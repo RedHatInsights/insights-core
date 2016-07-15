@@ -1,57 +1,77 @@
+"""
+``fstab``
+=========
+"""
+
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.mappers import get_active_lines
+from falafel.util import parse_table
+from falafel.mappers import get_active_lines, optlist_to_dict
 
-'''
-1st column -> fs_spec: This field describes the block special device or remote filesystem to be mounted.
-2nd column -> fs_file: This field describes the mount point for the filesystem.  
-3rd column -> fs_vfstype: This field describes the type of the filesystem.
-4th column -> fs_mntops: This field describes the mount options associated with the filesystem.
-5th column -> fs_freq: This field is used for these filesystems by the dump(8) command to determine which filesystems need to be dumped.
-6th column -> fs_passno: This field is used by the fsck(8) program to determine the order in which filesystem checks are done at reboot time.
-
-The returned data structure:
-    [
-        {
-            "fs_spec": "/dev/mapper/vg_ec0glz1201-lv_swap"
-            "fs_file": "swap"
-            "fs_vfstype":  "swap"
-            "fs_mntops": "defaults"
-            "fs_freq": "1"
-            "fs_passno": "1"
-        },
-        {
-            "fs_spec": "LABEL=/home"
-            "fs_file": "/home"
-            "fs_vfstype":  "ext3"
-            "fs_mntops": "defaults,rw"
-            "fs_freq": "1"
-            "fs_passno": "1"
-        }
-    ]
-'''
-
-class FilesystemList(MapperOutput):
-
-    def parse_fstab(self):
-        """
-        Parses table-like fstab. Assumes the first
-        row does not contains column names.
-        """
-        if not self.data:
-            return []
-        cols = ["fs_spec", "fs_file", "fs_vfstype", "fs_mntops", "fs_freq", "fs_passno"]
-        return [dict(zip(cols, row.split())) for row in get_active_lines(self.data, "#")]
-
-    def __contains__(self, s):
-        return any(s in line.split() for line in self.data)
+FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype fs_mntops    fs_freq fs_passno"
 
 
+@mapper("fstab")
+def filesystem_mounts(context):
+    """Parse each line in the file ``/etc/fstab``.
 
-@mapper('fstab')
-def fstab(context):
+    Typical content of the ``fstab`` looks like::
+
+        #
+        # /etc/fstab
+        # Created by anaconda on Fri May  6 19:51:54 2016
+        #
+        /dev/mapper/rhel_hadoop--test--1-root /                       xfs     defaults        0 0
+        UUID=2c839365-37c7-4bd5-ac47-040fba761735 /boot               xfs     defaults        0 0
+        /dev/mapper/rhel_hadoop--test--1-home /home                   xfs     defaults        0 0
+        /dev/mapper/rhel_hadoop--test--1-swap swap                    swap    defaults        0 0
+
+        /dev/sdb1 /hdfs/data1 xfs rw,relatime,seclabel,attr2,inode64,noquota 0 0
+        /dev/sdc1 /hdfs/data2 xfs rw,relatime,seclabel,attr2,inode64,noquota 0 0
+        /dev/sdd1 /hdfs/data3 xfs rw,relatime,seclabel,attr2,inode64,noquota 0 0
+
+        localhost:/ /mnt/hdfs nfs rw,vers=3,proto=tcp,nolock,timeo=600 0 0
+
+        nfs_hostname.redhat.com:/nfs_share/data     /srv/rdu/cases/000  nfs     ro,defaults,hard,intr,bg,noatime,nodev,nosuid,nfsvers=3,tcp,rsize=32768,wsize=32768     0
+
+    Parameters
+    ----------
+    context: falafel.core.context.Context
+        Context object providing file content for the ``/etc/fstab`` file as
+        well as metadata about the target system.
+
+    Returns
+    -------
+    list
+        A list of dictionaries containing information about each filesystem
+        defined in the ``/etc/fstab`` file.
+
+        .. code-block:: python
+
+        [
+            { 'fs_spec': "UUID=2c839365-37c7-4bd5-ac47-040fba761735",
+              'fs_file': '/',
+              'fs_vfstype': ['xfs'],
+              'fs_mntops': {'defaults': True},
+              'fs_freq': 0,
+              'fs_passno': 0 },
+            { 'fs_spec': "/dev/sdb1",
+              'fs_file': '/hdfs/data1',
+              'fs_vfstype': ['xfs'],
+              'fs_mntops': {'rw': True,
+                            'relatime': True,
+                            'seclabel': True,
+                            'attr2': True,
+                            'inode64': True,
+                            'noquota': True },
+              'fs_freq': 0,
+              'fs_passno': 0 }
+        ]
+
     """
-    Returns a list of dicts, where the keys in each dict are the column defined 
-    in function parse_fstab() and each item in the list represents a filesystem.
-    """
-    return FilesystemList(context.content)
+    fstab_output = parse_table([FS_HEADINGS] + get_active_lines(context.content))
+    for line in fstab_output:
+        line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0
+        line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
+        line['fs_vfstype'] = line['fs_vfstype'].split(',')
+        line['fs_mntops'] = optlist_to_dict(line['fs_mntops'])
+    return fstab_output
