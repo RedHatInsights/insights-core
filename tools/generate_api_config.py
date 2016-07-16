@@ -40,6 +40,7 @@ class APIConfigGenerator(object):
                  uploader_config_filename="uploader.json",
                  file_plugin_map_filename="file_plugin_mapping.json",
                  rule_spec_mapping_filename="rule_spec_mapping.json",
+                 plugin_package=None,
                  version_number=None):
 
         self.data_spec_config = data_spec_config
@@ -55,7 +56,7 @@ class APIConfigGenerator(object):
                                                  datetime.now().isoformat())
 
         sys.path.append("/home/klape/insights/rules")
-        plugins.load(DEFAULT_PLUGIN_MODULE)
+        plugins.load(plugin_package if plugin_package else DEFAULT_PLUGIN_MODULE)
 
     @staticmethod
     def writefile(filename, o):
