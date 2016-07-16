@@ -13,6 +13,15 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
 
+messages.messages.filters.extend([
+    "LIST",
+    "CROND",
+    "jabberd",
+    "Wrapper",
+    "Launching",
+    "yum"
+])
+
 
 def test_messages():
     msg_info = messages.messages(context_wrap(MSGINFO))
