@@ -2,6 +2,7 @@ from falafel.core.plugins import mapper
 
 FITLER = ['Filesystem features', 'Default mount options']
 
+
 @mapper('dumpe2fs-h', FITLER)
 def get_dumpe2fs_output(context):
     """

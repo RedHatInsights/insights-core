@@ -215,7 +215,7 @@ def integrate(input_data, module):
 
     if is_multi_node:
         gen = reducer.run_multi(mapper_output, error_handler, reducers=reducers)
-        return [result for _, result in gen]
+        return [result for func, result in gen]
     else:
         host_outputs = mapper_output.values()
         if len(host_outputs) == 0:
@@ -235,6 +235,8 @@ input_data_cache = {}
 
 # UUID is kinda slow
 GLOBAL_NUMBER = 0
+
+
 def next_gn():
     global GLOBAL_NUMBER
     GLOBAL_NUMBER += 1
@@ -391,4 +393,3 @@ def redhat_release(major, minor=""):
         return template % (major, "." + minor, name)
     else:
         raise Exception("invalid major version: %s" % major)
-

@@ -1,5 +1,6 @@
 from falafel.core.plugins import mapper
 
+
 @mapper("current_clocksource")
 def get_current_clksrc(context):
     """

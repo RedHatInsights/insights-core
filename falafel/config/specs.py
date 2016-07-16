@@ -174,3 +174,5 @@ meta_files = {
     "uploader_log"              : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log"),
     "metadata.json"             : SimpleFileSpec("metadata.json")
 }
+
+# flake8: noqa

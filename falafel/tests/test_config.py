@@ -1,12 +1,12 @@
-import re
 import unittest
 import pytest
 import shlex
 
 from falafel.config import InsightsDataSpecConfig, SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, All, First, group_wrap
 from falafel.config import DockerHostCommandSpec
-from falafel.util.command import retarget_command_for_mountpoint
+from falafel.util.command import retarget_command_for_mountpoint, sh_join
 from falafel.config import HostTarget, DockerImageTarget, DockerContainerTarget
+
 
 class TestSimpleFileSpec(unittest.TestCase):
 
@@ -127,30 +127,30 @@ class TestInsightsDataSpecConfig(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.static_specs = {
-            "nproc.conf"                : PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
-            "blkid"                     : CommandSpec("/usr/sbin/blkid -c /dev/null"),
-            "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
-            "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
-            "dmesg"                     : CommandSpec("/bin/dmesg", large_content=True),
-            "ethtool-a"                 : CommandSpec("/sbin/ethtool -a {iface}", iface=r"\S+"),
-            "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm( ), multi_output=False),
-                                           CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
-                                           CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False)]),
-            "multiple-rpms"            :  All([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm( ), multi_output=False),
-                                           CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
-                                           CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False)]),
-            "docker_image_inspect"      : DockerHostCommandSpec("/usr/bin/docker inspect --type=image {DOCKER_IMAGE_NAME}"),
+            "nproc.conf": PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
+            "blkid": CommandSpec("/usr/sbin/blkid -c /dev/null"),
+            "bond": PatternSpec(r"proc/net/bonding/bond.*"),
+            "chkconfig": CommandSpec("/sbin/chkconfig --list"),
+            "dmesg": CommandSpec("/bin/dmesg", large_content=True),
+            "ethtool-a": CommandSpec("/sbin/ethtool -a {iface}", iface=r"\S+"),
+            "installed-rpms": First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
+                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
+                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False)]),
+            "multiple-rpms": All([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
+                                  CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
+                                  CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False)]),
+            "docker_image_inspect": DockerHostCommandSpec("/usr/bin/docker inspect --type=image {DOCKER_IMAGE_NAME}"),
         }
 
         cls.meta_files = {
-            "machine-id"                : SimpleFileSpec("etc/redhat-access-insights/machine-id"),
-            "branch_info"               : SimpleFileSpec("branch_info"),
-            "uploader_log"              : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log")
+            "machine-id": SimpleFileSpec("etc/redhat-access-insights/machine-id"),
+            "branch_info": SimpleFileSpec("branch_info"),
+            "uploader_log": SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log")
         }
 
         cls.inconsistent_specs = {
-            "dumpe2fs-h"                : All([CommandSpec("/sbin/dumpe2fs -h {dumpdev}", dumpdev=r"\S+"),
-                                               CommandSpec("/usr/sbin/dumpe2fs")]),
+            "dumpe2fs-h": All([CommandSpec("/sbin/dumpe2fs -h {dumpdev}", dumpdev=r"\S+"),
+                               CommandSpec("/usr/sbin/dumpe2fs")]),
         }
 
         cls.additional_specs = {
@@ -161,17 +161,17 @@ class TestInsightsDataSpecConfig(unittest.TestCase):
 
     def test_inconsistent_specs(self):
         with pytest.raises(Exception):
-            config = InsightsDataSpecConfig(self.inconsistent_specs, self.meta_files)
+            InsightsDataSpecConfig(self.inconsistent_specs, self.meta_files)
 
     def test_additional_specs(self):
         my_config = InsightsDataSpecConfig(self.static_specs, self.meta_files)
         my_config.merge(group_wrap(self.additional_specs))
         self.assertEqual(my_config.get_spec_list('installed-rpms')[-1],
-                self.additional_specs["installed-rpms"])
+                         self.additional_specs["installed-rpms"])
 
     def test_iteritems(self):
         for k, v in self.config.iteritems():
-            self.assertEqual(v.get_all_specs() ,self.config.get_spec_list(k))
+            self.assertEqual(v.get_all_specs(), self.config.get_spec_list(k))
 
     def test_get_spec_list(self):
         actual = self.config.get_spec_list('blkid')[0]
@@ -252,26 +252,28 @@ class TestRetargetCommand(unittest.TestCase):
         "ls te\\\"\\\'\\\\st",
         "ls \"this \\\"is a\\\" test\"",
     ]
-    def test_retarget_command_for_mountpoint(self):
+
+    def test_retarget_command_for_mountpoint_1(self):
         for each in self.sh_join_test_data:
             self.assertEqual(shlex.split(each), shlex.split(sh_join(shlex.split(each))))
 
     retarget_test_data = [
         ("/usr/bin/yum -C repolist", "/usr/bin/yum --installroot={CONTAINER_MOUNT_POINT} -C repolist"),
         ("/bin/rpm -qa --qf='%s'" % format_rpm(3), "/bin/rpm --root={CONTAINER_MOUNT_POINT} -qa --qf='%s'" % format_rpm(3)),
-        ("/bin/date","/bin/date"),
-        ("systemctl list-unit-files","systemctl --root={CONTAINER_MOUNT_POINT} list-unit-files"),
-        (r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'",r"/usr/bin/find {CONTAINER_MOUNT_POINT}/var/crash {CONTAINER_MOUNT_POINT}/var/tmp -path '*.reports-*/whoopsie-report'"),
-        (r"/usr/bin/find -H /var/crash /var/tmp -path '*.reports-*/whoopsie-report'",r"/usr/bin/find -H {CONTAINER_MOUNT_POINT}/var/crash {CONTAINER_MOUNT_POINT}/var/tmp -path '*.reports-*/whoopsie-report'"),
-        ("/sbin/lsmod",None),
-        ("/usr/bin/ls -lanR /dev","/usr/bin/ls -lanR {CONTAINER_MOUNT_POINT}/dev"),
-        ("/usr/bin/ls -l /boot/grub2/grub.cfg","/usr/bin/ls -l {CONTAINER_MOUNT_POINT}/boot/grub2/grub.cfg"),
-        ]
-    def test_retarget_command_for_mountpoint(self):
+        ("/bin/date", "/bin/date"),
+        ("systemctl list-unit-files", "systemctl --root={CONTAINER_MOUNT_POINT} list-unit-files"),
+        (r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'", r"/usr/bin/find {CONTAINER_MOUNT_POINT}/var/crash {CONTAINER_MOUNT_POINT}/var/tmp -path '*.reports-*/whoopsie-report'"),
+        (r"/usr/bin/find -H /var/crash /var/tmp -path '*.reports-*/whoopsie-report'", r"/usr/bin/find -H {CONTAINER_MOUNT_POINT}/var/crash {CONTAINER_MOUNT_POINT}/var/tmp -path '*.reports-*/whoopsie-report'"),
+        ("/sbin/lsmod", None),
+        ("/usr/bin/ls -lanR /dev", "/usr/bin/ls -lanR {CONTAINER_MOUNT_POINT}/dev"),
+        ("/usr/bin/ls -l /boot/grub2/grub.cfg", "/usr/bin/ls -l {CONTAINER_MOUNT_POINT}/boot/grub2/grub.cfg"),
+    ]
+
+    def test_retarget_command_for_mountpoint_2(self):
         for each in self.retarget_test_data:
             retargeted_command = retarget_command_for_mountpoint(each[0])
             expected_retargeted_command = each[1]
-            if expected_retargeted_command == None:
+            if expected_retargeted_command is None:
                 self.assertEqual(retargeted_command, expected_retargeted_command)
             else:
                 self.assertEqual(shlex.split(retargeted_command),

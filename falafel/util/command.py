@@ -1,6 +1,7 @@
 import os
 import shlex
 
+
 def retarget_command_for_mountpoint(command):
     """
     For those AnalysisTargets that are examined by mounting their file system,
@@ -63,11 +64,13 @@ def retarget_command_for_mountpoint(command):
     else:
         return None
 
+
 def path_join(path1, path2):
     # os.path.join drops path1 entirely if path2 starts with a '/' which makes sense
     #    in some circomstances, but almost never in this program
     # so we use path_join instead
     return os.path.join(path1, path2 if not path2.startswith('/') else path2.lstrip('/'))
+
 
 def sh_join(split_command):
     # is the reverse of shlex.split
@@ -80,6 +83,7 @@ def sh_join(split_command):
     # Most of the real work happens in sh_quote
 
     return reduce(lambda accum, arg: accum + ' ' + sh_quote(arg), split_command)
+
 
 def sh_quote(arg):
     """
@@ -136,15 +140,18 @@ def sh_quote(arg):
     else:
         return sh_double_quote(arg)
 
+
 def sh_single_quote(arg):
     # put single-quotes around
     #    this will fail to quote correctly if arg contains any single-quotes
     return "'" + arg + "'"
 
+
 def sh_double_quote(arg):
     # put double-quotes around, and escape any double-quotes and backslashes within arg
     #   this will always quote correctly
     return '"' + arg.replace('\\', '\\\\').replace('"', '\\"') + '"'
+
 
 def sh_backslash_quote(arg):
     # quote each special character individually by putting a backslash in front of it.

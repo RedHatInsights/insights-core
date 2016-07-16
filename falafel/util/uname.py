@@ -40,7 +40,7 @@ rhel_release_map = {
     "2.6.18-400": "5.11",
     "2.6.18-402": "5.11",
     "2.6.18-404": "5.11",
-    "2.6.32-71":  "6.0",
+    "2.6.32-71": "6.0",
     "2.6.32-131": "6.1",
     "2.6.32-220": "6.2",
     "2.6.32-279": "6.3",
@@ -80,6 +80,7 @@ class UnameError(Exception):
 
     def __str__(self):
         return "{0}:'{1}'".format(self.msg, self.uname_line)
+
 
 class Uname(object):
     """
@@ -153,7 +154,7 @@ class Uname(object):
         uname_parts = uname_line_tmp.split(" ")
         logger.debug("Parsing uname line: %s", uname_parts)
         if len(uname_parts) < 3:
-            ver_rel_match = re.match("[0-9](\.[0-9]+){2}-[0-9]+",uname_parts[0])
+            ver_rel_match = re.match("[0-9](\.[0-9]+){2}-[0-9]+", uname_parts[0])
             if not ver_rel_match:
                 raise UnameError("Uname string appears invalid", uname_line)
             self.kernel = uname_parts[0]
@@ -162,7 +163,7 @@ class Uname(object):
             self.kernel = uname_parts[2]
             self.name = uname_parts[0]
             self.nodename = uname_parts[1]
-        has_arch = not "el" in self.kernel.split(".")[-1]
+        has_arch = "el" not in self.kernel.split(".")[-1]
         try:
             self.parse_nvr(self.kernel, arch=has_arch)
         except UnameError as error:
@@ -188,7 +189,7 @@ class Uname(object):
         if len(nvr.split('-')) < 2:
             raise UnameError("Too few parts in the uname version-release", nvr)
 
-        self.version, self.release_arch = nvr.split('-',1)
+        self.version, self.release_arch = nvr.split('-', 1)
         if arch:
             try:
                 self.release, self.arch = self.release_arch.rsplit('.', 1)
@@ -274,7 +275,8 @@ class Uname(object):
                 ret = self._lv_release == other_uname._lv_release
             else:
                 logger.debug("release not present for comparison: %s == %s", self.kernel, other_uname.kernel)
-                raise UnameError("Release information not present for comparison", "self({}), other({})".format(self.kernel,other_uname.kernel))
+                raise UnameError("Release information not present for comparison",
+                                 "self({}), other({})".format(self.kernel, other_uname.kernel))
         else:
             ret = self._sv_version == other_uname._sv_version
             logger.debug("comparison based on version: %s == %s ? %s", self._sv_version, other_uname._sv_version, ret)
@@ -306,7 +308,8 @@ class Uname(object):
                 ret = self._lv_release < other_uname._lv_release
             else:
                 logger.debug("release not present for comparison: %s < %s", self.kernel, other_uname.kernel)
-                raise UnameError("Release information not present for comparison", "self{}), other({})".format(self.kernel,other_uname.kernel))
+                raise UnameError("Release information not present for comparison",
+                                 "self{}), other({})".format(self.kernel, other_uname.kernel))
         else:
             ret = self._sv_version < other_uname._sv_version
             logger.debug("comparison based on version: %s < %s ? %s", self._sv_version, other_uname._sv_version, ret)
@@ -343,7 +346,8 @@ class Uname(object):
                 ret = self._lv_release > other_uname._lv_release
             else:
                 logger.debug("release not present for comparison: %s > %s", self.kernel, other_uname.kernel)
-                raise UnameError("Release information not present for comparison", "self{}), other({})".format(self.kernel,other_uname.kernel))
+                raise UnameError("Release information not present for comparison",
+                                 "self{}), other({})".format(self.kernel, other_uname.kernel))
         else:
             ret = self._sv_version > other_uname._sv_version
             logger.debug("comparison based on version: %s > %s ? %s", self._sv_version, other_uname._sv_version, ret)
@@ -382,7 +386,6 @@ class Uname(object):
             ret = self._sv_version < other._sv_version
             logger.debug("%s < %s ? %s", self._sv_version, other._sv_version, ret)
         return ret
-
 
     def fixed_by(self, *fixes, **kwargs):
         """

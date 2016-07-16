@@ -40,7 +40,7 @@ class TestCPUinfo():
         cpu_info = cpuinfo(context_wrap(CPUINFO))
         assert cpu_info.cpu_count() == 2
         assert cpu_info.socket_count() == 2
-        assert cpu_info.vendor() ==  "GenuineIntel"
-        assert cpu_info.model_name()[0] ==  "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
-        assert cpu_info.model()[0] ==  "45"
-        assert cpu_info.cpu_family() ==  "6"
+        assert cpu_info.vendor() == "GenuineIntel"
+        assert cpu_info.model_name()[0] == "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
+        assert cpu_info.model()[0] == "45"
+        assert cpu_info.cpu_family() == "6"

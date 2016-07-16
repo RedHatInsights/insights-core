@@ -1,4 +1,3 @@
-import json
 import pytest
 from falafel.core import mapper, reducer, MapperOutput, computed
 
@@ -45,6 +44,7 @@ COMPLEX_JSON = [
 ]
 
 FAKE_DATA = "This is some fake data"
+
 
 class SimpleMapperOutput(MapperOutput):
 
@@ -146,22 +146,6 @@ def test_serialization():
     }
 
     serialized = mapper.serialize(mapper_output)
-
-    # This doesn't seem to work most of the time
-    # assert serialized == json.dumps({
-    #     "some_host": {
-    #         simple_mapper.serializable_id: [
-    #             SIMPLE_JSON
-    #         ],
-    #         complex_mapper.serializable_id: [
-    #             COMPLEX_JSON
-    #         ],
-    #         fake_mapper.serializable_id: [
-    #             FAKE_DATA
-    #         ]
-    #     }
-    # })
-
     deserialized = reducer.deserialize(serialized)
 
     assert deserialized == mapper_output

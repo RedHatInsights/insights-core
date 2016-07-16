@@ -1,4 +1,3 @@
-import pytest
 from falafel.mappers.ls_boot import parse_ls_boot
 from falafel.tests import context_wrap
 
@@ -16,6 +15,7 @@ dr-xr-xr-x. 3 0 0 4096 Mar  4 16:19 ..
 lrwxrwxrwx. 1 0 0     11 Aug  4  2014 menu.lst -> ./grub.conf
 -rw-r--r--. 1 0 0   64 Sep 18  2015 device.map
 """
+
 
 def test_ls_boot():
     ls_boot = parse_ls_boot(context_wrap(LS_BOOT))

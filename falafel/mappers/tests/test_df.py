@@ -1,7 +1,7 @@
 from falafel.mappers import df
 from falafel.tests import context_wrap
 
-DF_ALP= """
+DF_ALP = """
 Filesystem                           1024-blocks      Used Available Capacity Mounted on
 /dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
 sysfs                                          0         0         0        - /sys
@@ -15,7 +15,7 @@ tmpfs                                    5998736         0   5998736       0% /s
 """.strip()
 
 
-DF_LI= """
+DF_LI = """
 Filesystem        Inodes  IUsed     IFree IUse% Mounted on
 /dev/mapper/vg_lxcrhel6sat56-lv_root
                  6275072 124955   6150117    2% /
@@ -34,14 +34,13 @@ tmpfs            1499684     15   1499669    1% /VM Tools
 def test_df_li():
     df_dict = df.df_li(context_wrap(DF_LI))
     assert len(df_dict) == 10
-    assert df_dict.get('/home') == \
-        {
-            'Filesystem'    : '/dev/sda2',
-            'Inodes'        : '106954752',
-            'IUsed'         : '298662',
-            'IFree'         : '106656090',
-            'IUse%'         : '1%'
-        }
+    assert df_dict.get('/home') == {
+        'Filesystem': '/dev/sda2',
+        'Inodes': '106954752',
+        'IUsed': '298662',
+        'IFree': '106656090',
+        'IUse%': '1%'
+    }
     assert df_dict['/dev'].get('Filesystem') == 'devtmpfs'
     assert df_dict['/run'].get('Inodes') == '1499684'
     assert df_dict['/tmp'].get('IUsed') == '54'
@@ -51,17 +50,17 @@ def test_df_li():
     assert df_dict['/VM Tools'].get('IFree') == '1499669'
     assert df_dict['/'].get('Filesystem') == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
 
+
 def test_df_alP():
     df_dict = df.df_alP(context_wrap(DF_ALP))
     assert len(df_dict) == 9
-    assert df_dict.get('/dev/shm') == \
-        {
-            'Filesystem'    : 'tmpfs',
-            '1024-blocks'   : '5998736',
-            'Used'          : '491660',
-            'Available'     : '5507076',
-            'Capacity'      : '9%'
-        }
+    assert df_dict.get('/dev/shm') == {
+        'Filesystem': 'tmpfs',
+        '1024-blocks': '5998736',
+        'Used': '491660',
+        'Available': '5507076',
+        'Capacity': '9%'
+    }
     assert df_dict['/sys'].get('Filesystem') == 'sysfs'
     assert df_dict['/proc'].get('1024-blocks') == '0'
     assert df_dict['/dev'].get('Used') == '0'

@@ -4,6 +4,7 @@ KEY_WORD_LINE_0 = ["Host", "Channel", "Id", "Lun"]
 KEY_WORD_LINE_1 = ["Vendor", "Model", "Rev"]
 KEY_WORD_LINE_2 = ["Type", "ANSI  SCSI revision"]
 
+
 @mapper('scsi')
 def get_scsi(context):
     """
@@ -48,6 +49,6 @@ def _get_line_dict(line, key_word):
     for i, word in enumerate(key_word):
         start = end if scsi_info else line.index(word)
         start += len(word) + 1
-        end = line.index(key_word[i + 1]) if i<len(key_word) -1 else None
+        end = line.index(key_word[i + 1]) if i < len(key_word) - 1 else None
         scsi_info[word.lower().replace(" ", "_")] = line[start:end].strip()
     return scsi_info

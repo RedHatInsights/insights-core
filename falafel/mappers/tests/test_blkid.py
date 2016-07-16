@@ -17,17 +17,15 @@ class TestBLKID():
     def test_get_blkid_info(self):
         blkid_dict = blkid.get_blkid_info(context_wrap(BLKID_INFO))
         assert len(blkid_dict) == 8
-        assert blkid_dict.get('/dev/sda1') == \
-            {
-                'UUID': '3676157d-f2f5-465c-a4c3-3c2a52c8d3f4',
-                'TYPE': 'xfs'
-            }
-        assert blkid_dict.get('/dev/cciss/c0d1p3') == \
-            {
-                'LABEL': '/u02',
-                'UUID': '004d0ca3-373f-4d44-a085-c19c47da8b5e',
-                'TYPE': 'ext3'
-            }
+        assert blkid_dict.get('/dev/sda1') == {
+            'UUID': '3676157d-f2f5-465c-a4c3-3c2a52c8d3f4',
+            'TYPE': 'xfs'
+        }
+        assert blkid_dict.get('/dev/cciss/c0d1p3') == {
+            'LABEL': '/u02',
+            'UUID': '004d0ca3-373f-4d44-a085-c19c47da8b5e',
+            'TYPE': 'ext3'
+        }
         assert blkid_dict['/dev/sda2'].get('UUID') == 'UVTk76-UWOc-vk7s-galL-dxIP-4UXO-0jG4MH'
         assert blkid_dict['/dev/sda2'].get('TYPE') == 'LVM2_member'
         assert blkid_dict['/dev/mapper/rhel_hp--dl160g8--3-lv_test'].get('TYPE') == 'ext4'

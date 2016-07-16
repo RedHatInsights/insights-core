@@ -1,5 +1,6 @@
 from falafel.core.plugins import mapper
 
+
 def parse_df_lines(five_keys, df_content):
     """
     Parse each line in df output.
@@ -16,7 +17,7 @@ def parse_df_lines(five_keys, df_content):
     df_ls = {}
     df_out = {}
     is_sep = False
-    for line in df_content[1:]: # [1:] -> Skip the header
+    for line in df_content[1:]:  # [1:] -> Skip the header
         line_splits = line.split()
         if len(line_splits) >= 6:
             # Re-split to avoid this kind of "Mounted on": "VMware Tools"
@@ -72,7 +73,7 @@ def df_li(context):
         },
     }
     """
-    five_keys = ['Filesystem','Inodes','IUsed','IFree','IUse%']
+    five_keys = ['Filesystem', 'Inodes', 'IUsed', 'IFree', 'IUse%']
     return parse_df_lines(five_keys, context.content)
 
 
@@ -104,5 +105,5 @@ def df_alP(context):
         },
     }
     """
-    five_keys = ['Filesystem','1024-blocks','Used','Available','Capacity']
-    return parse_df_lines(five_keys,context.content)
+    five_keys = ['Filesystem', '1024-blocks', 'Used', 'Available', 'Capacity']
+    return parse_df_lines(five_keys, context.content)

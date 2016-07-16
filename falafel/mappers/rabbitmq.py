@@ -1,5 +1,6 @@
 from falafel.core.plugins import mapper
 
+
 @mapper("rabbitmq_report", ["total_limit"])
 def fd_total_limit(context):
     if context.osp.role == "Controller":

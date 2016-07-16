@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core.mapper import MapperOutput
 
+
 class DmesgLineList(MapperOutput):
 
     def has_startswith(self, prefix):

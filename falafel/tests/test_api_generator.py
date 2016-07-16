@@ -6,7 +6,7 @@ class TestAPIGen(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from falafel.mappers import *
+        from falafel.mappers import *  # noqa
         pass
 
     def setUp(self):

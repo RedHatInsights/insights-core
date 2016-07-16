@@ -1,5 +1,3 @@
-import types
-
 try:
     import cjson
     json_encode = cjson.encode
@@ -21,16 +19,14 @@ class Marshaller(object):
         Packages the return from a mapper for easy use in the reducer.
         """
 
-        type_ = type(o)
-
         if o is None:
             return
-        elif type_ == types.DictType:
+        elif isinstance(o, dict):
             if use_value_list:
                 for k, v in o.items():
                     o[k] = [v]
             return o
-        elif type_ in types.StringTypes:
+        elif isinstance(o, basestring):
             if use_value_list:
                 return {o: [True]}
             else:
@@ -39,7 +35,7 @@ class Marshaller(object):
             if shared:
                 return [o] if use_value_list else o
             else:
-                raise TypeError("Marshaller doesn't support given type %s" % type_)
+                raise TypeError("Marshaller doesn't support given type %s" % type(o))
 
     def unmarshal(self, doc):
         return doc
@@ -60,9 +56,9 @@ class Marshaller(object):
                     context[k] = v
                 else:
                     cur = context[k]
-                    if type(cur) != types.ListType:
+                    if not isinstance(cur, list):
                         context[k] = [cur]
-                    if type(v) != types.ListType:
+                    if not isinstance(v, list):
                         context[k].append(v)
                     else:
                         context[k].extend(v)

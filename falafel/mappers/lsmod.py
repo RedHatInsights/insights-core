@@ -32,6 +32,6 @@ def get_modules_info(context):
             if len(line_split) == 4:
                 mod_attrs = {}
                 for i, key in enumerate(memb_keys):
-                    mod_attrs[key] = line_split[i+1]
+                    mod_attrs[key] = line_split[i + 1]
                 module_dict[line_split[0]] = mod_attrs
     return module_dict

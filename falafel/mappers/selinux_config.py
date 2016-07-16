@@ -19,7 +19,7 @@ def parse_selinux_config(context):
     result = {}
     for line in context.content:
         line = line.strip()
-        if line and not line.startswith("#") :
+        if line and not line.startswith("#"):
             key, _, value = line.partition("=")
             result[key.strip()] = value.strip()
     return result

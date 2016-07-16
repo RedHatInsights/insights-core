@@ -1,6 +1,5 @@
 import logging
 import os
-import types
 
 
 def keys_in(items, *args):
@@ -32,7 +31,7 @@ def logging_level(logger, level):
 
 
 def make_iter(item):
-    if type(item) is types.ListType:
+    if isinstance(item, list):
         return item
     else:
         return [item]

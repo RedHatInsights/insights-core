@@ -3,7 +3,7 @@ import unittest
 from falafel.mappers import docker_sysconfig
 from falafel.tests import context_wrap
 
-docker_sysconfig1="""
+docker_sysconfig1 = """
 OPTIONS=#'--selinux-enabled --log-opt max-size=10m --log-opt max-file=7'
 
 DOCKER_CERT_PATH=/etc/docker  # skbfvkfdble
@@ -15,7 +15,7 @@ DOCKER_CERT_PATH=/etc/docker  # skbfvkfdble
 ADD_REGISTRY='--add-registry registry.access.redhat.com'
 """
 
-docker_sysconfig2="""
+docker_sysconfig2 = """
 OPTIONS='--selinux-enabled --log-opt max-size=10m --log-opt max-file=7'
 
 DOCKER_CERT_PATH=/etc/docker  # skbfvkfdble
@@ -27,7 +27,7 @@ DOCKER_CERT_PATH=/etc/docker  # skbfvkfdble
 ADD_REGISTRY='--add-registry registry.access.redhat.com'
 """
 
-docker_sysconfig3="""
+docker_sysconfig3 = """
 OPTIONS='--selinux-enabled --log-opt max-size=10m --log-opt max-file=7'
 
 DOCKER_CERT_PATH=
@@ -39,7 +39,7 @@ DOCKER_CERT_PATH=
 ADD_REGISTRY='--add-registry registry.access.redhat.com'
 """
 
-docker_sysconfig4="""
+docker_sysconfig4 = """
 OPTIONS='--selinux-enabled --log-opt max-size=10m --log-opt max-file=7'
 
 DOCKER_CERT_PATH
@@ -50,6 +50,7 @@ DOCKER_CERT_PATH
 # searched.
 ADD_REGISTRY='--add-registry registry.access.redhat.com'
 """
+
 
 class Sysconfigdockercheck(unittest.TestCase):
     def test_OPTION(self):
@@ -72,4 +73,3 @@ class Sysconfigdockercheck(unittest.TestCase):
         expected = {"OPTIONS": "'--selinux-enabled --log-opt max-size=10m --log-opt max-file=7'",
                     "ADD_REGISTRY": "'--add-registry registry.access.redhat.com'"}
         self.assertEqual(expected, result)
-

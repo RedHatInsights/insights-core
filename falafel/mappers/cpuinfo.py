@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core.mapper import MapperOutput
 
+
 class CpuInfo(MapperOutput):
 
     def __init__(self, data):
@@ -79,6 +80,7 @@ class CpuInfo(MapperOutput):
         for line in self.data:
             if line.startswith('cache size'):
                 return line.split(':')[-1].strip()
+
 
 @mapper('cpuinfo')
 def cpuinfo(context):

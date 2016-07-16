@@ -2,6 +2,8 @@ import re
 from falafel.core.plugins import mapper
 
 MOUNT_REGEX = re.compile(r'(.*) on (.*) type (\S+) \((.*)\)(.*)')
+
+
 @mapper('mount')
 def get_mount(context):
     """

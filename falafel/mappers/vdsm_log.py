@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
 
+
 class ParseVdsmLog(MapperOutput):
 
     def __contains__(self, s):
@@ -8,6 +9,7 @@ class ParseVdsmLog(MapperOutput):
         Check if the specified string s is contained in file vdsm.log
         """
         return any(s in line for line in self.data)
+
 
 @mapper('vdsm.log')
 def parse_vdsm_log(context):

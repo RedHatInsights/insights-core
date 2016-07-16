@@ -10,5 +10,6 @@ with open(os.path.join(__here__, "RELEASE")) as f:
 with open(os.path.join(__here__, "COMMIT")) as f:
     COMMIT = f.read().strip()
 
+
 def get_nvr():
     return "{0}-{1}-{2}".format(NAME, VERSION, RELEASE)

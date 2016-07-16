@@ -6,6 +6,7 @@ from falafel.tests import context_wrap
 
 NON_MATCHING_HOSTNAME = "some-other-hostname-that-doesnt-match"
 
+
 class TestInsightsHeartbeat(unittest.TestCase):
     def test_heartbeat(self):
         expected_result = make_response(insights_heartbeat.ERROR_KEY)

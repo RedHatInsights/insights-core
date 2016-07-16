@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
 
+
 class LsPCI(MapperOutput):
 
     def __contains__(self, s):
@@ -14,6 +15,7 @@ class LsPCI(MapperOutput):
         Returns all lines that contain 's' and wrap them into a list
         """
         return [line for line in self.data if s in line]
+
 
 @mapper('lspci')
 def lspci(context):

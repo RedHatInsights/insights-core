@@ -149,13 +149,13 @@ def get_ip_addr(context):
     iface_addr_v4 = []
     iface_addr_v6 = []
     line = 0
-    if len(context.content)==0:
+    if len(context.content) == 0:
         return r
     while "Message truncated" == context.content[line].strip():
         line = line + 1
     for content in context.content[line:]:
         split_content = content.strip().split()
-        if len(content)>0 and content[0] != " ":    # Parse first line
+        if len(content) > 0 and content[0] != " ":  # Parse first line
             # save previous iface info
             if iface_name != "":
                 iface_pro["addr"] = iface_addr_v4

@@ -3,10 +3,10 @@ import unittest
 import tempfile
 import subprocess
 import shlex
-
 from falafel.core import archives
 
 HERE = os.path.abspath(os.path.dirname(__file__))
+
 
 class TestOnDiskExtractor(unittest.TestCase):
     def test_from_buffer_with_directory(self):
@@ -26,7 +26,7 @@ class TestOnDiskExtractor(unittest.TestCase):
                 dir_tf = dir_ex.from_path(tmp_dir)
                 dir_all_files = dir_tf.getnames()
 
-                self.assertEqual(len(tar_all_files),len(dir_all_files))
+                self.assertEqual(len(tar_all_files), len(dir_all_files))
 
                 for tar_path in tar_all_files:
                     dir_path = os.path.join(dir_tf.tar_file.path,

@@ -69,7 +69,7 @@ def get_ethtool_a(context):
     result = {}
     if "ethtool" in context.content[0]:
         # ethtool run error, only return iface
-        result["iface"]= extract_iface_name_from_path(context.path, "ethtool_-a_")
+        result["iface"] = extract_iface_name_from_path(context.path, "ethtool_-a_")
         return result
     if "Cannot get" in context.content[0]:
         # cannot got pause param in ethtool
@@ -97,7 +97,7 @@ def get_ethtool_c(context):
     result = {}
     if "ethtool" in context.content[0]:
         # ethtool run error, only return iface
-        result["iface"]= extract_iface_name_from_path(context.path, "ethtool_-c_")
+        result["iface"] = extract_iface_name_from_path(context.path, "ethtool_-c_")
         return result
     if "Cannot get" in context.content[0]:
         # cannot got pause param in ethtool
@@ -108,8 +108,8 @@ def get_ethtool_c(context):
 
     if len(context.content) > 1:
         second_line_content = context.content[1].split(" ")
-        result["adaptive-rx"] = (second_line_content[2]=="on")
-        result["adaptive-tx"] = (second_line_content[5] =="on")
+        result["adaptive-rx"] = (second_line_content[2] == "on")
+        result["adaptive-tx"] = (second_line_content[5] == "on")
 
         for line in context.content[2:]:
             if line.strip():
@@ -129,7 +129,7 @@ def get_ethtool_g(context):
     result = {}
     if "ethtool" in context.content[0]:
         # ethtool run error, only return iface
-        result["iface"]= extract_iface_name_from_path(context.path, "ethtool_-g_")
+        result["iface"] = extract_iface_name_from_path(context.path, "ethtool_-g_")
         return result
     if "Cannot get" in context.content[0]:
         # cannot got pause param in ethtool

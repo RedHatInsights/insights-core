@@ -38,6 +38,7 @@ def get_meta_specs():
         }
     return result
 
+
 class AnalysisTarget:
 
     ALL_DERIVED_CLASSES = []
@@ -109,7 +110,6 @@ class HostTarget(AnalysisTarget):
         # we just return valid, but never used data.
         return os.path.join(DATA_ARCHIVE_DIR + "/dockerhost/rootfs", path)
 
-
     @classmethod
     def add_command_section(self, json, spec, output_filters):
         doc = {
@@ -179,7 +179,7 @@ class DockerImageTarget(AnalysisTarget):
     def add_command_section(self, json, spec, output_filters):
         command = spec.get_for_uploader(self)
 
-        if command == None:
+        if command is None:
             return json
 
         section = [{
@@ -193,7 +193,7 @@ class DockerImageTarget(AnalysisTarget):
     def add_file_section(self, json, spec, output_filters):
         path = spec.get_for_uploader(self)
 
-        if path == None:
+        if path is None:
             return json
 
         section = [{
@@ -228,6 +228,7 @@ class DockerImageTarget(AnalysisTarget):
 
         return '{CONTAINER_MOUNT_POINT}' + path
 
+
 class DockerContainerTarget(AnalysisTarget):
     section_name = "docker_container"
 
@@ -251,7 +252,7 @@ class DockerContainerTarget(AnalysisTarget):
     def add_command_section(self, json, spec, output_filters):
         command = spec.get_for_uploader(self)
 
-        if command == None:
+        if command is None:
             return json
 
         section = [{
@@ -265,7 +266,7 @@ class DockerContainerTarget(AnalysisTarget):
     def add_file_section(self, json, spec, output_filters):
         path = spec.get_for_uploader(self)
 
-        if path == None:
+        if path is None:
             return json
 
         section = [{
@@ -297,6 +298,7 @@ class DockerContainerTarget(AnalysisTarget):
 
 
 AnalysisTarget.ALL_DERIVED_CLASSES = DefaultAnalysisTargets = [HostTarget, DockerImageTarget, DockerContainerTarget]
+
 
 def check_consistency(name, specs):
     """Function that ensures all specs in a SpecGroup have the same configuration."""
@@ -439,6 +441,7 @@ class InsightsDataSpecConfig(object):
 # to collect data from the host those things are on.  DockerHostSimpleFileSpec,
 # DockerHostPatternSpec, and DockerHostCommand (below) are for that case.
 
+
 class InsightsDataSpecBase(object):
 
     def __init__(self, multi_output=False, large_content=False):
@@ -559,6 +562,7 @@ class PatternSpec(SimpleFileSpec):
     def __init__(self, path, large_content=False):
         super(PatternSpec, self).__init__(path, multi_output=True, large_content=large_content)
 
+
 class DockerHostSimpleFileSpec(SimpleFileSpec):
     #  If you are collecting data for a DockerContainer or DockerImage
     #  but you want to collect data from it's host, use this spec
@@ -573,6 +577,7 @@ class DockerHostSimpleFileSpec(SimpleFileSpec):
         # ignore analysis target for the purposes of generating the file field
         #   so it collects from the host rather than the container or image
         return super(DockerHostSimpleFileSpec, self).get_for_uploader()
+
 
 class DockerHostPatternSpec(SimpleFileSpec):
     #  If you are collecting data for a DockerContainer or DockerImage
@@ -590,13 +595,12 @@ class DockerHostPatternSpec(SimpleFileSpec):
         return super(DockerHostPatternSpec, self).get_for_uploader()
 
 
-
 class CommandSpec(InsightsDataSpecBase):
 
     # this is the list of variables that are expanded by the client,
     # and so should not be expanded here, in the server
-    CLIENT_SIDE_VARIABLES = [ 'DOCKER_IMAGE_NAME', 'DOCKER_CONTAINER_NAME',
-                              'EXPANDED_FILE_NAME', 'CONTAINER_MOUNT_POINT' ]
+    CLIENT_SIDE_VARIABLES = ['DOCKER_IMAGE_NAME', 'DOCKER_CONTAINER_NAME',
+                             'EXPANDED_FILE_NAME', 'CONTAINER_MOUNT_POINT']
 
     def __str__(self):
         return '<Command "{0}">'.format(self.command)
@@ -737,6 +741,7 @@ class CommandSpec(InsightsDataSpecBase):
         mapping.update(dict((k, r'\S+') for k in self.CLIENT_SIDE_VARIABLES))
         return self.replace_variables(command, mapping)
 
+
 class DockerHostCommandSpec(CommandSpec):
     #  If you are collecting data for a DockerContainer or DockerImage
     #  but you want to collect data from it's host, use this spec
@@ -751,6 +756,7 @@ class DockerHostCommandSpec(CommandSpec):
         # ignore analysis target for the purposes of generating the command
         #   so it collects from the host rather than the container or image
         return super(DockerHostCommandSpec, self).get_for_uploader()
+
 
 def _make_rpm_formatter(fmt=None):
     if fmt is None:

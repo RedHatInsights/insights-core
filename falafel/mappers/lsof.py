@@ -8,7 +8,7 @@ class Splitter(object):
     def __init__(self, lines):
         self.lines = lines
         # In some sosreport the lsof does not start with the header
-        self.header_idx, self.header_row = [(i,l) for i,l in enumerate(lines) if 'COMMAND ' in l][0]
+        self.header_idx, self.header_row = [(i, l) for i, l in enumerate(lines) if 'COMMAND ' in l][0]
         self.name_idx = self.header_row.index(" NAME")
         self.pid_idx = self.header_row.index("  PID")
         _, self.mid_cols = self.header_row[:self.name_idx].split(None, 1)
@@ -28,7 +28,7 @@ class Splitter(object):
         return mid_dict
 
     def parse_lines(self):
-        for line in self.lines[self.header_idx+1:]:
+        for line in self.lines[self.header_idx + 1:]:
             command, rest = line[:self.pid_idx], line[self.pid_idx:]
             name = line[self.name_idx:]
             middle_dict = self.split_middle(rest[:self.name_idx - len(command)])

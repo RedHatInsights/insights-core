@@ -8,16 +8,16 @@ import falafel.config.db as dbcf
 from falafel.config import SimpleFileSpec, CommandSpec, PatternSpec
 
 static_specs = {
-    "nproc.conf"                : PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
-    "blkid"                     : CommandSpec("/usr/sbin/blkid -c /dev/null"),
-    "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
-    "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
+    "nproc.conf": PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
+    "blkid": CommandSpec("/usr/sbin/blkid -c /dev/null"),
+    "bond": PatternSpec(r"proc/net/bonding/bond.*"),
+    "cciss": PatternSpec(r"proc/driver/cciss/cciss.*"),
 }
 
 meta_files = {
-    "machine-id"                : SimpleFileSpec("etc/redhat-access-insights/machine-id"),
-    "branch_info"               : SimpleFileSpec("branch_info"),
-    "uploader_log"              : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log")
+    "machine-id": SimpleFileSpec("etc/redhat-access-insights/machine-id"),
+    "branch_info": SimpleFileSpec("branch_info"),
+    "uploader_log": SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log")
 }
 
 
@@ -66,7 +66,7 @@ class TestConfigFactory(unittest.TestCase):
         self.assertTrue(len(specs) == 0)
 
 
-class TestStaticConfigFactory(unittest.TestCase): 
+class TestStaticConfigFactory(unittest.TestCase):
     def test_get_config_factory(self):
         config = scf.get_config(module=sys.modules[__name__])
         self.assertEqual(config.get_specs('blkid')[0], static_specs.get('blkid'))
@@ -77,4 +77,3 @@ class TestDatabaseConfigFactory(unittest.TestCase):
     def test_get_config_factory(self):
         config = dbcf.get_config()
         self.assertTrue(config is not None)
-

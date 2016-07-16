@@ -19,8 +19,6 @@ from falafel.core.plugins import mapper
 def get_device_info(context):
     device_list = []
     parent = []
-    line_0 = context.content[0]
-    # column_size = len(line_0.split())
     for line in context.content[1:]:
         device_dict = {}
         if line[0].isalpha():

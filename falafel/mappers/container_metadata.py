@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
 
+
 class DockerRole(MapperOutput):
 
     def is_host(self):

@@ -1,4 +1,3 @@
-import pytest
 from falafel.mappers.selinux_config import parse_selinux_config
 from falafel.tests import context_wrap
 
@@ -12,11 +11,12 @@ SELINUX=enforcing
 
  # SELINUXTYPE= can take one of three two values:
  #     targeted - Targeted processes are protected,
- #     minimum - Modification of targeted policy. Only selected processes are protected. 
+ #     minimum - Modification of targeted policy. Only selected processes are protected.
  #     mls - Multi Level Security protection.
-SELINUXTYPE=targeted 
+SELINUXTYPE=targeted
 
 """
+
 
 def test_selinux_config():
     selinux_config = parse_selinux_config(context_wrap(SELINUX_CONFIG))

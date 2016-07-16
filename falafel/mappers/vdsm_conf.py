@@ -3,6 +3,7 @@ import re
 
 SECTION_RE = re.compile(r'^\[([a-zA-Z0-9]+)\]$')
 
+
 @mapper("vdsm.conf")
 def check_vdsm_conf(context):
     """

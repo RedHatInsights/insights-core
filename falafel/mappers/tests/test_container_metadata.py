@@ -11,6 +11,7 @@ docker_c.role = "container"
 docker_i = Docker()
 docker_i.role = "image"
 
+
 def test_container_metadata():
     context = context_wrap(RHEL6, docker=docker_c)
     assert docker_metadata_role(context)

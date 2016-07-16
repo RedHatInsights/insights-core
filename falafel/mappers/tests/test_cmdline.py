@@ -11,6 +11,6 @@ class TestCmdLine():
     def test_cmdline(self):
         cmd_line = cmdline.get_cmdline(context_wrap(CMDLINE))
         assert len(cmd_line) == 15
-        assert cmd_line.get('ro') == None
+        assert cmd_line.get('ro') is None
         assert cmd_line.get('root') == ['/dev/mapper/vg_rootvg-lv_root']
         assert cmd_line.get('rd_LVM_LV') == ['vg_rootvg/lv_root', 'vg_rootvg/lv_swap']

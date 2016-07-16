@@ -29,7 +29,8 @@ list_container_headers = ["CONTAINER ID", "IMAGE", "COMMAND", "CREATED", "STATUS
 
 @mapper("docker_list_images")
 def docker_list_images_parser(context):
-    return [dict(zip(list_image_headers, re.split(r'\s{3,}',row))) for row in context.content[1:]]
+    return [dict(zip(list_image_headers, re.split(r'\s{3,}', row))) for row in context.content[1:]]
+
 
 @mapper("docker_list_containers")
 def docker_list_containers_parser(context):
@@ -40,11 +41,3 @@ def docker_list_containers_parser(context):
             result.insert(5, None)
         docker_containers_list.append(dict(zip(list_container_headers, result)))
     return docker_containers_list
-
-
-
-
-
-
-
-

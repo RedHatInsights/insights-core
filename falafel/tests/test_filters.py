@@ -20,6 +20,6 @@ def check_filters(name, states):
 
 
 def test_filters():
-    from falafel.mappers import *
+    from falafel.mappers import *  # noqa
     for name, states in plugins.SYMBOLIC_NAME_FILTER_MAPPING.iteritems():
         yield check_filters, name, states

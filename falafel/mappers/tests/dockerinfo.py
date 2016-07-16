@@ -1,11 +1,10 @@
 import unittest
 
 from falafel.mappers import dockerinfo
-from falafel.core.plugins import make_response
-from falafel.tests import context_wrap, InputData, archive_provider
+from falafel.tests import context_wrap
 
 
-docker_info1="""
+docker_info1 = """
 Containers: 0
 Images: 1
 Server Version: 1.9.1
@@ -39,7 +38,7 @@ Name: dhcp-192-151.pek.redhat.com
 ID: QPOX:46K6:RZK5:GPBT:DEUD:QM6H:5LRE:R63D:42DI:4BH3:6ZOZ:5EUM
 """
 
-docker_info2="""
+docker_info2 = """
 Containers: 0
 Images: 0
 Server Version: 1.9.1
@@ -71,7 +70,7 @@ Name: dhcp-192-151.pek.redhat.com
 ID: QPOX:46K6:RZK5:GPBT:DEUD:QM6H:5LRE:R63D:42DI:4BH3:6ZOZ:5EUM
 """
 
-docker_info3="""
+docker_info3 = """
 Cannot connect to the Docker daemon. Is the docker daemon running on this host?
 """
 
@@ -83,7 +82,6 @@ class Testdockerstoragetypecheck(unittest.TestCase):
         sub_result = dict([(key, result[key]) for key in sub_key])
         expected = {'Data loop file': '/var/lib/docker/devicemapper/devicemapper/data', 'Data file': '/dev/loop0', 'Server Version': '1.9.1'}
         self.assertEqual(expected, sub_result)
-
 
         result = dockerinfo.docker_info_parser(context_wrap(docker_info2))
         self.assertEqual(None, result.get("Data loop file"))

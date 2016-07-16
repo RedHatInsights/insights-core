@@ -71,70 +71,61 @@ size=16G features='0' hwhandler='0' wp=rw
 
 
 def test_get_multipath_v4_ll():
-    multipath_v4_ll_list = \
-    multipath_v4_ll.get_multipath_v4_ll(context_wrap(MULTIPATH_V4_LL_INFO))
+    multipath_v4_ll_list = multipath_v4_ll.get_multipath_v4_ll(context_wrap(MULTIPATH_V4_LL_INFO))
     assert len(multipath_v4_ll_list) == 7
-    assert multipath_v4_ll_list[0] == \
-        {
-            "alias": "mpathg",
-            "wwid": "36f01faf000da360b0000033c528fea6d",
-            "dm_name": "dm-2",
-            "venprod": "DELL,MD36xxi",
-            "size": "54T",
-            "features": "3 queue_if_no_path pg_init_retries 50",
-            "hwhandler": "1 rdac",
-            "wp": "rw",
-            "path_group": [
-                {
-                "policy": "round-robin 0",
-                "prio": "0",
-                "status": "active",
-                "path": [
-                    ['12:0:0:1', 'sdc', '8:32', 'active', 'ready', 'running'],
-                    ['11:0:0:1', 'sdi', '8:128', 'active', 'ready', 'running'],
-                    ['15:0:0:1', 'sdo', '8:224', 'active', 'ready', 'running'],
-                    ['17:0:0:1', 'sdv', '65:80', 'active', 'ready', 'running']
-                ]
-                },
-                {
-                "policy": "round-robin 0",
-                "prio": "0",
-                "status": "enabled",
-                "path": [
-                    ['13:0:0:1', 'sdf', '8:80', 'active', 'ready', 'running'],
-                    ['14:0:0:1', 'sdl', '8:176', 'active', 'ready', 'running'],
-                    ['16:0:0:1', 'sdr', '65:16', 'active', 'ready', 'running'],
-                    ['18:0:0:1', 'sdx', '65:112','active', 'ready', 'running']
-                ]
-            }
+    assert multipath_v4_ll_list[0] == {
+        "alias": "mpathg",
+        "wwid": "36f01faf000da360b0000033c528fea6d",
+        "dm_name": "dm-2",
+        "venprod": "DELL,MD36xxi",
+        "size": "54T",
+        "features": "3 queue_if_no_path pg_init_retries 50",
+        "hwhandler": "1 rdac",
+        "wp": "rw",
+        "path_group": [{
+            "policy": "round-robin 0",
+            "prio": "0",
+            "status": "active",
+            "path": [
+                ['12:0:0:1', 'sdc', '8:32', 'active', 'ready', 'running'],
+                ['11:0:0:1', 'sdi', '8:128', 'active', 'ready', 'running'],
+                ['15:0:0:1', 'sdo', '8:224', 'active', 'ready', 'running'],
+                ['17:0:0:1', 'sdv', '65:80', 'active', 'ready', 'running']
             ]
-        }
+        }, {
+            "policy": "round-robin 0",
+            "prio": "0",
+            "status": "enabled",
+            "path": [
+                ['13:0:0:1', 'sdf', '8:80', 'active', 'ready', 'running'],
+                ['14:0:0:1', 'sdl', '8:176', 'active', 'ready', 'running'],
+                ['16:0:0:1', 'sdr', '65:16', 'active', 'ready', 'running'],
+                ['18:0:0:1', 'sdx', '65:112', 'active', 'ready', 'running']
+            ]
+        }]
+    }
     assert multipath_v4_ll_list[0].get('size') == '54T'
-    assert multipath_v4_ll_list[1].get('path_group') == \
-                [
-                {
-                "policy": "round-robin 0",
-                "prio": "1",
-                "status": "active",
-                "path": [
-                    ['12:0:0:2', 'sdc', '8:32', 'active', 'ready', 'running'],
-                    ['11:0:0:2', 'sdi', '8:128', 'active', 'ready', 'running'],
-                    ['15:0:0:2', 'sdo', '8:224', 'active', 'ready', 'running'],
-                    ['17:0:0:2', 'sdv', '65:80', 'active', 'ready', 'running']
-                ]
-                },
-                {
-                "policy": "round-robin 0",
-                "prio": "1",
-                "status": "enabled",
-                "path": [
-                    ['13:0:0:2', 'sdf', '8:80', 'active', 'ready', 'running'],
-                    ['14:0:0:2', 'sdl', '8:176', 'active', 'ready', 'running'],
-                    ['16:0:0:2', 'sdr', '65:16', 'active', 'ready', 'running'],
-                    ['18:0:0:2', 'sdx', '65:112','active', 'ready', 'running']
-                ]
-                }
-                ]
+    assert multipath_v4_ll_list[1].get('path_group') == [{
+        "policy": "round-robin 0",
+        "prio": "1",
+        "status": "active",
+        "path": [
+            ['12:0:0:2', 'sdc', '8:32', 'active', 'ready', 'running'],
+            ['11:0:0:2', 'sdi', '8:128', 'active', 'ready', 'running'],
+            ['15:0:0:2', 'sdo', '8:224', 'active', 'ready', 'running'],
+            ['17:0:0:2', 'sdv', '65:80', 'active', 'ready', 'running']
+        ]
+    }, {
+        "policy": "round-robin 0",
+        "prio": "1",
+        "status": "enabled",
+        "path": [
+            ['13:0:0:2', 'sdf', '8:80', 'active', 'ready', 'running'],
+            ['14:0:0:2', 'sdl', '8:176', 'active', 'ready', 'running'],
+            ['16:0:0:2', 'sdr', '65:16', 'active', 'ready', 'running'],
+            ['18:0:0:2', 'sdx', '65:112', 'active', 'ready', 'running']
+        ]
+    }]
     assert multipath_v4_ll_list[2].get('hwhandler') == "0"
     assert multipath_v4_ll_list[3].get('alias') == "mpatha"
     assert multipath_v4_ll_list[4].get('wwid') == "1IET     00080001"

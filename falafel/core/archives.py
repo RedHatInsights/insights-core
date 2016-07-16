@@ -161,6 +161,7 @@ class OnDiskExtractor(Extractor):
             subprocess.call(shlex.split("chmod -R 755 %s" % self.tmp_dir))
             shutil.rmtree(self.tmp_dir)
 
+
 class DirectoryAdapter(object):
     """
     This class takes a path to a directory and provides a subset of

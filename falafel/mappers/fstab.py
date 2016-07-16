@@ -4,7 +4,7 @@ from falafel.mappers import get_active_lines
 
 '''
 1st column -> fs_spec: This field describes the block special device or remote filesystem to be mounted.
-2nd column -> fs_file: This field describes the mount point for the filesystem.  
+2nd column -> fs_file: This field describes the mount point for the filesystem.
 3rd column -> fs_vfstype: This field describes the type of the filesystem.
 4th column -> fs_mntops: This field describes the mount options associated with the filesystem.
 5th column -> fs_freq: This field is used for these filesystems by the dump(8) command to determine which filesystems need to be dumped.
@@ -31,6 +31,7 @@ The returned data structure:
     ]
 '''
 
+
 class FilesystemList(MapperOutput):
 
     def parse_fstab(self):
@@ -47,11 +48,10 @@ class FilesystemList(MapperOutput):
         return any(s in line.split() for line in self.data)
 
 
-
 @mapper('fstab')
 def fstab(context):
     """
-    Returns a list of dicts, where the keys in each dict are the column defined 
+    Returns a list of dicts, where the keys in each dict are the column defined
     in function parse_fstab() and each item in the list represents a filesystem.
     """
     return FilesystemList(context.content)

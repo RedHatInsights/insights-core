@@ -20,6 +20,7 @@ Host: scsi0 Channel: 00 Id: 00 Lun: 03
   Type:   Direct-Access                    ANSI  SCSI revision: 05
 """
 
+
 def test_scsi():
     context = context_wrap(SCSI_OUTPUT)
     result = get_scsi(context)
@@ -35,7 +36,7 @@ def test_scsi():
     assert r["type"] == "RAID"
     assert r["ansi__scsi_revision"] == "05"
 
-    r =  result[1]
+    r = result[1]
     assert r["model"] == "LOGICAL VOLUME"
 
     r = result[4]

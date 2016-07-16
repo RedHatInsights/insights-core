@@ -28,6 +28,7 @@ Free  PE / Size       11 / 44.00 MiB
 VG UUID               by0Dl3-0lpB-MxEz-f6GO-9LYO-YRAQ-GufNZN
 """.strip()
 
+
 class TestVGdisplay():
     def test_vgdisplay(self):
         vg_info = vgdisplay.get_vginfo(context_wrap(VGDISPLAY))

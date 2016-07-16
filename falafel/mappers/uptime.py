@@ -80,7 +80,7 @@ def get_uptime(context):
         uptime_info['loadavg'] = load_values
 
     if uptime_info['uphhmm']:
-        hours,_,mins = uptime_info['uphhmm'].partition(':')
+        hours, _, mins = uptime_info['uphhmm'].partition(':')
         uptime_info['uptime'] += datetime.timedelta(hours=int(hours))
         uptime_info['uptime'] += datetime.timedelta(minutes=int(mins))
     if uptime_info['updays']:

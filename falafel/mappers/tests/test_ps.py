@@ -25,6 +25,7 @@ root     20357  0.0  0.0   9120   760 ?        Ss   10:09   0:00 /sbin/dhclient 
 qemu     22673  0.8 10.2 1618556 805636 ?      Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
 """.strip()
 
+
 class TestPS(unittest.TestCase):
     def test_ps_auxcww(self):
         d = ps.ps_auxcww(context_wrap(PS_AUXCWW_TEST)).data
@@ -32,8 +33,6 @@ class TestPS(unittest.TestCase):
         self.assertEqual(d[0], {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': 'init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'})
         self.assertEqual(d[2]["COMMAND"], 'irqbalance')
         self.assertEqual(d[-2]["COMMAND"], 'qemu-kvm')
-
-
 
     def test_ps_aux(self):
         d = ps.ps_aux(context_wrap(PS_AUX_TEST)).data

@@ -4,7 +4,7 @@ from falafel.mappers import ip_addr
 from falafel.tests import context_wrap
 from falafel.util import keys_in
 
-IP_ADDR_TEST= """
+IP_ADDR_TEST = """
 Message truncated
 Message truncated
 Message truncated

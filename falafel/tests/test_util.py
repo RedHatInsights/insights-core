@@ -400,7 +400,6 @@ class TestReducerRequirements(unittest.TestCase):
         assert result == ([t("b")], [])
 
 
-
 class TestContext(unittest.TestCase):
 
     def setUp(self):

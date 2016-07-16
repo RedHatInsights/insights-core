@@ -1,8 +1,10 @@
-import re, shlex
+import re
+import shlex
 from falafel.core.plugins import mapper
 
 MPATH_WWID_REG = re.compile(r'\(?([A-Za-z0-9_\s]+)\)?\s+dm-')
 HCTL_REG = re.compile(r'- (\d+:){3}\d+')
+
 
 @mapper('multipath_-v4_-ll')
 def get_multipath_v4_ll(context):
@@ -134,9 +136,9 @@ def get_multipath_v4_ll(context):
             path_group = []
             wwid = m.group(1)
             no_alias = line.startswith(wwid)
-            (dm, venprod) = re.findall(r".*(dm-\S+)\s+(.*)",line)[0]
+            (dm, venprod) = re.findall(r".*(dm-\S+)\s+(.*)", line)[0]
             if not no_alias:
-                (dm, venprod) = re.findall(r"\w+\s+\(.*\)\s+(dm-\S+)\s+(.*)",line)[0]
+                (dm, venprod) = re.findall(r"\w+\s+\(.*\)\s+(dm-\S+)\s+(.*)", line)[0]
                 mpath_dev['alias'] = line.split()[0]
             mpath_dev['wwid'] = wwid
             mpath_dev['dm_name'] = dm
@@ -152,10 +154,10 @@ def get_multipath_v4_ll(context):
             filter_line = shlex.split(line)[1:]
             for item in filter_line:
                 (k, v) = item.split('=', 1)
-                path_group_attr[k]= v
+                path_group_attr[k] = v
         elif HCTL_REG.search(line):
             colon_index = line.index(":")
-            path_info.append(line[colon_index-2:].split())
+            path_info.append(line[colon_index - 2:].split())
             if "`-" in line:
                 path_group_attr['path'] = path_info
                 path_group.append(path_group_attr)

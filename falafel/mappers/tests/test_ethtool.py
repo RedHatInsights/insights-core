@@ -20,7 +20,7 @@ Cannot get device pause settings: Operation not supported
 Pause parameters for __wlp3s0:
 """.strip()
 
-FAIL_ETHTOOL_A_PATH ="""
+FAIL_ETHTOOL_A_PATH = """
 sos_commands/networking/ethtool_-a____wlp3s0
 """.strip()
 
@@ -57,7 +57,7 @@ TEST_EXTRACT_FROM_PATH_4 = """
 TEST_EXTRACT_FROM_PATH_5 = """
     ethtool_-a_p3p2.2002-fcoe_p3p2
 """.strip()
-TEST_EXTRACT_FROM_PATH_PARAM="""
+TEST_EXTRACT_FROM_PATH_PARAM = """
     ethtool_-a
 """.strip()
 
@@ -74,7 +74,7 @@ tx-frame-high: 0
 
 """.strip()
 
-TEST_ETHTOOL_C_PATH= "sos_commands/networking/ethtool_-c_eth2".strip()
+TEST_ETHTOOL_C_PATH = "sos_commands/networking/ethtool_-c_eth2".strip()
 
 TEST_ETHTOOL_C_1 = """
 Cannot get device coalesce settings: Operation not supported

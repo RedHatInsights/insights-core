@@ -22,5 +22,3 @@ class TestLvmConf():
         assert lvm_conf_output.get("locking_type") == 1
         assert lvm_conf_output.get("volume_list") == ['vg2', 'vg3/lvol3', '@tag2', '@*']
         assert lvm_conf_output.get("filter") == ['a/sda[0-9]*$/', 'r/sd.*/']
-
-

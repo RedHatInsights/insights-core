@@ -5,9 +5,11 @@ import specs as static_specs
 
 _configs = {}
 
+
 def _get_config(static_spec_module=static_specs):
     return InsightsDataSpecConfig(static_spec_module.static_specs,
             static_spec_module.meta_files, pre_commands=static_specs.pre_commands)
+
 
 def get_config(module=static_specs):
     if module not in _configs:

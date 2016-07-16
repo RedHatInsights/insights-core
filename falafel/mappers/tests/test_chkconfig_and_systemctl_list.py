@@ -14,8 +14,9 @@ SYSTEMCTL_STATIC = """
 {}                            static
 """
 
-CHKCONFIG_ON  = '{}	0:off	1:off	2:off	3:on	4:off	5:on	6:off'
+CHKCONFIG_ON = '{}	0:off	1:off	2:off	3:on	4:off	5:on	6:off'
 CHKCONFIG_OFF = '{}	0:off	1:off	2:off	3:off	4:off	5:off	6:off'
+
 
 class TestChkconfig(unittest.TestCase):
     def test_systemctl_enabled(self):

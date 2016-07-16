@@ -26,7 +26,7 @@ class TestLsmod():
     def test_get_modules_info(self):
         mod_dict = lsmod.get_modules_info(context_wrap(LSMODINFO))
         assert len(mod_dict) == 16
-        assert mod_dict.has_key('xt_CHECKSUM') == True
+        assert 'xt_CHECKSUM' in mod_dict
         assert mod_dict['tun'].get('depnum') == '3'
         assert mod_dict['llc'].get('deplist') == 'stp,bridge'
         assert mod_dict['ip6table_nat'].get('size') == '12864'
