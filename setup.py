@@ -14,6 +14,7 @@ if __name__ == "__main__":
         ],
         extras_require={
             'develop': [
+                'flake8',
                 'coverage',
                 'numpydoc',
                 'pytest',
@@ -26,6 +27,7 @@ if __name__ == "__main__":
                 'python-cjson'
             ],
             'test': [
+                'flake8',
                 'coverage',
                 'pytest',
                 'pytest-cov'
