@@ -12,16 +12,23 @@ if __name__ == "__main__":
         install_requires=[
             'pyyaml',
         ],
-        extras_require={'develop': [
-            'coverage',
-            'numpydoc',
-            'pytest',
-            'pytest-cov',
-            'Sphinx',
-            'sphinx_rtd_theme',
-            'Jinja2'
-            ], 'optional': [
-            'python-cjson'
+        extras_require={
+            'develop': [
+                'coverage',
+                'numpydoc',
+                'pytest',
+                'pytest-cov',
+                'Sphinx',
+                'sphinx_rtd_theme',
+                'Jinja2'
+            ],
+            'optional': [
+                'python-cjson'
+            ],
+            'test': [
+                'coverage',
+                'pytest',
+                'pytest-cov'
             ]
         },
         entry_points={

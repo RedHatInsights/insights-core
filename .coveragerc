@@ -1,0 +1,10 @@
+[run]
+omit = falafel/contrib/*
+       falafel/archive/*
+       falafel/*/__main__.py
+       # Exclude test files from coverage.
+       falafel/tests/*
+       falafel/mappers/tests/*
+
+[report]
+show_missing = True
