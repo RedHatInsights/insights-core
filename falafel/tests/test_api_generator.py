@@ -1,17 +1,16 @@
-import re
 import unittest
-import pytest
-
 from tools import generate_api_config
+
 
 class TestAPIGen(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        from falafel.mappers import *
         pass
 
     def setUp(self):
-        self.latest = generate_api_config.APIConfigGenerator().serialize_data_spec()
+        self.latest = generate_api_config.APIConfigGenerator(plugin_package="falafel").serialize_data_spec()
 
     def tearDown(self):
         self.latest = None
