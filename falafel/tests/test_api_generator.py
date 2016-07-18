@@ -1,5 +1,5 @@
 import unittest
-from tools import generate_api_config
+from falafel.tools import generate_api_config
 
 
 class TestAPIGen(unittest.TestCase):
