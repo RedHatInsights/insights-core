@@ -10,7 +10,9 @@ class ProcessList(MapperOutput):
         return [row["COMMAND"] for row in self.data]
 
     def cpu_usage(self, proc):
-        return [row['%CPU'] for row in self.data if row['COMMAND'] == proc][0]
+        for row in self.data:
+            if proc == row["COMMAND"]:
+                return row["%CPU"]
 
     def fuzzy_match(self, proc):
         return proc in "".join(self.running)
