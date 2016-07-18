@@ -24,6 +24,7 @@ import generate_api_config
 
 TEMPLATE = 'bodytemplate.md'
 
+
 def get_diff(current, latest):
 
     SECTIONS = ("files", "commands")
@@ -68,16 +69,17 @@ def get_diff(current, latest):
 
 
 def create_doc(current, latest):
-    doc = {"all_files": [],
-           "all_commands": [],
-           "command_patterns": {},
-           "file_patterns": {},
-           "added_files": [],
-           "removed_files": [],
-           "changed_files": [],
-           "added_commands": [],
-           "removed_commands": [],
-           "changed_commands": []
+    doc = {
+        "all_files": [],
+        "all_commands": [],
+        "command_patterns": {},
+        "file_patterns": {},
+        "added_files": [],
+        "removed_files": [],
+        "changed_files": [],
+        "added_commands": [],
+        "removed_commands": [],
+        "changed_commands": []
     }
 
     for sec in ("file", "command"):
@@ -110,6 +112,7 @@ def markdown_encode_string(s):
     '''
     encoded = s.replace('\n', '')
     return encoded
+
 
 def markdown_encode(document):
     '''

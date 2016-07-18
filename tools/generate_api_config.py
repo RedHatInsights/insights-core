@@ -25,7 +25,7 @@ except ImportError:
     import falafel
 
 from falafel.config import CommandSpec, SimpleFileSpec
-from falafel.config import HostTarget, DockerImageTarget, DefaultAnalysisTargets
+from falafel.config import HostTarget, DefaultAnalysisTargets
 from falafel.config import get_meta_specs
 from falafel.core import plugins, DEFAULT_PLUGIN_MODULE
 from falafel.config.factory import get_config
@@ -90,7 +90,7 @@ class APIConfigGenerator(object):
             dict = vars(sys.modules[mapper.__module__])
             if 'PLUGIN_APPLIES_TO' in dict:
                 this_set = set(dict['PLUGIN_APPLIES_TO'])
-                if this_set == None or this_set == set():
+                if this_set is None or this_set == set():
                     return None
                 else:
                     retval |= this_set
@@ -133,7 +133,6 @@ class APIConfigGenerator(object):
             self._LIST = {}
             return v
 
-
     def serialize_data_spec(self):
         # really don't like the instanceof checking..
         upload_conf = {
@@ -173,7 +172,6 @@ class APIConfigGenerator(object):
 
                 applies_to = self.get_applies_to_for(plugins_)
                 specs_list.add(name, spec, output_filter, applies_to)
-
 
                 if isinstance(spec, CommandSpec):
                     path = spec.get_for_uploader()
