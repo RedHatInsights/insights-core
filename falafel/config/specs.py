@@ -121,6 +121,7 @@ static_specs = {
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
     "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine\.conf\.d/.*"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
+    "parted_-l"                 : CommandSpec("/sbin/parted -l"),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
