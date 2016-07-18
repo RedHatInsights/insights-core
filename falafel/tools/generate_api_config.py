@@ -232,15 +232,24 @@ class APIConfigGenerator(object):
         self.writefile(self.file_plugin_map_filename, file_plugins_map)
         self.writefile(self.rule_spec_mapping_filename, self.rule_spec_mapping)
 
-if __name__ == "__main__":
+
+def main():
     p = OptionParser()
     p.add_option("-v", "--verbose", dest="verbose",
                  help="log more things",
                  action="store_true", default=False)
     opts, args = p.parse_args()
+
+    if len(args) == 0:
+        print "Plugin package name required"
+        sys.exit(1)
+
     level = logging.DEBUG if opts.verbose else logging.INFO
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s",
                         level=level)
     log.info("Generating config files from %s.", falafel.get_nvr())
-    config_generator = APIConfigGenerator(get_config())
+    config_generator = APIConfigGenerator(get_config(), plugin_package=args[0])
     config_generator.create_file_content()
+
+if __name__ == "__main__":
+    main()
