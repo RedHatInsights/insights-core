@@ -112,7 +112,9 @@ class Formatter(object):
 
 def get_screen_width():
     try:
-        import fcntl, termios, struct
+        import fcntl
+        import termios
+        import struct
         screen_height, screen_width = struct.unpack('hh', fcntl.ioctl(1, termios.TIOCGWINSZ, 'neat'))
     except:
         return 24, 80

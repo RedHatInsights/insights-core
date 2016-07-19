@@ -38,3 +38,8 @@ def ps_aux(context):
     (if any) are kept together in the COMMAND key
     """
     return ProcessList(parse_table(context.content, max_splits=10))
+
+
+@mapper('ps_auxwww')  # we don't want to filter the ps_auxwww file
+def ps_auxwww(context):
+    return ps_aux(context)
