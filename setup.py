@@ -36,6 +36,7 @@ if __name__ == "__main__":
         entry_points={
             'console_scripts': [
                 'insights-run = falafel.core:main',
+                'insights-cli = falafel.console:main',
                 'gen_api = falafel.tools.generate_api_config:main',
                 'compare_api = falafel.tools.compare_uploader_configs:main'
             ]
