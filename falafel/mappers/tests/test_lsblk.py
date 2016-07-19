@@ -1,125 +1,95 @@
+""""
+``test lsblk``
+================
+"""
 from falafel.mappers import lsblk
-from falafel.tests import context_wrap
+from falafel.core.context import Context
 
-lsblk_content_1 = """
-NAME                            MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sdb                               8:16   0   32G  0 disk
-sda                               8:0    0   80G  0 disk
-|-sda1                            8:1    0  256M  0 part  /boot
-`-sda2                            8:2    0 79.8G  0 part
-  |-volgrp01-root (dm-0)        253:0    0   15G  0 lvm   /
-  |-volgrp01-swap (dm-1)        253:1    0    8G  0 lvm   [SWAP]
-  |-volgrp01-var (dm-3)         253:3    0   20G  0 lvm   /var
-  |-volgrp01-banktools (dm-4)   253:4    0   10G  0 lvm   /banktools
-  |-volgrp01-data (dm-5)        253:5    0  128M  0 lvm   /data
-  `-volgrp01-export_home (dm-6) 253:6    0  128M  0 lvm   /export/home
-sdc                               8:32   0  8.5G  0 disk
-`-mpathb (dm-2)                 253:2    0  8.5G  0 mpath
-  |-testVG-LVtest (dm-7)        253:7    0    3G  0 lvm   /test-clus-fs
-  |-testVG-LVtest1 (dm-8)       253:8    0    2G  0 lvm   /test-clus-fs1
-  `-testVG-LVtest2 (dm-9)       253:9    0    1G  0 lvm   /test-clus-fs2
-""".strip()
+LSBLK_DATA = ['NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT',
+              'vda           252:0    0    9G  0 disk',
+              '|-vda1        252:1    0  500M  0 part /boot',
+              '`-vda2        252:2    0  8.5G  0 part',
+              '  |-rhel-root 253:0    0  7.6G  0 lvm  /',
+              '  |-rhel-swap 253:1    0  924M  0 lvm  [SWAP]',
+              'sda             8:0    0  500G  0 disk',
+              '|-sda1          8:1    0  500G  0 part /data']
 
-lsblk_content_2 = """
-NAME                                        MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sda                                           8:0    0   50G  0 disk
-`-rootdisk                                  253:1    0   50G  0 mpath
-  |-rootdisk1                               253:2    0  500M  0 part  /boot
-  `-rootdisk2                               253:3    0   38G  0 part
-    |-rhel-root                             253:4    0   10G  0 lvm   /
-    |-rhel-swap                             253:5    0    8G  0 lvm   [SWAP]
-    |-rhel-home                             253:7    0   10G  0 lvm   /home
-    `-rhel-var                              253:8    0   10G  0 lvm   /var
-sdb                                           8:16   0  300G  0 disk
-`-testdbcl                                  253:0    0  300G  0 mpath
-sdc                                           8:32   0    1G  0 disk
-`-qdisk                                     253:6    0    1G  0 mpath
-sdd                                           8:48   0   50G  0 disk
-|-rootdisk                                  253:1    0   50G  0 mpath
-|  |-rootdisk1                               253:2    0  500M  0 part  /boot
-|  |-rootdisk2                               253:3    0   38G  0 part
-|  |  |-rhel-root                             253:4    0   10G  0 lvm   /
-|  |  |-rhel-swap                             253:5    0    8G  0 lvm   [SWAP]
-|  |  |-rhel-home                             253:7    0   10G  0 lvm   /home
-|  |  `-rhel-var                              253:8    0   10G  0 lvm   /var
-|  |-rootdisk3                               253:3    0   38G  0 part
-|-datadisk                                  253:1    0   50G  0 mpath
-  |-datadisk1                               253:2    0  500M  0 part  /boot
-  |-datadisk2                               253:3    0   38G  0 part
-sde                                           8:64   0  300G  0 disk
-`-testdbcl                                  253:0    0  300G  0 mpath
-sdf                                           8:80   0    1G  0 disk
-`-qdisk                                     253:6    0    1G  0 mpath
-sdg                                           8:96   0  100G  0 disk
-`-testdbcl12                                253:9    0  100G  0 mpath
-sdh                                           8:112  0  100G  0 disk
-`-testdbcl12                                253:9    0  100G  0 mpath
-sdi                                           8:128  0  100G  0 disk
-`-testdbcl12_druga                          253:11   0  100G  0 mpath
-  `-vg_testdbcl12_druga-lv_testdbcl12_druga 253:10   0  100G  0 lvm   /testdbcl12_druga
-sdj                                           8:144  0  100G  0 disk
-`-testdbcl12_druga                          253:11   0  100G  0 mpath
-  `-vg_testdbcl12_druga-lv_testdbcl12_druga 253:10   0  100G  0 lvm   /testdbcl12_druga
-sr0                                          11:0    1 1024M  0 rom
-""".strip()
-
-lsblk_output = """
-NAME                            MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
-sdb                               8:16   0   32G  0 disk
-sda                               8:0    0   80G  0 disk
-|-sda1                            8:1    0  256M  0 part  /boot
-`-sda2                            8:2    0 79.8G  0 part
-  |-volgrp01-root (dm-0)        253:0    0   15G  0 lvm   /
-  |-volgrp01-swap (dm-1)        253:1    0    8G  0 lvm   [SWAP]
-  |-volgrp01-var (dm-3)         253:3    0   20G  0 lvm   /var
-  |-volgrp01-banktools (dm-4)   253:4    0   10G  0 lvm   /banktools
-  |-volgrp01-data (dm-5)        253:5    0  128M  0 lvm   /data
-  `-volgrp01-export_home (dm-6) 253:6    0  128M  0 lvm   /export/home
-sdc                               8:32   0  8.5G  0 disk
-`-mpathb (dm-2)                 253:2    0  8.5G  0 mpath
-  |-testVG-LVtest (dm-7)        253:7    0    3G  0 lvm   /test-clus-fs
-  |-testVG-LVtest1 (dm-8)       253:8    0    2G  0 lvm   /test-clus-fs1
-  `-testVG-LVtest2 (dm-9)       253:9    0    1G  0 lvm   /test-clus-fs2
-""".strip()
+# lsblk -P -o
+LSBLK_EXT_DATA = """ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="disk" KNAME="sda" LABEL="" LOG-SEC="512" MAJ:MIN="8:0" MIN-IO="512" MODE="brw-rw----" MODEL="WDC WD1600JS-75N" MOUNTPOINT="" NAME="sda" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="149G" STATE="running" TYPE="disk" UUID=""
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ext4" GROUP="disk" KNAME="sda1" LABEL="" LOG-SEC="512" MAJ:MIN="8:1" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/boot" NAME="sda1" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="500M" STATE="" TYPE="part" UUID="c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="LVM2_member" GROUP="disk" KNAME="sda2" LABEL="" LOG-SEC="512" MAJ:MIN="8:2" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="" NAME="sda2" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="148.5G" STATE="" TYPE="part" UUID="fFE3aA-ifqV-09uh-1u18-b3mV-73gK-FApXf1"
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ext4" GROUP="disk" KNAME="dm-0" LABEL="" LOG-SEC="512" MAJ:MIN="253:0" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/" NAME="vg_trex-lv_root" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="" SIZE="50G" STATE="running" TYPE="lvm" UUID="0618daba-8dc0-4a1c-926b-4a0f968da62e"
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="swap" GROUP="disk" KNAME="dm-1" LABEL="" LOG-SEC="512" MAJ:MIN="253:1" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="[SWAP]" NAME="vg_trex-lv_swap" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="" SIZE="3.4G" STATE="running" TYPE="lvm" UUID="102e1d8a-39c9-4065-ae16-d9cbd7162691"
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ext4" GROUP="disk" KNAME="dm-2" LABEL="" LOG-SEC="512" MAJ:MIN="253:2" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/home" NAME="vg_trex-lv_home" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="" SIZE="95.1G" STATE="running" TYPE="lvm" UUID="eee3252d-de08-4732-9d55-f2e33f878664" """
 
 
-def test_get_device_info_a():
-    context = context_wrap(lsblk_output)
-    m_result = lsblk.get_device_info(context)
-    lines = lsblk_content_1.splitlines()
-    for index, item in enumerate(m_result):
-        assert item.get('device') in lines[index + 1]
-        assert item.get('type') in lines[index + 1]
-        if item.get('device') == "mpathb":
-            assert item.get('parent') == "sdc"
-            assert item.get('type') == "mpath"
+def test_lsblk():
+    context = Context(content=LSBLK_DATA)
+    results = lsblk.get_device_info(context)
+    assert results is not None
+    assert len(results) == 7
+    rhel_root = None
+    sda = None
+    for result in results:
+        if result['NAME'] == 'rhel-root':
+            rhel_root = result
+        elif result['NAME'] == 'sda':
+            sda = result
+    assert rhel_root is not None
+    assert rhel_root['MAJ:MIN'] == "253:0"
+    assert rhel_root['RM'] == "0"
+    assert rhel_root['SIZE'] == "7.6G"
+    assert rhel_root['RO'] == "0"
+    assert rhel_root['TYPE'] == "lvm"
+    assert rhel_root['MOUNTPOINT'] == "/"
+    assert rhel_root.get('PARENT_NAME') == "vda2"
+    assert sda is not None
+    assert sda['MAJ:MIN'] == "8:0"
+    assert sda['RM'] == "0"
+    assert sda['SIZE'] == "500G"
+    assert sda['RO'] == "0"
+    assert sda['TYPE'] == "disk"
+    assert 'MOUNTPOINT' not in sda
+    assert 'PARENT_NAME' not in sda
 
 
-def test_get_device_info_1():
-    context = context_wrap(lsblk_content_1)
-    m_result = lsblk.get_device_info(context)
-    lines = lsblk_content_1.splitlines()
-    for index, item in enumerate(m_result):
-        assert item.get('device') in lines[index + 1]
-        assert item.get('type') in lines[index + 1]
-        if item.get('mountpoint'):
-            assert item.get('mountpoint') in lines[index + 1]
-        if item.get('device') == "testVG-LVtest":
-            assert item.get('parent') == "mpathb"
-        if item.get('device') == "volgrp01-export_home":
-            assert item.get('parent') == "sda2"
-
-
-def test_get_device_info_2():
-    context = context_wrap(lsblk_content_2)
-    m_result = lsblk.get_device_info(context)
-    lines = lsblk_content_2.splitlines()
-    for index, item in enumerate(m_result):
-        assert item.get('device') in lines[index + 1]
-        assert item.get('type') in lines[index + 1]
-        if item.get('mountpoint'):
-            assert item.get('mountpoint') in lines[index + 1]
-        if item.get('device') == "rhel-home":
-            assert item.get('parent') == "rootdisk2"
-        if item.get('device') == "vg_testdbcl12_druga-lv_testdbcl12_druga":
-            assert item.get('parent') == "testdbcl12_druga"
+def test_lsblk_ext():
+    context = Context(content=LSBLK_EXT_DATA.splitlines())
+    results = lsblk.get_device_extended_info(context)
+    assert results is not None
+    assert len(results) == 7
+    sda1 = None
+    for result in results:
+        if result['NAME'] == 'sda1':
+            sda1 = result
+    assert sda1 is not None
+    assert sda1['ALIGNMENT'] == "0"
+    assert sda1['DISC-ALN'] == "0"
+    assert sda1['DISC-GRAN'] == "0B"
+    assert sda1['DISC-MAX'] == "0B"
+    assert sda1['DISC-ZERO'] == "0"
+    assert sda1['FSTYPE'] == "ext4"
+    assert sda1['GROUP'] == "disk"
+    assert sda1['KNAME'] == "sda1"
+    assert 'LABEL' not in sda1
+    assert sda1['LOG-SEC'] == "512"
+    assert sda1['MAJ:MIN'] == "8:1"
+    assert sda1['MIN-IO'] == "512"
+    assert sda1['MODE'] == "brw-rw----"
+    assert 'MODEL' not in sda1
+    assert sda1['MOUNTPOINT'] == "/boot"
+    assert sda1['NAME'] == "sda1"
+    assert sda1['OPT-IO'] == "0"
+    assert sda1['OWNER'] == "root"
+    assert sda1['PHY-SEC'] == "512"
+    assert sda1['RA'] == "128"
+    assert sda1['RM'] == "0"
+    assert sda1['RO'] == "0"
+    assert sda1['ROTA'] == "1"
+    assert sda1['RQ-SIZE'] == "128"
+    assert sda1['SCHED'] == "cfq"
+    assert sda1['SIZE'] == "500M"
+    assert 'STATE' not in sda1
+    assert sda1['TYPE'] == "part"
+    assert sda1['UUID'] == "c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
