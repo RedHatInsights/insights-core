@@ -40,3 +40,4 @@ pip-selfcheck.json
 integration_tests/
 demo-archives/
 archives/
+.engine_logs/
