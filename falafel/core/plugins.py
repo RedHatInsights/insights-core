@@ -1,10 +1,9 @@
 import logging
-import sys
 import types
 from collections import defaultdict
 from functools import wraps
 from falafel.config.factory import get_config
-from falafel.core import get_plugin_names
+from falafel.core import load_package
 
 data_spec_config = get_config()
 log = logging.getLogger(__name__)
@@ -13,7 +12,6 @@ RESPONSE_TYPES = ["rule", "metadata"]
 
 # Only used in test suite for plugin validation
 SYMBOLIC_NAME_FILTER_MAPPING = defaultdict(lambda: defaultdict(list))
-LOADED_MAPPERS = []
 
 # Data structures that hold different sets of plugin metadata
 # These are all populated via decorators while loading plugins
@@ -39,34 +37,9 @@ def single_reducers():
     return [k.rpartition(".")[-1] for k, v in PLUGINS.iteritems() if not v["cluster_reducers"]]
 
 
-def load(module_name, plugin_pattern_list=None, loaded_map={}):
-
-    if module_name in LOADED_MAPPERS:
-        return
-
-    plugin_count = 0
-
-    plugin_module = ".".join([module_name, "plugins"])
-    try:
-        __import__(plugin_module, globals(), locals(), [], -1)
-    except:
-        raise ValueError('Module [%s] does not have a "plugins" submodule' % module_name)
-
-    for plugin_name in get_plugin_names(sys.modules[plugin_module], plugin_pattern_list):
-        log.debug("attempting to import %s", plugin_name)
-        try:
-            __import__(plugin_name, globals(), locals(), [], -1)
-        except Exception:
-            log.exception("Failed to import %s", plugin_name)
-        else:
-            plugin_count = plugin_count + 1
-            log.debug("loaded %s", plugin_name)
-
-    # loaded_map[path] = True
+def load(package_name, pattern_list=None):
+    load_package(package_name, pattern_list)
     build_filter_map()
-    LOADED_MAPPERS.append(module_name)
-
-    log.info("Loaded %d plugins", plugin_count)
 
 
 def build_filter_map():

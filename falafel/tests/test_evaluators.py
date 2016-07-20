@@ -269,7 +269,7 @@ class TestSingleEvaluator(unittest.TestCase):
 
     def test_unpack_archive(self):
         with InMemoryExtractor().from_path(os.path.join(HERE, "insights_heartbeat.tar.gz")) as ex:
-            plugins.load("falafel")
+            plugins.load("falafel.plugins")
             spec_mapper = SpecMapper(ex)
             self.assertEquals(spec_mapper.get_content("machine-id", split=False), self.system_id)
             p = SingleEvaluator(spec_mapper)
@@ -289,7 +289,7 @@ class TestSingleEvaluator(unittest.TestCase):
 class TestMultiEvaluator(unittest.TestCase):
 
     def test_unpack(self):
-        plugins.load("falafel")
+        plugins.load("falafel.plugins")
         fd = InMemoryExtractor().from_path(os.path.join(HERE, "insights_heartbeat.tar.gz"), raw=True)
         cluster_arc = make_cluster_archive(fd, "application/x-gzip")
         fd.close()

@@ -3,10 +3,9 @@ import itertools
 import logging
 import pprint
 import json
-import sys
 from collections import defaultdict
 from functools import wraps
-from falafel.core import mapper, reducer, marshalling, plugins, get_plugin_names, DEFAULT_PLUGIN_MODULE
+from falafel.core import mapper, reducer, marshalling, plugins
 from falafel.core.context import Context, PRODUCT_NAMES
 from falafel.util import make_iter
 
@@ -37,25 +36,6 @@ def unordered_compare(result, expected):
             unordered_compare(result[item_key], expected[item_key])
     else:
         assert result == expected
-
-
-def ensure_tests_loaded(module_name):
-    """
-    Walks the given module directory tree and explicitly loads every
-    test module into the python interpreter.  This is done so that
-    @archive_provider-decorated functions can be registered before py.test (or
-    something else) imports the modules.
-    """
-    test_module = ".".join([module_name, "tests"])
-    try:
-        __import__(test_module, globals(), locals(), [], -1)
-    except:
-        raise
-        # raise ValueError('Module [%s] does not have a "tests" submodule' % module_name)
-
-    for test_submodule in get_plugin_names(sys.modules[test_module], (r"test_.*py",)):
-        print "Importing", test_submodule
-        __import__(test_submodule, globals(), locals(), [], -1)
 
 
 def archive_provider(module, test_func=unordered_compare, slow=False):
@@ -165,8 +145,6 @@ def integrate(input_data, module):
     from the `input_data` parameter. The function returns a list of reducer
     results. In most cases this will be a list of length 1.
     """
-    plugins.load(DEFAULT_PLUGIN_MODULE)
-
     mapper_map = defaultdict(list)
     for target, f in get_mappers_for(module):
         mapper_map[target].append(f)

@@ -13,21 +13,40 @@ log = logging.getLogger(__name__)
 DEFAULT_PLUGIN_MODULE = "telemetry.rules"
 
 
-def get_plugin_names(plugin_module, plugin_pattern_list=None):
+def load_package(package_name, pattern_list=None, loaded_map=set()):
 
-    if not plugin_pattern_list:
-        plugin_pattern_list = DEFAULT_PATTERN_LIST
+    if package_name in loaded_map:
+        return
 
-    plugin_matcher_list = [re.compile(plugin_pattern) for plugin_pattern in plugin_pattern_list]
+    module_count = 0
+
+    __import__(package_name, globals(), locals(), [], -1)
+
+    for module_name in get_module_names(sys.modules[package_name], pattern_list):
+        __import__(module_name, globals(), locals(), [], -1)
+        module_count += 1
+        log.debug("loaded %s", module_name)
+
+    loaded_map.add(package_name)
+    log.info("Loaded %d modules", module_count)
+
+
+def get_module_names(package_name, pattern_list=None):
+
+    if not pattern_list:
+        pattern_list = DEFAULT_PATTERN_LIST
+
+    plugin_matcher_list = [re.compile(p) for p in pattern_list]
 
     def name_filter(name):
         for plugin_matcher in plugin_matcher_list:
-            if "__init__" not in name and name.endswith(".py") and plugin_matcher.match(name):
-                return True
+            if "__init__" not in name and "__main__" not in name:
+                if name.endswith(".py") and plugin_matcher.match(name):
+                    return True
         return False
 
-    plugin_dir = os.path.dirname(os.path.realpath(plugin_module.__file__))
-    log.debug("looking for files that match: [%s] in [%s]", plugin_pattern_list, plugin_dir)
+    plugin_dir = os.path.dirname(os.path.realpath(package_name.__file__))
+    log.debug("looking for files that match: [%s] in [%s]", pattern_list, plugin_dir)
     for root, dirs, files in os.walk(plugin_dir):
         if os.path.exists(os.path.join(root, "__init__.py")):
             for file_ in files:

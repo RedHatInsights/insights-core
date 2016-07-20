@@ -1,5 +1,5 @@
 from falafel import tests
-from falafel.core import DEFAULT_PLUGIN_MODULE
+from falafel.core import load_package
 import pytest
 
 
@@ -7,14 +7,14 @@ def integration_test(module, test_func, input_data, expected):
     test_func(tests.integrate(input_data, module), expected)
 
 
-def generate_tests(metafunc, test_func):
+def generate_tests(metafunc, test_func, package_name):
     """
     This function hooks in to pytest's test collection framework and provides a
     test for every (input_data, expected) tuple that is generated from all
     @archive_provider-decorated functions.
     """
     if metafunc.function == test_func and not hasattr(test_func, "parametrized"):
-        tests.ensure_tests_loaded(DEFAULT_PLUGIN_MODULE)
+        load_package(package_name)
         test_func.parametrized = True  # Hack to ensure we don't generate tests twice
         args = []
         ids = []
