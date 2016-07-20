@@ -30,7 +30,8 @@ if __name__ == "__main__":
                 'flake8',
                 'coverage',
                 'pytest',
-                'pytest-cov'
+                'pytest-cov',
+                'Jinja2'
             ]
         },
         entry_points={
