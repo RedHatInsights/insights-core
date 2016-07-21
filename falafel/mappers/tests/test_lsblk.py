@@ -6,16 +6,49 @@ from falafel.mappers import lsblk
 from falafel.core.context import Context
 
 LSBLK_DATA = ['NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT',
-              'vda           252:0    0    9G  0 disk',
+              'vda           252:0    0    9G  0 disk ',
               '|-vda1        252:1    0  500M  0 part /boot',
               '`-vda2        252:2    0  8.5G  0 part',
               '  |-rhel-root 253:0    0  7.6G  0 lvm  /',
               '  |-rhel-swap 253:1    0  924M  0 lvm  [SWAP]',
               'sda             8:0    0  500G  0 disk',
-              '|-sda1          8:1    0  500G  0 part /data']
+              '`-sda1          8:1    0  500G  0 part /data']
+
+LSBLK_DATA2 = ['NAME                       MAJ:MIN RM    SIZE RO TYPE  MOUNTPOINT',
+               'sr0                         11:0    1   64.3M  0 rom',
+               'sda                          8:0    0     25G  0 disk ',
+               '|-sda1                       8:1    0    256M  0 part  /boot',
+               '|-sda2                       8:2    0   18.6G  0 part  ',
+               '| `-vg_root-lv_root (dm-0) 253:0    0   18.5G  0 lvm   /',
+               '`-sda3                       8:3    0    6.2G  0 part  [SWAP]',
+               'sdb                          8:16   0 1000.1G  0 disk  ',
+               '`-mpathb (dm-2)            253:2    0 1000.1G  0 mpath ',
+               '  `-mpathbp1 (dm-4)        253:4    0 1000.1G  0 part  ',
+               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
+               'sdc                          8:32   0  850.1G  0 disk  ',
+               '`-mpatha (dm-1)            253:1    0  850.1G  0 mpath ',
+               '  `-mpathap1 (dm-5)        253:5    0  850.1G  0 part  ',
+               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
+               'sdd                          8:48   0 1000.1G  0 disk  ',
+               '`-mpathc (dm-3)            253:3    0 1000.1G  0 mpath ',
+               '  `-mpathcp1 (dm-6)        253:6    0 1000.1G  0 part  ',
+               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
+               'sde                          8:64   0 1000.1G  0 disk  ',
+               '`-mpathb (dm-2)            253:2    0 1000.1G  0 mpath ',
+               '  `-mpathbp1 (dm-4)        253:4    0 1000.1G  0 part  ',
+               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
+               'sdf                          8:80   0  850.1G  0 disk  ',
+               '`-mpatha (dm-1)            253:1    0  850.1G  0 mpath ',
+               '  `-mpathap1 (dm-5)        253:5    0  850.1G  0 part  ',
+               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
+               'sdg                          8:96   0 1000.1G  0 disk  ',
+               '`-mpathc (dm-3)            253:3    0 1000.1G  0 mpath ',
+               '  `-mpathcp1 (dm-6)        253:6    0 1000.1G  0 part  ',
+               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk']
 
 # lsblk -P -o
-LSBLK_EXT_DATA = """ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
+LSBLK_EXT_DATA = """
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
 ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="disk" KNAME="sda" LABEL="" LOG-SEC="512" MAJ:MIN="8:0" MIN-IO="512" MODE="brw-rw----" MODEL="WDC WD1600JS-75N" MOUNTPOINT="" NAME="sda" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="149G" STATE="running" TYPE="disk" UUID=""
 ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ext4" GROUP="disk" KNAME="sda1" LABEL="" LOG-SEC="512" MAJ:MIN="8:1" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/boot" NAME="sda1" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="500M" STATE="" TYPE="part" UUID="c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
 ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="LVM2_member" GROUP="disk" KNAME="sda2" LABEL="" LOG-SEC="512" MAJ:MIN="8:2" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="" NAME="sda2" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="148.5G" STATE="" TYPE="part" UUID="fFE3aA-ifqV-09uh-1u18-b3mV-73gK-FApXf1"
@@ -43,7 +76,7 @@ def test_lsblk():
     assert rhel_root['RO'] == "0"
     assert rhel_root['TYPE'] == "lvm"
     assert rhel_root['MOUNTPOINT'] == "/"
-    assert rhel_root.get('PARENT_NAME') == "vda2"
+    assert rhel_root.get('PARENT_NAMES') == ["vda", "vda2"]
     assert sda is not None
     assert sda['MAJ:MIN'] == "8:0"
     assert sda['RM'] == "0"
@@ -51,11 +84,41 @@ def test_lsblk():
     assert sda['RO'] == "0"
     assert sda['TYPE'] == "disk"
     assert 'MOUNTPOINT' not in sda
-    assert 'PARENT_NAME' not in sda
+    assert 'PARENT_NAMES' not in sda
+
+    context = Context(content=LSBLK_DATA2)
+    results = lsblk.get_device_info(context)
+    assert results is not None
+    assert len(results) == 30
+    sr0 = None
+    sdf_appdg = None
+    for result in results:
+        if result['NAME'] == "sr0":
+            sr0 = result
+        elif result['NAME'] == "appdg-app (dm-7)" and result['PARENT_NAMES'][0] == "sdf":
+            sdf_appdg = result
+    assert sr0 is not None
+    assert len(sr0) == 6
+    assert sr0 == {'NAME': "sr0",
+                   'MAJ:MIN': "11:0",
+                   'RM': "1",
+                   'SIZE': "64.3M",
+                   'RO': "0",
+                   'TYPE': "rom"}
+    assert sdf_appdg is not None
+    assert len(sdf_appdg) == 8
+    assert sdf_appdg == {'NAME': "appdg-app (dm-7)",
+                         'MAJ:MIN': "253:7",
+                         'RM': "0",
+                         'SIZE': "2.8T",
+                         'RO': "0",
+                         'TYPE': "lvm",
+                         'MOUNTPOINT': "/splunk",
+                         'PARENT_NAMES': ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]}
 
 
 def test_lsblk_ext():
-    context = Context(content=LSBLK_EXT_DATA.splitlines())
+    context = Context(content=LSBLK_EXT_DATA.strip().splitlines())
     results = lsblk.get_device_extended_info(context)
     assert results is not None
     assert len(results) == 7

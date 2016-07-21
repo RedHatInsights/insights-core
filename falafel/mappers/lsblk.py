@@ -5,7 +5,8 @@
 
 import re
 from falafel.core.plugins import mapper
-from falafel.util import parse_table
+
+MAX_GENERATIONS = 20
 
 
 @mapper('lsblk')
@@ -20,7 +21,7 @@ def get_device_info(context):
         |-sda1                            8:1    0  256M  0 part  /boot
         `-sda2                            8:2    0 79.8G  0 part
           |-volgrp01-root (dm-0)        253:0    0   15G  0 lvm   /
-          |-volgrp01-swap (dm-1)        253:1    0    8G  0 lvm   [SWAP]
+          `-volgrp01-swap (dm-1)        253:1    0    8G  0 lvm   [SWAP]
 
     Parameters
     ----------
@@ -33,20 +34,21 @@ def get_device_info(context):
     dict
         A list of dictionaries containing information about each block device
         listed by the ``lsblk`` command.  Blank values in content will not be
-        present in the dictionary.
+        present in the dictionary. The ``PARENT_NAMES`` key is represented by
+        a list of all parent devices to support multipath where duplicate
+        child names will appear for different parents.
 
         .. code-block:: python
 
         [
             { 'NAME': 'sda',
-              'PARENT_NAME': None,
               'MAJ:MIN': '8:0',
               'RM': '0',
               'RO': "0",
               'TYPE': 'disk',
               'SIZE': '80G' },
             { 'NAME': 'sda1',
-              'PARENT_NAME': 'sda',
+              'PARENT_NAMES': ['sda']
               'MAJ:MIN': '8:1',
               'RM': '0',
               'RO': '0',
@@ -57,22 +59,29 @@ def get_device_info(context):
 
 
     """
-    r = re.compile(r"(\s*([\|\`\-]*))(\S+)")
+    r = re.compile(r"([\s\|\`\-]*)(\S+.*) (\d+:\d+)\s+(\d)\s+(\d+(\.\d)?[A-Z])\s+(\d)\s+([a-z]+)(.*)")
     device_list = []
-    device_table = parse_table(context.content)
-    parents = {}
-    for line, device in zip(context.content[1:], device_table):
+    parents = [None] * MAX_GENERATIONS
+    for line in context.content[1:]:
         name_match = r.match(line)
-        name = device['NAME']
         generation = 0
-        if name_match:
-            name = name_match.group(3)
+        if name_match and len(name_match.groups()) == 9:
+            device = {}
+            name = name_match.group(2).strip()
             generation = len(name_match.group(1)) / 2
-            parents[str(generation)] = name
-        device['NAME'] = name
-        if parents.get(str(generation - 1)) is not None:
-            device['PARENT_NAME'] = parents.get(str(generation - 1))
-        device_list.append(device)
+            parents[generation] = name
+            device['NAME'] = name
+            device['MAJ:MIN'] = name_match.group(3)
+            device['RM'] = name_match.group(4)
+            device['SIZE'] = name_match.group(5)
+            device['RO'] = name_match.group(7)
+            device['TYPE'] = name_match.group(8)
+            mountpoint = name_match.group(9).strip()
+            if len(mountpoint) > 0:
+                device['MOUNTPOINT'] = mountpoint
+            if generation > 0:
+                device['PARENT_NAMES'] = parents[:generation]
+            device_list.append(device)
 
     return device_list
 
