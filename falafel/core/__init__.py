@@ -212,7 +212,7 @@ def main():
     args = p.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     logging.getLogger(__name__).warning("Loading plugins")
-    plugins.load(DEFAULT_PLUGIN_MODULE, plugin_pattern_list=args.pattern)
+    plugins.load(DEFAULT_PLUGIN_MODULE, pattern_list=args.pattern)
     log = logging.getLogger("main")
     if args.map_only and args.reduce_only:
         print """
