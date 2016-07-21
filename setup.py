@@ -10,7 +10,8 @@ entry_points = {
         'insights-cli = falafel.console:main',
         'gen_api = falafel.tools.generate_api_config:main',
         'compare_api = falafel.tools.compare_uploader_configs:main',
-        'falafel-web = falafel.web.daemon:main'
+        'falafel-web = falafel.web.daemon:main',
+        'falafel-scaffold = falafel.scaffold:main'
     ]
 }
 data_files = []
