@@ -105,6 +105,7 @@ static_specs = {
     "meminfo"                   : SimpleFileSpec("proc/meminfo"),
     "messages"                  : SimpleFileSpec("var/log/messages", large_content=True),
     "modinfo"                   : CommandSpec("/usr/sbin/modinfo {module}", module=r"\S+"),
+    "modprobe.d"                : PatternSpec(r"etc/modprobe\.d/*\.conf"),
     "mount"                     : All([CommandSpec("/usr/bin/mount"),CommandSpec("/bin/mount")]),
     "multipath.conf"            : SimpleFileSpec("etc/multipath.conf"),
     "multipath_-v4_-ll"         : All([CommandSpec("/usr/sbin/multipath -v4 -ll"),
