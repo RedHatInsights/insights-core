@@ -118,6 +118,8 @@ class SingleEvaluator(Evaluator):
         for symbolic_name, files in self.spec_mapper.symbolic_files.items():
             for f in files:
                 content = self.spec_mapper.get_content(f, symbolic=False)
+                if len(content) == 1 and content[0] == "Command not found":
+                    continue
                 for plugin in plugins.get_mappers(symbolic_name):
                     context = self.build_context(content=content, path=f)
                     try:
