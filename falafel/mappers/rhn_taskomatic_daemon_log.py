@@ -1,5 +1,5 @@
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from falafel.core import MapperOutput, computed
 
 LOG_COLUMN = ('stat', 'proc', 'time', 'log')
 
@@ -28,15 +28,18 @@ class LogLineList(MapperOutput):
                 r.append(msg_info)
         return r
 
+    @computed
     def last(self):
         """
         Returns the last complete log line
         If the last line is not complete, then return the second last line
         """
         msg_info = dict()
+        # Only check the last 2 lines
         for l in self.data[-2:]:
             l_sp = [i.strip() for i in l.split('|', 3)]
             if len(l_sp) >= 3:
+                # If the line is a complete log line
                 msg_info = dict()
                 msg_info['raw_log'] = l
                 for i, c in enumerate(l_sp):
@@ -48,7 +51,7 @@ class LogLineList(MapperOutput):
 @mapper('rhn_taskomatic_daemon.log')
 def taskomatic_daemon_log(context):
     """
-    Returns an object in type of LogLineList which provide two methods:
+    Returns an object in type of LogLineList which provide 3 APIs:
     - Usage:
       in:
         log = shared.get(taskomatic_daemon_log)
@@ -64,10 +67,9 @@ def taskomatic_daemon_log(context):
             assert line.get('raw_log') ..
             ...
      last:
-        last_line_stat = log.last().get('stat') if log.last()
+        last_line_stat = log.last.get('time')
 
     -----------
 
     """
-    # for line in context.content:
     return LogLineList(context.content)

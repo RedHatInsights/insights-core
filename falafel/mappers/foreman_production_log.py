@@ -33,5 +33,4 @@ def foreman_production_log(context):
     -----------
 
     """
-    # for line in context.content:
     return LogLineList(context.content)

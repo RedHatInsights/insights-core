@@ -1,4 +1,5 @@
 from falafel.core.plugins import mapper
+from falafel.mappers import get_active_lines
 
 
 @mapper("cobbler_modules.conf")
@@ -12,10 +13,7 @@ def cobbler_modules_conf(context):
     """
     modules_dict = {}
     section_dict = {}
-    for line in context.content:
-        line = line.strip()
-        if line.startswith("#") or line == "":
-            continue
+    for line in get_active_lines(context.content):
         if line.startswith("["):
             # new section beginning
             section_dict = {}
