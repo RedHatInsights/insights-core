@@ -27,7 +27,8 @@ def ps_auxcww(context):
     Returns a list of dicts, where the keys in each dict are the column headers
     and each item in the list represents a process.
     """
-    return ProcessList(parse_table(context.content))
+    if len(context.content) > 0 and "COMMAND" in context.content[0]:
+        return ProcessList(parse_table(context.content))
 
 
 @mapper('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
@@ -37,7 +38,8 @@ def ps_aux(context):
     and each item in the list represents a process.  The command and its args
     (if any) are kept together in the COMMAND key
     """
-    return ProcessList(parse_table(context.content, max_splits=10))
+    if len(context.content) > 0 and "COMMAND" in context.content[0]:
+        return ProcessList(parse_table(context.content, max_splits=10))
 
 
 @mapper('ps_auxwww')  # we don't want to filter the ps_auxwww file
