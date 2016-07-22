@@ -53,7 +53,10 @@ if __name__ == "__main__":
                 'coverage',
                 'pytest',
                 'pytest-cov',
-                'Jinja2'
+                'Jinja2',
+                'tornado',
+                'futures',
+                'requests'
             ]
         },
         entry_points=entry_points,
