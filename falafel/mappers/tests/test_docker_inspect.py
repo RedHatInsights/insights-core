@@ -273,14 +273,14 @@ DOCKER_IMAGE_INSPECT = """
 
 class Testdockerinspect():
     def test_docker_container_inspect(self):
-        result = docker_inspect.docker_container_inspect_parser(context_wrap(DOCKER_CONTAINER_INSPECT))
+        result = docker_inspect.container(context_wrap(DOCKER_CONTAINER_INSPECT))
         assert result.get('Id') == "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
         assert result.get('NetworkSettings').get('HairpinMode') is False
         assert result.get('Config').get('Env') == ['container=docker', 'PKGM=yum', 'PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin']
         assert result.get('GraphDriver').get('Data').get('DeviceSize') == '107374182400'
 
     def test_docker_image_inspect(self):
-        result = docker_inspect.docker_image_inspect_parser(context_wrap(DOCKER_IMAGE_INSPECT))
+        result = docker_inspect.image(context_wrap(DOCKER_IMAGE_INSPECT))
         assert result.get('Id') == "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2"
         assert result.get('Size') == 580094174
         assert result.get('Config').get('AttachStdin') is False
