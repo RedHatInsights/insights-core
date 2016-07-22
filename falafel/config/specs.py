@@ -151,6 +151,7 @@ static_specs = {
     "vgdisplay"                 : CommandSpec("/sbin/vgdisplay"),
     "vdsm.conf"                 : SimpleFileSpec("etc/vdsm/vdsm.conf"),
     "vdsm.log"                  : SimpleFileSpec("var/log/vdsm/vdsm.log"),
+    "virt-what"                 : CommandSpec("/usr/sbin/virt-what"),
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
