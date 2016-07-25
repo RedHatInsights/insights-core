@@ -18,6 +18,7 @@ static_specs = {
     "corosync"                  : SimpleFileSpec("etc/sysconfig/corosync"),
     "woopsie"                   : CommandSpec(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'"),
     "current_clocksource"       : SimpleFileSpec("sys/devices/system/clocksource/clocksource0/current_clocksource"),
+    "cpuinfo_max_freq"          : PatternSpec(r"sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_max_freq"),
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
     "df_-alP"                   : CommandSpec("/usr/bin/df -alP"),
