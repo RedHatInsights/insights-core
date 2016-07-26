@@ -1,3 +1,4 @@
+from falafel.core import MapperOutput
 from distutils.version import LooseVersion, StrictVersion
 import logging
 import re
@@ -82,7 +83,7 @@ class UnameError(Exception):
         return "{0}:'{1}'".format(self.msg, self.uname_line)
 
 
-class Uname(object):
+class Uname(MapperOutput):
     """
     A utility class to parse uname content data and compare version and release
     information.
@@ -130,6 +131,10 @@ class Uname(object):
             - `UnameError`: This exception is raised when there are any errors
               evaluating the uname content.
         """
+        # Bear with us here, we're just trying to get by
+        self.data = uname_line
+        self.computed = {}
+
         self.kernel = self.name = self.nodename = self.version = None
         self.release_arch = self.arch = self.release = None
         self._lv_release = self._rel_maj = self.ver_rel = None
