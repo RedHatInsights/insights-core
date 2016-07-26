@@ -139,3 +139,11 @@ def run_mappers(stream, mappers=plugins.MAPPERS):
                     yield case, ctx.machine_id, mapper, response
             except Exception:
                 logger.exception(mapper.serializable_id)
+                log_content(ctx)
+
+
+@logging_level(logger, logging.DEBUG)
+def log_content(ctx):
+    logger.debug("ID: " + ctx.machine_id)
+    logger.debug("Mapper content:")
+    logger.debug("\n" + "\n".join(ctx.content))

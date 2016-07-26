@@ -197,7 +197,7 @@ def main():
         "Only run reducers.  Expect mapper output from stdin.",
         "Only run mappers.  Pipes mapper output to stdout."
     ]
-    p = argparse.ArgumentParser("python -m falafel.core")
+    p = argparse.ArgumentParser("insights-run")
     p.add_argument(
         "-p", "--pattern", dest="pattern", nargs="*", help=HELP[0])
     p.add_argument(
@@ -209,10 +209,13 @@ def main():
     p.add_argument(
         "-m", "--map-only", dest="map_only", action="store_true",
         default=False, help=HELP[3])
+    p.add_argument("-l", "--load-packages", dest="packages", nargs="*")
     args = p.parse_args()
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     logging.getLogger(__name__).warning("Loading plugins")
     plugins.load(DEFAULT_PLUGIN_MODULE, pattern_list=args.pattern)
+    for package in args.packages:
+        load_package(package)
     log = logging.getLogger("main")
     if args.map_only and args.reduce_only:
         print """
