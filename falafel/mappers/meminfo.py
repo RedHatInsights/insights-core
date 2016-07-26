@@ -6,7 +6,7 @@ class SubMemInfo(MapperOutput):
 
     sub_keys = []
 
-    def __init__(self, data):
+    def __init__(self, data, path=None):
         sub_dict = {sk: data.get(k) for k, sk in self.sub_keys}
         self.data = sub_dict
         self.computed = {}
@@ -142,7 +142,7 @@ class MemInfo(MapperOutput):
         ("hardwarecorrupted", "corrupted"),
     ]
 
-    def __init__(self, data):
+    def __init__(self, data, path=None):
         super(MemInfo, self).__init__(data)
         sub_classes = {
             "anon": AnonMemInfo(data),

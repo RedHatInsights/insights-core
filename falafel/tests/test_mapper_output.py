@@ -9,6 +9,12 @@ SIMPLE_JSON = [
     {"bc": 5}
 ]
 
+PATTERN_JSON = [
+    "falafel.tests.test_mapper_output#SimpleMapperOutput",
+    SIMPLE_DATA,
+    {"file_path": "/usr/lib/superlib.so.5000"}
+]
+
 COMPLEX_DATA = {
     "food": "processor",
     "mixing": "bowl",
@@ -144,8 +150,22 @@ def test_serialization():
             ]
         }
     }
-
     serialized = mapper.serialize(mapper_output)
     deserialized = reducer.deserialize(serialized)
-
     assert deserialized == mapper_output
+
+
+def test_serialization2():
+    SUPER_PATH = "/usr/lib/superlib.so.5000"
+    mapper_output = {
+        "some_host": {
+            simple_mapper: [
+                SimpleMapperOutput(SIMPLE_DATA, path=SUPER_PATH)
+            ]
+        }
+    }
+    serialized = mapper.serialize(mapper_output)
+    deserialized = reducer.deserialize(serialized)
+    assert deserialized == mapper_output
+    print deserialized
+    assert deserialized["some_host"][simple_mapper][0].file_path == SUPER_PATH

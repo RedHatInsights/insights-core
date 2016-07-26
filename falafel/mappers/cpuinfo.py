@@ -4,9 +4,6 @@ from falafel.core.mapper import MapperOutput
 
 class CpuInfo(MapperOutput):
 
-    def __init__(self, data):
-        self.data = data
-
     def cpu_count(self):
         """
         returns number of cpus, this is found by number of unique processor entries in data

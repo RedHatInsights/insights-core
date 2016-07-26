@@ -83,9 +83,12 @@ def computed(f):
 
 class MapperOutput(object):
 
-    def __init__(self, data):
+    def __init__(self, data, path=None):
         self.data = data
         self.computed = {}
+        if path:
+            self._add_to_computed("file_path", path)
+            self._add_to_computed("file_name", os.path.basename(path))
         self.compute()
 
     def get_name(self):

@@ -39,10 +39,6 @@ from falafel.core import MapperOutput
 
 
 class BondInfo(MapperOutput):
-    """Bonding information extracted from a single ``/proc/net/bonding/bond.*`` file."""
-    def __init__(self, data):
-        self.data = data.content
-        self.path = data.path
 
     def __contains__(self, s):
         """
@@ -67,4 +63,4 @@ class BondInfo(MapperOutput):
 @mapper('bond')
 def bondinfo(context):
     """ Returns an object of BondInfo. """
-    return BondInfo(context)
+    return BondInfo(context.content, path=context.path)

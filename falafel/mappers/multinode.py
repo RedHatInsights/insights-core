@@ -43,7 +43,7 @@ class MultinodeMetadata(MapperOutput):
     common_fields = ["display_name", "insights_version"]
     fields = []
 
-    def __init__(self, data):
+    def __init__(self, data, path=None):
         self.data = data
         for f in self.common_fields:
             setattr(self, f, data.get(f))

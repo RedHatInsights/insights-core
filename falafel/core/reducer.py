@@ -22,10 +22,11 @@ def value_to_class(o):
     if len(o) > 0 and isinstance(o[0], list) and len(o[0]) == 3:
         r = []
         for item in o:
-            cls_name, data, _ = item
+            cls_name, data, computed = item
             module, cls = cls_name.split("#")
             module = sys.modules[module]
-            r.append(getattr(module, cls)(data))
+            path = computed["file_path"] if "file_path" in computed else None
+            r.append(getattr(module, cls)(data, path=path))
         return r if r else o
     return o
 
