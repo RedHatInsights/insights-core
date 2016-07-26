@@ -1,5 +1,6 @@
 import os
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput, computed
 
 
 def extract_iface_name_from_path(path, name):
@@ -24,6 +25,30 @@ def extract_iface_name_from_path(path, name):
 
 def extract_iface_name_from_content(content):
     return content.split(" ", 3)[-1][:-1]
+
+
+class EthtoolInfo(MapperOutput):
+
+    @computed
+    def ifname(self):
+        """
+        Return the name of network interface in content.
+        """
+        return self.data.get('ETHNIC')
+
+    @computed
+    def speed(self):
+        """
+        return field in Speed.
+        """
+        return self.data.get('Speed')
+
+    @computed
+    def link_detected(self):
+        """
+        returns field in Link detected.
+        """
+        return self.data.get('Link detected')
 
 
 @mapper("ethtool-i")
@@ -184,5 +209,46 @@ def get_ethtool_S(context):
         if line.strip():
             key, value = line.split(':', 1)
             info[key.strip()] = value.strip() if value else ''
-
     return info
+
+
+@mapper("ethtool")
+def ethtool(context):
+    """
+    Returns an object of EthtoolInfo
+    -----------------------------------------------------
+    Settings for eth1:
+        Supported ports: [ TP ]
+        Supported link modes: 10baseT/Half 10baseT/Full
+                              100baseT/Half 100baseT/Full
+                              1000baseT/Full
+        Supported pause frame use: Symmetric
+        Supports auto-negotiation: Yes
+        Advertised link modes: 10baseT/Half 10baseT/Full
+                               100baseT/Half 100baseT/Full
+                               1000baseT/Full
+
+        Current message level: 0x00000007 (7)
+                               drv probe link
+    -----------------------------------------------------
+    After using pandas to do some more research, I found
+    the value of the current multi-line parameters
+    "Supported link modes" could also be a sigle line and
+    the current single line para "Supported pause frame use"
+    could also be multi-line. Since the multi-line or
+    single-line is not fixable, I just put the value in the list.
+    """
+    ethtool_dict = dict()
+    if "Settings for" in context.content[0]:
+        ethtool_dict['ETHNIC'] = context.content[0].split()[-1].strip(':')
+    key = value = None
+    for line in context.content[1:]:
+        line = line.strip()
+        if line:
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip()
+                ethtool_dict[key] = [value.strip()]
+            else:
+                ethtool_dict[key].append(line)
+    return EthtoolInfo(ethtool_dict)

@@ -1,8 +1,8 @@
 import unittest
-
 from falafel.mappers import ethtool
 from falafel.tests import context_wrap
 from falafel.util import keys_in
+
 
 SUCCESS_ETHTOOL_A = """
 Pause parameters for enp0s25:
@@ -214,6 +214,33 @@ FAILED_ETHTOOL_S_ONE = "no stats avilable "
 
 FAILED_ETHTOOL_S_TWO = "Cannot get stats strings information: Operation not supported"
 
+ETHTOOL_INFO = """
+Settings for eth1:
+    Supported ports: [ TP ]
+    Supported link modes: 10baseT/Half 10baseT/Full
+                          100baseT/Half 100baseT/Full
+                          1000baseT/Full
+    Supported pause frame use: Symmetric
+    Supports auto-negotiation: Yes
+    Advertised link modes: 10baseT/Half 10baseT/Full
+                           100baseT/Half 100baseT/Full
+                           1000baseT/Full
+    Advertised pause frame use: Symmetric
+    Advertised auto-negotiation: Yes
+    Speed: 1000Mb/s
+    Duplex: Full
+    Port: Twisted Pair
+    PHYAD: 1
+    Transceiver: internal
+    Auto-negotiation: on
+    MDI-X: off (auto)
+    Supports Wake-on: pumbg
+    Wake-on: d
+    Current message level: 0x00000007 (7)
+                           drv probe link
+    Link detected: yes
+""".strip()
+
 
 class TestEthtool(unittest.TestCase):
     def test_extract_from_path_1(self):
@@ -266,7 +293,6 @@ class TestEthtool(unittest.TestCase):
         context = context_wrap(TEST_ETHTOOL_C)
         context.path = TEST_ETHTOOL_C_PATH
         result = ethtool.get_ethtool_c(context)
-        print result
         self.assertTrue(keys_in(["iface", "adaptive-rx", "adaptive-tx", "pkt-rate-high",
                                  "tx-usecs-irq", "tx-frame-low", "tx-usecs-high", "tx-frame-high"], result))
         self.assertEqual(result["iface"], "eth2")
@@ -331,3 +357,9 @@ class TestEthtool(unittest.TestCase):
         ethtool_S_info_f2 = ethtool.get_ethtool_S(context_wrap(FAILED_ETHTOOL_S_TWO))
         assert len(ethtool_S_info_f1) == 1
         assert len(ethtool_S_info_f2) == 1
+
+    def test_ethtool(self):
+        ethtool_info = ethtool.ethtool(context_wrap(ETHTOOL_INFO))
+        assert ethtool_info.ifname == 'eth1'
+        assert ethtool_info.link_detected == ['yes']
+        assert ethtool_info.speed == ['1000Mb/s']
