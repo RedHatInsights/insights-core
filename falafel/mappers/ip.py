@@ -153,7 +153,7 @@ def addr(context):
         return r
     while "Message truncated" == context.content[line].strip():
         line = line + 1
-    for content in context.content[line:]:
+    for content in [l for l in context.content[line:] if l]:
         split_content = content.strip().split()
         if len(content) > 0 and content[0] != " ":  # Parse first line
             # save previous iface info
