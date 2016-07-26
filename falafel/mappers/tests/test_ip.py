@@ -77,3 +77,37 @@ class TestIPAddr(unittest.TestCase):
         self.assertEqual(tun2["peer"], "10.188.61.108")
         self.assertEqual(tun2["peer_ip"], "10.192.4.203")
         self.assertItemsEqual(["192.168.112.5"], tun2["addr"])
+
+
+IP_ROUTE_SHOW_TABLE_ALL_TEST = """
+throw 30.142.64.0/26  table red_mgmt
+default via 30.142.64.1 dev bond0.400  table red_mgmt
+throw 30.142.34.0/26  table red_storage
+default via 30.142.34.1 dev bond0.300  table red_storage
+30.0.0.0/8 dev notExist proto kernel scope link src 30.0.0.1
+30.142.34.0/26 dev bond0.300  proto kernel  scope link  src 30.142.34.5
+30.142.64.0/26 dev bond0.400  proto kernel  scope link  src 30.142.64.9
+169.254.0.0/16 dev bond0  scope link  metric 1012
+169.254.0.0/16 dev bond0.300  scope link  metric 1013
+169.254.0.0/16 dev bond0.400  scope link  metric 1014
+169.254.0.0/16 dev bond0.700  scope link  metric 1015
+default via 30.142.64.1 dev bond0.400
+broadcast 127.255.255.255 dev lo  table local  proto kernel  scope link  src 127.0.0.1
+local 30.142.64.9 dev bond0.400  table local  proto kernel  scope host  src 30.142.64.9
+""".strip()
+
+
+class Test_ip_route():
+    def test_ip_route_1(self):
+        d = ip.route_devices(context_wrap(IP_ROUTE_SHOW_TABLE_ALL_TEST))
+
+        assert len(d.data) == 5
+        assert d.data["30.142.34.0/26"][0] == "bond0.300"
+        assert d.data["30.142.64.0/26"][0] == "bond0.400"
+        assert d.data["169.254.0.0/16"][0] == "bond0"
+        assert d.ifaces("30.142.34.1")[0] == "bond0.300"
+        assert d.ifaces("30.142.64.1")[0] == "bond0.400"
+        assert d.ifaces("169.254.0.1")[0] == "bond0"
+        assert d.ifaces("30.0.0.1")[0] == "notExist"
+        assert d.ifaces("192.168.0.1")[0] == "bond0.400"
+        assert len(d.data["default"]) == 1

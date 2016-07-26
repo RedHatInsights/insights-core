@@ -1,4 +1,7 @@
 from falafel.core.plugins import mapper
+from falafel.contrib import ipaddress
+from falafel.core import MapperOutput
+from collections import defaultdict
 
 
 @mapper('ip_addr')
@@ -191,3 +194,52 @@ def addr(context):
         iface_pro["addr_v6"] = iface_addr_v6
         r[iface_name] = iface_pro
     return r
+
+DEV_IGNORE_LIST = ["broadcast", "throw", "local", "unreachable", "prohabit", "blackhole", "nat"]
+
+
+class RouteDevices(MapperOutput):
+
+    def ifaces(self, ip):
+        """
+        Given an IP address, choose the best iface name to return.  If there
+        are multiple routes that match, then the one with the most specific
+        netmask will be returned.
+
+        Example:
+        ip_table = shared.get(get_ip_route)
+        iface = ip_table.get_iface_by_ip(YOUR_IP_ADDRESS_STRING)
+        """
+        max_netmask = 0
+        ifaces = None
+        for route_mask in self.data:
+            if route_mask != "default":
+                if ipaddress.ip_address(unicode(ip)) in ipaddress.ip_network(unicode(route_mask)):
+                    netmask = int(route_mask.split("/")[1])
+                    if netmask > max_netmask:
+                        ifaces = self.data[route_mask]
+                        max_netmask = netmask   # Longest Prefix Match
+        return ifaces if ifaces else self.data.get('default')
+
+
+@mapper("ip_route_show_table_all")
+def route_devices(context):
+    """
+    Pulls out routes and devices, e.g.:
+    {
+        "30.142.34.0/26": [
+            "bond0", "bond0.300", "bond0.700"
+        ]
+    }
+    """
+    table = defaultdict(list)
+    for line in [l for l in context.content if l]:
+        if line.strip():
+            line_sp = line.split()
+            if line_sp[0] in DEV_IGNORE_LIST:
+                continue
+            if "dev" in line_sp:
+                # ignore RPDB other table
+                if line_sp[0] != "default" or "table" not in line_sp:
+                    table[line_sp[0]].append(line_sp[line_sp.index("dev") + 1])
+    return RouteDevices(table)
