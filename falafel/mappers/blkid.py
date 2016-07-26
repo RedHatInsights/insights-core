@@ -3,8 +3,15 @@ Block ID
 ========
 """
 
-import shlex
+import re
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput
+
+
+class BlockIDInfo(MapperOutput):
+
+    def filter_by_type(self, fs_type):
+        return [row for row in self.data if row['TYPE'] == fs_type]
 
 
 @mapper("blkid")
@@ -32,34 +39,33 @@ def get_blkid_info(context):
 
     Returns
     -------
-    dict
-        A dictionary keyed by device name whose values are dictionaries containing
-        option/value pairs.  For example,
+    list
+        A list of device info in dictionary format containing only values
+        present in the ``blkid`` output.  For example,
 
         .. code-block:: python
 
-            { "/dev/sda1" :
+            [
                 {
+                    'NAME': "/dev/sda1"
                     'UUID': '3676157d-f2f5-465c-a4c3-3c2a52c8d3f4',
                     'TYPE': 'xfs'
                 },
-            "/dev/cciss/c0d1p3" :
                 {
+                    'NAME': "/dev/cciss/c0d1p3",
                     'LABEL': '/u02',
                     'UUID': '004d0ca3-373f-4d44-a085-c19c47da8b5e',
                     'TYPE': 'ext3'
                 }
-            }``
+            ]
+
     """
-    blkid_output = {}
-    for line in context.content:
-        if line.strip():
-            para_dict = {}
-            line_split = shlex.split(line)
-            dev_name = line_split[0].strip(':')
-            para_line = line_split[1:]
-            for item in para_line:
-                (k, v) = item.split('=', 1)
-                para_dict[k] = v.strip('"')
-            blkid_output[dev_name] = para_dict
-    return blkid_output
+    blkid_output = []
+    if len(context.content) > 0:
+        for line in context.content:
+            dev_name, attributes = line.split(":", 1)
+            device = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line)}
+            device['NAME'] = dev_name.strip()
+            blkid_output.append(device)
+
+    return BlockIDInfo(blkid_output)
