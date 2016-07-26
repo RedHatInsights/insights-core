@@ -1,6 +1,6 @@
 import unittest
 
-from falafel.mappers import ip_addr
+from falafel.mappers import ip
 from falafel.tests import context_wrap
 from falafel.util import keys_in
 
@@ -35,7 +35,7 @@ Message truncated
 
 class TestIPAddr(unittest.TestCase):
     def test_ip_addr(self):
-        d = ip_addr.get_ip_addr(context_wrap(IP_ADDR_TEST))
+        d = ip.addr(context_wrap(IP_ADDR_TEST))
 
         self.assertEqual(len(d), 6)
         self.assertTrue(keys_in(["lo", "eth7", "tunl0", "tunl1", "bond1.57@bond1", "ip.tun2"], d))
@@ -71,9 +71,9 @@ class TestIPAddr(unittest.TestCase):
         self.assertItemsEqual(["10.192.4.171"], bond1Addr)
         self.assertItemsEqual(["fe80::211:3fff:fee2:f59e", "2001::211:3fff:fee2:f59e"], d["bond1.57@bond1"]["addr_v6"])
 
-        ip = d["ip.tun2"]
-        self.assertEqual(ip["mtu"], "XXX80")
-        self.assertEqual(ip["type"], "ipip")
-        self.assertEqual(ip["peer"], "10.188.61.108")
-        self.assertEqual(ip["peer_ip"], "10.192.4.203")
-        self.assertItemsEqual(["192.168.112.5"], ip["addr"])
+        tun2 = d["ip.tun2"]
+        self.assertEqual(tun2["mtu"], "XXX80")
+        self.assertEqual(tun2["type"], "ipip")
+        self.assertEqual(tun2["peer"], "10.188.61.108")
+        self.assertEqual(tun2["peer_ip"], "10.192.4.203")
+        self.assertItemsEqual(["192.168.112.5"], tun2["addr"])

@@ -2,7 +2,7 @@ from falafel.core.plugins import mapper
 
 
 @mapper('ip_addr')
-def get_ip_addr(context):
+def addr(context):
     """
     QUICK START:
     `ip addr` will return a dict that key is interface name. `addr` key is a array to store all address.
