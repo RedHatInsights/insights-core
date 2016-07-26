@@ -10,7 +10,7 @@ from falafel.core import marshalling
 DEFAULT_PATTERN_LIST = (r'.*py$',)
 log = logging.getLogger(__name__)
 
-DEFAULT_PLUGIN_MODULE = "telemetry.rules"
+DEFAULT_PLUGIN_MODULE = "falafel.plugins"
 
 
 def load_package(package_name, pattern_list=None, loaded_map=set()):
