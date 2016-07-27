@@ -45,23 +45,22 @@ def get_netstat_s(context):
 
     # There maybe some error metadata, such as:
     # 'cannot open /proc/net/snmp: No such file or directory'
-    #or  '/bin/sh: /bin/netstat: No such file or directory'
+    # or  '/bin/sh: /bin/netstat: No such file or directory'
     # In this situation, return {} directly.
     if 'cannot open' in context.content[0] or 'bin' in context.content[0]:
         return info
 
-
     # The right metadata(content) will start with "Ip". Some metadata may start
-    # with 'error' or 'ERROR' and the rest of lines are right datas. For example:
+    # with 'error' or 'ERROR' and the rest of lines are right datas.For example:
     # ~~~~~~~
     # error parsing /proc/net/netstat: No such file or directory
     # Ip:
     #   515 total packets received
     #   5 with invalid addresses
     #   0 forwarded
-    #.....
-    #~~~~~~~~
-    #In this situation, 'error...' line will be ignore.
+    # .....
+    # ~~~~~~~~
+    # In this situation, 'error...' line will be ignore.
     for line in context.content:
         if session:
             if line.startswith("  "):
@@ -69,11 +68,11 @@ def get_netstat_s(context):
                     key, val = line.split(":")
                     key = key.strip().replace(" ", "_").lower()
                     # For example:
-                    #~~~~~~~
+                    # ~~~~~~~
                     # ICMP input histogram:
                     #        echo requests: 309
                     # ...
-                    #~~~~~~~
+                    # ~~~~~~~
                     # There need second layer dict
                     if val == "" and not has_scd_layer:
                         has_scd_layer = True

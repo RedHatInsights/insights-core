@@ -1,6 +1,6 @@
 from falafel.mappers.netstat_s import get_netstat_s
 from falafel.tests import context_wrap
-import json
+# import json
 
 NETSTAT_S = '''
 Ip:
@@ -111,91 +111,91 @@ class TestNetstats():
     def test_get_netstat_s(self):
         info = get_netstat_s(context_wrap(NETSTAT_S))
         # print json.dumps(context_wrap(NETSTAT_S).content, indent=4)
-        print json.dumps(info, indent=4)
+        # print json.dumps(info, indent=4)
 
-        assert info['ip'] == {'total_packets_received': '3405107', \
-                              'forwarded': '0', \
-                              'incoming_packets_discarded': '0', \
-                              'incoming_packets_delivered': '2900146', \
-                              'requests_sent_out': '2886201', \
-                              'outgoing_packets_dropped': '456', \
-                              'fragments_received_ok': '4', \
+        assert info['ip'] == {'total_packets_received': '3405107',
+                              'forwarded': '0',
+                              'incoming_packets_discarded': '0',
+                              'incoming_packets_delivered': '2900146',
+                              'requests_sent_out': '2886201',
+                              'outgoing_packets_dropped': '456',
+                              'fragments_received_ok': '4',
                               'fragments_created': '8'}
-        assert info['icmp'] == {'icmp_messages_received': '114', \
-                                'input_icmp_message_failed': '0', \
+        assert info['icmp'] == {'icmp_messages_received': '114',
+                                'input_icmp_message_failed': '0',
                                 'icmp_input_histogram': {
-                                    'destination_unreachable': '107', \
-                                    'echo_requests': '4', \
+                                    'destination_unreachable': '107',
+                                    'echo_requests': '4',
                                     'echo_replies': '3',
                                 },
-                                'icmp_messages_sent': '261', \
-                                'icmp_messages_failed': '0', \
+                                'icmp_messages_sent': '261',
+                                'icmp_messages_failed': '0',
                                 'icmp_output_histogram': {
-                                    'destination_unreachable': '254', \
-                                    'echo_request': '3', \
+                                    'destination_unreachable': '254',
+                                    'echo_request': '3',
                                     'echo_replies': '4'
                                 }
                                 }
-        assert info['icmpmsg'] == {'intype0': '3', \
-                                   'intype3': '107', \
-                                   'intype8': '4', \
-                                   'outtype0': '4', \
-                                   'outtype3': '254', \
+        assert info['icmpmsg'] == {'intype0': '3',
+                                   'intype3': '107',
+                                   'intype8': '4',
+                                   'outtype0': '4',
+                                   'outtype3': '254',
                                    'outtype8': '3'}
-        assert info['tcp'] == {'active_connections_openings': '1648', \
-                               'passive_connection_openings': '1525', \
-                               'failed_connection_attempts': '105', \
-                               'connection_resets_received': '69', \
-                               'connections_established': '139', \
-                               'segments_received': '2886370', \
-                               'segments_send_out': '2890303', \
-                               'segments_retransmited': '428', \
-                               'bad_segments_received': '0', \
+        assert info['tcp'] == {'active_connections_openings': '1648',
+                               'passive_connection_openings': '1525',
+                               'failed_connection_attempts': '105',
+                               'connection_resets_received': '69',
+                               'connections_established': '139',
+                               'segments_received': '2886370',
+                               'segments_send_out': '2890303',
+                               'segments_retransmited': '428',
+                               'bad_segments_received': '0',
                                'resets_sent': '212'}
-        assert info['udp'] == {'packets_received': '4901', \
-                               'packets_to_unknown_port_received': '107', \
-                               'packet_receive_errors': '0', \
-                               'packets_sent': '1793', \
-                               'receive_buffer_errors': '0', \
+        assert info['udp'] == {'packets_received': '4901',
+                               'packets_to_unknown_port_received': '107',
+                               'packet_receive_errors': '0',
+                               'packets_sent': '1793',
+                               'receive_buffer_errors': '0',
                                'send_buffer_errors': '0'}
         assert info['udplite'] == {}
-        assert info['tcpext'] == {'tcp_sockets_finished_time_wait_in_fast_timer': '1239', \
-                                  'delayed_acks_sent': '295934', \
-                                  'delayed_acks_further_delayed_because_of_locked_socket': '6', \
-                                  'quick_ack_mode_was_activated_times': '9', \
-                                  'packets_directly_queued_to_recvmsg_prequeue': '999263', \
-                                  'bytes_directly_in_process_context_from_backlog': '8266', \
-                                  'bytes_directly_received_in_process_context_from_prequeue': '104052505', \
-                                  'packet_headers_predicted': '122927', \
-                                  'packets_header_predicted_and_directly_queued_to_user': '339500', \
-                                  'acknowledgments_not_containing_data_payload_received': '253351', \
-                                  'predicted_acknowledgments': '711851', \
-                                  'times_recovered_from_packet_loss_by_selective_acknowledgements': '1', \
-                                  'congestion_windows_recovered_without_slow_start_after_partial_ack': '1', \
-                                  'fast_retransmits': '3', \
-                                  'other_tcp_timeouts': '54', \
-                                  'tcplossprobes': '12', \
-                                  'tcplossproberecovery': '12', \
-                                  'dsacks_sent_for_old_packets': '9', \
-                                  'dsacks_received': '13', \
-                                  'connections_reset_due_to_unexpected_data': '72', \
-                                  'connections_reset_due_to_early_user_close': '4', \
-                                  'connections_aborted_due_to_timeout': '53', \
-                                  'tcpdsackignorednoundo': '13', \
-                                  'tcpspuriousrtos': '1', \
-                                  'tcpsackshiftfallback': '6', \
-                                  'tcpdeferacceptdrop': '537', \
-                                  'ipreversepathfilter': '1', \
-                                  'tcprcvcoalesce': '2610', \
-                                  'tcpofoqueue': '595', \
-                                  'tcpchallengeack': '3', \
+        assert info['tcpext'] == {'tcp_sockets_finished_time_wait_in_fast_timer': '1239',
+                                  'delayed_acks_sent': '295934',
+                                  'delayed_acks_further_delayed_because_of_locked_socket': '6',
+                                  'quick_ack_mode_was_activated_times': '9',
+                                  'packets_directly_queued_to_recvmsg_prequeue': '999263',
+                                  'bytes_directly_in_process_context_from_backlog': '8266',
+                                  'bytes_directly_received_in_process_context_from_prequeue': '104052505',
+                                  'packet_headers_predicted': '122927',
+                                  'packets_header_predicted_and_directly_queued_to_user': '339500',
+                                  'acknowledgments_not_containing_data_payload_received': '253351',
+                                  'predicted_acknowledgments': '711851',
+                                  'times_recovered_from_packet_loss_by_selective_acknowledgements': '1',
+                                  'congestion_windows_recovered_without_slow_start_after_partial_ack': '1',
+                                  'fast_retransmits': '3',
+                                  'other_tcp_timeouts': '54',
+                                  'tcplossprobes': '12',
+                                  'tcplossproberecovery': '12',
+                                  'dsacks_sent_for_old_packets': '9',
+                                  'dsacks_received': '13',
+                                  'connections_reset_due_to_unexpected_data': '72',
+                                  'connections_reset_due_to_early_user_close': '4',
+                                  'connections_aborted_due_to_timeout': '53',
+                                  'tcpdsackignorednoundo': '13',
+                                  'tcpspuriousrtos': '1',
+                                  'tcpsackshiftfallback': '6',
+                                  'tcpdeferacceptdrop': '537',
+                                  'ipreversepathfilter': '1',
+                                  'tcprcvcoalesce': '2610',
+                                  'tcpofoqueue': '595',
+                                  'tcpchallengeack': '3',
                                   'tcpspuriousrtxhostqueues': '3'}
-        assert info['ipext'] == {'innoroutes': '9', \
-                                 'inmcastpkts': '406', \
-                                 'inbcastpkts': '517437', \
-                                 'inoctets': '865450302', \
-                                 'outoctets': '812810111', \
-                                 'inmcastoctets': '12992', \
+        assert info['ipext'] == {'innoroutes': '9',
+                                 'inmcastpkts': '406',
+                                 'inbcastpkts': '517437',
+                                 'inoctets': '865450302',
+                                 'outoctets': '812810111',
+                                 'inmcastoctets': '12992',
                                  'inbcastoctets': '46402081'}
 
     def test_get_netstat_s_fail(self):
@@ -207,9 +207,9 @@ class TestNetstats():
         info = get_netstat_s(context_wrap(NETSTAT_S_W))
 
         assert len(info) == 1
-        assert info['ip'] == {'total_packets_received': "6440", \
-                             "with_invalid_addresses": "3", \
-                             "forwarded": "0", \
-                             "incoming_packets_discarded": "0", \
-                             "incoming_packets_delivered": "6437", \
-                             "requests_sent_out": "4777"}
+        assert info['ip'] == {'total_packets_received': "6440",
+                              "with_invalid_addresses": "3",
+                              "forwarded": "0",
+                              "incoming_packets_discarded": "0",
+                              "incoming_packets_delivered": "6437",
+                              "requests_sent_out": "4777"}
