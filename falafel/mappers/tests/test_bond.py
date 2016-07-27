@@ -31,9 +31,8 @@ Slave queue ID: 0
 
 
 def test_bondinfo():
-    bond_info = bondinfo(context_wrap(BONDINFO))
-    bond_info.path = CONTEXT_PATH
-    assert bond_info.bond_name().get('iface') == 'bond0'
+    bond_info = bondinfo(context_wrap(BONDINFO, CONTEXT_PATH))
+    assert bond_info.file_name == 'bond0'
     assert 'load balancing' in bond_info
     assert bond_info.get('Slave Interface') == \
             ['Slave Interface: eno1', 'Slave Interface: eno2']
