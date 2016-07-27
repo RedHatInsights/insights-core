@@ -143,6 +143,7 @@ static_specs = {
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),
     "sysctl.conf_initramfs"     : CommandSpec("/usr/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
     "systemctl_list-unit-files" : CommandSpec("systemctl list-unit-files"),
+    "systemd_docker"            : SimpleFileSpec("usr/lib/systemd/system/docker.service"),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
     "uname"                     : CommandSpec("/bin/uname -a"),
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),

@@ -3,13 +3,14 @@ import StringIO
 from falafel.core.plugins import mapper
 
 
-@mapper('docker.service')
-def systemd_docker_service_parser(context):
+@mapper('systemd_docker')
+def docker(context):
     """
-    The content of file "/usr/lib/systemd/system/docker.service" is recorded via INI format,
-    ConfigParser could be used to parse the content.
+    The content of file ``/usr/lib/systemd/system/docker.service`` is recorded
+    via INI format, ``ConfigParser`` could be used to parse the content.
 
-    Example:
+    Example::
+
         [Unit]
         Description=Docker Application Container Engine
         Documentation=http://docs.docker.com
@@ -42,27 +43,40 @@ def systemd_docker_service_parser(context):
         WantedBy=multi-user.target
 
     Parse Result::
-    {
-    "Unit":{"Description":"Docker Application Container Engine", "After":"network.target"...}
-    "Service":{"Type":"notify", "NotifyAccess":"all"...}
-    "Install":{"WantedBy":"multi-user.target"...}
-    }
+
+        {
+            "Unit":{
+                "Description": "Docker Application Container Engine",
+                "After": "network.target"
+                ...
+            },
+            "Service": {
+                "Type": "notify",
+                "NotifyAccess": "all"
+                ...
+            }
+            "Install":{
+                "WantedBy": "multi-user.target"
+                ...
+            }
+        }
     """
+    return parse_systemd_ini(context.content)
 
+
+def parse_systemd_ini(content):
     Config = cp.ConfigParser()
-
     Config.optionxform = str
-    buf = StringIO.StringIO('\n'.join(context.content))
-    Config.readfp(buf)
+    Config.readfp(StringIO.StringIO('\n'.join(content)))
 
-    sections = Config.sections()
     dict_all = {}
-    dict_section = {}
-
-    for section in sections:
-        options = Config.options(section)
-        for option in options:
-            dict_section[option] = Config.get(section, option)
+    for section in Config.sections():
+        dict_section = {}
+        for option in Config.options(section):
+            value = Config.get(section, option).splitlines()
+            value = map(lambda s: s.rstrip("\\").strip(), value)
+            value = filter(lambda s: bool(s), value)
+            dict_section[option] = "\n".join(value)
         dict_all[section] = dict_section
 
     return dict_all
