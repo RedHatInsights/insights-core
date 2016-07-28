@@ -50,6 +50,7 @@ static_specs = {
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
     "free"                      : CommandSpec("/usr/bin/free"),
     "fstab"                     : SimpleFileSpec("etc/fstab"),
+    "foreman_production.log"    : SimpleFileSpec("var/log/foreman/production.log", large_content=True),
     "galera.cnf"                : SimpleFileSpec("etc/my.cnf.d/galera.cnf"),
     "getenforce"                : CommandSpec("/usr/sbin/getenforce"),
     "getsebool"                 : CommandSpec("/usr/sbin/getsebool -a"),
