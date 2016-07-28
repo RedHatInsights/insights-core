@@ -130,6 +130,7 @@ static_specs = {
     "redhat-release"            : SimpleFileSpec("etc/redhat-release"),
     "resolv.conf"               : SimpleFileSpec("etc/resolv.conf"),
     "rhn.conf"                  : SimpleFileSpec("etc/rhn/rhn.conf"),
+    "rhn_taskomatic_daemon.log" : SimpleSpecFile("var/log/rhn/rhn_taskomatic_daemon.log", large_content=True),
     "root_crontab"              : CommandSpec("/usr/bin/crontab -l -u root"),
     "rpm_-V_packages"           : CommandSpec("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo"),
     "rsyslog.conf"              : SimpleFileSpec("etc/rsyslog.conf"),
