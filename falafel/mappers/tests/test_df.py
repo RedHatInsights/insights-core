@@ -32,14 +32,16 @@ tmpfs            1499684     15   1499669    1% /VM Tools
 
 
 def test_df_li():
-    df_dict = df.df_li(context_wrap(DF_LI))
-    assert len(df_dict) == 10
+    df_list = df.df_li(context_wrap(DF_LI))
+    assert len(df_list) == 10
+    df_dict = {m['Mounted_on']: m for m in df_list}
     assert df_dict.get('/home') == {
         'Filesystem': '/dev/sda2',
         'Inodes': '106954752',
         'IUsed': '298662',
         'IFree': '106656090',
-        'IUse%': '1%'
+        'IUse%': '1%',
+        'Mounted_on': '/home'
     }
     assert df_dict['/dev'].get('Filesystem') == 'devtmpfs'
     assert df_dict['/run'].get('Inodes') == '1499684'
@@ -52,14 +54,16 @@ def test_df_li():
 
 
 def test_df_alP():
-    df_dict = df.df_alP(context_wrap(DF_ALP))
-    assert len(df_dict) == 9
+    df_list = df.df_alP(context_wrap(DF_ALP))
+    assert len(df_list) == 9
+    df_dict = {m['Mounted_on']: m for m in df_list}
     assert df_dict.get('/dev/shm') == {
         'Filesystem': 'tmpfs',
         '1024-blocks': '5998736',
         'Used': '491660',
         'Available': '5507076',
-        'Capacity': '9%'
+        'Capacity': '9%',
+        'Mounted_on': '/dev/shm'
     }
     assert df_dict['/sys'].get('Filesystem') == 'sysfs'
     assert df_dict['/proc'].get('1024-blocks') == '0'
