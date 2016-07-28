@@ -120,6 +120,8 @@ static_specs = {
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
     "parted_-l"                 : CommandSpec("/sbin/parted -l"),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
+    "postgresql.log"		: All([PatternSpec(r"var/lib/pgsql/data/pg_log/postgresql-.*\.log", large_content=True),
+				    PatternSpec(r"opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-.*\.log", large_content=True)]),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
     "pvs"                       : CommandSpec("/sbin/pvs"),
