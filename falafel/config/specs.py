@@ -15,6 +15,7 @@ static_specs = {
     "cluster.conf"              : SimpleFileSpec("etc/cluster/cluster.conf"),
     "cmdline"                   : SimpleFileSpec("proc/cmdline"),
     "cpuinfo"                   : SimpleFileSpec("proc/cpuinfo"),
+    "cobbler_settings"          : SimpleSpecFile("etc/cobbler/settings"),
     "corosync"                  : SimpleFileSpec("etc/sysconfig/corosync"),
     "woopsie"                   : CommandSpec(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'"),
     "current_clocksource"       : SimpleFileSpec("sys/devices/system/clocksource/clocksource0/current_clocksource"),
