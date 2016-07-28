@@ -16,6 +16,7 @@ static_specs = {
     "cmdline"                   : SimpleFileSpec("proc/cmdline"),
     "cpuinfo"                   : SimpleFileSpec("proc/cpuinfo"),
     "cobbler_settings"          : SimpleFileSpec("etc/cobbler/settings"),
+    "cobbler_modules.conf"      : SimpleSpecFile("etc/cobbler/modules.conf"),
     "corosync"                  : SimpleFileSpec("etc/sysconfig/corosync"),
     "woopsie"                   : CommandSpec(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'"),
     "current_clocksource"       : SimpleFileSpec("sys/devices/system/clocksource/clocksource0/current_clocksource"),
