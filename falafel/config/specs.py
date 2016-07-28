@@ -5,6 +5,7 @@ from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, Dock
 
 static_specs = {
     "nproc.conf"                : PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
+    "display_java"              : CommandSpec("/usr/sbin/alternatives --display java"),
     "blkid"                     : CommandSpec("/usr/sbin/blkid -c /dev/null"),
     "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
