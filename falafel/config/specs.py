@@ -139,6 +139,7 @@ static_specs = {
     "redhat-release"            : SimpleFileSpec("etc/redhat-release"),
     "resolv.conf"               : SimpleFileSpec("etc/resolv.conf"),
     "rhn.conf"                  : SimpleFileSpec("etc/rhn/rhn.conf"),
+    "rhn-charsets"              : CommandSpec("/usr/bin/rhn-charsets"),
     "rhn-entitlement-cert.xml"  : SimpleFileSpec("etc/sysconfig/rhn/rhn-entitlement-cert.xml"),
     "rhn_hibernate.conf"        : SimpleSpecFile("usr/share/rhn/config-defaults/rhn_hibernate.conf"),
     "rhn_taskomatic_daemon.log" : SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log", large_content=True),
