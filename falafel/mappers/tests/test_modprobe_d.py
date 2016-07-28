@@ -11,6 +11,6 @@ install ipv6 /bin/true
 
 def test_modprobe():
     modprobe_info = modprobe(context_wrap(MOD_OPTION_INFO))
-    assert modprobe_info.options_dict.get('ipv6') == ['disable=1']
-    assert modprobe_info.options_dict.get('mlx4_core')[0] == 'debug_level=1'
-    assert modprobe_info.install_dict.get('ipv6') == ['/bin/true']
+    assert modprobe_info["options"].get('ipv6') == ['disable=1']
+    assert modprobe_info["options"].get('mlx4_core')[0] == 'debug_level=1'
+    assert modprobe_info["install"].get('ipv6') == ['/bin/true']

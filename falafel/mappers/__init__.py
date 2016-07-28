@@ -6,7 +6,7 @@ __all__ = [f.split(".")[0] for f in os.listdir(os.path.dirname(__file__)) if f.e
 def get_active_lines(lines, comment_char="#"):
     """
     Returns lines, or parts of lines, from content that are not commented out
-    or completely empty.
+    or completely empty.  The resulting lines are all individually stripped.
 
     This is useful for parsing many config files such as ifcfg.
     """
