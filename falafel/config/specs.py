@@ -8,6 +8,7 @@ static_specs = {
     "display_java"              : CommandSpec("/usr/sbin/alternatives --display java"),
     "blkid"                     : CommandSpec("/usr/sbin/blkid -c /dev/null"),
     "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
+    "catalina.out"              : PatternSpec(r"var/log/tomcat.*/catalina\.out", large_content=True),
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chronyc_sources"           : CommandSpec("/usr/bin/chronyc sources"),
