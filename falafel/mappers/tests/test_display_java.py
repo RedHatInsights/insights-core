@@ -1,5 +1,5 @@
 from falafel.tests import context_wrap
-from falafel.mappers.alternatives_display_java import default_java
+from falafel.mappers.display_java import default_java
 
 alter_java = """
 java - status is auto.

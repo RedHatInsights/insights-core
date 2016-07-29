@@ -3,7 +3,7 @@ from falafel.core.plugins import mapper
 JAVA_LINK_FLAG = 'link currently points to'
 
 
-@mapper('alternatives_--display_java')
+@mapper('display_java')
 def default_java(context):
     """
     Returns the full path of the linked java
