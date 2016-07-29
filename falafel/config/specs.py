@@ -150,6 +150,7 @@ static_specs = {
     "rpm_-V_packages"           : CommandSpec("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo"),
     "rsyslog.conf"              : SimpleFileSpec("etc/rsyslog.conf"),
     "samba"                     : SimpleFileSpec("etc/samba/smb.conf"),
+    "satellite_version.rb"      : SimpleFileSpec("usr/share/foreman/lib/satellite/version.rb"),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
