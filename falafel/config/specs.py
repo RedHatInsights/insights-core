@@ -144,6 +144,7 @@ static_specs = {
     "rhn-charsets"              : CommandSpec("/usr/bin/rhn-charsets"),
     "rhn-entitlement-cert.xml"  : SimpleFileSpec("etc/sysconfig/rhn/rhn-entitlement-cert.xml"),
     "rhn_hibernate.conf"        : SimpleFileSpec("usr/share/rhn/config-defaults/rhn_hibernate.conf"),
+    "rhn-schema-version"        : SimpleFileSpec("usr/bin/rhn-schema-version"),
     "rhn_taskomatic_daemon.log" : SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log", large_content=True),
     "root_crontab"              : CommandSpec("/usr/bin/crontab -l -u root"),
     "rpm_-V_packages"           : CommandSpec("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo"),
