@@ -75,6 +75,25 @@ class TestUname(unittest.TestCase):
             known_uname = Uname("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=known_ver['version']))
             assert known_uname.rhel_release == known_ver['rhel_release']
 
+    def test_to_json(self):
+        uname_obj = Uname("Linux hostname 3.10.0-229.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        uname_json_list = uname_obj.to_json()
+        assert 'falafel.util.uname#Uname' == uname_json_list[0], "Module name does not match"
+        uname_json = uname_json_list[1]
+        assert '3.10.0-229.el7.x86_64' == uname_json['kernel'], "Full kernel version string doesn't match"
+        assert 'Linux' == uname_json['name'], "Kernel name doesn't match"
+        assert 'hostname' == uname_json['nodename'], "Nodename doesn't match"
+        assert '3.10.0' == uname_json['version'], "Version doesn't match"
+        assert '229.el7' == uname_json['release'], "Release doesn't match"
+        assert ['7', '1'] == uname_json['rhel_release'], "RHEL Release doesn't match"
+        assert 'x86_64' == uname_json['arch'], "Architecture doesn't match"
+        assert 'GNU/Linux' == uname_json['os'], "OS doesn't match"
+        assert 'x86_64' == uname_json['hw_platform'], "H/W platform doesn't match"
+        assert 'x86_64' == uname_json['processor'], "Processor doesn't match"
+        assert 'x86_64' == uname_json['machine'], "Machine doesn't match"
+        assert 'Mon Sep 8 11:54:45 UTC 2014' == uname_json['kernel_date'], "Kernel date doesn't match"
+        assert 'SMP' == uname_json['kernel_type'], "Kernel type doesn't match"
+
     def test_uname_eq(self):
         left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")

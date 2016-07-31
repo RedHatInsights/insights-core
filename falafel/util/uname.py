@@ -132,7 +132,7 @@ class Uname(MapperOutput):
               evaluating the uname content.
         """
         # Bear with us here, we're just trying to get by
-        self.data = uname_line
+        self.data = {"uname_line": uname_line}
         self.computed = {}
 
         self.kernel = self.name = self.nodename = self.version = None
@@ -176,6 +176,33 @@ class Uname(MapperOutput):
             raise error
         except:
             raise UnameError("General error parsing uname content line", uname_line)
+
+        # Additional uname content parsing, may not be as reliable
+        if len(uname_parts) >= 15:
+            self.data['os'] = uname_parts[-1]
+            self.data['hw_platform'] = uname_parts[-2]
+            self.data['processor'] = uname_parts[-3]
+            self.data['machine'] = uname_parts[-4]
+            self.data['kernel_date'] = " ".join(uname_parts[-10:-4])
+            self.data['kernel_type'] = uname_parts[-11]
+        else:
+            self.data['os'] = None
+            self.data['hw_platform'] = None
+            self.data['processor'] = None
+            self.data['machine'] = None
+            self.data['kernel_date'] = None
+            self.data['kernel_type'] = None
+
+        # Save information in MapperOutput format
+        self.data['kernel'] = self.kernel
+        self.data['name'] = self.name
+        self.data['nodename'] = self.nodename
+        self.data['version'] = self.version
+        self.data['release'] = self.release
+        self.data['release_arch'] = self.release_arch
+        self.data['arch'] = self.arch
+        self.data['ver_rel'] = self.ver_rel
+        self.data['rhel_release'] = self.rhel_release
 
     def parse_nvr(self, nvr, arch=True):
         """
