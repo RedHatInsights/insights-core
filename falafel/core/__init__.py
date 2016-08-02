@@ -202,7 +202,7 @@ def main():
     ]
     p = argparse.ArgumentParser("insights-run")
     p.add_argument(
-        "-p", "--pattern", dest="pattern", nargs="*", help=HELP[0])
+        "-p", "--pattern", dest="pattern", help=HELP[0])
     p.add_argument(
         "-v", "--verbose", dest="verbose", action="store_true",
         default=False, help=HELP[1])
@@ -212,8 +212,12 @@ def main():
     p.add_argument(
         "-m", "--map-only", dest="map_only", action="store_true",
         default=False, help=HELP[3])
-    p.add_argument("-l", "--load-packages", dest="packages", nargs="*")
+    p.add_argument("packages", nargs="*")
     args = p.parse_args()
+    if len(args.packages) == 0:
+        p.print_help()
+        print "\nERROR: Please provide at least one plugin package"
+        return
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     logging.getLogger(__name__).warning("Loading plugins")
     plugins.load(DEFAULT_PLUGIN_MODULE, pattern_list=args.pattern)
