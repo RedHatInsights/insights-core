@@ -7,13 +7,13 @@ import sys
 from collections import defaultdict
 from falafel.core import marshalling
 
-DEFAULT_PATTERN_LIST = (r'.*py$',)
+DEFAULT_PATTERN = r'.*py$'
 log = logging.getLogger(__name__)
 
 DEFAULT_PLUGIN_MODULE = "falafel.plugins"
 
 
-def load_package(package_name, pattern_list=None, loaded_map=set()):
+def load_package(package_name, pattern=None, loaded_map=set()):
 
     if package_name in loaded_map:
         return
@@ -22,7 +22,7 @@ def load_package(package_name, pattern_list=None, loaded_map=set()):
 
     __import__(package_name, globals(), locals(), [], -1)
 
-    for module_name in get_module_names(sys.modules[package_name], pattern_list):
+    for module_name in get_module_names(sys.modules[package_name], pattern):
         __import__(module_name, globals(), locals(), [], -1)
         module_count += 1
         log.debug("loaded %s", module_name)
@@ -31,22 +31,21 @@ def load_package(package_name, pattern_list=None, loaded_map=set()):
     log.info("Loaded %d modules", module_count)
 
 
-def get_module_names(package_name, pattern_list=None):
+def get_module_names(package_name, pattern=None):
 
-    if not pattern_list:
-        pattern_list = DEFAULT_PATTERN_LIST
+    if not pattern:
+        pattern = DEFAULT_PATTERN
 
-    plugin_matcher_list = [re.compile(p) for p in pattern_list]
+    plugin_matcher = re.compile(pattern)
 
     def name_filter(name):
-        for plugin_matcher in plugin_matcher_list:
-            if "__init__" not in name and "__main__" not in name:
-                if name.endswith(".py") and plugin_matcher.match(name):
-                    return True
+        if "__init__" not in name and "__main__" not in name:
+            if name.endswith(".py") and plugin_matcher.match(name):
+                return True
         return False
 
     plugin_dir = os.path.dirname(os.path.realpath(package_name.__file__))
-    log.debug("looking for files that match: [%s] in [%s]", pattern_list, plugin_dir)
+    log.debug("looking for files that match: [%s] in [%s]", pattern, plugin_dir)
     for root, dirs, files in os.walk(plugin_dir):
         if os.path.exists(os.path.join(root, "__init__.py")):
             for file_ in files:
@@ -193,7 +192,7 @@ def print_results(results, cases=None, error_collector=None):
 
 
 def main():
-    from falafel.core import plugins, mapper, reducer, DEFAULT_PLUGIN_MODULE
+    from falafel.core import mapper, reducer
     HELP = [
         "Pattern used to filter out plugins for execution.",
         "Verbose console logging (n.b. it's *very* verbose).",
@@ -220,9 +219,8 @@ def main():
         return
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
     logging.getLogger(__name__).warning("Loading plugins")
-    plugins.load(DEFAULT_PLUGIN_MODULE, pattern_list=args.pattern)
     for package in args.packages:
-        load_package(package)
+        load_package(package, pattern=args.pattern)
     log = logging.getLogger("main")
     if args.map_only and args.reduce_only:
         print """
