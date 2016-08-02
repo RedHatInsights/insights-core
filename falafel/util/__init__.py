@@ -68,7 +68,7 @@ def parse_table(content, delim=None, max_splits=-1):
     """
     if not content:
         return []
-    cols = content[0].split()
+    cols = content[0].split(delim)
     return [dict(zip(cols, row.split(delim, max_splits))) for row in content[1:] if row.strip()]
 
 
