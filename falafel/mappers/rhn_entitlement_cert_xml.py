@@ -1,5 +1,10 @@
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput
 import xml.etree.ElementTree as ET
+
+
+class RHNCertConf(MapperOutput):
+    pass
 
 
 @mapper('rhn-entitlement-cert.xml')
@@ -36,20 +41,7 @@ def rhn_cert(context):
     </rhn-cert-signature>
     </rhn-cert>
     -----------
-    Return a dict as below:
-    {
-        'product': 'RHN-SATELLITE-001'
-        'satellite-version': '5.2'
-        'signature': '-----BEGIN PGP SIGNATURE-----....'
-        'channel-families':
-        {
-            'rhel-cluster': {'quantity':'10'}
-            'sam-rhel-server-6': {'quantity':'102', 'flex':'0'}
-            ...
-        }
-        ...
-    }
-
+    Return a RHNCertConf object
     """
 
     rhnxml = ' '.join(context.content)
@@ -68,4 +60,4 @@ def rhn_cert(context):
     singature = rhntree.findall(".//rhn-cert-signature")
     rhn_cert['signature'] = singature[0].text
 
-    return rhn_cert
+    return RHNCertConf(rhn_cert, path=context.path)
