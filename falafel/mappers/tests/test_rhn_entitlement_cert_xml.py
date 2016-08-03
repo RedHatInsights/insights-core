@@ -35,6 +35,7 @@ mhHkAJ9wdmqOeKfcBa3IUDL53oNMEBP/dg==
 
 
 def test_match():
-    result = rhn_cert(context_wrap(xml_content))
+    result = rhn_cert(context_wrap(xml_content, path='/etc/sysconfig/rhn/rhn_entitlement_cert_xml'))
     assert result.get("product") == "RHN-SATELLITE-001"
     assert result.get("channel-families").get('rhel-cluster') == {'quantity': '10'}
+    assert result.file_name == 'rhn_entitlement_cert_xml'

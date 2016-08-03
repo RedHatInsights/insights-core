@@ -41,7 +41,29 @@ def rhn_cert(context):
     </rhn-cert-signature>
     </rhn-cert>
     -----------
-    Return a RHNCertConf object
+    Return a RHNCertConf object which contains below dict:
+    {
+        'product': 'RHN-SATELLITE-001'
+        'satellite-version': '5.2'
+        'signature': '-----BEGIN PGP SIGNATURE-----....'
+        'channel-families':
+        {
+            'rhel-cluster': {'quantity':'10'}
+            'sam-rhel-server-6': {'quantity':'102', 'flex':'0'}
+            ...
+        }
+        ...
+    }
+    ---
+    And there may be patterns of "rhn_entitlement_cert.xml" files on the host,
+    you can use the 'file_name' attribute to check where the settings are
+    actually gotten from. E.g:
+    ---
+        rhn_certs = shared[rhn_cert]
+        for cert in rhn_certs:
+            if cert.file_name == 'rhn_entitlement_cert.xml':
+               cf = cert.get('channel_families')
+               ...
     """
 
     rhnxml = ' '.join(context.content)
