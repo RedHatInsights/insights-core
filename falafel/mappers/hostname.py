@@ -1,12 +1,24 @@
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput, computed
+
+
+class Hostname(MapperOutput):
+
+    @computed
+    def fqdn(self):
+        return self.data
+
+    @computed
+    def hostname(self):
+        return self.data.split(".")[0]
+
+    @computed
+    def domain(self):
+        return ".".join(self.data.split(".")[1:])
 
 
 @mapper("hostname")
-def common(context):
-    hostname = context.content[0].strip()
-    return {
-        "fqdn": hostname,
-        "hostname": hostname.split(".")[0],
-        "rhel_release": context.release,
-        "rhel_version": context.version
-    }
+def hostname(context):
+    if len(context.content) == 1:
+        hostname = context.content[0].strip()
+        return Hostname(hostname) if hostname else None
