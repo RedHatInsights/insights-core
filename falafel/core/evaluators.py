@@ -1,10 +1,13 @@
+import json
 from collections import defaultdict
 
 from falafel.core import archives, specs, marshalling, plugins
 from falafel.core.marshalling import Marshaller
 from falafel.core.plugins import validate_response
 from falafel.core.context import Context
+from falafel.core.archives import InvalidArchive
 from falafel.util.uname import Uname
+from falafel import util
 from falafel.core import reducer
 
 import logging
@@ -229,3 +232,118 @@ class MultiEvaluator(Evaluator):
             "reports": self.archive_results[None]["reports"],
             "archives": [v for k, v in self.archive_results.iteritems() if k is not None]
         })
+
+
+class InsightsEvaluator(SingleEvaluator):
+
+    def __init__(self, spec_mapping, url="not set", system_id=None, metadata=None):
+        super(InsightsEvaluator, self).__init__(spec_mapping, metadata=metadata)
+        self.system_id = system_id
+        self.url = url
+
+    def format_result(self, result):
+        result["system_id"] = self.system_id
+        return result
+
+    def get_contextual_hostname(self, default=""):
+        return self.system_id
+
+    def set_branch_info(self, system):
+        branch_info = json.loads(self.spec_mapper.get_content("branch_info",
+                                 split=False, default="{}"))
+        remote_branch = branch_info.get("remote_branch")
+        if remote_branch == -1:
+            remote_branch = None
+        remote_leaf = branch_info.get("remote_leaf")
+        if remote_leaf == -1:
+            remote_leaf = None
+        system["remote_branch"] = remote_branch
+        system["remote_leaf"] = remote_leaf
+
+    def pre_mapping(self):
+        super(InsightsEvaluator, self).pre_mapping()
+        int_system_id = self.spec_mapper.get_content("machine-id")[0]
+        if self.system_id and self.system_id != int_system_id:
+            raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
+        self.system_id = int_system_id
+
+    def format_response(self, response):
+        response["system"]["system_id"] = self.system_id
+        if self.release:
+            response["system"]["metadata"]["release"] = self.release
+        response["system"]["type"] = "host"
+        response["system"]["product"] = "rhel"
+        self.set_branch_info(response["system"])
+        return response
+
+    def handle_map_error(self, e, context):
+        log.warning("Mapper failed with message %s. Ignoring. context: %s [%s]",
+                    e, context, self.url, exc_info=True)
+
+    def handle_reduce_error(self, e, context):
+        log.warning("Reducer failed with message %s. Ignoring. context: %s [%s]",
+                    e, context, self.url, exc_info=True)
+
+
+class InsightsMultiEvaluator(MultiEvaluator):
+
+    def __init__(self, spec_mapper, system_id=None, metadata=None):
+        super(InsightsMultiEvaluator, self).__init__(spec_mapper, metadata=metadata)
+        self.system_id = system_id
+
+    def pre_mapping(self):
+        super(InsightsMultiEvaluator, self).pre_mapping()
+        int_system_id = self.archive_metadata.get("system_id", "")
+        if self.system_id and self.system_id != int_system_id:
+            raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
+        self.system_id = int_system_id
+
+    def sub_evaluator_class(self):
+        return InsightsEvaluator
+
+    def format_result(self, result):
+        result["system_id"] = self.system_id
+        return result
+
+    def format_response(self, response):
+        response["system"]["system_id"] = self.system_id
+        product = self.archive_metadata.get("product", "machine")
+        response["system"]["product"] = product
+        response["system"]["display_name"] = self.archive_metadata.get("display_name", "")
+        self.apply_system_metadata(self.archive_metadata["systems"], response)
+
+        # hackhackhackhack
+        system_id_hostname_map = {}
+
+        for archive in response["archives"]:
+            archive["system"]["product"] = product
+            self.hack_report_ids(archive)
+            system_id_hostname_map[archive["system"]["system_id"]] = archive["system"]["hostname"]
+
+        self.hack_affected_hosts(system_id_hostname_map, response)
+        for key in ["systems", "system_id", "product", "display_name"]:
+            del self.archive_metadata[key]
+        response["system"]["metadata"] = self.archive_metadata
+        return response
+
+    def hack_affected_hosts(self, mapping, response):
+        for report in response["reports"]:
+            if "affected_hosts" in report["details"]:
+                new_hosts = [mapping[h] for h in report["details"]["affected_hosts"]]
+                report["details"]["affected_hosts"] = new_hosts
+                report["details"]["hostname_mapping"] = mapping
+
+    def hack_report_ids(self, archive):
+        archive_type = archive["system"]["type"]
+        product = archive["system"]["product"]
+        if archive_type in ["Hypervisor", "image", "container"]:
+            for report in archive["reports"]:
+                report["rule_id"] += "#" + ".".join([product, archive_type])
+
+    def apply_system_metadata(self, system_metadata, response):
+        for system_md in system_metadata:
+            system_id = system_md.pop("system_id")
+            for system in response["archives"]:
+                if system["system"]["system_id"] == system_id:
+                    system["system"].update(system_md)
+                    break

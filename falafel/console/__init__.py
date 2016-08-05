@@ -51,9 +51,12 @@ class Runner(object):
             md_str = sm.get_content("metadata.json", split=False, default="{}")
             md = json.loads(md_str)
             if md and 'systems' in md:
-                runner = evaluators.MultiEvaluator(sm, metadata=md)
+                runner = evaluators.InsightsMultiEvaluator(sm, metadata=md)
             else:
-                runner = evaluators.SingleEvaluator(sm)
+                if sm.exists("etc/redhat_access_insights/machine-id", symbolic=False):
+                    runner = evaluators.InsightsSingleEvaluator(sm)
+                else:
+                    runner = evaluators.SingleEvaluator(sm)
 
             results = runner.process()
             system = results.get("system", {})

@@ -1,5 +1,9 @@
 import logging
+import platform
 import os
+
+TMP_DIR = os.path.join("/tmp", "falafel-web")
+logger = logging.getLogger(__name__)
 
 
 def keys_in(items, *args):
@@ -80,3 +84,18 @@ def rsplit(_str, seps):
     for idx, ch in enumerate(reversed(_str)):
         if ch in seps:
             return _str[0:-idx - 1], _str[-idx:]
+
+
+def check_path(path):
+    found = os.path.exists(path)
+    logger.debug("Checking for path [%s], found = %s.", path, found)
+    return found
+
+
+def get_addr():
+    from falafel.web.settings import engine as config
+    return "http://%s:%s" % (platform.node(), config["port"])
+
+
+def get_path_for_system_id(category, system_id):
+    return os.path.join(TMP_DIR, category, system_id[:2], system_id)
