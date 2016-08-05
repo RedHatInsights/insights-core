@@ -30,7 +30,7 @@ class RedhatRelease(MapperOutput):
 
     @computed
     def version(self):
-        return float(self.parsed["version"])
+        return self.parsed["version"]
 
     @computed
     def is_rhel(self):
