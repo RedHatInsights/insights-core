@@ -2,6 +2,14 @@ from falafel.mappers.ls_dev import parse_ls_dev
 from falafel.tests import context_wrap
 
 LS_DEV = """
+/dev:
+total 3
+brw-rw----.  1 0  6 253,   0 Aug  4 16:56 dm-0
+brw-rw----.  1 0  6 253,   1 Aug  4 16:56 dm-1
+brw-rw----.  1 0  6 253,  10 Aug  4 16:56 dm-10
+crw-rw-rw-.  1 0  5   5,   2 Aug  5  2016 ptmx
+drwxr-xr-x.  2 0  0        0 Aug  4 16:56 pts
+
 /dev/fedora:
 total 0
 drwxr-xr-x.  2 0 0  100 Jul 25 10:00 .
@@ -27,3 +35,4 @@ def test_ls_dev():
     assert len(ls_dev.get("/dev/mapper")) == 4
     assert ls_dev.get("/dev/fedora") == ['home', 'root', 'swap']
     assert ls_dev.get("/dev/mapper") == ['docker-253:0-1443032-pool', 'fedora-home', 'fedora-root', 'fedora-swap']
+    assert ls_dev.get("/dev") == ['dm-0', 'dm-1', 'dm-10']
