@@ -98,7 +98,7 @@ static_specs = {
     "lsof"                      : CommandSpec("lsof", large_content=True),
     "ls_boot"                   : CommandSpec("/bin/ls -lanR /boot"),
     "ls_dev"                    : CommandSpec("/bin/ls -lanR /dev"),
-    "ls_etc"                    : CommandSpec("/bin/ls -lan /etc"),
+    "ls_etc"                    : CommandSpec("/bin/ls -lanR /etc"),
     "lsmod"                     : CommandSpec("/sbin/lsmod"),
     "lspci"                     : CommandSpec("/sbin/lspci"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
