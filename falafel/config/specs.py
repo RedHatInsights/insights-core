@@ -147,6 +147,8 @@ static_specs = {
     "rhn-schema-version"        : CommandSpec("/usr/bin/rhn-schema-version"),
     "rhn_taskomatic_daemon.log" : SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log", large_content=True),
     "root_crontab"              : CommandSpec("/usr/bin/crontab -l -u root"),
+    "route"                     : First([CommandSpec("/sbin/route -n"),
+                                         SimpleFileSpec("route")]),
     "rpm_-V_packages"           : CommandSpec("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo"),
     "rsyslog.conf"              : SimpleFileSpec("etc/rsyslog.conf"),
     "samba"                     : SimpleFileSpec("etc/samba/smb.conf"),
