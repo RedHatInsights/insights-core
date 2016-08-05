@@ -41,9 +41,11 @@ def make_iter(item):
         return [item]
 
 
-def ensure_dir(path):
+def ensure_dir(path, dirname=False):
     log = logging.getLogger(__name__)
     try:
+        if dirname:
+            path = os.path.dirname(path)
         log.debug("Ensure dir '%s'", path)
         os.makedirs(path)
     except Exception as e:

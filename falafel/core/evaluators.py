@@ -7,7 +7,6 @@ from falafel.core.plugins import validate_response
 from falafel.core.context import Context
 from falafel.core.archives import InvalidArchive
 from falafel.util.uname import Uname
-from falafel import util
 from falafel.core import reducer
 
 import logging
