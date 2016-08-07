@@ -36,5 +36,8 @@ def get_lvm_conf(context):
     for line in get_active_lines(context.content, "#"):
         if "=" in line:
             (key, value) = [item.strip() for item in line.split('=', 1)]
-            lvm_conf_dict[key] = json.loads(value)
+            try:
+                lvm_conf_dict[key] = json.loads(value)
+            except Exception:
+                lvm_conf_dict[key] = value
     return lvm_conf_dict
