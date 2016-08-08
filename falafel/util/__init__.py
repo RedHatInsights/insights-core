@@ -67,15 +67,27 @@ class objectview(object):
         self.__dict__ = dict_
 
 
-def parse_table(content, delim=None, max_splits=-1):
+def parse_table(content, delim=None, max_splits=-1, strip=True):
     """
     Parses table-like text. Assumes the first
     row contains column names.
     """
     if not content:
         return []
-    cols = content[0].split(delim)
-    return [dict(zip(cols, row.split(delim, max_splits))) for row in content[1:] if row.strip()]
+    if strip:
+        cols = [c.strip() for c in content[0].split(delim)]
+    else:
+        cols = content[0].split(delim)
+    r = []
+    for row in content[1:]:
+        row = row.strip()
+        if row:
+            if strip:
+                parsed = dict(zip(cols, [i.strip() for i in row.split(delim, max_splits)]))
+            else:
+                parsed = dict(zip(cols, row.split(delim, max_splits)))
+            r.append(parsed)
+    return r
 
 
 def rsplit(_str, seps):
