@@ -8,6 +8,7 @@ class ModProbe(MapperOutput):
     pass
 
 
+@mapper('modprobe.conf')
 @mapper('modprobe.d')
 def modprobe(context):
     d = defaultdict(dict)
