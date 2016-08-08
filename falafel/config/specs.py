@@ -92,6 +92,7 @@ static_specs = {
     "keystone_crontab"          : CommandSpec("/usr/bin/crontab -l -u keystone"),
     "keystone.conf"             : SimpleFileSpec("etc/keystone/keystone.conf"),
     "ksmstate"                  : SimpleFileSpec("sys/kernel/mm/ksm/run"),
+    "libvirtd.log"              : SimpleFileSpec("var/log/libvirt/libvirtd.log"),
     "limits.conf"               : SimpleFileSpec("etc/security/limits.conf"),
     "limits.d"                  : PatternSpec(r"etc/security/limits\.d/.*"),
     "locale"                    : CommandSpec("/usr/bin/locale"),
