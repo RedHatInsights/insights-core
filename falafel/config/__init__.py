@@ -775,4 +775,27 @@ def _make_rpm_formatter(fmt=None):
             return "\t".join(fmt) + "\n"
     return inner
 
-format_rpm = _make_rpm_formatter()
+
+def _json_formatter(fmt=None):
+    if fmt is None:
+        fmt = [
+            ("name", "NAME"),
+            ("version", "VERSION"),
+            ("epoch", "EPOCH"),
+            ("release", "RELEASE"),
+            ("arch", "ARCH"),
+            ("installtime", "INSTALLTIME:date"),
+            ("buildtime", "BUILDTIME"),
+            ("rsaheader", "RSAHEADER:pgpsig"),
+            ("dsaheader", "DSAHEADER:pgpsig")
+        ]
+
+    def inner(idx=None):
+        if idx:
+            fields = ['"%s": "%%{%s}"' % (k, v) for k, v in fmt[:idx]]
+        else:
+            fields = ['"%s": "%%{%s}"' % (k, v) for k, v in fmt]
+        return "\\{" + ",".join(fields) + "\\}\\n"
+    return inner
+
+format_rpm = _json_formatter()

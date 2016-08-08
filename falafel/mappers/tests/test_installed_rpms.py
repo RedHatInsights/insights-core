@@ -1,6 +1,5 @@
 from falafel.mappers import installed_rpms
 from falafel.tests import context_wrap
-from falafel.util.rpm import get_package_nvr
 
 RPMS = """
 BESAgent-9.2.5.130-rhe5.x86_64                              Wed Jan 27 09:18:52 2016	1453904332	IBM Corp.	rhel5x64bs	(none)	(none)
@@ -13,7 +12,7 @@ yum-3.2.29-69.el6.noarch                                    Wed May 18 14:16:21 
 
 def test_installed_rpms():
     rpms = installed_rpms.installed_rpms(context_wrap(RPMS))
-    assert rpms.get('ConsoleKit').arch == 'x86_64'
-    assert rpms.get('kernel').version == '2.6.32'
-    assert rpms.get('yum').package == 'yum-3.2.29-69.el6.noarch'
-    assert get_package_nvr(rpms.get('yum').package) == 'yum-3.2.29-69.el6'
+    assert rpms.get_max("ConsoleKit")["arch"] == 'x86_64'
+    assert rpms.get_max("kernel")["version"] == '2.6.32'
+    assert rpms.get_max("yum")["release"] == '69.el6'
+    assert rpms.get_max("yum").package == "yum-3.2.29-69.el6"
