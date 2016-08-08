@@ -70,6 +70,7 @@ static_specs = {
                                     SimpleFileSpec("hostname")]),
     "hosts"                     : SimpleFileSpec("etc/hosts"),
     "hponcfg-g"                 : CommandSpec("hponcfg -g"),
+    "httpd"                     : SimpleFileSpec("etc/sysconfig/httpd"),
     "httpd_access_log"          : SimpleFileSpec("var/log/httpd/access_log", large_content=True),
     "httpd.conf"                : PatternSpec(r"etc/httpd/conf/httpd\.conf"),
     "httpd.conf.d"              : PatternSpec(r"etc/httpd/conf\.d/.+\.conf"),
