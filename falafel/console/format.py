@@ -13,7 +13,7 @@ class Formatter(object):
         col_size = max(map(len, items))
         col_cnt = self.screen_width / col_size
         col_size = col_size + ((self.screen_width % col_size) / col_cnt)
-        for i, item in enumerate(items, 1):
+        for i, item in enumerate(sorted(items), 1):
             print(item.ljust(col_size), end="" if i % col_cnt else "\n")
         print("\n")
 
@@ -104,6 +104,7 @@ class Formatter(object):
         self.heading("Results")
         self.display_results(items)
         if archives:
+            self.list_plugins = False
             for each in archives:
                 self.format_results(each.get("system", {}),
                                     each.get("reports", []),
