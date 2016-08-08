@@ -6,6 +6,12 @@ def parse_ls_dev(context):
     """
     parsing ls -lanR /dev and return all the regular and link files in a list.
     Input Example:
+      /dev:
+      total 3
+      brw-rw----.  1 0  6 253,   0 Aug  4 16:56 dm-0
+      brw-rw----.  1 0  6 253,   1 Aug  4 16:56 dm-1
+      brw-rw----.  1 0  6 253,  10 Aug  4 16:56 dm-10
+
       /dev/fedora:
       total 0
       drwxr-xr-x.  2 0 0  100 Jul 25 10:00 .
@@ -36,7 +42,7 @@ def parse_ls_dev(context):
             files = list()
         elif line.strip().endswith(":"):
             dir = line.split(":")[0]
-        elif line.startswith('-'):
+        elif line.startswith('b'):
             files.append(line.split()[-1])
         elif line.startswith('l'):
             files.append(line.split()[-3])
