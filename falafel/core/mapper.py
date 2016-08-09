@@ -63,7 +63,7 @@ def create_context(doc, content):
 
 
 def _unmarshal(s):
-    if isinstance(s, str):
+    if isinstance(s, basestring):
         # Used for line-based JSON input
         return marshalling.unmarshal(s)
     else:  # Should be a dict; used during integration tests.
@@ -96,11 +96,12 @@ def handle_large_file(doc, stream):
 def gen_contexts(stream):
     while True:
         doc = _unmarshal(stream.next())
-        if specs.is_large(doc["target"]):
-            for case, ctx in handle_large_file(doc, stream):
-                yield case, ctx
-        else:
-            yield doc["case_number"], create_context(doc, doc["content"])
+        if doc and "target" in doc:
+            if specs.is_large(doc["target"]):
+                for case, ctx in handle_large_file(doc, stream):
+                    yield case, ctx
+            else:
+                yield doc["case_number"], create_context(doc, doc["content"])
 
 
 @logging_level(logger, logging.DEBUG)
@@ -139,9 +140,9 @@ def run_mappers(stream, mappers=plugins.MAPPERS):
                     yield case, ctx.machine_id, mapper, response
             except Exception:
                 logger.exception(mapper.serializable_id)
-                log_content(ctx)
 
 
+# This is so incredibly verbose that it should use TRACE (which doesn't exist)
 @logging_level(logger, logging.DEBUG)
 def log_content(ctx):
     logger.debug("ID: " + ctx.machine_id)
