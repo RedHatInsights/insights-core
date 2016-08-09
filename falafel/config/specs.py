@@ -163,6 +163,7 @@ static_specs = {
     "satellite_version.rb"      : SimpleFileSpec("usr/share/foreman/lib/satellite/version.rb"),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
+    "sestatus"                  : CommandSpec("/usr/sbin/sestatus"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
     "ssh_config"                : SimpleFileSpec("etc/ssh/ssh_config"),
     "sshd_config"               : SimpleFileSpec("etc/ssh/sshd_config"),
