@@ -188,7 +188,8 @@ static_specs = {
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
-    "yum.log"                   : SimpleFileSpec("var/log/yum.log")
+    "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
+    "yum.repos.d"               : PatternSpec(r"etc/yum\.repos\.d/*")
 
 }
 
