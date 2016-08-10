@@ -1,20 +1,5 @@
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-
-
-class LogLineList(MapperOutput):
-
-    def __contains__(self, s):
-        """
-        Check if the specified string 's' is contained in one line
-        """
-        return any(s in l for l in self.data)
-
-    def get(self, s):
-        """
-        Returns all lines that contain 's' and wrap them in a list
-        """
-        return [l for l in self.data if s in l]
+from falafel.core import LogFileOutput
 
 
 @mapper('foreman_production.log')
@@ -33,4 +18,4 @@ def foreman_production_log(context):
     -----------
 
     """
-    return LogLineList(context.content)
+    return LogFileOutput(context.content)

@@ -1,15 +1,8 @@
 from falafel.core.plugins import mapper
-from falafel.core.mapper import MapperOutput
+from falafel.core import LogFileOutput
 
 
-class MessageLineList(MapperOutput):
-
-    def __contains__(self, s):
-        """
-        Check if the specified string 's' is contained in one line of
-        /var/log/messages
-        """
-        return any(s in l for l in self.data)
+class MessageLineList(LogFileOutput):
 
     def get(self, s):
         """
@@ -30,7 +23,7 @@ class MessageLineList(MapperOutput):
         ------------
         """
         r = list()
-        for l in self.data:
+        for l in self.lines:
             if s in l:
                 info, msg = [i.strip() for i in l.split(': ', 1)]
                 msg_info = dict()
@@ -44,9 +37,6 @@ class MessageLineList(MapperOutput):
                     msg_info['procname'] = info_splits[4]
                 r.append(msg_info)
         return r
-
-    def scan(self, token, result_key):
-        self._add_to_computed(result_key, token in self)
 
 
 @mapper('messages')

@@ -35,24 +35,9 @@ Typical content of ``bond.*`` file is:
 So, the data consists of stanzas of key value pairs.
 """
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-
-
-class BondInfo(MapperOutput):
-
-    def __contains__(self, s):
-        """
-        Check if the specified string 's' is contained in lspci output.
-        """
-        return any(s in line for line in self.data)
-
-    def get(self, s):
-        """
-        Returns all lines that contain 's' and wrap them into a list
-        """
-        return [line for line in self.data if s in line]
+from falafel.core import LogFileOutput
 
 
 @mapper('bond')
 def bondinfo(context):
-    return BondInfo(context.content, path=context.path)
+    return LogFileOutput(context.content, path=context.path)

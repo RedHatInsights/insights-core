@@ -136,6 +136,34 @@ class MapperOutput(object):
             return False
 
 
+class LogFileOutput(MapperOutput):
+
+    def __init__(self, data, path=None):
+        """
+        MapperOutput to be used for log file output.
+
+        Saves all raw log lines in a member that will not be serialized, thus
+        the raw output is only aavailable for the lifetime of the original
+        object instance.  Computed values will still be persisted.
+        """
+        self.lines = data
+        super(LogFileOutput, self).__init__({}, path)
+
+    def __contains__(self, s):
+        return len(self.get(s)) > 0
+
+    def get(self, s):
+        return [line for line in self.lines if s in line]
+
+    def scan(self, token, result_key):
+        """
+        Define computed fields based on a string to "grep for".  This is
+        preferred to utilizing raw log lines in plugins because computed fields
+        will be serialized, whereas raw log lines will not.
+        """
+        self._add_to_computed(result_key, token in self)
+
+
 class ErrorCollector(object):
     errors = defaultdict(lambda: {
         "count": 0,

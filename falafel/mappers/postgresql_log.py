@@ -1,14 +1,5 @@
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-
-
-class LogLineList(MapperOutput):
-
-    def __contains__(self, s):
-        """
-        Check if the specified string 's' is contained in one line
-        """
-        return any(s in l for l in self.data)
+from falafel.core import LogFileOutput
 
 
 @mapper('postgresql.log')
@@ -29,4 +20,4 @@ def postgresql_log(context):
     -----------
 
     """
-    return LogLineList(context.content, path=context.path)
+    return LogFileOutput(context.content, path=context.path)
