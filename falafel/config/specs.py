@@ -49,6 +49,7 @@ static_specs = {
     "ethtool-i"                 : CommandSpec("/sbin/ethtool -i {iface}", iface=r"\S+"),
     "ethtool-k"                 : CommandSpec("/sbin/ethtool -k {iface}", iface=r"\S+"),
     "ethtool-S"                 : CommandSpec("/sbin/ethtool -S {iface}", iface=r"\S+"),
+    "dcbtool_gc_dcb"            : CommandSpec("/sbin/dcbtool gc {iface} dcb", iface=r"\S+"),
     "exim.conf"                 : SimpleFileSpec("etc/exim.conf"),
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
     "free"                      : CommandSpec("/usr/bin/free"),
