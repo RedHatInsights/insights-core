@@ -26,6 +26,10 @@ KNOWN_ARCHITECTURES = [
 
 class InstalledRpms(MapperOutput):
 
+    @computed
+    def corrupt(self):
+        return "__error" in self
+
     def get_max(self, name):
         """
         Returns the highest version of the installed RPM with the given name
@@ -122,10 +126,16 @@ def installed_rpms(context):
     packages = defaultdict(list)
     try:
         for line in context.content:
-            rpm = json.loads(line)
-            packages[rpm["name"]].append(InstalledRpm(rpm))
+            if line.startswith("error:"):
+                packages["__error"] = True
+            else:
+                rpm = json.loads(line)
+                packages[rpm["name"]].append(InstalledRpm(rpm))
     except:
         for line in context.content:
-            name, rpm = parse_line(line)
-            packages[name].append(InstalledRpm(rpm))
+            if line.startswith("error:"):
+                packages["__error"] = True
+            else:
+                name, rpm = parse_line(line)
+                packages[name].append(InstalledRpm(rpm))
     return InstalledRpms(packages) if packages else None
