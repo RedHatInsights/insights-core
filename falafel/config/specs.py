@@ -134,6 +134,7 @@ static_specs = {
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
     "parted_-l"                 : CommandSpec("/sbin/parted -l"),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
+    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf\.d/*"),
     "postgresql.conf"           : All([SimpleFileSpec("var/lib/pgsql/data/postgresql.conf"),
                                     SimpleFileSpec("opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf")]),
     "postgresql.log"            : All([PatternSpec(r"var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
