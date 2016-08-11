@@ -1,84 +1,64 @@
 from falafel.core.plugins import mapper
-from falafel.core.mapper import MapperOutput
+from falafel.core import MapperOutput, computed
+from collections import defaultdict
 
 
 class CpuInfo(MapperOutput):
 
+    @classmethod
+    def parse_context(cls, context):
+        return cls(cls.parse_content(context.content), context.path)
+
+    @staticmethod
+    def parse_content(content):
+
+        def split(line):
+            return [p.strip() for p in line.split(":", 1)]
+
+        data = defaultdict(list)
+        mappings = {
+            "processor": "cpus",
+            "physical id": "sockets",
+            "vendor_id": "vendors",
+            "model name": "models",
+            "model": "model_ids",
+            "cpu family": "families",
+            "cpu MHz": "clockspeeds",
+            "cache size": "cache_sizes"
+        }
+
+        for line in content:
+            if line.strip():
+                key, value = split(line)
+                if key in mappings:
+                    data[mappings[key]].append(value)
+
+        return data
+
+    @computed
     def cpu_count(self):
-        """
-        returns number of cpus, this is found by number of unique processor entries in data
-        returns [] if processor does not exist in data
-        """
-        cpus = [line.split(':')[-1].strip() for line in self.data if line.startswith('processor')]
-        return len(list(set(cpus)))
+        return len(self["cpus"])
 
+    @computed
     def socket_count(self):
-        """
-        returns number of sockets, this is found by number of unique physical id entries in data
-        returns [] if physical id does not exist in data
-        """
-        sockets = [line.split(':')[-1].strip() for line in self.data if line.startswith('physical id')]
-        return len(list(set(sockets)))
+        return len(self["sockets"])
 
-    def vendor(self):
-        """
-        returns field in vendor_id
-        return None if vendor_id does not exist in data
-        """
-        for line in self.data:
-            if line.startswith('vendor_id'):
-                return line.split(':')[-1].strip()
-
+    @computed
     def model_name(self):
-        """
-        returns list of unique model names
-        return [] if no model names exist in data
-        """
-        names = []
-        for line in self.data:
-            if line.startswith('model name'):
-                names.append(line.split(':')[-1].strip())
-        return list(set(names))
+        return self["models"][0]
 
-    def model(self):
-        """
-        returns list of unique models
-        return [] if no models exist in data
-        """
-        models = []
-        for line in self.data:
-            if line.startswith('model  '):
-                models.append(line.split(':')[-1].strip())
-        return models
+    @computed
+    def model_number(self):
+        return self["model_ids"][0]
 
-    def cpu_family(self):
-        """
-        returns field in cpu family
-        return None if cpu family does not exist in data
-        """
-        for line in self.data:
-            if line.startswith('cpu family'):
-                return line.split(':')[-1].strip()
+    @computed
+    def vendor(self):
+        return self["vendors"][0]
 
-    def cpu_speed(self):
-        """
-        returns field in cpu MHz
-        return None if cpu MHz does not exist in data
-        """
-        for line in self.data:
-            if line.startswith('cpu MHz'):
-                return line.split(':')[-1].strip()
-
-    def cache_size(self):
-        """
-        returns field in cache size include the unit 'KB'
-        return None if cache size does not exist in data
-        """
-        for line in self.data:
-            if line.startswith('cache size'):
-                return line.split(':')[-1].strip()
+    def get_processor_by_index(self, index):
+        return {k: v[index] for k, v in self.data.items()}
 
 
 @mapper('cpuinfo')
 def cpuinfo(context):
-    return CpuInfo(context.content)
+    return CpuInfo.parse_context(context)
