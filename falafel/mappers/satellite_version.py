@@ -37,7 +37,7 @@ def get_sat5_version(content):
     return None
 
 
-@mapper('satellite_version')
+@mapper('satellite_version.rb')
 @mapper('installed-rpms')
 def get_sat_version(context):
     """
