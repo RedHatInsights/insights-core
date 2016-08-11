@@ -142,6 +142,8 @@ class MapperOutput(object):
 
 class LogFileOutput(MapperOutput):
 
+    scanners = []
+
     def __init__(self, data, path=None):
         """
         MapperOutput to be used for log file output.
@@ -152,6 +154,8 @@ class LogFileOutput(MapperOutput):
         """
         self.lines = data
         super(LogFileOutput, self).__init__({}, path)
+        for scanner in self.scanners:
+            scanner(self)
 
     def __contains__(self, s):
         return len(self.get(s)) > 0
@@ -159,13 +163,23 @@ class LogFileOutput(MapperOutput):
     def get(self, s):
         return [line for line in self.lines if s in line]
 
-    def scan(self, token, result_key):
+    @classmethod
+    def scan(cls, result_key, func):
         """
         Define computed fields based on a string to "grep for".  This is
         preferred to utilizing raw log lines in plugins because computed fields
         will be serialized, whereas raw log lines will not.
         """
-        self._add_to_computed(result_key, token in self)
+        def scanner(self):
+            self.data[result_key] = func(self)
+            self._add_to_computed(result_key, func(self))
+        cls.scanners.append(scanner)
+
+    @classmethod
+    def token_scan(cls, result_key, token):
+        def _scan(self):
+            return token in self
+        cls.scan(result_key, _scan)
 
 
 class ErrorCollector(object):
