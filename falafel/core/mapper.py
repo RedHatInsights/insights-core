@@ -131,7 +131,10 @@ def run_mappers(stream, mappers=plugins.MAPPERS):
                          mapper.serializable_id, ctx.target)
             try:
                 if mapper.shared:
-                    response = mapper(ctx)
+                    if isinstance(mapper, type) and issubclass(mapper, MapperOutput):
+                        response = mapper.parse_context(ctx)
+                    else:
+                        response = mapper(ctx)
                 else:
                     response = marshaller.marshal(
                         mapper(ctx), use_value_list=specs.is_multi_output(ctx.target))

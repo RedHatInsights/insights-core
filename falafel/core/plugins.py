@@ -185,10 +185,6 @@ def mapper(filename, filters=[], shared=False):
 
     """
     def _register(func):
-        if isinstance(func, MapperOutput):
-            def _f(context):
-                return func.parse_context(context)
-            func = _f
         register_mapper(filename, func, filters, shared=shared)
         return func
 
