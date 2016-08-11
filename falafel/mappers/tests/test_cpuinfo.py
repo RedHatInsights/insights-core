@@ -1,4 +1,4 @@
-from falafel.mappers.cpuinfo import cpuinfo
+from falafel.mappers.cpuinfo import CpuInfo
 from falafel.tests import context_wrap
 
 CPUINFO = """
@@ -37,7 +37,7 @@ address sizes   : 40 bits physical, 48 bits virtual
 
 class TestCPUinfo():
     def test_cpuinfo(self):
-        cpu_info = cpuinfo(context_wrap(CPUINFO))
+        cpu_info = CpuInfo.parse_context(context_wrap(CPUINFO))
         assert cpu_info.cpu_count == 2
         assert cpu_info.socket_count == 2
         assert cpu_info.vendor == "GenuineIntel"

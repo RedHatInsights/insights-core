@@ -90,6 +90,10 @@ class MapperOutput(object):
             self._add_to_computed("file_name", os.path.basename(path))
         self.compute()
 
+    @classmethod
+    def parse_context(cls, context):
+        return cls(cls.parse_content(context.content), context.path)
+
     def get_name(self):
         return "#".join([self.__module__, self.__class__.__name__])
 

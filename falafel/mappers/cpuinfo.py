@@ -3,11 +3,8 @@ from falafel.core import MapperOutput, computed
 from collections import defaultdict
 
 
+@mapper('cpuinfo')
 class CpuInfo(MapperOutput):
-
-    @classmethod
-    def parse_context(cls, context):
-        return cls(cls.parse_content(context.content), context.path)
 
     @staticmethod
     def parse_content(content):
@@ -61,8 +58,3 @@ class CpuInfo(MapperOutput):
 
     def get_processor_by_index(self, index):
         return {k: v[index] for k, v in self.data.items()}
-
-
-@mapper('cpuinfo')
-def cpuinfo(context):
-    return CpuInfo.parse_context(context)

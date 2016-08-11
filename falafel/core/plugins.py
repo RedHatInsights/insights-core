@@ -4,6 +4,7 @@ from collections import defaultdict
 from functools import wraps
 from falafel.config.factory import get_config
 from falafel.core import load_package
+from falafel.core import MapperOutput
 
 data_spec_config = get_config()
 log = logging.getLogger(__name__)
@@ -184,6 +185,10 @@ def mapper(filename, filters=[], shared=False):
 
     """
     def _register(func):
+        if isinstance(func, MapperOutput):
+            def _f(context):
+                return func.parse_context(context)
+            func = _f
         register_mapper(filename, func, filters, shared=shared)
         return func
 
