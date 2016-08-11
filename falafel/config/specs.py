@@ -87,6 +87,7 @@ static_specs = {
     "interrupts"                : SimpleFileSpec("proc/interrupts"),
     "ip_addr"                   : CommandSpec("/sbin/ip addr"),
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
+    "iptables"                  : SimpleFileSpec("etc/sysconfig/iptables"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
     "kexec_crash_loaded"        : SimpleFileSpec("sys/kernel/kexec_crash_loaded"),
