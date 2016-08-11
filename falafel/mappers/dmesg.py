@@ -3,7 +3,6 @@ from falafel.core.mapper import MapperOutput
 
 
 class DmesgLineList(MapperOutput):
-
     def has_startswith(self, prefix):
         """
         Returns a boolean array which is `True` where there is one line in
@@ -26,6 +25,14 @@ class DmesgLineList(MapperOutput):
 
 @mapper('dmesg')
 def dmesg(context):
+    """
+    Returns an object of DmesgLineList
+    """
+    return DmesgLineList(context.content)
+
+
+@mapper('vmcore-dmesg')
+def vmcore_dmesg(context):
     """
     Returns an object of DmesgLineList
     """
