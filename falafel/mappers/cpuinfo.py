@@ -35,6 +35,10 @@ class CpuInfo(MapperOutput):
 
         return data
 
+    def __iter__(self):
+        for idx in range(len(self["cpus"])):
+            yield self.get_processor_by_index(idx)
+
     @computed
     def cpu_count(self):
         return len(self["cpus"])
