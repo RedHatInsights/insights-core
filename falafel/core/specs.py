@@ -2,7 +2,7 @@ import re
 import logging
 from collections import defaultdict
 from falafel.config.static import get_config
-from falafel.config import AnalysisTarget, META_FILE_LIST
+from falafel.config import AnalysisTarget, META_FILE_LIST, CommandSpec
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +55,14 @@ class SpecMapper(object):
                                             analysis_target=self.analysis_target).match
                 matches = filter(match_func, self.all_names)
                 if matches:
+                    # In order to prevent matching *dumb* symlinks in some
+                    # archive formats, we are going to filter out symlinks when
+                    # calculating matches for CommandSpecs
+                    if isinstance(spec, CommandSpec):
+                        matches = filter(lambda n: not self.tf.issym(n), matches)
+
+                    if not matches:
+                        continue
                     # In order to prevent accidental duplication when matching
                     # files, we only allow the first matched file to be added
                     # to the working set for non-pattern file specs.

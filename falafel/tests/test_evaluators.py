@@ -201,6 +201,9 @@ class MockTarFile(object):
     def getnames(self):
         return self.names
 
+    def issym(self, name):
+        return False
+
 
 class TestDetermineRoot(unittest.TestCase):
 

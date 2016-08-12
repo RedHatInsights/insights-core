@@ -57,6 +57,9 @@ class Extractor(object):
     def cleanup(self):
         pass
 
+    def issym(self, name):
+        return self.tar_file.issym(name)
+
     def __enter__(self):
         return self
 
@@ -78,15 +81,14 @@ class InMemoryExtractor(Extractor):
         self.tar_file = None
 
     def extractfile(self, name):
-        with closing(self.tar_file.extractfile(name)) as fp:
-            return fp.read()
+        return self.tar_file.extractfile(name)
 
     def from_buffer(self, buf, raw=False):
         self.content_type = _magic.buffer(buf)
         if raw:
             return self.decompress(buf)
         else:
-            self.tar_file = tarfile.open(fileobj=self.decompress(buf))
+            self.tar_file = MemoryAdapter(self.decompress(buf))
             return self
 
     def decompress(self, buf):
@@ -181,3 +183,32 @@ class DirectoryAdapter(object):
     def extractfile(self, name):
         with open(name, "rb") as fp:
             return fp.read()
+
+    def issym(self, name):
+        return os.path.islink(name)
+
+    def close(self):
+        pass
+
+
+class MemoryAdapter(object):
+    """
+    Wraps an in-memory tarfile object so we can abstract
+    the methods we want to use.
+    """
+
+    def __init__(self, buf):
+        self.tar_file = tarfile.open(fileobj=buf)
+
+    def extractfile(self, name):
+        with closing(self.tar_file.extractfile(name)) as fp:
+            return fp.read()
+
+    def getnames(self):
+        return self.tar_file.getnames()
+
+    def issym(self, name):
+        return self.tar_file.getmember(name).issym()
+
+    def close(self):
+        self.tar_file.close()
