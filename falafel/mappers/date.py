@@ -1,8 +1,36 @@
-import logging
-from falafel.core.plugins import mapper
+import sys
 from datetime import datetime
 
-logger = logging.getLogger("rpm")
+from falafel.core import MapperOutput
+from falafel.core.plugins import mapper
+
+
+class DateParseException(Exception): pass
+
+
+class Date(MapperOutput):
+
+    def __init__(self, data, path=None):
+        super(Date, self).__init__(data, path)
+        self.datetime, self.timezone = self.parse(data)
+
+    @classmethod
+    def parse_content(cls, content):
+        return list(content)[0]
+
+    @staticmethod
+    def parse(data):
+        parts = data.split()
+        if not len(parts) == 6:
+            msg = "Expected six date parts.  Got [%s]"
+            raise DateParseException(msg % data)
+        try:
+            tz = parts[4]
+            no_tz = ' '.join(parts[:4]) + ' ' + parts[-1]
+            dt = datetime.strptime(no_tz, '%a %b %d %H:%M:%S %Y')
+            return dt, tz
+        except:
+            raise DateParseException(data), None, sys.exc_info()[2]
 
 
 @mapper('date')
@@ -15,20 +43,4 @@ def get_date(context):
      'datetime': the datetime object translated from 'date'
      'tzstr': the timezone string get from date's output, e.g. CST
     """
-    sos_date = list(context.content)[0]
-    # Convert to datetime object
-    sos_date_obj = None
-    tz_str = ''
-    sos_date_split = sos_date.split()
-    if len(sos_date_split) == 6:
-        tz_str = sos_date_split[-2]
-        # Remove the tzinfo for converting
-        sos_date_notz = ' '.join(sos_date_split[0:4]) + ' ' + sos_date_split[-1]
-        # Convert it
-        try:
-            sos_date_obj = datetime.strptime(sos_date_notz, '%a %b %d %H:%M:%S %Y')
-        except (ValueError, UnicodeEncodeError):
-            tz_str = ''
-            logger.debug("Error parsing date %s" % sos_date_notz)
-
-    return {'date': sos_date, 'datetime': sos_date_obj, 'tzstr': tz_str}
+    return Date(Date.parse_content(context.content))
