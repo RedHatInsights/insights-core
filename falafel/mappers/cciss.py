@@ -1,5 +1,33 @@
 import os
+import re
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput, computed
+
+
+CCISS_FIRMWARE_VERSION_REGEX = re.compile(r'\d+[.]*\d*')
+CCISS_MODEL_REGEX = re.compile(r'cciss\d+')
+
+class Cciss(MapperOutput):
+
+    def __init__(self, content, path):
+        cciss_info = {
+            "device": os.path.basename(path)
+        }
+        for line in content:
+            if line.strip():
+                key, val = line.split(":", 1)
+                cciss_info[key.strip()] = val.strip()
+
+        super(Cciss, self).__init__(cciss_info, path)
+
+
+    @computed
+    def firmware_version(self):
+        return self.data['Firmware Version']
+
+    @computed
+    def model(self):
+        return self.data['device']
 
 
 @mapper('cciss')
@@ -41,12 +69,4 @@ def get_cciss(context):
     }
     '''
 
-    cciss_info = {
-        "device": os.path.basename(context.path)
-    }
-    for line in context.content:
-        if line.strip():
-            key, val = line.split(":", 1)
-            cciss_info[key.strip()] = val.strip()
-
-    return cciss_info
+    return Cciss(context.content, context.path)
