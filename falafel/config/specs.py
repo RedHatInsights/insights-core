@@ -52,7 +52,6 @@ static_specs = {
     "dcbtool_gc_dcb"            : CommandSpec("/sbin/dcbtool gc {iface} dcb", iface=r"\S+"),
     "exim.conf"                 : SimpleFileSpec("etc/exim.conf"),
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
-    "free"                      : CommandSpec("/usr/bin/free"),
     "fstab"                     : SimpleFileSpec("etc/fstab"),
     "foreman_production.log"    : SimpleFileSpec("var/log/foreman/production.log", large_content=True),
     "galera.cnf"                : SimpleFileSpec("etc/my.cnf.d/galera.cnf"),
