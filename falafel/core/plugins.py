@@ -4,7 +4,6 @@ from collections import defaultdict
 from functools import wraps
 from falafel.config.factory import get_config
 from falafel.core import load_package
-from falafel.core import MapperOutput
 
 data_spec_config = get_config()
 log = logging.getLogger(__name__)
