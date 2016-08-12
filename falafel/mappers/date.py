@@ -5,7 +5,8 @@ from falafel.core import MapperOutput
 from falafel.core.plugins import mapper
 
 
-class DateParseException(Exception): pass
+class DateParseException(Exception):
+    pass
 
 
 @mapper("date")
