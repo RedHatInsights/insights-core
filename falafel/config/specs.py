@@ -158,6 +158,8 @@ static_specs = {
     "rhn_hibernate.conf"        : SimpleFileSpec("usr/share/rhn/config-defaults/rhn_hibernate.conf"),
     "rhn-schema-version"        : First([CommandSpec("/usr/bin/rhn-schema-version"),
                                     SimpleFileSpec("database-schema-version")]),
+    "rhn-schema-stats"          : First([CommandSpec("/usr/bin/rhn-schema-stats -"),
+                                    SimpleFileSpec("database/schema-stats.log")]),
     "rhn_taskomatic_daemon.log" : SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log", large_content=True),
     "root_crontab"              : CommandSpec("/usr/bin/crontab -l -u root"),
     "route"                     : First([CommandSpec("/sbin/route -n"),
