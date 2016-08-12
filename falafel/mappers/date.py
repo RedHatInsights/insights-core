@@ -8,8 +8,19 @@ from falafel.core.plugins import mapper
 class DateParseException(Exception): pass
 
 
+@mapper("date")
 class Date(MapperOutput):
+    """Parses the output of the ``date`` command.
 
+    Sample: Fri Jun 24 09:13:34 CST 2016
+
+    Attributes
+    ----------
+    datetime: datetime.datetime
+        A native datetime.datetime of the parsed date string
+    timezone: str
+        The string portion of the date string containing the timezone
+    """
     def __init__(self, data, path=None):
         super(Date, self).__init__(data, path)
         self.datetime, self.timezone = self.parse(data)
@@ -31,16 +42,3 @@ class Date(MapperOutput):
             return dt, tz
         except:
             raise DateParseException(data), None, sys.exc_info()[2]
-
-
-@mapper('date')
-def get_date(context):
-    """
-    Sample: Fri Jun 24 09:13:34 CST 2016
-
-    Returns a dict which contains:
-     'date': the output of the date
-     'datetime': the datetime object translated from 'date'
-     'tzstr': the timezone string get from date's output, e.g. CST
-    """
-    return Date(Date.parse_content(context.content))
