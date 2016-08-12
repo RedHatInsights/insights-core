@@ -111,6 +111,7 @@ class DirectMapMemInfo(SubMemInfo):
     ]
 
 
+@mapper("meminfo")
 class MemInfo(MapperOutput):
     """
     Meminfo field names are wildly inconsistent (imho).  This class attempts to
@@ -119,6 +120,10 @@ class MemInfo(MapperOutput):
     KB describing /proc/meminfo:
     https://access.redhat.com/solutions/406773
     """
+
+    VALUE_IN_BYTES = [
+        "hugepages_total", "hugepages_free", "hugepages_reserved", "hugepages_surp"
+    ]
 
     mem_keys = [
         ("memtotal", "total"),
@@ -143,7 +148,7 @@ class MemInfo(MapperOutput):
     ]
 
     def __init__(self, data, path=None):
-        super(MemInfo, self).__init__(data)
+        super(MemInfo, self).__init__(data, path)
         sub_classes = {
             "anon": AnonMemInfo(data),
             "file": FileMemInfo(data),
@@ -160,6 +165,20 @@ class MemInfo(MapperOutput):
         for meminfo_key, k in self.mem_keys:
             self._add_to_computed(k, self.data.get(meminfo_key))
 
+    @classmethod
+    def parse_content(cls, content):
+        mem_info = {}
+        for line in content:
+            if line.strip():
+                (key, value) = line.split(':', 1)
+                # Store values as byte count
+                key = key.strip().lower()
+                if key in MemInfo.VALUE_IN_BYTES:
+                    mem_info[key.strip().lower()] = int(value.split()[0])
+                else:
+                    mem_info[key.strip().lower()] = int(value.split()[0]) * 1024
+        return mem_info
+
     @computed
     def used(self):
         try:
@@ -175,22 +194,3 @@ class MemInfo(MapperOutput):
 
     def __getitem__(self, key):
         return super(MemInfo, self).__getitem__(key.lower())
-
-VALUE_IN_BYTES = [
-    "hugepages_total", "hugepages_free", "hugepages_reserved", "hugepages_surp"
-]
-
-
-@mapper('meminfo')
-def meminfo(context):
-    mem_info = {}
-    for line in context.content:
-        if line.strip():
-            (key, value) = line.split(':', 1)
-            # Store values as byte count
-            key = key.strip().lower()
-            if key in VALUE_IN_BYTES:
-                mem_info[key.strip().lower()] = int(value.split()[0])
-            else:
-                mem_info[key.strip().lower()] = int(value.split()[0]) * 1024
-    return MemInfo(mem_info)
