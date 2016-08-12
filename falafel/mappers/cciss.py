@@ -1,3 +1,4 @@
+import os
 from falafel.core.plugins import mapper
 
 
@@ -40,7 +41,9 @@ def get_cciss(context):
     }
     '''
 
-    cciss_info = dict()
+    cciss_info = {
+        "device": os.path.basename(context.path)
+    }
     for line in context.content:
         if line.strip():
             key, val = line.split(":", 1)
