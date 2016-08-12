@@ -29,5 +29,5 @@ def dcbtool_gc_dcb(context):
     return {
         content[0].lower().strip().replace(" ", "_"): content[1].strip()
         for content in
-        [line.split(":", 1) for line in context.content]
+        [line.split(":", 1) for line in context.content if line.strip()]
     }

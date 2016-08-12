@@ -3,11 +3,13 @@ from falafel.tests import context_wrap
 
 
 DCBTOOL_GC_OUTPUT = """
+
     Command:    Get Config
     Feature:    DCB State
     Port:       eth0
     Status:     Off
     DCBX Version: FORCED CIN
+
 """
 
 DCBTOOL_GC_DCB_FAILED = """
