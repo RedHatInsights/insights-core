@@ -61,7 +61,7 @@ def test_meminfo():
     values = []
     for l in MEMINFO.splitlines():
         values.append(l.split()[1].strip())
-    m = meminfo.meminfo(context_wrap(MEMINFO))
+    m = meminfo.MemInfo.parse_context(context_wrap(MEMINFO))
     actual = [
         m.total, m.free, m.available, m.buffers, m.cached, m.swap.cached,
         m.active, m.inactive, m.anon.active, m.anon.inactive, m.file.active,
@@ -85,13 +85,13 @@ def test_using_huge_pages():
         "AnonHugePages:    135168 kB",
         "HugePages_Total:       0"
     ]
-    m = meminfo.meminfo(context_wrap(t))
+    m = meminfo.MemInfo.parse_context(context_wrap(t))
     assert not m.huge_pages.using
     assert m.huge_pages.using_transparent
     t = [
         "AnonHugePages:    0 kB",
         "HugePages_Total:  123456"
     ]
-    m = meminfo.meminfo(context_wrap(t))
+    m = meminfo.MemInfo.parse_context(context_wrap(t))
     assert m.huge_pages.using
     assert not m.huge_pages.using_transparent
