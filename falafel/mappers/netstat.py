@@ -1,4 +1,7 @@
 from falafel.core.plugins import mapper
+from falafel.util import parse_table
+from collections import defaultdict
+from falafel.core import MapperOutput
 
 
 @mapper('netstat-s')
@@ -119,3 +122,52 @@ def get_netstat_s(context):
     # Assign to the last seesion
     info[session] = first_layer
     return info
+
+
+class NetstatAGNDevice(MapperOutput):
+    def groupByIface(self):
+        """
+            Group Netstat AGN data by Iface name.
+            return like this:
+            {
+                "lo":[
+                    {"refcnt":"1", "group":"224.0.0.1"},
+                    {"refcnt":"1", "group":"ff02::1"}
+                ]
+            }
+
+        """
+        result = defaultdict(list)
+        for entry in self.data:
+            result[entry["interface"]].append({k.lower(): v for (k, v) in entry.iteritems() if k in ["refcnt", "group"]})
+        return result
+
+
+@mapper("netstat_-agn")
+def get_netstat_agn(context):
+    """
+    Parse netstat -agn to get interface multicast infomation.
+    INPUT:
+        IPv6/IPv4 Group Memberships
+        Interface       RefCnt Group
+        --------------- ------ ---------------------
+        lo              1      224.0.0.1
+        eth0            1      224.0.0.1
+        lo              3      ff02::1
+        eth0            4      ff02::1
+        eth0            1      ff01::1
+
+    OUTPUT:
+    output a class named NetstatAGNDevice. The data property like this:
+     [
+        {"interface":"lo", "refcnt":"1", "group":"224.0.0.1"},
+        {"interface":"eth0", "refcnt":"1", "group":"224.0.0.1"},
+        {"interface":"lo", "refcnt":"3", "group":"ff02::1"},
+        {"interface":"eth0", "refcnt":"4", "group":"ff02::1"},
+        {"interface":"eth0", "refcnt":"1", "group":"ff01::1"},
+     ]
+    """
+    content = context.content[1:2] + context.content[3:]
+    table = parse_table(content)
+    result = map(lambda item: {k.lower(): v for (k, v) in item.iteritems()}, table)
+    return NetstatAGNDevice(result)
