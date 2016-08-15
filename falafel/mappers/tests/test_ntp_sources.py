@@ -1,4 +1,4 @@
-from falafel.mappers import ntp_sources
+from falafel.mappers.ntp_sources import ChronycSources, NtpqPn
 from falafel.tests import context_wrap
 
 chrony_output = """
@@ -19,14 +19,14 @@ ntpd_output = """
 
 
 def test_get_chrony_sources():
-    mapper_result = ntp_sources.get_chrony_sources(context_wrap(chrony_output))
-    assert mapper_result[1].get("source") == "a.b.c"
-    assert mapper_result[2].get("state") == "+"
-    assert mapper_result[2].get("mode") == "^"
+    mapper_result = ChronycSources.parse_context(context_wrap(chrony_output))
+    assert mapper_result.data[1].get("source") == "a.b.c"
+    assert mapper_result.data[2].get("state") == "+"
+    assert mapper_result.data[2].get("mode") == "^"
 
 
 def test_get_ntpd_sources():
-    mapper_result = ntp_sources.get_ntpd_sources(context_wrap(ntpd_output))
-    assert mapper_result[0].get("source") == "ntp103.cm4.tbsi"
-    assert mapper_result[1].get("flag") == "+"
-    assert mapper_result[1].get("source") == "ntp104.cm4.tbsi"
+    mapper_result = NtpqPn.parse_context(context_wrap(ntpd_output))
+    assert mapper_result.data[0].get("source") == "ntp103.cm4.tbsi"
+    assert mapper_result.data[1].get("flag") == "+"
+    assert mapper_result.data[1].get("source") == "ntp104.cm4.tbsi"
