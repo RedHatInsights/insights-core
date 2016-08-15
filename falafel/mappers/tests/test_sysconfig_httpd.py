@@ -1,4 +1,4 @@
-from falafel.mappers.httpd import httpd_service_conf
+from falafel.mappers.sysconfig_httpd import httpd_service_conf
 from falafel.tests import context_wrap
 
 HTTPD = """
@@ -27,7 +27,7 @@ HTTPD_LANG=C
 """.strip()
 
 
-def test_get_httpd():
+def test_httpd_service_conf():
     context = context_wrap(HTTPD)
     result = httpd_service_conf(context)
     assert result["HTTPD"] == '/usr/sbin/httpd.worker'

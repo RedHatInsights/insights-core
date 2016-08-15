@@ -7,10 +7,10 @@ class HTTPDService(MapperOutput):
     pass
 
 
-@mapper('httpd')
+@mapper('sysconfig_httpd')
 def httpd_service_conf(context):
     """
-    Returns all settings in /etc/sysconfig/httpd
+    Returns a dict object contains all settings in /etc/sysconfig/httpd
     """
     result = {}
     for line in get_active_lines(context.content):
