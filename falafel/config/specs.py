@@ -180,7 +180,7 @@ static_specs = {
                                     SimpleFileSpec("satellite_version")]),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
-    "sestatus"                  : CommandSpec("/usr/sbin/sestatus"),
+    "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
     "ssh_config"                : SimpleFileSpec("etc/ssh/ssh_config"),
     "sshd_config"               : SimpleFileSpec("etc/ssh/sshd_config"),
