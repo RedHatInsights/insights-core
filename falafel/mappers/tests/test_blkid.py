@@ -1,4 +1,4 @@
-from falafel.mappers import blkid
+from falafel.mappers.blkid import BlockIDInfo
 from falafel.tests import context_wrap
 
 BLKID_INFO = """
@@ -41,7 +41,7 @@ EXPECTED_RESULTS = [{'NAME': "/dev/sda1",
 
 class TestBLKID():
     def test_get_blkid_info(self):
-        blkid_info = blkid.get_blkid_info(context_wrap(BLKID_INFO))
+        blkid_info = BlockIDInfo.parse_context(context_wrap(BLKID_INFO))
         expected_list = {r['NAME']: r for r in EXPECTED_RESULTS}
         assert len(blkid_info.data) == 8
         for result in blkid_info.data:
