@@ -1,4 +1,4 @@
-from falafel.mappers import corosync
+from falafel.mappers.corosync import CoroSyncConfig
 from falafel.tests import context_wrap
 
 corosync_content = """
@@ -16,6 +16,6 @@ COROSYNC_OPTIONS=""
 
 
 def test_corosync_1():
-    result = corosync.parse_corosync(context_wrap(corosync_content))
-    assert result['COROSYNC_OPTIONS'] == ""
-    assert result['COROSYNC_INIT_TIMEOUT'] == "60"
+    result = CoroSyncConfig.parse_context(context_wrap(corosync_content))
+    assert result.data['COROSYNC_OPTIONS'] == ""
+    assert result.data['COROSYNC_INIT_TIMEOUT'] == "60"
