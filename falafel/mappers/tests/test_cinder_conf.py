@@ -1,5 +1,6 @@
 from falafel.core.context import OSP
 from falafel.mappers import cinder_conf
+from falafel.mappers.cinder_conf import CinderConf
 from falafel.tests import context_wrap
 
 cinder_content = """
@@ -1147,11 +1148,11 @@ osp.role = "Controller"
 
 
 def test_match():
-    result = cinder_conf.cinder_conf(context_wrap(cinder_content, osp=osp))
-    assert result.get("DEFAULT").get("enabled_backends") == "tripleo_ceph"
-    assert result.get("DEFAULT").get("glance_api_ssl_compression") == "False"
-    assert result.get("DEFAULT").get("eqlx_use_chap") == "false"
+    result = CinderConf.parse_context(context_wrap(cinder_content, osp=osp))
+    assert result.data.get("DEFAULT").get("enabled_backends") == "tripleo_ceph"
+    assert result.data.get("DEFAULT").get("glance_api_ssl_compression") == "False"
+    assert result.data.get("DEFAULT").get("eqlx_use_chap") == "false"
 
-    assert result.get("lvm").get("iscsi_helper") == "lioadm"
-    assert result.get("lvm").get("volumes_dir") == "/var/lib/cinder/volumes"
-    assert result.get("lvm").get("volume_backend_name") == "lvm"
+    assert result.data.get("lvm").get("iscsi_helper") == "lioadm"
+    assert result.data.get("lvm").get("volumes_dir") == "/var/lib/cinder/volumes"
+    assert result.data.get("lvm").get("volume_backend_name") == "lvm"
