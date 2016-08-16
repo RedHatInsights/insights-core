@@ -124,7 +124,7 @@ TEST_ETHTOOL_G_PATH_2 = """
 sos_commands/networkking/ethtool_-g_eth2
 """
 
-SUCEED_ETHTOOL_S = '''
+SUCCEED_ETHTOOL_S = '''
 NIC statistics:
     rx_packets: 912398
     tx_packets: 965449
@@ -258,108 +258,99 @@ class TestEthtool(unittest.TestCase):
     def test_ethtool_a(self):
         context = context_wrap(SUCCESS_ETHTOOL_A)
         context.path = SUCCESS_ETHTOOL_A_PATH
-        result = ethtool.get_ethtool_a(context)
-        self.assertTrue(keys_in(["iface", "Autonegotiate", "RX", "TX"], result))
-        self.assertEqual(result["iface"], "enp0s25")
-        self.assertEqual(result["Autonegotiate"], True)
-        self.assertEqual(result["RX"], False)
-        self.assertEqual(result["TX"], False)
+        result = ethtool.Pause.parse_context(context)
+        self.assertEqual(result.ifname, "enp0s25")
+        self.assertEqual(result.autonegotiate, True)
+        self.assertEqual(result.rx, False)
+        self.assertEqual(result.tx, False)
 
     def test_ethtool_a_1(self):
         context = context_wrap(FAIL_ETHTOOL_A)
         context.path = FAIL_ETHTOOL_A_PATH
-        result = ethtool.get_ethtool_a(context)
-        self.assertTrue(keys_in(["iface"], result))
-        self.assertEqual(result["iface"], "__wlp3s0")
-        self.assertFalse(keys_in(["Autonegotiate"], result))
+        result = ethtool.Pause.parse_context(context)
+        self.assertEqual(result.ifname, "__wlp3s0")
+        self.assertTrue(result.autonegotiate is None)
 
     def test_ethtool_a_2(self):
         context = context_wrap(FAIL_ETHTOOL_A_1)
         context.path = FAIL_ETHTOOL_A_PATH_1
-        result = ethtool.get_ethtool_a(context)
-        self.assertTrue(keys_in(["iface"], result))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result["iface"], "bond0.1384@bond0")
+        result = ethtool.Pause.parse_context(context)
+        self.assertEqual(result.ifname, "bond0.1384@bond0")
 
     def test_ethtool_a_3(self):
         context = context_wrap(FAIL_ETHTOOL_A_2)
         context.path = FAIL_ETHTOOL_A_PATH_2
-        result = ethtool.get_ethtool_a(context)
-        self.assertTrue(keys_in(["iface"], result))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result["iface"], "g_bond2")
+        result = ethtool.Pause.parse_context(context)
+        self.assertEqual(result.ifname, "g_bond2")
 
     def test_get_ethtool_c(self):
         context = context_wrap(TEST_ETHTOOL_C)
         context.path = TEST_ETHTOOL_C_PATH
-        result = ethtool.get_ethtool_c(context)
+        result = ethtool.CoalescingInfo.parse_context(context)
         self.assertTrue(keys_in(["iface", "adaptive-rx", "adaptive-tx", "pkt-rate-high",
                                  "tx-usecs-irq", "tx-frame-low", "tx-usecs-high", "tx-frame-high"], result))
-        self.assertEqual(result["iface"], "eth2")
-        self.assertEqual(result["adaptive-rx"], False)
-        self.assertEqual(result["adaptive-tx"], False)
-        self.assertEqual(result["pkt-rate-high"], 10)
-        self.assertEqual(result["tx-usecs-irq"], 0)
-        self.assertEqual(result["tx-frame-low"], 25)
-        self.assertEqual(result["tx-usecs-high"], 0)
-        self.assertEqual(result["tx-frame-high"], 0)
+        self.assertEqual(result.ifname, "eth2")
+        self.assertEqual(result.adaptive_rx, False)
+        self.assertEqual(result.adaptive_tx, False)
+        self.assertEqual(result.pkt_rate_high, 10)
+        self.assertEqual(result.tx_usecs_irq, 0)
+        self.assertEqual(result.tx_frame_low, 25)
+        self.assertEqual(result.tx_usecs_high, 0)
+        self.assertEqual(result.tx_frame_high, 0)
 
     def test_get_ethtool_c_1(self):
         context = context_wrap(TEST_ETHTOOL_C_1)
         context.path = TEST_ETHTOOL_C_1
-        result = ethtool.get_ethtool_c(context)
-        self.assertTrue(keys_in(["iface"], result))
-        self.assertEqual(len(result), 1)
+        result = ethtool.CoalescingInfo.parse_context(context)
+        self.assertTrue(result.ifname)
 
     def test_ethtool_g(self):
         context = context_wrap(TEST_ETHTOOL_G)
         context.path = TEST_ETHTOOL_G_PATH
-        result = ethtool.get_ethtool_g(context)
+        result = ethtool.Ring.parse_context(context)
         self.assertTrue(keys_in(["iface", "max", "current"], result))
         self.assertTrue(keys_in(["rx", "rx-mini", "rx-jumbo", "tx"], result["max"]))
         self.assertTrue(keys_in(["rx", "rx-mini", "rx-jumbo", "tx"], result["current"]))
-        self.assertEqual(result["iface"], "eth2")
-        self.assertEqual(result["max"]["rx"], 2047)
-        self.assertEqual(result["max"]["rx-mini"], 0)
-        self.assertEqual(result["max"]["rx-jumbo"], 0)
-        self.assertEqual(result["max"]["tx"], 511)
+        self.assertEqual(result.ifname, "eth2")
+        self.assertEqual(result.max.rx, 2047)
+        self.assertEqual(result.max.rx_mini, 0)
+        self.assertEqual(result.max.rx_jumbo, 0)
+        self.assertEqual(result.max.tx, 511)
 
-        self.assertEqual(result["current"]["rx"], 200)
-        self.assertEqual(result["current"]["rx-mini"], 0)
-        self.assertEqual(result["current"]["rx-jumbo"], 0)
-        self.assertEqual(result["current"]["tx"], 511)
+        self.assertEqual(result.current.rx, 200)
+        self.assertEqual(result.current.rx_mini, 0)
+        self.assertEqual(result.current.rx_jumbo, 0)
+        self.assertEqual(result.current.tx, 511)
 
     def test_ethtool_g_1(self):
         context = context_wrap(TEST_ETHTOOL_G_1)
         context.path = TEST_ETHTOOL_G_PATH_1
-        result = ethtool.get_ethtool_g(context)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result["iface"], "bond0.102@bond0")
+        result = ethtool.Ring.parse_context(context)
+        self.assertEqual(result.ifname, "bond0.102@bond0")
 
     def test_ethtool_g_2(self):
         context = context_wrap(TEST_ETHTOOL_G_2)
         context.path = TEST_ETHTOOL_G_PATH_2
-        result = ethtool.get_ethtool_g(context)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result["iface"], "eth2")
+        result = ethtool.Ring.parse_context(context)
+        self.assertEqual(result.ifname, "eth2")
 
     def test_ethtool_S(self):
-        ethtool_S_info = ethtool.get_ethtool_S(context_wrap(SUCEED_ETHTOOL_S))
-        ret = dict()
-        for line in SUCEED_ETHTOOL_S.split('\n')[2:-1]:
+        ethtool_S_info = ethtool.Statistics.parse_context(context_wrap(SUCCEED_ETHTOOL_S))
+        ret = {}
+        for line in SUCCEED_ETHTOOL_S.split('\n')[2:-1]:
             key, value = line.split(':')
-            ret[key.strip()] = value.strip() if value else ''
-        ethtool_S_info.pop('iface')
-        assert ethtool_S_info == ret
+            ret[key.strip()] = int(value.strip()) if value else None
+        eth_data = dict(ethtool_S_info.data)
+        assert eth_data == ret
 
     def test_ethtool_S_f(self):
-        ethtool_S_info_f1 = ethtool.get_ethtool_S(context_wrap(FAILED_ETHTOOL_S_ONE))
-        ethtool_S_info_f2 = ethtool.get_ethtool_S(context_wrap(FAILED_ETHTOOL_S_TWO))
-        assert len(ethtool_S_info_f1) == 1
-        assert len(ethtool_S_info_f2) == 1
+        ethtool_S_info_f1 = ethtool.Statistics.parse_context(context_wrap(FAILED_ETHTOOL_S_ONE))
+        ethtool_S_info_f2 = ethtool.Statistics.parse_context(context_wrap(FAILED_ETHTOOL_S_TWO))
+        self.assertFalse(ethtool_S_info_f1.ifname)
+        self.assertFalse(ethtool_S_info_f2.ifname)
 
     def test_ethtool(self):
-        ethtool_info = ethtool.ethtool(context_wrap(ETHTOOL_INFO))
-        assert ethtool_info.ifname == 'eth1'
-        assert ethtool_info.link_detected == ['yes']
-        assert ethtool_info.speed == ['1000Mb/s']
+        ethtool_info = ethtool.Ethtool.parse_context(context_wrap(ETHTOOL_INFO))
+        self.assertEqual(ethtool_info.ifname, "eth1")
+        self.assertEqual(ethtool_info.link_detected, ['yes'])
+        self.assertEqual(ethtool_info.speed, ['1000Mb/s'])

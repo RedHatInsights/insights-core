@@ -1,6 +1,7 @@
 import os
+from collections import namedtuple
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from falafel.core import MapperOutput, DictMapperOutput, computed
 
 
 def extract_iface_name_from_path(path, name):
@@ -27,7 +28,275 @@ def extract_iface_name_from_content(content):
     return content.split(" ", 3)[-1][:-1]
 
 
-class EthtoolInfo(MapperOutput):
+@mapper("ethtool-i")
+class Driver(MapperOutput):
+
+    def __init__(self, data, path):
+        super(Driver, self).__init__(data, path)
+        for k, v in data.iteritems():
+            k = k.replace('-', '_')
+            if k.startswith("supports"):
+                v = v == "yes"
+            self._add_to_computed(k, v)
+
+    @computed
+    def ifname(self):
+        return extract_iface_name_from_path(self.file_path, "ethtool_-i_")
+
+    @classmethod
+    def parse_content(cls, content):
+        d = {}
+        for line in content:
+            if ":" in line:
+                key, value = line.strip().split(":", 1)
+                value = value.strip()
+                value = value if value else None
+                d[key.strip()] = value
+        return d
+
+
+@mapper("ethtool-k")
+class Features(DictMapperOutput):
+
+    Feature = namedtuple('Feature', ['on', 'fixed'])
+
+    def __init__(self, data, path):
+        super(Features, self).__init__(data, path)
+        self.dict_data = {}
+        for k, v in data.iteritems():
+            f = Features.Feature(v.on, v.fixed)
+            self.dict_data[k] = f
+
+    @computed
+    def ifname(self):
+        return extract_iface_name_from_path(self.file_path, "ethtool_-k_")
+
+    @classmethod
+    def parse_content(cls, content):
+        d = {}
+        # Need to strip header line that's only on -k
+        for line in content[1:]:
+            if ":" in line:
+                key, value = line.strip().split(":", 1)
+                value = value.strip()
+                fixed = "fixed" in value
+                if fixed:
+                    value = value.split()[0].strip()
+                d[key.strip()] = {
+                    "on": value == "on",
+                    "fixed": fixed
+                }
+        return d
+
+
+@mapper("ethtool-a")
+class Pause(MapperOutput):
+
+    @computed
+    def ifname(self):
+        """
+        Return the name of network interface in content.
+        """
+        if "iface" in self.data:
+            return self.data.get("iface")
+        return extract_iface_name_from_path(self.file_path, "ethtool_-a_")
+
+    @computed
+    def autonegotiate(self):
+        return self.data.get("Autonegotiate")
+
+    @computed
+    def rx(self):
+        return self.data.get("RX")
+
+    @computed
+    def tx(self):
+        return self.data.get("TX")
+
+    @computed
+    def rx_negotiated(self):
+        return self.data.get("RX Autonegotiate")
+
+    @computed
+    def tx_negotiated(self):
+        return self.data.get("TX Autonegotiate")
+
+    @classmethod
+    def parse_content(cls, content):
+        """
+        Return ethtool -a result as a dict.
+        If ethtool -a output a error, only return "iface" key as a network interface
+        input: "RX: on"
+        Output: result["RX"] = true
+        """
+        result = {}
+        if "ethtool" in content[0]:
+            return result
+        if "Cannot get" in content[0]:
+            # cannot got pause param in ethtool
+            result["iface"] = extract_iface_name_from_content(content[1])
+            return result
+
+        result["iface"] = extract_iface_name_from_content(content[0])
+        for line in content[1:]:
+            if line.strip():
+                (key, value) = line.split(":", 1)
+                result[key.strip()] = (value.strip() == "on")
+        return result
+
+
+@mapper("ethtool-c")
+class CoalescingInfo(MapperOutput):
+
+    def __init__(self, data, path):
+        super(CoalescingInfo, self).__init__(data, path)
+        for k, v in data.iteritems():
+            k = k.replace('-','_')
+            self._add_to_computed(k, v)
+
+    @computed
+    def ifname(self):
+        """
+        Return the name of network interface in content.
+        """
+        if "iface" in self.data:
+            return self.data.get("iface")
+        return extract_iface_name_from_path(self.file_path, "ethtool_-c_")
+
+    @classmethod
+    def parse_content(cls, content):
+        """
+        Return ethtool -c result as a dict
+        if interface error, only return interface name
+        "iface" key is network interface name
+        Adaptive rx in "adaptive-rx" key, value is boolean
+        Adaptive tx in "adaptive-tx" key, value is boolean
+        Other value is int
+        """
+        result = {}
+        if "ethtool" in content[0]:
+            return result
+        if "Cannot get" in content[0]:
+            # cannot got pause param in ethtool
+            result["iface"] = extract_iface_name_from_content(content[1])
+            return result
+
+        result["iface"] = extract_iface_name_from_content(content[0])
+
+        if len(content) > 1:
+            second_line_content = content[1].split(" ")
+            result["adaptive-rx"] = (second_line_content[2] == "on")
+            result["adaptive-tx"] = (second_line_content[5] == "on")
+
+            for line in content[2:]:
+                if line.strip():
+                    (key, value) = line.split(":", 1)
+                    result[key.strip()] = int(value.strip())
+
+        return result
+
+
+@mapper("ethtool-g")
+class Ring(MapperOutput):
+
+    Parameters = namedtuple("Parameters", ["rx", "rx_mini", "rx_jumbo", "tx"])
+
+    def __init__(self, data, path):
+        super(Ring, self).__init__(data, path)
+        m = data.get("max")
+        c = data.get("current")
+        self.max = None
+        self.current = None
+        if m:
+            self.max = Ring.Parameters(m["rx"], m["rx-mini"], m["rx-jumbo"], m["tx"])
+        if c:
+            self.current = Ring.Parameters(c["rx"], c["rx-mini"], c["rx-jumbo"], c["tx"])
+
+    @computed
+    def ifname(self):
+        """
+        Return the name of network interface in content.
+        """
+        if "iface" in self.data:
+            return self.data.get("iface")
+        return extract_iface_name_from_path(self.file_path, "ethtool_-g_")
+
+    @classmethod
+    def parse_content(cls, content):
+        """
+        Return ethtool -g info into a dict contain 3 keys which is "max", "current", "iface"
+        "max" and "current" dict contain "rx", "rx_mini","rx_jumbo","tx", type is int
+        "iface" contain a interface name
+        """
+        result = {}
+        if "ethtool" in content[0]:
+            return result
+        if "Cannot get" in content[0]:
+            # cannot got pause param in ethtool
+            result["iface"] = extract_iface_name_from_content(content[1])
+            return result
+        result["iface"] = extract_iface_name_from_content(content[0])
+
+        # parse max value
+        result["max"] = cls.parse_value(content[2:6])
+        # parse current value
+        result["current"] = cls.parse_value(content[7:11])
+
+        return result
+
+    @classmethod
+    def parse_value(cls, content):
+        result = {}
+        for line in content:
+            if line.strip():
+                key, value = line.split(":", 1)
+                result[key.strip().replace(" ", "-").lower()] = int(value.strip())
+        return result
+
+
+@mapper("ethtool-S")
+class Statistics(MapperOutput):
+
+    @computed
+    def ifname(self):
+        """
+        Return the name of network interface in content.
+        """
+        return extract_iface_name_from_path(self.file_path, "ethtool_-S_")
+
+    @classmethod
+    def parse_content(cls, content):
+        '''
+        return the ethtool -S result as a dict
+        '''
+        info = {}
+
+        if "NIC statistics:" not in content[0]:
+            # if there's no data, then return info immediately.
+            # in this situation, content may looks like:
+            # "no stats available" or
+            # "Cannot get stats strings information: Operation not supported"
+            return info
+
+        for line in content[1:]:  # ignore first line
+            # the correct description lines look like below, but we will ignore the
+            # first line "NIC statistics":
+            # ~~~~~
+            # NIC statistics:
+            #     rx_packets: 7357503
+            #     tx_packets: 7159010
+            #     rx_bytes: 1687906514
+            #     tx_bytes: 2747645082
+            # ...
+            # ~~~~~
+            if line.strip():
+                key, value = line.split(':', 1)
+                info[key.strip()] = int(value.strip()) if value else None
+        return info
+
+
+@mapper("ethtool")
+class Ethtool(MapperOutput):
 
     @computed
     def ifname(self):
@@ -50,205 +319,43 @@ class EthtoolInfo(MapperOutput):
         """
         return self.data.get('Link detected')
 
+    @classmethod
+    def parse_content(cls, content):
+        """
+        Returns an object of EthtoolInfo
+        -----------------------------------------------------
+        Settings for eth1:
+            Supported ports: [ TP ]
+            Supported link modes: 10baseT/Half 10baseT/Full
+                                  100baseT/Half 100baseT/Full
+                                  1000baseT/Full
+            Supported pause frame use: Symmetric
+            Supports auto-negotiation: Yes
+            Advertised link modes: 10baseT/Half 10baseT/Full
+                                   100baseT/Half 100baseT/Full
+                                   1000baseT/Full
 
-@mapper("ethtool-i")
-def driver(context):
-    d = {}
-    for line in context.content:
-        if ":" in line:
-            key, value = line.strip().split(":", 1)
-            value = value.strip()
-            value = value if value else None
-            d[key.strip()] = value
-    d["iface"] = extract_iface_name_from_path(context.path, "ethtool_-i_")
-    return d
-
-
-@mapper("ethtool-k")
-def features(context):
-    d = {}
-    # Need to strip header line that's only on -k
-    for line in context.content[1:]:
-        if ":" in line:
-            key, value = line.strip().split(":", 1)
-            value = value.strip()
-            fixed = "fixed" in value
-            if fixed:
-                value = value.split()[0].strip()
-            d[key.strip()] = {
-                "value": value == "on",
-                "fixed": fixed
-            }
-    d["iface"] = extract_iface_name_from_path(context.path, "ethtool_-k_")
-    return d
-
-
-@mapper("ethtool-a")
-def get_ethtool_a(context):
-    """
-    Return ethtool -a result as a dict.
-    If ethtool -a output a error, only return "iface" key as a network interface
-    input: "RX: on"
-    Output: result["RX"] = true
-    """
-    result = {}
-    if "ethtool" in context.content[0]:
-        # ethtool run error, only return iface
-        result["iface"] = extract_iface_name_from_path(context.path, "ethtool_-a_")
-        return result
-    if "Cannot get" in context.content[0]:
-        # cannot got pause param in ethtool
-        result["iface"] = extract_iface_name_from_content(context.content[1])
-        return result
-
-    result["iface"] = extract_iface_name_from_content(context.content[0])
-    for line in context.content[1:]:
-        if line.strip():
-            (key, value) = line.split(":", 1)
-            result[key.strip()] = (value.strip() == "on")
-    return result
-
-
-@mapper("ethtool-c")
-def get_ethtool_c(context):
-    """
-    Return ethtool -c result as a dict
-    if interface error, only return interface name
-    "iface" key is network interface name
-    Adaptive rx in "adaptive-rx" key, value is boolean
-    Adaptive tx in "adaptive-tx" key, value is boolean
-    Other value is int
-    """
-    result = {}
-    if "ethtool" in context.content[0]:
-        # ethtool run error, only return iface
-        result["iface"] = extract_iface_name_from_path(context.path, "ethtool_-c_")
-        return result
-    if "Cannot get" in context.content[0]:
-        # cannot got pause param in ethtool
-        result["iface"] = extract_iface_name_from_content(context.content[1])
-        return result
-
-    result["iface"] = extract_iface_name_from_content(context.content[0])
-
-    if len(context.content) > 1:
-        second_line_content = context.content[1].split(" ")
-        result["adaptive-rx"] = (second_line_content[2] == "on")
-        result["adaptive-tx"] = (second_line_content[5] == "on")
-
-        for line in context.content[2:]:
-            if line.strip():
-                (key, value) = line.split(":", 1)
-                result[key.strip()] = int(value.strip())
-
-    return result
-
-
-@mapper("ethtool-g")
-def get_ethtool_g(context):
-    """
-    Return ethtool -g info into  a dict contain 3 keys which is "max", "current", "iface"
-    "max" and "current" dict contain "rx", "rx_mini","rx_jumbo","tx",  type is int
-    "iface" contain a interface name
-    """
-    result = {}
-    if "ethtool" in context.content[0]:
-        # ethtool run error, only return iface
-        result["iface"] = extract_iface_name_from_path(context.path, "ethtool_-g_")
-        return result
-    if "Cannot get" in context.content[0]:
-        # cannot got pause param in ethtool
-        result["iface"] = extract_iface_name_from_content(context.content[1])
-        return result
-    result["iface"] = extract_iface_name_from_content(context.content[0])
-
-    # parse max value
-    result["max"] = parse_value(context.content[2:6])
-    # parse current value
-    result["current"] = parse_value(context.content[7:11])
-
-    return result
-
-
-def parse_value(content):
-    result = {}
-    for line in content:
-        if line.strip():
-            key, value = line.split(":", 1)
-            result[key.strip().replace(" ", "-").lower()] = int(value.strip())
-    return result
-
-
-@mapper("ethtool-S")
-def get_ethtool_S(context):
-    '''
-    return the ethtool -S result as a dict
-    '''
-    info = dict()
-
-    info["iface"] = extract_iface_name_from_path(context.path, "ethtool_-S_")
-
-    if "NIC statistics:" not in context.content[0]:
-        # if there's no data, then return info immediately.
-        # in this situation, content may looks like:
-        # "no stats available" or
-        # "Cannot get stats strings information: Operation not supported"
-        return info
-
-    for line in context.content[1:]:  # ignore first line
-        # the correct description lines look like below, but we will ignore the
-        # first line "NIC statistics":
-        # ~~~~~
-        # NIC statistics:
-        #     rx_packets: 7357503
-        #     tx_packets: 7159010
-        #     rx_bytes: 1687906514
-        #     tx_bytes: 2747645082
-        # ...
-        # ~~~~~
-        if line.strip():
-            key, value = line.split(':', 1)
-            info[key.strip()] = value.strip() if value else ''
-    return info
-
-
-@mapper("ethtool")
-def ethtool(context):
-    """
-    Returns an object of EthtoolInfo
-    -----------------------------------------------------
-    Settings for eth1:
-        Supported ports: [ TP ]
-        Supported link modes: 10baseT/Half 10baseT/Full
-                              100baseT/Half 100baseT/Full
-                              1000baseT/Full
-        Supported pause frame use: Symmetric
-        Supports auto-negotiation: Yes
-        Advertised link modes: 10baseT/Half 10baseT/Full
-                               100baseT/Half 100baseT/Full
-                               1000baseT/Full
-
-        Current message level: 0x00000007 (7)
-                               drv probe link
-    -----------------------------------------------------
-    After using pandas to do some more research, I found
-    the value of the current multi-line parameters
-    "Supported link modes" could also be a sigle line and
-    the current single line para "Supported pause frame use"
-    could also be multi-line. Since the multi-line or
-    single-line is not fixable, I just put the value in the list.
-    """
-    ethtool_dict = dict()
-    if "Settings for" in context.content[0]:
-        ethtool_dict['ETHNIC'] = context.content[0].split()[-1].strip(':')
-    key = value = None
-    for line in context.content[1:]:
-        line = line.strip()
-        if line:
-            if ':' in line:
-                key, value = line.split(':', 1)
-                key = key.strip()
-                ethtool_dict[key] = [value.strip()]
-            else:
-                ethtool_dict[key].append(line)
-    return EthtoolInfo(ethtool_dict)
+            Current message level: 0x00000007 (7)
+                                   drv probe link
+        -----------------------------------------------------
+        After using pandas to do some more research, I found
+        the value of the current multi-line parameters
+        "Supported link modes" could also be a sigle line and
+        the current single line para "Supported pause frame use"
+        could also be multi-line. Since the multi-line or
+        single-line is not fixable, I just put the value in the list.
+        """
+        ethtool_dict = {}
+        if "Settings for" in content[0]:
+            ethtool_dict['ETHNIC'] = content[0].split()[-1].strip(':')
+        key = value = None
+        for line in content[1:]:
+            line = line.strip()
+            if line:
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    key = key.strip()
+                    ethtool_dict[key] = [value.strip()]
+                else:
+                    ethtool_dict[key].append(line)
+        return ethtool_dict
