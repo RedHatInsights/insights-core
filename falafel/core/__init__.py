@@ -157,6 +157,10 @@ class LogFileOutput(MapperOutput):
         for scanner in self.scanners:
             scanner(self)
 
+    @staticmethod
+    def parse_content(content):
+        return content
+
     def __contains__(self, s):
         return len(self.get(s)) > 0
 
