@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 
-from falafel.core import archives, specs, marshalling, plugins
+from falafel.core import archives, specs, marshalling, plugins, MapperOutput
 from falafel.core.marshalling import Marshaller
 from falafel.core.plugins import validate_response
 from falafel.core.context import Context
@@ -48,15 +48,21 @@ class Evaluator(object):
     def get_contextual_hostname(self, default=""):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
+    def _execute_mapper(self, mapper, context):
+        if isinstance(mapper, type) and issubclass(mapper, MapperOutput):
+            return mapper.parse_context(context)
+        else:
+            return mapper(context)
+
     def run_metadata_mappers(self, the_meta_data):
         MD_JSON = "metadata.json"
         result_map = {}
         for plugin in plugins.get_mappers(MD_JSON):
             context = self.build_context(content=marshalling.marshal(the_meta_data), path=MD_JSON)
             try:
-                r = plugin(context)
-                if r:
-                    result_map[plugin] = [r]
+                result = self._execute_mapper(plugin, context)
+                if result:
+                    result_map[plugin] = [result]
             except Exception as e:
                 self.handle_map_error(e, context)
         return result_map
@@ -125,7 +131,8 @@ class SingleEvaluator(Evaluator):
                 for plugin in plugins.get_mappers(symbolic_name):
                     context = self.build_context(content=content, path=f)
                     try:
-                        self.add_result(plugin(context), symbolic_name, plugin)
+                        self.add_result(self._execute_mapper(plugin, context),
+                                        symbolic_name, plugin)
                     except Exception as e:
                         self.handle_map_error(e, context)
 
