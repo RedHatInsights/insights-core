@@ -30,13 +30,26 @@ def extract_iface_name_from_content(content):
 
 @mapper("ethtool-i")
 class Driver(MapperOutput):
+    defaults = {
+            'driver': None,
+            'version': None,
+            'firmware_version': None,
+            'supports_statistics': None,
+            'supports_test': None,
+            'supports_eeprom_access': None,
+            'supports_register_dump': None,
+            'supports_priv_flags': None
+        }
 
     def __init__(self, data, path):
         super(Driver, self).__init__(data, path)
+        values = dict(Driver.defaults)
         for k, v in data.iteritems():
             k = k.replace('-', '_')
             if k.startswith("supports"):
                 v = v == "yes"
+            values[k] = v
+        for k, v in values.iteritems():
             self._add_to_computed(k, v)
 
     @computed
@@ -64,12 +77,20 @@ class Features(DictMapperOutput):
         super(Features, self).__init__(data, path)
         self.dict_data = {}
         for k, v in data.iteritems():
-            f = Features.Feature(v.on, v.fixed)
+            f = Features.Feature(v['on'], v['fixed'])
             self.dict_data[k] = f
 
     @computed
     def ifname(self):
         return extract_iface_name_from_path(self.file_path, "ethtool_-k_")
+
+    def is_on(self, feature):
+        f = self.get(feature)
+        return f and f.on
+
+    def is_fixed(self, feature):
+        f = self.get(feature)
+        return f and f.fixed
 
     @classmethod
     def parse_content(cls, content):
@@ -317,7 +338,7 @@ class Ethtool(MapperOutput):
         """
         returns field in Link detected.
         """
-        return self.data.get('Link detected')
+        return self.data.get('Link detected', ['no'])[0] == 'yes'
 
     @classmethod
     def parse_content(cls, content):
