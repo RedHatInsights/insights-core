@@ -26,6 +26,7 @@ supports-register-dump: no
 supports-priv-flags: no
 """
 
+
 class TestEthtoolI(unittest.TestCase):
 
     def test_good(self):
@@ -36,12 +37,12 @@ class TestEthtoolI(unittest.TestCase):
     def test_missing_version(self):
         context = context_wrap(MISSING_KEYS)
         parsed = Driver.parse_context(context)
-        assert parsed.version == None
+        assert parsed.version is None
 
     def test_missing_value(self):
         context = context_wrap(GOOD)
         parsed = Driver.parse_context(context)
-        assert parsed.firmware_version == None
+        assert parsed.firmware_version is None
 
     def test_iface(self):
         context = context_wrap(GOOD, path="foo/bar/baz/ethtool_-i_eth0")
@@ -51,4 +52,4 @@ class TestEthtoolI(unittest.TestCase):
     def test_no_iface(self):
         context = context_wrap(GOOD, path="foo/bar/baz/oopsie")
         parsed = Driver.parse_context(context)
-        assert parsed.ifname == None
+        assert parsed.ifname is None

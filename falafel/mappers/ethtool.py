@@ -1,7 +1,7 @@
 import os
 from collections import namedtuple
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, DictMapperOutput, computed
+from falafel.core import computed, MapperOutput
 
 
 def extract_iface_name_from_path(path, name):
@@ -31,15 +31,15 @@ def extract_iface_name_from_content(content):
 @mapper("ethtool-i")
 class Driver(MapperOutput):
     defaults = {
-            'driver': None,
-            'version': None,
-            'firmware_version': None,
-            'supports_statistics': None,
-            'supports_test': None,
-            'supports_eeprom_access': None,
-            'supports_register_dump': None,
-            'supports_priv_flags': None
-        }
+                   'driver': None,
+                   'version': None,
+                   'firmware_version': None,
+                   'supports_statistics': None,
+                   'supports_test': None,
+                   'supports_eeprom_access': None,
+                   'supports_register_dump': None,
+                   'supports_priv_flags': None
+               }
 
     def __init__(self, data, path):
         super(Driver, self).__init__(data, path)
@@ -69,28 +69,17 @@ class Driver(MapperOutput):
 
 
 @mapper("ethtool-k")
-class Features(DictMapperOutput):
-
-    Feature = namedtuple('Feature', ['on', 'fixed'])
-
-    def __init__(self, data, path):
-        super(Features, self).__init__(data, path)
-        self.dict_data = {}
-        for k, v in data.iteritems():
-            f = Features.Feature(v['on'], v['fixed'])
-            self.dict_data[k] = f
+class Features(MapperOutput):
 
     @computed
     def ifname(self):
         return extract_iface_name_from_path(self.file_path, "ethtool_-k_")
 
     def is_on(self, feature):
-        f = self.get(feature)
-        return f and f.on
+        return self.get(feature, {}).get('on', None)
 
     def is_fixed(self, feature):
-        f = self.get(feature)
-        return f and f.fixed
+        return self.get(feature, {}).get('fixed', None)
 
     @classmethod
     def parse_content(cls, content):
@@ -172,7 +161,7 @@ class CoalescingInfo(MapperOutput):
     def __init__(self, data, path):
         super(CoalescingInfo, self).__init__(data, path)
         for k, v in data.iteritems():
-            k = k.replace('-','_')
+            k = k.replace('-', '_')
             self._add_to_computed(k, v)
 
     @computed

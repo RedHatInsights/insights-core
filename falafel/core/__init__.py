@@ -140,38 +140,6 @@ class MapperOutput(object):
             return False
 
 
-class DictMapperOutput(MapperOutput):
-    """
-    Subclass to be used for overriding dict-like behavior of MapperOutput.
-    
-    Subclass DictMapperOutput for a dictionary interface delegating
-    to the subclass-defined self.dict_data attribute instead of
-    self.data as in MapperOutput.
-    """
-
-    def __len__(self):
-        return len(self.dict_data)
-
-    def __iter__(self):
-        return iter(self.dict_data)
-
-    def iteritems(self):
-        for k, v in self.dict_data.iteritems():
-            yield (k, v)
-
-    def items(self):
-        return self.dict_data.items()
-
-    def __contains__(self, key):
-        return key in self.dict_data
-
-    def __getitem__(self, key):
-        return self.dict_data[key]
-
-    def get(self, key, default=None):
-        return self.dict_data.get(key, default)
-
-
 class LogFileOutput(MapperOutput):
 
     scanners = []
