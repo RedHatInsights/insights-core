@@ -101,7 +101,7 @@ def _get_grub_entry(line):
 
 def parse_kernel_initrd(data):
     """
-        Get the kernel and initrd files referenced in grub.conf
+    Get the kernel and initrd files referenced in grub.conf
     """
 
     kernels = []

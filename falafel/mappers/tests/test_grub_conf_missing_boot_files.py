@@ -38,6 +38,7 @@ menuentry 'Red Hat Enterprise Linux Server, with Linux 0-rescue-00c2fbfaa85544e4
     initrd16 /initramfs-0-rescue-00c2fbfaa85544e48d6ca1d919fa2dd3.img
 }
 """.strip()
+
 LS_BOOT_1 = """
 /boot:
 total 68392
@@ -76,6 +77,7 @@ menuentry 'Red Hat Enterprise Linux Server, with Linux 0-rescue-13798ffcbc1ed437
     initrd16 /initramfs-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad.img
 }
 """.strip()
+
 LS_BOOT_2 = """
 /boot:
 total 173260

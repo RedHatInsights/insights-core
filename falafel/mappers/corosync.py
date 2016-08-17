@@ -1,24 +1,21 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
+from falafel.mappers import get_active_lines
 
 
 @mapper("corosync")
 class CoroSyncConfig(MapperOutput):
 
-    @classmethod
-    def parse_context(cls, context):
-
+    @staticmethod
+    def parse_content(content):
         """
         Parse /etc/sysconfig/corosync
         return dict like {'COROSYNC_OPTIONS': '', 'COROSYNC_INIT_TIMEOUT': '60'}
         """
 
         corosync_dict = {}
-        for line in context.content:
-            line = line.strip()
-            if line.startswith("#") or line == "":
-                continue
+        for line in get_active_lines(content):
             if "=" in line:
                 (key, value) = line.split("=", 1)
                 corosync_dict[key.strip()] = value.strip().replace('"', "")
-        return cls(corosync_dict, context.path)
+        return corosync_dict

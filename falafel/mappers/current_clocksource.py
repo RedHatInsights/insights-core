@@ -4,14 +4,10 @@ from falafel.core import MapperOutput, computed
 
 @mapper("current_clocksource")
 class CurrentClockSource(MapperOutput):
-    @classmethod
-    def parse_context(cls, context):
-        """
-            Return the current clock source in string
-        """
-        clksrc = list(context.content)[0]
 
-        return cls(clksrc, context.path)
+    @staticmethod
+    def parse_content(content):
+        return list(content)[0]
 
     @computed
     def is_kvm(self):
