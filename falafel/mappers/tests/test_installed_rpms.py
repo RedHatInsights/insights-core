@@ -1,4 +1,4 @@
-from falafel.mappers import installed_rpms
+from falafel.mappers.installed_rpms import InstalledRpms
 from falafel.tests import context_wrap
 
 RPMS = """
@@ -16,7 +16,7 @@ yum-security-1.1.16-21.el5.noarch
 
 
 def test_installed_rpms():
-    rpms = installed_rpms.installed_rpms(context_wrap(RPMS))
+    rpms = InstalledRpms.parse_context(context_wrap(RPMS))
     assert rpms.get_max("ConsoleKit")["arch"] == 'x86_64'
     assert rpms.get_max("kernel")["version"] == '2.6.32'
     assert rpms.get_max("yum")["release"] == '69.el6'
@@ -25,6 +25,6 @@ def test_installed_rpms():
 
 
 def test_corrupt_db():
-    rpms = installed_rpms.installed_rpms(context_wrap(ERROR_DB))
+    rpms = InstalledRpms.parse_context(context_wrap(ERROR_DB))
     assert "yum-security" in rpms
     assert rpms.corrupt is True
