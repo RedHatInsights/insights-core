@@ -278,7 +278,7 @@ class Statistics(MapperOutput):
     def search(self, pattern, flags=0):
         results = []
         for k, v in self.data.iteritems():
-            if regex.search(pattern, k, flags):
+            if re.search(pattern, k, flags):
                 results.append(v)
         return results
 
