@@ -136,6 +136,7 @@ def installed_rpms(context):
             if line.startswith("error:"):
                 packages["__error"] = True
             else:
-                name, rpm = parse_line(line)
-                packages[name].append(InstalledRpm(rpm))
+                if line.strip():
+                    name, rpm = parse_line(line)
+                    packages[name].append(InstalledRpm(rpm))
     return InstalledRpms(packages) if packages else None
