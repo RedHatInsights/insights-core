@@ -44,8 +44,8 @@ class DMIDecode(MapperOutput):
         The function returns the type of virtualized environment found, or
         ``None`` if virtualizion could not be determined.
         '''
-        sys_info = self.get("system_information", {})
-        bios_info = self.get("bios_information", {})
+        sys_info = self.get("system_information", [{}])[0]
+        bios_info = self.get("bios_information", [{}])[0]
 
         product_name = sys_info.get("product_name")
         manufacturer = sys_info.get("manufacturer")
@@ -98,7 +98,12 @@ def parse_dmidecode(dmidecode_content, pythonic_keys=False):
         nbline = line.strip()
         if section:
             if not nbline:
-                obj[section] = current
+                # There maybe some sections with the same name, such as:
+                # processor_information
+                if section in obj:
+                    obj[section].append(current)
+                else:
+                    obj[section] = [current]
                 current = {}
                 section = key = None
                 continue
@@ -122,7 +127,10 @@ def parse_dmidecode(dmidecode_content, pythonic_keys=False):
         if not section:
             section = fix_key(nbline)
 
-    obj[section] = current
+    if section in obj:
+        obj[section].append(current)
+    else:
+        obj[section] = [current]
 
     # Remove nonsense key-value
     for k in obj.keys():
