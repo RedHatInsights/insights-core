@@ -1,4 +1,5 @@
 import os
+import re
 from collections import namedtuple
 from falafel.core.plugins import mapper
 from falafel.core import computed, MapperOutput
@@ -274,6 +275,13 @@ class Statistics(MapperOutput):
         """
         return extract_iface_name_from_path(self.file_path, "ethtool_-S_")
 
+    def search(self, pattern, flags=0):
+        results = []
+        for k, v in self.data.iteritems():
+            if regex.search(pattern, k, flags):
+                results.append(v)
+        return results
+
     @classmethod
     def parse_content(cls, content):
         '''
@@ -299,9 +307,14 @@ class Statistics(MapperOutput):
             #     tx_bytes: 2747645082
             # ...
             # ~~~~~
-            if line.strip():
-                key, value = line.split(':', 1)
-                info[key.strip()] = int(value.strip()) if value else None
+            line = line.strip()
+            if line:
+                i = line.rfind(':')
+                if i != -1:
+                    key = line[:i].strip()
+                    value = line[i:].strip(': ')
+                    value = int(value) if value else None
+                    info[key] = value
         return info
 
 
