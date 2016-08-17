@@ -12,7 +12,7 @@ static_specs = {
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chronyc_sources"           : CommandSpec("/usr/bin/chronyc sources"),
-    "cib.xml"                   : PatternSpec(r"var/lib/pacemaker/cib/cib.xml"),
+    "cib.xml"                   : SimpleFileSpec("var/lib/pacemaker/cib/cib.xml"),
     "cinder.conf"               : SimpleFileSpec("etc/cinder/cinder.conf"),
     "cluster.conf"              : SimpleFileSpec("etc/cluster/cluster.conf"),
     "cmdline"                   : SimpleFileSpec("proc/cmdline"),
