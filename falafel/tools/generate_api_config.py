@@ -9,7 +9,7 @@ In addition, it creates a mapping of files to plugins,
 be effectively turned off by blacklisting a specific file.
 """
 
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 from datetime import datetime
 import json
 import logging
@@ -117,7 +117,7 @@ class APIConfigGenerator(object):
     class UploaderSpecs:
 
         def __init__(self):
-            self._LIST = {}
+            self._LIST = OrderedDict()
 
         def add(self, name, spec, output_filters, applies_to):
             self._LIST[name] = spec.add_uploader_spec(self.get_one(name), output_filters, applies_to)
@@ -130,7 +130,7 @@ class APIConfigGenerator(object):
 
         def get_all(self):
             v = self._LIST
-            self._LIST = {}
+            self._LIST = OrderedDict()
             return v
 
     def serialize_data_spec(self):
@@ -154,7 +154,8 @@ class APIConfigGenerator(object):
         specs_list.add("machine-id1", SimpleFileSpec("etc/redhat-access-insights/machine-id"), [], [HostTarget])
         specs_list.add("machine-id2", SimpleFileSpec("etc/redhat_access_proactive/machine-id"), [], [HostTarget])
 
-        for name, plugins_ in plugins.MAPPERS.iteritems():
+        for name in sorted(plugins.MAPPERS):
+            plugins_ = plugins.MAPPERS[name]
             try:
                 specs = self.data_spec_config.get_specs(name)
                 if not specs:
@@ -193,14 +194,14 @@ class APIConfigGenerator(object):
                             path)
 
         for cmd, pattern, pre_command in sorted(cmd_list):
-            r = {"command": cmd, "pattern": pattern}
+            r = {"command": cmd, "pattern": sorted(pattern)}
             if pre_command:
                 r["pre_command"] = pre_command
             upload_conf["commands"].append(r)
 
         for path, pattern in sorted(whitelist.items()):
             upload_conf["files"].append(
-                {"file": path, "pattern": pattern})
+                {"file": path, "pattern": sorted(pattern)})
 
         # placing the log at the end of the list ensures that we log as much
         # as possible before copying the logfile
