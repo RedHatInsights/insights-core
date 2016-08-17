@@ -1,6 +1,5 @@
 import unittest
 from falafel.mappers.grub_conf import GrubConfig
-
 from falafel.tests import context_wrap
 
 
@@ -102,18 +101,21 @@ title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
         kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 rhgb quiet
 """.strip()
 
-class TestKdumpReserveOffset(unittest.TestCase):
 
-    def test_kernel_version_no_match(self):
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(BAD_OFFSET, version='5.1')).crash_kernel_offset)
+IOMMU_OFF = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=off rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
+IOMMU_MISSING = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
+IOMMU_ON = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=on rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
+
+
+class TestGrubConfKdump(unittest.TestCase):
 
     def test_check_offset(self):
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(GOOD_OFFSET_1)).crash_kernel_offset)
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(GOOD_OFFSET_2)).crash_kernel_offset)
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(GOOD_OFFSET_3)).crash_kernel_offset)
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(GOOD_OFFSET_4)).crash_kernel_offset)
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(BAD_DEFAULT_1)).crash_kernel_offset)
-        self.assertTrue("128M@16M", GrubConfig.parse_context(context_wrap(BAD_OFFSET)).crash_kernel_offset)
+        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_1)).crash_kernel_offset is None
+        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_2)).crash_kernel_offset is None
+        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_3)).crash_kernel_offset is None
+        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_4)).crash_kernel_offset is None
+        assert GrubConfig.parse_context(context_wrap(BAD_DEFAULT_1)).crash_kernel_offset is None
+        assert "128M@16M" == GrubConfig.parse_context(context_wrap(BAD_OFFSET)).crash_kernel_offset
 
 
     def test_nonetype_group(self):
@@ -122,5 +124,11 @@ class TestKdumpReserveOffset(unittest.TestCase):
 
         See https://projects.engineering.redhat.com/browse/CEECBA-1239
         """
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(NOMATCH_CRASH_PARAM)).crash_kernel_offset)
-        self.assertEquals(None, GrubConfig.parse_context(context_wrap(NOMATCH_MEMORY)).crash_kernel_offset)
+        assert GrubConfig.parse_context(context_wrap(NOMATCH_CRASH_PARAM)).crash_kernel_offset is None
+        assert GrubConfig.parse_context(context_wrap(NOMATCH_MEMORY)).crash_kernel_offset is None
+
+
+    def test_kdump_iommu_enabled(self):
+        assert GrubConfig.parse_context(context_wrap(IOMMU_OFF)).is_kdump_iommu_enabled is None
+        assert GrubConfig.parse_context(context_wrap(IOMMU_MISSING)).is_kdump_iommu_enabled is None
+        assert True == GrubConfig.parse_context(context_wrap(IOMMU_ON)).is_kdump_iommu_enabled

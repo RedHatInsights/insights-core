@@ -40,6 +40,9 @@ class RedhatRelease(MapperOutput):
     def product(self):
         return self.parsed["product"]
 
+    @computed
+    def is_hypervisor(self):
+        return "Hypervisor" in self.parsed["product"]
 
 @mapper("redhat-release")
 def redhat_release(context):
