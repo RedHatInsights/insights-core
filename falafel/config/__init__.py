@@ -776,7 +776,7 @@ def _make_rpm_formatter(fmt=None):
     return inner
 
 
-def _json_formatter(fmt=None):
+def json_format(fmt=None):
     if fmt is None:
         fmt = [
             ("name", "NAME"),
@@ -798,4 +798,4 @@ def _json_formatter(fmt=None):
         return "\\{" + ",".join(fields) + "\\}\\n"
     return inner
 
-format_rpm = _json_formatter()
+format_rpm = _make_rpm_formatter()

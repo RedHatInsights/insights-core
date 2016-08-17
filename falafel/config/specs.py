@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from falafel.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, First, All
+from falafel.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, json_format, First, All
 from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, DockerHostCommandSpec
 
 static_specs = {
@@ -79,9 +79,10 @@ static_specs = {
     "ifconfig"                  : CommandSpec("/sbin/ifconfig -a"),
     "imagemagick_policy"        : PatternSpec(r"etc/ImageMagick.*/policy\.xml"),
     "init.ora"                  : SimpleFileSpec("{ORACLE_HOME}/dbs/init.ora"),
-    "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm( ), multi_output=False),
+    "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
                                    CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
                                    CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False),
+                                   CommandSpec("/bin/rpm -qa --qf='%s'" % json_format(), multi_output=False),
                                    SimpleFileSpec("installed-rpms"),
                                    SimpleFileSpec("rpm-manifest")]),
     "interrupts"                : SimpleFileSpec("proc/interrupts"),
