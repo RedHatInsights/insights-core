@@ -49,7 +49,7 @@ class LabelTable(MapperOutput):
     pass
 
 
-class DBStatsLog(object):
+class DBStatsLog(MapperOutput):
 
     def __init__(self, tables):
         self.table_summary = TableSummary(tables[0]) if len(tables) > 0 else None
