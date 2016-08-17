@@ -24,6 +24,7 @@ KNOWN_ARCHITECTURES = [
 ]
 
 
+@mapper('installed-rpms')
 class InstalledRpms(MapperOutput):
 
     @computed
@@ -35,6 +36,26 @@ class InstalledRpms(MapperOutput):
         Returns the highest version of the installed RPM with the given name
         """
         return max(self[name]) if name in self else None
+
+    @classmethod
+    def parse_content(cls, content):
+        packages = defaultdict(list)
+        try:
+            for line in content:
+                if line.startswith("error:"):
+                    packages["__error"] = True
+                else:
+                    rpm = json.loads(line)
+                    packages[rpm["name"]].append(InstalledRpm(rpm))
+        except:
+            for line in content:
+                if line.startswith("error:"):
+                    packages["__error"] = True
+                else:
+                    if line.strip():
+                        name, rpm = parse_line(line)
+                        packages[name].append(InstalledRpm(rpm))
+        return packages if packages else None
 
 
 class InstalledRpm(MapperOutput):
@@ -119,24 +140,3 @@ def parse_line(line):
     for i, value in enumerate(rest):
         rpm[SOSREPORT_KEYS[i]] = value
     return rpm["name"], rpm
-
-
-@mapper('installed-rpms')
-def installed_rpms(context):
-    packages = defaultdict(list)
-    try:
-        for line in context.content:
-            if line.startswith("error:"):
-                packages["__error"] = True
-            else:
-                rpm = json.loads(line)
-                packages[rpm["name"]].append(InstalledRpm(rpm))
-    except:
-        for line in context.content:
-            if line.startswith("error:"):
-                packages["__error"] = True
-            else:
-                if line.strip():
-                    name, rpm = parse_line(line)
-                    packages[name].append(InstalledRpm(rpm))
-    return InstalledRpms(packages) if packages else None
