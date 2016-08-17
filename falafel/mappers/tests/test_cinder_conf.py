@@ -1,5 +1,4 @@
 from falafel.core.context import OSP
-from falafel.mappers import cinder_conf
 from falafel.mappers.cinder_conf import CinderConf
 from falafel.tests import context_wrap
 

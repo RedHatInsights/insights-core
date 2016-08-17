@@ -2,7 +2,6 @@ import unittest
 from falafel.mappers.grub_conf import GrubConfig
 from falafel.tests import context_wrap
 
-
 BAD_DEFAULT_1 = """
 #boot=/dev/sda
 
@@ -101,7 +100,6 @@ title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
         kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 rhgb quiet
 """.strip()
 
-
 IOMMU_OFF = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=off rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
 IOMMU_MISSING = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
 IOMMU_ON = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=on rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
@@ -117,7 +115,6 @@ class TestGrubConfKdump(unittest.TestCase):
         assert GrubConfig.parse_context(context_wrap(BAD_DEFAULT_1)).crash_kernel_offset is None
         assert "128M@16M" == GrubConfig.parse_context(context_wrap(BAD_OFFSET)).crash_kernel_offset
 
-
     def test_nonetype_group(self):
         """
         Check that a search has a non-None result before attempting to get the ``group``.
@@ -127,8 +124,7 @@ class TestGrubConfKdump(unittest.TestCase):
         assert GrubConfig.parse_context(context_wrap(NOMATCH_CRASH_PARAM)).crash_kernel_offset is None
         assert GrubConfig.parse_context(context_wrap(NOMATCH_MEMORY)).crash_kernel_offset is None
 
-
     def test_kdump_iommu_enabled(self):
         assert GrubConfig.parse_context(context_wrap(IOMMU_OFF)).is_kdump_iommu_enabled is None
         assert GrubConfig.parse_context(context_wrap(IOMMU_MISSING)).is_kdump_iommu_enabled is None
-        assert True == GrubConfig.parse_context(context_wrap(IOMMU_ON)).is_kdump_iommu_enabled
+        assert GrubConfig.parse_context(context_wrap(IOMMU_ON)).is_kdump_iommu_enabled is True

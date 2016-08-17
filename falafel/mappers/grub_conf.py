@@ -30,7 +30,7 @@ class GrubConfig(MapperOutput):
     def parse_content(content):
 
         data = {}
-        data[CRASH_KERNEL_OFFSET]= parse_crash_kernel_offset(content)
+        data[CRASH_KERNEL_OFFSET] = parse_crash_kernel_offset(content)
         data[IS_KDUMP_IOMMU_ENABLED] = parse_is_kdump_iommu_enabled(content)
         data[KERNEL_INITRD] = parse_kernel_initrd(content)
         return data
@@ -45,7 +45,7 @@ class GrubConfig(MapperOutput):
 
     @computed
     def kernels_initrds(self):
-        return {GRUB_KERNELS:self.grub_kernels, GRUB_INITRDS: self.grub_initrds} if self.data[KERNEL_INITRD] else None
+        return {GRUB_KERNELS: self.grub_kernels, GRUB_INITRDS: self.grub_initrds} if self.data[KERNEL_INITRD] else None
 
     @computed
     def grub_kernels(self):
@@ -54,8 +54,6 @@ class GrubConfig(MapperOutput):
     @computed
     def grub_initrds(self):
         return self.data[KERNEL_INITRD][GRUB_INITRDS] if self.data[KERNEL_INITRD] else None
-
-
 
 
 def parse_crash_kernel_offset(data):
@@ -90,10 +88,12 @@ def parse_crash_kernel_offset(data):
                 if offset_num and offset_num.isdigit() and int(offset_num) <= 16:
                     return crash_kernel_offset
 
+
 def parse_is_kdump_iommu_enabled(data):
     for line in data:
         if IOMMU in line:
             return True
+
 
 def _get_grub_entry(line):
     return line.split()[1].split('/')[-1]
@@ -123,7 +123,3 @@ def parse_kernel_initrd(data):
             initrds.append(_get_grub_entry(line))
 
     return {GRUB_KERNELS: kernels, GRUB_INITRDS: initrds}
-
-
-def _get_grub_entry(line):
-    return line.split()[1].split('/')[-1]

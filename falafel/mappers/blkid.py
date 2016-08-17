@@ -7,6 +7,7 @@ import re
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
 
+
 @mapper("blkid")
 class BlockIDInfo(MapperOutput):
     @classmethod
@@ -62,9 +63,7 @@ class BlockIDInfo(MapperOutput):
                 device['NAME'] = dev_name.strip()
                 blkid_output.append(device)
 
-        return BlockIDInfo(blkid_output)
-
+        return cls(blkid_output)
 
     def filter_by_type(self, fs_type):
         return [row for row in self.data if row['TYPE'] == fs_type]
-

@@ -44,6 +44,7 @@ class RedhatRelease(MapperOutput):
     def is_hypervisor(self):
         return "Hypervisor" in self.parsed["product"]
 
+
 @mapper("redhat-release")
 def redhat_release(context):
     if len(context.content) == 1 and len(context.content[0]) > 0:

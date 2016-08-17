@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
 
+
 @mapper("corosync")
 class CoroSyncConfig(MapperOutput):
 

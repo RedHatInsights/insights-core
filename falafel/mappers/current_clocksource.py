@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput, computed
 
+
 @mapper("current_clocksource")
 class CurrentClockSource(MapperOutput):
     @classmethod

@@ -1,6 +1,6 @@
 from falafel.core.plugins import mapper
-
 from falafel.core import MapperOutput
+
 
 @mapper('chronyc_sources')
 class ChronycSources(MapperOutput):
@@ -34,4 +34,3 @@ class NtpqPn(MapperOutput):
                 source_list.append({"source": values[0][1:], "flag": values[0][0]})
         if source_list:
             return cls(source_list, context.path)
-
