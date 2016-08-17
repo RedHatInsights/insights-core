@@ -88,6 +88,7 @@ static_specs = {
     "ip_addr"                   : CommandSpec("/sbin/ip addr"),
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
+    "ipv4_neigh"                : CommandSpec("/sbin/ip -4 neighbor show nud all"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
     "kexec_crash_loaded"        : SimpleFileSpec("sys/kernel/kexec_crash_loaded"),
