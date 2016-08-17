@@ -26,6 +26,7 @@ static_specs = {
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
     "df_-alP"                   : CommandSpec("/usr/bin/df -alP"),
+    "df_-al"                    : CommandSpec("/usr/bin/df -al"),
     "df_-li"                    : CommandSpec("/usr/bin/df -li"),
     "dirsrv"                    : SimpleFileSpec("etc/sysconfig/dirsrv"),
     "dmesg"                     : CommandSpec("/bin/dmesg", large_content=True),
