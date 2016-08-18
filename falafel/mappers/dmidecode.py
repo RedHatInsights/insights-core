@@ -3,6 +3,7 @@ from falafel.core import MapperOutput, computed
 import re
 
 
+@mapper('dmidecode')
 class DMIDecode(MapperOutput):
 
     PRODUCT_MAP = {
@@ -23,6 +24,10 @@ class DMIDecode(MapperOutput):
         "QEMU": "qemu",
         "KVM": "kvm"
     }
+
+    @staticmethod
+    def parse_content(content):
+        return parse_dmidecode(content, pythonic_keys=True)
 
     @computed
     def virt_what(self):
@@ -59,7 +64,7 @@ class DMIDecode(MapperOutput):
                     return mapping[map_key]
 
     @computed
-    def present(self):
+    def is_present(self):
         return bool(self.data)
 
 
@@ -130,8 +135,3 @@ def parse_dmidecode(dmidecode_content, pythonic_keys=False):
             del obj[k]
 
     return obj
-
-
-@mapper('dmidecode')
-def get_dmidecode(context):
-    return DMIDecode(parse_dmidecode(context.content, pythonic_keys=True))

@@ -1,4 +1,4 @@
-from falafel.mappers import dmidecode
+from falafel.mappers.dmidecode import DMIDecode
 from falafel.tests import context_wrap
 
 DMIDECODE = '''
@@ -177,7 +177,7 @@ class TestDmidecode():
         Test for three kinds of output format of dmidecode shared_mapper
         '''
         context = context_wrap(DMIDECODE)
-        ret = dmidecode.get_dmidecode(context)
+        ret = DMIDecode.parse_context(context)
 
         assert ret.get("bios_information").get("vendor") == "HP"
         assert ret.get("bios_information").get("version") == "P70"
@@ -235,17 +235,17 @@ class TestDmidecode():
         Test for faied raw data
         '''
         context = context_wrap(DMIDECODE_FAIL)
-        ret = dmidecode.get_dmidecode(context)
+        ret = DMIDecode.parse_context(context)
 
-        assert ret.present is False
+        assert ret.is_present is False
 
     def test_get_dmidecode_v(self):
         '''
         Test for get_virt()
         '''
         context = context_wrap(DMIDECODE_V)
-        ret = dmidecode.get_dmidecode(context)
-        assert ret.present is True
+        ret = DMIDecode.parse_context(context)
+        assert ret.is_present is True
         assert ret.virt_what == "vmware"
 
     def test_get_dmidecode_dmi(self):
@@ -255,7 +255,7 @@ class TestDmidecode():
         "\n\tDMI" in the input
         '''
         context = context_wrap(DMIDECODE_DMI)
-        ret = dmidecode.get_dmidecode(context)
+        ret = DMIDecode.parse_context(context)
 
         assert ret.get("bios_information").get("vendor") == "HP"
         assert ret.get("bios_information").get("version") == "A08"
