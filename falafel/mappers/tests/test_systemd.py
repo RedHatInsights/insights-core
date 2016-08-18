@@ -39,6 +39,66 @@ StandardError=null
 WantedBy=multi-user.target
 """.strip()
 
+SYSTEMD_SYSTEM_CONF = """
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+#
+# Entries in this file show the compile time defaults.
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See systemd-system.conf(5) for details.
+
+[Manager]
+#LogLevel=info
+#LogTarget=journal-or-kmsg
+#LogColor=yes
+#LogLocation=no
+#DumpCore=yes
+#CrashShell=no
+#ShowStatus=yes
+#CrashChVT=1
+#CPUAffinity=1 2
+#JoinControllers=cpu,cpuacct net_cls,net_prio
+RuntimeWatchdogSec=0
+ShutdownWatchdogSec=10min
+#CapabilityBoundingSet=
+#SystemCallArchitectures=
+#TimerSlackNSec=
+#DefaultTimerAccuracySec=1min
+#DefaultStandardOutput=journal
+#DefaultStandardError=inherit
+#DefaultTimeoutStartSec=90s
+#DefaultTimeoutStopSec=90s
+#DefaultRestartSec=100ms
+#DefaultStartLimitInterval=10s
+#DefaultStartLimitBurst=5
+#DefaultEnvironment=
+#DefaultCPUAccounting=no
+#DefaultBlockIOAccounting=no
+#DefaultMemoryAccounting=no
+#DefaultLimitCPU=
+#DefaultLimitFSIZE=
+#DefaultLimitDATA=
+#DefaultLimitSTACK=
+#DefaultLimitCORE=
+#DefaultLimitRSS=
+#DefaultLimitNOFILE=
+#DefaultLimitAS=
+#DefaultLimitNPROC=
+#DefaultLimitMEMLOCK=
+#DefaultLimitLOCKS=
+#DefaultLimitSIGPENDING=
+#DefaultLimitMSGQUEUE=
+#DefaultLimitNICE=
+#DefaultLimitRTPRIO=
+#DefaultLimitRTTIME=
+""".strip()
+
 
 def test_docker():
     docker_service = systemd.docker(context_wrap(SYSTEMD_DOCKER))
@@ -57,3 +117,9 @@ $ADD_REGISTRY
 $BLOCK_REGISTRY
 $INSECURE_REGISTRY
 2>&1 | /usr/bin/forward-journald -tag docker'"""
+
+
+def test_common_conf():
+    common_conf_info = systemd.common_conf(context_wrap(SYSTEMD_SYSTEM_CONF))
+    assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"
+    assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
