@@ -1,9 +1,28 @@
-from falafel.util import parse_keypair_lines
+from falafel.util import parse_keypair_lines, parse_table
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput
 
 
+def map_keys(pvs, keys):
+    for pv in pvs:
+        yield {v: pv.get(k) for k, v in keys.items()}
+
+
+class Lvm(MapperOutput):
+    @classmethod
+    def parse_content(cls, content):
+        try:
+            return list(map_keys(parse_keypair_lines(content), cls.KEYS))
+        except:
+            return parse_table(content)
+
+    def __iter__(self):
+        return iter(self.data)
+
+
+@mapper('pvs')
 @mapper('pvs_noheadings')
-def pvs(context):
+class Pvs(Lvm):
     """
     The CommandSpec of "pvs" defined as:
     /sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all
@@ -33,11 +52,27 @@ def pvs(context):
         }
     ]
     """
-    return parse_keypair_lines(context.content)
+    KEYS = {
+        "LVM2_PV_NAME": "PV",
+        "LVM2_VG_NAME": "VG",
+        "LVM2_PV_FMT": "Fmt",
+        "LVM2_PV_ATTR": "Attr",
+        "LVM2_PV_SIZE": "PSize",
+        "LVM2_PV_FREE": "PFree",
+        "LVM2_PV_UUID": "UUID"
+    }
+
+    def pv(self, name):
+        for i in self.data:
+            if i["PV"] == name:
+                return i
+
+    def vg(self, name):
+        return [i for i in self.data if i["VG"] == name]
 
 
 @mapper('vgs_noheadings')
-def vgs(context):
+class Vgs(Lvm):
     """
     The CommandSpec of "vgs" defined as:
     /sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all
@@ -67,11 +102,25 @@ def vgs(context):
         }
     ]
     """
-    return parse_keypair_lines(context.content)
+    KEYS = {
+        "LVM2_VG_NAME": "VG",
+        "LVM2_PV_COUNT": "#PV",
+        "LVM2_LV_COUNT": "#LV",
+        "LVM2_SNAP_COUNT": "#SN",
+        "LVM2_VG_ATTR": "Attr",
+        "LVM2_VG_SIZE": "VSize",
+        "LVM2_VG_FREE": "VFree",
+    }
+
+    def vg(self, name):
+        for i in self.data:
+            if i["VG"] == name:
+                return i
 
 
+@mapper('lvs')
 @mapper('lvs_noheadings')
-def lvs(context):
+class Lvs(Lvm):
     """
     The CommandSpec of "lvs" defined as:
     /sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all
@@ -80,8 +129,10 @@ def lvs(context):
     specs.py:
 
     ---------------------------------- Output sample of lvs -----------------------------------
+
     LVM2_LV_UUID='KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m'|LVM2_LV_NAME='docker-poolmeta'|LVM2_LV_FULL_NAME='rhel/docker-poolmeta'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|LVM2_LV_DM_PATH='/dev/mapper/rhel-docker--poolmeta'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-a-----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='44.00m'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_CONVERT_LV=''|LVM2_MIRROR_LOG=''|LVM2_DATA_LV=''|LVM2_METADATA_LV=''|LVM2_POOL_LV=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2016-01-27 14:31:39 +0800'|LVM2_LV_HOST='dhcp-192-57.pek.redhat.com'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='6'|LVM2_LV_KERNEL_READ_AHEAD='4.00m'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN=''|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
     LVM2_LV_UUID='123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456'|LVM2_LV_NAME='rhel_root'|LVM2_LV_FULL_NAME='rhel/rhel_root'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|LVM2_LV_DM_PATH='/dev/mapper/rhel-docker--poolmeta'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-a-----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='44.00m'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_CONVERT_LV=''|LVM2_MIRROR_LOG=''|LVM2_DATA_LV=''|LVM2_METADATA_LV=''|LVM2_POOL_LV=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2016-01-27 14:31:39 +0800'|LVM2_LV_HOST='dhcp-192-57.pek.redhat.com'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='6'|LVM2_LV_KERNEL_READ_AHEAD='4.00m'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN=''|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
+
     -------------------------------------------------------------------------------------------
 
     Return a list, as shown below:
@@ -100,4 +151,20 @@ def lvs(context):
         }
     ]
     """
-    return parse_keypair_lines(context.content)
+    KEYS = {
+        "LVM2_LV_NAME": "LV",
+        "LVM2_VG_NAME": "VG",
+        "LVM2_LV_SIZE": "LSize",
+        "LVM2_REGIONSIZE": "Region",
+        "LVM2_MIRROR_LOG": "Log",
+        "LVM2_LV_ATTR": "Attr",
+        "LVM2_DEVICES": "Devices"
+    }
+
+    def vg(self, name):
+        return [i for i in self.data if i["VG"] == name]
+
+    def lv(self, name):
+        for i in self.data:
+            if i["LV"] == name:
+                return i
