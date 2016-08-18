@@ -243,3 +243,32 @@ def route_devices(context):
                 if line_sp[0] != "default" or "table" not in line_sp:
                     table[line_sp[0]].append(line_sp[line_sp.index("dev") + 1])
     return RouteDevices(table)
+
+
+@mapper("ipv4_neigh")
+def get_ipv4_neigh(context):
+    """
+    Return ip -4 neigh show nud all result.
+    INPUT:
+    172.17.0.19 dev docker0  FAILED
+    172.17.42.1 dev lo lladdr 00:00:00:00:00:00 NOARP
+
+    OUTPUT:
+    {
+        "172.17.0.19": [{"dev":"docker0","nud":"FAILED"}]
+        "172.17.0.27": [{"dev":"lo", "nud":"NOARP", "lladdr":"00:00:00:00:00:00" }]
+    }
+    """
+
+    result = defaultdict(list)
+    for line in filter(None, context.content):
+        split_result = line.split()
+        key_value_content = split_result[1:-1]
+        if len(key_value_content) >= 2:
+            entry = {k: v for k, v in zip(key_value_content[0::2], key_value_content[1::2])}
+        else:
+            entry = {}
+        entry["nud"] = split_result[-1]
+        result[split_result[0]].append(entry)
+    print result
+    return result
