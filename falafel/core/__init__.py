@@ -185,6 +185,12 @@ class LogFileOutput(MapperOutput):
             return token in self
         cls.scan(result_key, _scan)
 
+    @classmethod
+    def keep_scan(cls, result_key, token):
+        def _scan(self):
+            return self.get(token)
+        cls.scan(result_key, _scan)
+
 
 class ErrorCollector(object):
     errors = defaultdict(lambda: {
