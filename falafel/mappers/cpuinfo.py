@@ -37,6 +37,14 @@ class CpuInfo(MapperOutput):
             yield self.get_processor_by_index(idx)
 
     @computed
+    def cpu_speed(self):
+        return self["clockspeeds"][0]
+
+    @computed
+    def cache_size(self):
+        return self["cache_sizes"][0]
+
+    @computed
     def cpu_count(self):
         return len(self["cpus"])
 
