@@ -160,7 +160,7 @@ static_specs = {
     "rhn-charsets"              : First([CommandSpec("/usr/bin/rhn-charsets"),
                                     SimpleFileSpec("database-character-sets")]),
     "rhn-entitlement-cert.xml"  : First([PatternSpec(r"etc/sysconfig/rhn/rhn-entitlement-cert\.xml.*"),
-                                    SimpleFileSpec(r"conf/rhn/sysconfig/rhn/rhn-entitlement-cert\.xml.*")]),
+                                    PatternSpec(r"conf/rhn/sysconfig/rhn/rhn-entitlement-cert\.xml.*")]),
     "rhn_hibernate.conf"        : SimpleFileSpec("usr/share/rhn/config-defaults/rhn_hibernate.conf"),
     "rhn-schema-version"        : First([CommandSpec("/usr/bin/rhn-schema-version"),
                                     SimpleFileSpec("database-schema-version")]),
