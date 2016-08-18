@@ -86,6 +86,7 @@ class UnameError(Exception):
     def __str__(self):
         return "{0}:'{1}'".format(self.msg, self.uname_line)
 
+
 @mapper('uname')
 class Uname(MapperOutput):
     """
