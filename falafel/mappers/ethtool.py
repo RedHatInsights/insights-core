@@ -276,10 +276,10 @@ class Statistics(MapperOutput):
         return extract_iface_name_from_path(self.file_path, "ethtool_-S_")
 
     def search(self, pattern, flags=0):
-        results = []
+        results = {}
         for k, v in self.data.iteritems():
             if re.search(pattern, k, flags):
-                results.append(v)
+                results[k] = v
         return results
 
     @classmethod
