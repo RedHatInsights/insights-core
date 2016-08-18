@@ -3,7 +3,7 @@
 ================
 """
 from falafel.mappers import lsblk
-from falafel.core.context import Context
+from falafel.tests import context_wrap
 
 LSBLK_DATA = ['NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT',
               'vda           252:0    0    9G  0 disk ',
@@ -58,68 +58,63 @@ ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ex
 
 
 def test_lsblk():
-    context = Context(content=LSBLK_DATA)
-    results = lsblk.get_device_info(context)
+    results = lsblk.LSBlock.parse_context(context_wrap(LSBLK_DATA))
     assert results is not None
     assert len(results) == 7
     rhel_root = None
     sda = None
     for result in results:
-        if result['NAME'] == 'rhel-root':
+        if result.NAME == 'rhel-root':
             rhel_root = result
-        elif result['NAME'] == 'sda':
+        elif result.NAME == 'sda':
             sda = result
     assert rhel_root is not None
-    assert rhel_root['MAJ:MIN'] == "253:0"
-    assert rhel_root['RM'] == "0"
-    assert rhel_root['SIZE'] == "7.6G"
-    assert rhel_root['RO'] == "0"
-    assert rhel_root['TYPE'] == "lvm"
-    assert rhel_root['MOUNTPOINT'] == "/"
+    assert rhel_root.get('MAJ:MIN') == "253:0"
+    assert rhel_root.RM == "0"
+    assert rhel_root.SIZE == "7.6G"
+    assert rhel_root.RO == "0"
+    assert rhel_root.TYPE == "lvm"
+    assert rhel_root.MOUNTPOINT == "/"
     assert rhel_root.get('PARENT_NAMES') == ["vda", "vda2"]
     assert sda is not None
-    assert sda['MAJ:MIN'] == "8:0"
-    assert sda['RM'] == "0"
-    assert sda['SIZE'] == "500G"
-    assert sda['RO'] == "0"
-    assert sda['TYPE'] == "disk"
+    assert sda.get('MAJ:MIN') == "8:0"
+    assert sda.RM == "0"
+    assert sda.SIZE == "500G"
+    assert sda.RO == "0"
+    assert sda.TYPE == "disk"
     assert 'MOUNTPOINT' not in sda
     assert 'PARENT_NAMES' not in sda
 
-    context = Context(content=LSBLK_DATA2)
-    results = lsblk.get_device_info(context)
+    results = lsblk.LSBlock.parse_context(context_wrap(LSBLK_DATA2))
     assert results is not None
     assert len(results) == 30
     sr0 = None
     sdf_appdg = None
     for result in results:
-        if result['NAME'] == "sr0":
+        if result.NAME == "sr0":
             sr0 = result
-        elif result['NAME'] == "appdg-app (dm-7)" and result['PARENT_NAMES'][0] == "sdf":
+        elif result.NAME == "appdg-app (dm-7)" and result.PARENT_NAMES[0] == "sdf":
             sdf_appdg = result
     assert sr0 is not None
-    assert len(sr0) == 6
-    assert sr0 == {'NAME': "sr0",
-                   'MAJ:MIN': "11:0",
-                   'RM': "1",
-                   'SIZE': "64.3M",
-                   'RO': "0",
-                   'TYPE': "rom"}
+    assert sr0.NAME == "sr0"
+    assert sr0.get('MAJ:MIN') == "11:0"
+    assert sr0.RM == "1"
+    assert sr0.SIZE == "64.3M"
+    assert sr0.RO == "0"
+    assert sr0.TYPE == "rom"
     assert sdf_appdg is not None
-    assert len(sdf_appdg) == 8
-    assert sdf_appdg == {'NAME': "appdg-app (dm-7)",
-                         'MAJ:MIN': "253:7",
-                         'RM': "0",
-                         'SIZE': "2.8T",
-                         'RO': "0",
-                         'TYPE': "lvm",
-                         'MOUNTPOINT': "/splunk",
-                         'PARENT_NAMES': ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]}
+    assert sdf_appdg.NAME == "appdg-app (dm-7)"
+    assert sdf_appdg.get('MAJ:MIN') == "253:7"
+    assert sdf_appdg.RM == "0"
+    assert sdf_appdg.SIZE == "2.8T"
+    assert sdf_appdg.RO == "0"
+    assert sdf_appdg.TYPE == "lvm"
+    assert sdf_appdg.MOUNTPOINT == "/splunk"
+    assert sdf_appdg.PARENT_NAMES == ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]
 
 
-def test_lsblk_ext():
-    context = Context(content=LSBLK_EXT_DATA.strip().splitlines())
-    results = lsblk.get_device_extended_info(context)
+def test_lsblk_po():
+    results = lsblk.LSBlock_PO.parse_context(context_wrap(LSBLK_EXT_DATA))
     assert results is not None
     assert len(results) == 7
     sda1 = None
