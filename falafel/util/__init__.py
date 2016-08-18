@@ -92,20 +92,19 @@ def parse_table(content, delim=None, max_splits=-1, strip=True):
     return r
 
 
-def parse_keypair_seperated_by_delim(content, delim='|', kv_sep='='):
+def parse_keypair_lines(content, delim='|', kv_sep='='):
     """
-    Parses key-value text that different parameters are seperated by delim
+    Parses a set of entities, where each entity is a set of key-value pairs
+    contained all on one line.  Each entity is parsed into a dictionary and
+    added to the list returned from this function.
     """
-    if not content:
-        return []
     r = []
-    for row in content:
-        if row:
-            item_list = row.split(delim)
+    if content:
+        for row in [line for line in content if line]:
             item_dict = {}
-            for item in item_list:
-                key, value = item.strip().split(kv_sep)
-                item_dict[key] = value.replace("'", "")
+            for item in row.split(delim):
+                key, value = [i.strip("'\"").strip() for i in item.strip().split(kv_sep)]
+                item_dict[key] = value
             r.append(item_dict)
     return r
 
