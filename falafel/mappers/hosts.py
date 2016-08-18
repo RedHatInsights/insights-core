@@ -12,6 +12,11 @@ class Hosts(MapperOutput):
             names.update(host_set)
         return names
 
+    def get_nonlocal(self):
+        return {ip: host_list
+                for ip, host_list in self.data.items()
+                if ip not in ("127.0.0.1", "::1")}
+
 
 @mapper("hosts")
 def hosts(context):

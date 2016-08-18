@@ -140,9 +140,15 @@ class MapperOutput(object):
             return False
 
 
+class LogFileMeta(type):
+    def __new__(cls, name, parents, dct):
+        dct["scanners"] = []
+        return super(LogFileMeta, cls).__new__(cls, name, parents, dct)
+
+
 class LogFileOutput(MapperOutput):
 
-    scanners = []
+    __metaclass__ = LogFileMeta
 
     def __init__(self, data, path=None):
         """
