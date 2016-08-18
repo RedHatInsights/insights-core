@@ -1,4 +1,5 @@
-from falafel.mappers.netstat_s import get_netstat_s
+from falafel.mappers.netstat import get_netstat_s
+from falafel.mappers.netstat import get_netstat_agn
 from falafel.tests import context_wrap
 # import json
 
@@ -213,3 +214,30 @@ class TestNetstats():
                               "incoming_packets_discarded": "0",
                               "incoming_packets_delivered": "6437",
                               "requests_sent_out": "4777"}
+
+
+TEST_NETSTAT_AGN = """
+IPv6/IPv4 Group Memberships
+Interface       RefCnt Group
+--------------- ------ ---------------------
+lo              1      224.0.0.1
+eth0            1      224.0.0.1
+lo              3      ff02::1
+eth0            4      ff02::1
+eth0            1      ff01::1
+
+"""
+
+
+def test_get_netstat_agn():
+    result = get_netstat_agn(context_wrap(TEST_NETSTAT_AGN)).groupByIface()
+    assert len(result) == 2
+    assert len(result["lo"]) == 2
+    assert len(result["eth0"]) == 3
+    assert result["lo"] == [
+        {"refcnt": "1", "group": "224.0.0.1"},
+        {"refcnt": "3", "group": "ff02::1"}]
+    assert result["eth0"] == [
+        {"refcnt": "1", "group": "224.0.0.1"},
+        {"refcnt": "4", "group": "ff02::1"},
+        {"refcnt": "1", "group": "ff01::1"}]

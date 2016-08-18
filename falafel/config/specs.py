@@ -125,6 +125,7 @@ static_specs = {
     "netconsole"                : SimpleFileSpec("etc/sysconfig/netconsole"),
     "netstat"                   : CommandSpec("/bin/netstat -neopa"),
     "netstat-s"                 : CommandSpec("/bin/netstat -s"),
+    "netstat_-agn"              : CommandSpec("/bin/netstat -agn"),
     "neutron.conf"              : SimpleFileSpec("etc/neutron/neutron.conf"),
     "neutron_plugin.ini"        : SimpleFileSpec("etc/neutron/plugin.ini"),
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
