@@ -30,6 +30,16 @@ class DMIDecode(MapperOutput):
         return parse_dmidecode(content, pythonic_keys=True)
 
     @computed
+    def system_info(self):
+        """Convenience method to get system information"""
+        return self["system_information"][0] if "system_information" in self else None
+
+    @computed
+    def bios(self):
+        """Convenience method to get BIOS information"""
+        return self["bios_information"][0] if "bios_information" in self else None
+
+    @computed
     def virt_what(self):
         '''
         Detect if this machine is running in a virtualized environment.
