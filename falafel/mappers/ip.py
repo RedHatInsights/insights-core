@@ -270,5 +270,4 @@ def get_ipv4_neigh(context):
             entry = {}
         entry["nud"] = split_result[-1]
         result[split_result[0]].append(entry)
-    print result
     return result
