@@ -363,6 +363,17 @@ class All(SpecGroup):
         return self.specs
 
 
+class NoneGroup(SpecGroup):
+    """Indicates the uploader should not attempt to collect anything from this
+    spec.  This is to provide separate definitions for different formats of the
+    same command.  This generally happens when one format is collected by
+    SoSReport, but Insights collects a different version (usually to get more
+    or more easily parseable information)."""
+
+    def get_specs(self):
+        return []
+
+
 class InsightsDataSpecConfig(object):
 
     def __init__(self, specs, meta_specs, pre_commands=None, maximum_line_size=1024 * 32):

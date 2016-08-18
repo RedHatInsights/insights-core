@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from falafel.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, json_format, First, All
+from falafel.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, json_format, First, All, NoneGroup
 from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, DockerHostCommandSpec
 
 
@@ -111,7 +111,7 @@ static_specs = {
     "lsmod"                     : CommandSpec("/sbin/lsmod"),
     "lspci"                     : CommandSpec("/sbin/lspci"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
-    "lvs"                       : CommandSpec("/sbin/lvs -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices"),
+    "lvs"                       : NoneGroup([CommandSpec("/sbin/lvs -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices")]),
     "lvs_noheadings"            : CommandSpec("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all"),
     "mdstat"                    : SimpleFileSpec("proc/mdstat"),
     "meminfo"                   : SimpleFileSpec("proc/meminfo"),
@@ -145,7 +145,7 @@ static_specs = {
                                     PatternSpec(r"opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True)]),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
-    "pvs"                       : CommandSpec("/sbin/pvs"),
+    "pvs"                       : NoneGroup([CommandSpec("/sbin/pvs")]),
     "pvs_noheadings"            : CommandSpec("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all"),
     "spfile.ora"                : PatternSpec(r"{ORACLE_HOME}/dbs/spfile.*\.ora"),
     "rabbitmqctl"               : CommandSpec("rabbitmqctl list policies"),
