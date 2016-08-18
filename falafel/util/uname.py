@@ -55,6 +55,8 @@ rhel_release_map = {
     "3.10.0-327": "7.2"
 }
 
+release_to_kernel_map = {v: k for k, v in rhel_release_map.items()}
+
 
 class UnameError(Exception):
     """

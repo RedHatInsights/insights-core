@@ -2,7 +2,8 @@ from falafel.core.plugins import mapper
 from falafel.core import LogFileOutput
 
 
-class MessageLineList(LogFileOutput):
+@mapper('messages')
+class Messages(LogFileOutput):
 
     def get(self, s):
         """
@@ -22,13 +23,15 @@ class MessageLineList(LogFileOutput):
         <-           raw_message          ->
         ------------
         """
-        r = list()
+        r = []
         for l in self.lines:
             if s in l:
                 info, msg = [i.strip() for i in l.split(': ', 1)]
-                msg_info = dict()
-                msg_info['message'] = msg
-                msg_info['raw_message'] = l
+
+                msg_info = {
+                    'message': msg,
+                    'raw_message': l
+                }
 
                 info_splits = info.split()
                 if len(info_splits) == 5:
@@ -37,27 +40,3 @@ class MessageLineList(LogFileOutput):
                     msg_info['procname'] = info_splits[4]
                 r.append(msg_info)
         return r
-
-
-@mapper('messages')
-def messages(context):
-    """
-    Returns an object in type of MessageLineList which provide two methods:
-    - Usage:
-      in:
-        msg_info = shared.get(messages)
-        if "Abort command issued" in msg_info:
-            ...
-      get:
-        kernel_lines = msg_info.get('kernel')
-        for line in kernel_lines:
-            ts = line.get('timestamp')
-            ...
-
-    -- Sample of /var/log/messages --
-    May 18 14:24:14 lxc-rhel68-sat56 kernel: BIOS-e820: 0000000000000000 - 000000000009bc00 (usable)
-    May 18 14:24:14 lxc-rhel68-sat56 kernel: BIOS-e820: 000000000009bc00 - 00000000000a0000 (reserved)
-    -----------
-
-    """
-    return MessageLineList(context.content)
