@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 
 from falafel.core import MapperOutput
+from falafel.mappers import get_active_lines
 from falafel.core.plugins import mapper
 
 
@@ -28,7 +29,7 @@ class Date(MapperOutput):
 
     @classmethod
     def parse_content(cls, content):
-        return list(content)[0]
+        return get_active_lines(content, comment_char="COMMAND>")[0]
 
     @staticmethod
     def parse(data):
