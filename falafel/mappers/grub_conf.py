@@ -44,20 +44,20 @@ class GrubConfig(MapperOutput):
             "menuentry": [ [(menuentry_name, its name), (cmd, opt), (cmd, opt) ...], [another menu entry] ]
         }
         """
-        iterator = iter(get_active_lines(content))
+        line_iter = iter(get_active_lines(content))
         conf = defaultdict(list)
         line = None
         while (True):
             try:
 
                 if line is None:
-                    line = iterator.next()
+                    line = line_iter.next()
 
                 if line.startswith('title'):
-                    last_line = _parse_title(iterator, line, conf)
+                    last_line = _parse_title(line_iter, line, conf)
                     line = last_line
                 elif line.startswith('menuentry'):
-                    _parse_menu_entry(iterator, line, conf)
+                    _parse_menu_entry(line_iter, line, conf)
                     line = None
                 else:
                     conf["configs"].append(_parse_config(line))
@@ -157,20 +157,20 @@ def _parse_config(line):
     return _parse_line("=", line)
 
 
-def _parse_title(iter, cur_line, conf):
+def _parse_title(line_iter, cur_line, conf):
     title = []
     conf['title'].append(title)
     title.append(('title_name', cur_line.split('title', 1)[1].strip()))
     while (True):
-        line = iter.next()
-        if not line or line.startswith("title") or line.startswith("menuentry"):
+        line = line_iter.next()
+        if line.startswith("title") or line.startswith("menuentry"):
             return line
 
         cmd, opt = _parse_cmd(line)
         title.append((cmd, opt))
 
 
-def _parse_menu_entry(iter, cur_line, conf):
+def _parse_menu_entry(line_iter, cur_line, conf):
     menu = []
     conf['menuentry'].append(menu)
     n, entry = _parse_line("menuentry", cur_line)
@@ -185,7 +185,7 @@ def _parse_menu_entry(iter, cur_line, conf):
         menu.append(_parse_cmd(v))
 
     while (True):
-        line = iter.next()
+        line = line_iter.next()
         if "{" in line:
             n, v = _parse_line("{", line)
             if v:
