@@ -75,6 +75,18 @@ def get_importable_path(path):
         raise Exception("%s cannot be imported due to an insufficient sys.path" % path)
 
 
+def getitem_composite(key, *items):
+    """
+    For each parameter passed in after ``key``, check to see if ``key`` is in
+    ``item`` and return the first value found.  If none of the ``items``
+    contain the key, then raise ``KeyError``.
+    """
+    for item in items:
+        if key in item:
+            return item[key]
+    raise KeyError(key)
+
+
 def computed(f):
     f.computed = True
     return f
@@ -118,11 +130,7 @@ class MapperOutput(object):
     def __getitem__(self, key):
         if isinstance(key, int):
             raise TypeError("MapperOutput does not support integer indexes")
-        if key in self.data:
-            return self.data[key]
-        if key in self.computed:
-            return self.computed[key]
-        raise KeyError(key)
+        return getitem_composite(key, self.data, self.computed)
 
     def get(self, key, default=None):
         try:
