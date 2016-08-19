@@ -1,4 +1,4 @@
-from falafel.mappers.ls_boot import parse_ls_boot
+from falafel.mappers.ls_boot import LsBoot
 from falafel.tests import context_wrap
 
 LS_BOOT = """
@@ -18,7 +18,7 @@ lrwxrwxrwx. 1 0 0     11 Aug  4  2014 menu.lst -> ./grub.conf
 
 
 def test_ls_boot():
-    ls_boot = parse_ls_boot(context_wrap(LS_BOOT))
-    assert ls_boot[0] == "config-3.10.0-229.14.1.el7.x86_64"
-    assert ls_boot[1] == "menu.lst"
-    assert len(ls_boot) == 3
+    ls_boot = LsBoot.parse_context(context_wrap(LS_BOOT))
+    assert ls_boot.data[0] == "config-3.10.0-229.14.1.el7.x86_64"
+    assert ls_boot.data[1] == "menu.lst"
+    assert len(ls_boot.data) == 3
