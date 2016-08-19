@@ -191,6 +191,8 @@ static_specs = {
     "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
     "systemd_docker"            : SimpleFileSpec("usr/lib/systemd/system/docker.service"),
     "systemid"                  : SimpleFileSpec("etc/sysconfig/rhn/systemid"),
+    "tomcat_web.xml"            : First([PatternSpec(r"etc/tomcat.*/web\.xml"),
+                                    PatternSpec(r"conf/tomcat/tomcat.*/web\.xml")]),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
     "uname"                     : CommandSpec("/bin/uname -a"),
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
