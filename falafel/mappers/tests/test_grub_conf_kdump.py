@@ -100,9 +100,18 @@ title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
         kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 rhgb quiet
 """.strip()
 
-IOMMU_OFF = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=off rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
-IOMMU_MISSING = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
-IOMMU_ON = "kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=on rd_LVM_LV=vg00/lv00 crashkernel=256M@16M"
+IOMMU_OFF = """
+title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
+    kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=off rd_LVM_LV=vg00/lv00 crashkernel=256M@16M
+"""
+IOMMU_MISSING = """
+title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
+    kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 rd_LVM_LV=vg00/lv00 crashkernel=256M@16M
+"""
+IOMMU_ON = """
+title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
+    kernel /vmlinuz-2.6.32-279.el6.x86_64 ro root=/dev/mapper/vg00-lv00 intel_iommu=on rd_LVM_LV=vg00/lv00 crashkernel=256M@16M
+"""
 
 
 class TestGrubConfKdump(unittest.TestCase):
