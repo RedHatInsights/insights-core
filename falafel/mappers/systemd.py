@@ -64,6 +64,33 @@ def docker(context):
     return parse_systemd_ini(context.content)
 
 
+@mapper('systemd_system.conf')
+def common_conf(context):
+    """
+    Systemd configuration files are recorded via INI format as well, we can
+    share the same parser ``ConfigParser`` here.
+
+    Example::
+
+        [Manager]
+        LogLevel=info
+        LogTarget=journal-or-kmsg
+        ...
+
+    Parse Result::
+
+        {
+            "Manager":{
+                "LogLevel": "info",
+                "LogTarget": "journal-or-kmsg",
+                ...
+            }
+        }
+
+    """
+    return parse_systemd_ini(context.content)
+
+
 def parse_systemd_ini(content):
     Config = cp.ConfigParser()
     Config.optionxform = str

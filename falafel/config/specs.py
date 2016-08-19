@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from falafel.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, json_format, First, All
+from falafel.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, json_format, First, All, NoneGroup
 from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, DockerHostCommandSpec
+
 
 static_specs = {
     "nproc.conf"                : PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
@@ -26,6 +27,7 @@ static_specs = {
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
     "df_-alP"                   : CommandSpec("/usr/bin/df -alP"),
+    "df_-al"                    : CommandSpec("/usr/bin/df -al"),
     "df_-li"                    : CommandSpec("/usr/bin/df -li"),
     "dirsrv"                    : SimpleFileSpec("etc/sysconfig/dirsrv"),
     "dmesg"                     : CommandSpec("/bin/dmesg", large_content=True),
@@ -89,6 +91,7 @@ static_specs = {
     "ip_addr"                   : CommandSpec("/sbin/ip addr"),
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
+    "ipv4_neigh"                : CommandSpec("/sbin/ip -4 neighbor show nud all"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
     "kexec_crash_loaded"        : SimpleFileSpec("sys/kernel/kexec_crash_loaded"),
@@ -110,7 +113,8 @@ static_specs = {
     "lsmod"                     : CommandSpec("/sbin/lsmod"),
     "lspci"                     : CommandSpec("/sbin/lspci"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
-    "lvs"                       : CommandSpec("/sbin/lvs -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices"),
+    "lvs"                       : NoneGroup([CommandSpec("/sbin/lvs -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices")]),
+    "lvs_noheadings"            : CommandSpec("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices"),
     "mdstat"                    : SimpleFileSpec("proc/mdstat"),
     "meminfo"                   : SimpleFileSpec("proc/meminfo"),
     "messages"                  : SimpleFileSpec("var/log/messages", large_content=True),
@@ -123,6 +127,7 @@ static_specs = {
     "netconsole"                : SimpleFileSpec("etc/sysconfig/netconsole"),
     "netstat"                   : CommandSpec("/bin/netstat -neopa"),
     "netstat-s"                 : CommandSpec("/bin/netstat -s"),
+    "netstat_-agn"              : CommandSpec("/bin/netstat -agn"),
     "neutron.conf"              : SimpleFileSpec("etc/neutron/neutron.conf"),
     "neutron_plugin.ini"        : SimpleFileSpec("etc/neutron/plugin.ini"),
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
@@ -143,7 +148,8 @@ static_specs = {
                                     PatternSpec(r"opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True)]),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
-    "pvs"                       : CommandSpec("/sbin/pvs"),
+    "pvs"                       : NoneGroup([CommandSpec("/sbin/pvs")]),
+    "pvs_noheadings"            : CommandSpec("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name"),
     "spfile.ora"                : PatternSpec(r"{ORACLE_HOME}/dbs/spfile.*\.ora"),
     "rabbitmqctl"               : CommandSpec("rabbitmqctl list policies"),
     "rabbitmq_queues"           : CommandSpec("rabbitmqctl list_queues name messages consumers auto_delete"),
@@ -156,7 +162,7 @@ static_specs = {
     "rhn-charsets"              : First([CommandSpec("/usr/bin/rhn-charsets"),
                                     SimpleFileSpec("database-character-sets")]),
     "rhn-entitlement-cert.xml"  : First([PatternSpec(r"etc/sysconfig/rhn/rhn-entitlement-cert\.xml.*"),
-                                    SimpleFileSpec(r"conf/rhn/sysconfig/rhn/rhn-entitlement-cert\.xml.*")]),
+                                    PatternSpec(r"conf/rhn/sysconfig/rhn/rhn-entitlement-cert\.xml.*")]),
     "rhn_hibernate.conf"        : SimpleFileSpec("usr/share/rhn/config-defaults/rhn_hibernate.conf"),
     "rhn-schema-version"        : First([CommandSpec("/usr/bin/rhn-schema-version"),
                                     SimpleFileSpec("database-schema-version")]),
@@ -182,6 +188,7 @@ static_specs = {
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),
     "sysctl.conf_initramfs"     : CommandSpec("/usr/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
     "systemctl_list-unit-files" : CommandSpec("systemctl list-unit-files"),
+    "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
     "systemd_docker"            : SimpleFileSpec("usr/lib/systemd/system/docker.service"),
     "systemid"                  : SimpleFileSpec("etc/sysconfig/rhn/systemid"),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
@@ -189,6 +196,7 @@ static_specs = {
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
     "uptime"                    : CommandSpec("/usr/bin/uptime"),
     "vgdisplay"                 : CommandSpec("/sbin/vgdisplay"),
+    "vgs_noheadings"            : CommandSpec("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all"),
     "vdsm.conf"                 : SimpleFileSpec("etc/vdsm/vdsm.conf"),
     "vdsm.log"                  : SimpleFileSpec("var/log/vdsm/vdsm.log"),
     "virt-what"                 : CommandSpec("/usr/sbin/virt-what"),

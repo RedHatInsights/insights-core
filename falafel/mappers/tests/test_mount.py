@@ -1,6 +1,6 @@
 """"
-``test mount``
-================
+test mount
+==========
 """
 
 from falafel.mappers import mount
@@ -22,7 +22,7 @@ MOUNT_DATA = ['tmpfs on /tmp type tmpfs (rw,seclabel)',
 
 def test_mount():
     context = Context(content=MOUNT_DATA)
-    results = mount.get_mount(context)
+    results = mount.Mount.parse_context(context)
     assert results is not None
     assert len(results) == 12
     sr0 = None
@@ -36,6 +36,7 @@ def test_mount():
     assert sr0['mount_point'] == '/run/media/root/VMware Tools'
     assert sr0['mount_type'] == 'iso9660'
     assert 'ro' in sr0['mount_options']
+    assert sr0.mount_options.ro
     assert 'relatime' in sr0['mount_options']
     assert sr0['mount_options']['uhelper'] == 'udisks2'
     assert sr0['mount_label'] == 'VMware Tools'
@@ -45,4 +46,5 @@ def test_mount():
     assert 'rw' in sda1['mount_options']
     assert 'seclabel' in sda1['mount_options']
     assert sda1['mount_options']['data'] == 'ordered'
+    assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1

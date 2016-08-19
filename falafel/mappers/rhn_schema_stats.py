@@ -49,38 +49,8 @@ class LabelTable(MapperOutput):
     pass
 
 
-class DBStatsLog(object):
-
-    def __init__(self, tables):
-        self.table_summary = TableSummary(tables[0]) if len(tables) > 0 else None
-        self.constraint_table = ConstraintTable(tables[1]) if len(tables) > 1 else None
-        self.label_table = LabelTable(tables[2]) if len(tables) > 2 else None
-
-    def __contains__(self, s):
-        """
-        Return if the 's' (ignore case) is contained in any table name or not
-        """
-        s = s.lower()
-        return ((self.table_summary and s in self.table_summary) or
-                (self.constraint_table and s in self.constraint_table))
-
-    def get(self):
-        """ This is not allowed. (temporary) """
-        pass
-
-    def get_table(self, s, ic=True):
-        """
-        Return the table info in which the table name contains
-        the 's'
-        """
-        result = self.table_summary.get(s, ic) if self.table_summary else []
-        result.extend(self.constraint_table.get(s, ic)) if self.constraint_table else []
-        return result
-
-
 @mapper('rhn-schema-stats')
-def rhn_schema_stats(context):
-
+class DBStatsLog(MapperOutput):
     """
     Returns a DBStatsLog object which provides below two methods:
     - in:
@@ -131,52 +101,78 @@ def rhn_schema_stats(context):
     ==========================================================================
     """
 
-    tables = []
-    table = []
-    if context.content[0].strip().startswith("schema"):
-        # for PostgreSQL db stats log
-        for line in get_active_lines(context.content, comment_char="--"):
-            if line.startswith("(") and "rows" in line:
-                tables.append(parse_table(table, delim="|"))
-                table = []
-            else:
-                table.append(line)
-    else:
-        # for Oracle db stats log
-        header_line = []
-        header_list = []
-        index_list = []
-        for line in context.content:
-            if line.strip() == '' or line.startswith('\t'):
-                pass
-            elif ': ' in line:
-                k, _, v = line.partition(': ')
-                table.append({'table': k.strip(),
-                              'rows': int(v.strip())})
-            elif line.startswith('LABEL') or line.startswith('CONSTRAINT '):
-                header_line = _replace_tabs(line)
-            elif header_line and line.startswith('--'):
-                pre_idx = 0
-                for idx, c in enumerate(line):
-                    if c == ' ':
-                        header_list.append(header_line[pre_idx:idx].strip())
-                        pre_idx = idx + 1
-                        index_list.append(pre_idx)
-                header_list.append(header_line[pre_idx:].strip())
-                index_list.append(-1)
-                header_line = []
-            elif line.startswith("PL/SQL procedure ") or " rows " in line:
-                tables.append(table)
-                table = []
-                index_list = []
-                header_list = []
-            elif len(index_list) > 1:
-                line = _replace_tabs(line)
-                items_list = []
-                pre_idx = 0
-                for idx in index_list:
-                    items_list.append(line[pre_idx:idx].strip())
-                    pre_idx = idx
-                table.append(dict(zip(header_list, items_list)))
-    if tables:
-        return DBStatsLog(tables)
+    def __contains__(self, s):
+        """
+        Return if the 's' (ignore case) is contained in any table name or not
+        """
+        s = s.lower()
+        return s in self.data.get("table_summary", []) or s in self.data.get("constraint_table", [])
+
+    def get(self, name, default=None):
+        """ This is not allowed. (temporary) """
+        pass
+
+    def get_table(self, s, ic=True):
+        """
+        Return the table info in which the table name contains
+        the 's'
+        """
+        result = self["table_summary"].get(s, ic) if "table_summary" in self.data else []
+        result.extend(self["constraint_table"].get(s, ic) if "constraint_table" in self.data else [])
+        return result
+
+    @staticmethod
+    def parse_content(content):
+        tables = []
+        table = []
+        if content[0].strip().startswith("schema"):
+            # for PostgreSQL db stats log
+            for line in get_active_lines(content, comment_char="--"):
+                if line.startswith("(") and "rows" in line:
+                    tables.append(parse_table(table, delim="|"))
+                    table = []
+                else:
+                    table.append(line)
+        else:
+            # for Oracle db stats log
+            header_line = []
+            header_list = []
+            index_list = []
+            for line in content:
+                if line.strip() == '' or line.startswith('\t'):
+                    pass
+                elif ': ' in line:
+                    k, _, v = line.partition(': ')
+                    table.append({'table': k.strip(),
+                                  'rows': int(v.strip())})
+                elif line.startswith('LABEL') or line.startswith('CONSTRAINT '):
+                    header_line = _replace_tabs(line)
+                elif header_line and line.startswith('--'):
+                    pre_idx = 0
+                    for idx, c in enumerate(line):
+                        if c == ' ':
+                            header_list.append(header_line[pre_idx:idx].strip())
+                            pre_idx = idx + 1
+                            index_list.append(pre_idx)
+                    header_list.append(header_line[pre_idx:].strip())
+                    index_list.append(-1)
+                    header_line = []
+                elif line.startswith("PL/SQL procedure ") or " rows " in line:
+                    tables.append(table)
+                    table = []
+                    index_list = []
+                    header_list = []
+                elif len(index_list) > 1:
+                    line = _replace_tabs(line)
+                    items_list = []
+                    pre_idx = 0
+                    for idx in index_list:
+                        items_list.append(line[pre_idx:idx].strip())
+                        pre_idx = idx
+                    table.append(dict(zip(header_list, items_list)))
+        if tables:
+            return {
+                "table_summary": TableSummary(tables[0]) if len(tables) > 0 else None,
+                "constraint_table": ConstraintTable(tables[1]) if len(tables) > 1 else None,
+                "label_table": LabelTable(tables[2]) if len(tables) > 2 else None
+            }

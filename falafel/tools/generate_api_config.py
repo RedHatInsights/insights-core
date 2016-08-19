@@ -156,13 +156,11 @@ class APIConfigGenerator(object):
 
         for name in sorted(plugins.MAPPERS):
             plugins_ = plugins.MAPPERS[name]
-            try:
-                specs = self.data_spec_config.get_specs(name)
-                if not specs:
-                    raise KeyError
-            except KeyError:
-                print "Symbolic name '{0}' is referenced by '{1}', but is not defined via configuration.".format(
-                    name, ", ".join([p.__module__ for p in plugins_]))
+            specs = self.data_spec_config.get_specs(name)
+            if not specs:
+                if name not in self.data_spec_config:
+                    print "Symbolic name '{0}' is referenced by '{1}', but is not available via configuration.".format(
+                        name, ", ".join([p.__module__ for p in plugins_]))
                 continue
 
             for spec in specs:

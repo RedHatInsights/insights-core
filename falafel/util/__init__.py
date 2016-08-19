@@ -30,7 +30,9 @@ def logging_level(logger, level):
         def check_log_level(*args, **kwargs):
             if logger.getEffectiveLevel() <= level:
                 return func(*args, **kwargs)
+
         return check_log_level
+
     return _f
 
 
@@ -90,6 +92,23 @@ def parse_table(content, delim=None, max_splits=-1, strip=True):
     return r
 
 
+def parse_keypair_lines(content, delim='|', kv_sep='='):
+    """
+    Parses a set of entities, where each entity is a set of key-value pairs
+    contained all on one line.  Each entity is parsed into a dictionary and
+    added to the list returned from this function.
+    """
+    r = []
+    if content:
+        for row in [line for line in content if line]:
+            item_dict = {}
+            for item in row.split(delim):
+                key, value = [i.strip("'\"").strip() for i in item.strip().split(kv_sep)]
+                item_dict[key] = value
+            r.append(item_dict)
+    return r
+
+
 def rsplit(_str, seps):
     """
     Splits _str by the first sep in seps that is found from the right side.
@@ -108,6 +127,7 @@ def check_path(path):
 
 def get_addr():
     from falafel.web.settings import engine as config
+
     return "http://%s:%s" % (platform.node(), config["port"])
 
 

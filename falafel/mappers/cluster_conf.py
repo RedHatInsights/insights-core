@@ -1,7 +1,15 @@
 from falafel.core.plugins import mapper
+from falafel.core import LogFileOutput
 import xml.etree.ElementTree as ET
 
 
+@mapper("cluster.conf")
+class ClusterConf(LogFileOutput):
+    pass
+
+
+# This file is filtered and therefore this mapper won't work
+# But it's going to stay in here for the handling full files
 @mapper('cluster.conf')
 def get_cluster_conf(context):
     """

@@ -1,4 +1,4 @@
-from falafel.mappers import cmdline
+from falafel.mappers.cmdline import CmdLine
 from falafel.tests import context_wrap
 
 CMDLINE = """
@@ -9,8 +9,8 @@ ro root=/dev/mapper/vg_rootvg-lv_root rd_LVM_LV=vg_rootvg/lv_root rd_LVM_LV=vg_r
 
 class TestCmdLine():
     def test_cmdline(self):
-        cmd_line = cmdline.get_cmdline(context_wrap(CMDLINE))
-        assert len(cmd_line) == 15
+        cmd_line = CmdLine.parse_context(context_wrap(CMDLINE))
+        assert len(cmd_line.data) == 15
         assert cmd_line.get('ro') is None
         assert cmd_line.get('root') == ['/dev/mapper/vg_rootvg-lv_root']
         assert cmd_line.get('rd_LVM_LV') == ['vg_rootvg/lv_root', 'vg_rootvg/lv_swap']

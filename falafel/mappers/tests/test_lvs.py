@@ -1,33 +1,24 @@
-from falafel.mappers.lvm import lvs
+from falafel.mappers.lvm import Lvs
 from falafel.tests import context_wrap
 
-
 LVS_INFO = """
-LV             VG       LSize   Region  Log      Attr       Devices
-lv0            vg0       52.00m 512.00k lv0_mlog mwi-a-m--- lv0_mimage_0(0),lv0_mimage_1(0)
-[lv0_mimage_0] vg0       52.00m      0           iwi-aom--- /dev/sdb1(0)
-[lv0_mimage_1] vg0       52.00m      0           iwi-aom--- /dev/sdb2(0)
-[lv0_mlog]     vg0        4.00m      0           lwi-aom--- /dev/sdb3(3)
-
-lv1            vg0       20.00m   2.00m lv1_mlog mwi-a-m--- lv1_mimage_0(0),lv1_mimage_1(0)
-[lv1_mimage_0] vg0       20.00m      0           iwi-aom--- /dev/sdb1(13)
-[lv1_mimage_1] vg0       20.00m      0           iwi-aom--- /dev/sdb2(13)
-[lv1_mlog]     vg0        4.00m      0           lwi-aom--- /dev/sdb3(0)
-lv_root        vg_test1   6.71g      0           -wi-ao---- /dev/sda2(0)
-lv_swap        vg_test1 816.00m      0           -wi-ao---- /dev/sda2(1718)
+  LVM2_LV_NAME='home'|LVM2_VG_NAME='fedora_kjl'|LVM2_LV_SIZE='182.23g'|LVM2_REGIONSIZE='0 '|LVM2_MIRROR_LOG=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_DEVICES='/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(1472)'
+  LVM2_LV_NAME='root'|LVM2_VG_NAME='fedora_kjl'|LVM2_LV_SIZE='50.00g'|LVM2_REGIONSIZE='0 '|LVM2_MIRROR_LOG=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_DEVICES='/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(48122)'
+  LVM2_LV_NAME='swap'|LVM2_VG_NAME='fedora_kjl'|LVM2_LV_SIZE='5.75g'|LVM2_REGIONSIZE='0 '|LVM2_MIRROR_LOG=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_DEVICES='/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(0)'
 """.strip()
 
 
 class TestLVS(object):
     def test_lvs(self):
-        lvs_list = lvs(context_wrap(LVS_INFO))
-        assert len(lvs_list) == 10
-        assert lvs_list[0] == {
-            'LV': 'lv0',
-            'VG': 'vg0',
-            'LSize': '52.00m',
-            'Region': '512.00k',
-            'Log': 'lv0_mlog',
-            'Attr': 'mwi-a-m---',
-            'Devices': 'lv0_mimage_0(0),lv0_mimage_1(0)'
+        lvs_list = Lvs.parse_context(context_wrap(LVS_INFO))
+        assert len(lvs_list.data) == 3
+        assert lvs_list.data[1] == {
+            "LV": "root",
+            "VG": "fedora_kjl",
+            "LSize": "50.00g",
+            "Region": "0",
+            "Log": "",
+            "Attr": "-wi-ao----",
+            "Devices": "/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(48122)"
         }
+        assert lvs_list.lv("swap").get("LSize") == "5.75g"

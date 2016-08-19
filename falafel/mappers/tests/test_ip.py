@@ -111,3 +111,19 @@ class Test_ip_route():
         assert d.ifaces("30.0.0.1")[0] == "notExist"
         assert d.ifaces("192.168.0.1")[0] == "bond0.400"
         assert len(d.data["default"]) == 1
+
+
+IPV4_NEIGH_CONTEXT = """
+
+172.17.0.19 dev docker0  FAILED
+172.17.42.1 dev lo lladdr 00:00:00:00:00:00 NOARP
+"""
+
+
+def test_ip_neigh():
+    result = ip.get_ipv4_neigh(context_wrap(IPV4_NEIGH_CONTEXT))
+    assert len(result) == 2
+    assert len(result["172.17.0.19"])
+    assert len(result["172.17.42.1"])
+    assert result["172.17.0.19"] == [{"dev": "docker0", "nud": "FAILED"}]
+    assert result["172.17.42.1"] == [{"dev": "lo", "nud": "NOARP", "lladdr": "00:00:00:00:00:00"}]

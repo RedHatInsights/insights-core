@@ -140,9 +140,15 @@ class MapperOutput(object):
             return False
 
 
+class LogFileMeta(type):
+    def __new__(cls, name, parents, dct):
+        dct["scanners"] = []
+        return super(LogFileMeta, cls).__new__(cls, name, parents, dct)
+
+
 class LogFileOutput(MapperOutput):
 
-    scanners = []
+    __metaclass__ = LogFileMeta
 
     def __init__(self, data, path=None):
         """
@@ -183,6 +189,12 @@ class LogFileOutput(MapperOutput):
     def token_scan(cls, result_key, token):
         def _scan(self):
             return token in self
+        cls.scan(result_key, _scan)
+
+    @classmethod
+    def keep_scan(cls, result_key, token):
+        def _scan(self):
+            return self.get(token)
         cls.scan(result_key, _scan)
 
 

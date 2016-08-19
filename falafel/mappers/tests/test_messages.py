@@ -1,4 +1,4 @@
-from falafel.mappers import messages
+from falafel.mappers.messages import Messages
 from falafel.tests import context_wrap
 
 MSGINFO = """
@@ -13,7 +13,7 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
 
-messages.messages.filters.extend([
+Messages.filters.extend([
     "LIST",
     "CROND",
     "jabberd",
@@ -24,7 +24,7 @@ messages.messages.filters.extend([
 
 
 def test_messages():
-    msg_info = messages.messages(context_wrap(MSGINFO))
+    msg_info = Messages.parse_context(context_wrap(MSGINFO))
     bona_list = msg_info.get('(root) LIST (root)')
     assert 2 == len(bona_list)
     assert bona_list[0].get('timestamp') == "Apr 22 10:37:32"
