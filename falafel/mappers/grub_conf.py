@@ -36,7 +36,14 @@ class GrubConfig(MapperOutput):
 
     @staticmethod
     def parse_content(content):
-
+        """
+        Parse grub config file to create a dict with this structure:
+        {
+            "configs": [ (name, value), (name, value) ....],
+            "title": [ [(title_name, its name), (cmd, opt), (cmd, opt) ...], [another title] ]
+            "menuentry": [ [(menuentry_name, its name), (cmd, opt), (cmd, opt) ...], [another menu entry] ]
+        }
+        """
         iterator = iter(get_active_lines(content))
         conf = defaultdict(list)
         line = None
