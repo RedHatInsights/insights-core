@@ -10,8 +10,8 @@ LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG
 
 def test_vgs():
     vgs_records = lvm.Vgs.parse_context(context_wrap(VGS_INFO))
-    assert len(vgs_records.data) == 2
-    assert vgs_records.vg("fedora") == {
+    assert len(list(vgs_records)) == 2
+    assert vgs_records["fedora"] == {
         'VG': 'fedora',
         'Attr': 'wz--n-',
         'VSize': '476.45g',
@@ -19,4 +19,29 @@ def test_vgs():
         '#PV': '1',
         '#LV': '3',
         '#SN': '0',
+        '#Ext': '121971',
+        '#VMda': '1',
+        '#VMdaCps': 'unmanaged',
+        '#VMdaUse': '1',
+        'AllocPol': 'normal',
+        'Clustered': '',
+        'Exported': '',
+        'Ext': '4.00m',
+        'Extendable': 'extendable',
+        'Fmt': 'lvm2',
+        'Free': '1',
+        'Lock Args': '',
+        'Lock_Type': '',
+        'MaxLV': '0',
+        'MaxPV': '0',
+        'Partial': '',
+        'SYS_ID': '',
+        'Seq': '4',
+        'System_ID': '',
+        'VG_Tags': '',
+        'VG_UUID': '123456-LEly-THGL-YXhC-t3q6-mUQV-123456',
+        'VMdaFree': '0',
+        'VMdaSize': '1020.00k',
+        'VPerms': 'writeable',
+        'VProfile': ''
     }

@@ -1,6 +1,6 @@
 from falafel.util import parse_keypair_lines, parse_table
 from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from falafel.core import MapperOutput, computed
 
 
 def map_keys(pvs, keys):
@@ -8,16 +8,45 @@ def map_keys(pvs, keys):
         yield {v: pv.get(k) for k, v in keys.items()}
 
 
+def replace_spaces_in_keys(header):
+    for k in KEYS_WITH_SPACES:
+        if k in header:
+            header = header.replace(k, k.replace(" ", "_"))
+    return header
+
+
 class Lvm(MapperOutput):
     @classmethod
     def parse_content(cls, content):
+        d = {}
+        d["warnings"] = [l for l in content if l.strip().startswith("WARNING")]
+        content = [l for l in content if l not in d["warnings"]]
         try:
-            return list(map_keys(parse_keypair_lines(content), cls.KEYS))
+            d["content"] = list(map_keys(parse_keypair_lines(content), cls.KEYS))
         except:
-            return parse_table(content)
+            content[0] = replace_spaces_in_keys(content[0])
+            d["content"] = parse_table(content)
+        return d if d else None
 
     def __iter__(self):
-        return iter(self.data)
+        return iter(self.data["content"])
+
+    def __len__(self):
+        return len(self.data["content"])
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.data["content"][key]
+        i = [i for i in self.data["content"] if i[self.PRIMARY_KEY] == key]
+        return i[0] if len(i) > 0 else self.computed[key]
+
+    @computed
+    def locking_disabled(self):
+        return len([l for l in self.data["warnings"] if "Locking disabled" in l]) > 0
+
+    @computed
+    def warnings(self):
+        return self.data["warnings"]
 
 
 @mapper('pvs')
@@ -31,8 +60,8 @@ class Pvs(Lvm):
     specs.py:
     ---------------- Output sample of pvs ---------------
 
-    LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='500.00m'|LVM2_PV_NAME='/dev/sda1'|LVM2_PV_MDA_FREE='0 '|LVM2_PV_MDA_SIZE='0 '|LVM2_PE_START='0 '|LVM2_PV_SIZE='0 '|LVM2_PV_FREE='0 '|LVM2_PV_USED='0 '|LVM2_PV_ATTR='---'|LVM2_PV_ALLOCATABLE=''|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='0'|LVM2_PV_PE_ALLOC_COUNT='0'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='0'|LVM2_PV_MDA_USED_COUNT='0'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '
-    LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl'|LVM2_DEV_SIZE='476.45g'|LVM2_PV_NAME='/dev/sda2'|LVM2_PV_MDA_FREE='0 '|LVM2_PV_MDA_SIZE='1020.00k'|LVM2_PE_START='1.00m'|LVM2_PV_SIZE='476.45g'|LVM2_PV_FREE='4.00m'|LVM2_PV_USED='476.45g'|LVM2_PV_ATTR='a--'|LVM2_PV_ALLOCATABLE='allocatable'|LVM2_PV_EXPORTED=''|LVM2_PV_MISSING=''|LVM2_PV_PE_COUNT='121971'|LVM2_PV_PE_ALLOC_COUNT='121970'|LVM2_PV_TAGS=''|LVM2_PV_MDA_COUNT='1'|LVM2_PV_MDA_USED_COUNT='1'|LVM2_PV_BA_START='0 '|LVM2_PV_BA_SIZE='0 '
+    LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='500.00m'|...
+    LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl'|LVM2_DEV_SIZE='476.45g'|...
 
     -----------------------------------------------------
 
@@ -53,24 +82,38 @@ class Pvs(Lvm):
     ]
     """
     KEYS = {
-        "LVM2_PV_NAME": "PV",
-        "LVM2_VG_NAME": "VG",
+        "LVM2_PV_MDA_USED_COUNT": "#PMdaUse",
+        "LVM2_PV_UUID": "PV_UUID",
+        "LVM2_DEV_SIZE": "DevSize",
         "LVM2_PV_FMT": "Fmt",
-        "LVM2_PV_ATTR": "Attr",
+        "LVM2_PV_MDA_FREE": "PMdaFree",
+        "LVM2_PV_EXPORTED": "Exported",
         "LVM2_PV_SIZE": "PSize",
+        "LVM2_PV_BA_START": "BA_start",
+        "LVM2_PV_PE_ALLOC_COUNT": "Alloc",
+        "LVM2_VG_NAME": "VG",
+        "LVM2_PV_TAGS": "PV_Tags",
+        "LVM2_PV_PE_COUNT": "PE",
+        "LVM2_PV_BA_SIZE": "BA_size",
+        "LVM2_PV_ATTR": "Attr",
+        "LVM2_PE_START": "1st_PE",
+        "LVM2_PV_USED": "Used",
+        "LVM2_PV_NAME": "PV",
+        "LVM2_PV_MDA_COUNT": "#PMda",
         "LVM2_PV_FREE": "PFree",
-        "LVM2_PV_UUID": "UUID"
+        "LVM2_PV_ALLOCATABLE": "Allocatable",
+        "LVM2_PV_MDA_SIZE": "PMdaSize",
+        "LVM2_PV_MISSING": "Missing"
     }
 
-    def pv(self, name):
-        for i in self.data:
-            if i["PV"] == name:
-                return i
+    PRIMARY_KEY = "PV"
 
     def vg(self, name):
-        return [i for i in self.data if i["VG"] == name]
+        """Return all physical volumes assigned to the given volume group"""
+        return [i for i in self.data["content"] if i["VG"] == name]
 
 
+@mapper('vgs')
 @mapper('vgs_noheadings')
 class Vgs(Lvm):
     """
@@ -81,8 +124,8 @@ class Vgs(Lvm):
     specs.py:
     ---------------- Output sample of vgs ---------------
 
-    LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SIZE='476.45g'|LVM2_VG_FREE='4.00m'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCKTYPE=''|LVM2_VG_LOCKARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='121971'|LVM2_VG_FREE_COUNT='1'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_LV_COUNT='3'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='4'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='0 '|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
-    LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG_NAME='fedora'|LVM2_VG_ATTR='wz--n-'|LVM2_VG_PERMISSIONS='writeable'|LVM2_VG_EXTENDABLE='extendable'|LVM2_VG_EXPORTED=''|LVM2_VG_PARTIAL=''|LVM2_VG_ALLOCATION_POLICY='normal'|LVM2_VG_CLUSTERED=''|LVM2_VG_SIZE='476.45g'|LVM2_VG_FREE='4.00m'|LVM2_VG_SYSID=''|LVM2_VG_SYSTEMID=''|LVM2_VG_LOCKTYPE=''|LVM2_VG_LOCKARGS=''|LVM2_VG_EXTENT_SIZE='4.00m'|LVM2_VG_EXTENT_COUNT='121971'|LVM2_VG_FREE_COUNT='1'|LVM2_MAX_LV='0'|LVM2_MAX_PV='0'|LVM2_PV_COUNT='1'|LVM2_LV_COUNT='3'|LVM2_SNAP_COUNT='0'|LVM2_VG_SEQNO='4'|LVM2_VG_TAGS=''|LVM2_VG_PROFILE=''|LVM2_VG_MDA_COUNT='1'|LVM2_VG_MDA_USED_COUNT='1'|LVM2_VG_MDA_FREE='0 '|LVM2_VG_MDA_SIZE='1020.00k'|LVM2_VG_MDA_COPIES='unmanaged'
+    LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|...
+    LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG_NAME='fedora'|LVM2_VG_ATTR='wz--n-'|...
 
     -----------------------------------------------------
 
@@ -103,19 +146,41 @@ class Vgs(Lvm):
     ]
     """
     KEYS = {
-        "LVM2_VG_NAME": "VG",
-        "LVM2_PV_COUNT": "#PV",
-        "LVM2_LV_COUNT": "#LV",
-        "LVM2_SNAP_COUNT": "#SN",
+        "LVM2_VG_EXTENDABLE": "Extendable",
+        "LVM2_VG_EXTENT_SIZE": "Ext",
+        "LVM2_VG_MDA_COUNT": "#VMda",
+        "LVM2_VG_PROFILE": "VProfile",
+        "LVM2_VG_ALLOCATION_POLICY": "AllocPol",
+        "LVM2_MAX_PV": "MaxPV",
+        "LVM2_VG_UUID": "VG_UUID",
         "LVM2_VG_ATTR": "Attr",
-        "LVM2_VG_SIZE": "VSize",
+        "LVM2_VG_SYSID": "SYS_ID",
+        "LVM2_VG_MDA_USED_COUNT": "#VMdaUse",
+        "LVM2_VG_MDA_FREE": "VMdaFree",
+        "LVM2_VG_LOCKTYPE": "Lock_Type",
+        "LVM2_VG_TAGS": "VG_Tags",
+        "LVM2_VG_FMT": "Fmt",
+        "LVM2_PV_COUNT": "#PV",
+        "LVM2_VG_EXTENT_COUNT": "#Ext",
+        "LVM2_VG_MDA_SIZE": "VMdaSize",
+        "LVM2_SNAP_COUNT": "#SN",
+        "LVM2_VG_EXPORTED": "Exported",
+        "LVM2_LV_COUNT": "#LV",
+        "LVM2_VG_NAME": "VG",
+        "LVM2_VG_MDA_COPIES": "#VMdaCps",
+        "LVM2_VG_SYSTEMID": "System_ID",
         "LVM2_VG_FREE": "VFree",
+        "LVM2_VG_SEQNO": "Seq",
+        "LVM2_VG_FREE_COUNT": "Free",
+        "LVM2_VG_PARTIAL": "Partial",
+        "LVM2_VG_PERMISSIONS": "VPerms",
+        "LVM2_VG_CLUSTERED": "Clustered",
+        "LVM2_VG_LOCKARGS": "Lock Args",
+        "LVM2_MAX_LV": "MaxLV",
+        "LVM2_VG_SIZE": "VSize"
     }
 
-    def vg(self, name):
-        for i in self.data:
-            if i["VG"] == name:
-                return i
+    PRIMARY_KEY = "VG"
 
 
 @mapper('lvs')
@@ -130,8 +195,8 @@ class Lvs(Lvm):
 
     ---------------------------------- Output sample of lvs -----------------------------------
 
-    LVM2_LV_UUID='KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m'|LVM2_LV_NAME='docker-poolmeta'|LVM2_LV_FULL_NAME='rhel/docker-poolmeta'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|LVM2_LV_DM_PATH='/dev/mapper/rhel-docker--poolmeta'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-a-----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='44.00m'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_CONVERT_LV=''|LVM2_MIRROR_LOG=''|LVM2_DATA_LV=''|LVM2_METADATA_LV=''|LVM2_POOL_LV=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2016-01-27 14:31:39 +0800'|LVM2_LV_HOST='dhcp-192-57.pek.redhat.com'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='6'|LVM2_LV_KERNEL_READ_AHEAD='4.00m'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN=''|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
-    LVM2_LV_UUID='123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456'|LVM2_LV_NAME='rhel_root'|LVM2_LV_FULL_NAME='rhel/rhel_root'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|LVM2_LV_DM_PATH='/dev/mapper/rhel-docker--poolmeta'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-a-----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='44.00m'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_CONVERT_LV=''|LVM2_MIRROR_LOG=''|LVM2_DATA_LV=''|LVM2_METADATA_LV=''|LVM2_POOL_LV=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2016-01-27 14:31:39 +0800'|LVM2_LV_HOST='dhcp-192-57.pek.redhat.com'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='6'|LVM2_LV_KERNEL_READ_AHEAD='4.00m'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN=''|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
+    LVM2_LV_UUID='KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m'|LVM2_LV_NAME='docker-poolmeta'|LVM2_LV_FULL_NAME='rhel/docker-poolmeta'|...
+    LVM2_LV_UUID='123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456'|LVM2_LV_NAME='rhel_root'|LVM2_LV_FULL_NAME='rhel/rhel_root'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|...
 
     -------------------------------------------------------------------------------------------
 
@@ -152,19 +217,123 @@ class Lvs(Lvm):
     ]
     """
     KEYS = {
-        "LVM2_LV_NAME": "LV",
-        "LVM2_VG_NAME": "VG",
-        "LVM2_LV_SIZE": "LSize",
-        "LVM2_REGIONSIZE": "Region",
+        "LVM2_POOL_LV_UUID": "Pool_UUID",
+        "LVM2_LV_PARENT": "Parent",
+        "LVM2_LV_SKIP_ACTIVATION": "SkipAct",
+        "LVM2_LV_HEALTH_STATUS": "Health",
+        "LVM2_LV_KERNEL_MINOR": "KMin",
+        "LVM2_RAID_WRITE_BEHIND": "WBehind",
+        "LVM2_LV_ANCESTORS": "Ancestors",
+        "LVM2_LV_TIME": "Time",
+        "LVM2_METADATA_PERCENT": "Meta%",
+        "LVM2_LV_DM_PATH": "DMPath",
+        "LVM2_LV_INACTIVE_TABLE": "InactiveTable",
+        "LVM2_LV_UUID": "LV_UUID",
+        "LVM2_LV_MODULES": "Modules",
+        "LVM2_DEVICES": "Devices",
+        "LVM2_LV_ACTIVE_REMOTELY": "ActRemote",
+        "LVM2_LV_ACTIVE_LOCALLY": "ActLocal",
+        "LVM2_LV_TAGS": "LV_Tags",
+        "LVM2_LV_IMAGE_SYNCED": "ImgSynced",
+        "LVM2_CACHE_WRITE_MISSES": "CacheWriteMisses",
+        "LVM2_LV_PERMISSIONS": "LPerms",
+        "LVM2_CACHE_TOTAL_BLOCKS": "CacheTotalBlocks",
+        "LVM2_LV_ACTIVE_EXCLUSIVELY": "ActExcl",
+        "LVM2_LV_PATH": "Path",
+        "LVM2_LV_FULL_NAME": "LV",
+        "LVM2_LV_READ_AHEAD": "Rahead",
+        "LVM2_SNAP_PERCENT": "Snap%",
+        "LVM2_CACHE_WRITE_HITS": "CacheWriteHits",
         "LVM2_MIRROR_LOG": "Log",
+        "LVM2_CACHE_DIRTY_BLOCKS": "CacheDirtyBlocks",
+        "LVM2_SEG_COUNT": "#Seg",
+        "LVM2_MOVE_PV": "Move",
+        "LVM2_LV_FIXED_MINOR": "FixMin",
+        "LVM2_SYNC_PERCENT": "Cpy%Sync",
+        "LVM2_LV_METADATA_SIZE": "MSize",
         "LVM2_LV_ATTR": "Attr",
-        "LVM2_DEVICES": "Devices"
+        "LVM2_RAID_MAX_RECOVERY_RATE": "MaxSync",
+        "LVM2_LV_DEVICE_OPEN": "DevOpen",
+        "LVM2_LV_ALLOCATION_POLICY": "AllocPol",
+        "LVM2_LV_MERGING": "Merging",
+        "LVM2_LV_SIZE": "LSize",
+        "LVM2_LV_MAJOR": "Maj",
+        "LVM2_ORIGIN_SIZE": "OSize",
+        "LVM2_RAID_SYNC_ACTION": "SyncAction",
+        "LVM2_MIRROR_LOG_UUID": "Log_UUID",
+        "LVM2_POOL_LV": "Pool",
+        "LVM2_COPY_PERCENT": "Cpy%Sync",
+        "LVM2_CONVERT_LV": "Convert",
+        "LVM2_LV_KERNEL_READ_AHEAD": "KRahead",
+        "LVM2_LV_NAME": "LV",
+        "LVM2_LV_HOST": "Host",
+        "LVM2_CACHE_USED_BLOCKS": "CacheUsedBlocks",
+        "LVM2_RAID_MIN_RECOVERY_RATE": "MinSync",
+        "LVM2_ORIGIN_UUID": "Origin_UUID",
+        "LVM2_LV_SUSPENDED": "Suspended",
+        "LVM2_RAID_MISMATCH_COUNT": "Mismatches",
+        "LVM2_LV_KERNEL_MAJOR": "KMaj",
+        "LVM2_LV_LAYOUT": "Layout",
+        "LVM2_LV_PROFILE": "LProfile",
+        "LVM2_LV_LIVE_TABLE": "LiveTable",
+        "LVM2_LV_INITIAL_IMAGE_SYNC": "InitImgSync",
+        "LVM2_LV_CONVERTING": "Converting",
+        "LVM2_CACHE_READ_HITS": "CacheReadHits",
+        "LVM2_VG_NAME": "VG",
+        "LVM2_METADATA_LV": "Meta",
+        "LVM2_LV_ACTIVE": "Active",
+        "LVM2_CONVERT_LV_UUID": "Convert",
+        "LVM2_LV_MERGE_FAILED": "MergeFailed",
+        "LVM2_METADATA_LV_UUID": "Meta_UUID",
+        "LVM2_LV_ROLE": "Role",
+        "LVM2_LV_WHEN_FULL": "WhenFull",
+        "LVM2_LV_ALLOCATION_LOCKED": "AllocLock",
+        "LVM2_DATA_PERCENT": "Data%",
+        "LVM2_LV_LOCKARGS": "Lock_Args",
+        "LVM2_LV_SNAPSHOT_INVALID": "SnapInvalid",
+        "LVM2_MOVE_PV_UUID": "Move_UUID",
+        "LVM2_LV_MINOR": "Min",
+        "LVM2_ORIGIN": "Origin",
+        "LVM2_DATA_LV_UUID": "Data_UUID",
+        "LVM2_DATA_LV": "Data",
+        "LVM2_CACHE_READ_MISSES": "CacheReadMisses",
+        "LVM2_LV_DESCENDANTS": "Descendants"
     }
 
-    def vg(self, name):
-        return [i for i in self.data if i["VG"] == name]
+    PRIMARY_KEY = "LV"
 
-    def lv(self, name):
-        for i in self.data:
-            if i["LV"] == name:
-                return i
+    @classmethod
+    def parse_content(cls, content):
+        content = super(Lvs, cls).parse_content(content)
+        for item in content["content"]:
+            lv_name = item["LV"]
+            if "/" in lv_name:
+                # Reduce full name to just the name
+                # This is due to the lvs command having *two identical keys*
+                # with different values
+                item["LV"] = lv_name.split("/")[1]
+        return content
+
+    def vg(self, name):
+        """Return all logical volumes in the given volume group"""
+        return [i for i in self.data["content"] if i["VG"] == name]
+
+
+KEYS_WITH_SPACES = []
+for cls in (Lvs, Pvs, Vgs):
+    KEYS_WITH_SPACES.extend([k for k in cls.KEYS.values() if " " in k])
+
+
+if __name__ == "__main__":
+    # This is a quick script to generate the key mappings in each subclass.
+    # Run each lvm command with --separator="|", --nameprefixes and *not* --noheadings
+
+    import sys
+    import json
+    from collections import OrderedDict
+
+    content = sys.stdin.read().splitlines()
+    headers = [h.strip().replace(" ", "_") for h in content[0].split("|")]
+    nameprefixes = [v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")]
+    pairs = zip(nameprefixes, headers)
+    print json.dumps(OrderedDict(sorted(pairs, cmp=lambda x, y: cmp(x[0], y[0]))))

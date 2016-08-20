@@ -2,23 +2,94 @@ from falafel.mappers.lvm import Lvs
 from falafel.tests import context_wrap
 
 LVS_INFO = """
-  LVM2_LV_NAME='home'|LVM2_VG_NAME='fedora_kjl'|LVM2_LV_SIZE='182.23g'|LVM2_REGIONSIZE='0 '|LVM2_MIRROR_LOG=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_DEVICES='/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(1472)'
-  LVM2_LV_NAME='root'|LVM2_VG_NAME='fedora_kjl'|LVM2_LV_SIZE='50.00g'|LVM2_REGIONSIZE='0 '|LVM2_MIRROR_LOG=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_DEVICES='/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(48122)'
-  LVM2_LV_NAME='swap'|LVM2_VG_NAME='fedora_kjl'|LVM2_LV_SIZE='5.75g'|LVM2_REGIONSIZE='0 '|LVM2_MIRROR_LOG=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_DEVICES='/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(0)'
+  LVM2_LV_UUID='kw1ONN-Su5R-TTxt-G4Vi-ZoRx-KSRd-sG0CJ5'|LVM2_LV_NAME='home'|LVM2_LV_FULL_NAME='fedora_kjl/home'|LVM2_LV_PATH='/dev/fedora_kjl/home'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-home'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='182.23g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:49 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='3'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
+    LVM2_LV_UUID='BqPEaY-2mcf-0GOV-Q31u-vGlJ-rm2Z-wG2ABl'|LVM2_LV_NAME='root'|LVM2_LV_FULL_NAME='fedora_kjl/root'|LVM2_LV_PATH='/dev/fedora_kjl/root'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-root'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='50.00g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:52 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='2'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
+      LVM2_LV_UUID='27XoiT-2R2d-jcgv-pVNw-LqBO-tKIB-6eHpFn'|LVM2_LV_NAME='swap'|LVM2_LV_FULL_NAME='fedora_kjl/swap'|LVM2_LV_PATH='/dev/fedora_kjl/swap'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-swap'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='5.75g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:49 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='1'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
 """.strip()
 
 
 class TestLVS(object):
     def test_lvs(self):
         lvs_list = Lvs.parse_context(context_wrap(LVS_INFO))
-        assert len(lvs_list.data) == 3
-        assert lvs_list.data[1] == {
-            "LV": "root",
-            "VG": "fedora_kjl",
-            "LSize": "50.00g",
-            "Region": "0",
+        assert len(lvs_list) == 3
+        assert lvs_list.data["content"][1] == {
+            "MergeFailed": "unknown",
+            "#Seg": "1",
+            "Ancestors": "",
+            "Layout": "linear",
+            "Meta%": "",
+            "LPerms": "writeable",
+            "Data%": "",
+            "AllocLock": "",
+            "Health": "",
+            "CacheDirtyBlocks": "",
+            "CacheWriteMisses": "",
+            "MaxSync": "",
+            "Pool_UUID": "",
+            "Data_UUID": "",
+            "DMPath": "/dev/mapper/fedora_kjl-root",
+            "CacheTotalBlocks": "",
             "Log": "",
+            "SkipAct": "",
+            "Min": "-1",
+            "Mismatches": "",
+            "SyncAction": "",
+            "WBehind": "",
+            "ActExcl": "active exclusively",
+            "Parent": "",
+            "ActRemote": "",
+            "OSize": "",
+            "WhenFull": "",
+            "Log_UUID": "",
+            "KMin": "2",
+            "Lock_Args": "",
+            "LV": "root",
+            "CacheReadMisses": "",
+            "Host": "kjl.me",
+            "CacheWriteHits": "",
+            "DevOpen": "open",
+            "InitImgSync": "",
+            "Active": "active",
+            "Path": "/dev/fedora_kjl/root",
+            "Move_UUID": "",
+            "Maj": "-1",
+            "Data": "",
+            "LV_Tags": "",
+            "Pool": "",
+            "KMaj": "253",
+            "Convert": "",
+            "LProfile": "",
+            "AllocPol": "inherit",
             "Attr": "-wi-ao----",
-            "Devices": "/dev/mapper/luks-2c4fc590-db3c-4099-9b9a-51372deef87c(48122)"
+            "VG": None,
+            "KRahead": "128.00k",
+            "LiveTable": "live table present",
+            "Modules": "",
+            "Meta_UUID": "",
+            "Devices": None,
+            "MSize": "",
+            "Merging": "",
+            "Descendants": "",
+            "ActLocal": "active locally",
+            "Time": "2015-09-23 21:42:52 -0500",
+            "Cpy%Sync": "",
+            "LV_UUID": "BqPEaY-2mcf-0GOV-Q31u-vGlJ-rm2Z-wG2ABl",
+            "Origin": "",
+            "MinSync": "",
+            "Converting": "",
+            "SnapInvalid": "unknown",
+            "ImgSynced": "",
+            "Move": "",
+            "CacheReadHits": "",
+            "Origin_UUID": "",
+            "Snap%": "",
+            "Meta": "",
+            "InactiveTable": "",
+            "FixMin": "",
+            "Suspended": "",
+            "Rahead": "auto",
+            "CacheUsedBlocks": "",
+            "Role": "public",
+            "LSize": "50.00g"
         }
-        assert lvs_list.lv("swap").get("LSize") == "5.75g"
+        assert lvs_list["swap"]["LSize"] == "5.75g"
