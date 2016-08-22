@@ -41,7 +41,7 @@ class Runner(object):
 
         reports = []
         with archives.OnDiskExtractor() as ex:
-            tf = ex.from_path(path)
+            tf = ex.from_path(path, self.args.extract_dir)
             sm = specs.SpecMapper(tf, data_spec_config=config)
             for name, paths in self.external_files.iteritems():
                 for path in paths:
@@ -90,6 +90,7 @@ class Runner(object):
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a sosreport for some rules.")
     parser.add_argument("--sosreport", help="path to a sosreport to analyze (the path can be to a tar file, or to an expanded directory tree)")
+    parser.add_argument("--extract-dir", help="Root directory path in which files will be extracted.")
     parser.add_argument("--ext-file", dest="external_files", nargs="*", help="key=value set of a file to include for analysis")
     parser.add_argument("--specs", dest="specs", help="module path to user-defined specs")
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", help="path to extra plugins")

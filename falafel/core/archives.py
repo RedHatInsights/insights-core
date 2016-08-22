@@ -141,7 +141,7 @@ class OnDiskExtractor(Extractor):
         self.tar_file = DirectoryAdapter(self.tmp_dir)
         return self
 
-    def from_path(self, path):
+    def from_path(self, path, extract_dir=None):
         if os.path.isdir(path):
             self.tar_file = DirectoryAdapter(path)
 
@@ -151,8 +151,10 @@ class OnDiskExtractor(Extractor):
             if not tar_flag:
                 raise InvalidContentType(self.content_type)
 
-            self.tmp_dir = tempfile.mkdtemp()
+            self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
+
+            logging.info("Extracting files in %s", self.tmp_dir)
             subprocess.call(shlex.split(command))
 
             self.tar_file = DirectoryAdapter(self.tmp_dir)
