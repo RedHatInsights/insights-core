@@ -12,6 +12,7 @@ class SubMemInfo(MapperOutput):
         self.computed = {}
         for k in sub_dict:
             self._add_to_computed(k, sub_dict[k])
+        self.calc_computed_keys()
         self.compute()
 
 

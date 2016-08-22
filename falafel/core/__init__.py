@@ -94,7 +94,15 @@ def computed(f):
     return f
 
 
+class ComputedMeta(type):
+    def __new__(cls, name, parents, dct):
+        dct["_computed_keys"] = None
+        return super(ComputedMeta, cls).__new__(cls, name, parents, dct)
+
+
 class MapperOutput(object):
+
+    __metaclass__ = ComputedMeta
 
     def __init__(self, data, path=None):
         self.data = data
@@ -102,6 +110,8 @@ class MapperOutput(object):
         if path:
             self._add_to_computed("file_path", path)
             self._add_to_computed("file_name", os.path.basename(path))
+
+        self.calc_computed_keys()
         self.compute()
 
     @classmethod
@@ -124,10 +134,16 @@ class MapperOutput(object):
         self.computed[key] = value
         setattr(self, key, value)
 
+    @classmethod
+    def calc_computed_keys(cls):
+        if cls._computed_keys is None:
+            members = inspect.getmembers(cls, inspect.ismethod)
+            computed_keys = [k for k, m in members if hasattr(m, "computed")]
+            cls._computed_keys = computed_keys
+
     def compute(self):
-        for key, value in inspect.getmembers(self, inspect.ismethod):
-            if hasattr(value, "computed"):
-                self._add_to_computed(key, value())
+        for key in self._computed_keys:
+            self._add_to_computed(key, getattr(self, key)())
 
     def __getitem__(self, key):
         if isinstance(key, int):
@@ -150,7 +166,7 @@ class MapperOutput(object):
             return False
 
 
-class LogFileMeta(type):
+class LogFileMeta(ComputedMeta):
     def __new__(cls, name, parents, dct):
         dct["scanners"] = []
         return super(LogFileMeta, cls).__new__(cls, name, parents, dct)
