@@ -63,4 +63,4 @@ class IfCFG(MapperOutput):
             return None
 
         m = self["BONDING_OPTS"]["mode"]
-        return int(m) if m.isdigit() else bond_mode_map(m)
+        return int(m) if m.isdigit() else int(bond_mode_map[m])

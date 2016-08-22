@@ -1,6 +1,6 @@
 from falafel.core.plugins import mapper
 
-from falafel.core import MapperOutput
+from falafel.core import MapperOutput, computed
 from distutils.version import LooseVersion, StrictVersion
 import logging
 import re
@@ -475,6 +475,17 @@ class Uname(MapperOutput):
         # all fixes that are greater
         logger.debug("No matching fix stream found")
         return [fix.kernel for fix in fix_unames if self._less_than(fix)]
+
+    @computed
+    def release_as_float(self):
+        """
+        Returns the RHEL release value as a floating point.
+        Returns -1 if the release is Unknown.
+        """
+        if self['rhel_release'] in ([-1, -1], (-1, -1), ["-1", "-1"], ("-1", "-1")):
+            return -1
+        else:
+            return float(".".join(self['rhel_release']))
 
 
 def parse_uname(uname_line):
