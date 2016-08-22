@@ -35,6 +35,8 @@ def get_module_names(package_name, pattern=None):
 
     if not pattern:
         pattern = DEFAULT_PATTERN
+    else:
+        pattern = '.*' + pattern + '.*'
 
     plugin_matcher = re.compile(pattern)
 
