@@ -11,7 +11,7 @@ class UnitFiles(MapperOutput):
         on = ['enabled', 'static']
         data = {}
 
-        #skip header
+        # skip header
         for line in content[1:]:
             key = line.split()[0].strip()
             value = any(v in line for v in on)
