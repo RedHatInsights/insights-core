@@ -477,15 +477,8 @@ class Uname(MapperOutput):
         return [fix.kernel for fix in fix_unames if self._less_than(fix)]
 
     @computed
-    def release_as_float(self):
-        """
-        Returns the RHEL release value as a floating point.
-        Returns -1 if the release is Unknown.
-        """
-        if self['rhel_release'] in ([-1, -1], (-1, -1), ["-1", "-1"], ("-1", "-1")):
-            return -1
-        else:
-            return float(".".join(self['rhel_release']))
+    def release_tuple(self):
+        return tuple(map(int, self["rhel_release"]))
 
 
 def parse_uname(uname_line):

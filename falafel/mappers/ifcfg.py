@@ -27,12 +27,14 @@ class IfCFG(MapperOutput):
     `BONDING_OPTS` also will return a dict
     """
 
-    @classmethod
-    def parse_context(cls, context):
-        data = {
-            "iface": context.path.rsplit("-", 1)[1]
-        }
-        for line in get_active_lines(context.content):
+    def __init__(self, data, path):
+        super(IfCFG, self).__init__(data, path)
+        self.data["iface"] = path.rsplit("-", 1)[1]
+
+    @staticmethod
+    def parse_content(content):
+        data = {}
+        for line in get_active_lines(content):
             key, _, value = line.partition("=")
             key = key.strip().strip(QUOTES)
 
@@ -51,7 +53,7 @@ class IfCFG(MapperOutput):
                     value_map[sub_key.strip()] = sub_value.strip()
                 value = value_map
             data[key] = value
-        return cls(data, context.path)
+        return data
 
     @computed
     def bonding_mode(self):
