@@ -17,10 +17,7 @@ def stringify_mapper(o):
 
 def stringify(o):
     if isinstance(o[0], MapperOutput):
-        r = []
-        for item in o:
-            r.append(item.to_json())
-        return r
+        return [i.serialize() for i in o]
     else:
         return o
 

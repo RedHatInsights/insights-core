@@ -129,11 +129,11 @@ def test_name(simple):
 
 
 def test_serialization_simple(simple):
-    assert simple.to_json() == SIMPLE_JSON
+    assert simple.serialize() == SIMPLE_JSON
 
 
-def test_to_json_complex(complex_):
-    assert complex_.to_json() == COMPLEX_JSON
+def test_serialization_json_complex(complex_):
+    assert complex_.serialize() == COMPLEX_JSON
 
 
 def test_serialization():

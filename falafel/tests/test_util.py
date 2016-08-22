@@ -77,7 +77,7 @@ class TestUname(unittest.TestCase):
 
     def test_to_json(self):
         uname_obj = Uname("Linux hostname 3.10.0-229.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        uname_json_list = uname_obj.to_json()
+        uname_json_list = uname_obj.serialize()
         assert 'falafel.util.uname#Uname' == uname_json_list[0], "Module name does not match"
         uname_json = uname_json_list[1]
         assert '3.10.0-229.el7.x86_64' == uname_json['kernel'], "Full kernel version string doesn't match"

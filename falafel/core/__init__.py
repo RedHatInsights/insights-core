@@ -94,6 +94,28 @@ def computed(f):
     return f
 
 
+def serialize_data(data):
+    if isinstance(data, dict):
+        return {k: serialize_data(v) for k, v in data.iteritems()}
+    elif isinstance(data, list):
+        return [serialize_data(v) for v in data]
+    elif isinstance(data, MapperOutput):
+        return data.serialize()
+    else:
+        return data
+
+
+def deserialize_data(data):
+    if isinstance(data, dict):
+        return {k: deserialize_data(v) for k, v in data.iteritems()}
+    elif isinstance(data, list):
+        return [deserialize_data(v) for v in data]
+    elif MapperOutput.is_serialized(data):
+        return MapperOutput.deserialize(data)
+    else:
+        return data
+
+
 class ComputedMeta(type):
     def __new__(cls, name, parents, dct):
         dct["_computed_keys"] = None
@@ -114,6 +136,23 @@ class MapperOutput(object):
         self.calc_computed_keys()
         self.compute()
 
+    @staticmethod
+    def is_serialized(o):
+        return (
+            isinstance(o, list) and
+            len(o) == 3 and
+            isinstance(o[0], basestring) and
+            len(o[0].split("#")) == 2
+        )
+
+    @staticmethod
+    def deserialize(o):
+        name, data, computed = o
+        module, cls = name.split("#")
+        module = sys.modules[module]
+        path = computed["file_path"] if "file_path" in computed else None
+        return getattr(module, cls)(deserialize_data(data), path=path)
+
     @classmethod
     def parse_context(cls, context):
         return cls(cls.parse_content(context.content), context.path)
@@ -121,14 +160,12 @@ class MapperOutput(object):
     def get_name(self):
         return "#".join([self.__module__, self.__class__.__name__])
 
-    def to_json(self):
-        return [self.get_name(), self.data, self.computed_to_json()]
-
-    def computed_to_json(self):
-        d = {}
-        for k, v in self.computed.iteritems():
-            d[k] = v.to_json() if isinstance(v, MapperOutput) else v
-        return d
+    def serialize(self):
+        return [
+            self.get_name(),
+            serialize_data(self.data),
+            serialize_data(self.computed)
+        ]
 
     def _add_to_computed(self, key, value):
         self.computed[key] = value

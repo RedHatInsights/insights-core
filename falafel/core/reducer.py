@@ -1,7 +1,7 @@
 import logging
 import sys
 from collections import defaultdict
-from falafel.core import marshalling, plugins
+from falafel.core import marshalling, plugins, MapperOutput
 from falafel.config.static import get_config
 from falafel.util import logging_level
 
@@ -19,16 +19,10 @@ def string_to_mapper(o):
 
 
 def value_to_class(o):
-    if len(o) > 0 and isinstance(o[0], list) and len(o[0]) == 3:
-        r = []
-        for item in o:
-            cls_name, data, computed = item
-            module, cls = cls_name.split("#")
-            module = sys.modules[module]
-            path = computed["file_path"] if "file_path" in computed else None
-            r.append(getattr(module, cls)(data, path=path))
-        return r if r else o
-    return o
+    if len(o) > 0 and MapperOutput.is_serialized(o[0]):
+        return [MapperOutput.deserialize(i) for i in o]
+    else:
+        return o
 
 
 def deserialize(s):
