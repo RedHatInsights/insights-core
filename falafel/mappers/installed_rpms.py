@@ -31,6 +31,10 @@ class InstalledRpms(MapperOutput):
     def corrupt(self):
         return "__error" in self
 
+    @computed
+    def unparsed_lines(self):
+        return self.get("__unparsed", [])
+
     def get_max(self, name):
         """
         Returns the highest version of the installed RPM with the given name
@@ -53,9 +57,12 @@ class InstalledRpms(MapperOutput):
                     packages["__error"] = True
                 else:
                     if line.strip():
-                        name, rpm = parse_line(line)
-                        packages[name].append(InstalledRpm(rpm))
-        return packages if packages else None
+                        try:
+                            name, rpm = parse_line(line)
+                            packages[name].append(InstalledRpm(rpm))
+                        except Exception:
+                            packages["__unparsed"].append(line)
+        return packages
 
 
 class InstalledRpm(MapperOutput):
