@@ -332,3 +332,6 @@ def main():
         ec = ErrorCollector()
         results = list(reducer.run(mapper_results, ec.reducer_error))
         print_results(results, cases, ec)
+
+if __name__ == "__main__":
+    main()
