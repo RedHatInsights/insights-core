@@ -29,7 +29,7 @@ class InstalledRpms(MapperOutput):
 
     @computed
     def corrupt(self):
-        return "__error" in self
+        return any("rpmdbNextIterator" in s for s in self.get("__error", []))
 
     @computed
     def unparsed_lines(self):
@@ -46,15 +46,15 @@ class InstalledRpms(MapperOutput):
         packages = defaultdict(list)
         try:
             for line in content:
-                if line.startswith("error:"):
-                    packages["__error"] = True
+                if line.startswith("error:") or line.startswith("warning:"):
+                    packages["__error"].append(line)
                 else:
                     rpm = json.loads(line)
                     packages[rpm["name"]].append(InstalledRpm(rpm))
         except:
             for line in content:
-                if line.startswith("error:"):
-                    packages["__error"] = True
+                if line.startswith("error:") or line.startswith("warning:"):
+                    packages["__error"].append(line)
                 else:
                     if line.strip():
                         try:
