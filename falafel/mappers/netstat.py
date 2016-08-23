@@ -1,7 +1,13 @@
 from falafel.core.plugins import mapper
 from falafel.util import parse_table
 from collections import defaultdict
-from falafel.core import MapperOutput
+from falafel.core import MapperOutput, computed
+from falafel.mappers import get_active_lines
+import re
+
+
+class NetstatParserException(Exception):
+    pass
 
 
 @mapper('netstat-s')
@@ -171,3 +177,147 @@ def get_netstat_agn(context):
     table = parse_table(content)
     result = map(lambda item: {k.lower(): v for (k, v) in item.iteritems()}, table)
     return NetstatAGNDevice(result)
+
+ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
+ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and established)'
+NETSTAT_SECTION_ID = {
+    ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
+    ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
+}
+
+HTTPD_REGEX = re.compile(r'/httpd($|\s+)')
+
+
+class NetstatSection:
+
+    def __init__(self, name):
+        self.name = name.strip()
+        if self.name not in NETSTAT_SECTION_ID:
+            raise NetstatParserException("Unknown netstat section : " + name)
+        self.meta = NETSTAT_SECTION_ID[self.name]
+        self.data = defaultdict(list)
+        for m in self.meta:
+            self.data[m] = []
+
+    def addMetaData(self, line):
+        try:
+            data = []
+
+            meta = {}
+
+            for m in NETSTAT_SECTION_ID[self.name]:
+                meta[line.index(m)] = m
+                data.append([])
+
+            self.indexes = sorted(meta.keys())
+            self.data = data
+            self.meta = meta
+
+        except Exception, e:
+            raise NetstatParserException("Cannot parse meta data: " + line, e)
+
+    def addData(self, line):
+        indexes = self.indexes
+
+        i = 1
+        from_index = 0
+        while i < len(indexes):
+            value = line[from_index: indexes[i]].strip()
+            if not value:
+                value = None
+
+            self.data[i - 1].append(value)
+            from_index = indexes[i]
+            i += 1
+
+    def _merge_data_index(self):
+        merged_data = {}
+        i = 0
+        while i < len(self.indexes):
+            index = self.indexes[i]
+            m = self.meta[index]
+            merged_data[m] = self.data[i]
+            i += 1
+
+        self.data = merged_data
+        del self.indexes
+        del self.meta
+
+
+@mapper("netstat")
+class Netstat(MapperOutput):
+
+    @staticmethod
+    def parse_content(content):
+        """
+        Parsing netstat command content and return
+
+        Examples:
+            {
+                'Active Internet connections (servers and established)': {
+                    'Proto': ['tcp', 'tcp', 'tcp', 'tcp'],
+                    'Recv-Q': ['0', '0', '0', '0'],
+                    ..
+                    'PID/Program name': ['1279/qpidd', '2007/mongod', '2387/Passenger Rac', '1272/qdrouterd']
+                },
+
+                'Active UNIX domain sockets (servers and established)': {
+                    'Proto': ['unix', 'unix', 'unix'],
+                    'RefCnt': ['2', '2', '2'],
+                    ...
+                    'PID/Program name': ['1/systemd', '1/systemd', '738/NetworkManager']
+                }
+            }
+        For the input content:
+            Active Internet connections (servers and established)
+            Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
+            tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
+            tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
+            tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
+            tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+            Active UNIX domain sockets (servers and established)
+            Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+            unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+            unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+            unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+        """
+
+        sections = []
+        cur_section = None
+        is_meta_data = False
+        num_active_lines = 0
+        for line in get_active_lines(content):
+            num_active_lines += 1
+            if line in NETSTAT_SECTION_ID:
+
+                # this is a new section
+                cur_section = NetstatSection(line)
+                sections.append(cur_section)
+                is_meta_data = True
+                continue
+
+            if is_meta_data:
+                cur_section.addMetaData(line)
+                is_meta_data = False
+            else:
+                cur_section.addData(line)
+
+        if not sections:
+            if num_active_lines < 1:
+                raise NetstatParserException("Input content is empty")
+            else:
+                raise NetstatParserException("Input content is not empty but there is no useful parsed data")
+
+        section_map = {}
+        for s in sections:
+            s._merge_data_index()
+            section_map[s.name] = s.data
+
+        return section_map
+
+    @computed
+    def is_httpd_running(self):
+        if ACTIVE_INTERNET_CONNECTIONS in self.data:
+            for pid in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']:
+                if HTTPD_REGEX.search(pid):
+                    return True
