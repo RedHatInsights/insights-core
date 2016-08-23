@@ -260,6 +260,7 @@ class Uname(MapperOutput):
                 data['arch'] = None
         else:
             data['release'] = data['release_arch']
+            data['arch'] = None
         data['_rel_maj'] = data['release'].split(".")[0]
         rhel_key = "-".join([data['version'], data['_rel_maj']])
         rhel_release = rhel_release_map.get(rhel_key, '-1.-1')
