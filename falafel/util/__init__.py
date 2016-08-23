@@ -1,9 +1,31 @@
 import logging
 import platform
 import os
+from functools import wraps
 
 TMP_DIR = os.path.join("/tmp", "falafel-web")
 logger = logging.getLogger(__name__)
+
+
+def defaults(default=None):
+    """
+    Catches any exception thrown by the wrapped function and returns `default`
+    instead.
+
+    Parameters
+    ----------
+
+    default : object
+        The default value to return if the wrapped function throws an exception
+    """
+    def _f(func):
+        def __f(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception:
+                return default
+        return __f
+    return _f
 
 
 def keys_in(items, *args):

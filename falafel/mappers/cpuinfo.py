@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput, computed
 from collections import defaultdict
+from falafel.util import defaults
 
 
 @mapper('cpuinfo')
@@ -37,30 +38,37 @@ class CpuInfo(MapperOutput):
             yield self.get_processor_by_index(idx)
 
     @computed
+    @defaults()
     def cpu_speed(self):
         return self["clockspeeds"][0]
 
     @computed
+    @defaults()
     def cache_size(self):
         return self["cache_sizes"][0]
 
     @computed
+    @defaults()
     def cpu_count(self):
         return len(self["cpus"])
 
     @computed
+    @defaults()
     def socket_count(self):
         return len(self["sockets"])
 
     @computed
+    @defaults()
     def model_name(self):
         return self["models"][0]
 
     @computed
+    @defaults()
     def model_number(self):
         return self["model_ids"][0]
 
     @computed
+    @defaults()
     def vendor(self):
         return self["vendors"][0]
 
