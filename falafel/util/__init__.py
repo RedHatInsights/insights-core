@@ -1,7 +1,6 @@
 import logging
 import platform
 import os
-from functools import wraps
 
 TMP_DIR = os.path.join("/tmp", "falafel-web")
 logger = logging.getLogger(__name__)
