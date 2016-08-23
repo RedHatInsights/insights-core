@@ -327,6 +327,7 @@ for cls in (Lvs, Pvs, Vgs):
 
 
 LVM_CONF_FILTERS = [
+    "locking_type",  # CMIRROR_PERF_ISSUE
     "filter",  # LVM_CONF_REMOVE_BOOTDEV HA_LVM_RELOCATE_ISSUE LVM_FILTER_ISSUE
     "volume_list"  # HA_LVM_RELOCATE_ISSUE
 ]
