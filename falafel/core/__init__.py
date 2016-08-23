@@ -95,12 +95,12 @@ def computed(f):
 
 
 def serialize_data(data):
-    if isinstance(data, dict):
+    if isinstance(data, MapperOutput):
+        return data.serialize()
+    elif isinstance(data, dict):
         return {k: serialize_data(v) for k, v in data.iteritems()}
     elif isinstance(data, list):
         return [serialize_data(v) for v in data]
-    elif isinstance(data, MapperOutput):
-        return data.serialize()
     else:
         return data
 
