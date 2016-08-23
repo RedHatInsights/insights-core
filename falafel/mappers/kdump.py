@@ -1,4 +1,5 @@
 import re
+from falafel.core import computed, MapperOutput
 from falafel.core.plugins import mapper
 
 
@@ -27,8 +28,36 @@ def kdump_service_enabled(context):
     """
 
     for line in context.content:
-        if line.startswith('kdump') and ('on' in line or 'enabled' in line):
+        if line.startswith('kdump') and (':on' in line or 'enabled' in line):
             return True
+
+
+@mapper("kdump.conf")
+class KDumpConf(MapperOutput):
+
+    @staticmethod
+    def parse_content(content):
+        data = {}
+        for line in content:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            k, v = line.split(' ', 1)
+            data[k.strip()] = v.strip()
+        return data
+
+    @computed
+    def using_local_disk(self):
+        KDUMP_NETWORK_REGEX = re.compile(r'^\s*(ssh|nfs4?|net)\s+', re.I)
+        KDUMP_LOCAL_DISK_REGEX = re.compile(r'^\s*(ext[234]|raw|xfs|btrfs|minix)\s+', re.I)
+        local_disk = True
+        for k in self.data.keys():
+            if KDUMP_NETWORK_REGEX.search(k):
+                local_disk = False
+            elif KDUMP_LOCAL_DISK_REGEX.search(k):
+                local_disk = True
+
+        return local_disk
 
 
 @mapper("kdump.conf")

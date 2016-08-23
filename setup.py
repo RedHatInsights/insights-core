@@ -11,6 +11,7 @@ entry_points = {
         'gen_api = falafel.tools.generate_api_config:main',
         'compare_api = falafel.tools.compare_uploader_configs:main',
         'falafel-web = falafel.web.daemon:main',
+        'falafel-serve = falafel.web.server:main',
         'falafel-scaffold = falafel.scaffold:main'
     ]
 }
