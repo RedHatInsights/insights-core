@@ -299,7 +299,8 @@ class Lvs(Lvm):
         "LVM2_DATA_LV_UUID": "Data_UUID",
         "LVM2_DATA_LV": "Data",
         "LVM2_CACHE_READ_MISSES": "CacheReadMisses",
-        "LVM2_LV_DESCENDANTS": "Descendants"
+        "LVM2_LV_DESCENDANTS": "Descendants",
+        "LVM2_REGIONSIZE": "Region"
     }
 
     PRIMARY_KEY = "LV"

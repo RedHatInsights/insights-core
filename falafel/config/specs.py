@@ -115,7 +115,7 @@ static_specs = {
     "lspci"                     : CommandSpec("/sbin/lspci"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
     "lvs"                       : NoneGroup([CommandSpec('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')]),
-    "lvs_noheadings"            : CommandSpec("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices --config=\"global{locking_type=0}\""),
+    "lvs_noheadings"            : CommandSpec("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices,region_size --config=\"global{locking_type=0}\""),
     "mdstat"                    : SimpleFileSpec("proc/mdstat"),
     "meminfo"                   : SimpleFileSpec("proc/meminfo"),
     "messages"                  : SimpleFileSpec("var/log/messages", large_content=True),

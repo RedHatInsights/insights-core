@@ -90,6 +90,7 @@ class TestLVS(object):
             "Rahead": "auto",
             "CacheUsedBlocks": "",
             "Role": "public",
-            "LSize": "50.00g"
+            "LSize": "50.00g",
+            "Region": 0
         }
         assert lvs_list["swap"]["LSize"] == "5.75g"
