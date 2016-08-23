@@ -1,6 +1,8 @@
+import json
 from falafel.util import parse_keypair_lines, parse_table
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput, computed
+from falafel.mappers import get_active_lines
 
 
 def map_keys(pvs, keys):
@@ -324,12 +326,39 @@ for cls in (Lvs, Pvs, Vgs):
     KEYS_WITH_SPACES.extend([k for k in cls.KEYS.values() if " " in k])
 
 
+LVM_CONF_FILTERS = [
+    "filter",  # LVM_CONF_REMOVE_BOOTDEV HA_LVM_RELOCATE_ISSUE LVM_FILTER_ISSUE
+    "volume_list"  # HA_LVM_RELOCATE_ISSUE
+]
+
+
+@mapper('lvm.conf', LVM_CONF_FILTERS)
+class LvmConf(MapperOutput):
+
+    @staticmethod
+    def parse_content(content):
+        """
+        Returns a dict:
+        locking_type : 1
+        filter : ['a/sda[0-9]*$/', 'r/sd.*/']
+        volume_list : ['vg2', 'vg3/lvol3', '@tag2', '@*']
+        """
+        lvm_conf_dict = {}
+        for line in get_active_lines(content):
+            if "=" in line:
+                (key, value) = [item.strip() for item in line.split('=', 1)]
+                try:
+                    lvm_conf_dict[key] = json.loads(value)
+                except Exception:
+                    lvm_conf_dict[key] = value
+        return lvm_conf_dict
+
+
 if __name__ == "__main__":
     # This is a quick script to generate the key mappings in each subclass.
     # Run each lvm command with --separator="|", --nameprefixes and *not* --noheadings
 
     import sys
-    import json
     from collections import OrderedDict
 
     content = sys.stdin.read().splitlines()

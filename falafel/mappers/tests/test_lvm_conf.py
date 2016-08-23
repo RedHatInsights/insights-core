@@ -1,4 +1,4 @@
-from falafel.mappers import lvm_conf
+from falafel.mappers.lvm import LvmConf
 from falafel.tests import context_wrap
 
 LVM_CONF = """
@@ -18,7 +18,7 @@ history_size = 100
 
 class TestLvmConf():
     def test_lvm_conf(self):
-        lvm_conf_output = lvm_conf.get_lvm_conf(context_wrap(LVM_CONF))
-        assert lvm_conf_output.get("locking_type") == 1
-        assert lvm_conf_output.get("volume_list") == ['vg2', 'vg3/lvol3', '@tag2', '@*']
-        assert lvm_conf_output.get("filter") == ['a/sda[0-9]*$/', 'r/sd.*/']
+        lvm_conf_output = LvmConf.parse_context(context_wrap(LVM_CONF))
+        assert lvm_conf_output["locking_type"] == 1
+        assert lvm_conf_output["volume_list"] == ['vg2', 'vg3/lvol3', '@tag2', '@*']
+        assert lvm_conf_output["filter"] == ['a/sda[0-9]*$/', 'r/sd.*/']
