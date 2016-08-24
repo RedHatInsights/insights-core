@@ -31,6 +31,7 @@ class Runner(object):
         from falafel.config.static import get_config
         from falafel.config import group_wrap
         config = get_config()
+        logging.info("Analyzing report '%s'", path)
 
         if self.args.specs:
             try:
@@ -89,8 +90,7 @@ class Runner(object):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a sosreport for some rules.")
-    parser.add_argument("--sosreport", help="path to a sosreport to analyze (the path can be to a tar file, or to an expanded directory tree)")
-    parser.add_argument("--extract-dir", help="Root directory path in which files will be extracted.")
+    parser.add_argument("--extract-dir", dest="extract_dir", action="store", help="Root directory path in which files will be extracted.")
     parser.add_argument("--ext-file", dest="external_files", nargs="*", help="key=value set of a file to include for analysis")
     parser.add_argument("--specs", dest="specs", help="module path to user-defined specs")
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", help="path to extra plugins")
@@ -98,6 +98,7 @@ def main():
     parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=True, help="Hide missing file listing")
     parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=0, help="Max output width.  Defaults to width of console")
     parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=0)
+    parser.add_argument("reports", nargs="*", help="path to a report to analyze (the path can be to a tar file, or to an expanded directory tree)")
 
     args = parser.parse_args()
     args.list_missing = False  # Force suppression until we make it work again
@@ -115,8 +116,9 @@ def main():
         logging.info("Loading %s", module)
         plugins.load(module)
 
-    if args.sosreport:
-        Formatter(args).format_results(*runner.handle_sosreport(args.sosreport))
+    if args.reports:
+        for report in args.reports:
+            Formatter(args).format_results(*runner.handle_sosreport(report))
 
 if __name__ == "__main__":
     main()

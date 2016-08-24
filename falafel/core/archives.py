@@ -154,7 +154,7 @@ class OnDiskExtractor(Extractor):
             self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
 
-            logging.info("Extracting files in %s", self.tmp_dir)
+            logging.info("Extracting files in '%s'", self.tmp_dir)
             subprocess.call(shlex.split(command))
 
             self.tar_file = DirectoryAdapter(self.tmp_dir)
