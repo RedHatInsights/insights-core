@@ -99,12 +99,13 @@ local 30.142.64.9 dev bond0.400  table local  proto kernel  scope host  src 30.1
 
 class Test_ip_route():
     def test_ip_route_1(self):
-        d = ip.route_devices(context_wrap(IP_ROUTE_SHOW_TABLE_ALL_TEST))
+        context = context_wrap(IP_ROUTE_SHOW_TABLE_ALL_TEST)
+        d = ip.RouteDevices.parse_context(context)
 
         assert len(d.data) == 5
-        assert d.data["30.142.34.0/26"][0] == "bond0.300"
-        assert d.data["30.142.64.0/26"][0] == "bond0.400"
-        assert d.data["169.254.0.0/16"][0] == "bond0"
+        assert d["30.142.34.0/26"][0].dev == "bond0.300"
+        assert d["30.142.64.0/26"][0].dev == "bond0.400"
+        assert d["169.254.0.0/16"][0].dev == "bond0"
         assert d.ifaces("30.142.34.1")[0] == "bond0.300"
         assert d.ifaces("30.142.64.1")[0] == "bond0.400"
         assert d.ifaces("169.254.0.1")[0] == "bond0"
