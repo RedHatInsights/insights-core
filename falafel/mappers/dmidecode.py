@@ -1,6 +1,8 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput, computed
+from falafel.util import defaults
 import re
+from datetime import date
 
 
 @mapper('dmidecode')
@@ -38,6 +40,22 @@ class DMIDecode(MapperOutput):
     def bios(self):
         """Convenience method to get BIOS information"""
         return self["bios_information"][0] if "bios_information" in self else None
+
+    @computed
+    @defaults()
+    def bios_vendor(self):
+        return self["bios_information"][0]["vendor"]
+
+    @computed
+    @defaults()
+    def bios_date(self):
+        month, day, year = map(int, self["bios_information"][0]["release_date"].split("/"))
+        return date(year, month, day)
+
+    @computed
+    @defaults()
+    def processor_manufacturer(self):
+        return self["processor_information"][0]["manufacturer"]
 
     @computed
     def virt_what(self):
