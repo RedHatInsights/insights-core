@@ -268,7 +268,7 @@ class Routes(MapperOutput):
             if route and (route.prefix != 'default' or not route.table):
                 routes[route.prefix].append(route)
         return routes
-            
+
     @classmethod
     def parse_line(cls, line):
         parts = deque(filter(None, line.split()))
@@ -341,7 +341,7 @@ class Routes(MapperOutput):
                 continue
             if route.netmask > max_netmask:
                 ifaces = [r.dev for r in self.by_prefix[route.prefix] if r.dev]
-                max_netmask = route.netmask # Longest Prefix Match
+                max_netmask = route.netmask  # Longest Prefix Match
         if ifaces:
             return ifaces
 
