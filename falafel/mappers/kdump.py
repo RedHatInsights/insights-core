@@ -1,6 +1,8 @@
 import re
 from falafel.core import computed, MapperOutput
 from falafel.core.plugins import mapper
+from falafel.mappers import chkconfig
+from falafel.mappers.systemd import unitfiles
 
 
 @mapper("cmdline")
@@ -58,6 +60,28 @@ class KDumpConf(MapperOutput):
                 local_disk = True
 
         return local_disk
+
+
+@mapper('kexec_crash_loaded')
+class KexecCrashLoaded(MapperOutput):
+
+    @staticmethod
+    def parse_content(content):
+        line = list(content)[0].strip()
+        return line == '1'
+
+    @computed
+    def is_loaded(self):
+        return self.data
+
+
+def is_enabled(shared):
+    chk = shared.get(chkconfig.ChkConfig)
+    svc = shared.get(unitfiles.UnitFiles)
+    if chk and chk.is_on('kdump'):
+        return True
+
+    return bool(svc and svc.is_on('kdump.service'))
 
 
 @mapper("kdump.conf")

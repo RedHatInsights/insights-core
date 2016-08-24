@@ -4,8 +4,8 @@ from falafel.core.plugins import mapper
 
 @mapper('systemctl_list-unit-files')
 class UnitFiles(MapperOutput):
-    @classmethod
-    def parse_content(cls, content):
+    @staticmethod
+    def parse_content(content):
         # static means "on" to fulfill dependency of something else that
         # is on
         on = ['enabled', 'static']
