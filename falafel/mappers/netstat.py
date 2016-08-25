@@ -2,8 +2,6 @@ from falafel.core.plugins import mapper
 from falafel.util import parse_table
 from collections import defaultdict
 from falafel.core import MapperOutput, computed
-from falafel.mappers import get_active_lines
-import re
 
 
 class NetstatParserException(Exception):
@@ -185,7 +183,10 @@ NETSTAT_SECTION_ID = {
     ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
 }
 
-HTTPD_REGEX = re.compile(r'/httpd($|\s+)')
+NETSTAT_TEXT_RIGHT_ALLIGNMENT = {
+    ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
+}
+COMPONENT_LEN = "__component_len__"
 
 
 class NetstatSection:
@@ -230,16 +231,22 @@ class NetstatSection:
             from_index = indexes[i]
             i += 1
 
+        self.data[i - 1].append(line[indexes[i - 1]:])
+
     def _merge_data_index(self):
         merged_data = {}
+        component_len = {}
         i = 0
         while i < len(self.indexes):
             index = self.indexes[i]
             m = self.meta[index]
             merged_data[m] = self.data[i]
+            component_len[m] = self.indexes[i + 1] - self.indexes[i] if i != len(self.indexes) - 1 else None
             i += 1
 
         self.data = merged_data
+        self.data[COMPONENT_LEN] = component_len
+
         del self.indexes
         del self.meta
 
@@ -281,12 +288,17 @@ class Netstat(MapperOutput):
             unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
             unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
         """
+        if not content:
+            raise NetstatParserException("Input content is empty")
+
+        if len(content) < 3:
+            raise NetstatParserException("Input content is not empty but there is no useful parsed data")
 
         sections = []
         cur_section = None
         is_meta_data = False
         num_active_lines = 0
-        for line in get_active_lines(content):
+        for line in content:
             num_active_lines += 1
             if line in NETSTAT_SECTION_ID:
 
@@ -316,8 +328,44 @@ class Netstat(MapperOutput):
         return section_map
 
     @computed
-    def is_httpd_running(self):
+    def running_processes(self):
+
+        process_names = set()
+
         if ACTIVE_INTERNET_CONNECTIONS in self.data:
-            for pid in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']:
-                if HTTPD_REGEX.search(pid):
-                    return True
+            for pg in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']:
+                try:
+                    if not pg:
+                        continue
+
+                    pid, name = pg.split("/", 1)
+                    process_names.add(name.strip())
+                except Exception:
+                    pass
+
+        return process_names
+
+    def get_original_line(self, section_id, index):
+        """
+        Get the original netstat line that is stripped white spaces
+        """
+        if section_id not in self.data:
+            return
+
+        data = self.data[section_id]
+        component_len = data[COMPONENT_LEN]
+
+        line = ""
+        for component_label in NETSTAT_SECTION_ID[section_id]:
+            len = component_len[component_label]
+
+            str = data[component_label][index] if data[component_label][index] else ""
+            if len:
+                if component_label in NETSTAT_TEXT_RIGHT_ALLIGNMENT[section_id]:
+                    line += str.rjust(len - 1) + ' '
+                else:
+                    line += str.ljust(len)
+            else:
+                line += str
+
+        return line.strip()

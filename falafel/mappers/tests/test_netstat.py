@@ -244,34 +244,34 @@ def test_get_netstat_agn():
 
 
 NETSTAT = """
-        Active Internet connections (servers and established)
-        Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
-        tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
-        tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
-        tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
-        tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
-        Active UNIX domain sockets (servers and established)
-        Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
-        unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
-        unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
-        unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
-        """
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
+tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
+tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
+tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
+tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+"""
 
 
 NETSTAT_NOMATCH1 = """
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
-tcp        0      0 ::ffff:127.0.0.1:7403   :::*                    LISTEN      500        19075      2647/java           off (0.00/0/0)
-tcp        0      0 :::5227                 :::*                    LISTEN      0          15758      2416/perfd          off (0.00/0/0)
-tcp        0      0 :::7788                 :::*                    LISTEN      500        97305      7661/httpd.worker   off (0.00/0/0)
+tcp        0      0 ::ffff:127.0.0.1:7403   :::*                    LISTEN      500        19075      2647/java            off (0.00/0/0)
+tcp        0      0 :::5227                 :::*                    LISTEN      0          15758      2416/perfd           off (0.00/0/0)
+tcp        0      0 :::7788                 :::*                    LISTEN      500        97305      7661/httpd.worker    off (0.00/0/0)
 """.strip()
 
 NETSTAT_NOMATCH2 = """
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
-tcp        0      0 ::1:5432                :::*                    LISTEN      26         14071      1474/postmaster     off (0.00/0/0)
-tcp        0      0 ::1:25                  :::*                    LISTEN      0          12554      1569/master         off (0.00/0/0)
-tcp        0      0 :::8443                 :::*                    LISTEN      91         14065      1641/java           off (0.00/0/0)
+tcp        0      0 ::1:5432                :::*                    LISTEN      26         14071      1474/postmaster      off (0.00/0/0)
+tcp        0      0 ::1:25                  :::*                    LISTEN      0          12554      1569/master          off (0.00/0/0)
+tcp        0      0 :::8443                 :::*                    LISTEN      91         14065      1641/java            off (0.00/0/0)
 """.strip()
 
 NETSTAT_MATCH1 = """
@@ -286,11 +286,18 @@ tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      
 def test_get_netstat():
     ns = Netstat.parse_context(context_wrap(NETSTAT))
     assert len(ns.data) == 2
-    assert "1279/qpidd" in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']
-    assert "738/NetworkManager" in ns.data[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS]['PID/Program name']
+    assert "1279/qpidd" in [x.strip() for x in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']]
+    assert "738/NetworkManager" in [x.strip() for x in ns.data[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS]['PID/Program name']]
+
+
+def test_get_original_line():
+    ns = Netstat.parse_context(context_wrap(NETSTAT))
+    assert len(ns.data) == 2
+    assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 1)
+    assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 2)
 
 
 def test_is_httpd_running():
-    assert Netstat.parse_context(context_wrap(NETSTAT_MATCH1)).is_httpd_running is True
-    assert Netstat.parse_context(context_wrap(NETSTAT_NOMATCH1)).is_httpd_running is None
-    assert Netstat.parse_context(context_wrap(NETSTAT_NOMATCH2)).is_httpd_running is None
+    assert "httpd" in Netstat.parse_context(context_wrap(NETSTAT_MATCH1)).running_processes
+    assert "httpd" not in Netstat.parse_context(context_wrap(NETSTAT_NOMATCH1)).running_processes
+    assert "httpd" not in Netstat.parse_context(context_wrap(NETSTAT_NOMATCH2)).running_processes
