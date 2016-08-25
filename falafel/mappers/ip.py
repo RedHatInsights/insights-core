@@ -4,196 +4,290 @@ from falafel.core import computed, MapperOutput
 from collections import defaultdict, deque
 
 
-@mapper('ip_addr')
-def addr(context):
-    """
-    QUICK START:
-    `ip addr` will return a dict that key is interface name. `addr` key is a array to store all address.
-    Different type have different output. Peer ip and general interface have difference type.
-    There are some examples:
-    CASE 1:
-    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
-        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-        inet 127.0.0.1/8 scope host lo
-        inet6 ::1/128 scope host
-        valid_lft forever preferred_lft forever
-    RESULT:
-    "lo": {
-        "qdisc": "noqueue",
-        "addr": [
-            "127.0.0.1",
-        ],
-        "addr_v6":[
-            "::1",
-        ]
-        "state": "UNKNOWN",
-        "flag": [
-            "LOOPBACK",
-            "UP",
-            "LOWER_UP"
-        ],
-        "mtu": 16436,
-        "mac": "00:00:00:00:00:00",
-        "type": "loopback"
-    }
-    CASE 2:
-    2: eth7: <NO-CARRIER,BROADCAST,MULTICAST,SLAVE,UP> mtu 1500 qdisc mq master bond1 state DOWN qlen 1000
-        link/ether 00:11:3f:e2:f5:9f brd ff:ff:ff:ff:ff:ff link-netnsid 1
-    RESULT:
-    "eth7": {
-        "qlen": 1000,
-        "qdisc": "mq",
-        "addr": [ ],
-        "addr_v6": [ ],
-        "state": "DOWN",
-        "mtu": 1500,
-        "mac": "00:11:3f:e2:f5:9f",
-        "flag": [
-            "NO-CARRIER",
-            "BROADCAST",
-            "MULTICAST",
-            "SLAVE",
-            "UP"
-        ],
-        "master": "bond1",
-        "type": "ether"
-    }
-    CASE 3:
-    3: tunl0: <NOARP> mtu 1480 qdisc noop state DOWN
-        link/ipip 0.0.0.0 brd 0.0.0.0
-    RESULT:
-    "tunl0": {
-        "qdisc": "noop",
-        "addr": [ ],
-        "addr_v6", [ ],
-        "state": "DOWN",
-        "flag": [
-            "NOARP"
-        ],
-        "mtu": 1480,
-        "mac": "0.0.0.0",
-        "type": "ipip"
-    }
-    CASE 4:
-    4: tunl1: <NOARP> mtu 1480 qdisc noop state DOWN
-        link/[65534]
-        inet 172.30.0.1 peer 172.30.0.2/32 scope global tun0
-    RESULT:
-    "tunl1": {
-        "qdisc": "noop",
-        "addr": [
-            "172.30.0.1"
-        ],
-        "addr_v6": [ ],
-        "state": "DOWN",
-        "mtu": 1480,
-        "flag": [
-            "NOARP"
-        ],
-        "type": "[65534]"
-    }
-    CASE 5:
-    5: bond1.57@bond1: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
-        link/ether 00:11:3f:e2:f5:9e brd ff:ff:ff:ff:ff:ff
-        inet 10.192.4.171/27 brd 10.192.4.191 scope global bond1.57
-        inet6 fe80::211:3fff:fee2:f59e/64 scope link
-        valid_lft forever preferred_lft forever
-        inet6 2001::211:3fff:fee2:f59e/64 scope global mngtmpaddr dynamic
-        valid_lft 2592000sec preferred_lft 6480000sec
-    RESULT:
-    "bond1.57@bond1": {
-        "qdisc": "noqueue",
-        "addr": [
-            "10.192.4.171",
-        ],
-        "addr_v6":[
-            "fe80::211:3fff:fee2:f59e",
-            "2001::211:3fff:fee2:f59e"
-        ],
-        "state": "UP",
-        "flag": [
-            "BROADCAST",
-            "MULTICAST",
-            "MASTER",
-            "UP",
-            "LOWER_UP"
-        ],
-        "mtu": 1500,
-        "mac": "00:11:3f:e2:f5:9e",
-        "type": "ether"
-    }
-        CASE 6:
-    6: ip.tun2: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1480 qdisc noqueue state UNKNOWN
-        link/ipip 10.192.4.203 peer 10.188.61.108
-        inet 192.168.112.5 peer 192.168.122.6/32 scope global ip.tun2
-    RESULT:
-    "ip.tun2": {
-        "qdisc": "noqueue",
-        "addr": [
-            "192.168.112.5"
-        ],
-        "addr_v6":[],
-        "state": "UNKNOWN",
-        "peer_ip": "10.192.4.203",
-        "flag": [
-            "POINTOPOINT",
-            "NOARP",
-            "UP",
-            "LOWER_UP"
-        ],
-        "peer": "10.188.61.108",
-        "mtu": 1480,
-        "type": "ipip"
-    }
-    """
+class NetworkInterface(MapperOutput):
+
+    def __init__(self, data, path=None):
+        super(NetworkInterface, self).__init__(data, path)
+        addresses = [unicode("/".join([a["addr"], a["mask"]])) for a in self.data["addr"]]
+        self.addresses = map(ipaddress.ip_interface, addresses)
+
+    def __len__(self):
+        return len(self.addresses)
+
+    def __cmp__(self, other):
+        return cmp(self["name"], other["name"])
+
+    def addrs(self, version=None):
+        if version:
+            return [str(a.ip) for a in self.addresses if a.version == version]
+        else:
+            return [str(a.ip) for a in self.addresses]
+
+
+def parse_ip_addr(content):
     r = {}
-    iface_name = ""
-    iface_pro = {}
-    iface_addr_v4 = []
-    iface_addr_v6 = []
-    line = 0
-    if len(context.content) == 0:
-        return r
-    while "Message truncated" == context.content[line].strip():
-        line = line + 1
-    for content in [l for l in context.content[line:] if l]:
-        split_content = content.strip().split()
-        if len(content) > 0 and content[0] != " ":  # Parse first line
-            # save previous iface info
-            if iface_name != "":
-                iface_pro["addr"] = iface_addr_v4
-                iface_pro["addr_v6"] = iface_addr_v6
-                r[iface_name] = iface_pro
-                iface_name = ""
-                iface_pro = {}
-                iface_addr_v4 = []
-                iface_addr_v6 = []
-            iface_name = content.split(":")[1].strip()
-            iface_pro["flag"] = split_content[2].lstrip("<").rstrip(">").split(",")
-            # extract property
-            for i in range(3, len(split_content), 2):
-                if split_content[i] in ["mtu", "qlen"] and "X" not in split_content[i + 1]:  # must be integer
-                    iface_pro[split_content[i]] = int(split_content[i + 1])
-                else:
-                    iface_pro[split_content[i]] = split_content[i + 1]
-        elif "link" in split_content[0]:  # parse "link/ether line"
-            iface_pro["type"] = split_content[0].split("/")[1]
-            if "peer" in content and len(split_content) >= 3:
-                iface_pro["peer_ip"] = split_content[1]
-                iface_pro["peer"] = split_content[3]
-            elif len(split_content) >= 2:
-                iface_pro["mac"] = split_content[1]
-        elif "inet" in split_content[0]:
-            ipinfo = split_content[1].split("/")[0]
-            if "inet6" in split_content[0]:
-                iface_addr_v6.append(ipinfo)
-            else:
-                iface_addr_v4.append(ipinfo)
-    if iface_name != "":
-        iface_pro["addr"] = iface_addr_v4
-        iface_pro["addr_v6"] = iface_addr_v6
-        r[iface_name] = iface_pro
-    return r
+    content = [l.strip() for l in content if "Message truncated" not in l]
+    for line in filter(None, content):
+        if line[0].isdigit():
+            current = parse_interface(line)
+            r[current["name"]] = current
+        elif line.startswith("link"):
+            parse_link(line, current)
+        elif line.startswith("inet"):
+            parse_inet(line, current)
+    return {k: NetworkInterface(v) for k, v in r.iteritems()}
+
+
+def parse_interface(line):
+    split_content = line.split()
+    idx, name, _ = line.split(":", 2)
+    virtual = "@" in name
+    if virtual:
+        name, physical_name = name.split("@")
+    current = {
+        "index": int(idx),
+        "name": name.strip(),
+        "physical_name": physical_name if virtual else None,
+        "virtual": virtual,
+        "flags": split_content[2].strip("<>").split(","),
+        "addr": []
+    }
+    # extract properties
+    for i in range(3, len(split_content), 2):
+        key, value = (split_content[i], split_content[i + 1])
+        current[key] = int(value) if key in ["mtu", "qlen"] else value
+    return current
+
+
+def parse_link(line, d):
+    split_content = line.split()
+    d["type"] = split_content[0].split("/")[1]
+    if "peer" in line and len(split_content) >= 3:
+        d["peer_ip"] = split_content[1]
+        d["peer"] = split_content[3]
+    elif len(split_content) >= 2:
+        d["mac"] = split_content[1]
+
+
+def parse_inet(line, d):
+    split_content = line.split()
+    p2p = "peer" in split_content
+    addr, mask = split_content[3 if p2p else 1].split("/")
+    d["addr"].append({
+        "addr": addr,
+        "mask": mask,
+        "local_addr": split_content[1] if p2p else None,
+        "p2p": p2p
+    })
+
+
+@mapper('ip_addr')
+class IpAddr(MapperOutput):
+
+    def __init__(self, data, path=None):
+        super(IpAddr, self).__init__(data, path)
+
+    @staticmethod
+    def parse_content(content):
+        """
+        QUICK START:
+        `ip addr` will return a dict that key is interface name. `addr` key is a array to store all address.
+        Different type have different output. Peer ip and general interface have difference type.
+        There are some examples:
+        CASE 1:
+        1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+            link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+            inet 127.0.0.1/8 scope host lo
+            inet6 ::1/128 scope host
+            valid_lft forever preferred_lft forever
+        RESULT:
+        "lo": {
+            "index": 1,
+            "physical_name": null,
+            "qdisc": "noqueue",
+            "name": "lo",
+            "state": "UNKNOWN",
+            "virtual": false,
+            "mtu": 16436,
+            "mac": "00:00:00:00:00:00",
+            "flags": [
+                "LOOPBACK",
+                "UP",
+                "LOWER_UP"
+            ],
+            "type": "loopback",
+            "addr": [
+                {
+                    "local_addr": null,
+                    "mask": "8",
+                    "p2p": false,
+                    "addr": "127.0.0.1"
+                },
+                {
+                    "local_addr": null,
+                    "mask": "128",
+                    "p2p": false,
+                    "addr": "::1"
+                }
+            ]
+        }
+        CASE 2:
+        2: eth7: <NO-CARRIER,BROADCAST,MULTICAST,SLAVE,UP> mtu 1500 qdisc mq master bond1 state DOWN qlen 1000
+            link/ether 00:11:3f:e2:f5:9f brd ff:ff:ff:ff:ff:ff link-netnsid 1
+        RESULT:
+        "eth7": {
+            "index": 2,
+            "physical_name": null,
+            "qdisc": "mq",
+            "name": "eth7",
+            "state": "DOWN",
+            "qlen": 1000,
+            "virtual": false,
+            "mtu": 1500,
+            "mac": "00:11:3f:e2:f5:9f",
+            "flags": [
+                "NO-CARRIER",
+                "BROADCAST",
+                "MULTICAST",
+                "SLAVE",
+                "UP"
+            ],
+            "master": "bond1",
+            "type": "ether",
+            "addr": []
+        }
+        CASE 3:
+        3: tunl0: <NOARP> mtu 1480 qdisc noop state DOWN
+            link/ipip 0.0.0.0 brd 0.0.0.0
+        RESULT:
+        "tunl0": {
+            "index": 3,
+            "physical_name": null,
+            "qdisc": "noop",
+            "name": "tunl0",
+            "state": "DOWN",
+            "virtual": false,
+            "mtu": 1480,
+            "mac": "0.0.0.0",
+            "flags": [
+                "NOARP"
+            ],
+            "type": "ipip",
+            "addr": []
+        }
+        CASE 4:
+        4: tunl1: <NOARP> mtu 1480 qdisc noop state DOWN
+            link/[65534]
+            inet 172.30.0.1 peer 172.30.0.2/32 scope global tun0
+        RESULT:
+        "tunl1": {
+            "index": 4,
+            "physical_name": null,
+            "qdisc": "noop",
+            "name": "tunl1",
+            "virtual": false,
+            "mtu": 1480,
+            "state": "DOWN",
+            "flags": [
+                "NOARP"
+            ],
+            "type": "[65534]",
+            "addr": [
+                {
+                    "local_addr": "172.30.0.1",
+                    "mask": "32",
+                    "p2p": true,
+                    "addr": "172.30.0.2"
+                }
+            ]
+        }
+        CASE 5:
+        5: bond1.57@bond1: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
+            link/ether 00:11:3f:e2:f5:9e brd ff:ff:ff:ff:ff:ff
+            inet 10.192.4.171/27 brd 10.192.4.191 scope global bond1.57
+            inet6 fe80::211:3fff:fee2:f59e/64 scope link
+            valid_lft forever preferred_lft forever
+            inet6 2001::211:3fff:fee2:f59e/64 scope global mngtmpaddr dynamic
+            valid_lft 2592000sec preferred_lft 6480000sec
+        RESULT:
+        "bond1.57": {
+            "index": 5,
+            "physical_name": "bond1",
+            "qdisc": "noqueue",
+            "name": "bond1.57",
+            "state": "UP",
+            "virtual": true,
+            "mtu": 1500,
+            "mac": "00:11:3f:e2:f5:9e",
+            "flags": [
+                "BROADCAST",
+                "MULTICAST",
+                "MASTER",
+                "UP",
+                "LOWER_UP"
+            ],
+            "type": "ether",
+            "addr": [
+                {
+                    "local_addr": null,
+                    "mask": "27",
+                    "p2p": false,
+                    "addr": "10.192.4.171"
+                },
+                {
+                    "local_addr": null,
+                    "mask": "64",
+                    "p2p": false,
+                    "addr": "fe80::211:3fff:fee2:f59e"
+                },
+                {
+                    "local_addr": null,
+                    "mask": "64",
+                    "p2p": false,
+                    "addr": "2001::211:3fff:fee2:f59e"
+                }
+            ]
+        }
+        CASE 6:
+        6: ip.tun2: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1480 qdisc noqueue state UNKNOWN
+            link/ipip 10.192.4.203 peer 10.188.61.108
+            inet 192.168.112.5 peer 192.168.122.6/32 scope global ip.tun2
+        RESULT:
+        "ip.tun2": {
+            "index": 6,
+            "physical_name": null,
+            "qdisc": "noqueue",
+            "name": "ip.tun2",
+            "virtual": false,
+            "mtu": 1480,
+            "state": "UNKNOWN",
+            "flags": [
+                "POINTOPOINT",
+                "NOARP",
+                "UP",
+                "LOWER_UP"
+            ],
+            "peer": "10.188.61.108",
+            "peer_ip": "10.192.4.203",
+            "type": "ipip",
+            "addr": [
+                {
+                    "local_addr": "192.168.112.5",
+                    "mask": "32",
+                    "p2p": true,
+                    "addr": "192.168.122.6"
+                }
+            ]
+        }
+        """
+        return parse_ip_addr(content)
+
+    def __iter__(self):
+        return iter(self.data.values())
+
+    @computed
+    def active(self):
+        return [i["name"] for i in self if "UP" in i["flags"]]
 
 
 class Route(MapperOutput):
