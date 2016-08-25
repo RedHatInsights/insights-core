@@ -31,10 +31,10 @@ class TestOnDiskExtractor(unittest.TestCase):
                 for tar_path in tar_all_files:
                     dir_path = os.path.join(dir_tf.tar_file.path,
                                             os.path.relpath(tar_path, tar_tf.tar_file.path))
-                    tar_content = tar_tf.extractfile(tar_path)
-                    dir_content = dir_tf.extractfile(dir_path)
-
-                    self.assertEqual(tar_content, dir_content)
+                    if not os.path.isdir(tar_path):
+                        tar_content = tar_tf.extractfile(tar_path)
+                        dir_content = dir_tf.extractfile(dir_path)
+                        self.assertEqual(tar_content, dir_content)
 
         command = "rm -rf %s" % tmp_dir
         subprocess.call(shlex.split(command))

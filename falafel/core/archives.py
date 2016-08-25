@@ -176,6 +176,8 @@ class DirectoryAdapter(object):
         self.path = path
         self.names = []
         for root, dirs, files in os.walk(self.path):
+            for dirname in dirs:
+                self.names.append(os.path.join(root, dirname) + "/")
             for filename in files:
                 self.names.append(os.path.join(root, filename))
 

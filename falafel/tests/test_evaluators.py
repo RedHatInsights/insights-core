@@ -20,7 +20,7 @@ CLUSTER_UPLOAD = """
 ./insights-overcloud-controller-2.localdomain-20150930193927.tar
 ./insights-overcloud-controller-0.localdomain-20150930193931.tar
 ./cluster_id
-"""
+""".strip()
 
 SOSCLEANER_SINGLE_NODE_UPLOAD = """
 soscleaner-7704572305004757/branch_info
@@ -99,7 +99,7 @@ soscleaner-7704572305004757/var/log/yum.log
 soscleaner-7704572305004757/var/log/redhat-access-insights/redhat-access-insights.log
 soscleaner-7704572305004757/sys/devices/system/clocksource/clocksource0/current_clocksource
 soscleaner-7704572305004757/boot/grub/grub.conf
-"""
+""".strip()
 
 SINGLE_NODE_UPLOAD = """
 insights-davxapasnp03-20151007031606/
@@ -190,7 +190,7 @@ insights-davxapasnp03-20151007031606/var/log/yum.log
 insights-davxapasnp03-20151007031606/var/log/redhat-access-insights/
 insights-davxapasnp03-20151007031606/var/log/redhat-access-insights/redhat-access-insights.log
 insights-davxapasnp03-20151007031606/branch_info
-"""
+""".strip()
 
 
 class MockTarFile(object):
@@ -209,25 +209,15 @@ class TestDetermineRoot(unittest.TestCase):
 
     def test_single_node(self):
         spec = SpecMapper(MockTarFile(SINGLE_NODE_UPLOAD))
-        self.assertEqual(spec._determine_root(), "insights-davxapasnp03-20151007031606")
+        self.assertEqual(spec._determine_root(), "insights-davxapasnp03-20151007031606/")
 
     def test_multi_node(self):
         spec = SpecMapper(MockTarFile(CLUSTER_UPLOAD))
-        self.assertEqual(spec._determine_root(), ".")
+        self.assertEqual(spec._determine_root(), "./")
 
     def test_soscleaned(self):
         spec = SpecMapper(MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD))
-        self.assertEquals(spec._determine_root(), "soscleaner-7704572305004757")
-
-    def test_no_roots(self):
-        self.assertRaises(Exception, SpecMapper, MockTarFile("\n".join([
-            "foobar.txt", "another.txt", "one_more.txt"
-        ])))
-
-    def test_too_many_roots(self):
-        self.assertRaises(Exception, SpecMapper, MockTarFile("\n".join([
-            "foo/bar.txt", "baz/stuff.txt"
-        ])))
+        self.assertEquals(spec._determine_root(), "soscleaner-7704572305004757/")
 
 
 def make_cluster_archive(fd, content_type):
