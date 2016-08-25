@@ -94,7 +94,7 @@ def main():
     parser.add_argument("--ext-file", dest="external_files", nargs="*", help="key=value set of a file to include for analysis")
     parser.add_argument("--specs", dest="specs", help="module path to user-defined specs")
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", help="path to extra plugins")
-    parser.add_argument("--hide-plugin-list", dest="list_plugins", action="store_false", default=True, help="Hide full plugin listing")
+    parser.add_argument("--show-plugin-list", dest="list_plugins", action="store_true", default=False, help="Show full plugin listing")
     parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=True, help="Hide missing file listing")
     parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=0, help="Max output width.  Defaults to width of console")
     parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=0)
