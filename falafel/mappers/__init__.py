@@ -2,6 +2,9 @@ import os
 
 __all__ = [f.split(".")[0] for f in os.listdir(os.path.dirname(__file__)) if f.endswith(".py")]
 
+class ParseException(Exception):
+    pass
+
 
 def get_active_lines(lines, comment_char="#"):
     """
