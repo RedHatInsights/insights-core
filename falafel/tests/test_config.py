@@ -13,6 +13,7 @@ class TestSimpleFileSpec(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.dummy_path = r'/path/to/thing'
+        cls.with_dollar = cls.dummy_path + r'$'
 
     def setUp(self):
         self.spec = SimpleFileSpec(self.dummy_path)
@@ -24,11 +25,11 @@ class TestSimpleFileSpec(unittest.TestCase):
         self.assertEqual(self.dummy_path, self.spec.get_path())
 
     def test_get_regex(self):
-        self.assertEqual(self.dummy_path, self.spec.get_regex().pattern)
+        self.assertEqual(self.with_dollar, self.spec.get_regex().pattern)
 
     def test_get_regex_prefix(self):
         prefix = 'prefix'
-        self.assertEqual(prefix + self.dummy_path, self.spec.get_regex(prefix=prefix).pattern)
+        self.assertEqual(prefix + self.with_dollar, self.spec.get_regex(prefix=prefix).pattern)
 
     def test_get_regex_suffix(self):
         suffix = 'suffix'
@@ -115,7 +116,7 @@ class TestCommandSpec(unittest.TestCase):
 
     def test_get_regex(self):
         actual = self.spec.get_regex().pattern
-        expected = '.*' + self.spec.get_path()
+        expected = '.*' + self.spec.get_path() + "$"
         self.assertEqual(expected, actual)
 
     def test_get_preferred_path(self):

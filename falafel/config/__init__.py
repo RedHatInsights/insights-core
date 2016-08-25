@@ -469,7 +469,7 @@ class InsightsDataSpecBase(object):
         #   implement it's original behavor
         raise NotImplementedError()
 
-    def get_regex(self, prefix='', suffix='', analysis_target=None):
+    def get_regex(self, prefix='', suffix='$', analysis_target=None):
         # this method, and it's overrides in derived classes
         # is what the engine uses to find files in archives
         return re.compile(prefix + self.get_path(analysis_target=analysis_target) + suffix)
@@ -710,8 +710,8 @@ class CommandSpec(InsightsDataSpecBase):
         if self.multi_output:
             return self.path_groups.keys()[0]
 
-    def get_regex(self, prefix=".*", suffix="", analysis_target=None):
-        return re.compile(prefix + self.get_path(analysis_target=analysis_target) + suffix)
+    def get_regex(self, prefix="", suffix="$", analysis_target=None):
+        return super(CommandSpec, self).get_regex(prefix + ".*", suffix, analysis_target)
 
     def get_archive_file_name(self, analysis_target):
         return self.get_path(analysis_target=analysis_target, for_archive_file_name=True)

@@ -51,7 +51,7 @@ class SpecMapper(object):
     def add_files(self, file_map):
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
-                match_func = spec.get_regex(prefix=self.root + ".*", suffix=r"$",
+                match_func = spec.get_regex(prefix=self.root + "/",
                                             analysis_target=self.analysis_target).match
                 matches = filter(match_func, self.all_names)
                 if matches:
