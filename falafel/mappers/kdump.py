@@ -1,7 +1,7 @@
 import re
 from falafel.core import computed, MapperOutput
 from falafel.core.plugins import mapper
-from falafel.mappers import chkconfig
+from falafel.mappers import chkconfig, ParseException
 from falafel.mappers.systemd import unitfiles
 
 
@@ -60,7 +60,12 @@ class KDumpConf(MapperOutput):
             if line.startswith('#'):
                 comments.append(i)
                 continue
-            k, v = line.split(' ', 1)
+            r = line.split('=', 1)
+            if len(r) == 1 or len(r[0].split()) > 1:
+                r = line.split(' ', 1)
+                if len(r) == 1:
+                    raise ParseException('Cannot split %s', line)
+            k, v = r
             v = v.strip().split('#', 1)
             items[k] = v[0].strip()
             if len(v) > 1:
