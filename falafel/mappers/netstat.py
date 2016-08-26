@@ -345,6 +345,36 @@ class Netstat(MapperOutput):
 
         return process_names
 
+    @computed
+    def listening_pid(self):
+        """
+
+            Find PIDs of all LISTEN processes
+
+            Returns:
+                dict: If any are found, they are returned in a dictionary following the format:
+                    [
+                     {'pid': ("addr": 'ip_address', 'port', 'process_name')},
+                     {'pid': ('ip_address', 'port', 'process_name)}
+                    ]
+        """
+        pids = {}
+        connections = self.data.get(ACTIVE_INTERNET_CONNECTIONS, {})
+        for i, s in enumerate(connections.get('State', [])):
+            try:
+                if s.strip() == 'LISTEN':
+                    addr, port = connections['Local Address'][i].strip().split(":", 1)
+                    pid, name = connections['PID/Program name'][i].strip().split("/", 1)
+                    pids[pid] = {"addr": addr, "port": port, "name": name}
+
+            except Exception:
+                # sometimes netstat provide "-" for empty value, so the parser will throw exception for those fields
+                # just ignore it
+                pass
+
+        if pids:
+            return pids
+
     def get_original_line(self, section_id, index):
         """
         Get the original netstat line that is stripped white spaces

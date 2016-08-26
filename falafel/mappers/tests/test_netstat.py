@@ -290,6 +290,13 @@ def test_get_netstat():
     assert "738/NetworkManager" in [x.strip() for x in ns.data[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS]['PID/Program name']]
 
 
+def test_listening_pid():
+    ns = Netstat.parse_context(context_wrap(NETSTAT))
+    assert len(ns.data) == 2
+    assert ns.listening_pid['12387'] == {'addr': '127.0.0.1', 'name': 'Passenger Rac', 'port': '53644'}
+    assert ns.listening_pid['1272'] == {'addr': '0.0.0.0', 'name': 'qdrouterd', 'port': '5646'}
+
+
 def test_get_original_line():
     ns = Netstat.parse_context(context_wrap(NETSTAT))
     assert len(ns.data) == 2
