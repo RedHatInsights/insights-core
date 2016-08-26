@@ -12,7 +12,8 @@ entry_points = {
         'compare_api = falafel.tools.compare_uploader_configs:main',
         'falafel-web = falafel.web.daemon:main',
         'falafel-serve = falafel.web.server:main',
-        'falafel-scaffold = falafel.scaffold:main'
+        'falafel-scaffold = falafel.scaffold:main',
+        'falafel-content = falafel.content:main'
     ]
 }
 data_files = []
@@ -61,7 +62,9 @@ if __name__ == "__main__":
                     'Jinja2',
                     'tornado',
                     'futures',
-                    'requests'
+                    'requests',
+                    'GitPython'
+
                 ],
                 'optional': [
                     'python-cjson'
@@ -69,6 +72,7 @@ if __name__ == "__main__":
                     'python-statsd',
                     'tornado',
                     'futures',
+                    'GitPython'
                 ],
                 'test': [
                     'flake8',
