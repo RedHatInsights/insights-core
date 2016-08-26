@@ -2,27 +2,37 @@
 test mount
 ==========
 """
+import pytest
 
-from falafel.mappers import mount
+from falafel.mappers import ParseException
+from falafel.mappers.mount import Mount
 from falafel.core.context import Context
 
-MOUNT_DATA = ['tmpfs on /tmp type tmpfs (rw,seclabel)',
-              'hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)',
-              'nfsd on /proc/fs/nfsd type nfsd (rw,relatime)',
-              '/dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)',
-              '/dev/mapper/fedora-home on /home type ext4 (rw,relatime,seclabel,data=ordered)',
-              'sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)',
-              'tmpfs on /run/user/42 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=1605428k,mode=700,uid=42,gid=42)',
-              'tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=1605428k,mode=700,uid=1000,gid=1000)',
-              'gvfsd-fuse on /run/user/1000/gvfs type fuse.gvfsd-fuse (rw,nosuid,nodev,relatime,user_id=1000,group_id=1000)',
-              'fusectl on /sys/fs/fuse/connections type fusectl (rw,relatime)',
-              '/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered) [CONFIG]',
-              '/dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]']
+MOUNT_DATA = """
+tmpfs on /tmp type tmpfs (rw,seclabel)
+hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
+nfsd on /proc/fs/nfsd type nfsd (rw,relatime)
+/dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
+/dev/mapper/fedora-home on /home type ext4 (rw,relatime,seclabel,data=ordered)
+sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)
+tmpfs on /run/user/42 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=1605428k,mode=700,uid=42,gid=42)
+tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=1605428k,mode=700,uid=1000,gid=1000)
+gvfsd-fuse on /run/user/1000/gvfs type fuse.gvfsd-fuse (rw,nosuid,nodev,relatime,user_id=1000,group_id=1000)
+fusectl on /sys/fs/fuse/connections type fusectl (rw,relatime)
+/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered) [CONFIG]
+/dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+""".strip()
+
+# Missing 'on' in second line
+MOUNT_ERR_DATA = """
+tmpfs on /tmp type tmpfs (rw,seclabel)
+hugetlbfs /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
+""".strip()
 
 
 def test_mount():
-    context = Context(content=MOUNT_DATA)
-    results = mount.Mount.parse_context(context)
+    context = Context(content=MOUNT_DATA.splitlines())
+    results = Mount.parse_context(context)
     assert results is not None
     assert len(results) == 12
     sr0 = None
@@ -48,3 +58,7 @@ def test_mount():
     assert sda1['mount_options']['data'] == 'ordered'
     assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
+
+    context = Context(content=MOUNT_ERR_DATA.splitlines())
+    with pytest.raises(ParseException):
+        Mount.parse_context(context)

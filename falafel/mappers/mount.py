@@ -4,7 +4,7 @@ Mount
 """
 
 from falafel.core.plugins import mapper
-from falafel.mappers import get_active_lines, optlist_to_dict
+from falafel.mappers import get_active_lines, optlist_to_dict, ParseException
 from falafel.core import MapperOutput
 
 
@@ -111,13 +111,16 @@ class Mount(MapperOutput):
         mount_list = []
         for line in get_active_lines(content):
             mount = {}
-            mount['mount_clause'] = line
-            mount['filesystem'], rest = line.split(' on ', 1)
-            mount['mount_point'], rest = rest.split(' type ', 1)
-            mount['mount_type'], rest = rest.split(' (', 1)
-            mount_options, rest = rest.split(')', 1)
-            mount['mount_options'] = optlist_to_dict(mount_options)
-            if len(rest) > 0:
-                mount['mount_label'] = rest.strip(' []')
-            mount_list.append(mount)
+            try:
+                mount['mount_clause'] = line
+                mount['filesystem'], rest = line.split(' on ', 1)
+                mount['mount_point'], rest = rest.split(' type ', 1)
+                mount['mount_type'], rest = rest.split(' (', 1)
+                mount_options, rest = rest.split(')', 1)
+                mount['mount_options'] = optlist_to_dict(mount_options)
+                if len(rest) > 0:
+                    mount['mount_label'] = rest.strip(' []')
+                mount_list.append(mount)
+            except:
+                raise ParseException("Mount unable to parse content: ", line)
         return mount_list
