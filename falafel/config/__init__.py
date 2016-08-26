@@ -711,7 +711,7 @@ class CommandSpec(InsightsDataSpecBase):
             return self.path_groups.keys()[0]
 
     def get_regex(self, prefix="", suffix="$", analysis_target=None):
-        return super(CommandSpec, self).get_regex(prefix + ".*/", suffix, analysis_target)
+        return super(CommandSpec, self).get_regex(prefix + ".*", suffix, analysis_target)
 
     def get_archive_file_name(self, analysis_target):
         return self.get_path(analysis_target=analysis_target, for_archive_file_name=True)
