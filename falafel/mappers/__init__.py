@@ -2,6 +2,7 @@ import os
 
 __all__ = [f.split(".")[0] for f in os.listdir(os.path.dirname(__file__)) if f.endswith(".py")]
 
+
 class ParseException(Exception):
     """
     Exception that should be thrown from mappers that encounter

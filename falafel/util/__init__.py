@@ -1,4 +1,5 @@
 import logging
+import functools
 import platform
 import os
 
@@ -18,6 +19,7 @@ def defaults(default=None):
         The default value to return if the wrapped function throws an exception
     """
     def _f(func):
+        @functools.wraps(func)
         def __f(self, *args, **kwargs):
             try:
                 return func(self, *args, **kwargs)
@@ -48,6 +50,7 @@ def keys_in(items, *args):
 
 def logging_level(logger, level):
     def _f(func):
+        @functools.wraps(func)
         def check_log_level(*args, **kwargs):
             if logger.getEffectiveLevel() <= level:
                 return func(*args, **kwargs)

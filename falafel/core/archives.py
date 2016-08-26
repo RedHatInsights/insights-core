@@ -60,6 +60,9 @@ class Extractor(object):
     def issym(self, name):
         return self.tar_file.issym(name)
 
+    def isdir(self, name):
+        return self.tar_file.isdir(name)
+
     def __enter__(self):
         return self
 
@@ -154,7 +157,7 @@ class OnDiskExtractor(Extractor):
             self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
 
-            logging.info("Extracting files in %s", self.tmp_dir)
+            logging.info("Extracting files in '%s'", self.tmp_dir)
             subprocess.call(shlex.split(command))
 
             self.tar_file = DirectoryAdapter(self.tmp_dir)
@@ -176,6 +179,8 @@ class DirectoryAdapter(object):
         self.path = path
         self.names = []
         for root, dirs, files in os.walk(self.path):
+            for dirname in dirs:
+                self.names.append(os.path.join(root, dirname) + "/")
             for filename in files:
                 self.names.append(os.path.join(root, filename))
 
@@ -188,6 +193,9 @@ class DirectoryAdapter(object):
 
     def issym(self, name):
         return os.path.islink(name)
+
+    def isdir(self, name):
+        return os.path.isdir(name)
 
     def close(self):
         pass
@@ -211,6 +219,9 @@ class MemoryAdapter(object):
 
     def issym(self, name):
         return self.tar_file.getmember(name).issym()
+
+    def isdir(self, name):
+        return self.tar_file.getmember(name).isdir()
 
     def close(self):
         self.tar_file.close()
