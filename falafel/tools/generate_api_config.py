@@ -55,7 +55,6 @@ class APIConfigGenerator(object):
             self.version_number = os.environ.get("BUILD_NUMBER",
                                                  datetime.now().isoformat())
 
-        sys.path.append("/home/klape/insights/rules")
         plugins.load(plugin_package if plugin_package else DEFAULT_PLUGIN_MODULE)
 
     @staticmethod

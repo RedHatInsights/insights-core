@@ -10,7 +10,7 @@ class TestAPIGen(unittest.TestCase):
         pass
 
     def setUp(self):
-        self.latest = generate_api_config.APIConfigGenerator(plugin_package="falafel").serialize_data_spec()
+        self.latest = generate_api_config.APIConfigGenerator(plugin_package="falafel.mappers").serialize_data_spec()
 
     def tearDown(self):
         self.latest = None
