@@ -204,6 +204,9 @@ class MockTarFile(object):
     def issym(self, name):
         return False
 
+    def isdir(self, name):
+        return name.endswith("/")
+
 
 class TestDetermineRoot(unittest.TestCase):
 

@@ -63,6 +63,9 @@ class SpecMapper(object):
                     if isinstance(spec, CommandSpec):
                         matches = filter(lambda n: not self.tf.issym(n), matches)
 
+                    # We should never match a directory
+                    matches = filter(lambda n: not self.tf.isdir(n), matches)
+
                     if not matches:
                         continue
                     # In order to prevent accidental duplication when matching

@@ -60,6 +60,9 @@ class Extractor(object):
     def issym(self, name):
         return self.tar_file.issym(name)
 
+    def isdir(self, name):
+        return self.tar_file.isdir(name)
+
     def __enter__(self):
         return self
 
@@ -191,6 +194,9 @@ class DirectoryAdapter(object):
     def issym(self, name):
         return os.path.islink(name)
 
+    def isdir(self, name):
+        return os.path.isdir(name)
+
     def close(self):
         pass
 
@@ -213,6 +219,9 @@ class MemoryAdapter(object):
 
     def issym(self, name):
         return self.tar_file.getmember(name).issym()
+
+    def isdir(self, name):
+        return self.tar_file.getmember(name).isdir()
 
     def close(self):
         self.tar_file.close()
