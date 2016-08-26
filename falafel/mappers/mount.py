@@ -4,7 +4,7 @@ Mount
 """
 
 from falafel.core.plugins import mapper
-from falafel.mappers import optlist_to_dict
+from falafel.mappers import get_active_lines, optlist_to_dict
 from falafel.core import MapperOutput
 
 
@@ -109,7 +109,7 @@ class Mount(MapperOutput):
 
         """
         mount_list = []
-        for line in content:
+        for line in get_active_lines(content):
             mount = {}
             mount['mount_clause'] = line
             mount['filesystem'], rest = line.split(' on ', 1)
