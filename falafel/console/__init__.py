@@ -31,6 +31,7 @@ class Runner(object):
         from falafel.config.static import get_config
         from falafel.config import group_wrap
         config = get_config()
+        logging.info("Analyzing report '%s'", path)
 
         if self.args.specs:
             try:
@@ -93,8 +94,7 @@ class Runner(object):
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate a sosreport for some rules.")
-    parser.add_argument("--sosreport", help="path to a sosreport to analyze (the path can be to a tar file, or to an expanded directory tree)")
-    parser.add_argument("--extract-dir", help="Root directory path in which files will be extracted.")
+    parser.add_argument("--extract-dir", dest="extract_dir", action="store", help="Root directory path in which files will be extracted.")
     parser.add_argument("--ext-file", dest="external_files", nargs="*", help="key=value set of a file to include for analysis")
     parser.add_argument("--specs", dest="specs", help="module path to user-defined specs")
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", help="path to extra plugins")
@@ -104,6 +104,7 @@ def main():
     parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=0)
     parser.add_argument("--spec-map", dest="spec_map", action="store_true", default=False, help="Print the spec file mapping and exit")
     parser.add_argument("--mem-only", dest="mem_only", action="store_true", default=False, help="Use in-memory extracter")
+    parser.add_argument("reports", nargs="*", help="path to a report to analyze (the path can be to a tar file, or to an expanded directory tree)")
 
     args = parser.parse_args()
     args.list_missing = False  # Force suppression until we make it work again
@@ -121,8 +122,9 @@ def main():
         logging.info("Loading %s", module)
         plugins.load(module)
 
-    if args.sosreport:
-        Formatter(args).format_results(*runner.handle_sosreport(args.sosreport, args.spec_map))
+    if args.reports:
+        for report in args.reports:
+            Formatter(args).format_results(*runner.handle_sosreport(report))
 
 if __name__ == "__main__":
     main()
