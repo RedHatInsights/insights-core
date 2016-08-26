@@ -3,6 +3,14 @@ import os
 __all__ = [f.split(".")[0] for f in os.listdir(os.path.dirname(__file__)) if f.endswith(".py")]
 
 
+class ParseException(Exception):
+    """
+    Exception that should be thrown from mappers that encounter
+    exceptions they recognize while parsing.
+    """
+    pass
+
+
 def get_active_lines(lines, comment_char="#"):
     """
     Returns lines, or parts of lines, from content that are not commented out

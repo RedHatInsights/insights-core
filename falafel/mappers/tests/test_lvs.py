@@ -91,6 +91,6 @@ class TestLVS(object):
             "CacheUsedBlocks": "",
             "Role": "public",
             "LSize": "50.00g",
-            "Region": 0
+            "Region": None
         }
         assert lvs_list["swap"]["LSize"] == "5.75g"

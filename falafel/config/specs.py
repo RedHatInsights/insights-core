@@ -30,6 +30,7 @@ static_specs = {
     "df_-alP"                   : CommandSpec("/usr/bin/df -alP"),
     "df_-al"                    : CommandSpec("/usr/bin/df -al"),
     "df_-li"                    : CommandSpec("/usr/bin/df -li"),
+    "dig"                       : CommandSpec("/usr/bin/dig +dnssec . DNSKEY"),
     "dirsrv"                    : SimpleFileSpec("etc/sysconfig/dirsrv"),
     "dmesg"                     : CommandSpec("/bin/dmesg", large_content=True),
     "dmidecode"                 : CommandSpec("/usr/sbin/dmidecode"),
@@ -121,10 +122,11 @@ static_specs = {
     "messages"                  : SimpleFileSpec("var/log/messages", large_content=True),
     "modinfo"                   : CommandSpec("/usr/sbin/modinfo {module}", module=r"\S+"),
     "modprobe.conf"             : SimpleFileSpec("etc/modprobe.conf"),
-    "modprobe.d"                : PatternSpec(r"etc/modprobe\.d/*\.conf"),
+    "modprobe.d"                : PatternSpec(r"etc/modprobe\.d/.*\.conf"),
     "mount"                     : CommandSpec("/bin/mount"),
     "multipath.conf"            : SimpleFileSpec("etc/multipath.conf"),
     "multipath_-v4_-ll"         : CommandSpec("/sbin/multipath -v4 -ll"),
+    "named-checkconf_p"         : CommandSpec("/usr/sbin/named-checkconf -p"),
     "netconsole"                : SimpleFileSpec("etc/sysconfig/netconsole"),
     "netstat"                   : CommandSpec("/bin/netstat -neopa"),
     "netstat-s"                 : CommandSpec("/bin/netstat -s"),
@@ -142,7 +144,7 @@ static_specs = {
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
     "parted_-l"                 : CommandSpec("/sbin/parted -l"),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
-    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf\.d/*"),
+    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf\.d/\w+\.conf"),
     "postgresql.conf"           : All([SimpleFileSpec("var/lib/pgsql/data/postgresql.conf"),
                                     SimpleFileSpec("opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf")]),
     "postgresql.log"            : All([PatternSpec(r"var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
@@ -180,7 +182,7 @@ static_specs = {
                                     SimpleFileSpec("satellite_version")]),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
-    "sestatus"                  : CommandSpec("/usr/sbin/sestatus"),
+    "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
     "ssh_config"                : SimpleFileSpec("etc/ssh/ssh_config"),
     "sshd_config"               : SimpleFileSpec("etc/ssh/sshd_config"),
@@ -209,7 +211,7 @@ static_specs = {
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
     "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
-    "yum.repos.d"               : PatternSpec(r"etc/yum\.repos\.d/*")
+    "yum.repos.d"               : PatternSpec(r"etc/yum\.repos\.d/.*")
 
 }
 

@@ -38,6 +38,61 @@ KDUMP_MATCH_2 = """
 #core_collector makedumpfile -c --message-level 1 -d 31
 """.strip()
 
+KDUMP_WITH_NORMAL_COMMENTS = """
+# this is a comment
+
+ssh kdumpuser@10.209.136.62
+path /kdump/raw
+core_collector makedumpfile -c --message-level 1 -d 31
+""".strip()
+
+KDUMP_WITH_INLINE_COMMENTS = """
+ssh kdumpuser@10.209.136.62
+path /kdump/raw #some path stuff
+core_collector makedumpfile -c --message-level 1 -d 31
+""".strip()
+
+KDUMP_WITH_EQUAL = """
+ssh kdumpuser@10.209.136.62
+path /kdump/raw #some path stuff
+core_collector makedumpfile -c --message-level 1 -d 31
+some_var "blah=3"
+""".strip()
+
+KDUMP_WITH_EQUAL_2 = """
+ssh kdumpuser@10.209.136.62
+path /kdump/raw #some path stuff
+core_collector makedumpfile -c --message-level 1 -d 31
+KDUMP_COMMANDLINE_APPEND="blah"
+""".strip()
+
+
+class TestKDumpConf(unittest.TestCase):
+    def test_with_normal_comments(self):
+        context = context_wrap(KDUMP_WITH_NORMAL_COMMENTS)
+        kd = kdump.KDumpConf.parse_context(context)
+        expected = "# this is a comment"
+        self.assertEqual(expected, kd.comments[0])
+
+    def test_with_inline_comments(self):
+        context = context_wrap(KDUMP_WITH_INLINE_COMMENTS)
+        kd = kdump.KDumpConf.parse_context(context)
+        expected = "path /kdump/raw #some path stuff"
+        self.assertEqual(expected, kd.inline_comments[0])
+        self.assertEqual("/kdump/raw", kd["path"])
+
+    def test_with_equal(self):
+        context = context_wrap(KDUMP_WITH_EQUAL)
+        kd = kdump.KDumpConf.parse_context(context)
+        expected = '"blah=3"'
+        self.assertEqual(expected, kd['some_var'])
+
+    def test_with_equal2(self):
+        context = context_wrap(KDUMP_WITH_EQUAL_2)
+        kd = kdump.KDumpConf.parse_context(context)
+        expected = '"blah"'
+        self.assertEqual(expected, kd['KDUMP_COMMANDLINE_APPEND'])
+
 
 class TestKdump(unittest.TestCase):
     def test_crashkernel_enabled(self):

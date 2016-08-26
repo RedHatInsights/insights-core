@@ -1,6 +1,8 @@
 import re
 from falafel.core import computed, MapperOutput
 from falafel.core.plugins import mapper
+from falafel.mappers import chkconfig, ParseException
+from falafel.mappers.systemd import unitfiles
 
 
 @mapper("cmdline")
@@ -34,17 +36,62 @@ def kdump_service_enabled(context):
 
 @mapper("kdump.conf")
 class KDumpConf(MapperOutput):
+    """
+    A dictionary like object for the values of the kdump.conf file.
 
+    Attributes:
+    lines: dictionary of line numbers and raw lines from the file
+    comments: list of comment lines
+    inline_comments: list of lines containing inline comments
+    """
     @staticmethod
     def parse_content(content):
         data = {}
-        for line in content:
+        lines = {}
+        items = {}
+        comments = []
+        inline_comments = []
+
+        for i, line in enumerate(content):
+            lines[i] = line
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line:
                 continue
-            k, v = line.split(' ', 1)
-            data[k.strip()] = v.strip()
+            if line.startswith('#'):
+                comments.append(i)
+                continue
+            r = line.split('=', 1)
+            if len(r) == 1 or len(r[0].split()) > 1:
+                r = line.split(' ', 1)
+                if len(r) == 1:
+                    raise ParseException('Cannot split %s', line)
+            k, v = r
+            v = v.strip().split('#', 1)
+            items[k] = v[0].strip()
+            if len(v) > 1:
+                inline_comments.append(i)
+            items[k.strip()] = v[0].strip()
+        data['lines'] = lines
+        data['items'] = items
+        data['comments'] = comments
+        data['inline_comments'] = inline_comments
         return data
+
+    @property
+    def comments(self):
+        lines = self.data['lines']
+        comments = self.data.get('comments', [])
+        return [lines[i] for i in comments] or None
+
+    @property
+    def inline_comments(self):
+        lines = self.data['lines']
+        comments = self.data.get('inline_comments', [])
+        return [lines[i] for i in comments] or None
+
+    @computed
+    def lines(self):
+        return self.data['lines']
 
     @computed
     def using_local_disk(self):
@@ -58,6 +105,42 @@ class KDumpConf(MapperOutput):
                 local_disk = True
 
         return local_disk
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            raise TypeError("MapperOutput does not support integer indexes")
+        return self.data['items'][key]
+
+    def get(self, key, default=None):
+        try:
+            return self.__getitem__(key)
+        except KeyError:
+            return default
+
+    def __contains__(self, key):
+        return key in self.data['items']
+
+
+@mapper('kexec_crash_loaded')
+class KexecCrashLoaded(MapperOutput):
+
+    @staticmethod
+    def parse_content(content):
+        line = list(content)[0].strip()
+        return line == '1'
+
+    @computed
+    def is_loaded(self):
+        return self.data
+
+
+def is_enabled(shared):
+    chk = shared.get(chkconfig.ChkConfig)
+    svc = shared.get(unitfiles.UnitFiles)
+    if chk and chk.is_on('kdump'):
+        return True
+
+    return bool(svc and svc.is_on('kdump.service'))
 
 
 @mapper("kdump.conf")

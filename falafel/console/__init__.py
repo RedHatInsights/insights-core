@@ -26,7 +26,7 @@ class Runner(object):
                     logging.info("Adding '%s' as an external file for name '%s'", p, name)
                     self.external_files[name].append(p)
 
-    def handle_sosreport(self, path):
+    def handle_sosreport(self, path, spec_map):
         from falafel.core import archives, specs, evaluators
         from falafel.config.static import get_config
         from falafel.config import group_wrap
@@ -41,7 +41,8 @@ class Runner(object):
                 logging.error("Failed to load specs module.", exc_info=True)
 
         reports = []
-        with archives.OnDiskExtractor() as ex:
+        ex_class = archives.OnDiskExtractor if not self.args.mem_only else archives.InMemoryExtractor
+        with ex_class() as ex:
             tf = ex.from_path(path, self.args.extract_dir)
             sm = specs.SpecMapper(tf, data_spec_config=config)
             for name, paths in self.external_files.iteritems():
@@ -51,6 +52,9 @@ class Runner(object):
 
             md_str = sm.get_content("metadata.json", split=False, default="{}")
             md = json.loads(md_str)
+            if spec_map:
+                print json.dumps(sm.symbolic_files, indent=4, sort_keys=True)
+                sys.exit(0)
             if md and 'systems' in md:
                 runner = evaluators.InsightsMultiEvaluator(sm, metadata=md)
             else:
@@ -94,10 +98,12 @@ def main():
     parser.add_argument("--ext-file", dest="external_files", nargs="*", help="key=value set of a file to include for analysis")
     parser.add_argument("--specs", dest="specs", help="module path to user-defined specs")
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", help="path to extra plugins")
-    parser.add_argument("--hide-plugin-list", dest="list_plugins", action="store_false", default=True, help="Hide full plugin listing")
+    parser.add_argument("--show-plugin-list", dest="list_plugins", action="store_true", default=False, help="Show full plugin listing")
     parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=True, help="Hide missing file listing")
     parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=0, help="Max output width.  Defaults to width of console")
     parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=0)
+    parser.add_argument("--spec-map", dest="spec_map", action="store_true", default=False, help="Print the spec file mapping and exit")
+    parser.add_argument("--mem-only", dest="mem_only", action="store_true", default=False, help="Use in-memory extracter")
     parser.add_argument("reports", nargs="*", help="path to a report to analyze (the path can be to a tar file, or to an expanded directory tree)")
 
     args = parser.parse_args()

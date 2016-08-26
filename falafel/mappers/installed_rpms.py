@@ -75,6 +75,18 @@ class InstalledRpm(MapperOutput):
             self["release"]
         )
 
+    @computed
+    def name(self):
+        return self.get('name')
+
+    @computed
+    def version(self):
+        return self.get('version')
+
+    @computed
+    def release(self):
+        return self.get('release')
+
     def __str__(self):
         return self.package
 
