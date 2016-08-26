@@ -91,7 +91,7 @@ class TestCommandSpec(unittest.TestCase):
         self.assertEqual(expected, actual)
 
     def test_get_path_context_dict(self):
-        match = self.spec.get_regex().match("ethtool_-a_eth0")
+        match = self.spec.get_regex().match("stuff/ethtool_-a_eth0")
         actual = match.groupdict()
         expected = {"iface": "eth0"}
         self.assertEqual(expected, actual)
@@ -116,7 +116,7 @@ class TestCommandSpec(unittest.TestCase):
 
     def test_get_regex(self):
         actual = self.spec.get_regex().pattern
-        expected = '.*' + self.spec.get_path() + "$"
+        expected = '.*/' + self.spec.get_path() + "$"
         self.assertEqual(expected, actual)
 
     def test_get_preferred_path(self):
