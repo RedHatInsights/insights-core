@@ -26,7 +26,7 @@ class Runner(object):
                     logging.info("Adding '%s' as an external file for name '%s'", p, name)
                     self.external_files[name].append(p)
 
-    def handle_sosreport(self, path, spec_map):
+    def handle_sosreport(self, path, spec_map=None):
         from falafel.core import archives, specs, evaluators
         from falafel.config.static import get_config
         from falafel.config import group_wrap
@@ -124,7 +124,7 @@ def main():
 
     if args.reports:
         for report in args.reports:
-            Formatter(args).format_results(*runner.handle_sosreport(report))
+            Formatter(args).format_results(*runner.handle_sosreport(report, args.spec_map))
 
 if __name__ == "__main__":
     main()
