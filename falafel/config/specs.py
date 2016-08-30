@@ -181,6 +181,7 @@ static_specs = {
     "satellite_version.rb"      : First([SimpleFileSpec("usr/share/foreman/lib/satellite/version.rb"),
                                     SimpleFileSpec("satellite_version")]),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
+    "secure"                    : SimpleFileSpec("var/log/secure", large_content=True),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
