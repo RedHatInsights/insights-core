@@ -29,12 +29,13 @@ class SpecMapper(object):
         if multi_node:
             root = os.path.commonprefix([p for p in self.all_names])
         else:
-            root = os.path.commonprefix([p for p in self.all_names if p != "./"])
+            root = os.path.commonprefix([p for p in self.all_names if len(p) > 2])
+
         return root.rstrip("/") + "/"
 
     def _get_first_matching(self, pattern):
         for match in filter(
-                re.compile(self.root + ".*" + re.escape(pattern) + "$").match,
+                re.compile(self.root + "?" + pattern + "$").match,
                 self.all_names):
             return match
 
