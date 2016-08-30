@@ -31,4 +31,5 @@ def tomcat_web_conf(context):
         field_text = ''
 
     if field_text.isdigit():
-        return TomcatWebXml({TIMEOUT_KEYWORD: int(field_text)})
+        return TomcatWebXml({TIMEOUT_KEYWORD: int(field_text)},
+                            path=context.path)
