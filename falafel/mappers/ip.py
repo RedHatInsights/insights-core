@@ -423,6 +423,8 @@ class Routes(MapperOutput):
         ip_table = shared.get(get_ip_route)
         iface = ip_table.get_iface_by_ip(YOUR_IP_ADDRESS_STRING)
         """
+        if ip is None:
+            return
         routes = self.by_type.get('None', [])
         max_netmask = 0
         ifaces = None

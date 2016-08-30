@@ -44,11 +44,12 @@ class KDumpConf(MapperOutput):
     comments: list of comment lines
     inline_comments: list of lines containing inline comments
     """
+
     @staticmethod
     def parse_content(content):
         data = {}
         lines = {}
-        items = {}
+        items = {'options': {}}
         comments = []
         inline_comments = []
 
@@ -62,15 +63,24 @@ class KDumpConf(MapperOutput):
                 continue
             r = line.split('=', 1)
             if len(r) == 1 or len(r[0].split()) > 1:
-                r = line.split(' ', 1)
+                r = line.split(None, 1)
                 if len(r) == 1:
                     raise ParseException('Cannot split %s', line)
             k, v = r
-            v = v.strip().split('#', 1)
-            items[k] = v[0].strip()
-            if len(v) > 1:
+            k = k.strip()
+            parts = v.strip().split('#', 1)
+            v = parts[0].strip()
+
+            opt_kw = 'options'
+            if k != opt_kw:
+                items[k] = v
+            else:
+                mod, rest = v.split(None, 1)
+                items[opt_kw][mod] = rest.strip()
+
+            if len(parts) > 1:
                 inline_comments.append(i)
-            items[k.strip()] = v[0].strip()
+
         data['lines'] = lines
         data['items'] = items
         data['comments'] = comments
@@ -90,6 +100,14 @@ class KDumpConf(MapperOutput):
         return [lines[i] for i in comments] or None
 
     @computed
+    def ip(self):
+        ip_re = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
+        for l in filter(None, [self.get(n, '') for n in ('nfs', 'net', 'ssh')]):
+            matched_ip = ip_re.search(l)
+            if matched_ip:
+                return matched_ip.group()
+
+    @computed
     def lines(self):
         return self.data['lines']
 
@@ -105,6 +123,9 @@ class KDumpConf(MapperOutput):
                 local_disk = True
 
         return local_disk
+
+    def options(self, module):
+        return self.get('options', {}).get(module, '')
 
     def __getitem__(self, key):
         if isinstance(key, int):
