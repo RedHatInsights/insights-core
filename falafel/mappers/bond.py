@@ -32,11 +32,77 @@ Typical content of ``bond.*`` file is:
     Permanent HW addr: 2c:44:fd:80:5c:f9
     Slave queue ID: 0
 
-So, the data consists of stanzas of key value pairs.
+Data is modeled as an array of ``Bond`` objects (``bond`` being a
+pattern file specification gathering data from files located in
+``/proc/net/bonding``.
+
+The ``bondinfo`` method is deprecated.  Plugins should use the ``Bond``
+class instead.
 """
-from .. import LogFileOutput, mapper
+from .. import MapperOutput, LogFileOutput, mapper, get_active_lines
+
+BOND_4_INDICATOR = "Bonding Mode: IEEE 802.3ad Dynamic link aggregation"
+"""Deprecated, used by the deprecated ``bondinfo`` function"""
+
+BOND_PREFIX_MAP = [
+        ('load balancing (round-robin)', '0'),
+        ('fault-tolerance (active-backup)', '1'),
+        ('load balancing (xor)', '2'),
+        ('fault-tolerance (broadcast)', '3'),
+        ('IEEE 802.3ad Dynamic link aggregation', '4'),
+        ('transmit load balancing', '5'),
+        ('adaptive load balancing', '6')
+]
+
+
+@mapper('bond')
+class Bond(MapperOutput):
+    """Models the ``/proc/net/bonding`` file.
+
+    Currently used information from ``/proc/net/bonding`` includes
+    the "bond mode" and "partner mac address".
+    """
+
+    @staticmethod
+    def parse_content(content):
+        mode = None
+        partner_mac_address = None
+
+        for line in get_active_lines(content):
+            if line.startswith("Bonding Mode: "):
+                raw_mode = line.split(":", 1)[1].strip()
+                for prefix_map_item in BOND_PREFIX_MAP:
+                    if raw_mode.startswith(prefix_map_item[0]):
+                        mode = prefix_map_item[1]
+                        break
+                else:
+                    mode = raw_mode
+            elif line.startswith("Partner Mac Address: "):
+                partner_mac_address = line.split(":", 1)[1].strip()
+
+        data = {}
+        data["bond_mode"] = mode
+        data["partner_mac_address"] = partner_mac_address
+        return data
+
+    @property
+    def bond_mode(self):
+        """Returns the bond mode number as a string, or if there is no
+        known mapping to a number, the raw "Bonding Mode" value.
+        ``None`` is returned if no "Bonding Mode" key is found.
+        """
+        return self.data["bond_mode"]
+
+    @property
+    def partner_mac_address(self):
+        """Returns the value of the "Partner Mac Address" in the bond
+        file if the key/value exists.  If the key is not in the bond
+        file, ``None`` is returned.
+        """
+        return self.data["partner_mac_address"]
 
 
 @mapper('bond')
 def bondinfo(context):
+    """Deprecated, use Bond instead."""
     return LogFileOutput(context.content, path=context.path)
