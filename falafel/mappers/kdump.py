@@ -53,13 +53,13 @@ class KDumpConf(MapperOutput):
         comments = []
         inline_comments = []
 
-        for i, line in enumerate(content):
-            lines[i] = line
-            line = line.strip()
+        for i, _line in enumerate(content):
+            lines[i] = _line
+            line = _line.strip()
             if not line:
                 continue
             if line.startswith('#'):
-                comments.append(i)
+                comments.append(_line)
                 continue
             r = line.split('=', 1)
             if len(r) == 1 or len(r[0].split()) > 1:
@@ -79,7 +79,7 @@ class KDumpConf(MapperOutput):
                 items[opt_kw][mod] = rest.strip()
 
             if len(parts) > 1:
-                inline_comments.append(i)
+                inline_comments.append(_line)
 
         data['lines'] = lines
         data['items'] = items
@@ -89,15 +89,11 @@ class KDumpConf(MapperOutput):
 
     @property
     def comments(self):
-        lines = self.data['lines']
-        comments = self.data.get('comments', [])
-        return [lines[i] for i in comments] or None
+        return self.data.get('comments')
 
     @property
     def inline_comments(self):
-        lines = self.data['lines']
-        comments = self.data.get('inline_comments', [])
-        return [lines[i] for i in comments] or None
+        return self.data.get('inline_comments')
 
     @computed
     def ip(self):
@@ -107,7 +103,7 @@ class KDumpConf(MapperOutput):
             if matched_ip:
                 return matched_ip.group()
 
-    @computed
+    @property
     def lines(self):
         return self.data['lines']
 
