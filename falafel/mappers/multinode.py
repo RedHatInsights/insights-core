@@ -84,7 +84,7 @@ class RHEV(MultinodeMetadata):
     fields = [
         "storagedomains", "hosts", "api_version",
         "datacenters", "networks", "rhev_version",
-        "coordinator_version", "diskprofiles"
+        "coordinator_version", "diskprofiles", "vms"
     ]
 
 
