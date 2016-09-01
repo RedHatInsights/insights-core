@@ -154,7 +154,7 @@ static_specs = {
     "pvs"                       : NoneGroup([CommandSpec('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"')]),
     "pvs_noheadings"            : CommandSpec("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\""),
     "spfile.ora"                : PatternSpec(r"{ORACLE_HOME}/dbs/spfile.*\.ora"),
-    "rabbitmqctl"               : CommandSpec("rabbitmqctl list policies"),
+    "rabbitmq_policies"         : CommandSpec("rabbitmqctl list_policies"),
     "rabbitmq_queues"           : CommandSpec("rabbitmqctl list_queues name messages consumers auto_delete"),
     "rabbitmq_report"           : CommandSpec("rabbitmqctl report"),
     "rc.local"                  : SimpleFileSpec("etc/rc.d/rc.local"),
