@@ -28,8 +28,8 @@ class IfCFG(MapperOutput):
     """
 
     def __init__(self, data, path):
+        data["iface"] = path.rsplit("-", 1)[1]
         super(IfCFG, self).__init__(data, path)
-        self.data["iface"] = path.rsplit("-", 1)[1]
 
     @staticmethod
     def parse_content(content):
@@ -54,6 +54,10 @@ class IfCFG(MapperOutput):
                 value = value_map
             data[key] = value
         return data
+
+    @computed
+    def ifname(self):
+        return self.data.get('iface')
 
     @computed
     def bonding_mode(self):

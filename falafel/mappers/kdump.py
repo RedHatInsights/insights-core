@@ -1,4 +1,5 @@
 import re
+from urlparse import urlparse
 from falafel.core import computed, MapperOutput
 from falafel.core.plugins import mapper
 from falafel.mappers import chkconfig, ParseException
@@ -44,6 +45,7 @@ class KDumpConf(MapperOutput):
     comments: list of comment lines
     inline_comments: list of lines containing inline comments
     """
+    NET_COMMANDS = set(['nfs', 'net', 'ssh'])
 
     @staticmethod
     def parse_content(content):
@@ -87,25 +89,42 @@ class KDumpConf(MapperOutput):
         data['inline_comments'] = inline_comments
         return data
 
-    @property
-    def comments(self):
-        return self.data.get('comments')
+    def options(self, module):
+        return self.get('options', {}).get(module, '')
 
-    @property
-    def inline_comments(self):
-        return self.data.get('inline_comments')
+    def _network_lines(self, net_commands=NET_COMMANDS):
+        return filter(None, [self.get(n) for n in net_commands])
 
-    @computed
-    def ip(self):
+    def get_ip(self, net_commands=NET_COMMANDS):
         ip_re = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
-        for l in filter(None, [self.get(n, '') for n in ('nfs', 'net', 'ssh')]):
+        for l in self._network_lines(net_commands):
             matched_ip = ip_re.search(l)
             if matched_ip:
                 return matched_ip.group()
 
-    @property
-    def lines(self):
-        return self.data['lines']
+    def get_hostname(self, net_commands=NET_COMMANDS):
+        for l in self._network_lines(net_commands):
+            # required for urlparse to interpret as host instead of
+            # relative path
+            if '//' not in l:
+                l = '//' + l
+            netloc = urlparse(l).netloc
+
+            # strip user:pass@
+            i = netloc.find('@')
+            if i != -1:
+                netloc = netloc[i + 1:]
+
+            # strip port
+            return netloc.rsplit(':', 1)[0]
+
+    @computed
+    def ip(self):
+        return self.get_ip()
+
+    @computed
+    def hostname(self):
+        return self.get_hostname()
 
     @computed
     def using_local_disk(self):
@@ -120,8 +139,17 @@ class KDumpConf(MapperOutput):
 
         return local_disk
 
-    def options(self, module):
-        return self.get('options', {}).get(module, '')
+    @property
+    def comments(self):
+        return self.data.get('comments')
+
+    @property
+    def inline_comments(self):
+        return self.data.get('inline_comments')
+
+    @property
+    def lines(self):
+        return self.data['lines']
 
     def __getitem__(self, key):
         if isinstance(key, int):
