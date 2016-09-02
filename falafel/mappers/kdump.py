@@ -102,6 +102,12 @@ class KDumpConf(MapperOutput):
             if matched_ip:
                 return matched_ip.group()
 
+    def is_ssh(self):
+        return 'ssh' in self or '@' in self.get('net', '')
+
+    def is_nfs(self):
+        return 'nfs' in self or '@' not in self.get('net', '')
+
     def get_hostname(self, net_commands=NET_COMMANDS):
         for l in self._network_lines(net_commands):
             # required for urlparse to interpret as host instead of
