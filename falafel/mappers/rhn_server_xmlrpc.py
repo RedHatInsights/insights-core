@@ -10,6 +10,22 @@ import re
 line_re = re.compile(r"^(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} [+-]?\d{2}:\d{2}) (?P<pid>\d+) (?P<client_ip>\S+): (?P<module>\w+)/(?P<function>[\w.-]+)(?:\((?:(?P<client_id>\d+), ?)?(?P<args>.*?),?\))?$")
 GROUPS =('timestamp', 'pid', 'client_ip', 'module', 'function', 'client_id', 'args')
 
+def parse_line(line):
+    """
+        Parse a log line using the XMLRPC regular expression into a dict.  
+        All data will be in fields, and the raw log line is stored in
+        'raw_log'.
+    """
+    msg_info = dict()
+    msg_info['raw_log'] = line
+
+    match = line_re.search(line)
+    if match:
+        for group in GROUPS:
+            msg_info[group] = match.group(group)
+
+    return msg_info
+
 class LogLineList(MapperOutput):
 
     def __contains__(self, s):
@@ -22,19 +38,7 @@ class LogLineList(MapperOutput):
         """
         Returns all lines that contain 's' and wrap them in a list
         """
-        print "got to get() in rhn_server_xmlrpc.LogLineList"
-        r = list()
-        for l in self.data:
-            msg_info['raw_log'] = l
-            if s in l:
-                msg_info = dict()
-
-                match = line_re.search(l)
-                if match:
-                    for group in GROUPS:
-                        msg_info[group] = match.group(group)
-                r.append(msg_info)
-        return r
+        return [parse_line(l) for l in self.data if s in l]
 
     @computed
     def last(self):
@@ -43,16 +47,13 @@ class LogLineList(MapperOutput):
         If the last line is not complete, then return the second last line
         """
         msg_info = dict()
-        # Only check the last 2 lines
-        for l in self.data[-2:]:
-            l_sp = [i.strip() for i in l.split('|', 3)]
-            if len(l_sp) >= 3:
-                # If the line is a complete log line
-                msg_info = dict()
-                msg_info['raw_log'] = l
-                for i, c in enumerate(l_sp):
-                    msg_info[LOG_COLUMN[i]] = l_sp[i]
-        # Return the last one
+        # Only check the last 2 lines, in that order
+        for l in reversed(self.data[-2:]):
+            msg_info = parse_line(l)
+            # assume parse is successful if we got an IP address
+            if msg_info['client_ip']:
+                return msg_info
+        # Return the last one even if it didn't parse.
         return msg_info
 
 
