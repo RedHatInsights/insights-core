@@ -45,7 +45,7 @@ static_specs = {
     "docker_image_inspect"      : DockerHostCommandSpec("/usr/bin/docker inspect --type=image {DOCKER_IMAGE_NAME}"),
     "docker_container_inspect"  : DockerHostCommandSpec("/usr/bin/docker inspect --type=container {DOCKER_CONTAINER_NAME}"),
     "docker_host_machine-id"    : DockerHostSimpleFileSpec("etc/redhat-access-insights/machine-id"),
-    "engine.log"                : SimpleFileSpec("var/log/ovirt-engine/engine.log"),
+    "engine.log"                : SimpleFileSpec("var/log/ovirt-engine/engine.log", large_content=True),
     "ethtool-a"                 : CommandSpec("/sbin/ethtool -a {iface}", iface=r"\S+"),
     "ethtool-c"                 : CommandSpec("/sbin/ethtool -c {iface}", iface=r"\S+"),
     "ethtool"                   : CommandSpec("/sbin/ethtool {iface}", iface=r"[^-]\S+"),
