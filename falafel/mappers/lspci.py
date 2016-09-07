@@ -1,16 +1,32 @@
-from falafel.core.plugins import mapper
-from falafel.core import LogFileOutput
+"""
+LsPci
+=====
 
+Provides plugins access to the PCI device information gathered from
+the ``/usr/sbin/lspci`` command.
 
-@mapper('lspci')
-def lspci(context):
-    """
-    ----------------- Output sample of command lspci --------------------------
+Typical output of the ``lspci`` command is::
+
     00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
     00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
     03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
     0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
-    ----------------- Output sample of command lspci --------------------------
 
-    """
-    return LogFileOutput(context.content, path=context.path)
+The data is exposed via the ``obj.lines`` attribute which is a list containing
+each line in the output.  The data may also be filtered using the
+``obj.get("filter string")`` method.  This method will return a list of lines
+containing only "filter string".  The ``in`` operator may also be used to test
+whether a particular string is in the ``lspci`` output.  Other methods/operators
+are also supported, see the :py:class:`falafel.core.LogFileOutput` class for more information.
+"""
+from falafel.core import LogFileOutput
+from falafel.core.plugins import mapper
+
+
+@mapper('lspci')
+class LsPci(LogFileOutput):
+    def __init__(self, data, path=None):
+        """
+        00:00.0 Host bridge: Intel Corporation Haswell-ULT DRAM Controller (rev 0b)
+        """
+        super(LsPci, self).__init__(data, path)
