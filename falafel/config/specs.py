@@ -171,6 +171,7 @@ static_specs = {
                                     SimpleFileSpec("database-schema-version")]),
     "rhn-schema-stats"          : First([CommandSpec("/usr/bin/rhn-schema-stats -"),
                                     SimpleFileSpec("database/schema-stats.log")]),
+    "rhn_server_xmlrpc.log"     : SimpleFileSpec("var/log/rhn/rhn_server_xmlrpc.log", large_content=True),
     "rhn_taskomatic_daemon.log" : SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log", large_content=True),
     "root_crontab"              : CommandSpec("/usr/bin/crontab -l -u root"),
     "route"                     : First([CommandSpec("/sbin/route -n"),
