@@ -573,6 +573,12 @@ class PatternSpec(SimpleFileSpec):
     def __init__(self, path, large_content=False):
         super(PatternSpec, self).__init__(path, multi_output=True, large_content=large_content)
 
+    def get_for_uploader(self, analysis_target=None):
+        path = super(PatternSpec, self).get_for_uploader(analysis_target)
+        if path:
+            dir_path, filename = os.path.split(path)
+            return os.path.join(dir_path, "()*" + filename)
+
 
 class DockerHostSimpleFileSpec(SimpleFileSpec):
     #  If you are collecting data for a DockerContainer or DockerImage

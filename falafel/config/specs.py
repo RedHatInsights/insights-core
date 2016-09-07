@@ -5,7 +5,7 @@ from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, Dock
 
 
 static_specs = {
-    "nproc.conf"                : PatternSpec(r"etc/security/limits\.d/.*-nproc\.conf"),
+    "nproc.conf"                : PatternSpec(r"etc/security/limits.d/.*-nproc\.conf"),
     "display_java"              : CommandSpec("/usr/sbin/alternatives --display java"),
     "blkid"                     : CommandSpec("/usr/sbin/blkid -c /dev/null"),
     "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
@@ -24,7 +24,7 @@ static_specs = {
     "corosync"                  : SimpleFileSpec("etc/sysconfig/corosync"),
     "woopsie"                   : CommandSpec(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'"),
     "current_clocksource"       : SimpleFileSpec("sys/devices/system/clocksource/clocksource0/current_clocksource"),
-    "cpuinfo_max_freq"          : PatternSpec(r"sys/devices/system/cpu/cpu.*/cpufreq/cpuinfo_max_freq"),
+    "cpuinfo_max_freq"          : PatternSpec(r"sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"),
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
     "df_-alP"                   : CommandSpec("/usr/bin/df -alP"),
@@ -77,7 +77,7 @@ static_specs = {
     "sysconfig_httpd"           : SimpleFileSpec("etc/sysconfig/httpd"),
     "httpd_access_log"          : SimpleFileSpec("var/log/httpd/access_log", large_content=True),
     "httpd.conf"                : PatternSpec(r"etc/httpd/conf/httpd\.conf"),
-    "httpd.conf.d"              : PatternSpec(r"etc/httpd/conf\.d/.+\.conf"),
+    "httpd.conf.d"              : PatternSpec(r"etc/httpd/conf.d/.+\.conf"),
     "httpd_ssl_access_log"      : SimpleFileSpec("var/log/httpd/ssl_access_log", large_content=True),
     "ifcfg"                     : PatternSpec(r"etc/sysconfig/network-scripts/ifcfg-.*"),
     "ifconfig"                  : CommandSpec("/sbin/ifconfig -a"),
@@ -102,7 +102,7 @@ static_specs = {
     "ksmstate"                  : SimpleFileSpec("sys/kernel/mm/ksm/run"),
     "libvirtd.log"              : SimpleFileSpec("var/log/libvirt/libvirtd.log"),
     "limits.conf"               : SimpleFileSpec("etc/security/limits.conf"),
-    "limits.d"                  : PatternSpec(r"etc/security/limits\.d/.*"),
+    "limits.d"                  : PatternSpec(r"etc/security/limits.d/.*"),
     "locale"                    : CommandSpec("/usr/bin/locale"),
     "lsblk"                     : CommandSpec("/bin/lsblk"),
     "lscpu"                     : CommandSpec("/usr/bin/lscpu"),
@@ -122,7 +122,7 @@ static_specs = {
     "messages"                  : SimpleFileSpec("var/log/messages", large_content=True),
     "modinfo"                   : CommandSpec("/usr/sbin/modinfo {module}", module=r"\S+"),
     "modprobe.conf"             : SimpleFileSpec("etc/modprobe.conf"),
-    "modprobe.d"                : PatternSpec(r"etc/modprobe\.d/.*\.conf"),
+    "modprobe.d"                : PatternSpec(r"etc/modprobe.d/.*\.conf"),
     "mount"                     : CommandSpec("/bin/mount"),
     "multipath.conf"            : SimpleFileSpec("etc/multipath.conf"),
     "multipath_-v4_-ll"         : CommandSpec("/sbin/multipath -v4 -ll"),
@@ -138,13 +138,13 @@ static_specs = {
     "nscd.conf"                 : SimpleFileSpec("etc/nscd.conf"),
     "nsswitch.conf"             : SimpleFileSpec("etc/nsswitch.conf"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
-    "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine\.conf\.d/.*"),
+    "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
     "parted_-l"                 : CommandSpec("/sbin/parted -l"),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
-    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf\.d/\w+\.conf"),
+    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf.d/\w+\.conf"),
     "postgresql.conf"           : All([SimpleFileSpec("var/lib/pgsql/data/postgresql.conf"),
                                     SimpleFileSpec("opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf")]),
     "postgresql.log"            : All([PatternSpec(r"var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
@@ -212,7 +212,7 @@ static_specs = {
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
     "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
-    "yum.repos.d"               : PatternSpec(r"etc/yum\.repos\.d/.*")
+    "yum.repos.d"               : PatternSpec(r"etc/yum.repos.d/.*")
 
 }
 

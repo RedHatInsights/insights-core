@@ -171,15 +171,14 @@ class APIConfigGenerator(object):
                 applies_to = self.get_applies_to_for(plugins_)
                 specs_list.add(name, spec, output_filter, applies_to)
 
+                path = spec.get_for_uploader()
                 if isinstance(spec, CommandSpec):
-                    path = spec.get_for_uploader()
                     pk_key = spec.get_pre_command_key()
                     if HostTarget in applies_to if applies_to else DefaultAnalysisTargets:
                         cmd_list.append((path, output_filter, pk_key))
                     spec_key = "commands"
 
                 else:
-                    path = "/" + spec.get_path()
                     if path not in whitelist:
                         if HostTarget in applies_to if applies_to else DefaultAnalysisTargets:
                             whitelist[path] = output_filter
