@@ -1,6 +1,7 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput, computed
 
+from datetime import datetime
 import re
 
 """
@@ -23,6 +24,12 @@ def parse_line(line):
     if match:
         for group in GROUPS:
             msg_info[group] = match.group(group)
+        try:
+            stamp = match.group('timestamp')
+            # Must remove : from timezone for strptime %z
+            msg_info['timestamp'] = datetime.strptime(stamp[0:23] + stamp[24:26])
+        except:
+            pass
 
     return msg_info
 
