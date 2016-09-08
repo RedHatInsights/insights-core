@@ -1,4 +1,4 @@
-from falafel.mappers import sestatus
+from falafel.mappers.sestatus import SEStatus
 from falafel.tests import context_wrap
 
 
@@ -20,20 +20,18 @@ auditadm_exec_content                       on
 '''
 
 
-class TestSestatus():
-    def test_sestatus(self):
-        sestatus_info = sestatus.sestatus(context_wrap(SESTATUS))
+def test_sestatus():
+    sestatus_info = SEStatus.parse_context(context_wrap(SESTATUS))
 
-        assert len(sestatus_info) == 7
-        assert sestatus_info['loaded_policy_name'] == 'targeted'
-        assert sestatus_info['current_mode'] == 'enforcing'
-        assert sestatus_info['mode_from_config_file'] == 'enforcing'
-        assert sestatus_info['policy_mls_status'] == 'enabled'
-        assert sestatus_info['policy_deny_unknown_status'] == 'allowed'
-        assert sestatus_info['max_kernel_policy_version'] == '30'
-        assert sestatus_info['policy_booleans'] == {'abrt_anon_write': False,
-                                                    'abrt_handle_event': False,
-                                                    'abrt_upload_watch_anon_write': True,
-                                                    'antivirus_can_scan_system': False,
-                                                    'antivirus_use_jit': False,
-                                                    'auditadm_exec_content': True}
+    assert sestatus_info['loaded_policy_name'] == 'targeted'
+    assert sestatus_info['current_mode'] == 'enforcing'
+    assert sestatus_info['mode_from_config_file'] == 'enforcing'
+    assert sestatus_info['policy_mls_status'] == 'enabled'
+    assert sestatus_info['policy_deny_unknown_status'] == 'allowed'
+    assert sestatus_info['max_kernel_policy_version'] == '30'
+    assert sestatus_info['policy_booleans'] == {'abrt_anon_write': False,
+                                                'abrt_handle_event': False,
+                                                'abrt_upload_watch_anon_write': True,
+                                                'antivirus_can_scan_system': False,
+                                                'antivirus_use_jit': False,
+                                                'auditadm_exec_content': True}
