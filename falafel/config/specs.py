@@ -157,6 +157,7 @@ static_specs = {
     "rabbitmq_policies"         : CommandSpec("rabbitmqctl list_policies"),
     "rabbitmq_queues"           : CommandSpec("rabbitmqctl list_queues name messages consumers auto_delete"),
     "rabbitmq_report"           : CommandSpec("rabbitmqctl report"),
+    "rabbitmq_users"            : CommandSpec("rabbitmqctl list_users"),
     "rc.local"                  : SimpleFileSpec("etc/rc.d/rc.local"),
     "redhat-release"            : SimpleFileSpec("etc/redhat-release"),
     "resolv.conf"               : SimpleFileSpec("etc/resolv.conf"),
