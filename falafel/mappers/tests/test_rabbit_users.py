@@ -1,5 +1,5 @@
 from falafel.core.context import OSP
-from falafel.mappers import rabbitmq_users
+from falafel.mappers.rabbitmq import RabbitMQUsers
 from falafel.tests import context_wrap
 
 osp_controller = OSP()
@@ -15,6 +15,6 @@ test    [administrator]
 
 def test_rabbitmq_list_users():
     context = context_wrap(RABBITMQ_LIST_USERS, hostname="controller_1", osp=osp_controller)
-    result = rabbitmq_users.get_users(context)
+    result = RabbitMQUsers.parse_context(context)
     expect = {"guest": "administrator", "test": "administrator"}
-    assert result == expect
+    assert result.data == expect
