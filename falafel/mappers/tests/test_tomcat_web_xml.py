@@ -1,5 +1,5 @@
 from falafel.tests import context_wrap
-from falafel.mappers.tomcat_web_xml import tomcat_web_conf
+from falafel.mappers.tomcat_web_xml import TomcatWebXml
 
 xml_content = """
 <?xml version="1.0" encoding="ISO-8859-1"?>
@@ -1202,5 +1202,5 @@ xml_content = """
 
 
 def test_get_tmo():
-    result = tomcat_web_conf(context_wrap(xml_content))
+    result = TomcatWebXml.parse_context(context_wrap(xml_content))
     assert result.get("session-timeout") == 30

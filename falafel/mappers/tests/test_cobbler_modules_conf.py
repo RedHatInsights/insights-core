@@ -1,5 +1,5 @@
 from falafel.tests import context_wrap
-from falafel.mappers.cobbler_modules_conf import cobbler_modules_conf
+from falafel.mappers.cobbler_modules_conf import CobblerModulesConf
 
 conf_content = """
 # cobbler module configuration file
@@ -78,6 +78,6 @@ module = manage_isc
 
 
 def test_cobbler_modules_conf():
-    result = cobbler_modules_conf(context_wrap(conf_content))
+    result = CobblerModulesConf.parse_context(context_wrap(conf_content))
     assert result.get('authentication').get("module") == "authn_spacewalk"
     assert result.get('dhcp').get("module") == "manage_isc"

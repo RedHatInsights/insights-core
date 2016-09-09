@@ -1,5 +1,5 @@
 from falafel.tests import context_wrap
-from falafel.mappers.postgresql_conf import postgresql_conf
+from falafel.mappers.postgresql_conf import PostgreSQLConf
 
 postgresql_conf_cnt = """
 
@@ -148,7 +148,7 @@ work_mem = 2560kB
 
 
 def test_postgresql_conf():
-    result = postgresql_conf(context_wrap(postgresql_conf_cnt))
+    result = PostgreSQLConf.parse_context(context_wrap(postgresql_conf_cnt))
     assert result.get("checkpoint_segments") == "8"
     assert result.get("log_filename") == "postgresql-%a.log"
     assert result.get("log_line_prefix") == "%m "
