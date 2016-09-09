@@ -118,18 +118,27 @@ def main():
         logging.error("At least one plugin module must be specified.")
         sys.exit(1)
 
+    import_failure = False
     for module in args.plugin_modules:
         logging.info("Loading %s", module)
         try:
             plugins.load(module)
         except ImportError as e:
+            import_failure = True
             logging.error("Invalid module: %s", module)
             if "Import by filename" in e.message:
                 logging.error('Perhaps try adding "--" to the end of --plugin-modules arguments, e.g. "--plugin.modules my.plugins --"')
 
-    if args.reports:
-        for report in args.reports:
-            Formatter(args).format_results(*runner.handle_sosreport(report, args.spec_map))
+    # Wait to exit until all module imports have been attempted
+    if import_failure:
+        sys.exit(1)
+
+    if not args.reports:
+        logging.error("Please specify at least one report to process")
+        sys.exit(1)
+
+    for report in args.reports:
+        Formatter(args).format_results(*runner.handle_sosreport(report, args.spec_map))
 
 if __name__ == "__main__":
     main()
