@@ -118,14 +118,20 @@ def main():
         logging.error("At least one plugin module must be specified.")
         sys.exit(1)
 
+    import_failure = False
     for module in args.plugin_modules:
         logging.info("Loading %s", module)
         try:
             plugins.load(module)
         except ImportError as e:
+            import_failure = True
             logging.error("Invalid module: %s", module)
             if "Import by filename" in e.message:
                 logging.error('Perhaps try adding "--" to the end of --plugin-modules arguments, e.g. "--plugin.modules my.plugins --"')
+
+    # Wait to exit until all module imports have been attempted
+    if import_failure:
+        sys.exit(1)
 
     if args.reports:
         for report in args.reports:
