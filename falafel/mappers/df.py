@@ -54,6 +54,8 @@ def parse_df_lines(columns, df_content):
             for i, name in enumerate(columns[1:-1]):
                 df_ls[name] = line_splits[i]
             is_sep = False
+        elif not line_splits:  # Skip empty lines (might in sosreport)
+            continue
         if not is_sep:
             # Last column is mount point
             df_ls[columns[-1]] = line_splits[-1]
