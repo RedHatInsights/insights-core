@@ -75,15 +75,15 @@ class InstalledRpm(MapperOutput):
             self["release"]
         )
 
-    @computed
+    @property
     def name(self):
         return self.get('name')
 
-    @computed
+    @property
     def version(self):
         return self.get('version')
 
-    @computed
+    @property
     def release(self):
         return self.get('release')
 
@@ -134,8 +134,12 @@ SOSREPORT_KEYS = [
 ]
 
 
+def arch_sep(s):
+    return "." if s.rfind(".") > s.rfind("-") else "-"
+
+
 def parse_package(package_string):
-    pkg, arch = rsplit(package_string, ".")
+    pkg, arch = rsplit(package_string, arch_sep(package_string))
     if arch not in KNOWN_ARCHITECTURES:
         pkg, arch = (package_string, None)
     pkg, release = rsplit(pkg, "-")
