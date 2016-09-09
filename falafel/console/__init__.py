@@ -120,7 +120,12 @@ def main():
 
     for module in args.plugin_modules:
         logging.info("Loading %s", module)
-        plugins.load(module)
+        try:
+            plugins.load(module)
+        except ImportError as e:
+            logging.error("Invalid module: %s", module)
+            if "Import by filename" in e.message:
+                logging.error('Perhaps try adding "--" to the end of --plugin-modules arguments, e.g. "--plugin.modules my.plugins --"')
 
     if args.reports:
         for report in args.reports:
