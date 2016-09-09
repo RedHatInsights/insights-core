@@ -1,4 +1,4 @@
-from falafel.mappers import pluginconf_d
+from falafel.mappers.pluginconf_d import PluginConfD
 from falafel.tests import context_wrap
 
 
@@ -20,14 +20,11 @@ timeout = 120
 PLUGINPATH = 'etc/yum/plugincon.d/rhnplugin.conf'
 
 
-class TestPluginConf():
-    def test_pluginconf_d(self):
-        plugin_info = pluginconf_d.pluginconf_d(context_wrap(PLUGIN, path=PLUGINPATH))
+def test_pluginconf_d():
+    plugin_info = PluginConfD.parse_context(context_wrap(PLUGIN, path=PLUGINPATH))
 
-        assert len(plugin_info.data) == 1
-
-        assert plugin_info.data['main'] == {'enabled': '0',
-                                            'gpgcheck': '1',
-                                            'timeout': '120'}
-        assert plugin_info.file_path == 'etc/yum/plugincon.d/rhnplugin.conf'
-        assert plugin_info.file_name == 'rhnplugin.conf'
+    assert plugin_info.data['main'] == {'enabled': '0',
+                                        'gpgcheck': '1',
+                                        'timeout': '120'}
+    assert plugin_info.file_path == 'etc/yum/plugincon.d/rhnplugin.conf'
+    assert plugin_info.file_name == 'rhnplugin.conf'

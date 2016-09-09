@@ -1,5 +1,5 @@
-from falafel.mappers.sysconfig_httpd import httpd_service_conf
 from falafel.tests import context_wrap
+from falafel.mappers.sysconfig_httpd import HTTPDService
 
 HTTPD = """
 # Configuration file for the httpd service.
@@ -28,8 +28,7 @@ HTTPD_LANG=C
 
 
 def test_httpd_service_conf():
-    context = context_wrap(HTTPD)
-    result = httpd_service_conf(context)
+    result = HTTPDService.parse_context(context_wrap(HTTPD))
     assert result["HTTPD"] == '/usr/sbin/httpd.worker'
     assert result.get("OPTIONS") is None
     assert result['HTTPD_LANG'] == "C"

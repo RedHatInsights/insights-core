@@ -3,54 +3,48 @@ from falafel.core import MapperOutput
 from falafel.mappers import get_active_lines
 
 
-class PluginConfD(MapperOutput):
-    pass
-
-
 @mapper('pluginconf.d')
-def pluginconf_d(context):
-    '''
-    Return a object contains a dit.
-    There are several files in 'pluginconf.d' directory, which have the same format.
-    -----------one of the files : rhnplugin.conf
-    [main]
-    enabled = 0
-    gpgcheck = 1
-    timeout = 120
+class PluginConfD(MapperOutput):
 
-    # You can specify options per channel, e.g.:
-    #
-    #[rhel-i386-server-5]
-    #enabled = 1
-    #
-    #[some-unsigned-custom-channel]
-    #gpgcheck = 0
-    ------------------------------------------------
-    The output will looks like:
-    {
-        "main": {
-            "gpgcheck": "1",
-            "enabled": "0",
-            "timeout": "120"
+    @staticmethod
+    def parse_content(content):
+        '''
+        Return an object contains a dict.
+        {
+            "main": {
+                "gpgcheck": "1",
+                "enabled": "0",
+                "timeout": "120"
+            }
         }
-    }
-    '''
-    plugin_info = {}
-    section = None
-    info = {}
+        ------------------------------------------------
+        There are several files in 'pluginconf.d' directory, which have the same format.
+        -----------one of the files : rhnplugin.conf
+        [main]
+        enabled = 0
+        gpgcheck = 1
+        timeout = 120
 
-    for line in get_active_lines(context.content):
-        if section:
+        # You can specify options per channel, e.g.:
+        #
+        #[rhel-i386-server-5]
+        #enabled = 1
+        #
+        #[some-unsigned-custom-channel]
+        #gpgcheck = 0
+        '''
+        plugin_dict = {}
+        section_dict = {}
+        key = None
+        for line in get_active_lines(content):
             if line.startswith('['):
-                plugin_info[section] = info
-                section = line[1:-1]
-                info = {}
-                continue
+                section_dict = {}
+                plugin_dict[line[1:-1]] = section_dict
+            elif '=' in line:
+                key, _, value = line.partition("=")
+                key = key.strip()
+                section_dict[key] = value.strip()
             else:
-                key, val = line.split("=", 1)
-                info[key.strip()] = val.strip()
-        else:
-            section = line[1:-1]
-    if section:
-        plugin_info[section] = info
-    return PluginConfD(plugin_info, path=context.path)
+                if key:
+                    section_dict[key] = ','.join([section_dict.get(key), line])
+        return plugin_dict
