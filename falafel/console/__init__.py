@@ -133,9 +133,12 @@ def main():
     if import_failure:
         sys.exit(1)
 
-    if args.reports:
-        for report in args.reports:
-            Formatter(args).format_results(*runner.handle_sosreport(report, args.spec_map))
+    if not args.reports:
+        logging.error("Please specify at least one report to process")
+        sys.exit(1)
+
+    for report in args.reports:
+        Formatter(args).format_results(*runner.handle_sosreport(report, args.spec_map))
 
 if __name__ == "__main__":
     main()
