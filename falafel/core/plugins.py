@@ -130,11 +130,18 @@ def register_mapper(name, func, filters=None, shared=False):
         log.debug("registering [%s] to [%s]", ".".join([func.__module__, func.__name__]), name)
         add_to_map(name, func, filters, shared=shared)
         func.serializable_id = "#".join([func.__module__, func.__name__])
+        func.consumers = set()
         add_symbolic_name(func, name)
         MAPPER_FUNCS[func.serializable_id] = func
         p = PLUGINS[func.__module__]
         p["mappers"].append(func)
         p["module"] = func.__module__
+
+        # Need to add already-registered reducers defined in same module to conumser list
+        # Should only happen if a @reducer is defined above a @mapper in the same module
+        f_module = func.__module__
+        for r in [r for r in REDUCERS.values() if r.__module__ == f_module]:
+            func.consumers.add(r)
     except Exception:
         log.exception("Failed to register mapper: %s", func.__name__)
         raise
@@ -225,7 +232,27 @@ def cluster_mapper(filename, filters=[]):
     return _register
 
 
-def reducer(requires=None, cluster=False):
+def register_consumer(f, requires, optional):
+    if requires:
+        for req in requires:
+            if isinstance(req, list):
+                for m in req:
+                    m.consumers.add(f)
+            else:
+                req.consumers.add(f)
+    if optional:
+        for opt in optional:
+            opt.consumers.add(f)
+
+    # Non-shared mappers defined in same module are implicit consumers
+    f_module = f.__module__
+    for mappers in MAPPERS.values():
+        for m in mappers:
+            if m.__module__ == f_module:
+                m.consumers.add(f)
+
+
+def reducer(requires=None, optional=None, cluster=False):
     def _f(func):
         @wraps(func)
         def __f(local, shared):
@@ -243,6 +270,7 @@ def reducer(requires=None, cluster=False):
             register_cluster_reducer(__f)
         else:
             register_reducer(__f)
+        register_consumer(__f, requires, optional)
         return __f
     return _f
 
