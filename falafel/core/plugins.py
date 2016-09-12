@@ -65,8 +65,8 @@ def add_to_map(name, handler, filters, shared=False):
 
     handler.filters = filters if filters else []
 
-    name = "{0}.{1}".format(handler.__module__, handler.__name__)
-    SYMBOLIC_NAME_FILTER_MAPPING[name][bool(filters)].append(name)
+    plugin_name = "{0}.{1}".format(handler.__module__, handler.__name__)
+    SYMBOLIC_NAME_FILTER_MAPPING[name][bool(filters)].append(plugin_name)
 
 
 def get_mappers(name, mapping=MAPPERS):

@@ -244,8 +244,9 @@ class LogFileOutput(MapperOutput):
         will be serialized, whereas raw log lines will not.
         """
         def scanner(self):
-            self.data[result_key] = func(self)
-            self._add_to_computed(result_key, func(self))
+            result = func(self)
+            self.data[result_key] = result
+            self._add_to_computed(result_key, result)
         cls.scanners.append(scanner)
 
     @classmethod

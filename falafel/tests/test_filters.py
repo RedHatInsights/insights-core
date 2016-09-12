@@ -1,25 +1,31 @@
 from falafel.core import plugins
+from falafel.config.static import get_config
+
+spec = get_config()
 
 ERROR_MESSAGE = """
+`{0}` is marked as large but has no filters defined.
+""".strip()
 
-The following plugins do not specify filters for symbolic
-name `{1}`:
 
-    {0}
-
-This will prevent the plugin from receiving data that it expects.
-Add filters to your mapper like so:
-
-    @mapper('{1}', ['filter', 'string'])
-""".rstrip()
+def _check_filter(name, states):
+    if True in states:
+        return True
+    else:
+        for handler in plugins.MAPPERS[name]:
+            if handler.filters:
+                return True
+        return False
 
 
 def check_filters(name, states):
-    plugins = "\n    ".join(states.get(False, []))
-    assert len(states) == 1, ERROR_MESSAGE.format(plugins, name)
+    if spec.is_large(name):
+        assert _check_filter(name, states), ERROR_MESSAGE.format(name)
 
 
-def test_filters():
-    from falafel.mappers import *  # noqa
-    for name, states in plugins.SYMBOLIC_NAME_FILTER_MAPPING.iteritems():
-        yield check_filters, name, states
+def gen_test_filter_tuple():
+    return [(name, states) for name, states in plugins.SYMBOLIC_NAME_FILTER_MAPPING.iteritems()]
+
+
+def gen_ids(filter_tuple):
+    return [name for name, states in filter_tuple]

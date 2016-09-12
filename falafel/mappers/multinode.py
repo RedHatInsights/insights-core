@@ -66,7 +66,7 @@ class MultinodeMetadata(MapperOutput):
         return self.children.get(system_id)
 
     def child_class(self):
-        return globals()[self.__name__ + "Child"]
+        return globals()[self.__class__.__name__ + "Child"]
 
     def populate_children(self):
         children = {}

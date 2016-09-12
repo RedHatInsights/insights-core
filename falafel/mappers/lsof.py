@@ -1,4 +1,5 @@
 from falafel.core.plugins import mapper
+from falafel.core import MapperOutput
 
 FILTER_LIST = ['COMMAND', 'libssl', 'libcrypto', 'libssl.so', 'multipath']
 
@@ -42,5 +43,11 @@ class Splitter(object):
 
 
 @mapper('lsof', FILTER_LIST)
-def get_lsof(context):
-    return list(Splitter(context.content).parse_lines())
+class Lsof(MapperOutput):
+
+    @staticmethod
+    def parse_content(content):
+        return list(Splitter(content).parse_lines())
+
+    def __iter__(self):
+        return iter(self.data)
