@@ -1,5 +1,6 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput
+from falafel.core import LogFileOutput
 
 
 @mapper("rabbitmq_report", ["total_limit"])
@@ -22,3 +23,8 @@ class RabbitMQUsers(MapperOutput):
             if len(line_splits) > 1:
                 users_dict[line_splits[0]] = line_splits[1][1:-1]
         return users_dict
+
+
+@mapper("rabbitmq_startup_log")
+class RabbitMQStartupLog(LogFileOutput):
+    pass
