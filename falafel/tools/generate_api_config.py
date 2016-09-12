@@ -155,6 +155,8 @@ class APIConfigGenerator(object):
 
         for name in sorted(plugins.MAPPERS):
             plugins_ = plugins.MAPPERS[name]
+            if not any(m for m in plugins_ if m.consumers):
+                continue
             specs = self.data_spec_config.get_specs(name)
             if not specs:
                 if name not in self.data_spec_config:
