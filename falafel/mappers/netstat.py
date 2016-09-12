@@ -2,9 +2,10 @@ from falafel.core.plugins import mapper
 from falafel.util import parse_table
 from collections import defaultdict
 from falafel.core import MapperOutput, computed
+from falafel.mappers import ParseException
 
 
-class NetstatParserException(Exception):
+class NetstatParserException(ParseException):
     pass
 
 
