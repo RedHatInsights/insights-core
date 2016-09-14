@@ -2,11 +2,13 @@ from falafel.mappers.cpuinfo import CpuInfo
 from falafel.tests import context_wrap
 
 CPUINFO = """
+COMMAND> cat /proc/cpuinfo
 processor       : 0
 vendor_id       : GenuineIntel
 cpu family      : 6
 model           : 45
 model name      : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
+
 stepping        : 2
 microcode       : 1808
 cpu MHz         : 2900.000

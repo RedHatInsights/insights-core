@@ -1,4 +1,5 @@
 from falafel.core.plugins import mapper
+from falafel.mappers import get_active_lines
 from falafel.core import MapperOutput, computed
 
 
@@ -169,15 +170,14 @@ class MemInfo(MapperOutput):
     @classmethod
     def parse_content(cls, content):
         mem_info = {}
-        for line in content:
-            if line.strip():
-                (key, value) = line.split(':', 1)
-                # Store values as byte count
-                key = key.strip().lower()
-                if key in MemInfo.VALUE_IN_BYTES:
-                    mem_info[key.strip().lower()] = int(value.split()[0])
-                else:
-                    mem_info[key.strip().lower()] = int(value.split()[0]) * 1024
+        for line in get_active_lines(content, comment_char="COMMAND>"):
+            (key, value) = line.split(':', 1)
+            # Store values as byte count
+            key = key.strip().lower()
+            if key in MemInfo.VALUE_IN_BYTES:
+                mem_info[key.strip().lower()] = int(value.split()[0])
+            else:
+                mem_info[key.strip().lower()] = int(value.split()[0]) * 1024
         return mem_info
 
     @computed

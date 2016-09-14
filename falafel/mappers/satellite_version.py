@@ -1,7 +1,8 @@
 import os
+from falafel.mappers import get_active_lines
 from falafel.core.plugins import mapper
 
-foreman_sat61_ver_map = {
+foreman_sat6_ver_map = {
     '1.5': '6.0',
     '1.6.0.53': '6.0.8',
     '1.7': '6.1',
@@ -13,6 +14,7 @@ foreman_sat61_ver_map = {
     '1.7.2.50': '6.1.6',
     '1.7.2.53': '6.1.7',
     '1.7.2.55': '6.1.8',
+    '1.11': '6.2',
 }
 
 
@@ -54,19 +56,24 @@ def get_sat_version(context):
     # For installed-rpms
     else:
         sat5_pkg = ('satellite-schema-', 'rhn-satellite-schema-')
-        sat61_pkg = 'foreman-1'  # Add "-1" to check the `foreman` package only
-        # From Sat 6.2, we check `satellite-installer` instead of `foreman`
+        sat6_pkg = 'foreman-1'  # Add "-1" to check the `foreman` package only
+        # From Sat 6.2, we can also check `satellite-installer` instead of `foreman`
         sat62_pkg = 'satellite-installer-'
-        for line in context.content:
-            # for 6.0 and 6.1
-            if line.startswith(sat61_pkg):
+        sat_ver = None
+        for line in get_active_lines(context.content, comment_char="COMMAND>"):
+            # for 6.x
+            if line.startswith(sat6_pkg):
                 pkg_ver = line.split('-')[1]
-                sat61_ver = foreman_sat61_ver_map.get(pkg_ver)
-                # for `1.5` and `1.7`
-                sat61_ver = sat61_ver if sat61_ver else foreman_sat61_ver_map.get(pkg_ver[:3])
-                if sat61_ver:
-                    return sat61_ver
-            # for 6.2, (`foreman-1.11.x` is ignored above)
+                sat_ver = foreman_sat6_ver_map.get(pkg_ver)
+                # for `1.5`, `1.7` and `1.11`
+                if sat_ver is None:
+                    tmp_ver = pkg_ver.split('.')
+                    pkg_ver = '.'.join(tmp_ver[:2])
+                    sat_ver = foreman_sat6_ver_map.get(pkg_ver)
+                # for 6.2, need to check `satellite-installer` further
+                if sat_ver != '6.2':
+                    return sat_ver
+            # for 6.2 (`satellite-installer` is installed)
             elif line.startswith(sat62_pkg):
                 beg_idx = len(sat62_pkg)
                 # return the version of `satellite-installer` directly
@@ -76,5 +83,4 @@ def get_sat_version(context):
                 # return the version of `[rhn-]satellite-schema` directly
                 pkg = line.split()[0]
                 return pkg[pkg.find('schema-') + 7:]
-    # Return None for no satellite installed
-    return None
+        return sat_ver
