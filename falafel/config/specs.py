@@ -145,6 +145,7 @@ static_specs = {
     "neutron_plugin.ini"        : SimpleFileSpec("etc/neutron/plugin.ini"),
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
+    "nova-api_log"              : SimpleFileSpec("var/log/nova/nova-api.log", large_content=True),
     "nscd.conf"                 : SimpleFileSpec("etc/nscd.conf"),
     "nsswitch.conf"             : SimpleFileSpec("etc/nsswitch.conf"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
