@@ -228,6 +228,7 @@ static_specs = {
     "vgs_noheadings"            : CommandSpec("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\""),
     "vdsm.conf"                 : SimpleFileSpec("etc/vdsm/vdsm.conf"),
     "vdsm.log"                  : SimpleFileSpec("var/log/vdsm/vdsm.log"),
+    "vdsm_id"                   : SimpleFileSpec("/etc/vdsm/vdsm.id"),
     "virt-what"                 : CommandSpec("/usr/sbin/virt-what"),
     "vmcore-dmesg"              : PatternSpec(r"var/crash/.*/vmcore-dmesg\.txt", large_content=True),
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
