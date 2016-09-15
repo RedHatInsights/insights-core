@@ -143,6 +143,7 @@ static_specs = {
     "netstat_-agn"              : CommandSpec("/bin/netstat -agn"),
     "neutron.conf"              : SimpleFileSpec("etc/neutron/neutron.conf"),
     "neutron_plugin.ini"        : SimpleFileSpec("etc/neutron/plugin.ini"),
+    "neutron_server_log"        : SimpleFileSpec("var/log/neutron/server.log", large_content=True),
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
     "nscd.conf"                 : SimpleFileSpec("etc/nscd.conf"),
