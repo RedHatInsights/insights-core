@@ -76,17 +76,16 @@ def server_xmlrpc_log(context):
       get:
         err_lines = log.get('Wrapper')
         for line in err_lines:
-            assert line.get('stat') == 'INFO'
-            assert line.get('log') ..
-            assert line.get('proc') ..
-            assert line.get('time') ..
+            assert line.get('pid') == 3064
+            assert line.get('client_ip') == '10.20.30.40'
+            assert line.get('module') == 'rhnServer'
+            assert line.get('function') == 'server_certificate.valid'
             assert line.get('raw_log') ..
             ...
      last:
-        last_line_stat = log.last.get('time')
+        last_line_stat = log.last.get('timestamp')
 
     -----------
 
     """
-    print "got to server_xmlrpc_log"
     return LogLineList(context.content)
