@@ -27,7 +27,7 @@ def parse_line(line):
         try:
             stamp = match.group('timestamp')
             # Must remove : from timezone for strptime %z
-            msg_info['timestamp'] = datetime.strptime(stamp[0:23] + stamp[24:26])
+            msg_info['timestamp'] = datetime.strptime(stamp[0:23] + stamp[24:26], "%Y/%m/%d %H:%M:%S %z")
         except:
             pass
 
