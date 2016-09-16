@@ -1,5 +1,5 @@
 import unittest
-from falafel.mappers.chkconfig_and_systemctl_list import enabled
+from falafel.mappers.smartctl import SMARTctl
 from falafel.tests import context_wrap
 
 STANDARD_DRIVE = """
@@ -145,3 +145,27 @@ Device does not support Self Test logging
 
 """
 
+def test_standard_drive():
+    data = SMARTctl(context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'))
+
+    # Device assertions
+    assert data['device'] == 'sda'
+
+    # Information assertions
+    assert data['info']['Device Model']     == 'ST500LM021-1KJ152'
+    assert data['info']['Serial Number']    == 'W620AT02'
+    assert data['info']['LU WWN Device Id'] == '5 000c50 07817bb36'
+    assert data['info']['Firmware Version'] == '0002LIM1'
+    assert data['info']['User Capacity']    == '500,107,862,016 bytes [500 GB]'
+    assert data['info']['Sector Sizes']     == '512 bytes logical, 4096 bytes physical'
+    assert data['info']['Rotation Rate']    == '7200 rpm'
+    assert data['info']['Device is']        == 'Not in smartctl database [for details use: -P showall]'
+    assert data['info']['ATA Version is']   == 'ATA8-ACS T13/1699-D revision 4'
+    assert data['info']['SATA Version is']  == 'SATA 3.0, 6.0 Gb/s (current: 6.0 Gb/s)'
+    assert data['info']['Local Time is']    == 'Fri Sep 16 14:10:10 2016 AEST'
+    assert data['info']['SMART support is'] == 'Available - device has SMART capability.'
+    assert data['info']['SMART support is'] == 'Enabled'
+
+    # Health assertions
+    # SMART Value assertions
+    # Attribute assertions
