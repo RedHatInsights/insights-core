@@ -64,12 +64,12 @@ class RHNCertConf(MapperOutput):
                    ...
         """
 
-        # ignore empty xml files
+        # ignore empty xml file
+        rhn_cert = {}
         if len(content) <= 3:
-            return
+            return rhn_cert
 
         rhntree = ET.fromstring('\n'.join(content))
-        rhn_cert = {}
         channel_familes = {}
         for field in rhntree.findall(".//rhn-cert-field"):
             family = field.get('family')
