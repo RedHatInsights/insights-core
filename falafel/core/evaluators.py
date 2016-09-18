@@ -58,7 +58,9 @@ class Evaluator(object):
         MD_JSON = "metadata.json"
         result_map = {}
         for plugin in plugins.get_mappers(MD_JSON):
-            context = self.build_context(content=marshalling.marshal(the_meta_data), path=MD_JSON)
+            context = self.build_context(content=marshalling.marshal(the_meta_data),
+                                         path=MD_JSON,
+                                         target=MD_JSON)
             try:
                 result = self._execute_mapper(plugin, context)
                 if result:
@@ -129,7 +131,9 @@ class SingleEvaluator(Evaluator):
                 if len(content) == 1 and content[0] == "Command not found":
                     continue
                 for plugin in plugins.get_mappers(symbolic_name):
-                    context = self.build_context(content=content, path=f)
+                    context = self.build_context(content=content,
+                                                 path=f,
+                                                 target=symbolic_name)
                     try:
                         self.add_result(self._execute_mapper(plugin, context),
                                         symbolic_name, plugin)
