@@ -34,13 +34,27 @@ def SMARTctl(context):
     }
 
     for line in context.content:
-        # Parse info section until 'Error Counter logging not supported'
-        if line.startswith('Error Counter logging not supported'):
+        # Exit parsing information section if we go into the next section
+        if (line.startswith('Error Counter logging not supported') or
+           line.startswith('=== START OF READ SMART DATA SECTION ===')):
             break
         match = info_line_re.search(line)
         if match:
             drive_info['info'][match.group('key')] = match.group('value')
+        else:
+            # Translate some of the less structured information
+            if   line == 'Device does not support SMART':
+                drive_info[info]['SMART support is'] = 'Not supported'
+            elif line == 'Device supports SMART and is Enabled':
+                drive_info[info]['SMART support is'] = 'Enabled'
+            elif line == 'Error Counter logging not supported':
+                drive_info[info]['Error Counter logging'] = 'Not supported'
+            elif line == 'Device does not support Self Test logging':
+                drive_info[info]['Self Test logging'] = 'Not supported'
+            elif line == 'Temperature Warning Disabled or Not Supported':
+                drive_info[info]['Temperature Warning'] = 'Disabled or Not supported'
 
     # Continue parsing the values and attributes sections
 
     return drive_info
+
