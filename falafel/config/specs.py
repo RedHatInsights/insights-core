@@ -119,6 +119,7 @@ static_specs = {
                                     CommandSpec("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")]),
     "lsof"                      : CommandSpec("/usr/sbin/lsof", large_content=True),
     "ls_boot"                   : CommandSpec("/bin/ls -lanR /boot"),
+    "ls_disk"                   : CommandSpec("/bin/ls -lanR /dev/disk/by-*"),
     "ls_dev"                    : CommandSpec("/bin/ls -lanR /dev"),
     "ls_etc"                    : CommandSpec("/bin/ls -lanR /etc"),
     "lsmod"                     : CommandSpec("/sbin/lsmod"),
