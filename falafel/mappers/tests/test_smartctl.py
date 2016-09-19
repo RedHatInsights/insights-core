@@ -168,6 +168,18 @@ def test_standard_drive():
     assert data['info']['SMART support is'] == 'Enabled'
 
     # Health assertions
+    assert data['health'] == 'PASSED'
+
+    assert data['values']['Offline data collection status'] == '0x00'
+    assert data['values']['Self-test execution status'] == '0'
+    assert data['values']['Total time to complete Offline data collection'] == '0'
+    assert data['values']['Offline data collection capabilities'] == '0x73'
+    assert data['values']['SMART capabilities'] == '0x0003'
+    assert data['values']['Error logging capability'] == '0x01'
+    assert data['values']['Short self-test routine recommended polling time'] == '1'
+    assert data['values']['Extended self-test routine recommended polling time'] == '78'
+    assert data['values']['Conveyance self-test routine recommended polling time'] == '2'
+    assert data['values']['SCT capabilities'] == '0x1031'
     # SMART Value assertions
     # Attribute assertions
 
