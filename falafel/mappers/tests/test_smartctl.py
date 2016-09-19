@@ -163,9 +163,58 @@ def test_standard_drive():
     assert data['info']['ATA Version is']   == 'ATA8-ACS T13/1699-D revision 4'
     assert data['info']['SATA Version is']  == 'SATA 3.0, 6.0 Gb/s (current: 6.0 Gb/s)'
     assert data['info']['Local Time is']    == 'Fri Sep 16 14:10:10 2016 AEST'
-    assert data['info']['SMART support is'] == 'Available - device has SMART capability.'
+    # assert data['info']['SMART support is'] == 'Available - device has SMART capability.'
+    # Note: this key turns up twice - therefore new keys overwrite old
     assert data['info']['SMART support is'] == 'Enabled'
 
     # Health assertions
     # SMART Value assertions
     # Attribute assertions
+
+def test_cisco_drive():
+    data = SMARTctl(context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'))
+
+    # Device assertions
+    assert data['device'] == 'sda'
+
+    # Information assertions
+    assert data['info']['Vendor']           == 'Cisco'
+    assert data['info']['Product']          == 'UCSC-MRAID12G'
+    assert data['info']['Revision']         == '4.27'
+    assert data['info']['User Capacity']    == '898,999,779,328 bytes [898 GB]'
+    assert data['info']['Logical block size'] == '512 bytes'
+    assert data['info']['Logical Unit id']  == '0x678da6e715b756401d552c0c04e4953b'
+    assert data['info']['Serial number']    == '003b95e4040c2c551d4056b715e7a68d'
+    assert data['info']['Device type']      == 'disk'
+    assert data['info']['Local Time is']    == 'Wed Dec 16 21:29:59 2015 EST'
+
+    # Unstructured information assertions
+    assert data['info']['SMART support is']      == 'Not supported'
+    assert data['info']['Error Counter logging'] == 'Not supported'
+    assert data['info']['Self Test logging']     == 'Not supported'
+
+def test_netapp_drive():
+    data = SMARTctl(context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'))
+
+    # Device assertions
+    assert data['device'] == 'sda'
+
+    # Information assertions
+    assert data['info']['Vendor']           == 'NETAPP'
+    assert data['info']['Product']          == 'LUN'
+    assert data['info']['Revision']         == '820a'
+    assert data['info']['User Capacity']    == '5,243,081,326,592 bytes [5.24 TB]'
+    assert data['info']['Logical block size']== '512 bytes'
+    assert data['info']['Logical Unit id']  == '0x60a9800044312d364d5d4478753370620x5d447875337062000a980044312d364d'
+    assert data['info']['Serial number']    == 'D1-6M]Dxu3pb'
+    assert data['info']['Device type']      == 'disk'
+    assert data['info']['Transport protocol']== 'iSCSI'
+    assert data['info']['Local Time is']    == 'Wed Dec 16 21:29:59 2015 EST'
+    assert data['info']['SMART Health Status'] == 'OK'
+
+    # Unstructured information assertions
+    assert data['info']['SMART support is']      == 'Supported, enabled'
+    assert data['info']['Temperature Warning']   == 'Disabled or Not Supported'
+    assert data['info']['Error Counter logging'] == 'Not supported'
+    assert data['info']['Self Test logging']     == 'Not supported'
+
