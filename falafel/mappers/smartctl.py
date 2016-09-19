@@ -20,6 +20,7 @@ def SMARTctl(context):
     """
     filename_re =   re.compile(r'smartctl_-a_\.dev\.(?P<device>\w+)$')
     info_line_re =  re.compile(r'(?P<key>\w+(?:\s\w+)*):\s+(?P<value>\S.*?)\s*$')
+    value_line_re = re.compile(r'(?P<key>\w[A-Za-z_.-]+(?:\s\w+)*):\s+\(\s*(?P<value>\S.*?)\)')
 
     match = filename_re.search(context.path)
     if not match:
@@ -33,7 +34,9 @@ def SMARTctl(context):
         'attributes': {},
     }
 
+    # Information section:
     for line in context.content:
+        print "information section: line =", line
         # Exit parsing information section if we go into the next section
         if (line.startswith('Error Counter logging not supported') or
            line.startswith('=== START OF READ SMART DATA SECTION ===')):
@@ -44,16 +47,48 @@ def SMARTctl(context):
         else:
             # Translate some of the less structured information
             if   line == 'Device does not support SMART':
-                drive_info[info]['SMART support is'] = 'Not supported'
+                drive_info['info']['SMART support is'] = 'Not supported'
             elif line == 'Device supports SMART and is Enabled':
-                drive_info[info]['SMART support is'] = 'Enabled'
+                drive_info['info']['SMART support is'] = 'Enabled'
             elif line == 'Error Counter logging not supported':
-                drive_info[info]['Error Counter logging'] = 'Not supported'
+                drive_info['info']['Error Counter logging'] = 'Not supported'
             elif line == 'Device does not support Self Test logging':
-                drive_info[info]['Self Test logging'] = 'Not supported'
+                drive_info['info']['Self Test logging'] = 'Not supported'
             elif line == 'Temperature Warning Disabled or Not Supported':
-                drive_info[info]['Temperature Warning'] = 'Disabled or Not supported'
+                drive_info['info']['Temperature Warning'] = 'Disabled or Not supported'
 
+    # Values section:
+    full_line = ''
+    for line in context.content:
+        if line.startswith('Vendor Specific SMART Attributes with Thresholds:'):
+            break
+        if line.startswith('SMART overall-health self-assessment test result'):
+            drive_info['health'] = ''.join((line.split(': '))[1:])
+            continue
+        # Values section begins with this - ignore:
+        if line.startswith('General SMART Values:'):
+            continue
+
+        # Lines starting with a space are continuations of the commentary on
+        # the previous setting - ignore
+        if len(line) == 0 or line[0] == ' ' or line[0] == "\t":
+            continue
+        # Otherwise, join this line to the full line
+        if full_line:
+            full_line += ' '
+        full_line += line.strip()
+        print "full_line =", full_line
+        
+        match = value_line_re.search(full_line)
+        if match:
+            # Handle the recommended polling time lines, which are joined
+            # with the previous line and values are in minutes.
+            (key, value) = match.group('key', 'value')
+            drive_info['values'][key] = value
+            print "... matched, key =", key, "value =", value
+            full_line = ''
+            
+        
     # Continue parsing the values and attributes sections
 
     return drive_info
