@@ -1,7 +1,7 @@
 import os
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
-VERSION = "1.8.0"
+VERSION = "1.9.0"
 NAME = "falafel"
 
 with open(os.path.join(__here__, "RELEASE")) as f:
