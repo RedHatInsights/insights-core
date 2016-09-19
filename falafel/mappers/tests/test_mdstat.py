@@ -51,7 +51,21 @@ unused devices: <none>
 
 MDSTAT_RESULT_3 = {"personalities": ["linear", "raid0", "raid1"], "components": []}
 
+MDSTAT_TEST_4 = """
+Personalities : [linear] [raid0] [raid1]
+md0 : inactive sdb[1](S) sda[0](S)
+      6306 blocks super external:imsm<Paste>
+
+unused devices: <none>
+""".strip()
+
+MDSTAT_RESULT_4 = {"personalities": ["linear", "raid0", "raid1"], "components": [
+    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 1, 'active': False, 'auto_read_only': False, 'component_name': 'sdb'},
+    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 0, 'active': False, 'auto_read_only': False, 'component_name': 'sda'}
+]}
+
 PERSONALITIES_TEST = "Personalities : [linear] [raid0] [raid1] [raid5] [raid4] [raid6]\n"
+
 PERSONALITIES_FAIL = [
     "Some stupid line.",
     "Personalities [raid1]",
@@ -144,6 +158,9 @@ class TestMdstat(unittest.TestCase):
 
         result = mdstat.Mdstat.parse_content(MDSTAT_TEST_3.splitlines())
         self.assertEqual(MDSTAT_RESULT_3, result)
+
+        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_4.splitlines())
+        self.assertEqual(MDSTAT_RESULT_4, result)
 
     def test_mdstat_construction(self):
         mdstat_obj = mdstat.Mdstat.parse_context(context_wrap(MDSTAT_TEST_1))

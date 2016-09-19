@@ -159,8 +159,11 @@ def parse_array_start(md_line):
     if raid_read_only_token == "(auto-read-only)":
         auto_read_only = True
         raid = tokens.pop(0)
-    else:
+    elif active:
         raid = raid_read_only_token
+    else:  # Inactive devices don't list the raid type
+        raid = None
+        tokens.insert(0, raid_read_only_token)
 
     for token in tokens:
         subtokens = re.split(r"\[|]", token)
