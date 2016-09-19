@@ -194,29 +194,23 @@ class NetstatSection:
 
     def __init__(self, name):
         self.name = name.strip()
-        if self.name not in NETSTAT_SECTION_ID:
-            raise NetstatParserException("Unknown netstat section : " + name)
+        assert self.name in NETSTAT_SECTION_ID
         self.meta = NETSTAT_SECTION_ID[self.name]
         self.data = defaultdict(list)
         for m in self.meta:
             self.data[m] = []
 
     def addMetaData(self, line):
-        try:
-            data = []
+        data = []
+        meta = {}
 
-            meta = {}
+        for m in NETSTAT_SECTION_ID[self.name]:
+            meta[line.index(m)] = m
+            data.append([])
 
-            for m in NETSTAT_SECTION_ID[self.name]:
-                meta[line.index(m)] = m
-                data.append([])
-
-            self.indexes = sorted(meta.keys())
-            self.data = data
-            self.meta = meta
-
-        except Exception, e:
-            raise NetstatParserException("Cannot parse meta data: " + line, e)
+        self.indexes = sorted(meta.keys())
+        self.data = data
+        self.meta = meta
 
     def addData(self, line):
         indexes = self.indexes
