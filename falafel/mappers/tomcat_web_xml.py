@@ -22,13 +22,16 @@ class TomcatWebXml(MapperOutput):
 
         xmltree = ET.fromstring('\n'.join(content))
         # default namespace
-        xmlns = 'http://java.sun.com/xml/ns/javaee'
-        keyword = '*{%s}%s' % (xmlns, TIMEOUT_KEYWORD)
+        xmlns_0 = 'http://java.sun.com/xml/ns/javaee'
+        xmlns_1 = 'http://java.sun.com/xml/ns/j2ee'
+        keyword_0 = '*{%s}%s' % (xmlns_0, TIMEOUT_KEYWORD)
+        keyword_1 = '*{%s}%s' % (xmlns_1, TIMEOUT_KEYWORD)
 
-        try:
-            field_text = xmltree.findall(keyword)[0].text
-        except Exception:
-            field_text = ''
+        key_field = xmltree.findall(keyword_0)
+        key_field = key_field if key_field else xmltree.findall(keyword_1)
+        field_text = key_field[0].text if key_field else None
 
-        if field_text.isdigit():
-            return {TIMEOUT_KEYWORD: int(field_text)}
+        tmo_dict = {}
+        if field_text and field_text.isdigit():
+            tmo_dict = {TIMEOUT_KEYWORD: int(field_text)}
+        return tmo_dict
