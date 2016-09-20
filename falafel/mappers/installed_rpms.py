@@ -4,6 +4,7 @@ from distutils.version import LooseVersion
 
 from falafel.core.plugins import mapper
 from falafel.util import rsplit
+from falafel.mappers import get_active_lines
 from falafel.core import MapperOutput, computed
 
 KNOWN_ARCHITECTURES = [
@@ -44,6 +45,7 @@ class InstalledRpms(MapperOutput):
     @classmethod
     def parse_content(cls, content):
         packages = defaultdict(list)
+        content = get_active_lines(content, comment_char="COMMAND>")
         try:
             for line in content:
                 if line.startswith("error:") or line.startswith("warning:"):
@@ -56,12 +58,11 @@ class InstalledRpms(MapperOutput):
                 if line.startswith("error:") or line.startswith("warning:"):
                     packages["__error"].append(line)
                 else:
-                    if line.strip():
-                        try:
-                            name, rpm = parse_line(line)
-                            packages[name].append(InstalledRpm(rpm))
-                        except Exception:
-                            packages["__unparsed"].append(line)
+                    try:
+                        name, rpm = parse_line(line)
+                        packages[name].append(InstalledRpm(rpm))
+                    except Exception:
+                        packages["__unparsed"].append(line)
         return packages
 
 

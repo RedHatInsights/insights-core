@@ -1,5 +1,6 @@
 from falafel.core.plugins import mapper
 from falafel.core import MapperOutput, computed
+from falafel.mappers import get_active_lines
 from collections import defaultdict
 from falafel.util import defaults
 
@@ -25,11 +26,10 @@ class CpuInfo(MapperOutput):
             "cache size": "cache_sizes"
         }
 
-        for line in content:
-            if line.strip():
-                key, value = split(line)
-                if key in mappings:
-                    data[mappings[key]].append(value)
+        for line in get_active_lines(content, comment_char="COMMAND>"):
+            key, value = split(line)
+            if key in mappings:
+                data[mappings[key]].append(value)
 
         return data
 

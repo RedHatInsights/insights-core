@@ -97,6 +97,7 @@ static_specs = {
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % json_format(), multi_output=False),
                                     SimpleFileSpec("installed-rpms"),
+                                    SimpleFileSpec("installed_packages"),
                                     SimpleFileSpec("rpm-manifest")]),
     "interrupts"                : SimpleFileSpec("proc/interrupts"),
     "ip_addr"                   : CommandSpec("/sbin/ip addr"),
