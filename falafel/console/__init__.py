@@ -6,6 +6,7 @@ import os
 import sys
 import json
 from collections import defaultdict
+from falafel.console.custom_logging import setup_logger
 from falafel.console.format import Formatter
 from falafel.core import plugins
 
@@ -109,8 +110,10 @@ def main():
     args = parser.parse_args()
     args.list_missing = False  # Force suppression until we make it work again
 
-    log_level = {0: logging.ERROR, 1: logging.INFO}.get(args.verbose, logging.DEBUG)
-    logging.basicConfig(level=log_level)
+    setup_logger(args.verbose)
+
+    # log the command and arguments passed
+    logging.info(" ".join(sys.argv))
 
     runner = Runner(args)
 
