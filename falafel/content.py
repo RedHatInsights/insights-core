@@ -185,7 +185,7 @@ class ContentHandler(tornado.web.RequestHandler):
         plugin_path = os.path.join(self.content_prefix, compute_plugin_dir(module))
         yaml_path = os.path.join(plugin_path, error_key, "metadata.yaml")
         with open(yaml_path, "r") as fp:
-            d.update(yaml.load(fp))
+            d = yaml.load(fp).update(d)
         apply_changeset(self.repo, list(save_rule(d, self.content_prefix)),
                         "Posted content update for %s" % d["rule_id"],
                         d["name"], d["email"])
