@@ -19,9 +19,11 @@ except:
 
 logger = logging.getLogger("content")
 
+CONTENT_PREFIX = "content"
+
 PLUGIN_PACKAGE = "telemetry.rules.plugins"
 
-REQUIRED_FILEDS = [
+REQUIRED_FIELDS = [
     "rule_id", "name", "email"
 ]
 
@@ -56,7 +58,7 @@ def word_wrap(line, wrap_len=72):
         yield line.strip()
 
 
-def drop_content(content, path, wrap=True):
+def write_content(content, path, wrap=True):
     content = content.replace("\\n", "\n")
     with open(path, "wb") as fp:
         if content.strip() == "NULL":
@@ -72,6 +74,7 @@ def drop_content(content, path, wrap=True):
 
 def compute_plugin_dir(module):
     orig = module
+    # TODO: Start with falafel.core.plugins.MAPPERS instead of sys.modules
     module = [sys.modules[m].__name__ for m in sys.modules if m.endswith("." + module)]
     assert len(module) < 2, module
     if not module:
@@ -97,11 +100,11 @@ def save_rule(d, prefix=""):
         os.makedirs(error_key_dir)
     for content in CONTENT_FIELDS:
         if content in d:
-            yield drop_content(d[content],
-                               os.path.join(plugin_dir, error_key, content + ".md"))
-    yield drop_content(gen_yaml(d),
-                       os.path.join(plugin_dir, error_key, "metadata.yaml"),
-                       wrap=False)
+            yield write_content(d[content],
+                                os.path.join(plugin_dir, error_key, content + ".md"))
+    yield write_content(gen_yaml(d),
+                        os.path.join(plugin_dir, error_key, "metadata.yaml"),
+                        wrap=False)
 
 
 def import_tsv():
@@ -112,7 +115,7 @@ def import_tsv():
         row["reboot_required"] = row["reboot_required"] == "1"
     to_add = []
     for d in data:
-        to_add.extend(list(save_rule(d, "content")))
+        to_add.extend(list(save_rule(d, CONTENT_PREFIX)))
     apply_changeset(repo,
                     to_add,
                     "Import content from TSV",
@@ -159,7 +162,7 @@ class ContentHandler(tornado.web.RequestHandler):
 
     def initialize(self, repo):
         self.repo = repo
-        self.content_prefix = os.path.join(self.repo.working_tree_dir, "content")
+        self.content_prefix = os.path.join(self.repo.working_tree_dir, CONTENT_PREFIX)
 
     def get(self):
         d = []
@@ -176,11 +179,11 @@ class ContentHandler(tornado.web.RequestHandler):
             self.set_status(400)
             self.write("Invalid document")
             return
-        for field in REQUIRED_FILEDS:
-            if field not in d:
-                self.write("Missing field %s" % field)
-                self.set_status(400)
-                return
+        missing_fields = [f for f in REQUIRED_FIELDS if f not in d]
+        if missing_fields:
+            self.write("Missing field %s" % ",".join(missing_fields))
+            self.set_status(400)
+            return
         module, error_key = d["rule_id"].split("|")
         plugin_path = os.path.join(self.content_prefix, compute_plugin_dir(module))
         yaml_path = os.path.join(plugin_path, error_key, "metadata.yaml")
