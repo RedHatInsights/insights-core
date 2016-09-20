@@ -1,6 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.mappers import get_active_lines
-from falafel.core import MapperOutput, computed
+from .. import MapperOutput, mapper, computed, get_active_lines
 
 
 class SubMemInfo(MapperOutput):

@@ -1,4 +1,4 @@
-from falafel.core.plugins import mapper
+from .. import mapper
 
 
 @mapper('systemctl_list-unit-files')

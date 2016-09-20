@@ -1,9 +1,8 @@
 import re
 from urlparse import urlparse
-from falafel.core import computed, MapperOutput
-from falafel.core.plugins import mapper
-from falafel.mappers import chkconfig, ParseException
-from falafel.mappers.systemd import unitfiles
+from ..mappers import chkconfig, ParseException
+from ..mappers.systemd import unitfiles
+from .. import MapperOutput, mapper, computed
 
 
 @mapper("cmdline")

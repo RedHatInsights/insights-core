@@ -1,6 +1,4 @@
-from falafel.util import parse_table
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import MapperOutput, mapper, computed, parse_table
 
 
 class ProcessList(MapperOutput):

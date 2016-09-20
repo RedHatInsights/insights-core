@@ -1,6 +1,5 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
 import xml.etree.ElementTree as ET
+from .. import MapperOutput, mapper
 
 
 @mapper('rhn-entitlement-cert.xml')

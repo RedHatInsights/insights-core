@@ -1,8 +1,6 @@
 import json
-from falafel.util import parse_keypair_lines, parse_table
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
-from falafel.mappers import get_active_lines
+from ..util import parse_keypair_lines
+from .. import MapperOutput, mapper, computed, parse_table, get_active_lines
 
 
 def map_keys(pvs, keys):

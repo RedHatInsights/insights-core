@@ -1,5 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import MapperOutput, mapper
 
 FILTER_LIST = ['COMMAND', 'libssl', 'libcrypto', 'libssl.so', 'multipath']
 

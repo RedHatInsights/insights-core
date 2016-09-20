@@ -1,5 +1,4 @@
-from falafel.core import LogFileOutput
-from falafel.core.plugins import mapper
+from .. import LogFileOutput, mapper
 
 
 @mapper('nova-api_log')

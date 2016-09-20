@@ -4,9 +4,8 @@ Interrupts
 
 Provides parsing for contents of ``/proc/interrupts``.
 """
-from falafel.core import computed, MapperOutput
-from falafel.core.plugins import mapper
-from falafel.mappers import ParseException
+from .. import MapperOutput, mapper, computed
+from ..mappers import ParseException
 
 
 @mapper("interrupts")

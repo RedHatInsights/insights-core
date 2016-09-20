@@ -5,10 +5,8 @@
 
 from collections import namedtuple
 
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.util import parse_table
-from falafel.mappers import get_active_lines, optlist_to_dict
+from .. import MapperOutput, mapper, get_active_lines, parse_table
+from ..mappers import optlist_to_dict
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype fs_mntops    fs_freq fs_passno"
 

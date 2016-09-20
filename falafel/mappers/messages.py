@@ -1,5 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import LogFileOutput
+from .. import LogFileOutput, mapper
 
 
 @mapper('messages')

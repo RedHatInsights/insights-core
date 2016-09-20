@@ -1,8 +1,6 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
-from falafel.util import defaults
 import re
 from datetime import date
+from .. import MapperOutput, mapper, computed, defaults
 
 
 @mapper('dmidecode')

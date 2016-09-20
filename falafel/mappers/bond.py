@@ -34,8 +34,7 @@ Typical content of ``bond.*`` file is:
 
 So, the data consists of stanzas of key value pairs.
 """
-from falafel.core.plugins import mapper
-from falafel.core import LogFileOutput
+from .. import LogFileOutput, mapper
 
 
 @mapper('bond')

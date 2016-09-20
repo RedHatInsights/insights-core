@@ -2,8 +2,7 @@
 DF - Disk Free
 ==============
 """
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import MapperOutput, mapper, computed
 
 
 def parse_df_lines(columns, df_content):

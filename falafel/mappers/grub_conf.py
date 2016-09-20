@@ -3,11 +3,8 @@
 kbase: https://access.redhat.com/solutions/74233
 """
 import re
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
-from falafel.mappers import get_active_lines
-
 from collections import defaultdict
+from .. import MapperOutput, mapper, computed, get_active_lines
 
 crash_paramater_re = re.compile(r'\bcrashkernel=(\S+)\b')
 IOMMU = "intel_iommu=on"

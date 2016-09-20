@@ -4,8 +4,7 @@ lsblk - List Block Devices
 """
 
 import re
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import MapperOutput, mapper
 
 MAX_GENERATIONS = 20
 

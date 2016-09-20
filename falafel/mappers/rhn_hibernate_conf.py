@@ -1,6 +1,4 @@
-from falafel.mappers import get_active_lines
-from falafel.core import MapperOutput
-from falafel.core.plugins import mapper
+from .. import MapperOutput, mapper, get_active_lines
 
 
 @mapper("rhn_hibernate.conf")

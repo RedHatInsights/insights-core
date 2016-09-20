@@ -4,8 +4,7 @@ Block ID
 """
 
 import re
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import MapperOutput, mapper
 
 
 @mapper("blkid")

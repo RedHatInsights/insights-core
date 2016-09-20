@@ -1,7 +1,6 @@
-from falafel.core.plugins import mapper
-from falafel.contrib import ipaddress
-from falafel.core import computed, MapperOutput
 from collections import defaultdict, deque
+from .. import MapperOutput, mapper, computed
+from ..contrib import ipaddress
 
 
 class NetworkInterface(MapperOutput):

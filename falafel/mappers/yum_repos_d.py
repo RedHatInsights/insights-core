@@ -1,6 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.mappers import get_active_lines
+from .. import MapperOutput, mapper, get_active_lines
 
 
 @mapper('yum.repos.d')

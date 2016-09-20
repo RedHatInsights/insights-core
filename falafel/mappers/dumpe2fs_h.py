@@ -3,7 +3,7 @@
 ==============
 """
 
-from falafel.core.plugins import mapper
+from .. import mapper
 
 COMPOUND_FIELDS = ['Filesystem features', 'Filesystem flags', 'Default mount options']
 
