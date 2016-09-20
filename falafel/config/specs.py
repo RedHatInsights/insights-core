@@ -72,7 +72,8 @@ static_specs = {
     "glance-registry.conf"      : SimpleFileSpec("etc/glance/glance-registry.conf"),
     "grub2.cfg"                 : SimpleFileSpec("boot/grub2/grub.cfg"),
     "grub.conf"                 : SimpleFileSpec("boot/grub/grub.conf"),
-    "grub_config_perms"         : CommandSpec("/usr/bin/ls -l /boot/grub2/grub.cfg"),
+    "grub_config_perms"         : CommandSpec("/usr/bin/ls -l /boot/grub2/grub.cfg"),  # only RHEL7 and updwards
+    "grub1_config_perms"        : CommandSpec("/bin/ls -l /boot/grub/grub.conf"),  # RHEL6
     "haproxy_cfg"               : SimpleFileSpec("etc/haproxy/haproxy.cfg"),
     "heat.conf"                 : SimpleFileSpec("etc/heat/heat.conf"),
     "heat_crontab"              : CommandSpec("/usr/bin/crontab -l -u heat"),
