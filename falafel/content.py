@@ -113,6 +113,7 @@ def import_tsv():
     data = parse_table(sys.stdin.read().splitlines(), "\t")
     for row in data:
         row["reboot_required"] = row["reboot_required"] == "1"
+        row["node_id"] = row["node_id"] if row["node_id"] != "NULL" else None
     to_add = []
     for d in data:
         to_add.extend(list(save_rule(d, CONTENT_PREFIX)))
