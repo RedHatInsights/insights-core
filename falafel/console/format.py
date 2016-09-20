@@ -16,11 +16,11 @@ class Formatter(object):
         col_cnt = self.screen_width / col_size
         col_size = col_size + ((self.screen_width % col_size) / col_cnt)
         for i, item in enumerate(sorted(items), 1):
-            logger.con(item.ljust(col_size), end="" if i % col_cnt else "\n")
-        logger.con("\n")
+            logger.console(item.ljust(col_size), end="" if i % col_cnt else "\n")
+        logger.console("\n")
 
     def heading(self, text):
-        logger.con("\n" + "  {0}  ".format(text).center(self.screen_width, "="))
+        logger.console("\n" + "  {0}  ".format(text).center(self.screen_width, "="))
 
     def hanging_indent(self, line, indent_size, word_wrap=True):
         line = line.rstrip()
@@ -48,20 +48,20 @@ class Formatter(object):
         missing_fmt = "{}: {}"
         for symbolic_file, modules in d.iteritems():
             line = missing_fmt.format(symbolic_file.ljust(key_field_size), ", ".join(modules))
-            logger.con(self.hanging_indent(line, key_field_size + 2))
+            logger.console(self.hanging_indent(line, key_field_size + 2))
 
     def display_dict_of_strings(self, d):
         key_field_size = max(map(len, d.keys())) + 1
         missing_fmt = "{}: {}"
         for key, value in d.iteritems():
             line = missing_fmt.format(key.ljust(key_field_size), value)
-            logger.con(self.hanging_indent(line, key_field_size + 2))
+            logger.console(self.hanging_indent(line, key_field_size + 2))
 
     def display_results(self, results):
         result_count = 0
         for module, result in sorted(results.iteritems()):
             if result:
-                logger.con(module + ":")
+                logger.console(module + ":")
                 key_field_size = max(map(len, result.keys()))
                 for k, v in sorted(result.iteritems()):
                     if isinstance(v, list):
@@ -69,10 +69,10 @@ class Formatter(object):
                     elif isinstance(v, str):
                         v = '"{}"'.format(v)
                     line = "    {} : {}".format(k.ljust(key_field_size), v)
-                    logger.con(self.hanging_indent(line, key_field_size + 7, word_wrap=False))
-                logger.con("-" * self.screen_width)
+                    logger.console(self.hanging_indent(line, key_field_size + 7, word_wrap=False))
+                logger.console("-" * self.screen_width)
                 result_count = result_count + 1
-        logger.con("Result count: {}".format(result_count))
+        logger.console("Result count: {}".format(result_count))
 
     def display_system_data(self, system_data):
         d = {key: system_data[key] for key in system_data.keys() if key != "metadata"}
@@ -90,7 +90,7 @@ class Formatter(object):
                 for e in eligible.split(","):
                     missing[e.strip()].append(module)
         if not items:
-            logger.con("No plugins executed")
+            logger.console("No plugins executed")
             return
         if self.list_plugins:
             self.heading("Executed modules")
@@ -100,7 +100,7 @@ class Formatter(object):
                 self.heading("Missing files")
                 self.display_dict_of_lists(missing)
             else:
-                logger.con("No files were missing")
+                logger.console("No files were missing")
         self.heading("System Data")
         self.display_system_data(system)
         self.heading("Results")
