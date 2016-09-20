@@ -18,11 +18,6 @@ IS_KDUMP_IOMMU_ENABLED = 'is_kdump_iommu_enabled'
 KERNEL_INITRD = 'kernel_initrd'
 GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
-
-
-ERROR_KEY_GRUB = "GRUB_CONFIG_ISSUE"
-ERROR_KEY_FS = "MISSING_BOOT_FILES"
-
 GRUB_BOUNDARY_WORDS = ['title', 'menuentry', '}']
 
 
