@@ -117,11 +117,7 @@ def import_tsv():
     to_add = []
     for d in data:
         to_add.extend(list(save_rule(d, CONTENT_PREFIX)))
-    apply_changeset(repo,
-                    to_add,
-                    "Import content from TSV",
-                    "Kyle Lape",
-                    "klape@redhat.com")
+    repo.index.add(to_add)
 
 
 def apply_changeset(repo, to_add, message, name, email):
