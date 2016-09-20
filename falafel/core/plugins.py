@@ -38,8 +38,9 @@ def single_reducers():
 
 
 def load(package_name, pattern_list=None):
-    load_package(package_name, pattern_list)
+    loaded = load_package(package_name, pattern_list)
     build_filter_map()
+    return loaded
 
 
 def build_filter_map():

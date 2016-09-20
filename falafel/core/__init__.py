@@ -15,20 +15,21 @@ DEFAULT_PLUGIN_MODULE = "falafel.plugins"
 
 def load_package(package_name, pattern=None, loaded_map=set()):
 
+    loaded = []
+
     if package_name in loaded_map:
         return
-
-    module_count = 0
 
     __import__(package_name, globals(), locals(), [], -1)
 
     for module_name in get_module_names(sys.modules[package_name], pattern):
-        __import__(module_name, globals(), locals(), [], -1)
-        module_count += 1
+        m = __import__(module_name, globals(), locals(), [package_name], -1)
+        loaded.append(m)
         log.debug("loaded %s", module_name)
 
     loaded_map.add(package_name)
-    log.info("Loaded %d modules", module_count)
+    log.info("Loaded %d modules", len(loaded))
+    return loaded
 
 
 def get_module_names(package_name, pattern=None):
