@@ -170,6 +170,7 @@ def test_standard_drive():
     # Health assertions
     assert data['health'] == 'PASSED'
 
+    # SMART Value assertions
     assert data['values']['Offline data collection status'] == '0x00'
     assert data['values']['Self-test execution status'] == '0'
     assert data['values']['Total time to complete Offline data collection'] == '0'
@@ -180,14 +181,30 @@ def test_standard_drive():
     assert data['values']['Extended self-test routine recommended polling time'] == '78'
     assert data['values']['Conveyance self-test routine recommended polling time'] == '2'
     assert data['values']['SCT capabilities'] == '0x1031'
-    # SMART Value assertions
+    
     # Attribute assertions
+    # Don't bother to test every single key for every single attribute - test
+    # one, and then test the variations
+    assert data['attributes']['Raw_Read_Error_Rate']['id']          == '1'
+    assert data['attributes']['Raw_Read_Error_Rate']['flag']        == '0x000f'
+    assert data['attributes']['Raw_Read_Error_Rate']['value']       == '118'
+    assert data['attributes']['Raw_Read_Error_Rate']['worst']       == '099'
+    assert data['attributes']['Raw_Read_Error_Rate']['threshold']   == '034'
+    assert data['attributes']['Raw_Read_Error_Rate']['type']        == 'Pre-fail'
+    assert data['attributes']['Raw_Read_Error_Rate']['updated']     == 'Always'
+    assert data['attributes']['Raw_Read_Error_Rate']['when_failed'] == '-'
+    assert data['attributes']['Raw_Read_Error_Rate']['raw_value']   == '179599704'
+
+    assert data['attributes']['Start_Stop_Count']['type']           == 'Old_age'
+    assert data['attributes']['Power_On_Hours']['raw_value']        == '4273 (5 89 0)'
+    assert data['attributes']['Airflow_Temperature_Cel']['raw_value'] == '41 (Min/Max 21/41)'
+    assert data['attributes']['Offline_Uncorrectable']['updated']   == 'Offline'
 
 def test_cisco_drive():
-    data = SMARTctl(context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'))
+    data = SMARTctl(context_wrap(CISCO_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdb'))
 
     # Device assertions
-    assert data['device'] == 'sda'
+    assert data['device'] == 'sdb'
 
     # Information assertions
     assert data['info']['Vendor']           == 'Cisco'
@@ -206,10 +223,10 @@ def test_cisco_drive():
     assert data['info']['Self Test logging']     == 'Not supported'
 
 def test_netapp_drive():
-    data = SMARTctl(context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'))
+    data = SMARTctl(context_wrap(NETAPP_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdc'))
 
     # Device assertions
-    assert data['device'] == 'sda'
+    assert data['device'] == 'sdc'
 
     # Information assertions
     assert data['info']['Vendor']           == 'NETAPP'
@@ -225,7 +242,7 @@ def test_netapp_drive():
     assert data['info']['SMART Health Status'] == 'OK'
 
     # Unstructured information assertions
-    assert data['info']['SMART support is']      == 'Supported, enabled'
+    assert data['info']['SMART support is']      == 'Enabled'
     assert data['info']['Temperature Warning']   == 'Disabled or Not Supported'
     assert data['info']['Error Counter logging'] == 'Not supported'
     assert data['info']['Self Test logging']     == 'Not supported'
