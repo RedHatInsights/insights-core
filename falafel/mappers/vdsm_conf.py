@@ -1,5 +1,5 @@
-from falafel.core.plugins import mapper
 import re
+from .. import mapper
 
 SECTION_RE = re.compile(r'^\[([a-zA-Z0-9]+)\]$')
 

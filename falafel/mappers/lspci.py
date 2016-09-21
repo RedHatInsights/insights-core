@@ -19,8 +19,7 @@ containing only "filter string".  The ``in`` operator may also be used to test
 whether a particular string is in the ``lspci`` output.  Other methods/operators
 are also supported, see the :py:class:`falafel.core.LogFileOutput` class for more information.
 """
-from falafel.core import LogFileOutput
-from falafel.core.plugins import mapper
+from .. import LogFileOutput, mapper
 
 
 @mapper('lspci')

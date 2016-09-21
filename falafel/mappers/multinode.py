@@ -1,5 +1,5 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed, marshalling
+from ..core import marshalling
+from .. import MapperOutput, mapper, computed
 
 
 def _metadata(context, product_filter=None):

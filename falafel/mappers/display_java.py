@@ -1,4 +1,4 @@
-from falafel.core.plugins import mapper
+from .. import mapper
 
 JAVA_LINK_FLAG = 'link currently points to'
 

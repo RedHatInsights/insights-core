@@ -1,7 +1,5 @@
-from falafel.mappers import get_active_lines
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
 import json
+from .. import MapperOutput, mapper, get_active_lines, computed
 
 JSON_FIELDS = ["TEAM_CONFIG", "TEAM_PORT_CONFIG"]
 

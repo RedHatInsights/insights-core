@@ -1,4 +1,8 @@
 import os
+from .core import LogFileOutput, MapperOutput, computed  # noqa: F401
+from .core.plugins import mapper, reducer, make_response, make_metadata  # noqa: F401
+from .mappers import get_active_lines  # noqa: F401
+from .util import defaults, parse_table  # noqa: F401
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
 VERSION = "1.9.0"

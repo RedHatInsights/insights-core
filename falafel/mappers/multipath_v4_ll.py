@@ -1,6 +1,6 @@
 import re
 import shlex
-from falafel.core.plugins import mapper
+from .. import mapper
 
 MPATH_WWID_REG = re.compile(r'\(?([A-Za-z0-9_\s]+)\)?\s+dm-')
 HCTL_REG = re.compile(r'- (\d+:){3}\d+')

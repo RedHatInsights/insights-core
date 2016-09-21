@@ -1,5 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import MapperOutput, mapper, computed
 
 
 class Hostname(MapperOutput):

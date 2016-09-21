@@ -2,9 +2,8 @@
 Parted - Partition Editor
 =========================
 """
-from falafel.core import MapperOutput, computed
-from falafel.core.plugins import mapper
-from falafel.mappers import ParseException
+from .. import MapperOutput, mapper, computed
+from ..mappers import ParseException
 
 
 class Partition(MapperOutput):

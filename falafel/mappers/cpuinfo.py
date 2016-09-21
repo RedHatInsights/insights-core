@@ -1,8 +1,5 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
-from falafel.mappers import get_active_lines
 from collections import defaultdict
-from falafel.util import defaults
+from .. import MapperOutput, mapper, computed, defaults, get_active_lines
 
 
 @mapper('cpuinfo')

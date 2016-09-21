@@ -1,6 +1,5 @@
 import os
-from falafel.mappers import get_active_lines
-from falafel.core.plugins import mapper
+from .. import mapper, get_active_lines
 
 foreman_sat6_ver_map = {
     '1.5': '6.0',

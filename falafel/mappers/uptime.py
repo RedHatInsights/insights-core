@@ -1,6 +1,6 @@
-from falafel.core.plugins import mapper
 import re
 import datetime
+from .. import mapper
 
 
 @mapper("uptime")

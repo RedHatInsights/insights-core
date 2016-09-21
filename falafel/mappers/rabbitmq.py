@@ -1,6 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.core import LogFileOutput
+from .. import MapperOutput, LogFileOutput, mapper
 
 
 @mapper("rabbitmq_report", ["total_limit"])

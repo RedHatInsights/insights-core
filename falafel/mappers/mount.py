@@ -3,9 +3,8 @@ Mount
 =====
 """
 
-from falafel.core.plugins import mapper
-from falafel.mappers import get_active_lines, optlist_to_dict, ParseException
-from falafel.core import MapperOutput
+from ..mappers import optlist_to_dict, ParseException
+from .. import MapperOutput, mapper, get_active_lines
 
 
 class MountOpts(MapperOutput):

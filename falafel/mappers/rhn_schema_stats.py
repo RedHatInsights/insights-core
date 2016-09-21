@@ -1,7 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.util import parse_table
-from falafel.mappers import get_active_lines
+from .. import MapperOutput, mapper, parse_table, get_active_lines
 
 
 def _replace_tabs(s, ts=8):

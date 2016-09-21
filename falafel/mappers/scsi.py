@@ -1,7 +1,6 @@
 from collections import deque
-from falafel.core import MapperOutput
-from falafel.core.plugins import mapper
-from falafel.mappers import ParseException
+from .. import MapperOutput, mapper
+from ..mappers import ParseException
 
 KEY_WORD_LINE_0 = ["Host", "Channel", "Id", "Lun"]
 KEY_WORD_LINE_1 = ["Vendor", "Model", "Rev"]

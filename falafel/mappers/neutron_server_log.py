@@ -1,5 +1,4 @@
-from falafel.core import LogFileOutput
-from falafel.core.plugins import mapper
+from .. import LogFileOutput, mapper
 
 
 @mapper('neutron_server_log')

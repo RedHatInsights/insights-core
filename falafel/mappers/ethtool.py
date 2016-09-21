@@ -1,8 +1,7 @@
 import os
 import re
 from collections import namedtuple
-from falafel.core.plugins import mapper
-from falafel.core import computed, MapperOutput
+from .. import MapperOutput, mapper, computed
 
 
 def extract_iface_name_from_path(path, name):

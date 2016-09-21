@@ -1,9 +1,7 @@
-from falafel.core.plugins import mapper
-
-from falafel.core import MapperOutput, computed
 from distutils.version import LooseVersion, StrictVersion
 import logging
 import re
+from .. import MapperOutput, mapper, computed
 
 logger = logging.getLogger(__name__)
 

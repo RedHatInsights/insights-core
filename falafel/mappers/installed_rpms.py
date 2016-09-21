@@ -2,10 +2,8 @@ import json
 from collections import defaultdict
 from distutils.version import LooseVersion
 
-from falafel.core.plugins import mapper
-from falafel.util import rsplit
-from falafel.mappers import get_active_lines
-from falafel.core import MapperOutput, computed
+from ..util import rsplit
+from .. import MapperOutput, mapper, computed, get_active_lines
 
 KNOWN_ARCHITECTURES = [
     'x86_64',
