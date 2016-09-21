@@ -103,7 +103,7 @@ class Uname(MapperOutput):
     - `nodename`: Hostname of the computer where the uname command was
       executed.  This information may obfusicated for security.
     - `version`: The major identification number for the kernel release. It
-      be in the format ``#.#.#`` or UnameError exception will be raised.
+      be in the format ``#.#.#[.#]`` or UnameError exception will be raised.
     - `release`: The minor identification number for the kernel release. This
       information is generally in the format #.#.#.el#, however this is not
       strictly enforced.  If the release.arch informatoin cannot be reliably
@@ -141,7 +141,8 @@ class Uname(MapperOutput):
         'rhel_release',
         '_lv_release',
         '_rel_maj',
-        '_sv_version'
+        '_sv_version',
+        '_lv_version'
     ]
 
     defaults = {k: None for k in keys}
@@ -263,7 +264,12 @@ class Uname(MapperOutput):
         rhel_key = "-".join([data['version'], data['_rel_maj']])
         rhel_release = rhel_release_map.get(rhel_key, '-1.-1')
         data['rhel_release'] = rhel_release.split('.')
-        data['_sv_version'] = StrictVersion(data['version'])
+        try:
+            data['_sv_version'] = StrictVersion(data['version'])
+        except ValueError:
+            logger.debug("ValueError converting version to StrictVersion(%s)", data['version'])
+            data['_sv_version'] = None
+        data['_lv_version'] = LooseVersion(data['version'])
         try:
             data['_lv_release'] = LooseVersion(pad_release(data['release']))
         except ValueError:
@@ -271,6 +277,13 @@ class Uname(MapperOutput):
             data['_lv_release'] = None
         data['ver_rel'] = '%s-%s' % (data['version'], data['release'])
         return data
+
+    def _best_version(self, other):
+        """ Determine whether to use _sv_version or _lv_version. """
+        if self._sv_version and other._sv_version:
+            return self._sv_version, other._sv_version
+        else:
+            return self._lv_version, other._lv_version
 
     def __str__(self):
         return "version: %s; release: %s; rel_maj: %s; lv_release: %s" % (
@@ -318,7 +331,9 @@ class Uname(MapperOutput):
         else:
             other_uname = Uname(other)
 
-        if self._sv_version == other_uname._sv_version:
+        s_version, o_version = self._best_version(other_uname)
+
+        if s_version == o_version:
             if self._lv_release and other_uname._lv_release:
                 ret = self._lv_release == other_uname._lv_release
             else:
@@ -326,8 +341,8 @@ class Uname(MapperOutput):
                 raise UnameError("Release information not present for comparison",
                                  "self({}), other({})".format(self.kernel, other_uname.kernel))
         else:
-            ret = self._sv_version == other_uname._sv_version
-            logger.debug("comparison based on version: %s == %s ? %s", self._sv_version, other_uname._sv_version, ret)
+            ret = s_version == o_version
+            logger.debug("comparison based on version: %s == %s ? %s", s_version, o_version, ret)
         return ret
 
     def __ne__(self, other):
@@ -351,7 +366,9 @@ class Uname(MapperOutput):
         else:
             other_uname = Uname(other)
 
-        if self._sv_version == other_uname._sv_version:
+        s_version, o_version = self._best_version(other_uname)
+
+        if s_version == o_version:
             if self._lv_release and other_uname._lv_release:
                 ret = self._lv_release < other_uname._lv_release
             else:
@@ -359,8 +376,8 @@ class Uname(MapperOutput):
                 raise UnameError("Release information not present for comparison",
                                  "self{}), other({})".format(self.kernel, other_uname.kernel))
         else:
-            ret = self._sv_version < other_uname._sv_version
-            logger.debug("comparison based on version: %s < %s ? %s", self._sv_version, other_uname._sv_version, ret)
+            ret = s_version < o_version
+            logger.debug("comparison based on version: %s < %s ? %s", s_version, o_version, ret)
         return ret
 
     def __le__(self, other):
@@ -389,7 +406,9 @@ class Uname(MapperOutput):
         else:
             other_uname = Uname(other)
 
-        if self._sv_version == other_uname._sv_version:
+        s_version, o_version = self._best_version(other_uname)
+
+        if s_version == o_version:
             if self._lv_release and other_uname._lv_release:
                 ret = self._lv_release > other_uname._lv_release
             else:
@@ -397,8 +416,8 @@ class Uname(MapperOutput):
                 raise UnameError("Release information not present for comparison",
                                  "self{}), other({})".format(self.kernel, other_uname.kernel))
         else:
-            ret = self._sv_version > other_uname._sv_version
-            logger.debug("comparison based on version: %s > %s ? %s", self._sv_version, other_uname._sv_version, ret)
+            ret = s_version > o_version
+            logger.debug("comparison based on version: %s > %s ? %s", s_version, o_version, ret)
         return ret
 
     def __ge__(self, other):
@@ -424,15 +443,17 @@ class Uname(MapperOutput):
         Since this behavior is not optimal for the the '<' comparison operator (raising an Error would
         probably be better) we'll keep it internal to the class.
         """
-        if self._sv_version == other._sv_version:
+        s_version, o_version = self._best_version(other)
+
+        if s_version == o_version:
             if self._lv_release and other._lv_release:
                 ret = self._lv_release < other._lv_release
             else:
                 ret = False
             logger.debug("%s < %s ? %s", self._lv_release, other._lv_release, ret)
         else:
-            ret = self._sv_version < other._sv_version
-            logger.debug("%s < %s ? %s", self._sv_version, other._sv_version, ret)
+            ret = s_version < o_version
+            logger.debug("%s < %s ? %s", s_version, o_version, ret)
         return ret
 
     def fixed_by(self, *fixes, **kwargs):
