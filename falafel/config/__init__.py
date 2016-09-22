@@ -806,7 +806,8 @@ def json_format(fmt=None):
             ("installtime", "INSTALLTIME:date"),
             ("buildtime", "BUILDTIME"),
             ("rsaheader", "RSAHEADER:pgpsig"),
-            ("dsaheader", "DSAHEADER:pgpsig")
+            ("dsaheader", "DSAHEADER:pgpsig"),
+            ("srpm", "SOURCERPM")
         ]
 
     def inner(idx=None):

@@ -1,6 +1,6 @@
 import json
 from collections import defaultdict
-from distutils.version import LooseVersion
+from distutils.version import LooseVersion as LV
 
 from ..util import rsplit
 from .. import MapperOutput, mapper, computed, get_active_lines
@@ -39,6 +39,9 @@ class InstalledRpms(MapperOutput):
         Returns the highest version of the installed RPM with the given name
         """
         return max(self[name]) if name in self else None
+
+    def __len__(self):
+        return len(self.data)
 
     @classmethod
     def parse_content(cls, content):
@@ -86,8 +89,25 @@ class InstalledRpm(MapperOutput):
     def release(self):
         return self.get('release')
 
+    @property
+    def epoch(self):
+        return self.get('epoch', '0')
+
+    @property
+    def source(self):
+        if "srpm" in self.data:
+            r = InstalledRpm.from_package(self.data["srpm"])
+            r.data["epoch"] = self.epoch
+            return r
+
     def __str__(self):
-        return self.package
+        return "%s:%s" % (self.epoch, self.package)
+
+    def __unicode__(self):
+        return str(self)
+
+    def __repr__(self):
+        return str(self)
 
     @classmethod
     def from_package(cls, package_string):
@@ -95,27 +115,29 @@ class InstalledRpm(MapperOutput):
 
     def __eq__(self, other):
         return (
-            self["name"] == other["name"] and
-            LooseVersion(self["version"]) == LooseVersion(other["version"]) and
-            LooseVersion(self["release"]) == LooseVersion(other["release"])
+            self.name == other.name and
+            LV(self.epoch) == LV(other.epoch) and
+            LV(self.version) == LV(other.version) and
+            LV(self.release) == LV(other.release)
         )
 
     def __lt__(self, other):
-        if self["name"] != other["name"]:
-            raise ValueError("Cannot compare packages with differing names %s != %s" % (self["name"], other["name"]))
+        if self.name != other.name:
+            raise ValueError("Cannot compare packages with differing names %s != %s" % (self.name, other.name))
 
         if self == other:
             return False
 
-        self_v = LooseVersion(self["version"])
-        other_v = LooseVersion(other["version"])
+        self_v, other_v = LV(self.version), LV(other.version)
+        self_ep, other_ep = LV(self.epoch), LV(other.epoch)
 
-        if self_v < other_v:
-            return True
-        elif self_v > other_v:
-            return False
-        else:
-            return LooseVersion(self["release"]) < LooseVersion(other["release"])
+        if self_ep != other_ep:
+            return self_ep < other_ep
+
+        if self_v != other_v:
+            return self_v < other_v
+
+        return LV(self.release) < LV(other.release)
 
     def __gt__(self, other):
         return other.__lt__(self)
