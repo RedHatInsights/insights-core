@@ -17,3 +17,19 @@ with open(os.path.join(__here__, "COMMIT")) as f:
 
 def get_nvr():
     return "{0}-{1}-{2}".format(NAME, VERSION, RELEASE)
+
+RULES_STATUS = {}
+"""
+Mapping of dictionaries containing nvr and commitid for each rule repo included
+in this instance
+
+{"rule_repo_1": {"version": nvr(), "commit": sha1}}
+"""
+
+
+def add_status(name, nvr, commit):
+    """
+    Rule repositories should call this method in their package __init__ to
+    register their version information.
+    """
+    RULES_STATUS[name] = {"version": nvr, "commit": commit}
