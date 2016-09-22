@@ -1,4 +1,5 @@
 import os
+import getpass
 import logging
 import logging.config
 
@@ -41,7 +42,12 @@ class ContextFilter(logging.Filter):
     attributes the the log record
     """
     def filter(self, record):
-        record.username = os.environ.get('USER', 'unknown')
+        # use username if available
+        try:
+            record.username = getpass.getuser()
+        except Exception:
+            record.username = ''
+
         return True
 
 
