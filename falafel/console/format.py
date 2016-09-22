@@ -15,8 +15,13 @@ class Formatter(object):
         col_size = max(map(len, items))
         col_cnt = self.screen_width / col_size
         col_size = col_size + ((self.screen_width % col_size) / col_cnt)
-        for i, item in enumerate(sorted(items), 1):
-            logger.console(item.ljust(col_size), end="" if i % col_cnt else "\n")
+
+        sorted_items = sorted(items)
+        chunk_iter = (sorted_items[i:i + col_cnt] for i in xrange(0, len(sorted_items), col_cnt))
+        for chunks in chunk_iter:
+            row = ''.join(item.ljust(col_size) for item in chunks)
+            logger.console(row)
+
         logger.console("\n")
 
     def heading(self, text):
