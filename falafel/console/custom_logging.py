@@ -41,7 +41,7 @@ class ContextFilter(logging.Filter):
     attributes the the log record
     """
     def filter(self, record):
-        record.username = os.environ['USER']
+        record.username = os.environ.get('USER', 'unknown')
         return True
 
 
