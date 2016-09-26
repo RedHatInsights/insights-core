@@ -63,6 +63,7 @@ static_specs = {
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
     "fdisk-l-sos"               : PatternSpec(r"sos_commands/filesys/fdisk_-l_.+"),
     "fstab"                     : SimpleFileSpec("etc/fstab"),
+    "foreman_satellite.log"     : SimpleFileSpec("var/log/foreman-installer/satellite.log", large_content=True),
     "foreman_production.log"    : SimpleFileSpec("var/log/foreman/production.log", large_content=True),
     "galera.cnf"                : SimpleFileSpec("etc/my.cnf.d/galera.cnf"),
     "getenforce"                : CommandSpec("/usr/sbin/getenforce"),
