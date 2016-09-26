@@ -3,6 +3,7 @@ import itertools
 import logging
 import pprint
 import json
+import sys
 from collections import defaultdict
 from functools import wraps
 from falafel.core import mapper, reducer, marshalling, plugins
@@ -68,6 +69,25 @@ def archive_provider(module, test_func=unordered_compare, slow=False):
         ARCHIVE_GENERATORS.append(__wrap)
         return __wrap
     return _wrap
+
+
+CACHED_BY_MODULE = defaultdict(list)
+
+
+def ensure_cache_populated():
+    if not CACHED_BY_MODULE:
+        for gen in ARCHIVE_GENERATORS:
+            if not gen.slow:
+                for module, test_func, input_data, expected in gen():
+                    CACHED_BY_MODULE[module].append((test_func, input_data, expected))
+
+
+def plugin_tests(module_name):
+    ensure_cache_populated()
+    if module_name in sys.modules:
+        real_module = sys.modules[module_name]
+        for test_func, input_data, expected in CACHED_BY_MODULE[real_module]:
+            yield test_func, input_data, expected
 
 
 def context_wrap(lines, path='path', hostname='hostname',
