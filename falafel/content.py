@@ -5,9 +5,9 @@ import os
 import signal
 import sys
 import yaml
-from falafel.util import parse_table
-from falafel.core import load_package
-from falafel.core import plugins
+from .util import parse_table, word_wrap
+from .core import load_package, plugins
+from .tests import plugin_tests, ensure_cache_populated
 
 try:
     import tornado.ioloop
@@ -45,20 +45,7 @@ EXAMPLE_REQUEST = {
 }
 
 
-def word_wrap(line, wrap_len=72):
-    if len(line) > wrap_len:
-        for i, c in enumerate(reversed(line[:wrap_len])):
-            if c == " ":
-                break_point = wrap_len - i
-                yield line[:break_point].strip()
-                for more in word_wrap(line[break_point:], wrap_len):
-                    yield more
-                break
-    else:
-        yield line.strip()
-
-
-def write_content(content, path, wrap=True):
+def write_content(content, path, wrap=False):
     content = content.replace("\\n", "\n")
     with open(path, "wb") as fp:
         if content.strip() == "NULL":
@@ -72,19 +59,24 @@ def write_content(content, path, wrap=True):
     return path
 
 
-def compute_plugin_dir(module):
+def compute_plugin_module(module, package):
     orig = module
     # TODO: Start with falafel.core.plugins.MAPPERS instead of sys.modules
+    print module
     module = [sys.modules[m].__name__ for m in sys.modules if m.endswith("." + module)]
     assert len(module) < 2, module
     if not module:
-        return os.path.join("retired", orig)
-    module = module[0].split(PLUGIN_PACKAGE)[1].strip(".")
+        return ".".join(["retired", orig])
+    module = module[0].split(package)[1].strip(".")
     intermediate = module.split(".")[:-1]
     if intermediate:
         intermediate.append(module.split(".")[-1])
-        module = os.path.join(*intermediate)
+        module = ".".join(intermediate)
     return module
+
+
+def compute_plugin_dir(module, package):
+    return compute_plugin_module(module, package).replace(".", "/")
 
 
 def gen_yaml(data):
@@ -92,9 +84,9 @@ def gen_yaml(data):
     return yaml.dump(y, default_flow_style=False, default_style="")
 
 
-def save_rule(d, prefix=""):
+def save_rule(d, prefix="", package=PLUGIN_PACKAGE):
     module, error_key = d["rule_id"].split("|")
-    plugin_dir = os.path.join(prefix, compute_plugin_dir(module))
+    plugin_dir = os.path.join(prefix, compute_plugin_dir(module, package))
     error_key_dir = os.path.join(plugin_dir, error_key)
     if not os.path.exists(error_key_dir):
         os.makedirs(error_key_dir)
@@ -103,8 +95,7 @@ def save_rule(d, prefix=""):
             yield write_content(d[content],
                                 os.path.join(plugin_dir, error_key, content + ".md"))
     yield write_content(gen_yaml(d),
-                        os.path.join(plugin_dir, error_key, "metadata.yaml"),
-                        wrap=False)
+                        os.path.join(plugin_dir, error_key, "metadata.yaml"))
 
 
 def import_tsv():
@@ -126,47 +117,92 @@ def apply_changeset(repo, to_add, message, name, email):
 
 
 def read_error_key(path):
-    d = {}
+    d = {"content": {}}
     for f in CONTENT_FIELDS:
         with open(os.path.join(path, f + ".md")) as fp:
-            d[f] = fp.read().strip()
+            d["content"][f] = fp.read().strip()
     with open(os.path.join(path, "metadata.yaml"), "r") as fp:
         y = yaml.load(fp)
-    d.update(y)
+    d["metadata"] = y
     return d
 
 
-def read_plugin(path):
+def read_plugin_module(path):
     try:
-        for d in os.listdir(path):
-            yield read_error_key(os.path.join(path, d))
+        for error_key in os.listdir(path):
+            yield read_error_key(os.path.join(path, error_key))
     except:
         logger.warning("Missing content: %s", os.path.basename(path))
         logger.warning(path)
 
 
-def sig_handler(signum, frame):
-    logger.debug("Received signal {0}.".format(signum))
-    tornado.ioloop.IOLoop.current().add_callback_from_signal(shutdown)
+def split_rule_id(rule_id):
+    if "|" in rule_id:
+        return rule_id.split("|")
+    else:
+        return rule_id, None
 
 
-def shutdown():
-    logger.info("Shutting Down.")
-    tornado.ioloop.IOLoop.current().stop()
+class ContentParamHandler(tornado.web.RequestHandler):
+
+    def initialize(self, repo, plugin_package, test_package):
+        self.repo = repo
+        self.plugin_package = plugin_package
+        self.test_package = test_package
+
+    def get(self, rule_id):
+        module, error_key = split_rule_id(rule_id)
+        module_end = compute_plugin_module(module, self.plugin_package)
+        module_name = ".".join([self.plugin_package, module_end])
+        params = [expected for _, _, expected in plugin_tests(module_name) if expected]
+        unwrapped = [i[0] if isinstance(i, list) else i for i in params]
+        if error_key is not None:
+            unwrapped = [p for p in unwrapped if p["error_key"] == error_key]
+        for p in unwrapped:
+            if "type" in p:
+                del p["type"]
+            if "affected_hosts" in p:
+                p["hostname_mapping"] = {system_id: "hostname" for system_id in p["affected_hosts"]}
+        self.set_header("Content-Type", "application/json")
+        self.write(json.dumps(unwrapped))
 
 
 class ContentHandler(tornado.web.RequestHandler):
 
-    def initialize(self, repo):
+    def initialize(self, repo, plugin_package, test_package):
         self.repo = repo
+        self.plugin_package = plugin_package
+        self.test_package = test_package
         self.content_prefix = os.path.join(self.repo.working_tree_dir, CONTENT_PREFIX)
 
+    def get_content_for(self, module, error_key=None):
+        p = os.path.join(self.content_prefix, compute_plugin_dir(module, self.plugin_package))
+        for content in read_plugin_module(p):
+            this_error_key = content["metadata"]["error_key"]
+            if error_key is None or this_error_key == error_key:
+                yield this_error_key, content
+
+    def get_all_content(self, iterable):
+        for plugin in iterable:
+            p = plugin["module"].split(".")[-1]
+            for content in self.get_content_for(p):
+                yield content
+
+
+class SingleContentHandler(ContentHandler):
+
+    def get(self, rule_id):
+        module, error_key = split_rule_id(rule_id)
+        d = dict(self.get_content_for(module, error_key))
+        self.set_header("Content-Type", "application/json")
+        self.write(json.dumps(d))
+
+
+class BulkContentHandler(ContentHandler):
+
     def get(self):
-        d = []
-        for plugin in [p for n, p in plugins.PLUGINS.items() if PLUGIN_PACKAGE in n]:
-            p = compute_plugin_dir(plugin["module"].split(".")[-1])
-            p = os.path.join(self.content_prefix, p)
-            d.extend(read_plugin(p))
+        gen = (p for n, p in plugins.PLUGINS.items() if PLUGIN_PACKAGE in n)
+        d = dict(self.get_all_content(gen))
         self.write(json.dumps(d))
 
     def post(self):
@@ -191,22 +227,79 @@ class ContentHandler(tornado.web.RequestHandler):
                         d["name"], d["email"])
 
 
+class ErrorKeyHandler(tornado.web.RequestHandler):
+
+    def initialize(self, repo, plugin_package, test_package):
+        self.repo = repo
+        self.plugin_package = plugin_package
+        self.test_package = test_package
+        self.content_prefix = os.path.join(self.repo.working_tree_dir, CONTENT_PREFIX)
+
+    def get(self):
+        result = []
+        all_the_reducers = plugins.REDUCERS.values() + plugins.CLUSTER_REDUCERS.values()
+        for module_str in [r.__module__ for r in all_the_reducers]:
+            real_module = sys.modules[module_str]
+            for k, v in real_module.__dict__.items():
+                if k.startswith("ERROR_KEY"):
+                    result.append("|".join([module_str.split(".")[-1], v]))
+        self.set_header("Content-Type", "application/json")
+        self.write(json.dumps(result))
+
+
+class IndexHandler(tornado.web.RequestHandler):
+
+    def get(self):
+        d = os.path.dirname(os.path.abspath(__file__))
+        idx = os.path.join(d, "index.html")
+        with open(idx) as fp:
+            content = fp.read()
+            self.set_header("Content-Type", "text/html")
+            self.set_header("Content-Length", len(content))
+            self.write(content)
+
+
+def sig_handler(signum, frame):
+    logger.debug("Received signal {0}.".format(signum))
+    tornado.ioloop.IOLoop.current().add_callback_from_signal(shutdown)
+
+
+def shutdown():
+    logger.info("Shutting Down.")
+    tornado.ioloop.IOLoop.current().stop()
+
+
 def main():
     from optparse import OptionParser
     import git
     logging.basicConfig()
     p = OptionParser()
-    p.add_option("--plugin-module", help="plugin module")
+    p.add_option("--plugin-package", help="plugin package")
+    p.add_option("--test-package", help="test package")
     p.add_option("-p", "--port", help="listening port",
                  default=8080, action="store", type="int")
     p.add_option("--git-path", help="git path",
                  default=".", action="store", type="string")
     opts, args = p.parse_args()
-    load_package(opts.plugin_module)
-    params = {"repo": git.Repo(opts.git_path)}
-    application = tornado.web.Application([
-        (r"/content", ContentHandler, params)
-    ])
+    if not opts.plugin_package:
+        logger.error("Please provide plugin package")
+    load_package(opts.plugin_package)
+    params = {
+        "repo": git.Repo(opts.git_path),
+        "plugin_package": opts.plugin_package,
+        "test_package": opts.test_package
+    }
+    routes = [
+        (r"/content/?$", BulkContentHandler, params),
+        (r"/content/([a-zA-Z0-9_%|]+)/?$", SingleContentHandler, params),
+        (r"/error_keys/?$", ErrorKeyHandler, params),
+        (r"/?$", IndexHandler)
+    ]
+    if opts.test_package:
+        load_package(opts.test_package)
+        routes.append((r"/params/([a-zA-Z0-9_|%]+)/?$", ContentParamHandler, params))
+        ensure_cache_populated()
+    application = tornado.web.Application(routes)
     application.listen(opts.port)
     loop = tornado.ioloop.IOLoop.current()
     signal.signal(signal.SIGINT, sig_handler)
