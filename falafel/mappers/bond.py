@@ -67,6 +67,7 @@ class Bond(MapperOutput):
     def parse_content(content):
         mode = None
         partner_mac_address = None
+        slave_interface = []
 
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
@@ -79,10 +80,13 @@ class Bond(MapperOutput):
                     mode = raw_mode
             elif line.startswith("Partner Mac Address: "):
                 partner_mac_address = line.split(":", 1)[1].strip()
+            elif line.startswith("Slave Interface: "):
+                slave_interface.append(line.split(":", 1)[1].strip())
 
         data = {}
         data["bond_mode"] = mode
         data["partner_mac_address"] = partner_mac_address
+        data["slave_interface"] = slave_interface
         return data
 
     @property
@@ -100,6 +104,14 @@ class Bond(MapperOutput):
         file, ``None`` is returned.
         """
         return self.data["partner_mac_address"]
+
+    @property
+    def slave_interface(self):
+        """Returns all the slave interfaces of in the bond file wrapped
+        a list if the key/value exists.  If the key is not in the
+        bond file, ``[]`` is returned.
+        """
+        return self.data["slave_interface"]
 
 
 @mapper('bond')
