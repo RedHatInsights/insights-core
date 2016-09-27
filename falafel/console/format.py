@@ -22,7 +22,7 @@ class Formatter(object):
             row = ''.join(item.ljust(col_size) for item in chunks)
             logger.console(row)
 
-        logger.console("\n")
+        logger.console("")
 
     def heading(self, text):
         logger.console("\n" + "  {0}  ".format(text).center(self.screen_width, "="))

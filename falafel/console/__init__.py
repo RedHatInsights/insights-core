@@ -9,6 +9,9 @@ from collections import defaultdict
 from falafel.console.custom_logging import setup_logger
 from falafel.console.format import Formatter
 from falafel.core import plugins
+from falafel.core import get_module_names
+
+logger = logging.getLogger(__name__)
 
 
 class Runner(object):
@@ -142,12 +145,20 @@ def main():
             logging.error("Use -v option for more details")
         sys.exit(1)
 
+    frmt = Formatter(args)
     if not args.reports:
-        logging.error("Please specify at least one report to process")
-        sys.exit(1)
+        if args.list_plugins:
+            for plugin in args.plugin_modules:
+                frmt.heading(plugin)
+                module_list = [mod_name.split(".")[-1] for mod_name in get_module_names(sys.modules[plugin])]
+                frmt.display_list(module_list)
+            sys.exit(0)
+        else:
+            logging.error("Please specify at least one report to process")
+            sys.exit(1)
 
     for report in args.reports:
-        Formatter(args).format_results(*runner.handle_sosreport(report, args.spec_map))
+        frmt.format_results(*runner.handle_sosreport(report, args.spec_map))
 
 if __name__ == "__main__":
     main()
