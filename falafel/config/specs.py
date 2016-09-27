@@ -14,6 +14,7 @@ static_specs = {
     "catalina.out"              : First([PatternSpec(r"var/log/tomcat.*/catalina\.out", large_content=True),
                                     PatternSpec(r"tomcat-logs/tomcat.*/catalina\.out", large_content=True)]),
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
+    "ceilometer.conf"           : SimpleFileSpec("etc/ceilometer/ceilometer.conf"),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chronyc_sources"           : CommandSpec("/usr/bin/chronyc sources"),
     "cib.xml"                   : SimpleFileSpec("var/lib/pacemaker/cib/cib.xml"),
