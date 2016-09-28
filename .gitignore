@@ -4,7 +4,6 @@
 .coverage
 .cache
 *.swp
-*.html
 *.tsv
 htmlcov
 *.log
@@ -22,14 +21,11 @@ include/
 tags
 man
 pylint.out
-telemetry/config/active.py
 cover/
 docs/plugin_catalog/*.rst
 build/
 .idea*
 dist/
-telemetry/coverage.xml
-telemetry/nosetests.xml
 uploader.json
 file_plugin_mapping.json
 junk/
