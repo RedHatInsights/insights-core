@@ -85,6 +85,7 @@ class Evaluator(object):
         self.pre_mapping()
         self.run_mappers()
         self.run_reducers()
+        self.post_process()
         return self.get_response()
 
     def post_process(self):
