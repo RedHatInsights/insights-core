@@ -237,6 +237,7 @@ static_specs = {
     "vdsm_id"                   : SimpleFileSpec("/etc/vdsm/vdsm.id"),
     "virt-what"                 : CommandSpec("/usr/sbin/virt-what"),
     "vmcore-dmesg"              : PatternSpec(r"var/crash/.*/vmcore-dmesg\.txt", large_content=True),
+    "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
