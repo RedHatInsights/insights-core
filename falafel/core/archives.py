@@ -150,10 +150,10 @@ class OnDiskExtractor(Extractor):
 
         else:
             self.content_type = _magic.file(path)
-            tar_flag = self.TAR_FLAGS.get(self.content_type)
-            if not tar_flag:
+            if self.content_type not in self.TAR_FLAGS:
                 raise InvalidContentType(self.content_type)
 
+            tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
 
