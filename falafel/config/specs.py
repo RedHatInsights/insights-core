@@ -218,6 +218,7 @@ static_specs = {
     "sysctl"                    : CommandSpec("/sbin/sysctl -a"),
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),
     "sysctl.conf_initramfs"     : CommandSpec("/usr/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
+    "systemctl_cinder-volume"   : CommandSpec("/bin/systemctl show openstack-cinder-volume"),
     "systemctl_list-unit-files" : CommandSpec("/bin/systemctl list-unit-files"),
     "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
     "systemd_docker"            : SimpleFileSpec("usr/lib/systemd/system/docker.service"),
