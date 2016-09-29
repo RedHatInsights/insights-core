@@ -8,6 +8,7 @@ import json
 from collections import defaultdict
 from falafel.console.custom_logging import setup_logger
 from falafel.console.format import Formatter
+from falafel.console.config import InsightsCliConfig
 from falafel.core import plugins
 from falafel.core import get_module_names
 
@@ -97,17 +98,19 @@ class Runner(object):
 
 
 def main():
+    cfg = InsightsCliConfig()
+
     parser = argparse.ArgumentParser(description="Evaluate a sosreport for some rules.")
-    parser.add_argument("--extract-dir", dest="extract_dir", action="store", help="Root directory path in which files will be extracted.")
-    parser.add_argument("--ext-file", dest="external_files", nargs="*", help="key=value set of a file to include for analysis")
-    parser.add_argument("--specs", dest="specs", help="module path to user-defined specs")
-    parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", help="path to extra plugins")
-    parser.add_argument("--show-plugin-list", dest="list_plugins", action="store_true", default=False, help="Show full plugin listing")
-    parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=True, help="Hide missing file listing")
-    parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=0, help="Max output width.  Defaults to width of console")
-    parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=0)
-    parser.add_argument("--spec-map", dest="spec_map", action="store_true", default=False, help="Print the spec file mapping and exit")
-    parser.add_argument("--mem-only", dest="mem_only", action="store_true", default=False, help="Use in-memory extracter")
+    parser.add_argument("--extract-dir", dest="extract_dir", action="store", default=cfg.extract_dir, help="Root directory path in which files will be extracted.")
+    parser.add_argument("--ext-file", dest="external_files", nargs="*", default=cfg.external_files, help="key=value set of a file to include for analysis")
+    parser.add_argument("--specs", dest="specs", default=cfg.specs, help="module path to user-defined specs")
+    parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", default=cfg.plugin_modules, help="path to extra plugins")
+    parser.add_argument("--show-plugin-list", dest="list_plugins", action="store_true", default=cfg.list_plugins, help="Show full plugin listing")
+    parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=cfg.list_missing, help="Hide missing file listing")
+    parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=cfg.max_width, help="Max output width.  Defaults to width of console")
+    parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=cfg.verbose)
+    parser.add_argument("--spec-map", dest="spec_map", action="store_true", default=cfg.spec_map, help="Print the spec file mapping and exit")
+    parser.add_argument("--mem-only", dest="mem_only", action="store_true", default=cfg.mem_only, help="Use in-memory extracter")
     parser.add_argument("reports", nargs="*", help="path to a report to analyze (the path can be to a tar file, or to an expanded directory tree)")
 
     args = parser.parse_args()
