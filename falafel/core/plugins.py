@@ -138,11 +138,13 @@ def register_mapper(name, func, filters=None, shared=False):
         p["mappers"].append(func)
         p["module"] = func.__module__
 
-        # Need to add already-registered reducers defined in same module to conumser list
+        # Need to add already-registered reducers defined in same module to consumer list
         # Should only happen if a @reducer is defined above a @mapper in the same module
         f_module = func.__module__
         for r in [r for r in REDUCERS.values() if r.__module__ == f_module]:
             func.consumers.add(r)
+        func._requires = set()
+        func._reducer = False
     except Exception:
         log.exception("Failed to register mapper: %s", func.__name__)
         raise
@@ -156,8 +158,8 @@ def add_symbolic_name(f, name):
 
 def register_reducer(func):
     REDUCERS[get_name(func)] = func
-    p = PLUGINS[func.__module__]
     func.serializable_id = "#".join([func.__module__, func.__name__])
+    p = PLUGINS[func.__module__]
     p["reducers"].append(func)
     p["module"] = func.__module__
 
@@ -233,27 +235,67 @@ def cluster_mapper(filename, filters=[]):
     return _register
 
 
-def register_consumer(f, requires, optional):
-    if requires:
-        for req in requires:
-            if isinstance(req, list):
-                for m in req:
-                    m.consumers.add(f)
-            else:
-                req.consumers.add(f)
-    if optional:
-        for opt in optional:
-            opt.consumers.add(f)
+def visit_mappers(root, visitor=None):
+    """
+    Call visitor on all mappers reachable from root.
 
-    # Non-shared mappers defined in same module are implicit consumers
-    f_module = f.__module__
+    :param function root: non shared reducer function
+    :param function visitor: function to call on each mapper that is
+        reachable as a dependency of root.
+
+    Returns root's dependency tree.
+    """
+
+    # ensure root is a non-shared reducer
+    if not root._reducer or root.shared:
+        log.warn("Tried to visit mapper or shared reducer as visitor %s", root)
+        return
+
+    def _visit_mappers(parent, deps, visitor):
+        if not parent._requires or not parent._reducer:
+            return deps
+        for r in parent._requires:
+            if not r._reducer:
+                if visitor:
+                    visitor(r)
+                deps[r] = 1
+            elif r.shared:
+                deps[r] = _visit_mappers(r, {}, visitor)
+        return deps
+
+    deps = _visit_mappers(root, {}, visitor)
+
+    # Non-shared mappers defined in same module are implicitly consumed
+    root_module = root.__module__
     for mappers in MAPPERS.values():
         for m in mappers:
-            if m.__module__ == f_module:
-                m.consumers.add(f)
+            if m.__module__ == root_module:
+                if visitor:
+                    visitor(m)
+                deps[m] = 1
+    return deps
 
 
-def reducer(requires=None, optional=None, cluster=False):
+def generate_dependency_tree(f):
+    """
+    Generate the dependency tree of non shared reducer f.
+
+    This is currently only used for debugging.
+    """
+
+    return visit_mappers(f)
+
+
+def register_consumer(c):
+    """ Register non shared reducers as consumers of mappers. """
+
+    def register(mapper):
+        mapper.consumers.add(c)
+
+    visit_mappers(c, register)
+
+
+def reducer(requires=None, optional=None, cluster=False, shared=False):
     def _f(func):
         @wraps(func)
         def __f(local, shared):
@@ -271,7 +313,24 @@ def reducer(requires=None, optional=None, cluster=False):
             register_cluster_reducer(__f)
         else:
             register_reducer(__f)
-        register_consumer(__f, requires, optional)
+
+        if requires:
+            _all, _any = split_requirements(requires)
+            __f._any = _any
+            _all = set(_all)
+            _any = set(i for o in _any for i in o)
+        else:
+            __f._any = []
+            _all, _any = set(), set()
+        _optional = set(optional) if optional else set()
+        __f._all, __f._optional = _all, _optional
+        __f._requires = (_all | _any | _optional)
+        __f.shared = shared
+        __f.cluster = cluster
+        __f._reducer = True
+        if not shared:
+            register_consumer(__f)
+            __f._dependency_tree = generate_dependency_tree(__f)
         return __f
     return _f
 

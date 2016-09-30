@@ -212,6 +212,12 @@ def integrate(input_data, module):
     reducers = get_reducer_for(module)
 
     if is_multi_node:
+        shared_reducers = {}
+        for r in reducers.values():
+            shared_reducers = {i: i for i in r._requires if i.shared and i._reducer}
+        if shared_reducers:
+            for k, v in mapper_output.iteritems():
+                list(reducer.run_host(v, error_handler, reducers=shared_reducers))
         gen = reducer.run_multi(mapper_output, error_handler, reducers=reducers)
         return [result for func, result in gen]
     else:
