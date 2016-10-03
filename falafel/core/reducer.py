@@ -143,11 +143,11 @@ def _run(reducers, plugin_output, shared_output, error_handler, output_dict=None
     clustered = any(r.cluster for r in reducers.values())
     for func in run_order(reducers.values()):
 
-        # if a cluster reducer depends on a shared reducer, that
+        # if a cluster reducer depends on a regular shared reducer, that
         # shared reducer will already have run in a sub evaluator
         # and been shifted to the top of this dict. Don't try to
         # run it again in a clustered context.
-        if clustered and func.shared:
+        if clustered and func.shared and not func.cluster:
             continue
         real_module = sys.modules[func.__module__]
         local_output = plugin_output[real_module]
