@@ -1,5 +1,4 @@
-from __future__ import nested_scopes
-
+#from falafel.core import MapperOutput
 from falafel.core.plugins import mapper
 
 import re
@@ -75,9 +74,7 @@ def SMARTctl(context):
         return 0
 
     # Values section:
-    full_line = ''
-    def parse_freeform_information(line):
-        nonlocal full_line
+    def parse_freeform_information(line, _full_line = ''):
         if line.startswith('=== START OF READ SMART DATA SECTION ==='):
             return 1
         if line.startswith('Vendor Specific SMART Attributes with Thresholds'):
@@ -94,17 +91,17 @@ def SMARTctl(context):
         if len(line) == 0 or line[0] == ' ' or line[0] == "\t":
             return 1
         # Otherwise, join this line to the full line
-        if full_line:
-            full_line += ' '
-        full_line += line.strip()
+        if _full_line:
+            _full_line += ' '
+        _full_line += line.strip()
 
-        match = value_line_re.search(full_line)
+        match = value_line_re.search(_full_line)
         if match:
             # Handle the recommended polling time lines, which are joined
             # with the previous line and values are in minutes.
             (key, value) = match.group('key', 'value')
             drive_info['values'][key] = value
-            full_line = ''
+            _full_line = ''
         return 1
 
     # Attributes sections
@@ -128,7 +125,7 @@ def SMARTctl(context):
         parse_attributes,
     ]
 
-    for line in lines(context.content):
+    for line in context.content:
         parse_state = parse_for_state[parse_state](line)
         if parse_state == 3:
             break
