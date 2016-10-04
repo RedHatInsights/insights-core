@@ -1,18 +1,8 @@
+from __future__ import nested_scopes
+
 from falafel.core.plugins import mapper
 
 import re
-
-# Make our own iterator across the content, which doesn't go back to the
-# start when we read it later...
-pos_for_list = {}
-def lines(l):
-    global pos_for_list
-    idl = id(l)
-    if idl not in pos_for_list:
-        pos_for_list[idl] = 0
-    while pos_for_list[idl] < len(l):
-        yield l[pos_for_list[idl]]
-        pos_for_list[idl] += 1
 
 @mapper('smartctl')
 def SMARTctl(context):
@@ -51,11 +41,21 @@ def SMARTctl(context):
         'attributes': {},
     }
 
+    # Parsing using a state machine, sorry.  We use a state variable, and
+    # functions to parse lines in each of the different states.  The function
+    # returns the state as a result of reading that line, and we look up the
+    # parse function out of an array based on the parse state.
+    # parse state 0 = Reading 'key: value' drive information
+    # parse state 1 = Reading freeform drive information
+    # parse state 2 = Reading attributes information
+    # parse state 3 = finished reading.
+    parse_state = 0
+
     # Information section:
-    for line in lines(context.content):
+    def parse_information(line):
         # Exit parsing information section if we go into the next section
         if line.startswith('=== START OF READ SMART DATA SECTION ==='):
-            break
+            return 1
         match = info_line_re.search(line)
         if match:
             drive_info['info'][match.group('key')] = match.group('value')
@@ -72,25 +72,27 @@ def SMARTctl(context):
             elif line == 'Temperature Warning Disabled or Not Supported':
                 drive_info['info']['Temperature Warning'] =\
                     'Disabled or Not Supported'
+        return 0
 
     # Values section:
     full_line = ''
-    for line in lines(context.content):
+    def parse_freeform_information(line):
+        nonlocal full_line
         if line.startswith('=== START OF READ SMART DATA SECTION ==='):
-            continue
+            return 1
         if line.startswith('Vendor Specific SMART Attributes with Thresholds'):
-            break
+            return 2
         if line.startswith('SMART overall-health self-assessment test result'):
             drive_info['health'] = ''.join((line.split(': '))[1:])
-            continue
+            return 1
         # Values section begins with this - ignore:
         if line.startswith('General SMART Values:'):
-            continue
+            return 1
 
         # Lines starting with a space are continuations of the commentary on
         # the previous setting - ignore
         if len(line) == 0 or line[0] == ' ' or line[0] == "\t":
-            continue
+            return 1
         # Otherwise, join this line to the full line
         if full_line:
             full_line += ' '
@@ -103,19 +105,32 @@ def SMARTctl(context):
             (key, value) = match.group('key', 'value')
             drive_info['values'][key] = value
             full_line = ''
+        return 1
 
     # Attributes sections
-    for line in lines(context.content):
+    def parse_attributes(line):
         if line.startswith('SMART Error Log Version:'):
-            break
+            return 3
         if line.startswith('Vendor Specific SMART Attributes with Thresholds'):
-            continue
+            return 2
         if len(line) == 0:
-            continue
+            return 2
         match = attr_line_re.match(line)
         if match:
             name = match.group('name')
             drive_info['attributes'][name] = {key: match.group(key)
                 for key in attr_keys}
+        return 2
+
+    parse_for_state = [
+        parse_information,
+        parse_freeform_information,
+        parse_attributes,
+    ]
+
+    for line in lines(context.content):
+        parse_state = parse_for_state[parse_state](line)
+        if parse_state == 3:
+            break
 
     return drive_info
