@@ -19,73 +19,273 @@ KNOWN_ARCHITECTURES = [
     's390x',
     'amd64',
     '(none)',
-    'noarch'
+    'noarch',
 ]
 
 
 @mapper('installed-rpms')
 class InstalledRpms(MapperOutput):
+    """
+    A mapper for working with data containing a list of installed RPM files on the system and
+    related information.
+
+    The main data structure is defined as follows:
+        {'packages': {'package_name_1': [InstalledRpm_1, InstalledRpm_2, ...], ...},
+         'errors':   ['error_line_1', ...],
+         'unparsed': ['unparsed line_1', ...],
+        }
+    """
+    @classmethod
+    def parse_content(cls, content):
+        """
+        Main parsing class method which stores all interesting data from the content.
+
+        Args:
+            content (context.content): Mapper context content
+
+        Returns:
+            dict: dictionary with parsed data
+        """
+        content = get_active_lines(content, comment_char='COMMAND>')
+        data = {'packages': defaultdict(list),
+                'errors': [],
+                'unparsed': [],
+                }
+
+        for line in content:
+            if line.startswith('error:') or line.startswith('warning:'):
+                data['errors'].append(line)
+            else:
+                try:
+                    # Try to parse from JSON input
+                    rpm = InstalledRpm.from_json(line)
+                except Exception:
+                    # If that fails, try to parse from line input
+                    if line.strip():
+                        try:
+                            rpm = InstalledRpm.from_line(line)
+                        except Exception:
+                            # Both ways failed
+                            data['unparsed'].append(line)
+                        else:
+                            data['packages'][rpm['name']].append(rpm)
+                else:
+                    data['packages'][rpm['name']].append(rpm)
+
+        return data
+
+    @computed
+    def packages(self):
+        """
+        Property shortcut for parsed data.
+
+        Returns:
+            dict: dictionary with successfully parsed packages in following format:
+                  {'package_name_1': [InstalledRpm_1, InstalledRpm_2, ...]}
+        """
+        return self.data['packages']
+
+    @computed
+    def errors(self):
+        """
+        Property shortcut for parsed data.
+
+        Returns:
+            list: list of lines containing errors
+        """
+        return self.data['errors']
+
+    @computed
+    def unparsed(self):
+        """
+        Property shortcut for parsed data.
+
+        Returns:
+            list: list of lines which were not successfully parsed
+        """
+        return self.data['unparsed']
 
     @computed
     def corrupt(self):
-        return any("rpmdbNextIterator" in s for s in self.get("__error", []))
+        """
+        Property shortcut for parsed data.
 
-    @computed
-    def unparsed_lines(self):
-        return self.get("__unparsed", [])
+        Returns:
+            bool: True if RPM database is corrupted, else False
+        """
+        return any('rpmdbNextIterator' in s for s in self['errors'])
 
     def get_max(self, name):
         """
-        Returns the highest version of the installed RPM with the given name
+        Returns the highest version of the installed RPM with the given name.
+
+        Args:
+            name(str): Installed RPM package name
+
+        Returns:
+            InstalledRpm: Installed RPM with highest version
         """
-        return max(self[name]) if name in self else None
+        if name not in self['packages']:
+            return None
+        else:
+            return max(self['packages'][name])
 
-    def __len__(self):
-        return len(self.data)
+    def get_min(self, name):
+        """
+        Returns the lowest version of the installed RPM with the given name. This should be handy
+        for checking against list of vulnerable versions.
 
-    @classmethod
-    def parse_content(cls, content):
-        packages = defaultdict(list)
-        content = get_active_lines(content, comment_char="COMMAND>")
-        try:
-            for line in content:
-                if line.startswith("error:") or line.startswith("warning:"):
-                    packages["__error"].append(line)
-                else:
-                    rpm = json.loads(line)
-                    packages[rpm["name"]].append(InstalledRpm(rpm))
-        except:
-            for line in content:
-                if line.startswith("error:") or line.startswith("warning:"):
-                    packages["__error"].append(line)
-                else:
-                    try:
-                        name, rpm = parse_line(line)
-                        packages[name].append(InstalledRpm(rpm))
-                    except Exception:
-                        packages["__unparsed"].append(line)
-        return packages
+        Args:
+            name(str): Installed RPM package name
+
+        Returns:
+            InstalledRpm: Installed RPM with lowest version
+        """
+        if name not in self['packages']:
+            return None
+        else:
+            return min(self['packages'][name])
 
 
 class InstalledRpm(MapperOutput):
+    """
+    Class for holding information about one installed RPM.
+
+    The main data structure is defined as follows:
+        {'name': 'package name',
+         'version': 'package version',
+         'release': 'package release,
+         'arch': 'package architecture'
+        }
+
+    It may also contain supplementary information from SOS report.
+    """
+    SOSREPORT_KEYS = [
+        'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig-short'
+    ]
+
+    @classmethod
+    def from_package(cls, package_string):
+        """
+        The object of this class is usually created from dictionary. Alternatively it can be
+        created from package string.
+
+        Args:
+            package_string (str): package string in the following format (shown as Python string):
+                                  'kernel-devel-3.10.0-327.36.1.el7.x86_64'
+        """
+        return cls(cls._parse_package(package_string))
+
+    @classmethod
+    def from_json(cls, json_line):
+        """
+        The object of this class is usually created from dictionary. Alternatively it can be
+        created from JSON line.
+
+        Args:
+            json_line (str): JSON string in the following format (shown as Python string):
+                             '''{"name": "kernel-devel",
+                                 "version": "3.10.0",
+                                 "release": "327.36.1.el7",
+                                 "arch": "x86_64"}'''
+        """
+        return cls(json.loads(json_line))
+
+    @classmethod
+    def from_line(cls, line):
+        """
+        The object of this class is usually created from dictionary. Alternatively it can be
+        created from package line.
+
+        Args:
+            line (str): package line in the following format (shown as Python string):
+                        ('kernel-devel-3.10.0-327.36.1.el7.x86_64'
+                         '                                '
+                         'Wed May 18 14:16:21 2016' '\t'
+                         '1410968065' '\t'
+                         'Red Hat, Inc.' '\t'
+                         'hs20-bc2-4.build.redhat.com' '\t'
+                         '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
+                         'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
+        """
+        return cls(cls._parse_line(line))
+
+    @staticmethod
+    def _arch_sep(package_string):
+        """
+        Helper method for finding if arch separator is '.' or '-'
+
+        Args:
+            package_string (str): dash separated package string
+
+        Returns:
+            str: arch separator
+        """
+        return '.' if package_string.rfind('.') > package_string.rfind('-') else '-'
+
+    @classmethod
+    def _parse_package(cls, package_string):
+        """
+        Helper method for parsing package string.
+
+        Args:
+            package_string (str): dash separated package string
+
+        Returns:
+            dict: dictionary containing 'name', 'version', 'release', and 'arch' keys
+        """
+        pkg, arch = rsplit(package_string, cls._arch_sep(package_string))
+        if arch not in KNOWN_ARCHITECTURES:
+            pkg, arch = (package_string, None)
+        pkg, release = rsplit(pkg, '-')
+        name, version = rsplit(pkg, '-')
+        return {
+            'name': name,
+            'version': version,
+            'release': release,
+            'arch': arch
+        }
+
+    @classmethod
+    def _parse_line(cls, line):
+        """
+        Helper method for parsing package line with or without SOS report information.
+
+        Args:
+            line (str): package line with or without SOS report information
+
+        Returns:
+            dict: dictionary containing 'name', 'version', 'release', and 'arch' keys plus
+                  additionally 'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig',
+                  'pgpsig-short' if these are present.
+        """
+        try:
+            pkg, rest = line.split(None, 1)
+        except ValueError:
+            rpm = cls._parse_package(line.strip())
+            return rpm
+        rpm = cls._parse_package(pkg)
+        rest = rest.split('\t')
+        for i, value in enumerate(rest):
+            rpm[cls.SOSREPORT_KEYS[i]] = value
+        return rpm
 
     @computed
     def package(self):
-        return "%s-%s-%s" % (
-            self["name"],
-            self["version"],
-            self["release"]
-        )
+        return '{}-{}-{}'.format(self['name'],
+                                 self['version'],
+                                 self['release']
+                                 )
 
-    @property
+    @computed
     def name(self):
         return self.get('name')
 
-    @property
+    @computed
     def version(self):
         return self.get('version')
 
-    @property
+    @computed
     def release(self):
         return self.get('release')
 
@@ -95,23 +295,24 @@ class InstalledRpm(MapperOutput):
 
     @property
     def source(self):
-        if "srpm" in self.data:
-            r = InstalledRpm.from_package(self.data["srpm"])
-            r.data["epoch"] = self.epoch
-            return r
+        """
+        Returns source RPM of this RPM.
+        Returns:
+            InstalledRpm: source RPM
+        """
+        if 'srpm' in self.data:
+            rpm = self.from_package(self.data['srpm'])
+            rpm.data['epoch'] = self.epoch
+            return rpm
 
     def __str__(self):
-        return "%s:%s" % (self.epoch, self.package)
+        return '{}:{}'.format(self.epoch, self.package)
 
     def __unicode__(self):
-        return str(self)
+        return unicode(str(self))
 
     def __repr__(self):
         return str(self)
-
-    @classmethod
-    def from_package(cls, package_string):
-        return InstalledRpm(parse_package(package_string))
 
     def __eq__(self, other):
         return (
@@ -123,8 +324,8 @@ class InstalledRpm(MapperOutput):
 
     def __lt__(self, other):
         if self.name != other.name:
-            raise ValueError("Cannot compare packages with differing names %s != %s" % (self.name, other.name))
-
+            raise ValueError('Cannot compare packages with differing names {} != {}'
+                             .format(self['name'], other['name']))
         if self == other:
             return False
 
@@ -139,48 +340,14 @@ class InstalledRpm(MapperOutput):
 
         return LV(self.release) < LV(other.release)
 
-    def __gt__(self, other):
-        return other.__lt__(self)
+    def __ne__(self, other):
+        return self < other or other < self
 
-    def __le__(self, other):
-        return self == other or self.__lt__(other)
+    def __gt__(self, other):
+        return other < self
 
     def __ge__(self, other):
-        return self == other or self.__gt__(other)
+        return not self < other
 
-
-SOSREPORT_KEYS = [
-    "installtime", "buildtime", "vendor",
-    "buildserver", "pgpsig", "pgpsig-short"
-]
-
-
-def arch_sep(s):
-    return "." if s.rfind(".") > s.rfind("-") else "-"
-
-
-def parse_package(package_string):
-    pkg, arch = rsplit(package_string, arch_sep(package_string))
-    if arch not in KNOWN_ARCHITECTURES:
-        pkg, arch = (package_string, None)
-    pkg, release = rsplit(pkg, "-")
-    name, version = rsplit(pkg, "-")
-    return {
-        "name": name,
-        "version": version,
-        "release": release,
-        "arch": arch
-    }
-
-
-def parse_line(line):
-    try:
-        pkg, rest = line.split(None, 1)
-    except ValueError:
-        rpm = parse_package(line.strip())
-        return rpm["name"], rpm
-    rpm = parse_package(pkg)
-    rest = rest.split("\t")
-    for i, value in enumerate(rest):
-        rpm[SOSREPORT_KEYS[i]] = value
-    return rpm["name"], rpm
+    def __le__(self, other):
+        return not other < self
