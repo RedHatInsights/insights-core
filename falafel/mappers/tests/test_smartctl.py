@@ -146,8 +146,11 @@ Device does not support Self Test logging
 """
 
 def test_standard_drive():
-    data = SMARTctl(context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'))
+    data = SMARTctl.parse_context(
+        context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda')
+    )
 
+    print "data:", data
     # Device assertions
     assert data['device'] == 'sda'
 
@@ -201,7 +204,9 @@ def test_standard_drive():
     assert data['attributes']['Offline_Uncorrectable']['updated']   == 'Offline'
 
 def test_cisco_drive():
-    data = SMARTctl(context_wrap(CISCO_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdb'))
+    data = SMARTctl.parse_context(
+        context_wrap(CISCO_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdb')
+    )
 
     # Device assertions
     assert data['device'] == 'sdb'
@@ -223,7 +228,9 @@ def test_cisco_drive():
     assert data['info']['Self Test logging']     == 'Not supported'
 
 def test_netapp_drive():
-    data = SMARTctl(context_wrap(NETAPP_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdc'))
+    data = SMARTctl.parse_context(
+        context_wrap(NETAPP_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdc')
+    )
 
     # Device assertions
     assert data['device'] == 'sdc'
