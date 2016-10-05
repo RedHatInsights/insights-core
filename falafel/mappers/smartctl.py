@@ -20,10 +20,9 @@ class SMARTctl(MapperOutput):
     def __init__(self, data, path):
         filename_re = re.compile(r'smartctl_-a_\.dev\.(?P<device>\w+)$')
         match = filename_re.search(path)
-        if not match:
-            return {}
-
-        data['device'] = match.group('device')
+        if match:
+            data['device'] = match.group('device')
+        # Else warn?  fail?
 
         super(SMARTctl, self).__init__(data, path)
 
