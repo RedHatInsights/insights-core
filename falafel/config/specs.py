@@ -206,7 +206,7 @@ static_specs = {
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
-    "smartctl"                  : First([CommandSpec("/sbin/smartctl -a"),
+    "smartctl"                  : First([CommandSpec("/sbin/smartctl -a {block}", block=r"\S+"),
                                     PatternSpec(r"sos_commands/ata/smartctl_-a_\.dev\..*")]),
     "ssh_config"                : SimpleFileSpec("etc/ssh/ssh_config"),
     "sshd_config"               : SimpleFileSpec("etc/ssh/sshd_config"),
