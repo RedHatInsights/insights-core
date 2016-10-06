@@ -93,7 +93,9 @@ static_specs = {
     "ifconfig"                  : First([CommandSpec("/sbin/ifconfig -a"),
                                     SimpleFileSpec("ifconfig"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/ifconfig")]),
-    "imagemagick_policy"        : PatternSpec(r"etc/ImageMagick.*/policy\.xml"),
+    "imagemagick_policy"        : All([SimpleFileSpec("etc/ImageMagick/policy.xml"),  # RHEL6, RHEL7
+                                    SimpleFileSpec("usr/lib64/ImageMagick-6.5.4/config/policy.xml"),  # ImageMagick 6.5 on rhel-6 64bit.
+                                    SimpleFileSpec("usr/lib/ImageMagick-6.5.4/config/policy.xml")]),  # ImageMagick 6.5 on rhel-6 32bit.
     "init.ora"                  : SimpleFileSpec("{ORACLE_HOME}/dbs/init.ora"),
     "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
