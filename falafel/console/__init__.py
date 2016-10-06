@@ -9,6 +9,7 @@ from collections import defaultdict
 from falafel.console.custom_logging import setup_logger
 from falafel.console.format import Formatter
 from falafel.console.config import InsightsCliConfig
+from falafel.console.package import get_plugin_modules
 from falafel.core import plugins
 from falafel.core import get_module_names
 
@@ -106,6 +107,7 @@ def main():
     parser.add_argument("--specs", dest="specs", default=cfg.specs, help="module path to user-defined specs")
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", default=cfg.plugin_modules, help="path to extra plugins")
     parser.add_argument("--show-plugin-list", dest="list_plugins", action="store_true", default=cfg.list_plugins, help="Show full plugin listing")
+    parser.add_argument("--show-plugin-modules", dest="list_plugin_modules", action="store_true", help="Show full plugin modules listing")
     parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=cfg.list_missing, help="Hide missing file listing")
     parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=cfg.max_width, help="Max output width.  Defaults to width of console")
     parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=cfg.verbose)
@@ -122,6 +124,13 @@ def main():
     logging.info(" ".join(sys.argv))
 
     runner = Runner(args)
+    frmt = Formatter(args)
+
+    if args.list_plugin_modules:
+        frmt.heading('Plugin Modules')
+        plugin_modules = get_plugin_modules()
+        frmt.display_list(plugin_modules)
+        sys.exit(0)
 
     if not args.plugin_modules:
         logging.error("At least one plugin module must be specified.")
@@ -148,7 +157,6 @@ def main():
             logging.error("Use -v option for more details")
         sys.exit(1)
 
-    frmt = Formatter(args)
     if not args.reports:
         if args.list_plugins:
             for plugin in args.plugin_modules:
