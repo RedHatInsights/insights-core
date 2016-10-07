@@ -24,7 +24,7 @@ class MetaPattern(object):
         self.set_pattern()
 
     def set_pattern(self):
-        regex_string = r'(^{key}): .*({values_str}).*'
+        regex_string = r'^({key}): .*({values_str}).*'
         values_str = '|'.join(self.values)
         regex = regex_string.format(key=self.key, values_str=values_str)
         self.pattern = re.compile(regex, re.MULTILINE)
