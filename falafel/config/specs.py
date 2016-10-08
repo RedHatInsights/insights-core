@@ -61,6 +61,7 @@ static_specs = {
     "ethtool-S"                 : CommandSpec("/sbin/ethtool -S {iface}", iface=r"\S+"),
     "dcbtool_gc_dcb"            : CommandSpec("/sbin/dcbtool gc {iface} dcb", iface=r"\S+"),
     "exim.conf"                 : SimpleFileSpec("etc/exim.conf"),
+    "facts"                     : NoneGroup([SimpleFileSpec("facts")]),
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
     "fdisk-l-sos"               : PatternSpec(r"sos_commands/filesys/fdisk_-l_.+"),
     "fstab"                     : SimpleFileSpec("etc/fstab"),

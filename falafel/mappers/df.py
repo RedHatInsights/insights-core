@@ -7,6 +7,7 @@ from collections import namedtuple, defaultdict
 
 Record = namedtuple("Record", ['filesystem', 'total', 'used', 'available', 'capacity', 'mounted_on'])
 
+
 def parse_df_lines(df_content):
     """Parse contents of each line in ``df`` output.
 
@@ -60,7 +61,6 @@ def parse_df_lines(df_content):
             df_out.append(rec)
             df_ls = {}
     return df_out
-
 
 
 class DiskFree(Mapper):
