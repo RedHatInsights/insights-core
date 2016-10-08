@@ -1,5 +1,4 @@
 import unittest
-
 from falafel.mappers import kdump
 from falafel.tests import context_wrap
 
@@ -70,45 +69,45 @@ KDUMP_COMMANDLINE_APPEND="blah"
 class TestKDumpConf(unittest.TestCase):
     def test_with_normal_comments(self):
         context = context_wrap(KDUMP_WITH_NORMAL_COMMENTS)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         expected = "# this is a comment"
         self.assertEqual(expected, kd.comments[0])
 
     def test_with_inline_comments(self):
         context = context_wrap(KDUMP_WITH_INLINE_COMMENTS)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         expected = "path /kdump/raw #some path stuff"
         self.assertEqual(expected, kd.inline_comments[0])
         self.assertEqual("/kdump/raw", kd["path"])
 
     def test_with_equal(self):
         context = context_wrap(KDUMP_WITH_EQUAL)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         expected = '"blah=3"'
         self.assertEqual(expected, kd['some_var'])
 
     def test_with_equal2(self):
         context = context_wrap(KDUMP_WITH_EQUAL_2)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         expected = '"blah"'
         self.assertEqual(expected, kd['KDUMP_COMMANDLINE_APPEND'])
 
     def test_get_hostname(self):
         context = context_wrap(KDUMP_WITH_EQUAL)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         self.assertEquals('10.209.136.62', kd.hostname)
 
         context = context_wrap(KDUMP_MATCH_1)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         self.assertEquals('raw.server.com', kd.hostname)
 
     def test_get_ip(self):
         context = context_wrap(KDUMP_WITH_EQUAL)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         self.assertEquals('10.209.136.62', kd.ip)
 
         context = context_wrap(KDUMP_MATCH_1)
-        kd = kdump.KDumpConf.parse_context(context)
+        kd = kdump.KDumpConf(context)
         self.assertTrue(kd.ip is None)
 
 

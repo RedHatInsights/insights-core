@@ -24,7 +24,7 @@ REPOPATH = 'etc/yum.repos.d/rhel-source.repo'
 
 
 def test_yum_repos_d():
-    repos_info = YumReposD.parse_context(context_wrap(REPOINFO, path=REPOPATH))
+    repos_info = YumReposD(context_wrap(REPOINFO, path=REPOPATH))
 
     print repos_info.get('rhel-source')
     assert repos_info.get('rhel-source') == {

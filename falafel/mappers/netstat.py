@@ -1,6 +1,18 @@
 from collections import defaultdict
 from ..mappers import ParseException
-from .. import MapperOutput, mapper, parse_table, computed
+from .. import Mapper, mapper, parse_table
+
+ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
+ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and established)'
+NETSTAT_SECTION_ID = {
+    ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
+    ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
+}
+
+NETSTAT_TEXT_RIGHT_ALLIGNMENT = {
+    ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
+}
+COMPONENT_LEN = "__component_len__"
 
 
 class NetstatParserException(ParseException):
@@ -127,27 +139,8 @@ def get_netstat_s(context):
     return info
 
 
-class NetstatAGNDevice(MapperOutput):
-    def groupByIface(self):
-        """
-            Group Netstat AGN data by Iface name.
-            return like this:
-            {
-                "lo":[
-                    {"refcnt":"1", "group":"224.0.0.1"},
-                    {"refcnt":"1", "group":"ff02::1"}
-                ]
-            }
-
-        """
-        result = defaultdict(list)
-        for entry in self.data:
-            result[entry["interface"]].append({k.lower(): v for (k, v) in entry.iteritems() if k in ["refcnt", "group"]})
-        return result
-
-
 @mapper("netstat_-agn")
-def get_netstat_agn(context):
+class NetstatAGN(Mapper):
     """
     Parse netstat -agn to get interface multicast infomation.
     INPUT:
@@ -170,25 +163,31 @@ def get_netstat_agn(context):
         {"interface":"eth0", "refcnt":"1", "group":"ff01::1"},
      ]
     """
-    content = context.content[1:2] + context.content[3:]
-    table = parse_table(content)
-    result = map(lambda item: {k.lower(): v for (k, v) in item.iteritems()}, table)
-    return NetstatAGNDevice(result)
 
-ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
-ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and established)'
-NETSTAT_SECTION_ID = {
-    ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
-    ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
-}
+    def group_by_iface(self):
+        """
+            Group Netstat AGN data by Iface name.
+            return like this:
+            {
+                "lo":[
+                    {"refcnt":"1", "group":"224.0.0.1"},
+                    {"refcnt":"1", "group":"ff02::1"}
+                ]
+            }
 
-NETSTAT_TEXT_RIGHT_ALLIGNMENT = {
-    ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
-}
-COMPONENT_LEN = "__component_len__"
+        """
+        result = defaultdict(list)
+        for entry in self.data:
+            result[entry["interface"]].append({k.lower(): v for (k, v) in entry.iteritems() if k in ["refcnt", "group"]})
+        return result
+
+    def parse_content(self, content):
+        content = content[1:2] + content[3:]
+        table = parse_table(content)
+        self.data = map(lambda item: {k.lower(): v for (k, v) in item.iteritems()}, table)
 
 
-class NetstatSection:
+class NetstatSection(object):
 
     def __init__(self, name):
         self.name = name.strip()
@@ -198,7 +197,7 @@ class NetstatSection:
         for m in self.meta:
             self.data[m] = []
 
-    def addMetaData(self, line):
+    def add_meta_data(self, line):
         data = []
         meta = {}
 
@@ -210,7 +209,7 @@ class NetstatSection:
         self.data = data
         self.meta = meta
 
-    def addData(self, line):
+    def add_data(self, line):
         indexes = self.indexes
 
         i = 1
@@ -242,45 +241,45 @@ class NetstatSection:
 
         del self.indexes
         del self.meta
+        return self.data
 
 
 @mapper("netstat")
-class Netstat(MapperOutput):
+class Netstat(Mapper):
+    """
+    Parsing netstat command content and return
 
-    @staticmethod
-    def parse_content(content):
-        """
-        Parsing netstat command content and return
+    Examples:
+        {
+            'Active Internet connections (servers and established)': {
+                'Proto': ['tcp', 'tcp', 'tcp', 'tcp'],
+                'Recv-Q': ['0', '0', '0', '0'],
+                ..
+                'PID/Program name': ['1279/qpidd', '2007/mongod', '2387/Passenger Rac', '1272/qdrouterd']
+            },
 
-        Examples:
-            {
-                'Active Internet connections (servers and established)': {
-                    'Proto': ['tcp', 'tcp', 'tcp', 'tcp'],
-                    'Recv-Q': ['0', '0', '0', '0'],
-                    ..
-                    'PID/Program name': ['1279/qpidd', '2007/mongod', '2387/Passenger Rac', '1272/qdrouterd']
-                },
-
-                'Active UNIX domain sockets (servers and established)': {
-                    'Proto': ['unix', 'unix', 'unix'],
-                    'RefCnt': ['2', '2', '2'],
-                    ...
-                    'PID/Program name': ['1/systemd', '1/systemd', '738/NetworkManager']
-                }
+            'Active UNIX domain sockets (servers and established)': {
+                'Proto': ['unix', 'unix', 'unix'],
+                'RefCnt': ['2', '2', '2'],
+                ...
+                'PID/Program name': ['1/systemd', '1/systemd', '738/NetworkManager']
             }
-        For the input content:
-            Active Internet connections (servers and established)
-            Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
-            tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
-            tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
-            tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
-            tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
-            Active UNIX domain sockets (servers and established)
-            Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
-            unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
-            unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
-            unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
-        """
+        }
+    For the input content:
+        Active Internet connections (servers and established)
+        Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
+        tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
+        tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
+        tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
+        tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+        Active UNIX domain sockets (servers and established)
+        Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+        unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+        unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+        unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+    """
+
+    def parse_content(self, content):
         if not content:
             raise NetstatParserException("Input content is empty")
 
@@ -302,10 +301,10 @@ class Netstat(MapperOutput):
                 continue
 
             if is_meta_data:
-                cur_section.addMetaData(line)
+                cur_section.add_meta_data(line)
                 is_meta_data = False
             else:
-                cur_section.addData(line)
+                cur_section.add_data(line)
 
         if not sections:
             if num_active_lines < 1:
@@ -313,14 +312,9 @@ class Netstat(MapperOutput):
             else:
                 raise NetstatParserException("Input content is not empty but there is no useful parsed data")
 
-        section_map = {}
-        for s in sections:
-            s._merge_data_index()
-            section_map[s.name] = s.data
+        self.data = {s.name: s._merge_data_index() for s in sections}
 
-        return section_map
-
-    @computed
+    @property
     def running_processes(self):
 
         process_names = set()
@@ -338,10 +332,9 @@ class Netstat(MapperOutput):
 
         return process_names
 
-    @computed
+    @property
     def listening_pid(self):
         """
-
             Find PIDs of all LISTEN processes
 
             Returns:

@@ -13,7 +13,7 @@ release and may be removed in a future release. The stackforge ec2-api project h
 
 
 def test_nova_api_log():
-    log = NovaApiLog.parse_context(context_wrap(api_log))
+    log = NovaApiLog(context_wrap(api_log))
     assert len(log.get(["WARNING", "Authorization failed"])) == 2
     assert len(log.get("786c3cee52d14baeae98262c6a2f3a4e")) == 1
     assert len(log.get("Authorization failed")) == 2

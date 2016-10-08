@@ -64,12 +64,12 @@ yum-security-1.1.16-21.el5.noarch
 
 
 def test_from_package():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_PACKAGE))
+    rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
     assert rpms.packages['openssh-server'][0].package == 'openssh-server-5.3p1-104.el6'
 
 
 def test_from_line():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_LINE))
+    rpms = InstalledRpms(context_wrap(RPMS_LINE))
     assert rpms.get_max("ConsoleKit")["arch"] == 'x86_64'
     assert rpms.get_max("kernel")["version"] == '2.6.32'
     assert rpms.get_max("yum")["release"] == '69.el6'
@@ -79,38 +79,38 @@ def test_from_line():
 
 
 def test_from_json():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_JSON))
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
     assert isinstance(rpms.get_max("log4j").source, InstalledRpm)
     assert len(rpms.packages) == len(RPMS_JSON.splitlines())
     assert rpms.get_max("log4j").source.name == "log4j"
 
 
 def test_garbage():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_PACKAGE_WITH_GARBAGE))
+    rpms = InstalledRpms(context_wrap(RPMS_PACKAGE_WITH_GARBAGE))
     assert 'openssh-server' not in rpms
 
 
 def test_corrupt_db():
-    rpms = InstalledRpms.parse_context(context_wrap(ERROR_DB))
+    rpms = InstalledRpms(context_wrap(ERROR_DB))
     assert "yum-security" in rpms.packages
     assert rpms.corrupt is True
 
 
 def test_max_min():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_MULTIPLE))
+    rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE))
     assert rpms.get_min('yum').package == 'yum-3.4.2-132.el7'
     assert rpms.get_max('yum').package == 'yum-3.4.3-132.el7'
 
 
 def test_max_min_not_found():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_MULTIPLE_KERNEL))
+    rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
     assert rpms.get_min('abc') is None
     assert rpms.get_max('abc') is None
 
 
 @pytest.mark.xfail(reason='Incorrect implementation')
 def test_max_min_kernel():
-    rpms = InstalledRpms.parse_context(context_wrap(RPMS_MULTIPLE_KERNEL))
+    rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
     assert rpms.get_min('kernel').package == 'kernel-3.10.0-327.el7'
     assert rpms.get_max('kernel').package == 'kernel-3.10.0-327.36.1.el7'
     assert rpms.get_min('kernel-devel').package == 'kernel-devel-3.10.0-327.el7'

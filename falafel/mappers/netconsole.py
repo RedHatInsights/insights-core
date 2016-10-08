@@ -1,14 +1,13 @@
-from .. import get_active_lines, mapper, MapperOutput
+from .. import get_active_lines, mapper, Mapper, LegacyItemAccess
 
 
 @mapper('netconsole')
-class NetConsole(MapperOutput):
+class NetConsole(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         result = {}
         for line in get_active_lines(content):
             if '=' in line:
                 k, v = line.split('=')
                 result[k] = v
-        return result
+        self.data = result

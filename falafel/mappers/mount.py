@@ -4,23 +4,33 @@ Mount
 """
 
 from ..mappers import optlist_to_dict, ParseException
-from .. import MapperOutput, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
-class MountOpts(MapperOutput):
+class AttributesAsDict(object):
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def __contains__(self, item):
+        return item in self.__dict__
+
+    def get(self, item, default=None):
+        return self.__dict__.get(item, default)
+
+
+class MountOpts(AttributesAsDict):
     """Class for mount options for one mount entry.
 
     Provides mount options as attributes and may also
     be accessed as a dictionary.
     """
-    def __init__(self, data, path=None):
-        """Initialize object for mount options."""
-        super(MountOpts, self).__init__(data, path)
+    def __init__(self, data):
         for k, v in data.iteritems():
             setattr(self, k, v)
 
 
-class MountEntry(MapperOutput):
+class MountEntry(AttributesAsDict):
     """Class for a row of information from ``mount`` command.
 
     Contains all infomation from one row of the ``mount``
@@ -29,42 +39,21 @@ class MountEntry(MapperOutput):
     name.  All values may also be access in dictionary format
     or via the ``get`` method.
     """
-    def __init__(self, data, path=None):
-        """Initialize objects for a row of output.
-
-        Parameters
-        ----------
-        data: dict
-            key, value pairs for the ``mount`` entry
-        """
-        super(MountEntry, self).__init__(data, path)
+    def __init__(self, data):
         for k, v in data.iteritems():
-            if k != 'mount_options':
-                self._add_to_computed(k, v)
-            else:
-                self._add_to_computed(k, MountOpts(v))
+            setattr(self, k, MountOpts(v) if k == 'mount_options' else v)
 
 
 @mapper('mount')
-class Mount(MapperOutput):
+class Mount(Mapper):
     """Class of information for all output from ``mount`` command.
 
     Contains all rows of output from the ``mount`` command as
     ``MountEntry`` objects.
     """
-    def __init__(self, data, path=None):
-        """ Initialize objects for all rows of output.
 
-        Parameters
-        ----------
-        data: list
-            List of rows of output, each row is represented
-            as a dict of columns.
-        """
-        self.rows = []
-        for datum in data:
-            self.rows.append(MountEntry(datum))
-        super(Mount, self).__init__(data, path)
+    def __getitem__(self, item):
+        return self.rows[item]
 
     def __len__(self):
         return len(self.rows)
@@ -73,8 +62,7 @@ class Mount(MapperOutput):
         for row in self.rows:
             yield row
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """Parse each line of output from the ``mount`` command.
 
         The specific mount commands are ``/bin/mount`` and ``/usr/bin/mount``.
@@ -107,7 +95,7 @@ class Mount(MapperOutput):
             ]
 
         """
-        mount_list = []
+        self.rows = []
         for line in get_active_lines(content):
             mount = {}
             try:
@@ -119,7 +107,6 @@ class Mount(MapperOutput):
                 mount['mount_options'] = optlist_to_dict(mount_options)
                 if len(rest) > 0:
                     mount['mount_label'] = rest.strip(' []')
-                mount_list.append(mount)
+                self.rows.append(MountEntry(mount))
             except:
                 raise ParseException("Mount unable to parse content: ", line)
-        return mount_list

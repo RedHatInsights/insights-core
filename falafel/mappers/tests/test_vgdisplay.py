@@ -40,7 +40,7 @@ class TestVGdisplay():
         assert vg_info['vginfo_dict'][0].get('Metadata Sequence No') == '5'
 
     def test_VgDisplay(self):
-        vg_info = vgdisplay.VgDisplay.parse_context(context_wrap(VGDISPLAY))
+        vg_info = vgdisplay.VgDisplay(context_wrap(VGDISPLAY))
         assert len(vg_info.data) == 2
         assert vg_info.data['vginfo_dict'][0].get('VG Name') == 'rhel_hp-dl160g8-3'
         assert vg_info.data['vginfo_dict'][1].get('VG UUID') == 'by0Dl3-0lpB-MxEz-f6GO-9LYO-YRAQ-GufNZN'

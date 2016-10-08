@@ -10,7 +10,7 @@ LVS_INFO = """
 
 class TestLVS(object):
     def test_lvs(self):
-        lvs_list = Lvs.parse_context(context_wrap(LVS_INFO))
+        lvs_list = Lvs(context_wrap(LVS_INFO))
         assert len(lvs_list) == 3
         assert lvs_list.data["content"][1] == {
             "MergeFailed": "unknown",

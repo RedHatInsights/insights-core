@@ -47,7 +47,7 @@ BY_DISK = "/dev/disk/by-path"
 
 
 def test_ls_disk():
-    ls_disk = LsDisk.parse_context(context_wrap(LS_DISK, path=BY_DISK))
+    ls_disk = LsDisk(context_wrap(LS_DISK, path=BY_DISK))
     assert ls_disk.data.get("/dev/disk/by-path").get("sda") == ["pci-0000:00:0d.0-scsi-0:0:0:0"]
     assert ls_disk.data.get("/dev/disk/by-id").get("sda1") == ["ata-VBOX_HARDDISK_VBdb3eca59-6c439fb7-part1",
                                                                "scsi-SATA_VBOX_HARDDISK_VBdb3eca59-6c439fb7-part1"]

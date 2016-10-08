@@ -1,13 +1,12 @@
-from .. import MapperOutput
+from .. import Mapper
 from .. import mapper
 from .. import get_active_lines
 
 
 @mapper('systemctl_cinder-volume')
-class SystemctlShowCinderVolume(MapperOutput):
+class SystemctlShowCinderVolume(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Sample Input:
             TimeoutStartUSec=1min 30s
@@ -30,4 +29,4 @@ class SystemctlShowCinderVolume(MapperOutput):
             if value:
                 data[key.strip()] = value.strip()
 
-        return data
+        self.data = data

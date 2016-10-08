@@ -1,6 +1,6 @@
 from collections import namedtuple
 from falafel.core.plugins import reducer
-from falafel.mappers.redhat_release import redhat_release as rht_release
+from falafel.mappers.redhat_release import RedhatRelease as rht_release
 from falafel.mappers.uname import Uname
 
 Release = namedtuple('Release', field_names=['major', 'minor'])

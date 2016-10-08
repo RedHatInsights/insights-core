@@ -2,10 +2,12 @@
 DF - Disk Free
 ==============
 """
-from .. import MapperOutput, mapper, computed
+from .. import Mapper, mapper
+from collections import namedtuple, defaultdict
 
+Record = namedtuple("Record", ['filesystem', 'total', 'used', 'available', 'capacity', 'mounted_on'])
 
-def parse_df_lines(columns, df_content):
+def parse_df_lines(df_content):
     """Parse contents of each line in ``df`` output.
 
     Parsed each line of ``df`` output ensuring that wrapped lines are
@@ -26,14 +28,10 @@ def parse_df_lines(columns, df_content):
         A list of dictionaries for each line of the ``df`` output with
         columns as the key values.
     """
-    # Parse the header as keys of the inner dict
-    header_split = df_content[0].split(None, 5)
-    # Update the keys according to the actual names in header line
-    if len(header_split) == 6:
-        columns[0:5] = header_split[0:5]
     df_ls = {}
     df_out = []
     is_sep = False
+    columns = Record._fields
     for line in df_content[1:]:  # [1:] -> Skip the header
         line_splits = line.split()
         if len(line_splits) >= 6:
@@ -58,46 +56,14 @@ def parse_df_lines(columns, df_content):
         if not is_sep:
             # Last column is mount point
             df_ls[columns[-1]] = line_splits[-1]
-            df_out.append(df_ls)
+            rec = Record(**df_ls)
+            df_out.append(rec)
             df_ls = {}
     return df_out
 
 
-class DF_Entry(MapperOutput):
-    """Class to contain one line of ``df`` command information.
 
-    Contains all of the fields for a single line of ``df`` output.
-    Computed values are the column names except where the column
-    name is invalid as a variable in Python such as `Use%` and
-    `1024-blocks`.  ``get`` method is provided to access any
-    value, including those that are not valid in Python. For
-    valid Python names the values may be accessed as
-    ``obj.column_name``.
-    """
-    def __init__(self, data, path=None):
-        """Initialize objects for class.
-
-        Parameters
-        ----------
-        data: dict
-            key, value pairs for ``df`` entry
-        """
-        super(DF_Entry, self).__init__(data, path)
-        for k, v in data.iteritems():
-            self._add_to_computed(k, v)
-
-    def __eq__(self, other):
-        return self.data == other
-
-    def __ne__(self, other):
-        return not self.data == other
-
-    def get(self, k):
-        """Get any value by keyword (column) name."""
-        return self.data.get(k)
-
-
-class DiskFree(MapperOutput):
+class DiskFree(Mapper):
     """Class to contain all information from ``df`` command.
 
     Output of the ``df`` command is contained in this base
@@ -105,7 +71,7 @@ class DiskFree(MapperOutput):
     in one DF_Entry object for each line of output.  Data may
     also be accessed based on filesystem name or mount name.
     """
-    def __init__(self, data, path=None):
+    def __init__(self, context):
         """Initialize objects for ``df`` output.
 
         The column names `Filesystem` and `Mounted_on` are assumed to be
@@ -120,35 +86,29 @@ class DiskFree(MapperOutput):
             each row contains a dictionary of key, value pairs
             from the parsed output data.
         """
-        self.rows = []
-        self.filesystems = {}
+        super(DiskFree, self).__init__(context)
+        self.filesystems = defaultdict(list)
         self.mounts = {}
-        for datum in data:
-            df_entry = DF_Entry(datum)
-            self.rows.append(df_entry)
-            if datum['Filesystem'] not in self.filesystems:
-                self.filesystems[datum['Filesystem']] = []
-            self.filesystems[datum['Filesystem']].append(df_entry)
-            self.mounts[datum['Mounted_on']] = df_entry
-        super(DiskFree, self).__init__(data, path)
+        for datum in self.data:
+            self.filesystems[datum.filesystem].append(datum)
+            self.mounts[datum.mounted_on] = datum
 
     def __len__(self):
-        return len(self.rows)
+        return len(self.data)
 
     def __iter__(self):
-        for row in self.rows:
+        for row in self.data:
             yield row
 
-    @computed
     def filesystem_names(self):
         """Returns list of unique filesystem names."""
         return self.filesystems.keys()
 
     def get_filesystem(self, name):
-        """Returns list of DF_Entry objecs for filesystem `name`."""
+        """Returns list of Record objects for filesystem `name`."""
         return self.filesystems.get(name)
 
-    @computed
+    @property
     def mount_names(self):
         """Returns list of unique mount point names."""
         return self.mounts.keys()
@@ -162,8 +122,7 @@ class DiskFree(MapperOutput):
 class DiskFree_LI(DiskFree):
     """Parses ``df -li`` command output."""
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """Parse lines from the output of the ``df -li`` command.
 
         Typical content of the ``df -li`` command output looks like::
@@ -208,16 +167,14 @@ class DiskFree_LI(DiskFree):
                 ]
 
         """
-        columns = ['Filesystem', 'Inodes', 'IUsed', 'IFree', 'IUse%', 'Mounted_on']
-        return parse_df_lines(columns, content)
+        self.data = parse_df_lines(content)
 
 
 @mapper('df_-alP')
 class DiskFree_ALP(DiskFree):
     """Parses ``df -alP`` command output."""
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """Parse lines from the output of the ``df -alP`` command.
 
         Typical content of the ``df -alP`` command looks like::
@@ -260,16 +217,14 @@ class DiskFree_ALP(DiskFree):
                 ]
 
         """
-        columns = ['Filesystem', '1024-blocks', 'Used', 'Available', 'Capacity', 'Mounted_on']
-        return parse_df_lines(columns, content)
+        self.data = parse_df_lines(content)
 
 
 @mapper('df_-al')
 class DiskFree_AL(DiskFree):
     """Parses ``df -al`` command output."""
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """Parse lines from the output of the ``df -al`` command.
 
         Typical content of the ``df -al`` command looks like::
@@ -312,5 +267,4 @@ class DiskFree_AL(DiskFree):
                 ]
 
         """
-        columns = ['Filesystem', '1K-blocks', 'Used', 'Available', 'Use%', 'Mounted_on']
-        return parse_df_lines(columns, content)
+        self.data = parse_df_lines(content)

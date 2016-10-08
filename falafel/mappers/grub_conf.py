@@ -3,8 +3,7 @@
 kbase: https://access.redhat.com/solutions/74233
 """
 import re
-from collections import defaultdict
-from .. import MapperOutput, mapper, computed, get_active_lines
+from .. import Mapper, mapper, get_active_lines, defaults, LegacyItemAccess
 
 crash_paramater_re = re.compile(r'\bcrashkernel=(\S+)\b')
 IOMMU = "intel_iommu=on"
@@ -24,10 +23,9 @@ class GrubConfParserException(Exception):
 
 @mapper('grub2.cfg')
 @mapper("grub.conf")
-class GrubConfig(MapperOutput):
+class GrubConfig(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Parse grub config file to create a dict with this structure:
         {
@@ -37,7 +35,7 @@ class GrubConfig(MapperOutput):
         }
         """
         line_iter = iter(get_active_lines(content))
-        conf = defaultdict(list)
+        conf = {"configs": [], "title": [], "menuentry": []}
         line = None
         while (True):
             try:
@@ -56,9 +54,11 @@ class GrubConfig(MapperOutput):
                     line = None
 
             except StopIteration:
-                return conf
+                self.data = conf
+                return
 
-    @computed
+    @property
+    @defaults()
     def crash_kernel_offset(self):
 
         current_title = self._get_current_title()
@@ -94,7 +94,8 @@ class GrubConfig(MapperOutput):
             if len(title) > idx:
                 return title[idx]
 
-    @computed
+    @property
+    @defaults()
     def is_kdump_iommu_enabled(self):
 
         for title in self.data['title']:
@@ -102,7 +103,8 @@ class GrubConfig(MapperOutput):
                 if k[0] == 'kernel' and IOMMU in k[1]:
                     return True
 
-    @computed
+    @property
+    @defaults()
     def kernels_initrds(self):
         """
             Get the kernel and initrd files referenced in grub.conf

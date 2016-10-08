@@ -27,7 +27,7 @@ SYSLOGPORT=514
 
 
 def test_netconsole():
-    result = NetConsole.parse_context(context_wrap(netconsole))
+    result = NetConsole(context_wrap(netconsole))
     assert result["LOCALPORT"] == '6666'
     assert result.get("DEV") is None
     assert result['SYSLOGPORT'] == "514"

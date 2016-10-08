@@ -76,19 +76,19 @@ def test_bondinfo():
     assert bond_info.file_name == 'bond0'
     assert 'load balancing' in bond_info
     assert bond_info.get('Slave Interface') == \
-            ['Slave Interface: eno1', 'Slave Interface: eno2']
+        ['Slave Interface: eno1', 'Slave Interface: eno2']
 
 
 def test_bond_class():
 
-    bond_obj = Bond.parse_context(context_wrap(BONDINFO_1, CONTEXT_PATH))
+    bond_obj = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH))
     assert bond_obj.file_name == 'bond0'
     assert not bond_obj.partner_mac_address
     assert bond_obj.bond_mode == '0'
 
-    bond_obj = Bond.parse_context(context_wrap(BONDINFO_MODE_4, CONTEXT_PATH))
+    bond_obj = Bond(context_wrap(BONDINFO_MODE_4, CONTEXT_PATH))
     assert bond_obj.bond_mode == '4'
     assert bond_obj.partner_mac_address == "00:00:00:00:00:00"
 
-    bond_obj = Bond.parse_context(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
+    bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
     assert not bond_obj.bond_mode

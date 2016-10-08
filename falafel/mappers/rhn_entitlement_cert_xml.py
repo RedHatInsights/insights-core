@@ -1,12 +1,11 @@
 import xml.etree.ElementTree as ET
-from .. import MapperOutput, mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('rhn-entitlement-cert.xml')
-class RHNCertConf(MapperOutput):
+class RHNCertConf(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         ---Sample---
         <?xml version="1.0" encoding="UTF-8"?>
@@ -83,4 +82,4 @@ class RHNCertConf(MapperOutput):
         singature = rhntree.findall(".//rhn-cert-signature")
         rhn_cert['signature'] = singature[0].text
 
-        return rhn_cert
+        self.data = rhn_cert

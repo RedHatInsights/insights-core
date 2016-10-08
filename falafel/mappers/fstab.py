@@ -5,7 +5,7 @@
 
 from collections import namedtuple
 
-from .. import MapperOutput, mapper, get_active_lines, parse_table
+from .. import Mapper, mapper, get_active_lines, parse_table
 from ..mappers import optlist_to_dict
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype fs_mntops    fs_freq fs_passno"
@@ -13,7 +13,7 @@ FS_HEADINGS = "fs_spec                               fs_file                 fs_
 type_info = namedtuple('type_info', field_names=['type', 'default'])
 
 
-class MountOpts(MapperOutput):
+class MountOpts(object):
     type_infos = {
         'rw': type_info(bool, False),
         'rq': type_info(bool, False),
@@ -27,38 +27,25 @@ class MountOpts(MapperOutput):
         'noquota': type_info(bool, False)
     }
 
-    def __init__(self, data, path=None):
-        super(MountOpts, self).__init__(data, path)
-        attrs = {}
-        for k, v in data.iteritems():
-            attrs[k] = v
-
+    def __init__(self, data):
+        self.data = data
         for k, v in MountOpts.type_infos.iteritems():
             if k not in data:
-                attrs[k] = v.default
+                data[k] = v.default
 
-        for k, v in attrs.iteritems():
+        for k, v in data.iteritems():
             setattr(self, k, v)
 
 
-class FSTabEntry(MapperOutput):
-    def __init__(self, data, path=None):
-        super(FSTabEntry, self).__init__(data, path)
+class FSTabEntry(object):
+    def __init__(self, data):
         for k, v in data.iteritems():
-            if k != 'fs_mntops':
-                self._add_to_computed(k, v)
-            else:
-                self._add_to_computed(k, MountOpts(v))
+            v = v if k != 'fs_mntops' else MountOpts(v)
+            setattr(self, k, v)
 
 
 @mapper("fstab")
-class FSTab(MapperOutput):
-    def __init__(self, data, path=None):
-        self.rows = []
-        for datum in data:
-            self.rows.append(FSTabEntry(datum))
-        super(FSTab, self).__init__(data, path)
-
+class FSTab(Mapper):
     def __len__(self):
         return len(self.rows)
 
@@ -66,8 +53,7 @@ class FSTab(MapperOutput):
         for row in self.rows:
             yield row
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """Parse each line in the file ``/etc/fstab``.
 
         Typical content of the ``fstab`` looks like::
@@ -130,4 +116,5 @@ class FSTab(MapperOutput):
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             line['fs_vfstype'] = line['fs_vfstype']
             line['fs_mntops'] = optlist_to_dict(line['fs_mntops'])
-        return fstab_output
+        self.data = fstab_output
+        self.rows = [FSTabEntry(datum) for datum in self.data]

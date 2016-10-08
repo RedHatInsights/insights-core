@@ -1,4 +1,4 @@
-from falafel.mappers import ovirt_engine_confd
+from falafel.mappers.ovirt_engine_confd import OvirtEngineConfd
 from falafel.tests import context_wrap
 
 
@@ -19,7 +19,7 @@ ENGINE_PKI_ENGINE_CERT="/etc/pki/ovirt-engine/certs/engine.cer"
 
 
 def test_ovirt_engine_confd():
-    match_result = ovirt_engine_confd.ovirt_engine_confd(context_wrap(CONFD_MATCH))
+    match_result = OvirtEngineConfd(context_wrap(CONFD_MATCH))
     assert 'tmp' in match_result.get('ENGINE_TMP')
-    no_match_result = ovirt_engine_confd.ovirt_engine_confd(context_wrap(CONFD_NOT_MATCH))
+    no_match_result = OvirtEngineConfd(context_wrap(CONFD_NOT_MATCH))
     assert no_match_result.get('ENGINE_TMP') is None

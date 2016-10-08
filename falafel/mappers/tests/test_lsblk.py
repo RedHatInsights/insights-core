@@ -58,96 +58,96 @@ ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ex
 
 
 def test_lsblk():
-    results = lsblk.LSBlock.parse_context(context_wrap(LSBLK_DATA))
+    results = lsblk.LSBlock(context_wrap(LSBLK_DATA))
     assert results is not None
     assert len(results) == 7
     rhel_root = None
     sda = None
     for result in results:
-        if result.NAME == 'rhel-root':
+        if result.name == 'rhel-root':
             rhel_root = result
-        elif result.NAME == 'sda':
+        elif result.name == 'sda':
             sda = result
     assert rhel_root is not None
-    assert rhel_root.get('MAJ:MIN') == "253:0"
-    assert rhel_root.RM == "0"
-    assert rhel_root.SIZE == "7.6G"
-    assert rhel_root.RO == "0"
-    assert rhel_root.TYPE == "lvm"
-    assert rhel_root.MOUNTPOINT == "/"
-    assert rhel_root.get('PARENT_NAMES') == ["vda", "vda2"]
+    assert rhel_root.maj_min == "253:0"
+    assert rhel_root.removable is False
+    assert rhel_root.size == "7.6G"
+    assert rhel_root.read_only is False
+    assert rhel_root.type == "lvm"
+    assert rhel_root.mountpoint == "/"
+    assert rhel_root.parent_names == ["vda", "vda2"]
     assert sda is not None
-    assert sda.get('MAJ:MIN') == "8:0"
-    assert sda.RM == "0"
-    assert sda.SIZE == "500G"
-    assert sda.RO == "0"
-    assert sda.TYPE == "disk"
-    assert 'MOUNTPOINT' not in sda
-    assert 'PARENT_NAMES' not in sda
+    assert sda.maj_min == "8:0"
+    assert sda.removable is False
+    assert sda.size == "500G"
+    assert sda.read_only is False
+    assert sda.type == "disk"
+    assert 'mountpoint' not in sda
+    assert 'parent_names' not in sda
 
-    results = lsblk.LSBlock.parse_context(context_wrap(LSBLK_DATA2))
+    results = lsblk.LSBlock(context_wrap(LSBLK_DATA2))
     assert results is not None
     assert len(results) == 30
     sr0 = None
     sdf_appdg = None
     for result in results:
-        if result.NAME == "sr0":
+        if result.name == "sr0":
             sr0 = result
-        elif result.NAME == "appdg-app (dm-7)" and result.PARENT_NAMES[0] == "sdf":
+        elif result.name == "appdg-app (dm-7)" and result.parent_names[0] == "sdf":
             sdf_appdg = result
     assert sr0 is not None
-    assert sr0.NAME == "sr0"
-    assert sr0.get('MAJ:MIN') == "11:0"
-    assert sr0.RM == "1"
-    assert sr0.SIZE == "64.3M"
-    assert sr0.RO == "0"
-    assert sr0.TYPE == "rom"
+    assert sr0.name == "sr0"
+    assert sr0.maj_min == "11:0"
+    assert sr0.removable is True
+    assert sr0.size == "64.3M"
+    assert sr0.read_only is False
+    assert sr0.type == "rom"
     assert sdf_appdg is not None
-    assert sdf_appdg.NAME == "appdg-app (dm-7)"
-    assert sdf_appdg.get('MAJ:MIN') == "253:7"
-    assert sdf_appdg.RM == "0"
-    assert sdf_appdg.SIZE == "2.8T"
-    assert sdf_appdg.RO == "0"
-    assert sdf_appdg.TYPE == "lvm"
-    assert sdf_appdg.MOUNTPOINT == "/splunk"
-    assert sdf_appdg.PARENT_NAMES == ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]
+    assert sdf_appdg.name == "appdg-app (dm-7)"
+    assert sdf_appdg.maj_min == "253:7"
+    assert sdf_appdg.removable is False
+    assert sdf_appdg.size == "2.8T"
+    assert sdf_appdg.read_only is False
+    assert sdf_appdg.type == "lvm"
+    assert sdf_appdg.mountpoint == "/splunk"
+    assert sdf_appdg.parent_names == ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]
 
 
 def test_lsblk_po():
-    results = lsblk.LSBlock_PO.parse_context(context_wrap(LSBLK_EXT_DATA))
+    results = lsblk.LSBlock_PO(context_wrap(LSBLK_EXT_DATA))
     assert results is not None
     assert len(results) == 7
     sda1 = None
     for result in results:
-        if result['NAME'] == 'sda1':
+        if result.name == 'sda1':
             sda1 = result
     assert sda1 is not None
-    assert sda1['ALIGNMENT'] == "0"
-    assert sda1['DISC-ALN'] == "0"
-    assert sda1['DISC-GRAN'] == "0B"
-    assert sda1['DISC-MAX'] == "0B"
-    assert sda1['DISC-ZERO'] == "0"
-    assert sda1['FSTYPE'] == "ext4"
-    assert sda1['GROUP'] == "disk"
-    assert sda1['KNAME'] == "sda1"
+    assert sda1.alignment == "0"
+    assert sda1.disc_aln == "0"
+    assert sda1.disc_gran == "0B"
+    assert sda1.disc_max == "0B"
+    assert sda1.disc_zero == "0"
+    assert sda1.fstype == "ext4"
+    assert sda1.group == "disk"
+    assert sda1.kname == "sda1"
     assert 'LABEL' not in sda1
-    assert sda1['LOG-SEC'] == "512"
-    assert sda1['MAJ:MIN'] == "8:1"
-    assert sda1['MIN-IO'] == "512"
-    assert sda1['MODE'] == "brw-rw----"
+    assert sda1.log_sec == "512"
+    assert sda1.maj_min == "8:1"
+    assert sda1.min_io == "512"
+    assert sda1.mode == "brw-rw----"
     assert 'MODEL' not in sda1
-    assert sda1['MOUNTPOINT'] == "/boot"
-    assert sda1['NAME'] == "sda1"
-    assert sda1['OPT-IO'] == "0"
-    assert sda1['OWNER'] == "root"
-    assert sda1['PHY-SEC'] == "512"
-    assert sda1['RA'] == "128"
-    assert sda1['RM'] == "0"
-    assert sda1['RO'] == "0"
-    assert sda1['ROTA'] == "1"
-    assert sda1['RQ-SIZE'] == "128"
-    assert sda1['SCHED'] == "cfq"
-    assert sda1['SIZE'] == "500M"
+    assert sda1.mountpoint == "/boot"
+    assert sda1.name == "sda1"
+    assert sda1.opt_io == "0"
+    assert sda1.owner == "root"
+    assert sda1.phy_sec == "512"
+    assert sda1.ra == "128"
+    assert sda1.removable is False
+    assert sda1.read_only is False
+    assert sda1.rota == "1"
+    assert sda1.rq_size == "128"
+    assert sda1.sched == "cfq"
+    assert sda1.size == "500M"
     assert 'STATE' not in sda1
-    assert sda1['TYPE'] == "part"
-    assert sda1['UUID'] == "c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
+    assert sda1.type == "part"
+    assert sda1.uuid == "c7c4c016-8b00-4ded-bffb-5cc4719b7d45"

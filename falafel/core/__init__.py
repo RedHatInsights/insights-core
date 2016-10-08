@@ -1,5 +1,4 @@
 import argparse
-import inspect
 import logging
 import os
 import re
@@ -51,14 +50,13 @@ def get_module_names(package_name, pattern=None):
     log.debug("looking for files that match: [%s] in [%s]", pattern, plugin_dir)
     for root, dirs, files in os.walk(plugin_dir):
         if os.path.exists(os.path.join(root, "__init__.py")):
-            for file_ in files:
-                if name_filter(file_):
-                    plugin_name, dot, suffix = file_.rpartition(".")
-                    if dot == "." and suffix == "py":
-                        if get_importable_path(root):
-                            yield "%s.%s" % (get_importable_path(root), plugin_name)
-                        else:
-                            yield plugin_name
+            for file_ in filter(name_filter, files):
+                plugin_name, dot, suffix = file_.rpartition(".")
+                if dot == "." and suffix == "py":
+                    if get_importable_path(root):
+                        yield "%s.%s" % (get_importable_path(root), plugin_name)
+                    else:
+                        yield plugin_name
 
 
 def get_importable_path(path):
@@ -78,161 +76,63 @@ def get_importable_path(path):
         raise Exception("%s cannot be imported due to an insufficient sys.path" % path)
 
 
-def getitem_composite(key, *items):
+class Mapper(object):
     """
-    For each parameter passed in after ``key``, check to see if ``key`` is in
-    ``item`` and return the first value found.  If none of the ``items``
-    contain the key, then raise ``KeyError``.
+    Base class designed to be subclassed by mappers.
+
+    The framework will construct your object with a `Context` that will
+    provide *at least* the content as an interable of lines and the path
+    that the content was retrieved from.
+
+    Facts should be exposed as instance members where applicable.
+
+      self.fact = "123"
     """
-    for item in items:
-        if key in item:
-            return item[key]
-    raise KeyError(key)
+
+    def __init__(self, context):
+        self.file_path = context.path
+        self.file_name = os.path.basename(context.path) if context.path is not None else None
+        self.parse_content(context.content)
+
+    def parse_content(self, content):
+        pass
 
 
-def computed(f):
-    f.computed = True
-    return f
+class LegacyItemAccess(object):
+    """
+    Provides expected passthru functionality for classes that still use
+    self.data as the primary data structure for all parsed information.  Use
+    this as a mixin on mappers that expect these methods to be present as they
+    were previously.
+    """
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __contains__(self, item):
+        return item in self.data
+
+    def get(self, item, default=None):
+        return self.data.get(item, default)
 
 
-def serialize_data(data):
-    if isinstance(data, MapperOutput):
-        return data.serialize()
-    elif isinstance(data, dict):
-        return {k: serialize_data(v) for k, v in data.iteritems()}
-    elif isinstance(data, list):
-        return [serialize_data(v) for v in data]
-    else:
-        return data
-
-
-def deserialize_data(data):
-    if isinstance(data, dict):
-        return {k: deserialize_data(v) for k, v in data.iteritems()}
-    elif isinstance(data, list):
-        return [deserialize_data(v) for v in data]
-    elif MapperOutput.is_serialized(data):
-        return MapperOutput.deserialize(data)
-    else:
-        return data
-
-
-class ComputedMeta(type):
-    def __new__(cls, name, parents, dct):
-        dct["_computed_keys"] = None
-        return super(ComputedMeta, cls).__new__(cls, name, parents, dct)
-
-
-class MapperOutput(object):
-
-    __metaclass__ = ComputedMeta
-
-    def __init__(self, data, path=None):
-        self.data = data
-        self.computed = {}
-        if path:
-            self._add_to_computed("file_path", path)
-            self._add_to_computed("file_name", os.path.basename(path))
-
-        self.calc_computed_keys()
-        self.compute()
-
-    @staticmethod
-    def is_serialized(o):
-        return (
-            isinstance(o, list) and
-            len(o) == 3 and
-            isinstance(o[0], basestring) and
-            len(o[0].split("#")) == 2
-        )
-
-    @staticmethod
-    def deserialize(o):
-        name, data, computed = o
-        module, cls = name.split("#")
-        module = sys.modules[module]
-        path = computed["file_path"] if "file_path" in computed else None
-        return getattr(module, cls)(deserialize_data(data), path=path)
-
-    @classmethod
-    def parse_context(cls, context):
-        return cls(cls.parse_content(context.content), context.path)
-
-    def get_name(self):
-        return "#".join([self.__module__, self.__class__.__name__])
-
-    def serialize(self):
-        return [
-            self.get_name(),
-            serialize_data(self.data),
-            serialize_data(self.computed)
-        ]
-
-    def _add_to_computed(self, key, value):
-        self.computed[key] = value
-        setattr(self, key, value)
-
-    @classmethod
-    def calc_computed_keys(cls):
-        if cls._computed_keys is None:
-            members = inspect.getmembers(cls, inspect.ismethod)
-            computed_keys = [k for k, m in members if hasattr(m, "computed")]
-            cls._computed_keys = computed_keys
-
-    def compute(self):
-        for key in self._computed_keys:
-            self._add_to_computed(key, getattr(self, key)())
-
-    def __getitem__(self, key):
-        if isinstance(key, int):
-            raise TypeError("MapperOutput does not support integer indexes")
-        return getitem_composite(key, self.data, self.computed)
-
-    def get(self, key, default=None):
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            return default
-
-    def __contains__(self, key):
-        return key in self.data or key in self.computed
-
-    def __eq__(self, item):
-        if isinstance(item, MapperOutput):
-            return self.data == item.data
-        else:
-            return False
-
-
-class LogFileMeta(ComputedMeta):
+class LogFileMeta(type):
     def __new__(cls, name, parents, dct):
         dct["scanners"] = []
         return super(LogFileMeta, cls).__new__(cls, name, parents, dct)
 
 
-class LogFileOutput(MapperOutput):
+class LogFileOutput(Mapper):
 
     __metaclass__ = LogFileMeta
 
-    def __init__(self, data, path=None):
-        """
-        MapperOutput to be used for log file output.
-
-        Saves all raw log lines in a member that will not be serialized, thus
-        the raw output is only aavailable for the lifetime of the original
-        object instance.  Computed values will still be persisted.
-        """
-        self.lines = data
-        super(LogFileOutput, self).__init__({}, path)
+    def parse_content(self, content):
+        self.lines = list(content)
         for scanner in self.scanners:
             scanner(self)
 
-    @staticmethod
-    def parse_content(content):
-        return content
-
     def __contains__(self, s):
-        return len(self.get(s)) > 0
+        return any(s in l for l in self.lines)
 
     def get(self, s):
         return [line for line in self.lines if s in line]
@@ -246,8 +146,7 @@ class LogFileOutput(MapperOutput):
         """
         def scanner(self):
             result = func(self)
-            self.data[result_key] = result
-            self._add_to_computed(result_key, result)
+            setattr(self, result_key, result)
         cls.scanners.append(scanner)
 
     @classmethod

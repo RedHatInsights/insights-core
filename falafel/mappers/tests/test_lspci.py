@@ -34,12 +34,12 @@ RENESAS = """
 
 
 def test_lspci():
-    lspci_0 = LsPci.parse_context(context_wrap(LSPCI_0))
+    lspci_0 = LsPci(context_wrap(LSPCI_0))
     assert lspci_0.get("Intel Corporation") == INTEL.splitlines()
     assert len(lspci_0.get("Network controller")) == 1
     assert "Centrino Advanced-N 6205" in lspci_0
     assert "0d:00.0" in lspci_0
-    other = LsPci.parse_context(context_wrap(OTHER))
+    other = LsPci(context_wrap(OTHER))
     assert other.get("Renesas Technology Corp.") == RENESAS.splitlines()
     assert len(other.get("Xeon E5 v3")) == 4
     assert len(other.get("001a")) == 1

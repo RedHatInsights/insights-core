@@ -36,15 +36,15 @@ class TestUname(unittest.TestCase):
 
     def test_unknown_release(self):
         u = Uname.from_kernel("2.6.23-504.23.3.el6.revertBZ1169225")
-        self.assertEquals(None, u._lv_release)
+        self.assertEquals("504.23.3.el6", u._lv_release)
         fixed_by = u.fixed_by("2.6.18-128.39.1.el5", "2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5")
         self.assertEquals([], fixed_by)
 
     def test_fixed_by_rhel5(self):
         test_kernels = [
-            (Uname("Linux oprddb1r5.circoncorp.com 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"), []),
-            (Uname("Linux srspidr1-3.expdemo.com 2.6.18-402.el5 #1 SMP Thu Jan 8 06:22:34 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"), []),
-            (Uname("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5xen #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
+            (Uname.from_uname_str("Linux oprddb1r5.circoncorp.com 2.6.18-348.el5 #1 SMP Wed Nov 28 21:22:00 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"), []),
+            (Uname.from_uname_str("Linux srspidr1-3.expdemo.com 2.6.18-402.el5 #1 SMP Thu Jan 8 06:22:34 EST 2015 x86_64 x86_64 x86_64 GNU/Linux"), []),
+            (Uname.from_uname_str("Linux PVT-Dev1.pvtsolar.local 2.6.18-398.el5xen #1 SMP Tue Aug 12 06:30:31 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"), []),
             (Uname.from_kernel("2.6.18-194.el5"),
                 ["2.6.18-238.40.1.el5", "2.6.18-308.13.1.el5", "2.6.18-348.el5"]),
             (Uname.from_kernel("2.6.18-128.el5"),
@@ -69,36 +69,17 @@ class TestUname(unittest.TestCase):
                       {'version': "2.6.32-131.0.15", 'rhel_release': ["6", "1"]},
                       {'version': "3.10.0-123", 'rhel_release': ["7", "0"]}]
         for unknown_ver in unknown_list:
-            unknown_uname = Uname("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=unknown_ver))
+            unknown_uname = Uname.from_uname_str("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=unknown_ver))
             assert unknown_uname.rhel_release == ["-1", "-1"]
         for known_ver in known_list:
-            known_uname = Uname("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=known_ver['version']))
+            known_uname = Uname.from_uname_str("Linux hostname {version} #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux".format(version=known_ver['version']))
             assert known_uname.rhel_release == known_ver['rhel_release']
 
-    def test_to_json(self):
-        uname_obj = Uname("Linux hostname 3.10.0-229.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        uname_json_list = uname_obj.serialize()
-        assert 'falafel.util.uname#Uname' == uname_json_list[0], "Module name does not match"
-        uname_json = uname_json_list[1]
-        assert '3.10.0-229.el7.x86_64' == uname_json['kernel'], "Full kernel version string doesn't match"
-        assert 'Linux' == uname_json['name'], "Kernel name doesn't match"
-        assert 'hostname' == uname_json['nodename'], "Nodename doesn't match"
-        assert '3.10.0' == uname_json['version'], "Version doesn't match"
-        assert '229.el7' == uname_json['release'], "Release doesn't match"
-        assert ['7', '1'] == uname_json['rhel_release'], "RHEL Release doesn't match"
-        assert 'x86_64' == uname_json['arch'], "Architecture doesn't match"
-        assert 'GNU/Linux' == uname_json['os'], "OS doesn't match"
-        assert 'x86_64' == uname_json['hw_platform'], "H/W platform doesn't match"
-        assert 'x86_64' == uname_json['processor'], "Processor doesn't match"
-        assert 'x86_64' == uname_json['machine'], "Machine doesn't match"
-        assert 'Mon Sep 8 11:54:45 UTC 2014' == uname_json['kernel_date'], "Kernel date doesn't match"
-        assert 'SMP' == uname_json['kernel_type'], "Kernel type doesn't match"
-
     def test_uname_eq(self):
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right_copy = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left == right
         assert left == left_copy
         assert right == right_copy
@@ -108,16 +89,16 @@ class TestUname(unittest.TestCase):
         assert not left == right_ver_rel
         assert left == left_copy_ver_rel
 
-        left = Uname("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left == right
 
         right = "3.16.2-200.el7.x86_64"
         assert left == right
         assert right == left
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         with pytest.raises(UnameError):
             left == right
 
@@ -125,25 +106,25 @@ class TestUname(unittest.TestCase):
         with pytest.raises(UnameError):
             left == right
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left == right
 
         right_ver_rel = "3.155555.2-200.10.1.1.el17.x86_65"
         assert not left == right
 
         with pytest.raises(UnameError):
-            right = Uname("Linuxhostname3.15.2-200.10.1.1.el7.x86_64#1SMPMonSep811:54:45UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+            right = Uname.from_uname_str("Linuxhostname3.15.2-200.10.1.1.el7.x86_64#1SMPMonSep811:54:45UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
 
         right_ver_rel = "31555552-200.10.1.1.el17.x86_65"
         with pytest.raises(UnameError):
             left == right_ver_rel
 
     def test_uname_ne(self):
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right_copy = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left != right
         assert not left != left_copy
         assert not right != right_copy
@@ -153,26 +134,26 @@ class TestUname(unittest.TestCase):
         assert left != right_ver_rel
         assert not left != left_copy_ver_rel
 
-        left = Uname("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left != right
 
         right = "3.16.2-200.el7.x86_64"
         assert not left != right
         assert not right != left
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left != right
 
         right_ver_rel = "3.155555.2-200.10.1.1.el17.x86_65"
         assert left != right
 
     def test_uname_lt(self):
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right_copy = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left < right
         assert right < left
         assert not left < left_copy
@@ -184,8 +165,8 @@ class TestUname(unittest.TestCase):
         assert right_ver_rel < left
         assert not left < left_copy_ver_rel
 
-        left = Uname("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left < right
         assert not right < left
 
@@ -193,8 +174,8 @@ class TestUname(unittest.TestCase):
         assert not left < right
         assert not right < left
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         with pytest.raises(UnameError):
             left < right
 
@@ -202,18 +183,18 @@ class TestUname(unittest.TestCase):
         with pytest.raises(UnameError):
             left < right
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left < right
 
         right_ver_rel = "3.155555.2-200.10.1.1.el17.x86_65"
         assert not left < right
 
     def test_uname_le(self):
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right_copy = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left <= right
         assert right <= left
         assert left <= left_copy
@@ -225,8 +206,8 @@ class TestUname(unittest.TestCase):
         assert right_ver_rel <= left
         assert left <= left_copy_ver_rel
 
-        left = Uname("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left <= right
         assert right <= left
 
@@ -235,10 +216,10 @@ class TestUname(unittest.TestCase):
         assert right <= left
 
     def test_uname_gt(self):
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right_copy = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left > right
         assert not right > left
         assert not left > left_copy
@@ -250,8 +231,8 @@ class TestUname(unittest.TestCase):
         assert not right_ver_rel > left
         assert not left > left_ver_rel
 
-        left = Uname("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert not left > right
         assert not right > left
 
@@ -259,8 +240,8 @@ class TestUname(unittest.TestCase):
         assert not left > right
         assert not right > left
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         with pytest.raises(UnameError):
             left > right
 
@@ -268,18 +249,18 @@ class TestUname(unittest.TestCase):
         with pytest.raises(UnameError):
             left > right
 
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.15.2-200.10.1.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left > right
 
         right_ver_rel = "3.155555.2-200.10.1.1.el17.x86_65"
         assert left > right
 
     def test_uname_ge(self):
-        left = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        left_copy = Uname("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right_copy = Uname("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.10.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right_copy = Uname.from_uname_str("Linux hostname 3.16.2-200.9.1.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left >= right
         assert not right >= left
         assert left >= left_copy
@@ -291,8 +272,8 @@ class TestUname(unittest.TestCase):
         assert not right_ver_rel >= left
         assert left >= left_ver_rel
 
-        left = Uname("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
-        right = Uname("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        left = Uname.from_uname_str("Linux hostname 3.16.2-200.0.0.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
+        right = Uname.from_uname_str("Linux hostname 3.16.2-200.el7.x86_64 #1 SMP Mon Sep 8 11:54:45 UTC 2014 x86_64 x86_64 x86_64 GNU/Linux")
         assert left >= right
         assert right >= left
 
@@ -301,7 +282,7 @@ class TestUname(unittest.TestCase):
         assert right >= left
 
     def test_docker_uname(self):
-        u = Uname("Linux 06a04d0354dc 4.0.3-boot2docker #1 SMP Wed May 13 20:54:49 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux")
+        u = Uname.from_uname_str("Linux 06a04d0354dc 4.0.3-boot2docker #1 SMP Wed May 13 20:54:49 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux")
         self.assertEquals("boot2docker", u.release)
 
 

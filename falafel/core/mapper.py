@@ -1,7 +1,7 @@
 import logging
 import re
 from collections import defaultdict
-from falafel.core import marshalling, MapperOutput, plugins
+from falafel.core import marshalling, plugins
 from falafel.core import context
 from falafel.config.static import get_config
 from falafel.util import logging_level
@@ -9,28 +9,6 @@ from falafel.util import logging_level
 specs = get_config()
 logger = logging.getLogger("mapper")
 marshaller = marshalling.Marshaller()
-
-
-def stringify_mapper(o):
-    return "#".join([o.__module__, o.__name__])
-
-
-def stringify(o):
-    if isinstance(o[0], MapperOutput):
-        return [i.serialize() for i in o]
-    else:
-        return o
-
-
-def serialize(output):
-    logger.debug("Serializing output")
-    new_output = {}
-    for host, mapper_dict in output.iteritems():
-        new_dict = {}
-        for mapper, value in mapper_dict.iteritems():
-            new_dict[stringify_mapper(mapper)] = stringify(value)
-        new_output[host] = new_dict
-    return marshalling.marshal(new_output)
 
 
 def filter_lines(lines, target):
@@ -125,13 +103,10 @@ def run_mappers(stream, mappers=plugins.MAPPERS):
     for case, ctx in gen_contexts(stream):
         for mapper in mappers[ctx.target]:
             logger.debug("Executing mapper [%s] against target [%s]",
-                         mapper.serializable_id, ctx.target)
+                         mapper, ctx.target)
             try:
                 if mapper.shared:
-                    if isinstance(mapper, type) and issubclass(mapper, MapperOutput):
-                        response = mapper.parse_context(ctx)
-                    else:
-                        response = mapper(ctx)
+                    response = mapper(ctx)
                 else:
                     response = marshaller.marshal(
                         mapper(ctx), use_value_list=specs.is_multi_output(ctx.target))
@@ -139,7 +114,7 @@ def run_mappers(stream, mappers=plugins.MAPPERS):
                     logger.debug("Response for [%s]", ctx.machine_id)
                     yield case, ctx.machine_id, mapper, response
             except Exception:
-                logger.exception(mapper.serializable_id)
+                logger.exception(str(mapper))
 
 
 # This is so incredibly verbose that it should use TRACE (which doesn't exist)

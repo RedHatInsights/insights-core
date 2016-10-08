@@ -1,9 +1,9 @@
-from .. import MapperOutput, mapper, computed, parse_table
+from .. import Mapper, mapper, parse_table
 
 
-class ProcessList(MapperOutput):
+class ProcessList(Mapper):
 
-    @computed
+    @property
     def running(self):
         return [row["COMMAND"] for row in self.data if "COMMAND" in row]
 
@@ -25,31 +25,29 @@ class ProcessList(MapperOutput):
 
 @mapper('ps_auxcww')
 class PsAuxcww(ProcessList):
+    """
+    Returns a list of dicts, where the keys in each dict are the column headers
+    and each item in the list represents a process.
+    """
 
-    @classmethod
-    def parse_content(cls, content):
-        """
-        Returns a list of dicts, where the keys in each dict are the column headers
-        and each item in the list represents a process.
-        """
+    def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
-            return parse_table(content)
+            self.data = parse_table(content)
         else:
             raise ValueError("PsAuxcww: Unable to parse content: {} ({})".format(len(content), content[0]))
 
 
 @mapper('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
 class PsAux(ProcessList):
+    """
+    Returns a list of dicts, where the keys in each dict are the column headers
+    and each item in the list represents a process.  The command and its args
+    (if any) are kept together in the COMMAND key
+    """
 
-    @classmethod
-    def parse_content(cls, content):
-        """
-        Returns a list of dicts, where the keys in each dict are the column headers
-        and each item in the list represents a process.  The command and its args
-        (if any) are kept together in the COMMAND key
-        """
+    def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
-            return parse_table(content, max_splits=10)
+            self.data = parse_table(content, max_splits=10)
 
 
 @mapper('ps_auxwww')  # we don't want to filter the ps_auxwww file

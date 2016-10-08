@@ -15,6 +15,6 @@ test    [administrator]
 
 def test_rabbitmq_list_users():
     context = context_wrap(RABBITMQ_LIST_USERS, hostname="controller_1", osp=osp_controller)
-    result = RabbitMQUsers.parse_context(context)
+    result = RabbitMQUsers(context)
     expect = {"guest": "administrator", "test": "administrator"}
     assert result.data == expect

@@ -13,5 +13,5 @@ jsonrpc.Executor-worker-2::INFO::2016-07-13 04:45:51,454::logUtils::44::dispatch
 
 
 def test_vdsm_log():
-    vdsm_log = VDSMLog.parse_context(context_wrap(VDSM_LOG))
+    vdsm_log = VDSMLog(context_wrap(VDSM_LOG))
     assert "Migration is stuck:" in vdsm_log

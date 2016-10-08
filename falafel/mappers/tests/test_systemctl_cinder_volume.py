@@ -13,6 +13,6 @@ LimitNOFILE=4096
 
 def test_systemctl_show_cinder_volume():
     context = context_wrap(SYSTEMCTL_SHOW_CINDER_VOLUME)
-    result = SystemctlShowCinderVolume.parse_context(context).data
+    result = SystemctlShowCinderVolume(context).data
     assert result["LimitNOFILE"] == "4096"
     assert len(result) == 4

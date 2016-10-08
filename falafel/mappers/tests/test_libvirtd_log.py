@@ -24,7 +24,7 @@ LIBVIRTD_LOG = """
 
 
 def test_libvirtd_log():
-    log = LibVirtdLog.parse_context(context_wrap(LIBVIRTD_LOG))
+    log = LibVirtdLog(context_wrap(LIBVIRTD_LOG))
     assert "Certificate check failed Certificate" in log
 
     assert log.get("authentication failed: Failed to verify peer's certificate") == ["2013-10-23 17:32:19.957+0000: 14069: error : virNetTLSContextCheckCertificate:1105 : authentication failed: Failed to verify peer's certificate"]

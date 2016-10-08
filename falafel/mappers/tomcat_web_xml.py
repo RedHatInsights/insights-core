@@ -1,14 +1,13 @@
 import xml.etree.ElementTree as ET
-from .. import MapperOutput, mapper
+from .. import Mapper, mapper
 
 TIMEOUT_KEYWORD = 'session-timeout'
 
 
 @mapper('tomcat_web.xml')
-class TomcatWebXml(MapperOutput):
+class TomcatWebXml(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Get the setting of 'session-timeout' and return.
 
@@ -33,4 +32,4 @@ class TomcatWebXml(MapperOutput):
         tmo_dict = {}
         if field_text and field_text.isdigit():
             tmo_dict = {TIMEOUT_KEYWORD: int(field_text)}
-        return tmo_dict
+        self.data = tmo_dict

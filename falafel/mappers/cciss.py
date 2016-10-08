@@ -1,9 +1,8 @@
-import os
-from .. import MapperOutput, mapper, computed
+from .. import Mapper, mapper
 
 
 @mapper('cciss')
-class Cciss(MapperOutput):
+class Cciss(Mapper):
     '''
     Raw Data
     -----
@@ -44,22 +43,19 @@ class Cciss(MapperOutput):
 
     '''
 
-    @classmethod
-    def parse_context(cls, context):
-        cciss_info = {
-            "device": os.path.basename(context.path)
-        }
-        for line in context.content:
+    def parse_content(self, content):
+        self.device = self.file_name
+        self.data = {}
+
+        for line in content:
             if line.strip():
                 key, val = line.split(":", 1)
-                cciss_info[key.strip()] = val.strip()
+                self.data[key.strip()] = val.strip()
 
-        return cls(cciss_info, context.path)
-
-    @computed
+    @property
     def firmware_version(self):
         return self.data['Firmware Version']
 
-    @computed
+    @property
     def model(self):
-        return self.data['device']
+        return self.data[self.device]

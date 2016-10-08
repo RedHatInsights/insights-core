@@ -3,7 +3,7 @@ from collections import defaultdict
 from distutils.version import LooseVersion as LV
 
 from ..util import rsplit
-from .. import MapperOutput, mapper, computed, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 KNOWN_ARCHITECTURES = [
     'x86_64',
@@ -24,7 +24,7 @@ KNOWN_ARCHITECTURES = [
 
 
 @mapper('installed-rpms')
-class InstalledRpms(MapperOutput):
+class InstalledRpms(Mapper):
     """
     A mapper for working with data containing a list of installed RPM files on the system and
     related information.
@@ -35,8 +35,7 @@ class InstalledRpms(MapperOutput):
          'unparsed': ['unparsed line_1', ...],
         }
     """
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Main parsing class method which stores all interesting data from the content.
 
@@ -46,15 +45,13 @@ class InstalledRpms(MapperOutput):
         Returns:
             dict: dictionary with parsed data
         """
-        content = get_active_lines(content, comment_char='COMMAND>')
-        data = {'packages': defaultdict(list),
-                'errors': [],
-                'unparsed': [],
-                }
 
-        for line in content:
+        self.errors = []
+        self.unparsed = []
+        self.packages = defaultdict(list)
+        for line in get_active_lines(content, comment_char='COMMAND>'):
             if line.startswith('error:') or line.startswith('warning:'):
-                data['errors'].append(line)
+                self.errors.append(line)
             else:
                 try:
                     # Try to parse from JSON input
@@ -66,46 +63,24 @@ class InstalledRpms(MapperOutput):
                             rpm = InstalledRpm.from_line(line)
                         except Exception:
                             # Both ways failed
-                            data['unparsed'].append(line)
+                            self.unparsed.append(line)
                         else:
-                            data['packages'][rpm['name']].append(rpm)
+                            self.packages[rpm['name']].append(rpm)
                 else:
-                    data['packages'][rpm['name']].append(rpm)
+                    self.packages[rpm['name']].append(rpm)
 
-        return data
+        self.data = {'packages': self.packages,
+                     'errors': self.errors,
+                     'unparsed': self.unparsed,
+                     }
 
-    @computed
-    def packages(self):
-        """
-        Property shortcut for parsed data.
+    def __getitem__(self, item):
+        return self.data[item]
 
-        Returns:
-            dict: dictionary with successfully parsed packages in following format:
-                  {'package_name_1': [InstalledRpm_1, InstalledRpm_2, ...]}
-        """
-        return self.data['packages']
+    def __contains__(self, item):
+        return item in self.packages
 
-    @computed
-    def errors(self):
-        """
-        Property shortcut for parsed data.
-
-        Returns:
-            list: list of lines containing errors
-        """
-        return self.data['errors']
-
-    @computed
-    def unparsed(self):
-        """
-        Property shortcut for parsed data.
-
-        Returns:
-            list: list of lines which were not successfully parsed
-        """
-        return self.data['unparsed']
-
-    @computed
+    @property
     def corrupt(self):
         """
         Property shortcut for parsed data.
@@ -113,7 +88,7 @@ class InstalledRpms(MapperOutput):
         Returns:
             bool: True if RPM database is corrupted, else False
         """
-        return any('rpmdbNextIterator' in s for s in self['errors'])
+        return any('rpmdbNextIterator' in s for s in self.errors)
 
     def get_max(self, name):
         """
@@ -125,10 +100,10 @@ class InstalledRpms(MapperOutput):
         Returns:
             InstalledRpm: Installed RPM with highest version
         """
-        if name not in self['packages']:
+        if name not in self.packages:
             return None
         else:
-            return max(self['packages'][name])
+            return max(self.packages[name])
 
     def get_min(self, name):
         """
@@ -141,13 +116,13 @@ class InstalledRpms(MapperOutput):
         Returns:
             InstalledRpm: Installed RPM with lowest version
         """
-        if name not in self['packages']:
+        if name not in self.packages:
             return None
         else:
-            return min(self['packages'][name])
+            return min(self.packages[name])
 
 
-class InstalledRpm(MapperOutput):
+class InstalledRpm(object):
     """
     Class for holding information about one installed RPM.
 
@@ -163,6 +138,13 @@ class InstalledRpm(MapperOutput):
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig-short'
     ]
+
+    def __init__(self, data):
+        self.data = data
+        for k, v in data.iteritems():
+            setattr(self, k, v)
+        if 'epoch' not in data:
+            self.epoch = '0'
 
     @classmethod
     def from_package(cls, package_string):
@@ -270,28 +252,12 @@ class InstalledRpm(MapperOutput):
             rpm[cls.SOSREPORT_KEYS[i]] = value
         return rpm
 
-    @computed
-    def package(self):
-        return '{}-{}-{}'.format(self['name'],
-                                 self['version'],
-                                 self['release']
-                                 )
-
-    @computed
-    def name(self):
-        return self.get('name')
-
-    @computed
-    def version(self):
-        return self.get('version')
-
-    @computed
-    def release(self):
-        return self.get('release')
-
     @property
-    def epoch(self):
-        return self.get('epoch', '0')
+    def package(self):
+        return '{}-{}-{}'.format(self.name,
+                                 self.version,
+                                 self.release
+                                 )
 
     @property
     def source(self):
@@ -300,10 +266,14 @@ class InstalledRpm(MapperOutput):
         Returns:
             InstalledRpm: source RPM
         """
-        if 'srpm' in self.data:
-            rpm = self.from_package(self.data['srpm'])
-            rpm.data['epoch'] = self.epoch
+        if hasattr(self, 'srpm'):
+            rpm = self.from_package(self.srpm)
+            # Source RPMs don't have epoch for some reason
+            rpm.epoch = self.epoch
             return rpm
+
+    def __getitem__(self, item):
+        return self.data[item]
 
     def __str__(self):
         return '{}:{}'.format(self.epoch, self.package)

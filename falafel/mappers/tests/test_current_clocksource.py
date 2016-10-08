@@ -7,5 +7,5 @@ tsc
 
 
 def test_get_current_clksr():
-    clksrc = CurrentClockSource.parse_context(context_wrap(CLKSRC))
+    clksrc = CurrentClockSource(context_wrap(CLKSRC))
     assert clksrc.data == "tsc"

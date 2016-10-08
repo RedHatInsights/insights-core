@@ -2,7 +2,7 @@ import logging
 import sys
 from falafel.contrib import toposort
 from collections import defaultdict
-from falafel.core import marshalling, MapperOutput, plugins
+from falafel.core import marshalling, Mapper, plugins
 from falafel.config.static import get_config
 from falafel.util import logging_level
 
@@ -20,8 +20,8 @@ def string_to_mapper(o):
 
 
 def value_to_class(o):
-    if len(o) > 0 and MapperOutput.is_serialized(o[0]):
-        return [MapperOutput.deserialize(i) for i in o]
+    if len(o) > 0 and Mapper.is_serialized(o[0]):
+        return [Mapper.deserialize(i) for i in o]
     else:
         return o
 

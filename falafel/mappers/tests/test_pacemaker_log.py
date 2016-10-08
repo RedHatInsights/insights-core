@@ -16,5 +16,5 @@ Aug 21 12:58:32 [11661] example.redhat.com       crmd:     info: do_state_transi
 
 
 def test_pacemaker_log():
-    pacemaker = PacemakerLog.parse_context(context_wrap(PACEMAKER_LOG))
+    pacemaker = PacemakerLog(context_wrap(PACEMAKER_LOG))
     assert "Progressed to state S_POLICY_ENGINE after C_TIMER_POPPED" in pacemaker

@@ -1,19 +1,17 @@
-from .. import MapperOutput, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper("corosync")
-class CoroSyncConfig(MapperOutput):
+class CoroSyncConfig(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Parse /etc/sysconfig/corosync
         return dict like {'COROSYNC_OPTIONS': '', 'COROSYNC_INIT_TIMEOUT': '60'}
         """
 
-        corosync_dict = {}
+        self.data = {}
         for line in get_active_lines(content):
             if "=" in line:
                 (key, value) = line.split("=", 1)
-                corosync_dict[key.strip()] = value.strip().replace('"', "")
-        return corosync_dict
+                self.data[key.strip()] = value.strip().replace('"', "")

@@ -18,5 +18,5 @@ LOG:  autovacuum launcher started
 
 
 def test_postgresql_log():
-    log = PostgreSQLLog.parse_context(context_wrap(POSTGRESQL_LOG))
+    log = PostgreSQLLog(context_wrap(POSTGRESQL_LOG))
     assert "FATAL:  terminating connection" in log

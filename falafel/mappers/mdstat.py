@@ -3,11 +3,11 @@ mdstat
 ======
 """
 import re
-from .. import MapperOutput, mapper
+from .. import Mapper, mapper
 
 
 @mapper("mdstat")
-class Mdstat(MapperOutput):
+class Mdstat(Mapper):
     """
     Represents the information in the ``/proc/mdstat`` file.  Several
     examples of possible data containe in the file can be found on the
@@ -51,14 +51,9 @@ class Mdstat(MapperOutput):
           "auto-read-only"
     """
 
-    def __init__(self, data, path):
-        super(Mdstat, self).__init__(data, path)
-        self.components = self.data["components"]
-        self.personalities = self.data["personalities"]
-
-    @staticmethod
-    def parse_content(content):
-        data = {'personalities': [], 'components': []}
+    def parse_content(self, content):
+        self.components = []
+        self.personalities = []
 
         current_components = None
         in_component = False
@@ -67,13 +62,13 @@ class Mdstat(MapperOutput):
             line = line.strip()
             if line.startswith('Personalities'):
                 in_component = False
-                data['personalities'] = parse_personalities(line)
+                self.personalities = parse_personalities(line)
             elif line.startswith("md"):  # Starting a component array stanza
                 in_component = True
                 current_components = parse_array_start(line)
             elif not line:  # blank line, ending a component array stanza
                 if in_component:
-                    data['components'].extend(current_components)
+                    self.components.extend(current_components)
                     current_components = None
                 in_component = False
             else:
@@ -81,7 +76,12 @@ class Mdstat(MapperOutput):
                     upstring = parse_upstring(line)
                     if upstring:
                         apply_upstring(upstring, current_components)
-        return data
+
+        # Keep self.data just for backwards compat
+        self.data = {
+            'personalities': self.personalities,
+            'components': self.components
+        }
 
 
 def parse_personalities(personalities_line):

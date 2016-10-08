@@ -1,11 +1,16 @@
-from .. import MapperOutput, mapper
+from .. import Mapper, mapper
 
 
 @mapper("lsmod")
-class LsMod(MapperOutput):
+class LsMod(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __contains__(self, item):
+        return item in self.data
+
+    def parse_content(self, content):
         """
         Analysis each line and return a list with all modules info
 
@@ -37,4 +42,4 @@ class LsMod(MapperOutput):
                     for i, key in enumerate(memb_keys):
                         mod_attrs[key] = line_split[i + 1]
                     module_dict[line_split[0]] = mod_attrs
-        return module_dict
+        self.data = module_dict

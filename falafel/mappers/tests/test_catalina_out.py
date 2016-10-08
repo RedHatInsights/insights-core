@@ -107,6 +107,6 @@ INFO: Server startup in 27028 ms
 
 
 def test_catalina_out():
-    out_log = CatalinaOut.parse_context(context_wrap(OUT1))
+    out_log = CatalinaOut(context_wrap(OUT1))
     assert "IETF RFC 4122 compliant UUID" in out_log
     assert len(out_log.get("SEVERE")) == 4

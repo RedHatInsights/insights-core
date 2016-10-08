@@ -45,104 +45,87 @@ tmpfs                                    5998736         0   5998736       0% /s
 
 
 def test_df_li():
-    df_list = df.DiskFree_LI.parse_context(context_wrap(DF_LI))
+    df_list = df.DiskFree_LI(context_wrap(DF_LI))
     assert len(df_list) == 10
     assert len(df_list.mounts) == 10
     assert len(df_list.filesystems) == 5
-    assert '/home' in df_list.mount_names
-    assert df_list.get_mount('/home') == {
-        'Filesystem': '/dev/sda2',
-        'Inodes': '106954752',
-        'IUsed': '298662',
-        'IFree': '106656090',
-        'IUse%': '1%',
-        'Mounted_on': '/home'
-    }
-    assert '/dev/sda2' in df_list.filesystem_names
+    assert '/home' in df_list.mounts
+    r = df.Record(
+        filesystem='/dev/sda2',
+        total='106954752',
+        used='298662',
+        available='106656090',
+        capacity='1%',
+        mounted_on='/home'
+    )
+
+    assert df_list.get_mount('/home') == r
+    assert '/dev/sda2' in df_list.filesystems
     assert len(df_list.get_filesystem('/dev/sda2')) == 1
-    assert df_list.get_filesystem('/dev/sda2')[0] == {
-        'Filesystem': '/dev/sda2',
-        'Inodes': '106954752',
-        'IUsed': '298662',
-        'IFree': '106656090',
-        'IUse%': '1%',
-        'Mounted_on': '/home'
-    }
+    assert df_list.get_filesystem('/dev/sda2')[0] == r
     assert len(df_list.get_filesystem('tmpfs')) == 6
-    assert df_list.get_mount('/dev').Filesystem == 'devtmpfs'
-    assert df_list.get_mount('/run').Inodes == '1499684'
-    assert df_list.get_mount('/tmp').IUsed == '54'
-    assert df_list.get_mount('/boot').IFree == '127587'
-    assert df_list.get_filesystem('/dev/sda2')[0].get('IUse%') == '1%'
-    assert df_list.get_filesystem('/dev/sda2')[0].IFree == '106656090'
-    assert df_list.get_filesystem('devtmpfs')[0].Mounted_on == '/dev'
-    assert df_list.get_mount('/V M T o o l s').IFree == '1499678'
-    assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0].Mounted_on == '/'
+    assert df_list.get_mount('/dev').filesystem == 'devtmpfs'
+    assert df_list.get_mount('/run').total == '1499684'
+    assert df_list.get_mount('/tmp').used == '54'
+    assert df_list.get_mount('/boot').available == '127587'
+    assert df_list.get_filesystem('/dev/sda2')[0].capacity == '1%'
+    assert df_list.get_filesystem('/dev/sda2')[0].available == '106656090'
+    assert df_list.get_filesystem('devtmpfs')[0].mounted_on == '/dev'
+    assert df_list.get_mount('/V M T o o l s').available == '1499678'
+    assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0].mounted_on == '/'
 
 
 def test_df_alP():
-    df_list = df.DiskFree_ALP.parse_context(context_wrap(DF_ALP))
+    df_list = df.DiskFree_ALP(context_wrap(DF_ALP))
     assert len(df_list) == 9
     assert len(df_list.mounts) == 9
     assert len(df_list.filesystems) == 7
-    assert '/' in df_list.mount_names
-    assert df_list.get_mount('/') == {
-        'Filesystem': '/dev/mapper/vg_lxcrhel6sat56-lv_root',
-        '1024-blocks': '98571884',
-        'Used': '4244032',
-        'Available': '89313940',
-        'Capacity': '5%',
-        'Mounted_on': '/'
-    }
-    assert '/dev/mapper/vg_lxcrhel6sat56-lv_root' in df_list.filesystem_names
+    assert '/' in df_list.mounts
+    r = df.Record(
+        filesystem='/dev/mapper/vg_lxcrhel6sat56-lv_root',
+        total='98571884',
+        used='4244032',
+        available='89313940',
+        capacity='5%',
+        mounted_on='/'
+    )
+    assert df_list.get_mount('/') == r
+    assert '/dev/mapper/vg_lxcrhel6sat56-lv_root' in df_list.filesystems
     assert len(df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')) == 1
-    assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0] == {
-        'Filesystem': '/dev/mapper/vg_lxcrhel6sat56-lv_root',
-        '1024-blocks': '98571884',
-        'Used': '4244032',
-        'Available': '89313940',
-        'Capacity': '5%',
-        'Mounted_on': '/'
-    }
+    assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0] == r
     assert len(df_list.get_filesystem('tmpfs')) == 3
-    assert df_list.get_mount('/sys').Filesystem == 'sysfs'
-    assert df_list.get_mount('/proc').get('1024-blocks') == '0'
-    assert df_list.get_mount('/dev').Used == '0'
-    assert df_list.get_mount('/run').Available == '5997356'
-    assert df_list.get_mount('/sys/fs/cgroup').Capacity == '0%'
-    assert df_list.get_mount('/').Filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
-    assert df_list.get_mount('/').Capacity == '5%'
+    assert df_list.get_mount('/sys').filesystem == 'sysfs'
+    assert df_list.get_mount('/proc').total == '0'
+    assert df_list.get_mount('/dev').used == '0'
+    assert df_list.get_mount('/run').available == '5997356'
+    assert df_list.get_mount('/sys/fs/cgroup').capacity == '0%'
+    assert df_list.get_mount('/').filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
+    assert df_list.get_mount('/').capacity == '5%'
 
 
 def test_df_al():
-    df_list = df.DiskFree_AL.parse_context(context_wrap(DF_AL))
+    df_list = df.DiskFree_AL(context_wrap(DF_AL))
     assert len(df_list) == 9
     assert len(df_list.mounts) == 9
     assert len(df_list.filesystems) == 7
-    assert '/' in df_list.mount_names
-    assert df_list.get_mount('/') == {
-        'Filesystem': '/dev/mapper/vg_lxcrhel6sat56-lv_root',
-        '1K-blocks': '98571884',
-        'Used': '4244032',
-        'Available': '89313940',
-        'Use%': '5%',
-        'Mounted_on': '/'
-    }
-    assert '/dev/mapper/vg_lxcrhel6sat56-lv_root' in df_list.filesystem_names
+    assert '/' in df_list.mounts
+    r = df.Record(
+        filesystem='/dev/mapper/vg_lxcrhel6sat56-lv_root',
+        total='98571884',
+        used='4244032',
+        available='89313940',
+        capacity='5%',
+        mounted_on='/'
+    )
+    assert df_list.get_mount('/') == r
+    assert '/dev/mapper/vg_lxcrhel6sat56-lv_root' in df_list.filesystems
     assert len(df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')) == 1
-    assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0] == {
-        'Filesystem': '/dev/mapper/vg_lxcrhel6sat56-lv_root',
-        '1K-blocks': '98571884',
-        'Used': '4244032',
-        'Available': '89313940',
-        'Use%': '5%',
-        'Mounted_on': '/'
-    }
+    assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0] == r
     assert len(df_list.get_filesystem('tmpfs')) == 3
-    assert df_list.get_mount('/sys').Filesystem == 'sysfs'
-    assert df_list.get_mount('/proc').get('1K-blocks') == '0'
-    assert df_list.get_mount('/dev').Used == '0'
-    assert df_list.get_mount('/run').Available == '5997356'
-    assert df_list.get_mount('/sys/fs/cgroup').get('Use%') == '0%'
-    assert df_list.get_mount('/').Filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
-    assert df_list.get_mount('/').get('Use%') == '5%'
+    assert df_list.get_mount('/sys').filesystem == 'sysfs'
+    assert df_list.get_mount('/proc').total == '0'
+    assert df_list.get_mount('/dev').used == '0'
+    assert df_list.get_mount('/run').available == '5997356'
+    assert df_list.get_mount('/sys/fs/cgroup').capacity == '0%'
+    assert df_list.get_mount('/').filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
+    assert df_list.get_mount('/').capacity == '5%'

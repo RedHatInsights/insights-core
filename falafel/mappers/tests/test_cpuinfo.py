@@ -38,7 +38,7 @@ address sizes   : 40 bits physical, 48 bits virtual
 
 
 def test_cpuinfo():
-    cpu_info = CpuInfo.parse_context(context_wrap(CPUINFO))
+    cpu_info = CpuInfo(context_wrap(CPUINFO))
     assert cpu_info.cpu_count == 2
     assert cpu_info.socket_count == 2
     assert cpu_info.vendor == "GenuineIntel"
@@ -56,5 +56,5 @@ def test_cpuinfo():
 
 
 def test_empty_cpuinfo():
-    cpu_info = CpuInfo.parse_context(context_wrap(""))
-    assert cpu_info.cpu_count is None
+    cpu_info = CpuInfo(context_wrap(""))
+    assert cpu_info.cpu_count == 0

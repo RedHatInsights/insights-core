@@ -39,7 +39,7 @@ pattern file specification gathering data from files located in
 The ``bondinfo`` method is deprecated.  Plugins should use the ``Bond``
 class instead.
 """
-from .. import MapperOutput, LogFileOutput, mapper, get_active_lines
+from .. import Mapper, LogFileOutput, mapper, get_active_lines
 
 BOND_4_INDICATOR = "Bonding Mode: IEEE 802.3ad Dynamic link aggregation"
 """Deprecated, used by the deprecated ``bondinfo`` function"""
@@ -56,15 +56,14 @@ BOND_PREFIX_MAP = [
 
 
 @mapper('bond')
-class Bond(MapperOutput):
+class Bond(Mapper):
     """Models the ``/proc/net/bonding`` file.
 
     Currently used information from ``/proc/net/bonding`` includes
     the "bond mode" and "partner mac address".
     """
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         mode = None
         partner_mac_address = None
         slave_interface = []
@@ -83,38 +82,24 @@ class Bond(MapperOutput):
             elif line.startswith("Slave Interface: "):
                 slave_interface.append(line.split(":", 1)[1].strip())
 
-        data = {}
-        data["bond_mode"] = mode
-        data["partner_mac_address"] = partner_mac_address
-        data["slave_interface"] = slave_interface
-        return data
-
-    @property
-    def bond_mode(self):
+        self.bond_mode = mode
         """Returns the bond mode number as a string, or if there is no
         known mapping to a number, the raw "Bonding Mode" value.
         ``None`` is returned if no "Bonding Mode" key is found.
         """
-        return self.data["bond_mode"]
-
-    @property
-    def partner_mac_address(self):
+        self.partner_mac_address = partner_mac_address
         """Returns the value of the "Partner Mac Address" in the bond
         file if the key/value exists.  If the key is not in the bond
         file, ``None`` is returned.
         """
-        return self.data["partner_mac_address"]
-
-    @property
-    def slave_interface(self):
+        self.slave_interface = slave_interface
         """Returns all the slave interfaces of in the bond file wrapped
         a list if the key/value exists.  If the key is not in the
         bond file, ``[]`` is returned.
         """
-        return self.data["slave_interface"]
 
 
 @mapper('bond')
 def bondinfo(context):
     """Deprecated, use Bond instead."""
-    return LogFileOutput(context.content, path=context.path)
+    return LogFileOutput(context)

@@ -1,6 +1,6 @@
 import json
 from ..util import parse_keypair_lines
-from .. import MapperOutput, mapper, computed, parse_table, get_active_lines
+from .. import Mapper, mapper, parse_table, get_active_lines, LegacyItemAccess
 
 
 def map_keys(pvs, keys):
@@ -15,18 +15,18 @@ def replace_spaces_in_keys(header):
     return header
 
 
-class Lvm(MapperOutput):
-    @classmethod
-    def parse_content(cls, content):
+class Lvm(Mapper):
+
+    def parse_content(self, content):
         d = {}
         d["warnings"] = [l for l in content if l.strip().startswith("WARNING")]
         content = [l for l in content if l not in d["warnings"]]
         try:
-            d["content"] = list(map_keys(parse_keypair_lines(content), cls.KEYS))
+            d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         except:
             content[0] = replace_spaces_in_keys(content[0])
             d["content"] = parse_table(content)
-        return d if d else None
+        self.data = d if d else None
 
     def __iter__(self):
         return iter(self.data["content"])
@@ -40,11 +40,11 @@ class Lvm(MapperOutput):
         i = [i for i in self.data["content"] if i[self.PRIMARY_KEY] == key]
         return i[0] if len(i) > 0 else self.computed[key]
 
-    @computed
+    @property
     def locking_disabled(self):
         return len([l for l in self.data["warnings"] if "Locking disabled" in l]) > 0
 
-    @computed
+    @property
     def warnings(self):
         return self.data["warnings"]
 
@@ -303,17 +303,15 @@ class Lvs(Lvm):
 
     PRIMARY_KEY = "LV"
 
-    @classmethod
-    def parse_content(cls, content):
-        content = super(Lvs, cls).parse_content(content)
-        for item in content["content"]:
+    def parse_content(self, content):
+        super(Lvs, self).parse_content(content)
+        for item in self.data["content"]:
             lv_name = item["LV"]
             if "/" in lv_name:
                 # Reduce full name to just the name
                 # This is due to the lvs command having *two identical keys*
                 # with different values
                 item["LV"] = lv_name.split("/")[1]
-        return content
 
     def vg(self, name):
         """Return all logical volumes in the given volume group"""
@@ -333,10 +331,9 @@ LVM_CONF_FILTERS = [
 
 
 @mapper('lvm.conf', LVM_CONF_FILTERS)
-class LvmConf(MapperOutput):
+class LvmConf(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Returns a dict:
         locking_type : 1
@@ -351,7 +348,7 @@ class LvmConf(MapperOutput):
                     lvm_conf_dict[key] = json.loads(value)
                 except Exception:
                     lvm_conf_dict[key] = value
-        return lvm_conf_dict
+        self.data = lvm_conf_dict
 
 
 if __name__ == "__main__":

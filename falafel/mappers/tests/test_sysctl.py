@@ -13,8 +13,8 @@ c = include an = sign
 
 class TestSysctl(unittest.TestCase):
     def test_sysctl(self):
-        r = sysctl.runtime(context_wrap(SYSCTL_TEST))
-        self.assertTrue(keys_in(["a", "b", "c"], r))
-        self.assertEqual(r["a"], "1")
-        self.assertEqual(r["b"], "2")
-        self.assertEqual(r["c"], "include an = sign")
+        r = sysctl.Sysctl(context_wrap(SYSCTL_TEST))
+        self.assertTrue(keys_in(["a", "b", "c"], r.data))
+        self.assertEqual(r.data["a"], "1")
+        self.assertEqual(r.data["b"], "2")
+        self.assertEqual(r.data["c"], "include an = sign")

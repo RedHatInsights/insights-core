@@ -1,9 +1,9 @@
 from ..core import marshalling
-from .. import MapperOutput, mapper, computed
+from .. import Mapper, mapper
 
 
 def _metadata(context, product_filter=None):
-    if (not product_filter) or filter(lambda line: product_filter in line, context.content):
+    if product_filter is None or filter(lambda line: product_filter in line, context.content):
         try:
             md = marshalling.unmarshal("\n".join(context.content))
             product = md["product"]
@@ -34,7 +34,7 @@ def osp(context):
     return _metadata(context, MultinodeMetadata.OSP)
 
 
-class MultinodeMetadata(MapperOutput):
+class MultinodeMetadata(Mapper):
 
     RHEV = "RHEV"
     DOCKER = "Docker"
@@ -50,7 +50,7 @@ class MultinodeMetadata(MapperOutput):
         for f in self.fields:
             setattr(self, f, data.get(f))
 
-    @computed
+    @property
     def product(self):
         return self.data["product"]
 

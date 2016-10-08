@@ -15,7 +15,7 @@ def dmesg(context):
     """
     Returns an object of DmesgLineList
     """
-    return DmesgLineList(context.content, path=context.path)
+    return DmesgLineList(context)
 
 
 @mapper('vmcore-dmesg')
@@ -23,4 +23,4 @@ def vmcore_dmesg(context):
     """
     Returns an object of DmesgLineList
     """
-    return DmesgLineList(context.content, path=context.path)
+    return DmesgLineList(context)

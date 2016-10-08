@@ -1,7 +1,9 @@
+from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
 import logging
 import re
-from .. import MapperOutput, mapper, computed
+from .. import Mapper, mapper
+from falafel.core.context import Context
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +58,7 @@ rhel_release_map = {
 }
 
 release_to_kernel_map = {v: k for k, v in rhel_release_map.items()}
+RedhatRelease = namedtuple("RedhatRelease", ("major", "minor"))
 
 
 class UnameError(Exception):
@@ -86,7 +89,7 @@ class UnameError(Exception):
 
 
 @mapper('uname')
-class Uname(MapperOutput):
+class Uname(Mapper):
     """
     A utility class to parse uname content data and compare version and release
     information.
@@ -147,19 +150,17 @@ class Uname(MapperOutput):
 
     defaults = {k: None for k in keys}
 
-    def __init__(self, data, path=None):
-        if isinstance(data, basestring):
-            data = self.parse_content([data])
-        if not data['rhel_release']:
-            data['rhel_release'] = ['-1', '-1']
-        self.data = dict(self.defaults)
-        self.data.update(data)
-        super(Uname, self).__init__(data, path)
+    def __init__(self, context):
+        super(Uname, self).__init__(context)
+        if not self.data['rhel_release']:
+            self.data['rhel_release'] = ['-1', '-1']
+        data = dict(self.defaults)
+        data.update(self.data)
+        self.data = data
         for k, v in self.data.iteritems():
-            self._add_to_computed(k, v)
+            setattr(self, k, v)
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Parses uname content into individual uname components.
 
@@ -191,7 +192,7 @@ class Uname(MapperOutput):
             data['nodename'] = uname_parts[1]
         has_arch = "el" not in data['kernel'].split(".")[-1]
         try:
-            data = cls.parse_nvr(data['kernel'], data, arch=has_arch)
+            data = self.parse_nvr(data['kernel'], data, arch=has_arch)
         except UnameError as error:
             error.uname_line = uname_line
             raise error
@@ -213,15 +214,27 @@ class Uname(MapperOutput):
             data['machine'] = None
             data['kernel_date'] = None
             data['kernel_type'] = None
-        return data
+        self.data = data
 
     @classmethod
     def from_kernel(cls, kernel):
         logger.debug("from_kernel: %s", kernel)
         data = cls.parse_nvr(kernel, arch=False)
-        uname = cls(data)
-        uname.kernel = kernel
-        return uname
+        content = ["{name} {nodename} {kernel} {kernel_type} {kernel_date} {machine} {processor} {hw_platform} {os}".format(
+            name=data['name'],
+            nodename=data['nodename'],
+            kernel=kernel,
+            kernel_type=data['kernel_type'],
+            kernel_date=data['kernel_date'],
+            machine=data['machine'],
+            processor=data['processor'],
+            hw_platform=data['hw_platform'],
+            os=data['os'])]
+        return cls(Context(content=content, path=None))
+
+    @classmethod
+    def from_uname_str(cls, uname_str):
+        return cls(Context(content=[uname_str.strip()], path=None))
 
     @classmethod
     def from_release(cls, release):
@@ -329,7 +342,7 @@ class Uname(MapperOutput):
         if isinstance(other, Uname):
             other_uname = other
         else:
-            other_uname = Uname(other)
+            other_uname = Uname.from_uname_str(other)
 
         s_version, o_version = self._best_version(other_uname)
 
@@ -364,7 +377,7 @@ class Uname(MapperOutput):
         if isinstance(other, Uname):
             other_uname = other
         else:
-            other_uname = Uname(other)
+            other_uname = Uname.from_uname_str(other)
 
         s_version, o_version = self._best_version(other_uname)
 
@@ -404,7 +417,7 @@ class Uname(MapperOutput):
         if isinstance(other, Uname):
             other_uname = other
         else:
-            other_uname = Uname(other)
+            other_uname = Uname.from_uname_str(other)
 
         s_version, o_version = self._best_version(other_uname)
 
@@ -496,9 +509,13 @@ class Uname(MapperOutput):
         logger.debug("No matching fix stream found")
         return [fix.kernel for fix in fix_unames if self._less_than(fix)]
 
-    @computed
+    @property
     def release_tuple(self):
-        return tuple(map(int, self["rhel_release"]))
+        return tuple(map(int, self.data["rhel_release"]))
+
+    @property
+    def redhat_release(self):
+        return RedhatRelease(major=int(self.rhel_release[0]), minor=int(self.rhel_release[1]))
 
 
 def parse_uname(uname_line):
@@ -582,5 +599,4 @@ def uname(context):
     """
     return a Uname object from a uname string
     """
-    line = list(context.content)[0]
-    return Uname(line)
+    return Uname(context)
