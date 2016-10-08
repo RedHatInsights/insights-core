@@ -107,7 +107,9 @@ class SingleEvaluator(Evaluator):
 
     def pre_mapping(self):
         self.release = self._protected_parse("redhat-release", lambda c: c[0])
-        self.hostname = self._protected_parse("hostname", lambda c: c[0])
+        self.hostname = self._protected_parse("hostname", lambda c: c[0], default=None)
+        if self.hostname is None:
+            self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
         self.uname = self._protected_parse("uname", lambda c: Uname(c[0]), None)
 
     def _protected_parse(self, sym_name, parser, default=""):
