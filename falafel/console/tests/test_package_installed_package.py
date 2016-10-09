@@ -14,7 +14,7 @@ class TestInstalledPackage(unittest.TestCase):
         self.pkg = InstalledPackage(this_package)
 
     def test___init__(self):
-        self.assertIsInstance(self.pkg.package, Distribution)
+        self.assertIsInstance(self.pkg.dist, Distribution)
 
     def test_has_metapair(self):
         mp = MetaPattern('Name', NAME)
@@ -35,7 +35,7 @@ class TestInstalledPackage(unittest.TestCase):
     def test_all(self):
         packages = InstalledPackage.all()
 
-        _pkgs = [pkg for pkg in packages if pkg.package.project_name == NAME]
+        _pkgs = [pkg for pkg in packages if pkg.dist.project_name == NAME]
         self.assertEqual(len(_pkgs), 1)
 
     def test_by_metadata(self):

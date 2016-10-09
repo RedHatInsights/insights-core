@@ -44,7 +44,7 @@ class InstalledPackage(object):
     """
 
     def __init__(self, dist):
-        self.package = dist
+        self.dist = dist
 
     def has_metapair(self, meta_pattern):
         """
@@ -53,9 +53,9 @@ class InstalledPackage(object):
         """
         metapair_present = False
 
-        pkg_info = self.package.PKG_INFO
-        if self.package.has_metadata(pkg_info):
-            metadata = self.package.get_metadata(pkg_info)
+        pkg_info = self.dist.PKG_INFO
+        if self.dist.has_metadata(pkg_info):
+            metadata = self.dist.get_metadata(pkg_info)
             metapair_present = meta_pattern.present(metadata)
 
         return metapair_present
@@ -64,7 +64,7 @@ class InstalledPackage(object):
         """
         List loadable modules in the package
         """
-        location = self.package.location
+        location = self.dist.location
         modules_to_exclude = ["*.tests", "*.tests.*", "tests.*", "tests"]
 
         modules = find_packages(location, exclude=modules_to_exclude)
@@ -77,8 +77,8 @@ class InstalledPackage(object):
         Give all the installed python packages
         """
         packages = []
-        for pkg in pkg_resources.working_set:
-            installed_package = cls(pkg)
+        for dist in pkg_resources.working_set:
+            installed_package = cls(dist)
             packages.append(installed_package)
 
         return packages
@@ -90,7 +90,7 @@ class InstalledPackage(object):
         in their metadata
         """
         meta_pattern = MetaPattern(key, values)
-        all_packages = InstalledPackage.all()
+        all_packages = cls.all()
 
         packages = [pkg for pkg in all_packages if pkg.has_metapair(meta_pattern)]
         return packages
