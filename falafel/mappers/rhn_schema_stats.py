@@ -127,7 +127,7 @@ class DBStatsLog(Mapper):
     def parse_content(self, content):
         tables = []
         table = []
-        if content[0].strip().startswith("schema"):
+        if content and content[0].strip().startswith("schema"):
             # for PostgreSQL db stats log
             for line in get_active_lines(content, comment_char="--"):
                 if line.startswith("(") and "rows" in line:
