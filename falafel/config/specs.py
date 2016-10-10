@@ -33,9 +33,9 @@ static_specs = {
     "cpuinfo_max_freq"          : PatternSpec(r"sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"),
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
-    "df_-alP"                   : CommandSpec("/usr/bin/df -alP"),
-    "df_-al"                    : CommandSpec("/usr/bin/df -al"),
-    "df_-li"                    : CommandSpec("/usr/bin/df -li"),
+    "df_-alP"                   : CommandSpec("/bin/df -alP"),
+    "df_-al"                    : CommandSpec("/bin/df -al"),
+    "df_-li"                    : CommandSpec("/bin/df -li"),
     "dig"                       : CommandSpec("/usr/bin/dig +dnssec . DNSKEY"),
     "dirsrv"                    : SimpleFileSpec("etc/sysconfig/dirsrv"),
     "dmesg"                     : CommandSpec("/bin/dmesg", large_content=True),
@@ -75,7 +75,7 @@ static_specs = {
     "glance-registry.conf"      : SimpleFileSpec("etc/glance/glance-registry.conf"),
     "grub2.cfg"                 : SimpleFileSpec("boot/grub2/grub.cfg"),
     "grub.conf"                 : SimpleFileSpec("boot/grub/grub.conf"),
-    "grub_config_perms"         : CommandSpec("/usr/bin/ls -l /boot/grub2/grub.cfg"),  # only RHEL7 and updwards
+    "grub_config_perms"         : CommandSpec("/bin/ls -l /boot/grub2/grub.cfg"),  # only RHEL7 and updwards
     "grub1_config_perms"        : CommandSpec("/bin/ls -l /boot/grub/grub.conf"),  # RHEL6
     "haproxy_cfg"               : SimpleFileSpec("etc/haproxy/haproxy.cfg"),
     "heat.conf"                 : SimpleFileSpec("etc/heat/heat.conf"),
@@ -222,7 +222,7 @@ static_specs = {
     "sshd_config_perms"         : CommandSpec("/bin/ls -l /etc/ssh/sshd_config"),
     "sysctl"                    : CommandSpec("/sbin/sysctl -a"),
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),
-    "sysctl.conf_initramfs"     : CommandSpec("/usr/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
+    "sysctl.conf_initramfs"     : CommandSpec("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
     "systemctl_cinder-volume"   : CommandSpec("/bin/systemctl show openstack-cinder-volume"),
     "systemctl_list-unit-files" : CommandSpec("/bin/systemctl list-unit-files"),
     "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
