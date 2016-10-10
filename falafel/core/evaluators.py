@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 
-from falafel.core import archives, specs, marshalling, plugins, Mapper
+from falafel.core import archives, specs, marshalling, plugins
 from falafel.core.marshalling import Marshaller
 from falafel.core.plugins import validate_response
 from falafel.core.context import Context
@@ -49,10 +49,7 @@ class Evaluator(object):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
     def _execute_mapper(self, mapper, context):
-        if isinstance(mapper, type) and issubclass(mapper, Mapper):
-            return mapper.parse_context(context)
-        else:
-            return mapper(context)
+        return mapper(context)
 
     def run_metadata_mappers(self, the_meta_data):
         MD_JSON = "metadata.json"
