@@ -1,5 +1,5 @@
 from falafel.tests import context_wrap
-from falafel.mappers.satellite_version import get_sat_version
+from falafel.mappers.satellite_version import SatelliteVersion
 
 installed_rpms_5 = """
 satellite-branding-5.5.0.22-1.el6sat.noarch                 Wed May 18 14:50:17 2016
@@ -53,30 +53,36 @@ SDL-1.2.14-6.el6.x86_64                                     Wed May 18 14:16:25 
 
 
 def test_get_sat5_version():
-    result = get_sat_version(context_wrap(installed_rpms_5, path=''))
-    assert result == "5.6.0.10-1.el6sat.noarch"
+    result = SatelliteVersion(context_wrap(installed_rpms_5, path=''))
+    assert result.version_full == "5.6.0.10-1.el6sat.noarch"
+    assert result.version == "5.6.0"
 
 
 def test_get_sat6_version():
-    result = get_sat_version(context_wrap(satellite_version, path='satellite_version'))
-    assert result == "6.1.3"
+    result = SatelliteVersion(context_wrap(satellite_version, path='satellite_version'))
+    assert result.version_full is None
+    assert result.version == "6.1.3"
 
-    result = get_sat_version(context_wrap(installed_rpms_60, path=''))
-    assert result == "6.0.8"
+    result = SatelliteVersion(context_wrap(installed_rpms_60, path=''))
+    assert result.version_full is None
+    assert result.version == "6.0.8"
 
-    result = get_sat_version(context_wrap(installed_rpms_61, path=''))
-    assert result == "6.1.7"
+    result = SatelliteVersion(context_wrap(installed_rpms_61, path=''))
+    assert result.version_full is None
+    assert result.version == "6.1.7"
 
-    result = get_sat_version(context_wrap(installed_rpms_62, path='satellite'))
-    assert result == "6.2.0.11-1.el7sat.noarch"
+    result = SatelliteVersion(context_wrap(installed_rpms_62, path='satellite'))
+    assert result.version_full == "6.2.0.11-1.el7sat.noarch"
+    assert result.version == "6.2.0"
 
-    result = get_sat_version(context_wrap(installed_rpms_62_1, path='satellite'))
-    assert result == "6.2"
+    result = SatelliteVersion(context_wrap(installed_rpms_62_1, path='satellite'))
+    assert result.version_full is None
+    assert result.version == "6.2"
 
 
 def test_get_no_sat_version():
-    result = get_sat_version(context_wrap(no_sat, path='satellite_version'))
-    assert result is None
+    result = SatelliteVersion(context_wrap(no_sat, path='satellite_version'))
+    assert result.version is None
 
-    result = get_sat_version(context_wrap(satellite_version, path='satellite'))
-    assert result is None
+    result = SatelliteVersion(context_wrap(satellite_version, path='satellite'))
+    assert result.version is None

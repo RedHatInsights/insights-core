@@ -1,5 +1,4 @@
-import os
-from .. import mapper, get_active_lines
+from .. import mapper, Mapper, get_active_lines
 
 foreman_sat6_ver_map = {
     '1.5': '6.0',
@@ -13,18 +12,27 @@ foreman_sat6_ver_map = {
     '1.7.2.50': '6.1.6',
     '1.7.2.53': '6.1.7',
     '1.7.2.55': '6.1.8',
+    '1.7.2.56': '6.1.9',
     '1.11': '6.2',
 }
 
 
 @mapper('satellite_version.rb')
 @mapper('installed-rpms')
-def get_sat_version(context):
+class SatelliteVersion(Mapper):
     """
-    Return the full version of Satellite 5.x and 6.x:
+    Version of Satellite 5.x and 6.x:
     - E.g.
-      Satellite 5.x: "5.3.0.27-1.el5sat-noarch"
-      Satellite 6.x: "6.0", "6.1.3" or "6.2.0.11-1.el7sat.noarch"
+      Satellite 5.x:
+       version:      "5.3.0"
+       version_full: "5.3.0.27-1.el5sat-noarch"
+
+      Satellite 6.x:
+       version:      "6.2.0"
+       version_full: "6.2.0.11-1.el7sat.noarch"
+
+       version:      "6.1"
+       version_full: None
     ---
     For Satellite 6.x
     - https://access.redhat.com/articles/1343683
@@ -47,39 +55,43 @@ def get_sat_version(context):
       satellite-schema can also be used for checking the version, so here we use
       satellite-schema instead of satellite-branding
     """
-    # For satellite_version
-    if 'version' in os.path.basename(context.path).lower():
-        for line in context.content:
-            if line.strip().upper().startswith('VERSION'):
-                return line.split()[-1].strip('"')
-    # For installed-rpms
-    else:
-        sat5_pkg = ('satellite-schema-', 'rhn-satellite-schema-')
-        sat6_pkg = 'foreman-1'  # Add "-1" to check the `foreman` package only
-        # From Sat 6.2, we can also check `satellite-installer` instead of `foreman`
-        sat62_pkg = 'satellite-installer-'
-        sat_ver = None
-        for line in get_active_lines(context.content, comment_char="COMMAND>"):
-            # for 6.x
-            if line.startswith(sat6_pkg):
-                pkg_ver = line.split('-')[1]
-                sat_ver = foreman_sat6_ver_map.get(pkg_ver)
-                # for `1.5`, `1.7` and `1.11`
-                if sat_ver is None:
-                    tmp_ver = pkg_ver.split('.')
-                    pkg_ver = '.'.join(tmp_ver[:2])
-                    sat_ver = foreman_sat6_ver_map.get(pkg_ver)
-                # for 6.2, need to check `satellite-installer` further
-                if sat_ver != '6.2':
-                    return sat_ver
-            # for 6.2 (`satellite-installer` is installed)
-            elif line.startswith(sat62_pkg):
-                beg_idx = len(sat62_pkg)
-                # return the version of `satellite-installer` directly
-                return line.split()[0][beg_idx:]
-            # for 5.x
-            elif line.startswith(sat5_pkg):
-                # return the version of `[rhn-]satellite-schema` directly
-                pkg = line.split()[0]
-                return pkg[pkg.find('schema-') + 7:]
-        return sat_ver
+    def parse_content(self, content):
+        self.version_full = None
+        self.version = None
+        # Spec: satellite_version
+        if 'version' in self.file_path.lower():
+            for line in content:
+                if line.strip().upper().startswith('VERSION'):
+                    self.version = line.split()[-1].strip('"')
+                    break
+        # Spec: installed-rpms
+        else:
+            sat5_pkg = ('satellite-schema-', 'rhn-satellite-schema-')
+            sat6_pkg = ('foreman-1')  # Add "-1" to check the `foreman` package only
+            # From Sat 6.2, we can also check `satellite-installer` instead of `foreman`
+            sat62_pkg = ('satellite-installer-')
+            for line in get_active_lines(content, comment_char="COMMAND>"):
+                # for 6.x
+                if line.startswith(sat6_pkg):
+                    pkg_ver = line.split('-')[1]
+                    self.version = foreman_sat6_ver_map.get(pkg_ver)
+                    # for `1.5`, `1.7` and `1.11`
+                    if self.version is None:
+                        pkg_mj_ver = '.'.join(pkg_ver.split('.')[:2])
+                        self.version = foreman_sat6_ver_map.get(pkg_mj_ver)
+                    # for 6.2, need to check `satellite-installer` further
+                    if self.version != '6.2':
+                        break
+                # for 6.2 (if `satellite-installer` is installed)
+                elif line.startswith(sat62_pkg):
+                    # get the version of `satellite-installer`
+                    self.version_full = line.split()[0][len(sat62_pkg):]
+                    self.version = '.'.join(self.version_full.split('.')[:3])
+                    break
+                # for 5.x
+                elif line.startswith(sat5_pkg):
+                    # get the version of `[rhn-]satellite-schema`
+                    pkg = line.split()[0]
+                    self.version_full = pkg[pkg.find('schema-') + 7:]
+                    self.version = '.'.join(self.version_full.split('.')[:3])
+                    break
