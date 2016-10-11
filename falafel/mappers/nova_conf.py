@@ -1,5 +1,4 @@
-from .. import mapper
-from .. import IniConfigFile
+from .. import mapper, IniConfigFile
 
 @mapper("nova.conf")
 class NovaConf(IniConfigFile):
