@@ -174,9 +174,14 @@ class IniConfigFile(Mapper):
         key with spaces = value string
     """
 
-    def __init__(self, data, path=None):
+    def __init__(self, data, path=None, multikeys=[]):
         """
             Read the INI file and parse it now.
+
+            Normally, if a key occurs later in the same section its value will
+            replace the earlier value.  However, if this key is listed in the
+            'multikeys' list this will cause these values to be appended to a
+            list.  If multikeys is set to '*', all keys will do this.
         """
         #print "Got to INI file init: data:", data.content, "path:", path
         self.lines = data.content
@@ -193,8 +198,18 @@ class IniConfigFile(Mapper):
                 section_dict = {}
                 ini_data[line[1:].split(']',1)[0]] = section_dict
             elif '=' in line:
-                key, value = line.split("=", 1)
-                section_dict[key.strip()] = value.strip()
+                key, value = [s.strip() for s in line.split("=", 1)]
+                if key in section_dict and (
+                 key in multikeys or multikeys == '*'):
+                    # If we already have this key, and we want to keep
+                    # multiple values for this key, append or listify it.
+                    if isinstance(section_dict[key], list):
+                        section_dict[key].append(value)
+                    else:
+                        section_dict[key] = [section_dict[key], value]
+                else:
+                    # Otherwise overwrite the previous value
+                    section_dict[key] = value
         self.data = ini_data
 
         super(Mapper, self).__init__()
