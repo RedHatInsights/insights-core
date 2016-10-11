@@ -1,8 +1,8 @@
-from .. import Mapper, mapper, get_active_lines
+from .. import mapper, IniConfigFile
 
 
 @mapper("ceilometer.conf")
-class CeilometerConf(Mapper):
+class CeilometerConf(IniConfigFile):
     """
     a dict of ceilometer.conf
     Example:
@@ -15,16 +15,4 @@ class CeilometerConf(Mapper):
 
     }
     """
-
-    def parse_content(self, content):
-        ceilometer_dict = {}
-        section_dict = {}
-        for line in get_active_lines(content):
-            if line.startswith("["):
-                # new section beginning
-                section_dict = {}
-                ceilometer_dict[line[1:-1]] = section_dict
-            elif '=' in line:
-                key, value = line.split("=", 1)
-                section_dict[key.strip()] = value.strip()
-        self.data = ceilometer_dict
+    pass
