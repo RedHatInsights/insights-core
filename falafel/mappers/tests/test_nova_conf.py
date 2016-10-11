@@ -77,7 +77,7 @@ osp.role = "Compute"
 
 
 def test_nova_conf():
-    result = nova_conf.parse_nova_conf(context_wrap(nova_content, osp=osp))
+    result = nova_conf.NovaConf(context_wrap(nova_content, osp = osp))
     print result
     assert result.get("DEFAULT").get("notification_driver") == ""
     assert result.get("DEFAULT").get("report_interval") == "10"
