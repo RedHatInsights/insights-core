@@ -162,6 +162,73 @@ class LogFileOutput(Mapper):
         cls.scan(result_key, _scan)
 
 
+class IniConfigFile(Mapper):
+    """
+        A class specifically for reading configuration files in 'ini' format:
+
+        [section 1]
+        key = value
+        ; comment
+        # comment
+        [section 2]
+        key with spaces = value string
+    """
+
+    def __init__(self, data, path=None):
+        """
+            Read the INI file and parse it now.
+        """
+        #print "Got to INI file init: data:", data.content, "path:", path
+        self.lines = data.content
+
+        ini_data = {}
+        section_dict = {}
+        for line in data.content:
+            #print "INI file: line =", line
+            line = line.strip()
+            if line.startswith("#") or line.startswith(';') or line == "":
+                continue
+            if line.startswith("["):
+                # new section beginning
+                section_dict = {}
+                ini_data[line[1:].split(']',1)[0]] = section_dict
+            elif '=' in line:
+                key, value = line.split("=", 1)
+                section_dict[key.strip()] = value.strip()
+        self.data = ini_data
+
+        super(Mapper, self).__init__()
+
+    def get(self, section):
+        """
+            Look up the section by name, return the entire dict
+            (Should we throw a KeyError instead of returning None?)
+        """
+        if section not in self.data:
+            return None
+        return self.data[section]
+
+    def __contains__(self, section):
+        """
+            Does the INI file contain this *section*?
+        """
+        return section in self.data
+
+    def get_key(self, section, key):
+        """
+            Look up the given key in the given section, return the value
+            or None if the section or key were not found.
+            (Should we throw a KeyError instead of returning None?)
+        """
+        if section not in self.data:
+            return None
+        if key not in self.data[section]:
+            return None
+        return self.data[section][key]
+
+    def __repr__(self):
+        return "INI file - sections:[" + ', '.join(self.data.keys()) + "]"
+
 class ErrorCollector(object):
     errors = defaultdict(lambda: {
         "count": 0,
