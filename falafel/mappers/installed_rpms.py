@@ -286,6 +286,7 @@ class InstalledRpm(object):
 
     def __eq__(self, other):
         return (
+            type(self) == type(other) and
             self.name == other.name and
             LV(self.epoch) == LV(other.epoch) and
             LV(self.version) == LV(other.version) and
