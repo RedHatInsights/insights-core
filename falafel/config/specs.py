@@ -254,7 +254,7 @@ static_specs = {
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
-    "xfs_info"                  : All([
+    "xfs_info"                  : First([
                                     CommandSpec("/usr/sbin/xfs_info {mount}", mount=r'(?:/[\w-]*)+'),
                                     PatternSpec(r"sos_commands/xfs/xfs_info(_(?:\.[\w-]*)+)?"),
                                   ]),
