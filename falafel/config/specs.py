@@ -255,8 +255,8 @@ static_specs = {
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "xfs_info"                  : All([
-                                    CommandSpec("/usr/sbin/xfs_info {mount}", mount=r'(?:/\w*)+'),
-                                    PatternSpec(r"sos_commands/xfs/xfs_info(_(?:\.\w*)+)?"),
+                                    CommandSpec("/usr/sbin/xfs_info {mount}", mount=r'(?:/[\w-]*)+'),
+                                    PatternSpec(r"sos_commands/xfs/xfs_info(_(?:\.[\w-]*)+)?"),
                                   ]),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
     "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
