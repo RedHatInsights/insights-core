@@ -20,7 +20,7 @@ Secure.filters.extend([
 
 
 def test_secure():
-    msg_info = Secure.parse_context(context_wrap(MSGINFO))
+    msg_info = Secure(context_wrap(MSGINFO))
     ssh_list = msg_info.get('sshd')
     assert 5 == len(ssh_list)
     assert ssh_list[0].get('timestamp') == "Aug 25 13:52:54"

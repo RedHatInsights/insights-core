@@ -1,4 +1,4 @@
-from falafel.mappers.libvirtd_log import parse_libvirtd_log
+from falafel.mappers.libvirtd_log import LibVirtdLog
 from falafel.tests import context_wrap
 
 LIBVIRTD_LOG = """
@@ -24,7 +24,7 @@ LIBVIRTD_LOG = """
 
 
 def test_libvirtd_log():
-    log = parse_libvirtd_log(context_wrap(LIBVIRTD_LOG))
+    log = LibVirtdLog(context_wrap(LIBVIRTD_LOG))
     assert "Certificate check failed Certificate" in log
 
     assert log.get("authentication failed: Failed to verify peer's certificate") == ["2013-10-23 17:32:19.957+0000: 14069: error : virNetTLSContextCheckCertificate:1105 : authentication failed: Failed to verify peer's certificate"]

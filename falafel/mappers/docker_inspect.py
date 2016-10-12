@@ -1,5 +1,5 @@
-from falafel.core.plugins import mapper
-from falafel.core.marshalling import unmarshal
+from .. import mapper
+from ..core.marshalling import unmarshal
 
 """
 Parse the output of command "docker inspect --type=image" and "docker inspect

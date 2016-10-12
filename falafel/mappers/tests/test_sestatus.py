@@ -21,7 +21,7 @@ auditadm_exec_content                       on
 
 
 def test_sestatus():
-    sestatus_info = SEStatus.parse_context(context_wrap(SESTATUS))
+    sestatus_info = SEStatus(context_wrap(SESTATUS)).data
 
     assert sestatus_info['loaded_policy_name'] == 'targeted'
     assert sestatus_info['current_mode'] == 'enforcing'

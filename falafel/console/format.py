@@ -1,5 +1,9 @@
-from __future__ import print_function
+import logging
 from collections import defaultdict
+
+from falafel.console.custom_logging import print_console
+
+logger = logging.getLogger(__name__)
 
 
 class Formatter(object):
@@ -13,12 +17,17 @@ class Formatter(object):
         col_size = max(map(len, items))
         col_cnt = self.screen_width / col_size
         col_size = col_size + ((self.screen_width % col_size) / col_cnt)
-        for i, item in enumerate(sorted(items), 1):
-            print(item.ljust(col_size), end="" if i % col_cnt else "\n")
-        print("\n")
+
+        sorted_items = sorted(items)
+        chunk_iter = (sorted_items[i:i + col_cnt] for i in xrange(0, len(sorted_items), col_cnt))
+        for chunks in chunk_iter:
+            row = ''.join(item.ljust(col_size) for item in chunks)
+            print_console(row)
+
+        print_console("")
 
     def heading(self, text):
-        print("\n" + "  {0}  ".format(text).center(self.screen_width, "="))
+        print_console("\n" + "  {0}  ".format(text).center(self.screen_width, "="))
 
     def hanging_indent(self, line, indent_size, word_wrap=True):
         line = line.rstrip()
@@ -46,20 +55,20 @@ class Formatter(object):
         missing_fmt = "{}: {}"
         for symbolic_file, modules in d.iteritems():
             line = missing_fmt.format(symbolic_file.ljust(key_field_size), ", ".join(modules))
-            print(self.hanging_indent(line, key_field_size + 2))
+            print_console(self.hanging_indent(line, key_field_size + 2))
 
     def display_dict_of_strings(self, d):
         key_field_size = max(map(len, d.keys())) + 1
         missing_fmt = "{}: {}"
         for key, value in d.iteritems():
             line = missing_fmt.format(key.ljust(key_field_size), value)
-            print(self.hanging_indent(line, key_field_size + 2))
+            print_console(self.hanging_indent(line, key_field_size + 2))
 
     def display_results(self, results):
         result_count = 0
         for module, result in sorted(results.iteritems()):
             if result:
-                print(module + ":")
+                print_console(module + ":")
                 key_field_size = max(map(len, result.keys()))
                 for k, v in sorted(result.iteritems()):
                     if isinstance(v, list):
@@ -67,10 +76,10 @@ class Formatter(object):
                     elif isinstance(v, str):
                         v = '"{}"'.format(v)
                     line = "    {} : {}".format(k.ljust(key_field_size), v)
-                    print(self.hanging_indent(line, key_field_size + 7, word_wrap=False))
-                print("-" * self.screen_width)
+                    print_console(self.hanging_indent(line, key_field_size + 7, word_wrap=False))
+                print_console("-" * self.screen_width)
                 result_count = result_count + 1
-        print("Result count: {}".format(result_count))
+        print_console("Result count: {}".format(result_count))
 
     def display_system_data(self, system_data):
         d = {key: system_data[key] for key in system_data.keys() if key != "metadata"}
@@ -88,7 +97,7 @@ class Formatter(object):
                 for e in eligible.split(","):
                     missing[e.strip()].append(module)
         if not items:
-            print("No plugins executed")
+            print_console("No plugins executed")
             return
         if self.list_plugins:
             self.heading("Executed modules")
@@ -98,7 +107,7 @@ class Formatter(object):
                 self.heading("Missing files")
                 self.display_dict_of_lists(missing)
             else:
-                print("No files were missing")
+                print_console("No files were missing")
         self.heading("System Data")
         self.display_system_data(system)
         self.heading("Results")

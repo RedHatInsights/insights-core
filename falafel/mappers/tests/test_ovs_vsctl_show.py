@@ -75,7 +75,7 @@ e4d4f521-086d-4479-a88f-d531cd1646b8
 
 
 def test_ovs_vsctl_show():
-    ovs_ctl_cls = OVSvsctlshow.parse_context(context_wrap(ovs_vsctl_show_output))
+    ovs_ctl_cls = OVSvsctlshow(context_wrap(ovs_vsctl_show_output))
     assert ovs_ctl_cls.get_ovs_version() == "2.3.2"
     assert ovs_ctl_cls.get_bridge("br-int").get("fail_mode") == "secure"
     br_tun = ovs_ctl_cls.get_bridge("br-tun")

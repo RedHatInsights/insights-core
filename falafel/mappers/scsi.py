@@ -1,14 +1,13 @@
 from collections import deque
-from falafel.core import MapperOutput
-from falafel.core.plugins import mapper
-from falafel.mappers import ParseException
+from .. import Mapper, mapper
+from ..mappers import ParseException
 
 KEY_WORD_LINE_0 = ["Host", "Channel", "Id", "Lun"]
 KEY_WORD_LINE_1 = ["Vendor", "Model", "Rev"]
 KEY_WORD_LINE_2 = ["Type", "ANSI  SCSI revision"]
 
 
-class Device(MapperOutput):
+class Device(object):
     """
     A Device from /proc/scsi/scsi
     Sample fields:
@@ -37,15 +36,19 @@ class Device(MapperOutput):
         'lun'
     ]
 
-    def __init__(self, data, path=None):
-        super(Device, self).__init__(data, path)
+    def __init__(self, data):
         for k in Device.keys:
-            v = self.data.get(k)
-            self._add_to_computed(k, v)
+            setattr(self, k, data.get(k))
+
+    def __getitem__(self, item):
+        return self.__dict__[item]
+
+    def get(self, item, default=None):
+        return self.__dict__.get(item, default)
 
 
 @mapper('scsi')
-class SCSI(MapperOutput):
+class SCSI(Mapper):
     """
     Parses scsi info from /proc/scsi/scsi.
     Acts like an array that contains all info from scsi
@@ -59,8 +62,7 @@ class SCSI(MapperOutput):
     VENDOR_KEYS = ['Vendor', 'Model', 'Rev']
     TYPE_KEYS = ['Type', 'ANSI  SCSI revision']
 
-    @classmethod
-    def parse_content(cls, content, header='Attached devices:'):
+    def parse_content(self, content, header='Attached devices:'):
         devices = []
         if header:
             if content[0] != header:
@@ -69,8 +71,8 @@ class SCSI(MapperOutput):
             content = content[1:]
         lines = deque(filter(None, [line.strip() for line in content]))
         while lines:
-            devices.append(cls.parse_device(lines))
-        return devices
+            devices.append(self.parse_device(lines))
+        self.data = devices
 
     @classmethod
     def parse_device(cls, parts):
@@ -105,4 +107,4 @@ def get_scsi(context):
     """
     Backward compat function based mapper for SCSI
     """
-    return SCSI.parse_context(context)
+    return SCSI(context).data

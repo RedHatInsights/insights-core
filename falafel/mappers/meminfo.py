@@ -1,19 +1,15 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import Mapper, mapper, get_active_lines
 
 
-class SubMemInfo(MapperOutput):
+class SubMemInfo(object):
 
     sub_keys = []
 
-    def __init__(self, data, path=None):
+    def __init__(self, data):
         sub_dict = {sk: data.get(k) for k, sk in self.sub_keys}
         self.data = sub_dict
-        self.computed = {}
-        for k in sub_dict:
-            self._add_to_computed(k, sub_dict[k])
-        self.calc_computed_keys()
-        self.compute()
+        for k, v in sub_dict.iteritems():
+            setattr(self, k, v)
 
 
 class SwapMemInfo(SubMemInfo):
@@ -24,7 +20,7 @@ class SwapMemInfo(SubMemInfo):
         ("swapcached", "cached")
     ]
 
-    @computed
+    @property
     def used(self):
         try:
             return self.total - self.free - self.cached
@@ -69,11 +65,11 @@ class HugePageMemInfo(SubMemInfo):
         ("anonhugepages", "anon")
     ]
 
-    @computed
+    @property
     def using(self):
         return bool(self.total)
 
-    @computed
+    @property
     def using_transparent(self):
         return bool(self.anon)
 
@@ -113,7 +109,7 @@ class DirectMapMemInfo(SubMemInfo):
 
 
 @mapper("meminfo")
-class MemInfo(MapperOutput):
+class MemInfo(Mapper):
     """
     Meminfo field names are wildly inconsistent (imho).  This class attempts to
     bring a bit of order to the chaos.  All values are in bytes.
@@ -148,39 +144,36 @@ class MemInfo(MapperOutput):
         ("hardwarecorrupted", "corrupted"),
     ]
 
-    def __init__(self, data, path=None):
-        super(MemInfo, self).__init__(data, path)
+    def __init__(self, context):
+        super(MemInfo, self).__init__(context)
         sub_classes = {
-            "anon": AnonMemInfo(data),
-            "file": FileMemInfo(data),
-            "swap": SwapMemInfo(data),
-            "slab": SlabMemInfo(data),
-            "huge_pages": HugePageMemInfo(data),
-            "commit": CommitMemInfo(data),
-            "vmalloc": VmallocMemInfo(data),
-            "cma": CmaMemInfo(data),
-            "direct_map": DirectMapMemInfo(data)
+            "anon": AnonMemInfo(self.data),
+            "file": FileMemInfo(self.data),
+            "swap": SwapMemInfo(self.data),
+            "slab": SlabMemInfo(self.data),
+            "huge_pages": HugePageMemInfo(self.data),
+            "commit": CommitMemInfo(self.data),
+            "vmalloc": VmallocMemInfo(self.data),
+            "cma": CmaMemInfo(self.data),
+            "direct_map": DirectMapMemInfo(self.data)
         }
         for name, cls in sub_classes.iteritems():
-            self._add_to_computed(name, cls)
+            setattr(self, name, cls)
         for meminfo_key, k in self.mem_keys:
-            self._add_to_computed(k, self.data.get(meminfo_key))
+            setattr(self, k, self.data.get(meminfo_key))
 
-    @classmethod
-    def parse_content(cls, content):
-        mem_info = {}
-        for line in content:
-            if line.strip():
-                (key, value) = line.split(':', 1)
-                # Store values as byte count
-                key = key.strip().lower()
-                if key in MemInfo.VALUE_IN_BYTES:
-                    mem_info[key.strip().lower()] = int(value.split()[0])
-                else:
-                    mem_info[key.strip().lower()] = int(value.split()[0]) * 1024
-        return mem_info
+    def parse_content(self, content):
+        self.data = {}
+        for line in get_active_lines(content, comment_char="COMMAND>"):
+            (key, value) = line.split(':', 1)
+            # Store values as byte count
+            key = key.strip().lower()
+            if key in MemInfo.VALUE_IN_BYTES:
+                self.data[key.strip().lower()] = int(value.split()[0])
+            else:
+                self.data[key.strip().lower()] = int(value.split()[0]) * 1024
 
-    @computed
+    @property
     def used(self):
         try:
             return self.total - self.free

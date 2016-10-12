@@ -1,9 +1,8 @@
-from falafel.core.plugins import mapper
-from falafel.core import LogFileOutput
+from .. import LogFileOutput, mapper
 
 
 @mapper('vdsm.log')
-def parse_vdsm_log(context):
+class VDSMLog(LogFileOutput):
     """
     ----------------- Output sample of command lspci --------------------------
     00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
@@ -11,6 +10,5 @@ def parse_vdsm_log(context):
     03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
     0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
     ----------------- Output sample of command lspci --------------------------
-
     """
-    return LogFileOutput(context.content, path=context.path)
+    pass

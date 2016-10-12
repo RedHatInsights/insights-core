@@ -1,4 +1,4 @@
-from falafel.mappers.postgresql_log import postgresql_log
+from falafel.mappers.postgresql_log import PostgreSQLLog
 from falafel.tests import context_wrap
 
 POSTGRESQL_LOG = """
@@ -18,5 +18,5 @@ LOG:  autovacuum launcher started
 
 
 def test_postgresql_log():
-    log = postgresql_log(context_wrap(POSTGRESQL_LOG))
+    log = PostgreSQLLog(context_wrap(POSTGRESQL_LOG))
     assert "FATAL:  terminating connection" in log

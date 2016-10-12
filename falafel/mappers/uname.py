@@ -1,9 +1,9 @@
-from falafel.core.plugins import mapper
-
-from falafel.core import MapperOutput, computed
+from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
 import logging
 import re
+from .. import Mapper, mapper
+from falafel.core.context import Context
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,7 @@ rhel_release_map = {
 }
 
 release_to_kernel_map = {v: k for k, v in rhel_release_map.items()}
+RedhatRelease = namedtuple("RedhatRelease", ("major", "minor"))
 
 
 class UnameError(Exception):
@@ -88,7 +89,7 @@ class UnameError(Exception):
 
 
 @mapper('uname')
-class Uname(MapperOutput):
+class Uname(Mapper):
     """
     A utility class to parse uname content data and compare version and release
     information.
@@ -105,7 +106,7 @@ class Uname(MapperOutput):
     - `nodename`: Hostname of the computer where the uname command was
       executed.  This information may obfusicated for security.
     - `version`: The major identification number for the kernel release. It
-      be in the format ``#.#.#`` or UnameError exception will be raised.
+      be in the format ``#.#.#[.#]`` or UnameError exception will be raised.
     - `release`: The minor identification number for the kernel release. This
       information is generally in the format #.#.#.el#, however this is not
       strictly enforced.  If the release.arch informatoin cannot be reliably
@@ -143,24 +144,23 @@ class Uname(MapperOutput):
         'rhel_release',
         '_lv_release',
         '_rel_maj',
-        '_sv_version'
+        '_sv_version',
+        '_lv_version'
     ]
 
     defaults = {k: None for k in keys}
 
-    def __init__(self, data, path=None):
-        if isinstance(data, basestring):
-            data = self.parse_content([data])
-        if not data['rhel_release']:
-            data['rhel_release'] = ['-1', '-1']
-        self.data = dict(self.defaults)
-        self.data.update(data)
-        super(Uname, self).__init__(data, path)
+    def __init__(self, context):
+        super(Uname, self).__init__(context)
+        if not self.data['rhel_release']:
+            self.data['rhel_release'] = ['-1', '-1']
+        data = dict(self.defaults)
+        data.update(self.data)
+        self.data = data
         for k, v in self.data.iteritems():
-            self._add_to_computed(k, v)
+            setattr(self, k, v)
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Parses uname content into individual uname components.
 
@@ -192,7 +192,7 @@ class Uname(MapperOutput):
             data['nodename'] = uname_parts[1]
         has_arch = "el" not in data['kernel'].split(".")[-1]
         try:
-            data = cls.parse_nvr(data['kernel'], data, arch=has_arch)
+            data = self.parse_nvr(data['kernel'], data, arch=has_arch)
         except UnameError as error:
             error.uname_line = uname_line
             raise error
@@ -214,15 +214,27 @@ class Uname(MapperOutput):
             data['machine'] = None
             data['kernel_date'] = None
             data['kernel_type'] = None
-        return data
+        self.data = data
 
     @classmethod
     def from_kernel(cls, kernel):
         logger.debug("from_kernel: %s", kernel)
         data = cls.parse_nvr(kernel, arch=False)
-        uname = cls(data)
-        uname.kernel = kernel
-        return uname
+        content = ["{name} {nodename} {kernel} {kernel_type} {kernel_date} {machine} {processor} {hw_platform} {os}".format(
+            name=data['name'],
+            nodename=data['nodename'],
+            kernel=kernel,
+            kernel_type=data['kernel_type'],
+            kernel_date=data['kernel_date'],
+            machine=data['machine'],
+            processor=data['processor'],
+            hw_platform=data['hw_platform'],
+            os=data['os'])]
+        return cls(Context(content=content, path=None))
+
+    @classmethod
+    def from_uname_str(cls, uname_str):
+        return cls(Context(content=[uname_str.strip()], path=None))
 
     @classmethod
     def from_release(cls, release):
@@ -265,7 +277,12 @@ class Uname(MapperOutput):
         rhel_key = "-".join([data['version'], data['_rel_maj']])
         rhel_release = rhel_release_map.get(rhel_key, '-1.-1')
         data['rhel_release'] = rhel_release.split('.')
-        data['_sv_version'] = StrictVersion(data['version'])
+        try:
+            data['_sv_version'] = StrictVersion(data['version'])
+        except ValueError:
+            logger.debug("ValueError converting version to StrictVersion(%s)", data['version'])
+            data['_sv_version'] = None
+        data['_lv_version'] = LooseVersion(data['version'])
         try:
             data['_lv_release'] = LooseVersion(pad_release(data['release']))
         except ValueError:
@@ -273,6 +290,13 @@ class Uname(MapperOutput):
             data['_lv_release'] = None
         data['ver_rel'] = '%s-%s' % (data['version'], data['release'])
         return data
+
+    def _best_version(self, other):
+        """ Determine whether to use _sv_version or _lv_version. """
+        if self._sv_version and other._sv_version:
+            return self._sv_version, other._sv_version
+        else:
+            return self._lv_version, other._lv_version
 
     def __str__(self):
         return "version: %s; release: %s; rel_maj: %s; lv_release: %s" % (
@@ -318,9 +342,11 @@ class Uname(MapperOutput):
         if isinstance(other, Uname):
             other_uname = other
         else:
-            other_uname = Uname(other)
+            other_uname = Uname.from_uname_str(other)
 
-        if self._sv_version == other_uname._sv_version:
+        s_version, o_version = self._best_version(other_uname)
+
+        if s_version == o_version:
             if self._lv_release and other_uname._lv_release:
                 ret = self._lv_release == other_uname._lv_release
             else:
@@ -328,8 +354,8 @@ class Uname(MapperOutput):
                 raise UnameError("Release information not present for comparison",
                                  "self({}), other({})".format(self.kernel, other_uname.kernel))
         else:
-            ret = self._sv_version == other_uname._sv_version
-            logger.debug("comparison based on version: %s == %s ? %s", self._sv_version, other_uname._sv_version, ret)
+            ret = s_version == o_version
+            logger.debug("comparison based on version: %s == %s ? %s", s_version, o_version, ret)
         return ret
 
     def __ne__(self, other):
@@ -351,9 +377,11 @@ class Uname(MapperOutput):
         if isinstance(other, Uname):
             other_uname = other
         else:
-            other_uname = Uname(other)
+            other_uname = Uname.from_uname_str(other)
 
-        if self._sv_version == other_uname._sv_version:
+        s_version, o_version = self._best_version(other_uname)
+
+        if s_version == o_version:
             if self._lv_release and other_uname._lv_release:
                 ret = self._lv_release < other_uname._lv_release
             else:
@@ -361,8 +389,8 @@ class Uname(MapperOutput):
                 raise UnameError("Release information not present for comparison",
                                  "self{}), other({})".format(self.kernel, other_uname.kernel))
         else:
-            ret = self._sv_version < other_uname._sv_version
-            logger.debug("comparison based on version: %s < %s ? %s", self._sv_version, other_uname._sv_version, ret)
+            ret = s_version < o_version
+            logger.debug("comparison based on version: %s < %s ? %s", s_version, o_version, ret)
         return ret
 
     def __le__(self, other):
@@ -389,9 +417,11 @@ class Uname(MapperOutput):
         if isinstance(other, Uname):
             other_uname = other
         else:
-            other_uname = Uname(other)
+            other_uname = Uname.from_uname_str(other)
 
-        if self._sv_version == other_uname._sv_version:
+        s_version, o_version = self._best_version(other_uname)
+
+        if s_version == o_version:
             if self._lv_release and other_uname._lv_release:
                 ret = self._lv_release > other_uname._lv_release
             else:
@@ -399,8 +429,8 @@ class Uname(MapperOutput):
                 raise UnameError("Release information not present for comparison",
                                  "self{}), other({})".format(self.kernel, other_uname.kernel))
         else:
-            ret = self._sv_version > other_uname._sv_version
-            logger.debug("comparison based on version: %s > %s ? %s", self._sv_version, other_uname._sv_version, ret)
+            ret = s_version > o_version
+            logger.debug("comparison based on version: %s > %s ? %s", s_version, o_version, ret)
         return ret
 
     def __ge__(self, other):
@@ -426,15 +456,17 @@ class Uname(MapperOutput):
         Since this behavior is not optimal for the the '<' comparison operator (raising an Error would
         probably be better) we'll keep it internal to the class.
         """
-        if self._sv_version == other._sv_version:
+        s_version, o_version = self._best_version(other)
+
+        if s_version == o_version:
             if self._lv_release and other._lv_release:
                 ret = self._lv_release < other._lv_release
             else:
                 ret = False
             logger.debug("%s < %s ? %s", self._lv_release, other._lv_release, ret)
         else:
-            ret = self._sv_version < other._sv_version
-            logger.debug("%s < %s ? %s", self._sv_version, other._sv_version, ret)
+            ret = s_version < o_version
+            logger.debug("%s < %s ? %s", s_version, o_version, ret)
         return ret
 
     def fixed_by(self, *fixes, **kwargs):
@@ -477,9 +509,13 @@ class Uname(MapperOutput):
         logger.debug("No matching fix stream found")
         return [fix.kernel for fix in fix_unames if self._less_than(fix)]
 
-    @computed
+    @property
     def release_tuple(self):
-        return tuple(map(int, self["rhel_release"]))
+        return tuple(map(int, self.data["rhel_release"]))
+
+    @property
+    def redhat_release(self):
+        return RedhatRelease(major=int(self.rhel_release[0]), minor=int(self.rhel_release[1]))
 
 
 def parse_uname(uname_line):
@@ -563,5 +599,4 @@ def uname(context):
     """
     return a Uname object from a uname string
     """
-    line = list(context.content)[0]
-    return Uname(line)
+    return Uname(context)

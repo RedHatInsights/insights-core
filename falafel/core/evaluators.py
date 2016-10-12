@@ -1,7 +1,7 @@
 import json
 from collections import defaultdict
 
-from falafel.core import archives, specs, marshalling, plugins, MapperOutput
+from falafel.core import archives, specs, marshalling, plugins
 from falafel.core.marshalling import Marshaller
 from falafel.core.plugins import validate_response
 from falafel.core.context import Context
@@ -49,16 +49,15 @@ class Evaluator(object):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
     def _execute_mapper(self, mapper, context):
-        if isinstance(mapper, type) and issubclass(mapper, MapperOutput):
-            return mapper.parse_context(context)
-        else:
-            return mapper(context)
+        return mapper(context)
 
     def run_metadata_mappers(self, the_meta_data):
         MD_JSON = "metadata.json"
         result_map = {}
         for plugin in plugins.get_mappers(MD_JSON):
-            context = self.build_context(content=marshalling.marshal(the_meta_data), path=MD_JSON)
+            context = self.build_context(content=marshalling.marshal(the_meta_data),
+                                         path=MD_JSON,
+                                         target=MD_JSON)
             try:
                 result = self._execute_mapper(plugin, context)
                 if result:
@@ -83,6 +82,7 @@ class Evaluator(object):
         self.pre_mapping()
         self.run_mappers()
         self.run_reducers()
+        self.post_process()
         return self.get_response()
 
     def post_process(self):
@@ -104,7 +104,9 @@ class SingleEvaluator(Evaluator):
 
     def pre_mapping(self):
         self.release = self._protected_parse("redhat-release", lambda c: c[0])
-        self.hostname = self._protected_parse("hostname", lambda c: c[0])
+        self.hostname = self._protected_parse("hostname", lambda c: c[0], default=None)
+        if self.hostname is None:
+            self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
         self.uname = self._protected_parse("uname", lambda c: Uname(c[0]), None)
 
     def _protected_parse(self, sym_name, parser, default=""):
@@ -129,7 +131,9 @@ class SingleEvaluator(Evaluator):
                 if len(content) == 1 and content[0] == "Command not found":
                     continue
                 for plugin in plugins.get_mappers(symbolic_name):
-                    context = self.build_context(content=content, path=f)
+                    context = self.build_context(content=content,
+                                                 path=f,
+                                                 target=symbolic_name)
                     try:
                         self.add_result(self._execute_mapper(plugin, context),
                                         symbolic_name, plugin)

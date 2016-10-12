@@ -135,7 +135,7 @@ enable_security_group = True
 
 
 def test_neutron_ini():
-    result = NeutronPlugin.parse_context(context_wrap(neutron_plugin_content))
+    result = NeutronPlugin(context_wrap(neutron_plugin_content))
     assert result.get("ml2_type_flat").get("flat_networks") == "*"
     assert result.get("securitygroup").get("enable_security_group") == "True"
     assert result.get("ml2_type_gre").get("tunnel_id_ranges") == "20:100"

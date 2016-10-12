@@ -51,7 +51,21 @@ unused devices: <none>
 
 MDSTAT_RESULT_3 = {"personalities": ["linear", "raid0", "raid1"], "components": []}
 
+MDSTAT_TEST_4 = """
+Personalities : [linear] [raid0] [raid1]
+md0 : inactive sdb[1](S) sda[0](S)
+      6306 blocks super external:imsm<Paste>
+
+unused devices: <none>
+""".strip()
+
+MDSTAT_RESULT_4 = {"personalities": ["linear", "raid0", "raid1"], "components": [
+    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 1, 'active': False, 'auto_read_only': False, 'component_name': 'sdb'},
+    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 0, 'active': False, 'auto_read_only': False, 'component_name': 'sda'}
+]}
+
 PERSONALITIES_TEST = "Personalities : [linear] [raid0] [raid1] [raid5] [raid4] [raid6]\n"
+
 PERSONALITIES_FAIL = [
     "Some stupid line.",
     "Personalities [raid1]",
@@ -135,19 +149,15 @@ class TestMdstat(unittest.TestCase):
         with self.assertRaises(AssertionError):
             mdstat.apply_upstring('U_U', test_dict)
 
-    def test_parse_content(self):
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_1.splitlines())
-        self.assertEqual(MDSTAT_RESULT_1, result)
-
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_2.splitlines())
-        self.assertEqual(MDSTAT_RESULT_2, result)
-
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_3.splitlines())
-        self.assertEqual(MDSTAT_RESULT_3, result)
-
     def test_mdstat_construction(self):
-        mdstat_obj = mdstat.Mdstat.parse_context(context_wrap(MDSTAT_TEST_1))
+        mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_1))
         self.assertEqual(MDSTAT_RESULT_1, mdstat_obj.data)
 
-        mdstat_obj = mdstat.Mdstat.parse_context(context_wrap(MDSTAT_TEST_3))
+        result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_2))
+        self.assertEqual(MDSTAT_RESULT_2, result.data)
+
+        mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_3))
         self.assertEqual(MDSTAT_RESULT_3, mdstat_obj.data)
+
+        result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_4))
+        self.assertEqual(MDSTAT_RESULT_4, result.data)

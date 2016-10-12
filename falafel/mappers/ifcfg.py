@@ -1,7 +1,5 @@
-from falafel.mappers import get_active_lines
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
 import json
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 JSON_FIELDS = ["TEAM_CONFIG", "TEAM_PORT_CONFIG"]
 
@@ -19,7 +17,7 @@ bond_mode_map = {
 
 
 @mapper("ifcfg")
-class IfCFG(MapperOutput):
+class IfCFG(LegacyItemAccess, Mapper):
     """
     Parse `ifcfg-` file,return a dict contain ifcfg config file info.
     "iface" key is interface name parse from file name
@@ -27,13 +25,12 @@ class IfCFG(MapperOutput):
     `BONDING_OPTS` also will return a dict
     """
 
-    def __init__(self, data, path):
-        data["iface"] = path.rsplit("-", 1)[1]
-        super(IfCFG, self).__init__(data, path)
+    def __init__(self, context):
+        super(IfCFG, self).__init__(context)
+        self.data["iface"] = context.path.rsplit("-", 1)[1]
 
-    @staticmethod
-    def parse_content(content):
-        data = {}
+    def parse_content(self, content):
+        self.data = {}
         for line in get_active_lines(content):
             key, _, value = line.partition("=")
             key = key.strip().strip(QUOTES)
@@ -41,7 +38,7 @@ class IfCFG(MapperOutput):
             # In some cases we want to know what the actual value-side
             # of the key is
             if key == "BONDING_OPTS":
-                data["raw_bonding_value"] = value
+                self.data["raw_bonding_value"] = value
 
             value = value.strip().strip(QUOTES)
             if key in JSON_FIELDS:
@@ -52,14 +49,13 @@ class IfCFG(MapperOutput):
                     sub_key, _, sub_value = key_value_pair.partition("=")
                     value_map[sub_key.strip()] = sub_value.strip()
                 value = value_map
-            data[key] = value
-        return data
+            self.data[key] = value
 
-    @computed
+    @property
     def ifname(self):
         return self.data.get('iface')
 
-    @computed
+    @property
     def bonding_mode(self):
         """
         Returns the numeric value of bonding mode.

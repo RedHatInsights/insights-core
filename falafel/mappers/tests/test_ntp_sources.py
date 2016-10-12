@@ -19,14 +19,14 @@ ntpd_output = """
 
 
 def test_get_chrony_sources():
-    mapper_result = ChronycSources.parse_context(context_wrap(chrony_output))
+    mapper_result = ChronycSources(context_wrap(chrony_output))
     assert mapper_result.data[1].get("source") == "a.b.c"
     assert mapper_result.data[2].get("state") == "+"
     assert mapper_result.data[2].get("mode") == "^"
 
 
 def test_get_ntpd_sources():
-    mapper_result = NtpqPn.parse_context(context_wrap(ntpd_output))
+    mapper_result = NtpqPn(context_wrap(ntpd_output))
     assert mapper_result.data[0].get("source") == "ntp103.cm4.tbsi"
     assert mapper_result.data[1].get("flag") == "+"
     assert mapper_result.data[1].get("source") == "ntp104.cm4.tbsi"

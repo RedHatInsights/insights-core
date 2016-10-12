@@ -1,6 +1,5 @@
-from falafel.core.plugins import mapper
-from falafel.mappers import get_active_lines
 import os
+from .. import mapper, get_active_lines
 
 
 def parse_line(string):

@@ -21,7 +21,7 @@ PLUGINPATH = 'etc/yum/plugincon.d/rhnplugin.conf'
 
 
 def test_pluginconf_d():
-    plugin_info = PluginConfD.parse_context(context_wrap(PLUGIN, path=PLUGINPATH))
+    plugin_info = PluginConfD(context_wrap(PLUGIN, path=PLUGINPATH))
 
     assert plugin_info.data['main'] == {'enabled': '0',
                                         'gpgcheck': '1',

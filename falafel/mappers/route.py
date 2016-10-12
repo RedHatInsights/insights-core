@@ -1,5 +1,4 @@
-from falafel.util import parse_table
-from falafel.core.plugins import mapper
+from .. import mapper, parse_table
 
 
 @mapper('route')

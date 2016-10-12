@@ -1,5 +1,4 @@
-from falafel.mappers.netstat import get_netstat_s, Netstat
-from falafel.mappers.netstat import get_netstat_agn
+from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN
 from falafel.tests import context_wrap
 from falafel.mappers import netstat
 
@@ -111,8 +110,6 @@ Ip:
 class TestNetstats():
     def test_get_netstat_s(self):
         info = get_netstat_s(context_wrap(NETSTAT_S))
-        # print json.dumps(context_wrap(NETSTAT_S).content, indent=4)
-        # print json.dumps(info, indent=4)
 
         assert info['ip'] == {'total_packets_received': '3405107',
                               'forwarded': '0',
@@ -230,7 +227,7 @@ eth0            1      ff01::1
 
 
 def test_get_netstat_agn():
-    result = get_netstat_agn(context_wrap(TEST_NETSTAT_AGN)).groupByIface()
+    result = NetstatAGN(context_wrap(TEST_NETSTAT_AGN)).group_by_iface()
     assert len(result) == 2
     assert len(result["lo"]) == 2
     assert len(result["eth0"]) == 3
@@ -284,27 +281,27 @@ tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      
 
 
 def test_get_netstat():
-    ns = Netstat.parse_context(context_wrap(NETSTAT))
+    ns = Netstat(context_wrap(NETSTAT))
     assert len(ns.data) == 2
     assert "1279/qpidd" in [x.strip() for x in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']]
     assert "738/NetworkManager" in [x.strip() for x in ns.data[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS]['PID/Program name']]
 
 
 def test_listening_pid():
-    ns = Netstat.parse_context(context_wrap(NETSTAT))
+    ns = Netstat(context_wrap(NETSTAT))
     assert len(ns.data) == 2
     assert ns.listening_pid['12387'] == {'addr': '127.0.0.1', 'name': 'Passenger Rac', 'port': '53644'}
     assert ns.listening_pid['1272'] == {'addr': '0.0.0.0', 'name': 'qdrouterd', 'port': '5646'}
 
 
 def test_get_original_line():
-    ns = Netstat.parse_context(context_wrap(NETSTAT))
+    ns = Netstat(context_wrap(NETSTAT))
     assert len(ns.data) == 2
     assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 1)
     assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 2)
 
 
 def test_is_httpd_running():
-    assert "httpd" in Netstat.parse_context(context_wrap(NETSTAT_MATCH1)).running_processes
-    assert "httpd" not in Netstat.parse_context(context_wrap(NETSTAT_NOMATCH1)).running_processes
-    assert "httpd" not in Netstat.parse_context(context_wrap(NETSTAT_NOMATCH2)).running_processes
+    assert "httpd" in Netstat(context_wrap(NETSTAT_MATCH1)).running_processes
+    assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH1)).running_processes
+    assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes

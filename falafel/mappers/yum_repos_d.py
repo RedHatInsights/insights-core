@@ -1,13 +1,13 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.mappers import get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('yum.repos.d')
-class YumReposD(MapperOutput):
+class YumReposD(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def get(self, key):
+        return self.data.get(key)
+
+    def parse_content(self, content):
         '''
         Return an object contains a dict.
         {
@@ -49,4 +49,4 @@ class YumReposD(MapperOutput):
             else:
                 if key and isinstance(section_dict[key], list):
                     section_dict[key].append(line)
-        return repos_dict
+        self.data = repos_dict

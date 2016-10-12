@@ -1,9 +1,5 @@
-import logging
 from falafel.contrib import pyparsing as p
-from falafel.core.plugins import mapper
-
-logging.basicConfig()
-logger = logging.getLogger(__name__)
+from .. import mapper
 
 
 def create_parser():

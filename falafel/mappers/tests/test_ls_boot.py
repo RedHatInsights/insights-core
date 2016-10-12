@@ -18,7 +18,7 @@ lrwxrwxrwx. 1 0 0     11 Aug  4  2014 menu.lst -> ./grub.conf
 
 
 def test_ls_boot():
-    ls_boot = LsBoot.parse_context(context_wrap(LS_BOOT))
+    ls_boot = LsBoot(context_wrap(LS_BOOT))
     assert ls_boot.data[0] == "config-3.10.0-229.14.1.el7.x86_64"
     assert ls_boot.data[1] == "menu.lst"
     assert len(ls_boot.data) == 3

@@ -1,10 +1,12 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import Mapper, mapper
 
 LOG_COLUMN = ('stat', 'proc', 'time', 'log')
 
 
-class LogLineList(MapperOutput):
+class LogLineList(Mapper):
+
+    def parse_content(self, content):
+        self.data = content
 
     def __contains__(self, s):
         """
@@ -28,7 +30,7 @@ class LogLineList(MapperOutput):
                 r.append(msg_info)
         return r
 
-    @computed
+    @property
     def last(self):
         """
         Returns the last complete log line
@@ -72,4 +74,4 @@ def taskomatic_daemon_log(context):
     -----------
 
     """
-    return LogLineList(context.content)
+    return LogLineList(context)

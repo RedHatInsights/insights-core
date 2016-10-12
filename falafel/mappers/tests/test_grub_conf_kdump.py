@@ -117,12 +117,13 @@ title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
 class TestGrubConfKdump(unittest.TestCase):
 
     def test_check_offset(self):
-        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_1)).crash_kernel_offset is None
-        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_2)).crash_kernel_offset is None
-        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_3)).crash_kernel_offset is None
-        assert GrubConfig.parse_context(context_wrap(GOOD_OFFSET_4)).crash_kernel_offset is None
-        assert GrubConfig.parse_context(context_wrap(BAD_DEFAULT_1)).crash_kernel_offset is None
-        assert "128M@16M" == GrubConfig.parse_context(context_wrap(BAD_OFFSET)).crash_kernel_offset
+        print GrubConfig(context_wrap(GOOD_OFFSET_1)).crash_kernel_offset
+        assert GrubConfig(context_wrap(GOOD_OFFSET_1)).crash_kernel_offset is None
+        assert GrubConfig(context_wrap(GOOD_OFFSET_2)).crash_kernel_offset is None
+        assert GrubConfig(context_wrap(GOOD_OFFSET_3)).crash_kernel_offset is None
+        assert GrubConfig(context_wrap(GOOD_OFFSET_4)).crash_kernel_offset is None
+        assert GrubConfig(context_wrap(BAD_DEFAULT_1)).crash_kernel_offset is None
+        assert "128M@16M" == GrubConfig(context_wrap(BAD_OFFSET)).crash_kernel_offset
 
     def test_nonetype_group(self):
         """
@@ -130,10 +131,10 @@ class TestGrubConfKdump(unittest.TestCase):
 
         See https://projects.engineering.redhat.com/browse/CEECBA-1239
         """
-        assert GrubConfig.parse_context(context_wrap(NOMATCH_CRASH_PARAM)).crash_kernel_offset is None
-        assert GrubConfig.parse_context(context_wrap(NOMATCH_MEMORY)).crash_kernel_offset is None
+        assert GrubConfig(context_wrap(NOMATCH_CRASH_PARAM)).crash_kernel_offset is None
+        assert GrubConfig(context_wrap(NOMATCH_MEMORY)).crash_kernel_offset is None
 
     def test_kdump_iommu_enabled(self):
-        assert GrubConfig.parse_context(context_wrap(IOMMU_OFF)).is_kdump_iommu_enabled is None
-        assert GrubConfig.parse_context(context_wrap(IOMMU_MISSING)).is_kdump_iommu_enabled is None
-        assert GrubConfig.parse_context(context_wrap(IOMMU_ON)).is_kdump_iommu_enabled is True
+        assert GrubConfig(context_wrap(IOMMU_OFF)).is_kdump_iommu_enabled is None
+        assert GrubConfig(context_wrap(IOMMU_MISSING)).is_kdump_iommu_enabled is None
+        assert GrubConfig(context_wrap(IOMMU_ON)).is_kdump_iommu_enabled is True

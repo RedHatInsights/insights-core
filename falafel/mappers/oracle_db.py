@@ -6,8 +6,7 @@ Curently only gathers information from a database using generic init.ora file.
 
 import re
 from string import whitespace
-from falafel.core.plugins import mapper
-from falafel.mappers import get_active_lines
+from .. import mapper, get_active_lines
 
 # spfiles tend to contain strings of control characters usually bounded by 'C"'
 # and always ending with an ASCII NULL. This regex describes those strings for
