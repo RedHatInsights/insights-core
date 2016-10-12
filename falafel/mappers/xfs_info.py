@@ -4,11 +4,11 @@ import re
 @mapper('xfs_info')
 class XFSInfo(Mapper):
 
-    info_re = r.compile(r'^(?P<section>[\w-]+)\s*' +
+    info_re = re.compile(r'^(?P<section>[\w-]+)?\s*' +
         r'=(?:(?P<specifier>\S+)\s(?P<specval>\S+)?)?\s+' +
         r'(?P<keyvaldata>\w.*\w)$'
     )
-    keyval_re = r.compile(r'(?P<key>[\w-]+)=(?P<value>\d+(?: blks)?)')
+    keyval_re = re.compile(r'(?P<key>[\w-]+)=(?P<value>\d+(?: blks)?)')
 
     def parse_content(self, content):
         """
@@ -36,23 +36,29 @@ class XFSInfo(Mapper):
         sect_info = None
 
         for line in content:
-            match = info_re.match(line)
+            match = self.info_re.search(line)
             if match:
                 if match.group('section'):
                     # Change of section - make new sect_info dict and link
-                    section = match.group('section')
                     sect_info = {}
-                    xfs_info[section] = sect_info
+                    xfs_info[match.group('section')] = sect_info
                 if match.group('specifier'):
                     sect_info['specifier'] = match.group('specifier')
                     if match.group('specval'):
                         sect_info['specifier value'] = match.group('specval')
-                for pair in keyval_re.findall(match.group('keyvaldata')):
-                    key, value = pair.group('key', 'value')
+                for pair in self.keyval_re.findall(match.group('keyvaldata')):
+                    (key, value) = pair
                     if value[-1] != 's':
                         # Value doesn't end with 'blks', so convert it to int.
                         value = int(value)
                     sect_info[key] = value
+#            else:
+#                print "Warning: didn't match line regex"
 
         print xfs_info
         self.xfs_info = xfs_info
+
+    def __repr__(self):
+        return 'xfs_info of ' + self.xfs_info['meta-data']['specifier']\
+         + ' with sections [' + ', '.join(self.xfs_info.keys()) + ']'
+         
