@@ -5,7 +5,7 @@ import re
 class XFSInfo(Mapper):
 
     info_re = re.compile(r'^(?P<section>[\w-]+)?\s*' +
-        r'=(?:(?P<specifier>\S+)\s(?P<specval>\S+)?)?\s+' +
+        r'=(?:(?P<specifier>\S+)(?:\s(?P<specval>\w+))?)?\s+' +
         r'(?P<keyvaldata>\w.*\w)$'
     )
     keyval_re = re.compile(r'(?P<key>[\w-]+)=(?P<value>\d+(?: blks)?)')
@@ -61,4 +61,3 @@ class XFSInfo(Mapper):
     def __repr__(self):
         return 'xfs_info of ' + self.xfs_info['meta-data']['specifier']\
          + ' with sections [' + ', '.join(self.xfs_info.keys()) + ']'
-         
