@@ -213,6 +213,7 @@ static_specs = {
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/satellite_version"),
                                     SimpleFileSpec("satellite_version")]),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
+    "scheduler"                 : CommandSpec("/bin/cat {getblockscheduler}"),
     "secure"                    : SimpleFileSpec("var/log/secure", large_content=True),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
@@ -255,7 +256,8 @@ static_specs = {
 pre_commands = {
     "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "block": "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
-    "module": "/bin/ls /sys/module"
+    "module": "/bin/ls /sys/module",
+    "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done"
 }
 
 meta_files = {
