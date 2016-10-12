@@ -5,6 +5,7 @@ from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, Dock
 
 
 static_specs = {
+    "autofs.conf"               : SimpleFileSpec("etc/autofs.conf"),
     "nproc.conf"                : PatternSpec(r"etc/security/limits.d/.*-nproc\.conf"),
     "display_java"              : CommandSpec("/usr/sbin/alternatives --display java"),
     "blkid"                     : First([CommandSpec("/usr/sbin/blkid -c /dev/null"),
