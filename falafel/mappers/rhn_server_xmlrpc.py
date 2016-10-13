@@ -47,13 +47,13 @@ class ServerXMLRPCLog(LogFileOutput):
         """
         Check if the specified string 's' is contained in one line
         """
-        return any(s in l for l in self.data)
+        return any(s in l for l in self.lines)
 
     def get(self, s):
         """
         Returns all lines that contain 's' and wrap them in a list
         """
-        return [self.parse_line(l) for l in self.data if s in l]
+        return [self.parse_line(l) for l in self.lines if s in l]
 
     def last(self):
         """
@@ -62,7 +62,7 @@ class ServerXMLRPCLog(LogFileOutput):
         """
         msg_info = dict()
         # Only check the last 2 lines, in that order
-        for l in reversed(self.data[-2:]):
+        for l in reversed(self.lines[-2:]):
             msg_info = self.parse_line(l)
             # assume parse is successful if we got an IP address
             if msg_info['client_ip']:
