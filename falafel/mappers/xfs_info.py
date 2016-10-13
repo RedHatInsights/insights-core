@@ -57,6 +57,10 @@ class XFSInfo(Mapper):
 
         self.xfs_info = xfs_info
 
+        # Calculate a few things
+        self.data_size = xfs_info['data']['blocks'] * xfs_info['data']['bsize']
+        self.log_size = xfs_info['log']['blocks'] * xfs_info['log']['bsize']
+
     def __repr__(self):
         return 'xfs_info of ' + self.xfs_info['meta-data']['specifier']\
          + ' with sections [' + ', '.join(self.xfs_info.keys()) + ']'
