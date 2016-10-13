@@ -112,3 +112,20 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         assert xfs['realtime']['extsz'] == 4096
         assert xfs['realtime']['blocks'] == 0
         assert xfs['realtime']['rtextents'] == 0
+
+    def test_ext_log_xfs_info(self):
+        xfs = xfs_info.XFSInfo(context_wrap("""
+meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=0        finobt=0
+data     =                       bsize=4096   blocks=262144, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
+log      =log.xfs.image          bsize=4096   blocks=25600, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+        """.strip())).xfs_info
+
+        # Just test the few things that might be different
+        assert xfs['meta-data']['specifier'] == 'data.xfs.image'
+        assert xfs['log']['specifier'] == 'log.xfs.image'
