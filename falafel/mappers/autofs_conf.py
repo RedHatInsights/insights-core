@@ -1,5 +1,6 @@
 from .. import mapper, IniConfigFile
 
+
 @mapper("autofs_conf")
 class AutoFSConf(IniConfigFile):
     """
