@@ -13,6 +13,8 @@ LOG_DIRECTORY = os.path.join(os.environ['HOME'], '.{}'.format(NAME))
 LOG_SIZE = 10485760
 LOG_BACKUP_COUNT = 3
 
+ERROR_MSG = "Error occurred. Refer log file or use -v option for more details."
+
 
 class Verbosity(Borg):
     """
@@ -42,7 +44,6 @@ class ContextFilter(logging.Filter):
 
 
 def get_logging_conf(**kwargs):
-    console_log_level = kwargs.get('console_log_level', 'DEBUG')
 
     filename = "{0}.log".format(NAME)
     log_file = os.path.join(LOG_DIRECTORY, filename)
@@ -58,11 +59,6 @@ def get_logging_conf(**kwargs):
         },
 
         'handlers': {
-            'console': {
-                'class': 'logging.StreamHandler',
-                'level': console_log_level,
-                'stream': 'ext://sys.stdout'
-            },
             'file': {
                 'class': 'logging.handlers.RotatingFileHandler',
                 'formatter': 'precise',
@@ -75,7 +71,7 @@ def get_logging_conf(**kwargs):
 
         'root': {
             'level': 'DEBUG',
-            'handlers': ['console', 'file']
+            'handlers': ['file']
         }
     }
 
@@ -108,7 +104,17 @@ def setup_logger(log_level):
     if not os.path.exists(LOG_DIRECTORY):
         os.makedirs(LOG_DIRECTORY)
 
-    config = get_logging_conf(console_log_level=console_log_level)
+    config = get_logging_conf()
+
+    if log_level > 0:
+        config['handlers'].update({
+                    'console': {
+                        'class': 'logging.StreamHandler',
+                        'level': console_log_level,
+                        'stream': 'ext://sys.stdout'
+                    }
+                })
+        config['root']['handlers'].append('console')
 
     logging.config.dictConfig(config)
 
@@ -117,8 +123,9 @@ def setup_logger(log_level):
             handler.addFilter(ContextFilter())
 
 
-def print_console(message):
+def print_console(message, verbose=True):
     if Verbosity().level == 0:
         print(message)
 
-    logging.info(message)
+    if verbose:
+        logging.info(message)
