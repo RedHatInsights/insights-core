@@ -1,13 +1,14 @@
 from .. import Mapper, mapper
 import re
 
+
 @mapper('xfs_info')
 class XFSInfo(Mapper):
 
     info_re = re.compile(r'^(?P<section>[\w-]+)?\s*' +
-        r'=(?:(?P<specifier>\S+)(?:\s(?P<specval>\w+))?)?\s+' +
-        r'(?P<keyvaldata>\w.*\w)$'
-    )
+                         r'=(?:(?P<specifier>\S+)(?:\s(?P<specval>\w+))?)?' +
+                         r'\s+(?P<keyvaldata>\w.*\w)$'
+                         )
     keyval_re = re.compile(r'(?P<key>[\w-]+)=(?P<value>\d+(?: blks)?)')
 
     def parse_content(self, content):
@@ -21,7 +22,7 @@ class XFSInfo(Mapper):
         rest seems to be comma separated.  Specifiers come after the first
         equals sign, and sometimes have a value property, but sometimes not.
         E.g.:
-        
+
          meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
                   =              sectsz=512   attr=2
          data     =              bsize=4096   blocks=536869888, imaxpct=5
@@ -63,4 +64,4 @@ class XFSInfo(Mapper):
 
     def __repr__(self):
         return 'xfs_info of ' + self.xfs_info['meta-data']['specifier']\
-         + ' with sections [' + ', '.join(self.xfs_info.keys()) + ']'
+            + ' with sections [' + ', '.join(self.xfs_info.keys()) + ']'
