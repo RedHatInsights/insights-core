@@ -1,8 +1,7 @@
 import os
 import re
 from collections import namedtuple
-from falafel.core.plugins import mapper
-from falafel.core import computed, MapperOutput
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 def extract_iface_name_from_path(path, name):
@@ -30,49 +29,39 @@ def extract_iface_name_from_content(content):
 
 
 @mapper("ethtool-i")
-class Driver(MapperOutput):
-    defaults = {
-                   'driver': None,
-                   'version': None,
-                   'firmware_version': None,
-                   'supports_statistics': None,
-                   'supports_test': None,
-                   'supports_eeprom_access': None,
-                   'supports_register_dump': None,
-                   'supports_priv_flags': None
-               }
+class Driver(Mapper):
 
-    def __init__(self, data, path):
-        super(Driver, self).__init__(data, path)
-        values = dict(Driver.defaults)
-        for k, v in data.iteritems():
-            k = k.replace('-', '_')
-            if k.startswith("supports"):
-                v = v == "yes"
-            values[k] = v
-        for k, v in values.iteritems():
-            self._add_to_computed(k, v)
+    driver = None
+    version = None
+    firmware_version = None
+    supports_statistics = None
+    supports_test = None
+    supports_eeprom_access = None
+    supports_register_dump = None
+    supports_priv_flags = None
 
-    @computed
+    @property
     def ifname(self):
-        return extract_iface_name_from_path(self.file_path, "ethtool_-i_")
+        return self.iface
 
-    @classmethod
-    def parse_content(cls, content):
-        d = {}
+    def parse_content(self, content):
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-i_")
+        self.data = {}
         for line in content:
             if ":" in line:
                 key, value = line.strip().split(":", 1)
-                value = value.strip()
+                key, value = key.strip(), value.strip()
                 value = value if value else None
-                d[key.strip()] = value
-        return d
+                if key.startswith("supports"):
+                    value = value == "yes"
+                self.data[key] = value
+                setattr(self, key.replace("-", "_"), value)
 
 
 @mapper("ethtool-k")
-class Features(MapperOutput):
+class Features(LegacyItemAccess, Mapper):
 
-    @computed
+    @property
     def ifname(self):
         return extract_iface_name_from_path(self.file_path, "ethtool_-k_")
 
@@ -82,9 +71,8 @@ class Features(MapperOutput):
     def is_fixed(self, feature):
         return self.get(feature, {}).get('fixed', None)
 
-    @classmethod
-    def parse_content(cls, content):
-        d = {}
+    def parse_content(self, content):
+        self.data = {}
         # Need to strip header line that's only on -k
         for line in content[1:]:
             if ":" in line:
@@ -93,89 +81,76 @@ class Features(MapperOutput):
                 fixed = "fixed" in value
                 if fixed:
                     value = value.split()[0].strip()
-                d[key.strip()] = {
+                self.data[key.strip()] = {
                     "on": value == "on",
                     "fixed": fixed
                 }
-        return d
 
 
 @mapper("ethtool-a")
-class Pause(MapperOutput):
+class Pause(Mapper):
 
-    @computed
+    @property
     def ifname(self):
-        """
-        Return the name of network interface in content.
-        """
-        if "iface" in self.data:
-            return self.data.get("iface")
-        return extract_iface_name_from_path(self.file_path, "ethtool_-a_")
+        return self.iface
 
-    @computed
+    @property
     def autonegotiate(self):
         return self.data.get("Autonegotiate")
 
-    @computed
+    @property
     def rx(self):
         return self.data.get("RX")
 
-    @computed
+    @property
     def tx(self):
         return self.data.get("TX")
 
-    @computed
+    @property
     def rx_negotiated(self):
         return self.data.get("RX Autonegotiate")
 
-    @computed
+    @property
     def tx_negotiated(self):
         return self.data.get("TX Autonegotiate")
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Return ethtool -a result as a dict.
         If ethtool -a output a error, only return "iface" key as a network interface
         input: "RX: on"
         Output: result["RX"] = true
         """
-        result = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-a_")
+        self.data = {}
         if "ethtool" in content[0]:
-            return result
+            return
         if "Cannot get" in content[0]:
             # cannot got pause param in ethtool
-            result["iface"] = extract_iface_name_from_content(content[1])
-            return result
+            self.iface = extract_iface_name_from_content(content[1])
+            return
 
-        result["iface"] = extract_iface_name_from_content(content[0])
+        self.iface = extract_iface_name_from_content(content[0])
         for line in content[1:]:
             if line.strip():
                 (key, value) = line.split(":", 1)
-                result[key.strip()] = (value.strip() == "on")
-        return result
+                key, value = key.strip(), value.strip()
+                self.data[key] = (value == "on")
+                setattr(self, key, value == "on")
+        return self.data
 
 
 @mapper("ethtool-c")
-class CoalescingInfo(MapperOutput):
+class CoalescingInfo(Mapper):
 
-    def __init__(self, data, path):
-        super(CoalescingInfo, self).__init__(data, path)
-        for k, v in data.iteritems():
-            k = k.replace('-', '_')
-            self._add_to_computed(k, v)
-
-    @computed
+    @property
     def ifname(self):
         """
         Return the name of network interface in content.
         """
-        if "iface" in self.data:
-            return self.data.get("iface")
-        return extract_iface_name_from_path(self.file_path, "ethtool_-c_")
+        return self.iface
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Return ethtool -c result as a dict
         if interface error, only return interface name
@@ -184,96 +159,90 @@ class CoalescingInfo(MapperOutput):
         Adaptive tx in "adaptive-tx" key, value is boolean
         Other value is int
         """
-        result = {}
+        content = list(content)
+        self.data = {}
+
         if "ethtool" in content[0]:
-            return result
+            return
+
         if "Cannot get" in content[0]:
             # cannot got pause param in ethtool
-            result["iface"] = extract_iface_name_from_content(content[1])
-            return result
+            self.iface = extract_iface_name_from_content(content[1])
+            return
 
-        result["iface"] = extract_iface_name_from_content(content[0])
+        self.iface = extract_iface_name_from_content(content[0])
 
         if len(content) > 1:
             second_line_content = content[1].split(" ")
-            result["adaptive-rx"] = (second_line_content[2] == "on")
-            result["adaptive-tx"] = (second_line_content[5] == "on")
+            self.data["adaptive-rx"] = (second_line_content[2] == "on")
+            self.data["adaptive-tx"] = (second_line_content[5] == "on")
 
             for line in content[2:]:
                 if line.strip():
                     (key, value) = line.split(":", 1)
-                    result[key.strip()] = int(value.strip())
-
-        return result
+                    key, value = key.strip(), value.strip()
+                    self.data[key] = int(value)
+            for key, value in self.data.iteritems():
+                setattr(self, key.replace("-", "_"), value)
 
 
 @mapper("ethtool-g")
-class Ring(MapperOutput):
+class Ring(Mapper):
 
     Parameters = namedtuple("Parameters", ["rx", "rx_mini", "rx_jumbo", "tx"])
 
-    def __init__(self, data, path):
-        super(Ring, self).__init__(data, path)
-        m = data.get("max")
-        c = data.get("current")
-        self.max = None
-        self.current = None
-        if m:
-            self.max = Ring.Parameters(m["rx"], m["rx-mini"], m["rx-jumbo"], m["tx"])
-        if c:
-            self.current = Ring.Parameters(c["rx"], c["rx-mini"], c["rx-jumbo"], c["tx"])
-
-    @computed
+    @property
     def ifname(self):
         """
         Return the name of network interface in content.
         """
-        if "iface" in self.data:
-            return self.data.get("iface")
-        return extract_iface_name_from_path(self.file_path, "ethtool_-g_")
+        return self.iface
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Return ethtool -g info into a dict contain 3 keys which is "max", "current", "iface"
         "max" and "current" dict contain "rx", "rx_mini","rx_jumbo","tx", type is int
         "iface" contain a interface name
         """
-        result = {}
+        self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-g_")
+        self.max = self.current = None
         if "ethtool" in content[0]:
-            return result
+            return
+
         if "Cannot get" in content[0]:
             # cannot got pause param in ethtool
-            result["iface"] = extract_iface_name_from_content(content[1])
-            return result
-        result["iface"] = extract_iface_name_from_content(content[0])
+            self.iface = extract_iface_name_from_content(content[1])
+            return
+
+        self.iface = extract_iface_name_from_content(content[0])
 
         # parse max value
-        result["max"] = cls.parse_value(content[2:6])
+        self.max = self.data["max"] = Ring.parse_value(content[2:6])
         # parse current value
-        result["current"] = cls.parse_value(content[7:11])
+        self.current = self.data["current"] = Ring.parse_value(content[7:11])
 
-        return result
+        return self.data
 
-    @classmethod
-    def parse_value(cls, content):
-        result = {}
+    @staticmethod
+    def parse_value(content):
+        r = {}
         for line in content:
             if line.strip():
                 key, value = line.split(":", 1)
-                result[key.strip().replace(" ", "-").lower()] = int(value.strip())
-        return result
+                r[key.strip().replace(" ", "-").lower()] = int(value.strip())
+        return Ring.Parameters(r["rx"], r["rx-mini"], r["rx-jumbo"], r["tx"])
 
 
 @mapper("ethtool-S")
-class Statistics(MapperOutput):
+class Statistics(Mapper):
 
-    @computed
+    @property
     def ifname(self):
         """
         Return the name of network interface in content.
         """
-        return extract_iface_name_from_path(self.file_path, "ethtool_-S_")
+        return self.iface
 
     def search(self, pattern, flags=0):
         results = {}
@@ -282,19 +251,19 @@ class Statistics(MapperOutput):
                 results[k] = v
         return results
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         '''
         return the ethtool -S result as a dict
         '''
-        info = {}
+        self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-S_")
 
         if "NIC statistics:" not in content[0]:
-            # if there's no data, then return info immediately.
+            # if there's no data, then return self.data immediately.
             # in this situation, content may looks like:
             # "no stats available" or
-            # "Cannot get stats strings information: Operation not supported"
-            return info
+            # "Cannot get stats strings self.datarmation: Operation not supported"
+            return
 
         for line in content[1:]:  # ignore first line
             # the correct description lines look like below, but we will ignore the
@@ -314,36 +283,34 @@ class Statistics(MapperOutput):
                     key = line[:i].strip()
                     value = line[i:].strip(': ')
                     value = int(value) if value else None
-                    info[key] = value
-        return info
+                    self.data[key] = value
 
 
 @mapper("ethtool")
-class Ethtool(MapperOutput):
+class Ethtool(Mapper):
 
-    @computed
+    @property
     def ifname(self):
         """
         Return the name of network interface in content.
         """
-        return self.data.get('ETHNIC')
+        return self.iface
 
-    @computed
+    @property
     def speed(self):
         """
         return field in Speed.
         """
         return self.data.get('Speed')
 
-    @computed
+    @property
     def link_detected(self):
         """
         returns field in Link detected.
         """
         return self.data.get('Link detected', ['no'])[0] == 'yes'
 
-    @classmethod
-    def parse_content(cls, content):
+    def parse_content(self, content):
         """
         Returns an object of EthtoolInfo
         -----------------------------------------------------
@@ -368,9 +335,11 @@ class Ethtool(MapperOutput):
         could also be multi-line. Since the multi-line or
         single-line is not fixable, I just put the value in the list.
         """
-        ethtool_dict = {}
+        self.data = {}
+        self.iface = self.file_name.replace("ethtool_", "")
+
         if "Settings for" in content[0]:
-            ethtool_dict['ETHNIC'] = content[0].split()[-1].strip(':')
+            self.data['ETHNIC'] = content[0].split()[-1].strip(':')
         key = value = None
         for line in content[1:]:
             line = line.strip()
@@ -378,7 +347,6 @@ class Ethtool(MapperOutput):
                 if ':' in line:
                     key, value = line.split(':', 1)
                     key = key.strip()
-                    ethtool_dict[key] = [value.strip()]
+                    self.data[key] = [value.strip()]
                 else:
-                    ethtool_dict[key].append(line)
-        return ethtool_dict
+                    self.data[key].append(line)

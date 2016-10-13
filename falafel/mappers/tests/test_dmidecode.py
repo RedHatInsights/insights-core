@@ -213,7 +213,7 @@ class TestDmidecode():
         Test for three kinds of output format of dmidecode shared_mapper
         '''
         context = context_wrap(DMIDECODE)
-        ret = DMIDecode.parse_context(context)
+        ret = DMIDecode(context)
 
         assert len(ret.get("bios_information")) == 1
         assert ret.get("bios_information")[0].get("vendor") == "HP"
@@ -281,7 +281,7 @@ class TestDmidecode():
         Test for faied raw data
         '''
         context = context_wrap(DMIDECODE_FAIL)
-        ret = DMIDecode.parse_context(context)
+        ret = DMIDecode(context)
 
         assert ret.is_present is False
 
@@ -290,7 +290,7 @@ class TestDmidecode():
         Test for get_virt()
         '''
         context = context_wrap(DMIDECODE_V)
-        ret = DMIDecode.parse_context(context)
+        ret = DMIDecode(context)
         assert ret.is_present is True
         assert ret.virt_what == "vmware"
 
@@ -301,7 +301,7 @@ class TestDmidecode():
         "\n\tDMI" in the input
         '''
         context = context_wrap(DMIDECODE_DMI)
-        ret = DMIDecode.parse_context(context)
+        ret = DMIDecode(context)
 
         assert ret.get("bios_information")[0].get("vendor") == "HP"
         assert ret.get("bios_information")[0].get("version") == "A08"

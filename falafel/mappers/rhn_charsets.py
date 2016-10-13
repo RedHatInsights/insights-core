@@ -1,32 +1,31 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('rhn-charsets')
-class RHNCharSets(MapperOutput):
-    @staticmethod
-    def parse_content(content):
-        """
-        ==== Sample (1) embedded database ====
-         server_encoding
-        -----------------
-         UTF8
-        (1 row)
+class RHNCharSets(LegacyItemAccess, Mapper):
+    """
+    ==== Sample (1) embedded database ====
+     server_encoding
+    -----------------
+     UTF8
+    (1 row)
 
-         client_encoding
-        -----------------
-         UTF8
-        (1 row)
-        ==== Sample (2) Oracle database ====
-        PARAMETER                  VALUE
-        ---------------------------------
-        NLS_CHARACTERSET           UTF8
-        NLS_NCHAR_CHARACTERSET     UTF8
-        ======================================
-        Returns a dict:
-        - {'server_encoding': 'UTF8','client_encoding': 'UTF8'}
-        - {'NLS_CHARACTERSET': 'UTF8','NLS_NCHAR_CHARACTERSET': 'UTF8'}
-        """
+     client_encoding
+    -----------------
+     UTF8
+    (1 row)
+    ==== Sample (2) Oracle database ====
+    PARAMETER                  VALUE
+    ---------------------------------
+    NLS_CHARACTERSET           UTF8
+    NLS_NCHAR_CHARACTERSET     UTF8
+    ======================================
+    Returns a dict:
+    - {'server_encoding': 'UTF8','client_encoding': 'UTF8'}
+    - {'NLS_CHARACTERSET': 'UTF8','NLS_NCHAR_CHARACTERSET': 'UTF8'}
+    """
+
+    def parse_content(self, content):
         db_set = {}
         db_backend = None
         in_server = False
@@ -49,4 +48,4 @@ class RHNCharSets(MapperOutput):
                 line_splits = line.split()
                 if len(line_splits) == 2:
                     db_set[line_splits[0]] = line_splits[1]
-        return db_set
+        self.data = db_set

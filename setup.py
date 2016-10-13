@@ -39,10 +39,11 @@ if "bdist_rpm" in sys.argv:
 
 if __name__ == "__main__":
     import falafel
+    name = os.environ.get("FALAFEL_NAME", falafel.NAME)
 
     try:
         setup(
-            name=falafel.NAME,
+            name=name,
             version=falafel.VERSION,
             description="Insights Application Programming Interface",
             packages=find_packages(),

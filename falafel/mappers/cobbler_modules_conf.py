@@ -1,13 +1,10 @@
-from falafel.core.plugins import mapper
-from falafel.mappers import get_active_lines
-from falafel.core import MapperOutput
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 
 @mapper("cobbler_modules.conf")
-class CobblerModulesConf(MapperOutput):
+class CobblerModulesConf(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Parses cobbler/modules.conf and returns a dict.
         - {
@@ -25,4 +22,4 @@ class CobblerModulesConf(MapperOutput):
             elif '=' in line:
                 key, _, value = line.partition("=")
                 section_dict[key.strip()] = value.strip()
-        return modules_dict
+        self.data = modules_dict

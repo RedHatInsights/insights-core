@@ -1,11 +1,13 @@
 import ConfigParser as cp
 import StringIO
+from falafel.core import Mapper
 from falafel.core.plugins import mapper
 
 
 @mapper('systemd_docker')
-def docker(context):
-    """
+class SystemdDocker(Mapper):
+    """Class for docker systemd configuration.
+
     The content of file ``/usr/lib/systemd/system/docker.service`` is recorded
     via INI format, ``ConfigParser`` could be used to parse the content.
 
@@ -61,12 +63,15 @@ def docker(context):
             }
         }
     """
-    return parse_systemd_ini(context.content)
+
+    def parse_content(self, content):
+        self.data = parse_systemd_ini(content)
 
 
 @mapper('systemd_system.conf')
-def common_conf(context):
-    """
+class SystemdSystemConf(Mapper):
+    """Class for system systemd configuration.
+
     Systemd configuration files are recorded via INI format as well, we can
     share the same parser ``ConfigParser`` here.
 
@@ -88,7 +93,21 @@ def common_conf(context):
         }
 
     """
-    return parse_systemd_ini(context.content)
+
+    def parse_content(self, content):
+        self.data = parse_systemd_ini(content)
+
+
+@mapper('systemd_docker')
+def docker(context):
+    """Deprecated, do not use."""
+    return SystemdDocker(context).data
+
+
+@mapper('systemd_system.conf')
+def common_conf(context):
+    """Deprecated, do not use."""
+    return SystemdSystemConf(context).data
 
 
 def parse_systemd_ini(content):

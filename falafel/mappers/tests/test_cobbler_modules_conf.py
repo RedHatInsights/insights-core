@@ -78,6 +78,6 @@ module = manage_isc
 
 
 def test_cobbler_modules_conf():
-    result = CobblerModulesConf.parse_context(context_wrap(conf_content))
+    result = CobblerModulesConf(context_wrap(conf_content))
     assert result.get('authentication').get("module") == "authn_spacewalk"
     assert result.get('dhcp').get("module") == "manage_isc"

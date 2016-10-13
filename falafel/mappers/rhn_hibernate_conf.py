@@ -1,13 +1,10 @@
-from falafel.mappers import get_active_lines
-from falafel.core import MapperOutput
-from falafel.core.plugins import mapper
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 
 @mapper("rhn_hibernate.conf")
-class RHNHibernateConf(MapperOutput):
+class RHNHibernateConf(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Parses rhn_hibernate.conf and returns a dict.
         - {
@@ -20,4 +17,4 @@ class RHNHibernateConf(MapperOutput):
             if '=' in line:
                 key, _, value = line.partition('=')
                 hb_dict[key.strip()] = value.strip()
-        return hb_dict
+        self.data = hb_dict

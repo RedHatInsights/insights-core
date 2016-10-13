@@ -148,27 +148,27 @@ class TestEthtoolI(unittest.TestCase):
 
     def test_good(self):
         context = context_wrap(GOOD)
-        parsed = ethtool.Driver.parse_context(context)
+        parsed = ethtool.Driver(context)
         assert parsed.version == "1.0.0"
 
     def test_missing_version(self):
         context = context_wrap(MISSING_KEYS)
-        parsed = ethtool.Driver.parse_context(context)
+        parsed = ethtool.Driver(context)
         assert parsed.version is None
 
     def test_missing_value(self):
         context = context_wrap(GOOD)
-        parsed = ethtool.Driver.parse_context(context)
+        parsed = ethtool.Driver(context)
         assert parsed.firmware_version is None
 
     def test_iface(self):
         context = context_wrap(GOOD, path="foo/bar/baz/ethtool_-i_eth0")
-        parsed = ethtool.Driver.parse_context(context)
+        parsed = ethtool.Driver(context)
         assert parsed.ifname == "eth0"
 
     def test_no_iface(self):
         context = context_wrap(GOOD, path="foo/bar/baz/oopsie")
-        parsed = ethtool.Driver.parse_context(context)
+        parsed = ethtool.Driver(context)
         assert parsed.ifname is None
 
 
@@ -310,7 +310,7 @@ class TestEthtool(unittest.TestCase):
     def test_ethtool_a(self):
         context = context_wrap(SUCCESS_ETHTOOL_A)
         context.path = SUCCESS_ETHTOOL_A_PATH
-        result = ethtool.Pause.parse_context(context)
+        result = ethtool.Pause(context)
         self.assertEqual(result.ifname, "enp0s25")
         self.assertEqual(result.autonegotiate, True)
         self.assertEqual(result.rx, False)
@@ -319,28 +319,28 @@ class TestEthtool(unittest.TestCase):
     def test_ethtool_a_1(self):
         context = context_wrap(FAIL_ETHTOOL_A)
         context.path = FAIL_ETHTOOL_A_PATH
-        result = ethtool.Pause.parse_context(context)
+        result = ethtool.Pause(context)
         self.assertEqual(result.ifname, "__wlp3s0")
         self.assertTrue(result.autonegotiate is None)
 
     def test_ethtool_a_2(self):
         context = context_wrap(FAIL_ETHTOOL_A_1)
         context.path = FAIL_ETHTOOL_A_PATH_1
-        result = ethtool.Pause.parse_context(context)
+        result = ethtool.Pause(context)
         self.assertEqual(result.ifname, "bond0.1384@bond0")
 
     def test_ethtool_a_3(self):
         context = context_wrap(FAIL_ETHTOOL_A_2)
         context.path = FAIL_ETHTOOL_A_PATH_2
-        result = ethtool.Pause.parse_context(context)
+        result = ethtool.Pause(context)
         self.assertEqual(result.ifname, "g_bond2")
 
     def test_get_ethtool_c(self):
         context = context_wrap(TEST_ETHTOOL_C)
         context.path = TEST_ETHTOOL_C_PATH
-        result = ethtool.CoalescingInfo.parse_context(context)
-        self.assertTrue(keys_in(["iface", "adaptive-rx", "adaptive-tx", "pkt-rate-high",
-                                 "tx-usecs-irq", "tx-frame-low", "tx-usecs-high", "tx-frame-high"], result))
+        result = ethtool.CoalescingInfo(context)
+        self.assertTrue(keys_in(["adaptive-rx", "adaptive-tx", "pkt-rate-high",
+                                 "tx-usecs-irq", "tx-frame-low", "tx-usecs-high", "tx-frame-high"], result.data))
         self.assertEqual(result.ifname, "eth2")
         self.assertEqual(result.adaptive_rx, False)
         self.assertEqual(result.adaptive_tx, False)
@@ -353,16 +353,14 @@ class TestEthtool(unittest.TestCase):
     def test_get_ethtool_c_1(self):
         context = context_wrap(TEST_ETHTOOL_C_1)
         context.path = TEST_ETHTOOL_C_1
-        result = ethtool.CoalescingInfo.parse_context(context)
+        result = ethtool.CoalescingInfo(context)
         self.assertTrue(result.ifname)
 
     def test_ethtool_g(self):
         context = context_wrap(TEST_ETHTOOL_G)
         context.path = TEST_ETHTOOL_G_PATH
-        result = ethtool.Ring.parse_context(context)
-        self.assertTrue(keys_in(["iface", "max", "current"], result))
-        self.assertTrue(keys_in(["rx", "rx-mini", "rx-jumbo", "tx"], result["max"]))
-        self.assertTrue(keys_in(["rx", "rx-mini", "rx-jumbo", "tx"], result["current"]))
+        result = ethtool.Ring(context)
+        self.assertTrue(keys_in(["max", "current"], result.data))
         self.assertEqual(result.ifname, "eth2")
         self.assertEqual(result.max.rx, 2047)
         self.assertEqual(result.max.rx_mini, 0)
@@ -377,17 +375,17 @@ class TestEthtool(unittest.TestCase):
     def test_ethtool_g_1(self):
         context = context_wrap(TEST_ETHTOOL_G_1)
         context.path = TEST_ETHTOOL_G_PATH_1
-        result = ethtool.Ring.parse_context(context)
+        result = ethtool.Ring(context)
         self.assertEqual(result.ifname, "bond0.102@bond0")
 
     def test_ethtool_g_2(self):
         context = context_wrap(TEST_ETHTOOL_G_2)
         context.path = TEST_ETHTOOL_G_PATH_2
-        result = ethtool.Ring.parse_context(context)
+        result = ethtool.Ring(context)
         self.assertEqual(result.ifname, "eth2")
 
     def test_ethtool_S(self):
-        ethtool_S_info = ethtool.Statistics.parse_context(context_wrap(SUCCEED_ETHTOOL_S))
+        ethtool_S_info = ethtool.Statistics(context_wrap(SUCCEED_ETHTOOL_S))
         ret = {}
         for line in SUCCEED_ETHTOOL_S.split('\n')[2:-1]:
             key, value = line.split(':')
@@ -396,13 +394,13 @@ class TestEthtool(unittest.TestCase):
         assert eth_data == ret
 
     def test_ethtool_S_f(self):
-        ethtool_S_info_f1 = ethtool.Statistics.parse_context(context_wrap(FAILED_ETHTOOL_S_ONE))
-        ethtool_S_info_f2 = ethtool.Statistics.parse_context(context_wrap(FAILED_ETHTOOL_S_TWO))
+        ethtool_S_info_f1 = ethtool.Statistics(context_wrap(FAILED_ETHTOOL_S_ONE))
+        ethtool_S_info_f2 = ethtool.Statistics(context_wrap(FAILED_ETHTOOL_S_TWO))
         self.assertFalse(ethtool_S_info_f1.ifname)
         self.assertFalse(ethtool_S_info_f2.ifname)
 
     def test_ethtool(self):
-        ethtool_info = ethtool.Ethtool.parse_context(context_wrap(ETHTOOL_INFO))
+        ethtool_info = ethtool.Ethtool(context_wrap(ETHTOOL_INFO, path="ethtool_eth1"))
         self.assertEqual(ethtool_info.ifname, "eth1")
         self.assertTrue(ethtool_info.link_detected)
         self.assertEqual(ethtool_info.speed, ['1000Mb/s'])

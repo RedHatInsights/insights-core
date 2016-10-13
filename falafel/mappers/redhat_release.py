@@ -1,51 +1,42 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import Mapper, mapper
 
 
-def parse(data):
-    product, _, version_name = [v.strip() for v in data.partition("release")]
-    version, code_name = [v.strip() for v in version_name.split(None, 1)]
-    return {
-        "product": product,
-        "version": version,
-        "code_name": code_name.strip("()")
-    }
+@mapper("redhat-release")
+class RedhatRelease(Mapper):
 
+    def parse_content(self, content):
+        assert len(content) == 1
+        self.raw = content[0]
+        product, _, version_name = [v.strip() for v in content[0].partition("release")]
+        version, code_name = [v.strip() for v in version_name.split(None, 1)]
+        self.parsed = {
+            "product": product,
+            "version": version,
+            "code_name": code_name.strip("()")
+        }
 
-class RedhatRelease(MapperOutput):
-
-    def __init__(self, data):
-        self.parsed = parse(data)
-        super(RedhatRelease, self).__init__(data)
-
-    @computed
+    @property
     def major(self):
         return int(self.parsed["version"].split(".")[0])
 
-    @computed
+    @property
     def minor(self):
         s = self.parsed["version"].split(".")
         if len(s) > 1:
             return int(s[1])
 
-    @computed
+    @property
     def version(self):
         return self.parsed["version"]
 
-    @computed
+    @property
     def is_rhel(self):
         return "Red Hat Enterprise Linux" in self.parsed["product"]
 
-    @computed
+    @property
     def product(self):
         return self.parsed["product"]
 
-    @computed
+    @property
     def is_hypervisor(self):
         return "Hypervisor" in self.parsed["product"]
-
-
-@mapper("redhat-release")
-def redhat_release(context):
-    if len(context.content) == 1 and len(context.content[0]) > 0:
-        return RedhatRelease(context.content[0])

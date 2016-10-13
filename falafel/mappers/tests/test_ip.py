@@ -32,7 +32,7 @@ Message truncated
 
 
 def test_ip_addr():
-    d = ip.IpAddr.parse_context(context_wrap(IP_ADDR_TEST)).data
+    d = ip.IpAddr(context_wrap(IP_ADDR_TEST))
 
     assert len(d) == 6
     assert keys_in(["lo", "eth7", "tunl0", "tunl1", "bond1.57", "ip.tun2"], d)
@@ -94,7 +94,7 @@ local 30.142.64.9 dev bond0.400  table local  proto kernel  scope host  src 30.1
 class Test_ip_route():
     def test_ip_route_1(self):
         context = context_wrap(IP_ROUTE_SHOW_TABLE_ALL_TEST)
-        d = ip.RouteDevices.parse_context(context)
+        d = ip.RouteDevices(context)
 
         assert len(d.data) == 5
         assert d["30.142.34.0/26"][0].dev == "bond0.300"

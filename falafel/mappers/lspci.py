@@ -19,14 +19,9 @@ containing only "filter string".  The ``in`` operator may also be used to test
 whether a particular string is in the ``lspci`` output.  Other methods/operators
 are also supported, see the :py:class:`falafel.core.LogFileOutput` class for more information.
 """
-from falafel.core import LogFileOutput
-from falafel.core.plugins import mapper
+from .. import LogFileOutput, mapper
 
 
 @mapper('lspci')
 class LsPci(LogFileOutput):
-    def __init__(self, data, path=None):
-        """
-        00:00.0 Host bridge: Intel Corporation Haswell-ULT DRAM Controller (rev 0b)
-        """
-        super(LsPci, self).__init__(data, path)
+    pass

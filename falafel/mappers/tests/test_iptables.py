@@ -46,12 +46,12 @@ PARSED_TCP_REJECT_RULE = {
 
 
 def test_iptables_save():
-    ipt = IPTables.parse_context(context_wrap(IPTABLES_SAVE))
-    assert len(ipt["rules"]) == 6
-    assert len(ipt.chain("INPUT")) == 5
+    ipt = IPTables(context_wrap(IPTABLES_SAVE))
+    assert len(ipt.rules) == 6
+    assert len(ipt.get_chain("INPUT")) == 5
     assert len(ipt.table_chains("mangle")) == 5
-    assert ipt["rules"][-1] == PARSED_TCP_REJECT_RULE
-    assert ipt.table("nat")[1] == {
+    assert ipt.rules[-1] == PARSED_TCP_REJECT_RULE
+    assert ipt.get_table("nat")[1] == {
         "policy": "ACCEPT",
         "table": "nat",
         "name": "POSTROUTING",
@@ -60,4 +60,4 @@ def test_iptables_save():
     }
     assert "tcp-reset" in ipt
     assert "--sport" not in ipt
-    assert ipt.get("tcp-reset") == [PARSED_TCP_REJECT_RULE]
+    assert ipt.get_rule("tcp-reset") == [PARSED_TCP_REJECT_RULE]

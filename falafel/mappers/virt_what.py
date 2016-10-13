@@ -1,24 +1,21 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
-
-
-class VirtWhat(MapperOutput):
-
-    @computed
-    def is_virtual(self):
-        return self["generic"] != "Baremetal"
-
-    @computed
-    def has_specific(self):
-        return "specific" in self and self["generic"] != self["specific"]
+from .. import Mapper, mapper
 
 
 @mapper('virt-what')
-def virt_what(context):
-    if context.content:
-        return VirtWhat({
-            "generic": context.content[0],
-            "specific": context.content[-1]
-        })
-    else:
-        return VirtWhat({"generic": "Baremetal"})
+class VirtWhat(Mapper):
+
+    @property
+    def is_virtual(self):
+        return self.generic != "Baremetal"
+
+    @property
+    def has_specific(self):
+        return self.specific is not None and self.generic != self.specific
+
+    def parse_content(self, content):
+        if content:
+            self.generic = content[0]
+            self.specific = content[-1]
+        else:
+            self.generic = "Baremetal"
+            self.specific = None

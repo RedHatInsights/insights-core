@@ -1,5 +1,5 @@
 from falafel.tests import context_wrap
-from falafel.mappers.catalina_out import catalina_out
+from falafel.mappers.catalina_out import CatalinaOut
 
 OUT1 = """
 Nov 10, 2015 8:52:38 AM org.apache.jk.common.MsgAjp processHeader
@@ -105,13 +105,8 @@ Nov 10, 2015 6:38:27 PM org.apache.catalina.startup.Catalina start
 INFO: Server startup in 27028 ms
 """.strip()
 
-catalina_out.filters.extend([
-    "which does not generate IETF RFC 4122 compliant UUID values",
-    "SEVERE"
-])
-
 
 def test_catalina_out():
-    out_log = catalina_out(context_wrap(OUT1))
+    out_log = CatalinaOut(context_wrap(OUT1))
     assert "IETF RFC 4122 compliant UUID" in out_log
     assert len(out_log.get("SEVERE")) == 4

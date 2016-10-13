@@ -28,7 +28,7 @@ HTTPD_LANG=C
 
 
 def test_httpd_service_conf():
-    result = HTTPDService.parse_context(context_wrap(HTTPD))
+    result = HTTPDService(context_wrap(HTTPD)).data
     assert result["HTTPD"] == '/usr/sbin/httpd.worker'
     assert result.get("OPTIONS") is None
     assert result['HTTPD_LANG'] == "C"

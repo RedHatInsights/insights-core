@@ -1,19 +1,16 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
 from collections import defaultdict
-from falafel.util import defaults
+from .. import Mapper, mapper, defaults, get_active_lines, LegacyItemAccess
 
 
 @mapper('cpuinfo')
-class CpuInfo(MapperOutput):
+class CpuInfo(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
 
         def split(line):
             return [p.strip() for p in line.split(":", 1)]
 
-        data = defaultdict(list)
+        self.data = defaultdict(list)
         mappings = {
             "processor": "cpus",
             "physical id": "sockets",
@@ -25,52 +22,49 @@ class CpuInfo(MapperOutput):
             "cache size": "cache_sizes"
         }
 
-        for line in content:
-            if line.strip():
-                key, value = split(line)
-                if key in mappings:
-                    data[mappings[key]].append(value)
-
-        return data
+        for line in get_active_lines(content, comment_char="COMMAND>"):
+            key, value = split(line)
+            if key in mappings:
+                self.data[mappings[key]].append(value)
 
     def __iter__(self):
         for idx in range(len(self["cpus"])):
             yield self.get_processor_by_index(idx)
 
-    @computed
+    @property
     @defaults()
     def cpu_speed(self):
-        return self["clockspeeds"][0]
+        return self.data["clockspeeds"][0]
 
-    @computed
+    @property
     @defaults()
     def cache_size(self):
-        return self["cache_sizes"][0]
+        return self.data["cache_sizes"][0]
 
-    @computed
+    @property
     @defaults()
     def cpu_count(self):
-        return len(self["cpus"])
+        return len(self.data["cpus"])
 
-    @computed
+    @property
     @defaults()
     def socket_count(self):
-        return len(self["sockets"])
+        return len(self.data["sockets"])
 
-    @computed
+    @property
     @defaults()
     def model_name(self):
-        return self["models"][0]
+        return self.data["models"][0]
 
-    @computed
+    @property
     @defaults()
     def model_number(self):
-        return self["model_ids"][0]
+        return self.data["model_ids"][0]
 
-    @computed
+    @property
     @defaults()
     def vendor(self):
-        return self["vendors"][0]
+        return self.data["vendors"][0]
 
     def get_processor_by_index(self, index):
         return {k: v[index] for k, v in self.data.items()}

@@ -63,7 +63,7 @@ Number  Start   End     Size    Type     File system  Flags
 
 def test_parted():
     context = Context(content=PARTED_DATA.splitlines())
-    results = PartedL.parse_context(context)
+    results = PartedL(context)
     assert results is not None
     assert results.get('model') == 'Virtio Block Device (virtblk)'
     assert results.disk == '/dev/vda'
@@ -96,13 +96,13 @@ def test_parted():
     assert partitions[1].get('type') == 'primary'
 
     context = Context(content=PARTED_DATA_2.splitlines())
-    results = PartedL.parse_context(context)
+    results = PartedL(context)
     assert results is not None
     assert results.disk == '/dev/sdet'
     assert len(results.partitions) == 1
 
     context = Context(content=PARTED_DATA_3.splitlines())
-    results = PartedL.parse_context(context)
+    results = PartedL(context)
     assert results is not None
     assert results.disk == '/dev/sda'
     assert results.logical_sector_size == '512B'
@@ -111,8 +111,8 @@ def test_parted():
 
     context = Context(content=PARTED_ERR_DATA)
     with pytest.raises(ParseException):
-        PartedL.parse_context(context)
+        PartedL(context)
 
     context = Context(content=PARTED_ERR_DATA_2.splitlines())
     with pytest.raises(ParseException):
-        PartedL.parse_context(context)
+        PartedL(context)

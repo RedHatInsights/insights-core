@@ -1,4 +1,4 @@
-from falafel.mappers import systemd
+from falafel.mappers.systemd import config
 from falafel.tests import context_wrap
 
 SYSTEMD_DOCKER = """
@@ -101,13 +101,13 @@ ShutdownWatchdogSec=10min
 
 
 def test_docker():
-    docker_service = systemd.docker(context_wrap(SYSTEMD_DOCKER))
-    assert docker_service["Unit"]["After"] == "network.target"
-    assert docker_service["Service"]["NotifyAccess"] == "all"
-    assert docker_service["Service"]["Environment"] == "GOTRACEBACK=crash"
-    assert docker_service["Install"]["WantedBy"] == "multi-user.target"
-    assert docker_service["Install"].keys() == ["WantedBy"]
-    assert docker_service["Service"]["ExecStart"] == """/bin/sh -c '/usr/bin/docker-current daemon
+    docker_service = config.SystemdDocker(context_wrap(SYSTEMD_DOCKER))
+    assert docker_service.data["Unit"]["After"] == "network.target"
+    assert docker_service.data["Service"]["NotifyAccess"] == "all"
+    assert docker_service.data["Service"]["Environment"] == "GOTRACEBACK=crash"
+    assert docker_service.data["Install"]["WantedBy"] == "multi-user.target"
+    assert docker_service.data["Install"].keys() == ["WantedBy"]
+    assert docker_service.data["Service"]["ExecStart"] == """/bin/sh -c '/usr/bin/docker-current daemon
 --authorization-plugin=rhel-push-plugin
 --exec-opt native.cgroupdriver=systemd
 $OPTIONS
@@ -120,6 +120,6 @@ $INSECURE_REGISTRY
 
 
 def test_common_conf():
-    common_conf_info = systemd.common_conf(context_wrap(SYSTEMD_SYSTEM_CONF))
-    assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"
-    assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
+    common_conf_info = config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF))
+    assert common_conf_info.data["Manager"]["RuntimeWatchdogSec"] == "0"
+    assert common_conf_info.data["Manager"]["ShutdownWatchdogSec"] == "10min"

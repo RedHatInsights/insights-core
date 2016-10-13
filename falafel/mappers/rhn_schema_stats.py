@@ -1,7 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.util import parse_table
-from falafel.mappers import get_active_lines
+from .. import Mapper, mapper, parse_table, get_active_lines
 
 
 def _replace_tabs(s, ts=8):
@@ -25,7 +22,13 @@ def _lower(s, ic=True):
     return s.lower() if ic else s
 
 
-class TableSummary(MapperOutput):
+class Table(object):
+
+    def __init__(self, data):
+        self.data = data
+
+
+class TableSummary(Table):
 
     def __contains__(self, s):
         return any(s in r.get('table', '').lower() for r in self.data)
@@ -35,7 +38,7 @@ class TableSummary(MapperOutput):
         return [r for r in self.data if s in _lower(r.get('table', ''), ic)]
 
 
-class ConstraintTable(MapperOutput):
+class ConstraintTable(Table):
 
     def __contains__(self, s):
         return any(s in r.get('table', r.get('TABLE NAME', '')).lower() for r in self.data)
@@ -45,12 +48,12 @@ class ConstraintTable(MapperOutput):
         return [r for r in self.data if s in _lower(r.get('table', r.get('TABLE NAME', '')), ic)]
 
 
-class LabelTable(MapperOutput):
+class LabelTable(Table):
     pass
 
 
 @mapper('rhn-schema-stats')
-class DBStatsLog(MapperOutput):
+class DBStatsLog(Mapper):
     """
     Returns a DBStatsLog object which provides below two methods:
     - in:
@@ -117,15 +120,14 @@ class DBStatsLog(MapperOutput):
         Return the table info in which the table name contains
         the 's'
         """
-        result = self["table_summary"].get(s, ic) if "table_summary" in self.data else []
-        result.extend(self["constraint_table"].get(s, ic) if "constraint_table" in self.data else [])
+        result = self.data["table_summary"].get(s, ic) if "table_summary" in self.data else []
+        result.extend(self.data["constraint_table"].get(s, ic) if "constraint_table" in self.data else [])
         return result
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         tables = []
         table = []
-        if content[0].strip().startswith("schema"):
+        if content and content[0].strip().startswith("schema"):
             # for PostgreSQL db stats log
             for line in get_active_lines(content, comment_char="--"):
                 if line.startswith("(") and "rows" in line:
@@ -171,8 +173,10 @@ class DBStatsLog(MapperOutput):
                         pre_idx = idx
                     table.append(dict(zip(header_list, items_list)))
         if tables:
-            return {
+            self.data = {
                 "table_summary": TableSummary(tables[0]) if len(tables) > 0 else None,
                 "constraint_table": ConstraintTable(tables[1]) if len(tables) > 1 else None,
                 "label_table": LabelTable(tables[2]) if len(tables) > 2 else None
             }
+        else:
+            self.data = {}

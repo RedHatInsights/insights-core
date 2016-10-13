@@ -1,13 +1,11 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
 import xml.etree.ElementTree as ET
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('rhn-entitlement-cert.xml')
-class RHNCertConf(MapperOutput):
+class RHNCertConf(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         ---Sample---
         <?xml version="1.0" encoding="UTF-8"?>
@@ -65,12 +63,12 @@ class RHNCertConf(MapperOutput):
                    ...
         """
 
-        # ignore empty xml files
+        # ignore empty xml file
+        rhn_cert = {}
         if len(content) <= 3:
-            return
+            return rhn_cert
 
         rhntree = ET.fromstring('\n'.join(content))
-        rhn_cert = {}
         channel_familes = {}
         for field in rhntree.findall(".//rhn-cert-field"):
             family = field.get('family')
@@ -84,4 +82,4 @@ class RHNCertConf(MapperOutput):
         singature = rhntree.findall(".//rhn-cert-signature")
         rhn_cert['signature'] = singature[0].text
 
-        return rhn_cert
+        self.data = rhn_cert

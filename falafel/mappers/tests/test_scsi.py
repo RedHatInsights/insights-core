@@ -23,10 +23,10 @@ Host: scsi0 Channel: 00 Id: 00 Lun: 03
 """
 
 
-class TestSCSIMapperOutput(unittest.TestCase):
+class TestSCSIMapper(unittest.TestCase):
     def test_parse(self):
         context = context_wrap(SCSI_OUTPUT)
-        result = SCSI.parse_context(context)
+        result = SCSI(context)
         assert len(result) == 5
         r = result[0]
         assert r.host == "scsi0"

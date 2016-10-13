@@ -1,12 +1,10 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('cmdline')
-class CmdLine(MapperOutput):
+class CmdLine(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Content format is like "ro root=/dev/mapper/vg_rootvg-lv_root"
 
@@ -27,4 +25,4 @@ class CmdLine(MapperOutput):
             else:
                 (key, value) = el.split("=", 1)
                 cmdline_properties.setdefault(key, []).append(value)
-        return cmdline_properties
+        self.data = cmdline_properties

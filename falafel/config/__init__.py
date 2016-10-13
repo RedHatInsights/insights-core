@@ -472,7 +472,8 @@ class InsightsDataSpecBase(object):
     def get_regex(self, prefix='', suffix='$', analysis_target=None):
         # this method, and it's overrides in derived classes
         # is what the engine uses to find files in archives
-        return re.compile(prefix + self.get_path(analysis_target=analysis_target) + suffix)
+        regex = prefix + self.get_path(analysis_target=analysis_target) + suffix
+        return re.compile(regex.replace("//", "/"))
 
     def get_archive_file_name(self, analysis_target):
         # this method, and it's overrides in derived classes
@@ -805,7 +806,8 @@ def json_format(fmt=None):
             ("installtime", "INSTALLTIME:date"),
             ("buildtime", "BUILDTIME"),
             ("rsaheader", "RSAHEADER:pgpsig"),
-            ("dsaheader", "DSAHEADER:pgpsig")
+            ("dsaheader", "DSAHEADER:pgpsig"),
+            ("srpm", "SOURCERPM")
         ]
 
     def inner(idx=None):

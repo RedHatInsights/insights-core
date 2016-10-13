@@ -1,34 +1,29 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import Mapper, mapper
 
 
 @mapper('chronyc_sources')
-class ChronycSources(MapperOutput):
+class ChronycSources(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Get source, mode and state for chrony
         """
-        source_list = []
+        self.data = []
         for row in content[3:]:
             if row.strip():
                 values = row.split(" ", 2)
-                source_list.append({"source": values[1], "mode": values[0][0], "state": values[0][1]})
-        return source_list if source_list else None
+                self.data.append({"source": values[1], "mode": values[0][0], "state": values[0][1]})
 
 
 @mapper('ntpq_pn')
-class NtpqPn(MapperOutput):
+class NtpqPn(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Get source, flag for ntp
         """
-        source_list = []
+        self.data = []
         for row in content[2:]:
             if row.strip():
                 values = row.split(" ", 2)
-                source_list.append({"source": values[0][1:], "flag": values[0][0]})
-        return source_list if source_list else None
+                self.data.append({"source": values[0][1:], "flag": values[0][0]})

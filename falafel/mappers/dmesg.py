@@ -1,5 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import LogFileOutput
+from .. import LogFileOutput, mapper
 
 
 class DmesgLineList(LogFileOutput):
@@ -16,7 +15,7 @@ def dmesg(context):
     """
     Returns an object of DmesgLineList
     """
-    return DmesgLineList(context.content, path=context.path)
+    return DmesgLineList(context)
 
 
 @mapper('vmcore-dmesg')
@@ -24,4 +23,4 @@ def vmcore_dmesg(context):
     """
     Returns an object of DmesgLineList
     """
-    return DmesgLineList(context.content, path=context.path)
+    return DmesgLineList(context)

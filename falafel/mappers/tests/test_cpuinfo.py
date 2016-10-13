@@ -2,11 +2,13 @@ from falafel.mappers.cpuinfo import CpuInfo
 from falafel.tests import context_wrap
 
 CPUINFO = """
+COMMAND> cat /proc/cpuinfo
 processor       : 0
 vendor_id       : GenuineIntel
 cpu family      : 6
 model           : 45
 model name      : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
+
 stepping        : 2
 microcode       : 1808
 cpu MHz         : 2900.000
@@ -36,7 +38,7 @@ address sizes   : 40 bits physical, 48 bits virtual
 
 
 def test_cpuinfo():
-    cpu_info = CpuInfo.parse_context(context_wrap(CPUINFO))
+    cpu_info = CpuInfo(context_wrap(CPUINFO))
     assert cpu_info.cpu_count == 2
     assert cpu_info.socket_count == 2
     assert cpu_info.vendor == "GenuineIntel"
@@ -54,5 +56,5 @@ def test_cpuinfo():
 
 
 def test_empty_cpuinfo():
-    cpu_info = CpuInfo.parse_context(context_wrap(""))
-    assert cpu_info.cpu_count is None
+    cpu_info = CpuInfo(context_wrap(""))
+    assert cpu_info.cpu_count == 0

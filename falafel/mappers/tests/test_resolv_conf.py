@@ -21,7 +21,7 @@ nameserver 192.168.30.1
 
 
 def test_resolv_conf():
-    resolv_info = ResolvConf.parse_context(context_wrap(RESOLVCONF))
+    resolv_info = ResolvConf(context_wrap(RESOLVCONF))
 
     assert resolv_info.get('search') == ['a.b.com', 'b.c.com']
     assert resolv_info.get('options') == ['timeout:2', 'attempts:2']
@@ -31,7 +31,7 @@ def test_resolv_conf():
 
 # Testing when 'search' and 'domain' keywords exit both.
 def test_resolv_conf_m():
-    resolv_info = ResolvConf.parse_context(context_wrap(RESOLVCONF_M))
+    resolv_info = ResolvConf(context_wrap(RESOLVCONF_M))
 
     assert resolv_info.get('domain') == ['ttt.com']
     assert resolv_info.get('search') == ['ttt.com']

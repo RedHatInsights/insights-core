@@ -1,6 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.core import LogFileOutput
+from .. import Mapper, LogFileOutput, mapper
 
 
 @mapper("rabbitmq_report", ["total_limit"])
@@ -13,16 +11,15 @@ def fd_total_limit(context):
 
 
 @mapper("rabbitmq_users")
-class RabbitMQUsers(MapperOutput):
+class RabbitMQUsers(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         users_dict = {}
         for line in content[1:-1]:
             line_splits = line.split()
             if len(line_splits) > 1:
                 users_dict[line_splits[0]] = line_splits[1][1:-1]
-        return users_dict
+        self.data = users_dict
 
 
 @mapper("rabbitmq_startup_log")

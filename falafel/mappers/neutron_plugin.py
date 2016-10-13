@@ -1,9 +1,8 @@
-from falafel.core import MapperOutput
-from falafel.core.plugins import mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper("neutron_plugin.ini")
-class NeutronPlugin(MapperOutput):
+class NeutronPlugin(LegacyItemAccess, Mapper):
     """
     parsing plugin.ini and return dict.
     :return: a dict(dict)   Example:
@@ -35,8 +34,7 @@ class NeutronPlugin(MapperOutput):
     }
     """
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         neutron_dict = {}
         section_dict = {}
         for line in content:
@@ -50,4 +48,4 @@ class NeutronPlugin(MapperOutput):
             elif '=' in line:
                 key, value = line.split("=", 1)
                 section_dict[key.strip()] = value.strip()
-        return neutron_dict
+        self.data = neutron_dict

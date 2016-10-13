@@ -24,7 +24,7 @@ Messages.filters.extend([
 
 
 def test_messages():
-    msg_info = Messages.parse_context(context_wrap(MSGINFO))
+    msg_info = Messages(context_wrap(MSGINFO))
     bona_list = msg_info.get('(root) LIST (root)')
     assert 2 == len(bona_list)
     assert bona_list[0].get('timestamp') == "Apr 22 10:37:32"

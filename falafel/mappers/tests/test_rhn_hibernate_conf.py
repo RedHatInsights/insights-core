@@ -42,7 +42,7 @@ hibernate.jdbc.batch_size=0
 
 
 def test_rhn_hibernate_conf():
-    result = RHNHibernateConf.parse_context(context_wrap(conf_content))
+    result = RHNHibernateConf(context_wrap(conf_content))
     assert result.get("hibernate.c3p0.max_statements") == "0"
     assert result.get("hibernate.connection.driver_proto") == ""
     assert result.get("hibernate.c3p0.preferredTestQuery") == "select 'c3p0 ping' from dual"

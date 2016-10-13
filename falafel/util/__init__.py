@@ -157,3 +157,16 @@ def get_addr():
 
 def get_path_for_system_id(category, system_id):
     return os.path.join(TMP_DIR, category, system_id[:2], system_id)
+
+
+def word_wrap(line, wrap_len=72):
+    if len(line) > wrap_len:
+        for i, c in enumerate(reversed(line[:wrap_len])):
+            if c == " ":
+                break_point = wrap_len - i
+                yield line[:break_point].strip()
+                for more in word_wrap(line[break_point:], wrap_len):
+                    yield more
+                break
+    else:
+        yield line.strip()

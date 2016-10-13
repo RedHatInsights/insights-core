@@ -1147,7 +1147,7 @@ osp.role = "Controller"
 
 
 def test_match():
-    result = CinderConf.parse_context(context_wrap(cinder_content, osp=osp))
+    result = CinderConf(context_wrap(cinder_content, osp=osp))
     assert result.data.get("DEFAULT").get("enabled_backends") == "tripleo_ceph"
     assert result.data.get("DEFAULT").get("glance_api_ssl_compression") == "False"
     assert result.data.get("DEFAULT").get("eqlx_use_chap") == "false"

@@ -4,12 +4,11 @@ Block ID
 """
 
 import re
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
+from .. import Mapper, mapper
 
 
 @mapper("blkid")
-class BlockIDInfo(MapperOutput):
+class BlockIDInfo(Mapper):
     """
     Typical content of the ``blkid`` command output looks like::
 
@@ -51,17 +50,15 @@ class BlockIDInfo(MapperOutput):
                 }
             ]
     """
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         blkid_output = []
-        if len(content) > 0:
-            for line in content:
-                dev_name, attributes = line.split(":", 1)
-                device = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line)}
-                device['NAME'] = dev_name.strip()
-                blkid_output.append(device)
+        for line in content:
+            dev_name, attributes = line.split(":", 1)
+            device = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line)}
+            device['NAME'] = dev_name.strip()
+            blkid_output.append(device)
 
-        return blkid_output
+        self.data = blkid_output
 
     def filter_by_type(self, fs_type):
         return [row for row in self.data if row['TYPE'] == fs_type]

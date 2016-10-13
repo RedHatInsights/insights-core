@@ -109,7 +109,7 @@ schema\t\t\t       2014-05-01 2014-05-01 satellite-schema\t\t\t  5.5.0.22   1.el
 
 def test_rhn_schema_stats_pgs():
 
-    pg_log = DBStatsLog.parse_context(context_wrap(POSTGRESQL_LOG))
+    pg_log = DBStatsLog(context_wrap(POSTGRESQL_LOG))
     assert 'rhnsnapshotPACKAGE' in pg_log
     assert 'rhnsnapshotpackage_' not in pg_log
     assert pg_log.get_table('chkpb_probe_type_ck') == []
@@ -123,7 +123,7 @@ def test_rhn_schema_stats_pgs():
 
 
 def test_rhn_schema_stats_ora():
-    ora_log = DBStatsLog.parse_context(context_wrap(ORACLE_LOG))
+    ora_log = DBStatsLog(context_wrap(ORACLE_LOG))
     assert 'rhnerratatmP' in ora_log
     assert 'rhnerratatmP_' not in ora_log
     assert ora_log.get_table('rhnerrataseverity', ic=False) == []

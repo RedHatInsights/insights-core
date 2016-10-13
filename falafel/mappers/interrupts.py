@@ -4,14 +4,54 @@ Interrupts
 
 Provides parsing for contents of ``/proc/interrupts``.
 """
-from falafel.core import computed, MapperOutput
-from falafel.core.plugins import mapper
-from falafel.mappers import ParseException
+from .. import Mapper, mapper
+from ..mappers import ParseException
 
 
 @mapper("interrupts")
-class Interrupts(MapperOutput):
-    """Container class for parsed ``/proc/interrupts`` information."""
+class Interrupts(Mapper):
+    """Parse contents of ``/proc/interrupts``.
+
+    The contents of a typical ``interrupts`` file looks like::
+
+                 CPU0       CPU1       CPU2       CPU3
+        0:         37          0          0          0  IR-IO-APIC   2-edge      timer
+        1:          3          2          1          0  IR-IO-APIC   1-edge      i8042
+        8:          0          1          0          0  IR-IO-APIC   8-edge      rtc0
+        9:      11107       2316       4040       1356  IR-IO-APIC   9-fasteoi   acpi
+      NMI:        210         92        179         96   Non-maskable interrupts
+      LOC:    7561411    2488524    6527767    2448192   Local timer interrupts
+      ERR:          0
+      MIS:          0
+
+    Parameters
+    ----------
+
+    content : list
+        Lines in list represent content of ``/proc/interrupts``.
+
+    Returns
+    -------
+
+    dict
+        A list of dictionaries containing information for each row of the
+        content.  Blank values in content will not be present in the
+        dictionary.
+
+    .. code-block:: python
+
+        [
+            { 'irq': '0',
+              'num_cpus': 4,
+              'counts': [37, 0, 0, 0],
+              'type_device': 'IR-IO-APIC   2-edge      timer'},
+            # Other rows present in output
+            { 'irq': 'MIS',
+              'num_cpus': 4,
+              'counts': [0, ]}
+        ]
+
+    """
 
     def get(self, filter):
         """Returns list of records containing ``filter`` in the type/device field."""
@@ -20,56 +60,13 @@ class Interrupts(MapperOutput):
     def __iter__(self):
         return iter(self.data)
 
-    @computed
+    @property
     def num_cpus(self):
         """Total number of CPUs."""
         return int(self.data[0]['num_cpus'])
 
-    @staticmethod
-    def parse_content(content):
-        """Parse contents of ``/proc/interrupts``.
-
-        The contents of a typical ``interrupts`` file looks like::
-
-                     CPU0       CPU1       CPU2       CPU3
-            0:         37          0          0          0  IR-IO-APIC   2-edge      timer
-            1:          3          2          1          0  IR-IO-APIC   1-edge      i8042
-            8:          0          1          0          0  IR-IO-APIC   8-edge      rtc0
-            9:      11107       2316       4040       1356  IR-IO-APIC   9-fasteoi   acpi
-          NMI:        210         92        179         96   Non-maskable interrupts
-          LOC:    7561411    2488524    6527767    2448192   Local timer interrupts
-          ERR:          0
-          MIS:          0
-
-        Parameters
-        ----------
-
-        content : list
-            Lines in list represent content of ``/proc/interrupts``.
-
-        Returns
-        -------
-
-        dict
-            A list of dictionaries containing information for each row of the
-            content.  Blank values in content will not be present in the
-            dictionary.
-
-        .. code-block:: python
-
-            [
-                { 'irq': '0',
-                  'num_cpus': 4,
-                  'counts': [37, 0, 0, 0],
-                  'type_device': 'IR-IO-APIC   2-edge      timer'},
-                # Other rows present in output
-                { 'irq': 'MIS',
-                  'num_cpus': 4,
-                  'counts': [0, ]}
-            ]
-
-        """
-        all_ints = []
+    def parse_content(self, content):
+        self.data = []
         try:
             cpu_names = content[0].split()
         except:
@@ -88,7 +85,6 @@ class Interrupts(MapperOutput):
             else:
                 for part, cpu in zip(parts[1:], cpu_names):
                     one_int['counts'].append(int(part))
-            all_ints.append(one_int)
-        if len(all_ints) < 1:
+            self.data.append(one_int)
+        if len(self.data) < 1:
             raise ParseException("No information in /proc/interrupts")
-        return all_ints

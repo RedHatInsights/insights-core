@@ -1,5 +1,4 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput, computed
+from .. import Mapper, mapper
 
 eus = [
     '5.0.z',
@@ -50,10 +49,12 @@ def _parse(lines):
 
 @mapper("yum-repolist")
 def repo_list(context):
-    return YumRepoList(list(_parse(context.content)))
+    """Deprecated, do not use."""
+    return YumRepoList(context)
 
 
-class YumRepoList(MapperOutput):
+@mapper("yum-repolist")
+class YumRepoList(Mapper):
 
     def __len__(self):
         return len(self.data)
@@ -64,7 +65,10 @@ class YumRepoList(MapperOutput):
         else:
             return super(YumRepoList, self).__getitem__(idx)
 
-    @computed
+    def parse_content(self, content):
+        self.data = list(_parse(content))
+
+    @property
     def eus(self):
         euses = []
         for repo in [r["id"] for r in self.data]:

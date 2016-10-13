@@ -1,4 +1,4 @@
-from falafel.mappers.pacemaker_log import pacemaker_log
+from falafel.mappers.pacemaker_log import PacemakerLog
 from falafel.tests import context_wrap
 
 PACEMAKER_LOG = """
@@ -16,5 +16,5 @@ Aug 21 12:58:32 [11661] example.redhat.com       crmd:     info: do_state_transi
 
 
 def test_pacemaker_log():
-    pacemaker = pacemaker_log(context_wrap(PACEMAKER_LOG))
+    pacemaker = PacemakerLog(context_wrap(PACEMAKER_LOG))
     assert "Progressed to state S_POLICY_ENGINE after C_TIMER_POPPED" in pacemaker

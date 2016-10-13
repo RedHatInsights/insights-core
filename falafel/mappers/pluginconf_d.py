@@ -1,38 +1,35 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.mappers import get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('pluginconf.d')
-class PluginConfD(MapperOutput):
-
-    @staticmethod
-    def parse_content(content):
-        '''
-        Return an object contains a dict.
-        {
-            "main": {
-                "gpgcheck": "1",
-                "enabled": "0",
-                "timeout": "120"
-            }
+class PluginConfD(Mapper):
+    '''
+    Return an object contains a dict.
+    {
+        "main": {
+            "gpgcheck": "1",
+            "enabled": "0",
+            "timeout": "120"
         }
-        ------------------------------------------------
-        There are several files in 'pluginconf.d' directory, which have the same format.
-        -----------one of the files : rhnplugin.conf
-        [main]
-        enabled = 0
-        gpgcheck = 1
-        timeout = 120
+    }
+    ------------------------------------------------
+    There are several files in 'pluginconf.d' directory, which have the same format.
+    -----------one of the files : rhnplugin.conf
+    [main]
+    enabled = 0
+    gpgcheck = 1
+    timeout = 120
 
-        # You can specify options per channel, e.g.:
-        #
-        #[rhel-i386-server-5]
-        #enabled = 1
-        #
-        #[some-unsigned-custom-channel]
-        #gpgcheck = 0
-        '''
+    # You can specify options per channel, e.g.:
+    #
+    #[rhel-i386-server-5]
+    #enabled = 1
+    #
+    #[some-unsigned-custom-channel]
+    #gpgcheck = 0
+    '''
+
+    def parse_content(self, content):
         plugin_dict = {}
         section_dict = {}
         key = None
@@ -47,4 +44,4 @@ class PluginConfD(MapperOutput):
             else:
                 if key:
                     section_dict[key] = ','.join([section_dict.get(key), line])
-        return plugin_dict
+        self.data = plugin_dict

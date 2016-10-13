@@ -1,70 +1,52 @@
-from falafel.core.plugins import mapper
-from falafel.core import MapperOutput
-from falafel.mappers import get_active_lines
-
-
-class YumReposD(MapperOutput):
-    pass
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('yum.repos.d')
-def yum_repos_d(context):
-    '''
-    Return a object contains a dict.
-    There are several files in 'yum.repos.d' directory, which have the same format.
-    For example:
-    --------one of the files : rhel-source.repo---------
-    [rhel-source]
-    name=Red Hat Enterprise Linux $releasever - $basearch - Source
-    baseurl=ftp://ftp.redhat.com/pub/redhat/linux/enterprise/$releasever/en/os/SRPMS/
-    enabled=0
-    gpgcheck=1
-    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+class YumReposD(Mapper):
 
-    [rhel-source-beta]
-    name=Red Hat Enterprise Linux $releasever Beta - $basearch - Source
-    baseurl=ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/
-    enabled=0
-    gpgcheck=1
-    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-    ----------------------------------------------------
-    The output's dict will looks like:
-    {
-        "rhel-source-beta": {
-            "gpgcheck": "1",
-            "gpgkey": "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
-            "enabled": "0",
-            "name": "Red Hat Enterprise Linux $releasever Beta - $basearch - Source",
-            "baseurl": "ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/"
-        },
-        "rhel-source": {
-            "gpgcheck": "1",
-            "gpgkey": "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
-            "enabled": "0",
-            "name": "Red Hat Enterprise Linux $releasever - $basearch - Source",
-            "baseurl": "ftp://ftp.redhat.com/pub/redhat/linux/enterprise/$releasever/en/os/SRPMS/"
+    def get(self, key):
+        return self.data.get(key)
+
+    def parse_content(self, content):
+        '''
+        Return an object contains a dict.
+        {
+            "rhel-source": {
+                "gpgcheck": "1",
+                "gpgkey": ["file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release",
+                           "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release_bak"]
+                "enabled": "0",
+                "name": "Red Hat Enterprise Linux $releasever - $basearch - Source",
+                "baseurl": "ftp://ftp.redhat.com/pub/redhat/linux/enterprise/$releasever/en/os/SRPMS/"
+            }
         }
-    }
-    '''
-    repos = {}
-    section = None
-    info = {}
-
-    for line in get_active_lines(context.content):
-        if section:
+        ----------------------------------------------------
+        There are several files in 'yum.repos.d' directory, which have the same
+        format.  For example:
+        --------one of the files : rhel-source.repo---------
+        [rhel-source]
+        name=Red Hat Enterprise Linux $releasever - $basearch - Source
+        baseurl=ftp://ftp.redhat.com/pub/redhat/linux/enterprise/$releasever/en/os/SRPMS/
+        enabled=0
+        gpgcheck=1
+        gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+               file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release_bak
+        '''
+        repos_dict = {}
+        section_dict = {}
+        key = None
+        for line in get_active_lines(content):
             if line.startswith('['):
-                repos[section] = info
-                section = line[1:-1]
-                info = {}
-                continue
+                section_dict = {}
+                repos_dict[line[1:-1]] = section_dict
+            elif '=' in line:
+                key, _, value = line.partition("=")
+                key = key.strip()
+                if key in ('baseurl', 'gpgkey'):
+                    section_dict[key] = [value.strip()]
+                else:
+                    section_dict[key] = value.strip()
             else:
-                key, val = line.split("=", 1)
-                info[key.strip()] = val.strip()
-        else:
-            # assign the first line to first section
-            section = line[1:-1]
-    # Some files contain nothing.
-    if section:
-        # Add the last section
-        repos[section] = info
-    return YumReposD(repos, path=context.path)
+                if key and isinstance(section_dict[key], list):
+                    section_dict[key].append(line)
+        self.data = repos_dict

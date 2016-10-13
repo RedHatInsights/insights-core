@@ -9,7 +9,7 @@ LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl'|LVM2_DE
 
 
 def test_pvs():
-    pvs_records = lvm.Pvs.parse_context(context_wrap(PVS_INFO))
+    pvs_records = lvm.Pvs(context_wrap(PVS_INFO))
     assert len(list(pvs_records)) == 2
     assert pvs_records.data["content"][1] == {
         'Fmt': 'lvm2',

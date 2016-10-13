@@ -1,5 +1,5 @@
-from falafel.core.plugins import mapper
 import os
+from .. import mapper
 
 
 @mapper("limits.conf")
