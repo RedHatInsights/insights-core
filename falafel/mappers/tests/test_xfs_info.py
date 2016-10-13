@@ -3,7 +3,7 @@ from falafel.tests import context_wrap
 
 class TestXFSInfo():
     def test_example_xfs_info(self):
-        xfs = xfs_info.XFSInfo(context_wrap("""
+        xfs_obj = xfs_info.XFSInfo(context_wrap("""
 meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
          =              sectsz=512   attr=2
 data     =              bsize=4096   blocks=536869888, imaxpct=5
@@ -12,7 +12,8 @@ naming   =version 2     bsize=4096
 log      =internal      bsize=4096   blocks=32768, version=2
          =              sectsz=512   sunit=32 blks, lazy-count=1
 realtime =none          extsz=524288 blocks=0, rtextents=0
-        """.strip())).xfs_info
+        """.strip()))
+        xfs = xfs_obj.xfs_info
 
         # Section checks
         assert 'meta-data' in xfs
@@ -54,8 +55,12 @@ realtime =none          extsz=524288 blocks=0, rtextents=0
         assert xfs['realtime']['blocks'] == 0
         assert xfs['realtime']['rtextents'] == 0
 
+        # Calculated information checks
+        assert xfs_obj.data_size == 536869888 * 4096
+        assert xfs_obj.log_size == 32768 * 4096
+
     def test_root_xfs_info(self):
-        xfs = xfs_info.XFSInfo(context_wrap("""
+        xfs_obj = xfs_info.XFSInfo(context_wrap("""
 meta-data=/dev/mapper/vgSys-lvRoot isize=256    agcount=4, agsize=320000 blks
          =                       sectsz=512   attr=2, projid32bit=1
          =                       crc=0        finobt=0
@@ -65,8 +70,8 @@ naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
 log      =internal               bsize=4096   blocks=2560, version=2
          =                       sectsz=512   sunit=0 blks, lazy-count=1
 realtime =none                   extsz=4096   blocks=0, rtextents=0
-
-        """.strip())).xfs_info
+        """.strip()))
+        xfs = xfs_obj.xfs_info
 
         # Section checks
         assert 'meta-data' in xfs
@@ -113,8 +118,12 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         assert xfs['realtime']['blocks'] == 0
         assert xfs['realtime']['rtextents'] == 0
 
+        # Calculated information checks
+        assert xfs_obj.data_size == 1280000 * 4096
+        assert xfs_obj.log_size == 2560 * 4096
+
     def test_ext_log_xfs_info(self):
-        xfs = xfs_info.XFSInfo(context_wrap("""
+        xfs_obj = xfs_info.XFSInfo(context_wrap("""
 meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
          =                       sectsz=512   attr=2, projid32bit=1
          =                       crc=0        finobt=0
@@ -124,8 +133,14 @@ naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
 log      =log.xfs.image          bsize=4096   blocks=25600, version=2
          =                       sectsz=512   sunit=0 blks, lazy-count=1
 realtime =none                   extsz=4096   blocks=0, rtextents=0
-        """.strip())).xfs_info
+        """.strip()))
+        xfs = xfs_obj.xfs_info
 
         # Just test the few things that might be different
         assert xfs['meta-data']['specifier'] == 'data.xfs.image'
         assert xfs['log']['specifier'] == 'log.xfs.image'
+
+        # Calculated information checks
+        assert xfs_obj.data_size == 262144 * 4096
+        assert xfs_obj.log_size == 25600 * 4096
+
