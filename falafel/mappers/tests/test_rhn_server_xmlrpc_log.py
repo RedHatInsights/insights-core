@@ -20,13 +20,13 @@ def test_log_data():
 
     # Check the first log line for all fields
     line = log.get('10.4.4.17: xmlrpc/registration.welcome_message')[0]
-    
+
     assert line['timestamp'] == '2016/04/11 05:52:01 -04:00'
     assert line['pid'] == '23630'
     assert line['client_ip'] == '10.4.4.17'
     assert line['module'] == 'xmlrpc'
     assert line['function'] == 'registration.welcome_message'
-    assert line['client_id'] == None
+    assert line['client_id'] is None
     assert line['args'] == "'lang: None'"
 
     # Check that get works
@@ -37,7 +37,7 @@ def test_log_data():
 
     # Check parsing of lines without argument lists
     line = log.get('registration.register_osad_jid')[0]
-    assert line['args'] == None
+    assert line['args'] is None
 
     # Check lines that include the client ID
     line = log.get('__add_hw_profile_no_auth')[0]
