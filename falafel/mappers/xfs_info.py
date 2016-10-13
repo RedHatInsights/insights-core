@@ -55,7 +55,6 @@ class XFSInfo(Mapper):
 #            else:
 #                print "Warning: didn't match line regex"
 
-        print xfs_info
         self.xfs_info = xfs_info
 
     def __repr__(self):
