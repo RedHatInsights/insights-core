@@ -69,17 +69,17 @@ class InstalledRpms(Mapper):
                             # Both ways failed
                             self.unparsed.append(line)
 
-    def __contains__(self, name):
+    def __contains__(self, package_name):
         """
         Checks if package name is in list of installed RPMs.
 
         Args:
-            name (str): RPM package name
+            package_name (str): RPM package name such as 'bash'
 
         Returns:
-            bool: True if package name in in list of installed packages, otherwise false
+            bool: True if package name is in list of installed packages, otherwise False
         """
-        return name in self.packages
+        return package_name in self.packages
 
     @property
     def corrupt(self):
@@ -91,43 +91,43 @@ class InstalledRpms(Mapper):
         """
         return any('rpmdbNextIterator' in s for s in self.errors)
 
-    def get_max(self, name):
+    def get_max(self, package_name):
         """
-        Returns the highest version of the installed RPM with the given name.
+        Returns the highest version of the installed package with the given name.
 
         Args:
-            name (str): Installed RPM package name
+            package_name (str): Installed RPM package name such as 'bash'
 
         Returns:
             InstalledRpm: Installed RPM with highest version
         """
-        if name not in self.packages:
+        if package_name not in self.packages:
             return None
         else:
-            return max(self.packages[name])
+            return max(self.packages[package_name])
 
-    def get_min(self, name):
+    def get_min(self, package_name):
         """
-        Returns the lowest version of the installed RPM with the given name. This should be handy
-        for checking against list of vulnerable versions.
+        Returns the lowest version of the installed package with the given name.
 
         Args:
-            name(str): Installed RPM package name
+            package_name (str): Installed RPM package name such as 'bash'
 
         Returns:
             InstalledRpm: Installed RPM with lowest version
         """
-        if name not in self.packages:
+        if package_name not in self.packages:
             return None
         else:
-            return min(self.packages[name])
+            return min(self.packages[package_name])
 
-    def check_versions_installed(self, packages):
+    def check_versions_installed(self, packages_strings):
         """
         Check if any of the packages listed in a list is installed on the system.
 
         Args:
-            packages (iterable): list/iterable of checked package versions
+            packages_strings (iterable): list/iterable of checked package strings such as
+                                         ['bash-4.2.39-3.el7', ...]
 
         Returns:
             dict: list of detected packages and list of their names in the following format,
@@ -137,20 +137,21 @@ class InstalledRpms(Mapper):
                    PACKAGE_NAMES: installed_package_names}
         """
         installed_packages = set(chain.from_iterable(self.packages.values()))
-        installed_listed_packages = [a for a in installed_packages if a.package in packages]
+        installed_listed_packages = [a for a in installed_packages if a.package in packages_strings]
         installed_listed_package_strings = sorted(a.package for a in installed_listed_packages)
         installed_listed_package_names = sorted({a.name for a in installed_listed_packages})
         if installed_listed_packages:
             return {PACKAGES: installed_listed_package_strings,
                     PACKAGE_NAMES: installed_listed_package_names}
 
-    def vulnerable_versions_installed(self, vulnerable_packages):
+    def vulnerable_versions_installed(self, vulnerable_package_strings):
         """
         Check if any of the packages listed in a list of vulnerable packages is installed on
         the system.
 
         Args:
-            vulnerable_packages (iterable): list/iterable of vulnerable package versions
+            vulnerable_package_strings (iterable): list/iterable of vulnerable package strings
+                                                   such as ['bash-4.2.39-3.el7', ...]
 
         Returns:
             dict: list of detected packages and list of their names in the following format,
@@ -163,16 +164,16 @@ class InstalledRpms(Mapper):
             This exists only for compatibility with older security rules, use
             'check_installed_version' method instead.
         """
-        result = self.check_versions_installed(vulnerable_packages)
+        result = self.check_versions_installed(vulnerable_package_strings)
         if result:
             return {VULNERABLE_PACKAGES: result[PACKAGES], PACKAGE_NAMES: result[PACKAGE_NAMES]}
 
-    def check_package_installed(self, package):
+    def check_package_installed(self, package_name):
         """
         Check if package with concrete name is installed on the system.
 
         Args:
-            package (str): name of package
+            package_name (str): name of package such as 'bash'
 
         Returns:
             dict: first found full package name which matches searched package in the following
@@ -180,8 +181,8 @@ class InstalledRpms(Mapper):
 
                   {INSTALLED_PACKAGE: package_found}
         """
-        if package in self.packages:
-            return {INSTALLED_PACKAGE: self.packages[package][0].package}
+        if package_name in self.packages:
+            return {INSTALLED_PACKAGE: self.packages[package_name][0].package}
 
 
 class InstalledRpm(object):
@@ -267,7 +268,7 @@ class InstalledRpm(object):
         Helper method for finding if arch separator is '.' or '-'
 
         Args:
-            package_string (str): dash separated package string
+            package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'
 
         Returns:
             str: arch separator
@@ -280,7 +281,7 @@ class InstalledRpm(object):
         Helper method for parsing package string.
 
         Args:
-            package_string (str): dash separated package string
+            package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'
 
         Returns:
             dict: dictionary containing 'name', 'version', 'release', and 'arch' keys
@@ -343,6 +344,10 @@ class InstalledRpm(object):
             return rpm
 
     def __getitem__(self, item):
+        """
+        Allows to use `rpm["element"]` instead of `rpm.element`. Dot notation should be preferred,
+        however it is especially useful for values containing dash, such as "pgpsig-short".
+        """
         return getattr(self, item)
 
     def __str__(self):
