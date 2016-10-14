@@ -1,4 +1,3 @@
-import unittest
 from falafel.mappers.smartctl import SMARTctl
 from falafel.tests import context_wrap
 
@@ -25,37 +24,37 @@ SMART support is: Enabled
 SMART overall-health self-assessment test result: PASSED
 
 General SMART Values:
-Offline data collection status:  (0x00)	Offline data collection activity
-					was never started.
-					Auto Offline Data Collection: Disabled.
-Self-test execution status:      (   0)	The previous self-test routine completed
-					without error or no self-test has ever 
-					been run.
+Offline data collection status:  (0x00) Offline data collection activity
+                    was never started.
+                    Auto Offline Data Collection: Disabled.
+Self-test execution status:      (   0) The previous self-test routine completed
+                    without error or no self-test has ever 
+                    been run.
 Total time to complete Offline 
-data collection: 		(    0) seconds.
+data collection:        (    0) seconds.
 Offline data collection
-capabilities: 			 (0x73) SMART execute Offline immediate.
-					Auto Offline data collection on/off support.
-					Suspend Offline collection upon new
-					command.
-					No Offline surface scan supported.
-					Self-test supported.
-					Conveyance Self-test supported.
-					Selective Self-test supported.
-SMART capabilities:            (0x0003)	Saves SMART data before entering
-					power-saving mode.
-					Supports SMART auto save timer.
-Error logging capability:        (0x01)	Error logging supported.
-					General Purpose Logging supported.
+capabilities:            (0x73) SMART execute Offline immediate.
+                    Auto Offline data collection on/off support.
+                    Suspend Offline collection upon new
+                    command.
+                    No Offline surface scan supported.
+                    Self-test supported.
+                    Conveyance Self-test supported.
+                    Selective Self-test supported.
+SMART capabilities:            (0x0003) Saves SMART data before entering
+                    power-saving mode.
+                    Supports SMART auto save timer.
+Error logging capability:        (0x01) Error logging supported.
+                    General Purpose Logging supported.
 Short self-test routine 
-recommended polling time: 	 (   1) minutes.
+recommended polling time:    (   1) minutes.
 Extended self-test routine
-recommended polling time: 	 (  78) minutes.
+recommended polling time:    (  78) minutes.
 Conveyance self-test routine
-recommended polling time: 	 (   2) minutes.
-SCT capabilities: 	       (0x1031)	SCT Status supported.
-					SCT Feature Control supported.
-					SCT Data Table supported.
+recommended polling time:    (   2) minutes.
+SCT capabilities:          (0x1031) SCT Status supported.
+                    SCT Feature Control supported.
+                    SCT Data Table supported.
 
 SMART Attributes Data Structure revision number: 10
 Vendor Specific SMART Attributes with Thresholds:
@@ -145,27 +144,27 @@ Device does not support Self Test logging
 
 """
 
-def test_standard_drive():
-    data = SMARTctl(
-        context_wrap(STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda')
-    )
 
-    print "data:", data
+def test_standard_drive():
+    data = SMARTctl(context_wrap(
+        STANDARD_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sda'
+    ))
+
     # Device assertions
     assert data.device == 'sda'
 
     # Information assertions
-    assert data.info['info']['Device Model']     == 'ST500LM021-1KJ152'
-    assert data.info['info']['Serial Number']    == 'W620AT02'
+    assert data.info['info']['Device Model'] == 'ST500LM021-1KJ152'
+    assert data.info['info']['Serial Number'] == 'W620AT02'
     assert data.info['info']['LU WWN Device Id'] == '5 000c50 07817bb36'
     assert data.info['info']['Firmware Version'] == '0002LIM1'
-    assert data.info['info']['User Capacity']    == '500,107,862,016 bytes [500 GB]'
-    assert data.info['info']['Sector Sizes']     == '512 bytes logical, 4096 bytes physical'
-    assert data.info['info']['Rotation Rate']    == '7200 rpm'
-    assert data.info['info']['Device is']        == 'Not in smartctl database [for details use: -P showall]'
-    assert data.info['info']['ATA Version is']   == 'ATA8-ACS T13/1699-D revision 4'
-    assert data.info['info']['SATA Version is']  == 'SATA 3.0, 6.0 Gb/s (current: 6.0 Gb/s)'
-    assert data.info['info']['Local Time is']    == 'Fri Sep 16 14:10:10 2016 AEST'
+    assert data.info['info']['User Capacity'] == '500,107,862,016 bytes [500 GB]'
+    assert data.info['info']['Sector Sizes'] == '512 bytes logical, 4096 bytes physical'
+    assert data.info['info']['Rotation Rate'] == '7200 rpm'
+    assert data.info['info']['Device is'] == 'Not in smartctl database [for details use: -P showall]'
+    assert data.info['info']['ATA Version is'] == 'ATA8-ACS T13/1699-D revision 4'
+    assert data.info['info']['SATA Version is'] == 'SATA 3.0, 6.0 Gb/s (current: 6.0 Gb/s)'
+    assert data.info['info']['Local Time is'] == 'Fri Sep 16 14:10:10 2016 AEST'
     # assert data.info['info']['SMART support is'] == 'Available - device has SMART capability.'
     # Note: this key turns up twice - therefore new keys overwrite old
     assert data.info['info']['SMART support is'] == 'Enabled'
@@ -184,73 +183,74 @@ def test_standard_drive():
     assert data.info['values']['Extended self-test routine recommended polling time'] == '78'
     assert data.info['values']['Conveyance self-test routine recommended polling time'] == '2'
     assert data.info['values']['SCT capabilities'] == '0x1031'
-    
+
     # Attribute assertions
     # Don't bother to test every single key for every single attribute - test
     # one, and then test the variations
-    assert data.info['attributes']['Raw_Read_Error_Rate']['id']          == '1'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['flag']        == '0x000f'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['value']       == '118'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['worst']       == '099'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['threshold']   == '034'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['type']        == 'Pre-fail'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['updated']     == 'Always'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['id'] == '1'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['flag'] == '0x000f'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['value'] == '118'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['worst'] == '099'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['threshold'] == '034'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['type'] == 'Pre-fail'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['updated'] == 'Always'
     assert data.info['attributes']['Raw_Read_Error_Rate']['when_failed'] == '-'
-    assert data.info['attributes']['Raw_Read_Error_Rate']['raw_value']   == '179599704'
+    assert data.info['attributes']['Raw_Read_Error_Rate']['raw_value'] == '179599704'
 
-    assert data.info['attributes']['Start_Stop_Count']['type']           == 'Old_age'
-    assert data.info['attributes']['Power_On_Hours']['raw_value']        == '4273 (5 89 0)'
+    assert data.info['attributes']['Start_Stop_Count']['type'] == 'Old_age'
+    assert data.info['attributes']['Power_On_Hours']['raw_value'] == '4273 (5 89 0)'
     assert data.info['attributes']['Airflow_Temperature_Cel']['raw_value'] == '41 (Min/Max 21/41)'
-    assert data.info['attributes']['Offline_Uncorrectable']['updated']   == 'Offline'
+    assert data.info['attributes']['Offline_Uncorrectable']['updated'] == 'Offline'
+
 
 def test_cisco_drive():
-    data = SMARTctl(
-        context_wrap(CISCO_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdb')
-    )
+    data = SMARTctl(context_wrap(
+        CISCO_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdb'
+    ))
 
     # Device assertions
     assert data.device == 'sdb'
 
     # Information assertions
-    assert data.info['info']['Vendor']           == 'Cisco'
-    assert data.info['info']['Product']          == 'UCSC-MRAID12G'
-    assert data.info['info']['Revision']         == '4.27'
-    assert data.info['info']['User Capacity']    == '898,999,779,328 bytes [898 GB]'
+    assert data.info['info']['Vendor'] == 'Cisco'
+    assert data.info['info']['Product'] == 'UCSC-MRAID12G'
+    assert data.info['info']['Revision'] == '4.27'
+    assert data.info['info']['User Capacity'] == '898,999,779,328 bytes [898 GB]'
     assert data.info['info']['Logical block size'] == '512 bytes'
-    assert data.info['info']['Logical Unit id']  == '0x678da6e715b756401d552c0c04e4953b'
-    assert data.info['info']['Serial number']    == '003b95e4040c2c551d4056b715e7a68d'
-    assert data.info['info']['Device type']      == 'disk'
-    assert data.info['info']['Local Time is']    == 'Wed Dec 16 21:29:59 2015 EST'
+    assert data.info['info']['Logical Unit id'] == '0x678da6e715b756401d552c0c04e4953b'
+    assert data.info['info']['Serial number'] == '003b95e4040c2c551d4056b715e7a68d'
+    assert data.info['info']['Device type'] == 'disk'
+    assert data.info['info']['Local Time is'] == 'Wed Dec 16 21:29:59 2015 EST'
 
     # Unstructured information assertions
-    assert data.info['info']['SMART support is']      == 'Not supported'
+    assert data.info['info']['SMART support is'] == 'Not supported'
     assert data.info['info']['Error Counter logging'] == 'Not supported'
-    assert data.info['info']['Self Test logging']     == 'Not supported'
+    assert data.info['info']['Self Test logging'] == 'Not supported'
+
 
 def test_netapp_drive():
-    data = SMARTctl(
-        context_wrap(NETAPP_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdc')
-    )
+    data = SMARTctl(context_wrap(
+        NETAPP_DRIVE, path='sos_commands/ata/smartctl_-a_.dev.sdc'
+    ))
 
     # Device assertions
     assert data.device == 'sdc'
 
     # Information assertions
-    assert data.info['info']['Vendor']           == 'NETAPP'
-    assert data.info['info']['Product']          == 'LUN'
-    assert data.info['info']['Revision']         == '820a'
-    assert data.info['info']['User Capacity']    == '5,243,081,326,592 bytes [5.24 TB]'
-    assert data.info['info']['Logical block size']== '512 bytes'
-    assert data.info['info']['Logical Unit id']  == '0x60a9800044312d364d5d4478753370620x5d447875337062000a980044312d364d'
-    assert data.info['info']['Serial number']    == 'D1-6M]Dxu3pb'
-    assert data.info['info']['Device type']      == 'disk'
-    assert data.info['info']['Transport protocol']== 'iSCSI'
-    assert data.info['info']['Local Time is']    == 'Wed Dec 16 21:29:59 2015 EST'
+    assert data.info['info']['Vendor'] == 'NETAPP'
+    assert data.info['info']['Product'] == 'LUN'
+    assert data.info['info']['Revision'] == '820a'
+    assert data.info['info']['User Capacity'] == '5,243,081,326,592 bytes [5.24 TB]'
+    assert data.info['info']['Logical block size'] == '512 bytes'
+    assert data.info['info']['Logical Unit id'] == '0x60a9800044312d364d5d4478753370620x5d447875337062000a980044312d364d'
+    assert data.info['info']['Serial number'] == 'D1-6M]Dxu3pb'
+    assert data.info['info']['Device type'] == 'disk'
+    assert data.info['info']['Transport protocol'] == 'iSCSI'
+    assert data.info['info']['Local Time is'] == 'Wed Dec 16 21:29:59 2015 EST'
     assert data.info['info']['SMART Health Status'] == 'OK'
 
     # Unstructured information assertions
-    assert data.info['info']['SMART support is']      == 'Enabled'
-    assert data.info['info']['Temperature Warning']   == 'Disabled or Not Supported'
+    assert data.info['info']['SMART support is'] == 'Enabled'
+    assert data.info['info']['Temperature Warning'] == 'Disabled or Not Supported'
     assert data.info['info']['Error Counter logging'] == 'Not supported'
-    assert data.info['info']['Self Test logging']     == 'Not supported'
-
+    assert data.info['info']['Self Test logging'] == 'Not supported'
