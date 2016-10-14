@@ -44,11 +44,11 @@ class SMARTctl(Mapper):
 
     def parse_content(self, content):
         drive_info = {
-            'info':         {},
-            'health':       'not parsed',
-            'values':       {},
-            'attributes':   {},
-            'full_line':    '',  # hack for persistent line storage
+            'info': {},
+            'health': 'not parsed',
+            'values': {},
+            'attributes': {},
+            'full_line': '',  # hack for persistent line storage
         }
 
         # Parsing using a state machine, sorry.  We use a state variable, and
