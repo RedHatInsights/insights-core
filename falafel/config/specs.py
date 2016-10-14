@@ -11,6 +11,8 @@ static_specs = {
                                     SimpleFileSpec("run/blkid"),
                                     SimpleFileSpec("sos_commands/filesys/blkid")]),
     "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
+    "candlepin.log"             : First([SimpleFileSpec(r"var/log/candlepin/candlepin.log", large_content=True),
+                                    SimpleFileSpec(r"sos_commands/foreman/foreman-debug/var/log/candlepin/candlepin.log", large_content=True)]),
     "catalina.out"              : First([PatternSpec(r"var/log/tomcat.*/catalina\.out", large_content=True),
                                     PatternSpec(r"tomcat-logs/tomcat.*/catalina\.out", large_content=True)]),
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
@@ -65,8 +67,10 @@ static_specs = {
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
     "fdisk-l-sos"               : PatternSpec(r"sos_commands/filesys/fdisk_-l_.+"),
     "fstab"                     : SimpleFileSpec("etc/fstab"),
-    "foreman_satellite.log"     : SimpleFileSpec("var/log/foreman-installer/satellite.log", large_content=True),
-    "foreman_production.log"    : SimpleFileSpec("var/log/foreman/production.log", large_content=True),
+    "foreman_satellite.log"     : First([SimpleFileSpec("var/log/foreman-installer/satellite.log", large_content=True),
+                                    SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/foreman-installer/satellite.log", large_content=True)]),
+    "foreman_production.log"    : First([SimpleFileSpec("var/log/foreman/production.log", large_content=True),
+                                    SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/foreman/production.log", large_content=True)]),
     "galera.cnf"                : SimpleFileSpec("etc/my.cnf.d/galera.cnf"),
     "getenforce"                : CommandSpec("/usr/sbin/getenforce"),
     "getsebool"                 : CommandSpec("/usr/sbin/getsebool -a"),
@@ -213,6 +217,7 @@ static_specs = {
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/satellite_version"),
                                     SimpleFileSpec("satellite_version")]),
     "scsi"                      : SimpleFileSpec("proc/scsi/scsi"),
+    "scheduler"                 : CommandSpec("/bin/cat {getblockscheduler}"),
     "secure"                    : SimpleFileSpec("var/log/secure", large_content=True),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
@@ -255,7 +260,8 @@ static_specs = {
 pre_commands = {
     "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "block": "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
-    "module": "/bin/ls /sys/module"
+    "module": "/bin/ls /sys/module",
+    "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done"
 }
 
 meta_files = {

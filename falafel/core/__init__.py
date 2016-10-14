@@ -254,11 +254,15 @@ class ErrorCollector(object):
         "func": None
     })
 
+    def __init__(self, verbose):
+        self.verbose = verbose
+
     def reducer_error(self, func, e, local, shared):
         key = "".join([func.__module__, str(type(e)), str(e.message)])
         error = self.errors[key]
         error["count"] = error["count"] + 1
         error["exception"] = e
+        error["tb"] = sys.exc_info()[2]
         error["func"] = func
 
     def has_errors(self):
@@ -272,6 +276,10 @@ class ErrorCollector(object):
             ename = e.__class__.__name__
             yield "%d count(s) of [%s]: %s: %s" % \
                 (count, func.__module__, ename, e.message)
+            if self.verbose:
+                import traceback
+                traceback.print_exception(type(e), e, error["tb"])
+                yield ""
 
 
 def print_result(r, case=None, min_key_len=0):
@@ -310,11 +318,15 @@ def main():
         "Pattern used to filter out plugins for execution.",
         "Verbose console logging (n.b. it's *very* verbose).",
         "Only run reducers.  Expect mapper output from stdin.",
-        "Only run mappers.  Pipes mapper output to stdout."
+        "Only run mappers.  Pipes mapper output to stdout.",
+        "Print a traceback for each kind of error caught."
     ]
     p = argparse.ArgumentParser("insights-run")
     p.add_argument(
         "-p", "--pattern", dest="pattern", help=HELP[0])
+    p.add_argument(
+        "-t", "--tracebacks", dest="tracebacks", action="store_true",
+        default=False, help=HELP[4])
     p.add_argument(
         "-v", "--verbose", dest="verbose", action="store_true",
         default=False, help=HELP[1])
@@ -347,14 +359,14 @@ def main():
     elif args.reduce_only:
         mapper_results = reducer.deserialize(sys.stdin.read())
         log.warning("Reduce-only run")
-        ec = ErrorCollector()
+        ec = ErrorCollector(args.tracebacks)
         results = list(reducer.run(mapper_results, ec.reducer_error))
         print_results(results, error_collector=ec)
     else:
         log.warning("Running mappers")
         cases, mapper_results = mapper.run(sys.stdin)
         log.warning("Running reducers")
-        ec = ErrorCollector()
+        ec = ErrorCollector(args.tracebacks)
         results = list(reducer.run(mapper_results, ec.reducer_error))
         print_results(results, cases, ec)
 
