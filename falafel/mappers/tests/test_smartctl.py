@@ -100,7 +100,7 @@ Selective self-test flags (0x0):
   After scanning selected spans, do NOT read-scan remainder of disk.
 If Selective self-test is pending on power-up, resume after 0 minute delay.
 
-"""
+""" # noqa
 
 CISCO_DRIVE = """
 smartctl 5.43 2012-06-30 r3573 [x86_64-linux-2.6.32-573.8.1.el6.x86_64] (local build)
@@ -119,7 +119,7 @@ Device does not support SMART
 
 Error Counter logging not supported
 Device does not support Self Test logging
-"""
+""" # noqa
 
 NETAPP_DRIVE = """
 smartctl 5.43 2012-06-30 r3573 [x86_64-linux-2.6.32-573.8.1.el6.x86_64] (local build)
@@ -142,7 +142,7 @@ SMART Health Status: OK
 Error Counter logging not supported
 Device does not support Self Test logging
 
-"""
+""" # noqa
 
 
 def test_standard_drive():
