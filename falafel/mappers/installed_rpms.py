@@ -330,6 +330,22 @@ class InstalledRpm(object):
                                  )
 
     @property
+    def nvr(self):
+        """
+        Alias for ``package``.
+        NVR: Name, Version, Release.
+        """
+        return self.package
+
+    @property
+    def nvra(self):
+        """
+        Just like ``nvr``, but adds arch as well
+        NVRA: Name, Version, Release, Arch
+        """
+        return ".".join([self.package, self.arch])
+
+    @property
     def source(self):
         """
         Returns source RPM of this RPM.

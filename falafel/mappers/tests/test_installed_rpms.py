@@ -120,6 +120,14 @@ def test_check_versions_installed():
              'VULNERABLE_PACKAGES': expected['PACKAGES']})
 
 
+def test_package_property_aliases():
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
+    rpm = rpms.get_max("grub2-tools")
+    assert rpm.package == "grub2-tools-2.02-0.34.el7_2"
+    assert rpm.nvr == "grub2-tools-2.02-0.34.el7_2"
+    assert rpm.nvra == "grub2-tools-2.02-0.34.el7_2.x86_64"
+
+
 def test_check_package_installed():
     rpms = InstalledRpms(context_wrap(RPMS_JSON))
     expected = {'INSTALLED_PACKAGE': 'bash-4.2.46-19.el7'}
