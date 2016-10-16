@@ -1,6 +1,7 @@
 from falafel.mappers import xfs_info
 from falafel.tests import context_wrap
 
+
 class TestXFSInfo():
     def test_example_xfs_info(self):
         xfs_obj = xfs_info.XFSInfo(context_wrap("""
@@ -41,7 +42,7 @@ realtime =none          extsz=524288 blocks=0, rtextents=0
         assert xfs['data']['imaxpct'] == 5
         assert xfs['data']['sunit'] == 32
         assert xfs['data']['swidth'] == '128 blks'
-        
+
         assert xfs['naming']['bsize'] == 4096
 
         assert xfs['log']['bsize'] == 4096
@@ -143,4 +144,3 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         # Calculated information checks
         assert xfs_obj.data_size == 262144 * 4096
         assert xfs_obj.log_size == 25600 * 4096
-
