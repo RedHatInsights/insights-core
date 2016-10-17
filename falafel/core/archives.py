@@ -76,7 +76,7 @@ class InMemoryExtractor(Extractor):
         "application/x-xz": "xz -d -c -",
         "application/x-gzip": "gunzip",
         "application/gzip": "gunzip",
-        "application/x-bzip2": "bunzip",
+        "application/x-bzip2": "bunzip2",
         "application/x-tar": "tar"
     }
 
