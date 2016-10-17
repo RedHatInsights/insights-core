@@ -26,8 +26,20 @@ def parse_df_lines(df_content):
     Returns
     -------
     list
-        A list of dictionaries for each line of the ``df`` output with
-        columns as the key values.
+        A list of ``Record`` ``namedtuple``s. One for each line of the
+        ``df`` output with columns as the key values.  The fields of
+        ``Record`` provide information about the file system attributes
+        as determined by the arguments to the ``df`` command.  So, for
+        example, if ``df`` is given the ``-alP``, the values are in
+        terms of 1024 blocks.  If ``-li`` is given, then the values are
+        in terms of inodes.
+
+        - filesystem: Name of the filesystem
+        - total: total number of resources on the filesystem
+        - used: number of the resources used on the filesystem
+        - available: number of the resource available on the filesystem
+        - capacity: percentage of the resource used on the filesystem
+        - mounted_on: mount point of the filesystem
     """
     df_ls = {}
     df_out = []
