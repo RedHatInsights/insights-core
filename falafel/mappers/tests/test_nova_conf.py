@@ -77,7 +77,7 @@ osp.role = "Compute"
 
 
 def test_nova_conf():
-    result = nova_conf.NovaConf(context_wrap(nova_content, osp = osp))
+    result = nova_conf.NovaConf(context_wrap(nova_content, osp=osp))
     print result
     assert result.get_key("DEFAULT", "notification_driver") == ""
     assert result.get_key("DEFAULT", "report_interval") == "10"
@@ -85,5 +85,5 @@ def test_nova_conf():
 
     assert result.get_key("keystone_authtoken", "auth_uri") == "http://[fd00:4888:1000:f901::a000]:5000/v2.0"
     assert result.get_key("keystone_authtoken", "service_metadata_proxy") == "True"
-    assert result.get_key("keystone_authtoken", 
-        "rabbit_hosts") == "fd00:4888:1000:f901::c0,fd00:4888:1000:f901::c1,fd00:4888:1000:f901::c2"
+    assert result.get_key("keystone_authtoken", "rabbit_hosts")\
+        == "fd00:4888:1000:f901::c0,fd00:4888:1000:f901::c1,fd00:4888:1000:f901::c2"
