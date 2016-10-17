@@ -126,8 +126,9 @@ class OnDiskExtractor(Extractor):
         "application/x-tar": ""
     }
 
-    def __init__(self):
+    def __init__(self, timeout=150):
         self.tmp_dir = None
+        self.timeout = timeout
 
     def from_buffer(self, buf):
         self.content_type = _magic.buffer(buf)
@@ -158,7 +159,7 @@ class OnDiskExtractor(Extractor):
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
 
             logging.info("Extracting files in '%s'", self.tmp_dir)
-            subproc.call(command, timeout=150)
+            subproc.call(command, timeout=self.timeout)
             self.tar_file = DirectoryAdapter(self.tmp_dir)
         return self
 
