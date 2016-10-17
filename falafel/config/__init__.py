@@ -29,6 +29,7 @@ META_FILE_LIST = {
     "uploader_log": DATA_ARCHIVE_DIR + "/insights_logs/insights.log"
 }
 
+
 class SpecPathError(Exception):
     """
         Errors in the path to a ___Spec call - e.g. a SimpleFileSpec starting
@@ -37,6 +38,7 @@ class SpecPathError(Exception):
     def __init__(self, expression, message):
         self.expression = expression
         self.message = message
+
 
 def get_meta_specs():
     result = {}
@@ -531,8 +533,7 @@ class SimpleFileSpec(InsightsDataSpecBase):
     def __init__(self, path, multi_output=False, large_content=False):
         if path[0] == '/':
             raise SpecPathError(path,
-                "SimpleFileSpec path must not start with '/'"
-            )
+                "SimpleFileSpec path must not start with '/'")
         super(SimpleFileSpec, self).__init__(multi_output=multi_output, large_content=large_content)
         if not isinstance(path, types.StringTypes):
             raise ValueError("Path must be a string")
@@ -638,8 +639,7 @@ class CommandSpec(InsightsDataSpecBase):
     def __init__(self, command, multi_output=True, large_content=False, **kwargs):
         if command[0] != '/':
             raise SpecPathError(command,
-                "CommandSpec command must start with '/'"
-            )
+                "CommandSpec command must start with '/'")
         super(CommandSpec, self).__init__(multi_output=multi_output and len(kwargs) > 0, large_content=large_content)
         self.command = command
         self.path_groups = kwargs
