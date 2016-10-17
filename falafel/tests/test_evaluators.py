@@ -274,9 +274,8 @@ class TestSingleEvaluator(unittest.TestCase):
             self.assertEquals(p.mapper_results.get(is_insights_heartbeat),
                               [{"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}])
             p.run_reducers()
-            # print [r.get("rule_id") for r in p.reducer_results]
             self.assertTrue("insights_heartbeat|INSIGHTS_HEARTBEAT"
-                            in [r.get("rule_id") for r in p.reducer_results])
+                            in [r.get("rule_id") for r in p.rule_results])
             r = p.get_response()
             self.assertTrue("system" in r)
             self.assertTrue("reports" in r)

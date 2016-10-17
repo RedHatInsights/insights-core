@@ -56,33 +56,45 @@ def test_get_sat5_version():
     result = SatelliteVersion(context_wrap(installed_rpms_5, path=''))
     assert result.version_full == "5.6.0.10-1.el6sat.noarch"
     assert result.version == "5.6.0"
+    assert result.major == 5
+    assert result.minor == 6
 
 
 def test_get_sat6_version():
     result = SatelliteVersion(context_wrap(satellite_version, path='satellite_version'))
-    assert result.version_full is None
+    assert result.version_full == "6.1.3"
     assert result.version == "6.1.3"
 
     result = SatelliteVersion(context_wrap(installed_rpms_60, path=''))
-    assert result.version_full is None
+    assert result.version_full == "6.0.8"
     assert result.version == "6.0.8"
 
     result = SatelliteVersion(context_wrap(installed_rpms_61, path=''))
-    assert result.version_full is None
+    assert result.version_full == "6.1.7"
     assert result.version == "6.1.7"
 
     result = SatelliteVersion(context_wrap(installed_rpms_62, path='satellite'))
     assert result.version_full == "6.2.0.11-1.el7sat.noarch"
     assert result.version == "6.2.0"
+    assert result.major == 6
+    assert result.minor == 2
 
     result = SatelliteVersion(context_wrap(installed_rpms_62_1, path='satellite'))
-    assert result.version_full is None
+    assert result.version_full == "6.2"
     assert result.version == "6.2"
+    assert result.major == 6
+    assert result.minor == 2
 
 
 def test_get_no_sat_version():
     result = SatelliteVersion(context_wrap(no_sat, path='satellite_version'))
     assert result.version is None
+    assert result.version_full is None
+    assert result.major is None
+    assert result.minor is None
 
     result = SatelliteVersion(context_wrap(satellite_version, path='satellite'))
     assert result.version is None
+    assert result.version_full is None
+    assert result.major is None
+    assert result.minor is None

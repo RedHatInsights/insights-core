@@ -1,1 +1,2 @@
 include falafel/web/falafel-web.service
+include falafel/content/index.html

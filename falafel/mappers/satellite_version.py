@@ -63,6 +63,7 @@ class SatelliteVersion(Mapper):
             for line in content:
                 if line.strip().upper().startswith('VERSION'):
                     self.version = line.split()[-1].strip('"')
+                    self.version_full = self.version
                     break
         # Spec: installed-rpms
         else:
@@ -79,6 +80,7 @@ class SatelliteVersion(Mapper):
                     if self.version is None:
                         pkg_mj_ver = '.'.join(pkg_ver.split('.')[:2])
                         self.version = foreman_sat6_ver_map.get(pkg_mj_ver)
+                    self.version_full = self.version
                     # for 6.2, need to check `satellite-installer` further
                     if self.version != '6.2':
                         break
@@ -95,3 +97,15 @@ class SatelliteVersion(Mapper):
                     self.version_full = pkg[pkg.find('schema-') + 7:]
                     self.version = '.'.join(self.version_full.split('.')[:3])
                     break
+
+    @property
+    def major(self):
+        if self.version:
+            return int(self.version.split(".")[0])
+
+    @property
+    def minor(self):
+        if self.version:
+            s = self.version.split(".")
+            if len(s) > 1:
+                return int(s[1])
