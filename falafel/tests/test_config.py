@@ -12,7 +12,7 @@ class TestSimpleFileSpec(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.dummy_path = r'/path/to/thing'
+        cls.dummy_path = r'path/to/thing'
         cls.with_dollar = cls.dummy_path + r'$'
 
     def setUp(self):
