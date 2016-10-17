@@ -26,7 +26,7 @@ realtime =none          extsz=524288 blocks=0, rtextents=0
         # Section specifier checks
         assert xfs['meta-data']['specifier'] == '/dev/sda'
         assert xfs['naming']['specifier'] == 'version'
-        assert xfs['naming']['specifier value'] == '2'
+        assert xfs['naming']['specifier_value'] == '2'
         assert xfs['log']['specifier'] == 'internal'
         assert xfs['realtime']['specifier'] == 'none'
 
@@ -84,7 +84,7 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         # Section specifier checks
         assert xfs['meta-data']['specifier'] == '/dev/mapper/vgSys-lvRoot'
         assert xfs['naming']['specifier'] == 'version'
-        assert xfs['naming']['specifier value'] == '2'
+        assert xfs['naming']['specifier_value'] == '2'
         assert xfs['log']['specifier'] == 'internal'
         assert xfs['realtime']['specifier'] == 'none'
 
