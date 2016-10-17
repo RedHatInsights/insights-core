@@ -10,7 +10,7 @@ STDOUT = subprocess.PIPE
 STDERR = subprocess.STDOUT
 
 
-class CalledProcessError(IOError): 
+class CalledProcessError(IOError):
     """Raised if call fails.
 
     Parameters
@@ -32,21 +32,21 @@ class CalledProcessError(IOError):
         Any output the command produced.
      """
 
-    def __init__(self, returncode, cmd, output): 
-        self.returncode = returncode 
-        self.cmd = cmd 
-        self.output = output 
-        super(CalledProcessError, self).__init__(returncode, cmd, output) 
- 
-    def __unicode__(self): 
+    def __init__(self, returncode, cmd, output):
+        self.returncode = returncode
+        self.cmd = cmd
+        self.output = output
+        super(CalledProcessError, self).__init__(returncode, cmd, output)
+
+    def __unicode__(self):
         name = self.__class__.__name__
         rc = self.returncode
         cmd = self.cmd
         output = self.output
-        return  '<{c}({r}, {cmd}, {o})>'.format(c=name, r=rc, cmd=cmd, o=output)
+        return '<{c}({r}, {cmd}, {o})>'.format(c=name, r=rc, cmd=cmd, o=output)
 
 
-def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs): 
+def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
     """Call cmd with an optional timeout in seconds.
 
     If `timeout` is supplied and expires, the process is killed with
@@ -78,21 +78,21 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
             Raised when cmd fails
     """
 
-    cmd = cmd.encode('utf-8', 'replace') 
-    output = None 
-    rc = 0 
-    try: 
-        if timeout is not None: 
-            cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd) 
+    cmd = cmd.encode('utf-8', 'replace')
+    output = None
+    rc = 0
+    try:
+        if timeout is not None:
+            cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
         if not shell:
             cmd = shlex.split(cmd)
-        log.debug(cmd) 
+        log.debug(cmd)
         p = subprocess.Popen(cmd, stdout=STDOUT, stderr=STDERR, shell=shell, **kwargs)
-        output = p.communicate()[0] 
+        output = p.communicate()[0]
         rc = p.poll()
-    except Exception as e: 
-        log.exception(e) 
-        raise CalledProcessError, (rc, cmd, str(e)), sys.exc_info()[2]
+    except Exception as e:
+        log.exception(e)
+        raise CalledProcessError(rc, cmd, str(e)), sys.exc_info()[2]
     if rc:
         raise CalledProcessError(rc, cmd, output)
     return output

@@ -2,6 +2,7 @@ import unittest
 
 from falafel.util import subproc
 
+
 class TestSubproc(unittest.TestCase):
     def test_call(self):
         cmd = 'echo -n hello'

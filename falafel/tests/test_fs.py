@@ -4,8 +4,8 @@ import tempfile
 import unittest
 
 from contextlib import closing
-
 from falafel.util import fs
+
 
 class TestFS(unittest.TestCase):
     def test_remove_exists(self):

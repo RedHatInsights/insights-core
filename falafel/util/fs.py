@@ -3,6 +3,7 @@ import os
 
 from falafel.util import subproc
 
+
 def remove(path, chmod=False):
     """Remove a file or directory located on the filesystem at path.
 
@@ -40,7 +41,7 @@ def ensure_path(path, mode=0777):
     If the path does not exist, recursively create it and its parent
     directories using the provided mode.  If the path already exists,
     do nothing.
-    
+
     Parameters
     ----------
     path : str
