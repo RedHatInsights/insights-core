@@ -8,7 +8,7 @@ from falafel.core import load_package
 data_spec_config = get_config()
 log = logging.getLogger(__name__)
 
-RESPONSE_TYPES = ["rule", "metadata"]
+RESPONSE_TYPES = ["rule", "metadata", "skip"]
 
 # Only used in test suite for plugin validation
 SYMBOLIC_NAME_FILTER_MAPPING = defaultdict(lambda: defaultdict(list))
@@ -296,6 +296,10 @@ def register_consumer(c):
 
 
 def reducer(requires=None, optional=None, cluster=False, shared=False):
+    # I know. We suck. We'll make it better later when the
+    # reducer api changes to just take context.
+    is_shared = shared
+
     def _f(func):
         @wraps(func)
         def __f(local, shared):
@@ -309,6 +313,12 @@ def reducer(requires=None, optional=None, cluster=False, shared=False):
                 log.debug("Reducer [%s] is missing requirements: %s",
                           func.__module__,
                           stringify_requirements(missing_requirements))
+                if not is_shared:
+                    rule_name = ".".join([func.__module__, func.__name__])
+                    log.debug("Non-shared reducer %s is being skipped due to missing requirements", rule_name)
+                    return make_skip(rule_name,
+                                     reason="MISSING_REQUIREMENTS",
+                                     details=missing_requirements)
         if cluster:
             register_cluster_reducer(__f)
         else:
@@ -383,6 +393,13 @@ def box_value(v):
             return v
     else:
         return []
+
+
+def make_skip(rule_fqdn, reason, details=None):
+    return {"rule_fqdn": rule_fqdn,
+            "reason": reason,
+            "details": details,
+            "type": "skip"}
 
 
 def make_response(error_key, **kwargs):

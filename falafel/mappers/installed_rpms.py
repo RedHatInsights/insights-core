@@ -1,6 +1,7 @@
 import json
 from collections import defaultdict
 from distutils.version import LooseVersion as LV
+from itertools import chain
 
 from ..util import rsplit
 from .. import Mapper, mapper, get_active_lines
@@ -22,19 +23,24 @@ KNOWN_ARCHITECTURES = [
     'noarch',
 ]
 
+PACKAGES = 'PACKAGES'
+VULNERABLE_PACKAGES = 'VULNERABLE_PACKAGES'
+PACKAGE_NAMES = 'PACKAGE_NAMES'
+INSTALLED_PACKAGE = 'INSTALLED_PACKAGE'
+
 
 @mapper('installed-rpms')
 class InstalledRpms(Mapper):
     """
     A mapper for working with data containing a list of installed RPM files on the system and
     related information.
-
-    The main data structure is defined as follows:
-        {'packages': {'package_name_1': [InstalledRpm_1, InstalledRpm_2, ...], ...},
-         'errors':   ['error_line_1', ...],
-         'unparsed': ['unparsed line_1', ...],
-        }
     """
+    def __init__(self, *args, **kwargs):
+        self.errors = []
+        self.unparsed = []
+        self.packages = defaultdict(list)
+        super(InstalledRpms, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         """
         Main parsing class method which stores all interesting data from the content.
@@ -45,10 +51,6 @@ class InstalledRpms(Mapper):
         Returns:
             dict: dictionary with parsed data
         """
-
-        self.errors = []
-        self.unparsed = []
-        self.packages = defaultdict(list)
         for line in get_active_lines(content, comment_char='COMMAND>'):
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
@@ -56,29 +58,28 @@ class InstalledRpms(Mapper):
                 try:
                     # Try to parse from JSON input
                     rpm = InstalledRpm.from_json(line)
+                    self.packages[rpm.name].append(rpm)
                 except Exception:
                     # If that fails, try to parse from line input
                     if line.strip():
                         try:
                             rpm = InstalledRpm.from_line(line)
+                            self.packages[rpm.name].append(rpm)
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
-                        else:
-                            self.packages[rpm['name']].append(rpm)
-                else:
-                    self.packages[rpm['name']].append(rpm)
 
-        self.data = {'packages': self.packages,
-                     'errors': self.errors,
-                     'unparsed': self.unparsed,
-                     }
+    def __contains__(self, package_name):
+        """
+        Checks if package name is in list of installed RPMs.
 
-    def __getitem__(self, item):
-        return self.data[item]
+        Args:
+            package_name (str): RPM package name such as 'bash'
 
-    def __contains__(self, item):
-        return item in self.packages
+        Returns:
+            bool: True if package name is in list of installed packages, otherwise False
+        """
+        return package_name in self.packages
 
     @property
     def corrupt(self):
@@ -90,57 +91,126 @@ class InstalledRpms(Mapper):
         """
         return any('rpmdbNextIterator' in s for s in self.errors)
 
-    def get_max(self, name):
+    def get_max(self, package_name):
         """
-        Returns the highest version of the installed RPM with the given name.
+        Returns the highest version of the installed package with the given name.
 
         Args:
-            name(str): Installed RPM package name
+            package_name (str): Installed RPM package name such as 'bash'
 
         Returns:
             InstalledRpm: Installed RPM with highest version
         """
-        if name not in self.packages:
+        if package_name not in self.packages:
             return None
         else:
-            return max(self.packages[name])
+            return max(self.packages[package_name])
 
-    def get_min(self, name):
+    def get_min(self, package_name):
         """
-        Returns the lowest version of the installed RPM with the given name. This should be handy
-        for checking against list of vulnerable versions.
+        Returns the lowest version of the installed package with the given name.
 
         Args:
-            name(str): Installed RPM package name
+            package_name (str): Installed RPM package name such as 'bash'
 
         Returns:
             InstalledRpm: Installed RPM with lowest version
         """
-        if name not in self.packages:
+        if package_name not in self.packages:
             return None
         else:
-            return min(self.packages[name])
+            return min(self.packages[package_name])
+
+    def check_versions_installed(self, packages_strings):
+        """
+        Check if any of the packages listed in a list is installed on the system.
+
+        Args:
+            packages_strings (iterable): list/iterable of checked package strings such as
+                                         ['bash-4.2.39-3.el7', ...]
+
+        Returns:
+            dict: list of detected packages and list of their names in the following format,
+                  otherwise None:
+
+                  {PACKAGES: installed_package_strings,
+                   PACKAGE_NAMES: installed_package_names}
+        """
+        installed_packages = set(chain.from_iterable(self.packages.values()))
+        installed_listed_packages = [a for a in installed_packages if a.package in packages_strings]
+        installed_listed_package_strings = sorted(a.package for a in installed_listed_packages)
+        installed_listed_package_names = sorted({a.name for a in installed_listed_packages})
+        if installed_listed_packages:
+            return {PACKAGES: installed_listed_package_strings,
+                    PACKAGE_NAMES: installed_listed_package_names}
+
+    def vulnerable_versions_installed(self, vulnerable_package_strings):
+        """
+        Check if any of the packages listed in a list of vulnerable packages is installed on
+        the system.
+
+        Args:
+            vulnerable_package_strings (iterable): list/iterable of vulnerable package strings
+                                                   such as ['bash-4.2.39-3.el7', ...]
+
+        Returns:
+            dict: list of detected packages and list of their names in the following format,
+                  otherwise None:
+
+                  {VULNERABLE_PACKAGES: installed_vulnerable_package_strings,
+                   PACKAGE_NAMES: installed_vulnerable_package_names}
+
+        Warnings:
+            This exists only for compatibility with older security rules, use
+            'check_installed_version' method instead.
+        """
+        result = self.check_versions_installed(vulnerable_package_strings)
+        if result:
+            return {VULNERABLE_PACKAGES: result[PACKAGES], PACKAGE_NAMES: result[PACKAGE_NAMES]}
+
+    def check_package_installed(self, package_name):
+        """
+        Check if package with concrete name is installed on the system.
+
+        Args:
+            package_name (str): name of package such as 'bash'
+
+        Returns:
+            dict: first found full package name which matches searched package in the following
+                  format, otherwise None:
+
+                  {INSTALLED_PACKAGE: package_found}
+        """
+        if package_name in self.packages:
+            return {INSTALLED_PACKAGE: self.packages[package_name][0].package}
 
 
 class InstalledRpm(object):
     """
     Class for holding information about one installed RPM.
-
-    The main data structure is defined as follows:
-        {'name': 'package name',
-         'version': 'package version',
-         'release': 'package release,
-         'arch': 'package architecture'
-        }
-
-    It may also contain supplementary information from SOS report.
     """
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig-short'
     ]
 
     def __init__(self, data):
-        self.data = data
+        """
+        Args:
+            data (dict): This class is usually created from dictionary with following structure:
+                         {'name': 'package name',
+                          'version': 'package version',
+                          'release': 'package release,
+                          'arch': 'package architecture'
+                          }
+
+                          It may also contain supplementary information from SOS report or epoch
+                          information from JSON.
+        """
+        self.name = None
+        self.version = None
+        self.release = None
+        self.arch = None
+
         for k, v in data.iteritems():
             setattr(self, k, v)
         if 'epoch' not in data:
@@ -198,7 +268,7 @@ class InstalledRpm(object):
         Helper method for finding if arch separator is '.' or '-'
 
         Args:
-            package_string (str): dash separated package string
+            package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'
 
         Returns:
             str: arch separator
@@ -211,7 +281,7 @@ class InstalledRpm(object):
         Helper method for parsing package string.
 
         Args:
-            package_string (str): dash separated package string
+            package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'
 
         Returns:
             dict: dictionary containing 'name', 'version', 'release', and 'arch' keys
@@ -263,6 +333,7 @@ class InstalledRpm(object):
     def source(self):
         """
         Returns source RPM of this RPM.
+
         Returns:
             InstalledRpm: source RPM
         """
@@ -273,7 +344,11 @@ class InstalledRpm(object):
             return rpm
 
     def __getitem__(self, item):
-        return self.data[item]
+        """
+        Allows to use `rpm["element"]` instead of `rpm.element`. Dot notation should be preferred,
+        however it is especially useful for values containing dash, such as "pgpsig-short".
+        """
+        return getattr(self, item)
 
     def __str__(self):
         return '{}:{}'.format(self.epoch, self.package)
@@ -286,6 +361,7 @@ class InstalledRpm(object):
 
     def __eq__(self, other):
         return (
+            type(self) == type(other) and
             self.name == other.name and
             LV(self.epoch) == LV(other.epoch) and
             LV(self.version) == LV(other.version) and
@@ -295,7 +371,7 @@ class InstalledRpm(object):
     def __lt__(self, other):
         if self.name != other.name:
             raise ValueError('Cannot compare packages with differing names {} != {}'
-                             .format(self['name'], other['name']))
+                             .format(self.name, other.name))
         if self == other:
             return False
 

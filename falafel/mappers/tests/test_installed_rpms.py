@@ -70,10 +70,10 @@ def test_from_package():
 
 def test_from_line():
     rpms = InstalledRpms(context_wrap(RPMS_LINE))
-    assert rpms.get_max("ConsoleKit")["arch"] == 'x86_64'
-    assert rpms.get_max("kernel")["version"] == '2.6.32'
-    assert rpms.get_max("yum")["release"] == '69.el6'
-    assert rpms.get_max("tftp-server")["version"] == '5.2'
+    assert rpms.get_max("ConsoleKit").arch == 'x86_64'
+    assert rpms.get_max("kernel").version == '2.6.32'
+    assert rpms.get_max("yum").release == '69.el6'
+    assert rpms.get_max("tftp-server").version == '5.2'
     assert rpms.get_max("yum").package == "yum-3.2.29-69.el6"
     assert rpms.corrupt is False
 
@@ -94,6 +94,37 @@ def test_corrupt_db():
     rpms = InstalledRpms(context_wrap(ERROR_DB))
     assert "yum-security" in rpms.packages
     assert rpms.corrupt is True
+
+
+def test_check_versions_installed():
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
+    listed = ['bash-4.2.46-19.el7', 'bash-4.2.47-19.el7']
+    expected = {'PACKAGE_NAMES': ['bash'], 'PACKAGES': ['bash-4.2.46-19.el7']}
+    assert rpms.check_versions_installed(listed) == expected
+    assert (rpms.vulnerable_versions_installed(listed) ==
+            {'PACKAGE_NAMES': expected['PACKAGE_NAMES'],
+             'VULNERABLE_PACKAGES': expected['PACKAGES']})
+
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
+    listed = ['bash-4.2.48-19.el7', 'bash-4.2.47-19.el7']
+    assert rpms.check_versions_installed(listed) is None
+    assert rpms.vulnerable_versions_installed(listed) is None
+
+    rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
+    listed = ['kernel-3.10.0-327.el7', 'kernel-3.10.0-327.36.1.el7']
+    expected = {'PACKAGE_NAMES': ['kernel'],
+                'PACKAGES': ['kernel-3.10.0-327.36.1.el7', 'kernel-3.10.0-327.el7']}
+    assert rpms.check_versions_installed(listed) == expected
+    assert (rpms.vulnerable_versions_installed(listed) ==
+            {'PACKAGE_NAMES': expected['PACKAGE_NAMES'],
+             'VULNERABLE_PACKAGES': expected['PACKAGES']})
+
+
+def test_check_package_installed():
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
+    expected = {'INSTALLED_PACKAGE': 'bash-4.2.46-19.el7'}
+    assert rpms.check_package_installed('bash') == expected
+    assert rpms.check_package_installed('dnf') is None
 
 
 def test_max_min():
@@ -163,4 +194,5 @@ def test_different_arch_sep():
     rpm1 = InstalledRpm.from_package('yum-3.4.3-132.el7.noarch')
     rpm2 = InstalledRpm.from_package('yum-3.4.3-132.el7-noarch')
     assert rpm1 == rpm2
-    assert rpm1['arch'] == rpm2['arch']
+    assert rpm1.arch == rpm2.arch
+    assert rpm1['arch'] == rpm2.arch

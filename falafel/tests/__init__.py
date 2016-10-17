@@ -219,7 +219,7 @@ def integrate(input_data, module):
             for k, v in mapper_output.iteritems():
                 list(reducer.run_host(v, error_handler, reducers=shared_reducers))
         gen = reducer.run_multi(mapper_output, error_handler, reducers=reducers)
-        return [result for func, result in gen]
+        return [result for func, result in gen if result["type"] != "skip"]
     else:
         host_outputs = mapper_output.values()
         if len(host_outputs) == 0:
@@ -231,7 +231,7 @@ def integrate(input_data, module):
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
         gen = reducer.run_host(single_host, error_handler, reducers)
         reducer_modules = [r.__module__ for r in reducers.values()]
-        return [r for func, r in gen if func.__module__ in reducer_modules]
+        return [r for func, r in gen if func.__module__ in reducer_modules and r["type"] != "skip"]
 
 
 input_data_cache = {}

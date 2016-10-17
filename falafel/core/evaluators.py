@@ -3,7 +3,7 @@ from collections import defaultdict
 
 from falafel.core import archives, specs, marshalling, plugins
 from falafel.core.marshalling import Marshaller
-from falafel.core.plugins import validate_response
+from falafel.core.plugins import validate_response, stringify_requirements
 from falafel.core.context import Context
 from falafel.core.archives import InvalidArchive
 from falafel.util.uname import Uname
@@ -19,6 +19,11 @@ def name_from_module(plugin):
     return plugin.__name__.rpartition(".")[-1]
 
 
+def serialize_skips(skips):
+    for skip in skips:
+        skip["details"] = stringify_requirements(skip["details"])
+
+
 class Evaluator(object):
 
     def is_pattern_file(self, symbolic_name):
@@ -27,17 +32,24 @@ class Evaluator(object):
     def __init__(self, spec_mapper, metadata=None):
         self.spec_mapper = spec_mapper
         self.metadata = {}
-        self.reducer_errors = []
-        self.reducer_results = []
+        self.rule_skips = []
+        self.rule_results = []
         self.archive_metadata = metadata
 
     def pre_mapping(self):
         pass
 
     def format_response(self, response):
+        """
+        To be overridden by subclasses to format the response sent back to the
+        client.
+        """
         return response
 
     def format_result(self, result):
+        """
+        To be overridden by subclasses to format individual rule results.
+        """
         return result
 
     def handle_reducer_error(self):
@@ -52,6 +64,11 @@ class Evaluator(object):
         return mapper(context)
 
     def run_metadata_mappers(self, the_meta_data):
+        """
+        Special case of running the mapper for metadata.json.  This is special
+        because metadata.json is the only file not contained in an individual
+        Insights archive.
+        """
         MD_JSON = "metadata.json"
         result_map = {}
         for plugin in plugins.get_mappers(MD_JSON):
@@ -146,7 +163,8 @@ class SingleEvaluator(Evaluator):
                 "metadata": self.metadata,
                 "hostname": self.hostname
             },
-            "reports": self.reducer_results
+            "reports": self.rule_results,
+            "skips": self.rule_skips
         })
 
     def _marshal(self, result, symbolic_name, shared):
@@ -168,10 +186,12 @@ class SingleEvaluator(Evaluator):
         if type_ == "metadata":
             self.append_metadata(r)
         elif type_ == "rule":
-            self.reducer_results.append(self.format_result({
+            self.rule_results.append(self.format_result({
                 "rule_id": "{0}|{1}".format(plugins.get_name(plugin), r["error_key"]),
                 "details": r
             }))
+        elif type_ == "skip":
+            self.rule_skips.append(r)
 
     def run_reducers(self):
         generator = reducer.run_host(
@@ -231,6 +251,8 @@ class MultiEvaluator(Evaluator):
                 "rule_id": "{0}|{1}".format(plugins.get_name(plugin), r["error_key"]),
                 "details": r
             }))
+        elif type_ == "skip":
+            self.rule_skips.append(r)
 
     def append_metadata(self, r):
         for k, v in r.iteritems():
@@ -240,7 +262,8 @@ class MultiEvaluator(Evaluator):
         return self.format_response({
             "system": self.archive_results[None]["system"],
             "reports": self.archive_results[None]["reports"],
-            "archives": [v for k, v in self.archive_results.iteritems() if k is not None]
+            "archives": [v for k, v in self.archive_results.iteritems() if k is not None],
+            "skips": self.rule_skips
         })
 
 
@@ -278,6 +301,7 @@ class InsightsEvaluator(SingleEvaluator):
         self.system_id = int_system_id
 
     def format_response(self, response):
+        serialize_skips(response["skips"])
         response["system"]["system_id"] = self.system_id
         if self.release:
             response["system"]["metadata"]["release"] = self.release
@@ -316,6 +340,7 @@ class InsightsMultiEvaluator(MultiEvaluator):
         return result
 
     def format_response(self, response):
+        serialize_skips(response)
         response["system"]["system_id"] = self.system_id
         product = self.archive_metadata.get("product", "machine")
         response["system"]["product"] = product
