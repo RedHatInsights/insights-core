@@ -46,15 +46,13 @@ class XFSInfo(Mapper):
                 if match.group('specifier'):
                     sect_info['specifier'] = match.group('specifier')
                     if match.group('specval'):
-                        sect_info['specifier value'] = match.group('specval')
+                        sect_info['specifier_value'] = match.group('specval')
                 for pair in self.keyval_re.findall(match.group('keyvaldata')):
                     (key, value) = pair
                     if value[-1] != 's':
                         # Value doesn't end with 'blks', so convert it to int.
                         value = int(value)
                     sect_info[key] = value
-#            else:
-#                print "Warning: didn't match line regex"
 
         self.xfs_info = xfs_info
 
