@@ -41,17 +41,18 @@ dismount_interval = 300
 #
 """
 
+
 class TestAutoFSConf():
     def test_standard_autofs_conf(self):
         cfg = autofs_conf.AutoFSConf(context_wrap(AUTOFS_CONF))
 
         assert cfg.get("autofs").get("timeout") == '300'
-        assert cfg.get_key("autofs","timeout") == '300'
-        assert cfg.get_key("autofs","browse_mode") == 'no'
-        assert cfg.get_key("autofs","mount_nfs_default_protocol") == '4'
-        assert cfg.get_key("amd","dismount_interval") == '300'
+        assert cfg.get_key("autofs", "timeout") == '300'
+        assert cfg.get_key("autofs", "browse_mode") == 'no'
+        assert cfg.get_key("autofs", "mount_nfs_default_protocol") == '4'
+        assert cfg.get_key("amd", "dismount_interval") == '300'
 
         # Check that things set in comments do not appear
-        assert cfg.get_key("amd", "map_type") == None
+        assert cfg.get_key("amd", "map_type") is None
         # Check that nonexistent sections do not appear
-        assert cfg.get("nfs") == None
+        assert cfg.get("nfs") is None
