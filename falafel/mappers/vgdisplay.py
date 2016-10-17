@@ -1,4 +1,4 @@
-from .. import mapper
+from .. import mapper, Mapper, get_active_lines
 
 
 FILTER_INFO = list()
@@ -11,7 +11,7 @@ FILTER_INFO.append("physical volumes missing")
 
 
 @mapper('vgdisplay')
-def get_vginfo(context):
+class VgDisplay(Mapper):
     """
     Returns a list of dicts and list contain debug info:
     - the keys in each dict are the row headers
@@ -50,31 +50,40 @@ def get_vginfo(context):
         ]
     }
     """
-    all_dict = {}
-    vginfo_dict_list = []
-    vginfo_dict = {}
-    debug_info = []
-    for line in context.content:
-        if 'System ID' in line or '--- Volume' in line:
-            continue
-        if any(debug in line for debug in FILTER_INFO):
+
+    def parse_content(self, content):
+        self.data = {}
+        vginfo_dict_list = []
+        vginfo_dict = {}
+        debug_info = []
+        for line in get_active_lines(content):
             line = line.strip()
-            debug_info.append(line)
-            continue
-        elif line.strip() and not any(debug in line for debug in FILTER_INFO):
-            if line.startswith('Metadata Sequence'):
-                (key, value) = line.split('  ', 1)
+            if 'System ID' in line or '--- Volume' in line:
+                continue
+            if any(debug in line for debug in FILTER_INFO):
+                debug_info.append(line)
+                continue
             else:
-                (key, value) = line.split('   ', 1)
-            vginfo_dict[key.strip()] = value.strip()
-        # Empty line indicates the end of a VG
-        else:
-            # Record the parsed VG
-            vginfo_dict_list.append(vginfo_dict)
-            vginfo_dict = {}
-    # Record the last VG and debug info
-    set_info = list(set(debug_info))
-    vginfo_dict_list.append(vginfo_dict) if vginfo_dict else None
-    all_dict['vginfo_dict'] = vginfo_dict_list
-    all_dict['debug_info'] = set_info
-    return all_dict
+                if line.startswith("VG Name"):
+                    # New section starts with VG Name since blank lines are removed
+                    if vginfo_dict:
+                        vginfo_dict_list.append(vginfo_dict)
+                    (key, value) = line.split('   ', 1)
+                    vginfo_dict = {}
+                elif line.startswith('Metadata Sequence'):
+                    (key, value) = line.split('  ', 1)
+                else:
+                    (key, value) = line.split('   ', 1)
+                vginfo_dict[key.strip()] = value.strip()
+
+        # Record the last VG and debug info
+        set_info = list(set(debug_info))
+        vginfo_dict_list.append(vginfo_dict) if vginfo_dict else None
+        self.data['vginfo_dict'] = vginfo_dict_list
+        self.data['debug_info'] = set_info
+
+
+@mapper('vgdisplay')
+def get_vginfo(context):
+    """Deprecated, use class :py:class:`VgDisplay` instead."""
+    return VgDisplay(context).data

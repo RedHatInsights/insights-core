@@ -1,12 +1,11 @@
 import yaml
-from .. import MapperOutput, mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('cobbler_settings')
-class CobblerSettings(MapperOutput):
+class CobblerSettings(LegacyItemAccess, Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Return a dict that is parsed from the YAML settings
         - keys are the row header
@@ -26,5 +25,4 @@ class CobblerSettings(MapperOutput):
         """
 
         # Revert the list to a stream string
-        cob_set_dict = yaml.load('\n'.join(content))
-        return cob_set_dict
+        self.data = yaml.load('\n'.join(content))

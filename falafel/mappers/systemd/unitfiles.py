@@ -1,12 +1,12 @@
-from falafel.core import MapperOutput
+from falafel.core import Mapper
 from falafel.core.plugins import mapper
 from falafel.mappers import get_active_lines
 
 
 @mapper('systemctl_list-unit-files')
-class UnitFiles(MapperOutput):
-    @staticmethod
-    def parse_content(content):
+class UnitFiles(Mapper):
+
+    def parse_content(self, content):
 
         # static means "on" to fulfill dependency of something else that
         # is on
@@ -22,7 +22,7 @@ class UnitFiles(MapperOutput):
             k, v = [p.strip() for p in parts]
             value = any(s == v for s in on)
             data[k] = value
-        return data
+        self.data = data
 
     def is_on(self, service):
-        return self.get(service)
+        return self.data.get(service)

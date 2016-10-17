@@ -9,7 +9,7 @@ LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG
 
 
 def test_vgs():
-    vgs_records = lvm.Vgs.parse_context(context_wrap(VGS_INFO))
+    vgs_records = lvm.Vgs(context_wrap(VGS_INFO))
     assert len(list(vgs_records)) == 2
     assert vgs_records["fedora"] == {
         'VG': 'fedora',

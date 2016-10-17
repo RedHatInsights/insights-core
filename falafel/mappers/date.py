@@ -1,7 +1,7 @@
 import sys
 from datetime import datetime
 
-from .. import MapperOutput, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 class DateParseException(Exception):
@@ -9,7 +9,7 @@ class DateParseException(Exception):
 
 
 @mapper("date")
-class Date(MapperOutput):
+class Date(Mapper):
     """Parses the output of the ``date`` command.
 
     Sample: Fri Jun 24 09:13:34 CST 2016
@@ -21,24 +21,15 @@ class Date(MapperOutput):
     timezone: str
         The string portion of the date string containing the timezone
     """
-    def __init__(self, data, path=None):
-        super(Date, self).__init__(data, path)
-        self.datetime, self.timezone = self.parse(data)
-
-    @classmethod
-    def parse_content(cls, content):
-        return get_active_lines(content, comment_char="COMMAND>")[0]
-
-    @staticmethod
-    def parse(data):
-        parts = data.split()
+    def parse_content(self, content):
+        self.data = get_active_lines(content, comment_char="COMMAND>")[0]
+        parts = self.data.split()
         if not len(parts) == 6:
             msg = "Expected six date parts.  Got [%s]"
-            raise DateParseException(msg % data)
+            raise DateParseException(msg % self.data)
         try:
-            tz = parts[4]
+            self.timezone = parts[4]
             no_tz = ' '.join(parts[:4]) + ' ' + parts[-1]
-            dt = datetime.strptime(no_tz, '%a %b %d %H:%M:%S %Y')
-            return dt, tz
+            self.datetime = datetime.strptime(no_tz, '%a %b %d %H:%M:%S %Y')
         except:
-            raise DateParseException(data), None, sys.exc_info()[2]
+            raise DateParseException(self.data), None, sys.exc_info()[2]

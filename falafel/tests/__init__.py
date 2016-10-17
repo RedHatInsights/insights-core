@@ -3,6 +3,7 @@ import itertools
 import logging
 import pprint
 import json
+import sys
 from collections import defaultdict
 from functools import wraps
 from falafel.core import mapper, reducer, marshalling, plugins
@@ -68,6 +69,25 @@ def archive_provider(module, test_func=unordered_compare, slow=False):
         ARCHIVE_GENERATORS.append(__wrap)
         return __wrap
     return _wrap
+
+
+CACHED_BY_MODULE = defaultdict(list)
+
+
+def ensure_cache_populated():
+    if not CACHED_BY_MODULE:
+        for gen in ARCHIVE_GENERATORS:
+            if not gen.slow:
+                for module, test_func, input_data, expected in gen():
+                    CACHED_BY_MODULE[module].append((test_func, input_data, expected))
+
+
+def plugin_tests(module_name):
+    ensure_cache_populated()
+    if module_name in sys.modules:
+        real_module = sys.modules[module_name]
+        for test_func, input_data, expected in CACHED_BY_MODULE[real_module]:
+            yield test_func, input_data, expected
 
 
 def context_wrap(lines, path='path', hostname='hostname',
@@ -192,8 +212,14 @@ def integrate(input_data, module):
     reducers = get_reducer_for(module)
 
     if is_multi_node:
+        shared_reducers = {}
+        for r in reducers.values():
+            shared_reducers = {i: i for i in r._requires if i.shared and i._reducer}
+        if shared_reducers:
+            for k, v in mapper_output.iteritems():
+                list(reducer.run_host(v, error_handler, reducers=shared_reducers))
         gen = reducer.run_multi(mapper_output, error_handler, reducers=reducers)
-        return [result for func, result in gen]
+        return [result for func, result in gen if result["type"] != "skip"]
     else:
         host_outputs = mapper_output.values()
         if len(host_outputs) == 0:
@@ -205,7 +231,7 @@ def integrate(input_data, module):
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
         gen = reducer.run_host(single_host, error_handler, reducers)
         reducer_modules = [r.__module__ for r in reducers.values()]
-        return [r for func, r in gen if func.__module__ in reducer_modules]
+        return [r for func, r in gen if func.__module__ in reducer_modules and r["type"] != "skip"]
 
 
 input_data_cache = {}

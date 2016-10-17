@@ -1,4 +1,4 @@
-from falafel.mappers.engine_log import parse_engine_log
+from falafel.mappers.engine_log import EngineLog
 from falafel.tests import context_wrap
 
 
@@ -14,6 +14,6 @@ matched_lines = ['2016-05-18 14:00:51,318 ERROR [org.ovirt.engine.core.dal.dbbro
 
 
 def test_engine_log():
-    engine_log_obj = parse_engine_log(context_wrap(ENGINE_LOG))
+    engine_log_obj = EngineLog(context_wrap(ENGINE_LOG))
     assert "storage I/O problem." in engine_log_obj
     assert matched_lines == engine_log_obj.get('has paused due to storage I/O problem')

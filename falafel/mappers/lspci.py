@@ -24,8 +24,4 @@ from .. import LogFileOutput, mapper
 
 @mapper('lspci')
 class LsPci(LogFileOutput):
-    def __init__(self, data, path=None):
-        """
-        00:00.0 Host bridge: Intel Corporation Haswell-ULT DRAM Controller (rev 0b)
-        """
-        super(LsPci, self).__init__(data, path)
+    pass

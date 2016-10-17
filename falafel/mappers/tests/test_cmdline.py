@@ -9,8 +9,8 @@ ro root=/dev/mapper/vg_rootvg-lv_root rd_LVM_LV=vg_rootvg/lv_root rd_LVM_LV=vg_r
 
 class TestCmdLine():
     def test_cmdline(self):
-        cmd_line = CmdLine.parse_context(context_wrap(CMDLINE))
+        cmd_line = CmdLine(context_wrap(CMDLINE))
         assert len(cmd_line.data) == 15
-        assert cmd_line.get('ro') is None
-        assert cmd_line.get('root') == ['/dev/mapper/vg_rootvg-lv_root']
-        assert cmd_line.get('rd_LVM_LV') == ['vg_rootvg/lv_root', 'vg_rootvg/lv_swap']
+        assert cmd_line.data.get('ro') is None
+        assert cmd_line.data.get('root') == ['/dev/mapper/vg_rootvg-lv_root']
+        assert cmd_line.data.get('rd_LVM_LV') == ['vg_rootvg/lv_root', 'vg_rootvg/lv_swap']

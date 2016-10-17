@@ -17,7 +17,7 @@ NEUTRON_LOG = """
 
 
 def test_server_log():
-    neutron_server = NeutronServerLog.parse_context(context_wrap(NEUTRON_LOG))
+    neutron_server = NeutronServerLog(context_wrap(NEUTRON_LOG))
     assert len(neutron_server.get(["WARNING", "Authorization failed for token"])) == 5
     assert len(neutron_server.get(["Identity response:"])) == 3
     assert len(neutron_server.get("Identity response:")) == 3

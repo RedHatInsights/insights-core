@@ -1,11 +1,10 @@
-from .. import MapperOutput, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('sysconfig_httpd')
-class HTTPDService(MapperOutput):
+class HTTPDService(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         """
         Returns a dict object contains all settings in /etc/sysconfig/httpd
         """
@@ -14,4 +13,4 @@ class HTTPDService(MapperOutput):
             if '=' in line:
                 k, rest = line.split('=', 1)
                 result[k.strip()] = rest.strip()
-        return result
+        self.data = result

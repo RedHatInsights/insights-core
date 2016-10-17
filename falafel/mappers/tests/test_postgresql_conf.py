@@ -148,7 +148,7 @@ work_mem = 2560kB
 
 
 def test_postgresql_conf():
-    result = PostgreSQLConf.parse_context(context_wrap(postgresql_conf_cnt))
+    result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
     assert result.get("checkpoint_segments") == "8"
     assert result.get("log_filename") == "postgresql-%a.log"
     assert result.get("log_line_prefix") == "%m "

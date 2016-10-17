@@ -81,7 +81,7 @@ class TestIfcfg(unittest.TestCase):
         context = context_wrap(IFCFG_TEST)
         context.path = CONTEXT_PATH
 
-        r = IfCFG.parse_context(context)
+        r = IfCFG(context)
         self.assertTrue(keys_in(["iface", "TYPE", "BOOTPROTO",
                                  "IPV4_FAILURE_FATAL", "NAME"], r))
         self.assertFalse(keys_in(["ONBOOT"], r))
@@ -95,7 +95,7 @@ class TestIfcfg(unittest.TestCase):
         context = context_wrap(IFCFG_TEST_2)
         context.path = IFCFG_PATH_2
 
-        r = IfCFG.parse_context(context)
+        r = IfCFG(context)
         self.assertTrue(len(r.data) == 7)
         self.assertEqual(r["iface"], "=eno1")
         self.assertEqual(r["TYPE"], "Ethernet")
@@ -109,7 +109,7 @@ class TestIfcfg(unittest.TestCase):
         context = context_wrap(IFCFG_TEST_3)
         context.path = IFCFG_PATH_3
 
-        r = IfCFG.parse_context(context)
+        r = IfCFG(context)
 
         self.assertTrue(len(r.data) == 7)
         self.assertEqual(r["DEVICE"], "team1")
@@ -126,7 +126,7 @@ class TestIfcfg(unittest.TestCase):
         context = context_wrap(IFCFG_TEST_4)
         context.path = IFCFG_PATH_4
 
-        r = IfCFG.parse_context(context)
+        r = IfCFG(context)
 
         self.assertEqual(r["TEAM_PORT_CONFIG"]["prio"], 100)
         self.assertEqual(r["iface"], "=eno2")
@@ -136,7 +136,7 @@ class TestIfcfg(unittest.TestCase):
         context = context_wrap(IFCFG_TEST_5)
         context.path = IFCFG_PATH_5
 
-        r = IfCFG.parse_context(context)
+        r = IfCFG(context)
 
         self.assertEqual(r["TEAM_PORT_CONFIG"]["prio"], -10)
 
@@ -144,7 +144,7 @@ class TestIfcfg(unittest.TestCase):
         context = context_wrap(IFCFG_TEST_6)
         context.path = IFCFG_PATH_6
 
-        r = IfCFG.parse_context(context)
+        r = IfCFG(context)
 
         self.assertEqual(r["BONDING_OPTS"]["mode"], "1")
         self.assertEqual(r["BONDING_OPTS"]["arp_ip_target"], "+10.11.96.1")

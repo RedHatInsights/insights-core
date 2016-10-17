@@ -2,11 +2,11 @@
 Parted - Partition Editor
 =========================
 """
-from .. import MapperOutput, mapper, computed
+from .. import Mapper, mapper
 from ..mappers import ParseException
 
 
-class Partition(MapperOutput):
+class Partition(object):
     """Class to contain information for one partition.
 
     The ``parted`` command provides disk information including a list
@@ -21,7 +21,7 @@ class Partition(MapperOutput):
         not present for a key then it will not be present in ``data``.
         Attributes are also available as computed values if present.
     """
-    def __init__(self, data, path=None):
+    def __init__(self, data):
         """Initialize objects for the class.
 
         Parameters
@@ -29,13 +29,42 @@ class Partition(MapperOutput):
         data: dict
             key, value pairs for the ``partition`` info.
         """
-        super(Partition, self).__init__(data, path)
-        for k, v in data.iteritems():
-            self._add_to_computed(k, v)
+        self.data = data
+
+    @property
+    def number(self):
+        return self.data.get('number')
+
+    @property
+    def start(self):
+        return self.data.get('start')
+
+    @property
+    def end(self):
+        return self.data.get('end')
+
+    @property
+    def size(self):
+        return self.data.get('size')
+
+    @property
+    def file_system(self):
+        return self.data.get('file_system')
+
+    @property
+    def type(self):
+        return self.data.get('type')
+
+    @property
+    def flags(self):
+        return self.data.get('flags')
+
+    def get(self, item):
+        return self.data.get(item)
 
 
 @mapper("parted_-l")
-class PartedL(MapperOutput):
+class PartedL(Mapper):
     """Class to represent attributes of the ``parted`` command output.
 
     Attributes
@@ -45,36 +74,20 @@ class PartedL(MapperOutput):
         partition_table, disk_flags``, and ``disk_label_type``. If a value
         is blank for any key then it will not be present in ``data``."""
 
-    def __init__(self, data, path=None):
-        """Initialize objects for ``parted`` command output."""
-        self._partitions = []
-        self._boot_partition = None
-        self._sector_size = None
-        if 'partitions' in data:
-            for part in data['partitions']:
-                self._partitions.append(Partition(part, path))
-                if 'flags' in part and 'boot' in part['flags']:
-                    self._boot_partition = Partition(part)
-        if 'sector_size' in data:
-            self._sector_size = data['sector_size'].split('/', 1)
-            if len(self._sector_size) != 2:
-                self._sector_size = None
-        super(PartedL, self).__init__(data, path)
-
     @property
     def partitions(self):
         return self._partitions
 
-    @computed
+    @property
     def disk(self):
         return self.data['disk']
 
-    @computed
+    @property
     def logical_sector_size(self):
         if self._sector_size:
             return self._sector_size[0]
 
-    @computed
+    @property
     def physical_sector_size(self):
         if self._sector_size:
             return self._sector_size[1]
@@ -83,8 +96,10 @@ class PartedL(MapperOutput):
     def boot_partition(self):
         return self._boot_partition
 
-    @staticmethod
-    def parse_content(content):
+    def get(self, item):
+        return self.data.get(item)
+
+    def parse_content(self, content):
         """Parse lines from the command output of ``parted -l device_name``.
 
         Typical content of the ``parted -l device_name`` command output
@@ -198,7 +213,19 @@ class PartedL(MapperOutput):
             except:
                 raise ValueError("PartedL unable to parse partition content: ", table_lines)
 
+        self._partitions = []
+        self._boot_partition = None
+        self._sector_size = None
+        self.data = {}
         if dev_info:
             if partitions:
                 dev_info['partitions'] = partitions
-            return dev_info
+                for part in partitions:
+                    self._partitions.append(Partition(part))
+                    if 'flags' in part and 'boot' in part['flags']:
+                        self._boot_partition = Partition(part)
+            self.data = dev_info
+            if 'sector_size' in self.data:
+                self._sector_size = self.data['sector_size'].split('/', 1)
+                if len(self._sector_size) != 2:
+                    self._sector_size = None

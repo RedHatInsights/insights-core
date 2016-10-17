@@ -1202,5 +1202,5 @@ xml_content = """
 
 
 def test_get_tmo():
-    result = TomcatWebXml.parse_context(context_wrap(xml_content))
+    result = TomcatWebXml(context_wrap(xml_content)).data
     assert result.get("session-timeout") == 30

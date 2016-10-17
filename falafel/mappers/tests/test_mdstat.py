@@ -149,22 +149,15 @@ class TestMdstat(unittest.TestCase):
         with self.assertRaises(AssertionError):
             mdstat.apply_upstring('U_U', test_dict)
 
-    def test_parse_content(self):
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_1.splitlines())
-        self.assertEqual(MDSTAT_RESULT_1, result)
-
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_2.splitlines())
-        self.assertEqual(MDSTAT_RESULT_2, result)
-
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_3.splitlines())
-        self.assertEqual(MDSTAT_RESULT_3, result)
-
-        result = mdstat.Mdstat.parse_content(MDSTAT_TEST_4.splitlines())
-        self.assertEqual(MDSTAT_RESULT_4, result)
-
     def test_mdstat_construction(self):
-        mdstat_obj = mdstat.Mdstat.parse_context(context_wrap(MDSTAT_TEST_1))
+        mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_1))
         self.assertEqual(MDSTAT_RESULT_1, mdstat_obj.data)
 
-        mdstat_obj = mdstat.Mdstat.parse_context(context_wrap(MDSTAT_TEST_3))
+        result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_2))
+        self.assertEqual(MDSTAT_RESULT_2, result.data)
+
+        mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_3))
         self.assertEqual(MDSTAT_RESULT_3, mdstat_obj.data)
+
+        result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_4))
+        self.assertEqual(MDSTAT_RESULT_4, result.data)

@@ -1,8 +1,8 @@
-from .. import MapperOutput, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper("cinder.conf")
-class CinderConf(MapperOutput):
+class CinderConf(Mapper):
     """
     a dict of cinder.conf
     Example:
@@ -11,8 +11,7 @@ class CinderConf(MapperOutput):
         "lvm": {"volumes_dir":"/var/lib/cider/columes"}
     }
     """
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
 
         cinder_dict = {}
         section_dict = {}
@@ -24,4 +23,4 @@ class CinderConf(MapperOutput):
             elif '=' in line:
                 key, value = line.split("=", 1)
                 section_dict[key.strip()] = value.strip()
-        return cinder_dict
+        self.data = cinder_dict

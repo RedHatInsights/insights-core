@@ -8,14 +8,14 @@ DATE_OUTPUT2 = "Thu Oct 22 12:59:28 %s 2015"
 class TestDate():
     def test_get_date1(self):
         DATE = DATE_OUTPUT1 % ('CST')
-        date_info = Date.parse_context(context_wrap(DATE))
+        date_info = Date(context_wrap(DATE))
         assert date_info.data == DATE
         assert date_info.datetime is not None
         assert date_info.timezone == 'CST'
 
     def test_get_date2(self):
         DATE = DATE_OUTPUT2 % ('EDT')
-        date_info = Date.parse_context(context_wrap(DATE))
+        date_info = Date(context_wrap(DATE))
         assert date_info.data == DATE
         assert date_info.datetime is not None
         assert date_info.timezone == 'EDT'

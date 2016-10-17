@@ -2,7 +2,7 @@ import re
 from urlparse import urlparse
 from ..mappers import chkconfig, ParseException
 from ..mappers.systemd import unitfiles
-from .. import MapperOutput, mapper, computed
+from .. import Mapper, mapper
 
 
 @mapper("cmdline")
@@ -35,7 +35,7 @@ def kdump_service_enabled(context):
 
 
 @mapper("kdump.conf")
-class KDumpConf(MapperOutput):
+class KDumpConf(Mapper):
     """
     A dictionary like object for the values of the kdump.conf file.
 
@@ -46,9 +46,8 @@ class KDumpConf(MapperOutput):
     """
     NET_COMMANDS = set(['nfs', 'net', 'ssh'])
 
-    @staticmethod
-    def parse_content(content):
-        data = {}
+    def parse_content(self, content):
+        self.data = {}
         lines = {}
         items = {'options': {}}
         comments = []
@@ -82,11 +81,10 @@ class KDumpConf(MapperOutput):
             if len(parts) > 1:
                 inline_comments.append(_line)
 
-        data['lines'] = lines
-        data['items'] = items
-        data['comments'] = comments
-        data['inline_comments'] = inline_comments
-        return data
+        self.data['lines'] = lines
+        self.data['items'] = items
+        self.data['comments'] = comments
+        self.data['inline_comments'] = inline_comments
 
     def options(self, module):
         return self.get('options', {}).get(module, '')
@@ -123,15 +121,15 @@ class KDumpConf(MapperOutput):
             # strip port
             return netloc.rsplit(':', 1)[0]
 
-    @computed
+    @property
     def ip(self):
         return self.get_ip()
 
-    @computed
+    @property
     def hostname(self):
         return self.get_hostname()
 
-    @computed
+    @property
     def using_local_disk(self):
         KDUMP_NETWORK_REGEX = re.compile(r'^\s*(ssh|nfs4?|net)\s+', re.I)
         KDUMP_LOCAL_DISK_REGEX = re.compile(r'^\s*(ext[234]|raw|xfs|btrfs|minix)\s+', re.I)
@@ -158,7 +156,7 @@ class KDumpConf(MapperOutput):
 
     def __getitem__(self, key):
         if isinstance(key, int):
-            raise TypeError("MapperOutput does not support integer indexes")
+            raise TypeError("Mapper does not support integer indexes")
         return self.data['items'][key]
 
     def get(self, key, default=None):
@@ -172,16 +170,11 @@ class KDumpConf(MapperOutput):
 
 
 @mapper('kexec_crash_loaded')
-class KexecCrashLoaded(MapperOutput):
+class KexecCrashLoaded(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         line = list(content)[0].strip()
-        return line == '1'
-
-    @computed
-    def is_loaded(self):
-        return self.data
+        self.is_loaded = line == '1'
 
 
 def is_enabled(shared):

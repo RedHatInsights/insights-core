@@ -81,7 +81,7 @@ sslCACert=/usr/share/rhn/RHN-ORG-TRUSTED-SSL-CERT
 
 
 def test_get_up2date():
-    up2date_info = Up2Date.parse_context(context_wrap(UP2DATE))
+    up2date_info = Up2Date(context_wrap(UP2DATE)).data
 
     assert up2date_info['retrieveOnly'] == '0'
     assert up2date_info['writeChangesToLog'] == '0'

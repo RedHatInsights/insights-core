@@ -1,4 +1,4 @@
-from falafel.mappers import redhat_release
+from falafel.mappers.redhat_release import RedhatRelease
 from falafel.tests import context_wrap
 
 REDHAT_RELEASE1 = """
@@ -15,8 +15,8 @@ Fedora release 23 (Twenty Three)
 
 
 def test_rhe6():
-    release = redhat_release.redhat_release(context_wrap(REDHAT_RELEASE1))
-    assert release.data == REDHAT_RELEASE1
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE1))
+    assert release.raw == REDHAT_RELEASE1
     assert release.major == 6
     assert release.minor == 7
     assert release.version == "6.7"
@@ -25,8 +25,8 @@ def test_rhe6():
 
 
 def test_rhe7():
-    release = redhat_release.redhat_release(context_wrap(REDHAT_RELEASE2))
-    assert release.data == REDHAT_RELEASE2
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE2))
+    assert release.raw == REDHAT_RELEASE2
     assert release.major == 7
     assert release.minor == 2
     assert release.version == "7.2"
@@ -35,8 +35,8 @@ def test_rhe7():
 
 
 def test_fedora23():
-    release = redhat_release.redhat_release(context_wrap(FEDORA))
-    assert release.data == FEDORA
+    release = RedhatRelease(context_wrap(FEDORA))
+    assert release.raw == FEDORA
     assert release.major == 23
     assert release.minor is None
     assert release.version == "23"

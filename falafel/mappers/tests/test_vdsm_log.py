@@ -1,5 +1,5 @@
 import re
-from falafel.mappers.vdsm_log import parse_vdsm_log
+from falafel.mappers.vdsm_log import VDSMLog
 from falafel.tests import context_wrap
 
 LOG_REGEX = re.compile(r"Migration is stuck: Hasn't progressed in (\d)+(.)(\d)+ seconds. Aborting.")
@@ -13,5 +13,5 @@ jsonrpc.Executor-worker-2::INFO::2016-07-13 04:45:51,454::logUtils::44::dispatch
 
 
 def test_vdsm_log():
-    vdsm_log = parse_vdsm_log(context_wrap(VDSM_LOG))
+    vdsm_log = VDSMLog(context_wrap(VDSM_LOG))
     assert "Migration is stuck:" in vdsm_log

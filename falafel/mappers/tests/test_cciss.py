@@ -21,18 +21,18 @@ cciss/c0d0:  299.96GB   RAID 1(1+0)
 
 
 def test_get_cciss():
-    cciss_info = cciss.Cciss.parse_context(context_wrap(CCISS))
+    cciss_info = cciss.Cciss(context_wrap(CCISS))
 
-    assert cciss_info['cciss0'] == 'HP Smart Array P220i Controller'
-    assert cciss_info['Board ID'] == "0x3355103c"
-    assert cciss_info['Firmware Version'] == '3.42'
-    assert cciss_info['IRQ'] == '82'
-    assert cciss_info['Logical drives'] == '1'
-    assert cciss_info['Sector size'] == '8192'
-    assert cciss_info['Current Q depth'] == '0'
-    assert cciss_info['Current # commands on controller'] == '0'
-    assert cciss_info['Max Q depth since init'] == '84'
-    assert cciss_info['Max # commands on controller since init'] == '111'
-    assert cciss_info['Max SG entries since init'] == '128'
-    assert cciss_info['Sequential access devices'] == '0'
-    assert cciss_info['cciss/c0d0'] == '299.96GB   RAID 1(1+0)'
+    assert cciss_info.data['cciss0'] == 'HP Smart Array P220i Controller'
+    assert cciss_info.data['Board ID'] == "0x3355103c"
+    assert cciss_info.data['Firmware Version'] == '3.42'
+    assert cciss_info.data['IRQ'] == '82'
+    assert cciss_info.data['Logical drives'] == '1'
+    assert cciss_info.data['Sector size'] == '8192'
+    assert cciss_info.data['Current Q depth'] == '0'
+    assert cciss_info.data['Current # commands on controller'] == '0'
+    assert cciss_info.data['Max Q depth since init'] == '84'
+    assert cciss_info.data['Max # commands on controller since init'] == '111'
+    assert cciss_info.data['Max SG entries since init'] == '128'
+    assert cciss_info.data['Sequential access devices'] == '0'
+    assert cciss_info.data['cciss/c0d0'] == '299.96GB   RAID 1(1+0)'

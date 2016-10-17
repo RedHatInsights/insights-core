@@ -1,10 +1,10 @@
 import re
 from datetime import date
-from .. import MapperOutput, mapper, computed, defaults
+from .. import LegacyItemAccess, Mapper, mapper, defaults
 
 
 @mapper('dmidecode')
-class DMIDecode(MapperOutput):
+class DMIDecode(Mapper, LegacyItemAccess):
 
     PRODUCT_MAP = {
         "VMware": "vmware",
@@ -25,37 +25,36 @@ class DMIDecode(MapperOutput):
         "KVM": "kvm"
     }
 
-    @staticmethod
-    def parse_content(content):
-        return parse_dmidecode(content, pythonic_keys=True)
+    def parse_content(self, content):
+        self.data = parse_dmidecode(content, pythonic_keys=True)
 
-    @computed
+    @property
     def system_info(self):
         """Convenience method to get system information"""
         return self["system_information"][0] if "system_information" in self else None
 
-    @computed
+    @property
     def bios(self):
         """Convenience method to get BIOS information"""
         return self["bios_information"][0] if "bios_information" in self else None
 
-    @computed
+    @property
     @defaults()
     def bios_vendor(self):
         return self["bios_information"][0]["vendor"]
 
-    @computed
+    @property
     @defaults()
     def bios_date(self):
         month, day, year = map(int, self["bios_information"][0]["release_date"].split("/"))
         return date(year, month, day)
 
-    @computed
+    @property
     @defaults()
     def processor_manufacturer(self):
         return self["processor_information"][0]["manufacturer"]
 
-    @computed
+    @property
     def virt_what(self):
         '''
         Detect if this machine is running in a virtualized environment.
@@ -75,8 +74,8 @@ class DMIDecode(MapperOutput):
         The function returns the type of virtualized environment found, or
         ``None`` if virtualizion could not be determined.
         '''
-        sys_info = self.get("system_information", [{}])[0]
-        bios_info = self.get("bios_information", [{}])[0]
+        sys_info = self.data.get("system_information", [{}])[0]
+        bios_info = self.data.get("bios_information", [{}])[0]
 
         product_name = sys_info.get("product_name")
         manufacturer = sys_info.get("manufacturer")
@@ -89,7 +88,7 @@ class DMIDecode(MapperOutput):
                 if dmidecode_value and map_key in dmidecode_value:
                     return mapping[map_key]
 
-    @computed
+    @property
     def is_present(self):
         return bool(self.data)
 

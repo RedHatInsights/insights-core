@@ -1,11 +1,10 @@
-from .. import MapperOutput, mapper
+from .. import Mapper, mapper
 
 
 @mapper('sestatus')
-class SEStatus(MapperOutput):
+class SEStatus(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         '''
         Return the 'sestatus -b' information as a dict.
         Input:
@@ -63,4 +62,4 @@ class SEStatus(MapperOutput):
         if 'policy_booleans' in sestatus_info:
             sestatus_info['policy_booleans'] = booleans
 
-        return sestatus_info
+        self.data = sestatus_info

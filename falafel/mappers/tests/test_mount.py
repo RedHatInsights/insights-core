@@ -32,7 +32,7 @@ hugetlbfs /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 
 def test_mount():
     context = Context(content=MOUNT_DATA.splitlines())
-    results = Mount.parse_context(context)
+    results = Mount(context)
     assert results is not None
     assert len(results) == 12
     sr0 = None
@@ -61,4 +61,4 @@ def test_mount():
 
     context = Context(content=MOUNT_ERR_DATA.splitlines())
     with pytest.raises(ParseException):
-        Mount.parse_context(context)
+        Mount(context)

@@ -1,11 +1,10 @@
-from .. import MapperOutput, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('up2date')
-class Up2Date(MapperOutput):
+class Up2Date(Mapper):
 
-    @staticmethod
-    def parse_content(content):
+    def parse_content(self, content):
         '''
         Return a dict of up2date info which ignores comment lines.
         The first and second line for key word 'serverURL' will be ignored.
@@ -21,4 +20,4 @@ class Up2Date(MapperOutput):
             if "[comment]" not in line and '=' in line:
                 key, val = line.split('=')
                 up2date_info[key.strip()] = val.strip()
-        return up2date_info
+        self.data = up2date_info
