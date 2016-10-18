@@ -340,7 +340,7 @@ class InsightsMultiEvaluator(MultiEvaluator):
         return result
 
     def format_response(self, response):
-        serialize_skips(response)
+        serialize_skips(response["skips"])
         response["system"]["system_id"] = self.system_id
         product = self.archive_metadata.get("product", "machine")
         response["system"]["product"] = product
