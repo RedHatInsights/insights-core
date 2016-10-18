@@ -9,39 +9,67 @@ vg_name_line = re.compile(" +VG Name\ +.*")
 @mapper('lvdisplay')
 class LvDisplay(Mapper, LegacyItemAccess):
     """
-    Returns a list of dicts and list contain debug info:
-    - the keys in each dict are the row headers
-    - each item in the list represents a VG or list contain debug info
-    - there is a empty line between different VG
+    The normal lvdisplay content looks like this:
+
+        Adding lvsapp01ap01:0 as an user of lvsapp01ap01_mlog
+      --- Volume group ---
+      VG Name               vgp01app
+      ...
+      VG Size               399.98 GiB
+      VG UUID               JVgCxE-UY84-C0Gk-8Cmn-UGXu-UHo0-9Qa4Re
+
+      --- Logical volume ---
+          global/lvdisplay_shows_full_device_path not found in config: defaulting to 0
+      LV Path                /dev/vgp01app/lvsapp01ap01-old
+      LV Name                lvsapp01ap01-old
+      ...
+      VG Name                vgp01app
+
+      --- Logical volume ---
+          global/lvdisplay_shows_full_device_path not found in config: defaulting to 0
+      LV Path                /dev/vgp01app/lvsapp01ap02
+      LV Name                lvsapp01ap02
+      ...
+      VG Name                vgp01app
+
+
+    This mapper returns a dict with volumes and debug keys.
+    'Volumne group' and 'Logical volumn' are grouped inside volumes key
+    A typical output looks like:
     {
-      "logical_volume":
-      [
-        {
-            'VG Name': 'rhel_hp-dl160g8-3',
-            'Format': 'lvm2',
-            'VG Access': 'read/write',schema[0]
-            'Total PE': '119109',
-            'VG UUID': 'by0Dl3-0lpB-MxEz-f6GO-9LYO-YRAQ-GufNZD',
-            'Metadata Areas': '1'
-            'debug': 'global/lvdisplay_shows_full_device_path not found in config: defaulting to 0'
-        },
-
-        {
-            'VG Name': 'rhel_hp-dl260g7-4',
-            'Format': 'lvm2',
-            'VG Access': 'read/write',
-            'Free  PE / Size': '11/ 44.00 MiB',
-            'VG UUID': 'by0Dl3-0lpB-MxEz-f6GO-9LYO-YRAQ-GufNZN',
-            'Alloc PE / Size': '119098 / 465.23 GiB'
+        "debug": [
+            "Adding lvsapp01ap01:0 as an user of lvsapp01ap01_mlog"
+        ],
+        "volumes": {
+            "Logical volume": [
+                {
+                    "LV Name": "lvsapp01ap01-old",
+                    "LV Path": "/dev/vgp01app/lvsapp01ap01-old",
+                    ...
+                    "VG Name": "vgp01app",
+                    "debug": [
+                        "    global/lvdisplay_shows_full_device_path not found in config: defaulting to 0"
+                    ]
+                },
+                {
+                    "LV Name": "lvsapp01ap02",
+                    "LV Path": "/dev/vgp01app/lvsapp01ap02",
+                    ...
+                    "VG Name": "vgp01app",
+                    "debug": [
+                        "    global/lvdisplay_shows_full_device_path not found in config: defaulting to 0"
+                    ]
+                }
+            ],
+            "Volume group": [
+                {
+                    "VG Name": "vgp01app",
+                    "VG Size": "399.98 GiB",
+                    ...
+                    "VG UUID": "JVgCxE-UY84-C0Gk-8Cmn-UGXu-UHo0-9Qa4Re",
+                }
+            ]
         }
-
-      ],
-
-      "debug_info":
-      [
-            "Couldn't find device with uuid VVLmw8-e2AA-ECfW-wDPl-Vnaa-0wW1-utv7tV.",
-            "There are 1 physical volumes missing."
-      ]
     }
     """
 
