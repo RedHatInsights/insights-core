@@ -5,6 +5,8 @@ import re
 import sys
 from collections import defaultdict
 from falafel.core import marshalling
+import io
+from ConfigParser import RawConfigParser
 
 DEFAULT_PATTERN = r'.*py$'
 log = logging.getLogger(__name__)
@@ -177,74 +179,50 @@ class IniConfigFile(Mapper):
         # comment
         [section 2]
         key with spaces = value string
+
+        Note that we only pass through a few of the methods of RawConfigParser
+        because we don't want people to write config files!  If there's a way
+        to do this with multiple inheritance, patches are welcome :-)
     """
 
-    def __init__(self, context, multikeys=[]):
-        """
-            Normally, if a key occurs later in the same section its value will
-            replace the earlier value.  However, if this key is listed in the
-            'multikeys' list this will cause these values to be appended to a
-            list.  If multikeys is set to '*', all keys will do this.
-        """
-        self.multikeys = multikeys
-        super(IniConfigFile, self).__init__(context)
-
     def parse_content(self, content):
-        ini_data = {}
-        section_dict = {}
-        for line in content:
-            #print "INI file: line =", line
-            line = line.strip()
-            if line.startswith("#") or line.startswith(';') or line == "":
-                continue
-            if line.startswith("["):
-                # new section beginning
-                section_dict = {}
-                ini_data[line[1:].split(']', 1)[0]] = section_dict
-            elif '=' in line:
-                key, value = [s.strip() for s in line.split("=", 1)]
-                if key in section_dict and (key in self.multikeys
-                                            or self.multikeys == '*'):
-                    # If we already have this key, and we want to keep
-                    # multiple values for this key, append or listify it.
-                    if isinstance(section_dict[key], list):
-                        section_dict[key].append(value)
-                    else:
-                        section_dict[key] = [section_dict[key], value]
-                else:
-                    # Otherwise overwrite the previous value
-                    section_dict[key] = value
-        self.data = ini_data
+        config = RawConfigParser()
+        fp = io.BytesIO("\n".join(content))
+        config.readfp(fp, filename=self.file_name)
+        self.data = config
 
-    def get(self, section):
-        """
-            Look up the section by name, return the entire dict
-            (Should we throw a KeyError instead of returning None?)
-        """
-        if section not in self.data:
-            return None
-        return self.data[section]
+    def sections(self):
+        return self.data.sections()
+
+    def items(self, section):
+        return [k for (k, v) in self.data.items(section)]
+
+    def get(self, section, key):
+        return self.data.get(section, key)
+
+    def getint(self, section, key):
+        return self.data.getint(section, key)
+
+    def getfloat(self, section, key):
+        return self.data.getfloat(section, key)
+
+    def getboolean(self, section, key):
+        return self.data.getboolean(section, key)
+
+    def has_option(self, section, key):
+        return self.data.has_option(section, key)
 
     def __contains__(self, section):
         """
             Does the INI file contain this *section*?
         """
-        return section in self.data
-
-    def get_key(self, section, key):
-        """
-            Look up the given key in the given section, return the value
-            or None if the section or key were not found.
-            (Should we throw a KeyError instead of returning None?)
-        """
-        if section not in self.data:
-            return None
-        if key not in self.data[section]:
-            return None
-        return self.data[section][key]
+        return section in self.data.sections()
 
     def __repr__(self):
-        return "INI file - sections:[" + ', '.join(self.data.keys()) + "]"
+        return "INI file '{filename}' - sections:{sections}".format(
+            filename=self.file_name,
+            sections=self.data.sections()
+            )
 
 
 class ErrorCollector(object):
