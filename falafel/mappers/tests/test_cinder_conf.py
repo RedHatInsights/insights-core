@@ -1148,10 +1148,10 @@ osp.role = "Controller"
 
 def test_match():
     result = CinderConf(context_wrap(cinder_content, osp=osp))
-    assert result.data.get("DEFAULT").get("enabled_backends") == "tripleo_ceph"
-    assert result.data.get("DEFAULT").get("glance_api_ssl_compression") == "False"
-    assert result.data.get("DEFAULT").get("eqlx_use_chap") == "false"
+    assert result.data.get("DEFAULT", "enabled_backends") == "tripleo_ceph"
+    assert result.data.get("DEFAULT", "glance_api_ssl_compression") == "False"
+    assert result.data.get("DEFAULT", "eqlx_use_chap") == "false"
 
-    assert result.data.get("lvm").get("iscsi_helper") == "lioadm"
-    assert result.data.get("lvm").get("volumes_dir") == "/var/lib/cinder/volumes"
-    assert result.data.get("lvm").get("volume_backend_name") == "lvm"
+    assert result.data.get("lvm", "iscsi_helper") == "lioadm"
+    assert result.data.get("lvm", "volumes_dir") == "/var/lib/cinder/volumes"
+    assert result.data.get("lvm", "volume_backend_name") == "lvm"
