@@ -64,3 +64,20 @@ def ensure_path(path, mode=0777):
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
+
+
+def size(path):
+    """Return the size of the file.
+
+    Parameters
+    ----------
+    path : str
+        absolute path to a file.
+
+    Returns
+    -------
+    int
+        size of the file in bytes.
+    """
+
+    return os.stat(path).st_size
