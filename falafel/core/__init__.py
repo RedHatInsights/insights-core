@@ -195,7 +195,7 @@ class IniConfigFile(Mapper):
         return self.data.sections()
 
     def items(self, section):
-        return [k for (k, v) in self.data.items(section)]
+        return {k: v for (k, v) in self.data.items(section)}
 
     def get(self, section, key):
         return self.data.get(section, key)
