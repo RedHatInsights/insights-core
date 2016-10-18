@@ -14,7 +14,7 @@ key with continued value = value1
 ; semicolon comment = should not be found
 # hash comment = should not be found
 comment # in key = value still found
-comment in value = comment includes # sign
+comment in value = value includes # sign
 
 [value overwriting]
 key = value1
@@ -45,7 +45,7 @@ def test_ini_config_file_mapper():
     # items() tests - here we return a dictionary
     assert ini.items('global') == \
         {'keynospace': 'valuenospaces',
-         'key with spaces': 'valuewithspaces',
+         'key with spaces': 'value with spaces',
          'key with continued value': "value1\nvalue2"}
     assert ini.items('comment tricks') == \
         {'comment # in key': 'value still found',
@@ -64,7 +64,7 @@ def test_ini_config_file_mapper():
     # Other comment tricks
     assert ini.get('comment tricks', 'comment # in key') == 'value still found'
     assert ini.get('comment tricks', 'comment in value') == \
-        'comment includes # sign'
+        'value includes # sign'
 
     # Multiple lines giving the same key - last value overwrites.
     assert ini.get('value overwriting', 'key') == 'this one should be picked'
@@ -72,10 +72,10 @@ def test_ini_config_file_mapper():
     # getint / getfloat / getboolean tests
     assert ini.getint('value checks', 'positive integer value') == 14
     assert ini.getint('value checks', 'negative integer value') == -993
-    assert ini.getint('value checks', 'positive float value') == 3.791
-    assert ini.getint('value checks', 'negative float value') == -91.2e6
-    assert ini.getint('value checks', 'true boolean value')
-    assert not ini.getint('value checks', 'false boolean value')
+    assert ini.getfloat('value checks', 'positive float value') == 3.791
+    assert ini.getfloat('value checks', 'negative float value') == -91.2e6
+    assert ini.getboolean('value checks', 'true boolean value')
+    assert not ini.getboolean('value checks', 'false boolean value')
 
     # positive has_option tests
     assert ini.has_option('global', 'key with spaces')
