@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 JSON_FIELDS = ["TEAM_CONFIG", "TEAM_PORT_CONFIG"]
@@ -44,7 +45,7 @@ class IfCFG(LegacyItemAccess, Mapper):
             if key in JSON_FIELDS:
                 value = json.loads(value.replace("\\", ""))
             if key == "BONDING_OPTS":
-                value_map = {}
+                value_map = OrderedDict()
                 for key_value_pair in value.split():
                     sub_key, _, sub_value = key_value_pair.partition("=")
                     value_map[sub_key.strip()] = sub_value.strip()
