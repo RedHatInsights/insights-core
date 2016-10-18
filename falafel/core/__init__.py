@@ -219,9 +219,10 @@ class IniConfigFile(Mapper):
         return section in self.data.sections()
 
     def __repr__(self):
-        return "INI file '{filename}' - sections:{sections}".format(
-            filename=self.file_name,
-            sections=self.data.sections()
+        return "INI file '{filename}' - sections:{sections}".\
+            format(
+                    filename=self.file_name,
+                    sections=self.data.sections()
             )
 
 
