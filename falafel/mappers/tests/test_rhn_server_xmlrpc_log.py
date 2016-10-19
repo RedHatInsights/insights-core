@@ -1,6 +1,8 @@
 from falafel.tests import context_wrap
 from falafel.mappers import rhn_server_xmlrpc
 
+import datetime
+
 LOG_DATA = """
 2016/04/11 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
 2016/04/11 05:52:26 -04:00 12911 10.4.4.17: xmlrpc/registration.create_system("token = '1-RegKey'", '6Server', 'x86_64')
@@ -20,6 +22,8 @@ def test_log_data():
     line = log.get('10.4.4.17: xmlrpc/registration.welcome_message')[0]
 
     assert line['timestamp'] == '2016/04/11 05:52:01 -04:00'
+    d = datetime.datetime(2016, 04, 11, 05, 52, 01)
+    assert line['datetime'] == d
     assert line['pid'] == '23630'
     assert line['client_ip'] == '10.4.4.17'
     assert line['module'] == 'xmlrpc'
@@ -45,4 +49,5 @@ def test_log_data():
     # Check that we can get IPv6 addresses correctly
     line = log.get('checkins enabled')[0]
     assert line['client_ip'] == '2620:10a:0:4::40'
-
+    assert line['client_id'] == '1000014812'
+    assert line['args'] == "2, 'checkins enabled'"
