@@ -15,6 +15,7 @@ LOG_DATA = """
 2016/07/27 04:44:41 -04:00 25923 2620:10a:0:4::40: xmlrpc/queue.get(1000014812, 2, 'checkins enabled')
 """
 
+
 def test_log_data():
     log = rhn_server_xmlrpc.ServerXMLRPCLog(context_wrap(LOG_DATA))
 
