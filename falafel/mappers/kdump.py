@@ -1,6 +1,6 @@
 import re
 from urlparse import urlparse
-from ..mappers import chkconfig, ParseException
+from ..mappers import chkconfig, get_active_lines, ParseException
 from ..mappers.systemd import unitfiles
 from .. import Mapper, mapper
 
@@ -205,3 +205,63 @@ def kdump_using_local_disk(context):
             local_disk = True
 
     return local_disk
+
+
+@mapper('kdump')
+class SysconfigKdump(Mapper):
+    """Parses the `/etc/sysconfig/kdump` file.
+
+    Sample Input::
+
+        # Comments
+        KDUMP_KERNELVER=""
+
+        KDUMP_COMMANDLINE=""
+        KDUMP_COMMANDLINE_REMOVE="hugepages hugepagesz slub_debug quiet"
+        KDUMP_COMMANDLINE_APPEND="irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never"
+        KEXEC_ARGS="--elf32-core-headers"
+        KDUMP_IMG="vmlinuz"
+        KDUMP_IMG_EXT=""
+
+    Attributes
+    ----------
+    data: dict
+        Contains key/value pairs for the information in the config file  in the form::
+
+        .. code::python:
+
+            {
+                'KDUMP_KERNELVER': "",
+                'KDUMP_COMMANDLINE': "",
+                'KDUMP_COMMANDLINE_REMOVE': "hugepages hugepagesz slub_debug quiet",
+                'KDUMP_COMMANDLINE_APPEND': "irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never",
+                'KEXEC_ARGS': "--elf32-core-headers",
+                'KDUMP_IMG': "vmlinuz",
+                'KDUMP_IMG_EXT': ""
+            }
+
+    All dictionary values may be accessed as attributes by keyword name as `obj.name`.
+
+    Examples
+    --------
+    >>> shared[SysconfigKdump].KDUMP_COMMANDLINE_REMOVE
+    'hugepages hugepagesz slub_debug quiet'
+
+    """
+    KDUMP_KEYS = [
+        'KDUMP_KERNELVER',
+        'KDUMP_COMMANDLINE',
+        'KDUMP_COMMANDLINE_REMOVE',
+        'KDUMP_COMMANDLINE_APPEND',
+        'KEXEC_ARGS',
+        'KDUMP_IMG',
+        'KDUMP_IMG_EXT'
+    ]
+
+    def parse_content(self, content):
+        self.data = {k: "" for k in self.KDUMP_KEYS}
+        for line in get_active_lines(content):
+            kw, val = line.split("=", 1)
+            self.data[kw] = val.strip().replace('"', '')
+        for kw, val in self.data.iteritems():
+            setattr(self, kw, val)

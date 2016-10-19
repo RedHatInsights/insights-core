@@ -66,8 +66,8 @@ class SCSI(Mapper):
         devices = []
         if header:
             if content[0] != header:
-                msg = 'Expected Header: %s but got %s'
-                raise ParseException(msg, header, content[0])
+                msg = 'Expected Header: %s but got %s' % (header, content[0])
+                raise ParseException(msg)
             content = content[1:]
         lines = deque(filter(None, [line.strip() for line in content]))
         while lines:
