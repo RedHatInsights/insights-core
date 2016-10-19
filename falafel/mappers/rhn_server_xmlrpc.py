@@ -33,12 +33,13 @@ class ServerXMLRPCLog(LogFileOutput):
         if match:
             for group in self.GROUPS:
                 msg_info[group] = match.group(group)
+            # Try converting the time stamp but move on if it fails
             try:
                 stamp = match.group('timestamp')
-                # Must remove : from timezone for strptime %z
-                msg_info['timestamp'] = datetime.strptime(
-                    stamp[0:23] + stamp[24:26], "%Y/%m/%d %H:%M:%S %z")
-            except:
+                # Cannot guess time zone from e.g. '+01:00', so strip timezone
+                msg_info['datetime'] = datetime.strptime(
+                    stamp[0:19], "%Y/%m/%d %H:%M:%S")
+            except ValueError:
                 pass
 
         return msg_info
