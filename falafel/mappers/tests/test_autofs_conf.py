@@ -46,13 +46,12 @@ class TestAutoFSConf():
     def test_standard_autofs_conf(self):
         cfg = autofs_conf.AutoFSConf(context_wrap(AUTOFS_CONF))
 
-        assert cfg.get("autofs").get("timeout") == '300'
-        assert cfg.get_key("autofs", "timeout") == '300'
-        assert cfg.get_key("autofs", "browse_mode") == 'no'
-        assert cfg.get_key("autofs", "mount_nfs_default_protocol") == '4'
-        assert cfg.get_key("amd", "dismount_interval") == '300'
+        assert cfg.get(" autofs ", "timeout") == '300'
+        assert cfg.get(" autofs ", "browse_mode") == 'no'
+        assert cfg.get(" autofs ", "mount_nfs_default_protocol") == '4'
+        assert cfg.get(" amd ", "dismount_interval") == '300'
 
         # Check that things set in comments do not appear
-        assert cfg.get_key("amd", "map_type") is None
+        assert not cfg.has_option(" amd ", "map_type")
         # Check that nonexistent sections do not appear
-        assert cfg.get("nfs") is None
+        assert "nfs" not in cfg
