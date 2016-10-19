@@ -1,7 +1,7 @@
 from .. import mapper, IniConfigFile
 
 
-@mapper("autofs_conf")
+@mapper("autofs.conf")
 class AutoFSConf(IniConfigFile):
     """
         /etc/autofs.conf is a standard INI style config file.
