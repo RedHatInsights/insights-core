@@ -15,7 +15,7 @@ use_ipv6=True
 notify_on_state_change=vm_and_task_state
 notify_api_faults=False
 state_path=/var/lib/nova
- report_interval = 10
+report_interval = 10
 osapi_compute_listen=fd00:4888:1000:f901::c1
 osapi_compute_workers=32
 metadata_listen=fd00:4888:1000:f901::c1
@@ -77,13 +77,13 @@ osp.role = "Compute"
 
 
 def test_nova_conf():
-    result = nova_conf.parse_nova_conf(context_wrap(nova_content, osp=osp))
+    result = nova_conf.NovaConf(context_wrap(nova_content, osp=osp))
     print result
-    assert result.get("DEFAULT").get("notification_driver") == ""
-    assert result.get("DEFAULT").get("report_interval") == "10"
-    assert result.get("DEFAULT").get("novncproxy_host") == "fd00:4888:1000:f901::c1"
+    assert result.get("DEFAULT", "notification_driver") == ""
+    assert result.get("DEFAULT", "report_interval") == "10"
+    assert result.get("DEFAULT", "novncproxy_host") == "fd00:4888:1000:f901::c1"
 
-    assert result.get("keystone_authtoken").get("auth_uri") == "http://[fd00:4888:1000:f901::a000]:5000/v2.0"
-    assert result.get("keystone_authtoken").get("service_metadata_proxy") == "True"
-    assert result.get("keystone_authtoken").get(
-        "rabbit_hosts") == "fd00:4888:1000:f901::c0,fd00:4888:1000:f901::c1,fd00:4888:1000:f901::c2"
+    assert result.get("keystone_authtoken", "auth_uri") == "http://[fd00:4888:1000:f901::a000]:5000/v2.0"
+    assert result.get("keystone_authtoken", "service_metadata_proxy") == "True"
+    assert result.get("keystone_authtoken", "rabbit_hosts")\
+        == "fd00:4888:1000:f901::c0,fd00:4888:1000:f901::c1,fd00:4888:1000:f901::c2"

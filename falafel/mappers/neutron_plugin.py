@@ -1,8 +1,8 @@
-from .. import Mapper, mapper, LegacyItemAccess
+from .. import mapper, LegacyItemAccess, IniConfigFile
 
 
 @mapper("neutron_plugin.ini")
-class NeutronPlugin(LegacyItemAccess, Mapper):
+class NeutronPlugin(LegacyItemAccess, IniConfigFile):
     """
     parsing plugin.ini and return dict.
     :return: a dict(dict)   Example:
@@ -33,19 +33,4 @@ class NeutronPlugin(LegacyItemAccess, Mapper):
         }
     }
     """
-
-    def parse_content(self, content):
-        neutron_dict = {}
-        section_dict = {}
-        for line in content:
-            line = line.strip()
-            if line.startswith("#") or line == "":
-                continue
-            if line.startswith("["):
-                # new section beginning
-                section_dict = {}
-                neutron_dict[line[1:-1]] = section_dict
-            elif '=' in line:
-                key, value = line.split("=", 1)
-                section_dict[key.strip()] = value.strip()
-        self.data = neutron_dict
+    pass

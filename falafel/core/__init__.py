@@ -5,6 +5,8 @@ import re
 import sys
 from collections import defaultdict
 from falafel.core import marshalling
+import io
+from ConfigParser import RawConfigParser
 
 DEFAULT_PATTERN = r'.*py$'
 log = logging.getLogger(__name__)
@@ -47,14 +49,16 @@ def get_module_names(package_name, pattern=None):
         return False
 
     plugin_dir = os.path.dirname(os.path.realpath(package_name.__file__))
-    log.debug("looking for files that match: [%s] in [%s]", pattern, plugin_dir)
+    log.debug("looking for files that match: [%s] in [%s]",
+              pattern, plugin_dir)
     for root, dirs, files in os.walk(plugin_dir):
         if os.path.exists(os.path.join(root, "__init__.py")):
             for file_ in filter(name_filter, files):
                 plugin_name, dot, suffix = file_.rpartition(".")
                 if dot == "." and suffix == "py":
                     if get_importable_path(root):
-                        yield "%s.%s" % (get_importable_path(root), plugin_name)
+                        yield "%s.%s" % (
+                            get_importable_path(root), plugin_name)
                     else:
                         yield plugin_name
 
@@ -68,12 +72,14 @@ def get_importable_path(path):
     path to import from.
     """
     dirs = map(os.path.realpath, sys.path)
-    prefixes = [os.path.commonprefix([path, el]) for el in dirs if path.startswith(el)]
+    prefixes = [os.path.commonprefix([path, el]) for el in dirs
+                if path.startswith(el)]
     longest = max(prefixes, key=len)
     if longest:
         return path.replace(longest, '').lstrip('/').replace('/', '.')
     else:
-        raise Exception("%s cannot be imported due to an insufficient sys.path" % path)
+        raise Exception(
+            "%s cannot be imported due to an insufficient sys.path" % path)
 
 
 class Mapper(object):
@@ -91,7 +97,8 @@ class Mapper(object):
 
     def __init__(self, context):
         self.file_path = context.path
-        self.file_name = os.path.basename(context.path) if context.path is not None else None
+        self.file_name = os.path.basename(context.path) \
+            if context.path is not None else None
         self.parse_content(context.content)
 
     def parse_content(self, content):
@@ -162,6 +169,63 @@ class LogFileOutput(Mapper):
         cls.scan(result_key, _scan)
 
 
+class IniConfigFile(Mapper):
+    """
+        A class specifically for reading configuration files in 'ini' format:
+
+        [section 1]
+        key = value
+        ; comment
+        # comment
+        [section 2]
+        key with spaces = value string
+
+        Note that we only pass through a few of the methods of RawConfigParser
+        because we don't want people to write config files!  If there's a way
+        to do this with multiple inheritance, patches are welcome :-)
+    """
+
+    def parse_content(self, content):
+        config = RawConfigParser()
+        fp = io.BytesIO("\n".join(content))
+        config.readfp(fp, filename=self.file_name)
+        self.data = config
+
+    def sections(self):
+        return self.data.sections()
+
+    def items(self, section):
+        return {k: v for (k, v) in self.data.items(section)}
+
+    def get(self, section, key):
+        return self.data.get(section, key)
+
+    def getint(self, section, key):
+        return self.data.getint(section, key)
+
+    def getfloat(self, section, key):
+        return self.data.getfloat(section, key)
+
+    def getboolean(self, section, key):
+        return self.data.getboolean(section, key)
+
+    def has_option(self, section, key):
+        return self.data.has_option(section, key)
+
+    def __contains__(self, section):
+        """
+            Does the INI file contain this *section*?
+        """
+        return section in self.data.sections()
+
+    def __repr__(self):
+        return "INI file '{filename}' - sections:{sections}".\
+            format(
+                    filename=self.file_name,
+                    sections=self.data.sections()
+            )
+
+
 class ErrorCollector(object):
     errors = defaultdict(lambda: {
         "count": 0,
@@ -189,7 +253,8 @@ class ErrorCollector(object):
             func = error["func"]
             count = error["count"]
             ename = e.__class__.__name__
-            yield "%d count(s) of [%s]: %s: %s" % (count, func.__module__, ename, e.message)
+            yield "%d count(s) of [%s]: %s: %s" % \
+                (count, func.__module__, ename, e.message)
             if self.verbose:
                 import traceback
                 traceback.print_exception(type(e), e, error["tb"])
@@ -213,7 +278,8 @@ def print_result(r, case=None, min_key_len=0):
 
 def print_results(results, cases=None, error_collector=None):
     results.sort(key=lambda x: x[1].__module__)
-    min_key_len = max([0] + [len(r["error_key"]) for h, f, r in results if "error_key" in r])
+    min_key_len = max([0] + [len(r["error_key"]) for h, f, r in results
+                      if "error_key" in r])
     result_count = len([r for host, f, r in results if "error_key" in r])
     for host, func, r in results:
         case = cases.get(host) if cases else None
