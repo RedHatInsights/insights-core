@@ -25,3 +25,9 @@ def test_detect_fd_limit():
     context = context_wrap(rabbitmq_report, hostname="controller_1", osp=osp_controller)
     map_result = rabbitmq.fd_total_limit(context)
     assert 3996 == map_result
+
+
+def test_fd_limit_class():
+    context = context_wrap(rabbitmq_report, hostname="controller_1", osp=osp_controller)
+    map_result = rabbitmq.RabbitMQFileDescriptors(context)
+    assert 3996 == map_result.fd_total_limit

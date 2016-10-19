@@ -2,6 +2,8 @@ import logging
 import os
 import ConfigParser
 
+from falafel.console.custom_logging import print_console, ERROR_MSG
+
 logger = logging.getLogger(__name__)
 
 
@@ -52,6 +54,7 @@ class InsightsCliConfig():
             config_parser.read(path)
         except ConfigParser.Error as e:
             logger.error("Error reading config file: \n{0}".format(e))
+            print_console(ERROR_MSG, verbose=False)
             raise
 
         return config_parser
@@ -78,4 +81,5 @@ class InsightsCliConfig():
                 self.__dict__[config_item] = config_options.get('default', None)
             except ValueError:
                 logging.error("Value of '{0}' in section '{1}' should be of type {2}".format(config_item, section, typ))
+                print_console(ERROR_MSG, verbose=False)
                 raise

@@ -4,12 +4,12 @@ import cStringIO
 import logging
 import os
 import shlex
-import shutil
 import subprocess
 import tarfile
 import tempfile
 from contextlib import closing
 from falafel.core.marshalling import Marshaller
+from falafel.util import subproc, fs
 
 try:
     import falafel.contrib.magic as magic
@@ -76,7 +76,7 @@ class InMemoryExtractor(Extractor):
         "application/x-xz": "xz -d -c -",
         "application/x-gzip": "gunzip",
         "application/gzip": "gunzip",
-        "application/x-bzip2": "bunzip",
+        "application/x-bzip2": "bunzip2",
         "application/x-tar": "tar"
     }
 
@@ -126,8 +126,9 @@ class OnDiskExtractor(Extractor):
         "application/x-tar": ""
     }
 
-    def __init__(self):
+    def __init__(self, timeout=150):
         self.tmp_dir = None
+        self.timeout = timeout
 
     def from_buffer(self, buf):
         self.content_type = _magic.buffer(buf)
@@ -158,15 +159,13 @@ class OnDiskExtractor(Extractor):
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
 
             logging.info("Extracting files in '%s'", self.tmp_dir)
-            subprocess.call(shlex.split(command))
-
+            subproc.call(command, timeout=self.timeout)
             self.tar_file = DirectoryAdapter(self.tmp_dir)
         return self
 
     def cleanup(self):
         if self.tmp_dir:
-            subprocess.call(shlex.split("chmod -R 755 %s" % self.tmp_dir))
-            shutil.rmtree(self.tmp_dir)
+            fs.remove(self.tmp_dir, chmod=True)
 
 
 class DirectoryAdapter(object):

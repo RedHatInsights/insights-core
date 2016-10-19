@@ -12,6 +12,7 @@ from falafel.console.config import InsightsCliConfig
 from falafel.console.package import get_plugin_modules
 from falafel.core import plugins
 from falafel.core import get_module_names
+from falafel.console.custom_logging import print_console, ERROR_MSG
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class Runner(object):
                 my_specs = imp.load_source("specs", self.args.specs)
                 config.merge(group_wrap(my_specs.specs))
             except ImportError:
-                logging.error("Failed to load specs module.", exc_info=True)
+                logging.exception("Failed to load specs module.")
 
         reports = []
         ex_class = archives.OnDiskExtractor if not self.args.mem_only else archives.InMemoryExtractor
@@ -134,6 +135,7 @@ def main():
 
     if not args.plugin_modules:
         logging.error("At least one plugin module must be specified.")
+        print_console(ERROR_MSG, verbose=False)
         sys.exit(1)
 
     import_failures = []
@@ -152,9 +154,9 @@ def main():
     if import_failures:
         if args.verbose:
             for e in import_failures:
-                print e.strip()
+                logging.error(e.strip())
         else:
-            logging.error("Use -v option for more details")
+            print_console(ERROR_MSG, verbose=False)
         sys.exit(1)
 
     if not args.reports:
@@ -166,6 +168,7 @@ def main():
             sys.exit(0)
         else:
             logging.error("Please specify at least one report to process")
+            print_console(ERROR_MSG, verbose=False)
             sys.exit(1)
 
     for report in args.reports:
