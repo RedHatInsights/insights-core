@@ -1,6 +1,7 @@
 from .. import LogFileOutput, mapper
 
 
+@mapper('dmesg')
 class DmesgLineList(LogFileOutput):
     def has_startswith(self, prefix):
         """
