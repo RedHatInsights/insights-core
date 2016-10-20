@@ -130,36 +130,33 @@ SAMBA_CONFIG = """
 def test_match():
     config = samba.SambaConfig(context_wrap(SAMBA_CONFIG))
 
-    assert isinstance(config.get('global'), dict) 
-    assert config.get('global').get('workgroup') == 'MYGROUP'
-    assert config.get_key('global', 'workgroup') == 'MYGROUP'
-    assert config.get_key('global', 'server string') == 'Samba Server Version %v'
-    assert config.get_key('global', 'netbios name') is None
-    assert config.get_key('global', 'log file') == '/var/log/samba/log.%m'
-    assert config.get_key('global', 'max log size') == '50'
+    assert config.get('global', 'workgroup') == 'MYGROUP'
+    assert config.get('global', 'workgroup') == 'MYGROUP'
+    assert config.get('global', 'server string') == 'Samba Server Version %v'
+    assert not config.has_option('global', 'netbios name')
+    assert config.get('global', 'log file') == '/var/log/samba/log.%m'
+    assert config.get('global', 'max log size') == '50'
 
-    assert config.get_key('global', 'security') == 'user'
-    assert config.get_key('global', 'passdb backend') == 'tdbsam'
+    assert config.get('global', 'security') == 'user'
+    assert config.get('global', 'passdb backend') == 'tdbsam'
 
-    assert config.get_key('global', 'load printers') == 'yes'
-    assert config.get_key('global', 'cups options') == 'raw'
+    assert config.get('global', 'load printers') == 'yes'
+    assert config.get('global', 'cups options') == 'raw'
 
-    assert config.get_key('global', 'printcap name') is None
+    assert not config.has_option('global', 'printcap name')
 
-    assert isinstance(config.get('homes'), dict) 
-    assert config.get_key('homes', 'comment') == 'Home Directories'
-    assert config.get_key('homes', 'browseable') == 'no'
-    assert config.get_key('homes', 'writable') == 'yes'
-    assert config.get_key('homes', 'valid users') is None
+    assert config.get('homes', 'comment') == 'Home Directories'
+    assert config.get('homes', 'browseable') == 'no'
+    assert config.get('homes', 'writable') == 'yes'
+    assert not config.has_option('homes', 'valid users')
 
-    assert isinstance(config.get('printers'), dict) 
-    assert config.get_key('printers', 'comment') == 'All Printers'
-    assert config.get_key('printers', 'path') == '/var/spool/samba'
-    assert config.get_key('printers', 'browseable') == 'no'
-    assert config.get_key('printers', 'guest ok') == 'no'
-    assert config.get_key('printers', 'writable') == 'no'
-    assert config.get_key('printers', 'printable') == 'yes'
+    assert config.get('printers', 'comment') == 'All Printers'
+    assert config.get('printers', 'path') == '/var/spool/samba'
+    assert config.get('printers', 'browseable') == 'no'
+    assert config.get('printers', 'guest ok') == 'no'
+    assert config.get('printers', 'writable') == 'no'
+    assert config.get('printers', 'printable') == 'yes'
 
-    assert config.get('netlogon') is None
-    assert config.get('Profiles') is None
-    assert config.get('public') is None
+    assert 'netlogin' not in config
+    assert 'Profiles' not in config
+    assert 'public' not in config
