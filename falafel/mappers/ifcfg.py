@@ -34,7 +34,7 @@ class IfCFG(LegacyItemAccess, Mapper):
         self.data = {}
         for line in get_active_lines(content):
             key, _, value = line.partition("=")
-            key = key.strip().strip(QUOTES)
+            key = key.strip().strip(QUOTES).upper()
 
             # In some cases we want to know what the actual value-side
             # of the key is
