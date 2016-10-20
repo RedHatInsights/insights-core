@@ -3,7 +3,7 @@ import pytest
 import shlex
 
 from falafel.config import InsightsDataSpecConfig, SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, All, First, group_wrap
-from falafel.config import DockerHostCommandSpec
+from falafel.config import DockerHostCommandSpec, SpecPathError
 from falafel.util.command import retarget_command_for_mountpoint, sh_join
 from falafel.config import HostTarget, DockerImageTarget, DockerContainerTarget
 
@@ -12,7 +12,7 @@ class TestSimpleFileSpec(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.dummy_path = r'/path/to/thing'
+        cls.dummy_path = r'path/to/thing'
         cls.with_dollar = cls.dummy_path + r'$'
 
     def setUp(self):
@@ -46,6 +46,13 @@ class TestSimpleFileSpec(unittest.TestCase):
 
     def test_get_dynamic_args(self):
         self.assertEqual(self.spec.get_dynamic_args(), [])
+
+
+class TestAbsolutePathFileSpec(unittest.TestCase):
+
+    def test_absolute_path_raises_specpatherror(self):
+        with self.assertRaises(SpecPathError):
+            self.spec = SimpleFileSpec('/etc/php.ini')
 
 
 class TestPatternSpec(TestSimpleFileSpec):
@@ -121,6 +128,13 @@ class TestCommandSpec(unittest.TestCase):
 
     def test_get_preferred_path(self):
         self.assertEqual(self.spec.get_preferred_path(), self.spec.get_regex())
+
+
+class TestRelativePathCommandSpec(unittest.TestCase):
+
+    def test_relative_path_raises_specpatherror(self):
+        with self.assertRaises(SpecPathError):
+            self.spec = CommandSpec('ls -la')
 
 
 class TestInsightsDataSpecConfig(unittest.TestCase):
