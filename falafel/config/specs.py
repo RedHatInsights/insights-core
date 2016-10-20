@@ -208,6 +208,8 @@ static_specs = {
                                     SimpleFileSpec("database-schema-version")]),
     "rhn-schema-stats"          : First([CommandSpec("/usr/bin/rhn-schema-stats -"),
                                     SimpleFileSpec("database/schema-stats.log")]),
+    "rhn_server_xmlrpc.log"     : First([SimpleFileSpec("var/log/rhn/rhn_server_xmlrpc.log", large_content=True),
+                                    SimpleFileSpec("rhn-logs/rhn/rhn_server_xmlrpc.log", large_content=True)]),
     "rhn_taskomatic_daemon.log" : NoneGroup([SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log"),
                                     SimpleFileSpec("rhn-logs/rhn/rhn_taskomatic_daemon.log")]),
     "root_crontab"              : First([CommandSpec("/usr/bin/crontab -l -u root"),
