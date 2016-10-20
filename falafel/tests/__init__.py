@@ -9,6 +9,7 @@ from functools import wraps
 from falafel.core import mapper, reducer, marshalling, plugins
 from falafel.core.context import Context, PRODUCT_NAMES
 from falafel.util import make_iter
+from falafel.config.specs import static_specs
 
 logger = logging.getLogger("test.util")
 
@@ -91,9 +92,26 @@ def plugin_tests(module_name):
 
 
 def context_wrap(lines, path='path', hostname='hostname',
-                 release='release', version='-1.-1', machine_id="machine_id", **kwargs):
+                 release='release', version='-1.-1', machine_id="machine_id", mapper=None, **kwargs):
+
     if isinstance(lines, basestring):
         lines = lines.strip().splitlines()
+
+    is_large_content = False
+    if mapper:
+        for name in mapper.symbolic_names:
+            if static_specs[name].large_content:
+                is_large_content = True
+                break
+
+    if is_large_content:
+        filter_lines = []
+        for line in lines:
+            for f in mapper.filters:
+                if f in line:
+                    filter_lines.append(line)
+                    break
+        lines = filter_lines
 
     return Context(content=lines,
                    path=path, hostname=hostname,
