@@ -165,6 +165,8 @@ static_specs = {
     "nscd.conf"                 : SimpleFileSpec("etc/nscd.conf"),
     "nsswitch.conf"             : SimpleFileSpec("etc/nsswitch.conf"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
+    'osa_dispatcher.log'        : First([SimpleFileSpec("var/log/rhn/osa-dispatcher.log", large_content=True),
+                                         SimpleFileSpec("rhn-logs/rhn/osa-dispatcher.log", large_content=True)]),
     "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
