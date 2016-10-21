@@ -205,6 +205,7 @@ def test_different_arch_sep():
     assert rpm1.arch == rpm2.arch
     assert rpm1['arch'] == rpm2.arch
 
+
 def test_no_suffixes():
     # make sure 'in' really means 'has a package that starts with'
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
