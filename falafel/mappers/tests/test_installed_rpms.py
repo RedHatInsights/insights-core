@@ -204,3 +204,11 @@ def test_different_arch_sep():
     assert rpm1 == rpm2
     assert rpm1.arch == rpm2.arch
     assert rpm1['arch'] == rpm2.arch
+
+def test_no_suffixes():
+    # make sure 'in' really means 'has a package that starts with'
+    rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
+    assert 'openssh-askpass' in rpms
+    assert 'askpass' not in rpms
+    assert 'openobex' in rpms
+    assert 'penobex' not in rpms
