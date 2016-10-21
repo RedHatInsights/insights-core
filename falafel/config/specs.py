@@ -248,6 +248,7 @@ static_specs = {
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
     "uptime"                    : CommandSpec("/usr/bin/uptime"),
     "vgdisplay"                 : CommandSpec("/sbin/vgdisplay"),
+    "lvdisplay"                 : CommandSpec("/sbin/lvdisplay"),
     "vgs"                       : NoneGroup([CommandSpec('/sbin/vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"')]),
     "vgs_noheadings"            : CommandSpec("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\""),
     "vdsm.conf"                 : SimpleFileSpec("etc/vdsm/vdsm.conf"),
