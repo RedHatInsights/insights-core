@@ -21,7 +21,7 @@ class TestRedhatRelease(unittest.TestCase):
         un = Uname(context_wrap(UNAME))
         shared = {Uname: un}
         expected = (7, 2)
-        result =  redhat_release(None, shared)
+        result = redhat_release(None, shared)
         self.assertEqual(result.major, expected[0])
         self.assertEqual(result.minor, expected[1])
 
@@ -29,7 +29,7 @@ class TestRedhatRelease(unittest.TestCase):
         rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
         shared = {RedhatRelease: rel}
         expected = (7, 2)
-        result =  redhat_release(None, shared)
+        result = redhat_release(None, shared)
         self.assertEqual(result.major, expected[0])
         self.assertEqual(result.minor, expected[1])
 
@@ -38,7 +38,7 @@ class TestRedhatRelease(unittest.TestCase):
         rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
         shared = {Uname: un, RedhatRelease: rel}
         expected = (7, 2)
-        result =  redhat_release(None, shared)
+        result = redhat_release(None, shared)
         self.assertEqual(result.major, expected[0])
         self.assertEqual(result.minor, expected[1])
 
