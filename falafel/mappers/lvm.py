@@ -4,13 +4,8 @@ from .. import Mapper, mapper, parse_table, get_active_lines, LegacyItemAccess
 
 
 def map_keys(pvs, keys):
-    rs = []
     for pv in pvs:
-        r = {keys[k]: v if k in keys else None for k, v in pv.items()}
-        empty_r = {k: None for k in (set(keys.values()) - set(r.keys()))}
-        r.update(empty_r)
-        rs.append(r)
-    return rs
+        yield {v: pv.get(k) for k, v in keys.items()}
 
 
 def replace_spaces_in_keys(header):
