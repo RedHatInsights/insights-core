@@ -2,9 +2,6 @@ from .. import mapper, Mapper, LegacyItemAccess
 from collections import defaultdict
 import re
 
-segement_sep = re.compile(" *---.*---.*")
-vg_name_line = re.compile(" +VG Name\ +.*")
-
 
 @mapper('lvdisplay')
 class LvDisplay(Mapper, LegacyItemAccess):
@@ -80,9 +77,10 @@ class LvDisplay(Mapper, LegacyItemAccess):
         self.data['debug'] = []
         self.data['volumes'] = defaultdict(list)
         for line in content:
-            if segement_sep.match(line):
+            split_line = line.split()
+            if len(split_line) >= 2 and split_line[0] == '---' and split_line[-1] == '---':
                 self.add_segment(segment_type, segment)
-                segment_type = line.split('---')[1].strip()
+                segment_type = " ".join(split_line[1:len(split_line) - 1])
                 segment = []
             else:
                 segment.append(line)
@@ -97,8 +95,8 @@ class LvDisplay(Mapper, LegacyItemAccess):
 
         schema = ()
         for line in segment:
-            if vg_name_line.match(line):
-                indexes = [(m.start(), m.end()) for m in re.finditer("\ +", line)]
+            if line.lstrip().startswith('VG Name'):
+                indexes = [(m.start(), m.end()) for m in re.finditer(r"\ +", line)]
                 schema = (indexes[0][1], indexes[2][1])
                 break
 
