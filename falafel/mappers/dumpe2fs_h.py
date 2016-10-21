@@ -3,13 +3,13 @@
 ==============
 """
 
-from .. import mapper
+from .. import mapper, Mapper
 
 COMPOUND_FIELDS = ['Filesystem features', 'Filesystem flags', 'Default mount options']
 
 
 @mapper('dumpe2fs-h')
-def get_dumpe2fs_output(context):
+class DumpE2fs(Mapper):
     """Parse each line in the output of the ``dumpe2fs`` command.
 
     Typical contents of the ``/sbin/dumpe2fs -h /dev/device`` command looks
@@ -24,12 +24,6 @@ def get_dumpe2fs_output(context):
         Filesystem features:      has_journal ext_attr resize_inode dir_index filetype needs_recovery extent flex_bg sparse_super large_file huge_file uninit_bg dir_nlink extra_isize
         Filesystem flags:         signed_directory_hash
         Default mount options:    user_xattr acl
-
-    Parameters
-    ----------
-    context: falafel.core.context.Context
-        Context object providing file contents for the ``dumpe2fs``
-        command as well as metadata about the target system.
 
     Returns
     -------
@@ -54,13 +48,20 @@ def get_dumpe2fs_output(context):
         }
 
     """
-    dumpe2fs_values_dict = {}
-    for line in context.content:
-        if line and ":" in line:
-            key, value = line.split(":", 1)
-            if key in COMPOUND_FIELDS:
-                dumpe2fs_values_dict[key] = list(value.strip().split())
-            else:
-                dumpe2fs_values_dict[key] = value.strip()
-    dev_name = context.path.split('dumpe2fs_-h_')[-1].replace('.', '/')
-    return {dev_name: dumpe2fs_values_dict}
+    def parse_content(self, content):
+        dumpe2fs_values_dict = {}
+        for line in content:
+            if ":" in line:
+                key, value = line.split(":", 1)
+                if key in COMPOUND_FIELDS:
+                    dumpe2fs_values_dict[key] = list(value.strip().split())
+                else:
+                    dumpe2fs_values_dict[key] = value.strip()
+        dev_name = self.file_name.split('dumpe2fs_-h_')[-1].replace('.', '/')
+        self.data = {dev_name: dumpe2fs_values_dict}
+
+
+@mapper('dumpe2fs-h')
+def get_dumpe2fs_output(context):
+    """Deprecated, use DumpE2fs instead"""
+    return DumpE2fs(context).data
