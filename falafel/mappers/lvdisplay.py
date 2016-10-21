@@ -80,7 +80,7 @@ class LvDisplay(Mapper, LegacyItemAccess):
             split_line = line.split()
             if len(split_line) >= 2 and split_line[0] == '---' and split_line[-1] == '---':
                 self.add_segment(segment_type, segment)
-                segment_type = " ".join(split_line[1:len(split_line) - 1])
+                segment_type = " ".join(split_line[1:len(split_line)-1])
                 segment = []
             else:
                 segment.append(line)
