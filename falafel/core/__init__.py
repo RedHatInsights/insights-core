@@ -251,12 +251,15 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     size_regex = r'(?P<size>(?:\d+,\s+)?\d+)(?P<frac>\.\d+)?' +\
         r'(?:<unit>[KMGTPEZY])?'
     date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[ 0-9]\d:\d{2}|\s\d{4}))'
-    name_regex = r'\s(?P<name>\S+)(?: -> (?P<link>\S+))?'
+    name_regex = r'\s(?P<name>\S.+)(?: -> (?P<link>\S+))?'
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
                               size_regex, date_regex, name_regex))
     normal_re = re.compile(normal_regex)
     normal_groups = ('type', 'perms', 'links', 'user', 'group', 'size',
                      'date', 'name')
+    # we also use the size regex when parsing a human-formatted total size,
+    # so compile it separately
+    size_re = re.compile(size_regex)
 
     context_regex = r'(?P<se_user>\w+_u):(?P<se_role>\w+_r):' +\
         r'(?P<se_type>\w+_t):(?P<se_mls>\S+)'
@@ -285,36 +288,42 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             self.file_groups = self.normal_groups
         super(Mapper, self).__init__(context)
 
+    def parse_size(self, match):
+        """ Assumes a match from re.search on the size_regex """
+        size = int(match.group('size'))
+        if match.group('unit'):
+            if match.group('frac'):
+                # the frac group also captures the decimal point, so:
+                size += float(match.group('frac'))
+            size *= size_of_unit[match.group('unit')]
+        return size
+
     def parse_file_match(self, match):
         # Pull all the normal fields out of it
         this_file = {group: match.group(group)
             for group in self.file_groups}
         typ = match.group('type')
+        # Type conversions
+        this_file['links'] = int(this_file['links'])
         # Is this a character or block device?  If so, it should
         # have a major, minor 'size':
         if typ in 'bc':
             major, minor = ','.split(match.group('size'))
-            this_file['major'] = major.strip()
-            this_file['minor'] = minor.strip()
+            this_file['major'] = int(major.strip())
+            this_file['minor'] = int(minor.strip())
         else:
-            size = int(match.group('size'))
-            if match.group('unit'):
-                if match.group('frac'):
-                    # the frac group also captures the decimal point, so:
-                    size += float(match.group('frac'))
-                size *= size_of_unit[match.group('unit')]
-            this_file['size'] = size
+            this_file['size'] = self.parse_size(match)
         # Is this a symlink?  If so, record what we link to.
         if match.group('link'):
             this_file['link'] = match.group('link')
         # Now add it to our various properties
         this_dir['listing'][this_file['name']] = this_file
         if typ in 'bc':
-            this_dir['listing']['special'].append(this_file['name'])
+            this_dir['special'].append(this_file['name'])
         if typ == 'd':
-            this_dir['listing']['dirs'].append(this_file['name'])
+            this_dir['dirs'].append(this_file['name'])
         else:
-            this_dir['listing']['files'].append(this_file['name'])
+            this_dir['files'].append(this_file['name'])
 
     def parse_content(self, content):
         listings = {}
@@ -326,14 +335,43 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             if l.endswith(':'):
                 # New structures for a new directory
                 this_dir = {'listing': {}, 'files': [], 'dirs': [],
-                    'special': []}
+                    'special': [], 'total': 0}
                 listings[l[:-1]] = this_dir
+            elif l.startswith('total'):
+                match = self.size_re.search(l[5:])
+                if match:
+                    this_dir['total'] = self.parse_size(match)
             else:
                 match = self.file_re.search(l)
                 if match:
                     self.parse_file_match(this_dir, match)
 
         self.listings = listings
+
+    # Now some helpers to make some things easier:
+    def __contains__(self, directory):
+        return directory in self.listings
+
+    def files_of(self, directory):
+        return self.listings[directory]['files']
+
+    def dirs_of(self, directory):
+        return self.listings[directory]['dirs']
+
+    def specials_of(self, directory):
+        return self.listings[directory]['specials']
+
+    def total_of(self, directory):
+        return self.listings[directory]['total']
+
+    def listing_of(self, directory):
+        return self.listings[directory]['listing']
+
+    def dir_contains(self, directory, name):
+        return name in self.listings[directory]['listing']
+
+    def dir_entry(self, directory, name):
+        return self.listings[directory]['listing'][name]
 
 
 class ErrorCollector(object):
