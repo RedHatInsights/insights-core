@@ -312,7 +312,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         if typ in 'bc':
             this_dir['listing']['special'].append(this_file['name'])
         if typ == 'd':
-            this_dir['listing']['files'].append(this_file['name'])
+            this_dir['listing']['dirs'].append(this_file['name'])
         else:
             this_dir['listing']['files'].append(this_file['name'])
 
