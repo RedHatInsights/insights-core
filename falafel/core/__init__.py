@@ -220,10 +220,9 @@ class IniConfigFile(Mapper):
         return section in self.data.sections()
 
     def __repr__(self):
-        return "INI file '{filename}' - sections:{sections}". \
+        return "INI file '{filename}' - sections:{sections}".\
             format(filename=self.file_name,
-                   sections=self.data.sections()
-                   )
+                   sections=self.data.sections())
 
 
 class FileListing(Mapper):
@@ -242,20 +241,20 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     """
 
     # I know I'm missing some types in the 'type' subexpression...
-    perms_regex = r'^(?P<type>[bcdlp-])' +\
+    perms_regex = r'^(?P<type>[bcdlps-])' +\
         r'(?P<perms>[r-][w-][x-][r-][w-][x-][r-][w-][xt-].)'
     links_regex = r'(?P<links>\d+)'
-    owner_regex = r'(?P<user>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
+    owner_regex = r'(?P<owner>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
     # In 'size' we also cope with major, minor format character devices
     # by just catching the \d+, and then splitting it off later.
     size_regex = r'(?P<size>(?:\d+,\s+)?\d+)(?P<frac>\.\d+)?' +\
-        r'(?:<unit>[KMGTPEZY])?'
+        r'(?P<unit>[KMGTPEZY]?)'
     date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[ 0-9]\d:\d{2}|\s\d{4}))'
-    name_regex = r'\s(?P<name>\S.+)(?: -> (?P<link>\S+))?'
+    name_regex = r'(?P<name>\S.*?)(?: -> (?P<link>\S+))?$'
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
                               size_regex, date_regex, name_regex))
     normal_re = re.compile(normal_regex)
-    normal_groups = ('type', 'perms', 'links', 'user', 'group', 'size',
+    normal_groups = ('type', 'perms', 'links', 'owner', 'group', 'size',
                      'date', 'name')
     # we also use the size regex when parsing a human-formatted total size,
     # so compile it separately
@@ -266,14 +265,15 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     selinux_regex = '\s+'.join((perms_regex, owner_regex, context_regex,
                                name_regex))
     selinux_re = re.compile(selinux_regex)
-    selinux_groups = ('type', 'perms', 'user', 'group', 'context', 'name')
+    selinux_groups = ('type', 'perms', 'owner', 'group', 'se_user', 'se_role',
+                      'se_type', 'se_mls', 'name')
 
     # ls can give SI 'multiply by 1000' units with the --si option, but we
     # ignore that possibility here.
-    size_of_unit = { 'K': 1<<10, 'M': 1<<20, 'G': 1<<30, 'T': 1<<40,
-        'P': 1<<50, 'E': 1<<60, 'Y': 1<<70, 'Z': 1<<80 }
+    size_of_unit = {'K': 1 << 10, 'M': 1 << 20, 'G': 1 << 30, 'T': 1 << 40,
+                    'P': 1 << 50, 'E': 1 << 60, 'Y': 1 << 70, 'Z': 1 << 80}
 
-    def __init__(self, context, selinux = False):
+    def __init__(self, context, selinux=False):
         """
             You can set the 'selinux' parameter to True to have this
             directory listing parsed as a 'ls -Z' directory listing.
@@ -281,12 +281,14 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         self.selinux = selinux
         # Pick the right regex to use and save that as a property
         if selinux:
+            self.file_regex = self.selinux_regex
             self.file_re = self.selinux_re
             self.file_groups = self.selinux_groups
         else:
+            self.file_regex = self.normal_regex
             self.file_re = self.normal_re
             self.file_groups = self.normal_groups
-        super(Mapper, self).__init__(context)
+        super(FileListing, self).__init__(context)
 
     def parse_size(self, match):
         """ Assumes a match from re.search on the size_regex """
@@ -295,31 +297,32 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             if match.group('frac'):
                 # the frac group also captures the decimal point, so:
                 size += float(match.group('frac'))
-            size *= size_of_unit[match.group('unit')]
+            size *= self.size_of_unit[match.group('unit')]
         return size
 
-    def parse_file_match(self, match):
+    def parse_file_match(self, this_dir, match):
         # Pull all the normal fields out of it
-        this_file = {group: match.group(group)
-            for group in self.file_groups}
+        this_file = {group: match.group(group) for group in self.file_groups}
         typ = match.group('type')
-        # Type conversions
-        this_file['links'] = int(this_file['links'])
-        # Is this a character or block device?  If so, it should
-        # have a major, minor 'size':
-        if typ in 'bc':
-            major, minor = ','.split(match.group('size'))
-            this_file['major'] = int(major.strip())
-            this_file['minor'] = int(minor.strip())
-        else:
-            this_file['size'] = self.parse_size(match)
+        # There's a bunch of stuff that the SELinux listing doesn't contain:
+        if not self.selinux:
+            # Type conversions
+            this_file['links'] = int(this_file['links'])
+            # Is this a character or block device?  If so, it should
+            # have a major, minor 'size':
+            if typ in 'bc':
+                major, minor = match.group('size').split(',')
+                this_file['major'] = int(major.strip())
+                this_file['minor'] = int(minor.strip())
+            else:
+                this_file['size'] = self.parse_size(match)
         # Is this a symlink?  If so, record what we link to.
         if match.group('link'):
             this_file['link'] = match.group('link')
         # Now add it to our various properties
         this_dir['listing'][this_file['name']] = this_file
         if typ in 'bc':
-            this_dir['special'].append(this_file['name'])
+            this_dir['specials'].append(this_file['name'])
         if typ == 'd':
             this_dir['dirs'].append(this_file['name'])
         else:
@@ -335,7 +338,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             if l.endswith(':'):
                 # New structures for a new directory
                 this_dir = {'listing': {}, 'files': [], 'dirs': [],
-                    'special': [], 'total': 0}
+                            'specials': [], 'total': 0}
                 listings[l[:-1]] = this_dir
             elif l.startswith('total'):
                 match = self.size_re.search(l[5:])
