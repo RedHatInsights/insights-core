@@ -1,4 +1,4 @@
-from falafel.mappers.lvm import Lvs
+from falafel.mappers.lvm import Lvs, map_keys
 from falafel.tests import context_wrap
 
 LVS_INFO = """
@@ -94,3 +94,17 @@ class TestLVS(object):
             "Region": None
         }
         assert lvs_list["swap"]["LSize"] == "5.75g"
+
+    def test_map_keys(self):
+        pvs = [{'LVM2_LV_NAME': 'lv1'}]
+        name = self._get_value_after_map_keys(pvs, 'LV')
+        assert name == 'lv1'
+
+        pvs = [{'LVM2_LV_FULL_NAME': 'lv1'}]
+        name = self._get_value_after_map_keys(pvs, 'LV')
+        assert name == 'lv1'
+
+    def _get_value_after_map_keys(self, pvs, key):
+        pvs = map_keys(pvs, Lvs.KEYS)
+        for pv in pvs:
+            return pv[key]
