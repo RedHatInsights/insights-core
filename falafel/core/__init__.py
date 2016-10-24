@@ -226,6 +226,116 @@ class IniConfigFile(Mapper):
             )
 
 
+class FileListing(Mapper):
+    """
+        Reads a series of concatenated directory listings and turns them into
+        a dictionary of entities by name.  Stores all the information for
+        each directory entry.  Also provides a number of other conveniences,
+        such as:
+         * a (name only) list of files and subdirectories for each directory
+Examples:
+dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
+-rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
+lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
+brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
+crw-------.  1 0 0 10,  236 Jul 25 10:00 control
+    """
+
+    # I know I'm missing some types in the 'type' subexpression...
+    perms_regex = r'^(?P<type>[bcdlp-])' +\
+        r'(?P<perms>[r-][w-][x-][r-][w-][x-][r-][w-][xt-].)'
+    links_regex = r'(?P<links>\d+)'
+    owner_regex = r'(?P<user>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
+    # In 'size' we also cope with major, minor format character devices
+    # by just catching the \d+, and then splitting it off later.
+    size_regex = r'(?P<size>(?:\d+,\s+)?\d+)(?P<frac>\.\d+)?' +\
+        r'(?:<unit>[KMGTPEZY])?'
+    date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[ 0-9]\d:\d{2}|\s\d{4}))'
+    name_regex = r'\s(?P<name>\S+)(?: -> (?P<link>\S+))?'
+    normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
+                              size_regex, date_regex, name_regex))
+    normal_re = re.compile(normal_regex)
+    normal_groups = ('type', 'perms', 'links', 'user', 'group', 'size',
+                     'date', 'name')
+
+    context_regex = r'(?P<se_user>\w+_u):(?P<se_role>\w+_r):' +\
+        r'(?P<se_type>\w+_t):(?P<se_mls>\S+)'
+    selinux_regex = '\s+'.join((perms_regex, owner_regex, context_regex,
+                               name_regex))
+    selinux_re = re.compile(selinux_regex)
+    selinux_groups = ('type', 'perms', 'user', 'group', 'context', 'name')
+
+    # ls can give SI 'multiply by 1000' units with the --si option, but we
+    # ignore that possibility here.
+    size_of_unit = { 'K': 1<<10, 'M': 1<<20, 'G': 1<<30, 'T': 1<<40,
+        'P': 1<<50, 'E': 1<<60, 'Y': 1<<70, 'Z': 1<<80 }
+
+    def __init__(self, context, selinux = False):
+        """
+            You can set the 'selinux' parameter to True to have this
+            directory listing parsed as a 'ls -Z' directory listing.
+        """
+        self.selinux = selinux
+        # Pick the right regex to use and save that as a property
+        if selinux:
+            self.file_re = self.selinux_re
+            self.file_groups = self.selinux_groups
+        else:
+            self.file_re = self.normal_re
+            self.file_groups = self.normal_groups
+        super(Mapper, self).__init__(context)
+
+    def parse_file_match(self, match):
+        # Pull all the normal fields out of it
+        this_file = {group: match.group(group)
+            for group in self.file_groups}
+        typ = match.group('type')
+        # Is this a character or block device?  If so, it should
+        # have a major, minor 'size':
+        if typ in 'bc':
+            major, minor = ','.split(match.group('size'))
+            this_file['major'] = major.strip()
+            this_file['minor'] = minor.strip()
+        else:
+            size = int(match.group('size'))
+            if match.group('unit'):
+                if match.group('frac'):
+                    # the frac group also captures the decimal point, so:
+                    size += float(match.group('frac'))
+                size *= size_of_unit[match.group('unit')]
+            this_file['size'] = size
+        # Is this a symlink?  If so, record what we link to.
+        if match.group('link'):
+            this_file['link'] = match.group('link')
+        # Now add it to our various properties
+        this_dir['listing'][this_file['name']] = this_file
+        if typ in 'bc':
+            this_dir['listing']['special'].append(this_file['name'])
+        if typ == 'd':
+            this_dir['listing']['files'].append(this_file['name'])
+        else:
+            this_dir['listing']['files'].append(this_file['name'])
+
+    def parse_content(self, content):
+        listings = {}
+        this_dir = {}
+        for line in content:
+            l = line.strip()
+            if not l:
+                continue
+            if l.endswith(':'):
+                # New structures for a new directory
+                this_dir = {'listing': {}, 'files': [], 'dirs': [],
+                    'special': []}
+                listings[l[:-1]] = this_dir
+            else:
+                match = self.file_re.search(l)
+                if match:
+                    self.parse_file_match(this_dir, match)
+
+        self.listings = listings
+
+
 class ErrorCollector(object):
     errors = defaultdict(lambda: {
         "count": 0,
