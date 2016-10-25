@@ -271,10 +271,10 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
     # ls can give SI 'multiply by 1000' units with the --si option, but we
     # ignore that possibility here.
-    size_of_unit = { 'K': 1<<10, 'M': 1<<20, 'G': 1<<30, 'T': 1<<40,
-        'P': 1<<50, 'E': 1<<60, 'Y': 1<<70, 'Z': 1<<80 }
+    size_of_unit = {'K': 1 << 10, 'M': 1 << 20, 'G': 1 << 30, 'T': 1 << 40,
+        'P': 1 << 50, 'E': 1 << 60, 'Y': 1 << 70, 'Z': 1 << 80}
 
-    def __init__(self, context, selinux = False):
+    def __init__(self, context, selinux=False):
         """
             You can set the 'selinux' parameter to True to have this
             directory listing parsed as a 'ls -Z' directory listing.
