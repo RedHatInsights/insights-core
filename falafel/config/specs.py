@@ -243,6 +243,7 @@ static_specs = {
                                     SimpleFileSpec("conf/rhn/sysconfig/rhn/systemid")]),
     "tomcat_web.xml"            : First([PatternSpec(r"etc/tomcat.*/web\.xml"),
                                     PatternSpec(r"conf/tomcat/tomcat.*/web\.xml")]),
+    "tuned-adm"                 : CommandSpec("/sbin/tuned-adm list"),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
     "uname"                     : CommandSpec("/bin/uname -a"),
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
