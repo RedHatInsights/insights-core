@@ -352,7 +352,6 @@ class InsightsMultiEvaluator(MultiEvaluator):
 
         for archive in response["archives"]:
             archive["system"]["product"] = product
-            self.hack_report_ids(archive)
             system_id_hostname_map[archive["system"]["system_id"]] = archive["system"]["hostname"]
 
         self.hack_affected_hosts(system_id_hostname_map, response)
@@ -367,13 +366,6 @@ class InsightsMultiEvaluator(MultiEvaluator):
                 new_hosts = [mapping[h] for h in report["details"]["affected_hosts"]]
                 report["details"]["affected_hosts"] = new_hosts
                 report["details"]["hostname_mapping"] = mapping
-
-    def hack_report_ids(self, archive):
-        archive_type = archive["system"]["type"]
-        product = archive["system"]["product"]
-        if archive_type in ["Hypervisor", "image", "container"]:
-            for report in archive["reports"]:
-                report["rule_id"] += "#" + ".".join([product, archive_type])
 
     def apply_system_metadata(self, system_metadata, response):
         for system_md in system_metadata:
