@@ -13,6 +13,7 @@ def map_keys(pvs, keys):
         rs.append(r)
     return rs
 
+
 def replace_spaces_in_keys(header):
     for k in KEYS_WITH_SPACES:
         if k in header:
