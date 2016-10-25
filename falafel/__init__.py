@@ -6,7 +6,7 @@ from .mappers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
-VERSION = "1.11.0"
+VERSION = "1.12.0"
 NAME = "falafel"
 
 with open(os.path.join(__here__, "RELEASE")) as f:
