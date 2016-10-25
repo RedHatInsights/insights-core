@@ -1,4 +1,4 @@
-# -*- coding: unicode -*-
+# -*- coding: UTF-8 -*-
 from falafel.core import FileListing
 from falafel.tests import context_wrap
 import pytest
@@ -33,7 +33,7 @@ dr-xr-xr-x. 10 0 0     4096 Mar  4 16:19 ..
 lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
 brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
 crw-------.  1 0 0 10,  236 Jul 25 10:00 control
-srw-------.  1 26214 17738 Oct 19 08:48 geany_socket.c46453c2
+srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 -rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 File name with spaces in it!
 -rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt
 """
@@ -68,7 +68,7 @@ def test_multiple_directories():
 
     # Testing the main features
     listing = dirs.listing_of('/etc/sysconfig')
-    assert listing['.'] == \
+    assert listing['..'] == \
         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0', 
          'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..'}
     assert listing['cbq'] == \
@@ -84,15 +84,15 @@ def test_multiple_directories():
          'link': '/etc/default/grub'}
 
     listing = dirs.listing_of('/etc/rc.d/rc3.d')
-    assert listing['.'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0', 
-         'group': '0', 'size': 58, 'date': 'Jul  6 23:32', 'name': '..'}
+    assert listing['..'] == \
+        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0', 
+         'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..'}
     assert listing['K50netconsole'] == \
         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0', 
          'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
          'name': 'K50netconsole', 'link': '../init.d/netconsole'}
 
-    assert dirs.total_of('/etc/sysconfig') == 72
+    assert dirs.total_of('/etc/sysconfig') == 96
     assert dirs.total_of('/etc/rc.d/rc3.d') == 4
 
     assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
@@ -122,8 +122,8 @@ def test_complicated_directory():
     # Tricky file names
     assert 'File name with spaces in it!' in listing
     assert 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt' in listing
-    assert dirs.dir_contains('File name with spaces in it!')
-    assert dirs.dir_contains('Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
+    assert dirs.dir_contains('/tmp', 'File name with spaces in it!')
+    assert dirs.dir_contains('/tmp', 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
 
 
 def test_human_listing():
