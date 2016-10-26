@@ -121,3 +121,44 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
             k, _, v = line.partition(split_on)
             kv_pairs[k.strip()] = v.strip()
     return kv_pairs
+
+
+def unsplit_lines(lines, cont_char='\\'):
+    """Recombine lines having a continuation character at end.
+
+    Generator that recombines lines in the list that have the char `cont_char`
+    at the end of a line.  If `cont_char` is found in a line then then
+    next line will be appended to the current line, this will continue for
+    multiple continuation lines until the next line is found with no
+    continuation character at the end.  All lines found will be combined and
+    returned.
+
+    Parameters
+    ----------
+    lines: list of str
+        List of strings to be evaluated.
+    cont_char: char
+        Char to search for at end of line.
+
+    Returns
+    -------
+    list:
+        Returns the list of lines one line at a time via generator.
+
+    Examples
+    --------
+    >>> lines = ['Line one \\', '     line one part 2', 'Line two']
+    >>> list(unsplit_lines(lines))
+    ['Line one      line one part 2', 'Line two']
+
+    """
+    _lines = []
+    for line in lines:
+        line = line.rstrip()
+        if line.endswith(cont_char):
+            _lines.append(line[:-1])
+        else:
+            yield ''.join(_lines) + line
+            _lines = []
+    if _lines:
+        yield ''.join(_lines)
