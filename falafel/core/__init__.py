@@ -220,10 +220,8 @@ class IniConfigFile(Mapper):
 
     def __repr__(self):
         return "INI file '{filename}' - sections:{sections}".\
-            format(
-                    filename=self.file_name,
-                    sections=self.data.sections()
-            )
+            format(filename=self.file_name,
+                   sections=self.data.sections())
 
 
 class FileListing(Mapper):
@@ -272,7 +270,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     # ls can give SI 'multiply by 1000' units with the --si option, but we
     # ignore that possibility here.
     size_of_unit = {'K': 1 << 10, 'M': 1 << 20, 'G': 1 << 30, 'T': 1 << 40,
-        'P': 1 << 50, 'E': 1 << 60, 'Y': 1 << 70, 'Z': 1 << 80}
+                    'P': 1 << 50, 'E': 1 << 60, 'Y': 1 << 70, 'Z': 1 << 80}
 
     def __init__(self, context, selinux=False):
         """
@@ -340,19 +338,16 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             if l.endswith(':'):
                 # New structures for a new directory
                 this_dir = {'listing': {}, 'files': [], 'dirs': [],
-                    'specials': [], 'total': 0}
+                            'specials': [], 'total': 0}
                 listings[l[:-1]] = this_dir
             elif l.startswith('total'):
                 match = self.size_re.search(l[5:])
                 if match:
                     this_dir['total'] = self.parse_size(match)
             else:
-                #print "* entry '{ent}'".format(ent = l)
                 match = self.file_re.search(l)
                 if match:
                     self.parse_file_match(this_dir, match)
-                #else:
-                    #print "WARNING: didn't match regex '{rex}'".format(rex = self.file_regex)
 
         self.listings = listings
 

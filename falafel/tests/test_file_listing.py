@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 from falafel.core import FileListing
 from falafel.tests import context_wrap
-import pytest
 
 
 MULTIPLE_DIRECTORIES = """
@@ -51,7 +50,7 @@ total 3
 -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267.el7.x86_64
 drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2
 -rw-r--r--. root root system_u:object_r:boot_t:s0      initramfs-0-rescue-71483baa33934d94a7804a398fed6241.img
-"""
+"""  # noqa
 
 
 def test_multiple_directories():
@@ -69,26 +68,26 @@ def test_multiple_directories():
     # Testing the main features
     listing = dirs.listing_of('/etc/sysconfig')
     assert listing['..'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0', 
+        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
          'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..'}
     assert listing['cbq'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0', 
+        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
          'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq'}
     assert listing['firewalld'] == \
-        {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0', 
-         'group': '0', 'size': 72, 'date': 'Sep 15  2015', 
+        {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
+         'group': '0', 'size': 72, 'date': 'Sep 15  2015',
          'name': 'firewalld'}
     assert listing['grub'] == \
-        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0', 
-         'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub', 
+        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+         'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
          'link': '/etc/default/grub'}
 
     listing = dirs.listing_of('/etc/rc.d/rc3.d')
     assert listing['..'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0', 
+        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
          'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..'}
     assert listing['K50netconsole'] == \
-        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0', 
+        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
          'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
          'name': 'K50netconsole', 'link': '../init.d/netconsole'}
 
@@ -97,8 +96,8 @@ def test_multiple_directories():
 
     assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
     assert dirs.dir_entry('/etc/sysconfig', 'grub') == \
-        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0', 
-         'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub', 
+        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+         'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
          'link': '/etc/default/grub'}
 
 
@@ -136,12 +135,12 @@ def test_human_listing():
          'name': 'email_alert_recipients'}
     dirs.dir_entry('/var/lib/setroubleshoot', 'setroubleshoot_database.xml') \
         == {'type': '-', 'perms': 'rw-------.', 'links': 1, 'owner': 'root',
-            'group': 'root', 'size': int(3.7*1024), 'date': 'Sep  7  2015',
+            'group': 'root', 'size': int(3.7 * 1024), 'date': 'Sep  7  2015',
             'name': 'setroubleshoot_database.xml'}
 
 
 def test_selinux_directory():
-    dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux = True)
+    dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux=True)
 
     # Test that one entry is exactly what we expect it to be.
     dirs.dir_entry('/boot', 'grub2') == \
