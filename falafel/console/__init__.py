@@ -72,10 +72,11 @@ class Runner(object):
 
             results = runner.process()
             system = results.get("system", {})
+            skips = results.get("skips", [])
             reports = self.reports_generator(results.get("reports", []))
             if sm.analysis_target:
                 system["analysis_target"] = sm.analysis_target.section_name
-            return system, reports, self.extract_archives(results, md)
+            return system, skips, reports, self.extract_archives(results, md)
 
     def reports_generator(self, reports):
         results = {}
@@ -93,6 +94,7 @@ class Runner(object):
             archives = []
             for each in results_archives:
                 archives.append({"system": each.get("system", {}),
+                                 "skips": each.get("skips", []),
                                  "reports": self.reports_generator(each.get("reports", []))})
             return archives
         else:
@@ -109,7 +111,7 @@ def main():
     parser.add_argument("--plugin-modules", dest="plugin_modules", nargs="*", default=cfg.plugin_modules, help="path to extra plugins")
     parser.add_argument("--show-plugin-list", dest="list_plugins", action="store_true", default=cfg.list_plugins, help="Show full plugin listing")
     parser.add_argument("--show-plugin-modules", dest="list_plugin_modules", action="store_true", help="Show full plugin modules listing")
-    parser.add_argument("--hide-missing", dest="list_missing", action="store_false", default=cfg.list_missing, help="Hide missing file listing")
+    parser.add_argument("--show-missing", dest="list_missing", action="store_true", default=cfg.list_missing, help="Show missing requirement listing")
     parser.add_argument("--max-width", dest="max_width", action="store", type=int, default=cfg.max_width, help="Max output width.  Defaults to width of console")
     parser.add_argument("--verbose", "-v", dest="verbose", action="count", default=cfg.verbose)
     parser.add_argument("--spec-map", dest="spec_map", action="store_true", default=cfg.spec_map, help="Print the spec file mapping and exit")
@@ -117,7 +119,6 @@ def main():
     parser.add_argument("reports", nargs="*", help="path to a report to analyze (the path can be to a tar file, or to an expanded directory tree)")
 
     args = parser.parse_args()
-    args.list_missing = False  # Force suppression until we make it work again
 
     setup_logger(args.verbose)
 

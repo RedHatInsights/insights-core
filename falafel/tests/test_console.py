@@ -124,3 +124,12 @@ class TestInsightsCliMain(unittest.TestCase):
                 with open(self.config_file_path, 'wb') as config_file:
                     config_file.write(self.config_org)
                 config_file.close()
+
+    def test_show_missing(self):
+        cmd = [self.insights_cli, '--show-missing', '--plugin-modules', 'falafel.plugins', '--', self.path]
+
+        insights_cli = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, err = insights_cli.communicate()
+        regex = re.compile(r"No files were missing")
+        test = re.search(regex, output)
+        self.assertNotEqual(test, None, msg="Failed to test '--show-missing' option.")
