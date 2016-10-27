@@ -2,7 +2,7 @@
 
 import unittest
 
-from falafel.mappers import oracle_db
+from falafel.mappers import oracle
 from falafel.tests import context_wrap
 
 PFILE = """
@@ -111,14 +111,17 @@ perftest.__streams_pool_size=0
 """.strip()
 
 
-class TestOracleDB(unittest.TestCase):
+class TestOracle(unittest.TestCase):
     def test_pfile(self):
-        p = oracle_db.oracle_pfile(context_wrap(PFILE))
-        self.assertEqual(p['db_name'], 'orcl')
+        p = oracle.OraclePfile(context_wrap(PFILE, path='/u01/oracle/12/dbs/init.ora'))
+        self.assertEqual(p.data['db_name'], 'orcl')
+        self.assertEqual(p.file_path, '/u01/oracle/12/dbs/init.ora')
 
     def test_spfile(self):
-        s = oracle_db.oracle_spfile(context_wrap(SPFILE))
-        self.assertEqual(s['*.db_name'], 'perf_test')
-        self.assertEqual(s['*.compatible'], '12.1.0.2.0')
-        self.assertEqual(s['*.dispatchers'], '(protocol=tcp) (service=perftestxdb)')
-        self.assertEquals(s['*.control_files'], ['/u01/app/oracle/oradata/perf_test/controlfile/o1_mf_cko573p9_.ctl', '/u01/app/oracle/fast_recovery_area/perf_test/controlfile/o1_mf_cko573qn_.ctl'])
+        s = oracle.OracleSpfile(context_wrap(SPFILE, path='/u01/oracle/12/dbs/spfileperftest.ora'))
+        conf = s.data
+        self.assertEqual(conf['*.db_name'], 'perf_test')
+        self.assertEqual(conf['*.compatible'], '12.1.0.2.0')
+        self.assertEqual(conf['*.dispatchers'], '(protocol=tcp) (service=perftestxdb)')
+        self.assertEquals(conf['*.control_files'], ['/u01/app/oracle/oradata/perf_test/controlfile/o1_mf_cko573p9_.ctl', '/u01/app/oracle/fast_recovery_area/perf_test/controlfile/o1_mf_cko573qn_.ctl'])
+        self.assertEquals(s.file_path, '/u01/oracle/12/dbs/spfileperftest.ora')
