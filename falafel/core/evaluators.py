@@ -126,6 +126,10 @@ class SingleEvaluator(Evaluator):
             self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
         self.uname = self._protected_parse("uname", lambda c: Uname(c[0]), None)
 
+    def format_response(self, response):
+        serialize_skips(response["skips"])
+        return response
+
     def _protected_parse(self, sym_name, parser, default=""):
         try:
             return parser(self.spec_mapper.get_content(sym_name))

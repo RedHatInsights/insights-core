@@ -1,5 +1,5 @@
 import logging
-from collections import defaultdict
+from copy import deepcopy
 
 from falafel.console.custom_logging import print_console
 
@@ -86,16 +86,21 @@ class Formatter(object):
         d.update(system_data.get("metadata", {}))
         self.display_dict_of_strings(d)
 
-    def format_results(self, system, reports, archives):
+    def display_missing_requirement(self, skips):
+        for skip in skips:
+            s = deepcopy(skip)
+            del s["reason"]
+            self.display_dict_of_strings(s)
+            print_console("")
+
+    def format_results(self, system, skips, reports, archives):
         if archives:
             self.heading("Multi Archive (%s nested archives)" % len(archives))
         items = {}
-        missing = defaultdict(list)
+
         for module, eligible, output in list(reports):
             items[module] = output
-            if eligible:
-                for e in eligible.split(","):
-                    missing[e.strip()].append(module)
+
         if not items:
             print_console("No plugins executed")
             return
@@ -103,9 +108,9 @@ class Formatter(object):
             self.heading("Executed modules")
             self.display_list(items.keys())
         if self.list_missing:
-            if missing:
-                self.heading("Missing files")
-                self.display_dict_of_lists(missing)
+            if skips:
+                self.heading("Missing requirements")
+                self.display_missing_requirement(skips)
             else:
                 print_console("No files were missing")
         self.heading("System Data")
@@ -116,6 +121,7 @@ class Formatter(object):
             self.list_plugins = False
             for each in archives:
                 self.format_results(each.get("system", {}),
+                                    each.get("skips", []),
                                     each.get("reports", []),
                                     None)
 
