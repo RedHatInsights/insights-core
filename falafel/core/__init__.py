@@ -302,7 +302,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     def parse_file_match(self, this_dir, match):
         # Pull all the normal fields out of it
         this_file = {group: match.group(group) for group in self.file_groups}
-        #print '** this_file:', this_file
         typ = match.group('type')
         # There's a bunch of stuff that the SELinux listing doesn't contain:
         if not self.selinux:
