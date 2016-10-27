@@ -69,27 +69,33 @@ def test_multiple_directories():
     listing = dirs.listing_of('/etc/sysconfig')
     assert listing['..'] == \
         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
-         'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..'}
+         'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
+         'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..'}
     assert listing['cbq'] == \
         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-         'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq'}
+         'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+         'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq'}
     assert listing['firewalld'] == \
         {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
          'group': '0', 'size': 72, 'date': 'Sep 15  2015',
-         'name': 'firewalld'}
+         'name': 'firewalld', 'raw_entry':
+         '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld'}
     assert listing['grub'] == \
         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
          'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-         'link': '/etc/default/grub'}
+         'link': '/etc/default/grub', 'raw_entry':
+         'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'}
 
     listing = dirs.listing_of('/etc/rc.d/rc3.d')
     assert listing['..'] == \
         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
-         'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..'}
+         'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
+         'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..'}
     assert listing['K50netconsole'] == \
         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
          'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
-         'name': 'K50netconsole', 'link': '../init.d/netconsole'}
+         'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
+         'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole'}
 
     assert dirs.total_of('/etc/sysconfig') == 96
     assert dirs.total_of('/etc/rc.d/rc3.d') == 4
@@ -98,7 +104,19 @@ def test_multiple_directories():
     assert dirs.dir_entry('/etc/sysconfig', 'grub') == \
         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
          'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-         'link': '/etc/default/grub'}
+         'link': '/etc/default/grub', 'raw_entry':
+         'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'}
+
+    print dirs.raw_directory('/etc/sysconfig')
+    assert dirs.raw_directory('/etc/sysconfig') == [
+        'drwxr-xr-x.  7 0 0 4096 Jul  6 23:41 .',
+        'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
+        'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
+        'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console',
+        '-rw-------.  1 0 0 1390 Mar  4  2014 ebtables-config',
+        '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
+        'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'
+    ]
 
 
 def test_complicated_directory():
@@ -132,11 +150,13 @@ def test_human_listing():
     dirs.dir_entry('/var/lib/setroubleshoot', 'email_alert_recipients') == \
         {'type': '-', 'perms': 'rw-------.', 'links': 1, 'owner': 'root',
          'group': 'root', 'size': 0, 'date': 'Apr 15  2015',
-         'name': 'email_alert_recipients'}
+         'name': 'email_alert_recipients', 'raw_entry':
+         '-rw-------. 1 root root    0 Apr 15  2015 email_alert_recipients'}
     dirs.dir_entry('/var/lib/setroubleshoot', 'setroubleshoot_database.xml') \
         == {'type': '-', 'perms': 'rw-------.', 'links': 1, 'owner': 'root',
             'group': 'root', 'size': int(3.7 * 1024), 'date': 'Sep  7  2015',
-            'name': 'setroubleshoot_database.xml'}
+            'name': 'setroubleshoot_database.xml', 'raw_entry':
+            '-rw-------. 1 root root 3.7K Sep  7  2015 setroubleshoot_database.xml'}
 
 
 def test_selinux_directory():
@@ -146,4 +166,5 @@ def test_selinux_directory():
     dirs.dir_entry('/boot', 'grub2') == \
         {'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
          'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
-         'se_mls': 's0', 'name': 'grub2'}
+         'se_mls': 's0', 'name': 'grub2', 'raw_entry':
+         'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2'}

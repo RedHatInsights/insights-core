@@ -242,7 +242,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
     # I know I'm missing some types in the 'type' subexpression...
     perms_regex = r'^(?P<type>[bcdlps-])' +\
-        r'(?P<perms>[r-][w-][x-][r-][w-][x-][r-][w-][xt-].)'
+        r'(?P<perms>[r-][w-][sSx-][r-][w-][sSx-][r-][w-][xsSt-]\S+)'
     links_regex = r'(?P<links>\d+)'
     owner_regex = r'(?P<owner>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
     # In 'size' we also cope with major, minor format character devices
@@ -300,9 +300,18 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             size *= self.size_of_unit[match.group('unit')]
         return size
 
-    def parse_file_match(self, this_dir, match):
+    def parse_file_match(self, this_dir, line):
+        # Save all the raw directory entries, even if we can't parse them
+        assert isinstance(this_dir['raw_list'], list)
+        this_dir['raw_list'].append(line)
+        match = self.file_re.search(line)
+        if not match:
+            # Can't do anything more with the line here
+            return
+
         # Pull all the normal fields out of it
         this_file = {group: match.group(group) for group in self.file_groups}
+        this_file['raw_entry'] = line
         typ = match.group('type')
         # There's a bunch of stuff that the SELinux listing doesn't contain:
         if not self.selinux:
@@ -320,7 +329,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         if match.group('link'):
             this_file['link'] = match.group('link')
         # Now add it to our various properties
-        this_dir['listing'][this_file['name']] = this_file
+        this_dir['entries'][this_file['name']] = this_file
         if typ in 'bc':
             this_dir['specials'].append(this_file['name'])
         if typ == 'd':
@@ -337,17 +346,15 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                 continue
             if l.endswith(':'):
                 # New structures for a new directory
-                this_dir = {'listing': {}, 'files': [], 'dirs': [],
-                            'specials': [], 'total': 0}
+                this_dir = {'entries': {}, 'files': [], 'dirs': [],
+                            'specials': [], 'total': 0, 'raw_list': []}
                 listings[l[:-1]] = this_dir
             elif l.startswith('total'):
                 match = self.size_re.search(l[5:])
                 if match:
                     this_dir['total'] = self.parse_size(match)
             else:
-                match = self.file_re.search(l)
-                if match:
-                    self.parse_file_match(this_dir, match)
+                self.parse_file_match(this_dir, l)
 
         self.listings = listings
 
@@ -368,13 +375,16 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         return self.listings[directory]['total']
 
     def listing_of(self, directory):
-        return self.listings[directory]['listing']
+        return self.listings[directory]['entries']
 
     def dir_contains(self, directory, name):
-        return name in self.listings[directory]['listing']
+        return name in self.listings[directory]['entries']
 
     def dir_entry(self, directory, name):
-        return self.listings[directory]['listing'][name]
+        return self.listings[directory]['entries'][name]
+
+    def raw_directory(self, directory):
+        return self.listings[directory]['raw_list']
 
 
 class ErrorCollector(object):
