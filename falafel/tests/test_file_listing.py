@@ -77,6 +77,11 @@ prw-rw----. 1000 1000  0 Nov 12 23:3 Minute too short
 prw-rw----. 1000 1000  0 Nov 12 23:357 Minute too long
 """
 
+# Note - should we test for anomalous but parseable entries?  E.g. block
+# devices without a major/minor number?  Or non-devices that have a comma in
+# the size?  Permissions that don't make sense?  Dates that don't make sense
+# but still fit the patterns?  What should the parser do with such entries?
+
 
 def test_multiple_directories():
     dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
