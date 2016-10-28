@@ -248,6 +248,8 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     # by just catching the \d+, and then splitting it off later.
     size_regex = r'(?P<size>(?:\d+,\s+)?\d+)(?P<frac>\.\d+)?' +\
         r'(?P<unit>[KMGTPEZY]?)'
+    # Note that we don't try to determine nonexistent month, day > 31, hour
+    # > 23, minute > 59 or improbable year here.
     date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[ 0-9]\d:\d{2}|\s\d{4}))'
     name_regex = r'(?P<name>\S.*?)(?: -> (?P<link>\S+))?$'
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
@@ -301,7 +303,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
     def parse_file_match(self, this_dir, line):
         # Save all the raw directory entries, even if we can't parse them
-        assert isinstance(this_dir['raw_list'], list)
         this_dir['raw_list'].append(line)
         match = self.file_re.search(line)
         if not match:
@@ -322,6 +323,8 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                 major, minor = match.group('size').split(',')
                 this_file['major'] = int(major.strip())
                 this_file['minor'] = int(minor.strip())
+                # Remove 'size' entry since it's clearly invalid
+                del(this_file['size'])
             else:
                 this_file['size'] = self.parse_size(match)
         # Is this a symlink?  If so, record what we link to.
