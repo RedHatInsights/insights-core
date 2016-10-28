@@ -322,8 +322,10 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                     major, minor = match.group('size').split(',')
                     this_file['major'] = int(major.strip())
                     this_file['minor'] = int(minor.strip())
-                    # Remove 'size' entry since it's clearly invalid
+                    # Remove other 'size' entries
                     del(this_file['size'])
+                    del(this_file['frac'])
+                    del(this_file['unit'])
             else:
                 # What should we do if we get a comma here?
                 if ',' not in size:
