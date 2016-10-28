@@ -22,7 +22,7 @@ class InsightsCliConfig():
         'specs': {'default': None},
         'plugin_modules': {'default': None, 'islist': True},
         'list_plugins': {'default': False, 'type': 'boolean'},
-        'list_missing': {'default': True, 'type': 'boolean'},
+        'list_missing': {'default': False, 'type': 'boolean'},
         'max_width': {'default': 0, 'type': 'integer'},
         'verbose': {'default': 0, 'type': 'integer'},
         'spec_map': {'default': False, 'type': 'boolean'},
