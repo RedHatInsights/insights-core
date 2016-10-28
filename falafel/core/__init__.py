@@ -257,8 +257,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
                               size_regex, date_regex, name_regex))
     normal_re = re.compile(normal_regex)
-    normal_groups = ('type', 'perms', 'links', 'owner', 'group', 'size',
-                     'date', 'name')
     # we also use the size regex when parsing a human-formatted total size,
     # so compile it separately
     size_re = re.compile(size_regex)
@@ -268,8 +266,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     selinux_regex = '\s+'.join((perms_regex, owner_regex, context_regex,
                                name_regex))
     selinux_re = re.compile(selinux_regex)
-    selinux_groups = ('type', 'perms', 'owner', 'group', 'se_user', 'se_role',
-                      'se_type', 'se_mls', 'name')
 
     # ls can give SI 'multiply by 1000' units with the --si option, but we
     # ignore that possibility here.
@@ -284,13 +280,9 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         self.selinux = selinux
         # Pick the right regex to use and save that as a property
         if selinux:
-            self.file_regex = self.selinux_regex
             self.file_re = self.selinux_re
-            self.file_groups = self.selinux_groups
         else:
-            self.file_regex = self.normal_regex
             self.file_re = self.normal_re
-            self.file_groups = self.normal_groups
         super(FileListing, self).__init__(context)
 
     def parse_size(self, match):
@@ -311,8 +303,8 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             # Can't do anything more with the line here
             return
 
-        # Pull all the normal fields out of it
-        this_file = {group: match.group(group) for group in self.file_groups}
+        # Get the fields from the regex
+        this_file = match.groupdict()
         this_file['raw_entry'] = line
         typ = match.group('type')
 
@@ -336,10 +328,12 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                 # What should we do if we get a comma here?
                 if ',' not in size:
                     this_file['size'] = self.parse_size(match)
+                    del(this_file['frac'])
+                    del(this_file['unit'])
 
-        # Is this a symlink?  If so, record what we link to.
-        if match.group('link'):
-            this_file['link'] = match.group('link')
+        # If this is not a symlink, remove the link key
+        if not this_file['link']:
+            del this_file['link']
         # Now add it to our various properties
         this_dir['entries'][this_file['name']] = this_file
         if typ in 'bc':
