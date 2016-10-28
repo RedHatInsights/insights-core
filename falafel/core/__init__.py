@@ -250,6 +250,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         r'(?P<unit>[KMGTPEZY]?)'
     # Note that we don't try to determine nonexistent month, day > 31, hour
     # > 23, minute > 59 or improbable year here.
+    # TODO: handle non-English formatted dates here.
     date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[ 0-9]\d:\d{2}|\s\d{4}))'
     name_regex = r'(?P<name>\S.*?)(?: -> (?P<link>\S+))?$'
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
@@ -313,20 +314,28 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         this_file = {group: match.group(group) for group in self.file_groups}
         this_file['raw_entry'] = line
         typ = match.group('type')
+
         # There's a bunch of stuff that the SELinux listing doesn't contain:
         if not self.selinux:
             # Type conversions
             this_file['links'] = int(this_file['links'])
             # Is this a character or block device?  If so, it should
             # have a major, minor 'size':
+            size = match.group('size')
             if typ in 'bc':
-                major, minor = match.group('size').split(',')
-                this_file['major'] = int(major.strip())
-                this_file['minor'] = int(minor.strip())
-                # Remove 'size' entry since it's clearly invalid
-                del(this_file['size'])
+                # What should we do if we expect a major, minor size but
+                # don't get one?
+                if ',' in size:
+                    major, minor = match.group('size').split(',')
+                    this_file['major'] = int(major.strip())
+                    this_file['minor'] = int(minor.strip())
+                    # Remove 'size' entry since it's clearly invalid
+                    del(this_file['size'])
             else:
-                this_file['size'] = self.parse_size(match)
+                # What should we do if we get a comma here?
+                if ',' not in size:
+                    this_file['size'] = self.parse_size(match)
+
         # Is this a symlink?  If so, record what we link to.
         if match.group('link'):
             this_file['link'] = match.group('link')
