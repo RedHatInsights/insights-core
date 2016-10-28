@@ -149,6 +149,11 @@ def test_complicated_directory():
     assert listing['config-3.10.0-229.14.1.el7.x86_64']['type'] == '-'
     assert listing['menu.lst']['type'] == 'l'
     assert listing['menu.lst']['link'] == './grub.conf'
+    assert dirs.dir_entry('/tmp', 'dm-10') == \
+        {'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
+         'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
+         'name': 'dm-10', 'raw_entry':
+         'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'}
     assert listing['dm-10']['type'] == 'b'
     assert listing['dm-10']['major'] == 253
     assert listing['dm-10']['minor'] == 10
