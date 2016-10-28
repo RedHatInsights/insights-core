@@ -52,6 +52,31 @@ drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2
 -rw-r--r--. root root system_u:object_r:boot_t:s0      initramfs-0-rescue-71483baa33934d94a7804a398fed6241.img
 """  # noqa
 
+BAD_DIRECTORY_ENTRIES = """
+/badness:
+    -rwxr-xr-x. 0 0    1 Sep 12 2010 indented entry
+xr-xr--r--. 0 0        1 Sep 12  2010 bad file type
+-rxr-xr-x.  0 0        1 Sep 12  2010 missing user w permission
+-rwxr-xr-x  0 0        1 Sep 12  2010 missing ACL dot
+-rw-r--r--. user with spaces group 2 Oct 3 2011 user with spaces
+-rw-r--r--. user group with spaces 2 Oct 3 2011 group with spaces
+dr-xr-xr-x. -42 -63 1271 Jan  6  2008 Negative user and group numbers
+dr-xr-xr-x. 1 7 123, 124, 125 Jan 6 2008 Three comma blocks in size
+brw-rw----. 1 0 6 123456 Aug 4 16:56 two size blocks
+prw-rw----. 1000 1000  0  6 2007 Month missing
+prw-rw----. 1000 1000  0 No 6 2007 Month too short
+prw-rw----. 1000 1000  0 November 6 2007 Month too long
+prw-rw----. 1000 1000  0 Nov  2007 Day too long
+prw-rw----. 1000 1000  0 Nov 126 2007 Day too long
+prw-rw----. 1000 1000  0 Nov 126  Year missing
+prw-rw----. 1000 1000  0 Nov 126 20107 Year too long
+prw-rw----. 1000 1000  0 Nov 12 :56 Missing hour
+prw-rw----. 1000 1000  0 Nov 12 723:56 Hour too long
+prw-rw----. 1000 1000  0 Nov 12 23: Missing minute
+prw-rw----. 1000 1000  0 Nov 12 23:3 Minute too short
+prw-rw----. 1000 1000  0 Nov 12 23:357 Minute too long
+"""
+
 
 def test_multiple_directories():
     dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
@@ -107,16 +132,8 @@ def test_multiple_directories():
          'link': '/etc/default/grub', 'raw_entry':
          'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'}
 
-    print dirs.raw_directory('/etc/sysconfig')
-    assert dirs.raw_directory('/etc/sysconfig') == [
-        'drwxr-xr-x.  7 0 0 4096 Jul  6 23:41 .',
-        'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
-        'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-        'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console',
-        '-rw-------.  1 0 0 1390 Mar  4  2014 ebtables-config',
-        '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
-        'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'
-    ]
+    assert dirs.raw_directory('/etc/sysconfig') == \
+        MULTIPLE_DIRECTORIES.split('\n')[3:10]
 
 
 def test_complicated_directory():
@@ -135,6 +152,10 @@ def test_complicated_directory():
     assert listing['control']['minor'] == 236
     assert listing['geany_socket.c46453c2']['type'] == 's'
     assert listing['geany_socket.c46453c2']['size'] == 0
+
+    # Check that things that _shouldn't_ be there _aren't_
+    assert 'size' not in listing['dm-10']
+    assert 'size' not in listing['control']
 
     # Tricky file names
     assert 'File name with spaces in it!' in listing
@@ -168,3 +189,12 @@ def test_selinux_directory():
          'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
          'se_mls': 's0', 'name': 'grub2', 'raw_entry':
          'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2'}
+
+
+def test_bad_directory():
+    dirs = FileListing(context_wrap(BAD_DIRECTORY_ENTRIES))
+
+    # None of those entries should parse.  So we should have the raw lines,
+    # but no parsed entries
+    dirs.raw_directory('/badness') == BAD_DIRECTORY_ENTRIES.split('/n')[2:]
+    dirs.listing_of('/badness') == []
