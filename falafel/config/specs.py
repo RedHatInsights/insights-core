@@ -106,7 +106,7 @@ static_specs = {
     "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False),
-                                    CommandSpec("/bin/rpm -qa --qf='%s'" % json_format(), multi_output=False),
+                                    CommandSpec("/bin/rpm -qa --qf='%s'" % json_format()(), multi_output=False),
                                     SimpleFileSpec("installed-rpms"),
                                     SimpleFileSpec("installed_packages"),
                                     SimpleFileSpec("rpm-manifest")]),
