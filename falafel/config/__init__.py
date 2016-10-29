@@ -468,6 +468,7 @@ class InsightsDataSpecBase(object):
     def __init__(self, multi_output=False, large_content=False):
         self.multi_output = multi_output
         self.large_content = large_content
+        self.regex_cache = {}
 
     def get_path(self, analysis_target=None, for_archive_file_name=False):
         # this method, and it's overrides in derived classes
@@ -483,7 +484,12 @@ class InsightsDataSpecBase(object):
         # this method, and it's overrides in derived classes
         # is what the engine uses to find files in archives
         regex = prefix + self.get_path(analysis_target=analysis_target) + suffix
-        return re.compile(regex.replace("//", "/"))
+        if regex in self.regex_cache:
+            r = self.regex_cache[regex]
+        else:
+            r = re.compile(regex.replace("//", "/"))
+            self.regex_cache[regex] = r
+        return r
 
     def get_archive_file_name(self, analysis_target):
         # this method, and it's overrides in derived classes

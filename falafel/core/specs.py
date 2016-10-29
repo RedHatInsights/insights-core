@@ -31,7 +31,10 @@ class SpecMapper(object):
         else:
             root = os.path.commonprefix([p for p in self.all_names if len(p) > 2])
 
-        return root.rstrip("/") + "/"
+        if root.endswith("/"):
+            return root.rstrip("/") + "/"
+        else:
+            return root
 
     def _get_first_matching(self, pattern):
         for match in filter(
@@ -50,22 +53,26 @@ class SpecMapper(object):
             self.symbolic_files[symbolic_name].extend(matches)
 
     def add_files(self, file_map):
+        unrooted_files = {
+            f.split(self.root)[1]: f
+            for f in self.all_names
+            if f != self.root
+        }
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
-                r = spec.get_regex(prefix=self.root,
-                                   analysis_target=self.analysis_target)
-                match_func = r.match
-                logging.debug("Matching [%s] with [%s]", symbolic_name, r.pattern)
-                matches = filter(match_func, self.all_names)
+                r = spec.get_regex(prefix='', analysis_target=self.analysis_target)
+                matches = filter(r.search, unrooted_files)
                 if matches:
+                    matches = [unrooted_files[m] for m in matches]
+
                     # In order to prevent matching *dumb* symlinks in some
                     # archive formats, we are going to filter out symlinks when
                     # calculating matches for CommandSpecs
                     if isinstance(spec, CommandSpec):
                         matches = filter(lambda n: not self.tf.issym(n), matches)
 
-                    # We should never match a directory
-                    matches = filter(lambda n: not self.tf.isdir(n), matches)
+                    # filter out directories that match
+                    matches = [m for m in matches if not self.tf.isdir(m)]
 
                     if not matches:
                         continue
