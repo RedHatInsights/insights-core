@@ -1,88 +1,144 @@
+"""PAM configuration parsers.
+
+This module provides parsing for PAM configuration files.
+`PamConf` is a mapper for `/etc/pam.conf` files and `PamDConf`
+is a base class for the creation of mappers for `/etc/pam.d`
+service specific configuration files.
+
+Notes
+-----
+Useful references:
+    http://www.linux-pam.org/Linux-PAM-html/Linux-PAM_SAG.html
+
+"""
+
 from collections import namedtuple
 from .. import Mapper, get_active_lines, mapper
 from ..mappers import unsplit_lines
 
 
 class PamConfEntry(object):
-    """Contains information from one pam conf line."""
+    """Contains information from one pam conf line.
+
+    Parses a single line of either a `/etc/pam.conf` file or
+    a service specific `/etc/pam.d` conf file. The difference
+    is that for `/etc/pam.conf`, the service name is the first
+    column of the input line. If a service specific conf file
+    then the service name is not present in the line and must
+    be provided as the `service` parameter as well as setting
+    the `pamd_conf` to True.
+
+    Parameters
+    ----------
+    line: str
+        One line of the pam conf info.
+    pamd_conf: boolean default False
+        If this is set to False then `line` will be parsed as a
+        line from the `etc/pam.conf` file, if True then the
+        line will be parsed as a line from a service specific
+        `etc/pam.d/` conf file.
+    service: str
+        If pamd_conf is True then the name of the service file
+        must be provided since it is not present in `line`.
+
+    Examples
+    --------
+    >>> pam_conf_line = 'vsftpd      auth        requisite   pam_unix.so nullok'
+    >>> entry = PamConfEntry(pam_conf_line)
+    >>> entry.service
+    'vsftpd'
+    >>> entry.control_flags[0].flag
+    'requisite'
+    >>> entry.module_args
+    'nullok'
+    >>> pamd_conf_line = '''
+    ... auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
+    ... '''.strip()
+    >>> entry = PamConfEntry(pamd_conf_line, pamd_conf=True, service='vsftpd')
+    >>> entry.service
+    'vsftpd'
+    >>> entry.control_flags
+    [(flag='success', value='2'), (flag='default', value='ok')]
+    >>> entry.module_args
+    'auth=perm_denied cred=success'
+
+    Raises
+    ------
+    ValueError
+        If `pamd_conf` is True and `service` name is not provided,
+        or if the line doesn't contain any module information.
+    """
 
     ControlFlag = namedtuple('ControlFlag', 'flag, value')
 
     def __init__(self, line, pamd_conf=False, service=None):
-        self.data = {}
-        self.raw_line = line
         # If not pam.d file then service is first column in
         # line for pam.conf file. Otherwise service must be parameter.
+        self._service = service
         if not pamd_conf:
-            service, rest = line.split(None, 1)
+            self._service, rest = line.split(None, 1)
             line = rest
         elif service is None:
             raise ValueError('Service name must be provided for pam.d conf file')
 
-        mod_if, rest = line.split(None, 1)
-        mod_if = mod_if.lower()
+        self._mod_if, rest = line.split(None, 1)
+        self._mod_if = self._mod_if.lower()
         if not rest[0] == '[':
             ctrl_flag, mod_info = rest.split(None, 1)
-            ctrl_flags = [self.ControlFlag(ctrl_flag, None)]
+            self._ctrl_flags = [self.ControlFlag(ctrl_flag, None)]
         else:
             ctrl_flag, mod_info = rest[1:].split(']', 1)
-            ctrl_flags = []
+            self._ctrl_flags = []
             for flag_val in ctrl_flag.split():
                 flag, _, val = flag_val.partition('=')
-                ctrl_flags.append(self.ControlFlag(flag, val))
+                self._ctrl_flags.append(self.ControlFlag(flag, val))
 
         mod_info = mod_info.split(None, 1)
-        if len(mod_info) == 1:
-            mod_name = mod_info[0]
-            mod_args = None
-        elif len(mod_info) > 1:
-            mod_name = mod_info[0]
-            mod_args = mod_info[1]
+        if len(mod_info) >= 1:
+            self._mod_name = mod_info[0]
+            self._mod_args = mod_info[1] if len(mod_info) > 1 else None
         else:
             raise ValueError('Missing module name from pam conf line: {}'.format(line))
 
-        self.data['service'] = service
-        self.data['interface'] = mod_if
-        self.data['flags'] = ctrl_flags
-        self.data['mod_name'] = mod_name
-        self.data['mod_args'] = mod_args
-
-    def __getitem__(self, key):
-        return self.data[key]
-
     @property
     def service(self):
-        return self.data['service']
+        """str: name of the service."""
+        return self._service
 
     @property
     def interface(self):
-        return self.data['interface']
+        """str: name of the module interface."""
+        return self._mod_if
 
     @property
     def control_flags(self):
-        return self.data['flags']
+        """list: List of ControlFlag(flag, value) tuples."""
+        return self._ctrl_flags
 
     @property
     def module_name(self):
-        return self.data['mod_name']
+        """str: Name of the module."""
+        return self._mod_name
 
     @property
     def module_args(self):
-        return self.data['mod_args']
+        """str: Module arguments."""
+        return self._mod_args
 
 
 @mapper('pam.conf')
 class PamConf(Mapper):
-    """Base class for parsing pam config file `/etc/pam.conf`
+    """Base class for parsing pam config file `/etc/pam.conf`.
 
-    Derive from this class for mappers of files in
-    the `/etc/pam.d` directory.
-
-    Configuration file format is::
+    This class provides parsing for the `pam.conf` configuration
+    file. Each line of the file is parsed into `PamConfEntry` class
+    object containing the columns of the configuration file.  Each
+    parsed entry is stored in a list in the order it appears in the
+    `pam.conf` file. The format of the input data is::
 
         service_name    module_interface    control_flag    module_name module_arguments
 
-    Sample input::
+    Sample input data::
 
         # Comment line
         vsftpd      auth        required    pam_securetty.so
@@ -93,9 +149,27 @@ class PamConf(Mapper):
         other       password    required    pam_unix.so shadow nullok use_authtok
         servicex    session     required    pam_unix.so
 
-    Reference:
-        https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Managing_Smart_Cards/PAM_Configuration_Files.html
-        http://www.linux-pam.org/Linux-PAM-html/Linux-PAM_SAG.html
+    Attributes
+    ----------
+    data: list of PamConfEntry objects
+        List of PamConfEntry objects for each line in the conf file.
+
+    Example
+    -------
+    >>> pam_conf = PamConf(context_wrap(pam_conf_data))
+    >>> len(pam_conf)
+    7
+    >>> pam_conf[0].service
+    'vsftpd'
+    >>> pam_conf[0].interface
+    'auth'
+    >>> pam_conf[0].control_flags
+    [(flag='required', value=None)]
+    >>> pam_conf[0].module_name
+    'pam_security.so'
+    >>> pam_conf[0].module_args
+    None
+
     """
     def parse_content(self, content):
         self.data = []
@@ -118,9 +192,8 @@ class PamDConf(Mapper):
     """Base class for parsing files in `/etc/pam.d`
 
     Derive from this class for mappers of files in
-    the `/etc/pam.d` directory.
-
-    Configuration file format is::
+    the `/etc/pam.d` directory.  Parses each line of the conf
+    file into a list of PamConfEntry.  Configuration file format is::
 
         module_interface    control_flag    module_name module_arguments
 
@@ -135,9 +208,28 @@ class PamDConf(Mapper):
         password    required    pam_unix.so shadow nullok use_authtok
         session     required    pam_unix.so
 
-    Reference:
-        https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Managing_Smart_Cards/PAM_Configuration_Files.html
-        http://www.linux-pam.org/Linux-PAM-html/Linux-PAM_SAG.html
+    Attributes
+    ----------
+    data: list of PamConfEntry
+        List containing a PamConfEntry object for each line of the conf
+        file in the same order as lines appear in the file.
+
+    Examples
+    --------
+    >>> pamd_conf = PamDConf(context_wrap(pamd_conf_data))
+    >>> len(pamd_conf)
+    7
+    >>> pamd_conf[0].service
+    'some_application'
+    >>> pamd_conf[0].interface
+    'auth'
+    >>> pamd_conf[0].control_flags
+    [(flag='required', value=None)]
+    >>> pamd_conf[0].module_name
+    'pam_securetty.so'
+    >>> pamd_conf[0].module_args
+    None
+
     """
     def parse_content(self, content):
         self.data = []

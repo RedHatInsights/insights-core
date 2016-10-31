@@ -152,13 +152,13 @@ def unsplit_lines(lines, cont_char='\\'):
     ['Line one      line one part 2', 'Line two']
 
     """
-    _lines = []
+    unsplit_lines = []
     for line in lines:
         line = line.rstrip()
         if line.endswith(cont_char):
-            _lines.append(line[:-1])
+            unsplit_lines.append(line[:-1])
         else:
-            yield ''.join(_lines) + line
-            _lines = []
-    if _lines:
-        yield ''.join(_lines)
+            yield ''.join(unsplit_lines) + line
+            unsplit_lines = []
+    if unsplit_lines:
+        yield ''.join(unsplit_lines)
