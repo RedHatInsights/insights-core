@@ -1,6 +1,15 @@
+"""
+Netstat
+=======
+
+Shared mappers for parsing and extracting data from variations of the
+```netstat``` command.
+"""
+
 from collections import defaultdict
 from ..mappers import ParseException
 from .. import Mapper, mapper, parse_table
+
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
 ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and established)'
@@ -15,15 +24,63 @@ NETSTAT_TEXT_RIGHT_ALLIGNMENT = {
 COMPONENT_LEN = "__component_len__"
 
 
-class NetstatParserException(ParseException):
-    pass
-
-
 @mapper('netstat-s')
-def get_netstat_s(context):
+class NetstatS(Mapper):
     '''
-    Return a dict nested dicts, and each key consist of lower case letters and
-    "_". For example:
+    Parses data from the ```netstat -s``` command.
+
+    The output of the ```netstat -s``` command looks like:
+
+        Ip:
+            3405107 total packets received
+            0 forwarded
+            0 incoming packets discarded
+            2900146 incoming packets delivered
+            2886201 requests sent out
+            456 outgoing packets dropped
+            4 fragments received ok
+            8 fragments created
+        Icmp:
+            114 ICMP messages received
+            0 input ICMP message failed.
+            ICMP input histogram:
+                destination unreachable: 107
+                echo requests: 4
+                echo replies: 3
+            261 ICMP messages sent
+            0 ICMP messages failed
+            ICMP output histogram:
+                destination unreachable: 254
+                echo request: 3
+                echo replies: 4
+        IcmpMsg:
+                InType0: 3
+                InType3: 107
+                InType8: 4
+                OutType0: 4
+                OutType3: 254
+                OutType8: 3
+        Tcp:
+            1648 active connections openings
+            1525 passive connection openings
+            105 failed connection attempts
+            69 connection resets received
+            139 connections established
+            2886370 segments received
+            2890303 segments send out
+            428 segments retransmited
+            0 bad segments received.
+            212 resets sent
+        Udp:
+            4901 packets received
+            107 packets to unknown port received.
+            0 packet receive errors
+            1793 packets sent
+            0 receive buffer errors
+            0 send buffer errors
+
+    Return a dictionary of nested dictionaries, and each key consist of
+    lower case letters and "_". For example:
 
     {
         "ip": {
@@ -55,88 +112,95 @@ def get_netstat_s(context):
         ......
     }
     '''
-    info = dict()
-    session = None
-    first_layer = dict()
-    second_layer = dict()
-    has_scd_layer = False
+    def parse_content(self, content):
+        self.data = {}
+        session = None
+        first_layer = {}
+        second_layer = {}
+        has_scd_layer = False
 
-    # There maybe some error metadata, such as:
-    # 'cannot open /proc/net/snmp: No such file or directory'
-    # or  '/bin/sh: /bin/netstat: No such file or directory'
-    # In this situation, return {} directly.
-    if 'cannot open' in context.content[0] or 'bin' in context.content[0]:
-        return info
+        # There maybe some error metadata, such as:
+        # 'cannot open /proc/net/snmp: No such file or directory'
+        # or  '/bin/sh: /bin/netstat: No such file or directory'
+        if len(content) == 1:
+            raise ParseException("Corrupt netstat -s file: {0}".format(content[0]))
 
-    # The right metadata(content) will start with "Ip". Some metadata may start
-    # with 'error' or 'ERROR' and the rest of lines are right datas.For example:
-    # ~~~~~~~
-    # error parsing /proc/net/netstat: No such file or directory
-    # Ip:
-    #   515 total packets received
-    #   5 with invalid addresses
-    #   0 forwarded
-    # .....
-    # ~~~~~~~~
-    # In this situation, 'error...' line will be ignore.
-    for line in context.content:
-        if session:
-            if line.startswith("  "):
-                if ":" in line:
-                    key, val = line.split(":")
-                    key = key.strip().replace(" ", "_").lower()
-                    # For example:
-                    # ~~~~~~~
-                    # ICMP input histogram:
-                    #        echo requests: 309
-                    # ...
-                    # ~~~~~~~
-                    # There need second layer dict
-                    if val == "" and not has_scd_layer:
-                        has_scd_layer = True
-                        layer_key = key
-                    else:
-                        if has_scd_layer:
-                            second_layer[key] = val.strip().lower()
+        # The right metadata(content) will start with "Ip". Some metadata may start
+        # with 'error' or 'ERROR' and the rest of lines are right datas.For example:
+        # ~~~~~~~
+        # error parsing /proc/net/netstat: No such file or directory
+        # Ip:
+        #   515 total packets received
+        #   5 with invalid addresses
+        #   0 forwarded
+        # .....
+        # ~~~~~~~~
+        # In this situation, 'error...' line will be ignored.
+        for line in content:
+            if session:
+                if line.startswith("  "):
+                    if ":" in line:
+                        key, val = line.split(":", 1)
+                        key = key.strip().replace(" ", "_").lower()
+                        # For example:
+                        # ~~~~~~~
+                        # ICMP input histogram:
+                        #        echo requests: 309
+                        # ...
+                        # ~~~~~~~
+                        # There need second layer dict
+                        if val == "" and not has_scd_layer:
+                            has_scd_layer = True
+                            layer_key = key
                         else:
-                            first_layer[key] = val.strip().lower()
+                            if has_scd_layer:
+                                second_layer[key] = val.strip().lower()
+                            else:
+                                first_layer[key] = val.strip().lower()
+                    else:
+                        # To deal with lines look like:
+                        # 0 bad segments received.
+                        if has_scd_layer:
+                            first_layer[layer_key] = second_layer
+                            has_scd_layer = False
+                            second_layer = {}
+                        data = line.split()
+
+                        # Some line's end has a '.', it'll be removed
+                        tmp_data = data[-1]
+                        if tmp_data[-1] == ".":
+                            data.remove(tmp_data)
+                            data.append(tmp_data[:-1])
+                        for d in data:
+                            if d.isdigit():
+                                tmp = d
+                                break
+                        data.remove(tmp)
+                        key, val = "_".join([k.lower() for k in data]), tmp
+                        first_layer[key] = val
                 else:
-                    # To deal with lines look like:
-                    # 0 bad segments received.
                     if has_scd_layer:
                         first_layer[layer_key] = second_layer
                         has_scd_layer = False
-                        second_layer = dict()
-                    data = line.split()
+                        second_layer = {}
+                    self.data[session] = first_layer
+                    first_layer = {}
+                    session = None
+            if not session:
+                session = line.split(":")[0].lower()
+                if session.startswith('error'):
+                    session = None
 
-                    # Some line's end has a '.', it'll be removed
-                    tmp_data = data[-1]
-                    if tmp_data[-1] == ".":
-                        data.remove(tmp_data)
-                        data.append(tmp_data[:-1])
-                    for d in data:
-                        if d.isdigit():
-                            tmp = d
-                            break
-                    data.remove(tmp)
-                    key, val = "_".join([k.lower() for k in data]), tmp
-                    first_layer[key] = val
-            else:
-                if has_scd_layer:
-                    first_layer[layer_key] = second_layer
-                    has_scd_layer = False
-                    second_layer = dict()
-                info[session] = first_layer
-                first_layer = dict()
-                session = None
-        if not session:
-            session = line.split(":")[0].lower()
-            if session.startswith('error'):
-                session = None
+        # Assign to the last seesion
+        self.data[session] = first_layer
 
-    # Assign to the last seesion
-    info[session] = first_layer
-    return info
+
+@mapper('netstat-s')
+def get_netstat_s(context):
+    '''
+    Deprecated, use ```NetstatS``` instead.
+    '''
+    return NetstatS(context).data
 
 
 @mapper("netstat_-agn")
@@ -281,10 +345,10 @@ class Netstat(Mapper):
 
     def parse_content(self, content):
         if not content:
-            raise NetstatParserException("Input content is empty")
+            raise ParseException("Input content is empty")
 
         if len(content) < 3:
-            raise NetstatParserException("Input content is not empty but there is no useful parsed data")
+            raise ParseException("Input content is not empty but there is no useful parsed data")
 
         sections = []
         cur_section = None
@@ -308,9 +372,9 @@ class Netstat(Mapper):
 
         if not sections:
             if num_active_lines < 1:
-                raise NetstatParserException("Input content is empty")
+                raise ParseException("Input content is empty")
             else:
-                raise NetstatParserException("Input content is not empty but there is no useful parsed data")
+                raise ParseException("Input content is not empty but there is no useful parsed data")
 
         self.data = {s.name: s._merge_data_index() for s in sections}
 
