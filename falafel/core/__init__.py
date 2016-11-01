@@ -1,21 +1,20 @@
 import argparse
+import io
 import logging
 import os
 import re
 import sys
-from collections import defaultdict
-from falafel.core import marshalling
-import io
 from ConfigParser import RawConfigParser
+from collections import defaultdict
+
+from falafel.core import marshalling
 
 DEFAULT_PATTERN = r'.*py$'
-log = logging.getLogger(__name__)
-
 DEFAULT_PLUGIN_MODULE = "falafel.plugins"
+log = logging.getLogger(__name__)
 
 
 def load_package(package_name, pattern=None, loaded_map=set()):
-
     loaded = []
 
     if package_name in loaded_map:
@@ -34,7 +33,6 @@ def load_package(package_name, pattern=None, loaded_map=set()):
 
 
 def get_module_names(package_name, pattern=None):
-
     if not pattern:
         pattern = DEFAULT_PATTERN
     else:
@@ -130,7 +128,6 @@ class LogFileMeta(type):
 
 
 class LogFileOutput(Mapper):
-
     __metaclass__ = LogFileMeta
 
     def parse_content(self, content):
@@ -151,21 +148,25 @@ class LogFileOutput(Mapper):
         preferred to utilizing raw log lines in plugins because computed fields
         will be serialized, whereas raw log lines will not.
         """
+
         def scanner(self):
             result = func(self)
             setattr(self, result_key, result)
+
         cls.scanners.append(scanner)
 
     @classmethod
     def token_scan(cls, result_key, token):
         def _scan(self):
             return token in self
+
         cls.scan(result_key, _scan)
 
     @classmethod
     def keep_scan(cls, result_key, token):
         def _scan(self):
             return self.get(token)
+
         cls.scan(result_key, _scan)
 
 
@@ -422,7 +423,7 @@ class ErrorCollector(object):
             count = error["count"]
             ename = e.__class__.__name__
             yield "%d count(s) of [%s]: %s: %s" % \
-                (count, func.__module__, ename, e.message)
+                  (count, func.__module__, ename, e.message)
             if self.verbose:
                 import traceback
                 traceback.print_exception(type(e), e, error["tb"])
@@ -447,11 +448,13 @@ def print_result(r, case=None, min_key_len=0):
 def print_results(results, cases=None, error_collector=None):
     results.sort(key=lambda x: x[1].__module__)
     min_key_len = max([0] + [len(r["error_key"]) for h, f, r in results
-                      if "error_key" in r])
+                             if "error_key" in r])
     result_count = len([r for host, f, r in results if "error_key" in r])
     for host, func, r in results:
-        case = cases.get(host) if cases else None
-        print_result(r, case=case, min_key_len=min_key_len)
+        # like result_count, filter result with "error_key"
+        if "error_key" in r:
+            case = cases.get(host) if cases else None
+            print_result(r, case=case, min_key_len=min_key_len)
     print "Result count:", result_count
     if error_collector and error_collector.has_errors():
         print "\n===== ERRORS ====="
@@ -502,7 +505,9 @@ def main():
     elif args.map_only:
         log.warning("Map-only run")
         _, mapper_results = mapper.run(sys.stdin)
-        print mapper.serialize(mapper_results)
+        # print mapper.serialize(mapper_results)
+        # as there is no serialize method, print the result directly
+        print mapper_results
     elif args.reduce_only:
         mapper_results = reducer.deserialize(sys.stdin.read())
         log.warning("Reduce-only run")
@@ -516,6 +521,7 @@ def main():
         ec = ErrorCollector(args.tracebacks)
         results = list(reducer.run(mapper_results, ec.reducer_error))
         print_results(results, cases, ec)
+
 
 if __name__ == "__main__":
     main()
