@@ -13,7 +13,8 @@ entry_points = {
         'falafel-web = falafel.web.daemon:main',
         'falafel-serve = falafel.web.server:main',
         'falafel-scaffold = falafel.scaffold:main',
-        'falafel-content = falafel.content:main'
+        'falafel-content = falafel.content:main',
+        'falafel-perf = falafel.tools.perf:main'
     ]
 }
 data_files = []
