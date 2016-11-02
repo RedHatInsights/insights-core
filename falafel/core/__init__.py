@@ -251,7 +251,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     # Note that we don't try to determine nonexistent month, day > 31, hour
     # > 23, minute > 59 or improbable year here.
     # TODO: handle non-English formatted dates here.
-    date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[ 0-9]\d:\d{2}|\s\d{4}))'
+    date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[012]\d:\d{2}|\s\d{4}))'
     name_regex = r'(?P<name>\S.*?)(?: -> (?P<link>\S+))?$'
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
                               size_regex, date_regex, name_regex))
