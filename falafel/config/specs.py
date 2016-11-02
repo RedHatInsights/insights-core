@@ -6,6 +6,7 @@ from falafel.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, Dock
 
 static_specs = {
     "autofs.conf"               : SimpleFileSpec("etc/autofs.conf"),
+    "auditd.conf"               : SimpleFileSpec("etc/audit/auditd.conf"),
     "nproc.conf"                : PatternSpec(r"etc/security/limits.d/.*-nproc\.conf"),
     "display_java"              : CommandSpec("/usr/sbin/alternatives --display java"),
     "blkid"                     : First([CommandSpec("/usr/sbin/blkid -c /dev/null"),
@@ -135,6 +136,7 @@ static_specs = {
     "ls_disk"                   : CommandSpec("/bin/ls -lanR /dev/disk/by-*"),
     "ls_dev"                    : CommandSpec("/bin/ls -lanR /dev"),
     "ls_etc"                    : CommandSpec("/bin/ls -lanR /etc"),
+    "ls_var_log"                : CommandSpec("/bin/ls -laR /var/log"),
     "lsmod"                     : CommandSpec("/sbin/lsmod"),
     "lspci"                     : CommandSpec("/sbin/lspci"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
