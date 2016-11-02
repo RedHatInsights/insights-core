@@ -44,15 +44,9 @@ class ServerXMLRPCLog(LogFileOutput):
 
         return msg_info
 
-    def __contains__(self, s):
-        """
-        Check if the specified string 's' is contained in one line
-        """
-        return any(s in l for l in self.lines)
-
     def get(self, s):
         """
-        Returns all lines that contain 's' and wrap them in a list
+        Returns all lines that contain 's', parse them and wrap them in a list
         """
         return [self.parse_line(l) for l in self.lines if s in l]
 
