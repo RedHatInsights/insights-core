@@ -6,7 +6,10 @@ from itertools import chain
 from ..util import rsplit
 from .. import Mapper, mapper, get_active_lines
 
+# This list of architectures is taken from PDC (Product Definition Center):
+# https://pdc.fedoraproject.org/rest_api/v1/arches/
 KNOWN_ARCHITECTURES = [
+    # Common architectures
     'x86_64',
     'i386',
     'i486',
@@ -21,6 +24,43 @@ KNOWN_ARCHITECTURES = [
     'amd64',
     '(none)',
     'noarch',
+    # Less common
+    'alpha',
+    'alphaev4',
+    'alphaev45',
+    'alphaev5',
+    'alphaev56',
+    'alphaev6',
+    'alphaev67',
+    'alphaev68',
+    'alphaev7',
+    'alphapca56',
+    'arm64',
+    'armv5tejl',
+    'armv5tel',
+    'armv6l',
+    'armv7hl',
+    'armv7hnl',
+    'armv7l',
+    'athlon',
+    'armhfp',
+    'geode',
+    'ia32e',
+    'nosrc',
+    'ppc64iseries',
+    'ppc64le',
+    'ppc64p7',
+    'ppc64pseries',
+    'sh3',
+    'sh4',
+    'sh4a',
+    'sparc',
+    'sparc64',
+    'sparc64v',
+    'sparcv8',
+    'sparcv9',
+    'sparcv9v',
+    'aarch64',
 ]
 
 PACKAGES = 'PACKAGES'
