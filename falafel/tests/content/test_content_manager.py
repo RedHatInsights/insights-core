@@ -23,7 +23,6 @@ def test_save(cm):
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "tina_loves_butts/OH_YEAH")
-    doc["plugin"] = doc["rule_id"].split("|")[0]
     assert next(cm.get("tina_loves_butts|OH_YEAH")) == doc
     assert next(cm.get("tina_loves_butts")) == doc
 
@@ -31,5 +30,4 @@ def test_save(cm):
 def test_error_keys(cm):
     cm.save({"rule_id": "tina_loves_butts|OH_YEAH"}, default=True)
     cm.save({"rule_id": "tina_loves_butts|OH_NO"}, default=True)
-    print set(cm.error_keys())
     assert set(cm.error_keys()) == {"tina_loves_butts|OH_YEAH", "tina_loves_butts|OH_NO"}
