@@ -1,18 +1,77 @@
+"""
+ps - Command
+============
+
+This module provides processing for the output of the ``ps`` command.  The specs
+handled by this command inlude::
+
+    "ps_aux"                    : CommandSpec("/bin/ps aux"),
+    "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
+    "ps_auxwww"                 : SimpleFileSpec("sos_commands/process/ps_auxwww"),
+
+Class ``PsAuxcww`` parses the output of the ``ps auxcww`` command.  Sample
+output of this command looks like::
+
+    USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+    root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init
+    root      1821  0.0  0.0      0     0 ?        S    May31   0:29 kondemand/0
+    root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 irqbalance
+    user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash
+    root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 dhclient
+    qemu     22673  0.6 10.7 1618556 840452 ?      Sl   11:38   1:31 qemu-kvm
+    vdsm     27323 98.0 11.3  9120    987 ?        Ss   10.01   1:31 vdsm
+
+Class ``PsAux`` parses the output of the ``ps aux`` command which is filtered
+to only contain lines with the strings 'STAT', 'keystone-all', and 'COMMAND'.
+Output is similar to the ``ps auxcww`` command except that the `COMMAND`
+column provides additional information about the command.
+
+Class ``PsAuxwww`` parses the output of the ``ps auxwww`` command.  Output of
+this command is similar to the ``ps aux``.
+
+All classes utilize the same base class ``ProcessList`` so the following
+examples apply to all classes in this module.
+
+Examples:
+    >>> ps_info = shared[PsAuxcww]
+    >>> ps_info.running
+    ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
+    >>> ps_info.cpu_usage('vdsm')
+    '98.0'
+    >>> ps_info.fuzzy_match('qemu')
+    True
+    >>> 'bash' in ps_info
+    True
+    >>> ps_info.data[3]
+    {'USER': 'user1', 'PID': '20150', '%CPU': '0.0', '%MEM': '0.0', 'VSZ': '108472',
+     'RSS': '1896', 'TTY': 'pts/3', 'STAT': 'Ss', 'START': '10:09', 'TIME': '0:00',
+     'COMMAND': 'bash'}
+    >>> ps_info.data[3]['START']
+    '10:09'
+    >>> [p['COMMAND'] for p in ps_info]
+    ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
+"""
 from .. import Mapper, mapper, parse_table
 
 
 class ProcessList(Mapper):
+    """Base class implementing shared code."""
 
     @property
     def running(self):
+        """list: Returns the list of values from the COMMAND column."""
         return [row["COMMAND"] for row in self.data if "COMMAND" in row]
 
     def cpu_usage(self, proc):
+        """str: Returns the %CPU column corresponding to ``proc`` in COMMAND or
+        ``None`` if ``proc`` is not found.
+        """
         for row in self.data:
             if proc == row["COMMAND"]:
                 return row["%CPU"]
 
     def fuzzy_match(self, proc):
+        """boolean: Returns ``True`` if ``proc`` is in the COMMAND column."""
         return proc in "".join(self.running)
 
     def __contains__(self, proc):
@@ -25,9 +84,14 @@ class ProcessList(Mapper):
 
 @mapper('ps_auxcww')
 class PsAuxcww(ProcessList):
-    """
-    Returns a list of dicts, where the keys in each dict are the column headers
-    and each item in the list represents a process.
+    """Class to parse ``ps auxcww`` command output.
+
+    Attributes:
+        data (list): List of dicts, where the keys in each dict are the column
+            headers and each item in the list represents a process.
+
+    Raises:
+        ValueError: Raised if any error occurs parsing the content.
     """
 
     def parse_content(self, content):
@@ -39,10 +103,15 @@ class PsAuxcww(ProcessList):
 
 @mapper('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
 class PsAux(ProcessList):
-    """
-    Returns a list of dicts, where the keys in each dict are the column headers
-    and each item in the list represents a process.  The command and its args
-    (if any) are kept together in the COMMAND key
+    """Class to parse ``ps aux`` command output.
+
+    Output is filtered to only contain the header line and lines containing
+    the string 'keystone-all'.
+
+    Attributes:
+        data (list): List of dicts, where the keys in each dict are the column
+            headers and each item in the list represents a process. The command
+            and its args (if any) are kept together in the COMMAND key.
     """
 
     def parse_content(self, content):
@@ -52,4 +121,10 @@ class PsAux(ProcessList):
 
 @mapper('ps_auxwww')  # we don't want to filter the ps_auxwww file
 class PsAuxwww(PsAux):
+    """Class to parse ``ps auxwww`` command output.
+
+    Attributes:
+        data (list):  List of dicts, where the keys in each dict are the column
+            headers and each item in the list represents a process.
+    """
     pass

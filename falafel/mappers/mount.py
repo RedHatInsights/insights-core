@@ -1,6 +1,61 @@
 """
-Mount
-=====
+mount - Command
+===============
+
+This module provides parsing for the ``mount`` command. The ``Mount`` class
+implements parsing for the ``mount`` command output which looks like::
+
+    sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
+    proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+    /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
+    dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+
+The information is stored as a list of ``MountEntry`` objects.  Each ``MountEntry``
+object contains attributes for the following information that are listed in the same
+order as in the command output::
+
+    - filesystem: (str) Name of filesystem
+    - mount_point: (str) Name of mount point for filesystem
+    - mount_type: (str) Name of filesystem type
+    - mount_options: (MountOpts) Mount options as ``MountOpts`` object
+    - mount_label: (str) Only present if optional label is present
+    - mount_clause: (str) Full string from command output
+
+The ``MountOpts`` class contains the mount options as attributes accessible
+via the attribute name as it appears in the command output.  For instance the
+options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the value
+``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in`` operator
+may be used to determine if an option is present.
+
+Examples:
+    >>> mnt_info = shared[Mount]
+    >>> mnt_info
+    <falafel.mappers.mount.Mount at 0x7fd4a7d3bbd0>
+    >>> mnt_info.rows
+    [<falafel.mappers.mount.MountEntry at 0x7fd4a7d3bfd0>,
+     <falafel.mappers.mount.MountEntry at 0x7fd4a7d3bc10>,
+     <falafel.mappers.mount.MountEntryat 0x7fd4a7d3bfd0>
+    >>> len(mnt_info)
+    4
+    >>> mnt_info[3].__dict__
+    {'filesystem': 'dev/sr0',
+     'mount_clause': 'dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]',
+     'mount_label': 'VMware Tools',
+     'mount_options': <falafel.mappers.mount.MountOpts at 0x7fd4a7d3e110>,
+     'mount_point': '/run/media/root/VMware Tools',
+     'mount_type': 'iso9660'}
+    >>> mnt_info[3].filesystem
+    'dev/sr0'
+    >>> mnt_info[3].mount_type
+    'iso9660'
+    >>> mnt_info[3].mount_options
+    <falafel.mappers.mount.MountOpts at 0x7fd4a7d3e110>
+    >>> mnt_info[3].mount_options.__dict__
+    {'dmode': '0500', 'gid': '0', 'iocharset': 'utf8', 'mode': '0400', 'nodev': True,
+     'nosuid': True, 'relatime': True, 'ro': True, 'uhelper': 'udisks2', 'uid': '0'}
+    >>> mnt_info[3].mount_options.dmode
+    >>> 'dmode' in mnt_info[3].mount_options
+    True
 """
 
 from ..mappers import optlist_to_dict, ParseException
@@ -8,6 +63,7 @@ from .. import Mapper, mapper, get_active_lines
 
 
 class AttributesAsDict(object):
+    """Helper class used by MountOpts and MountEntry."""
 
     def __getitem__(self, item):
         return self.__dict__[item]
@@ -22,8 +78,7 @@ class AttributesAsDict(object):
 class MountOpts(AttributesAsDict):
     """Class for mount options for one mount entry.
 
-    Provides mount options as attributes and may also
-    be accessed as a dictionary.
+    Attributes are the named options present in the mount entry.
     """
     def __init__(self, data):
         for k, v in data.iteritems():
@@ -33,11 +88,7 @@ class MountOpts(AttributesAsDict):
 class MountEntry(AttributesAsDict):
     """Class for a row of information from ``mount`` command.
 
-    Contains all infomation from one row of the ``mount``
-    command output.  Values are provided as attributes by
-    column name except where column name is not a valid Python
-    name.  All values may also be access in dictionary format
-    or via the ``get`` method.
+    Attributes are described in the module section.
     """
     def __init__(self, data):
         for k, v in data.iteritems():
@@ -48,10 +99,13 @@ class MountEntry(AttributesAsDict):
 class Mount(Mapper):
     """Class of information for all output from ``mount`` command.
 
-    Contains all rows of output from the ``mount`` command as
-    ``MountEntry`` objects.
-    """
+    Attributes:
+        rows (list of MountEntry): List of ``MountEntry`` objects for each row of
+            the command output.
 
+    Raises:
+        ParseException: Raised when any problem parsing the command output.
+    """
     def __getitem__(self, item):
         return self.rows[item]
 
@@ -63,38 +117,6 @@ class Mount(Mapper):
             yield row
 
     def parse_content(self, content):
-        """Parse each line of output from the ``mount`` command.
-
-        The specific mount commands are ``/bin/mount`` and ``/usr/bin/mount``.
-        Typical content of the ``mount`` command output looks like::
-            sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime,seclabel)
-            proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
-            /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
-            dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
-
-        Parameters
-        ----------
-        context: telemetry.rules.plugins.util.Content
-            Context object providing file content for the ``/bin/mount`` command
-            as well as metadata about the target system.
-
-        Returns
-        -------
-        list
-            A list of dictionaries containing information about each filesystem
-            listed by the ``mount`` command.
-
-            .. code-block:: python
-
-            [
-                { "filesystem": "/dev/mapper/HostVG-Config",
-                  "mount_point": "/etc/shadow",
-                  "mount_type": "ext4",
-                  "mount_options": ["rw", "noatime", "seclabel", "stripe=256", "data=ordered"],
-                  "mount_clause": "/dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)"}
-            ]
-
-        """
         self.rows = []
         for line in get_active_lines(content):
             mount = {}

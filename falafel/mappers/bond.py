@@ -1,12 +1,12 @@
 """
-Bond
-====
+bonding - File /proc/net/bonding
+================================
 
 Provides plugins access to the network bonding information gathered from
 all the files starteing with "bond." located in the
 ``/proc/net/bonding`` directory.
 
-Typical content of ``bond.*`` file is:
+Typical content of ``bond.*`` file is::
 
     Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
 
@@ -38,6 +38,15 @@ pattern file specification gathering data from files located in
 
 The ``bondinfo`` method is deprecated.  Plugins should use the ``Bond``
 class instead.
+
+Examples:
+    >>> bond_info = shared[Bond]
+    >>> bond_info.bond_mode
+    '0'
+    >>> bond_info.partner_mac_address
+    None
+    >>> bond_info.slave_interface
+    ['eno1', 'eno2']
 """
 from .. import Mapper, LogFileOutput, mapper, get_active_lines
 
@@ -53,6 +62,7 @@ BOND_PREFIX_MAP = [
         ('transmit load balancing', '5'),
         ('adaptive load balancing', '6')
 ]
+"""list: List of strings indicating bonding mode parameter."""
 
 
 @mapper('bond')
@@ -61,6 +71,15 @@ class Bond(Mapper):
 
     Currently used information from ``/proc/net/bonding`` includes
     the "bond mode" and "partner mac address".
+
+    Attributes:
+        bond_mode (str): Bond mode number as a string, or if there is no
+            known mapping to a number, the raw "Bonding Mode" value. Default is
+            ``None`` if no "Bonding Mode" key is found.
+        partner_mac_address (str): Value of the "Partner Mac Address" in the bond
+            file if the key/value exists. Default is ``None``.
+        slave_interface (list): List of the slave interfaces in the bond file
+            if the key/value exists. Default is ``[]``.
     """
 
     def parse_content(self, content):

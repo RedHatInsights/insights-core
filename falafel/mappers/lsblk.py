@@ -1,6 +1,85 @@
 """
-lsblk - List Block Devices
-==========================
+lsblk - Command
+===============
+
+Module for processing output of the ``lsblk`` command.  Different information is
+provided by the ``lsblk`` command depending upon the options. The ``LSBlock``
+class parses output of the ``lsblk`` command with no options.  The ``LSBlock_PO``
+class parses output of the ``lsblk -P -o column_names`` command.  These classes
+based on ``BlockDevices`` which implements all of the functionality except the
+parsing of command specific information.  Information is stored in the
+attribute ``self.rows`` which is a ``list`` of ``BlockDevice`` objects.
+
+Each ``BlockDevice`` object provides the functionality for one row of data from the
+command output.  Data in a ``BlockDevice`` object is accessible by multiple methods.
+For example the NAME field can be accessed in the follow three ways::
+
+    lsblk_info.rows[0].data['NAME']
+    lsblk_info.rows[0].NAME
+    lsblk_info.rows[0].name
+    lsblk_info.rows[0].get('NAME')
+
+Sample output of the ``lsblk`` command looks like::
+
+    NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+    vda           252:0    0    9G  0 disk
+    |-vda1        252:1    0  500M  0 part /boot
+    `-vda2        252:2    0  8.5G  0 part
+      |-rhel-root 253:0    0  7.6G  0 lvm  /
+      |-rhel-swap 253:1    0  924M  0 lvm  [SWAP]
+    sda             8:0    0  500G  0 disk
+    `-sda1          8:1    0  500G  0 part /data
+
+Note the hierarchy demonstrated in the name column. For instance `vda1` and
+`vda2` are children of `vda`.  Also `rhel-root` and `rhel-swap` are children
+of `vda2`.  This relationship is demonstrated in the ``PARENT_NAMES`` key, which
+is only present if the row is a *child* row.  For example ``PARENT_NAMES`` value
+for ``rhel-root`` will be ``['vda', 'vda2']`` meaning that ``vda2`` is the
+immediate parent and ``vda`` is parent of ``vda2``.
+
+Also note that column names that are not valid Python names been changed.  For
+example ``MAJ:MIN`` has been changed to ``MAJ_MIN``.
+
+Examples:
+    >>> lsblk_info = shared[LSBlock]
+    >>> lsblk_info
+    <falafel.mappers.lsblk.LSBlock object at 0x7f1f6a422d50>
+    >>> lsblk_info.rows
+    [<falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422ed0>,
+     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422f10>,
+     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422f50>,
+     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422f90>,
+     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422fd0>,
+     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a3b0050>,
+     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a3b0090>]
+    >>> lsblk_info.rows[0]
+    <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422ed0>
+    >>> lsblk_info.rows[0].data
+    {'READ_ONLY': False, 'NAME': 'vda', 'REMOVABLE': False, 'MAJ_MIN': '252:0',
+     'TYPE': 'disk', 'SIZE': '9G'}
+    >>> lsblk_info.rows[0].data['NAME']
+    'vda'
+    >>> lsblk_info.rows[0].NAME
+    'vda'
+    >>> lsblk_info.rows[0].name
+    'vda'
+    >>> lsblk_info.rows[0].data['MAJ_MIN']
+    '252:0'
+    >>> lsblk_info.rows[0].MAJ_MIN
+    '252:0'
+    >>> lsblk_info.rows[0].maj_min
+    '252:0'
+    >>> lsblk_info.rows[0].removable
+    False
+    >>> lsblk_info.rows[0].read_only
+    False
+    >>> lsblk_info.rows[2].data
+    {'READ_ONLY': False, 'PARENT_NAMES': ['vda'], 'NAME': 'vda2',
+     'REMOVABLE': False, 'MAJ_MIN': '252:2', 'TYPE': 'part', 'SIZE': '8.5G'}
+    >>> lsblk_info.rows[2].parent_names
+    ['vda']
+    >>> lsblk_info.rows[3].parent_names
+    ['vda', 'vda2']
 """
 
 import re
@@ -20,13 +99,6 @@ class BlockDevice(object):
     names may be accessed as ``obj.column_name``.
     """
     def __init__(self, data):
-        """Initialize objects for the class.
-
-        Parameters
-        ----------
-        data: dict
-            key, value pairs for the ``lsblk`` entry
-        """
         self.data = data
         for k, v in data.iteritems():
             k = k.replace("-", "_")
@@ -77,40 +149,19 @@ class LSBlock(BlockDevices):
           |-volgrp01-root (dm-0)        253:0    0   15G  0 lvm   /
           `-volgrp01-swap (dm-1)        253:1    0    8G  0 lvm   [SWAP]
 
-    Parameters
-    ----------
-    content: list
-        Lines in list represent output of the ``lsblk`` command.
+    Attributes:
+        rows (list of BlockDevice): List of ``BlockDevice`` objects for each row of
+            the input. Input column name matches key name except any '-' is replaced with
+            '_' and the following names are changed::
 
-    Returns
-    -------
-    dict
-        A list of dictionaries containing information about each block device
-        listed by the ``lsblk`` command.  Blank values in content will not be
-        present in the dictionary. The ``PARENT_NAMES`` key is represented by
-        a list of all parent devices to support multipath where duplicate
-        child names will appear for different parents.
+                Column Name     Key Name
+                MAJ:MIN         MAJ_MIN
+                RM              REMOVABLE
+                RO              READD_ONLY
 
-        .. code-block:: python
-
-        [
-            { 'NAME': 'sda',
-              'MAJ:MIN': '8:0',
-              'RM': '0',
-              'RO': "0",
-              'TYPE': 'disk',
-              'SIZE': '80G' },
-            { 'NAME': 'sda1',
-              'PARENT_NAMES': ['sda']
-              'MAJ:MIN': '8:1',
-              'RM': '0',
-              'RO': '0',
-              'TYPE': 'part',
-              'SIZE': '256M',
-              'MOUNTPOINT': '/boot' }
-        ]
+    Note:
+        See the discussion of the key ``PARENT_NAMES`` above.
     """
-
     def parse_content(self, content):
         r = re.compile(r"([\s\|\`\-]*)(\S+.*) (\d+:\d+)\s+(\d)\s+(\d+(\.\d)?[A-Z])\s+(\d)\s+([a-z]+)(.*)")
         device_list = []
@@ -150,48 +201,36 @@ class LSBlock_PO(BlockDevices):
     ``/usr/bin/lsblk -P -o column_names``.  Typical content of the ``lsblk``
     command output looks like::
 
-        ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
-        ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="disk" KNAME="sda" LABEL="" LOG-SEC="512" MAJ:MIN="8:0" MIN-IO="512" MODE="brw-rw----" MODEL="WDC WD1600JS-75N" MOUNTPOINT="" NAME="sda" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="149G" STATE="running" TYPE="disk" UUID=""
-        ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ext4" GROUP="disk" KNAME="sda1" LABEL="" LOG-SEC="512" MAJ:MIN="8:1" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/boot" NAME="sda1" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="500M" STATE="" TYPE="part" UUID="c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
+        ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" \
+            FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" \
+            MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" \
+            NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" \
+            ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
+        ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" \
+            FSTYPE="" GROUP="disk" KNAME="sda" LABEL="" LOG-SEC="512" MAJ:MIN="8:0" \
+            MIN-IO="512" MODE="brw-rw----" MODEL="WDC WD1600JS-75N" MOUNTPOINT="" \
+            NAME="sda" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" \
+            ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="149G" STATE="running" TYPE="disk" UUID=""
+        ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" \
+            FSTYPE="ext4" GROUP="disk" KNAME="sda1" LABEL="" LOG-SEC="512" MAJ:MIN="8:1" \
+            MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/boot" NAME="sda1" \
+            OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" \
+            RQ-SIZE="128" SCHED="cfq" SIZE="500M" STATE="" TYPE="part" \
+            UUID="c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
 
-    Parameters
-    ----------
-    content: list
-        Lines in list represent output of the ``lsblk -P -o`` command.
+    Attributes:
+        rows (list of BlockDevice): List of ``BlockDevice`` objects for each row of
+            the input. Input column name matches key name except any '-' is replaced with
+            '_' and the following names are changed::
 
-    Returns
-    -------
-    dict
-        A list of dictionaries containing information about each block device
-        listed by the ``lsblk`` command.  Blank values in content will not be
-        present in the dictionary.
+                Column Name     Key Name
+                MAJ:MIN         MAJ_MIN
+                RM              REMOVABLE
+                RO              READD_ONLY
 
-        .. code-block:: python
-
-        [
-            { 'NAME': 'sda',
-              'MAJ:MIN': '8:0',
-              'RM': '0',
-              'RO': '0',
-              'TYPE': 'disk',
-              'SIZE': '149G',
-              # All other fields listed in the example above with non-null values
-            },
-            { 'NAME': 'sda1',
-              'MAJ:MIN': '8:1',
-              'RM': '0',
-              'RO': '0',
-              'TYPE': 'part',
-              'SIZE': '500M',
-              'MOUNTPOINT': '/boot',
-              'FSTYPE': 'ext4',
-              # All other fields listed in the example above with non-null values
-            }
-        ]
-
-
+    Note:
+        See the discussion of the key ``PARENT_NAMES`` above.
     """
-
     def parse_content(self, content):
         self.rows = []
         for line in content:
