@@ -52,23 +52,37 @@ class SpecMapper(object):
         if matches:
             self.symbolic_files[symbolic_name].extend(matches)
 
+    def filter_commands(self, files):
+        for f in files:
+            if "sos_commands" in f or "insights_commands" in f:
+                yield f
+
     def add_files(self, file_map):
-        unrooted_files = {
+        unrooted_map = {
             f.split(self.root)[1]: f
             for f in self.all_names
             if f != self.root
         }
+        unrooted_files = set(unrooted_map)
+        commands = set(self.filter_commands(unrooted_files))
+        non_commands = unrooted_files - commands
+
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
+                is_command = isinstance(spec, CommandSpec)
                 r = spec.get_regex(prefix='', analysis_target=self.analysis_target)
-                matches = filter(r.search, unrooted_files)
+                if is_command or "_commands/" in r.pattern:
+                    filter_set = commands
+                else:
+                    filter_set = non_commands
+                matches = filter(r.search, filter_set)
                 if matches:
-                    matches = [unrooted_files[m] for m in matches]
+                    matches = [unrooted_map[m] for m in matches]
 
                     # In order to prevent matching *dumb* symlinks in some
                     # archive formats, we are going to filter out symlinks when
                     # calculating matches for CommandSpecs
-                    if isinstance(spec, CommandSpec):
+                    if is_command:
                         matches = filter(lambda n: not self.tf.issym(n), matches)
 
                     # filter out directories that match
