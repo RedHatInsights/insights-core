@@ -133,24 +133,17 @@ def unsplit_lines(lines, cont_char='\\'):
     continuation character at the end.  All lines found will be combined and
     returned.
 
-    Parameters
-    ----------
-    lines: list of str
-        List of strings to be evaluated.
-    cont_char: char
-        Char to search for at end of line.
+    Parameters:
+        lines (list): List of strings to be evaluated.
+        cont_char (char): Char to search for at end of line. Default is ``\\``.
 
-    Returns
-    -------
-    list:
-        Returns the list of lines one line at a time via generator.
+    Yields:
+        line (str): Yields unsplit lines
 
-    Examples
-    --------
-    >>> lines = ['Line one \\', '     line one part 2', 'Line two']
-    >>> list(unsplit_lines(lines))
-    ['Line one      line one part 2', 'Line two']
-
+    Examples:
+        >>> lines = ['Line one \\', '     line one part 2', 'Line two']
+        >>> list(unsplit_lines(lines))
+        ['Line one      line one part 2', 'Line two']
     """
     unsplit_lines = []
     for line in lines:
