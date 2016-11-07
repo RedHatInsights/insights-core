@@ -449,3 +449,47 @@ class Netstat(Mapper):
                 line += str
 
         return line.strip()
+
+
+@mapper("netstat-i")
+class Netstat_I(Mapper):
+    """
+    Parse netstat -i to get interface traffic info
+    such as "TX-OK" and "RX-OK".
+    INPUT:
+        Kernel Interface table
+        Iface       MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+        bond0      1500   0   845265      0      0      0     1753      0      0      0 BMmRU
+        bond1      1500   0   842447      0      0      0     4233      0      0      0 BMmRU
+        eth0       1500   0   422518      0      0      0     1703      0      0      0 BMsRU
+        eth1       1500   0   422747      0      0      0       50      0      0      0 BMsRU
+        eth2       1500   0   421192      0      0      0     3674      0      0      0 BMsRU
+        eth3       1500   0   421255      0      0      0      559      0      0      0 BMsRU
+        lo        65536   0        0      0      0      0        0      0      0      0 LRU
+
+    OUTPUT:
+        Group Netstat_I data by Iface name.
+        return like this:
+        {
+            "bond0": {
+                "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
+                "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
+                "TX-DPR": "0", "TX-OVR": "0", "Flg": "BMmRU"},
+            },
+            "eth0": {
+                "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
+                "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
+                "TX-DPR": "0", "TX-OVR": "0", "Flg": "BMmRU"}
+            }
+        }
+    """
+
+    def group_by_iface(self):
+        result = {}
+        for entry in self.data:
+            result[entry["Iface"]] = {k: v for (k, v) in entry.iteritems() if k != 'Iface'}
+        return result
+
+    def parse_content(self, content):
+        table = parse_table(content[1:])
+        self.data = map(lambda item: {k: v for (k, v) in item.iteritems()}, table)

@@ -153,6 +153,7 @@ static_specs = {
     "named-checkconf_p"         : CommandSpec("/usr/sbin/named-checkconf -p"),
     "netconsole"                : SimpleFileSpec("etc/sysconfig/netconsole"),
     "netstat"                   : CommandSpec("/bin/netstat -neopa"),
+    "netstat-i"                 : CommandSpec("/bin/netstat -i"),
     "netstat-s"                 : CommandSpec("/bin/netstat -s"),
     "netstat_-agn"              : CommandSpec("/bin/netstat -agn"),
     "neutron.conf"              : SimpleFileSpec("etc/neutron/neutron.conf"),
