@@ -55,7 +55,9 @@ class Runner(object):
             for name, paths in self.external_files.iteritems():
                 for path in paths:
                     ext_path = os.path.join("external", path)
+                    logging.info("Adding '{path}' to symbolic_files for '{name}'".format(path=path, name=name))
                     sm.symbolic_files[name].append(ext_path)
+                    sm.all_names.append(ext_path)
 
             md_str = sm.get_content("metadata.json", split=False, default="{}")
             md = json.loads(md_str)
