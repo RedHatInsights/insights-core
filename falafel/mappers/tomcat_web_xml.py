@@ -1,11 +1,11 @@
 import xml.etree.ElementTree as ET
-from .. import Mapper, mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 TIMEOUT_KEYWORD = 'session-timeout'
 
 
 @mapper('tomcat_web.xml')
-class TomcatWebXml(Mapper):
+class TomcatWebXml(LegacyItemAccess, Mapper):
 
     def parse_content(self, content):
         """
