@@ -1,0 +1,14 @@
+[falafel-web]
+tornado_logging_enabled=False
+distributed=True
+port=8080
+log_type=falafel-web
+logstash_host=localhost
+logstash_port=5000
+log_level=INFO
+multipart_file_key=file
+statsd_host=localhost
+statsd_port=8125
+statsd_enabled=True
+statsd_sample_rate=0.05
+dbdump_allowed_ips=127.0.0.1
