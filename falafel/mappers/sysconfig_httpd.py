@@ -1,8 +1,8 @@
-from .. import Mapper, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 
 @mapper('sysconfig_httpd')
-class HTTPDService(Mapper):
+class HTTPDService(LegacyItemAccess, Mapper):
 
     def parse_content(self, content):
         """
