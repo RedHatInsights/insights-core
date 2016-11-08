@@ -48,7 +48,7 @@ if __name__ == "__main__":
             version=falafel.VERSION,
             description="Insights Application Programming Interface",
             packages=find_packages(),
-            package_data={"": ["*.json", "RELEASE", "COMMIT", "*.md", "*.html"]},
+            package_data={"": ["*.json", "RELEASE", "COMMIT", "*.md", "*.html", "*.js"]},
             install_requires=[
                 'pyyaml',
             ],
