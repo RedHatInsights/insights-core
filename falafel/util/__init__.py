@@ -150,7 +150,7 @@ def check_path(path):
 
 
 def get_addr():
-    from falafel.web.settings import engine as config
+    from falafel.settings import web as config
 
     return "http://%s:%s" % (platform.node(), config["port"])
 
