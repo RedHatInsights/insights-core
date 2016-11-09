@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from falafel.mappers import split_kv_pairs
+from falafel.mappers import split_kv_pairs, unsplit_lines
 
 SPLIT_TEST_1 = """
 # Comment line
@@ -75,3 +75,32 @@ def test_split_kv_pairs():
         'keyword2': 'value2a=True, value2b=100M',
         'keyword3': ''
     }
+
+SPLIT_LINES = """
+Line one
+Line two part 1 \\
+         line two part 2\\
+         line two part 3
+Line three
+""".strip()
+SPLIT_LINES_2 = """
+Line one
+Line two part 1 ^
+         line two part 2^
+         line two part 3
+Line three
+""".strip()
+
+
+def test_unsplit_lines():
+    lines = list(unsplit_lines(SPLIT_LINES.splitlines()))
+    assert len(lines) == 3
+    assert lines[0] == 'Line one'
+    assert lines[1] == 'Line two part 1          line two part 2         line two part 3'
+    assert lines[2] == 'Line three'
+
+    lines = list(unsplit_lines(SPLIT_LINES_2.splitlines(), cont_char='^'))
+    assert len(lines) == 3
+    assert lines[0] == 'Line one'
+    assert lines[1] == 'Line two part 1          line two part 2         line two part 3'
+    assert lines[2] == 'Line three'
