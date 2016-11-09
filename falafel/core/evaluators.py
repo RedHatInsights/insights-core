@@ -273,8 +273,8 @@ class MultiEvaluator(Evaluator):
 
 class InsightsEvaluator(SingleEvaluator):
 
-    def __init__(self, spec_mapping, url="not set", system_id=None, metadata=None):
-        super(InsightsEvaluator, self).__init__(spec_mapping, metadata=metadata)
+    def __init__(self, spec_mapper, url="not set", system_id=None, metadata=None):
+        super(InsightsEvaluator, self).__init__(spec_mapper, metadata=metadata)
         self.system_id = system_id
         self.url = url
 
