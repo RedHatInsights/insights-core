@@ -3,10 +3,11 @@ import os
 import yaml
 
 INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
-NAME = "falafel.cfg"
+NAME = "falafel.yaml"
+DEFAULTS_NAME = "defaults.yaml"
 
 PATHS = [
-    os.path.join(INSTALL_DIR, NAME),  # Defaults
+    os.path.join(INSTALL_DIR, DEFAULTS_NAME),  # Defaults
     os.path.join("/etc", NAME),  # System-wide config
     os.path.join(os.path.expanduser("~/.local"), NAME),  # User-specific config
     "." + NAME  # Directory-specific config
