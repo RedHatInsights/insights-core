@@ -37,13 +37,6 @@ srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 -rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt
 """
 
-HUMAN_LISTING = """
-/var/lib/setroubleshoot:
-total 4.0K
--rw-------. 1 root root    0 Apr 15  2015 email_alert_recipients
--rw-------. 1 root root 3.7K Sep  7  2015 setroubleshoot_database.xml
-"""
-
 SELINUX_DIRECTORY = """
 /boot:
 total 3
@@ -172,22 +165,6 @@ def test_complicated_directory():
     assert 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt' in listing
     assert dirs.dir_contains('/tmp', 'File name with spaces in it!')
     assert dirs.dir_contains('/tmp', 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
-
-
-def test_human_listing():
-    dirs = FileListing(context_wrap(HUMAN_LISTING))
-
-    dirs.total_of('/var/lib/setroubleshoot') == 4096
-    dirs.dir_entry('/var/lib/setroubleshoot', 'email_alert_recipients') == \
-        {'type': '-', 'perms': 'rw-------.', 'links': 1, 'owner': 'root',
-         'group': 'root', 'size': 0, 'date': 'Apr 15  2015',
-         'name': 'email_alert_recipients', 'raw_entry':
-         '-rw-------. 1 root root    0 Apr 15  2015 email_alert_recipients'}
-    dirs.dir_entry('/var/lib/setroubleshoot', 'setroubleshoot_database.xml') \
-        == {'type': '-', 'perms': 'rw-------.', 'links': 1, 'owner': 'root',
-            'group': 'root', 'size': int(3.7 * 1024), 'date': 'Sep  7  2015',
-            'name': 'setroubleshoot_database.xml', 'raw_entry':
-            '-rw-------. 1 root root 3.7K Sep  7  2015 setroubleshoot_database.xml'}
 
 
 def test_selinux_directory():

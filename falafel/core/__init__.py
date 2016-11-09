@@ -247,8 +247,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     owner_regex = r'(?P<owner>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
     # In 'size' we also cope with major, minor format character devices
     # by just catching the \d+, and then splitting it off later.
-    size_regex = r'(?P<size>(?:\d+,\s+)?\d+)(?P<frac>\.\d+)?' +\
-        r'(?P<unit>[KMGTPEZY]?)'
+    size_regex = r'(?P<size>(?:\d+,\s+)?\d+)'
     # Note that we don't try to determine nonexistent month, day > 31, hour
     # > 23, minute > 59 or improbable year here.
     # TODO: handle non-English formatted dates here.
@@ -267,11 +266,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                                name_regex))
     selinux_re = re.compile(selinux_regex)
 
-    # ls can give SI 'multiply by 1000' units with the --si option, but we
-    # ignore that possibility here.
-    size_of_unit = {'K': 1 << 10, 'M': 1 << 20, 'G': 1 << 30, 'T': 1 << 40,
-                    'P': 1 << 50, 'E': 1 << 60, 'Y': 1 << 70, 'Z': 1 << 80}
-
     def __init__(self, context, selinux=False):
         """
             You can set the 'selinux' parameter to True to have this
@@ -284,16 +278,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
         else:
             self.file_re = self.normal_re
         super(FileListing, self).__init__(context)
-
-    def parse_size(self, match):
-        """ Assumes a match from re.search on the size_regex """
-        size = int(match.group('size'))
-        if match.group('unit'):
-            if match.group('frac'):
-                # the frac group also captures the decimal point, so:
-                size += float(match.group('frac'))
-            size *= self.size_of_unit[match.group('unit')]
-        return size
 
     def parse_file_match(self, this_dir, line):
         # Save all the raw directory entries, even if we can't parse them
@@ -324,14 +308,10 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                     this_file['minor'] = int(minor.strip())
                     # Remove other 'size' entries
                     del(this_file['size'])
-                    del(this_file['frac'])
-                    del(this_file['unit'])
             else:
                 # What should we do if we get a comma here?
                 if ',' not in size:
-                    this_file['size'] = self.parse_size(match)
-                    del(this_file['frac'])
-                    del(this_file['unit'])
+                    this_file['size'] = int(match.group('size'))
 
         # If this is not a symlink, remove the link key
         if not this_file['link']:
@@ -360,7 +340,7 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
             elif l.startswith('total'):
                 match = self.size_re.search(l[5:])
                 if match:
-                    this_dir['total'] = self.parse_size(match)
+                    this_dir['total'] = int(match.group('size'))
             else:
                 self.parse_file_match(this_dir, l)
 
