@@ -176,7 +176,7 @@ class Uname(Mapper):
             raise UnameError('Empty uname line')
 
         data = {}
-        uname_line = content[0]
+        uname_line = content[-1]  # read the last line instead of the first
         uname_line_tmp = ' '.join(uname_line.split())
         uname_parts = uname_line_tmp.split(" ")
         logger.debug("Parsing uname line: %s", uname_parts)

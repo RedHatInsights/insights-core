@@ -1,11 +1,8 @@
-from .. import Mapper, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 
 @mapper('yum.repos.d')
-class YumReposD(Mapper):
-
-    def get(self, key):
-        return self.data.get(key)
+class YumReposD(LegacyItemAccess, Mapper):
 
     def parse_content(self, content):
         '''
@@ -50,3 +47,7 @@ class YumReposD(Mapper):
                 if key and isinstance(section_dict[key], list):
                     section_dict[key].append(line)
         self.data = repos_dict
+
+    def __iter__(self):
+        for repo in self.data:
+            yield repo

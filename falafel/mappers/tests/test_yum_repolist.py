@@ -1,4 +1,4 @@
-from falafel.mappers import yum
+from falafel.mappers.yum_repolist import YumRepoList
 from falafel.tests import context_wrap
 
 YUM_REPOLIST_CONTENT = """
@@ -24,7 +24,7 @@ repolist: 3,787
 
 
 def test_yum_repolist():
-    repo_list = yum.repo_list(context_wrap(YUM_REPOLIST_CONTENT))
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
     assert len(repo_list) == 4
     assert repo_list[0] == {"id": "rhel-7-server-rpms/7Server/x86_64",
                             "name": "Red Hat Enterprise Linux",
@@ -33,7 +33,7 @@ def test_yum_repolist():
 
 
 def test_eus():
-    repo_list = yum.repo_list(context_wrap(YUM_REPOLIST_CONTENT_EUS))
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_EUS))
     assert len(repo_list) == 2
     assert repo_list[0] == {"id": "clone-6u5-server-x86_64",
                             "name": "clone-6u5-server-x86_64",

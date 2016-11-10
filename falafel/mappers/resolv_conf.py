@@ -66,3 +66,7 @@ class ResolvConf(LegacyItemAccess, Mapper):
             resolv_info['active'] = KEYWORD2
 
         self.data = resolv_info
+
+    def __iter__(self):
+        for sec in self.data:
+            yield sec
