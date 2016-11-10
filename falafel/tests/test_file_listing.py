@@ -35,6 +35,9 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 -rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 File name with spaces in it!
 -rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt
+drwxr-xr-x+  2 0 0       41 Jul  6 23:32 additional_ACLs
+-rw-rw----.  1 0 6 253,  10 Aug  4 16:56 comma in size currently valid
+brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
 """
 
 SELINUX_DIRECTORY = """
@@ -79,8 +82,6 @@ bash: ls: command not found
 cannot access /boot/grub2/grub.cfg: No such file or directory
 No such file or directory
 adsf
--rw-rw----.  1 0 6 253,  10 Aug  4 16:56 file with comma in size
-drwxr-xr-x+  2 0 0   41 Jul  6 23:32 good-file
 """
 
 # Note - should we test for anomalous but parseable entries?  E.g. block
@@ -179,6 +180,23 @@ def test_complicated_directory():
     assert dirs.dir_contains('/tmp', 'File name with spaces in it!')
     assert dirs.dir_contains('/tmp', 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
 
+    # Grey area - commas in size for ordinary files, and devices without
+    # major or minor numbers
+    assert 'comma in size currently valid' in listing
+    # For ordinary files, commas in size leave size unconverted
+    assert listing['comma in size currently valid']['size'] == '253,  10'
+    assert 'major' not in listing['comma in size currently valid']
+    assert 'minor' not in listing['comma in size currently valid']
+    # For devices missing a comma in their 'size', size is also unconverted
+    assert 'block dev with no comma also valid' in listing
+    assert listing['block dev with no comma also valid']['size'] == '1048576'
+    assert 'major' not in listing['block dev with no comma also valid']
+    assert 'minor' not in listing['block dev with no comma also valid']
+
+    # Extended ACLs
+    assert 'additional_ACLs' in listing
+    assert listing['additional_ACLs']['perms'] == 'rwxr-xr-x+'
+
 
 def test_selinux_directory():
     dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux=True)
@@ -199,15 +217,4 @@ def test_bad_directory():
     bad_listing = [s.strip() for s in BAD_DIRECTORY_ENTRIES.split('\n')[2:] if s]
     print bad_listing
     assert dirs.raw_directory('/badness') == bad_listing
-    expected = {
-        'good-file':
-            {'group': '0', 'name': 'good-file', 'links': 2, 'perms': 'rwxr-xr-x+',
-             'raw_entry': 'drwxr-xr-x+  2 0 0   41 Jul  6 23:32 good-file', 'owner': '0',
-             'date': 'Jul  6 23:32', 'type': 'd', 'size': 41},
-        'file with comma in size':
-            {'group': '6', 'name': 'file with comma in size',
-             'links': 1, 'perms': 'rw-rw----.', 'date': 'Aug  4 16:56',
-             'raw_entry': '-rw-rw----.  1 0 6 253,  10 Aug  4 16:56 file with comma in size',
-             'owner': '0', 'type': '-', 'size': '253,  10'}
-    }
-    assert dirs.listing_of('/badness') == expected
+    assert dirs.listing_of('/badness') == {}
