@@ -40,10 +40,10 @@ srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 SELINUX_DIRECTORY = """
 /boot:
 total 3
--rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267.el7.x86_64
+-rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
 drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2
--rw-r--r--. root root system_u:object_r:boot_t:s0      initramfs-0-rescue-71483baa33934d94a7804a398fed6241.img
-"""  # noqa
+-rw-r--r--. root root system_u:object_r:boot_t:s0      initramfs-0-rescue
+"""
 
 BAD_DIRECTORY_ENTRIES = """
 /badness:
@@ -68,6 +68,19 @@ prw-rw----. 1000 1000  0 Nov 12 723:56 Hour too long
 prw-rw----. 1000 1000  0 Nov 12 23: Missing minute
 prw-rw----. 1000 1000  0 Nov 12 23:3 Minute too short
 prw-rw----. 1000 1000  0 Nov 12 23:357 Minute too long
+-rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
+bash: ls: command not found
+-rw------ 1 root root 762 Se
+-rw------- 1 ro:t root 762 Sep 23 002 /etc/ssh/sshd_config
+-rw------- 1 root r:ot 762 Sep 23 002 /etc/ssh/sshd_config
+-rwasdfas- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
+-rwx/----- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
+/usr/bin/ls: cannot access /boot/grub2/grub.cfg: No such file or directory
+cannot access /boot/grub2/grub.cfg: No such file or directory
+No such file or directory
+adsf
+-rw-rw----.  1 0 6 253,  10 Aug  4 16:56 file with comma in size
+drwxr-xr-x+  2 0 0   41 Jul  6 23:32 good-file
 """
 
 # Note - should we test for anomalous but parseable entries?  E.g. block
@@ -171,7 +184,7 @@ def test_selinux_directory():
     dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux=True)
 
     # Test that one entry is exactly what we expect it to be.
-    dirs.dir_entry('/boot', 'grub2') == \
+    assert dirs.dir_entry('/boot', 'grub2') == \
         {'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
          'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
          'se_mls': 's0', 'name': 'grub2', 'raw_entry':
@@ -183,5 +196,18 @@ def test_bad_directory():
 
     # None of those entries should parse.  So we should have the raw lines,
     # but no parsed entries
-    dirs.raw_directory('/badness') == BAD_DIRECTORY_ENTRIES.split('/n')[2:]
-    dirs.listing_of('/badness') == []
+    bad_listing = [s.strip() for s in BAD_DIRECTORY_ENTRIES.split('\n')[2:] if s]
+    print bad_listing
+    assert dirs.raw_directory('/badness') == bad_listing
+    expected = {
+        'good-file':
+            {'group': '0', 'name': 'good-file', 'links': 2, 'perms': 'rwxr-xr-x+',
+             'raw_entry': 'drwxr-xr-x+  2 0 0   41 Jul  6 23:32 good-file', 'owner': '0',
+             'date': 'Jul  6 23:32', 'type': 'd', 'size': 41},
+        'file with comma in size':
+            {'group': '6', 'name': 'file with comma in size',
+             'links': 1, 'perms': 'rw-rw----.', 'date': 'Aug  4 16:56',
+             'raw_entry': '-rw-rw----.  1 0 6 253,  10 Aug  4 16:56 file with comma in size',
+             'owner': '0', 'type': '-', 'size': '253,  10'}
+    }
+    assert dirs.listing_of('/badness') == expected
