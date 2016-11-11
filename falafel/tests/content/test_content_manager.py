@@ -8,7 +8,7 @@ from falafel.content.manager import ContentManager
 @pytest.fixture
 def cm():
     tmp_dir = tempfile.mkdtemp()
-    yield ContentManager(tmp_dir, "falafel.tests.plugins")
+    yield ContentManager(tmp_dir, ["falafel.tests.plugins"])
     shutil.rmtree(tmp_dir)
 
 
