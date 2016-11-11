@@ -169,6 +169,7 @@ static_specs = {
     "nscd.conf"                 : SimpleFileSpec("etc/nscd.conf"),
     "nsswitch.conf"             : SimpleFileSpec("etc/nsswitch.conf"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
+    "ntp.conf"                  : SimpleFileSpec("etc/ntp.conf"),
     "ntptime"                   : CommandSpec("/usr/sbin/ntptime"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
     'osa_dispatcher.log'        : First([SimpleFileSpec("var/log/rhn/osa-dispatcher.log", large_content=True),
