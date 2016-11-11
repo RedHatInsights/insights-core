@@ -172,6 +172,7 @@ static_specs = {
     "nsswitch.conf"             : SimpleFileSpec("etc/nsswitch.conf"),
     "sysconfig_chronyd"         : SimpleFileSpec("etc/sysconfig/chronyd"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
+    "ntp.conf"                  : SimpleFileSpec("etc/ntp.conf"),
     "ntptime"                   : CommandSpec("/usr/sbin/ntptime"),
     "ntpq_leap"                 : CommandSpec("/usr/sbin/ntpq -c 'rv 0 leap'"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
