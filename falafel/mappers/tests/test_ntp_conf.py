@@ -61,6 +61,10 @@ keys /etc/ntp/keys
 # Note: Monitoring will not be disabled with the limited restriction flag.
 #disable monitor
 
+# Set a couple of single keyword options:
+broadcastclient
+iburst
+
 ### Added by IPA Installer ###
 server 127.127.1.0
 fudge 127.127.1.0 stratum 10
@@ -93,6 +97,8 @@ class TestNTPConfig(unittest.TestCase):
             },
             'includefile': {'/etc/ntp/crypto/pw': None},
             'keys': {'/etc/ntp/keys': None},
+            'broadcastclient': None,
+            'iburst': None,
             'server': {
                 '127.127.1.0': None,
                 '10.20.30.40': None,
