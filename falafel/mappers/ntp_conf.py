@@ -6,9 +6,10 @@ driftfile /var/lib/ntp/drift
 
 ...
 
-Keyword followed immediately by values.  Keywords can be repeated multiple
-times - those that are (e.g. server, peer, fudge, restrict) have a unique
-item following the keyword, so we form a dictionary based on that.
+Keyword, optionally followed immediately by values.  Keywords can be repeated
+multiple times - those that are (e.g. server, peer, fudge, restrict) have a
+unique item following the keyword, so we form a dictionary based on that.
+Some keywords have no values - we record these as keys but with no value.
 """
 
 from .. import Mapper, mapper, get_active_lines
@@ -22,6 +23,11 @@ class NTP_conf(Mapper):
         for line in get_active_lines(content):
             print line
             value = None
+            # Some keywords appear bare - just record them
+            if ' ' not in line:
+                config[line] = None
+                continue
+            # Deal with keywords with items and optional values
             keyword, item = line.split(None, 1)
             if ' ' in item:
                 item, value = item.split(None, 1)
