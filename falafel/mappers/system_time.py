@@ -2,6 +2,53 @@ import re
 from .. import Mapper, mapper, get_active_lines
 
 
+@mapper("chrony.conf")
+class ChronyConf(Mapper):
+    """
+    A mapper for analyzing the chrony service config file /etc/chrony.conf
+    """
+    def parse_content(self, content):
+        """
+        Returns a dict object contains all settings in /etc/chrony.conf.
+
+        Sample Input:
+            server 0.rhel.pool.ntp.org iburst
+            server 1.rhel.pool.ntp.org iburst
+            server 2.rhel.pool.ntp.org iburst
+            server 3.rhel.pool.ntp.org iburst
+            # Enable kernel RTC synchronization.
+            rtcsync
+            leapsecmode slew
+            maxslewrate 1000
+            smoothtime 400 0.001 leaponly
+
+        Sample Output:
+
+        .. code-block:: python
+
+            {'server': ["0.rhel.pool.ntp.org iburst",
+                "0.rhel.pool.ntp.org iburst",
+                "2.rhel.pool.ntp.org iburst",
+                "3.rhel.pool.ntp.org iburst"]
+            'rtcsync': None,
+            'leapsecmode': ['slew]',
+            'maxslewrate': ['1000]',
+            'smoothtime': ['400 0.001 leaponly']
+            }
+        """
+        result = {}
+        for line in get_active_lines(content):
+            if ' ' in line:
+                k, rest = line.split(None, 1)
+                if k in result:
+                    result[k].append(rest)
+                else:
+                    result[k] = [rest]
+            else:
+                result[line] = None
+        self.data = result
+
+
 @mapper("localtime")
 class LocalTime(Mapper):
     """
@@ -105,6 +152,34 @@ class NtpTime(Mapper):
                     g = reg.search(frags[2])
                     if g and g.lastindex == 1:
                         result['flags'] = g.group(1).split(',')
+        self.data = result
+
+
+@mapper("sysconfig_chronyd")
+class ChronydService(Mapper):
+    """
+    A mapper for analyzing the chronyd service config file in /etc/sysconfig
+    directory
+    """
+    def parse_content(self, content):
+        """
+        Returns a dict object contains all settings in /etc/sysconfig/chronyd.
+
+        Sample Input:
+          OPTIONS="-d"
+          #HIDE="me"
+
+        Sample Output:
+
+        .. code-block:: python
+
+            {'OPTIONS': '"-d"'}
+        """
+        result = {}
+        for line in get_active_lines(content):
+            if '=' in line:
+                k, rest = line.split('=', 1)
+                result[k.strip()] = rest.strip()
         self.data = result
 
 
