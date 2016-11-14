@@ -122,7 +122,7 @@ class TestNTPConfig(unittest.TestCase):
         assert hasattr(conf_obj, 'peers')
         assert conf_obj.peers == ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
 
-    def test_standard_ntp_conf(self):
+    def test_zero_hosts_ntp_conf(self):
         conf_obj = NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
         assert conf_obj
         assert hasattr(conf_obj, 'config')
