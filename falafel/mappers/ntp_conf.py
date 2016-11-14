@@ -41,5 +41,9 @@ class NTP_conf(Mapper):
         # Also set up some convenience access to lists of stuff:
         if 'server' in config:
             self.servers = sorted(config['server'].keys())
+        else:
+            self.servers = []
         if 'peer' in config:
             self.peers = sorted(config['peer'].keys())
+        else:
+            self.peers = []
