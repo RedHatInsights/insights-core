@@ -79,6 +79,10 @@ peer ntp3.example.com
 
 """
 
+ZERO_HOSTS_NTP_CONF = """
+broadcastclient
+"""
+
 
 class TestNTPConfig(unittest.TestCase):
     def test_standard_ntp_conf(self):
@@ -117,3 +121,13 @@ class TestNTPConfig(unittest.TestCase):
         assert conf_obj.servers == ['10.20.30.40', '127.127.1.0', '192.168.1.111']
         assert hasattr(conf_obj, 'peers')
         assert conf_obj.peers == ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
+
+    def test_standard_ntp_conf(self):
+        conf_obj = NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
+        assert conf_obj
+        assert hasattr(conf_obj, 'config')
+        assert conf_obj.config == {
+            'broadcastclient': None
+        }
+        assert not hasattr(conf_obj, 'servers')
+        assert not hasattr(conf_obj, 'peers')
