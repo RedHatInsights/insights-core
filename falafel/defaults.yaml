@@ -47,7 +47,7 @@ defaults:
 
   # List of test plugin packages to load
   test_packages:
-  - falafel.plugins.tests
+  - falafel.tests.plugins
 
   # Default logging level
   log_level: INFO
