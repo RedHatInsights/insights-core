@@ -1,4 +1,4 @@
-from falafel.mappers.ntp_sources import ChronycSources, NtpqPn
+from falafel.mappers.ntp_sources import ChronycSources, NtpqPn, NtpqLeap
 from falafel.tests import context_wrap
 
 chrony_output = """
@@ -8,6 +8,10 @@ MS Name/IP address Stratum Poll Reach LastRx Last sample
 #* GPS0            0        4    377   11  -479ns[ -621ns]  +/- 134ns
 ^? a.b.c 2 6 377 23 -923us[ -924us] +/- 43ms
 ^+ d.e.f 1 6 377 21 -2629us[-2619us] +/- 86ms
+""".strip()
+
+ntpq_leap_output = """
+leap=00
 """.strip()
 
 ntpd_output = """
@@ -23,6 +27,11 @@ def test_get_chrony_sources():
     assert mapper_result.data[1].get("source") == "a.b.c"
     assert mapper_result.data[2].get("state") == "+"
     assert mapper_result.data[2].get("mode") == "^"
+
+
+def test_get_ntpq_leap():
+    mapper_result = NtpqLeap(context_wrap(ntpq_leap_output))
+    assert mapper_result.data.get("leap") == "00"
 
 
 def test_get_ntpd_sources():
