@@ -25,25 +25,21 @@ class NTP_conf(Mapper):
             # Some keywords appear bare - just record them
             if ' ' not in line:
                 config[line] = None
-                continue
-            # Deal with keywords with items and optional values
-            keyword, item = line.split(None, 1)
-            if ' ' in item:
-                item, value = item.split(None, 1)
-            if keyword not in config:
-                config[keyword] = {}
-            if item in config[keyword]:
-                raise ValueError("item '{item}' already listed for keyword" +
-                    "'{keyword}'".format(item=item, keyword=keyword))
-            config[keyword][item] = value
+            else:
+                keyword, value = line.split(None, 1)
+                # Note: we do nothing to the spacing in the value.
+                # Process the value as you see fit.
+                if keyword not in config:
+                    config[keyword] = []
+                config[keyword].append(value)
         self.config = config
 
         # Also set up some convenience access to lists of stuff:
         if 'server' in config:
-            self.servers = sorted(config['server'].keys())
+            self.servers = sorted(config['server'])
         else:
             self.servers = []
         if 'peer' in config:
-            self.peers = sorted(config['peer'].keys())
+            self.peers = sorted(config['peer'])
         else:
             self.peers = []
