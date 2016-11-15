@@ -51,6 +51,7 @@ class LsPci(LogFileOutput):
     """Parses output of the ``lspci`` command."""
     pass
 
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

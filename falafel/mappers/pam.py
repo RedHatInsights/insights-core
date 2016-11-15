@@ -241,6 +241,7 @@ class PamDConf(Mapper):
     def __len__(self):
         return len(self.data)
 
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

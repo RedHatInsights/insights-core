@@ -177,5 +177,6 @@ def main():
     for report in args.reports:
         frmt.format_results(*runner.handle_sosreport(report, args.spec_map))
 
+
 if __name__ == "__main__":
     main()

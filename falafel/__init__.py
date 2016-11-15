@@ -18,6 +18,7 @@ with open(os.path.join(__here__, "COMMIT")) as f:
 def get_nvr():
     return "{0}-{1}-{2}".format(NAME, VERSION, RELEASE)
 
+
 RULES_STATUS = {}
 """
 Mapping of dictionaries containing nvr and commitid for each rule repo included

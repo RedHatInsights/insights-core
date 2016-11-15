@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 class Uname(uname.Uname):
     pass
 
+
 UnameError = uname.UnameError
 pad_release = uname.pad_release
 parse_uname = uname.parse_uname
