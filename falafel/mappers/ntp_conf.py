@@ -20,8 +20,8 @@ class NTP_conf(Mapper):
 
     def parse_content(self, content):
         config = {}
+        # get_active_lines strips content
         for line in get_active_lines(content):
-            value = None
             # Some keywords appear bare - just record them
             if ' ' not in line:
                 config[line] = None
