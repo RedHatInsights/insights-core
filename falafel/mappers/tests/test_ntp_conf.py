@@ -93,27 +93,27 @@ class TestNTPConfig(unittest.TestCase):
         # Test configuration dictionary
         config = conf_obj.config
         assert config == {
-            'driftfile': {'/var/lib/ntp/drift': None},
-            'restrict': {
-                'default': 'nomodify notrap nopeer noquery',
-                '127.0.0.1': None,
-                '::1': None,
-            },
-            'includefile': {'/etc/ntp/crypto/pw': None},
-            'keys': {'/etc/ntp/keys': None},
+            'driftfile': ['/var/lib/ntp/drift'],
+            'restrict': [
+                'default nomodify notrap nopeer noquery',
+                '127.0.0.1',
+                '::1',
+            ],
+            'includefile': ['/etc/ntp/crypto/pw'],
+            'keys': ['/etc/ntp/keys'],
             'broadcastclient': None,
             'iburst': None,
-            'server': {
-                '127.127.1.0': None,
-                '10.20.30.40': None,
-                '192.168.1.111': None,
-            },
-            'fudge': {'127.127.1.0': 'stratum 10'},
-            'peer': {
-                'ntp1.example.com': None,
-                'ntp2.example.com': None,
-                'ntp3.example.com': None,
-            }
+            'server': [
+                '127.127.1.0',
+                '10.20.30.40',
+                '192.168.1.111',
+            ],
+            'fudge': ['127.127.1.0 stratum 10'],
+            'peer': [
+                'ntp1.example.com',
+                'ntp2.example.com',
+                'ntp3.example.com',
+            ]
         }
 
         # Test other attributes
@@ -129,5 +129,7 @@ class TestNTPConfig(unittest.TestCase):
         assert conf_obj.config == {
             'broadcastclient': None
         }
-        assert not hasattr(conf_obj, 'servers')
-        assert not hasattr(conf_obj, 'peers')
+        assert hasattr(conf_obj, 'servers')
+        assert conf_obj.servers == []
+        assert hasattr(conf_obj, 'peers')
+        assert conf_obj.peers == []
