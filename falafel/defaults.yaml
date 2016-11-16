@@ -23,13 +23,13 @@ content:
   # api_* opations are used mainly to pull content parameters from production.
 
   # RHN username. 
-  api_password: changeme
+  # api_password: changeme
 
   # URL of target Insights API.  Must include /r/insights at the end.
   api_url: http://localhost:9002/r/insights
 
   # RHN password
-  api_user: changeme
+  # api_user: changeme
 
   # Path to content git repo
   git_path: .
