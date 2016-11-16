@@ -19,3 +19,12 @@ class TestDate():
         assert date_info.data == DATE
         assert date_info.datetime is not None
         assert date_info.timezone == 'EDT'
+
+
+class TestDateUTC():
+    def test_get_date1(self):
+        DATE = DATE_OUTPUT1 % ('UTC')
+        date_info = Date(context_wrap(DATE))
+        assert date_info.data == DATE
+        assert date_info.datetime is not None
+        assert date_info.timezone == 'UTC'
