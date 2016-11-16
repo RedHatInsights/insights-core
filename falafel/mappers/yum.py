@@ -48,6 +48,12 @@ def _parse(lines):
 
 
 @mapper("yum-repolist")
+def repo_list(context):
+    """Deprecated, do not use."""
+    return YumRepoList(context)
+
+
+@mapper("yum-repolist")
 class YumRepoList(Mapper):
 
     def __len__(self):

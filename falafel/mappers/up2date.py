@@ -1,8 +1,8 @@
-from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('up2date')
-class Up2Date(LegacyItemAccess, Mapper):
+class Up2Date(Mapper):
 
     def parse_content(self, content):
         '''

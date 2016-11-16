@@ -1,8 +1,8 @@
-from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
+from .. import Mapper, mapper, get_active_lines
 
 
 @mapper('pluginconf.d')
-class PluginConfD(LegacyItemAccess, Mapper):
+class PluginConfD(Mapper):
     '''
     Return an object contains a dict.
     {
@@ -45,7 +45,3 @@ class PluginConfD(LegacyItemAccess, Mapper):
                 if key:
                     section_dict[key] = ','.join([section_dict.get(key), line])
         self.data = plugin_dict
-
-    def __iter__(self):
-        for sec in self.data:
-            yield sec
