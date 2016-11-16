@@ -15,6 +15,23 @@ class ChronycSources(Mapper):
                 self.data.append({"source": values[1], "mode": values[0][0], "state": values[0][1]})
 
 
+@mapper('ntpq_leap')
+class NtpqLeap(Mapper):
+
+    def parse_content(self, content):
+        """
+        Sample Input:
+            leap=00
+
+        Sample Output:
+            {"leap": "00"}
+        """
+        line = content[0].strip()
+        if "=" in line:
+            k, v = line.split("=")
+            self.data = {k: v}
+
+
 @mapper('ntpq_pn')
 class NtpqPn(Mapper):
 
