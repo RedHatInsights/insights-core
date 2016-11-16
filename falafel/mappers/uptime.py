@@ -3,7 +3,6 @@ import datetime
 from .. import Mapper, mapper
 
 
-@mapper('facts')
 @mapper("uptime")
 class Uptime(Mapper):
     """Class for uptime content."""
@@ -47,67 +46,55 @@ class Uptime(Mapper):
         self.uptime = None
 
         uptime_info = {}
-        uptime_info['uptime'] = datetime.timedelta()
+        line = content[0].strip()
+        line_split = re.split(', |: ', line)
+        has_day = False
+
+        mix_part = line_split[0].strip().split()
         uptime_info['updays'] = ""
+        uptime_info['currtime'] = mix_part[0]
         uptime_info['uphhmm'] = ""
-        if len(content) == 1:
-            line = content[0].strip()
-            line_split = re.split(', |: ', line)
-            has_day = False
+        uptime_info['users'] = ""
+        uptime_info['loadavg'] = []
+        uptime_info['uptime'] = datetime.timedelta()
 
-            mix_part = line_split[0].strip().split()
-            uptime_info['currtime'] = mix_part[0]
-            uptime_info['users'] = ""
-            uptime_info['loadavg'] = []
+        if len(mix_part) == 4:
+            # check days
+            if 'day' in mix_part[3]:
+                uptime_info['updays'] = mix_part[2]
+                has_day = True
+            # check min
+            if 'min' in mix_part[3]:
+                uptime_info['uphhmm'] = '00:%02d' % int(mix_part[2])
 
-            if len(mix_part) == 4:
-                # check days
-                if 'day' in mix_part[3]:
-                    uptime_info['updays'] = mix_part[2]
-                    has_day = True
-                # check min
-                if 'min' in mix_part[3]:
-                    uptime_info['uphhmm'] = '00:%02d' % int(mix_part[2])
+        if len(mix_part) == 3:
+            uptime_info['uphhmm'] = mix_part[2]
 
-            if len(mix_part) == 3:
-                uptime_info['uphhmm'] = mix_part[2]
-
-            if has_day:
-                hhmm_data = line_split[1].strip().split()
-                if len(hhmm_data) == 2:
-                    if 'min' in hhmm_data[1]:
-                        uptime_info['uphhmm'] = '00:%02d' % int(hhmm_data[0])
-                else:
-                    uptime_info['uphhmm'] = hhmm_data[0]
-                regular_data = line_split[2:]
+        if has_day:
+            hhmm_data = line_split[1].strip().split()
+            if len(hhmm_data) == 2:
+                if 'min' in hhmm_data[1]:
+                    uptime_info['uphhmm'] = '00:%02d' % int(hhmm_data[0])
             else:
-                regular_data = line_split[1:]
-            # users
-            users_info = regular_data[0].strip().split()
-            if len(users_info) == 2:
-                uptime_info['users'] = users_info[0]
-            # load
-            load_values = regular_data[2:]
-            if len(load_values) == 3:
-                uptime_info['loadavg'] = load_values
-
-            if uptime_info['uphhmm']:
-                hours, _, mins = uptime_info['uphhmm'].partition(':')
-                uptime_info['uptime'] += datetime.timedelta(hours=int(hours))
-                uptime_info['uptime'] += datetime.timedelta(minutes=int(mins))
-            if uptime_info['updays']:
-                uptime_info['uptime'] += datetime.timedelta(days=int(uptime_info['updays']))
-
+                uptime_info['uphhmm'] = hhmm_data[0]
+            regular_data = line_split[2:]
         else:
-            for line in content:
-                if line.startswith('uptime_seconds'):
-                    secs = int(line.split()[-1])
-                    up_dd = secs / (3600 * 24)
-                    up_hh = (secs % (3600 * 24)) / 3600
-                    up_mm = (secs % 3600) / 60
-                    uptime_info['updays'] = str(up_dd) if up_dd > 0 else ''
-                    uptime_info['uphhmm'] = '%02d:%02d' % (up_hh, up_mm)
-                    uptime_info['uptime'] += datetime.timedelta(seconds=secs)
+            regular_data = line_split[1:]
+        # users
+        users_info = regular_data[0].strip().split()
+        if len(users_info) == 2:
+            uptime_info['users'] = users_info[0]
+        # load
+        load_values = regular_data[2:]
+        if len(load_values) == 3:
+            uptime_info['loadavg'] = load_values
+
+        if uptime_info['uphhmm']:
+            hours, _, mins = uptime_info['uphhmm'].partition(':')
+            uptime_info['uptime'] += datetime.timedelta(hours=int(hours))
+            uptime_info['uptime'] += datetime.timedelta(minutes=int(mins))
+        if uptime_info['updays']:
+            uptime_info['uptime'] += datetime.timedelta(days=int(uptime_info['updays']))
 
         for k, v in uptime_info.iteritems():
             setattr(self, k, v)
