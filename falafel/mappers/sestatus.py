@@ -1,8 +1,8 @@
-from .. import Mapper, mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('sestatus')
-class SEStatus(Mapper):
+class SEStatus(LegacyItemAccess, Mapper):
 
     def parse_content(self, content):
         '''
@@ -63,3 +63,7 @@ class SEStatus(Mapper):
             sestatus_info['policy_booleans'] = booleans
 
         self.data = sestatus_info
+
+    def __iter__(self):
+        for sec in self.data:
+            yield sec

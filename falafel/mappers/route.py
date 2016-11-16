@@ -1,4 +1,4 @@
-from .. import mapper, parse_table
+from .. import mapper, parse_table, get_active_lines
 
 
 @mapper('route')
@@ -30,4 +30,5 @@ def route(context):
 
     '''
     # Ignore first line to use "parse_table"
-    return parse_table(context.content[1:])
+    content = get_active_lines(context.content, "COMMAND>")
+    return parse_table(content[1:])

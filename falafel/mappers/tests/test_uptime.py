@@ -6,6 +6,20 @@ UPTIME1 = " 14:28:24 up  5:55,  4 users,  load average: 0.04, 0.03, 0.05"
 UPTIME2 = " 10:55:22 up 40 days, 21:17,  1 user,  load average: 0.49, 0.12, 0.04"
 UPTIME3 = " 10:55:22 up 40 days, 3 min,  1 user,  load average: 0.49, 0.12, 0.04"
 UPTIME4 = " 10:55:22 up 30 min,  1 user,  load average: 0.49, 0.12, 0.04"
+UPTIME5 = """
+COMMAND> facts
+uptime => 0:35 hours
+uptime_days => 0
+uptime_hours => 0
+uptime_seconds => 2126
+""".strip()
+UPTIME6 = """
+COMMAND> facts
+uptime => 21 days
+uptime_days => 21
+uptime_hours => 525
+uptime_seconds => 1893598
+""".strip()
 
 
 class TestUptime():
@@ -51,4 +65,22 @@ class TestUptime():
         assert uptime.users == '1'
         assert uptime.loadavg == ['0.49', '0.12', '0.04']
         c = datetime.timedelta(days=0, hours=0, minutes=30)
+        assert uptime.uptime.total_seconds() == c.total_seconds()
+
+    def test_get_uptime5(self):
+        uptime = Uptime(context_wrap(UPTIME5))
+        assert len(uptime.data) == 3
+        assert uptime.currtime is None
+        assert uptime.updays == ""
+        assert uptime.uphhmm == '00:35'
+        c = datetime.timedelta(days=0, hours=0, minutes=0, seconds=2126)
+        assert uptime.uptime.total_seconds() == c.total_seconds()
+
+    def test_get_uptime6(self):
+        uptime = Uptime(context_wrap(UPTIME6))
+        assert len(uptime.data) == 3
+        assert uptime.updays == "21"
+        assert uptime.uphhmm == '21:59'
+        assert uptime.loadavg is None
+        c = datetime.timedelta(days=0, hours=0, minutes=0, seconds=1893598)
         assert uptime.uptime.total_seconds() == c.total_seconds()
