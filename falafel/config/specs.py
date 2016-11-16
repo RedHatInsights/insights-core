@@ -37,6 +37,7 @@ static_specs = {
     "cpuinfo_max_freq"          : PatternSpec(r"sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"),
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
+    "date_utc"                  : CommandSpec("/bin/date --utc"),
     "df_-alP"                   : CommandSpec("/bin/df -alP"),
     "df_-al"                    : CommandSpec("/bin/df -al"),
     "df_-li"                    : CommandSpec("/bin/df -li"),
