@@ -1,31 +1,12 @@
-from .. import Mapper, mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('sestatus')
-class SEStatus(Mapper):
+class SEStatus(LegacyItemAccess, Mapper):
+    """Class to parse the ``sestatus -b`` command
 
-    def parse_content(self, content):
-        '''
-        Return the 'sestatus -b' information as a dict.
-        Input:
-        ------------------
-        Loaded policy name:             targeted
-        Current mode:                   enforcing
-        Mode from config file:          enforcing
-        Policy MLS status:              enabled
-        Policy deny_unknown status:     allowed
-        Max kernel policy version:      30
-
-        Policy booleans:
-        abrt_anon_write                             off
-        abrt_handle_event                           off
-        abrt_upload_watch_anon_write                on
-        antivirus_can_scan_system                   off
-        antivirus_use_jit                           off
-        auditadm_exec_content                       on
-        ...
-        ------------------
-        The output will look like:
+    Attributes:
+        data (dict): A dict likes
         {
             "loaded_policy_name": "targeted",
             "policy_booleans": {
@@ -42,7 +23,26 @@ class SEStatus(Mapper):
             "policy_deny_unknown_status": "allowed",
             "max_kernel_policy_version": "30"
         }
-        '''
+
+    ---Sample---
+        Loaded policy name:             targeted
+        Current mode:                   enforcing
+        Mode from config file:          enforcing
+        Policy MLS status:              enabled
+        Policy deny_unknown status:     allowed
+        Max kernel policy version:      30
+
+        Policy booleans:
+        abrt_anon_write                             off
+        abrt_handle_event                           off
+        abrt_upload_watch_anon_write                on
+        antivirus_can_scan_system                   off
+        antivirus_use_jit                           off
+        auditadm_exec_content                       on
+        ...
+    """
+
+    def parse_content(self, content):
         sestatus_info = {}
         booleans = {}
 
@@ -63,3 +63,7 @@ class SEStatus(Mapper):
             sestatus_info['policy_booleans'] = booleans
 
         self.data = sestatus_info
+
+    def __iter__(self):
+        for sec in self.data:
+            yield sec
