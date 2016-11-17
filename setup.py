@@ -2,6 +2,14 @@ import os
 import sys
 from setuptools import setup, find_packages
 
+__here__ = os.path.dirname(os.path.abspath(__file__))
+
+package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
+
+for name in package_info:
+    with open(os.path.join(__here__, "falafel", name)) as f:
+        package_info[name] = f.read().strip()
+
 BDIST_RPM_RUNNING = "bdist_rpm_running"
 
 entry_points = {
@@ -39,16 +47,16 @@ if "bdist_rpm" in sys.argv:
         fp.write("yes\n")
 
 if __name__ == "__main__":
-    import falafel
-    name = os.environ.get("FALAFEL_NAME", falafel.NAME)
+    # allows for runtime modification of rpm name
+    name = os.environ.get("FALAFEL_NAME", package_info["NAME"])
 
     try:
         setup(
             name=name,
-            version=falafel.VERSION,
+            version=package_info["VERSION"],
             description="Insights Application Programming Interface",
             packages=find_packages(),
-            package_data={"": ["*.json", "RELEASE", "COMMIT", "*.md", "*.html", "*.js", "*.yaml"]},
+            package_data={"": package_info.keys() + ["*.json", "*.md", "*.html", "*.js", "*.yaml"]},
             install_requires=[
                 'pyyaml',
             ],

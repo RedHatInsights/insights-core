@@ -4,7 +4,7 @@ from pkg_resources import get_distribution
 from falafel.console.package import MetaPattern
 from falafel.console.package import InstalledPackage
 
-from falafel import NAME
+NAME = "falafel"
 
 
 class TestInstalledPackage(unittest.TestCase):

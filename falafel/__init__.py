@@ -5,18 +5,18 @@ from .mappers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
-VERSION = "1.14.0"
-NAME = "falafel"
 
-with open(os.path.join(__here__, "RELEASE")) as f:
-    RELEASE = f.read().strip()
+package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
 
-with open(os.path.join(__here__, "COMMIT")) as f:
-    COMMIT = f.read().strip()
+for name in package_info:
+    with open(os.path.join(__here__, name)) as f:
+        package_info[name] = f.read().strip()
 
 
 def get_nvr():
-    return "{0}-{1}-{2}".format(NAME, VERSION, RELEASE)
+    return "{0}-{1}-{2}".format(package_info["NAME"],
+                                package_info["VERSION"],
+                                package_info["RELEASE"])
 
 
 RULES_STATUS = {}
