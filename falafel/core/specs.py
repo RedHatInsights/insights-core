@@ -15,7 +15,7 @@ class SpecMapper(object):
 
     def __init__(self, tf_object, data_spec_config=None):
         self.tf = tf_object
-        self.all_names = self.tf.getnames()
+        self.all_names = [f for f in self.tf.getnames() if len(f) > 2]
         self.root = self._determine_root()
         logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
@@ -25,12 +25,7 @@ class SpecMapper(object):
         self.create_symbolic_file_list()
 
     def _determine_root(self):
-        multi_node = any(["metadata.json" in name for name in self.all_names])
-        if multi_node:
-            root = os.path.commonprefix([p for p in self.all_names])
-        else:
-            root = os.path.commonprefix([p for p in self.all_names if len(p) > 2])
-
+        root = os.path.commonprefix(self.all_names)
         if root.endswith("/"):
             return root.rstrip("/") + "/"
         else:
