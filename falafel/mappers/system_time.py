@@ -67,6 +67,12 @@ class ChronyConf(NTPConfMapper):
     """
     pass
 
+
+@mapper("ntp.conf")
+class NTP_conf(NTPConfMapper):
+    pass
+
+
 @mapper("localtime")
 class LocalTime(Mapper):
     """
@@ -172,10 +178,6 @@ class NtpTime(Mapper):
                         result['flags'] = g.group(1).split(',')
         self.data = result
 
-
-@mapper("ntp.conf")
-class NTP_conf(NTPConfMapper):
-    pass
 
 @mapper("sysconfig_chronyd")
 class ChronydService(Mapper):
