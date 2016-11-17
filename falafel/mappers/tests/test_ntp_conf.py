@@ -1,6 +1,6 @@
 import unittest
 from falafel.tests import context_wrap
-from falafel.mappers.ntp_conf import NTP_conf
+from falafel.mappers.ntp_conf import Old_NTP_conf
 
 STANDARD_NTP_CONF = """
 # For more information about this file, see the man pages
@@ -84,9 +84,9 @@ broadcastclient
 """
 
 
-class TestNTPConfig(unittest.TestCase):
+class OldTestNTPConfig(unittest.TestCase):
     def test_standard_ntp_conf(self):
-        conf_obj = NTP_conf(context_wrap(STANDARD_NTP_CONF))
+        conf_obj = Old_NTP_conf(context_wrap(STANDARD_NTP_CONF))
         assert conf_obj
         assert hasattr(conf_obj, 'config')
 
@@ -125,7 +125,7 @@ class TestNTPConfig(unittest.TestCase):
             ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
 
     def test_zero_hosts_ntp_conf(self):
-        conf_obj = NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
+        conf_obj = Old_NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
         assert conf_obj
         assert hasattr(conf_obj, 'config')
         assert conf_obj.config == {

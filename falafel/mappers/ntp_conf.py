@@ -16,7 +16,7 @@ from .. import Mapper, mapper, get_active_lines
 
 
 @mapper("ntp.conf")
-class NTP_conf(Mapper):
+class Old_NTP_conf(Mapper):
 
     def parse_content(self, content):
         config = {}
