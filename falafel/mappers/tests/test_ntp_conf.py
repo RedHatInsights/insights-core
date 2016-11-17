@@ -118,9 +118,11 @@ class TestNTPConfig(unittest.TestCase):
 
         # Test other attributes
         assert hasattr(conf_obj, 'servers')
-        assert conf_obj.servers == ['10.20.30.40', '127.127.1.0', '192.168.1.111']
+        assert conf_obj.servers == \
+            ['10.20.30.40', '127.127.1.0', '192.168.1.111']
         assert hasattr(conf_obj, 'peers')
-        assert conf_obj.peers == ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
+        assert conf_obj.peers == \
+            ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
 
     def test_zero_hosts_ntp_conf(self):
         conf_obj = NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
