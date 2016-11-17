@@ -46,6 +46,24 @@ if "bdist_rpm" in sys.argv:
     with open(BDIST_RPM_RUNNING, "w") as fp:
         fp.write("yes\n")
 
+runtime = {
+    'pyyaml',
+    'tornado',
+    'futures',
+    'requests',
+    'GitPython',
+}
+
+develop = {
+    'flake8',
+    'coverage',
+    'pytest',
+    'pytest-cov',
+    'Sphinx',
+    'sphinx_rtd_theme',
+    'Jinja2',
+}
+
 if __name__ == "__main__":
     # allows for runtime modification of rpm name
     name = os.environ.get("FALAFEL_NAME", package_info["NAME"])
@@ -57,43 +75,10 @@ if __name__ == "__main__":
             description="Insights Application Programming Interface",
             packages=find_packages(),
             package_data={"": package_info.keys() + ["*.json", "*.md", "*.html", "*.js", "*.yaml"]},
-            install_requires=[
-                'pyyaml',
-            ],
+            install_requires=list(runtime),
             extras_require={
-                'develop': [
-                    'flake8',
-                    'coverage',
-                    'numpydoc',
-                    'pytest',
-                    'pytest-cov',
-                    'Sphinx',
-                    'sphinx_rtd_theme',
-                    'Jinja2',
-                    'tornado',
-                    'futures',
-                    'requests',
-                    'GitPython'
-
-                ],
-                'optional': [
-                    'python-cjson'
-                    'python-logstash',
-                    'python-statsd',
-                    'tornado',
-                    'futures',
-                    'GitPython'
-                ],
-                'test': [
-                    'flake8',
-                    'coverage',
-                    'pytest',
-                    'pytest-cov',
-                    'Jinja2',
-                    'tornado',
-                    'futures',
-                    'requests'
-                ]
+                'develop': list(runtime | develop),
+                'optional': ['python-cjson', 'python-logstash', 'python-statsd'],
             },
             entry_points=entry_points,
             data_files=data_files
