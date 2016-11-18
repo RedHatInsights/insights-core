@@ -32,8 +32,8 @@ class NTPConfMapper(Mapper):
                 "2.rhel.pool.ntp.org iburst",
                 "3.rhel.pool.ntp.org iburst"]
             'rtcsync': None,
-            'leapsecmode': ['slew]',
-            'maxslewrate': ['1000]',
+            'leapsecmode': ['slew'],
+            'maxslewrate': ['1000'],
             'smoothtime': ['400 0.001 leaponly']
             }
         """
