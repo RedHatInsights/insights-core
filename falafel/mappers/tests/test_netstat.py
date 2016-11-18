@@ -427,7 +427,7 @@ lo        65536   0        0      0      0      0        0      0      0      0 
 
 
 def test_get_netstat_i():
-    result = Netstat_I(context_wrap(NETSTAT_I)).group_by_iface()
+    result = Netstat_I(context_wrap(NETSTAT_I)).group_by_iface
     assert len(result) == 7
     assert result["bond0"] == {
             "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",

@@ -456,6 +456,7 @@ class Netstat_I(Mapper):
     """
     Parse netstat -i to get interface traffic info
     such as "TX-OK" and "RX-OK".
+
     INPUT:
         Kernel Interface table
         Iface       MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
@@ -484,12 +485,16 @@ class Netstat_I(Mapper):
         }
     """
 
+    @property
     def group_by_iface(self):
-        result = {}
-        for entry in self.data:
-            result[entry["Iface"]] = {k: v for (k, v) in entry.iteritems() if k != 'Iface'}
-        return result
+        return self._group_by_iface
 
     def parse_content(self, content):
+        self._group_by_iface = {}
         table = parse_table(content[1:])
-        self.data = map(lambda item: {k: v for (k, v) in item.iteritems()}, table)
+        self.data = map(lambda item:
+                        {k: v for (k, v) in item.iteritems()}, table)
+        for entry in self.data:
+            self._group_by_iface[entry["Iface"]] = \
+                {k: v for (k, v) in entry.iteritems() if k != 'Iface'}
+        return
