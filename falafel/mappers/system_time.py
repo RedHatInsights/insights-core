@@ -2,15 +2,16 @@ import re
 from .. import Mapper, mapper, get_active_lines
 
 
-@mapper("chrony.conf")
-class ChronyConf(Mapper):
+class NTPConfMapper(Mapper):
     """
-    A mapper for analyzing the chrony service config file /etc/chrony.conf
+        NTP and Chrony both use the same format for their configuration file -
+        a series of keywords with optional values.  Some keywords can appear
+        more than once, so all keyword values are stored as a list of strings.
+        Keywords that have no value, like 'iburst' or 'rtcsync', are left as
+        keys but have None as a value.
     """
     def parse_content(self, content):
         """
-        Returns a dict object contains all settings in /etc/chrony.conf.
-
         Sample Input:
             server 0.rhel.pool.ntp.org iburst
             server 1.rhel.pool.ntp.org iburst
@@ -31,22 +32,45 @@ class ChronyConf(Mapper):
                 "2.rhel.pool.ntp.org iburst",
                 "3.rhel.pool.ntp.org iburst"]
             'rtcsync': None,
-            'leapsecmode': ['slew]',
-            'maxslewrate': ['1000]',
+            'leapsecmode': ['slew'],
+            'maxslewrate': ['1000'],
             'smoothtime': ['400 0.001 leaponly']
             }
         """
-        result = {}
+        data = {}
         for line in get_active_lines(content):
             if ' ' in line:
                 k, rest = line.split(None, 1)
-                if k in result:
-                    result[k].append(rest)
+                if k in data:
+                    data[k].append(rest)
                 else:
-                    result[k] = [rest]
+                    data[k] = [rest]
             else:
-                result[line] = None
-        self.data = result
+                data[line] = None
+        self.data = data
+
+        # Also set up some convenience access to lists of stuff:
+        if 'server' in data:
+            self.servers = sorted(data['server'])
+        else:
+            self.servers = []
+        if 'peer' in data:
+            self.peers = sorted(data['peer'])
+        else:
+            self.peers = []
+
+
+@mapper("chrony.conf")
+class ChronyConf(NTPConfMapper):
+    """
+    A mapper for analyzing the chrony service config file /etc/chrony.conf
+    """
+    pass
+
+
+@mapper("ntp.conf")
+class NTP_conf(NTPConfMapper):
+    pass
 
 
 @mapper("localtime")
