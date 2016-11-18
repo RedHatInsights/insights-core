@@ -230,6 +230,7 @@ static_specs = {
                                     SimpleFileSpec("rhn-logs/rhn/rhn_server_xmlrpc.log", large_content=True)]),
     "rhn_taskomatic_daemon.log" : NoneGroup([SimpleFileSpec("var/log/rhn/rhn_taskomatic_daemon.log"),
                                     SimpleFileSpec("rhn-logs/rhn/rhn_taskomatic_daemon.log")]),
+    "rhsm.log"                  : SimpleFileSpec("var/log/rhsm/rhsm.log", large_content=True),
     "root_crontab"              : First([CommandSpec("/usr/bin/crontab -l -u root"),
                                     SimpleFileSpec("sos_commands/crontab")]),
     "route"                     : CommandSpec("/sbin/route -n"),
