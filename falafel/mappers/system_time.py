@@ -37,25 +37,25 @@ class NTPConfMapper(Mapper):
             'smoothtime': ['400 0.001 leaponly']
             }
         """
-        config = {}
+        data = {}
         for line in get_active_lines(content):
             if ' ' in line:
                 k, rest = line.split(None, 1)
-                if k in config:
-                    config[k].append(rest)
+                if k in data:
+                    data[k].append(rest)
                 else:
-                    config[k] = [rest]
+                    data[k] = [rest]
             else:
-                config[line] = None
-        self.config = config
+                data[line] = None
+        self.data = data
 
         # Also set up some convenience access to lists of stuff:
-        if 'server' in config:
-            self.servers = sorted(config['server'])
+        if 'server' in data:
+            self.servers = sorted(data['server'])
         else:
             self.servers = []
-        if 'peer' in config:
-            self.peers = sorted(config['peer'])
+        if 'peer' in data:
+            self.peers = sorted(data['peer'])
         else:
             self.peers = []
 

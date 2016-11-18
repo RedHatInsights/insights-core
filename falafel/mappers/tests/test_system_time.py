@@ -164,7 +164,7 @@ broadcastclient
 
 
 def test_chrony_conf():
-    result = system_time.ChronyConf(context_wrap(CHRONY_CONF)).config
+    result = system_time.ChronyConf(context_wrap(CHRONY_CONF)).data
     assert result['server'] == ["0.rhel.pool.ntp.org iburst",
             "1.rhel.pool.ntp.org iburst",
             "2.rhel.pool.ntp.org iburst",
@@ -208,13 +208,13 @@ def test_sysconfig_ntpd():
 
 class TestNTPConfig(unittest.TestCase):
     def test_standard_ntp_conf(self):
-        conf_obj = system_time.NTP_conf(context_wrap(STANDARD_NTP_CONF))
-        assert conf_obj
-        assert hasattr(conf_obj, 'config')
+        ntp_obj = system_time.NTP_conf(context_wrap(STANDARD_NTP_CONF))
+        assert ntp_obj
+        assert hasattr(ntp_obj, 'data')
 
         # Test configuration dictionary
-        config = conf_obj.config
-        assert config == {
+        data = ntp_obj.data
+        assert data == {
             'driftfile': ['/var/lib/ntp/drift'],
             'restrict': [
                 'default nomodify notrap nopeer noquery',
@@ -239,21 +239,21 @@ class TestNTPConfig(unittest.TestCase):
         }
 
         # Test other attributes
-        assert hasattr(conf_obj, 'servers')
-        assert conf_obj.servers == \
+        assert hasattr(ntp_obj, 'servers')
+        assert ntp_obj.servers == \
             ['10.20.30.40', '127.127.1.0', '192.168.1.111']
-        assert hasattr(conf_obj, 'peers')
-        assert conf_obj.peers == \
+        assert hasattr(ntp_obj, 'peers')
+        assert ntp_obj.peers == \
             ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
 
     def test_zero_hosts_ntp_conf(self):
-        conf_obj = system_time.NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
-        assert conf_obj
-        assert hasattr(conf_obj, 'config')
-        assert conf_obj.config == {
+        ntp_obj = system_time.NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
+        assert ntp_obj
+        assert hasattr(ntp_obj, 'data')
+        assert ntp_obj.data == {
             'broadcastclient': None
         }
-        assert hasattr(conf_obj, 'servers')
-        assert conf_obj.servers == []
-        assert hasattr(conf_obj, 'peers')
-        assert conf_obj.peers == []
+        assert hasattr(ntp_obj, 'servers')
+        assert ntp_obj.servers == []
+        assert hasattr(ntp_obj, 'peers')
+        assert ntp_obj.peers == []
