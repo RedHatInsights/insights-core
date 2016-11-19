@@ -1,4 +1,4 @@
-from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN, NetstatS
+from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN, NetstatS, Netstat_I
 from falafel.tests import context_wrap
 from falafel.mappers import netstat
 from ...mappers import ParseException
@@ -411,3 +411,31 @@ def test_is_httpd_running():
     assert "httpd" in Netstat(context_wrap(NETSTAT_MATCH1)).running_processes
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH1)).running_processes
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes
+
+
+NETSTAT_I = """
+Kernel Interface table
+Iface       MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+bond0      1500   0   845265      0      0      0     1753      0      0      0 BMmRU
+bond1      1500   0   842447      0      0      0     4233      0      0      0 BMmRU
+eth0       1500   0   422518      0      0      0     1703      0      0      0 BMsRU
+eth1       1500   0   422747      0      0      0       50      0      0      0 BMsRU
+eth2       1500   0   421192      0      0      0     3674      0      0      0 BMsRU
+eth3       1500   0   421255      0      0      0      559      0      0      0 BMsRU
+lo        65536   0        0      0      0      0        0      0      0      0 LRU
+"""
+
+
+def test_get_netstat_i():
+    result = Netstat_I(context_wrap(NETSTAT_I)).group_by_iface
+    assert len(result) == 7
+    assert result["bond0"] == {
+            "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
+            "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
+            "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMmRU"
+                }
+    assert result["eth0"] == {
+            "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
+            "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
+            "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMsRU"
+                }
