@@ -247,7 +247,7 @@ class IniConfigFile(Mapper):
 
     def getboolean(self, section, key):
         """
-        Get the given key from the given section as a boolean.  Uses the 
+        Get the given key from the given section as a boolean.  Uses the
         RawConfigParser's 'getboolean' method, so '1', 'yes', 'true' and 'on'
         cause this to return True, '0, 'no', 'false' and 'off' return False,
         and anything else raises a ValueError. Case is ignored when comparing.
@@ -277,48 +277,55 @@ class FileListing(Mapper):
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
     each directory entry for every entry that can be parsed, containing:
-        * type (one of [bcdlps-])
-        * permission string including ACL character
-        * number of links
-        * owner and group (as given in the listing)
-        * size, or major and minor number for block and character devices.
-        * date (in the format given in the listing)
-        * name
-        * name of linked file, if a symlink
+    * type (one of [bcdlps-])
+    * permission string including ACL character
+    * number of links
+    * owner and group (as given in the listing)
+    * size, or major and minor number for block and character devices
+    * date (in the format given in the listing)
+    * name
+    * name of linked file, if a symlink
 
     In addition, the raw line is always stored, even if the line doesn't look
     like a directory entry.
 
     Also provides a number of other conveniences, such as:
-        * lists of regular and special files and subdirectory names for each
-          directory
-        * total blocks allocated to all the entities in this directory
+    * lists of regular and special files and subdirectory names for each
+      directory, in the order found in the listing
+    * total blocks allocated to all the entities in this directory
 
     Parses SELinux directory listings if the 'selinux' option is True.
     SELinux directory listings contain:
-        * the type of file
-        * the permissions block
-        * the owner and group as given in the directory listing
-        * the SELinux user, role, type and MLS
-        * the name, and link destination if it's a symlink
+    * the type of file
+    * the permissions block
+    * the owner and group as given in the directory listing
+    * the SELinux user, role, type and MLS
+    * the name, and link destination if it's a symlink
 
-    Examples
-    --------
+    Sample input data looks like this::
 
-        ```::
-/example_dir:
-dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
--rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
-lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
-brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
-crw-------.  1 0 0 10,  236 Jul 25 10:00 control
-        ```
+        /example_dir:
+        total 20
+        dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
+        -rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
+        lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
+        brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
+        crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
-    >>> dir = shared[FileListing].listing_of('/example_dir')
-    ... assert dir['.']['type'] == 'd'
-    ... assert dir['config-3.10.0-229.14.q.el7.x86_64']['size'] == 123891
-    ... assert dir['dm-10']['major'] == 253
-    ... assert dir['menu.lst']['link'] == './grub.conf'
+    Examples:
+        >>> '/example_dir' in shared[FileListing]
+        True
+        >>> shared[FileListing].dir_contains('/example_dir', 'menu.lst')
+        True
+        >>> dir = shared[FileListing].listing_of('/example_dir')
+        >>> dir['.']['type'] == 'd'
+        True
+        >>> dir['config-3.10.0-229.14.q.el7.x86_64']['size']
+        123891
+        >>> dir['dm-10']['major']
+        253
+        >>> dir['menu.lst']['link']
+        './grub.conf'
     """
 
     # I know I'm missing some types in the 'type' subexpression...
