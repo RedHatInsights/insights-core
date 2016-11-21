@@ -4,10 +4,34 @@ from .. import Mapper, mapper, LegacyItemAccess
 
 @mapper('rhn-entitlement-cert.xml')
 class RHNCertConf(LegacyItemAccess, Mapper):
+    """Class to parse the xml files ``rhn-entitlement-cert.xml*``
 
-    def parse_content(self, content):
-        """
-        ---Sample---
+    Attributes:
+        data (dict): A dict likes
+        {
+            'product': 'RHN-SATELLITE-001'
+            'satellite-version': '5.2'
+            'signature': '-----BEGIN PGP SIGNATURE-----....'
+            'channel-families':
+            {
+                'rhel-cluster': {'quantity':'10'}
+                'sam-rhel-server-6': {'quantity':'102', 'flex':'0'}
+                ...
+            }
+            ...
+        }
+        ---
+        And there may be patterns of "rhn_entitlement_cert.xml" files on the host,
+        you can use the 'file_name' attribute to check where the settings are
+        actually gotten from. E.g:
+        ---
+            rhn_certs = shared[rhn_cert]
+            for cert in rhn_certs:
+                if cert.file_name == 'rhn_entitlement_cert.xml':
+                   cf = cert.get('channel_families')
+                   ...
+
+    ---Sample---
         <?xml version="1.0" encoding="UTF-8"?>
         <rhn-cert version="0.1">
           <rhn-cert-field name="product">RHN-SATELLITE-001</rhn-cert-field>
@@ -37,49 +61,25 @@ class RHNCertConf(LegacyItemAccess, Mapper):
         -----END PGP SIGNATURE-----
         </rhn-cert-signature>
         </rhn-cert>
-        -----------
-        Return a RHNCertConf object which contains below dict:
-        {
-            'product': 'RHN-SATELLITE-001'
-            'satellite-version': '5.2'
-            'signature': '-----BEGIN PGP SIGNATURE-----....'
-            'channel-families':
-            {
-                'rhel-cluster': {'quantity':'10'}
-                'sam-rhel-server-6': {'quantity':'102', 'flex':'0'}
-                ...
-            }
-            ...
-        }
-        ---
-        And there may be patterns of "rhn_entitlement_cert.xml" files on the host,
-        you can use the 'file_name' attribute to check where the settings are
-        actually gotten from. E.g:
-        ---
-            rhn_certs = shared[rhn_cert]
-            for cert in rhn_certs:
-                if cert.file_name == 'rhn_entitlement_cert.xml':
-                   cf = cert.get('channel_families')
-                   ...
-        """
+    """
 
-        # ignore empty xml file
+    def parse_content(self, content):
+
         rhn_cert = {}
-        if len(content) <= 3:
-            return rhn_cert
-
-        rhntree = ET.fromstring('\n'.join(content))
-        channel_familes = {}
-        for field in rhntree.findall(".//rhn-cert-field"):
-            family = field.get('family')
-            if family:
-                channel_familes[family] = {
-                    k: v for k, v in field.items() if k not in ('name', 'family')}
-            elif field.text:
-                rhn_cert[field.get('name')] = field.text
-        # for all channel families
-        rhn_cert['channel-families'] = channel_familes
-        singature = rhntree.findall(".//rhn-cert-signature")
-        rhn_cert['signature'] = singature[0].text
+        # ignore empty xml file
+        if len(content) > 3:
+            rhntree = ET.fromstring('\n'.join(content))
+            channel_familes = {}
+            for field in rhntree.findall(".//rhn-cert-field"):
+                family = field.get('family')
+                if family:
+                    channel_familes[family] = {
+                        k: v for k, v in field.items() if k not in ('name', 'family')}
+                elif field.text:
+                    rhn_cert[field.get('name')] = field.text
+            # for all channel families
+            rhn_cert['channel-families'] = channel_familes
+            singature = rhntree.findall(".//rhn-cert-signature")
+            rhn_cert['signature'] = singature[0].text
 
         self.data = rhn_cert

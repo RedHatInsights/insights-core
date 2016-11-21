@@ -1,20 +1,20 @@
-from .. import Mapper, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 
 @mapper('up2date')
-class Up2Date(Mapper):
+class Up2Date(LegacyItemAccess, Mapper):
+    """Class to parse the ``up2date``
 
-    def parse_content(self, content):
-        '''
-        Return a dict of up2date info which ignores comment lines.
+    Attributes:
+        data (dict): A dict of up2date info which ignores comment lines.
         The first and second line for key word 'serverURL' will be ignored.
-        For example:
-        ~~~~
+
+    For example:
         serverURL[comment]=Remote server URL
         #serverURL=https://rhnproxy.glb.tech.markit.partners/XMLRPC
         serverURL=https://rhnproxy.glb.tech.markit.partners/XMLRPC
-        ~~~~
-        '''
+    """
+    def parse_content(self, content):
         up2date_info = {}
         for line in get_active_lines(content):
             if "[comment]" not in line and '=' in line:
