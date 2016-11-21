@@ -256,9 +256,6 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
                               size_regex, date_regex, name_regex))
     normal_re = re.compile(normal_regex)
-    # we also use the size regex when parsing a human-formatted total size,
-    # so compile it separately
-    size_re = re.compile(size_regex)
 
     context_regex = r'(?P<se_user>\w+_u):(?P<se_role>\w+_r):' +\
         r'(?P<se_type>\w+_t):(?P<se_mls>\S+)'
@@ -337,10 +334,8 @@ crw-------.  1 0 0 10,  236 Jul 25 10:00 control
                 this_dir = {'entries': {}, 'files': [], 'dirs': [],
                             'specials': [], 'total': 0, 'raw_list': []}
                 listings[l[:-1]] = this_dir
-            elif l.startswith('total'):
-                match = self.size_re.search(l[5:])
-                if match:
-                    this_dir['total'] = int(match.group('size'))
+            elif l.startswith('total') and l[6:].isdigit():
+                this_dir['total'] = int(l[6:])
             else:
                 self.parse_file_match(this_dir, l)
 
