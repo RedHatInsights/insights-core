@@ -1,18 +1,21 @@
 from .. import Mapper, mapper
 
 
-@mapper("facts")
 @mapper("hostname")
 class Hostname(Mapper):
+    """Class for parsing ``hostname`` command output.
+
+    Attributes:
+        fqdn: The fully qualified domain name of the host. The same to
+            ``hostname`` when domain part is not set.
+        hostname: The hostname.
+        domain: The domain get from the fqdn.
+    """
 
     def parse_content(self, content):
-        fqdn = None
+        raw = None
         if len(content) == 1:
-            fqdn = content[0].strip()
-        elif len(content) > 1:
-            for line in content:
-                if line.startswith('fqdn'):
-                    fqdn = line.split()[-1]
-        self.fqdn = fqdn
-        self.hostname = fqdn.split(".")[0] if fqdn else None
-        self.domain = ".".join(fqdn.split(".")[1:]) if fqdn else None
+            raw = content[0].strip()
+        self.fqdn = raw
+        self.hostname = raw.split(".")[0] if raw else None
+        self.domain = ".".join(raw.split(".")[1:]) if raw else None
