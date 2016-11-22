@@ -23,6 +23,8 @@ NETSTAT_TEXT_RIGHT_ALLIGNMENT = {
 }
 COMPONENT_LEN = "__component_len__"
 
+ACTIVE_INTERNET_CONNECTIONS_LIST = ['Netid', 'State', 'Recv-Q', 'Send-Q', 'Local Address:Port', 'Peer Address:Port']
+
 
 @mapper('netstat-s')
 class NetstatS(Mapper):
@@ -498,3 +500,98 @@ class Netstat_I(Mapper):
             self._group_by_iface[entry["Iface"]] = \
                 {k: v for (k, v) in entry.iteritems() if k != 'Iface'}
         return
+
+
+class SsSection(NetstatSection):
+
+    def __init__(self):
+        self.meta = ACTIVE_INTERNET_CONNECTIONS_LIST
+        self.data = defaultdict(list)
+        for m in self.meta:
+            self.data[m] = []
+
+    def add_meta_data(self, line):
+        data = []
+        meta = {}
+
+        for m in self.meta:
+            meta[line.index(m)] = m
+            data.append([])
+        meta[line.index(m) + len(m) + 2] = 'Process_info'
+        data.append([])
+        self.indexes = sorted(meta.keys())
+        self.data = data
+        self.meta = meta
+
+    def _merge_data_index(self):
+        merged_data = {}
+        i = 0
+        while i < len(self.indexes):
+            index = self.indexes[i]
+            m = self.meta[index]
+            merged_data[m] = self.data[i]
+            i += 1
+
+        self.data = merged_data
+        del self.indexes
+        del self.meta
+        return self.data
+
+
+@mapper("ss")
+class SsTULPN(Mapper):
+    """
+    INPUT:
+        COMMAND> ss -tulpn
+
+        Netid  State      Recv-Q Send-Q     Local Address:Port       Peer Address:Port
+        tcp    LISTEN     0      10                    :::5671                 :::*      users:(("qpidd",10973,27))
+        tcp    LISTEN     0      50                     *:5646                  *:*      users:(("qdrouterd",10991,6))
+        tcp    UNCONN     0      0                    ::1:323                  :::*      users:(("chronyd",848,5))
+        tcp    LISTEN     0      100                   :::8443                 :::*      users:(("java",11066,46))
+
+    OUTPUT:
+        return like this:
+        {
+            'Netid': ['tcp', 'tcp', 'tcp', 'tcp'],
+            'State': ['LISTEN', 'LISTEN', 'UNCONN', 'LISTEN'],
+            ...
+            'Peer Address:Port': ['users:(("qpidd",10973,27))', 'users:(("qdrouterd",10991,6))', 'users:(("chronyd",848,5))', 'users:(("java",11066,46))']
+        }
+    """
+
+    @property
+    def listening_port(self):
+        return self._listening_port
+
+    def parse_content(self, content):
+        self._listening_port = {}
+        is_meta_data = False
+        cur_section = SsSection()
+
+        for line in content:
+            if is_meta_data:
+                cur_section.add_data(line)
+                continue
+            if "Netid" in line:
+                cur_section.add_meta_data(line)
+                is_meta_data = True
+        self.data = cur_section._merge_data_index()
+        for i, s in enumerate(self.data.get('State', [])):
+            try:
+                if s.strip() == 'LISTEN':
+                    port = self.data['Local Address:Port'][i].strip().split(":")[-1]
+                    if self.data['Local Address:Port'][i].strip().split(port)[0] != ':::':
+                        addr = self.data['Local Address:Port'][i].strip().split(":")[0]
+                    else:
+                        addr = '::'
+                    self._listening_port[port] = {"addr": addr, "port": port}
+
+            except Exception:
+                pass
+
+        if self._listening_port:
+            return self._listening_port
+
+    def col(self, name):
+        return [v.strip() for v in self.data[name]]

@@ -1,4 +1,4 @@
-from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN, NetstatS, Netstat_I
+from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN
 from falafel.tests import context_wrap
 from falafel.mappers import netstat
 from ...mappers import ParseException
@@ -439,3 +439,42 @@ def test_get_netstat_i():
             "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
             "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMsRU"
                 }
+
+
+Ss_TULPN = """
+COMMAND> ss -tulpn
+
+Netid  State      Recv-Q Send-Q     Local Address:Port       Peer Address:Port
+tcp    LISTEN     0      10                    :::5671                 :::*      users:(("qpidd",10973,27))
+tcp    LISTEN     0      50                     *:5646                  *:*      users:(("qdrouterd",10991,6))
+tcp    UNCONN     0      0                    ::1:323                  :::*      users:(("chronyd",848,5))
+tcp    LISTEN     0      128                   :::443                  :::*      users:(("httpd",10488,4),("httpd",10487,4),("httpd",10486,4),("httpd",10485,4),("httpd",10484,4),("httpd",10482,4),("httpd",10481,4),("httpd",10480,4),("httpd",10440,4))
+tcp    LISTEN     0      100                   :::8443                 :::*      users:(("java",11066,46))
+"""
+
+
+def test_get_ss_tupn():
+    ss = SsTULPN(context_wrap(Ss_TULPN))
+    assert len(ss.data) == 7
+    assert "tcp" in ss.col('Netid')
+    assert "UNCONN" in ss.col('State')
+    assert "LISTEN" in ss.col('State')
+    assert "0" in ss.col('Send-Q')
+    assert "50" in ss.col('Send-Q')
+    assert ":::5671" in ss.col('Local Address:Port')
+    assert "*:5646" in ss.col('Local Address:Port')
+    assert "::1:323" in ss.col('Local Address:Port')
+    assert ":::443" in ss.col('Local Address:Port')
+    assert ":::*" in ss.col('Peer Address:Port')
+    assert "*:*" in ss.col('Peer Address:Port')
+    assert "users:((\"qpidd\",10973,27))" in ss.col('Process_info')
+    assert "users:((\"qdrouterd\",10991,6))" in ss.col('Process_info')
+    assert "users:((\"chronyd\",848,5))" in ss.col('Process_info')
+    assert "users:((\"httpd\",10488,4),(\"httpd\",10487,4),(\"httpd\",10486,4),(\"httpd\",10485,4),(\"httpd\",10484,4),(\"httpd\",10482,4),(\"httpd\",10481,4),(\"httpd\",10480,4),(\"httpd\",10440,4))" in ss.col('Process_info')
+
+
+def test_listening_port():
+    ss = SsTULPN(context_wrap(Ss_TULPN))
+    assert len(ss.data) == 7
+    assert ss.listening_port['5646'] == {'addr': '*', 'port': '5646'}
+    assert ss.listening_port['5671'] == {'addr': '::', 'port': '5671'}
