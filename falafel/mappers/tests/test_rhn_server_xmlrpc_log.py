@@ -54,9 +54,6 @@ def test_log_data():
     assert line['args'] == "2, 'checkins enabled'"
     # Use this line for the last test later
 
-    # Test __contains__ method
-    assert 'register_osad_jid' in log
-
     # Test last method
     last = log.last()
     assert line == last

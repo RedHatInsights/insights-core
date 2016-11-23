@@ -128,17 +128,32 @@ class LogFileMeta(type):
 
 
 class LogFileOutput(Mapper):
+    """
+    Provides methods useful for processing log files - i.e. lines of text
+    usually with time stamps giving the status and errors of one or more
+    processes.
+    """
     __metaclass__ = LogFileMeta
 
     def parse_content(self, content):
+        """
+        Use all the defined scanners to search the log file, setting the
+        properties defined in the scanner.
+        """
         self.lines = list(content)
         for scanner in self.scanners:
             scanner(self)
 
     def __contains__(self, s):
+        """
+        Returns true if any line contains the given text string.
+        """
         return any(s in l for l in self.lines)
 
     def get(self, s):
+        """
+        Returns a list of all lines that contain the given text string.
+        """
         return [line for line in self.lines if s in line]
 
     @classmethod
@@ -157,6 +172,10 @@ class LogFileOutput(Mapper):
 
     @classmethod
     def token_scan(cls, result_key, token):
+        """
+        Define a property that is set to true if the given token is found in
+        the log file.  Uses the __contains__ method of the log file.
+        """
         def _scan(self):
             return token in self
 
@@ -164,6 +183,10 @@ class LogFileOutput(Mapper):
 
     @classmethod
     def keep_scan(cls, result_key, token):
+        """
+        Define a property that is set to the list of lines that contain the
+        given token.  Uses the get method of the log file.
+        """
         def _scan(self):
             return self.get(token)
 
@@ -174,12 +197,12 @@ class IniConfigFile(Mapper):
     """
         A class specifically for reading configuration files in 'ini' format:
 
-        [section 1]
-        key = value
-        ; comment
-        # comment
-        [section 2]
-        key with spaces = value string
+           [section 1]
+           key = value
+           ; comment
+           # comment
+           [section 2]
+           key with spaces = value string
 
         Note that we only pass through a few of the methods of RawConfigParser
         because we don't want people to write config files!  If there's a way
@@ -193,24 +216,48 @@ class IniConfigFile(Mapper):
         self.data = config
 
     def sections(self):
+        """
+        The list of sections given in this config file.
+        """
         return self.data.sections()
 
     def items(self, section):
+        """
+        Give the dictionary of keys and values defined in the given section.
+        """
         return {k: v for (k, v) in self.data.items(section)}
 
     def get(self, section, key):
+        """
+        Get the given key from the given section.
+        """
         return self.data.get(section, key)
 
     def getint(self, section, key):
+        """
+        Get the given key from the given section as an integer.
+        """
         return self.data.getint(section, key)
 
     def getfloat(self, section, key):
+        """
+        Get the given key from the given section as a floating point number.
+        """
         return self.data.getfloat(section, key)
 
     def getboolean(self, section, key):
+        """
+        Get the given key from the given section as a boolean.  Uses the
+        RawConfigParser's 'getboolean' method, so '1', 'yes', 'true' and 'on'
+        cause this to return True, '0, 'no', 'false' and 'off' return False,
+        and anything else raises a ValueError. Case is ignored when comparing.
+        """
         return self.data.getboolean(section, key)
 
     def has_option(self, section, key):
+        """
+        Does the given section contain the given key?
+        """
         return self.data.has_option(section, key)
 
     def __contains__(self, section):
@@ -220,10 +267,233 @@ class IniConfigFile(Mapper):
         return section in self.data.sections()
 
     def __repr__(self):
-        return "INI file '{filename}' - sections:{sections}". \
+        return "INI file '{filename}' - sections:{sections}".\
             format(filename=self.file_name,
-                   sections=self.data.sections()
-                   )
+                   sections=self.data.sections())
+
+
+class FileListing(Mapper):
+    """
+    Reads a series of concatenated directory listings and turns them into
+    a dictionary of entities by name.  Stores all the information for
+    each directory entry for every entry that can be parsed, containing:
+
+    * type (one of [bcdlps-])
+    * permission string including ACL character
+    * number of links
+    * owner and group (as given in the listing)
+    * size, or major and minor number for block and character devices
+    * date (in the format given in the listing)
+    * name
+    * name of linked file, if a symlink
+
+    In addition, the raw line is always stored, even if the line doesn't look
+    like a directory entry.
+
+    Also provides a number of other conveniences, such as:
+
+    * lists of regular and special files and subdirectory names for each
+      directory, in the order found in the listing
+    * total blocks allocated to all the entities in this directory
+
+    Parses SELinux directory listings if the 'selinux' option is True.
+    SELinux directory listings contain:
+
+    * the type of file
+    * the permissions block
+    * the owner and group as given in the directory listing
+    * the SELinux user, role, type and MLS
+    * the name, and link destination if it's a symlink
+
+    Sample input data looks like this:
+
+        | /example_dir:
+        | total 20
+        | dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
+        | -rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
+        | lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
+        | brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
+        | crw-------.  1 0 0 10,  236 Jul 25 10:00 control
+
+    Examples:
+        >>> '/example_dir' in shared[FileListing]
+        True
+        >>> shared[FileListing].dir_contains('/example_dir', 'menu.lst')
+        True
+        >>> dir = shared[FileListing].listing_of('/example_dir')
+        >>> dir['.']['type'] == 'd'
+        True
+        >>> dir['config-3.10.0-229.14.q.el7.x86_64']['size']
+        123891
+        >>> dir['dm-10']['major']
+        253
+        >>> dir['menu.lst']['link']
+        './grub.conf'
+    """
+
+    # I know I'm missing some types in the 'type' subexpression...
+    perms_regex = r'^(?P<type>[bcdlps-])' +\
+        r'(?P<perms>[r-][w-][sSx-][r-][w-][sSx-][r-][w-][xsSt-]\S+)'
+    links_regex = r'(?P<links>\d+)'
+    owner_regex = r'(?P<owner>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
+    # In 'size' we also cope with major, minor format character devices
+    # by just catching the \d+, and then splitting it off later.
+    size_regex = r'(?P<size>(?:\d+,\s+)?\d+)'
+    # Note that we don't try to determine nonexistent month, day > 31, hour
+    # > 23, minute > 59 or improbable year here.
+    # TODO: handle non-English formatted dates here.
+    date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[012]\d:\d{2}|\s\d{4}))'
+    name_regex = r'(?P<name>\S.*?)(?: -> (?P<link>\S+))?$'
+    normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
+                              size_regex, date_regex, name_regex))
+    normal_re = re.compile(normal_regex)
+
+    context_regex = r'(?P<se_user>\w+_u):(?P<se_role>\w+_r):' +\
+        r'(?P<se_type>\w+_t):(?P<se_mls>\S+)'
+    selinux_regex = '\s+'.join((perms_regex, owner_regex, context_regex,
+                               name_regex))
+    selinux_re = re.compile(selinux_regex)
+
+    def __init__(self, context, selinux=False):
+        """
+            You can set the 'selinux' parameter to True to have this
+            directory listing parsed as a 'ls -Z' directory listing.
+        """
+        self.selinux = selinux
+        # Pick the right regex to use and save that as a property
+        if selinux:
+            self.file_re = self.selinux_re
+        else:
+            self.file_re = self.normal_re
+        super(FileListing, self).__init__(context)
+
+    def parse_file_match(self, this_dir, line):
+        # Save all the raw directory entries, even if we can't parse them
+        this_dir['raw_list'].append(line)
+        match = self.file_re.search(line)
+        if not match:
+            # Can't do anything more with the line here
+            return
+
+        # Get the fields from the regex
+        this_file = match.groupdict()
+        this_file['raw_entry'] = line
+        typ = match.group('type')
+
+        # There's a bunch of stuff that the SELinux listing doesn't contain:
+        if not self.selinux:
+            # Type conversions
+            this_file['links'] = int(this_file['links'])
+            # Is this a character or block device?  If so, it should
+            # have a major, minor 'size':
+            size = match.group('size')
+            if typ in 'bc':
+                # What should we do if we expect a major, minor size but
+                # don't get one?
+                if ',' in size:
+                    major, minor = match.group('size').split(',')
+                    this_file['major'] = int(major.strip())
+                    this_file['minor'] = int(minor.strip())
+                    # Remove other 'size' entries
+                    del(this_file['size'])
+            else:
+                # What should we do if we get a comma here?
+                if ',' not in size:
+                    this_file['size'] = int(match.group('size'))
+
+        # If this is not a symlink, remove the link key
+        if not this_file['link']:
+            del this_file['link']
+        # Now add it to our various properties
+        this_dir['entries'][this_file['name']] = this_file
+        if typ in 'bc':
+            this_dir['specials'].append(this_file['name'])
+        if typ == 'd':
+            this_dir['dirs'].append(this_file['name'])
+        else:
+            this_dir['files'].append(this_file['name'])
+
+    def parse_content(self, content):
+        """
+        Called automatically to process the directory listing(s) contained in
+        the content.
+        """
+        listings = {}
+        this_dir = {}
+        for line in content:
+            l = line.strip()
+            if not l:
+                continue
+            if l.endswith(':'):
+                # New structures for a new directory
+                this_dir = {'entries': {}, 'files': [], 'dirs': [],
+                            'specials': [], 'total': 0, 'raw_list': []}
+                listings[l[:-1]] = this_dir
+            elif l.startswith('total') and l[6:].isdigit():
+                this_dir['total'] = int(l[6:])
+            else:
+                self.parse_file_match(this_dir, l)
+
+        self.listings = listings
+
+    # Now some helpers to make some things easier:
+    def __contains__(self, directory):
+        """
+        Does the given directory appear in this set of directory listings?
+        """
+        return directory in self.listings
+
+    def files_of(self, directory):
+        """
+        The list of non-special files (i.e. not block or character files)
+        in the given directory.
+        """
+        return self.listings[directory]['files']
+
+    def dirs_of(self, directory):
+        """
+        The list of subdirectories in the given directory.
+        """
+        return self.listings[directory]['dirs']
+
+    def specials_of(self, directory):
+        """
+        The list of block and character special files in the given directory.
+        """
+        return self.listings[directory]['specials']
+
+    def total_of(self, directory):
+        """
+        The total blocks of storage consumed by entries in this directory.
+        """
+        return self.listings[directory]['total']
+
+    def listing_of(self, directory):
+        """
+        The listing of this directory, in a dictionary by entry name.  All
+        entries contain the original line as is in the 'raw_entry' key.
+        Entries that can be parsed then have fields as described in the class
+        description above.
+        """
+        return self.listings[directory]['entries']
+
+    def dir_contains(self, directory, name):
+        """
+        Does this directory contain this entry name?
+        """
+        return name in self.listings[directory]['entries']
+
+    def dir_entry(self, directory, name):
+        """
+        The parsed data for the given entry name in the given directory.
+        """
+        return self.listings[directory]['entries'][name]
+
+    def raw_directory(self, directory):
+        """
+        The list of raw lines from the directory, as is.
+        """
+        return self.listings[directory]['raw_list']
 
 
 class ErrorCollector(object):
