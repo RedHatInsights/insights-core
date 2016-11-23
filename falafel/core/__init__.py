@@ -307,13 +307,13 @@ class FileListing(Mapper):
 
     Sample input data looks like this:
 
-        /example_dir:
-        total 20
-        dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
-        -rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
-        lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
-        brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
-        crw-------.  1 0 0 10,  236 Jul 25 10:00 control
+        | /example_dir:
+        | total 20
+        | dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
+        | -rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
+        | lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
+        | brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
+        | crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
     Examples:
         >>> '/example_dir' in shared[FileListing]
