@@ -277,6 +277,7 @@ class FileListing(Mapper):
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
     each directory entry for every entry that can be parsed, containing:
+
     * type (one of [bcdlps-])
     * permission string including ACL character
     * number of links
@@ -290,19 +291,21 @@ class FileListing(Mapper):
     like a directory entry.
 
     Also provides a number of other conveniences, such as:
+
     * lists of regular and special files and subdirectory names for each
       directory, in the order found in the listing
     * total blocks allocated to all the entities in this directory
 
     Parses SELinux directory listings if the 'selinux' option is True.
     SELinux directory listings contain:
+
     * the type of file
     * the permissions block
     * the owner and group as given in the directory listing
     * the SELinux user, role, type and MLS
     * the name, and link destination if it's a symlink
 
-    Sample input data looks like this::
+    Sample input data looks like this:
 
         /example_dir:
         total 20
