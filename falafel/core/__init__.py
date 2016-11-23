@@ -88,27 +88,82 @@ class Mapper(object):
     provide *at least* the content as an interable of lines and the path
     that the content was retrieved from.
 
-    Facts should be exposed as instance members where applicable.
+    Facts should be exposed as instance members where applicable. For
+    example::
 
-      self.fact = "123"
+        self.fact = "123"
+
+    Examples:
+        >>> class MyMapper(Mapper):
+        ...     def parse_content(self, content):
+        ...         self.facts = []
+        ...         for line in content:
+        ...             if 'fact' in line:
+        ...                 self.facts.append(line)
+        >>> content = '''
+        ... # Comment line
+        ... fact=fact 1
+        ... fact=fact 2
+        ... fact=fact 3
+        ... '''.strip()
+        >>> my_mapper = MyMapper(context_wrap(content, path='/etc/path_to_content/content.conf'))
+        >>> my_mapper.facts
+        ['fact=fact 1', 'fact=fact 2', 'fact=fact 3']
+        >>> my_mapper.file_path
+        '/etc/path_to_content/content.conf'
+        >>> my_mapper.file_name
+        'content.conf'
     """
 
     def __init__(self, context):
         self.file_path = context.path
+        """str: Full context path of the input file."""
         self.file_name = os.path.basename(context.path) \
             if context.path is not None else None
+        """str: Filename portion of the input file."""
         self.parse_content(context.content)
 
     def parse_content(self, content):
+        """This method must be implemented by classes based on this class."""
         pass
 
 
 class LegacyItemAccess(object):
     """
+    Mixin class to provide legacy access to ``self.data`` attribute.
+
     Provides expected passthru functionality for classes that still use
-    self.data as the primary data structure for all parsed information.  Use
+    ``self.data`` as the primary data structure for all parsed information.  Use
     this as a mixin on mappers that expect these methods to be present as they
     were previously.
+
+    Examples:
+        >>> class MyMapper(LegacyItemAccess, Mapper):
+        ...     def parse_content(self, content):
+        ...         self.data = {}
+        ...         for line in content:
+        ...             if 'fact' in line:
+        ...                 k, v = line.split('=')
+        ...                 self.data[k.strip()] = v.strip()
+        >>> content = '''
+        ... # Comment line
+        ... fact1=fact 1
+        ... fact2=fact 2
+        ... fact3=fact 3
+        ... '''.strip()
+        >>> my_mapper = MyMapper(context_wrap(content, path='/etc/path_to_content/content.conf'))
+        >>> my_mapper.data
+        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
+        >>> my_mapper.file_path
+        '/etc/path_to_content/content.conf'
+        >>> my_mapper.file_name
+        'content.conf'
+        >>> my_mapper['fact1']
+        'fact 1'
+        >>> 'fact2' in my_mapper
+        True
+        >>> my_mapper.get('fact3', default='no fact')
+        'fact 3'
     """
 
     def __getitem__(self, item):
@@ -118,6 +173,13 @@ class LegacyItemAccess(object):
         return item in self.data
 
     def get(self, item, default=None):
+        """Returns value of key ``item`` in self.data or ``default``
+        if key is not present.
+
+        Parameters:
+            item: Key to get from ``self.data``.
+            default: Default value to return if key is not present.
+        """
         return self.data.get(item, default)
 
 
@@ -128,10 +190,32 @@ class LogFileMeta(type):
 
 
 class LogFileOutput(Mapper):
-    """
-    Provides methods useful for processing log files - i.e. lines of text
-    usually with time stamps giving the status and errors of one or more
-    processes.
+    """Class for parsing log file content.
+
+    Log file content is stored in raw format in the ``lines`` attribute.
+
+    Attributes:
+        lines (list): List of the lines from the log file content.
+
+    Examples:
+        >>> class MyLogger(LogFileOutput):
+        ...     pass
+        >>> contents = '''
+        Log file line one
+        Log file line two
+        Log file line three
+        '''.strip()
+        >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
+        >>> my_logger.file_path
+        '/var/log/mylog'
+        >>> my_logger.file_name
+        'mylog'
+        >>> my_logger.lines.get('two')
+        ['Log file line two']
+        >>> 'three' in my_logger
+        True
+        >>> my_logger.lines[0]
+        'Log file line one'
     """
     __metaclass__ = LogFileMeta
 
@@ -151,9 +235,7 @@ class LogFileOutput(Mapper):
         return any(s in l for l in self.lines)
 
     def get(self, s):
-        """
-        Returns a list of all lines that contain the given text string.
-        """
+        """list: Returns lis of lines containing string ``s``."""
         return [line for line in self.lines if s in line]
 
     @classmethod
@@ -195,7 +277,9 @@ class LogFileOutput(Mapper):
 
 class IniConfigFile(Mapper):
     """
-        A class specifically for reading configuration files in 'ini' format:
+    A class specifically for reading configuration files in 'ini' format.
+
+    The input file format supported by this class is::
 
            [section 1]
            key = value
@@ -204,9 +288,38 @@ class IniConfigFile(Mapper):
            [section 2]
            key with spaces = value string
 
-        Note that we only pass through a few of the methods of RawConfigParser
-        because we don't want people to write config files!  If there's a way
-        to do this with multiple inheritance, patches are welcome :-)
+    References:
+        See Python ``RawConfigParser`` documentation for more information
+        https://docs.python.org/2/library/configparser.html#rawconfigparser-objects
+
+    Examples:
+        >>> class MyConfig(IniConfigFile):
+        ...     pass
+        >>> content = '''
+        ... [program opts]
+        ... memsize = 1024
+        ... delay = 1.5
+        ... [logging]
+        ... log = true
+        ... logging level = verbose
+        ... '''.split()
+        >>> my_config = MyConfig(context_wrap(content, path='/etc/myconfig.conf'))
+        >>> 'program opts' in my_config
+        True
+        >>> my_config.sections()
+        ['program opts', 'logging']
+        >>> my_config.items('program opts')
+        {'memsize': 1024, 'delay': 1.5}
+        >>> my_config.get('logging', 'logging level')
+        'verbose'
+        >>> my_config.getint('program opts', 'memsize')
+        1024
+        >>> my_config.getfloat('program opts', 'delay')
+        1.5
+        >>> my_config.getboolean('logging', 'log')
+        True
+        >>> my_config.has_option('logging', 'log')
+        True
     """
 
     def parse_content(self, content):
@@ -216,54 +329,35 @@ class IniConfigFile(Mapper):
         self.data = config
 
     def sections(self):
-        """
-        The list of sections given in this config file.
-        """
+        """list: Return a list of section names."""
         return self.data.sections()
 
     def items(self, section):
-        """
-        Give the dictionary of keys and values defined in the given section.
-        """
+        """dict: Return a dictionary of key/value pairs for ``section``."""
         return {k: v for (k, v) in self.data.items(section)}
 
     def get(self, section, key):
-        """
-        Get the given key from the given section.
-        """
+        """value: Get value for ``section`` and ``key``."""
         return self.data.get(section, key)
 
     def getint(self, section, key):
-        """
-        Get the given key from the given section as an integer.
-        """
+        """int: Get int value for ``section`` and ``key``."""
         return self.data.getint(section, key)
 
     def getfloat(self, section, key):
-        """
-        Get the given key from the given section as a floating point number.
-        """
+        """float: Get float value for ``section`` and ``key``."""
         return self.data.getfloat(section, key)
 
     def getboolean(self, section, key):
-        """
-        Get the given key from the given section as a boolean.  Uses the
-        RawConfigParser's 'getboolean' method, so '1', 'yes', 'true' and 'on'
-        cause this to return True, '0, 'no', 'false' and 'off' return False,
-        and anything else raises a ValueError. Case is ignored when comparing.
-        """
+        """boolean: Get boolean value for ``section`` and ``key``."""
         return self.data.getboolean(section, key)
 
     def has_option(self, section, key):
-        """
-        Does the given section contain the given key?
-        """
+        """boolean: Returns ``True`` of ``section`` is present and has option
+        ``key``."""
         return self.data.has_option(section, key)
 
     def __contains__(self, section):
-        """
-            Does the INI file contain this *section*?
-        """
         return section in self.data.sections()
 
     def __repr__(self):
