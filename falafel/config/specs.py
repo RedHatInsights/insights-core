@@ -181,6 +181,7 @@ static_specs = {
     "ntptime"                   : CommandSpec("/usr/sbin/ntptime"),
     "ntpq_leap"                 : CommandSpec("/usr/sbin/ntpq -c 'rv 0 leap'"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
+    "config.ora"                : CommandSpec("/bin/cat {getoracleconfig}", getoracleconfig=r"\S+"),
     'osa_dispatcher.log'        : First([SimpleFileSpec("var/log/rhn/osa-dispatcher.log", large_content=True),
                                          SimpleFileSpec("rhn-logs/rhn/osa-dispatcher.log", large_content=True)]),
     "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
@@ -300,7 +301,8 @@ pre_commands = {
     "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "block": "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
     "module": "/bin/ls /sys/module",
-    "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done"
+    "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
+    "getoraconfig": "/bin/locate -r '.*dbs\\/\\(init\\|spfile\\).*ora$'"
 }
 
 meta_files = {
