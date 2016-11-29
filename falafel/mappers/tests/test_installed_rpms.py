@@ -134,8 +134,8 @@ def test_check_versions_installed():
 
     rpms = InstalledRpms(context_wrap(RPMS_JSON))
     listed = ['bash-4.2.48-19.el7', 'bash-4.2.47-19.el7']
-    assert rpms.check_versions_installed(listed) is None
-    assert rpms.vulnerable_versions_installed(listed) is None
+    assert rpms.check_versions_installed(listed) == {}
+    assert rpms.vulnerable_versions_installed(listed) == {}
 
     rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
     listed = ['kernel-3.10.0-327.el7', 'kernel-3.10.0-327.36.1.el7']
@@ -159,7 +159,7 @@ def test_check_package_installed():
     rpms = InstalledRpms(context_wrap(RPMS_JSON))
     expected = {'INSTALLED_PACKAGE': 'bash-4.2.46-19.el7'}
     assert rpms.check_package_installed('bash') == expected
-    assert rpms.check_package_installed('dnf') is None
+    assert rpms.check_package_installed('dnf') == {}
 
 
 def test_max_min():
