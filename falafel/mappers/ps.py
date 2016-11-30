@@ -196,6 +196,8 @@ class PsAux(ProcessList):
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
             self.data = parse_table(content, max_splits=10)
+        else:
+            self.data = []
 
 
 @mapper('ps_auxwww')  # we don't want to filter the ps_auxwww file

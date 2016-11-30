@@ -525,6 +525,11 @@ class FileListing(Mapper):
                 listings[l[:-1]] = this_dir
             elif l.startswith('total') and l[6:].isdigit():
                 this_dir['total'] = int(l[6:])
+            elif not this_dir:
+                # This state can happen if processing an archive that filtered
+                # a file listing due to an old spec definition.
+                # Let's just skip these lines.
+                continue
             else:
                 self.parse_file_match(this_dir, l)
 
