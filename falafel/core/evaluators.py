@@ -152,8 +152,9 @@ class SingleEvaluator(Evaluator):
                 if len(content) == 1 and content[0] == "Command not found":
                     continue
                 for plugin in plugins.get_mappers(symbolic_name):
+                    unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
                     context = self.build_context(content=content,
-                                                 path=f,
+                                                 path=unrooted_path,
                                                  target=symbolic_name)
                     try:
                         self.add_result(self._execute_mapper(plugin, context),
