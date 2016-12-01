@@ -1,5 +1,5 @@
 import pytest
-from falafel.mappers.installed_rpms import InstalledRpms, InstalledRpm
+from falafel.mappers.installed_rpms import InstalledRpms, InstalledRpm, OracleAsmRpms
 from falafel.tests import context_wrap
 
 
@@ -78,6 +78,19 @@ kernel-devel-3.10.0-327.36.1.el7.x86_64
 ERROR_DB = '''
 error: rpmdbNextIterator: skipping h#     753 Header V3 DSA signature: BAD, key ID db42a6
 yum-security-1.1.16-21.el5.noarch
+'''.strip()
+
+ORACLEASM_RPMS = '''
+oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64
+oracleasmlib-2.0.4-1.el5.x86_64
+oracleasm-support-2.1.3-1.el5.x86_64
+oracle-validated-1.0.0-18.el5.x86_64
+'''.strip()
+
+NON_ORACLEASM_RPMS = '''
+oracleasmlib-2.0.4-1.el5.x86_64
+oracleasm-support-2.1.3-1.el5.x86_64
+oracle-validated-1.0.0-18.el5.x86_64
 '''.strip()
 
 
@@ -240,3 +253,13 @@ def test_no_suffixes():
     assert 'askpass' not in rpms
     assert 'openobex' in rpms
     assert 'penobex' not in rpms
+
+
+def test_oracleasmrpms():
+    ora_rpms = OracleAsmRpms(context_wrap(ORACLEASM_RPMS))
+    assert ora_rpms is not None
+    assert ora_rpms.rpms_installed == ['oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64']
+
+    ora_rpms = OracleAsmRpms(context_wrap(NON_ORACLEASM_RPMS))
+    assert ora_rpms is not None
+    assert ora_rpms.rpms_installed == []
