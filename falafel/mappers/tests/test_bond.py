@@ -58,7 +58,7 @@ Slave Interface: eth2
 MII Status: up
 Link Failure Count: 0
 Permanent HW addr: 00:16:35:5e:02:7e
-Aggregator ID:
+Aggregator ID: 2
 """.strip()
 
 BONDINFO_CORRUPT = """
@@ -89,6 +89,7 @@ def test_bond_class():
     bond_obj = Bond(context_wrap(BONDINFO_MODE_4, CONTEXT_PATH))
     assert bond_obj.bond_mode == '4'
     assert bond_obj.partner_mac_address == "00:00:00:00:00:00"
+    assert bond_obj.aggregator_id == ['3', '3', '2']
 
     bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
     assert not bond_obj.bond_mode
