@@ -106,6 +106,8 @@ class InstalledRpms(Mapper):
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
+        # Don't want defaultdict's behavior after parsing is complete
+        self.packages = dict(self.packages)
 
     def __contains__(self, package_name):
         """
