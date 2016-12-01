@@ -6,6 +6,7 @@ Classes to parse ``ethtool`` command information.
 import os
 import re
 from collections import namedtuple
+from ..mappers import ParseException
 from .. import Mapper, mapper, LegacyItemAccess
 
 
@@ -309,6 +310,9 @@ class Ethtool(Mapper):
         data (dict): Dictionary of keys with values in a list.
         iface (str): Interface name.
 
+    Raises:
+        ParseException: Raised when any problem parsing the command output.
+
     Sample input::
 
         Settings for eth0:
@@ -404,12 +408,15 @@ class Ethtool(Mapper):
         for line in content[1:]:
             line = line.strip()
             if line:
-                if ':' in line:
-                    key, value = line.split(':', 1)
-                    key = key.strip()
-                    self.data[key] = [value.strip()]
-                else:
-                    self.data[key].append(line)
+                try:
+                    if ':' in line:
+                        key, value = line.split(':', 1)
+                        key = key.strip()
+                        self.data[key] = [value.strip()]
+                    else:
+                        self.data[key].append(line)
+                except:
+                    raise ParseException('Ethtool unable to parse content', line)
 
         self._supported_link_modes = []
         if 'Supported link modes' in self.data:

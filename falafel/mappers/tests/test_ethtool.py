@@ -1,7 +1,8 @@
+import pytest
 import unittest
 
 from falafel.tests import context_wrap
-from falafel.mappers import ethtool
+from falafel.mappers import ethtool, ParseException
 from falafel.util import keys_in
 
 
@@ -414,3 +415,7 @@ class TestEthtool(unittest.TestCase):
                           '1000baseT/Full'])
         self.assertEqual(ethtool_info.supported_ports,
                          ['TP', 'MII'])
+
+    def test_ethtool_fail(self):
+        with pytest.raises(ParseException):
+            ethtool.Ethtool(context_wrap(FAIL_ETHTOOL_A_1, path="ethtool_eth1"))
