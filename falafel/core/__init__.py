@@ -186,6 +186,7 @@ class LegacyItemAccess(object):
 class LogFileMeta(type):
     def __new__(cls, name, parents, dct):
         dct["scanners"] = []
+        dct["scanner_keys"] = set()
         return super(LogFileMeta, cls).__new__(cls, name, parents, dct)
 
 
@@ -246,11 +247,15 @@ class LogFileOutput(Mapper):
         will be serialized, whereas raw log lines will not.
         """
 
+        if result_key in cls.scanner_keys:
+            raise ValueError("'%s' is already a registered scanner key" % result_key)
+
         def scanner(self):
             result = func(self)
             setattr(self, result_key, result)
 
         cls.scanners.append(scanner)
+        cls.scanner_keys.add(result_key)
 
     @classmethod
     def token_scan(cls, result_key, token):
