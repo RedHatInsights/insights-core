@@ -73,23 +73,6 @@ def test_ps_auxcww_alternate():
     ]
 
 
-def test_ps_auxcww_service_is_running():
-    ps_auxcww = ps.PsAuxcww(context_wrap(PsAuxcww_TEST))
-    assert ps_auxcww.service_is_running('init') == {SERVICE_RUNNING: 'root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init'}
-    assert ps_auxcww.service_is_running('bash') == {SERVICE_RUNNING: 'user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash'}
-    assert ps_auxcww.service_is_running('ksh') == {}
-
-
-def test_ps_auxcww_services_are_running():
-    ps_auxcww = ps.PsAuxcww(context_wrap(PsAuxcww_TEST))
-    assert (ps_auxcww.services_are_running('init', 'bash', 'ksh') ==
-            {SERVICES_RUNNING: {'bash': ['user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash',
-                                         'user2    20161  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash'],
-                                'init': ['root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init']}}
-            )
-    assert ps_auxcww.services_are_running('ksh') == {}
-
-
 def test_ps_auxcww_exception():
     with pytest.raises(ValueError):
         ps.PsAuxcww(context_wrap('Unknown HZ value! (771) Assume 100'))

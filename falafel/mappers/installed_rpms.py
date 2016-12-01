@@ -1,7 +1,6 @@
 import json
 from collections import defaultdict
 from distutils.version import LooseVersion as LV
-from itertools import chain
 
 from ..util import rsplit
 from .. import Mapper, mapper, get_active_lines
@@ -62,12 +61,6 @@ KNOWN_ARCHITECTURES = [
     'sparcv9v',
     'aarch64',
 ]
-
-PACKAGES = 'PACKAGES'
-VULNERABLE_PACKAGES = 'VULNERABLE_PACKAGES'
-PACKAGE_NAMES = 'PACKAGE_NAMES'
-INSTALLED_PACKAGE = 'INSTALLED_PACKAGE'
-INSTALLED_PACKAGES = 'INSTALLED_PACKAGES'
 
 
 @mapper('installed-rpms')
@@ -160,98 +153,6 @@ class InstalledRpms(Mapper):
             return None
         else:
             return min(self.packages[package_name])
-
-    def check_versions_installed(self, packages_strings):
-        """
-        Check if any of the packages listed in a list is installed on the system.
-
-        Args:
-            packages_strings (iterable): list/iterable of checked package strings such as
-                                         ['bash-4.2.39-3.el7', ...]
-
-        Returns:
-            dict: list of detected packages and list of their names in the following format,
-                  otherwise empty dict:
-
-                  {PACKAGES: installed_package_strings,
-                   PACKAGE_NAMES: installed_package_names}
-        """
-        installed_packages = set(chain.from_iterable(self.packages.values()))
-        installed_listed_packages = [a for a in installed_packages if a.package in packages_strings]
-        installed_listed_package_strings = sorted(a.package for a in installed_listed_packages)
-        installed_listed_package_names = sorted({a.name for a in installed_listed_packages})
-        if installed_listed_packages:
-            return {PACKAGES: installed_listed_package_strings,
-                    PACKAGE_NAMES: installed_listed_package_names}
-        else:
-            return {}
-
-    def vulnerable_versions_installed(self, vulnerable_package_strings):
-        """
-        Check if any of the packages listed in a list of vulnerable packages is installed on
-        the system.
-
-        Args:
-            vulnerable_package_strings (iterable): list/iterable of vulnerable package strings
-                                                   such as ['bash-4.2.39-3.el7', ...]
-
-        Returns:
-            dict: list of detected packages and list of their names in the following format,
-                  otherwise empty dict:
-
-                  {VULNERABLE_PACKAGES: installed_vulnerable_package_strings,
-                   PACKAGE_NAMES: installed_vulnerable_package_names}
-
-        Warnings:
-            This exists only for compatibility with older security rules, use
-            'check_installed_version' method instead.
-        """
-        result = self.check_versions_installed(vulnerable_package_strings)
-        if result:
-            return {VULNERABLE_PACKAGES: result[PACKAGES], PACKAGE_NAMES: result[PACKAGE_NAMES]}
-        else:
-            return {}
-
-    def check_package_installed(self, package_name):
-        """
-        Check if package with concrete name is installed on the system.
-
-        Args:
-            package_name (str): name of package such as 'bash'
-
-        Returns:
-            dict: first found full package name which matches searched package in the following
-                  format, otherwise empty dict:
-
-                  {INSTALLED_PACKAGE: package_found}
-        """
-        if package_name in self.packages:
-            return {INSTALLED_PACKAGE: self.packages[package_name][0].package}
-        else:
-            return {}
-
-    def check_packages_installed(self, *package_names):
-        """
-        Check if packages with concrete names are installed on the system.
-
-        Args:
-            *package_names (str): package names such as 'bash', 'telnet-server'
-
-        Returns:
-            dict: first found full package name which matches searched package in the following
-                  format, otherwise empty dict:
-
-                  {INSTALLED_PACKAGES: {package_name_1: package_found,
-                                        package_name_2: package_found}}
-        """
-        installed_packages = {}
-        for package_name in package_names:
-            if package_name in self.packages:
-                installed_packages[package_name] = self.packages[package_name][0].package
-        if installed_packages:
-            return {INSTALLED_PACKAGES: installed_packages}
-        else:
-            return {}
 
 
 class InstalledRpm(object):

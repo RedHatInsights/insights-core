@@ -53,9 +53,6 @@ Examples:
 """
 from .. import Mapper, mapper, parse_table
 
-SERVICE_RUNNING = 'SERVICE_RUNNING'
-SERVICES_RUNNING = 'SERVICES_RUNNING'
-
 
 class ProcessList(Mapper):
     """Base class implementing shared code."""
@@ -124,60 +121,12 @@ class PsAuxcww(ProcessList):
         """
         for line in content[1:]:  # skip header
             parts = line.split(None, 10)
-            service, user = parts[10], parts[0]
-            self.services.append((service, user, line))
-
-    def service_is_running(self, service_name):
-        """
-        Check for running process name.
-
-        The method stops when first occurrence of 'service_name' is found.
-
-        Some daemons are not provided as system services - e.g samba, git - however, they may still
-        be running.
-
-        For debugging purposes returns the matched line.
-
-        Args:
-            service_name (str): service name to look for
-
-        Returns:
-            dict: the matched line in the following format, otherwise empty dict:
-                  {SERVICE_RUNNING: line}
-        """
-        for service, user, line in self.services:
-            if service == service_name:
-                return {SERVICE_RUNNING: line}
-        return {}
-
-    def services_are_running(self, *service_names):
-        """
-        Check for running process names.
-
-        Some daemons are not provided as system services - e.g samba, git - however, they may still
-        be running.
-
-        For debugging purposes returns the matched line.
-
-        Args:
-            *service_names (str): service names to look for
-
-        Returns:
-            dict: containing list of found service names and their matched lines in the following
-                  format, otherwise empty dict:
-
-                  {SERVICES_RUNNING: {service_1: [line_1, line_2], service_2: [line1]}
-        """
-        services = {}
-        for service, user, line in self.services:
-            if service in service_names:
-                if service not in services:
-                    services[service] = []
-                services[service].append(line)
-        if services:
-            return {SERVICES_RUNNING: services}
-        else:
-            return {}
+            try:
+                service, user = parts[10], parts[0]
+            except IndexError:
+                pass
+            else:
+                self.services.append((service, user, line))
 
 
 @mapper('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
