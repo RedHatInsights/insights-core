@@ -1,3 +1,4 @@
+import pytest
 from ...tests import context_wrap
 from ..chkconfig import ChkConfig
 
@@ -32,3 +33,17 @@ def test_command_not_found():
     assert not chkconfig.is_on('crond')
     assert not chkconfig.is_on('kdump')
     assert not chkconfig.is_on('restorecond')
+
+
+def test_levels_on():
+    chkconfig = ChkConfig(context_wrap(SERVICES))
+    assert chkconfig.levels_on('crond') == set(['2', '3', '4', '5'])
+    with pytest.raises(KeyError):
+        assert chkconfig.levels_on('bad_name')
+
+
+def test_levels_off():
+    chkconfig = ChkConfig(context_wrap(SERVICES))
+    assert chkconfig.levels_off('crond') == set(['0', '1', '6'])
+    with pytest.raises(KeyError):
+        assert chkconfig.levels_off('bad_name')
