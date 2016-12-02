@@ -88,7 +88,7 @@ class SCSI(Mapper):
         for i, key in enumerate(keys):
             start = content.index(key)
             end = content.index(keys[i + 1]) if (i + 1) < num_keys else None
-            k, v = filter(None, [s.strip() for s in content[start:end].split(':')])
+            k, v = [s.strip() for s in content[start:end].split(':')]
             data[k.lower().replace(' ', '_')] = v
 
     def __len__(self):

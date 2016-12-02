@@ -11,13 +11,18 @@ well.
 
 @mapper("docker_image_inspect")
 def image(context):
-    content = "\n".join(list(context.content))
-    inspect_data = unmarshal(content)
-    return inspect_data[0]
+    return _parse(context)
 
 
 @mapper("docker_container_inspect")
 def container(context):
+    return _parse(context)
+
+
+def _parse(context):
     content = "\n".join(list(context.content))
-    inspect_data = unmarshal(content)
-    return inspect_data[0]
+    try:
+        inspect_data = unmarshal(content)
+        return inspect_data[0]
+    except:
+        pass
