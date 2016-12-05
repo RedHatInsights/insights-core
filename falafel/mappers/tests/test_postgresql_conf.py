@@ -144,6 +144,12 @@ max_connections = 600
 shared_buffers = 384MB
 wal_buffers = 4MB
 work_mem = 2560kB
+
+password_encryption = on
+db_user_namespace = off
+
+bgwriter_delay = 200ms			# 10-10000ms between rounds
+checkpoint_timeout = 5min
 """.strip()
 
 
@@ -152,3 +158,14 @@ def test_postgresql_conf():
     assert result.get("checkpoint_segments") == "8"
     assert result.get("log_filename") == "postgresql-%a.log"
     assert result.get("log_line_prefix") == "%m "
+
+    assert result.as_duration('bgwriter_delay') == 0.2
+    assert result.as_duration('checkpoint_timeout') == 300
+
+    assert result.as_boolean('password_encryption')
+    assert not result.as_boolean('db_user_namespace')
+
+    assert result.as_memory_bytes('work_mem') == 2560 * 1024
+    assert result.as_memory_bytes('wal_buffers') == 4 * 1048576
+
+    # Test that we raise the right errors for bad conversions?
