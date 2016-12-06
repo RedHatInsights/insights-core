@@ -259,6 +259,8 @@ static_specs = {
     "scheduler"                 : CommandSpec("/bin/cat {getblockscheduler}"),
     "secure"                    : SimpleFileSpec("var/log/secure", large_content=True),
     "selinux-config"            : SimpleFileSpec("etc/selinux/config"),
+    "foreman_proxy_conf"        : First([SimpleFileSpec("etc/foreman-proxy/settings.yml"),
+                                    SimpleFileSpec("sos_commands/foreman/foreman-debug/etc/foreman-proxy/settings.yml")]),
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
     "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
     "smartctl"                  : First([CommandSpec("/sbin/smartctl -a {block}", block=r"\S+"),
