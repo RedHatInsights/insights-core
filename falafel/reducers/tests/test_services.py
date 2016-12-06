@@ -24,9 +24,6 @@ kdump.service                               enabled
 7 unit files listed.
 """.strip()
 
-SERVICE_ENABLED = 'SERVICE_ENABLED'
-SERVICES_ENABLED = 'SERVICES_ENABLED'
-
 
 def test_chkconfig():
     context = context_wrap(CHKCONIFG)
@@ -68,42 +65,3 @@ def test_combined():
     assert services.is_on('crond.service')
     assert not services.is_on('cpupower.service')
     assert not services.is_on('cpupower')
-
-
-def test_service_is_enabled():
-    context = context_wrap(CHKCONIFG)
-    chkconfig = ChkConfig(context)
-    context = context_wrap(SYSTEMCTL)
-    unitfiles = UnitFiles(context)
-    services = Services(None, {ChkConfig: chkconfig, UnitFiles: unitfiles})
-
-    assert (services.service_is_enabled('crond') ==
-            {SERVICE_ENABLED: 'crond          \t0:off\t1:off\t2:on\t3:on\t4:on\t5:on\t6:off'})
-    assert (services.service_is_enabled('iptables') ==
-            {SERVICE_ENABLED: 'iptables       \t0:off\t1:off\t2:on\t3:on\t4:on\t5:on\t6:off'})
-    assert services.service_is_enabled('restorecond') == {}
-    assert (services.service_is_enabled('firewalld') ==
-            {SERVICE_ENABLED: 'firewalld.service                           enabled'})
-    assert (services.service_is_enabled('firewalld.service') ==
-            {SERVICE_ENABLED: 'firewalld.service                           enabled'})
-    assert (services.service_is_enabled('fstrim') ==
-            {SERVICE_ENABLED: 'fstrim.service                              static'})
-    assert services.service_is_enabled('cpupower') == {}
-
-
-def test_services_are_enabled():
-    context = context_wrap(CHKCONIFG)
-    chkconfig = ChkConfig(context)
-    context = context_wrap(SYSTEMCTL)
-    unitfiles = UnitFiles(context)
-    services = Services(None, {ChkConfig: chkconfig, UnitFiles: unitfiles})
-
-    result = services.services_are_enabled('crond', 'iptables', 'firewalld', 'fstrim', 'cpupower')
-    expected = {SERVICES_ENABLED:
-                    {'crond': 'crond          \t0:off\t1:off\t2:on\t3:on\t4:on\t5:on\t6:off',
-                     'iptables': 'iptables       \t0:off\t1:off\t2:on\t3:on\t4:on\t5:on\t6:off',
-                     'firewalld': 'firewalld.service                           enabled',
-                     'fstrim': 'fstrim.service                              static',
-                     }
-                }
-    assert result == expected
