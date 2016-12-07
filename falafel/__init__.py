@@ -1,17 +1,16 @@
-import os
+import pkgutil
 from .core import LogFileOutput, Mapper, IniConfigFile, LegacyItemAccess  # noqa: F401
 from .core import FileListing  # noqa: F401
 from .core.plugins import mapper, reducer, make_response, make_metadata  # noqa: F401
 from .mappers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401
 
-__here__ = os.path.dirname(os.path.abspath(__file__))
 
 package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
 
+
 for name in package_info:
-    with open(os.path.join(__here__, name)) as f:
-        package_info[name] = f.read().strip()
+    package_info[name] = pkgutil.get_data(__name__, name).strip()
 
 
 def get_nvr():

@@ -1,7 +1,8 @@
-import os
+import pkgutil
 from collections import OrderedDict
 
-__all__ = [f.split(".")[0] for f in os.listdir(os.path.dirname(__file__)) if f.endswith(".py")]
+
+__all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]
 
 
 class ParseException(Exception):
