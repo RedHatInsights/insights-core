@@ -1,3 +1,4 @@
+"""Will be deprecated, do not use"""
 from .. import Mapper, mapper
 
 LOG_COLUMN = ('stat', 'proc', 'time', 'log')

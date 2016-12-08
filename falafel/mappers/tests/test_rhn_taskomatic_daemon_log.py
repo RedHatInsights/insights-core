@@ -1,3 +1,4 @@
+"""Will be deprecated"""
 from falafel.tests import context_wrap
 from falafel.mappers.rhn_taskomatic_daemon_log import taskomatic_daemon_log
 
