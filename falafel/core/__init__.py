@@ -305,6 +305,8 @@ class IniConfigFile(Mapper):
         >>> class MyConfig(IniConfigFile):
         ...     pass
         >>> content = '''
+        ... [defaults]
+        ... admin_token = ADMIN
         ... [program opts]
         ... memsize = 1024
         ... delay = 1.5
@@ -317,6 +319,8 @@ class IniConfigFile(Mapper):
         True
         >>> my_config.sections()
         ['program opts', 'logging']
+        >>> my_config.defaults()
+        ['admin_token': 'ADMIN']
         >>> my_config.items('program opts')
         {'memsize': 1024, 'delay': 1.5}
         >>> my_config.get('logging', 'logging level')
@@ -340,6 +344,10 @@ class IniConfigFile(Mapper):
     def sections(self):
         """list: Return a list of section names."""
         return self.data.sections()
+
+    def defaults(self):
+        """list: Return a dict of key/value pairs in the ``[default]`` section."""
+        return self.data.defaults()
 
     def items(self, section):
         """dict: Return a dictionary of key/value pairs for ``section``."""
