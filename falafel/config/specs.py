@@ -322,6 +322,7 @@ meta_files = {
     "machine-id"                : SimpleFileSpec("etc/redhat-access-insights/machine-id"),
     "branch_info"               : SimpleFileSpec("branch_info"),
     "uploader_log"              : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log"),
+    "prev_uploader_log"         : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log.1"),
     "metadata.json"             : SimpleFileSpec("metadata.json")
 }
 

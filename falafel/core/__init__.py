@@ -121,6 +121,10 @@ class Mapper(object):
         self.file_name = os.path.basename(context.path) \
             if context.path is not None else None
         """str: Filename portion of the input file."""
+        if hasattr(context, "last_client_run"):
+            self.last_client_run = context.last_client_run
+        else:
+            self.last_client_run = None
         self.parse_content(context.content)
 
     def parse_content(self, content):

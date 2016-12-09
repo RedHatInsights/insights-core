@@ -82,7 +82,9 @@ class Context(object):
         self.version = kwargs.pop("version", DEFAULT_VERSION)
         self.metadata = kwargs.pop("metadata", {})
         optional_attrs = [
-            "content", "path", "hostname", "release", "machine_id", "target"]
+            "content", "path", "hostname", "release",
+            "machine_id", "target", "last_client_run"
+        ]
         for k in optional_attrs:
             setattr(self, k, kwargs.pop(k, None))
 
