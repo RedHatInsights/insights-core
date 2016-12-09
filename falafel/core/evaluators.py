@@ -8,6 +8,7 @@ from falafel.core.context import Context
 from falafel.core.archives import InvalidArchive
 from falafel.util.uname import Uname
 from falafel.core import reducer
+from datetime import datetime
 
 import logging
 log = logging.getLogger("eval")
@@ -91,6 +92,8 @@ class Evaluator(object):
             "release": self.release if hasattr(self, "release") else "",
             "version": self.uname.rhel_release if hasattr(self, "uname") and hasattr(self.uname, "rhel_release") else ['-1', '-1'],
         })
+        if hasattr(self, "last_client_run"):
+            kwargs["last_client_run"] = self.last_client_run
         if self.archive_metadata:
             kwargs["metadata"] = self.archive_metadata
         return Context(**kwargs)
@@ -125,6 +128,13 @@ class SingleEvaluator(Evaluator):
         if self.hostname is None:
             self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
         self.uname = self._protected_parse("uname", lambda c: Uname(c[0]), None)
+        self.calc_last_client_run()
+
+    def calc_last_client_run(self):
+        content = self.spec_mapper.get_content("prev_uploader_log")
+        if content and len(content) > 1:
+            date_str = " ".join(content[0:1]).split(",")[0]
+            self.last_client_run = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     def format_response(self, response):
         serialize_skips(response["skips"])
