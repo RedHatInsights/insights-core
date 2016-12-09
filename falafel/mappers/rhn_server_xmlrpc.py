@@ -1,3 +1,4 @@
+"""Will be deprecated, do not use"""
 from falafel.core.plugins import mapper
 from falafel.core import LogFileOutput
 

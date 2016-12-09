@@ -1,3 +1,4 @@
+"""Will be deprecated"""
 from falafel.tests import context_wrap
 from falafel.mappers import rhn_server_xmlrpc
 
