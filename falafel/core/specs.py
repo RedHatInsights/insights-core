@@ -15,21 +15,14 @@ class SpecMapper(object):
 
     def __init__(self, tf_object, data_spec_config=None):
         self.tf = tf_object
-        self.all_names = [f for f in self.tf.getnames() if len(f) > 2]
-        self.root = self._determine_root()
+        self.all_names = [f for f in self.tf.getnames() if not self.tf.isdir(f)]
+        self.root = os.path.commonprefix(self.all_names)
         logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
         self.analysis_target = None
         self.symbolic_files = defaultdict(list)
         self._determine_analysis_target()
         self.create_symbolic_file_list()
-
-    def _determine_root(self):
-        root = os.path.commonprefix(self.all_names)
-        if root.endswith("/"):
-            return root.rstrip("/") + "/"
-        else:
-            return root
 
     def _get_first_matching(self, pattern):
         for match in filter(
