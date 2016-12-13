@@ -47,7 +47,29 @@ BY_DISK = "/dev/disk/by-path"
 
 
 def test_ls_disk():
-    ls_disk = LsDisk(context_wrap(LS_DISK, path=BY_DISK))
-    assert ls_disk.data.get("/dev/disk/by-path").get("sda") == ["pci-0000:00:0d.0-scsi-0:0:0:0"]
-    assert ls_disk.data.get("/dev/disk/by-id").get("sda1") == ["ata-VBOX_HARDDISK_VBdb3eca59-6c439fb7-part1",
-                                                               "scsi-SATA_VBOX_HARDDISK_VBdb3eca59-6c439fb7-part1"]
+    ls_disk = LsDisk(context_wrap(LS_DISK))
+    assert ls_disk.listing_of("/dev/disk/by-uuid") == {
+        '7b0068d4-1399-4ce7-a54a-3e2fc1232299': {'group': 'root', 'name': '7b0068d4-1399-4ce7-a54a-3e2fc1232299',
+                                                 'links': 1, 'perms': 'rwxrwxrwx.',
+                                                 'raw_entry': 'lrwxrwxrwx. 1 root root 10 Sep 19 10:15 7b0068d4-1399-4ce7-a54a-3e2fc1232299 -> ../../dm-0',
+                                                 'owner': 'root', 'link': '../../dm-0', 'date': 'Sep 19 10:15',
+                                                 'type': 'l',
+                                                 'size': 10},
+        '3ab50b34-d0b9-4518-9f21-05307d895f81': {'group': 'root', 'name': '3ab50b34-d0b9-4518-9f21-05307d895f81',
+                                                 'links': 1, 'perms': 'rwxrwxrwx.',
+                                                 'raw_entry': 'lrwxrwxrwx. 1 root root 10 Sep 19 10:15 3ab50b34-d0b9-4518-9f21-05307d895f81 -> ../../dm-1',
+                                                 'owner': 'root', 'link': '../../dm-1', 'date': 'Sep 19 10:15',
+                                                 'type': 'l',
+                                                 'size': 10},
+        '51c5cf12-a577-441e-89da-bc93a73a1ba3': {'group': 'root', 'name': '51c5cf12-a577-441e-89da-bc93a73a1ba3',
+                                                 'links': 1, 'perms': 'rwxrwxrwx.',
+                                                 'raw_entry': 'lrwxrwxrwx. 1 root root 10 Sep 19 10:15 51c5cf12-a577-441e-89da-bc93a73a1ba3 -> ../../sda1',
+                                                 'owner': 'root', 'link': '../../sda1', 'date': 'Sep 19 10:15',
+                                                 'type': 'l',
+                                                 'size': 10}}
+    assert ls_disk.listings.get("/dev/disk/by-uuid")['files'] == ['3ab50b34-d0b9-4518-9f21-05307d895f81',
+                                                                  '51c5cf12-a577-441e-89da-bc93a73a1ba3',
+                                                                  '7b0068d4-1399-4ce7-a54a-3e2fc1232299']
+
+    assert ls_disk.listings.get("/dev/disk/by-uuid")['entries']['3ab50b34-d0b9-4518-9f21-05307d895f81'][
+               'link'] == "../../dm-1"
