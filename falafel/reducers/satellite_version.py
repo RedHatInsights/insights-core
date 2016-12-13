@@ -6,7 +6,8 @@ Shared reducer for Satellite Version information. It uses the results of
 the ``Satellite6Version`` mapper and the ``InstalledRpms`` mapper to determine
 the satellite version
 
-Below is the logic to determine the satellite version
+Below is the logic to determine the satellite version::
+
     1. For Satellite 6.x
      - https://access.redhat.com/articles/1343683
      - https://access.redhat.com/solutions/1392633

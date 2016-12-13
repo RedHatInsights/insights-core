@@ -1,6 +1,6 @@
 """
 rsyslog_conf - File /etc/rsyslog.conf
-===============
+=====================================
 
 The rsyslog configuration files can include statements with two different
 line based formats along with snippets of 'RainerScript' that can span
