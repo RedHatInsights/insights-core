@@ -116,7 +116,10 @@ class YumLog(Mapper):
                 timestamp = ' '.join([month, day, time])
                 state = state.rstrip(':')
                 pkg = pkg.split(':')[-1].strip()
-                pkg = InstalledRpm.from_package(pkg)
+                if state == self.ERASED:
+                    pkg = InstalledRpm({'name': pkg})
+                else:
+                    pkg = InstalledRpm.from_package(pkg)
                 e = Entry(idx, timestamp, state, pkg)
                 self.data.append(e)
                 self.pkgs[pkg.name].append(e)

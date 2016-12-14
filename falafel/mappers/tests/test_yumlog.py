@@ -9,6 +9,7 @@ Jan 24 00:24:10 Updated: nss-softokn-3.14.3-19.el6_6.x86_64
 Jan 24 18:10:05 Updated: 1:openssl-libs-1.0.1e-51.el7_2.5.x86_64
 Jan 24 00:24:11 Updated: glibc-2.12-1.149.el6_6.4.i686
 May 23 16:09:09 Erased: redhat-access-insights-batch
+May 23 16:09:09 Erased: katello-agent
 Jan 24 00:24:11 Updated: glibc-devel-2.12-1.149.el6_6.4.i686
 """.strip()
 
@@ -33,7 +34,7 @@ def test_iteration():
 
 def test_len():
     yl = YumLog(context_wrap(OKAY))
-    assert len(yl) == 8
+    assert len(yl) == 9
 
 
 def test_present():
@@ -60,3 +61,9 @@ def test_error():
     assert e.pkg.version == '1.0.1e'
 
     assert len(yl) == 8
+
+
+def test_erased():
+    yl = YumLog(context_wrap(OKAY))
+    assert any(e.pkg.name == "redhat-access-insights-batch" for e in yl) is True
+    assert any(e.pkg.name == "katello-agent" for e in yl) is True
