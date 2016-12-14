@@ -320,7 +320,7 @@ class IniConfigFile(Mapper):
         >>> my_config.sections()
         ['program opts', 'logging']
         >>> my_config.defaults()
-        ['admin_token': 'ADMIN']
+        {'admin_token': 'ADMIN'}
         >>> my_config.items('program opts')
         {'memsize': 1024, 'delay': 1.5}
         >>> my_config.get('logging', 'logging level')
