@@ -137,6 +137,7 @@ static_specs = {
     "locale"                    : CommandSpec("/usr/bin/locale"),
     "localtime"                 : CommandSpec("/usr/bin/file -L /etc/localtime"),
     "lsblk"                     : CommandSpec("/bin/lsblk"),
+    "lsblk_pairs"               : CommandSpec("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO"),
     "lscpu"                     : CommandSpec("/usr/bin/lscpu"),
     "lsinitrd_lvm.conf"         : All([CommandSpec("/sbin/lsinitrd -f /etc/lvm/lvm.conf"),
                                     CommandSpec("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")]),
