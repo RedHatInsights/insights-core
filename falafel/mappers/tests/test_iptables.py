@@ -9,7 +9,9 @@ IPTABLES_SAVE = """
 :OUTPUT ACCEPT [769:196899]
 :REJECT-LOG - [0:0]
 -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -m state --state RELATED,ESTABLISHED -g ACCEPT
 -A INPUT -s 192.168.0.0/24 -j ACCEPT
+-A INPUT -s 192.168.2.0/24
 -A INPUT -p icmp -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
 -A INPUT -j REJECT --reject-with icmp-host-prohibited
@@ -47,8 +49,8 @@ PARSED_TCP_REJECT_RULE = {
 
 def test_iptables_save():
     ipt = IPTables(context_wrap(IPTABLES_SAVE))
-    assert len(ipt.rules) == 6
-    assert len(ipt.get_chain("INPUT")) == 5
+    assert len(ipt.rules) == 8
+    assert len(ipt.get_chain("INPUT")) == 7
     assert len(ipt.table_chains("mangle")) == 5
     assert ipt.rules[-1] == PARSED_TCP_REJECT_RULE
     assert ipt.get_table("nat")[1] == {

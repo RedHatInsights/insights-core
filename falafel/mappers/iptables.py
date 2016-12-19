@@ -94,22 +94,28 @@ class IPTables(Mapper):
                 })
             elif line.startswith("-"):
                 chain_name, rule = line[3:].split(None, 1)
-                target_option = "-j" if "-j" in rule else "-g"
-                constraints, target = [i.strip() for i in rule.split(target_option)]
-                if " " in target:
-                    target, target_options = target.split(None, 1)
+                target_option = [i for i in ('-j', '-g') if i in rule]
+                if target_option:
+                    constraints, target = [i.strip() for i in rule.split(target_option[-1])]
+                    if " " in target:
+                        target, target_options = target.split(None, 1)
+                    else:
+                        target_options = None
+                    self.rules.append({
+                        "table": current_table,
+                        "chain": chain_name,
+                        "rule": rule,
+                        "target_action": "jump" if target_option[-1] == "-j" else "goto",
+                        "constraints": constraints,
+                        "target": target,
+                        "target_options": target_options
+                    })
                 else:
-                    target_options = None
-                self.rules.append({
-                    "table": current_table,
-                    "chain": chain_name,
-                    "rule": rule,
-                    "target_action": "jump" if target_option == "-j" else "goto",
-                    "constraints": constraints,
-
-                    "target": target,
-                    "target_options": target_options
-                })
+                    self.rules.append({
+                        "table": current_table,
+                        "chain": chain_name,
+                        "rule": rule
+                    })
 
     def get_chain(self, name, table="filter"):
         """
