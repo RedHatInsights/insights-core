@@ -78,10 +78,10 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
             Raised when cmd fails
     """
 
-    cmd = cmd.encode('utf-8', 'replace')
     output = None
     rc = 0
     try:
+        cmd = cmd.encode('utf-8', 'replace')
         if timeout is not None:
             cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
         if not shell:
@@ -90,9 +90,9 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
         p = subprocess.Popen(cmd, stdout=STDOUT, stderr=STDERR, shell=shell, **kwargs)
         output = p.communicate()[0]
         rc = p.poll()
-    except Exception as e:
+    except BaseException as e:
         log.exception(e)
-        raise CalledProcessError(rc, cmd, str(e)), sys.exc_info()[2]
+        raise CalledProcessError(rc, cmd, str(e)), None, sys.exc_info()[2]
     if rc:
         raise CalledProcessError(rc, cmd, output)
     return output
