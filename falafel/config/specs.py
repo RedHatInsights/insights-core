@@ -190,7 +190,7 @@ static_specs = {
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
-    "parted_-l"                 : CommandSpec("/sbin/parted -l"),
+    "parted_-l"                 : CommandSpec("/sbin/parted -l -s"),
     "parted_-s-sos"             : First([PatternSpec(r"sos_commands/block/parted-s_.+"),
                                     PatternSpec(r"sos_commands/filesys/parted_-s_.+")]),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
