@@ -45,7 +45,7 @@ class Splitter(object):
 class Lsof(Mapper):
 
     def parse_content(self, content):
-        self.data = list(Splitter(content).parse_lines())
+        self.data = [rec for rec in Splitter(content).parse_lines() if rec["TYPE"] != "BLK"]
 
     def __iter__(self):
         return iter(self.data)
