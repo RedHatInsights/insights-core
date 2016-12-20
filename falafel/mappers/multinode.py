@@ -56,14 +56,14 @@ class MultinodeMetadata(Mapper):
 
     @property
     def children(self):
-        if not hasattr(self, "children"):
-            self.children = self.populate_children()
-        return self.children.values()
+        if not hasattr(self, "_children"):
+            self._children = self.populate_children()
+        return self._children.values()
 
     def child(self, system_id):
-        if not hasattr(self, "children"):
-            self.children = self.populate_children()
-        return self.children.get(system_id)
+        if not hasattr(self, "_children"):
+            self._children = self.populate_children()
+        return self._children.get(system_id)
 
     def child_class(self):
         return globals()[self.__class__.__name__ + "Child"]
