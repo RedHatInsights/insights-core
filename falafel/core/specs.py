@@ -58,7 +58,8 @@ class SpecMapper(object):
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
                 is_command = isinstance(spec, CommandSpec)
-                r = spec.get_regex(prefix='', analysis_target=self.analysis_target)
+                prefix = '' if '/' in spec.get_path() else '^'
+                r = spec.get_regex(prefix=prefix, analysis_target=self.analysis_target)
                 if is_command or "_commands/" in r.pattern:
                     filter_set = commands
                 else:
