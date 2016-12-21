@@ -1,14 +1,16 @@
 from .. import Mapper, mapper
 
-FILTER_LIST = ['COMMAND', 'libssl', 'libcrypto', 'libssl.so', 'multipath']
+# XXX: some of this should be delegated to rules
+FILTER_LIST = ['COMMAND', 'libssl', 'libcrypto', 'libssl.so']
 
 
-class Splitter(object):
+@mapper('lsof', FILTER_LIST)
+class Lsof(Mapper):
 
-    def __init__(self, lines):
-        self.lines = lines
+    def parse_content(self, content):
+        self.lines = content
         # In some sosreport the lsof does not start with the header
-        self.header_lines = [(i, l) for i, l in enumerate(lines) if 'COMMAND ' in l]
+        self.header_lines = [(i, l) for i, l in enumerate(self.lines) if 'COMMAND ' in l]
         if self.header_lines:
             self.header_idx, self.header_row = self.header_lines[0]
             self.name_idx = self.header_row.index(" NAME")
@@ -40,12 +42,5 @@ class Splitter(object):
                 middle_dict["NAME"] = name.strip()
                 yield middle_dict
 
-
-@mapper('lsof', FILTER_LIST)
-class Lsof(Mapper):
-
-    def parse_content(self, content):
-        self.data = [rec for rec in Splitter(content).parse_lines() if rec["TYPE"] != "BLK"]
-
     def __iter__(self):
-        return iter(self.data)
+        return iter(self.parse_lines())
