@@ -27,6 +27,8 @@ class CpuInfo(LegacyItemAccess, Mapper):
             if key in mappings:
                 self.data[mappings[key]].append(value)
 
+        self.data = dict(self.data)
+
     def __iter__(self):
         for idx in range(len(self["cpus"])):
             yield self.get_processor_by_index(idx)
@@ -44,12 +46,12 @@ class CpuInfo(LegacyItemAccess, Mapper):
     @property
     @defaults()
     def cpu_count(self):
-        return len(self.data["cpus"])
+        return len(self.data.get("cpus", []))
 
     @property
     @defaults()
     def socket_count(self):
-        return len(self.data["sockets"])
+        return len(self.data.get("sockets", []))
 
     @property
     @defaults()
