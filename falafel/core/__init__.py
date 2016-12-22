@@ -215,7 +215,7 @@ class Scannable(Mapper):
     @classmethod
     def scan_any(cls, result_key, func):
         def scanner(self, obj):
-            current_value = getattr(self, result_key)
+            current_value = getattr(self, result_key, None)
             setattr(self, result_key, current_value and func(obj))
 
         Scannable._scan(result_key, scanner)
@@ -223,7 +223,7 @@ class Scannable(Mapper):
     @classmethod
     def scan_latch(cls, result_key, func):
         def scanner(self, obj):
-            current_value = getattr(self, result_key)
+            current_value = getattr(self, result_key, None)
             setattr(self, result_key, current_value or func(obj))
 
         Scannable._scan(result_key, scanner)
