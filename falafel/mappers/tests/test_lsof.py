@@ -1,5 +1,4 @@
 from falafel.mappers import lsof
-from falafel.tests import context_wrap
 
 LSOF = """
 lsof: avoiding stat(/): -b was specified.
@@ -41,8 +40,7 @@ columns = ["COMMAND", "PID", "TID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", 
 
 
 def test_lsof():
-    mapper = lsof.Lsof(context_wrap(LSOF))
-    d = list(mapper)
+    d = list(lsof.LsofParser().parse(LSOF.splitlines()))
 
     assert set(columns) == set([k for f in d for k in f.keys()])
     assert d[0] == {
@@ -79,8 +77,7 @@ def test_lsof():
 
 
 def test_lsof_good():
-    mapper = lsof.Lsof(context_wrap(LSOF_GOOD_V1))
-    d = list(mapper)
+    d = list(lsof.LsofParser().parse(LSOF_GOOD_V1.splitlines()))
     assert d[0] == {
         "COMMAND": "systemd-l",
         "PID": "602",

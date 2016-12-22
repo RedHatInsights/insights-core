@@ -187,6 +187,48 @@ class LegacyItemAccess(object):
         return self.data.get(item, default)
 
 
+class ScanMeta(type):
+    def __new__(cls, name, parents, dct):
+        dct["scanners"] = []
+        dct["scanner_keys"] = set()
+        return super(ScanMeta, cls).__new__(cls, name, parents, dct)
+
+
+class Scannable(Mapper):
+
+    __metaclass__ = ScanMeta
+
+    @classmethod
+    def _scan(cls, result_key, scanner):
+        """
+        Define computed fields based on a string to "grep for".  This is
+        preferred to utilizing raw log lines in plugins because computed fields
+        will be serialized, whereas raw log lines will not.
+        """
+
+        if result_key in cls.scanner_keys:
+            raise ValueError("'%s' is already a registered scanner key" % result_key)
+
+        cls.scanners.append(scanner)
+        cls.scanner_keys.add(result_key)
+
+    @classmethod
+    def scan_any(cls, result_key, func):
+        def scanner(self, obj):
+            current_value = getattr(self, result_key, None)
+            setattr(self, result_key, current_value and func(obj))
+
+        Scannable._scan(result_key, scanner)
+
+    @classmethod
+    def scan_latch(cls, result_key, func):
+        def scanner(self, obj):
+            current_value = getattr(self, result_key, None)
+            setattr(self, result_key, current_value or func(obj))
+
+        Scannable._scan(result_key, scanner)
+
+
 class LogFileMeta(type):
     def __new__(cls, name, parents, dct):
         dct["scanners"] = []

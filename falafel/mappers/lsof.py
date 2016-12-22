@@ -1,28 +1,23 @@
-from .. import Mapper, mapper
+from .. import Scannable, mapper
 
 # XXX: some of this should be delegated to rules
 FILTER_LIST = ['COMMAND', 'libssl', 'libcrypto', 'libssl.so']
 
 
-@mapper('lsof', FILTER_LIST)
-class Lsof(Mapper):
+class LsofParser(object):
 
-    def parse_content(self, content):
-        self.lines = content
-        # In some sosreport the lsof does not start with the header
-        self.header_lines = [(i, l) for i, l in enumerate(self.lines) if 'COMMAND ' in l]
-        if self.header_lines:
-            self.header_idx, self.header_row = self.header_lines[0]
-            self.name_idx = self.header_row.index(" NAME")
-            self.pid_idx = self.header_row.index("  PID")
-            _, self.mid_cols = self.header_row[:self.name_idx].split(None, 1)
-            self.mid_cols = "  " + self.mid_cols
-            self.indexes = {}
-            for col_name in self.mid_cols.split():
-                self.indexes[col_name] = self.mid_cols.index(col_name) + len(col_name)
-            self.indexes["FD"] += 2
+    def _calc_indexes(self, line):
+        self.header_row = line
+        self.name_idx = self.header_row.index(" NAME")
+        self.pid_idx = self.header_row.index("  PID")
+        _, self.mid_cols = self.header_row[:self.name_idx].split(None, 1)
+        self.mid_cols = "  " + self.mid_cols
+        self.indexes = {}
+        for col_name in self.mid_cols.split():
+            self.indexes[col_name] = self.mid_cols.index(col_name) + len(col_name)
+        self.indexes["FD"] += 2
 
-    def split_middle(self, middle):
+    def _split_middle(self, middle):
         mid_dict = {}
         offset = 0
         for col in self.mid_cols.split():
@@ -31,16 +26,42 @@ class Lsof(Mapper):
             offset = idx
         return mid_dict
 
-    def parse_lines(self):
-        # If no header line could be found, then we are dead in the water
-        if self.header_lines:
-            for line in self.lines[self.header_idx + 1:]:
-                command, rest = line[:self.pid_idx], line[self.pid_idx:]
-                name = line[self.name_idx:]
-                middle_dict = self.split_middle(rest[:self.name_idx - len(command)])
-                middle_dict["COMMAND"] = command.strip()
-                middle_dict["NAME"] = name.strip()
-                yield middle_dict
+    def _start(self, content):
+        """
+        Consumes lines from content until the HEADER is found and processed.
+        Returns an iterator over the remaining lines.
+        """
+        content = iter(content)
 
-    def __iter__(self):
-        return iter(self.parse_lines())
+        line = next(content)
+        while 'COMMAND ' not in line:
+            line = next(content)
+
+        self._calc_indexes(line)
+        return content
+
+    def _parse_line(self, line):
+        """
+        Given a line, returns a dictionary for that line. Requires _start to be
+        called first.
+        """
+        command, rest = line[:self.pid_idx], line[self.pid_idx:]
+        name = line[self.name_idx:]
+        middle_dict = self._split_middle(rest[:self.name_idx - len(command)])
+        middle_dict["COMMAND"] = command.strip()
+        middle_dict["NAME"] = name.strip()
+        return middle_dict
+
+    def parse(self, content):
+        for line in self._start(content):
+            yield self._parse_line(line)
+
+
+@mapper('lsof', FILTER_LIST)
+class Lsof(Scannable):
+
+    def parse_content(self, content):
+        parser = LsofParser()
+        for obj in parser.parse(content):
+            for scanner in self.scanners:
+                scanner(obj)
