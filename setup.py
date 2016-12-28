@@ -51,7 +51,6 @@ runtime = {
     'tornado',
     'futures',
     'requests',
-    'GitPython',
 }
 
 develop = {
