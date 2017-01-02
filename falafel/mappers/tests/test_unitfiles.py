@@ -1,6 +1,5 @@
-from falafel.tests import context_wrap
-
-from falafel.mappers.systemd import unitfiles
+from ...tests import context_wrap
+from ..systemd.unitfiles import UnitFiles
 
 KDUMP_DISABLED_RHEL7 = """
 UNIT FILE                                   STATE
@@ -30,24 +29,27 @@ test.service                                static
 
 def test_unitfiles():
     context = context_wrap(KDUMP_DISABLED_RHEL7)
-    uf = unitfiles.UnitFiles(context)
-    assert not uf.is_on('kdump.service')
-    assert len(uf.data) == 1
+    unitfiles = UnitFiles(context)
+    assert not unitfiles.is_on('kdump.service')
+    assert len(unitfiles.services) == 1
+    assert len(unitfiles.parsed_lines) == 1
 
     context = context_wrap(KDUMP_ENABLED_RHEL7)
-    uf = unitfiles.UnitFiles(context)
-    print uf.data
-    assert uf.is_on('kdump.service')
-    assert len(uf.data) == 1
+    unitfiles = UnitFiles(context)
+    assert unitfiles.is_on('kdump.service')
+    assert len(unitfiles.services) == 1
+    assert len(unitfiles.parsed_lines) == 1
 
     context = context_wrap(KDUMP_ENABLED_RHEL7)
-    uf = unitfiles.UnitFiles(context)
-    assert uf.is_on('kdump.service')
-    assert len(uf.data) == 1
+    unitfiles = UnitFiles(context)
+    assert unitfiles.is_on('kdump.service')
+    assert len(unitfiles.services) == 1
+    assert len(unitfiles.parsed_lines) == 1
 
     context = context_wrap(KDUMP_BIG_TEST)
-    uf = unitfiles.UnitFiles(context)
-    assert uf.is_on('kdump.service')
-    assert not uf.is_on('other.service')
-    assert uf.is_on('test.service')
-    assert len(uf.data) == 3
+    unitfiles = UnitFiles(context)
+    assert unitfiles.is_on('kdump.service')
+    assert not unitfiles.is_on('other.service')
+    assert unitfiles.is_on('test.service')
+    assert len(unitfiles.services) == 3
+    assert len(unitfiles.parsed_lines) == 3

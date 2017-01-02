@@ -102,8 +102,6 @@ soscleaner-7704572305004757/boot/grub/grub.conf
 """.strip()
 
 SINGLE_NODE_UPLOAD = """
-insights-davxapasnp03-20151007031606/
-insights-davxapasnp03-20151007031606/insights_commands/
 insights-davxapasnp03-20151007031606/insights_commands/date
 insights-davxapasnp03-20151007031606/insights_commands/dmesg
 insights-davxapasnp03-20151007031606/insights_commands/hostname
@@ -139,52 +137,31 @@ insights-davxapasnp03-20151007031606/insights_commands/lsof
 insights-davxapasnp03-20151007031606/insights_commands/sestatus_-b
 insights-davxapasnp03-20151007031606/insights_commands/systemctl_list-unit-files
 insights-davxapasnp03-20151007031606/insights_commands/vgdisplay
-insights-davxapasnp03-20151007031606/boot/
-insights-davxapasnp03-20151007031606/boot/grub2/
 insights-davxapasnp03-20151007031606/boot/grub2/grub.cfg
-insights-davxapasnp03-20151007031606/etc/
 insights-davxapasnp03-20151007031606/etc/hosts
 insights-davxapasnp03-20151007031606/etc/kdump.conf
-insights-davxapasnp03-20151007031606/etc/lvm/
 insights-davxapasnp03-20151007031606/etc/lvm/lvm.conf
-insights-davxapasnp03-20151007031606/etc/pam.d/
 insights-davxapasnp03-20151007031606/etc/pam.d/password-auth
-insights-davxapasnp03-20151007031606/etc/rc.d/
 insights-davxapasnp03-20151007031606/etc/rc.d/rc.local
 insights-davxapasnp03-20151007031606/etc/redhat-access-insights/
 insights-davxapasnp03-20151007031606/etc/redhat-access-insights/machine-id
 insights-davxapasnp03-20151007031606/etc/redhat-release
 insights-davxapasnp03-20151007031606/etc/rsyslog.conf
-insights-davxapasnp03-20151007031606/etc/security/
 insights-davxapasnp03-20151007031606/etc/security/limits.conf
-insights-davxapasnp03-20151007031606/etc/selinux/
 insights-davxapasnp03-20151007031606/etc/selinux/config
-insights-davxapasnp03-20151007031606/etc/ssh/
 insights-davxapasnp03-20151007031606/etc/ssh/sshd_config
-insights-davxapasnp03-20151007031606/etc/sysconfig/
 insights-davxapasnp03-20151007031606/etc/sysconfig/kdump
 insights-davxapasnp03-20151007031606/etc/sysconfig/netconsole
-insights-davxapasnp03-20151007031606/etc/sysconfig/network-scripts/
 insights-davxapasnp03-20151007031606/etc/sysconfig/network-scripts/ifcfg-lo
 insights-davxapasnp03-20151007031606/etc/sysconfig/network-scripts/ifcfg-eth0
 insights-davxapasnp03-20151007031606/etc/sysctl.conf
-insights-davxapasnp03-20151007031606/proc/
 insights-davxapasnp03-20151007031606/proc/cmdline
 insights-davxapasnp03-20151007031606/proc/cpuinfo
 insights-davxapasnp03-20151007031606/proc/interrupts
 insights-davxapasnp03-20151007031606/proc/meminfo
-insights-davxapasnp03-20151007031606/proc/scsi/
 insights-davxapasnp03-20151007031606/proc/scsi/scsi
-insights-davxapasnp03-20151007031606/sys/
-insights-davxapasnp03-20151007031606/sys/devices/
-insights-davxapasnp03-20151007031606/sys/devices/system/
-insights-davxapasnp03-20151007031606/sys/devices/system/clocksource/
-insights-davxapasnp03-20151007031606/sys/devices/system/clocksource/clocksource0/
 insights-davxapasnp03-20151007031606/sys/devices/system/clocksource/clocksource0/current_clocksource
-insights-davxapasnp03-20151007031606/sys/kernel/
 insights-davxapasnp03-20151007031606/sys/kernel/kexec_crash_loaded
-insights-davxapasnp03-20151007031606/var/
-insights-davxapasnp03-20151007031606/var/log/
 insights-davxapasnp03-20151007031606/var/log/messages
 insights-davxapasnp03-20151007031606/var/log/yum.log
 insights-davxapasnp03-20151007031606/var/log/redhat-access-insights/
@@ -192,35 +169,85 @@ insights-davxapasnp03-20151007031606/var/log/redhat-access-insights/redhat-acces
 insights-davxapasnp03-20151007031606/branch_info
 """.strip()
 
+DEEP_ROOT = """
+tmp/sdc-appblx002-15.corp.com_sosreport/free
+tmp/sdc-appblx002-15.corp.com_sosreport/meminfo
+tmp/sdc-appblx002-15.corp.com_sosreport/date
+tmp/sdc-appblx002-15.corp.com_sosreport/dmesg
+tmp/sdc-appblx002-15.corp.com_sosreport/fdisk
+tmp/sdc-appblx002-15.corp.com_sosreport/chkconfig
+tmp/sdc-appblx002-15.corp.com_sosreport/netstat
+tmp/sdc-appblx002-15.corp.com_sosreport/ps
+tmp/sdc-appblx002-15.corp.com_sosreport/rpm-Va
+tmp/sdc-appblx002-15.corp.com_sosreport/df
+tmp/sdc-appblx002-15.corp.com_sosreport/cpuinfo
+tmp/sdc-appblx002-15.corp.com_sosreport/rpm-qa
+tmp/sdc-appblx002-15.corp.com_sosreport/hostname
+tmp/sdc-appblx002-15.corp.com_sosreport/ulimit
+tmp/sdc-appblx002-15.corp.com_sosreport/dmidecode
+tmp/sdc-appblx002-15.corp.com_sosreport/ifconfig
+tmp/sdc-appblx002-15.corp.com_sosreport/lsmod
+tmp/sdc-appblx002-15.corp.com_sosreport/mount
+tmp/sdc-appblx002-15.corp.com_sosreport/var/log/messages
+tmp/sdc-appblx002-15.corp.com_sosreport/var/log/messages-20140413
+tmp/sdc-appblx002-15.corp.com_sosreport/var/log/messages-20140330
+tmp/sdc-appblx002-15.corp.com_sosreport/var/log/messages-20140406
+tmp/sdc-appblx002-15.corp.com_sosreport/uname
+""".strip()
+
 
 class MockTarFile(object):
+    """
+    Creates a tarfile filled with zero-byte files.
+    names should be a list of paths to files, directories should be omitted.
+    """
 
     def __init__(self, names):
-        self.names = names.splitlines()
+        self.tmp_file = tempfile.TemporaryFile()
+        self.tf = tarfile.open(fileobj=self.tmp_file, mode="w")
+        with tempfile.NamedTemporaryFile() as zero_byte_file:
+            filename = zero_byte_file.name
+            for name in names.splitlines():
+                self.tf.add(filename, arcname=name)
 
     def getnames(self):
-        return self.names
+        return self.tf.getnames()
 
     def issym(self, name):
-        return False
+        return self.tf.getmember(name).issym()
 
     def isdir(self, name):
-        return name.endswith("/")
+        return self.tf.getmember(name).isdir()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.tf.close()
+        self.tmp_file.close()
 
 
 class TestDetermineRoot(unittest.TestCase):
 
     def test_single_node(self):
-        spec = SpecMapper(MockTarFile(SINGLE_NODE_UPLOAD))
-        self.assertEqual(spec._determine_root(), "insights-davxapasnp03-20151007031606/")
+        with MockTarFile(SINGLE_NODE_UPLOAD) as mtf:
+            spec = SpecMapper(mtf)
+            self.assertEqual(spec.root, "insights-davxapasnp03-20151007031606/")
 
     def test_multi_node(self):
-        spec = SpecMapper(MockTarFile(CLUSTER_UPLOAD))
-        self.assertEqual(spec._determine_root(), "./")
+        with MockTarFile(CLUSTER_UPLOAD) as mtf:
+            spec = SpecMapper(mtf)
+            self.assertEqual(spec.root, "./")
 
     def test_soscleaned(self):
-        spec = SpecMapper(MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD))
-        self.assertEquals(spec._determine_root(), "soscleaner-7704572305004757/")
+        with MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD) as mtf:
+            spec = SpecMapper(mtf)
+            self.assertEquals(spec.root, "soscleaner-7704572305004757/")
+
+    def test_deep_root(self):
+        with MockTarFile(DEEP_ROOT) as mtf:
+            spec = SpecMapper(mtf)
+            self.assertEquals(spec.root, "tmp/sdc-appblx002-15.corp.com_sosreport/")
 
 
 def make_cluster_archive(fd, content_type):

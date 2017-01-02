@@ -1,21 +1,31 @@
+"""
+ethtool - Commands
+==================
+Classes to parse ``ethtool`` command information.
+"""
 import os
 import re
 from collections import namedtuple
+from ..mappers import ParseException
 from .. import Mapper, mapper, LegacyItemAccess
 
 
 def extract_iface_name_from_path(path, name):
     """
-    extract iface name from path
+    Extract iface name from path
     there are some special name:
-    |----------------|----------------|
-    |   real name    |   path name    |
-    |----------------|----------------|
-    | bond0.104@bond0|bond0.104_bond0 |
-    |  __tmp1111     |  __tmp1111     |
-    |  macvtap@bond0 |  macvlan_bond0 |
-    |  prod_bond     |  prod_bond     |
-    |----------------|----------------|
+
+    +------------------+-----------------+
+    | real name        | path name       |
+    +==================+=================+
+    | bond0.104\@bond0 | bond0.104_bond0 |
+    +------------------+-----------------+
+    | __tmp1111        | __tmp1111       |
+    +------------------+-----------------+
+    | macvtap\@bond0   | macvlan_bond0   |
+    +------------------+-----------------+
+    | prod_bond        | prod_bond       |
+    +------------------+-----------------+
     """
     if name in path:
         ifname = os.path.basename(path).split("_", 2)[-1].strip()
@@ -30,6 +40,7 @@ def extract_iface_name_from_content(content):
 
 @mapper("ethtool-i")
 class Driver(Mapper):
+    """Parse information for the ``ethtool -i`` command."""
 
     driver = None
     version = None
@@ -60,6 +71,7 @@ class Driver(Mapper):
 
 @mapper("ethtool-k")
 class Features(LegacyItemAccess, Mapper):
+    """Parse information for the ``ethtool -k`` command."""
 
     @property
     def ifname(self):
@@ -89,6 +101,7 @@ class Features(LegacyItemAccess, Mapper):
 
 @mapper("ethtool-a")
 class Pause(Mapper):
+    """Parse information for the ``ethtool -a`` command."""
 
     @property
     def ifname(self):
@@ -142,6 +155,7 @@ class Pause(Mapper):
 
 @mapper("ethtool-c")
 class CoalescingInfo(Mapper):
+    """Parse information for the ``ethtool -c`` command."""
 
     @property
     def ifname(self):
@@ -188,6 +202,7 @@ class CoalescingInfo(Mapper):
 
 @mapper("ethtool-g")
 class Ring(Mapper):
+    """Parse information for the ``ethtool -g`` command."""
 
     Parameters = namedtuple("Parameters", ["rx", "rx_mini", "rx_jumbo", "tx"])
 
@@ -236,6 +251,7 @@ class Ring(Mapper):
 
 @mapper("ethtool-S")
 class Statistics(Mapper):
+    """Parse information for the ``ethtool -S`` command."""
 
     @property
     def ifname(self):
@@ -288,53 +304,101 @@ class Statistics(Mapper):
 
 @mapper("ethtool")
 class Ethtool(Mapper):
+    """Parses output of ``ethtool`` command.
 
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+
+    Raises:
+        ParseException: Raised when any problem parsing the command output.
+
+    Sample input::
+
+        Settings for eth0:
+                Supported ports: [ TP MII ]
+                Supported link modes:   10baseT/Half 10baseT/Full
+                                        100baseT/Half 100baseT/Full
+                Supported pause frame use: No
+                Supports auto-negotiation: Yes
+                Advertised link modes:  10baseT/Half 10baseT/Full
+                                        100baseT/Half 100baseT/Full
+                Advertised pause frame use: Symmetric
+                Advertised auto-negotiation: Yes
+                Link partner advertised link modes:  10baseT/Half 10baseT/Full
+                                                     100baseT/Half 100baseT/Full
+                Link partner advertised pause frame use: Symmetric
+                Link partner advertised auto-negotiation: No
+                Speed: 100Mb/s
+                Duplex: Full
+                Port: MII
+                PHYAD: 32
+                Transceiver: internal
+                Auto-negotiation: on
+        Cannot get wake-on-lan settings: Operation not permitted
+                Current message level: 0x00000007 (7)
+                                       drv probe link
+        Cannot get link status: Operation not permitted
+
+    After using pandas to do some more research, I found
+    the value of the current multi-line parameters
+    "Supported link modes" could also be a single line and
+    the current single line para "Supported pause frame use"
+    could also be multi-line. Since the multi-line or
+    single-line is not fixable, I just put the value in the list.
+
+    Examples:
+        >>> ethinfo = shared[Ethtool]
+        >>> ethinfo.ifname
+        'eth0'
+        >>> ethinfo.speed
+        ['100Mb/s']
+        >>> ethinfo.link_detected
+        False
+        >>> ethinfo.data
+        {'Cannot get link status': ['Operation not permitted'],
+         'Supported link modes': ['10baseT/Half 10baseT/Full', '100baseT/Half 100baseT/Full'],
+         'Link partner advertised link modes': ['10baseT/Half 10baseT/Full', '100baseT/Half 100baseT/Full'],
+         'Link partner advertised auto-negotiation': ['No'],
+         'Supported pause frame use': ['No'],
+         'Supports auto-negotiation': ['Yes'],
+         'Advertised auto-negotiation': ['Yes'],
+         'Duplex': ['Full'],
+         'PHYAD': ['32'],
+         'Advertised link modes': ['10baseT/Half 10baseT/Full', '100baseT/Half 100baseT/Full'],
+         'Current message level': ['0x00000007 (7)', 'drv probe link'],
+         'Supported ports': ['[ TP MII ]'],
+         'Auto-negotiation': ['on'],
+         'ETHNIC': 'eth0',
+         'Transceiver': ['internal'],
+         'Cannot get wake-on-lan settings': ['Operation not permitted'],
+         'Link partner advertised pause frame use': ['Symmetric'],
+         'Port': ['MII'],
+         'Speed': ['100Mb/s'],
+         'Advertised pause frame use': ['Symmetric']}
+        >>> ethinfo.supported_link_modes
+        ['10baseT/Half', '10baseT/Full', '100baseT/Half', '100baseT/Full']
+        >>> ethinfo.advertised_link_modes
+        ['10baseT/Half', '10baseT/Full', '100baseT/Half', '100baseT/Full']
+        >>> ethinfo.supported_ports
+        ['TP', 'MII']
+    """
     @property
     def ifname(self):
-        """
-        Return the name of network interface in content.
-        """
+        """str: Return the name of network interface in content."""
         return self.iface
 
     @property
     def speed(self):
-        """
-        return field in Speed.
-        """
+        """list (str): Return field in Speed."""
         return self.data.get('Speed')
 
     @property
     def link_detected(self):
-        """
-        returns field in Link detected.
-        """
+        """boolean: Returns field in Link detected."""
         return self.data.get('Link detected', ['no'])[0] == 'yes'
 
     def parse_content(self, content):
-        """
-        Returns an object of EthtoolInfo
-        -----------------------------------------------------
-        Settings for eth1:
-            Supported ports: [ TP ]
-            Supported link modes: 10baseT/Half 10baseT/Full
-                                  100baseT/Half 100baseT/Full
-                                  1000baseT/Full
-            Supported pause frame use: Symmetric
-            Supports auto-negotiation: Yes
-            Advertised link modes: 10baseT/Half 10baseT/Full
-                                   100baseT/Half 100baseT/Full
-                                   1000baseT/Full
-
-            Current message level: 0x00000007 (7)
-                                   drv probe link
-        -----------------------------------------------------
-        After using pandas to do some more research, I found
-        the value of the current multi-line parameters
-        "Supported link modes" could also be a sigle line and
-        the current single line para "Supported pause frame use"
-        could also be multi-line. Since the multi-line or
-        single-line is not fixable, I just put the value in the list.
-        """
         self.data = {}
         self.iface = self.file_name.replace("ethtool_", "")
 
@@ -344,9 +408,41 @@ class Ethtool(Mapper):
         for line in content[1:]:
             line = line.strip()
             if line:
-                if ':' in line:
-                    key, value = line.split(':', 1)
-                    key = key.strip()
-                    self.data[key] = [value.strip()]
-                else:
-                    self.data[key].append(line)
+                try:
+                    if ':' in line:
+                        key, value = line.split(':', 1)
+                        key = key.strip()
+                        self.data[key] = [value.strip()]
+                    else:
+                        self.data[key].append(line)
+                except:
+                    raise ParseException('Ethtool unable to parse content', line)
+
+        self._supported_link_modes = []
+        if 'Supported link modes' in self.data:
+            for pair in self.data['Supported link modes']:
+                self._supported_link_modes += pair.split()
+
+        self._advertised_link_modes = []
+        if 'Advertised link modes' in self.data:
+            for pair in self.data['Advertised link modes']:
+                self._advertised_link_modes += pair.split()
+
+        self._supported_ports = []
+        if 'Supported ports' in self.data:
+            self._supported_ports = self.data['Supported ports'][0].strip('[] ').split()
+
+    @property
+    def supported_link_modes(self):
+        """list (str): Returns list of supported link modes."""
+        return self._supported_link_modes
+
+    @property
+    def supported_ports(self):
+        """list (str): Returns list of supported ports."""
+        return self._supported_ports
+
+    @property
+    def advertised_link_modes(self):
+        """list (str): Returns list of advertised link modes."""
+        return self._advertised_link_modes

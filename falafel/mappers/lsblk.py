@@ -4,7 +4,7 @@ lsblk - Command
 
 Module for processing output of the ``lsblk`` command.  Different information is
 provided by the ``lsblk`` command depending upon the options. The ``LSBlock``
-class parses output of the ``lsblk`` command with no options.  The ``LSBlock_PO``
+class parses output of the ``lsblk`` command with no options.  The ``LSBlockPairs``
 class parses output of the ``lsblk -P -o column_names`` command.  These classes
 based on ``BlockDevices`` which implements all of the functionality except the
 parsing of command specific information.  Information is stored in the
@@ -101,7 +101,7 @@ class BlockDevice(object):
     def __init__(self, data):
         self.data = data
         for k, v in data.iteritems():
-            k = k.replace("-", "_")
+            k = re.sub(r'[-:\.]', "_", k)
             setattr(self, k, v)
             setattr(self, k.lower(), v)
 
@@ -190,8 +190,8 @@ class LSBlock(BlockDevices):
         self.rows = [BlockDevice(d) for d in device_list]
 
 
-@mapper('lsblk_-P-o')
-class LSBlock_PO(BlockDevices):
+@mapper('lsblk_pairs')
+class LSBlockPairs(BlockDevices):
     """Parse output of the ``lsblk -P -o`` command.
 
     ``lsblk`` command with ``-P -o`` options provides explicit selection of
@@ -220,13 +220,13 @@ class LSBlock_PO(BlockDevices):
 
     Attributes:
         rows (list of BlockDevice): List of ``BlockDevice`` objects for each row of
-            the input. Input column name matches key name except any '-' is replaced with
+            the input. Input column name matches key name except that
+            any '-', ':', or '.' is replaced with
             '_' and the following names are changed::
 
                 Column Name     Key Name
-                MAJ:MIN         MAJ_MIN
-                RM              REMOVABLE
-                RO              READD_ONLY
+                RM              removable
+                RO              read_only
 
     Note:
         See the discussion of the key ``PARENT_NAMES`` above.
@@ -234,14 +234,13 @@ class LSBlock_PO(BlockDevices):
     def parse_content(self, content):
         self.rows = []
         for line in content:
-            d = {k.lower(): v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line) if len(v) > 0}
+            d = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line) if len(v) > 0}
 
             def str2bool(s):
                 return bool(int(s))
 
-            for original, replace, transform in [("maj:min", "maj_min", None),
-                                                 ("rm", "removable", str2bool),
-                                                 ("ro", "read_only", str2bool)]:
+            for original, replace, transform in [("RM", "REMOVABLE", str2bool),
+                                                 ("RO", "READ_ONLY", str2bool)]:
                 if original in d:
                     d[replace] = transform(d[original]) if transform else d[original]
                     del d[original]

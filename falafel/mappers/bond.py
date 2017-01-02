@@ -47,6 +47,8 @@ Examples:
     None
     >>> bond_info.slave_interface
     ['eno1', 'eno2']
+    >>> bond_info.aggregator_id
+    ['3', '2', '3']
 """
 from .. import Mapper, LogFileOutput, mapper, get_active_lines
 
@@ -80,12 +82,15 @@ class Bond(Mapper):
             file if the key/value exists. Default is ``None``.
         slave_interface (list): List of the slave interfaces in the bond file
             if the key/value exists. Default is ``[]``.
+        aggregator_id (list): List of the "Aggregator ID" in the bond file
+            if the key/value exists. Default is ``[]``.
     """
 
     def parse_content(self, content):
         mode = None
         partner_mac_address = None
         slave_interface = []
+        aggregator_id = []
 
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
@@ -100,6 +105,8 @@ class Bond(Mapper):
                 partner_mac_address = line.split(":", 1)[1].strip()
             elif line.startswith("Slave Interface: "):
                 slave_interface.append(line.split(":", 1)[1].strip())
+            elif line.strip().startswith("Aggregator ID: "):
+                aggregator_id.append(line.strip().split(':', 1)[1].strip())
 
         self.bond_mode = mode
         """Returns the bond mode number as a string, or if there is no
@@ -113,6 +120,11 @@ class Bond(Mapper):
         """
         self.slave_interface = slave_interface
         """Returns all the slave interfaces of in the bond file wrapped
+        a list if the key/value exists.  If the key is not in the
+        bond file, ``[]`` is returned.
+        """
+        self.aggregator_id = aggregator_id
+        """Returns all the aggregator id of in the bond file wrapped
         a list if the key/value exists.  If the key is not in the
         bond file, ``[]`` is returned.
         """

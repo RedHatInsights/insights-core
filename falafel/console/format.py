@@ -14,6 +14,10 @@ class Formatter(object):
         self.list_plugins = args.list_plugins
 
     def display_list(self, items):
+        if not items:
+            print_console("")
+            return
+
         col_size = max(map(len, items))
         col_cnt = self.screen_width / col_size
         col_size = col_size + ((self.screen_width % col_size) / col_cnt)

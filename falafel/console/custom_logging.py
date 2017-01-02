@@ -3,13 +3,12 @@ import getpass
 import logging
 import logging.config
 
-from falafel import NAME
 from falafel.console.borg import Borg
 
 # TODO: once the config file is added,
 # we can read below values from that file
 LOG_LEVEL = logging.INFO
-LOG_DIRECTORY = os.path.join(os.environ['HOME'], '.{}'.format(NAME))
+LOG_DIRECTORY = os.path.join(os.environ['HOME'], '.{}'.format("falafel"))
 LOG_SIZE = 10485760
 LOG_BACKUP_COUNT = 3
 
@@ -45,7 +44,7 @@ class ContextFilter(logging.Filter):
 
 def get_logging_conf(**kwargs):
 
-    filename = "{0}.log".format(NAME)
+    filename = "{0}.log".format("falafel")
     log_file = os.path.join(LOG_DIRECTORY, filename)
 
     logging_conf = {

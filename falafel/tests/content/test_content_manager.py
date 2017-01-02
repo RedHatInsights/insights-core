@@ -27,6 +27,17 @@ def test_save(cm):
     assert next(cm.get("tina_loves_butts")) == doc
 
 
+def test_retired(cm):
+    doc = {
+        "resolution": "This is the resolution",
+        "rule_id": "old_rule|OLD_ERROR_KEY"
+    }
+    cm.save(doc, default=True)
+    doc["path"] = os.path.join(cm.content_prefix, "retired/old_rule/OLD_ERROR_KEY")
+    assert next(cm.get("old_rule|OLD_ERROR_KEY")) == doc
+    assert next(cm.get("old_rule")) == doc
+
+
 def test_error_keys(cm):
     cm.save({"rule_id": "tina_loves_butts|OH_YEAH"}, default=True)
     cm.save({"rule_id": "tina_loves_butts|OH_NO"}, default=True)

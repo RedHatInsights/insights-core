@@ -1,22 +1,23 @@
-import os
-from .core import LogFileOutput, Mapper, IniConfigFile, LegacyItemAccess  # noqa: F401
+import pkgutil
+from .core import Scannable, LogFileOutput, Mapper, IniConfigFile, LegacyItemAccess  # noqa: F401
+from .core import FileListing  # noqa: F401
 from .core.plugins import mapper, reducer, make_response, make_metadata  # noqa: F401
 from .mappers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401
 
-__here__ = os.path.dirname(os.path.abspath(__file__))
-VERSION = "1.14.0"
-NAME = "falafel"
 
-with open(os.path.join(__here__, "RELEASE")) as f:
-    RELEASE = f.read().strip()
+package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
 
-with open(os.path.join(__here__, "COMMIT")) as f:
-    COMMIT = f.read().strip()
+
+for name in package_info:
+    package_info[name] = pkgutil.get_data(__name__, name).strip()
 
 
 def get_nvr():
-    return "{0}-{1}-{2}".format(NAME, VERSION, RELEASE)
+    return "{0}-{1}-{2}".format(package_info["NAME"],
+                                package_info["VERSION"],
+                                package_info["RELEASE"])
+
 
 RULES_STATUS = {}
 """

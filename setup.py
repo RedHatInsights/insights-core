@@ -2,6 +2,14 @@ import os
 import sys
 from setuptools import setup, find_packages
 
+__here__ = os.path.dirname(os.path.abspath(__file__))
+
+package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
+
+for name in package_info:
+    with open(os.path.join(__here__, "falafel", name)) as f:
+        package_info[name] = f.read().strip()
+
 BDIST_RPM_RUNNING = "bdist_rpm_running"
 
 entry_points = {
@@ -38,54 +46,38 @@ if "bdist_rpm" in sys.argv:
     with open(BDIST_RPM_RUNNING, "w") as fp:
         fp.write("yes\n")
 
+runtime = {
+    'pyyaml',
+    'tornado',
+    'futures',
+    'requests',
+}
+
+develop = {
+    'flake8',
+    'coverage',
+    'pytest',
+    'pytest-cov',
+    'Sphinx',
+    'sphinx_rtd_theme',
+    'Jinja2',
+}
+
 if __name__ == "__main__":
-    import falafel
-    name = os.environ.get("FALAFEL_NAME", falafel.NAME)
+    # allows for runtime modification of rpm name
+    name = os.environ.get("FALAFEL_NAME", package_info["NAME"])
 
     try:
         setup(
             name=name,
-            version=falafel.VERSION,
+            version=package_info["VERSION"],
             description="Insights Application Programming Interface",
             packages=find_packages(),
-            package_data={"": ["*.json", "RELEASE", "COMMIT", "*.md", "*.html", "*.js", "*.yaml"]},
-            install_requires=[
-                'pyyaml',
-            ],
+            package_data={"": package_info.keys() + ["*.json", "*.md", "*.html", "*.js", "*.yaml"]},
+            install_requires=list(runtime),
             extras_require={
-                'develop': [
-                    'flake8',
-                    'coverage',
-                    'numpydoc',
-                    'pytest',
-                    'pytest-cov',
-                    'Sphinx',
-                    'sphinx_rtd_theme',
-                    'Jinja2',
-                    'tornado',
-                    'futures',
-                    'requests',
-                    'GitPython'
-
-                ],
-                'optional': [
-                    'python-cjson'
-                    'python-logstash',
-                    'python-statsd',
-                    'tornado',
-                    'futures',
-                    'GitPython'
-                ],
-                'test': [
-                    'flake8',
-                    'coverage',
-                    'pytest',
-                    'pytest-cov',
-                    'Jinja2',
-                    'tornado',
-                    'futures',
-                    'requests'
-                ]
+                'develop': list(runtime | develop),
+                'optional': ['python-cjson', 'python-logstash', 'python-statsd'],
             },
             entry_points=entry_points,
             data_files=data_files

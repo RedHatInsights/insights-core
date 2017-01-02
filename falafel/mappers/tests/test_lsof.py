@@ -40,7 +40,7 @@ columns = ["COMMAND", "PID", "TID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", 
 
 
 def test_lsof():
-    d = list(lsof.Splitter(LSOF.splitlines()).parse_lines())
+    d = list(lsof.LsofParser().parse(LSOF.splitlines()))
 
     assert set(columns) == set([k for f in d for k in f.keys()])
     assert d[0] == {
@@ -77,7 +77,7 @@ def test_lsof():
 
 
 def test_lsof_good():
-    d = list(lsof.Splitter(LSOF_GOOD_V1.splitlines()).parse_lines())
+    d = list(lsof.LsofParser().parse(LSOF_GOOD_V1.splitlines()))
     assert d[0] == {
         "COMMAND": "systemd-l",
         "PID": "602",

@@ -90,15 +90,43 @@ class PsAuxcww(ProcessList):
         data (list): List of dicts, where the keys in each dict are the column
             headers and each item in the list represents a process.
 
+        services (list): List of tuples containing (service, user, parsed line) which is useful
+                         for security rules and their debugging.
+
     Raises:
         ValueError: Raised if any error occurs parsing the content.
     """
+    def __init__(self, *args, **kwargs):
+        self.data = {}
+        self.services = []
+        super(PsAuxcww, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
             self.data = parse_table(content)
+            self.parse_services(content)
         else:
-            raise ValueError("PsAuxcww: Unable to parse content: {} ({})".format(len(content), content[0]))
+            raise ValueError("PsAuxcww: Unable to parse content: {} ({})".format(len(content),
+                                                                                 content[0]))
+
+    def parse_services(self, content):
+        """
+        Alternative parsing method which also stores whole line.
+
+        Args:
+             content (context.content): Mapper context content
+
+        Returns:
+            list: list ouf tuples containing (service, user, parsed line)
+        """
+        for line in content[1:]:  # skip header
+            parts = line.split(None, 10)
+            try:
+                service, user = parts[10], parts[0]
+            except IndexError:
+                pass
+            else:
+                self.services.append((service, user, line))
 
 
 @mapper('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
@@ -117,6 +145,8 @@ class PsAux(ProcessList):
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
             self.data = parse_table(content, max_splits=10)
+        else:
+            self.data = []
 
 
 @mapper('ps_auxwww')  # we don't want to filter the ps_auxwww file

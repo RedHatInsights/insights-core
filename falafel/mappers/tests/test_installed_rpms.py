@@ -1,5 +1,5 @@
 import pytest
-from falafel.mappers.installed_rpms import InstalledRpms, InstalledRpm
+from falafel.mappers.installed_rpms import InstalledRpms, InstalledRpm, OracleAsmRpms
 from falafel.tests import context_wrap
 
 
@@ -31,6 +31,24 @@ tftp-server-5.2-12.el7.x86_64
 yum-3.2.29-69.el6.noarch                                    Wed May 18 14:16:21 2016	1410968065	Red Hat, Inc.	hs20-bc2-4.build.redhat.com	8902150305004c6955c9199e2f91fd431d51010853c80ffb05f6916ea5f2980314b1766656aeb544777db76296173ffc16708d725e7b691e4ad9aef3dbe9c544a5d33264c9b4bf36464bec32ae6960be72c0175d710333f7aa52e24fc774d1c8809c2730d381593214b51abf7a455354e56993eac5a536fbdda1f1530ca8a9b5816bb47f0a5cf60081462aef48c8a68c761cd15d01f53eabc10aa4b90f47fac18ee8094d1613195277120a85efc6a0c9e2dbbb619f520c59ee74a7be84b2ae4177ece2e10f18617bfb926eade8537993f16fbd28e4a95e3bf7acf381b847171e0a03c241c5c20b5cfb021f69903b9afa4ce40d2bf17b5b439b1014bb974becca815b268f209833dce8cdd4052020aee680a56d1eff7214fb36bbcd35a0674374df2a64e3c3f13c10f23c7d33d035f3a7c7525e7037868ef86681ce0f41d9376f0ac4b1176a939752e1b63cb5a49e9004ee6b9d797ee16dd7b5b97496b3c1f5c0fd792e28117887af78026eb8422077e27d32fb0dba7025d870e8db7fa4e6abfb221abe9b1997ab808c07220329e0ec7863dfcf0c1c1931c4f0061015b902a6d65e59ca8a9252dcf4eeeac3cdfbbf4664a356d6f05e031bcd9cc3223d10425a03bacbe2f49d3f54bd2288f64c9812a5c255e6c11a4dd46255c3a9f2bed34b61bbd849bcf1f007d5f4e3f6e60064b372e0ac6ab301163393adb10d9aa47fe6be211b3576ff37da7e12e2285358267495ac48a437d4eefb3213	RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51
 '''.strip()
 
+RPM_MANIFEST = '''
+gpg-pubkey-0608b895-4bd22942                  Sat Aug 29 19:29:30 2015
+capacity-osms-0.0.1-1.noarch                  Sat Aug 29 19:17:55 2015
+HPOvGlanc-11.14.014-1.x86_64                  Sat Aug 29 19:17:01 2015
+HPOvPerfAgt-11.14.014-1.x86_64                Sat Aug 29 19:16:39 2015
+HPOvPerfMI-11.14.014-1.x86_64                 Sat Aug 29 19:16:32 2015
+HPOvAgtLc-11.14.014-1.x86_64                  Sat Aug 29 19:16:02 2015
+vmware-tools-8.3.19-1310361.el6.x86_64        Sat Aug 29 19:10:11 2015
+vmware-open-vm-tools-xorg-utilities-8.3.19-1310361.el6.x86_64 Sat Aug 29 19:10:11 2015
+vmware-open-vm-tools-8.3.19-1310361.el6.x86_64 Sat Aug 29 19:10:11 2015
+vmware-tools-nox-8.3.19-1310361.el6.x86_64    Sat Aug 29 19:10:10 2015
+vmware-tools-common-8.3.19-1310361.el6.x86_64 Sat Aug 29 19:10:10 2015
+vmware-open-vm-tools-xorg-drv-display-11.0.1.0-0.1310361.el6.x86_64 Sat Aug 29 19:10:10 2015
+vmware-open-vm-tools-nox-8.3.19-1310361.el6.x86_64 Sat Aug 29 19:10:10 2015
+vmware-open-vm-tools-common-8.3.19-1310361.el6.x86_64 Sat Aug 29 19:10:09 2015
+vmware-open-vm-tools-xorg-drv-mouse-12.6.7.0-0.1310361.el6.x86_64 Sat Aug 29 19:10:08 2015
+'''
+
 RPMS_JSON = '''
 {"name": "util-linux","version": "2.23.2","epoch": "(none)","release": "26.el7_2.2","arch": "x86_64","installtime": "Fri 24 Jun 2016 04:17:58 PM EDT","buildtime": "1458159298","rsaheader": "RSA/SHA256, Sun 20 Mar 2016 10:00:45 PM EDT, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "util-linux-2.23.2-26.el7_2.2.src.rpm"}
 {"name": "libestr","version": "0.1.9","epoch": "(none)","release": "2.el7","arch": "x86_64","installtime": "Fri 06 May 2016 03:53:26 PM EDT","buildtime": "1390734694","rsaheader": "RSA/SHA256, Tue 01 Apr 2014 04:49:20 PM EDT, Key ID 199e2f91fd431d51","dsaheader": "(none)","srpm": "libestr-0.1.9-2.el7.src.rpm"}
@@ -60,6 +78,19 @@ kernel-devel-3.10.0-327.36.1.el7.x86_64
 ERROR_DB = '''
 error: rpmdbNextIterator: skipping h#     753 Header V3 DSA signature: BAD, key ID db42a6
 yum-security-1.1.16-21.el5.noarch
+'''.strip()
+
+ORACLEASM_RPMS = '''
+oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64
+oracleasmlib-2.0.4-1.el5.x86_64
+oracleasm-support-2.1.3-1.el5.x86_64
+oracle-validated-1.0.0-18.el5.x86_64
+'''.strip()
+
+NON_ORACLEASM_RPMS = '''
+oracleasmlib-2.0.4-1.el5.x86_64
+oracleasm-support-2.1.3-1.el5.x86_64
+oracle-validated-1.0.0-18.el5.x86_64
 '''.strip()
 
 
@@ -96,28 +127,13 @@ def test_corrupt_db():
     assert rpms.corrupt is True
 
 
-def test_check_versions_installed():
-    rpms = InstalledRpms(context_wrap(RPMS_JSON))
-    listed = ['bash-4.2.46-19.el7', 'bash-4.2.47-19.el7']
-    expected = {'PACKAGE_NAMES': ['bash'], 'PACKAGES': ['bash-4.2.46-19.el7']}
-    assert rpms.check_versions_installed(listed) == expected
-    assert (rpms.vulnerable_versions_installed(listed) ==
-            {'PACKAGE_NAMES': expected['PACKAGE_NAMES'],
-             'VULNERABLE_PACKAGES': expected['PACKAGES']})
-
-    rpms = InstalledRpms(context_wrap(RPMS_JSON))
-    listed = ['bash-4.2.48-19.el7', 'bash-4.2.47-19.el7']
-    assert rpms.check_versions_installed(listed) is None
-    assert rpms.vulnerable_versions_installed(listed) is None
-
-    rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
-    listed = ['kernel-3.10.0-327.el7', 'kernel-3.10.0-327.36.1.el7']
-    expected = {'PACKAGE_NAMES': ['kernel'],
-                'PACKAGES': ['kernel-3.10.0-327.36.1.el7', 'kernel-3.10.0-327.el7']}
-    assert rpms.check_versions_installed(listed) == expected
-    assert (rpms.vulnerable_versions_installed(listed) ==
-            {'PACKAGE_NAMES': expected['PACKAGE_NAMES'],
-             'VULNERABLE_PACKAGES': expected['PACKAGES']})
+def test_rpm_manifest():
+    rpms = InstalledRpms(context_wrap(RPM_MANIFEST))
+    assert 'gpg-pubkey' in rpms
+    assert rpms.packages['vmware-tools'][0].package == \
+        'vmware-tools-8.3.19-1310361.el6'
+    assert rpms.packages['vmware-tools'][0].installtime == \
+        'Sat Aug 29 19:10:11 2015'
 
 
 def test_package_property_aliases():
@@ -126,13 +142,6 @@ def test_package_property_aliases():
     assert rpm.package == "grub2-tools-2.02-0.34.el7_2"
     assert rpm.nvr == "grub2-tools-2.02-0.34.el7_2"
     assert rpm.nvra == "grub2-tools-2.02-0.34.el7_2.x86_64"
-
-
-def test_check_package_installed():
-    rpms = InstalledRpms(context_wrap(RPMS_JSON))
-    expected = {'INSTALLED_PACKAGE': 'bash-4.2.46-19.el7'}
-    assert rpms.check_package_installed('bash') == expected
-    assert rpms.check_package_installed('dnf') is None
 
 
 def test_max_min():
@@ -213,3 +222,13 @@ def test_no_suffixes():
     assert 'askpass' not in rpms
     assert 'openobex' in rpms
     assert 'penobex' not in rpms
+
+
+def test_oracleasmrpms():
+    ora_rpms = OracleAsmRpms(context_wrap(ORACLEASM_RPMS))
+    assert ora_rpms is not None
+    assert ora_rpms.rpms_installed == ['oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64']
+
+    ora_rpms = OracleAsmRpms(context_wrap(NON_ORACLEASM_RPMS))
+    assert ora_rpms is not None
+    assert ora_rpms.rpms_installed == []

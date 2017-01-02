@@ -15,26 +15,14 @@ class SpecMapper(object):
 
     def __init__(self, tf_object, data_spec_config=None):
         self.tf = tf_object
-        self.all_names = self.tf.getnames()
-        self.root = self._determine_root()
+        self.all_names = [f for f in self.tf.getnames() if not self.tf.isdir(f)]
+        self.root = os.path.commonprefix(self.all_names)
         logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
         self.analysis_target = None
         self.symbolic_files = defaultdict(list)
         self._determine_analysis_target()
         self.create_symbolic_file_list()
-
-    def _determine_root(self):
-        multi_node = any(["metadata.json" in name for name in self.all_names])
-        if multi_node:
-            root = os.path.commonprefix([p for p in self.all_names])
-        else:
-            root = os.path.commonprefix([p for p in self.all_names if len(p) > 2])
-
-        if root.endswith("/"):
-            return root.rstrip("/") + "/"
-        else:
-            return root
 
     def _get_first_matching(self, pattern):
         for match in filter(
@@ -70,7 +58,8 @@ class SpecMapper(object):
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
                 is_command = isinstance(spec, CommandSpec)
-                r = spec.get_regex(prefix='', analysis_target=self.analysis_target)
+                prefix = '' if '/' in spec.get_path() else '^'
+                r = spec.get_regex(prefix=prefix, analysis_target=self.analysis_target)
                 if is_command or "_commands/" in r.pattern:
                     filter_set = commands
                 else:

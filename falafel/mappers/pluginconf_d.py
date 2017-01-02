@@ -1,35 +1,37 @@
-from .. import Mapper, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 
 
 @mapper('pluginconf.d')
-class PluginConfD(Mapper):
-    '''
-    Return an object contains a dict.
-    {
-        "main": {
-            "gpgcheck": "1",
-            "enabled": "0",
-            "timeout": "120"
-        }
-    }
-    ------------------------------------------------
-    There are several files in 'pluginconf.d' directory, which have the same format.
-    -----------one of the files : rhnplugin.conf
-    [main]
-    enabled = 0
-    gpgcheck = 1
-    timeout = 120
+class PluginConfD(LegacyItemAccess, Mapper):
+    """Class to parse configuration file under ``pluginconf.d``
 
-    # You can specify options per channel, e.g.:
-    #
-    #[rhel-i386-server-5]
-    #enabled = 1
-    #
-    #[some-unsigned-custom-channel]
-    #gpgcheck = 0
-    '''
+    Attributes:
+        data (dict): A dict likes
+            {
+                "main": {
+                    "gpgcheck": "1",
+                    "enabled": "0",
+                    "timeout": "120"
+                }
+            }
+    """
 
     def parse_content(self, content):
+        """
+        ---Sample---
+        [main]
+        enabled = 0
+        gpgcheck = 1
+        timeout = 120
+
+        # You can specify options per channel, e.g.:
+        #
+        #[rhel-i386-server-5]
+        #enabled = 1
+        #
+        #[some-unsigned-custom-channel]
+        #gpgcheck = 0
+        """
         plugin_dict = {}
         section_dict = {}
         key = None
@@ -45,3 +47,7 @@ class PluginConfD(Mapper):
                 if key:
                     section_dict[key] = ','.join([section_dict.get(key), line])
         self.data = plugin_dict
+
+    def __iter__(self):
+        for sec in self.data:
+            yield sec

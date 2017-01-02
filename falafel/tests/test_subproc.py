@@ -14,3 +14,8 @@ class TestSubproc(unittest.TestCase):
         cmd = 'sleep 3'
         with self.assertRaises(subproc.CalledProcessError):
             subproc.call(cmd, timeout=1)
+
+    def test_call_invalid_args(self):
+        cmd = [1, 2, 3]
+        with self.assertRaises(subproc.CalledProcessError):
+            subproc.call(cmd)

@@ -231,6 +231,7 @@ def integrate(input_data, module):
             return []
         else:
             single_host = host_outputs[0]
+        assert all(not r.cluster for r in reducers.values()), "Cluster reducers not allowed in single node test"
         if not reducers:
             # Assume we're expecting a mapper to make_response.
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]

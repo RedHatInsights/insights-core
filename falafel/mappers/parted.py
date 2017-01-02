@@ -258,6 +258,7 @@ class PartedL(Mapper):
                 if len(self._sector_size) != 2:
                     self._sector_size = None
 
+
 if __name__ == "__main__":
     import doctest
     doctest.testmod()

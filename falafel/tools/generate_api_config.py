@@ -250,5 +250,6 @@ def main():
     config_generator = APIConfigGenerator(get_config(), plugin_package=args[0])
     config_generator.create_file_content()
 
+
 if __name__ == "__main__":
     main()

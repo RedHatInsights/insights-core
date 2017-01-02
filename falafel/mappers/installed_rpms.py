@@ -1,7 +1,67 @@
+"""
+installed RPMs - Command ``rpm -qa``
+====================================
+The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.  Each line
+is parsed and stored in an ``InstalledRpm`` object.  The ``rpm -qa`` command may
+output data in different formats and each format can be handled by the parsing
+routines of this class. The basic format of command is the package and is shown
+in the Examples.
+
+Examples:
+    >>> from falafel.mappers.installed_rpms import InstalledRpms
+    >>> from falafel.tests import context_wrap
+    >>> content = '''
+    ... openjpeg-libs-1.3-9.el6_3.x86_64
+    ... openldap-2.4.23-31.el6.x86_64
+    ... openobex-1.4-7.el6.x86_64
+    ... openssh-server-5.3p1-104.el6.x86_64
+    ... openssh-askpass-5.3p1-84.1.el6.x86_64
+    ... openssl-1.0.0-27.el6.x86_64
+    ... '''
+    >>> shared = {InstalledRpms: InstalledRpms(context_wrap(content))}
+    >>> rpms = shared[InstalledRpms]
+    >>> 'openjpeg-libs' in rpms
+    True
+    >>> rpms.corrupt
+    False
+    >>> rpms.get_max('openjpeg-libs')
+    0:openjpeg-libs-1.3-9.el6_3
+    >>> type(rpms.get_max('openjpeg-libs'))
+    <class 'falafel.mappers.installed_rpms.InstalledRpm'>
+    >>> rpms.get_min('openjpeg-libs')
+    0:openjpeg-libs-1.3-9.el6_3
+    >>> rpm = rpms.get_max('openssh-server')
+    >>> rpm
+    0:openssh-server-5.3p1-104.el6
+    >>> type(rpm)
+    <class 'falafel.mappers.installed_rpms.InstalledRpm'>
+    >>> rpm.package
+    'openssh-server-5.3p1-104.el6'
+    >>> rpm.nvr
+    'openssh-server-5.3p1-104.el6'
+    >>> rpm.source
+    >>> rpm.name
+    'openssh-server'
+    >>> rpm.version
+    '5.3p1'
+    >>> rpm.release
+    '104.el6'
+    >>> rpm.arch
+    'x86_64'
+    >>> rpm.epoch
+    '0'
+    >>> from falafel.mappers.installed_rpms import InstalledRpm
+    >>> rpm2 = InstalledRpm.from_package('openssh-server-6.0-100.el6.x86_64')
+    >>> rpm == rpm2
+    False
+    >>> rpm > rpm2
+    False
+    >>> rpm < rpm2
+    True
+"""
 import json
 from collections import defaultdict
 from distutils.version import LooseVersion as LV
-from itertools import chain
 
 from ..util import rsplit
 from .. import Mapper, mapper, get_active_lines
@@ -62,11 +122,11 @@ KNOWN_ARCHITECTURES = [
     'sparcv9v',
     'aarch64',
 ]
+"""list: List of recognized architectures.
 
-PACKAGES = 'PACKAGES'
-VULNERABLE_PACKAGES = 'VULNERABLE_PACKAGES'
-PACKAGE_NAMES = 'PACKAGE_NAMES'
-INSTALLED_PACKAGE = 'INSTALLED_PACKAGE'
+This list is taken from the PDC (Product Definition Center) available
+here https://pdc.fedoraproject.org/rest_api/v1/arches/.
+"""
 
 
 @mapper('installed-rpms')
@@ -77,20 +137,15 @@ class InstalledRpms(Mapper):
     """
     def __init__(self, *args, **kwargs):
         self.errors = []
+        """list: List of input lines that indicate an error acquiring the data on the client."""
         self.unparsed = []
+        """list: List of input lines that raised an exception during parsing."""
         self.packages = defaultdict(list)
+        """dict (InstalledRpm): Dictionary of RPMs keyed by package name."""
+
         super(InstalledRpms, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        """
-        Main parsing class method which stores all interesting data from the content.
-
-        Args:
-            content (context.content): Mapper context content
-
-        Returns:
-            dict: dictionary with parsed data
-        """
         for line in get_active_lines(content, comment_char='COMMAND>'):
             if line.startswith('error:') or line.startswith('warning:'):
                 self.errors.append(line)
@@ -108,6 +163,8 @@ class InstalledRpms(Mapper):
                         except Exception:
                             # Both ways failed
                             self.unparsed.append(line)
+        # Don't want defaultdict's behavior after parsing is complete
+        self.packages = dict(self.packages)
 
     def __contains__(self, package_name):
         """
@@ -123,12 +180,7 @@ class InstalledRpms(Mapper):
 
     @property
     def corrupt(self):
-        """
-        Property shortcut for parsed data.
-
-        Returns:
-            bool: True if RPM database is corrupted, else False
-        """
+        """bool: True if RPM database is corrupted, else False."""
         return any('rpmdbNextIterator' in s for s in self.errors)
 
     def get_max(self, package_name):
@@ -151,7 +203,7 @@ class InstalledRpms(Mapper):
         Returns the lowest version of the installed package with the given name.
 
         Args:
-            package_name (str): Installed RPM package name such as 'bash'
+            package_name (str): Installed RPM package name such as 'bash'.
 
         Returns:
             InstalledRpm: Installed RPM with lowest version
@@ -161,95 +213,62 @@ class InstalledRpms(Mapper):
         else:
             return min(self.packages[package_name])
 
-    def check_versions_installed(self, packages_strings):
-        """
-        Check if any of the packages listed in a list is installed on the system.
-
-        Args:
-            packages_strings (iterable): list/iterable of checked package strings such as
-                                         ['bash-4.2.39-3.el7', ...]
-
-        Returns:
-            dict: list of detected packages and list of their names in the following format,
-                  otherwise None:
-
-                  {PACKAGES: installed_package_strings,
-                   PACKAGE_NAMES: installed_package_names}
-        """
-        installed_packages = set(chain.from_iterable(self.packages.values()))
-        installed_listed_packages = [a for a in installed_packages if a.package in packages_strings]
-        installed_listed_package_strings = sorted(a.package for a in installed_listed_packages)
-        installed_listed_package_names = sorted({a.name for a in installed_listed_packages})
-        if installed_listed_packages:
-            return {PACKAGES: installed_listed_package_strings,
-                    PACKAGE_NAMES: installed_listed_package_names}
-
-    def vulnerable_versions_installed(self, vulnerable_package_strings):
-        """
-        Check if any of the packages listed in a list of vulnerable packages is installed on
-        the system.
-
-        Args:
-            vulnerable_package_strings (iterable): list/iterable of vulnerable package strings
-                                                   such as ['bash-4.2.39-3.el7', ...]
-
-        Returns:
-            dict: list of detected packages and list of their names in the following format,
-                  otherwise None:
-
-                  {VULNERABLE_PACKAGES: installed_vulnerable_package_strings,
-                   PACKAGE_NAMES: installed_vulnerable_package_names}
-
-        Warnings:
-            This exists only for compatibility with older security rules, use
-            'check_installed_version' method instead.
-        """
-        result = self.check_versions_installed(vulnerable_package_strings)
-        if result:
-            return {VULNERABLE_PACKAGES: result[PACKAGES], PACKAGE_NAMES: result[PACKAGE_NAMES]}
-
-    def check_package_installed(self, package_name):
-        """
-        Check if package with concrete name is installed on the system.
-
-        Args:
-            package_name (str): name of package such as 'bash'
-
-        Returns:
-            dict: first found full package name which matches searched package in the following
-                  format, otherwise None:
-
-                  {INSTALLED_PACKAGE: package_found}
-        """
-        if package_name in self.packages:
-            return {INSTALLED_PACKAGE: self.packages[package_name][0].package}
-
 
 class InstalledRpm(object):
     """
     Class for holding information about one installed RPM.
+
+    This class is usually created from dictionary with following structure::
+
+         {
+            'name': 'package name',
+            'version': 'package version',
+            'release': 'package release,
+            'arch': 'package architecture'
+          }
+
+    It may also contain supplementary information from SOS report or epoch
+    information from JSON.
+
+    Factory methods are provided such as ``from_package`` to create an object from a
+    short package string::
+
+        kernel-devel-3.10.0-327.36.1.el7.x86_64
+
+    ``from_json`` to create an object from JSON::
+
+       {"name": "kernel-devel",
+        "version": "3.10.0",
+        "release": "327.36.1.el7",
+        "arch": "x86_64"}
+
+    and ``from_line`` to create an object from a long package string:
+
+        .. code:: python
+
+            ('kernel-devel-3.10.0-327.36.1.el7.x86_64'
+             '                                '
+             'Wed May 18 14:16:21 2016' '\t'
+             '1410968065' '\t'
+             'Red Hat, Inc.' '\t'
+             'hs20-bc2-4.build.redhat.com' '\t'
+             '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
+             'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig-short'
     ]
+    """list: List of keys for SOS Report RPM information."""
 
     def __init__(self, data):
-        """
-        Args:
-            data (dict): This class is usually created from dictionary with following structure:
-                         {'name': 'package name',
-                          'version': 'package version',
-                          'release': 'package release,
-                          'arch': 'package architecture'
-                          }
-
-                          It may also contain supplementary information from SOS report or epoch
-                          information from JSON.
-        """
         self.name = None
+        """str: RPM package name."""
         self.version = None
+        """str: RPM package version."""
         self.release = None
+        """str: RPM package release."""
         self.arch = None
+        """str: RPM package architecture."""
 
         for k, v in data.iteritems():
             setattr(self, k, v)
@@ -263,8 +282,9 @@ class InstalledRpm(object):
         created from package string.
 
         Args:
-            package_string (str): package string in the following format (shown as Python string):
-                                  'kernel-devel-3.10.0-327.36.1.el7.x86_64'
+            package_string (str): package string in the following format (shown as Python string)::
+
+                'kernel-devel-3.10.0-327.36.1.el7.x86_64'
         """
         return cls(cls._parse_package(package_string))
 
@@ -275,11 +295,9 @@ class InstalledRpm(object):
         created from JSON line.
 
         Args:
-            json_line (str): JSON string in the following format (shown as Python string):
-                             '''{"name": "kernel-devel",
-                                 "version": "3.10.0",
-                                 "release": "327.36.1.el7",
-                                 "arch": "x86_64"}'''
+            json_line (str): JSON string in the following format (shown as Python string)::
+
+                '{"name": "kernel-devel", "version": "3.10.0", "release": "327.36.1.el7", "arch": "x86_64"}'
         """
         return cls(json.loads(json_line))
 
@@ -291,14 +309,18 @@ class InstalledRpm(object):
 
         Args:
             line (str): package line in the following format (shown as Python string):
-                        ('kernel-devel-3.10.0-327.36.1.el7.x86_64'
-                         '                                '
-                         'Wed May 18 14:16:21 2016' '\t'
-                         '1410968065' '\t'
-                         'Red Hat, Inc.' '\t'
-                         'hs20-bc2-4.build.redhat.com' '\t'
-                         '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
-                         'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
+
+                .. code-block:: python
+
+                    ('kernel-devel-3.10.0-327.36.1.el7.x86_64'
+                     '                                '
+                     'Wed May 18 14:16:21 2016' '\t'
+                     '1410968065' '\t'
+                     'Red Hat, Inc.' '\t'
+                     'hs20-bc2-4.build.redhat.com' '\t'
+                     '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
+                     'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
+
         """
         return cls(cls._parse_line(line))
 
@@ -308,7 +330,7 @@ class InstalledRpm(object):
         Helper method for finding if arch separator is '.' or '-'
 
         Args:
-            package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'
+            package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'.
 
         Returns:
             str: arch separator
@@ -364,35 +386,24 @@ class InstalledRpm(object):
 
     @property
     def package(self):
+        """str: Package `name-version-release` string."""
         return '{}-{}-{}'.format(self.name,
                                  self.version,
-                                 self.release
-                                 )
+                                 self.release)
 
     @property
     def nvr(self):
-        """
-        Alias for ``package``.
-        NVR: Name, Version, Release.
-        """
+        """str: Package `name-version-release` string."""
         return self.package
 
     @property
     def nvra(self):
-        """
-        Just like ``nvr``, but adds arch as well
-        NVRA: Name, Version, Release, Arch
-        """
+        """str: Package `name-version-release.arch` string."""
         return ".".join([self.package, self.arch])
 
     @property
     def source(self):
-        """
-        Returns source RPM of this RPM.
-
-        Returns:
-            InstalledRpm: source RPM
-        """
+        """InstalledRpm: Returns source RPM of this RPM object."""
         if hasattr(self, 'srpm'):
             rpm = self.from_package(self.srpm)
             # Source RPMs don't have epoch for some reason
@@ -453,3 +464,30 @@ class InstalledRpm(object):
 
     def __le__(self, other):
         return not other < self
+
+
+@mapper('installed-rpms')
+class OracleAsmRpms(Mapper):
+    """Parse installed rpms for oracleasm RPM.
+
+    This class parses the installed rpms and saves all versions of the
+    oracleasm RPM that is installed. The Oracle Asm RPM has two version
+    numbers embedded, like this `oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64`.
+
+    This mapper filters out the `oracleasmlib` and `oracleasm-support` rpms.
+
+    Examples:
+        >>> shared[OracleAsmRpms].rpms_installed
+        ['oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64']
+    """
+    def parse_content(self, content):
+        self._data = []
+        for line in get_active_lines(content, comment_char='COMMAND>'):
+            if line.startswith('oracleasm-'):
+                if 'support' not in line:
+                    self._data.append(line)
+
+    @property
+    def rpms_installed(self):
+        """list (str): Returns a list of the installed oracleasm rpms."""
+        return self._data

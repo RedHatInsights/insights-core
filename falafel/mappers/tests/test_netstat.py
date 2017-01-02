@@ -1,4 +1,4 @@
-from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN, NetstatS
+from falafel.mappers.netstat import get_netstat_s, Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN
 from falafel.tests import context_wrap
 from falafel.mappers import netstat
 from ...mappers import ParseException
@@ -411,3 +411,70 @@ def test_is_httpd_running():
     assert "httpd" in Netstat(context_wrap(NETSTAT_MATCH1)).running_processes
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH1)).running_processes
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes
+
+
+NETSTAT_I = """
+Kernel Interface table
+Iface       MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+bond0      1500   0   845265      0      0      0     1753      0      0      0 BMmRU
+bond1      1500   0   842447      0      0      0     4233      0      0      0 BMmRU
+eth0       1500   0   422518      0      0      0     1703      0      0      0 BMsRU
+eth1       1500   0   422747      0      0      0       50      0      0      0 BMsRU
+eth2       1500   0   421192      0      0      0     3674      0      0      0 BMsRU
+eth3       1500   0   421255      0      0      0      559      0      0      0 BMsRU
+lo        65536   0        0      0      0      0        0      0      0      0 LRU
+"""
+
+
+def test_get_netstat_i():
+    result = Netstat_I(context_wrap(NETSTAT_I)).group_by_iface
+    assert len(result) == 7
+    assert result["bond0"] == {
+            "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
+            "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
+            "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMmRU"
+                }
+    assert result["eth0"] == {
+            "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
+            "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
+            "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMsRU"
+                }
+
+
+Ss_TULPN = """
+COMMAND> ss -tulpn
+
+Netid  State      Recv-Q Send-Q     Local Address:Port       Peer Address:Port
+tcp    LISTEN     0      10                    :::5671                 :::*      users:(("qpidd",10973,27))
+tcp    LISTEN     0      50                     *:5646                  *:*      users:(("qdrouterd",10991,6))
+tcp    UNCONN     0      0                    ::1:323                  :::*      users:(("chronyd",848,5))
+tcp    LISTEN     0      128                   :::443                  :::*      users:(("httpd",10488,4),("httpd",10487,4),("httpd",10486,4),("httpd",10485,4),("httpd",10484,4),("httpd",10482,4),("httpd",10481,4),("httpd",10480,4),("httpd",10440,4))
+tcp    LISTEN     0      100                   :::8443                 :::*      users:(("java",11066,46))
+"""
+
+
+def test_get_ss_tupn():
+    ss = SsTULPN(context_wrap(Ss_TULPN))
+    assert len(ss.data) == 7
+    assert "tcp" in ss.col('Netid')
+    assert "UNCONN" in ss.col('State')
+    assert "LISTEN" in ss.col('State')
+    assert "0" in ss.col('Send-Q')
+    assert "50" in ss.col('Send-Q')
+    assert ":::5671" in ss.col('Local Address:Port')
+    assert "*:5646" in ss.col('Local Address:Port')
+    assert "::1:323" in ss.col('Local Address:Port')
+    assert ":::443" in ss.col('Local Address:Port')
+    assert ":::*" in ss.col('Peer Address:Port')
+    assert "*:*" in ss.col('Peer Address:Port')
+    assert "users:((\"qpidd\",10973,27))" in ss.col('Process_info')
+    assert "users:((\"qdrouterd\",10991,6))" in ss.col('Process_info')
+    assert "users:((\"chronyd\",848,5))" in ss.col('Process_info')
+    assert "users:((\"httpd\",10488,4),(\"httpd\",10487,4),(\"httpd\",10486,4),(\"httpd\",10485,4),(\"httpd\",10484,4),(\"httpd\",10482,4),(\"httpd\",10481,4),(\"httpd\",10480,4),(\"httpd\",10440,4))" in ss.col('Process_info')
+
+
+def test_listening_port():
+    ss = SsTULPN(context_wrap(Ss_TULPN))
+    assert len(ss.data) == 7
+    assert ss.listening_port['5646'] == {'addr': '*', 'port': '5646'}
+    assert ss.listening_port['5671'] == {'addr': '::', 'port': '5671'}

@@ -1,7 +1,8 @@
+import pytest
 import unittest
 
 from falafel.tests import context_wrap
-from falafel.mappers import ethtool
+from falafel.mappers import ethtool, ParseException
 from falafel.util import keys_in
 
 
@@ -268,7 +269,7 @@ FAILED_ETHTOOL_S_TWO = "Cannot get stats strings information: Operation not supp
 
 ETHTOOL_INFO = """
 Settings for eth1:
-    Supported ports: [ TP ]
+    Supported ports: [ TP MII ]
     Supported link modes: 10baseT/Half 10baseT/Full
                           100baseT/Half 100baseT/Full
                           1000baseT/Full
@@ -404,3 +405,17 @@ class TestEthtool(unittest.TestCase):
         self.assertEqual(ethtool_info.ifname, "eth1")
         self.assertTrue(ethtool_info.link_detected)
         self.assertEqual(ethtool_info.speed, ['1000Mb/s'])
+        self.assertEqual(ethtool_info.supported_link_modes,
+                         ['10baseT/Half', '10baseT/Full',
+                          '100baseT/Half', '100baseT/Full',
+                          '1000baseT/Full'])
+        self.assertEqual(ethtool_info.advertised_link_modes,
+                         ['10baseT/Half', '10baseT/Full',
+                          '100baseT/Half', '100baseT/Full',
+                          '1000baseT/Full'])
+        self.assertEqual(ethtool_info.supported_ports,
+                         ['TP', 'MII'])
+
+    def test_ethtool_fail(self):
+        with pytest.raises(ParseException):
+            ethtool.Ethtool(context_wrap(FAIL_ETHTOOL_A_1, path="ethtool_eth1"))

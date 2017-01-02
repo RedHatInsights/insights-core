@@ -114,7 +114,7 @@ def test_lsblk():
 
 
 def test_lsblk_po():
-    results = lsblk.LSBlock_PO(context_wrap(LSBLK_EXT_DATA))
+    results = lsblk.LSBlockPairs(context_wrap(LSBLK_EXT_DATA))
     assert results is not None
     assert len(results) == 7
     sda1 = None

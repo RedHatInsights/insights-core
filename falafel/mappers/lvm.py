@@ -21,11 +21,30 @@ def replace_spaces_in_keys(header):
     return header
 
 
+def find_warnings(content):
+    keywords = [k.lower() for k in [
+        "WARNING", "Couldn't find device", "Configuration setting",
+        "read failed", "Was device resized?", "Invalid argument",
+        "leaked on lvs", "Checksum error", "is exported", "failed.",
+        "Invalid metadata", "response failed", "unknown device",
+        "duplicate", "not found", "Missing device", "Internal error",
+        "Input/output error", "Incorrect metadata", "Cannot process volume",
+        "No such file or directory", "Logging initialised", "changed sizes",
+        "vsnprintf failed", "write failed", "correction failed",
+        "Failed to write", "Couldn't read", "marked missing",
+        "Attempt to close device", "Ignoring supplied major",
+        "not match metadata"
+    ]]
+    for l in content:
+        lower = l.strip().lower()
+        if any(k in lower for k in keywords):
+            yield l
+
+
 class Lvm(Mapper):
 
     def parse_content(self, content):
-        d = {}
-        d["warnings"] = [l for l in content if l.strip().startswith("WARNING")]
+        d = {"warnings": set(find_warnings(content))}
         content = [l for l in content if l not in d["warnings"]]
         try:
             d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))

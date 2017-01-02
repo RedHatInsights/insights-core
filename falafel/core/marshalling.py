@@ -77,6 +77,7 @@ class JsonMarshaller(Marshaller):
     def unmarshal(self, doc):
         return json_decode(doc)
 
+
 INSTANCE = JsonMarshaller()
 marshal = INSTANCE.marshal
 unmarshal = INSTANCE.unmarshal

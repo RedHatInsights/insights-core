@@ -9,5 +9,7 @@ class NetConsole(LegacyItemAccess, Mapper):
         for line in get_active_lines(content):
             if '=' in line:
                 k, v = line.split('=')
+                k = k.strip()
+                v = v.split('#', 1)[0].strip()
                 result[k] = v
         self.data = result

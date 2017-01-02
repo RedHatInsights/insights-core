@@ -100,9 +100,3 @@ class Uptime(Mapper):
             setattr(self, k, v)
 
         self.data = uptime_info
-
-
-@mapper("uptime")
-def get_uptime(context):
-    """Deprecated, do not use. """
-    return Uptime(context).data

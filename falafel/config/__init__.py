@@ -840,4 +840,5 @@ def json_format(fmt=None):
         return "\\{" + ",".join(fields) + "\\}\\n"
     return inner
 
+
 format_rpm = _make_rpm_formatter()
