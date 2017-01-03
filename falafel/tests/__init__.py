@@ -358,14 +358,14 @@ RHEL6 = "Red Hat Enterprise Linux Server release 6.5 (Santiago)"
 RHEL7 = "Red Hat Enterprise Linux Server release 7.0 (Maipo)"
 
 
-def redhat_release(major, minor=""):
+def redhat_release(rel_major, rel_minor=""):
     """
     Helper function to construct a redhat-release string for a specific RHEL
     major and minor version.  Only constructs redhat-releases for RHEL major
     releases 4, 5, 6 & 7
 
-    :param major major: RHEL major number. Accepts str, int or float (as major.minor)
-    :param minor minor: RHEL minor number. Optional and accepts str or int
+    :param rel_major rel_major: RHEL major number. Accepts str, int or float (as major.minor)
+    :param rel_minor rel_minor: RHEL minor number. Optional and accepts str or int
 
     For example, to construct a redhat-release for:
         RHEL4U9:  redhat_release('4.9') or (4.9) or (4, 9)
@@ -375,29 +375,29 @@ def redhat_release(major, minor=""):
 
     Limitation with float args: (x.10) will be parsed as minor = 1
     """
-    if isinstance(major, str) and '.' in major:
-        major, minor = major.split('.')
-    elif isinstance(major, float):
-        major, minor = str(major).split('.')
-    elif isinstance(major, int):
-        major = str(major)
-    if isinstance(minor, int):
-        minor = str(minor)
+    if isinstance(rel_major, str) and '.' in rel_major:
+        rel_major, rel_minor = rel_major.split('.')
+    elif isinstance(rel_major, float):
+        rel_major, rel_minor = str(rel_major).split('.')
+    elif isinstance(rel_major, int):
+        rel_major = str(rel_major)
+    if isinstance(rel_minor, int):
+        rel_minor = str(rel_minor)
 
-    if major == '4':
-        if minor:
-            minor = "" if minor == '0' else " Update %s" % minor
-        return "Red Hat Enterprise Linux AS release %s (Nahant%s)" % (major, minor)
+    if rel_major == '4':
+        if rel_minor:
+            rel_minor = "" if rel_minor == '0' else " Update %s" % rel_minor
+        return "Red Hat Enterprise Linux AS release %s (Nahant%s)" % (rel_major, rel_minor)
 
     template = "Red Hat Enterprise Linux Server release %s%s (%s)"
-    if major == '5':
-        if minor:
-            minor = "" if minor == '0' else "." + minor
-        return template % (major, minor, "Tikanga")
-    elif major == '6' or major == '7':
-        if not minor:
-            minor = "0"
-        name = "Santiago" if major == '6' else "Maipo"
-        return template % (major, "." + minor, name)
+    if rel_major == '5':
+        if rel_minor:
+            rel_minor = "" if rel_minor == '0' else "." + rel_minor
+        return template % (rel_major, rel_minor, "Tikanga")
+    elif rel_major == '6' or rel_major == '7':
+        if not rel_minor:
+            rel_minor = "0"
+        name = "Santiago" if rel_major == '6' else "Maipo"
+        return template % (rel_major, "." + rel_minor, name)
     else:
-        raise Exception("invalid major version: %s" % major)
+        raise Exception("invalid major version: %s" % rel_major)
