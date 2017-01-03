@@ -27,9 +27,7 @@ def unordered_compare(result, expected):
 
     if isinstance(result, list):
         assert len(result) == len(expected)
-        result.sort()
-        expected.sort()
-        for left_item, right_item in itertools.izip(result, expected):
+        for left_item, right_item in itertools.izip(sorted(result), sorted(expected)):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):
         assert len(result) == len(expected)
