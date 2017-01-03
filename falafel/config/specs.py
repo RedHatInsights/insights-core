@@ -13,6 +13,7 @@ static_specs = {
                                     SimpleFileSpec("run/blkid"),
                                     SimpleFileSpec("sos_commands/filesys/blkid")]),
     "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
+    "brctl_show"                : CommandSpec("/usr/sbin/brctl show"),
     "candlepin.log"             : First([SimpleFileSpec(r"var/log/candlepin/candlepin.log", large_content=True),
                                     SimpleFileSpec(r"sos_commands/foreman/foreman-debug/var/log/candlepin/candlepin.log", large_content=True)]),
     "catalina.out"              : First([PatternSpec(r"var/log/tomcat.*/catalina\.out", large_content=True),
