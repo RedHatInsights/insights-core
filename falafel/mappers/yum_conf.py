@@ -32,4 +32,3 @@ class YumConf(Mapper):
                     section_dict[key].append(line)
 
         self.data = yum_conf_dict
-
