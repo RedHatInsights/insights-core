@@ -204,6 +204,7 @@ static_specs = {
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
     "ps_auxwww"                 : SimpleFileSpec("sos_commands/process/ps_auxwww"),
+    "ps_axcwwo"                 : CommandSpec("/bin/ps axcwwo ucomm,%cpu,lstart"),
     "puppet_ssl_cert_ca_pem"    : NoneGroup([SimpleFileSpec("var/lib/puppet/ssl/certs/ca.pem"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")]),
     "pvs"                       : NoneGroup([CommandSpec('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"')]),

@@ -8,6 +8,7 @@ handled by this command inlude::
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
     "ps_auxwww"                 : SimpleFileSpec("sos_commands/process/ps_auxwww"),
+    "ps_axcwwo"                 : CommandSpec("/bin/ps axcwwo ucomm,%cpu,lstart"),
 
 Class ``PsAuxcww`` parses the output of the ``ps auxcww`` command.  Sample
 output of this command looks like::
@@ -26,8 +27,19 @@ to only contain lines with the strings 'STAT', 'keystone-all', and 'COMMAND'.
 Output is similar to the ``ps auxcww`` command except that the `COMMAND`
 column provides additional information about the command.
 
-Class ``PsAuxwww`` parses the output of the ``ps auxwww`` command.  Output of
+Class ``PsAuxwww`` parses the output of the ``ps auxwww`` command. Output of
 this command is similar to the ``ps aux``.
+
+Class ``PsAxcwwo`` parses the output of the ``ps axcwwo ucomm,%cpu,lstart``
+command to provide full timestamp of service start time. Sample output of this
+command looks like::
+
+    COMMAND         %CPU                  STARTED
+    systemd          0.0 Thu Dec  8 01:19:25 2016
+    kthreadd         0.0 Thu Dec  8 01:19:25 2016
+    ksoftirqd/0      0.0 Thu Dec  8 01:19:25 2016
+    libvirtd         0.0 Wed Dec 28 05:59:04 2016
+    vdsm             1.3 Wed Dec 28 05:59:06 2016
 
 All classes utilize the same base class ``ProcessList`` so the following
 examples apply to all classes in this module.
@@ -158,3 +170,25 @@ class PsAuxwww(PsAux):
             headers and each item in the list represents a process.
     """
     pass
+
+
+@mapper('ps_axcwwo')
+class PsAxcwwo(ProcessList):
+    """Class to parse ``ps axcwwo ucomm,%cpu,lstart`` command output.
+
+    Colume "STARTED" provides full timestamp of service start time.
+
+    Attributes:
+        data (list): List of dicts, where the keys in each dict are the column
+            headers and each item in the list represents a process.
+
+    Raises:
+        ValueError: Raised if any error occurs parsing the content.
+    """
+
+    def parse_content(self, content):
+        if len(content) > 0 and "COMMAND" in content[0]:
+            self.data = parse_table(content, max_splits=2)
+        else:
+            raise ValueError("PsAuxcww: Unable to parse content: {} ({})".format(len(content),
+                                                                                 content[0]))
