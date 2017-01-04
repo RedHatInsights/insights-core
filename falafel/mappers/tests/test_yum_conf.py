@@ -26,6 +26,19 @@ installonly_limit=3
 
 # PUT YOUR REPOS HERE OR IN separate files named file.repo
 # in /etc/yum.repos.d
+
+[rhel-7-server-rhn-tools-beta-debug-rpms]
+metadata_expire = 86400
+sslclientcert = /etc/pki/entitlement/1234.pem
+baseurl = https://cdn.redhat.com/content/beta/rhel/server/7/$basearch/rhn-tools/debug
+ui_repoid_vars = basearch
+sslverify = 1
+name = RHN Tools for Red Hat Enterprise Linux 7 Server Beta (Debug RPMs)
+sslclientkey = /etc/pki/entitlement/1234-key.pem
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+enabled = 0
+sslcacert = /etc/rhsm/ca/redhat-uep.pem
+gpgcheck = 1
 """
 
 
@@ -35,8 +48,9 @@ CONF_PATH = 'etc/yum.conf'
 def test_get_yum_conf():
     yum_conf = YumConf(context_wrap(YUM_CONF, path=CONF_PATH))
 
-    print yum_conf.get('main')
-    assert yum_conf.get('main') == {
+    print 'main'
+    print yum_conf.items('main')
+    assert yum_conf.items('main') == {
         'plugins': '1',
         'keepcache': '0',
         'cachedir': '/var/cache/yum/$basearch/$releasever',
@@ -47,5 +61,19 @@ def test_get_yum_conf():
         'gpgcheck': '1',
         'logfile': '/var/log/yum.log'
     }
+
+    print 'rhel-7-server-rhn-tools-beta-debug-rpms'
+    print yum_conf.items('rhel-7-server-rhn-tools-beta-debug-rpms')
+    assert yum_conf.items('rhel-7-server-rhn-tools-beta-debug-rpms') == {
+         'ui_repoid_vars': 'basearch', 'sslverify': '1',
+         'name': 'RHN Tools for Red Hat Enterprise Linux 7 Server Beta (Debug RPMs)',
+         'sslclientkey': '/etc/pki/entitlement/1234-key.pem', 'enabled': '0',
+         'gpgkey': ['file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta',
+                    'file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release'],
+         'sslclientcert': '/etc/pki/entitlement/1234.pem',
+         'baseurl': ['https://cdn.redhat.com/content/beta/rhel/server/7/$basearch/rhn-tools/debug'],
+         'sslcacert': '/etc/rhsm/ca/redhat-uep.pem', 'gpgcheck': '1', 'metadata_expire': '86400'
+    }
+
     assert yum_conf.file_name == 'yum.conf'
     assert yum_conf.file_path == 'etc/yum.conf'
