@@ -1,5 +1,7 @@
+from collections import namedtuple
 from falafel.contrib import pyparsing as p
 from .. import Mapper, LogFileOutput, mapper
+from . import ParseException
 
 
 # For "Status of node" section's erlang block prasing only, could not cover
@@ -155,3 +157,64 @@ class RabbitMQUsers(Mapper):
 @mapper("rabbitmq_startup_log")
 class RabbitMQStartupLog(LogFileOutput):
     pass
+
+
+TRUE_FALSE = {'true': True, 'false': False}
+"""dict: Dictionary for converting true/false strings to bool."""
+
+
+@mapper('rabbitmq_queues')
+class RabbitMQQueues(Mapper):
+    """Parse the output of the `rabbitmqctl list_queues` command.
+
+    The actual command is
+    `rabbitmqctl list_queues name messages consumers auto_delete`.
+
+    The four columns that are output are:
+
+    1. name - The name of the queue with non-ASCII characters escaped as in C.
+    2. messages - Sum of ready and unacknowledged messages (queue depth).
+    3. consumers - Number of consumers.
+    4. auto_delete - Whether the queue will be deleted automatically when no longer used.
+
+    The output of the command looks like::
+
+        cinder-scheduler        0       3       false
+        cinder-scheduler.ha-controller  0       3       false
+        cinder-scheduler_fanout_ea9c69fb630f41b2ae6120eba3cd43e0        8141    1   true
+        cinder-scheduler_fanout_9aed9fbc3d4249289f2cb5ea04c062ab        8145    0   true
+        cinder-scheduler_fanout_b7a2e488f3ed4e1587b959f9ac255b93        8141    0   true
+
+    Examples:
+    >>> queues = shared[RabbitMQQueues]
+    >>> queues.data[0]
+    QueueInfo(name='cinder-scheduler', messages=0, consumers=3, auto_delete=False)
+    >>> queues.data[0].name
+    'cinder-scheduler'
+    >>> queues.data[1].name
+    'cinder-scheduler.ha-controller'
+
+    Raises:
+        ParseException: Raised if the data indicates an error in acquisition or if
+            the auto_delete value is not true or false.
+        ValueError: Raised if any of the numbers are not valid numbers
+    """
+
+    QueueInfo = namedtuple('QueueInfo', ['name', 'messages', 'consumers', 'auto_delete'])
+    """namedtuple: Structure to hold a line of RabbitMQ queue information."""
+
+    def parse_content(self, content):
+        self.data = []
+        for line in content:
+            parts = line.split()
+            if len(parts) == 4 and not line.startswith('Error:'):
+                if parts[3].lower() in TRUE_FALSE:
+                    self.data.append(RabbitMQQueues.QueueInfo(parts[0],
+                                                              int(parts[1]),
+                                                              int(parts[2]),
+                                                              TRUE_FALSE[parts[3].lower()]))
+                else:
+                    raise ParseException(
+                        "auto_delete should be true or false: {}".format(line))
+            else:
+                raise ParseException("Data appears invalid: {}".format(line))
