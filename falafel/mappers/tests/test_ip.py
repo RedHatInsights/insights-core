@@ -92,7 +92,7 @@ local 30.142.64.9 dev bond0.400  table local  proto kernel  scope host  src 30.1
 
 
 class Test_ip_route():
-    def test_ip_route_1(self):
+    def test_ip_route(self):
         context = context_wrap(IP_ROUTE_SHOW_TABLE_ALL_TEST)
         d = ip.RouteDevices(context)
 
@@ -106,10 +106,14 @@ class Test_ip_route():
         assert d.ifaces("30.0.0.1")[0] == "notExist"
         assert d.ifaces("192.168.0.1")[0] == "bond0.400"
         assert len(d.data["default"]) == 1
+        assert getattr(d.by_device['bond0.300'][0], 'src') == '30.142.34.5'
+        assert getattr(d.by_prefix['default'][0], 'via') == '30.142.64.1'
+        assert getattr(d.by_prefix['30.142.34.0/26'][0], 'scope') == 'link'
+        assert getattr(d.by_table['None'][1], 'proto') == 'kernel'
+        assert getattr(d.by_type['None'][3], 'netmask') == 8
 
 
 IPV4_NEIGH_CONTEXT = """
-
 172.17.0.19 dev docker0  FAILED
 172.17.42.1 dev lo lladdr 00:00:00:00:00:00 NOARP
 """
