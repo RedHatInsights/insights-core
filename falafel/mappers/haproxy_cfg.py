@@ -1,22 +1,51 @@
-from .. import mapper
+"""
+haproxy_cfg - File haproxy.cfg
+==============================
 
+Contents of the `haproxy.cfg` file look like::
 
-@mapper('haproxy_cfg')
-def haproxy_cfg_parser(context):
-    """
-    if there are duplicate key items, merge them in to one. Like
+    global
+        daemon
+        group       haproxy
+        log         /dev/log local0
+        user        haproxy
+        maxconn     20480
+        pidfile     /var/run/haproxy.pid
+
+    defaults
+        retries     3
+        maxconn     4096
+        log         global
+        timeout     http-request 10s
+        timeout     queue 1m
+        timeout     connect 10s
+
+If there are duplicate key items, merge them in to one. Like::
+
     option  tcpka
                             }--->    option: ["tcpka","tcplog"]
     option  tcplog
 
-    return dict as below:
-    {"global": {"daemon": "", "group": "haproxy", "log": " /dev/log local0", "user": "haproxy", "maxconn": "20480", "pidfile": "/var/run/haproxy.pid"},
-     "defaults": {"retries": "3", "maxconn": "4096", "log": "global", "timeout": ["http-request 10s, queue 1m, connect 10s"]
+Examples:
+    >>> cfg = shared[HaproxyCfg]
+    >>> cfg.data['global']
+    {"daemon": "", "group": "haproxy", "log": " /dev/log local0",
+     "user": "haproxy", "maxconn": "20480", "pidfile": "/var/run/haproxy.pid"}
+    >>> cfg.data['global']['group']
+    "haproxy"
+    >>> 'global' in cfg.data
+    True
+    >>> 'user' in cfg.data.get('global')
+    True
     """
+from .. import Mapper, mapper
+
+
+def _parse_content(content):
     SECTION_NAMES = ("global", "defaults", "frontend", "backend", "listen")
     haproxy_dict = {}
     section_dict = {}
-    for line in context.content:
+    for line in content:
         line = line.strip()
         if line.startswith("#") or line == "":
             continue
@@ -41,3 +70,16 @@ def haproxy_cfg_parser(context):
                 else:
                     section_dict[attr_key] = attr_value
     return haproxy_dict
+
+
+@mapper('haproxy_cfg')
+class HaproxyCfg(Mapper):
+    """Class to parse file ``haproxy.cfg``."""
+    def parse_content(self, content):
+        self.data = _parse_content(content)
+
+
+@mapper('haproxy_cfg')
+def haproxy_cfg_parser(context):
+    """Deprecated, do not use."""
+    return _parse_content(context.content)
