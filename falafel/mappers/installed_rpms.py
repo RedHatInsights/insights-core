@@ -275,6 +275,30 @@ class InstalledRpm(object):
         if 'epoch' not in data:
             self.epoch = '0'
 
+        """Below is only for version comparison"""
+        def _start_of_distribution(rest_split):
+            """
+            The start of distribution field: from the right, the last non-digit part
+            - bash-4.2.39-3.el7_2.2
+              distribution: el7_2.2
+            - kernel-rt-debug-3.10.0-327.rt56.204.el7
+              distribution: el7
+            """
+            nondigit_flag = False
+            for i, r in enumerate(reversed(rest_split)):
+                if not r.isdigit():
+                    nondigit_flag = True
+                elif nondigit_flag and r.isdigit():
+                    return len(rest_split) - i
+
+        self._release_sep = self.release
+        self._distribution = None
+        rl_split = self._release_sep.split('.') if self._release_sep else None
+        idx = _start_of_distribution(rl_split) if rl_split else None
+        if idx:
+            self._release_sep = '.'.join(rl_split[:idx])
+            self._distribution = '.'.join(rl_split[idx:])
+
     @classmethod
     def from_package(cls, package_string):
         """
@@ -346,7 +370,7 @@ class InstalledRpm(object):
             package_string (str): dash separated package string such as 'bash-4.2.39-3.el7'
 
         Returns:
-            dict: dictionary containing 'name', 'version', 'release', and 'arch' keys
+            dict: dictionary containing 'name', 'version', 'release' and 'arch' keys
         """
         pkg, arch = rsplit(package_string, cls._arch_sep(package_string))
         if arch not in KNOWN_ARCHITECTURES:
@@ -369,7 +393,7 @@ class InstalledRpm(object):
             line (str): package line with or without SOS report information
 
         Returns:
-            dict: dictionary containing 'name', 'version', 'release', and 'arch' keys plus
+            dict: dictionary containing 'name', 'version', 'release' and 'arch' keys plus
                   additionally 'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig',
                   'pgpsig-short' if these are present.
         """
@@ -427,34 +451,46 @@ class InstalledRpm(object):
         return str(self)
 
     def __eq__(self, other):
-        return (
-            type(self) == type(other) and
-            self.name == other.name and
-            LV(self.epoch) == LV(other.epoch) and
-            LV(self.version) == LV(other.version) and
-            LV(self.release) == LV(other.release)
-        )
-
-    def __lt__(self, other):
         if self.name != other.name:
             raise ValueError('Cannot compare packages with differing names {} != {}'
                              .format(self.name, other.name))
+        if (not self._distribution) != (not other._distribution):
+            raise ValueError('Cannot compare packages that one has distribution while the other does not {} != {}'
+                             .format(self.package, other.package))
+
+        eq_ret = (type(self) == type(other) and
+                  LV(self.epoch) == LV(other.epoch) and
+                  LV(self.version) == LV(other.version) and
+                  LV(self.release) == LV(other.release))
+
+        if self._distribution:
+            return eq_ret and LV(self._distribution) == LV(other._distribution)
+        else:
+            return eq_ret
+
+    def __lt__(self, other):
         if self == other:
             return False
 
-        self_v, other_v = LV(self.version), LV(other.version)
         self_ep, other_ep = LV(self.epoch), LV(other.epoch)
-
         if self_ep != other_ep:
             return self_ep < other_ep
 
+        self_v, other_v = LV(self.version), LV(other.version)
         if self_v != other_v:
             return self_v < other_v
 
-        return LV(self.release) < LV(other.release)
+        self_rl, other_rl = LV(self._release_sep), LV(other._release_sep)
+        if self_rl != other_rl:
+            return self_rl < other_rl
+
+        if self._distribution:
+            return LV(self._distribution) < LV(other._distribution)
+
+        return False
 
     def __ne__(self, other):
-        return self < other or other < self
+        return not self == other
 
     def __gt__(self, other):
         return other < self

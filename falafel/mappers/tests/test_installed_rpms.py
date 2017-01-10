@@ -156,13 +156,63 @@ def test_max_min_not_found():
     assert rpms.get_max('abc') is None
 
 
-@pytest.mark.xfail(reason='Incorrect implementation')
 def test_max_min_kernel():
     rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
     assert rpms.get_min('kernel').package == 'kernel-3.10.0-327.el7'
     assert rpms.get_max('kernel').package == 'kernel-3.10.0-327.36.1.el7'
     assert rpms.get_min('kernel-devel').package == 'kernel-devel-3.10.0-327.el7'
     assert rpms.get_max('kernel-devel').package == 'kernel-devel-3.10.0-327.36.1.el7'
+
+
+def test_release_compare():
+    rpm1 = InstalledRpm.from_package('kernel-rt-debug-3.10.0-327.rt56.204.el7_2.1')
+    rpm2 = InstalledRpm.from_package('kernel-rt-debug-3.10.0-327.rt56.204.el7_2.2')
+    rpm3 = InstalledRpm.from_package('kernel-3.10.0-327.10.1.el7')
+    rpm4 = InstalledRpm.from_package('kernel-3.10.0-327.el7')
+    rpm5 = InstalledRpm.from_package('kernel-3.10.0-327.el7_1')
+    rpm6 = InstalledRpm.from_package('kernel-3.10.0-327')
+    rpm7 = InstalledRpm.from_package('kernel-3.10.0-327.1')
+    rpm8 = InstalledRpm.from_package('kernel-3.10.0-327.x86_64')
+    rpm9 = InstalledRpm.from_package('kernel-3.10.0-327.1.x86_64')
+    with pytest.raises(ValueError) as ve:
+        rpm4 < rpm6
+    assert "the other does not" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm4 != rpm6
+    assert "the other does not" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm4 == rpm6
+    assert "the other does not" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm4 >= rpm6
+    assert "the other does not" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm4 < rpm8
+    assert "the other does not" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm1 > rpm7
+    assert "differing names" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm1 <= rpm7
+    assert "differing names" in ve.value.message
+    with pytest.raises(ValueError) as ve:
+        rpm1 != rpm7
+    assert "differing names" in ve.value.message
+
+    assert rpm1 < rpm2
+    assert rpm1 != rpm2
+    assert rpm3 > rpm4
+    assert rpm5 > rpm4
+    assert rpm5 >= rpm4
+    assert not (rpm5 <= rpm4)
+    assert rpm6 < rpm7
+    assert rpm8 < rpm9
+    assert rpm6 < rpm9
+    assert rpm6 <= rpm9
+    assert rpm6 == rpm8
+    assert rpm6 <= rpm8
+    assert rpm6 >= rpm8
+    assert not (rpm7 != rpm9)
 
 
 def test_version_compare():
