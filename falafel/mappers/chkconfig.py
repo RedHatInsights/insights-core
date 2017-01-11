@@ -21,17 +21,32 @@ class ChkConfig(Mapper):
         ... iptables       0:off   1:off   2:on    3:on    4:on    5:on    6:off
         ... kdump          0:off   1:off   2:off   3:on    4:on    5:on    6:off
         ... restorecond    0:off   1:off   2:off   3:off   4:off   5:off   6:off
+        ... xinetd:        0:off   1:off   2:on    3:on    4:on    5:on    6:off
+        ...         rexec:         off
+        ...         rlogin:        off
+        ...         rsh:           off
+        ...         telnet:        on
         ... '''
         >>> shared[ChkConfig].is_on('crond')
         True
         >>> shared[ChkConfig].is_on('httpd')
         False
+        >>> shared[ChkConfig].is_on('rexec')
+        False
+        >>> shared[ChkConfig].is_on('telnet')
+        True
         >>> shared[ChkConfig].parsed_lines['crond']
         'crond          0:off   1:off   2:on    3:on    4:on    5:on    6:off'
+        >>> shared[ChkConfig].parsed_lines['telnet']
+        '        telnet:        on'
         >>> shared[ChkConfig].levels_on('crond')
         set(['3', '2', '5', '4'])
         >>> shared[ChkConfig].levels_off('crond')
         set(['1', '0', '6'])
+        >>> shared[ChkConfig].levels_on('telnet')
+        set([])
+        >>> shared[ChkConfig].levels_off('telnet')
+        set([])
     """
 
     LevelState = namedtuple('LevelState', ['level', 'state'])
@@ -56,20 +71,28 @@ class ChkConfig(Mapper):
             content (context.content): Mapper context content
         """
 
+        # sysv services are in the form "service     0:off"
+        # while xinetd services are "service:    off"
         on_state = re.compile(r':\s*on(?:\s+|$)')
         off_state = re.compile(r':\s*off(?:\s+|$)')
 
         valid_states = [on_state, off_state]
         for line in content:
             if any(state.search(line) for state in valid_states):
+                # xinetd service names have a trailing colon ("telnet:  on")
                 service = line.split()[0].strip(' \t:')
                 enabled = on_state.search(line) is not None
                 self.services[service] = enabled
                 self.parsed_lines[service] = line
 
                 states = []
+                # Register the state of this service at each runlevel by
+                # parsing e.g. "0:off 1:off 2:on" etc.
                 for level in line.split()[1:]:
+                    # xinetd services have no runlevels, so set their states
+                    # to those of xinetd
                     if len(level.split(':')) < 2:
+                        states = self.level_states.get('xinetd',[])
                         continue
                     num, state = level.split(':')
                     states.append(self.LevelState(num.strip(), state.strip()))
