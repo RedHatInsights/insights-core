@@ -36,7 +36,7 @@ def hostname(local, shared):
     Prefer hostname to facter and systemid.
 
     Returns:
-        hostname (Hostname): A named tuple with `fqdn`, `hostname` and `domain`
+        Hostname: A named tuple with `fqdn`, `hostname` and `domain`
         components.
 
     Raises:

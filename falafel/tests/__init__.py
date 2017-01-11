@@ -27,9 +27,7 @@ def unordered_compare(result, expected):
 
     if isinstance(result, list):
         assert len(result) == len(expected)
-        result.sort()
-        expected.sort()
-        for left_item, right_item in itertools.izip(result, expected):
+        for left_item, right_item in itertools.izip(sorted(result), sorted(expected)):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):
         assert len(result) == len(expected)
@@ -366,10 +364,12 @@ def redhat_release(major, minor=""):
     major and minor version.  Only constructs redhat-releases for RHEL major
     releases 4, 5, 6 & 7
 
-    :param major major: RHEL major number. Accepts str, int or float (as major.minor)
-    :param minor minor: RHEL minor number. Optional and accepts str or int
+    Arguments:
+        major: RHEL major number. Accepts str, int or float (as major.minor)
+        minor: RHEL minor number. Optional and accepts str or int
 
-    For example, to construct a redhat-release for:
+    For example, to construct a redhat-release for::
+
         RHEL4U9:  redhat_release('4.9') or (4.9) or (4, 9)
         RHEL5 GA: redhat_release('5')   or (5.0) or (5, 0) or (5)
         RHEL6.6:  redhat_release('6.6') or (6.6) or (6, 6)

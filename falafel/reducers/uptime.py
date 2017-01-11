@@ -33,7 +33,7 @@ def uptime(local, shared):
     Prefer uptime to facts.
 
     Returns:
-        uptime (Uptime): A named tuple with `currtime`, `updays`, `uphhmm`,
+        Uptime: A named tuple with `currtime`, `updays`, `uphhmm`,
         `users`, `loadavg` and `uptime` components.
 
     Raises:

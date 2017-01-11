@@ -31,6 +31,15 @@ root     20357  0.0  0.0   9120   760 ?        Ss   10:09   0:00 /sbin/dhclient 
 qemu     22673  0.8 10.2 1618556 805636 ?      Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
 """.strip()
 
+PsAxcwwo_TEST = """
+COMMAND         %CPU                  STARTED
+systemd          0.0 Thu Dec  8 01:19:25 2016
+kthreadd         0.0 Thu Dec  8 01:19:25 2016
+ksoftirqd/0      0.0 Thu Dec  8 01:19:25 2016
+libvirtd         0.0 Wed Dec 28 05:59:04 2016
+vdsm             1.3 Wed Dec 28 05:59:06 2016
+""".strip()
+
 
 class TestPS(unittest.TestCase):
     def test_ps_auxcww(self):
@@ -57,6 +66,13 @@ class TestPS(unittest.TestCase):
 
     def test_cpu_usage(self):
         self.assertEqual(ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).cpu_usage("vdsm"), "98.0")
+
+    def test_ps_axcwwo(self):
+        d = ps.PsAxcwwo(context_wrap(PsAxcwwo_TEST)).data
+        self.assertTrue(keys_in(["COMMAND", "%CPU", "STARTED"], d[0]))
+        self.assertEqual(d[0], {'STARTED': 'Thu Dec  8 01:19:25 2016', 'COMMAND': 'systemd', '%CPU': '0.0'})
+        self.assertEqual(d[2]["COMMAND"], 'ksoftirqd/0')
+        self.assertEqual(d[-2]["COMMAND"], 'libvirtd')
 
 
 def test_ps_auxcww_alternate():

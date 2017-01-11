@@ -36,7 +36,7 @@ def redhat_release(local, shared):
     Prefer uname to redhat-release.
 
     Returns:
-        release (Release): A named tuple with `major` and `minor` version
+        Release: A named tuple with `major` and `minor` version
         components.
 
     Raises:

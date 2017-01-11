@@ -22,7 +22,7 @@ cli:
 content:
   # api_* opations are used mainly to pull content parameters from production.
 
-  # RHN username. 
+  # RHN username.
   # api_password: changeme
 
   # URL of target Insights API.  Must include /r/insights at the end.
@@ -71,6 +71,9 @@ web:
 
   # Size (MB) of largest allowable archive
   max_upload_size: 150
+
+  # Enables some expensive diagnostic information logging
+  enable_archive_diagnostics: false
 
   # Kind of a silly option which should never change.  This is the name of the
   # key used to pull out the archive from the multipart HTTP request.  While

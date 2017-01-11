@@ -303,7 +303,7 @@ class Route(object):
             setattr(self, k, v)
 
     def __repr__(self):
-        return self.data.__repr__()
+        return self.__dict__.__repr__()
 
 
 @mapper("ip_route_show_table_all")

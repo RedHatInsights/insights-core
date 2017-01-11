@@ -1,5 +1,6 @@
 from falafel.core.context import OSP
 from falafel.mappers import haproxy_cfg
+from falafel.mappers.haproxy_cfg import HaproxyCfg
 from falafel.tests import context_wrap
 
 haproxy_osp = """
@@ -252,7 +253,6 @@ def test_haproxy_2():
     result = haproxy_cfg.haproxy_cfg_parser(context_wrap(haproxy_mysql, osp=osp_c))
     assert "daemon" in result.get("global")
     assert "maxconn" in result.get("global")
-    print result.get("defaults")
     assert result.get("defaults").get("maxconn") == "4096"
     assert "queue 1m" in result.get("defaults").get("timeout")
 
@@ -261,3 +261,17 @@ def test_haproxy_2():
     # "defaults": {"retries": "3", "maxconn": "4096", "log": "global", "timeout": " http-request 10s, queue 1m, connect 10s, client 1m, server 1m, check 10s", "mode": "tcp"},
     # "listen mysql": {"option": "tcpka,httpchk", "stick-table": "type ip size 1000", "bind": "10.0.1.10:3306",
     #     "server": "chicago-controller-0 10.0.1.14:3306 backup check fall 5 inter 2000 on-marked-down shutdown-sessions port 9200 rise 2,chicago-controller-1 10.0.1.12:3306 backup check fall 5 inter 2000 on-marked-down shutdown-sessions port 9200 rise 2,chicago-controller-2 10.0.1.15:3306 backup check fall 5 inter 2000 on-marked-down shutdown-sessions port 9200 rise 2", "stick": "on dst", "timeout": "client 0,server 0"}}
+
+
+def test_haproxy_cls_1():
+    r = HaproxyCfg(context_wrap(haproxy_osp, osp=osp_c))
+    assert r.data.get("global").get("maxconn") == "10000"
+    assert r.data.get("listen galera").get("mode") == "tcp"
+
+
+def test_haproxy_cls_2():
+    result = HaproxyCfg(context_wrap(haproxy_mysql, osp=osp_c))
+    assert "daemon" in result.data.get("global")
+    assert "maxconn" in result.data.get("global")
+    assert result.data.get("defaults").get("maxconn") == "4096"
+    assert "queue 1m" in result.data.get("defaults").get("timeout")

@@ -338,6 +338,11 @@ class IniConfigFile(Mapper):
            # comment
            [section 2]
            key with spaces = value string
+           [section 3]
+           # Must implement parse_content in child class
+           # and pass allow_no_value=True to parent class
+           # to enable keys with no values
+           key_with_no_value
 
     References:
         See Python ``RawConfigParser`` documentation for more information
@@ -377,8 +382,18 @@ class IniConfigFile(Mapper):
         True
     """
 
-    def parse_content(self, content):
-        config = RawConfigParser()
+    def parse_content(self, content, allow_no_value=False):
+        """Parses content of the config file.
+
+        In child class overload and call super to set flag
+        ``allow_no_values`` and allow keys with no value in
+        config file::
+
+            def parse_content(self, content):
+                super(YourClass, self).parse_content(content,
+                                                     allow_no_values=True)
+        """
+        config = RawConfigParser(allow_no_value=allow_no_value)
         fp = io.BytesIO("\n".join(content))
         config.readfp(fp, filename=self.file_name)
         self.data = config
