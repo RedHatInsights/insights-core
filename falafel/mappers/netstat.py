@@ -245,7 +245,7 @@ class NetstatAGN(Mapper):
         result = defaultdict(list)
         for entry in self.data:
             result[entry["interface"]].append({k.lower(): v for (k, v) in entry.iteritems() if k in ["refcnt", "group"]})
-        return result
+        return dict(result)
 
     def parse_content(self, content):
         content = content[1:2] + content[3:]
@@ -262,6 +262,7 @@ class NetstatSection(object):
         self.data = defaultdict(list)
         for m in self.meta:
             self.data[m] = []
+        self.data = dict(self.data)
 
     def add_meta_data(self, line):
         data = []
@@ -509,6 +510,7 @@ class SsSection(NetstatSection):
         self.data = defaultdict(list)
         for m in self.meta:
             self.data[m] = []
+        self.data = dict(self.data)
 
     def add_meta_data(self, line):
         data = []

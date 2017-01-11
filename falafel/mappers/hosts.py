@@ -6,7 +6,7 @@ from .. import Mapper, mapper
 class Hosts(Mapper):
 
     def parse_content(self, content):
-        self.data = defaultdict(list)
+        host_data = defaultdict(list)
         for line in content:
             line = line.strip()
             if "#" in line:
@@ -14,9 +14,10 @@ class Hosts(Mapper):
             if line:
                 try:
                     ip, hostnames = line.split(None, 1)
-                    self.data[ip].extend(hostnames.split())
+                    host_data[ip].extend(hostnames.split())
                 except:
                     pass
+        self.data = dict(host_data)
 
     @property
     def all_names(self):

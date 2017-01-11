@@ -13,3 +13,5 @@ class ModProbe(LegacyItemAccess, Mapper):
                 if line.startswith(mod_key):
                     parts = line.split()
                     self.data[mod_key][parts[1]] = parts[2:]
+
+        self.data = dict(self.data)

@@ -89,6 +89,8 @@ class LvDisplay(Mapper, LegacyItemAccess):
             # last segment
             self.add_segment(segment_type, segment)
 
+        self.data['volumes'] = dict(self.data['volumes'])
+
     def add_segment(self, segment_type, segment):
         if not segment:
             return

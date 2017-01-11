@@ -366,6 +366,8 @@ class RouteDevices(Mapper):
             self.routes['by_device'][dev].append(route)
             self.routes['by_type'][table_type].append(route)
             self.routes['by_table'][table].append(route)
+        self.data = dict(self.data)
+        self.routes = {k: dict(v) for k, v in self.routes.items()}
 
     def parse_line(self, line):
         parts = deque(filter(None, line.split()))
@@ -472,4 +474,4 @@ def get_ipv4_neigh(context):
             entry = {}
         entry["nud"] = split_result[-1]
         result[split_result[0]].append(entry)
-    return result
+    return dict(result)

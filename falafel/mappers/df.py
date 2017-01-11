@@ -117,7 +117,7 @@ class DiskFree(Mapper):
     Attributes:
         data (list of Record): List of ``Record`` objects for each line of command
             output.
-        filesystems (defaultdict of list): Dictionary with each entry being a
+        filesystems (dict of list): Dictionary with each entry being a
             list of ``Record`` objects, for all lines in the command output. The
             dictionary is keyed by the ``filesystem`` value of the Record.
         mounts (dict): Dictionary with each entry being a ``Record`` object
@@ -125,11 +125,12 @@ class DiskFree(Mapper):
     """
     def __init__(self, context):
         super(DiskFree, self).__init__(context)
-        self.filesystems = defaultdict(list)
+        filesystems = defaultdict(list)
         self.mounts = {}
         for datum in self.data:
-            self.filesystems[datum.filesystem].append(datum)
+            filesystems[datum.filesystem].append(datum)
             self.mounts[datum.mounted_on] = datum
+        self.filesystems = dict(filesystems)
 
     def __len__(self):
         return len(self.data)
@@ -148,7 +149,7 @@ class DiskFree(Mapper):
 
     def get_filesystem(self, name):
         """str: Returns list of Record objects for filesystem ``name``."""
-        return self.filesystems.get(name)
+        return self.filesystems.get(name, [])
 
     @property
     def mount_names(self):

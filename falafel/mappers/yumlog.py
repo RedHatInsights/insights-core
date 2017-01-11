@@ -126,6 +126,8 @@ class YumLog(Mapper):
             except:
                 raise ParseException('YumLog could not parse', line)
 
+        self.pkgs = dict(self.pkgs)
+
     def __len__(self):
         return len(self.data)
 
