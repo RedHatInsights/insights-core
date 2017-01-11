@@ -266,7 +266,6 @@ static_specs = {
     "foreman_proxy_conf"        : First([SimpleFileSpec("etc/foreman-proxy/settings.yml"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/etc/foreman-proxy/settings.yml")]),
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
-    "slapd_errors"              : PatternSpec(r"var/log/dirsrv/slapd-.*/errors"),
     "smartctl"                  : First([CommandSpec("/sbin/smartctl -a {block}", block=r"\S+"),
                                     PatternSpec(r"sos_commands/ata/smartctl_-a_\.dev\..*")]),
     "ss"                        : First([CommandSpec("/usr/sbin/ss -tulpn"),
