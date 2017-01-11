@@ -100,8 +100,8 @@ class ChkConfig(Mapper):
                         else:
                             # Disabled xinetd services are effectively
                             # off at every runlevel
-                            states = ['0:off','1:off','2:off','3:off',
-                                      '4:off','5:off','6:off']
+                            states = [self.LevelState(str(x), 'off') for 
+                                        x in range(7)]
                         continue
                     num, state = level.split(':')
                     states.append(self.LevelState(num.strip(), state.strip()))
