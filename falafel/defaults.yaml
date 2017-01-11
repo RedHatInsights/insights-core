@@ -37,6 +37,10 @@ content:
   # Port used by content server
   port: 8080
 
+  # DO NOT ENABLE: Will enable endpoint that will update/write content against
+  # configured Insights API
+  enable_sync: false
+
 defaults:
   # All options in this section can also be overridden in other sections,
   # though they aren't explicitly defined there.
