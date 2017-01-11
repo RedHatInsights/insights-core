@@ -90,9 +90,18 @@ class ChkConfig(Mapper):
                 # parsing e.g. "0:off 1:off 2:on" etc.
                 for level in line.split()[1:]:
                     # xinetd services have no runlevels, so set their states
-                    # to those of xinetd
+                    # to those of xinetd if they are on, else all off
                     if len(level.split(':')) < 2:
-                        states = self.level_states.get('xinetd',[])
+                        if enabled:
+                            # This may except if xinetd isn't in services,
+                            # but xinetd services are only reported by
+                            # chkconfig when it's on.
+                            states = self.level_states['xinetd']
+                        else:
+                            # Disabled xinetd services are effectively
+                            # off at every runlevel
+                            states = ['0:off','1:off','2:off','3:off',
+                                      '4:off','5:off','6:off']
                         continue
                     num, state = level.split(':')
                     states.append(self.LevelState(num.strip(), state.strip()))
