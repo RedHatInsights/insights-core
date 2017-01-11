@@ -4,7 +4,6 @@ chkconfig - command
 """
 from collections import namedtuple
 from .. import Mapper, mapper
-import re
 
 
 @mapper('chkconfig')
@@ -55,22 +54,16 @@ class ChkConfig(Mapper):
         Args:
             content (context.content): Mapper context content
         """
-
-        on_state = re.compile(r':\s*on(?:\s+|$)')
-        off_state = re.compile(r':\s*off(?:\s+|$)')
-
-        valid_states = [on_state, off_state]
+        valid_states = {':on', ':off'}
         for line in content:
-            if any(state.search(line) for state in valid_states):
-                service = line.split()[0].strip(' \t:')
-                enabled = on_state.search(line) is not None
+            if any(state in line for state in valid_states):
+                service = line.split()[0].strip()
+                enabled = ':on' in line  # Store boolean value
                 self.services[service] = enabled
                 self.parsed_lines[service] = line
 
                 states = []
                 for level in line.split()[1:]:
-                    if len(level.split(':')) < 2:
-                        continue
                     num, state = level.split(':')
                     states.append(self.LevelState(num.strip(), state.strip()))
                 self.level_states[service] = states
