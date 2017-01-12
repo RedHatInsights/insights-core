@@ -56,9 +56,6 @@ def test_levels_off():
     chkconfig = ChkConfig(context_wrap(SERVICES))
     assert chkconfig.levels_off('crond') == set(['0', '1', '6'])
     assert chkconfig.levels_off('telnet') == set(['0', '1', '6'])
-    print '>>>>'
-    print chkconfig.levels_off('rlogin')
-    print '>>>>'
     assert chkconfig.levels_off('rlogin') == set(['0', '1', '2', '3',
                                                     '4', '5', '6'])
     with pytest.raises(KeyError):
