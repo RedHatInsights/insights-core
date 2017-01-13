@@ -21,14 +21,37 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
 
     def parse_content(self, content):
         pg_dict = {}
+        # Parsing rules from :
+        # https://www.postgresql.org/docs/9.3/static/config-setting.html
+        # """One parameter is specified per line. The equal sign between name
+        # and value is optional. Whitespace is insignificant and blank lines
+        # are ignored.   Hash marks (#) designate the remainder of the line as
+        # a comment. Parameter values that are not simple identifiers or
+        # numbers must be single-quoted. To embed a single quote in a
+        # parameter value, write either two quotes (preferred) or
+        # backslash-quote."""
         for line in get_active_lines(content):
+            # Remove commented remainder of line
+            if '#' in line:
+                (line,_) = [s.strip() for s in line.split('#',1)]
+            # Ignore blank lines
+            if not line:
+                continue
+            # Split on equals or on first word
             if '=' in line:
-                key, value = line.split("=")
-                # In postgresql.conf, there are lines like:
-                # - plog_line_prefix = '%m '
-                # strip the " and ' (reserve the space inner the " or ')
-                # {"plig_line_prefix": "%m "}; but not {"plig_line_prefix": "'%m '"}
-                pg_dict[key.strip()] = value.strip().strip('\'"')
+                key, value = [s.strip() for s in line.split("=")]
+            else:
+                key, value = [s.strip() for s in line.split(' ')]
+            # If value is quoted, quotes appear first and last - remove them.
+            if value[0] == "'" and value[-1] == "'":
+                value = value[1:-1]
+            # If value contains '' or \', change to single quote
+            if "''" in value:
+                value = value.replace("''", "'")
+            elif "\\'" in value:
+                value = value.replace("\\'", "'")
+            # Now save value in key
+            pg_dict[key] = value
         self.data = pg_dict
 
     def as_duration(self, item):
