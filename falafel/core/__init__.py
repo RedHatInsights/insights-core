@@ -2,6 +2,7 @@ import argparse
 import io
 import logging
 import os
+import pkgutil
 import re
 import sys
 from ConfigParser import RawConfigParser
@@ -22,7 +23,7 @@ def load_package(package_name, pattern=None, loaded_map=set()):
 
     __import__(package_name, globals(), locals(), [], -1)
 
-    for module_name in get_module_names(sys.modules[package_name], pattern):
+    for module_name in get_module_names(package_name, pattern):
         m = __import__(module_name, globals(), locals(), [package_name], -1)
         loaded.append(m)
         log.debug("loaded %s", module_name)
@@ -33,51 +34,23 @@ def load_package(package_name, pattern=None, loaded_map=set()):
 
 
 def get_module_names(package_name, pattern=None):
-    if not pattern:
-        pattern = DEFAULT_PATTERN
-    else:
-        pattern = '.*' + pattern + '.*'
-
-    plugin_matcher = re.compile(pattern)
+    matcher = re.compile('.*' + pattern + '.*' if pattern else DEFAULT_PATTERN)
 
     def name_filter(name):
         if "__init__" not in name and "__main__" not in name:
-            if name.endswith(".py") and plugin_matcher.match(name):
+            if matcher.match(name):
                 return True
         return False
 
-    plugin_dir = os.path.dirname(os.path.realpath(package_name.__file__))
-    log.debug("looking for files that match: [%s] in [%s]",
-              pattern, plugin_dir)
-    for root, dirs, files in os.walk(plugin_dir):
-        if os.path.exists(os.path.join(root, "__init__.py")):
-            for file_ in filter(name_filter, files):
-                plugin_name, dot, suffix = file_.rpartition(".")
-                if dot == "." and suffix == "py":
-                    if get_importable_path(root):
-                        yield "%s.%s" % (
-                            get_importable_path(root), plugin_name)
-                    else:
-                        yield plugin_name
+    path = package_name.replace('.', '/')
 
-
-def get_importable_path(path):
-    """
-    Get an importable package from the given path. Will return an absolute
-    package path if it exists.
-
-    Works by selecting the most specific (i.e. longest common prefix) possible
-    path to import from.
-    """
-    dirs = map(os.path.realpath, sys.path)
-    prefixes = [os.path.commonprefix([path, el]) for el in dirs
-                if path.startswith(el)]
-    longest = max(prefixes, key=len)
-    if longest:
-        return path.replace(longest, '').lstrip('/').replace('/', '.')
-    else:
-        raise Exception(
-            "%s cannot be imported due to an insufficient sys.path" % path)
+    log.debug("looking for files that match: [%s] in [%s]", pattern, path)
+    for loader, name, ispkg in pkgutil.walk_packages([path], package_name + '.'):
+        if not ispkg:
+            # absolute path of the module
+            filename = loader.find_module(name).filename
+            if name_filter(filename):
+                yield name
 
 
 class Mapper(object):
