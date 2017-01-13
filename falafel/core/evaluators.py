@@ -111,6 +111,9 @@ class Evaluator(object):
     def handle_map_error(self, e, context):
         log.exception("Mapper failed")
 
+    def handle_content_error(self, e, filename):
+        log.exception("Unable to extract content from %s.", filename)
+
 
 class SingleEvaluator(Evaluator):
 
@@ -158,7 +161,13 @@ class SingleEvaluator(Evaluator):
             self.mapper_results.update(md)
         for symbolic_name, files in self.spec_mapper.symbolic_files.items():
             for f in files:
-                content = self.spec_mapper.get_content(f, symbolic=False)
+                content = []
+                try:
+                    content = self.spec_mapper.get_content(f, symbolic=False)
+                except Exception as e:
+                    self.handle_content_error(e, f)
+                    continue
+
                 if len(content) == 1 and content[0] == "Command not found":
                     continue
                 for plugin in plugins.get_mappers(symbolic_name):
@@ -324,6 +333,10 @@ class InsightsEvaluator(SingleEvaluator):
         response["system"]["product"] = "rhel"
         self.set_branch_info(response["system"])
         return response
+
+    def handle_content_error(self, e, filename):
+        log.warning("Unable to extract content from %s [%s]. Failed with message %s. Ignoring.",
+                    filename, self.url, e, exc_info=True)
 
     def handle_map_error(self, e, context):
         log.warning("Mapper failed with message %s. Ignoring. context: %s [%s]",
