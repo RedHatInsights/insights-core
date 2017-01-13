@@ -33,7 +33,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
         for line in get_active_lines(content):
             # Remove commented remainder of line
             if '#' in line:
-                (line,_) = [s.strip() for s in line.split('#',1)]
+                (line, _) = [s.strip() for s in line.split('#', 1)]
             # Ignore blank lines
             if not line:
                 continue

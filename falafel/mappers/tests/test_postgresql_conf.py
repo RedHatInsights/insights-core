@@ -162,6 +162,7 @@ def test_postgresql_conf():
     assert result.get("log_line_prefix") == "%m "
     assert result.get("password_encryption") == "on"
 
+
 def test_postgresql_conf_conversions():
     result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
     assert result.as_duration('bgwriter_delay') == 0.2
@@ -172,6 +173,7 @@ def test_postgresql_conf_conversions():
 
     assert result.as_memory_bytes('work_mem') == 2560 * 1024
     assert result.as_memory_bytes('wal_buffers') == 4 * 1048576
+
 
 def test_postgresql_conf_conversion_errors():
     result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
