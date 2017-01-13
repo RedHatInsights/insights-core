@@ -20,16 +20,16 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
                        "as a {_type}"
 
     def parse_content(self, content):
+        """Parsing rules from :
+        https://www.postgresql.org/docs/9.3/static/config-setting.html
+        One parameter is specified per line. The equal sign between name
+        and value is optional. Whitespace is insignificant and blank lines
+        are ignored.   Hash marks (#) designate the remainder of the line as
+        a comment. Parameter values that are not simple identifiers or
+        numbers must be single-quoted. To embed a single quote in a
+        parameter value, write either two quotes (preferred) or
+        backslash-quote."""
         pg_dict = {}
-        # Parsing rules from :
-        # https://www.postgresql.org/docs/9.3/static/config-setting.html
-        # """One parameter is specified per line. The equal sign between name
-        # and value is optional. Whitespace is insignificant and blank lines
-        # are ignored.   Hash marks (#) designate the remainder of the line as
-        # a comment. Parameter values that are not simple identifiers or
-        # numbers must be single-quoted. To embed a single quote in a
-        # parameter value, write either two quotes (preferred) or
-        # backslash-quote."""
         for line in get_active_lines(content):
             # Remove commented remainder of line
             if '#' in line:
@@ -96,20 +96,17 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
             return None
         if item not in self.data:
             return None
-        trues = ('on', 't', 'tr', 'tru', 'true', 'y', 'ye', 'yes', '0')
-        falses = ('off', 'f', 'fa', 'fal', 'fals', 'false', 'n', 'no', '0')
-        boolean_of = {}
-        boolean_of.update({key: True for key in trues})
-        boolean_of.update({key: False for key in falses})
 
         value = self.data[item]
         lval = value.lower()
-        if lval in boolean_of:
-            return boolean_of[lval]
-        else:
-            raise ValueError(self._value_error_str.format(
-                             val=value, item=item, _type='boolean'
-                             ))
+        if lval in ('on', 't', 'tr', 'tru', 'true', 'y', 'ye', 'yes', '1'):
+            return True
+        if lval in ('of','off', 'f', 'fa', 'fal', 'fals', 'false', 'n', 'no',
+                    '0'):
+            return False
+        raise ValueError(self._value_error_str.format(
+                         val=value, item=item, _type='boolean'
+                         ))
 
     def as_memory_bytes(self, item):
         """
