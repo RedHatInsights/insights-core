@@ -101,7 +101,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
         lval = value.lower()
         if lval in ('on', 't', 'tr', 'tru', 'true', 'y', 'ye', 'yes', '1'):
             return True
-        if lval in ('of','off', 'f', 'fa', 'fal', 'fals', 'false', 'n', 'no',
+        if lval in ('of', 'off', 'f', 'fa', 'fal', 'fals', 'false', 'n', 'no',
                     '0'):
             return False
         raise ValueError(self._value_error_str.format(
