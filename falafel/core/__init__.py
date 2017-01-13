@@ -42,10 +42,12 @@ def get_module_names(package_name, pattern=None):
                 return True
         return False
 
-    path = package_name.replace('.', '/')
-
-    log.debug("looking for files that match: [%s] in [%s]", pattern, path)
-    for loader, name, ispkg in pkgutil.walk_packages([path], package_name + '.'):
+    search_paths = (
+        package_name.replace('.', '/'),
+        os.path.dirname(os.path.realpath(sys.modules[package_name].__file__))
+    )
+    log.debug("looking for files that match: [%s] in [%s]", pattern, search_paths)
+    for loader, name, ispkg in pkgutil.walk_packages(search_paths, package_name + '.'):
         if not ispkg:
             # absolute path of the module
             filename = loader.find_module(name).filename
