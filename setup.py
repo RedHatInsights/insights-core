@@ -77,7 +77,7 @@ if __name__ == "__main__":
             install_requires=list(runtime),
             extras_require={
                 'develop': list(runtime | develop),
-                'optional': ['python-cjson', 'python-logstash', 'python-statsd'],
+                'optional': ['python-cjson', 'python-logstash', 'python-statsd', 'watchdog'],
             },
             entry_points=entry_points,
             data_files=data_files

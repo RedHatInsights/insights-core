@@ -23,8 +23,7 @@ def test_save(cm):
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "tina_loves_butts/OH_YEAH")
-    assert next(cm.get("tina_loves_butts|OH_YEAH")) == doc
-    assert next(cm.get("tina_loves_butts")) == doc
+    assert cm.get("tina_loves_butts|OH_YEAH")[0] == doc
 
 
 def test_retired(cm):
@@ -34,8 +33,7 @@ def test_retired(cm):
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "retired/old_rule/OLD_ERROR_KEY")
-    assert next(cm.get("old_rule|OLD_ERROR_KEY")) == doc
-    assert next(cm.get("old_rule")) == doc
+    assert cm.get("old_rule|OLD_ERROR_KEY")[0] == doc
 
 
 def test_error_keys(cm):
