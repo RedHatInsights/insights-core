@@ -32,7 +32,7 @@ class Evaluator(object):
 
     def __init__(self, spec_mapper, metadata=None):
         self.spec_mapper = spec_mapper
-        self.metadata = {}
+        self.metadata = defaultdict(dict)
         self.rule_skips = []
         self.rule_results = []
         self.archive_metadata = metadata
@@ -121,7 +121,7 @@ class SingleEvaluator(Evaluator):
         super(SingleEvaluator, self).__init__(spec_mapper, metadata)
         self.mapper_results = defaultdict(list)
 
-    def append_metadata(self, r):
+    def append_metadata(self, r, plugin):
         for k, v in r.iteritems():
             self.metadata[k] = v
 
@@ -208,7 +208,7 @@ class SingleEvaluator(Evaluator):
         type_ = r["type"]
         del r["type"]
         if type_ == "metadata":
-            self.append_metadata(r)
+            self.append_metadata(r, plugin)
         elif type_ == "rule":
             self.rule_results.append(self.format_result({
                 "rule_id": "{0}|{1}".format(plugins.get_name(plugin), r["error_key"]),
@@ -269,7 +269,7 @@ class MultiEvaluator(Evaluator):
         type_ = r["type"]
         del r["type"]
         if type_ == "metadata":
-            self.append_metadata(r)
+            self.append_metadata(r, plugin)
         elif type_ == "rule":
             self.archive_results[None]["reports"].append(self.format_result({
                 "rule_id": "{0}|{1}".format(plugins.get_name(plugin), r["error_key"]),
@@ -278,7 +278,7 @@ class MultiEvaluator(Evaluator):
         elif type_ == "skip":
             self.rule_skips.append(r)
 
-    def append_metadata(self, r):
+    def append_metadata(self, r, plugin):
         for k, v in r.iteritems():
             self.archive_results[None]["system"]["metadata"][k] = v
 

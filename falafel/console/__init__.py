@@ -10,11 +10,25 @@ from falafel.console.custom_logging import setup_logger
 from falafel.console.format import Formatter
 from falafel.console.config import InsightsCliConfig
 from falafel.console.package import get_plugin_modules
-from falafel.core import plugins
+from falafel.core import plugins, evaluators
 from falafel.core import get_module_names
 from falafel.console.custom_logging import print_console, ERROR_MSG
 
 logger = logging.getLogger(__name__)
+
+
+class CliEvaluator(evaluators.SingleEvaluator):
+
+    def append_metadata(self, r, plugin):
+        for k, v in r.iteritems():
+            self.metadata[plugins.get_name(plugin)][k] = v
+
+
+class CliInsightsEvaluator(evaluators.InsightsEvaluator):
+
+    def append_metadata(self, r, plugin):
+        for k, v in r.iteritems():
+            self.metadata[plugins.get_name(plugin)][k] = v
 
 
 class Runner(object):
@@ -34,7 +48,7 @@ class Runner(object):
                     self.external_files[name].append(p)
 
     def handle_sosreport(self, path, spec_map=None):
-        from falafel.core import archives, specs, evaluators
+        from falafel.core import archives, specs
         from falafel.config.static import get_config
         from falafel.config import group_wrap
         config = get_config()
@@ -68,9 +82,9 @@ class Runner(object):
                 runner = evaluators.InsightsMultiEvaluator(sm, metadata=md)
             else:
                 if sm.exists("etc/redhat_access_insights/machine-id", symbolic=False):
-                    runner = evaluators.InsightsSingleEvaluator(sm)
+                    runner = CliInsightsEvaluator(sm)
                 else:
-                    runner = evaluators.SingleEvaluator(sm)
+                    runner = CliEvaluator(sm)
 
             results = runner.process()
             system = results.get("system", {})
