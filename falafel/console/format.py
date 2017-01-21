@@ -68,7 +68,7 @@ class Formatter(object):
             line = missing_fmt.format(key.ljust(key_field_size), value)
             print_console(self.hanging_indent(line, key_field_size + 2))
 
-    def display_results(self, results):
+    def display_results(self, results, stats):
         result_count = 0
         for module, result in sorted(results.iteritems()):
             if result:
@@ -82,8 +82,14 @@ class Formatter(object):
                     line = "    {} : {}".format(k.ljust(key_field_size), v)
                     print_console(self.hanging_indent(line, key_field_size + 7, word_wrap=False))
                 print_console("-" * self.screen_width)
-                result_count = result_count + 1
-        print_console("Result count: {}".format(result_count))
+                result_count += 1
+
+        print_console("Result: {0} issues found; {1} rules run; {2} skipped\n".
+                      format(result_count, len(results), stats["skips"]["count"]))
+        logger.info("Mapper : {0} executed; {1} failed".
+                    format(stats["mapper"]["count"], stats["mapper"]["fail"]))
+        logger.info("Reducer: {0} executed; {1} failed".
+                    format(stats["reducer"]["count"], stats["reducer"]["fail"]))
 
     def display_system_data(self, system_data):
         d = {key: system_data[key] for key in system_data.keys() if key != "metadata"}
@@ -97,12 +103,12 @@ class Formatter(object):
             self.display_dict_of_strings(s)
             print_console("")
 
-    def format_results(self, system, skips, reports, archives):
+    def format_results(self, system, skips, reports, archives, stats):
         if archives:
             self.heading("Multi Archive (%s nested archives)" % len(archives))
         items = {}
 
-        for module, eligible, output in list(reports):
+        for module, output in list(reports):
             items[module] = output
 
         if not items:
@@ -120,14 +126,15 @@ class Formatter(object):
         self.heading("System Data")
         self.display_system_data(system)
         self.heading("Results")
-        self.display_results(items)
+        self.display_results(items, stats)
         if archives:
             self.list_plugins = False
             for each in archives:
                 self.format_results(each.get("system", {}),
                                     each.get("skips", []),
                                     each.get("reports", []),
-                                    None)
+                                    None,
+                                    each.get("stats", {}))
 
 
 def get_screen_width():
