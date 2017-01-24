@@ -1,3 +1,41 @@
+"""
+PostgreSQLConf - file /var/lib/pgsql/data/postgresql.conf
+=========================================================
+
+The PostgreSQL configuration file is in a fairly standard 'key = value'
+format, with the equals sign being optional.  A hash mark (#) marks the
+rest of the line as a comment.
+
+The configuration then appears as a dictionary in the `data` property.
+
+This mapper does not attempt to know the default value of any property; it
+only shows what's defined in the configuration file as given.
+
+This mapper also provides several utility functions to make sense of values
+specific to PostgreSQL.  These are:
+
+  * `as_duration(property)`
+      Convert the value (given in milliseconds, seconds, minutes, hours or
+      days) to seconds (as a floating point value).
+  * `as_boolean(property)`
+      If the value is 'on', 'true', 'yes', or '1', return True.  If the value
+      is 'off', 'false', 'no' or '0', return False.  Unique prefixes of these
+      are acceptable and case is ignored.
+  * `as_memory_bytes(property)`
+      Convert a number given in KB, MB or GB into bytes, where 1 kilobyte is
+      1024 bytes.
+
+All three type conversion functions will raise a ValueError if the value
+doesn't match the spec or cannot be converted to the correct type.
+
+Example:
+    >>> pgsql = shared[PostgreSQLConf]
+    >>> 'port' in pgsql
+    True
+    >>> pgsql['port']
+    '5432'
+    >>>
+"""
 from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
 import re
 
@@ -5,30 +43,25 @@ import re
 @mapper("postgresql.conf")
 class PostgreSQLConf(LegacyItemAccess, Mapper):
     """
-    Parses postgresql.conf and returns a dict.
-    - {
-        "port": '5344',
-        "listen_addresses": 'localhost',
-        "shared_buffers": '128MB'
-      }
-
-      Helper functions as_duration, as_boolean and as_memory_bytes are
-      available for converting the values of specific configuration items
-      into more Pythonic values.
+    Parses postgresql.conf and converts it into a dictionary of properties.
     """
     _value_error_str = "Do not recognise '{val}' for setting '{item}' " +\
                        "as a {_type}"
 
     def parse_content(self, content):
-        """Parsing rules from :
+        """
+        Parsing rules from :
+
         https://www.postgresql.org/docs/9.3/static/config-setting.html
+
         One parameter is specified per line. The equal sign between name
         and value is optional. Whitespace is insignificant and blank lines
         are ignored.   Hash marks (#) designate the remainder of the line as
         a comment. Parameter values that are not simple identifiers or
         numbers must be single-quoted. To embed a single quote in a
         parameter value, write either two quotes (preferred) or
-        backslash-quote."""
+        backslash-quote.
+        """
         pg_dict = {}
         for line in get_active_lines(content):
             # Remove commented remainder of line
@@ -39,16 +72,16 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
                 continue
             # Split on equals or on first word
             if '=' in line:
-                key, value = [s.strip() for s in line.split("=")]
+                key, value = [s.strip() for s in line.split("=", 1)]
             else:
-                key, value = [s.strip() for s in line.split(' ')]
+                key, value = [s.strip() for s in line.split(' ', 1)]
             # If value is quoted, quotes appear first and last - remove them.
             if value[0] == "'" and value[-1] == "'":
                 value = value[1:-1]
             # If value contains '' or \', change to single quote
             if "''" in value:
                 value = value.replace("''", "'")
-            elif "\\'" in value:
+            if "\\'" in value:
                 value = value.replace("\\'", "'")
             # Now save value in key
             pg_dict[key] = value
@@ -56,13 +89,17 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
 
     def as_duration(self, item):
         """
-        Postgres's time durations for checkpoint_timeout can have 's', 'm', or
-        'h' suffixes.  We convert all of them here to seconds.
+        Postgres's time durations for checkpoint_timeout can have 'ms', 's',
+        'min', 'h', or 'd' suffixes.  We convert all of them here to seconds.
+
         See https://www.postgresql.org/docs/9.3/static/config-setting.html :-
-        "valid time units are ms (milliseconds), s (seconds), min (minutes), h
-        (hours), and d (days)"
+
+        "Valid time units are ms (milliseconds), s (seconds), min (minutes),
+        h (hours), and d (days)"
+
         We return a floating point number because of the possibility of
-        convertion from milliseconds.
+        convertion from milliseconds, and because maybe someone will say
+        8.4h.
         """
         if not item:
             return None
@@ -89,6 +126,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
     def as_boolean(self, item):
         """
         See https://www.postgresql.org/docs/9.3/static/config-setting.html :-
+
         "Boolean values can be written as on, off, true, false, yes, no, 1,
         0 (all case-insensitive) or any unambiguous prefix of these."
         """
@@ -111,6 +149,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
     def as_memory_bytes(self, item):
         """
         See https://www.postgresql.org/docs/9.3/static/config-setting.html :-
+
         "Valid memory units are kB (kilobytes), MB (megabytes), and GB
         (gigabytes).  Note that the multiplier for memory units is 1024, not
         1000."

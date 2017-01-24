@@ -152,15 +152,23 @@ db_user_namespace = off
 
 bgwriter_delay = 200ms			# 10-10000ms between rounds
 checkpoint_timeout = 5min
+
+test_strange_quoting '''strange quoting\\''
 """.strip()
 
 
 def test_postgresql_conf():
     result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
     assert result.get("checkpoint_segments") == "8"
+    # The bit before the hash mark should still be treated as valid:
     assert result.get("log_filename") == "postgresql-%a.log"
+    # Quoting allows spaces at beginning or end of value
     assert result.get("log_line_prefix") == "%m "
+    # Equals signs are optional
     assert result.get("password_encryption") == "on"
+    # Values can include a quote with '' or \\' - both work.
+    print result.get("test_strange_quoting")
+    assert result.get("test_strange_quoting") == "'strange quoting'"
 
 
 def test_postgresql_conf_conversions():
