@@ -1,3 +1,5 @@
+import pytest
+
 from falafel.tests import context_wrap
 from falafel.mappers.postgresql_conf import PostgreSQLConf
 
@@ -144,11 +146,50 @@ max_connections = 600
 shared_buffers = 384MB
 wal_buffers = 4MB
 work_mem = 2560kB
+
+password_encryption on
+db_user_namespace = off
+
+bgwriter_delay = 200ms			# 10-10000ms between rounds
+checkpoint_timeout = 5min
+
+test_strange_quoting '''strange quoting\\''
 """.strip()
 
 
 def test_postgresql_conf():
     result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
     assert result.get("checkpoint_segments") == "8"
+    # The bit before the hash mark should still be treated as valid:
     assert result.get("log_filename") == "postgresql-%a.log"
+    # Quoting allows spaces at beginning or end of value
     assert result.get("log_line_prefix") == "%m "
+    # Equals signs are optional
+    assert result.get("password_encryption") == "on"
+    # Values can include a quote with '' or \\' - both work.
+    print result.get("test_strange_quoting")
+    assert result.get("test_strange_quoting") == "'strange quoting'"
+
+
+def test_postgresql_conf_conversions():
+    result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
+    assert result.as_duration('bgwriter_delay') == 0.2
+    assert result.as_duration('checkpoint_timeout') == 300
+
+    assert result.as_boolean('password_encryption')
+    assert not result.as_boolean('db_user_namespace')
+
+    assert result.as_memory_bytes('work_mem') == 2560 * 1024
+    assert result.as_memory_bytes('wal_buffers') == 4 * 1048576
+
+
+def test_postgresql_conf_conversion_errors():
+    result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
+    # Test that we raise the right errors for bad conversions
+    with pytest.raises(ValueError):
+        assert result.as_boolean('log_directory')
+        assert result.as_boolean('checkpoint_segments')
+        assert result.as_duration('log_filename')
+        assert result.as_duration('db_user_namespace')
+        assert result.as_memory_bytes('log_line_prefix')
+        assert result.as_memory_bytes('checkpoint_timeout')
