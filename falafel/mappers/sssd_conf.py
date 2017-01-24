@@ -1,3 +1,25 @@
+"""
+sssd_conf - File /etc/sssd/sssd.conf
+====================================
+
+SSSD's configuration file is in a standard 'ini' format.
+
+The 'sssd' section will define one or more active domains, which are then
+configured in the 'domain/{domain}' section of the configuration.  These
+domains are then available via the 'domains' method, and the configuration
+of a domain can be fetched as a dictionary using the 'domain_config' method.
+
+Example:
+    >>> sssd_conf = shared[SSSD_Config]
+    >>> sssd_conf.getint('nss', 'reconnection_retries')
+    3
+    >>> sssd_conf.domains()
+    ['example.com']
+    >>> domain = sssd_conf.domain_config('example.com')
+    >>> 'ldap_uri' in domain
+    True
+"""
+
 from .. import IniConfigFile, mapper
 
 
