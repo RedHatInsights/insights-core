@@ -276,6 +276,7 @@ static_specs = {
     "ssh_config"                : SimpleFileSpec("etc/ssh/ssh_config"),
     "sshd_config"               : SimpleFileSpec("etc/ssh/sshd_config"),
     "sshd_config_perms"         : CommandSpec("/bin/ls -l /etc/ssh/sshd_config"),
+    "sssd_config"               : SimpleFileSpec("etc/sssd/sssd.conf"),
     "sysctl"                    : CommandSpec("/sbin/sysctl -a"),
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),
     "sysctl.conf_initramfs"     : CommandSpec("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
