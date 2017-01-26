@@ -104,6 +104,7 @@ static_specs = {
     "httpd.conf.d"              : First([PatternSpec(r"etc/httpd/conf.d/.+\.conf"),
                                     PatternSpec(r"conf/httpd/conf.d/.+\.conf")]),
     "httpd_ssl_access_log"      : SimpleFileSpec("var/log/httpd/ssl_access_log", large_content=True),
+    "httpd-V"                   : CommandSpec("/usr/sbin/httpd -V"),
     "ifcfg"                     : PatternSpec(r"etc/sysconfig/network-scripts/ifcfg-.*"),
     "ifconfig"                  : First([CommandSpec("/sbin/ifconfig -a"),
                                     SimpleFileSpec("ifconfig"),
