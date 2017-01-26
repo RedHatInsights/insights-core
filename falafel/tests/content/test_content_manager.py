@@ -19,7 +19,8 @@ def test_create_manager(cm):
 def test_save(cm):
     doc = {
         "resolution": "butts",
-        "rule_id": "tina_loves_butts|OH_YEAH"
+        "rule_id": "tina_loves_butts|OH_YEAH",
+        "active": True
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "tina_loves_butts/OH_YEAH")
@@ -29,7 +30,8 @@ def test_save(cm):
 def test_retired(cm):
     doc = {
         "resolution": "This is the resolution",
-        "rule_id": "old_rule|OLD_ERROR_KEY"
+        "rule_id": "old_rule|OLD_ERROR_KEY",
+        "active": False
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "retired/old_rule/OLD_ERROR_KEY")
@@ -37,6 +39,6 @@ def test_retired(cm):
 
 
 def test_error_keys(cm):
-    cm.save({"rule_id": "tina_loves_butts|OH_YEAH"}, default=True)
-    cm.save({"rule_id": "tina_loves_butts|OH_NO"}, default=True)
+    cm.save({"rule_id": "tina_loves_butts|OH_YEAH", "active": True}, default=True)
+    cm.save({"rule_id": "tina_loves_butts|OH_NO", "active": True}, default=True)
     assert set(cm.error_keys()) == {"tina_loves_butts|OH_YEAH", "tina_loves_butts|OH_NO"}
