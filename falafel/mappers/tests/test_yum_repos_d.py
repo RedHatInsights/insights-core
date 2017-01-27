@@ -13,11 +13,10 @@ gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 
 [rhel-source-beta]
 name=Red Hat Enterprise Linux $releasever Beta - $basearch - Source
-baseurl=ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/
+baseurl=ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/,ftp://ftp2.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta
-       file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 '''
 
 REPOPATH = 'etc/yum.repos.d/rhel-source.repo'
@@ -34,9 +33,11 @@ def test_yum_repos_d():
             'gpgcheck': '1',
             'gpgkey': ['file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release',
                        'file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release1']}
+    print repos_info.get('rhel-source-beta')
     assert repos_info.get('rhel-source-beta') == {
             'name': 'Red Hat Enterprise Linux $releasever Beta - $basearch - Source',
-            'baseurl': ['ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/'],
+            'baseurl': ['ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/',
+                        'ftp://ftp2.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/'],
             'enabled': '0',
             'gpgcheck': '1',
             'gpgkey': ['file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta',

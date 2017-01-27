@@ -44,12 +44,12 @@ class YumReposD(LegacyItemAccess, Mapper):
                 key, _, value = line.partition("=")
                 key = key.strip()
                 if key in ('baseurl', 'gpgkey'):
-                    section_dict[key] = [value.strip()]
+                    section_dict[key] = [v.strip() for v in value.split(",")]
                 else:
                     section_dict[key] = value.strip()
             else:
                 if key and isinstance(section_dict[key], list):
-                    section_dict[key].append(line)
+                    section_dict[key].extend(v.strip() for v in line.split(","))
         self.data = repos_dict
 
     def __iter__(self):
