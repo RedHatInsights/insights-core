@@ -56,6 +56,9 @@ defaults:
   # Default logging level
   log_level: INFO
 
+  # Location of log file.  Null value means stderr.
+  log_file: null
+
 test:
   host: localhost:52346
   start_server: true
