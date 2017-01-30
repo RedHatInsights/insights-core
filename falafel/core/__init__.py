@@ -464,8 +464,8 @@ class FileListing(Mapper):
         >>> shared[FileListing].dir_contains('/example_dir', 'menu.lst')
         True
         >>> dir = shared[FileListing].listing_of('/example_dir')
-        >>> dir['.']['type'] == 'd'
-        True
+        >>> dir['.']['type']
+        'd'
         >>> dir['config-3.10.0-229.14.q.el7.x86_64']['size']
         123891
         >>> dir['dm-10']['major']
@@ -713,28 +713,31 @@ def print_results(results, cases=None, error_collector=None):
 
 def main():
     from falafel.core import mapper, reducer
-    HELP = [
-        "Pattern used to filter out plugins for execution.",
-        "Verbose console logging (n.b. it's *very* verbose).",
-        "Only run reducers.  Expect mapper output from stdin.",
-        "Only run mappers.  Pipes mapper output to stdout.",
-        "Print a traceback for each kind of error caught."
-    ]
     p = argparse.ArgumentParser("insights-run")
     p.add_argument(
-        "-p", "--pattern", dest="pattern", help=HELP[0])
+        "-p", "--pattern", dest="pattern",
+        help="Pattern used to filter out plugins for execution."
+    )
     p.add_argument(
         "-t", "--tracebacks", dest="tracebacks", action="store_true",
-        default=False, help=HELP[4])
+        default=False,
+        help="Print a traceback for each kind of error caught."
+    )
     p.add_argument(
         "-v", "--verbose", dest="verbose", action="store_true",
-        default=False, help=HELP[1])
+        default=False,
+        help="Verbose console logging (n.b. it's *very* verbose)."
+    )
     p.add_argument(
         "-r", "--reduce-only", dest="reduce_only",
-        action="store_true", default=False, help=HELP[2])
+        action="store_true", default=False,
+        help="Only run reducers.  Expect mapper output from stdin."
+    )
     p.add_argument(
         "-m", "--map-only", dest="map_only", action="store_true",
-        default=False, help=HELP[3])
+        default=False,
+        help="Only run mappers.  Pipes mapper output to stdout."
+    )
     p.add_argument("packages", nargs="*")
     args = p.parse_args()
     if len(args.packages) == 0:
