@@ -20,7 +20,8 @@ def test_save(cm):
     doc = {
         "resolution": "butts",
         "rule_id": "tina_loves_butts|OH_YEAH",
-        "active": True
+        "active": True,
+        "playbooks": {}
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "tina_loves_butts/OH_YEAH")
@@ -31,7 +32,8 @@ def test_retired(cm):
     doc = {
         "resolution": "This is the resolution",
         "rule_id": "old_rule|OLD_ERROR_KEY",
-        "active": False
+        "active": False,
+        "playbooks": {}
     }
     cm.save(doc, default=True)
     doc["path"] = os.path.join(cm.content_prefix, "retired/old_rule/OLD_ERROR_KEY")
