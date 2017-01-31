@@ -17,13 +17,16 @@ config = {}
 
 for path in PATHS:
     if os.path.exists(path):
-        with open(path) as fp:
-            y = yaml.load(fp.read())
-            for name, section in y.iteritems():
-                if name in config:
-                    config[name].update(section)
-                else:
-                    config[name] = section
+        try:
+            with open(path) as fp:
+                y = yaml.load(fp.read())
+                for name, section in y.iteritems():
+                    if name in config:
+                        config[name].update(section)
+                    else:
+                        config[name] = section
+        except:
+            pass
 
 # The defaults section is for keys that belong in every section and can be
 # overridden in particular sections if desired.  This adds the default values
