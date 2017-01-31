@@ -126,6 +126,7 @@ static_specs = {
                                     SimpleFileSpec("ip_a")]),
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
+    "ip6tables"                 : CommandSpec("/sbin/ip6tables-save"),
     "ipv4_neigh"                : CommandSpec("/sbin/ip -4 neighbor show nud all"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
