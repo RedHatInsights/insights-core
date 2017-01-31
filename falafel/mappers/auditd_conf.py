@@ -1,3 +1,20 @@
+"""
+AuditdConf - File /etc/audit/auditd.conf
+========================================
+
+The auditd.conf file is a standard key = value file with hash comments.
+Active settings are provided using the `get_active_settings_value` method or
+by using the dictionary `contains` functionality.
+
+Example:
+
+    >>> conf = shared[AuditdConf]
+    >>> conf.get_active_setting_value('log_group')
+    'root'
+    >>> 'log_file' in conf
+    True
+"""
+
 from .. import Mapper, mapper, get_active_lines
 from ..mappers import split_kv_pairs
 
