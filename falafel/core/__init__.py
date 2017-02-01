@@ -276,7 +276,7 @@ class Scannable(Mapper):
         cls.scanner_keys.add(result_key)
 
     @classmethod
-    def scan_any(cls, result_key, func):
+    def scan_any(cls, result_key, func, type_=bool):
         def scanner(self, obj):
             current_value = getattr(self, result_key, None)
             setattr(self, result_key, current_value and func(obj))
@@ -284,10 +284,21 @@ class Scannable(Mapper):
         cls._scan(result_key, scanner)
 
     @classmethod
-    def scan_latch(cls, result_key, func):
+    def scan_latch(cls, result_key, func, type_=bool):
         def scanner(self, obj):
             current_value = getattr(self, result_key, None)
             setattr(self, result_key, current_value or func(obj))
+
+        cls._scan(result_key, scanner)
+
+    @classmethod
+    def scan_accumulate(cls, result_key, func):
+        def scanner(self, obj):
+            if not getattr(self, result_key):
+                setattr(self, result_key)
+            rv = func(obj)
+            if rv:
+                getattr(self, result_key).append(rv)
 
         cls._scan(result_key, scanner)
 
