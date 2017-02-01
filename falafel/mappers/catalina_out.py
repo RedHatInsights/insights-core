@@ -48,4 +48,11 @@ from .. import LogFileOutput, mapper
 
 @mapper('catalina.out')
 class CatalinaOut(LogFileOutput):
+    """
+    Catalina log file reader class.  Import this to read the catalina log
+    files::
+
+        from falafel.core.mappers.catalina_out import CatalinaOut
+
+    """
     pass
