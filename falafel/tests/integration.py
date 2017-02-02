@@ -7,21 +7,17 @@ def integration_test(module, test_func, input_data, expected):
     test_func(tests.integrate(input_data, module), expected)
 
 
-def completed(test_func, package_name):
-    if not hasattr(test_func, "parametrized"):
-        test_func.parametrized = []
-    return any(package_name.startswith(p) for p in test_func.parametrized)
-
-
-def generate_tests(metafunc, test_func, package_name):
+def generate_tests(metafunc, test_func, package_names):
     """
     This function hooks in to pytest's test collection framework and provides a
     test for every (input_data, expected) tuple that is generated from all
     @archive_provider-decorated functions.
     """
-    if metafunc.function == test_func and not completed(test_func, package_name):
-        load_package(package_name)
-        test_func.parametrized.append(package_name)
+    if metafunc.function == test_func:
+        if type(package_names) not in (list, tuple):
+            package_names = [package_names]
+        for package_name in package_names:
+            load_package(package_name)
         args = []
         ids = []
         for f in tests.ARCHIVE_GENERATORS:
