@@ -261,7 +261,7 @@ class Uname(Mapper):
     def from_kernel(cls, kernel):
         """
         Create a Uname object from a kernel NVR (e.g. '2.6.32-504.el6.x86_64').
-        
+
         :Parameters:
             - `kernel` - the kernel version and release string.
         """
