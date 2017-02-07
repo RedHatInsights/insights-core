@@ -69,6 +69,79 @@ size=16G features='0' hwhandler='0' wp=rw
   `- 4:0:0:1 sdc 8:32 active ready running
 """.strip()
 
+MULTIPATH_V4_LL_INFO_RHEL_5 = """
+sdz: size = 293601280
+sdz: vendor = DGC
+sdz: product = RAID 5
+sdz: rev = 0430
+sdz: h:b:t:l = 5:0:1:6
+sdz: tgt_node_name = 0x50060160c4603569
+sdz: path checker = emc_clariion (controller setting)
+sdz: checker timeout = 60000 ms (sysfs setting)
+sdz: state = 2
+sr0: blacklisted
+sr1: blacklisted
+===== paths list =====
+uuid hcil    dev  dev_t  pri dm_st  chk_st  vend/prod/rev
+     5:0:1:7 sdaa 65:160 0   [undef][ready] DGC,RAID 5
+     3:0:0:5 sdab 65:176 0   [undef][ready] DGC,RAID 5
+     3:0:0:6 sdac 65:192 0   [undef][ready] DGC,RAID 5
+     3:0:0:7 sdad 65:208 0   [undef][ready] DGC,RAID 5
+     3:0:1:5 sdae 65:224 0   [undef][ready] DGC,RAID 5
+     3:0:1:6 sdaf 65:240 0   [undef][ready] DGC,RAID 5
+     3:0:1:7 sdag 66:0   0   [undef][ready] DGC,RAID 5
+     0:2:0:0 sda  8:0    0   [undef][ready] DELL,PERC 6/i
+     3:0:0:0 sdb  8:16   0   [undef][ready] DGC,RAID 5
+     3:0:0:1 sdc  8:32   0   [undef][ready] DGC,RAID 5
+     3:0:0:2 sdd  8:48   0   [undef][ready] DGC,RAID 5
+     3:0:0:3 sde  8:64   0   [undef][ready] DGC,RAID 5
+     3:0:0:4 sdf  8:80   0   [undef][ready] DGC,RAID 5
+     3:0:1:0 sdg  8:96   0   [undef][ready] DGC,RAID 5
+     3:0:1:1 sdh  8:112  0   [undef][ready] DGC,RAID 5
+     3:0:1:2 sdi  8:128  0   [undef][ready] DGC,RAID 5
+     3:0:1:3 sdj  8:144  0   [undef][ready] DGC,RAID 5
+     3:0:1:4 sdk  8:160  0   [undef][ready] DGC,RAID 5
+     5:0:0:0 sdl  8:176  0   [undef][ready] DGC,RAID 5
+     5:0:0:1 sdm  8:192  0   [undef][ready] DGC,RAID 5
+     5:0:0:2 sdn  8:208  0   [undef][ready] DGC,RAID 5
+     5:0:0:3 sdo  8:224  0   [undef][ready] DGC,RAID 5
+     5:0:0:4 sdp  8:240  0   [undef][ready] DGC,RAID 5
+     5:0:1:0 sdq  65:0   0   [undef][ready] DGC,RAID 5
+     5:0:1:1 sdr  65:16  0   [undef][ready] DGC,RAID 5
+     5:0:1:2 sds  65:32  0   [undef][ready] DGC,RAID 5
+     5:0:1:3 sdt  65:48  0   [undef][ready] DGC,RAID 5
+     5:0:1:4 sdu  65:64  0   [undef][ready] DGC,RAID 5
+     5:0:0:5 sdv  65:80  0   [undef][ready] DGC,RAID 5
+     5:0:0:6 sdw  65:96  0   [undef][ready] DGC,RAID 5
+     5:0:0:7 sdx  65:112 0   [undef][ready] DGC,RAID 5
+     5:0:1:5 sdy  65:128 0   [undef][ready] DGC,RAID 5
+     5:0:1:6 sdz  65:144 0   [undef][ready] DGC,RAID 5
+params = 1 queue_if_no_path 1 emc 2 1 round-robin 0 2 1 8:160 1000 8:240 1000 round-robin 0 2 1 8:80 1000 65:64 1000
+status = 2 0 1 0 2 1 A 0 2 0 8:160 A 0 8:240 A 0 E 0 2 0 8:80 A 0 65:64 A 0
+*word = 1, len = 1
+*word = queue_if_no_path, len = 16
+*word = 1, len = 1
+*word = emc, len = 3
+sdu: getprio = /sbin/mpath_prio_emc /dev/%n (controller setting)
+process 31154 forking to exec '/sbin/mpath_prio_emc /dev/sdu' ((nil))
+forked 31158
+sdu: prio = 0
+*word = 2, len = 1
+*word = 1, len = 1
+L004 (360060160ade32800f2e3baf47665e211) dm-9 DGC,RAID 5
+[size=100G][features=1 queue_if_no_path][hwhandler=1 emc][rw]
+\_ round-robin 0 [prio=1][active]
+ \_ 3:0:1:4 sdk  8:160  [active][ready]
+ \_ 5:0:0:4 sdp  8:240  [active][ready]
+\_ round-robin 0 [prio=0][enabled]
+ \_ 3:0:0:4 sdf  8:80   [active][ready]
+ \_ 5:0:1:4 sdu  65:64  [active][ready]
+params = 1 queue_if_no_path 1 emc 2 1 round-robin 0 2 1 8:64 1000 65:48 1000 round-robin 0 2 1 8:144 1000 8:224 1000
+status = 2 0 1 0 2 1 A 0 2 0 8:64 A 0 65:48 A 0 E 0 2 0 8:144 A 0 8:224 A 0
+*word = 1, len = 1
+*word = queue_if_no_path, len = 16
+"""
+
 
 def test_get_multipath_v4_ll():
     multipath_v4_ll_list = multipath_v4_ll.get_multipath_v4_ll(context_wrap(MULTIPATH_V4_LL_INFO))
@@ -105,6 +178,7 @@ def test_get_multipath_v4_ll():
         }]
     }
     assert multipath_v4_ll_list[0].get('size') == '54T'
+    print multipath_v4_ll_list[1]
     assert multipath_v4_ll_list[1].get('path_group') == [{
         "policy": "round-robin 0",
         "prio": "1",
@@ -133,3 +207,41 @@ def test_get_multipath_v4_ll():
     assert multipath_v4_ll_list[5].get('dm_name') == "dm-8"
     assert multipath_v4_ll_list[6].get('venprod') == "COMPELNT,Compellent Vol"
     assert multipath_v4_ll_list[6].get('dm_name') == "dm-19"
+
+
+def test_get_multipath_v4_ll_RHEL_5():
+    """
+    Test alternate device line prefixes, and ignoring extra clutter in input.
+    """
+    multipath_v4_ll_list = multipath_v4_ll.get_multipath_v4_ll(context_wrap(MULTIPATH_V4_LL_INFO_RHEL_5))
+
+    assert len(multipath_v4_ll_list) == 1
+
+    """
+L004 (360060160ade32800f2e3baf47665e211) dm-9 DGC,RAID 5
+[size=100G][features=1 queue_if_no_path][hwhandler=1 emc][rw]
+\_ round-robin 0 [prio=1][active]
+ \_ 3:0:1:4 sdk  8:160  [active][ready]
+ \_ 5:0:0:4 sdp  8:240  [active][ready]
+\_ round-robin 0 [prio=0][enabled]
+ \_ 3:0:0:4 sdf  8:80   [active][ready]
+ \_ 5:0:1:4 sdu  65:64  [active][ready]
+    """
+    path_dev = multipath_v4_ll_list[0]
+    assert path_dev['alias'] == 'L004'
+    assert path_dev['wwid'] == '360060160ade32800f2e3baf47665e211'
+    assert path_dev['dm_name'] == 'dm-9'
+    assert path_dev['venprod'] == 'DGC,RAID 5'
+    assert path_dev['size'] == '100G'
+    assert path_dev['features'] == '1 queue_if_no_path'
+    assert path_dev['hwhandler'] == '1 emc'
+    assert path_dev['wp'] == 'rw'
+    assert path_dev['path_group'][0]['policy'] == 'round-robin 0'
+    assert path_dev['path_group'][0]['prio'] == '1'
+    assert path_dev['path_group'][0]['status'] == 'active'
+
+    assert len(path_dev['path_group'][0]['path']) == 2
+    paths = path_dev['path_group'][0]['path']
+    assert len(paths) == 2
+    print paths
+    assert paths[0] == ['3:0:1:4', 'sdk', '8:160', 'active', 'ready']
