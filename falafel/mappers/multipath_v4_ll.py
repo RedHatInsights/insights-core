@@ -31,7 +31,13 @@ import shlex
 from .. import mapper
 
 MPATH_WWID_REG = re.compile(r'\(?([A-Za-z0-9_\s]+)\)?\s+dm-')
-HCTL_REG = re.compile(r'- (\d+:){3}\d+')
+PROPERTY_SQBRKT_REG = re.compile(r"\[(?P<key>\w+)=(?P<value>[^\]]+)\]")
+PATHGROUP_POLICY_STR = \
+    r"(?:policy=')?(?P<policy>(?:round-robin|queue-length|service-time) \d)" + \
+    r"(?:' | \[)prio=(?P<priority>\d+)(?:\]\[| status=)" + \
+    r"(?P<status>\w+)(?:\]|)"
+PATHGROUP_POLICY_REG = re.compile(PATHGROUP_POLICY_STR)
+HCTL_REG = re.compile(r'(?:[`|]-(?:\+-)?|\\_) (\d+:){3}\d+')
 
 
 @mapper('multipath_-v4_-ll')
@@ -157,10 +163,28 @@ def get_multipath_v4_ll(context):
           }
         ]
     """
+
     mpath_dev_all = []
+    mpath_dev = {}
+    path_info = []
+    path_group = []
+    path_group_attr = {}
     for line in context.content:
         m = MPATH_WWID_REG.search(line)
+
         if m:
+            # Save previous path group info if we have any:
+            # Now that we've got a valid path, append the group data if we
+            # haven't already
+            if path_info:
+                path_group_attr['path'] = path_info
+                path_group.append(path_group_attr)
+                # Must reset path group info to not carry on into new device
+                path_group_attr = {}
+                path_info = []
+                mpath_dev['path_group'] = path_group
+                mpath_dev_all.append(mpath_dev)
+
             mpath_dev = {}
             path_group = []
             wwid = m.group(1)
@@ -172,25 +196,47 @@ def get_multipath_v4_ll(context):
             mpath_dev['wwid'] = wwid
             mpath_dev['dm_name'] = dm
             mpath_dev['venprod'] = venprod
-        elif line.startswith('size='):
-            attr_line = shlex.split(line)
-            for item in attr_line:
-                (k, v) = item.split('=', 1)
-                mpath_dev[k] = v
-        elif 'policy=' in line:
-            path_group_attr = {}
-            path_info = []
-            filter_line = shlex.split(line)[1:]
-            for item in filter_line:
-                (k, v) = item.split('=', 1)
-                path_group_attr[k] = v
-        elif HCTL_REG.search(line):
-            colon_index = line.index(":")
-            path_info.append(line[colon_index - 2:].split())
-            if "`-" in line:
+
+        elif 'size=' in line:
+            if '][' in line:
+                # Old RHEL 5 format:
+                for (k, v) in PROPERTY_SQBRKT_REG.findall(line):
+                    mpath_dev[k] = v
+                # Handle un-named write policy attribute on the end:
+                mpath_dev['wp'] = line[-3:-1]
+            else:
+                # Newer RHEL 6 format:
+                attr_line = shlex.split(line)
+                for item in attr_line:
+                    (k, v) = item.split('=', 1)
+                    mpath_dev[k] = v
+
+        elif PATHGROUP_POLICY_REG.search(line):
+            m = PATHGROUP_POLICY_REG.search(line)
+            # New path info - save the previous if we have one:
+            if path_info:
                 path_group_attr['path'] = path_info
                 path_group.append(path_group_attr)
-                if line.strip().startswith('`-'):
-                    mpath_dev['path_group'] = path_group
-                    mpath_dev_all.append(mpath_dev)
+
+            path_group_attr = {}
+            path_info = []
+            path_group_attr['policy'] = m.group('policy')
+            path_group_attr['prio'] = m.group('priority')
+            path_group_attr['status'] = m.group('status')
+
+        elif HCTL_REG.search(line):
+            colon_index = line.index(":")
+            # Dodgy hack to convert RHEL 5 attributes in square brackets into
+            # spaced out words to combine into the list
+            line = line.replace('[', ' ').replace(']', ' ')
+            path_info.append(line[colon_index - 2:].split())
+
+    # final save of outstanding path and path group data:
+    if path_info:
+        path_group_attr['path'] = path_info
+        path_group.append(path_group_attr)
+    if path_group:
+        mpath_dev['path_group'] = path_group
+        mpath_dev_all.append(mpath_dev)
+
     return mpath_dev_all
