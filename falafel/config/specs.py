@@ -312,6 +312,8 @@ static_specs = {
                                     CommandSpec("/usr/sbin/xfs_info {mount}", mount=r'(?:/[\w-]*)+'),
                                     PatternSpec(r"sos_commands/xfs/xfs_info(_(?:\.[\w-]*)+)?"),
                                   ]),
+    "xinetd.conf"               : SimpleFileSpec("etc/xinetd.conf"),
+    "xinetd.d"                  : PatternSpec(r"etc/xinetd.d/.*"),
     "yum.conf"                  : SimpleFileSpec("etc/yum.conf"),
     "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
