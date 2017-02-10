@@ -153,6 +153,7 @@ static_specs = {
     "ls_dev"                    : CommandSpec("/bin/ls -lanR /dev"),
     "ls_disk"                   : CommandSpec("/bin/ls -lanR /dev/disk/by-*"),
     "ls_etc"                    : CommandSpec("/bin/ls -lanR /etc"),
+    "ls_sys_firmware"           : CommandSpec("/bin/ls -lanR /sys/firmware"),
     "ls_var_log"                : CommandSpec("/bin/ls -la /var/log /var/log/audit"),
     "lvdisplay"                 : CommandSpec("/sbin/lvdisplay"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
