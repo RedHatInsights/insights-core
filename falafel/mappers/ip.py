@@ -4,7 +4,6 @@ from ..contrib import ipaddress
 
 
 class NetworkInterface(object):
-
     def __init__(self, d):
         self.data = d
         addresses = [unicode("/".join([a["addr"], a["mask"]])) for a in self.data["addr"]]
@@ -308,7 +307,6 @@ class Route(object):
 
 @mapper("ip_route_show_table_all")
 class RouteDevices(Mapper):
-
     TYPES = set(["unicast",
                  "local",
                  "broadcast",
@@ -461,6 +459,34 @@ def get_ipv4_neigh(context):
     {
         "172.17.0.19": [{"dev":"docker0","nud":"FAILED"}]
         "172.17.0.27": [{"dev":"lo", "nud":"NOARP", "lladdr":"00:00:00:00:00:00" }]
+    }
+    """
+
+    result = defaultdict(list)
+    for line in filter(None, context.content):
+        split_result = line.split()
+        key_value_content = split_result[1:-1]
+        if len(key_value_content) >= 2:
+            entry = {k: v for k, v in zip(key_value_content[0::2], key_value_content[1::2])}
+        else:
+            entry = {}
+        entry["nud"] = split_result[-1]
+        result[split_result[0]].append(entry)
+    return dict(result)
+
+
+@mapper("ipv6_neigh")
+def get_ipv6_neigh(context):
+    """
+    Return ip -6 neigh show nud all result.
+    INPUT:
+    ff02::16 dev vlinuxbr lladdr 33:33:00:00:00:16 NOARP
+    ff02::1:ffea:2c00 dev tun0 lladdr 33:33:ff:ea:2c:00 NOARP
+
+    OUTPUT:
+    {
+        "ff02::16": [{"dev":"vlinuxbr", "nud":"NOARP", "lladdr":"33:33:00:00:00:16"]
+        "ff02::1:ffea:2c00": [{"dev":"tun0", "nud":"NOARP", "lladdr":"33:33:ff:ea:2c:00" }]
     }
     """
 

@@ -128,6 +128,7 @@ static_specs = {
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
     "ip6tables"                 : CommandSpec("/sbin/ip6tables-save"),
     "ipv4_neigh"                : CommandSpec("/sbin/ip -4 neighbor show nud all"),
+    "ipv6_neigh"                : CommandSpec("/sbin/ip -6 neighbor show nud all"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kexec_crash_loaded"        : SimpleFileSpec("sys/kernel/kexec_crash_loaded"),
