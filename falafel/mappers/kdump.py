@@ -265,3 +265,24 @@ class SysconfigKdump(Mapper):
             self.data[kw] = val.strip().replace('"', '')
         for kw, val in self.data.iteritems():
             setattr(self, kw, val)
+
+
+@mapper('kexec_crash_size')
+class KexecCrashSize(Mapper):
+    """
+    Parses the `/sys/kernel/kexec_crash_size` file which tells the
+    reserved memory size for the crash kernel.
+
+    Attributes
+    ----------
+    size: reserved memory size for the crash kernel
+    """
+
+    def parse_content(self, content):
+        self.data = {}
+        line = list(content)[0].strip()
+        self.data['size'] = int(line)
+
+    @property
+    def size(self):
+        return self.data['size']

@@ -132,6 +132,7 @@ static_specs = {
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kexec_crash_loaded"        : SimpleFileSpec("sys/kernel/kexec_crash_loaded"),
+    "kexec_crash_size"          : SimpleFileSpec("sys/kernel/kexec_crash_size"),
     "keystone.conf"             : SimpleFileSpec("etc/keystone/keystone.conf"),
     "keystone_crontab"          : CommandSpec("/usr/bin/crontab -l -u keystone"),
     "ksmstate"                  : SimpleFileSpec("sys/kernel/mm/ksm/run"),
