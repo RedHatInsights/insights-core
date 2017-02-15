@@ -1,8 +1,49 @@
+"""
+NTP sources - remote clock info from ``ntpq`` and ``chronyc``
+=============================================================
+
+The mappers here provide information about the time sources used by
+``ntpd`` and ``chronyd``.  These are gathered from the output of the
+``ntpq -pn`` and ``chronyc sources`` commands respectively.
+
+There is also a mapper for parsing the output of ``ntpq -c 'rv 0 leap'``
+command to give leap second status.
+
+"""
+
 from .. import Mapper, mapper
 
 
 @mapper('chronyc_sources')
 class ChronycSources(Mapper):
+    """
+    Chronyc Sources mapper
+
+    Parses the list of NTP time sources in use by ``chronyd``.  So far only
+    the source IP address and the mode and the state flags are retrieved.
+
+    Sample input::
+
+        210 Number of sources = 6
+        MS Name/IP address         Stratum Poll Reach LastRx Last sample
+        ===============================================================================
+        ^- 10.20.30.40                   2   9   377    95  -1345us[-1345us] +/-   87ms
+        ^- 10.56.72.8                    2  10   377   949  -3449us[-3483us] +/-  120ms
+        ^* 10.64.108.95                  2  10   377   371    -91us[ -128us] +/-   30ms
+        ^- 10.8.205.17                   2   8   377    27  +7161us[+7161us] +/-   52ms
+
+    Examples:
+
+        >>> sources = shared[ChronycSources]
+        >>> len(sources)
+        4
+        >>> sources[0]['source']
+        '10.20.30.40'
+        >>> sources[0]['mode']
+        '^'
+        >>> sources[0]['state']
+        '-'
+    """
 
     def parse_content(self, content):
         """
@@ -17,28 +58,61 @@ class ChronycSources(Mapper):
 
 @mapper('ntpq_leap')
 class NtpqLeap(Mapper):
+    """
+    Converts the output of ``ntpq -c 'rv 0 leap'`` into a dictionary in the
+    ``data`` property, and sets the ``leap`` property to the value of the
+    'leap' key if found.
+
+    Sample input::
+
+        leap=00
+
+    Examples:
+
+        >>> print shared[NtpqLeap].data['leap']
+        '00'
+        >>> print shared[NtpqLeap].leap  # same data
+        '00'
+    """
 
     def parse_content(self, content):
-        """
-        Sample Input:
-            leap=00
-
-        Sample Output:
-            {"leap": "00"}
-        """
         line = content[0].strip()
         if "=" in line:
             k, v = line.split("=")
             self.data = {k: v}
+            if 'k' == 'leap':
+                self.leap = v
 
 
 @mapper('ntpq_pn')
 class NtpqPn(Mapper):
+    """
+    Get source and flag for each NTP time source from the output of `ntpq -pn`.
+
+    Currently, this only captures the source IP address and the 'flag'
+    character in the first column at this stage.  Therefore it will need
+    to be extended should you wish to determine the stratum, polling rate
+    or other properties of the source.
+
+    Sample input::
+
+             remote           refid      st t when poll reach   delay   offset  jitter
+        ==============================================================================
+        +10.20.30.40     192.231.203.132  3 u  638 1024  377    0.242    2.461   1.886
+        *2001:388:608c:8 .GPS.            1 u  371 1024  377   29.323    1.939   1.312
+        -2001:44b8:1::1  216.218.254.202  2 u  396 1024  377   37.869   -3.340   6.458
+        +150.203.1.10    202.6.131.118    2 u  509 1024  377   20.135    0.800   3.260
+
+    Examples:
+
+        >>> sources = shared[NtpqPn]
+        >>> len(sources)
+        4
+        >>> sources[0]
+        {'flag': '*', 'source', '10.20.30.40'}
+    """
 
     def parse_content(self, content):
-        """
-        Get source, flag for ntp
-        """
         self.data = []
         for row in content[2:]:
             if row.strip():
