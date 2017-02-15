@@ -7,7 +7,7 @@ of its time setting resources.
 """
 
 import re
-from .. import Mapper, mapper, get_active_lines
+from .. import Mapper, mapper, get_active_lines, SysconfigOptions
 
 
 class NTPConfMapper(Mapper):
@@ -198,7 +198,7 @@ class NtpTime(Mapper):
 
 
 @mapper("sysconfig_chronyd")
-class ChronydService(Mapper):
+class ChronydService(SysconfigOptions):
     """
     A mapper for analyzing the ``chronyd`` service config file in the
     ``/etc/sysconfig`` directory.
@@ -219,17 +219,11 @@ class ChronydService(Mapper):
         '"-d"'
 
     """
-    def parse_content(self, content):
-        result = {}
-        for line in get_active_lines(content):
-            if '=' in line:
-                k, rest = line.split('=', 1)
-                result[k.strip()] = rest.strip()
-        self.data = result
+    pass
 
 
 @mapper("sysconfig_ntpd")
-class NTPDService(Mapper):
+class NTPDService(SysconfigOptions):
     """
     A mapper for analyzing the ``ntpd`` service config file in the
     ``/etc/sysconfig`` directory
@@ -249,10 +243,4 @@ class NTPDService(Mapper):
         >>> service_opts.data['OPTIONS']
         '"-x -g"'
     """
-    def parse_content(self, content):
-        result = {}
-        for line in get_active_lines(content):
-            if '=' in line:
-                k, rest = line.split('=', 1)
-                result[k.strip()] = rest.strip()
-        self.data = result
+    pass
