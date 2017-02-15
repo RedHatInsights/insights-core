@@ -169,6 +169,7 @@ static_specs = {
     "mount"                     : CommandSpec("/bin/mount"),
     "multipath.conf"            : SimpleFileSpec("etc/multipath.conf"),
     "multipath_-v4_-ll"         : CommandSpec("/sbin/multipath -v4 -ll"),
+    "namei_tomcat"              : CommandSpec("/usr/bin/namei -monl /usr/share/tomcat/work/Catalina/localhost/candlepin /var/cache/tomcat/work/Catalina/localhost/candlepin"),
     "named-checkconf_p"         : CommandSpec("/usr/sbin/named-checkconf -p"),
     "netconsole"                : SimpleFileSpec("etc/sysconfig/netconsole"),
     "netstat"                   : CommandSpec("/bin/netstat -neopa"),
