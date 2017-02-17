@@ -143,6 +143,7 @@ static_specs = {
     "limits.d"                  : PatternSpec(r"etc/security/limits.d/.*"),
     "locale"                    : CommandSpec("/usr/bin/locale"),
     "localtime"                 : CommandSpec("/usr/bin/file -L /etc/localtime"),
+    "lpstat_p"                  : CommandSpec("/usr/bin/lpstat -p"),
     "lsblk"                     : CommandSpec("/bin/lsblk"),
     "lsblk_pairs"               : CommandSpec("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO"),
     "lscpu"                     : CommandSpec("/usr/bin/lscpu"),
