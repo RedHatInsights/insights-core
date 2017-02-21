@@ -281,6 +281,7 @@ static_specs = {
     "sshd_config"               : SimpleFileSpec("etc/ssh/sshd_config"),
     "sshd_config_perms"         : CommandSpec("/bin/ls -l /etc/ssh/sshd_config"),
     "sssd_config"               : SimpleFileSpec("etc/sssd/sssd.conf"),
+    "sssd_logs"                 : PatternSpec(r"var/log/sssd/.*\.log$"),
     "sysconfig_chronyd"         : SimpleFileSpec("etc/sysconfig/chronyd"),
     "sysconfig_httpd"           : SimpleFileSpec("etc/sysconfig/httpd"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
