@@ -32,13 +32,15 @@ def test_dcbtool_gc_deprecated():
 
 
 def test_dcbtool_gc():
-    result = dcbtool_gc_dcb.Dcbtool(context_wrap(DCBTOOL_GC_OUTPUT)).data
-    assert len(result) == 5
+    result = dcbtool_gc_dcb.Dcbtool(context_wrap(DCBTOOL_GC_OUTPUT))
+    assert len(result.data) == 5
     assert result["command"] == "Get Config"
     assert result["feature"] == "DCB State"
     assert result["port"] == "eth0"
     assert result["status"] == "Off"
     assert result["dcbx_version"] == "FORCED CIN"
 
-    result = dcbtool_gc_dcb.Dcbtool(context_wrap(DCBTOOL_GC_DCB_FAILED)).data
-    assert len(result) == 0
+    assert not result.is_on
+
+    result = dcbtool_gc_dcb.Dcbtool(context_wrap(DCBTOOL_GC_DCB_FAILED))
+    assert len(result.data) == 0

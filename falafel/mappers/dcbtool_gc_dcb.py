@@ -1,12 +1,10 @@
-from .. import mapper, Mapper, get_active_lines
+"""
+Dcbtool - Command ``/sbin/dcbtool gc {interface} dcb``
+======================================================
 
-
-@mapper("dcbtool_gc_dcb")
-class Dcbtool(Mapper):
-    """
     Parse Lines from the `dcbtool gc eth1 dcb` to check DCBX if enabled
 
-    Successful completion of the command returns data like:
+    Successful completion of the command returns data similar to::
 
         Command:    Get Config
         Feature:    DCB State
@@ -14,14 +12,15 @@ class Dcbtool(Mapper):
         Status:     Off
         DCBX Version: FORCED CIN
 
-    Returns
-    -------
+    The keys in this data are converted to lower case and spaces are converted
+    to underscores.
 
-    The ``data`` member of the class is a ``dict`` that
-    reflects the above content, e.g.:
+    An `is_on` attribute is also provided to indicate if the status is 'On'.
 
-    .. code-block:: python
+    Examples:
 
+        >>> dcbstate = shared[Dcbtool]
+        >>> dcb.data
         {
             "command": "Get Config",
             "feature": "DCB State",
@@ -29,9 +28,33 @@ class Dcbtool(Mapper):
             "status": "Off"
             "dcbx_version":"FORCED CIN"
         }
+        >>> dcb['port']
+        'eth0'
+        >>> dcb['state']
+        'Off'
+        >>> dcb.is_on
+        False
 
     If a "Connection refused" error is encountered,
     an empty dictionary is returned`.
+
+"""
+
+from .. import mapper, LegacyItemAccess, Mapper, get_active_lines
+
+
+@mapper("dcbtool_gc_dcb")
+class Dcbtool(LegacyItemAccess, Mapper):
+    """
+    Parse the output of the `dcbtool` command.
+
+    If the command output contains 'Connection refused', no data is stored.
+    The LegacyItemAccess mixin class is used to provide direct access to the
+    data.
+
+    Attributes:
+        data (dict): A dictionary of the content of the command output.
+        is_on: (bool): Is the status of the interface 'On'?
     """
     def parse_content(self, content):
         self.data = {}
@@ -43,8 +66,10 @@ class Dcbtool(Mapper):
             key = key.lower().replace(" ", "_")
             self.data[key] = value.strip()
 
+        self.is_on = (self.data['status'] == 'On')
+
 
 @mapper("dcbtool_gc_dcb")
 def dcbtool_gc_dcb(context):
-    """Deprecated, use ``Dcbtool`` instead."""
+    """Deprecated, use the ``Dcbtool`` class instead."""
     return Dcbtool(context).data
