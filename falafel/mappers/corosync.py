@@ -1,17 +1,46 @@
-from .. import Mapper, mapper, get_active_lines
+"""
+CoroSyncConfig - file ``/etc/sysconfig/corosync``
+=================================================
+
+This mapper reads the ``/etc/sysconfig/corosync`` file.  It uses the
+``SysconfigOptions`` mapper class to convert the file into a dictionary of
+options.  It also provides the ``options`` property as a helper to retrieve
+the ``COROSYNC_OPTIONS`` variable.
+
+Sample data::
+
+    # Corosync init script configuration file
+
+    # COROSYNC_INIT_TIMEOUT specifies number of seconds to wait for corosync
+    # initialization (default is one minute).
+    COROSYNC_INIT_TIMEOUT=60
+
+    # COROSYNC_OPTIONS specifies options passed to corosync command
+    # (default is no options).
+    # See "man corosync" for detailed descriptions of the options.
+    COROSYNC_OPTIONS=""
+
+Examples:
+
+    >>> csconfig = shared[CoroSyncConfig]
+    >>> 'COROSYNC_OPTIONS' in csconfig.data
+    True
+    >>> csconfig.options
+    ''
+
+"""
+
+from .. import SysconfigOptions, mapper
 
 
 @mapper("corosync")
-class CoroSyncConfig(Mapper):
+class CoroSyncConfig(SysconfigOptions):
+    """
+    Parse the ``/etc/sysconfig/corosync`` file using the SysconfigOptions
+    mapper class.
+    """
 
-    def parse_content(self, content):
-        """
-        Parse /etc/sysconfig/corosync
-        return dict like {'COROSYNC_OPTIONS': '', 'COROSYNC_INIT_TIMEOUT': '60'}
-        """
-
-        self.data = {}
-        for line in get_active_lines(content):
-            if "=" in line:
-                (key, value) = line.split("=", 1)
-                self.data[key.strip()] = value.strip().replace('"', "")
+    @property
+    def options(self):
+        """ (str): The value of the ``COROSYNC_OPTIONS`` variable."""
+        return self.data.get('COROSYNC_OPTIONS', '')
