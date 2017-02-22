@@ -205,6 +205,49 @@ Handle 0x0100
 \t\tWake-up Type: Power Switch
 '''
 
+# Several oddities in processing that should be picked up:
+# * Things besides 'Characteristics' that are double-indented
+# * Multiple instances of the same heading
+# * A subheading with a value on that line and subsequent double-indented data.
+DMIDECODE_ODDITIES = """
+Handle 0x0009, DMI type 129, 8 bytes
+OEM-specific Type
+\tHeader and Data:
+\t\t81 08 09 00 01 01 02 01
+\tStrings:
+\t\tIntel_ASF
+\t\tIntel_ASF_001
+
+Handle 0x000A, DMI type 134, 13 bytes
+OEM-specific Type
+\tHeader and Data:
+\t\t86 0D 0A 00 28 06 14 20 00 00 00 00 00
+
+Handle 0x000F, DMI type 8, 9 bytes
+Port Connector Information
+\tInternal Reference Designator: Not Available
+\tInternal Connector Type: None
+\tExternal Reference Designator: USB 1
+\tExternal Connector Type: Access Bus (USB)
+\tPort Type: USB
+
+Handle 0x0010, DMI type 8, 9 bytes
+Port Connector Information
+\tInternal Reference Designator: Not Available
+\tInternal Connector Type: None
+\tExternal Reference Designator: USB 2
+\tExternal Connector Type: Access Bus (USB)
+\tPort Type: USB
+
+Handle 0x0029, DMI type 13, 22 bytes
+BIOS Language Information
+\tLanguage Description Format: Abbreviated
+\tInstallable Languages: 1
+\t\ten-US
+\tCurrently Installed Language: en-US
+
+"""
+
 
 class TestDmidecode():
 
@@ -276,6 +319,9 @@ class TestDmidecode():
         assert ret.get("processor_information")[1].get("socket_designation") == "CPU 2"
         assert ret.get("processor_information")[1].get("type") == "Central Processor"
 
+        # Check for 'nonsense' keys
+        assert 'table_at_0xbffcb000.' not in ret
+
     def test_get_dmidecode_fail(self):
         '''
         Test for faied raw data
@@ -333,3 +379,40 @@ class TestDmidecode():
         assert ret.get("system_information")[0].get("serial_number") == "3H6CMK2537"
         assert ret.get("system_information")[0].get("uuid") == "58585858-5858-3348-3643-4D4B32353337"
         assert ret.get("system_information")[0].get("wake-up_type") == "Power Switch"
+
+    def test_dmidecode_oddities(self):
+        dmi = DMIDecode(context_wrap(DMIDECODE_ODDITIES))
+
+        print dmi.data
+
+        assert len(dmi['oem-specific_type']) == 2
+        assert dmi['oem-specific_type'][0] == {
+            'header_and_data': '81 08 09 00 01 01 02 01',
+            'strings': ['Intel_ASF', 'Intel_ASF_001'],
+        }
+        assert dmi['oem-specific_type'][1] == {
+            'header_and_data': '86 0D 0A 00 28 06 14 20 00 00 00 00 00',
+        }
+
+        assert len(dmi['port_connector_information']) == 2
+        assert dmi['port_connector_information'][0] == {
+            'internal_reference_designator': 'Not Available',
+            'internal_connector_type': 'None',
+            'external_reference_designator': 'USB 1',
+            'external_connector_type': 'Access Bus (USB)',
+            'port_type': 'USB',
+        }
+        assert dmi['port_connector_information'][0] == {
+            'internal_reference_designator': 'Not Available',
+            'internal_connector_type': 'None',
+            'external_reference_designator': 'USB 1',
+            'external_connector_type': 'Access Bus (USB)',
+            'port_type': 'USB',
+        }
+
+        assert len(dmi['bios_language_information']) == 1
+        assert dmi['bios_language_information'][0] == {
+            'language_description_format': 'Abbreviated',
+            'installable_languages': ['1', 'en-US'],
+            'currently_installed_language': 'en-US'
+        }
