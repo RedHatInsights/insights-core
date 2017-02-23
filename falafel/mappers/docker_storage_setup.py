@@ -1,31 +1,40 @@
-from .. import Mapper, mapper, get_active_lines
-from ..mappers import split_kv_pairs
+"""
+DockerStorageSetup - file ``/etc/sysconfig/docker-storage-setup``
+=================================================================
+
+A fairly simple mapper to read the contents of the docker storage setup
+configuration.
+
+Sample input::
+
+    # Edit this file to override any configuration options specified in
+    # /usr/lib/docker-storage-setup/docker-storage-setup.
+    #
+    # For more details refer to "man docker-storage-setup"
+    VG=vgtest
+    AUTO_EXTEND_POOL=yes
+    ##name = mydomain
+    POOL_AUTOEXTEND_THRESHOLD=60
+    POOL_AUTOEXTEND_PERCENT=20
+
+Examples:
+
+    >>> setup = shared[DockerStorageSetup]
+    >>> setup['VG'] # Pseudo-dict access
+    'vgtest'
+    >>> 'name' in setup
+    False
+    >>> setup.data['POOL_AUTOEXTEND_THRESHOLD'] # old style access
+    '60'
+
+"""
+
+from .. import SysconfigOptions, mapper
 
 
 @mapper('docker_storage_setup')
-class DockerStorageSetup(Mapper):
+class DockerStorageSetup(SysconfigOptions):
     """
     A mapper for accessing /etc/sysconfig/docker-storage-setup.
     """
-
-    def __init__(self, *args, **kwargs):
-        self.active_lines_unparsed = []
-        self.active_settings = {}
-        super(DockerStorageSetup, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        """
-        Main parsing class method which stores all interesting data from the content.
-
-        Args:
-            content (context.content): Mapper context content
-        """
-        self.active_lines_unparsed = get_active_lines(content)
-        #  (man page specifies that a line must contain "=")
-        self.active_settings = split_kv_pairs(content, use_partition=False)
-
-    def __getitem__(self, item):
-        return self.active_settings[item]
-
-    def __contains__(self, item):
-        return item in self.active_settings
+    pass
