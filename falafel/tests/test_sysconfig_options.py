@@ -33,7 +33,7 @@ AND = 'so should this'
 """ + "SPACES_AFTER_VALUE=should_be_ignored    \n" + "  \n"
 
 
-class Sysconfigdockercheck(unittest.TestCase):
+class Test_Sysconfig_Options(unittest.TestCase):
     def test_standard_config(self):
         config = SysconfigOptions(context_wrap(STANDARD_CONFIG))
 
@@ -42,12 +42,26 @@ class Sysconfigdockercheck(unittest.TestCase):
         assert 'HOST' in config.data
         assert 'PORT' in config.data
 
-        print config.data
-
         assert config.data['OPTIONS'] == '-x -g'
         assert config.data['USER'] == 'root'
         assert config.data['HOST'] == '192.168.0.100'
         assert config.data['PORT'] == '1066'
+
+        # New pseudo-dictionary access:
+        assert sorted(config.keys()) == sorted(['OPTIONS', 'USER', 'HOST', 'PORT'])
+        assert 'OPTIONS' in config
+        assert 'USER' in config
+        assert 'HOST' in config
+        assert 'PORT' in config
+
+        assert config['OPTIONS'] == '-x -g'
+        assert config['USER'] == 'root'
+        assert config['HOST'] == '192.168.0.100'
+        assert config['PORT'] == '1066'
+
+        assert config.get('OPTIONS', 'wrong') == '-x -g'
+        # Check that get for not found value returns default
+        assert config.get('NO_KEY', 'value') == 'value'
 
     def test_tricky_config(self):
         config = SysconfigOptions(context_wrap(TRICKY_CONFIG))
