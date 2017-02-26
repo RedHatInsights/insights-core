@@ -113,11 +113,13 @@ class DockerList(Mapper):
             self.rows.append(row)
 
         # If we have a key_field set, construct a data dictionary on it.
-        # Note that duplicates will be overwritten.
+        # Note that duplicates will be overwritten, but we ignore '<none>'.
         if self.key_field and self.key_field in self.rows[0]:
             self.data = {}
             for row in self.rows:
-                self.data[row[self.key_field]] = row
+                k = row[self.key_field]
+                if k is not None and k != '<none>':
+                    self.data[k] = row
 
 
 @mapper("docker_list_images")
