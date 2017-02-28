@@ -156,6 +156,7 @@ class RabbitMQUsers(Mapper):
 
 @mapper("rabbitmq_startup_log")
 class RabbitMQStartupLog(LogFileOutput):
+    """Deprecated, use ``rabbitmq_log.RabbitMQStartupLog`` class instead."""
     pass
 
 
