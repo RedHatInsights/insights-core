@@ -4,6 +4,7 @@ import logging
 import os
 import pkgutil
 import re
+import shlex
 import sys
 from ConfigParser import RawConfigParser
 from collections import defaultdict
@@ -107,6 +108,90 @@ class Mapper(object):
         pass
 
 
+class SysconfigOptions(Mapper):
+    """
+    A mapper to handle the standard 'keyword=value' format of files in the
+    ``/etc/sysconfig`` directory.  These are provided in the standard 'data'
+    dictionary.
+
+    Examples:
+
+        >>> ntpconf = shared[NtpConf]
+        >>> 'OPTIONS' in ntpconf.data
+        True
+        >>> 'NOT_SET' in ntpconf.data
+        False
+        >>> 'COMMENTED_OUT' in ntpconf.data
+        False
+        >>> ntpconf.data['OPTIONS']
+        '-x -g'
+
+    For common variables such as OPTIONS, it is recommended to set a specific
+    property in the subclass that fetches this option with a fallback to a
+    default value.
+
+    Example subclass::
+
+        class DirsrvSysconfig(SysconfigOptions):
+
+            @property
+            def options(self):
+                return self.data.get('OPTIONS', '')
+    """
+
+    def parse_content(self, content):
+        result = {}
+        unparsed_lines = []
+
+        # Do not use get_active_lines, it strips comments within quotes
+        for line in content:
+            if not line:
+                continue
+            words = shlex.split(line)
+            # Either only one thing or line or rest starts with comment
+            # but either way we need to have an equals in the first word.
+            if (len(words) == 1 or (len(words) > 1 and words[1][0] == '#')) \
+                    and '=' in words[0]:
+                key, value = words[0].split('=', 1)
+                result[key] = value
+            # Only store lines if they aren't comments or blank
+            elif len(words) > 0 and words[0][0] != '#':
+                unparsed_lines.append(line)
+        self.data = result
+        self.unparsed_lines = unparsed_lines
+
+    def __getitem__(self, option):
+        """
+        Retrieves an item from the underlying data dictionary.
+        """
+        return self.data[option]
+
+    def __contains__(self, option):
+        """
+        Does the underlying dictionary contain this option?
+        """
+        return option in self.data
+
+    def keys(self):
+        """
+        Return the list of keys (in no order) in the underlying dictionary.
+        """
+        return self.data.keys()
+
+    def get(self, item, default=None):
+        """Returns value of key ``item`` in self.data or ``default``
+        if key is not present.
+
+        Parameters:
+            item (str): Key to get from ``self.data``.
+            default (str): Default value to return if key is not present.
+
+        Returns:
+            (str): String value of the stored item, or the default if not found.
+        """
+        return self.data.get(item, default)
+
+
 class LegacyItemAccess(object):
     """
     Mixin class to provide legacy access to ``self.data`` attribute.
@@ -158,6 +243,9 @@ class LegacyItemAccess(object):
         Parameters:
             item: Key to get from ``self.data``.
             default: Default value to return if key is not present.
+
+        Returns:
+            (str): String value of the stored item, or the default if not found.
         """
         return self.data.get(item, default)
 
