@@ -200,6 +200,7 @@ static_specs = {
     "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
     "oc_get_dc"                 : CommandSpec("/usr/bin/oc get dc -o yaml --all-namespaces"),
     "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces"),
+    "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}"),
     "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
@@ -336,6 +337,7 @@ pre_commands = {
     "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
     "module": "/bin/ls /sys/module",
+    "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'"
 }
 
 meta_files = {
