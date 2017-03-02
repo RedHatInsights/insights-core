@@ -130,6 +130,10 @@ class DMIDecode(Mapper, LegacyItemAccess):
         "KVM": "kvm"
     }
 
+    VERSION_MAP = {
+        "amazon": "amazon"
+    }
+
     def parse_content(self, content):
         self.data = parse_dmidecode(content, pythonic_keys=True)
 
@@ -189,8 +193,10 @@ class DMIDecode(Mapper, LegacyItemAccess):
         product_name = sys_info.get("product_name")
         manufacturer = sys_info.get("manufacturer")
         vendor = bios_info.get("vendor")
+        version = bios_info.get("version")
 
-        for dmidecode_value, mapping in [(product_name, self.PRODUCT_MAP),
+        for dmidecode_value, mapping in [(version, self.VERSION_MAP),
+                                         (product_name, self.PRODUCT_MAP),
                                          (manufacturer, self.MANUFACTURER_MAP),
                                          (vendor, self.VENDOR_MAP)]:
             for map_key in mapping:

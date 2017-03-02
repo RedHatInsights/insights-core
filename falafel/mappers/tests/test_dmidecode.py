@@ -157,6 +157,51 @@ System Information
 \tFamily: Not Specified
 '''
 
+DMIDECODE_AWS = '''
+# dmidecode 2.12-dmifs
+SMBIOS 2.4 present.
+11 structures occupying 310 bytes.
+Table at 0x000EB01F.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+\tVendor: Xen
+\tVersion: 4.2.amazon
+\tRelease Date: 12/09/2016
+\tAddress: 0xE8000
+\tRuntime Size: 96 kB
+\tROM Size: 64 kB
+\tCharacteristics:
+\t\tPCI is supported
+\t\tEDD is supported
+\t\tTargeted content distribution is supported
+\tBIOS Revision: 4.2
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+\tManufacturer: Xen
+\tProduct Name: HVM domU
+\tVersion: 4.2.amazon
+\tSerial Number: ec2f58af-2dad-c57e-88c0-a81cb6084290
+\tUUID: EC2F58AF-2DAD-C57E-88C0-A81CB6084290
+\tWake-up Type: Power Switch
+\tSKU Number: Not Specified
+\tFamily: Not Specified
+
+Handle 0x0300, DMI type 3, 13 bytes
+Chassis Information
+\tManufacturer: Xen
+\tType: Other
+\tLock: Not Present
+\tVersion: Not Specified
+\tSerial Number: Not Specified
+\tAsset Tag: Not Specified
+\tBoot-up State: Safe
+\tPower Supply State: Safe
+\tThermal State: Safe
+\tSecurity Status: Unknown
+'''
+
 DMIDECODE_FAIL = "# dmidecode 2.11\n# No SMBIOS nor DMI entry point found, sorry.\n"
 
 DMIDECODE_DMI = '''
@@ -339,6 +384,15 @@ class TestDmidecode():
         ret = DMIDecode(context)
         assert ret.is_present is True
         assert ret.virt_what == "vmware"
+
+    def test_get_dmidecode_v2(self):
+            '''
+            Test for get_virt() with AWS data
+            '''
+            context = context_wrap(DMIDECODE_AWS)
+            ret = DMIDecode(context)
+            assert ret.is_present is True
+            assert ret.virt_what == "amazon"
 
     def test_get_dmidecode_dmi(self):
         '''
