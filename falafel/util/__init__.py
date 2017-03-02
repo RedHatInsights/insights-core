@@ -95,8 +95,8 @@ class objectview(object):
 
 def parse_table(content, delim=None, max_splits=-1, strip=True):
     """
-    Parses table-like text. Assumes the first
-    row contains column names.
+    Parses table-like text. Assumes the first row contains column names.
+    Column names cannot contain spaces.  Fields cannot be blank.
     """
     if not content:
         return []
