@@ -200,7 +200,7 @@ static_specs = {
     "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
     "oc_get_dc"                 : CommandSpec("/usr/bin/oc get dc -o yaml --all-namespaces"),
     "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces"),
-    "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}"),
+    "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}", crt=r"\S+"),
     "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
