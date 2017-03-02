@@ -9,7 +9,12 @@ class UnitFiles(Mapper):
     """
     def __init__(self, *args, **kwargs):
         self.services = {}
+        """dict: Dictionary of bool indicating if service is enabled,
+        access by service name ."""
+        self.service_list = []
+        """list: List of service names in order of appearance."""
         self.parsed_lines = {}
+        """dict: Dictionary of content lines access by service name."""
         super(UnitFiles, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
@@ -20,8 +25,8 @@ class UnitFiles(Mapper):
             content (context.content): Mapper context content
         """
         # 'static' means 'on' to fulfill dependency of something else that is on
-        valid_states = {'enabled', 'static', 'disabled'}
-        on_states = valid_states - {'disabled'}
+        valid_states = {'enabled', 'static', 'disabled', 'invalid'}
+        on_states = {'enabled', 'static'}
 
         for line in get_active_lines(content):
             parts = line.split(None)  # AWK like split, strips whitespaces
@@ -30,6 +35,7 @@ class UnitFiles(Mapper):
                 enabled = state in on_states
                 self.services[service] = enabled
                 self.parsed_lines[service] = line
+                self.service_list.append(service)
 
     def is_on(self, service_name):
         """
