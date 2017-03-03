@@ -233,7 +233,7 @@ class SingleEvaluator(Evaluator):
 
     def run_reducers(self):
         generator = reducer.run_host(
-            self.mapper_results, self.handle_reducer_error(), self.stats['reducer'])
+            self.mapper_results, self.handle_reducer_error(), reducer_stats=self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(r, plugin)
 
@@ -275,7 +275,7 @@ class MultiEvaluator(Evaluator):
 
     def run_reducers(self, metadata=None):
         generator = reducer.run_multi(
-            self.mapper_results, self.handle_reducer_error(), self.stats['reducer'])
+            self.mapper_results, self.handle_reducer_error(), reducer_stats=self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(r, plugin)
 

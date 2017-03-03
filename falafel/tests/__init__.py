@@ -233,7 +233,7 @@ def integrate(input_data, module):
         if not reducers:
             # Assume we're expecting a mapper to make_response.
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
-        gen = reducer.run_host(single_host, error_handler, reducers)
+        gen = reducer.run_host(single_host, error_handler, reducers=reducers)
         reducer_modules = [r.__module__ for r in reducers.values()]
         return [r for func, r in gen if func.__module__ in reducer_modules and r["type"] != "skip"]
 
