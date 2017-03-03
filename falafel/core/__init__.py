@@ -303,13 +303,6 @@ class Scannable(Mapper):
         cls._scan(result_key, scanner)
 
 
-class LogFileMeta(type):
-    def __new__(cls, name, parents, dct):
-        dct["scanners"] = []
-        dct["scanner_keys"] = set()
-        return super(LogFileMeta, cls).__new__(cls, name, parents, dct)
-
-
 class LogFileOutput(Mapper):
     """Class for parsing log file content.
 
@@ -338,7 +331,7 @@ class LogFileOutput(Mapper):
         >>> my_logger.lines[0]
         'Log file line one'
     """
-    __metaclass__ = LogFileMeta
+    __metaclass__ = ScanMeta
 
     def parse_content(self, content):
         """
