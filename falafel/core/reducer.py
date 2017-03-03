@@ -80,12 +80,12 @@ def collect_results_multi(results_dict):
     return combined_local_output, combined_shared_output
 
 
-def run_multi(mapper_output, error_handler, reducers=plugins.CLUSTER_REDUCERS):
+def run_multi(mapper_output, error_handler, reducer_stats=None, reducers=plugins.CLUSTER_REDUCERS):
     logger.debug("Multi-node reducer run started")
     if reducers != plugins.CLUSTER_REDUCERS:
         log_reducers(reducers)
     plugin_output, shared_output = collect_results_multi(mapper_output)
-    for func, r in _run(reducers, plugin_output, shared_output, error_handler):
+    for func, r in _run(reducers, plugin_output, shared_output, error_handler, reducer_stats):
         yield func, r
 
 
@@ -96,12 +96,13 @@ def run(mapper_output, error_handler):
             yield host, func, r
 
 
-def run_host(mapper_dict, error_handler, reducers=plugins.REDUCERS):
+def run_host(mapper_dict, error_handler, reducer_stats=None, reducers=plugins.REDUCERS):
     logger.debug("Single-node reducer run started")
     if reducers != plugins.REDUCERS:
         log_reducers(reducers)
     plugin_output, shared_output = collect_results(mapper_dict)
-    for func, r in _run(reducers, plugin_output, shared_output, error_handler, output_dict=mapper_dict):
+    for func, r in _run(reducers, plugin_output, shared_output, error_handler, reducer_stats,
+                        output_dict=mapper_dict):
         yield func, r
     for func, r in default_reducer_results(plugin_output):
         yield func, r
@@ -139,7 +140,7 @@ def run_order(reducers):
             yield o
 
 
-def _run(reducers, plugin_output, shared_output, error_handler, output_dict=None):
+def _run(reducers, plugin_output, shared_output, error_handler, reducer_stats=None, output_dict=None):
     clustered = any(r.cluster for r in reducers.values())
     for func in run_order(reducers.values()):
 
@@ -152,7 +153,7 @@ def _run(reducers, plugin_output, shared_output, error_handler, output_dict=None
         real_module = sys.modules[func.__module__]
         local_output = plugin_output[real_module]
         log_mapper_outputs(func, local_output, shared_output)
-        r = run_reducer(func, local_output, shared_output, error_handler)
+        r = run_reducer(func, local_output, shared_output, error_handler, reducer_stats)
         if r:
             logger.debug("Reducer output: %s", r)
             if func.shared:
@@ -169,8 +170,12 @@ def default_reducer_results(plugin_output):
             yield plugins.PLUGINS[module.__name__]["mappers"][0], output
 
 
-def run_reducer(func, local, shared, error_handler):
+def run_reducer(func, local, shared, error_handler, reducer_stats=None):
     try:
+        if reducer_stats:
+            reducer_stats['count'] += 1
         return func(local=local, shared=shared)
     except Exception as e:
+        if reducer_stats:
+            reducer_stats['fail'] += 1
         error_handler(func, e, local, shared)

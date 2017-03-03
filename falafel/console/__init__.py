@@ -90,9 +90,10 @@ class Runner(object):
             system = results.get("system", {})
             skips = results.get("skips", [])
             reports = self.reports_generator(results.get("reports", []))
+            stats = results.get("stats", {})
             if sm.analysis_target:
                 system["analysis_target"] = sm.analysis_target.section_name
-            return system, skips, reports, self.extract_archives(results, md)
+            return system, skips, reports, self.extract_archives(results, md), stats
 
     def reports_generator(self, reports):
         results = {}
@@ -102,7 +103,7 @@ class Runner(object):
 
         for module, d in plugins.PLUGINS.iteritems():
             module = module.split(".")[-1]
-            yield module, None, results.get(module)
+            yield module, results.get(module)
 
     def extract_archives(self, results, md):
         results_archives = results.get("archives", None)
@@ -111,7 +112,8 @@ class Runner(object):
             for each in results_archives:
                 archives.append({"system": each.get("system", {}),
                                  "skips": each.get("skips", []),
-                                 "reports": self.reports_generator(each.get("reports", []))})
+                                 "reports": self.reports_generator(each.get("reports", [])),
+                                 "stats": each.get("stats", {})})
             return archives
         else:
             return None

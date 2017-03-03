@@ -36,6 +36,14 @@ class Evaluator(object):
         self.rule_skips = []
         self.rule_results = []
         self.archive_metadata = metadata
+        self.stats = self._init_stats()
+
+    def _init_stats(self):
+        return {
+                "mapper": {"count": 0, "fail": 0},
+                "reducer": {"count": 0, "fail": 0},
+                "skips": {"count": 0}
+        }
 
     def pre_mapping(self):
         pass
@@ -54,6 +62,8 @@ class Evaluator(object):
         return result
 
     def handle_reducer_error(self):
+        self.stats["reducer"]["fail"] += 1
+
         def default_error_handler(func, e, local, shared):
             log.exception("Reducer [%s] failed", ".".join([func.__module__, func.__name__]))
         return default_error_handler
@@ -62,6 +72,7 @@ class Evaluator(object):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
     def _execute_mapper(self, mapper, context):
+        self.stats["mapper"]["count"] += 1
         return mapper(context)
 
     def run_metadata_mappers(self, the_meta_data):
@@ -109,6 +120,7 @@ class Evaluator(object):
         pass
 
     def handle_map_error(self, e, context):
+        self.stats["mapper"]["fail"] += 1
         log.exception("Mapper failed")
 
     def handle_content_error(self, e, filename):
@@ -141,6 +153,7 @@ class SingleEvaluator(Evaluator):
 
     def format_response(self, response):
         serialize_skips(response["skips"])
+        response["stats"]["skips"]["count"] = len(self.rule_skips)
         return response
 
     def _protected_parse(self, sym_name, parser, default=""):
@@ -188,7 +201,8 @@ class SingleEvaluator(Evaluator):
                 "hostname": self.hostname
             },
             "reports": self.rule_results,
-            "skips": self.rule_skips
+            "skips": self.rule_skips,
+            "stats": self.stats
         })
 
     def _marshal(self, result, symbolic_name, shared):
@@ -219,7 +233,7 @@ class SingleEvaluator(Evaluator):
 
     def run_reducers(self):
         generator = reducer.run_host(
-            self.mapper_results, self.handle_reducer_error())
+            self.mapper_results, self.handle_reducer_error(), self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(r, plugin)
 
@@ -260,7 +274,8 @@ class MultiEvaluator(Evaluator):
             self.mapper_results[hn] = sub_evaluator.mapper_results
 
     def run_reducers(self, metadata=None):
-        generator = reducer.run_multi(self.mapper_results, self.handle_reducer_error())
+        generator = reducer.run_multi(
+            self.mapper_results, self.handle_reducer_error(), self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(r, plugin)
 
@@ -287,7 +302,8 @@ class MultiEvaluator(Evaluator):
             "system": self.archive_results[None]["system"],
             "reports": self.archive_results[None]["reports"],
             "archives": [v for k, v in self.archive_results.iteritems() if k is not None],
-            "skips": self.rule_skips
+            "skips": self.rule_skips,
+            "stats": self.stats
         })
 
 
@@ -332,6 +348,7 @@ class InsightsEvaluator(SingleEvaluator):
         response["system"]["type"] = "host"
         response["system"]["product"] = "rhel"
         self.set_branch_info(response["system"])
+        response["stats"]["skips"]["count"] = len(self.rule_skips)
         return response
 
     def handle_content_error(self, e, filename):
@@ -339,10 +356,12 @@ class InsightsEvaluator(SingleEvaluator):
                     filename, self.url, e, exc_info=True)
 
     def handle_map_error(self, e, context):
+        self.stats["mapper"]["fail"] += 1
         log.warning("Mapper failed with message %s. Ignoring. context: %s [%s]",
                     e, context, self.url, exc_info=True)
 
     def handle_reduce_error(self, e, context):
+        self.stats["reducer"]["fail"] += 1
         log.warning("Reducer failed with message %s. Ignoring. context: %s [%s]",
                     e, context, self.url, exc_info=True)
 
@@ -386,6 +405,7 @@ class InsightsMultiEvaluator(MultiEvaluator):
         for key in ["systems", "system_id", "product", "display_name"]:
             del self.archive_metadata[key]
         response["system"]["metadata"] = self.archive_metadata
+        response["stats"]["skips"]["count"] = len(self.rule_skips)
         return response
 
     def hack_affected_hosts(self, mapping, response):
