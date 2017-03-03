@@ -31,8 +31,10 @@ content:
   # RHN password
   # api_user: changeme
 
-  # Path to content git repo
-  git_path: .
+  # Path to content git repos
+  git_paths:
+  - .
+
   playbook_path: null
 
   # Port used by content server
