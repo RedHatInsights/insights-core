@@ -64,4 +64,4 @@ class Lsof(Scannable):
         parser = LsofParser()
         for obj in parser.parse(content):
             for scanner in self.scanners:
-                scanner(obj)
+                scanner(self, obj)
