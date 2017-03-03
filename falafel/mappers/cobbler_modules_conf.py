@@ -1,25 +1,40 @@
-from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
+"""
+Cobbler modules configuration - file ``/etc/cobbler/modules.conf``
+==================================================================
+
+The Cobbler modules configuration lists a set of services, and typically
+sets the module that provides that service.
+
+Sample input::
+
+    [authentication]
+    module = authn_spacewalk
+
+    [authorization]
+    module = authz_allowall
+
+    [dns]
+    module = manage_bind
+
+    [dhcp]
+    module = manage_isc
+
+Examples:
+
+    >>> conf = CobblerModulesConf(context_wrap(conf_content))
+    >>> conf.get('authentication', 'module')
+    'authn_spacewalk'
+    >>> conf.get('dhcp', 'module')
+    'manage_isc'
+
+"""
+
+from .. import mapper, IniConfigFile
 
 
 @mapper("cobbler_modules.conf")
-class CobblerModulesConf(LegacyItemAccess, Mapper):
-
-    def parse_content(self, content):
-        """
-        Parses cobbler/modules.conf and returns a dict.
-        - {
-            "authentication": {"module":"authn_spacewalk"},
-            "authorization": {"module":"authz_allowall"}
-          }
-        """
-        modules_dict = {}
-        section_dict = {}
-        for line in get_active_lines(content):
-            if line.startswith("["):
-                # new section beginning
-                section_dict = {}
-                modules_dict[line[1:-1]] = section_dict
-            elif '=' in line:
-                key, _, value = line.partition("=")
-                section_dict[key.strip()] = value.strip()
-        self.data = modules_dict
+class CobblerModulesConf(IniConfigFile):
+    """
+    This uses the standard ``IniConfigFile`` mapper class.
+    """
+    pass

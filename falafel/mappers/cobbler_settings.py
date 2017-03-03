@@ -1,28 +1,37 @@
+"""
+Cobbler settings - ``/etc/cobbler/settings`` file
+=================================================
+
+The Cobbler settings file is a **YAML** file and the standard Python ``yaml``
+library is used to parse it.
+
+Sample input::
+
+    kernel_options:
+        ksdevice: bootif
+        lang: ' '
+        text: ~
+
+Examples:
+
+    >>> cobbler = shared[CobblerSettings]
+    >>> 'kernel_options' in cobbler.data
+    True
+    >>> cobbler.data['kernel_options']['ksdevice']
+    'bootif'
+
+"""
+
 import yaml
 from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper('cobbler_settings')
 class CobblerSettings(LegacyItemAccess, Mapper):
+    """
+    Read the ``/etc/cobbler/settings`` YAML file.
+    """
 
     def parse_content(self, content):
-        """
-        Return a dict that is parsed from the YAML settings
-        - keys are the row header
-        - values are the option after the ":".
-        ---Result---
-        {'kernel_options':
-            {'ksdevice':'bootif', 'lang': ' ', 'text':'~'}
-        }
-        ---Sample---
-        # kernel options that should be present in every cobbler installation.
-        # kernel options can also be applied at the distro/profile/system
-        # level.
-        kernel_options:
-            ksdevice: bootif
-            lang: ' '
-            text: ~
-        """
-
         # Revert the list to a stream string
         self.data = yaml.load('\n'.join(content))

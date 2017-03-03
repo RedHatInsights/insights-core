@@ -1,8 +1,18 @@
 """
-ethtool - Commands
-==================
+ethtool - Command ``/sbin/ethtool`` in various formats
+======================================================
+
 Classes to parse ``ethtool`` command information.
+
+The interface information for a machine is stored as lists.  Each interface
+is accessed by iterating through the shared mapper list.
+
+The interface classes all provide the following properties:
+
+* ``iface`` and ``ifname``: the interface name (derived from the output file).
+* ``data``: the data for that interface
 """
+
 import os
 import re
 from collections import namedtuple
@@ -12,8 +22,11 @@ from .. import Mapper, mapper, LegacyItemAccess
 
 def extract_iface_name_from_path(path, name):
     """
-    Extract iface name from path
-    there are some special name:
+    Extract the 'real' interface name from the path name.  Basically this
+    puts the '@' back in the name in place of the underscore, where the name
+    contains a '.' or contains 'macvtap' or 'macvlan'.
+
+    Examples:
 
     +------------------+-----------------+
     | real name        | path name       |
@@ -35,12 +48,76 @@ def extract_iface_name_from_path(path, name):
 
 
 def extract_iface_name_from_content(content):
+    """
+    Extract the interface name from the third item in the content, delimited
+    by spaces, up to its second-last character.  For example, this transmutes
+    ``Features for bond0:`` to ``bond0``.
+    """
     return content.split(" ", 3)[-1][:-1]
 
 
 @mapper("ethtool-i")
 class Driver(Mapper):
-    """Parse information for the ``ethtool -i`` command."""
+    """
+    Parse information for the ``ethtool -i`` command.
+
+    All the ``ethtool -i`` outputs are stored as a list, in no particular
+    order.
+
+    Each driver is stored as a dictionary in the ``data`` property.  If the
+    key starts with 'supports', then the value is a boolean test of whether
+    the string is 'yes'.  If the value is not given on the string (e.g.
+    'bus-info:'), the value is set to None.
+
+    All data is also set as attributes of the object with the attribute name
+    being the key name with hyphens replaced with underscores.
+
+    The following attributes will always be present (even if their value is
+    None):
+
+    * driver
+    * version
+    * firmware_version
+    * supports_statistics
+    * supports_test
+    * supports_eeprom_access
+    * supports_register_dump
+    * supports_priv_flags
+
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+
+    Sample input for ``/sbin/ethtool -i bond0``::
+
+        driver: bonding
+        version: 3.6.0
+        firmware-version: 2
+        bus-info:
+        supports-statistics: no
+        supports-test: no
+        supports-eeprom-access: no
+        supports-register-dump: no
+        supports-priv-flags: no
+
+    Examples::
+        >>> interfaces = shared[ethtool.Driver]
+        >>> len(interfaces) # All interfaces in a list
+        1
+        >>> bond0 = interfaces[0] # Would normally iterate through interfaces
+        >>> bond0.iface
+        'bond0'
+        >>> bond0.ifname
+        'bond0'
+        >>> bond0.data['driver'] # Old-style access
+        'bonding'
+        >>> bond0.driver # New-style access
+        'bonding'
+        >>> bond0.bus_info
+        None
+        >>> bond0.supports_statistics
+        False
+    """
 
     driver = None
     version = None
@@ -53,6 +130,7 @@ class Driver(Mapper):
 
     @property
     def ifname(self):
+        """(str): the interface name"""
         return self.iface
 
     def parse_content(self, content):
@@ -60,8 +138,7 @@ class Driver(Mapper):
         self.data = {}
         for line in content:
             if ":" in line:
-                key, value = line.strip().split(":", 1)
-                key, value = key.strip(), value.strip()
+                key, value = [s.strip() for s in line.strip().split(":", 1)]
                 value = value if value else None
                 if key.startswith("supports"):
                     value = value == "yes"
@@ -71,25 +148,116 @@ class Driver(Mapper):
 
 @mapper("ethtool-k")
 class Features(LegacyItemAccess, Mapper):
-    """Parse information for the ``ethtool -k`` command."""
+    """
+    Parse information for the ``ethtool -k`` command.
+
+    Features are stored as a flat set of key: value pairs, with no hierarchy
+    that the indentation of the input might imply.  This means, that the
+    output below will provide data for 'tx-checksumming' and
+    'tx-checksum-ipv4'.
+
+    Each key stores a two-key dictionary:
+
+    * 'on' (boolean) - whether the value (before any '[fixed]') is 'on'.
+    * 'fixed' (boolean) - whether the value contains 'fixed'.
+
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+
+    Sample input for ``/sbin/ethtool -k bond0``::
+
+        Features for bond0:
+        rx-checksumming: off [fixed]
+        tx-checksumming: on
+            tx-checksum-ipv4: off [fixed]
+            tx-checksum-unneeded: on [fixed]
+            tx-checksum-ip-generic: off [fixed]
+            tx-checksum-ipv6: off [fixed]
+            tx-checksum-fcoe-crc: off [fixed]
+            tx-checksum-sctp: off [fixed]
+        scatter-gather: on
+            tx-scatter-gather: on [fixed]
+            tx-scatter-gather-fraglist: off [fixed]
+        tcp-segmentation-offload: on
+            tx-tcp-segmentation: on [fixed]
+            tx-tcp-ecn-segmentation: on [fixed]
+            tx-tcp6-segmentation: on [fixed]
+        udp-fragmentation-offload: off [fixed]
+        generic-segmentation-offload: off [requested on]
+        generic-receive-offload: on
+        large-receive-offload: on
+        rx-vlan-offload: on
+        tx-vlan-offload: on
+        ntuple-filters: off
+        receive-hashing: off
+        highdma: on [fixed]
+        rx-vlan-filter: on [fixed]
+        vlan-challenged: off [fixed]
+        tx-lockless: on [fixed]
+        netns-local: off [fixed]
+        tx-gso-robust: off [fixed]
+        tx-fcoe-segmentation: off [fixed]
+        tx-gre-segmentation: on [fixed]
+        tx-udp_tnl-segmentation: on [fixed]
+        fcoe-mtu: off [fixed]
+        loopback: off [fixed]
+
+    Examples:
+
+        >>> features = shared[ethtool.Features]
+        >>> len(features) # All interfaces in a list
+        1
+        >>> bond0 = features[0] # Would normally iterate through interfaces
+        >>> bond0.iface
+        'bond0'
+        >>> bond0.ifname
+        'bond0'
+        >>> bond0.data['rx-vlan-offload']['on'] # Traditional access
+        True
+        >>> bond0.data['rx-vlan-offload']['fixed']
+        False
+        >>> bond0.data['tx-checksum-sctp']['on']
+        False
+        >>> bond0.data['tx-checksum-sctp']['fixed']
+        True
+        >>> bond0.is_on('ntuple-filters')
+        False
+        >>> bond0.is_on('large-receive-offload')
+        True
+        >>> bond0.is_fixed('receive-hashing')
+        False
+        >>> bond0.is_fixed('fcoe-mtu')
+        True
+    """
 
     @property
     def ifname(self):
-        return extract_iface_name_from_path(self.file_path, "ethtool_-k_")
+        """(str): the interface name"""
+        return self.iface
 
     def is_on(self, feature):
-        return self.get(feature, {}).get('on', None)
+        """(bool): Does this feature exist and is it on?"""
+        return self.get(feature, {}).get('on', False)
 
     def is_fixed(self, feature):
-        return self.get(feature, {}).get('fixed', None)
+        """(bool): Does this feature exist and is it fixed?"""
+        return self.get(feature, {}).get('fixed', False)
 
     def parse_content(self, content):
         self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-k_")
+        # Handle e.g. '/sbin/ethtool: file not found'
+        if "ethtool" in content[0]:
+            return
+        # Handle 'Cannot get feature settings: Operation not supported'
+        if "Cannot get" in content[0]:
+            return
+
         # Need to strip header line that's only on -k
         for line in content[1:]:
             if ":" in line:
-                key, value = line.strip().split(":", 1)
-                value = value.strip()
+                key, value = [s.strip() for s in line.strip().split(":", 1)]
                 fixed = "fixed" in value
                 if fixed:
                     value = value.split()[0].strip()
@@ -101,7 +269,46 @@ class Features(LegacyItemAccess, Mapper):
 
 @mapper("ethtool-a")
 class Pause(Mapper):
-    """Parse information for the ``ethtool -a`` command."""
+    """
+    Parse information for the ``ethtool -a`` command.
+
+    Each parameter in the input is stored as a key in a dictionary, with the
+    value being whether the found string equals 'on'.
+
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+        autonegotiate (bool): Is autonegotiate present and set to 'on'?
+        rx (bool): Is receive pausing present and set to 'on'?
+        tx (bool): Is transmit pausing present and set to 'on'?
+        rx_negotiated (bool): Is receive pause autonegotiate present and set to 'on'?
+        tx_negotiated (bool): Is transmit pause autonegotiate present and set to 'on'?
+
+    Sample input from ``/sbin/ethtool -a 0``::
+
+        Pause parameters for eth0:
+        Autonegotiate:  on
+        RX:             on
+        TX:             on
+        RX negotiated:  off
+        TX negotiated:  off
+
+    Examples:
+        >>> pause = shared[ethtool.Pause]
+        >>> len(pause) # All interfaces in a list
+        1
+        >>> eth0 = pause[0] # Would normally iterate through interfaces
+        >>> eth0.iface
+        'eth0'
+        >>> eth0.ifname
+        'eth0'
+        >>> eth0.data['RX'] # Old-style accessor
+        True
+        >>> eth0.autonegotiate # New-style accessor
+        True
+        >>> eth0.rx_negotiated
+        False
+    """
 
     @property
     def ifname(self):
@@ -109,72 +316,134 @@ class Pause(Mapper):
 
     @property
     def autonegotiate(self):
-        return self.data.get("Autonegotiate")
+        return self.data.get("Autonegotiate", False)
 
     @property
     def rx(self):
-        return self.data.get("RX")
+        return self.data.get("RX", False)
 
     @property
     def tx(self):
-        return self.data.get("TX")
+        return self.data.get("TX", False)
 
     @property
     def rx_negotiated(self):
-        return self.data.get("RX Autonegotiate")
+        return self.data.get("RX Autonegotiate", False)
 
     @property
     def tx_negotiated(self):
-        return self.data.get("TX Autonegotiate")
+        return self.data.get("TX Autonegotiate", False)
 
     def parse_content(self, content):
         """
         Return ethtool -a result as a dict.
-        If ethtool -a output a error, only return "iface" key as a network interface
-        input: "RX: on"
-        Output: result["RX"] = true
+
+        If ethtool -a outputs an error or could not get the pause state for
+        the device, the "iface" property will be set but the data dictionary
+        will be blank and all properties will return False.
         """
-        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-a_")
         self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-a_")
+        # Handle e.g. '/sbin/ethtool: file not found'
         if "ethtool" in content[0]:
             return
+        # Handle 'Cannot get device pause settings: Operation not supported'
         if "Cannot get" in content[0]:
-            # cannot got pause param in ethtool
-            self.iface = extract_iface_name_from_content(content[1])
             return
 
-        self.iface = extract_iface_name_from_content(content[0])
         for line in content[1:]:
             if line.strip():
-                (key, value) = line.split(":", 1)
-                key, value = key.strip(), value.strip()
+                (key, value) = [s.strip() for s in line.split(":", 1)]
                 self.data[key] = (value == "on")
-                setattr(self, key, value == "on")
-        return self.data
+                # Can't use key if it has a space in it, and we provide these
+                # as properties anyway.
+                # setattr(self, key, value == "on")
 
 
 @mapper("ethtool-c")
 class CoalescingInfo(Mapper):
-    """Parse information for the ``ethtool -c`` command."""
+    """
+    Parse information for the ``ethtool -c`` command.
+
+    The parsing is fairly similar to other ``ethtool`` parsers - the
+    interface name is available as the ``ifname`` and ``iface`` properties,
+    and the data about the coalescing information is stored in the ``data``
+    property as a dictionary.  The one difference is the 'Adaptive RX' data,
+    which is stored as two keys - 'adaptive-rx' and 'adaptive-tx', for RX
+    and TX respectively.  Both these return a boolean for whether the
+    respective state equals 'on'.
+
+    Otherwise, all values are made available as keys in the ``data``
+    dictionary, and as properties with the hyphen transmuted to an underscore
+    - e.g. data['tx-usecs'] is available as tx_usecs
+
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+
+    Sample input for ``/sbin/ethtool -c eth0``::
+
+        Coalesce parameters for eth0:
+        Adaptive RX: off  TX: off
+        stats-block-usecs: 0
+        sample-interval: 0
+        pkt-rate-low: 0
+        pkt-rate-high: 0
+
+        rx-usecs: 20
+        rx-frames: 5
+        rx-usecs-irq: 0
+        rx-frames-irq: 5
+
+        tx-usecs: 72
+        tx-frames: 53
+        tx-usecs-irq: 0
+        tx-frames-irq: 5
+
+        rx-usecs-low: 0
+        rx-frame-low: 0
+        tx-usecs-low: 0
+        tx-frame-low: 0
+
+        rx-usecs-high: 0
+        rx-frame-high: 0
+        tx-usecs-high: 0
+        tx-frame-high: 0
+
+    Examples:
+
+        >>> coalesce = shared[ethtool.CoalescingInfo]
+        >>> len(coalesce) # All interfaces in a list
+        1
+        >>> eth0 = coalesce[0] # Would normally iterate through interfaces
+        >>> eth0.iface
+        'eth0'
+        >>> eth0.ifname
+        'eth0'
+        >>> eth0.data['adaptive-rx'] # Old-style accessor
+        False
+        >>> eth0.adaptive_rx # New-style accessor
+        False
+        >>> eth0.rx_usecs # Note integer value
+        20
+    """
 
     @property
     def ifname(self):
-        """
-        Return the name of network interface in content.
-        """
+        """(str): the interface name"""
         return self.iface
 
     def parse_content(self, content):
         """
-        Return ethtool -c result as a dict
-        if interface error, only return interface name
-        "iface" key is network interface name
-        Adaptive rx in "adaptive-rx" key, value is boolean
-        Adaptive tx in "adaptive-tx" key, value is boolean
-        Other value is int
+        Parse the output of ``ethtool -c`` into a dictionary.
+
+        If ethtool -c outputs an error or could not get the pause state for
+        the device, the "iface" property will be set but the data dictionary
+        will be blank.
         """
         content = list(content)
         self.data = {}
+        self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-c_")
 
         if "ethtool" in content[0]:
             return
@@ -189,20 +458,65 @@ class CoalescingInfo(Mapper):
         if len(content) > 1:
             second_line_content = content[1].split(" ")
             self.data["adaptive-rx"] = (second_line_content[2] == "on")
+            self.adaptive_rx = (second_line_content[2] == "on")
             self.data["adaptive-tx"] = (second_line_content[5] == "on")
+            self.adaptive_tx = (second_line_content[5] == "on")
 
             for line in content[2:]:
                 if line.strip():
-                    (key, value) = line.split(":", 1)
-                    key, value = key.strip(), value.strip()
-                    self.data[key] = int(value)
-            for key, value in self.data.iteritems():
-                setattr(self, key.replace("-", "_"), value)
+                    (key, value) = [s.strip() for s in line.split(":", 1)]
+                    value = int(value)
+                    self.data[key] = value
+                    setattr(self, key.replace("-", "_"), value)
 
 
 @mapper("ethtool-g")
 class Ring(Mapper):
-    """Parse information for the ``ethtool -g`` command."""
+    """
+    Parse information for the ``ethtool -g`` command.
+
+    In addition to the standard ``iface`` and ``ifname`` parameters, as well
+    as being available in the ``data`` property, the interface statistics
+    are accessed using two parameters: ``max`` and ``current``.
+    Within each the interface settings are available as four parameters -
+    ``rx``, ``rx_mini``, ``rx_jumbo`` and ``tx``.
+
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+        max (dict): Dictonary of maximum ring buffer settings.
+        current (dict): Dictionary of current ring buffer settings.
+
+    Sample input for ``/sbin/ethtool -g eth0``::
+
+        Ring parameters for eth0:
+        Pre-set maximums:
+        RX:             2047
+        RX Mini:        0
+        RX Jumbo:       0
+        TX:             511
+        Current hardware settings:
+        RX:             200
+        RX Mini:        0
+        RX Jumbo:       0
+        TX:             511
+
+    Examples:
+
+        >>> ring = shared[ethtool.Ring]
+        >>> len(ring) # All interfaces in a list
+        1
+        >>> eth0 = ring[0] # Would normally iterate through interfaces
+        >>> eth0.iface
+        'eth0'
+        >>> eth0.ifname
+        'eth0'
+        >>> eth0.data['max'].rx # Old-style access
+        2047
+        >>> eth0.max.rx # New-style access
+        2047
+
+    """
 
     Parameters = namedtuple("Parameters", ["rx", "rx_mini", "rx_jumbo", "tx"])
 
@@ -215,11 +529,10 @@ class Ring(Mapper):
 
     def parse_content(self, content):
         """
-        Return ethtool -g info into a dict contain 3 keys which is "max", "current", "iface"
-        "max" and "current" dict contain "rx", "rx_mini","rx_jumbo","tx", type is int
-        "iface" contain a interface name
+        Parse ``ethtool -g`` info into a dictionary.
         """
         self.data = {}
+        # First guess from path information
         self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-g_")
         self.max = self.current = None
         if "ethtool" in content[0]:
@@ -241,17 +554,61 @@ class Ring(Mapper):
 
     @staticmethod
     def parse_value(content):
+        # This might be simpler as a list, but we keep this just in case the
+        # order of keys changes.
         r = {}
         for line in content:
             if line.strip():
-                key, value = line.split(":", 1)
-                r[key.strip().replace(" ", "-").lower()] = int(value.strip())
-        return Ring.Parameters(r["rx"], r["rx-mini"], r["rx-jumbo"], r["tx"])
+                key, value = [s.strip() for s in line.split(":", 1)]
+                r[key.replace(" ", "_").lower()] = int(value)
+        # Doesn't seem to be a good way of using the field order as a list
+        return Ring.Parameters(r['rx'], r['rx_mini'], r['rx_jumbo'], r['tx'])
 
 
 @mapper("ethtool-S")
 class Statistics(Mapper):
-    """Parse information for the ``ethtool -S`` command."""
+    """
+    Parse information for the ``ethtool -S`` command.
+
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+
+    Sample partial input for ``/sbin/ethtool -S eth0``::
+
+        NIC statistics:
+             rx_octets: 808488730
+             rx_fragments: 0
+             rx_ucast_packets: 1510830
+             rx_mcast_packets: 678653
+             rx_bcast_packets: 9921
+             rx_fcs_errors: 0
+             rx_align_errors: 0
+             rx_xon_pause_rcvd: 0
+             rx_xoff_pause_rcvd: 0
+             rx_mac_ctrl_rcvd: 0
+             rx_xoff_entered: 0
+             rx_frame_too_long_errors: 0
+             rx_jabbers: 0
+             ...
+
+    Examples:
+
+        >>> stats = shared[ethtool.Statistics]
+        >>> len(stats) # All interfaces in a list
+        1
+        >>> eth0 = stats[0] # Would normally iterate through interfaces
+        >>> eth0.iface
+        'eth0'
+        >>> eth0.ifname
+        'eth0'
+        >>> eth0.data['rx_octets'] # Old-style access
+        808488730
+        >>> eth0.rx_octets # New-style access
+        808488730
+        >>> eth0.fcs_errors
+        0
+    """
 
     @property
     def ifname(self):
@@ -261,6 +618,18 @@ class Statistics(Mapper):
         return self.iface
 
     def search(self, pattern, flags=0):
+        """
+        Finds all the parameters matching a given regular expression.
+
+        Parameters:
+            pattern (raw): A regular expression
+            flags (int): Regular expression flags summed from ``re`` constants.
+
+        Returns:
+            (dict): A dictionary of the key/value pairs where the key matches
+            the given regular expression.  An empty dictionary is returned if
+            no keys matched.
+        """
         results = {}
         for k, v in self.data.iteritems():
             if re.search(pattern, k, flags):
@@ -269,7 +638,7 @@ class Statistics(Mapper):
 
     def parse_content(self, content):
         '''
-        return the ethtool -S result as a dict
+        Parse the output of ``ethtool -S``.
         '''
         self.data = {}
         self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-S_")
@@ -281,34 +650,23 @@ class Statistics(Mapper):
             # "Cannot get stats strings self.datarmation: Operation not supported"
             return
 
-        for line in content[1:]:  # ignore first line
-            # the correct description lines look like below, but we will ignore the
-            # first line "NIC statistics":
-            # ~~~~~
-            # NIC statistics:
-            #     rx_packets: 7357503
-            #     tx_packets: 7159010
-            #     rx_bytes: 1687906514
-            #     tx_bytes: 2747645082
-            # ...
-            # ~~~~~
-            line = line.strip()
-            if line:
-                i = line.rfind(':')
-                if i != -1:
-                    key = line[:i].strip()
-                    value = line[i:].strip(': ')
-                    value = int(value) if value else None
-                    self.data[key] = value
+        for line in content[1:]:  # ignore 'NIC statistics' line
+            if ':' not in line:
+                continue
+            # Some interfaces can report keys with colons in them, e.g.
+            # "rxq0: rx_pkts", so look for the last colon and strip from
+            # there.
+            i = line.rfind(':')
+            key = line[:i].strip()
+            value = line[i + 2:].strip()
+            value = int(value)
+            self.data[key] = value
 
 
 @mapper("ethtool")
 class Ethtool(Mapper):
-    """Parses output of ``ethtool`` command.
-
-    Attributes:
-        data (dict): Dictionary of keys with values in a list.
-        iface (str): Interface name.
+    """
+    Parses output of ``ethtool`` command.
 
     Raises:
         ParseException: Raised when any problem parsing the command output.

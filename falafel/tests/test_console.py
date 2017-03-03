@@ -41,6 +41,14 @@ class TestInsightsCliMain(unittest.TestCase):
             self.fail("Failed to run insights-cli succesfully, test_show_plugin_list() "
                       "raised subprocess.CalledProcessError unexpectedly!.")
 
+    def test_show_plugin_list_without_report(self):
+        cmd = [self.insights_cli, '--show-plugin-list', '--plugin-modules', 'falafel.plugins']
+        try:
+            subprocess.check_call(cmd)
+        except subprocess.CalledProcessError:
+            self.fail("Failed to run insights-cli succesfully, test_show_plugin_list_without_report() "
+                      "raised subprocess.CalledProcessError unexpectedly!.")
+
     def test_extract_dir(self):
         cmd = [self.insights_cli, '--show-plugin-list', '--plugin-modules', 'falafel.plugins', '--extract-dir', '/tmp', '-v', '--', self.path]
 

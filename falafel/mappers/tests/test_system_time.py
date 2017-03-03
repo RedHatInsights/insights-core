@@ -196,13 +196,13 @@ def test_ntptime():
 
 def test_sysconfig_chronyd():
     result = system_time.ChronydService(context_wrap(CHRONYD)).data
-    assert result['OPTIONS'] == '"-d"'
+    assert result['OPTIONS'] == '-d'
     assert result.get('HIDE') is None
 
 
 def test_sysconfig_ntpd():
     result = system_time.NTPDService(context_wrap(NTPD)).data
-    assert result['OPTIONS'] == '"-x -g"'
+    assert result['OPTIONS'] == '-x -g'
     assert result.get('HIDE') is None
 
 

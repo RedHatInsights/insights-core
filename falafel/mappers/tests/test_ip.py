@@ -119,10 +119,27 @@ IPV4_NEIGH_CONTEXT = """
 """
 
 
-def test_ip_neigh():
-    result = ip.get_ipv4_neigh(context_wrap(IPV4_NEIGH_CONTEXT))
-    assert len(result) == 2
-    assert len(result["172.17.0.19"])
-    assert len(result["172.17.42.1"])
-    assert result["172.17.0.19"] == [{"dev": "docker0", "nud": "FAILED"}]
-    assert result["172.17.42.1"] == [{"dev": "lo", "nud": "NOARP", "lladdr": "00:00:00:00:00:00"}]
+class TestIpv4Neigh():
+    def test_ipv4_neigh(self):
+        result = ip.Ipv4Neigh(context_wrap(IPV4_NEIGH_CONTEXT))
+        assert len(result.data) == 2
+        assert len(result["172.17.0.19"])
+        assert len(result["172.17.42.1"])
+        assert result["172.17.0.19"] == [{"dev": "docker0", "nud": "FAILED"}]
+        assert result["172.17.42.1"] == [{"dev": "lo", "nud": "NOARP", "lladdr": "00:00:00:00:00:00"}]
+
+
+IPV6_NEIGH_CONTEXT = """
+ff02::16 dev vlinuxbr lladdr 33:33:00:00:00:16 NOARP
+ff02::1:ffea:2c00 dev tun0 lladdr 33:33:ff:ea:2c:00 NOARP
+"""
+
+
+class TestIpv6Neigh():
+    def test_ipv6_neigh(self):
+        result = ip.Ipv6Neigh(context_wrap(IPV6_NEIGH_CONTEXT))
+        assert len(result.data) == 2
+        assert len(result["ff02::16"])
+        assert len(result["ff02::1:ffea:2c00"])
+        assert result["ff02::16"] == [{"dev": "vlinuxbr", "nud": "NOARP", "lladdr": "33:33:00:00:00:16"}]
+        assert result["ff02::1:ffea:2c00"] == [{"dev": "tun0", "nud": "NOARP", "lladdr": "33:33:ff:ea:2c:00"}]

@@ -56,6 +56,8 @@ class ChkConfig(Mapper):
         self.services = {}
         """dict: Dictionary of bool indicating if service is enabled,
         access by service name ."""
+        self.service_list = []
+        """list: List of service names in order of appearance."""
         self.parsed_lines = {}
         """dict: Dictionary of content lines access by service name."""
         self.level_states = {}
@@ -81,9 +83,12 @@ class ChkConfig(Mapper):
             if any(state.search(line) for state in valid_states):
                 # xinetd service names have a trailing colon ("telnet:  on")
                 service = line.split()[0].strip(' \t:')
+                # Note that for regular services this assumes the ':on' occurs
+                # in the current run level.  It does not check the run level.
                 enabled = on_state.search(line) is not None
                 self.services[service] = enabled
                 self.parsed_lines[service] = line
+                self.service_list.append(service)
 
                 states = []
                 # Register the state of this service at each runlevel by

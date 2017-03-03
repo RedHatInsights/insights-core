@@ -1,6 +1,6 @@
 import pkgutil
-from .core import Scannable, LogFileOutput, Mapper, IniConfigFile, LegacyItemAccess  # noqa: F401
-from .core import FileListing  # noqa: F401
+from .core import Scannable, LogFileOutput, Mapper, IniConfigFile  # noqa: F401
+from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core.plugins import mapper, reducer, make_response, make_metadata  # noqa: F401
 from .mappers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401

@@ -1,3 +1,40 @@
+"""
+Uname - ``uname -a`` command output
+===================================
+
+The ``Uname`` class reads the output of the ``uname -a`` command and
+interprets it.  It also does a number of handy extra things, like deriving
+the RHEL release from the kernel version.
+
+Uname objects can also be compared by their kernel versions.
+
+An example from the following ``uname -a`` output::
+
+    Linux server1.example.com 2.6.32-504.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"
+
+Example:
+    >>> uname = shared[Uname]
+    >>> uname.version
+    '2.6.32'
+    >>> uname.release
+    '504.el6'
+    >>> uname.arch
+    'x86_64'
+    >>> uname.nodename
+    'server1.example.com'
+
+Uname objects can be created from, and compared to, other Uname objects or
+kernel strings::
+
+    >>> early_rhel6 = Uname.from_kernel('2.6.32-71.el6.x86_64')
+    >>> late_rhel6 = Uname.from_release('2.6.32-504')
+    >>> late_rhel6 > early_rhel6
+    True
+    >>> early_rhel6 > '2.6.32-279.el6.x86_64'
+    False
+
+"""
+
 from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
 import logging
@@ -54,7 +91,8 @@ rhel_release_map = {
     "2.6.32-642": "6.8",
     "3.10.0-123": "7.0",
     "3.10.0-229": "7.1",
-    "3.10.0-327": "7.2"
+    "3.10.0-327": "7.2",
+    "3.10.0-514": "7.3"
 }
 
 release_to_kernel_map = {v: k for k, v in rhel_release_map.items()}
@@ -99,17 +137,19 @@ class Uname(Mapper):
     Operators are provided for comparison of version and release information.
     Uname content is expected to be in the format returned by the ``uname -a``
     command.  The following instance variables are provided by this class:
+
     - `kernel`: Provides an unparsed copy of the full version and release
       string provided in the uname content input.  No validation is performed
       on this information. Generally in the format ``#.#.#-#.#.#.el#.arch``.
     - `name`: The kernel name, usually ``Linux``.
     - `nodename`: Hostname of the computer where the uname command was
-      executed.  This information may obfusicated for security.
+      executed.  This information may obfuscated for security.
     - `version`: The major identification number for the kernel release. It
-      be in the format ``#.#.#[.#]`` or UnameError exception will be raised.
+      should be in the format ``#.#.#[.#]`` or a UnameError exception will be
+      raised.
     - `release`: The minor identification number for the kernel release. This
       information is generally in the format #.#.#.el#, however this is not
-      strictly enforced.  If the release.arch informatoin cannot be reliably
+      strictly enforced.  If the release.arch information cannot be reliably
       parsed then `release` and `release_arch` will be the same value.
     - `release_arch`: This is the `release` plus the kernel architecture
       information as provided in `arch`.
@@ -124,7 +164,9 @@ class Uname(Mapper):
 
     Further discussion of uname parsing and evaluation can be found in this
     article:
-    https://mojo.redhat.com/groups/red-hat-insights/blog/2016/03/23/using-uname-content-in-insights-rules
+
+    `Using uname content in Insights rules <https://mojo.redhat.com/groups/red-hat-insights/blog/2016/03/23/using-uname-content-in-insights-rules>`_
+
     """
     keys = [
         'os',
@@ -165,11 +207,11 @@ class Uname(Mapper):
         Parses uname content into individual uname components.
 
         :Parameters:
-            - `uname_line`: Uname content string to be parsed.
+            - `content`: Uname content from Insights to be parsed.
 
         :Exceptions:
-            - `UnameError`: This exception is raised when there are any errors
-              evaluating the uname content.
+            - `UnameError`: Raised when there are any errors evaluating
+              the uname content.
         """
         # Remove extra whitespace prior to parsing, preserve original line
         if not content:
@@ -218,6 +260,12 @@ class Uname(Mapper):
 
     @classmethod
     def from_kernel(cls, kernel):
+        """
+        Create a Uname object from a kernel NVR (e.g. '2.6.32-504.el6.x86_64').
+
+        :Parameters:
+            - `kernel` - the kernel version and release string.
+        """
         logger.debug("from_kernel: %s", kernel)
         data = cls.parse_nvr(kernel, arch=False)
         content = ["{name} {nodename} {kernel} {kernel_type} {kernel_date} {machine} {processor} {hw_platform} {os}".format(
@@ -234,12 +282,29 @@ class Uname(Mapper):
 
     @classmethod
     def from_uname_str(cls, uname_str):
+        """
+        Create a Uname object from a string containing the output of 'uname -a'.
+
+        :Parameters:
+            - `uname_str` - the string output of `uname -a`
+        """
         return cls(Context(content=[uname_str.strip()], path=None))
 
     @classmethod
     def from_release(cls, release):
+        """
+        Attempt to create a Uname object from a release (e.g. '7.2').
+
+        This translates from the release to the kernel version for that
+        release, and then uses that to generate a Uname object using the
+        class `from_kernel` method.  If the release does not match a known
+        release, it returns None.
+
+        :Parameters:
+            - `release`: RHEL release version.
+        """
         release = ".".join(release)
-        nvr = dict((v, k) for k, v in rhel_release_map.items()).get(release)
+        nvr = release_to_kernel_map.get(release)
         return cls.from_kernel(nvr) if nvr else None
 
     @classmethod
@@ -254,8 +319,7 @@ class Uname(Mapper):
               information in the release.
 
         :Exceptions:
-            - `UnameError`: This exception is raised when there are any errors
-              evaluating the uname content.
+            - `UnameError`: Raised on errors in evaluating the uname content.
         """
         if len(nvr.split('-')) < 2:
             raise UnameError("Too few parts in the uname version-release", nvr)
@@ -372,7 +436,7 @@ class Uname(Mapper):
         Operator to perform less than comparison of a Uname object to another
         Uname object or a string.
 
-        See the :__eq__: operator for a detailed description.
+        See the `__eq__` operator for a detailed description.
         """
         if isinstance(other, Uname):
             other_uname = other
@@ -484,7 +548,7 @@ class Uname(Mapper):
               used the current Uname object is checked to see if it is prior to
               the `introduced_in` release.  It will be further checked against
               fixes only if it is the same as or newer than the
-              `introduced_in release.
+              `introduced_in` release.
         """
         logger.debug("fixed_by %s", self.release)
         introduced_in = kwargs.get("introduced_in")

@@ -182,7 +182,7 @@ def main():
         if args.list_plugins:
             for plugin in args.plugin_modules:
                 frmt.heading(plugin)
-                module_list = [mod_name.split(".")[-1] for mod_name in get_module_names(sys.modules[plugin])]
+                module_list = [mod_name.split(".")[-1] for mod_name in get_module_names(plugin)]
                 frmt.display_list(module_list)
             sys.exit(0)
         else:

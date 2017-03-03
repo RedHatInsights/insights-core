@@ -83,6 +83,10 @@ KDUMP_COMMANDLINE_APPEND="irqpoll nr_cpus=1 reset_devices cgroup_disable=memory 
 KDUMP_IMG="vmlinuz"
 """
 
+KEXEC_CRASH_SIZE_1 = "134217728"
+
+KEXEC_CRASH_SIZE_2 = "0"
+
 
 class TestKDumpConf(unittest.TestCase):
     def test_with_normal_comments(self):
@@ -171,3 +175,10 @@ def test_sysconfig_kdump():
     assert sc_kdump.KDUMP_IMG == "vmlinuz"
     assert sc_kdump.KDUMP_IMG_EXT == ""
     assert sc_kdump.data.get("KDUMP_IMG") == "vmlinuz"
+
+
+def test_kexec_crash_size():
+    kcs = kdump.KexecCrashSize(context_wrap(KEXEC_CRASH_SIZE_1))
+    assert kcs.size == 134217728
+    kcs = kdump.KexecCrashSize(context_wrap(KEXEC_CRASH_SIZE_2))
+    assert kcs.size == 0

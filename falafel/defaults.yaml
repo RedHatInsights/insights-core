@@ -33,6 +33,7 @@ content:
 
   # Path to content git repo
   git_path: .
+  playbook_path: null
 
   # Port used by content server
   port: 8080
@@ -55,6 +56,9 @@ defaults:
 
   # Default logging level
   log_level: INFO
+
+  # Location of log file.  Null value means stderr.
+  log_file: null
 
 test:
   host: localhost:52346
