@@ -171,6 +171,7 @@ static_specs = {
     "modprobe.conf"             : SimpleFileSpec("etc/modprobe.conf"),
     "modprobe.d"                : PatternSpec(r"etc/modprobe.d/.*\.conf"),
     "mount"                     : CommandSpec("/bin/mount"),
+    "multicast_querier"         : CommandSpec("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;"),
     "multipath.conf"            : SimpleFileSpec("etc/multipath.conf"),
     "multipath_-v4_-ll"         : CommandSpec("/sbin/multipath -v4 -ll"),
     "namei_tomcat"              : CommandSpec("/usr/bin/namei -monl /usr/share/tomcat/work/Catalina/localhost/candlepin /var/cache/tomcat/work/Catalina/localhost/candlepin"),
