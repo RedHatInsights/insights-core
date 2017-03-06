@@ -1,7 +1,83 @@
 """
+GRUB configuration - files `/boot/grub/grub2.cfg` and `/boot/grub.conf`
+=======================================================================
 
-kbase: https://access.redhat.com/solutions/74233
+This mapper reads the configuration of the GRand Unified Bootloader, versions
+1 or 2.
+
+This is currently a fairly simple parsing process.  Data read from the file
+is put into roughly three categories:
+
+* **configs**: lines read from the file that aren't boot options (i.e.
+  excluding lines that go in the *title* and *menuentry* sections).  These
+  are split into pairs on the first '=' sign.
+* **title**: lines prefixed by the word 'title'.  All following lines up to
+  the next title line are folded together.
+* **menuentry**: lines prefixed by the word 'menuentry'.  All following lines
+  up to the line starting with '}' are treated as part of one menu entry.
+
+Each of these categories is (currently) stored as a simple list of tuples.
+
+* For the list of **configs**, the tuples are (key, value) pairs based on
+  the line, split on the first '=' character.  If nothing is found after the
+  '=' character, then the value is ``None``.
+* For the **title** list, there will be exactly two items in this list:
+
+  * The first item will be a tuple of two items: 'title_name' and the
+    title of the boot option.
+  * The second item will be a tuple of two items: 'kernel' and the entire
+    rest of the kernel boot line as if it had been given all on one line.
+
+* For the **menuentry** list:
+
+  * the first item will be a tuple of two items: 'menuentry_name' and the
+    full text between 'menuentry' and '{'.
+  * the rest of the items will be tuples of that line in the menu entry
+    configuration, split on the first space.  If no space is found after the
+    first word, the value will be ``None``.  So ``load_video`` will be stored
+    as ``('load_video', None)`` and ``set root='hd0,msdos1'`` will be stored
+    as ``('set', "root='hd0,msdos1'")``.
+
+There are several helper functions for dealing with the 'crashkernel' option,
+usage of the Intel IOMMU, and for extracting the kernel and initrd
+configurations available.
+
+With an example ``/boot/grub.conf`` configuration file of::
+
+    default=0
+    timeout=0
+    splashimage=(hd0,0)/grub/splash.xpm.gz
+    hiddenmenu
+    title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
+            kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
+    title Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)
+            kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet
+
+The following code will extract relevant information from the GRUB
+configuration::
+
+    >>> config = shared[GrubConfig]
+    >>> config['configs']
+    [ ('default', '1'),
+      ('timeout', '0'),
+      ('splashimage', '(hd0,0)/grub/splash.xpm.gz'),
+      ('hiddenmenu', None)
+    ]
+    >>> config['title'][0]
+    [ ('title', 'Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64'),
+      ('kernel', '/vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet') ]
+    >>> config['title'][1][0][1]
+    'Red Hat Enterprise Linux Server (2.6.32-431.11.2.el6.x86_64)'
+    >>> config['menuconfig'] # an empty list here shows GRUB v1 config
+    []
+    >>> config.crash_kernel_offset
+    None
+    >>> config.is_kdump_iommu_enabled
+    None
+    >>> config.kernel_initrds['grub_kernels'][0]
+    'vmlinuz-2.6.32-431.17.1.el6.x86_64'
 """
+
 import re
 from .. import Mapper, mapper, get_active_lines, defaults, LegacyItemAccess
 
@@ -24,15 +100,25 @@ class GrubConfParserException(Exception):
 @mapper('grub2.cfg')
 @mapper("grub.conf")
 class GrubConfig(LegacyItemAccess, Mapper):
+    """
+    Parser for configuration for both GRUB versions 1 and 2.
+    """
 
     def parse_content(self, content):
         """
-        Parse grub config file to create a dict with this structure:
-        {
-            "configs": [ (name, value), (name, value) ....],
-            "title": [ [(title_name, its name), (cmd, opt), (cmd, opt) ...], [another title] ]
-            "menuentry": [ [(menuentry_name, its name), (cmd, opt), (cmd, opt) ...], [another menu entry] ]
-        }
+        Parse grub config file to create a dict with this structure::
+
+            {
+                "configs": [ (name, value), (name, value) ...],
+                "title": [
+                    [(title_name, its name), (cmd, opt), (cmd, opt) ...],
+                    [(another title, name), ...]
+                ],
+                "menuentry": [
+                    [(menuentry_name, its name), (cmd, opt), (cmd, opt) ...],
+                    [another menu entry]
+                ],
+            }
         """
         line_iter = iter(get_active_lines(content))
         conf = {"configs": [], "title": [], "menuentry": []}
@@ -43,10 +129,10 @@ class GrubConfig(LegacyItemAccess, Mapper):
                 if line is None:
                     line = line_iter.next()
 
-                if line.startswith('title'):
+                if line.startswith('title '):
                     last_line = _parse_title(line_iter, line, conf)
                     line = last_line
-                elif line.startswith('menuentry'):
+                elif line.startswith('menuentry '):
                     _parse_menu_entry(line_iter, line, conf)
                     line = None
                 else:
@@ -60,6 +146,12 @@ class GrubConfig(LegacyItemAccess, Mapper):
     @property
     @defaults()
     def crash_kernel_offset(self):
+        """
+        Finds the current default title, looks for the 'crashkernel' option,
+        and looks for any offset (i.e. '@16M') in the value.  If this is
+        present, and is greater than zero, the value is returned.  Otherwise,
+        the returned value is ``None``.
+        """
 
         current_title = self._get_current_title()
         if not current_title:
@@ -80,6 +172,10 @@ class GrubConfig(LegacyItemAccess, Mapper):
                                 return crash_kernel_offset
 
     def _get_current_title(self):
+        """
+        Returns the current default title from the ``default`` option in the
+        main configuration.
+        """
         if "configs" in self.data:
             conf = self.data["configs"]
             # if no 'default' in grub.conf, set default to 0
@@ -97,6 +193,9 @@ class GrubConfig(LegacyItemAccess, Mapper):
     @property
     @defaults()
     def is_kdump_iommu_enabled(self):
+        """
+        Does any kernel have 'intel_iommu=on' set?
+        """
 
         for title in self.data['title']:
             for k in title:
