@@ -1,52 +1,50 @@
-import re
-from .. import Mapper, mapper
+"""
+VDSMConfIni - file ``/etc/vdsm/vdsm.conf``
+==========================================
 
-SECTION_RE = re.compile(r'^\[([a-zA-Z0-9]+)\]$')
+The VDSM configuration file ``/etc/vdsm/vdsm.conf`` is in the standard 'ini'
+format and is read by the IniConfigFile mapper.
+
+Sample configuration file::
+
+    [vars]
+    ssl = true
+    cpu_affinity = 1
+
+    [addresses]
+    management_port = 54321
+    qq = 345
+
+
+Examples:
+    >>> vdsm_conf = shared[VDSMConfIni]
+    >>> 'vars' in vdsm_conf
+    True
+    >>> vdsm_conf.get('addresses', 'qq')
+    '345'
+    >>> vdsm_conf.getboolean('vars', 'ssl')
+    True
+    >>> vdsm_conf.getint('addresses', 'management_port')
+    54321
+"""
+
+from .. import IniConfigFile, mapper
 
 
 @mapper("vdsm.conf")
-class VDSMConf(Mapper):
+class VDSMConfIni(IniConfigFile):
     """Class for VDSM configuration file content."""
-
-    def parse_content(self, content):
-        """
-        Returns a dict which have parameter dict as below:
-        {'vars': {'ssl': 'true',
-                  'cpu_affinity': '1'},
-         'addresses':{'management_port': '54321'}}
-
-        -- Sample of vdsm.conf --
-        [vars]
-        ssl = true
-        cpu_affinity = 1
-
-        [addresses]
-        management_port = 54321
-
-        -----------
-
-        """
-        section = None
-        vdsm_dict = {}
-        tmp = {}
-        for line in content:
-            if not line.strip() or line.startswith('#'):
-                continue
-            match = SECTION_RE.match(line.strip())
-            if match:
-                if section and tmp:
-                    vdsm_dict[section] = tmp
-                section = match.group(1)
-                tmp = {}
-            else:
-                key, value = line.strip().split("=", 1)
-                tmp[key.strip()] = value.strip()
-        vdsm_dict[section] = tmp
-
-        self.data = vdsm_dict
+    pass
 
 
 @mapper("vdsm.conf")
-def check_vdsm_conf(context):
-    """Deprecated, do not use."""
-    return VDSMConf(context).data
+class VDSMConf(VDSMConfIni):
+    """
+    Class for VDSM configuration file content, old style.
+    **Deprecated, do not use** - use ``VDSMConfIni`` instead.
+    """
+    def parse_content(self, content):
+        super(VDSMConf, self).parse_content(content)
+        # Replace the data from the ini file with a dict
+        data = {sect: self.items(sect) for sect in self.sections()}
+        self.data = data
