@@ -1,3 +1,24 @@
+"""
+hostname - command ``/bin/hostname``
+====================================
+
+This mapper simply reads the output of ``/bin/hostname``, which is the
+configured fully qualified domain name of the client system.  It then
+splits it into ``hostname`` and ``domain`` and stores these as attributes,
+along with the unmodified name in the ``fqdn`` attribute.
+
+Examples:
+
+    >>> hostname = shared[Hostname]
+    >>> hostname.fqdn
+    'www.example.com'
+    >>> hostname.hostname
+    'www'
+    >>> hostname.domain
+    'example.com'
+
+"""
+
 from .. import Mapper, mapper
 
 

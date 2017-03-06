@@ -36,11 +36,11 @@ def hostname(local, shared):
     Prefer hostname to facter and systemid.
 
     Returns:
-        Hostname: A named tuple with `fqdn`, `hostname` and `domain`
-        components.
+        falafel.reducers.hostname.Hostname: A named tuple with `fqdn`,
+        `hostname` and `domain` components.
 
     Raises:
-        Exception: If nothing can be gotten from all the three mappers.
+        Exception: If no hostname can be found in any of the three mappers.
     """
 
     hn = shared.get(hname)
