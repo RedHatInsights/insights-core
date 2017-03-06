@@ -60,8 +60,10 @@ class LsofParser(object):
 @mapper('lsof', FILTER_LIST)
 class Lsof(Scannable):
 
-    def parse_content(self, content):
-        parser = LsofParser()
-        for obj in parser.parse(content):
-            for scanner in self.scanners:
-                scanner(self, obj)
+    def __init__(self, context):
+        self.parser = LsofParser()
+        super(Scannable, self).__init__(context)
+
+    def parse(self, content):
+        for obj in self.parser.parse(content):
+            yield obj

@@ -264,9 +264,10 @@ class Scannable(Mapper):
     @classmethod
     def _scan(cls, result_key, scanner):
         """
-        Define computed fields based on a string to "grep for".  This is
-        preferred to utilizing raw log lines in plugins because computed fields
-        will be serialized, whereas raw log lines will not.
+        Registers a `scanner` which is a function that will be called once per
+        logical line in a document. A scanners job is to evaluate the content
+        of the line and set a so-called `result_key` on the class to be
+        retrieved later by a rule.
         """
 
         if result_key in cls.scanner_keys:
@@ -276,15 +277,11 @@ class Scannable(Mapper):
         cls.scanner_keys.add(result_key)
 
     @classmethod
-    def scan_any(cls, result_key, func):
-        def scanner(self, obj):
-            current_value = getattr(self, result_key, None)
-            setattr(self, result_key, current_value and func(obj))
-
-        cls._scan(result_key, scanner)
-
-    @classmethod
-    def scan_latch(cls, result_key, func):
+    def any(cls, result_key, func):
+        """
+        Sets the `result_key` to the output of `func` if `func` ever returns
+        truthy
+        """
         def scanner(self, obj):
             current_value = getattr(self, result_key, None)
             setattr(self, result_key, current_value or func(obj))
@@ -292,15 +289,32 @@ class Scannable(Mapper):
         cls._scan(result_key, scanner)
 
     @classmethod
-    def scan_accumulate(cls, result_key, func):
+    def collect(cls, result_key, func):
+        """
+        Sets the `result_key` to an iterable of objects for which `func(obj)`
+        returns True
+        """
         def scanner(self, obj):
-            if not getattr(self, result_key):
-                setattr(self, result_key)
+            if not getattr(self, result_key, None):
+                setattr(self, result_key, [])
             rv = func(obj)
             if rv:
                 getattr(self, result_key).append(rv)
 
         cls._scan(result_key, scanner)
+
+    def parse(self, content):
+        """
+        Default 'parsing' method. Subclasses should override this method with
+        their own custom parsing as necessary.
+        """
+        for line in content:
+            yield line
+
+    def parse_content(self, content):
+        for obj in self.parse(content):
+            for scanner in self.scanners:
+                scanner(self, obj)
 
 
 class LogFileOutput(Mapper):
