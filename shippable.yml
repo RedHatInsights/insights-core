@@ -1,0 +1,6 @@
+language: python
+
+build:
+    ci:
+    - pip install -e .[develop]
+    - py.test
