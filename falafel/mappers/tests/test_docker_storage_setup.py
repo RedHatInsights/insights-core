@@ -38,29 +38,19 @@ def test_constructor():
     context = context_wrap(DOCKER_STORAGE_SETUP1, DOCKER_STORAGE_SETUP_PATH)
     result = DockerStorageSetup(context)
 
-    assert 'POOL_AUTOEXTEND_THRESHOLD=60' in result.active_lines_unparsed
-    assert "20" == result.active_settings["POOL_AUTOEXTEND_PERCENT"]
-    assert "name" not in result.active_settings
-    assert "##name" not in result.active_settings
+    assert 'POOL_AUTOEXTEND_THRESHOLD' in result.data
+    assert "20" == result.data["POOL_AUTOEXTEND_PERCENT"]
+    assert "name" not in result.data
+    assert "##name" not in result.data
     assert "vgtest" == result["VG"]
 
     context = context_wrap(DOCKER_STORAGE_SETUP2, DOCKER_STORAGE_SETUP_PATH)
     result = DockerStorageSetup(context)
 
-    assert "comment" not in result.active_settings
-    assert "broken_option_g" not in result.active_settings
-    assert "value_i" == result["option_i"]
-
-
-def test_active_lines_unparsed():
-    context = context_wrap(DOCKER_STORAGE_SETUP1, DOCKER_STORAGE_SETUP_PATH)
-    result = DockerStorageSetup(context)
-    test_active_lines = []
-    for line in DOCKER_STORAGE_SETUP1.split("\n"):
-        if not line.strip().startswith("#"):
-            if line.strip():
-                test_active_lines.append(line)
-    assert test_active_lines == result.active_lines_unparsed
+    assert "comment" not in result
+    assert "broken_option_g" not in result
+    # Options with spaces around the '=' are not allowed in /etc/sysconfig
+    assert "option_i" not in result
 
 
 def build_active_settings_expected():
@@ -79,7 +69,10 @@ def build_active_settings_expected():
 
 
 def test_active_settings():
+    # Paul Wayper 2017-02-23: I'm really not sure what the point of trying to
+    # rewrite a parser for these files is.  We should just be testing the
+    # data we expect in the file.
     context = context_wrap(DOCKER_STORAGE_SETUP1, DOCKER_STORAGE_SETUP_PATH)
     result = DockerStorageSetup(context)
     active_settings = build_active_settings_expected()
-    assert active_settings == result.active_settings
+    assert active_settings == result.data
