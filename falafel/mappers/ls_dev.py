@@ -56,26 +56,3 @@ from .. import mapper, FileListing
 class LsDev(FileListing):
     """Parses output of ``ls -lanR /dev`` command."""
     pass
-
-
-@mapper("ls_dev")
-def parse_ls_dev(context):
-    """
-        We still reserve this method here just for compatibility as the refactoring will cause existing plugins in CEEPH fail.
-        Don't use this method anymore. It will be deprecated later.
-    """
-    dicts = dict()
-    files = list()
-    dir = ""
-    for line in context.content:
-        if not line:
-            dicts[dir] = files
-            files = list()
-        elif line.strip().endswith(":"):
-            dir = line.split(":")[0]
-        elif line.startswith('b'):
-            files.append(line.split()[-1])
-        elif line.startswith('l'):
-            files.append(line.split()[-3])
-    dicts[dir] = files
-    return dicts
