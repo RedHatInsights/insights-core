@@ -18,6 +18,7 @@ static_specs = {
                                     PatternSpec(r"tomcat-logs/tomcat.*/catalina\.out", large_content=True)]),
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
     "ceilometer.conf"           : SimpleFileSpec("etc/ceilometer/ceilometer.conf"),
+    "ceph_config_show"          : CommandSpec("/usr/bin/ceph daemon {ceph_socket_files} config show", ceph_socket_files=r"\S+"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chrony.conf"               : SimpleFileSpec("etc/chrony.conf"),
@@ -337,6 +338,7 @@ pre_commands = {
     "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
     "module": "/bin/ls /sys/module",
+    "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
     "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'"
 }
 
