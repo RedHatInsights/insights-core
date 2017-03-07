@@ -581,8 +581,9 @@ class FileListing(Mapper):
     """
 
     # I know I'm missing some types in the 'type' subexpression...
+    # Modify the last '\S+' to '\S*' to match where there is no '.' at the end
     perms_regex = r'^(?P<type>[bcdlps-])' +\
-        r'(?P<perms>[r-][w-][sSx-][r-][w-][sSx-][r-][w-][xsSt-]\S+)'
+        r'(?P<perms>[r-][w-][sSx-][r-][w-][sSx-][r-][w-][xsSt-]\S*)'
     links_regex = r'(?P<links>\d+)'
     owner_regex = r'(?P<owner>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
     # In 'size' we also cope with major, minor format character devices
