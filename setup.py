@@ -56,7 +56,7 @@ runtime = {
 develop = {
     'flake8',
     'coverage',
-    'pytest',
+    'pytest==3.0.6',
     'pytest-cov',
     'Sphinx',
     'sphinx_rtd_theme',
