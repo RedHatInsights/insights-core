@@ -29,6 +29,7 @@ from .. import Mapper, mapper
 @mapper('oc_get_pod')
 class OcGetPod(Mapper):
     """Class to parse ``oc get pod -o yaml --all-namespaces``"""
+
     def parse_content(self, content):
         self.data = yaml.load('\n'.join(content))
 
@@ -43,6 +44,7 @@ class OcGetPod(Mapper):
 @mapper('oc_get_dc')
 class OcGetDc(Mapper):
     """Class to parse ``oc get dc -o yaml --all-namespaces``"""
+
     def parse_content(self, content):
         self.data = yaml.load('\n'.join(content))
 
@@ -57,6 +59,7 @@ class OcGetDc(Mapper):
 @mapper('oc_get_service')
 class OcGetService(Mapper):
     """Class to parse ``oc get service -o yaml --all-namespaces``"""
+
     def parse_content(self, content):
         self.data = yaml.load('\n'.join(content))
 
@@ -66,3 +69,48 @@ class OcGetService(Mapper):
         for service in self.data["items"]:
             service_items[service["metadata"]["name"]] = service
         return service_items
+
+
+@mapper('oc_get_rolebinding')
+class OcGetRolebinding(Mapper):
+    """Class to parse ``oc get rolebinding -o yaml --all-namespaces``"""
+
+    def parse_content(self, content):
+        self.data = yaml.load('\n'.join(content))
+
+    def get_rolebind(self):
+        """ dict: Returns a dictionary of openshift rolebind information."""
+        rolebind_items = {}
+        for rolebind in self.data["items"]:
+            rolebind_items[rolebind["metadata"]["name"]] = rolebind
+        return rolebind_items
+
+
+@mapper('oc_get_project')
+class OcGetProject(Mapper):
+    """Class to parse ``oc get project -o yaml --all-namespaces``"""
+
+    def parse_content(self, content):
+        self.data = yaml.load('\n'.join(content))
+
+    def get_project(self):
+        """ dict: Returns a dictionary of openshift project information."""
+        project_items = {}
+        for project in self.data["items"]:
+            project_items[project["metadata"]["name"]] = project
+        return project_items
+
+
+@mapper('oc_get_role')
+class OcGetRole(Mapper):
+    """Class to parse ``oc get role -o yaml --all-namespaces``"""
+
+    def parse_content(self, content):
+        self.data = yaml.load('\n'.join(content))
+
+    def get_role(self):
+        """ dict: Returns a dictionary of openshift role information."""
+        role_items = {}
+        for role in self.data["items"]:
+            role_items[role["metadata"]["name"]] = role
+        return role_items
