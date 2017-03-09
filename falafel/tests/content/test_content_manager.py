@@ -25,7 +25,7 @@ def cm():
     os.mkdir(os.path.join(tmp_dir, "content"))
     with open(os.path.join(tmp_dir, "content", "config.yaml"), "w") as fp:
         yaml.dump(TEST_CONFIG, fp)
-    yield ContentManager(tmp_dir, ["falafel.tests.plugins"])
+    yield ContentManager(tmp_dir, ["falafel.tests.test_plugins"])
     shutil.rmtree(tmp_dir)
 
 
