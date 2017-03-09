@@ -34,7 +34,7 @@ class ChronycSources(Mapper):
 
     Examples:
 
-        >>> sources = shared[ChronycSources]
+        >>> sources = shared[ChronycSources].data
         >>> len(sources)
         4
         >>> sources[0]['source']
@@ -69,8 +69,6 @@ class NtpqLeap(Mapper):
 
     Examples:
 
-        >>> print shared[NtpqLeap].data['leap']
-        '00'
         >>> print shared[NtpqLeap].leap  # same data
         '00'
     """
@@ -80,8 +78,11 @@ class NtpqLeap(Mapper):
         if "=" in line:
             k, v = line.split("=")
             self.data = {k: v}
-            if 'k' == 'leap':
-                self.leap = v
+
+    @property
+    def leap(self):
+        if self.data:
+            return self.data.get('leap')
 
 
 @mapper('ntpq_pn')
@@ -105,7 +106,7 @@ class NtpqPn(Mapper):
 
     Examples:
 
-        >>> sources = shared[NtpqPn]
+        >>> sources = shared[NtpqPn].data
         >>> len(sources)
         4
         >>> sources[0]
