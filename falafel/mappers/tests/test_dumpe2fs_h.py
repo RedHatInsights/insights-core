@@ -25,11 +25,11 @@ def test_dumpe2fs_deprecated():
     dumpe2fs_dict = dumpe2fs_h.get_dumpe2fs_output(context_wrap(DUMPE2FS, path=PATH))
     fs_info = dumpe2fs_dict.get("/dev/mapper/vg_spcdrhellb01-lv_usr")
     assert fs_info is not None
-    assert set(fs_info.get("Filesystem features")) == set(['has_journal', 'ext_attr', 'resize_inode',
-                                                           'dir_index', 'filetype', 'needs_recovery',
-                                                           'extent', 'flex_bg', 'sparse_super',
-                                                           'large_file', 'huge_file', 'uninit_bg',
-                                                           'dir_nlink', 'extra_isize'])
+    assert set(fs_info.get("Filesystem features")) == set([
+        'has_journal', 'ext_attr', 'resize_inode', 'dir_index',
+        'filetype', 'needs_recovery', 'extent', 'flex_bg', 'sparse_super',
+        'large_file', 'huge_file', 'uninit_bg', 'dir_nlink', 'extra_isize'
+    ])
     assert set(fs_info.get("Default mount options")) == set(['user_xattr', 'acl', 'journal_data_writeback'])
     assert fs_info.get('Filesystem magic number') == '0xEF53'
     assert set(fs_info.get('Filesystem flags')) == set(['signed_directory_hash'])
@@ -40,16 +40,21 @@ def test_dumpe2fs_deprecated():
 
 
 def test_dumpe2fs():
-    dumpe2fs_dict = dumpe2fs_h.DumpE2fs(context_wrap(DUMPE2FS, path=PATH)).data
-    fs_info = dumpe2fs_dict.get("/dev/mapper/vg_spcdrhellb01-lv_usr")
+    dumpe2fs_obj = dumpe2fs_h.DumpE2fs(context_wrap(DUMPE2FS, path=PATH))
+    assert dumpe2fs_obj.dev_name == '/dev/mapper/vg_spcdrhellb01-lv_usr'
+    fs_info = dumpe2fs_obj.data
     assert fs_info is not None
-    assert set(fs_info.get("Filesystem features")) == set(['has_journal', 'ext_attr', 'resize_inode',
-                                                           'dir_index', 'filetype', 'needs_recovery',
-                                                           'extent', 'flex_bg', 'sparse_super',
-                                                           'large_file', 'huge_file', 'uninit_bg',
-                                                           'dir_nlink', 'extra_isize'])
-    assert set(fs_info.get("Default mount options")) == set(['user_xattr', 'acl', 'journal_data_writeback'])
+    assert type(fs_info['Filesystem features']) == list
+    assert set(fs_info.get("Filesystem features")) == set([
+        'has_journal', 'ext_attr', 'resize_inode', 'dir_index',
+        'filetype', 'needs_recovery', 'extent', 'flex_bg', 'sparse_super',
+        'large_file', 'huge_file', 'uninit_bg', 'dir_nlink', 'extra_isize'
+    ])
+    assert type(fs_info.get("Default mount options")) == list
+    assert set(fs_info.get("Default mount options")) == \
+        set(['user_xattr', 'acl', 'journal_data_writeback'])
     assert fs_info.get('Filesystem magic number') == '0xEF53'
+    assert type(fs_info.get("Filesystem flags")) == list
     assert set(fs_info.get('Filesystem flags')) == set(['signed_directory_hash'])
     assert fs_info.get('Filesystem revision #') == '1 (dynamic)'
     assert fs_info.get('Last mounted on') == '/usr'
