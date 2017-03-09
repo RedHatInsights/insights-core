@@ -19,6 +19,7 @@ static_specs = {
     "cciss"                     : PatternSpec(r"proc/driver/cciss/cciss.*"),
     "ceilometer.conf"           : SimpleFileSpec("etc/ceilometer/ceilometer.conf"),
     "ceph_config_show"          : CommandSpec("/usr/bin/ceph daemon {ceph_socket_files} config show", ceph_socket_files=r"\S+"),
+    "ceph_osd_dump"             : CommandSpec("/usr/bin/ceph osd dump -f json-pretty"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chrony.conf"               : SimpleFileSpec("etc/chrony.conf"),
