@@ -31,7 +31,7 @@ def test_get_chrony_sources():
 
 def test_get_ntpq_leap():
     mapper_result = NtpqLeap(context_wrap(ntpq_leap_output))
-    assert mapper_result.data.get("leap") == "00"
+    assert mapper_result.leap == "00"
 
 
 def test_get_ntpd_sources():
