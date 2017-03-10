@@ -49,6 +49,8 @@ Examples:
     >>> shared = {Uname: Uname(context_wrap(my_uname)), Sysctl: Sysctl(context_wrap(my_sysctl))}
     >>> my_ipv6 = IPv6({},shared)
     >>> my_ipv6.disabled()
+    False
+    >>> my_ipv6.disabled_by()
     set([])
     >>> my_sysctl = '''
     ... net.ipv6.conf.all.autoconf = 1
@@ -61,6 +63,8 @@ Examples:
     >>> shared[Sysctl] = Sysctl(context_wrap(my_sysctl))
     >>> my_ipv6 = IPv6({},shared)
     >>> my_ipv6.disabled()
+    True
+    >>> my_ipv6.disabled_by()
     set(['sysctl'])
 
 """
@@ -73,13 +77,11 @@ from ..mappers.sysctl import Sysctl
 from ..mappers.uname import Uname
 
 
-@reducer(requires=[Uname], optional=[ModProbe, LsMod, CmdLine, Sysctl],
-         shared=True)
-class IPv6(object):
+class IPv6Reducer(object):
     """A shared reducer which detects disabled IPv6 networking."""
 
     def __init__(self, local, shared):
-        self.disabled_by = set()
+        self.disablers = set()
         self.uname = shared[Uname]
         self.modprobe = shared.get(ModProbe)
         self.lsmod = shared.get(LsMod)
@@ -93,7 +95,7 @@ class IPv6(object):
         if self.uname.rhel_release[0] == '7':
             if self.cmdline:
                 if self.cmdline.data.get('ipv6.disable') == ['1']:
-                    self.disabled_by.add('cmdline')
+                    self.disablers.add('cmdline')
 
         # EL6 requires lsmod and modprobe to state definitively whether the
         # module is disabled or not
@@ -105,17 +107,17 @@ class IPv6(object):
             if 'ipv6' in self.lsmod:
                 if self.modprobe.data.get('options',
                                           {}).get('ipv6') == ['disable=1']:
-                    self.disabled_by.add('modprobe_disable')
+                    self.disablers.add('modprobe_disable')
 
             # Even if the module isn't loaded, it might be, unless it's fake
             # installed, and it may still be disabled
             else:
                 if self.modprobe.data.get('install',
                                           {}).get('ipv6') == ['/bin/true']:
-                    self.disabled_by.add('fake_install')
+                    self.disablers.add('fake_install')
                 if self.modprobe.data.get('options',
                                           {}).get('ipv6') == ['disable=1']:
-                    self.disabled_by.add('modprobe_disable')
+                    self.disablers.add('modprobe_disable')
 
         # IPv6 can also be disabled via sysctl. Though it may be disabled on a
         # per-interface basis, this reducer only reports if it's turned off
@@ -128,13 +130,28 @@ class IPv6(object):
         if self.sysctl:
             if '1' in self.sysctl.data.get('net.ipv6.conf.all.disable_ipv6',
                                            ()):
-                self.disabled_by.add('sysctl')
+                self.disablers.add('sysctl')
 
     def disabled(self):
         """Determine whether IPv6 has been disabled on this system.
 
         Returns:
-            set: Empty set if IPv6 has not been disabled, otherwise the
-            configuration locations where it has been disabled.
+            bool: True if a configuration that disables IPv6 was found.
         """
-        return self.disabled_by
+        return self.disablers != set([])
+
+    def disabled_by(self):
+        """Get the means by which IPv6 was disabled on this system.
+
+        Returns:
+            set: Zero or more of ``cmdline``, ``modprobe_disable``,
+            ``fake_install``, or ``sysctl``, depending on which methods to
+            disable IPv6 have been found.
+        """
+        return self.disablers
+
+@reducer(requires=[Uname], optional=[ModProbe, LsMod, CmdLine, Sysctl],
+         shared=True)
+class IPv6(IPv6Reducer):
+    """See class `IPv6Reducer` for attributes and methods."""
+    pass
