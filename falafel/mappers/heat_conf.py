@@ -4,7 +4,7 @@ heat.conf - File /etc/heat/heat.conf
 
 This module provides plugins access to the heat.conf information.
 
-Typical content of the ``heat.conf`` like::
+Typical content of the ``heat.conf`` is::
 
     [DEFAULT]
     heat_metadata_server_url = http://172.16.0.11:8000
@@ -27,6 +27,16 @@ Typical content of the ``heat.conf`` like::
     auth_uri =http://192.0.2.18:35357
     [clients_neutron]
 
+Usage of this mapper is similar to others that use the ``IniConfigFile`` base
+class.
+
+Examples:
+
+    >>> conf = shared(HeatConf)
+    >>> 'DEFAULT' in conf
+    True
+    >>> conf.get_item('clients_keystone', 'auth_uri')
+    'http://192.0.2.18:35357'
 """
 from .. import mapper, IniConfigFile
 
