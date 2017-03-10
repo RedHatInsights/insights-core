@@ -49,16 +49,13 @@ Examples:
     >>> "xxx.m2m.xxx" in setting_dic.data[':trusted_hosts']
     True
 """
-import yaml
-from .. import Mapper, mapper
+from .. import YAMLMapper, mapper
 
 
 @mapper('foreman_proxy_conf')
-class ForemanProxyConf(Mapper):
+class ForemanProxyConf(YAMLMapper):
     """ Class for parsing the content of ``foreman_proxy_conf``."""
-
-    def parse_content(self, content):
-        self.data = yaml.load('\n'.join(content))
+    pass
 
 
 if __name__ == "__main__":

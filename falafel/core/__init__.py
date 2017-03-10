@@ -6,6 +6,7 @@ import pkgutil
 import re
 import shlex
 import sys
+import yaml
 from ConfigParser import RawConfigParser
 from collections import defaultdict
 
@@ -106,6 +107,14 @@ class Mapper(object):
     def parse_content(self, content):
         """This method must be implemented by classes based on this class."""
         pass
+
+
+class YAMLMapper(Mapper):
+    """
+    A mapper class that reads YAML files.  Base your own mapper on this.
+    """
+    def parse_content(self, content):
+        self.data = yaml.load('\n'.join(content))
 
 
 class SysconfigOptions(Mapper):

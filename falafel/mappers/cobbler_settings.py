@@ -22,16 +22,12 @@ Examples:
 
 """
 
-import yaml
-from .. import Mapper, mapper, LegacyItemAccess
+from .. import YAMLMapper, mapper, LegacyItemAccess
 
 
 @mapper('cobbler_settings')
-class CobblerSettings(LegacyItemAccess, Mapper):
+class CobblerSettings(LegacyItemAccess, YAMLMapper):
     """
     Read the ``/etc/cobbler/settings`` YAML file.
     """
-
-    def parse_content(self, content):
-        # Revert the list to a stream string
-        self.data = yaml.load('\n'.join(content))
+    pass
