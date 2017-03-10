@@ -28,8 +28,7 @@ from ..mappers import chkconfig
 from ..mappers.systemd import unitfiles
 
 
-@reducer(requires=[[chkconfig.ChkConfig, unitfiles.UnitFiles]], shared=True)
-class Services(object):
+class ServicesReducer(object):
     """
     A reducer for working with enabled services, independent of which
     version of RHEL is in use.
@@ -97,3 +96,9 @@ class Services(object):
             bool: True if service is enabled, False otherwise
         """
         return self.is_on(service_name)
+
+
+@reducer(requires=[[chkconfig.ChkConfig, unitfiles.UnitFiles]], shared=True)
+class Services(ServicesReducer):
+    """See `ServicesReducer` for attributes and methods."""
+    pass
