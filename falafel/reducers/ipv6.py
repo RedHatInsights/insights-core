@@ -150,6 +150,7 @@ class IPv6Reducer(object):
         """
         return self.disablers
 
+
 @reducer(requires=[Uname], optional=[ModProbe, LsMod, CmdLine, Sysctl],
          shared=True)
 class IPv6(IPv6Reducer):
