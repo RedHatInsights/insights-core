@@ -214,6 +214,8 @@ static_specs = {
     "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
     "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
     "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}", crt=r"\S+"),
+    "openshift_master_config"   : SimpleFileSpec("etc/origin/master/master-config.yaml"),
+    "openshift_node_config"     : SimpleFileSpec("etc/origin/node/node-config.yaml"),
     "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
