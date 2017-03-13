@@ -442,39 +442,43 @@ def test_get_netstat_i():
 
 
 Ss_TULPN = """
-COMMAND> ss -tulpn
-
-Netid  State      Recv-Q Send-Q     Local Address:Port       Peer Address:Port
-tcp    LISTEN     0      10                    :::5671                 :::*      users:(("qpidd",10973,27))
-tcp    LISTEN     0      50                     *:5646                  *:*      users:(("qdrouterd",10991,6))
-tcp    UNCONN     0      0                    ::1:323                  :::*      users:(("chronyd",848,5))
-tcp    LISTEN     0      128                   :::443                  :::*      users:(("httpd",10488,4),("httpd",10487,4),("httpd",10486,4),("httpd",10485,4),("httpd",10484,4),("httpd",10482,4),("httpd",10481,4),("httpd",10480,4),("httpd",10440,4))
-tcp    LISTEN     0      100                   :::8443                 :::*      users:(("java",11066,46))
+Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
+udp    UNCONN     0      0         *:55898                 *:*
+udp    UNCONN     0      0      127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
+udp    UNCONN     0      0         *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
+udp    UNCONN     0      0        :::37968                :::12345                    users:(("rpc.statd",pid=29559,fd=10))
+udp    UNCONN     0      0        :::57315                :::*
+udp    UNCONN     0      0        :::111                  :::*                   users:(("rpcbind",pid=953,fd=11))
+tcp    LISTEN     0      1      10.72.32.206:5900                  *:*                   users:(("qemu-kvm",pid=9787,fd=20))
+tcp    LISTEN     0      5         *:54322                 *:*                   users:(("ovirt-imageio-d",pid=929,fd=3))
+tcp    LISTEN     0      100    127.0.0.1:25                    *:*                   users:(("master",pid=2612,fd=13))
+tcp    LISTEN     0      64        *:34850                 *:*
+tcp    LISTEN     0      64        *:35752                 *:*
+tcp    LISTEN     0      128      :::2223                 :::*                   users:(("sshd",pid=1416,fd=4))
 """
 
 
-def test_get_ss_tupn():
-    ss = SsTULPN(context_wrap(Ss_TULPN))
-    assert len(ss.data) == 7
-    assert "tcp" in ss.col('Netid')
-    assert "UNCONN" in ss.col('State')
-    assert "LISTEN" in ss.col('State')
-    assert "0" in ss.col('Send-Q')
-    assert "50" in ss.col('Send-Q')
-    assert ":::5671" in ss.col('Local Address:Port')
-    assert "*:5646" in ss.col('Local Address:Port')
-    assert "::1:323" in ss.col('Local Address:Port')
-    assert ":::443" in ss.col('Local Address:Port')
-    assert ":::*" in ss.col('Peer Address:Port')
-    assert "*:*" in ss.col('Peer Address:Port')
-    assert "users:((\"qpidd\",10973,27))" in ss.col('Process_info')
-    assert "users:((\"qdrouterd\",10991,6))" in ss.col('Process_info')
-    assert "users:((\"chronyd\",848,5))" in ss.col('Process_info')
-    assert "users:((\"httpd\",10488,4),(\"httpd\",10487,4),(\"httpd\",10486,4),(\"httpd\",10485,4),(\"httpd\",10484,4),(\"httpd\",10482,4),(\"httpd\",10481,4),(\"httpd\",10480,4),(\"httpd\",10440,4))" in ss.col('Process_info')
+def test_ss_tulpn_data():
+    ss = SsTULPN(context_wrap(Ss_TULPN)).data
+    assert len(ss) == 12
+    assert ss[0] == {'Netid': 'udp', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:55898', 'State': 'UNCONN', 'Recv-Q': '0'}
+    assert ss[1].get("Netid") == "udp"
+    assert ss[9].get("Process") is None
+    assert "sshd" in ss[-1].get("Process")
+    assert "904" in ss[1].get("Local-Address-Port")
 
 
-def test_listening_port():
+def test_ss_tulpn_get_service():
     ss = SsTULPN(context_wrap(Ss_TULPN))
-    assert len(ss.data) == 7
-    assert ss.listening_port['5646'] == {'addr': '*', 'port': '5646'}
-    assert ss.listening_port['5671'] == {'addr': '::', 'port': '5671'}
+    exp = [{'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=9))', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:111', 'State': 'UNCONN', 'Recv-Q': '0'},
+           {'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=11))', 'Peer-Address-Port': ':::*', 'Send-Q': '0', 'Local-Address-Port': ':::111', 'State': 'UNCONN', 'Recv-Q': '0'}]
+    assert ss.get_service("rpcbind") == exp
+
+
+def test_ss_tulpn_get_port():
+    ss = SsTULPN(context_wrap(Ss_TULPN))
+    exp01 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",pid=1416,fd=4))', 'Peer-Address-Port': ':::*', 'Send-Q': '128', 'Local-Address-Port': ':::2223', 'State': 'LISTEN', 'Recv-Q': '0'}]
+    assert ss.get_localport("2223") == exp01
+    exp02 = [{'Netid': 'udp', 'Process': 'users:(("rpc.statd",pid=29559,fd=10))', 'Peer-Address-Port': ':::12345', 'Send-Q': '0', 'Local-Address-Port': ':::37968', 'State': 'UNCONN', 'Recv-Q': '0'}]
+    assert ss.get_peerport("12345") == exp02
+    assert ss.get_port("12345") == exp02
