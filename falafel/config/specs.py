@@ -22,6 +22,8 @@ static_specs = {
     "ceilometer.conf"           : SimpleFileSpec("etc/ceilometer/ceilometer.conf"),
     "ceph_config_show"          : CommandSpec("/usr/bin/ceph daemon {ceph_socket_files} config show", ceph_socket_files=r"\S+"),
     "ceph_osd_dump"             : CommandSpec("/usr/bin/ceph osd dump -f json-pretty"),
+    "ceph_osd_df"               : CommandSpec("/usr/bin/ceph osd df -f json-pretty"),
+    "ceph_s"                    : CommandSpec("/usr/bin/ceph -s -f json-pretty"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chrony.conf"               : SimpleFileSpec("etc/chrony.conf"),
