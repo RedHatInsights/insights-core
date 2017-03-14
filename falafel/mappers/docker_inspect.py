@@ -16,6 +16,7 @@ Sample input::
         "Created": "2016-06-23T05:12:25.433469799Z",
         "Path": "/bin/bash",
         "Args": [],
+        "Name": "/sample_webapp",
         "State": {
             "Status": "running",
             "Running": true,
@@ -27,9 +28,9 @@ Examples:
 
     >>> image = shared[DockerInspectContainer]
     >>> image.data['ID'] # new-style access
-    "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
-    >>> image['ID'] # old-style access
-    "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
+    '97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07'
+    >>> image['Name'] # old-style access
+    '/sample_webapp'
     >>> image.get('State').get('Paused') # sub-dictionaries
     False
 
