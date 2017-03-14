@@ -1,3 +1,43 @@
+"""
+HponConf - command ``/sbin/hponcfg -g``
+=======================================
+
+Get the iLO firmware revision from the ``hponcfg`` command.
+This is a 3rd party utility from HP and isn't shipped with RHEL.  However,
+it's useful for detecting possible hardware incompatibilities.
+
+There are only five pieces of information extracted:
+
+* **firmware_revision** - the ``Firmware Revision`` value
+* **device_type** - the ``Device type`` value
+* **driver_name** - the ``Driver name`` value
+* **server_name** - the ``Server Name`` value
+* **server_number** - the ``Server Number`` value
+
+Values are '' if not listed in the output.
+
+Input looks like this::
+
+    HP Lights-Out Online Configuration utility
+    Version 4.3.1 Date 05/02/2014 (c) Hewlett-Packard Company, 2014
+    Firmware Revision = 1.22 Device type = iLO 4 Driver name = hpilo
+    Host Information:
+                            Server Name: esxi01.hp.local
+                            Server Number:
+
+Examples:
+
+    >>> cfg = shared[HponConf]
+    >>> cfg.data['firmware_revision']
+    '1.22'
+    >>> cfg.data['server_name']
+    'esxi01.hp.local'
+    >>> cfg.data['server_number']
+    ''
+    >>> 'Version' in cfg.data # other values in the hponcfg output not found
+    False
+"""
+
 from .. import Mapper, mapper, get_active_lines
 
 DRIVER_NAME = 'driver_name'
@@ -8,27 +48,12 @@ FIRMWARE_REVISION = 'firmware_revision'
 @mapper('hponcfg-g')
 class HponConf(Mapper):
     """
-    Get the iLO firmware revision from the hponcfg command.
-    This is a 3rd party utility from HP and isn't shipped with RHEL.
+    Read the output of the HP ILO configuration utility.
 
-    Input looks like this::
-
-        HP Lights-Out Online Configuration utility
-        Version 4.3.1 Date 05/02/2014 (c) Hewlett-Packard Company, 2014
-        Firmware Revision = 1.22 Device type = iLO 4 Driver name = hpilo
-        Host Information:
-                                Server Name: esxi01.hp.local
-                                Server Number:
-
-    Output a dict like this::
-
-        {
-            'firmware_revision': '1.22',
-            'device_type': 'iLO 4',
-            'driver_name': 'hpilo'
-            'server_name': esxi01.hp.local
-            'server_number': ''
-        }
+    Attributes:
+        firmware_revision (str): The firmware revision string.
+        device_type (str): The device type (e.g. 'iLO 4').
+        driver_name (str): The driver name (e.g. 'hpilo').
     """
 
     def parse_content(self, content):
