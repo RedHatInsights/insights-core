@@ -2,10 +2,18 @@
 httpd-V - Command httpd -V
 ==========================
 
-Module for parsing the output of command ``httpd -V``. All contents are wrapped
-into a dict.
+Module for parsing the output of command ``httpd -V``.   The bulk of the
+content is split on the colon and keys are kept as is.  Lines beginning with
+'-D' are kept in a dictionary keyed under 'Server compiled with'; each
+compilation option is a key in this sub-dictionary.  The value of the
+compilation options is the value after the equals sign, if one is present,
+or the value in brackets after the compilation option, or 'True' if only the
+compilation option is present.
 
-Typical output of command ``httpd -V`` looks like:
+The data is kept in the ``data`` property and can be accessed through the
+object itself thanks to the ``LegacyItemAccess`` mapper class.
+
+Typical output of command ``httpd -V`` looks like::
 
     Server version: Apache/2.4.6 (Red Hat Enterprise Linux)
     Server's Module Magic Number: 20120211:24
@@ -46,16 +54,20 @@ class HttpdV(LegacyItemAccess, Mapper):
         for line in content:
             line = line.strip()
             if ': ' in line:
-                key, value = line.split(': ', 1)
-                self.data[key.strip()] = value.strip()
+                key, value = [s.strip() for s in line.split(': ', 1)]
+                self.data[key] = value
             elif line.startswith('-'):
                 line = line[3:]  # cut off the '-D '
                 if '=' in line:
                     key, value = line.split('=', 1)
                     compiled_with[key] = value.strip('"')
                 else:
-                    key, _, value = line.partition(' ')
-                    compiled_with[key] = value.strip('"()') if value else True
+                    if ' ' in line:
+                        key, value = line.split(' ', 1)
+                        value = value.strip('"()')
+                    else:
+                        key, value = line, True
+                    compiled_with[key] = value
 
         self.data['Server compiled with'] = compiled_with
 
