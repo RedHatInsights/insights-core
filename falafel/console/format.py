@@ -1,5 +1,6 @@
 import logging
 from copy import deepcopy
+import pprint
 
 from falafel.console.custom_logging import print_console
 
@@ -39,7 +40,9 @@ class Formatter(object):
             return line
 
         def do_wrap(l, i):
-            if word_wrap and i < len(l):
+            if l.find("\n") >= 0 and l.find("\n") < i:
+                return l.find("\n")
+            elif word_wrap and i < len(l):
                 rightmost_space = l.rfind(" ", 0, i)
                 return rightmost_space if rightmost_space > -1 else i
             else:
@@ -48,7 +51,7 @@ class Formatter(object):
         lines = [line[0:do_wrap(line, self.screen_width)]]
         line = line[do_wrap(line, self.screen_width):]
         while line:
-            line = line.strip()
+            line = line.strip("\n")
             end_idx = min(len(line), do_wrap(line, self.screen_width - indent_size))
             lines.append(" " * indent_size + line[:end_idx])
             line = line[end_idx:]
@@ -74,13 +77,17 @@ class Formatter(object):
             if result:
                 print_console(module + ":")
                 key_field_size = max(map(len, result.keys()))
+                indent_size = key_field_size + 7
+                pp = pprint.PrettyPrinter(width=self.screen_width - indent_size)
                 for k, v in sorted(result.iteritems()):
                     if isinstance(v, list):
                         v = ", ".join(map(str, v)).rstrip()
                     elif isinstance(v, str):
                         v = '"{}"'.format(v)
+                    elif isinstance(v, dict):
+                        v = pp.pformat(v)
                     line = "    {} : {}".format(k.ljust(key_field_size), v)
-                    print_console(self.hanging_indent(line, key_field_size + 7, word_wrap=False))
+                    print_console(self.hanging_indent(line, indent_size, word_wrap=False))
                 print_console("-" * self.screen_width)
                 result_count += 1
 
