@@ -25,6 +25,7 @@ COMMENT_QUOTED_IN_VALUE="This value should have a # character in it"
 MANY_QUOTES="this "'is'" valid"
 QUOTE_HANDLING="single ' allowed"
 OPTION_WITH_NO_VALUE=
+DOUBLE_EQUALS==included
   # blank lines with a comment are ignored
 
 # blank lines without comments are ignored too.
@@ -71,7 +72,7 @@ class Test_Sysconfig_Options(unittest.TestCase):
             'SELECTOR', 'SPACES_IN_FRONT', 'SPACES_AFTER_VALUE',
             'COMMENT_SPACE_OK', 'SPACE_COMMENT_IGNORED', 'COMMENT_NOSPACE_OK',
             'COMMENT_QUOTED_IN_VALUE', 'MANY_QUOTES', 'QUOTE_HANDLING',
-            'OPTION_WITH_NO_VALUE'])
+            'OPTION_WITH_NO_VALUE', 'DOUBLE_EQUALS'])
 
         assert config.data['SELECTOR'] == 'and all that'
         assert config.data['SPACES_IN_FRONT'] == 'yes'
@@ -84,6 +85,7 @@ class Test_Sysconfig_Options(unittest.TestCase):
         assert config.data['MANY_QUOTES'] == "this is valid"
         assert config.data['QUOTE_HANDLING'] == "single ' allowed"
         assert config.data['OPTION_WITH_NO_VALUE'] == ''
+        assert config.data['DOUBLE_EQUALS'] == '=included'
 
         print config.unparsed_lines
         assert config.unparsed_lines == [
