@@ -66,10 +66,13 @@ class Formatter(object):
 
     def display_dict_of_strings(self, d):
         key_field_size = max(map(len, d.keys())) + 1
+        indent_size = key_field_size + 2
+        pp = pprint.PrettyPrinter(width=self.screen_width - indent_size)
         missing_fmt = "{}: {}"
         for key, value in d.iteritems():
+            value = pp.pformat(value)
             line = missing_fmt.format(key.ljust(key_field_size), value)
-            print_console(self.hanging_indent(line, key_field_size + 2))
+            print_console(self.hanging_indent(line, indent_size))
 
     def display_results(self, results, stats):
         result_count = 0
