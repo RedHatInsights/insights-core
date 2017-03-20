@@ -75,6 +75,32 @@ BONDING_OPTS="mode=1 primary=eth1 arp_interval=1000 arp_ip_target=+10.11.96.1"
 
 IFCFG_PATH_6 = "etc/sysconfig/network-scripts/ifcfg-en0"
 
+IFCFG_TEST_NAMED_BOND_MODE = """
+DEVICE=bond0
+IPADDR=10.11.96.172
+NETMASK=255.255.252.0
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+IPV6INIT=no
+BONDING_OPTS="mode=balance-xor primary=eth1 arp_interval=1000 arp_ip_target=+10.11.96.1"
+""".strip()
+
+IFCFG_PATH_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
+
+IFCFG_TEST_BADLY_NAMED_BOND_MODE = """
+DEVICE=bond0
+IPADDR=10.11.96.172
+NETMASK=255.255.252.0
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+IPV6INIT=no
+BONDING_OPTS="mode=failover primary=eth1 arp_interval=1000 arp_ip_target=+10.11.96.1"
+""".strip()
+
+IFCFG_PATH_BADLY_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
+
 
 class TestIfcfg(unittest.TestCase):
     def test_ifcfg(self):
@@ -90,6 +116,8 @@ class TestIfcfg(unittest.TestCase):
         self.assertEqual(r["IPV4_FAILURE_FATAL"], "no")
         self.assertEqual(r["NAME"], "enp0s25")
         self.assertEqual(r["iface"], "enp0s25")
+        self.assertEqual(r.ifname, r['iface'])
+        self.assertIsNone(r.bonding_mode)
 
     def test_ifcfg_2(self):
         context = context_wrap(IFCFG_TEST_2)
@@ -148,4 +176,20 @@ class TestIfcfg(unittest.TestCase):
 
         self.assertEqual(r["BONDING_OPTS"]["mode"], "1")
         self.assertEqual(r["BONDING_OPTS"]["arp_ip_target"], "+10.11.96.1")
-        assert r.bonding_mode == 1
+        self.assertEqual(r.bonding_mode, 1)
+
+    def test_ifcfg_named_bond_mode(self):
+        context = context_wrap(IFCFG_TEST_NAMED_BOND_MODE)
+        context.path = IFCFG_PATH_NAMED_BOND_MODE
+
+        r = IfCFG(context)
+
+        self.assertEqual(r.bonding_mode, 2)
+
+    def test_ifcfg_badly_named_bond_mode(self):
+        context = context_wrap(IFCFG_TEST_BADLY_NAMED_BOND_MODE)
+        context.path = IFCFG_PATH_BADLY_NAMED_BOND_MODE
+
+        r = IfCFG(context)
+
+        self.assertIsNone(r.bonding_mode)
