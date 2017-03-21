@@ -13,6 +13,8 @@ e.g
 
 3. ceph -s -f json-pretty
 
+4. ceph osd erasure-code-profile get default -f json-pretty
+
 ...
 
 
@@ -138,6 +140,15 @@ Part of the sample output of this command looks like::
 
     }
 
+    4. `ceph osd erasure-code-profile get default -f json-pretty`
+    {
+        "k": "2",
+        "m": "1",
+        "plugin": "jerasure",
+        "technique": "reed_sol_van"
+    }
+
+
 }
 
 
@@ -192,6 +203,19 @@ Examples:
     >>> result = CephS(context_wrap(ceph_s_content)).data
     >>> result['pgmap']['pgs_by_state'][0]['state_name']
     'active+clean'
+
+    ...
+
+    >>> ceph_osd_ec_profile_get_content = ''.strip()
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephECProfileGet
+    >>> from falafel.tests import context_wrap
+    >>> shared = {CephECProfileGet: CephECProfileGet(context_wrap(ceph_osd_ec_profile_get_content))}
+    >>> result = CephECProfileGet(context_wrap(ceph_osd_ec_profile_get_content)).data
+    >>> result['k']
+    "2"
+
+    ...
+
 """
 
 import json
@@ -232,5 +256,13 @@ class CephOsdDf(CephJsonParsing):
 class CephS(CephJsonParsing):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
+    """
+    pass
+
+
+@mapper("ceph_osd_ec_profile_get")
+class CephECProfileGet(CephJsonParsing):
+    """
+    Class to parse the output of ``ceph osd erasure-code-profile get default -f json-pretty``.
     """
     pass

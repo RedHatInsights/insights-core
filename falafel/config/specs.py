@@ -23,6 +23,7 @@ static_specs = {
     "ceph_config_show"          : CommandSpec("/usr/bin/ceph daemon {ceph_socket_files} config show", ceph_socket_files=r"\S+"),
     "ceph_osd_dump"             : CommandSpec("/usr/bin/ceph osd dump -f json-pretty"),
     "ceph_osd_df"               : CommandSpec("/usr/bin/ceph osd df -f json-pretty"),
+    "ceph_osd_ec_profile_get"   : CommandSpec("/usr/bin/ceph osd erasure-code-profile get {ceph_osd_ec_profile_ls} -f json-pretty ", ceph_osd_ec_profile_ls=r"\S+"),
     "ceph_s"                    : CommandSpec("/usr/bin/ceph -s -f json-pretty"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
@@ -355,6 +356,7 @@ pre_commands = {
     "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
     "module": "/bin/ls /sys/module",
     "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
+    "ceph_osd_ec_profile_ls ": "/usr/bin/ceph osd erasure-code-profile ls",
     "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'"
 }
 
