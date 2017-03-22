@@ -4,7 +4,25 @@ from falafel.mappers.ifcfg import IfCFG
 from falafel.tests import context_wrap
 from falafel.util import keys_in
 
+
+CONTEXT_PATH_DEVICE = "etc/sysconfig/network-scripts/ifcfg-eth0"
+
+IFCFG_TEST_SPACE_V1 = """
+DEVICE='"badName1"  '
+BOOTPROTO=dhcp
+IPV4_FAILURE_FATAL = no  #this is a comment
+ONBOOT=yes
+""".strip()
+
+IFCFG_TEST_SPACE_V2 = """
+DEVICE="\"badName2\"  "
+BOOTPROTO=dhcp
+IPV4_FAILURE_FATAL = no  #this is a comment
+ONBOOT=yes
+""".strip()
+
 CONTEXT_PATH = "etc/sysconfig/network-scripts/ifcfg-enp0s25"
+
 IFCFG_TEST = """
 TYPE = "Ethernet"
 BOOTPROTO=dhcp
@@ -103,6 +121,24 @@ IFCFG_PATH_BADLY_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
 
 
 class TestIfcfg(unittest.TestCase):
+    def test_ifcfg_space_v1(self):
+        context = context_wrap(IFCFG_TEST_SPACE_V1)
+        context.path = CONTEXT_PATH_DEVICE
+
+        r = IfCFG(context)
+        self.assertTrue(keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
+                                 "IPV4_FAILURE_FATAL"], r))
+        self.assertEqual(r["DEVICE"], '\'"badName1"  \'')
+
+    def test_ifcfg_space_v2(self):
+        context = context_wrap(IFCFG_TEST_SPACE_V2)
+        context.path = CONTEXT_PATH_DEVICE
+
+        r = IfCFG(context)
+        self.assertTrue(keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
+                                 "IPV4_FAILURE_FATAL"], r))
+        self.assertEqual(r["DEVICE"], '\"\"badName2\"  \"')
+
     def test_ifcfg(self):
         context = context_wrap(IFCFG_TEST)
         context.path = CONTEXT_PATH

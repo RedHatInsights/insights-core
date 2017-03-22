@@ -92,8 +92,8 @@ class IfCFG(LegacyItemAccess, Mapper):
             # of the key is before dequoting and stripping.
             if key == "BONDING_OPTS":
                 self.data["raw_bonding_value"] = value
-
-            value = value.strip().strip(QUOTES)
+            if key != "DEVICE":
+                value = value.strip().strip(QUOTES)
             if key in JSON_FIELDS:
                 value = json.loads(value.replace("\\", ""))
             if key == "BONDING_OPTS":
