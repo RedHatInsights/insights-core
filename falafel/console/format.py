@@ -57,40 +57,42 @@ class Formatter(object):
             line = line[end_idx:]
         return "\n".join(lines)
 
-    def display_dict_of_lists(self, d):
-        key_field_size = max(map(len, d.keys())) + 1
-        missing_fmt = "{}: {}"
-        for symbolic_file, modules in d.iteritems():
-            line = missing_fmt.format(symbolic_file.ljust(key_field_size), ", ".join(modules))
-            print_console(self.hanging_indent(line, key_field_size + 2))
-
-    def display_dict_of_strings(self, d):
-        key_field_size = max(map(len, d.keys())) + 1
-        indent_size = key_field_size + 2
+    def format_value(self, value, indent_size):
         pp = pprint.PrettyPrinter(width=self.screen_width - indent_size)
-        missing_fmt = "{}: {}"
-        for key, value in d.iteritems():
-            value = pp.pformat(value)
-            line = missing_fmt.format(key.ljust(key_field_size), value)
-            print_console(self.hanging_indent(line, indent_size))
+
+        ret_val = value
+        if isinstance(value, list):
+            if (any(t for t in (dict, tuple) if t in map(type, value)) or
+                    not value):
+                ret_val = pp.pformat(value)
+            else:
+                ret_val = ", ".join(map(str, value)).rstrip()
+        elif isinstance(value, basestring):
+            ret_val = '"{}"'.format(value)
+        elif isinstance(value, dict):
+            ret_val = pp.pformat(value)
+
+        return ret_val
+
+    def display_dict_of_strings(self, d, sort=False, margin=0, word_wrap=True):
+        key_field_size = max(map(len, d.keys())) + 1
+        indent_size = margin + key_field_size + 2
+        display_fmt = "{}{}: {}"
+        d_items = sorted(d.iteritems()) if sort else d.iteritems()
+        for key, value in d_items:
+            value = self.format_value(value, indent_size)
+            line = display_fmt.format(
+                ' ' * margin,
+                key.ljust(key_field_size),
+                value)
+            print_console(self.hanging_indent(line, indent_size, word_wrap))
 
     def display_results(self, results, stats):
         result_count = 0
         for module, result in sorted(results.iteritems()):
             if result:
                 print_console(module + ":")
-                key_field_size = max(map(len, result.keys()))
-                indent_size = key_field_size + 7
-                pp = pprint.PrettyPrinter(width=self.screen_width - indent_size)
-                for k, v in sorted(result.iteritems()):
-                    if isinstance(v, list):
-                        v = ", ".join(map(str, v)).rstrip()
-                    elif isinstance(v, str):
-                        v = '"{}"'.format(v)
-                    elif isinstance(v, dict):
-                        v = pp.pformat(v)
-                    line = "    {} : {}".format(k.ljust(key_field_size), v)
-                    print_console(self.hanging_indent(line, indent_size, word_wrap=False))
+                self.display_dict_of_strings(result, sort=True, margin=4, word_wrap=False)
                 print_console("-" * self.screen_width)
                 result_count += 1
 
