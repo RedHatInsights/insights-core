@@ -3,10 +3,11 @@ import unittest
 from falafel.core.specs import SpecMapper
 from falafel.core.evaluators import SingleEvaluator, MultiEvaluator
 from falafel.core import plugins
-from falafel.core.archives import InMemoryExtractor
+from falafel.core.archives import TarExtractor
 from falafel.plugins.insights_heartbeat import is_insights_heartbeat
 import tarfile
 import tempfile
+import subprocess
 import json
 import shutil
 
@@ -291,7 +292,7 @@ class TestSingleEvaluator(unittest.TestCase):
     system_id = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
 
     def test_unpack_archive(self):
-        with InMemoryExtractor().from_path(os.path.join(HERE, "insights_heartbeat.tar.gz")) as ex:
+        with TarExtractor().from_path(os.path.join(HERE, "insights_heartbeat.tar.gz")) as ex:
             plugins.load("falafel.plugins")
             spec_mapper = SpecMapper(ex)
             self.assertEquals(spec_mapper.get_content("machine-id", split=False), self.system_id)
@@ -312,13 +313,15 @@ class TestMultiEvaluator(unittest.TestCase):
 
     def test_unpack(self):
         plugins.load("falafel.plugins")
-        fd = InMemoryExtractor().from_path(os.path.join(HERE, "insights_heartbeat.tar.gz"), raw=True)
-        cluster_arc = make_cluster_archive(fd, "application/x-gzip")
-        fd.close()
-        with InMemoryExtractor().from_buffer(cluster_arc) as ex:
-            spec_mapper = SpecMapper(ex)
-            p = MultiEvaluator(spec_mapper)
-            self.assertEquals(p.archive_metadata["system_id"], "test-id")
-            response = p.process()
-            self.assertEquals(len(response["archives"]), 1)
-            self.assertEquals(response["system"]["type"], "cluster")
+        with tempfile.TemporaryFile() as fd:
+            subprocess.call(["gunzip", "-c", os.path.join(HERE, "insights_heartbeat.tar.gz")], stdout=fd)
+            fd.seek(0)
+            cluster_arc = make_cluster_archive(fd, "application/x-gzip")
+
+            with TarExtractor().from_buffer(cluster_arc) as ex:
+                spec_mapper = SpecMapper(ex)
+                p = MultiEvaluator(spec_mapper)
+                self.assertEquals(p.archive_metadata["system_id"], "test-id")
+                response = p.process()
+                self.assertEquals(len(response["archives"]), 1)
+                self.assertEquals(response["system"]["type"], "cluster")
