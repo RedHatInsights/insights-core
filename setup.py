@@ -15,13 +15,9 @@ BDIST_RPM_RUNNING = "bdist_rpm_running"
 entry_points = {
     'console_scripts': [
         'insights-run = falafel.core:main',
-        'insights-cli = falafel.console:main',
         'gen_api = falafel.tools.generate_api_config:main',
         'compare_api = falafel.tools.compare_uploader_configs:main',
-        'falafel-web = falafel.web.daemon:main',
-        'falafel-serve = falafel.web.server:main',
         'falafel-scaffold = falafel.scaffold:main',
-        'falafel-content = falafel.content.server:main',
         'falafel-perf = falafel.tools.perf:main'
     ]
 }
