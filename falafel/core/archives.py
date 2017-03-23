@@ -1,13 +1,10 @@
 #!/usr/bin/env python
 
-import cStringIO
 import logging
 import os
 import shlex
 import subprocess
-import tarfile
 import tempfile
-from contextlib import closing
 from falafel.core.marshalling import Marshaller
 from falafel.util import subproc, fs
 
@@ -42,6 +39,10 @@ class Extractor(object):
     into usable objects.
     """
 
+    def __init__(self, timeout=150):
+        self.tmp_dir = None
+        self.timeout = timeout
+
     def from_buffer(self, buf):
         pass
 
@@ -55,7 +56,8 @@ class Extractor(object):
         return self.tar_file.extractfile(name)
 
     def cleanup(self):
-        pass
+        if self.tmp_dir:
+            fs.remove(self.tmp_dir, chmod=True)
 
     def issym(self, name):
         return self.tar_file.issym(name)
@@ -70,53 +72,23 @@ class Extractor(object):
         self.cleanup()
 
 
-class InMemoryExtractor(Extractor):
+class ZipExtractor(Extractor):
 
-    DECOMPRESSORS = {
-        "application/x-xz": "xz -d -c -",
-        "application/x-gzip": "gunzip",
-        "application/gzip": "gunzip",
-        "application/x-bzip2": "bunzip2",
-        "application/x-tar": "tar"
-    }
+    def from_buffer(self, buf):
+        with tempfile.NamedTemporaryFile() as tf:
+            tf.write(buf)
+            tf.flush()
+            return self.from_path(tf.name)
 
-    def __init__(self):
-        self.tar_file = None
-
-    def extractfile(self, name):
-        return self.tar_file.extractfile(name)
-
-    def from_buffer(self, buf, raw=False):
-        self.content_type = _magic.buffer(buf)
-        if raw:
-            return self.decompress(buf)
-        else:
-            self.tar_file = MemoryAdapter(self.decompress(buf))
-            return self
-
-    def decompress(self, buf):
-        command = self.DECOMPRESSORS.get(self.content_type)
-        if not command:
-            raise InvalidContentType(self.content_type)
-
-        if command == "tar":
-            return cStringIO.StringIO(buf)
-        else:
-            p = subprocess.Popen(shlex.split(command),
-                                 stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE)
-            return cStringIO.StringIO(p.communicate(input=buf)[0])
-
-    def from_path(self, path, raw=False):
-        with open(path, "rb") as fp:
-            return self.from_buffer(fp.read(), raw)
-
-    def cleanup(self):
-        if self.tar_file:
-            self.tar_file.close()
+    def from_path(self, path):
+        self.tmp_dir = tempfile.mkdtemp()
+        command = "unzip %s -d %s" % (path, self.tmp_dir)
+        subprocess.call(shlex.split(command))
+        self.tar_file = DirectoryAdapter(self.tmp_dir)
+        return self
 
 
-class OnDiskExtractor(Extractor):
+class TarExtractor(Extractor):
 
     TAR_FLAGS = {
         "application/x-xz": "-J",
@@ -126,14 +98,10 @@ class OnDiskExtractor(Extractor):
         "application/x-tar": ""
     }
 
-    def __init__(self, timeout=150):
-        self.tmp_dir = None
-        self.timeout = timeout
-
     def from_buffer(self, buf):
         self.content_type = _magic.buffer(buf)
         tar_flag = self.TAR_FLAGS.get(self.content_type)
-        if not tar_flag:
+        if tar_flag is None:
             raise InvalidContentType(self.content_type)
 
         self.tmp_dir = tempfile.mkdtemp()
@@ -148,7 +116,6 @@ class OnDiskExtractor(Extractor):
     def from_path(self, path, extract_dir=None):
         if os.path.isdir(path):
             self.tar_file = DirectoryAdapter(path)
-
         else:
             self.content_type = _magic.file(path)
             if self.content_type not in self.TAR_FLAGS:
@@ -162,10 +129,6 @@ class OnDiskExtractor(Extractor):
             subproc.call(command, timeout=self.timeout)
             self.tar_file = DirectoryAdapter(self.tmp_dir)
         return self
-
-    def cleanup(self):
-        if self.tmp_dir:
-            fs.remove(self.tmp_dir, chmod=True)
 
 
 class DirectoryAdapter(object):
@@ -198,29 +161,3 @@ class DirectoryAdapter(object):
 
     def close(self):
         pass
-
-
-class MemoryAdapter(object):
-    """
-    Wraps an in-memory tarfile object so we can abstract
-    the methods we want to use.
-    """
-
-    def __init__(self, buf):
-        self.tar_file = tarfile.open(fileobj=buf)
-
-    def extractfile(self, name):
-        with closing(self.tar_file.extractfile(name)) as fp:
-            return fp.read()
-
-    def getnames(self):
-        return self.tar_file.getnames()
-
-    def issym(self, name):
-        return self.tar_file.getmember(name).issym()
-
-    def isdir(self, name):
-        return self.tar_file.getmember(name).isdir()
-
-    def close(self):
-        self.tar_file.close()

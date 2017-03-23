@@ -265,7 +265,7 @@ class MultiEvaluator(Evaluator):
         subarchives = [a for a in self.spec_mapper.tf.getnames() if a.endswith(".tar")]
         for i, archive in enumerate(subarchives):
             content = self.spec_mapper.get_content(archive, split=False, symbolic=False)
-            extractor = archives.InMemoryExtractor().from_buffer(content)
+            extractor = archives.TarExtractor().from_buffer(content)
             sub_spec_mapper = specs.SpecMapper(extractor)
             sub_evaluator = self.SubEvaluator(sub_spec_mapper, metadata=self.archive_metadata)
             host_result = sub_evaluator.process()

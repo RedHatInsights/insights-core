@@ -62,8 +62,7 @@ class Runner(object):
                 logging.exception("Failed to load specs module.")
 
         reports = []
-        ex_class = archives.OnDiskExtractor if not self.args.mem_only else archives.InMemoryExtractor
-        with ex_class() as ex:
+        with archives.TarExtractor() as ex:
             tf = ex.from_path(path, self.args.extract_dir)
             sm = specs.SpecMapper(tf, data_spec_config=config)
             for name, paths in self.external_files.iteritems():
