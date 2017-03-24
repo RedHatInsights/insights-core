@@ -98,6 +98,13 @@ class SystemdSystemConf(Mapper):
         self.data = parse_systemd_ini(content)
 
 
+@mapper('systemd_openshift_node')
+class SystemdOpenshiftNode(Mapper):
+    """Class for atomic-openshift-node systemd configuration. Example is like SystemdDocker"""
+    def parse_content(self, content):
+        self.data = parse_systemd_ini(content)
+
+
 @mapper('systemd_docker')
 def docker(context):
     """Deprecated, do not use."""

@@ -39,6 +39,33 @@ StandardError=null
 WantedBy=multi-user.target
 """.strip()
 
+SYSTEMD_OPENSHIFT_NODE = """
+[Unit]
+Description=Atomic OpenShift Node
+After=docker.service
+After=openvswitch.service
+Wants=docker.service
+Documentation=https://github.com/openshift/origin
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/sysconfig/atomic-openshift-node
+Environment=GOTRACEBACK=crash
+ExecStart=/usr/bin/openshift start node --config=${CONFIG_FILE} $OPTIONS
+LimitNOFILE=65536
+LimitCORE=infinity
+WorkingDirectory=/var/lib/origin/
+SyslogIdentifier=atomic-openshift-node
+Restart=always
+RestartSec=5s
+OOMScoreAdjust=-999
+ExecStartPost=/usr/bin/sleep 10
+ExecStartPost=/usr/sbin/sysctl --system
+
+[Install]
+WantedBy=multi-user.target
+""".strip()
+
 SYSTEMD_SYSTEM_CONF = """
 #  This file is part of systemd.
 #
@@ -117,6 +144,12 @@ $ADD_REGISTRY
 $BLOCK_REGISTRY
 $INSECURE_REGISTRY
 2>&1 | /usr/bin/forward-journald -tag docker'"""
+
+
+def test_openshift_node():
+    openshift_node_service = config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE))
+    assert openshift_node_service.data["Unit"]["Wants"] == "docker.service"
+    assert openshift_node_service.data["Service"]["ExecStartPost"] == "/usr/sbin/sysctl --system"
 
 
 def test_common_conf():
