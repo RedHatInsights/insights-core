@@ -318,6 +318,7 @@ static_specs = {
     "systemctl_cinder-volume"   : CommandSpec("/bin/systemctl show openstack-cinder-volume"),
     "systemctl_list-unit-files" : CommandSpec("/bin/systemctl list-unit-files"),
     "systemd_docker"            : SimpleFileSpec("usr/lib/systemd/system/docker.service"),
+    "systemd_openshift_node"    : SimpleFileSpec("usr/lib/systemd/system/atomic-openshift-node.service"),
     "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
     "systemid"                  : First([SimpleFileSpec("etc/sysconfig/rhn/systemid"),
                                     SimpleFileSpec("conf/rhn/sysconfig/rhn/systemid")]),
