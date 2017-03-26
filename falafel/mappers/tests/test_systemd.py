@@ -64,6 +64,7 @@ ExecStartPost=/usr/sbin/sysctl --system
 
 [Install]
 WantedBy=multi-user.target
+
 """.strip()
 
 SYSTEMD_SYSTEM_CONF = """
@@ -149,7 +150,8 @@ $INSECURE_REGISTRY
 def test_openshift_node():
     openshift_node_service = config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE))
     assert openshift_node_service.data["Unit"]["Wants"] == "docker.service"
-    assert openshift_node_service.data["Service"]["ExecStartPost"] == "/usr/sbin/sysctl --system"
+    assert openshift_node_service.data["Unit"]["After"] == """docker.service
+openvswitch.service"""
 
 
 def test_common_conf():
