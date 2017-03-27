@@ -15,6 +15,8 @@ e.g
 
 4. ceph osd erasure-code-profile get default -f json-pretty
 
+5. ceph daemon {ceph_socket_files} config show
+
 ...
 
 
@@ -140,7 +142,9 @@ Part of the sample output of this command looks like::
 
     }
 
+
     4. `ceph osd erasure-code-profile get default -f json-pretty`
+
     {
         "k": "2",
         "m": "1",
@@ -148,8 +152,39 @@ Part of the sample output of this command looks like::
         "technique": "reed_sol_van"
     }
 
+    5. `ceph daemon {ceph_socket_files} config show`
 
-}
+    {
+        "name": "osd.1",
+        "cluster": "ceph",
+        "debug_none": "0\/5",
+        "heartbeat_interval": "5",
+        "heartbeat_file": "",
+        "heartbeat_inject_failure": "0",
+        "perf": "true",
+        "max_open_files": "131072",
+        "ms_type": "simple",
+        "ms_tcp_nodelay": "true",
+        "ms_tcp_rcvbuf": "0",
+        "ms_tcp_prefetch_max_size": "4096",
+        "ms_initial_backoff": "0.2",
+        "ms_max_backoff": "15",
+        "ms_crc_data": "true",
+        "ms_crc_header": "true",
+        "ms_die_on_bad_msg": "false",
+        "ms_die_on_unhandled_msg": "false",
+        "ms_die_on_old_message": "false",
+        "ms_die_on_skipped_message": "false",
+        "ms_dispatch_throttle_bytes": "104857600",
+        "ms_bind_ipv6": "false",
+        "ms_bind_port_min": "6800",
+        "ms_bind_port_max": "7300",
+        "ms_bind_retry_count": "3",
+        "ms_bind_retry_delay": "5",
+        ...
+        ...
+    }
+
 
 
 Examples:
@@ -216,6 +251,11 @@ Examples:
 
     ...
 
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_config_show import CephCfgInfo
+    >>> ceph_info = CephCfgInfo(context_wrap(CEPHINFO))
+    >>> cpu_info.max_open_files
+    131072
 """
 
 import json
@@ -266,3 +306,18 @@ class CephECProfileGet(CephJsonParsing):
     Class to parse the output of ``ceph osd erasure-code-profile get default -f json-pretty``.
     """
     pass
+
+
+@mapper("ceph_config_show")
+class CephCfgInfo(CephJsonParsing):
+    """
+    Class to parse the output of ``ceph daemon .. config show``
+    """
+    pass
+
+    @property
+    def max_open_files(self):
+        """
+        str: Return the value of max_open_files
+        """
+        return self.data["max_open_files"]
