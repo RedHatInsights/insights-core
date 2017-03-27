@@ -1,6 +1,26 @@
+"""
+Kernel dump configuration files
+===============================
+
+This module contains the following mappers:
+
+* ``KDumpConf`` - reads the ``/etc/kdump.conf`` file.
+* ``KexecCrashLoaded`` - reads the ``/sys/kernel/kexec_crash_loaded`` file.
+* ``KexecCrashSize`` - reads the ``/sys/kernel/kexec_crash_size`` file.
+* ``SysconfigKdump`` - reads the ``/etc/sysconfig/kdump`` file.
+
+The following mappers are deprecated and will be removed in the future:
+
+* ``crashkernel_enabled``: is 'crashkernel' in the kernel's command line?
+  Use the ``CmdLine`` mapper from the ``cmdline`` mapper module instead.
+* ``kdump_service_enabled``: is the 'kdump' service enabled?  Use the
+  ``Services`` reducer from the ``services`` reducer module instead.
+* ``kdump_using_local_disk``: is the kdump service writing to local disk or
+  not.  Use the ``KDumpConf`` mapper in this module instead.
+"""
+
 import re
 from urlparse import urlparse
-from ..mappers import ParseException
 from .. import Mapper, mapper, SysconfigOptions
 
 
@@ -8,6 +28,9 @@ from .. import Mapper, mapper, SysconfigOptions
 def crashkernel_enabled(context):
     """
     Determine if kernel is configured to reserve memory for the crashkernel
+
+    **DEPRECATED** - use the 'CmdLine' shared mapper in the 'cmdline' module
+    instead.
     """
 
     for line in context.content:
@@ -26,6 +49,9 @@ def kdump_service_enabled(context):
 
     RHEL7 uses systemctl list-unit-files and if enabled will look like this:
     kdump.service                               enabled
+
+    **DEPRECATED** - use the 'Services' shared reducer in the 'services'
+    module instead.
     """
 
     for line in context.content:
@@ -38,60 +64,121 @@ class KDumpConf(Mapper):
     """
     A dictionary like object for the values of the kdump.conf file.
 
-    Attributes:
-    lines: dictionary of line numbers and raw lines from the file
-    comments: list of comment lines
-    inline_comments: list of lines containing inline comments
+    Attributes::
+
+        lines (list): raw lines from the file, in order
+        data (dict): a dictionary of options set in the data.
+        comments(list): fully commented lines
+        inline_comments(list): lines containing inline comments
+
+    The ``data`` property has two special behaviours:
+
+    * If an option - e.g. ``blacklist`` - is repeated, its values are
+      collected together in a list.  Options that only appear once have
+      their values stored as is.
+    * The ``options`` option is special - it appears in the form ``option
+      module value``.  The ``options`` key in the data dictionary is therefore
+      stored as a dictionary, keyed on the ``module`` name.
+
+    Main helper functions:
+
+    * ``options`` - the ``options`` value in the data(see above).
+
+    Sample ``/etc/kdump.conf`` file::
+
+        path /var/crash
+        core_collector makedumpfile -c --message-level 1 -d 24
+        default shell
+
+    Examples:
+
+        >>> kd = shared[KDumpConf]
+        >>> kd.is_local_disk
+        True
+        >>> kd.is_ssh()
+        False
+        >>> 'path' in kd.data
+        True
     """
     NET_COMMANDS = set(['nfs', 'net', 'ssh'])
 
     def parse_content(self, content):
-        self.data = {}
-        lines = {}
-        items = {'options': {}}
+        lines = list(content)
+        opt_kw = 'options'
+        items = {opt_kw: {}}
+        # Paul Wayper - 2017-03-27 - why do we care about comments?
         comments = []
         inline_comments = []
 
-        for i, _line in enumerate(content):
-            lines[i] = _line
+        for _line in content:
             line = _line.strip()
             if not line:
                 continue
+            # Ignore lines that are entirely comments
             if line.startswith('#'):
                 comments.append(_line)
                 continue
-            r = line.split('=', 1)
-            if len(r) == 1 or len(r[0].split()) > 1:
-                r = line.split(None, 1)
-                if len(r) == 1:
-                    raise ParseException('Cannot split %s', line)
-            k, v = r
-            k = k.strip()
-            parts = v.strip().split('#', 1)
-            v = parts[0].strip()
+            # Remove comments
+            if '#' in line:
+                comment_start = line.index('#')
+                inline_comments.append(_line)
+                line = line[0:comment_start]
 
-            opt_kw = 'options'
-            if k != opt_kw:
-                items[k] = v
+            # Settings of the form 'option value' where value is the rest of
+            # the line.  No equals is expected here.
+            lineparts = [s.strip() for s in line.split(None, 1)]
+            # All options must have a value
+            if len(lineparts) < 2:
+                continue
+            opt, value = (lineparts)
+
+            if opt != opt_kw:
+                # Some items can be repeated - if they are, create a list of
+                # their values
+                if opt in items:
+                    # Append to the list, creating if necessary
+                    if not isinstance(items[opt], list):
+                        items[opt] = [items[opt]]
+                    items[opt].append(value)
+                else:
+                    items[opt] = value
             else:
-                mod, rest = v.split(None, 1)
+                # 'options' is special - it becomes a dictionary
+                mod, rest = value.split(None, 1)
                 items[opt_kw][mod] = rest.strip()
 
-            if len(parts) > 1:
-                inline_comments.append(_line)
-
-        self.data['lines'] = lines
-        self.data['items'] = items
-        self.data['comments'] = comments
-        self.data['inline_comments'] = inline_comments
+        self.lines = lines
+        self.data = items
+        self.comments = comments
+        self.inline_comments = inline_comments
 
     def options(self, module):
+        """
+        Returns the options for this module in the settings.
+
+        Arguments:
+            module(str): The module name
+
+        Returns:
+            (str) The module's options, or '' if either ``options`` or
+              ``module`` is not found.
+        """
         return self.get('options', {}).get(module, '')
 
     def _network_lines(self, net_commands=NET_COMMANDS):
+        """
+        A list of all the options in the given list of commands, defaulting
+        to the list of network destinations for kernel dumps (i.e. 'ssh',
+        'nfs', 'nfs4' and 'net').
+        """
         return filter(None, [self.get(n) for n in net_commands])
 
     def get_ip(self, net_commands=NET_COMMANDS):
+        """
+        Find the first IP address in the given list of commands.  Uses
+        ``_network_lines`` above to find the list of commands.  The first
+        line that lists an IP address is returned, otherwise None is returned.
+        """
         ip_re = re.compile(r'(\d{1,3}\.){3}\d{1,3}')
         for l in self._network_lines(net_commands):
             matched_ip = ip_re.search(l)
@@ -99,12 +186,27 @@ class KDumpConf(Mapper):
                 return matched_ip.group()
 
     def is_ssh(self):
-        return 'ssh' in self or '@' in self.get('net', '')
+        """
+        Is the destination of the kernel dump an ssh connection?
+        """
+        return 'ssh' in self or ('net' in self and '@' in self['net'])
 
     def is_nfs(self):
-        return 'nfs' in self or '@' not in self.get('net', '')
+        """
+        Is the destination of the kernel dump a NFS or NFSv4 connection?
+        """
+        return (
+            ('nfs' in self or 'nfs4' in self) or
+            ('net' in self and '@' not in self['net'])
+        )
 
     def get_hostname(self, net_commands=NET_COMMANDS):
+        """
+        Find the first host name in the given list of commands.  Uses
+        ``_network_lines`` above to find the list of commands.  The first
+        line that matches ``urlparse``'s definition of a host name is
+        returned, or None is returned.
+        """
         for l in self._network_lines(net_commands):
             # required for urlparse to interpret as host instead of
             # relative path
@@ -122,56 +224,77 @@ class KDumpConf(Mapper):
 
     @property
     def ip(self):
+        """
+        Uses get_ip() above to give the first IP address found in the list of
+        crash dump destinations.
+        """
         return self.get_ip()
 
     @property
     def hostname(self):
+        """
+        Uses get_hostname() above to give the first host name found in the
+        list of crash dump destinations.
+        """
         return self.get_hostname()
 
     @property
     def using_local_disk(self):
-        KDUMP_NETWORK_REGEX = re.compile(r'^\s*(ssh|nfs4?|net)\s+', re.I)
-        KDUMP_LOCAL_DISK_REGEX = re.compile(r'^\s*(ext[234]|raw|xfs|btrfs|minix)\s+', re.I)
-        local_disk = True
-        for k in self.data.keys():
-            if KDUMP_NETWORK_REGEX.search(k):
-                local_disk = False
-            elif KDUMP_LOCAL_DISK_REGEX.search(k):
-                local_disk = True
+        """
+        Is kdump configured to only use local disk?
 
-        return local_disk
+        The logic used here is the first of these conditions:
 
-    @property
-    def comments(self):
-        return self.data.get('comments')
-
-    @property
-    def inline_comments(self):
-        return self.data.get('inline_comments')
-
-    @property
-    def lines(self):
-        return self.data['lines']
+        * If 'raw' is given as an option, then the dump is local.
+        * If 'ssh', 'net', 'nfs', or 'nfs4' is given, then the dump is NOT local.
+        * Otherwise, the dump is local.
+        """
+        # The previous version used iteration across self.data.keys(), which
+        # is of course non-repeatable because hash key ordering may change.
+        # So we reverted to logic.
+        return ('raw' in self.data) or (not (
+            'ssh' in self.data or 'net' in self.data or
+            'nfs' in self.data or 'nfs4' in self.data)
+        )
 
     def __getitem__(self, key):
+        """
+        Return the configuration option of this key.  Integer keys are
+        explicitly not supported.
+        """
         if isinstance(key, int):
             raise TypeError("Mapper does not support integer indexes")
-        return self.data['items'][key]
+        return self.data[key]
 
     def get(self, key, default=None):
-        try:
-            return self.__getitem__(key)
-        except KeyError:
-            return default
+        """
+        Return the configuration option of this key, or the default if the
+        key is not found and the default is defined, otherwise None.
+        """
+        return self[key] if key in self else default
 
     def __contains__(self, key):
-        return key in self.data['items']
+        """
+        Is the given key a configuration option in the file?
+        """
+        return key in self.data
 
 
 @mapper('kexec_crash_loaded')
 class KexecCrashLoaded(Mapper):
+    """
+    A simple mapper to determine if a crash kernel (i.e. a second kernel
+    capable of capturing the machine state should the main kernel crash) is
+    present.
+
+    This simply returns a set of whether the ``/sys/kernel/kexec_crash_loaded``
+    file has the value ``1``.
+    """
 
     def parse_content(self, content):
+        if len(content) == 0:
+            self.is_loaded = False
+            return
         line = list(content)[0].strip()
         self.is_loaded = line == '1'
 
@@ -180,6 +303,9 @@ class KexecCrashLoaded(Mapper):
 def kdump_using_local_disk(context):
     """
     Determine if kdump service is using local disk
+
+    **DEPRECATED** - use the 'KDumpConf' shared mapper in this module
+    instead.
     """
 
     KDUMP_NETWORK_REGEX = re.compile(r'^\s*(ssh|nfs4?|net)\s+', re.I)
@@ -240,12 +366,13 @@ class KexecCrashSize(Mapper):
 
     Attributes
     ----------
-    size (int): reserved memory size for the crash kernel
+    size (int): reserved memory size for the crash kernel, or 0 if not found.
     """
 
     def parse_content(self, content):
+        self.size = 0
+        if len(content) == 0:
+            return
         size = list(content)[0].strip()
         if size.isdigit():
             self.size = int(size)
-        else:
-            self.size = 0
