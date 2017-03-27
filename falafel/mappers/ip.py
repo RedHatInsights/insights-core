@@ -1,3 +1,8 @@
+"""
+Mappers for ``ip`` command outputs
+==================================
+"""
+
 from collections import defaultdict, deque
 from .. import Mapper, mapper
 from ..contrib import ipaddress
@@ -85,214 +90,111 @@ def parse_inet(line, d):
 @mapper('ip_addr')
 class IpAddr(Mapper):
     """
-    QUICK START:
-    `ip addr` will return a dict that key is interface name. `addr` key is a array to store all address.
+    This mapper reads the output of ``ip addr`` into a dict whose key is
+    the interface name.  The information about this interface`addr` key is a array to store all address.
     Different type have different output. Peer ip and general interface have difference type.
-    There are some examples:
-    CASE 1:
-    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
-        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-        inet 127.0.0.1/8 scope host lo
-        inet6 ::1/128 scope host
-        valid_lft forever preferred_lft forever
-    RESULT:
-    "lo": {
-        "index": 1,
-        "physical_name": null,
-        "qdisc": "noqueue",
-        "name": "lo",
-        "state": "UNKNOWN",
-        "virtual": false,
-        "mtu": 16436,
-        "mac": "00:00:00:00:00:00",
-        "flags": [
-            "LOOPBACK",
-            "UP",
-            "LOWER_UP"
-        ],
-        "type": "loopback",
-        "addr": [
-            {
-                "local_addr": null,
-                "mask": "8",
-                "p2p": false,
-                "addr": "127.0.0.1"
-            },
-            {
-                "local_addr": null,
-                "mask": "128",
-                "p2p": false,
-                "addr": "::1"
-            }
-        ]
-    }
-    CASE 2:
-    2: eth7: <NO-CARRIER,BROADCAST,MULTICAST,SLAVE,UP> mtu 1500 qdisc mq master bond1 state DOWN qlen 1000
-        link/ether 00:11:3f:e2:f5:9f brd ff:ff:ff:ff:ff:ff link-netnsid 1
-    RESULT:
-    "eth7": {
-        "index": 2,
-        "physical_name": null,
-        "qdisc": "mq",
-        "name": "eth7",
-        "state": "DOWN",
-        "qlen": 1000,
-        "virtual": false,
-        "mtu": 1500,
-        "mac": "00:11:3f:e2:f5:9f",
-        "flags": [
-            "NO-CARRIER",
-            "BROADCAST",
-            "MULTICAST",
-            "SLAVE",
-            "UP"
-        ],
-        "master": "bond1",
-        "type": "ether",
-        "addr": []
-    }
-    CASE 3:
-    3: tunl0: <NOARP> mtu 1480 qdisc noop state DOWN
-        link/ipip 0.0.0.0 brd 0.0.0.0
-    RESULT:
-    "tunl0": {
-        "index": 3,
-        "physical_name": null,
-        "qdisc": "noop",
-        "name": "tunl0",
-        "state": "DOWN",
-        "virtual": false,
-        "mtu": 1480,
-        "mac": "0.0.0.0",
-        "flags": [
-            "NOARP"
-        ],
-        "type": "ipip",
-        "addr": []
-    }
-    CASE 4:
-    4: tunl1: <NOARP> mtu 1480 qdisc noop state DOWN
-        link/[65534]
-        inet 172.30.0.1 peer 172.30.0.2/32 scope global tun0
-    RESULT:
-    "tunl1": {
-        "index": 4,
-        "physical_name": null,
-        "qdisc": "noop",
-        "name": "tunl1",
-        "virtual": false,
-        "mtu": 1480,
-        "state": "DOWN",
-        "flags": [
-            "NOARP"
-        ],
-        "type": "[65534]",
-        "addr": [
-            {
-                "local_addr": "172.30.0.1",
-                "mask": "32",
-                "p2p": true,
-                "addr": "172.30.0.2"
-            }
-        ]
-    }
-    CASE 5:
-    5: bond1.57@bond1: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP
-        link/ether 00:11:3f:e2:f5:9e brd ff:ff:ff:ff:ff:ff
-        inet 10.192.4.171/27 brd 10.192.4.191 scope global bond1.57
-        inet6 fe80::211:3fff:fee2:f59e/64 scope link
-        valid_lft forever preferred_lft forever
-        inet6 2001::211:3fff:fee2:f59e/64 scope global mngtmpaddr dynamic
-        valid_lft 2592000sec preferred_lft 6480000sec
-    RESULT:
-    "bond1.57": {
-        "index": 5,
-        "physical_name": "bond1",
-        "qdisc": "noqueue",
-        "name": "bond1.57",
-        "state": "UP",
-        "virtual": true,
-        "mtu": 1500,
-        "mac": "00:11:3f:e2:f5:9e",
-        "flags": [
-            "BROADCAST",
-            "MULTICAST",
-            "MASTER",
-            "UP",
-            "LOWER_UP"
-        ],
-        "type": "ether",
-        "addr": [
-            {
-                "local_addr": null,
-                "mask": "27",
-                "p2p": false,
-                "addr": "10.192.4.171"
-            },
-            {
-                "local_addr": null,
-                "mask": "64",
-                "p2p": false,
-                "addr": "fe80::211:3fff:fee2:f59e"
-            },
-            {
-                "local_addr": null,
-                "mask": "64",
-                "p2p": false,
-                "addr": "2001::211:3fff:fee2:f59e"
-            }
-        ]
-    }
-    CASE 6:
-    6: ip.tun2: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1480 qdisc noqueue state UNKNOWN
-        link/ipip 10.192.4.203 peer 10.188.61.108
-        inet 192.168.112.5 peer 192.168.122.6/32 scope global ip.tun2
-    RESULT:
-    "ip.tun2": {
-        "index": 6,
-        "physical_name": null,
-        "qdisc": "noqueue",
-        "name": "ip.tun2",
-        "virtual": false,
-        "mtu": 1480,
-        "state": "UNKNOWN",
-        "flags": [
-            "POINTOPOINT",
-            "NOARP",
-            "UP",
-            "LOWER_UP"
-        ],
-        "peer": "10.188.61.108",
-        "peer_ip": "10.192.4.203",
-        "type": "ipip",
-        "addr": [
-            {
-                "local_addr": "192.168.112.5",
-                "mask": "32",
-                "p2p": true,
-                "addr": "192.168.122.6"
-            }
-        ]
-    }
+
+    Example output::
+
+        1: lo: <LOOPBACK,UP,LOWER_UP> mtu 16436 qdisc noqueue state UNKNOWN
+            link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+            inet 127.0.0.1/8 scope host lo
+            inet6 ::1/128 scope host
+            valid_lft forever preferred_lft forever
+
+    Resultant data structure::
+
+        {
+            "index": 1,
+            "physical_name": null,
+            "qdisc": "noqueue",
+            "name": "lo",
+            "state": "UNKNOWN",
+            "virtual": false,
+            "mtu": 16436,
+            "mac": "00:00:00:00:00:00",
+            "flags": [
+                "LOOPBACK",
+                "UP",
+                "LOWER_UP"
+            ],
+            "type": "loopback",
+            "addr": [
+                {
+                    "local_addr": null,
+                    "mask": "8",
+                    "p2p": false,
+                    "addr": "127.0.0.1"
+                },
+                {
+                    "local_addr": null,
+                    "mask": "128",
+                    "p2p": false,
+                    "addr": "::1"
+                }
+            ]
+        }
+
+    Examples:
+
+        >>> for iface in shared[IpAddr]:
+        ...     print 'Interface:', iface['name']
+        ...     print 'State:', iface['state']
+        ...     print 'Addresses:', ', '.join(a['addr'] for a in iface['addr'])
+        ...
+        Interface: lo
+        State: UNKNOWN
+        Addresses: 127.0.0.1, ::1
+        Interface: eth7
+        State: DOWN
+        Addresses:
+        Interface: tunl1
+        State: DOWN
+        Addresses: 172.30.0.1
+        Interface: bond1.57
+        State: UP
+        Addresses:10.192.4.171, fe80::211:3fff:fee2:f59e, 2001::211:3fff:fee2:f59e
+        Interface: ip.tun2
+        State: UNKNOWN
+        Addresses: 192.168.122.6
+
     """
 
     def parse_content(self, content):
         self.data = parse_ip_addr(content)
 
     def __iter__(self):
+        """
+        (iterable): Iterate through the list of available interfaces (in no order)
+        """
         return iter(self.data.values())
 
     def __len__(self):
+        """
+        (int): number of interfaces configured.
+        """
         return len(self.data)
 
     def __getitem__(self, item):
+        """
+        Parameters:
+            item (str): Interface name
+        Returns:
+            (dict): Dictionary of the named interface
+        """
         return self.data[item]
 
     def __contains__(self, item):
+        """
+        Is the given interface name configured?
+        """
         return item in self.data
 
     @property
     def active(self):
+        """
+        (list): List of interfaces with 'UP' set in their flags.
+        """
         return [i["name"] for i in self if "UP" in i["flags"]]
 
 
@@ -307,16 +209,63 @@ class Route(object):
 
 @mapper("ip_route_show_table_all")
 class RouteDevices(Mapper):
-    TYPES = set(["unicast",
-                 "local",
-                 "broadcast",
-                 "multicast",
-                 "throw",
-                 "unreachable",
-                 "prohibit",
-                 "blackhole",
-                 "nat"])
+    """
+    This mapper reads the output of the command ``ip route show table all``
+    and provides access to the routing table.
 
+    Each object in these properties is stored as a Route object, which has
+    as properties the various parts of the route line.  Route objects will
+    always include these properties (all defaulting to None):
+
+    * ``type`` - the type of route (e.g. 'throw')
+    * ``dev`` - the device routed through (e.g. 'eth0')
+    * ``via`` - the external address routed through, or None if direct
+    * ``netmask`` - the CIDR notation of the network as a string (e.g. '24')
+    * ``table`` - the routing table, or None if not given.
+
+    Destinations given as **broadcast**, **throw**, **local**,
+    **unreachable**, **prohibit**, **blackhole** and **nat** are discarded.
+
+    Destinations given as **unicast**, **multicast**
+
+    Properties::
+
+        by_device (dict): routes by device (e.g. 'eth0').
+        by_type (dict): routes by table type (e.g. 'throw', default = 'None').
+        by_table (dict): routes by table (e.g. 'mgmt', default = 'None').
+
+    Sample routing table::
+
+        default via 192.168.1.254 dev enp0s25
+        10.0.0.0/8 via 10.64.54.1 dev tun0  proto static  metric 50
+        10.64.54.0/23 dev tun0  proto kernel  scope link  src 10.64.54.44  metric 50
+        66.187.239.220 via 192.168.23.250 dev enp0s25  proto static
+        192.168.0.0/24 dev enp0s25  proto kernel  scope link  src 192.168.1.37
+        192.168.122.0/24 dev virbr0  proto kernel  scope link  src 192.168.122.1
+
+    Examples:
+
+        >>> routes = shared[RouteDevices]
+        >>> 'default' in routes
+        True
+        >>> '10.64.54.0/23' in routes
+        False
+        >>> len(routes['10.64.54.0/23']) # Multiple routes possible, esp. for default
+        1
+        >>> tunnel = routes['10.64.54.0/23'][0]
+        >>> tunnel.dev
+        'tun0'
+        >>> tunnel.proto
+        'kernel'
+        >>> len(routes.by_device['tun0'])
+        2
+        >>> routes.by_device['tun0'][1] == tunnel
+        True
+
+    """
+    SAVED_TYPES = set(["unicast", "multicast"])
+
+    # Why have types we ignore?
     IGNORE_TYPES = set(["broadcast",
                         "throw",
                         "local",
@@ -327,59 +276,80 @@ class RouteDevices(Mapper):
 
     @property
     def by_prefix(self):
+        """
+        (Route): The dictionary of routes by prefix  (e.g. '192.168.0.0/24').
+        """
         return self.routes.get('by_prefix', {})
 
     @property
-    def by_device(self):
-        return self.routes.get('by_device', {})
-
-    @property
-    def by_type(self):
-        return self.routes.get('by_type', {})
-
-    @property
-    def by_table(self):
-        return self.routes.get('by_table', {})
-
-    @property
     def defaults(self):
+        """
+        (list): The list of default routes.
+        """
         return self.routes.get('by_prefix', {}).get('default', [])
 
+    def __contains__(self, prefix):
+        """
+        (bool): Is there a route with the given prefix?
+        """
+        return prefix in self.data
+
     def __getitem__(self, prefix):
-        return self.data[prefix]
+        """
+        (Route): Retrieve the given prefix - same as the ``by_prefix`` dict.
+        """
+        return self.data.get(prefix, None)
 
     def parse_content(self, content):
+        """
+        Read the routing table and construct the routes and data properties.
+        """
         self.data = defaultdict(list)
-        for line in filter(None, [l.strip() for l in content]):
-            route = self.parse_line(line)
-            if route and (route.prefix != 'default' or not route.table):
-                self.data[route.prefix].append(route)
+        prev_line = ''
+        for line in content:
+            # Seems to not get blank lines here...
+            # Leading spaces indicate a line continued from the previous
+            if line.startswith('    '):
+                prev_line += line
+            else:
+                if prev_line:
+                    self.parse_line(prev_line)
+                prev_line = line
+        # Grab last line
+        self.parse_line(prev_line)
+
+        # Reprocess these into routes by prefix, device, type and table.
         self.routes = defaultdict(lambda: defaultdict(list))
         all_routes = [r for routes in self.data.values() for r in routes]
+        # For some reason, if we try to construct the by_prefix property
+        # as a defaultdict(list) here we break the tests.  Leaving it as is...
+        self.routes['by_prefix'] = self.data
+        self.by_device = defaultdict(list)
+        self.by_type = defaultdict(list)
+        self.by_table = defaultdict(list)
         for route in all_routes:
             table_type = route.type if route.type else 'None'
             dev = route.dev if route.dev else 'None'
             table = route.table if route.table else 'None'
-            self.routes['by_prefix'] = self.data
-            self.routes['by_device'][dev].append(route)
-            self.routes['by_type'][table_type].append(route)
-            self.routes['by_table'][table].append(route)
-        self.data = dict(self.data)
-        self.routes = {k: dict(v) for k, v in self.routes.items()}
+            self.by_device[dev].append(route)
+            self.by_type[table_type].append(route)
+            self.by_table[table].append(route)
+        # self.routes = {k: dict(v) for k, v in self.routes.items()}
 
     def parse_line(self, line):
-        parts = deque(filter(None, line.split()))
+        parts = deque(line.split(None))
         route = self.parse_route(parts)
-        if route:
-            return route
+        if route and (route.prefix != 'default' or not route.table):
+            self.data[route.prefix].append(route)
 
     def parse_route(self, parts):
-        route = {}
+        required_parts = ['via', 'dev', 'type', 'netmask', 'prefix', 'table']
+        route = {part: None for part in required_parts}
         table_type = None
-        if parts[0] in self.TYPES:
+        if parts[0] in self.IGNORE_TYPES:
+            return None
+        if parts[0] in self.SAVED_TYPES:
             table_type = parts.popleft()
-            if table_type in self.IGNORE_TYPES:
-                return None
         route['type'] = table_type
         prefix = parts.popleft()
         route['netmask'] = 255
@@ -394,52 +364,56 @@ class RouteDevices(Mapper):
         keys = ['via', 'dev']
         for k in keys:
             route[k] = None
-
         if not parts:
             return
         for key in keys:
-            if parts and parts[0] == key:
+            if len(parts) > 1 and parts[0] == key:
                 k, v = parts.popleft(), parts.popleft()
                 route[k] = v
 
     def parse_node_spec(self, parts, route):
-        keys = ['tos', 'table', 'proto', 'scope', 'metric', 'src', 'error']
-        for k in keys:
-            route[k] = None
-        if not parts:
-            return
-        for key in keys:
-            if parts and parts[0] == key:
-                k, v = parts.popleft(), parts.popleft()
-                route[k] = v
+        while parts:
+            if parts[0] == 'cache':
+                route['cache'] = True
+                parts.popleft()
+                continue
+            if len(parts) == 1:
+                return
+            k, v = parts.popleft(), parts.popleft()
+            route[k] = v
 
     def ifaces(self, ip):
         """
-        Given an IP address, choose the best iface name to return.  If there
-        are multiple routes that match, then the one with the most specific
-        netmask will be returned.
+        Given an IP address, choose the best iface name to return.  If
+        there are multiple routes that match, then the one with the most
+        specific netmask will be returned.  There may be multiple interfaces
+        that serve this route so it returns a list.  If there are default
+        routes, then these are used if a route is not found.  If no default
+        routes are found, then return ``None``.
 
-        Example:
-        ip_table = shared.get(get_ip_route)
-        iface = ip_table.get_iface_by_ip(YOUR_IP_ADDRESS_STRING)
+        Returns:
+            (list): Device names that serve this network, or None if not found.
+
+        Examples:
+
+            >>> ip_table = shared[RouteDevices]
+            >>> iface = ip_table.ifaces(YOUR_IP_ADDRESS_STRING)
         """
         if ip is None:
             return
         routes = self.by_type.get('None', [])
-        max_netmask = 0
-        ifaces = None
         addr = ipaddress.ip_address(unicode(ip))
-        for route in routes:
+        # Iterate through by descending netmask, so first found is most precise
+        for route in sorted(routes, key=lambda r: r.netmask, reverse=True):
             if route.prefix == "default":
                 continue
             net = ipaddress.ip_network(unicode(route.prefix))
+            # Only test containment if this is the same verison of IP address.
+            if addr.version != net.version:
+                continue
             if addr not in net:
                 continue
-            if route.netmask > max_netmask:
-                ifaces = [r.dev for r in self.by_prefix[route.prefix] if r.dev]
-                max_netmask = route.netmask  # Longest Prefix Match
-        if ifaces:
-            return ifaces
+            return [r.dev for r in self.by_prefix[route.prefix] if r.dev]
 
         if self.defaults:
             return [self.defaults[0].dev]
@@ -448,37 +422,108 @@ class RouteDevices(Mapper):
 
 
 class IpNeighMapper(Mapper):
-    """Base class implementing shared code."""
+    """
+    This mapper takes the output of ``ip neigh show nud all`` results for
+    ARP and NDISC cache entries and reads them into a dictionary of results
+    keyed on the name of the IP address.  Each item is a dictionary of the
+    properties of that address record in the ARP table.  Fields usually
+    include:
 
-    def parse_content(self, content):
-        """
-        1. Return ip -4 neigh show nud all result.
+    * ``dev`` - the device the address was seen on
+    * ``lladdr`` - the link level (MAC) address associated with the IP
+    * ``nud`` - the Neighbour Unreachability Detection result, which is one
+      of the following values:
 
-        INPUT:
+      * **permanent** - the neighbour is permanently valid
+      * **noarp** - the neighbour is valid and does not need revalidation
+      * **reachable** - the neighbour is valid until its lifetime expires
+      * **stale** - the neighour has not been seen in a while and its
+        lifetime has expired, but it may still be valid
+      * **failed** - the neighbour resolution has failed
+
+    This class deals with both IPv4 and IPv6 records, and is subclassed to
+    the two related mappers.
+
+    Sample (IPv4) input data::
+
         172.17.0.19 dev docker0  FAILED
         172.17.42.1 dev lo lladdr 00:00:00:00:00:00 NOARP
 
-        OUTPUT:
-        {
-            "172.17.0.19": [{"dev":"docker0","nud":"FAILED"}]
-            "172.17.0.27": [{"dev":"lo", "nud":"NOARP", "lladdr":"00:00:00:00:00:00" }]
-        }
+    Examples:
 
-        2. Return ip -6 neigh show nud all result.
+        >>> neighb4 = shared[Ipv4Neigh]
+        >>> '192.168.0.1' in neighb4
+        False
+        >>> '172.17.0.19' in neighb4
+        True
+        >>> neighb4['172.17.0.19']['dev']
+        'docker0'
+        >>> neighb4['172.17.42.1']['lladdr']
+        '00:00:00:00:00:00'
+    """
 
-        INPUT:
-        ff02::16 dev vlinuxbr lladdr 33:33:00:00:00:16 NOARP
-        ff02::1:ffea:2c00 dev tun0 lladdr 33:33:ff:ea:2c:00 NOARP
+    VALID_NUD_STATES = {
+        'PERMANENT': 0,
+        'NOARP': 1,
+        'REACHABLE': 2,
+        'STALE': 3,
+        'DELAY': 4,
+        'FAILED': 5,
+    }
 
-        OUTPUT:
-        {
-            "ff02::16": [{"dev":"vlinuxbr", "nud":"NOARP", "lladdr":"33:33:00:00:00:16"]
-            "ff02::1:ffea:2c00": [{"dev":"tun0", "nud":"NOARP", "lladdr":"33:33:ff:ea:2c:00" }]
-        }
+    def parse_content(self, content):
         """
-        self.data = defaultdict(list)
+        Parse the lines if the ``ip neighbor`` output.  Each line is split up
+        into words on spaces, and must meet the following criteria:
+
+        * there must be at least two words on the line
+        * the first word must be a valid IP (v4 or v6) address
+        * the last word must be a valid Neighbour Unreachability Detection state
+        * the remaining words must be in pairs - these are then combined into
+          key-value pairs for a dictionary.
+
+        Each line is then stored in a dictionary by the address (as a string).
+        The address as parsed by the ``ipaddress`` module is stored in the
+        ``addr`` item in the dictionary, for convenience.
+        """
+        self.data = {}
+        self.unparsed_lines = []
         for line in filter(None, content):
             split_result = line.split()
+            # Need at least IP address, something, and reachability
+            if len(split_result) < 2:
+                self.unparsed_lines.append({
+                    'line': line,
+                    'reason': "not enough words"
+                })
+                continue
+            # Total words needs to be even: beginning + 2*keyvals + ending
+            if len(split_result) % 2 == 1:
+                self.unparsed_lines.append({
+                    'line': line,
+                    'reason': "odd number of words"
+                })
+                continue
+            # Don't parse this line if the first thing isn't an
+            # IP address
+            try:
+                addr = ipaddress.ip_address(unicode(split_result[0]))
+            except ValueError:
+                self.unparsed_lines.append({
+                    'line': line,
+                    'reason': "can't convert address '" + split_result[0] + "'"
+                })
+                continue
+            # Don't parse this line if the last item doesn't seem to be a
+            # neighbour unreachability state
+            if split_result[-1] not in self.VALID_NUD_STATES:
+                self.unparsed_lines.append({
+                    'line': line,
+                    'reason': split_result[-1] + " is not a valid state"
+                })
+                continue
+
+            # OK, good to go, split everything in the middle up
             key_value_content = split_result[1:-1]
             if len(key_value_content) >= 2:
                 entry = {k: v for k, v in zip(key_value_content[0::2],
@@ -486,10 +531,19 @@ class IpNeighMapper(Mapper):
             else:
                 entry = {}
             entry["nud"] = split_result[-1]
-            self.data[split_result[0]].append(entry)
-        return dict(self.data)
+            entry['addr'] = addr  # save the object
+            self.data[split_result[0]] = entry
+
+    def __contains__(self, item):
+        """
+        (bool): Is there neighbour information for the given address?
+        """
+        return item in self.data
 
     def __getitem__(self, item):
+        """
+        (dict): Get the neighbour information for the given address.
+        """
         return self.data[item]
 
 
