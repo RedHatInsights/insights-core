@@ -1,13 +1,27 @@
+"""
+Kernel Samepage Merging state - file ``/sys/kernel/mm/ksm/run``
+===============================================================
+
+This module offers the ``is_running`` mapper function, which returns a
+dictionary with one key: 'running', whose value is the state of whether
+Kernel Samepage Merging is turned on.
+
+Examples:
+
+    >>> ksm = shared[is_running]
+    >>> ksm['running']
+    False
+"""
+
 from .. import mapper
 
 
 @mapper('ksmstate')
 def is_running(context):
     """
-    Check if KSM is running. Returns 'True' or 'False'
+    Check if Kernel Samepage Merging is turned on. Returns 'True' if KSM is
+    on (i.e. ``/sys/kernel/mm/ksm/run`` is '1') or 'False' if not.
     """
     ksminfo = {}
-    ksminfo['running'] = False
-    if context.content[0].split()[0] == '1':
-        ksminfo['running'] = True
+    ksminfo['running'] = (context.content[0].split()[0] == '1')
     return ksminfo
