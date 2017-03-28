@@ -264,6 +264,11 @@ def test_cpuinfo():
         "clockspeeds": "2900.000",
         "cache_sizes": "20480 KB"
     }
+    assert cpu_info.cpu_speed == "2900.000"
+    assert cpu_info.cache_size == "20480 KB"
+    assert cpu_info.model_number == "45"
+    for i, cpu in enumerate(cpu_info):
+        assert cpu['cpus'] == str(i)
 
 
 def test_one_socket_cpuinfo():
