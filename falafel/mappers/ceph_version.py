@@ -1,33 +1,40 @@
 """
-CephVersion - ``ceph -v`` command output
-===================================
+ceph_version - Command
+======================
 
-The ``CephVersion`` class reads the output of the ``ceph -v`` command and
-interprets it.  Deriving the Red Hat deriving
-the RHEL release from the kernel version.
+This module provides plugins access to the Ceph version information gathered from
+the ``ceph -v`` command. This module parses the community version to the Red Hat
+release version.
+
+Typical output of the ``ceph -v`` command is::
+
+    ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)
 
 Note:
     This module can only be used for Ceph.
 
-An example from the following ``ceph -v`` output::
-
-    ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)
-
 Example:
     >>> ceph_ver = shared[CephVersion]
+    >>> ceph_ver.release
+    '1.3.3'
     >>> ceph_ver.major
     '1.3'
+    >>> ceph_ver.minor
+    '3'
 
 """
 
 from .. import Mapper, mapper
+import re
 
 community_to_release_map = {
-    "0.94": "1.3",
-    "10.2": "2.0",
+    "0.94.1": "1.3.0",
+    "0.94.3": "1.3.1",
+    "0.94.5": "1.3.2",
+    "0.94.9": "1.3.3",
+    "10.2.2": "2.0",
+    "10.2.3": "2.1"
 }
-
-release_to_community_map = {v: k for k, v in community_to_release_map.items()}
 
 
 class CephVersionError(Exception):
@@ -48,40 +55,49 @@ class CephVersionError(Exception):
         self.errors = errors
         self.message = message
 
+
+@mapper('ceph_v')
 class CephVersion(Mapper):
     """ Class for parsing the content of ``ceph_version``."""
 
     def parse_content(self, content):
-        # Parse Ceph Version Content and get the Major number
-
+        # Parse Ceph Version Content and get Release, Major, Minor number
         if not content:
-            raise CephVersionError("Empty Ceph Version Line",content)
+            raise CephVersionError("Empty Ceph Version Line", content)
 
         ceph_version_line = content[-1]
-        content_list = ceph_version_line.split()
+        # re search pattern
+        pattern_community = r'((\d{1,2})\.(\d{1,2})\.((\d{1,2})|x))((\-(\d{1,2}))?)'
+        pattern_release = r'(\d\.?\d?)\.(\d)'
+        community_version_mo = re.search(pattern_community, str(ceph_version_line), 0)
+        if not community_version_mo:
+            raise CephVersionError("Wrong Format Ceph Version", content)
 
-        if len(content_list) < 3:
-            raise CephVersionError("Error Ceph Version Line", ceph_version_line)
+        communit_version = community_version_mo.group(1)
+        self._release = community_to_release_map.get(communit_version, None)
+        if not self._release:
+            raise CephVersionError("No Mapping Release Version. Ceph Release Number is Null", content)
 
-        # I will change this to get detail version infomation
+        release_version_mo = re.search(pattern_release, self._release)
+        if not release_version_mo:
+            raise CephVersionError("Wrong Format Release Version", content)
 
+        self._major = release_version_mo.group(1)
+        self._minor = release_version_mo.group(2)
+        if not self._major:
+            raise CephVersionError("Major Number is Null", content)
 
-        full_version = content_list[2]
-        full_version_list = full_version.split(".")
+        if not self._major:
+            raise CephVersionError("Major Number is Null", content)
 
-        if len(full_version_list) < 2:
-            raise CephVersionError("Error Ceph Version Number",ceph_version_line)
-        self.major_number = None
-        major_list = [full_version_list[0], full_version_list[1]]
-        community_major_number = ".".join(major_list)
-        if community_major_number in community_to_release_map.keys() :
-            self.major_number = community_to_release_map[community_major_number]
+    @property
+    def release(self):
+        return self._release
 
     @property
     def major(self):
-        if self.major_number:
-            return self.major_number
-        else:
-            return ""
+        return self._major
 
-
+    @property
+    def minor(self):
+        return self._minor
