@@ -1,4 +1,11 @@
-import ConfigParser as cp
+"""
+Service systemd file - File
+======================================================================================
+Service systemd files are in ``/usr/lib/systemd/system``, and Their content format is
+``config``.
+"""
+
+from ConfigParser import RawConfigParser as cp
 import StringIO
 from falafel.core import Mapper
 from falafel.core.plugins import mapper
@@ -117,8 +124,18 @@ def common_conf(context):
     return SystemdSystemConf(context).data
 
 
+class MultiOrderedDict(dict):
+    """Class for condition that duplicate keys exist"""
+    def __setitem__(self, key, value):
+        if isinstance(value, list) and key in self:
+            self[key].extend(value)
+        else:
+            super(MultiOrderedDict, self).__setitem__(key, value)
+
+
 def parse_systemd_ini(content):
-    Config = cp.ConfigParser()
+    """Function to parse config format file, the result format is dictionary"""
+    Config = cp(dict_type=MultiOrderedDict)
     Config.optionxform = str
     Config.readfp(StringIO.StringIO('\n'.join(content)))
 
