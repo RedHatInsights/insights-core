@@ -1,4 +1,4 @@
-from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet
+from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo
 from falafel.tests import context_wrap
 
 CEPH_OSD_DUMP_INFO = """
@@ -92,6 +92,37 @@ CEPH_OSD_EC_PROFILE_GET = """
     "m": "1",
     "plugin": "jerasure",
     "technique": "reed_sol_van"
+}
+""".strip()
+
+CEPHINFO = """
+{
+    "name": "osd.1",
+    "cluster": "ceph",
+    "debug_none": "0\/5",
+    "heartbeat_interval": "5",
+    "heartbeat_file": "",
+    "heartbeat_inject_failure": "0",
+    "perf": "true",
+    "max_open_files": "131072",
+    "ms_type": "simple",
+    "ms_tcp_nodelay": "true",
+    "ms_tcp_rcvbuf": "0",
+    "ms_tcp_prefetch_max_size": "4096",
+    "ms_initial_backoff": "0.2",
+    "ms_max_backoff": "15",
+    "ms_crc_data": "true",
+    "ms_crc_header": "true",
+    "ms_die_on_bad_msg": "false",
+    "ms_die_on_unhandled_msg": "false",
+    "ms_die_on_old_message": "false",
+    "ms_die_on_skipped_message": "false",
+    "ms_dispatch_throttle_bytes": "104857600",
+    "ms_bind_ipv6": "false",
+    "ms_bind_port_min": "6800",
+    "ms_bind_port_max": "7300",
+    "ms_bind_retry_count": "3",
+    "ms_bind_retry_delay": "5"
 }
 """.strip()
 
@@ -197,3 +228,26 @@ class TestCephECProfileGet():
         }
         assert result['k'] == "2"
         assert result['m'] == "1"
+
+
+class TestCephCfgInfo():
+    def test_cephcfginfo(self):
+        result = CephCfgInfo(context_wrap(CEPHINFO))
+
+        assert result.data == {
+            'ms_tcp_nodelay': 'true', 'ms_max_backoff': '15',
+            'cluster': 'ceph', 'ms_dispatch_throttle_bytes': '104857600',
+            'debug_none': '0/5', 'ms_crc_data': 'true', 'perf': 'true',
+            'ms_tcp_prefetch_max_size': '4096', 'ms_die_on_bad_msg': 'false',
+            'ms_bind_port_max': '7300', 'ms_bind_port_min': '6800',
+            'ms_die_on_skipped_message': 'false', 'heartbeat_file': '',
+            'heartbeat_interval': '5', 'heartbeat_inject_failure': '0',
+            'ms_crc_header': 'true', 'max_open_files': '131072',
+            'ms_die_on_old_message': 'false', 'name': 'osd.1',
+            'ms_type': 'simple', 'ms_initial_backoff': '0.2',
+            'ms_bind_retry_delay': '5', 'ms_bind_ipv6': 'false',
+            'ms_die_on_unhandled_msg': 'false', 'ms_tcp_rcvbuf': '0',
+            'ms_bind_retry_count': '3'
+        }
+
+        assert result.max_open_files == '131072'
