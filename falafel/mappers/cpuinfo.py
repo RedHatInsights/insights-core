@@ -74,7 +74,7 @@ from .. import Mapper, mapper, defaults, get_active_lines, LegacyItemAccess
 @mapper('cpuinfo')
 class CpuInfo(LegacyItemAccess, Mapper):
     """
-    CPUInfo mapper - able to be used as a dictionary through the
+    CpuInfo mapper - able to be used as a dictionary through the
     LegacyItemAccess mixin class.
 
     The following items are remapped into lists, with the element number
