@@ -21,7 +21,7 @@ cciss/c0d0:  299.96GB   RAID 1(1+0)
 
 
 def test_get_cciss():
-    cciss_info = cciss.Cciss(context_wrap(CCISS))
+    cciss_info = cciss.Cciss(context_wrap(CCISS, path='/proc/devices/cciss0'))
 
     assert cciss_info.data['cciss0'] == 'HP Smart Array P220i Controller'
     assert cciss_info.data['Board ID'] == "0x3355103c"
@@ -36,3 +36,5 @@ def test_get_cciss():
     assert cciss_info.data['Max SG entries since init'] == '128'
     assert cciss_info.data['Sequential access devices'] == '0'
     assert cciss_info.data['cciss/c0d0'] == '299.96GB   RAID 1(1+0)'
+    assert cciss_info.firmware_version == '3.42'
+    assert cciss_info.model == 'HP Smart Array P220i Controller'

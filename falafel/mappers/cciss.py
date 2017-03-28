@@ -11,6 +11,10 @@ Example:
     '1'
     >>> 'IRQ' in cciss.data
     True
+    >>> cciss.model
+    'HP Smart Array P220i Controller'
+    >>> cciss.firmware_version
+    '3.42'
 """
 
 from .. import Mapper, mapper
@@ -19,6 +23,8 @@ from .. import Mapper, mapper
 @mapper('cciss')
 class Cciss(Mapper):
     '''
+    Class for parsing the content of ``/etc/device/cciss*``
+
     Raw Data::
 
         cciss0: HP Smart Array P220i Controller
@@ -67,8 +73,10 @@ class Cciss(Mapper):
 
     @property
     def firmware_version(self):
-        return self.data['Firmware Version']
+        '''Return the Firmware Version.'''
+        return self.data.get('Firmware Version')
 
     @property
     def model(self):
-        return self.data[self.device]
+        '''Return the full model name of the cciss device.'''
+        return self.data.get(self.device)
