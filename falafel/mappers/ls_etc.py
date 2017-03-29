@@ -1,6 +1,6 @@
 """
-ls /etc - Command
-=================
+LsEtc - command ``ls -lanR /etc``
+=================================
 
 The ``ls -lanR /etc`` command provides information for the listing of the
 ``/etc`` directory.
