@@ -25,7 +25,7 @@ except ImportError:
     import falafel
 
 from falafel.config import CommandSpec, SimpleFileSpec
-from falafel.config import HostTarget, DefaultAnalysisTargets
+from falafel.config import DefaultAnalysisTargets
 from falafel.config import get_meta_specs
 from falafel.core import plugins, DEFAULT_PLUGIN_MODULE
 from falafel.config.factory import get_config
@@ -118,8 +118,8 @@ class APIConfigGenerator(object):
         def __init__(self):
             self._LIST = OrderedDict()
 
-        def add(self, name, spec, output_filters, applies_to):
-            self._LIST[name] = spec.add_uploader_spec(self.get_one(name), output_filters, applies_to)
+        def add(self, name, spec, output_filters):
+            self._LIST[name] = spec.add_uploader_spec(self.get_one(name), output_filters)
 
         def get_one(self, name):
             if name in self._LIST:
@@ -150,8 +150,8 @@ class APIConfigGenerator(object):
             "/etc/redhat_access_proactive/machine-id": []
         }
 
-        specs_list.add("machine-id1", SimpleFileSpec("etc/redhat-access-insights/machine-id"), [], [HostTarget])
-        specs_list.add("machine-id2", SimpleFileSpec("etc/redhat_access_proactive/machine-id"), [], [HostTarget])
+        specs_list.add("machine-id1", SimpleFileSpec("etc/redhat-access-insights/machine-id"), [])
+        specs_list.add("machine-id2", SimpleFileSpec("etc/redhat_access_proactive/machine-id"), [])
 
         for name in sorted(plugins.MAPPERS):
             plugins_ = plugins.MAPPERS[name]
@@ -170,20 +170,17 @@ class APIConfigGenerator(object):
 
                 output_filter = self.get_filters_for(name)
 
-                applies_to = self.get_applies_to_for(plugins_)
-                specs_list.add(name, spec, output_filter, applies_to)
+                specs_list.add(name, spec, output_filter)
 
                 path = spec.get_for_uploader()
                 if isinstance(spec, CommandSpec):
                     pk_key = spec.get_pre_command_key()
-                    if HostTarget in applies_to if applies_to else DefaultAnalysisTargets:
-                        cmd_list.append((path, output_filter, pk_key))
+                    cmd_list.append((path, output_filter, pk_key))
                     spec_key = "commands"
 
                 else:
                     if path not in whitelist:
-                        if HostTarget in applies_to if applies_to else DefaultAnalysisTargets:
-                            whitelist[path] = output_filter
+                        whitelist[path] = output_filter
                         spec_key = "files"
 
                 for plugin in plugins_:

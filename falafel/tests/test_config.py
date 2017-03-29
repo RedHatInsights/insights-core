@@ -239,18 +239,18 @@ class TestInsightsDataSpecConfig(unittest.TestCase):
         self.assertRegexpMatches(name_in_archive, regex)
 
     def test_commandspec(self):
-        self.check_spec_archive2regex('chkconfig', HostTarget)
+        self.check_spec_archive2regex('chkconfig', HostTarget.instance)
 
     def test_rpmspec(self):
-        self.check_spec_archive2regex('installed-rpms', HostTarget)
-        self.check_spec_archive2regex('installed-rpms', DockerImageTarget)
-        self.check_spec_archive2regex('installed-rpms', DockerContainerTarget)
+        self.check_spec_archive2regex('installed-rpms', HostTarget.instance)
+        self.check_spec_archive2regex('installed-rpms', DockerImageTarget.instance)
+        self.check_spec_archive2regex('installed-rpms', DockerContainerTarget.instance)
 
     def test_multispec(self):
-        self.check_spec_archive2regex('ethtool-a', HostTarget)
+        self.check_spec_archive2regex('ethtool-a', HostTarget.instance)
 
     def test_client_variable(self):
-        self.check_spec_archive2regex('docker_image_inspect', DockerImageTarget)
+        self.check_spec_archive2regex('docker_image_inspect', DockerImageTarget.instance)
 
 
 class TestRetargetCommand(unittest.TestCase):

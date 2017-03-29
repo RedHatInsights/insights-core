@@ -19,9 +19,8 @@ class SpecMapper(object):
         self.root = os.path.commonprefix(self.all_names)
         logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
-        self.analysis_target = None
         self.symbolic_files = defaultdict(list)
-        self._determine_analysis_target()
+        self.analysis_target = self._determine_analysis_target()
         self.create_symbolic_file_list()
 
     def _get_first_matching(self, pattern):
@@ -34,7 +33,7 @@ class SpecMapper(object):
         path = self._get_first_matching(META_FILE_LIST["analysis_target"])
         if path:
             section = self.get_content(path, symbolic=False)[0].strip()
-            self.analysis_target = AnalysisTarget.get_class_for_section_name(section)
+            return AnalysisTarget.get(section)
 
     def _extend_symbolic_files(self, symbolic_name, matches):
         if matches:
@@ -42,7 +41,7 @@ class SpecMapper(object):
 
     def filter_commands(self, files):
         for f in files:
-            if "sos_commands" in f or "insights_commands" in f:
+            if "sos_commands" in f or "insights_commands" in f or "commands/" in f:
                 yield f
 
     def add_files(self, file_map):
@@ -58,7 +57,16 @@ class SpecMapper(object):
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
                 is_command = isinstance(spec, CommandSpec)
-                prefix = '' if '/' in spec.get_path() else '^'
+
+                # foreman-debug archives contain flat structures of commands
+                # that can be confused with other command outputs easily so
+                # we'll add a ^ to the beginning of the pattern if it is not an
+                # insights archive
+                if '/' in spec.get_path() or self.analysis_target is not None:
+                    prefix = ''
+                else:
+                    prefix = '^'
+
                 r = spec.get_regex(prefix=prefix, analysis_target=self.analysis_target)
                 if is_command or "_commands/" in r.pattern:
                     filter_set = commands

@@ -7,21 +7,6 @@ from falafel.util.command import retarget_command_for_mountpoint
 COMMANDS_ARCHIVE_DIR = "/insights_commands"
 DATA_ARCHIVE_DIR = "/insights_data"
 
-HOST_COMMANDS_ARCHIVE_DIR = COMMANDS_ARCHIVE_DIR
-
-DOCKER_CONTAINER_ARCHIVE_DIR = DATA_ARCHIVE_DIR + "/container"
-DOCKER_CONTAINER_ROOTFS_ARCHIVE_DIR = DOCKER_CONTAINER_ARCHIVE_DIR + "/rootfs"
-DOCKER_CONTAINER_COMMANDS_ARCHIVE_DIR = DOCKER_CONTAINER_ARCHIVE_DIR + "/commands"
-DOCKER_CONTAINER_HOST_ROOTFS_ARCHIVE_DIR = DOCKER_CONTAINER_ARCHIVE_DIR + "/dockerhost/rootfs"
-DOCKER_CONTAINER_HOST_COMMANDS_ARCHIVE_DIR = DOCKER_CONTAINER_ARCHIVE_DIR + "/dockerhost/commands"
-
-DOCKER_IMAGE_ARCHIVE_DIR = DATA_ARCHIVE_DIR + "/image"
-DOCKER_IMAGE_ROOTFS_ARCHIVE_DIR = DOCKER_IMAGE_ARCHIVE_DIR + "/rootfs"
-DOCKER_IMAGE_COMMANDS_ARCHIVE_DIR = DOCKER_IMAGE_ARCHIVE_DIR + "/commands"
-DOCKER_IMAGE_HOST_ROOTFS_ARCHIVE_DIR = DOCKER_IMAGE_ARCHIVE_DIR + "/dockerhost/rootfs"
-DOCKER_IMAGE_HOST_COMMANDS_ARCHIVE_DIR = DOCKER_IMAGE_ARCHIVE_DIR + "/dockerhost/commands"
-
-
 META_FILE_LIST = {
     "analysis_target": DATA_ARCHIVE_DIR + "/analysis_target",
     "machine-id": DATA_ARCHIVE_DIR + "/machine-id",
@@ -52,11 +37,15 @@ def get_meta_specs():
 class AnalysisTarget:
 
     ALL_DERIVED_CLASSES = []
+    section_name = "unset"
+
+    def __str__(self):
+        return self.section_name
 
     @classmethod
-    def add_section(self, json, section):
-        if self not in self.ALL_DERIVED_CLASSES:
-            raise ValueError("in AnalysisTarget:add_section: class %s not in ALL_DERIVED_CLASSES" % self)
+    def add_section(cls, json, section):
+        if cls.instance not in cls.ALL_DERIVED_CLASSES:
+            raise ValueError("in AnalysisTarget:add_section: class %s not in ALL_DERIVED_CLASSES" % cls)
 
         if not section:
             return json
@@ -64,37 +53,41 @@ class AnalysisTarget:
         if not json:
             json = {}
 
-        if self.section_name in json:
-            json[self.section_name].extend(section)
+        if cls.section_name in json:
+            json[cls.section_name].extend(section)
         else:
-            json[self.section_name] = section
+            json[cls.section_name] = section
 
         return json
 
     @classmethod
-    def get_class_for_section_name(self, section_name):
-        for each_class in self.ALL_DERIVED_CLASSES:
+    def get(cls, section_name):
+        for each_class in cls.ALL_DERIVED_CLASSES:
             if section_name == each_class.section_name:
                 return each_class
         return None
+
+    def _calc_dirs(self, name):
+        self.archive_dir = os.path.join(DATA_ARCHIVE_DIR, name)
+        self.rootfs_archive_dir = os.path.join(self.archive_dir, "rootfs")
+        self.commands_archive_dir = os.path.join(self.archive_dir, "commands")
+        self.host_rootfs_archive_dir = os.path.join(self.archive_dir, "dockerhost", "rootfs")
+        self.host_commands_archive_dir = os.path.join(self.archive_dir, "dockerhost", "commands")
 
 
 class HostTarget(AnalysisTarget):
 
     section_name = "host"
 
-    @classmethod
     def place_in_archive_command(self, mangled_command):
-        return os.path.join(HOST_COMMANDS_ARCHIVE_DIR, mangled_command)
+        return os.path.join(COMMANDS_ARCHIVE_DIR, mangled_command)
 
-    @classmethod
     def place_in_archive_file(self, path):
         if path.startswith("/"):
             return path
         else:
             return "/" + path
 
-    @classmethod
     def place_in_archive_docker_host_command(self, mangled_command):
         # This case should never happen, that is get_for_uploader should never
         #  call this case, and so one of these should never appear in uploader.json,
@@ -107,7 +100,6 @@ class HostTarget(AnalysisTarget):
         # we just return valid, but never used data.
         return os.path.join(DATA_ARCHIVE_DIR + "/dockerhost/commands", mangled_command)
 
-    @classmethod
     def place_in_archive_docker_host_file(self, path):
         # This case should never happen, that is get_for_uploader should never
         #  call this case, and so one of these should never appear in uploader.json,
@@ -120,7 +112,6 @@ class HostTarget(AnalysisTarget):
         # we just return valid, but never used data.
         return os.path.join(DATA_ARCHIVE_DIR + "/dockerhost/rootfs", path)
 
-    @classmethod
     def add_command_section(self, json, spec, output_filters):
         doc = {
             "command": spec.get_for_uploader(),
@@ -131,7 +122,6 @@ class HostTarget(AnalysisTarget):
 
         return self.add_section(json, [doc])
 
-    @classmethod
     def add_file_section(self, json, spec, output_filters):
         section = [{
             "file": spec.get_for_uploader(),
@@ -140,7 +130,6 @@ class HostTarget(AnalysisTarget):
 
         return self.add_section(json, section)
 
-    @classmethod
     def retarget_command(self, command):
         # if a command, written to collect data from a host,
         # can be applied to this target,
@@ -151,7 +140,6 @@ class HostTarget(AnalysisTarget):
         #   we implement all commands, and we don't need to alter the command
         return command
 
-    @classmethod
     def retarget_file(self, path):
         # if a path, written to collect data from a host,
         # can be applied to this target,
@@ -166,26 +154,20 @@ class HostTarget(AnalysisTarget):
 VIRTUAL_FILE_MOUNT_POINTS = ["/proc", "/sys"]
 
 
-class DockerImageTarget(AnalysisTarget):
-    section_name = "docker_image"
+class DockerTarget(AnalysisTarget):
 
-    @classmethod
     def place_in_archive_command(self, mangled_command):
-        return os.path.join(DOCKER_IMAGE_COMMANDS_ARCHIVE_DIR, mangled_command)
+        return os.path.join(self.commands_archive_dir, mangled_command)
 
-    @classmethod
     def place_in_archive_file(self, path):
-        return os.path.join(DOCKER_IMAGE_ROOTFS_ARCHIVE_DIR, path)
+        return os.path.join(self.rootfs_archive_dir, path)
 
-    @classmethod
     def place_in_archive_docker_host_command(self, mangled_command):
-        return os.path.join(DOCKER_IMAGE_HOST_COMMANDS_ARCHIVE_DIR, mangled_command)
+        return os.path.join(self.host_commands_archive_dir, mangled_command)
 
-    @classmethod
     def place_in_archive_docker_host_file(self, path):
-        return os.path.join(DOCKER_IMAGE_HOST_ROOTFS_ARCHIVE_DIR, path)
+        return os.path.join(self.host_rootfs_archive_dir, path)
 
-    @classmethod
     def add_command_section(self, json, spec, output_filters):
         command = spec.get_for_uploader(self)
 
@@ -199,7 +181,6 @@ class DockerImageTarget(AnalysisTarget):
 
         return self.add_section(json, section)
 
-    @classmethod
     def add_file_section(self, json, spec, output_filters):
         path = spec.get_for_uploader(self)
 
@@ -213,7 +194,6 @@ class DockerImageTarget(AnalysisTarget):
 
         return self.add_section(json, section)
 
-    @classmethod
     def retarget_command(self, command):
         # if a command, written to collect data from a host,
         # can be applied to this target,
@@ -222,7 +202,14 @@ class DockerImageTarget(AnalysisTarget):
 
         return retarget_command_for_mountpoint(command)
 
-    @classmethod
+
+class DockerImageTarget(DockerTarget):
+
+    section_name = "docker_image"
+
+    def __init__(self):
+        self._calc_dirs("image")
+
     def retarget_file(self, path):
         # if a path, written to collect data from a host,
         # can be applied to this target,
@@ -232,70 +219,19 @@ class DockerImageTarget(AnalysisTarget):
         # For DockerImageTarget, we collect from any path that isn't in
         # a virtual file system
 
-        for each in VIRTUAL_FILE_MOUNT_POINTS:
-            if path.startswith(each):
-                return None
+        if any(path.startswith(pt) for pt in VIRTUAL_FILE_MOUNT_POINTS):
+            return None
+        else:
+            return '{CONTAINER_MOUNT_POINT}' + path
 
-        return '{CONTAINER_MOUNT_POINT}' + path
 
+class DockerContainerTarget(DockerTarget):
 
-class DockerContainerTarget(AnalysisTarget):
     section_name = "docker_container"
 
-    @classmethod
-    def place_in_archive_command(self, mangled_command):
-        return os.path.join(DOCKER_CONTAINER_COMMANDS_ARCHIVE_DIR, mangled_command)
+    def __init__(self):
+        self._calc_dirs("container")
 
-    @classmethod
-    def place_in_archive_file(self, path):
-        return os.path.join(DOCKER_CONTAINER_ROOTFS_ARCHIVE_DIR, path)
-
-    @classmethod
-    def place_in_archive_docker_host_command(self, mangled_command):
-        return os.path.join(DOCKER_CONTAINER_HOST_COMMANDS_ARCHIVE_DIR, mangled_command)
-
-    @classmethod
-    def place_in_archive_docker_host_file(self, path):
-        return os.path.join(DOCKER_CONTAINER_HOST_ROOTFS_ARCHIVE_DIR, path)
-
-    @classmethod
-    def add_command_section(self, json, spec, output_filters):
-        command = spec.get_for_uploader(self)
-
-        if command is None:
-            return json
-
-        section = [{
-            "command": command,
-            "pattern": output_filters,
-            "archive_file_name": spec.get_archive_file_name(self)}]
-
-        return self.add_section(json, section)
-
-    @classmethod
-    def add_file_section(self, json, spec, output_filters):
-        path = spec.get_for_uploader(self)
-
-        if path is None:
-            return json
-
-        section = [{
-            "file": path,
-            "pattern": output_filters,
-            "archive_file_name": spec.get_archive_file_name(self)}]
-
-        return self.add_section(json, section)
-
-    @classmethod
-    def retarget_command(self, command):
-        # if a command, written to collect data from a host,
-        # can be applied to this target,
-        #   return a rewritten command to do so
-        #   otherwise return None
-
-        return retarget_command_for_mountpoint(command)
-
-    @classmethod
     def retarget_file(self, path):
         # if a path, written to collect data from a host,
         # can be applied to this target,
@@ -307,7 +243,11 @@ class DockerContainerTarget(AnalysisTarget):
         return '{CONTAINER_MOUNT_POINT}' + path
 
 
-AnalysisTarget.ALL_DERIVED_CLASSES = DefaultAnalysisTargets = [HostTarget, DockerImageTarget, DockerContainerTarget]
+AnalysisTarget.ALL_DERIVED_CLASSES = DefaultAnalysisTargets = [
+    HostTarget(), DockerImageTarget(), DockerContainerTarget()
+]
+
+HostTarget.instance, DockerImageTarget.instance, DockerContainerTarget.instance = DefaultAnalysisTargets
 
 
 def check_consistency(name, specs):
@@ -483,11 +423,11 @@ class InsightsDataSpecBase(object):
     def get_regex(self, prefix='', suffix='$', analysis_target=None):
         # this method, and it's overrides in derived classes
         # is what the engine uses to find files in archives
-        regex = prefix + self.get_path(analysis_target=analysis_target) + suffix
+        regex = prefix + self.get_path(analysis_target) + suffix
         if regex in self.regex_cache:
             r = self.regex_cache[regex]
         else:
-            r = re.compile(regex.replace("//", "/"))
+            r = re.compile(regex.strip("/").replace("//", "/"))
             self.regex_cache[regex] = r
         return r
 
@@ -521,7 +461,7 @@ class InsightsDataSpecBase(object):
         '''
         return []
 
-    def add_uploader_spec(self, json, output_filters, applies_to):
+    def add_uploader_spec(self, json, output_filters):
         raise NotImplementedError()
 
     def __unicode__(self):
@@ -538,8 +478,7 @@ class SimpleFileSpec(InsightsDataSpecBase):
 
     def __init__(self, path, multi_output=False, large_content=False):
         if path[0] == '/':
-            raise SpecPathError(path,
-                "SimpleFileSpec path must not start with '/'")
+            raise SpecPathError(path, "SimpleFileSpec path must not start with '/'")
         super(SimpleFileSpec, self).__init__(multi_output=multi_output, large_content=large_content)
         if not isinstance(path, types.StringTypes):
             raise ValueError("Path must be a string")
@@ -582,8 +521,8 @@ class SimpleFileSpec(InsightsDataSpecBase):
     def place_in_archive(self, path, analysis_target):
         return analysis_target.place_in_archive_file(path)
 
-    def add_uploader_spec(self, json, output_filters, applies_to):
-        for each in applies_to if applies_to else DefaultAnalysisTargets:
+    def add_uploader_spec(self, json, output_filters):
+        for each in DefaultAnalysisTargets:
             json = each.add_file_section(json, self, output_filters)
         return json
 
@@ -644,8 +583,7 @@ class CommandSpec(InsightsDataSpecBase):
 
     def __init__(self, command, multi_output=True, large_content=False, **kwargs):
         if command[0] != '/':
-            raise SpecPathError(command,
-                "CommandSpec command must start with '/'")
+            raise SpecPathError(command, "CommandSpec command must start with '/'")
         super(CommandSpec, self).__init__(multi_output=multi_output and len(kwargs) > 0, large_content=large_content)
         self.command = command
         self.path_groups = kwargs
@@ -749,8 +687,8 @@ class CommandSpec(InsightsDataSpecBase):
     def get_preferred_path(self):
         return self.get_regex()
 
-    def add_uploader_spec(self, json, output_filters, applies_to):
-        for target in applies_to if applies_to else DefaultAnalysisTargets:
+    def add_uploader_spec(self, json, output_filters):
+        for target in DefaultAnalysisTargets:
             json = target.add_command_section(json, self, output_filters)
         return json
 
