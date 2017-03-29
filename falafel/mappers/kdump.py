@@ -1,7 +1,6 @@
 import re
 from urlparse import urlparse
-from ..mappers import chkconfig, ParseException
-from ..mappers.systemd import unitfiles
+from ..mappers import ParseException
 from .. import Mapper, mapper, SysconfigOptions
 
 
@@ -175,15 +174,6 @@ class KexecCrashLoaded(Mapper):
     def parse_content(self, content):
         line = list(content)[0].strip()
         self.is_loaded = line == '1'
-
-
-def is_enabled(shared):
-    chk = shared.get(chkconfig.ChkConfig)
-    svc = shared.get(unitfiles.UnitFiles)
-    if chk and chk.is_on('kdump'):
-        return True
-
-    return bool(svc and svc.is_on('kdump.service'))
 
 
 @mapper("kdump.conf")
