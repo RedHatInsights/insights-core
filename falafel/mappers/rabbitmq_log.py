@@ -71,3 +71,30 @@ class RabbitMQStartupErrLog(LogFileOutput):
         Please refer to its super-class ``LogFileOutput``
     """
     pass
+
+
+@mapper("rabbitmq_logs")
+class RabbitMQLogs(LogFileOutput):
+    """Class for parsing ``/var/log/rabbitmq/rabbit@$HOSTNAME.log`` file
+
+    Typical content of ``rabbit@$HOSTNAME.log`` file is::
+
+        =INFO REPORT==== 9-Nov-2016::14:29:11 ===
+        Starting RabbitMQ 3.6.3 on Erlang 18.3.4.4
+        Copyright (C) 2007-2016 Pivotal Software, Inc.
+        Licensed under the MPL.  See http://www.rabbitmq.com/
+
+        =INFO REPORT==== 9-Nov-2016::14:29:11 ===
+        node           : rabbit@overcloud-controller-0
+        home dir       : /var/lib/rabbitmq
+        config file(s) : /etc/rabbitmq/rabbitmq.config
+        cookie hash    : F7g8XhNTzvEK3KywLHh9yA==
+        log            : /var/log/rabbitmq/rabbit@overcloud-controller-0.log
+        sasl log       : /var/log/rabbitmq/rabbit@overcloud-controller-0-sasl.log
+        database dir   : /var/lib/rabbitmq/mnesia/rabbit@overcloud-controller-0
+        ...
+
+    Note:
+        Please refer to its super-class ``LogFileOutput``
+    """
+    pass
