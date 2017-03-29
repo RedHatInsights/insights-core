@@ -1,4 +1,1 @@
-include falafel/web/falafel-web.service
-include falafel/content/index.html
-include falafel/content/content.js
-include falafel/falafel.defaults.yaml
+include falafel/defaults.yaml
