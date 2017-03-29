@@ -256,6 +256,7 @@ static_specs = {
                                     SimpleFileSpec("qpid-stat-u"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/qpid_stat_subscriptions"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/qpid-stat-u")]),
+    "rabbitmq_logs"             :PatternSpec(r'var/log/rabbitmq/rabbit@.*(?<!-sasl).log',large_content=True),
     "rabbitmq_policies"         : CommandSpec("/usr/sbin/rabbitmqctl list_policies"),
     "rabbitmq_queues"           : CommandSpec("/usr/sbin/rabbitmqctl list_queues name messages consumers auto_delete"),
     "rabbitmq_report"           : CommandSpec("/usr/sbin/rabbitmqctl report"),
