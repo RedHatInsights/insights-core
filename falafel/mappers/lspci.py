@@ -1,6 +1,6 @@
 """
-lspci - Command
-===============
+LsPci - Command ``/usr/sbin/lspci``
+===================================
 
 This module provides plugins access to the PCI device information gathered from
 the ``/usr/sbin/lspci`` command.

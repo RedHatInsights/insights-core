@@ -1,14 +1,26 @@
 """
-lsblk - Command
-===============
+Block device listing - Command ``lsblk``
+========================================
 
-Module for processing output of the ``lsblk`` command.  Different information is
-provided by the ``lsblk`` command depending upon the options. The ``LSBlock``
-class parses output of the ``lsblk`` command with no options.  The ``LSBlockPairs``
-class parses output of the ``lsblk -P -o column_names`` command.  These classes
-based on ``BlockDevices`` which implements all of the functionality except the
-parsing of command specific information.  Information is stored in the
-attribute ``self.rows`` which is a ``list`` of ``BlockDevice`` objects.
+Module for processing output of the ``lsblk`` command.  Different information
+is provided by the ``lsblk`` command depending upon the options.  Mappers
+included here are:
+
+LSBlock
+-------
+
+The ``LSBlock`` class parses output of the ``lsblk`` command with no options.
+
+LSBlockPairs
+------------
+
+The ``LSBlockPairs`` class parses output of the ``lsblk -P -o column_names``
+command.
+
+These classes based on ``BlockDevices`` which implements all of the
+functionality except the parsing of command specific information.
+Information is stored in the attribute ``self.rows`` which is a ``list`` of
+``BlockDevice`` objects.
 
 Each ``BlockDevice`` object provides the functionality for one row of data from the
 command output.  Data in a ``BlockDevice`` object is accessible by multiple methods.
@@ -30,30 +42,31 @@ Sample output of the ``lsblk`` command looks like::
     sda             8:0    0  500G  0 disk
     `-sda1          8:1    0  500G  0 part /data
 
-Note the hierarchy demonstrated in the name column. For instance `vda1` and
-`vda2` are children of `vda`.  Also `rhel-root` and `rhel-swap` are children
-of `vda2`.  This relationship is demonstrated in the ``PARENT_NAMES`` key, which
-is only present if the row is a *child* row.  For example ``PARENT_NAMES`` value
-for ``rhel-root`` will be ``['vda', 'vda2']`` meaning that ``vda2`` is the
-immediate parent and ``vda`` is parent of ``vda2``.
+Note the hierarchy demonstrated in the name column. For instance ``vda1`` and
+``vda2`` are children of ``vda``.  Likewise, ``rhel-root`` and ``rhel-swap``
+are children of ``vda2``.  This relationship is demonstrated in the
+``PARENT_NAMES`` key, which is only present if the row is a *child* row.  For
+example ``PARENT_NAMES`` value for ``rhel-root`` will be ``['vda', 'vda2']``
+meaning that ``vda2`` is the immediate parent and ``vda`` is parent of
+``vda2``.
 
-Also note that column names that are not valid Python names been changed.  For
-example ``MAJ:MIN`` has been changed to ``MAJ_MIN``.
+Also note that column names that are not valid Python property names been
+changed.  For example ``MAJ:MIN`` has been changed to ``MAJ_MIN``.
 
 Examples:
     >>> lsblk_info = shared[LSBlock]
     >>> lsblk_info
     <falafel.mappers.lsblk.LSBlock object at 0x7f1f6a422d50>
     >>> lsblk_info.rows
-    [<falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422ed0>,
-     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422f10>,
-     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422f50>,
-     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422f90>,
-     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422fd0>,
-     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a3b0050>,
-     <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a3b0090>]
+    [disk:vda,
+     part:vda1(/boot),
+     part:vda2,
+     lvm:rhel-root(/),
+     lvm:rhel-swap([SWAP]),
+     disk:sda,
+     part:sda1(/data)]
     >>> lsblk_info.rows[0]
-    <falafel.mappers.lsblk.BlockDevice object at 0x7f1f6a422ed0>
+    disk:vda
     >>> lsblk_info.rows[0].data
     {'READ_ONLY': False, 'NAME': 'vda', 'REMOVABLE': False, 'MAJ_MIN': '252:0',
      'TYPE': 'disk', 'SIZE': '9G'}
@@ -117,6 +130,17 @@ class BlockDevice(object):
     def get(self, k, default=None):
         """Get any value by keyword (column) name."""
         return self.__dict__.get(k, default)
+
+    def __repr__(self):
+        if 'TYPE' in self.data and 'MOUNTPOINT' in self.data:
+            return '{type}:{name}({mnt})'.format(
+                type=self.data['TYPE'], name=self.data['NAME'],
+                mnt=self.data['MOUNTPOINT']
+            )
+        elif 'TYPE' in self.data:
+            return '{type}:{name}'.format(type=self.data['TYPE'], name=self.data['NAME'])
+        else:
+            return self.data['NAME']
 
 
 class BlockDevices(Mapper):

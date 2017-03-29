@@ -1,6 +1,6 @@
 """
-ls /dev/disk/by-* - Command
-===========================
+LsDisk - Command ``ls -lanR /dev/disk/by-*``
+============================================
 
 The ``ls -lanR /dev/disk/by-*`` command provides information for the listing of the
 directories under ``/dev/disk/`` .
