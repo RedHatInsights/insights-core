@@ -207,3 +207,31 @@ class IP6Tables(IPTables):
     See ``IPTables`` class for additional information.
     """
     pass
+
+
+@mapper("iptables_permanent")
+class IPTabPermanent(IPTables):
+    """
+    Process ``iptables`` configuration saved in file ``/etc/sysconfig/iptables``.
+
+    The configuration in this file is loaded by the ``iptables`` service when the system boots.
+    New configuration is saved by using the ``service iptables save`` command. This configuration
+    file is not available on a system with ``firewalld`` service.
+
+    See ``IPTables`` class for additional information.
+    """
+    pass
+
+
+@mapper("ip6tables_permanent")
+class IP6TabPermanent(IPTables):
+    """
+    Process ``ip6tables`` configuration saved in file ``/etc/sysconfig/ip6tables``.
+
+    The configuration in this file is loaded by the ``ip6tables`` service when the system boots.
+    New configuration is saved by using the ``service ip6tables save`` command. This configuration
+    file is not available on a system with ``firewalld`` service.
+
+    See ``IPTables`` class for additional information.
+    """
+    pass

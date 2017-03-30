@@ -1,4 +1,4 @@
-from falafel.mappers.iptables import IPTables, IP6Tables
+from falafel.mappers.iptables import IPTables, IP6Tables, IPTabPermanent, IP6TabPermanent
 from falafel.tests import context_wrap
 
 IPTABLES_SAVE = """
@@ -47,8 +47,8 @@ PARSED_TCP_REJECT_RULE = {
 }
 
 
-def test_iptables_save():
-    ipt = IPTables(context_wrap(IPTABLES_SAVE))
+def check_iptables_rules_parsing(iptables_obj):
+    ipt = iptables_obj
     assert len(ipt.rules) == 8
     assert len(ipt.get_chain("INPUT")) == 7
     assert len(ipt.table_chains("mangle")) == 5
@@ -63,6 +63,16 @@ def test_iptables_save():
     assert "tcp-reset" in ipt
     assert "--sport" not in ipt
     assert ipt.get_rule("tcp-reset") == [PARSED_TCP_REJECT_RULE]
+
+
+def test_iptables_save():
+    ipt = IPTables(context_wrap(IPTABLES_SAVE))
+    check_iptables_rules_parsing(ipt)
+
+
+def test_iptables_permanent():
+    ipt = IPTabPermanent(context_wrap(IPTABLES_SAVE))
+    check_iptables_rules_parsing(ipt)
 
 
 IP6TABLES_SAVE = """
@@ -137,8 +147,8 @@ PARSED_TCP_REJECT_RULE_6 = {
 }
 
 
-def test_ip6tables_save():
-    ipt = IP6Tables(context_wrap(IP6TABLES_SAVE))
+def check_ip6tables_rules_parsing(ip6tables_obj):
+    ipt = ip6tables_obj
     assert len(ipt.rules) == 14
     assert len(ipt.get_chain("INPUT")) == 6
     assert len(ipt.table_chains("mangle")) == 5
@@ -153,3 +163,13 @@ def test_ip6tables_save():
     assert "tcp-reset" in ipt
     assert "--sport" not in ipt
     assert ipt.get_rule("tcp-reset") == [PARSED_TCP_REJECT_RULE]
+
+
+def test_ip6tables_save():
+    ipt = IP6Tables(context_wrap(IP6TABLES_SAVE))
+    check_ip6tables_rules_parsing(ipt)
+
+
+def test_ip6tables_permanent():
+    ipt = IP6TabPermanent(context_wrap(IP6TABLES_SAVE))
+    check_ip6tables_rules_parsing(ipt)
