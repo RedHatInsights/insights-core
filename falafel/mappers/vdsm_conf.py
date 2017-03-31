@@ -35,16 +35,3 @@ from .. import IniConfigFile, mapper
 class VDSMConfIni(IniConfigFile):
     """Class for VDSM configuration file content."""
     pass
-
-
-@mapper("vdsm.conf")
-class VDSMConf(VDSMConfIni):
-    """
-    Class for VDSM configuration file content, old style.
-    **Deprecated, do not use** - use ``VDSMConfIni`` instead.
-    """
-    def parse_content(self, content):
-        super(VDSMConf, self).parse_content(content)
-        # Replace the data from the ini file with a dict
-        data = {sect: self.items(sect) for sect in self.sections()}
-        self.data = data

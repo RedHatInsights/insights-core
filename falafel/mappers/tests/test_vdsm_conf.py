@@ -1,4 +1,4 @@
-from falafel.mappers.vdsm_conf import VDSMConf, VDSMConfIni
+from falafel.mappers.vdsm_conf import VDSMConfIni
 from falafel.tests import context_wrap
 
 
@@ -11,12 +11,6 @@ cpu_affinity = 1
 management_port = 54321
 qq = 345
 """
-
-
-def test_vdsm_conf():
-    result = VDSMConf(context_wrap(CONF))
-    expected = {'vars': {'ssl': 'true', 'cpu_affinity': '1'}, 'addresses': {'management_port': '54321', 'qq': '345'}}
-    assert result.data == expected
 
 
 def test_vdsm_conf_ini():
