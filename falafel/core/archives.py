@@ -16,6 +16,9 @@ else:
     _magic = magic.open(magic.MIME_TYPE)
     _magic.load()
 
+    _magic_inner = magic.open(magic.MIME_TYPE | magic.MAGIC_COMPRESS)
+    _magic_inner.load()
+
 logger = logging.getLogger(__name__)
 marshaller = Marshaller()
 
@@ -98,12 +101,19 @@ class TarExtractor(Extractor):
         "application/x-tar": ""
     }
 
-    def from_buffer(self, buf):
-        self.content_type = _magic.buffer(buf)
-        tar_flag = self.TAR_FLAGS.get(self.content_type)
-        if tar_flag is None:
+    def _assert_type(self, _input, is_buffer=False):
+        method = 'buffer' if is_buffer else 'file'
+        self.content_type = getattr(_magic, method)(_input)
+        if self.content_type not in self.TAR_FLAGS:
             raise InvalidContentType(self.content_type)
 
+        inner_type = getattr(_magic_inner, method)(_input)
+        if inner_type != 'application/x-tar':
+            raise InvalidArchive('No compressed tar archive')
+
+    def from_buffer(self, buf):
+        self._assert_type(buf, True)
+        tar_flag = self.TAR_FLAGS.get(self.content_type)
         self.tmp_dir = tempfile.mkdtemp()
         command = "tar %s -x -f - -C %s" % (tar_flag, self.tmp_dir)
         p = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE)
@@ -117,10 +127,7 @@ class TarExtractor(Extractor):
         if os.path.isdir(path):
             self.tar_file = DirectoryAdapter(path)
         else:
-            self.content_type = _magic.file(path)
-            if self.content_type not in self.TAR_FLAGS:
-                raise InvalidContentType(self.content_type)
-
+            self._assert_type(path, False)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
             command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)

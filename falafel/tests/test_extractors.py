@@ -3,6 +3,7 @@ import unittest
 import tempfile
 import subprocess
 import shlex
+import gzip
 from falafel.core import archives
 from falafel.core.specs import SpecMapper
 
@@ -38,6 +39,24 @@ class TestTarExtractor(unittest.TestCase):
 
         command = "rm -rf %s" % tmp_dir
         subprocess.call(shlex.split(command))
+
+    def test__assert_type_gzip_tar(self):
+        with archives.TarExtractor() as tar_ex:
+            tar_ex._assert_type(ARC, False)
+            self.assertEquals(tar_ex.content_type, 'application/x-gzip')
+
+    def test__assert_type_gzip_no_tar(self):
+        tmp_dir = tempfile.mkdtemp()
+
+        archive_path = os.path.join(tmp_dir, "file.log.gz")
+        with gzip.open(archive_path, 'wb') as f:
+            f.write("testing contents")
+
+        with archives.TarExtractor() as tar_ex:
+            with self.assertRaises(archives.InvalidArchive) as cm:
+                tar_ex._assert_type(archive_path, False)
+
+            self.assertEqual(cm.exception.msg, "No compressed tar archive")
 
 
 class TestZipFileExtractor(unittest.TestCase):
