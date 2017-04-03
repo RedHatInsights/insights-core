@@ -1,7 +1,6 @@
 import pytest
 import unittest
 from falafel.tests import unordered_compare
-from falafel.util.rpm import RpmPackage, get_package_nvr
 from falafel.util.uname import Uname, UnameError, pad_release, parse_uname
 from falafel.core.plugins import split_requirements, stringify_requirements, get_missing_requirements
 from falafel.core import context
@@ -284,71 +283,6 @@ class TestUname(unittest.TestCase):
     def test_docker_uname(self):
         u = Uname.from_uname_str("Linux 06a04d0354dc 4.0.3-boot2docker #1 SMP Wed May 13 20:54:49 UTC 2015 x86_64 x86_64 x86_64 GNU/Linux")
         self.assertEquals("boot2docker", u.release)
-
-
-class TestRpm(unittest.TestCase):
-
-    def test_get_package_nvr(self):
-        line = "zlib-1.2.3-29.el6.x86_64                                    Sun Mar 17 07:01:21 2013"
-        self.assertEquals('zlib-1.2.3-29.el6', get_package_nvr(line))
-
-        line = "xorg-x11-fonts-75dpi-7.2-9.1.el6.noarch                     Thu Oct 18 14:30:26 2012"
-        self.assertEquals('xorg-x11-fonts-75dpi-7.2-9.1.el6', get_package_nvr(line))
-
-    def test_rpm_package_construct_error(self):
-        self.assertRaises(ValueError, RpmPackage, "9.9.4-15.P2.fc20.x86_64")
-        self.assertRaises(ValueError, RpmPackage, "9.9.4-15.P2.AB20.x86_64")
-
-    def test_rpm_package_construct(self):
-        rpm_package = RpmPackage("bind-libs-9.8.2-0.17.rc1.el6_4.6.x86_64")
-        self.assertEquals('bind-libs', rpm_package.name)
-        self.assertEquals('9.8.2', rpm_package.version)
-        self.assertEquals('0.17.rc1.el6_4.6', rpm_package.release)
-        self.assertEquals('0.17.rc1', rpm_package.build)
-        self.assertEquals('el6_4.6', rpm_package.dist)
-        self.assertEquals('x86_64', rpm_package.arch)
-
-        rpm_package = RpmPackage("bind-libs-9.8.2-0.17.rc1.el6_4.6")
-        self.assertEquals('bind-libs', rpm_package.name)
-        self.assertEquals('9.8.2', rpm_package.version)
-        self.assertEquals('0.17.rc1.el6_4.6', rpm_package.release)
-        self.assertEquals('0.17.rc1', rpm_package.build)
-        self.assertEquals('el6_4.6', rpm_package.dist)
-        self.assertEquals(None, rpm_package.arch)
-
-        rpm_package = RpmPackage("a-package-name-9.9.4-15.P2.fc20.x86_64")
-        self.assertEquals('a-package-name', rpm_package.name)
-        self.assertEquals('9.9.4', rpm_package.version)
-        self.assertEquals('15.P2.fc20', rpm_package.release)
-        self.assertEquals('15.P2', rpm_package.build)
-        self.assertEquals('fc20', rpm_package.dist)
-        self.assertEquals('x86_64', rpm_package.arch)
-
-    def test_name_dist_match(self):
-        left = RpmPackage("bind-libs-9.8.2.1-0.17.rc2.el6_4.6.x86_64")
-        right = RpmPackage("bind-libs-9.8.2-0.17.rc2.el6_4.6.x86_64")
-        self.assertTrue(left.name_dist_match(right))
-        self.assertTrue(right.name_dist_match(left))
-        self.assertTrue(left.name_dist_match("bind-libs-9.8.2-0.17.rc2.el6_4.6.x86_64"))
-
-        right = RpmPackage("binding-libs-9.8.2-0.17.rc2.el6_4.6.x86_64")
-        self.assertFalse(left.name_dist_match(right))
-        self.assertFalse(right.name_dist_match(left))
-
-        right = RpmPackage("bind-libs-9.8.2-0.17.rc2.el5.6.x86_64")
-        self.assertFalse(left.name_dist_match(right))
-        self.assertFalse(right.name_dist_match(left))
-
-        right = RpmPackage("binding-libs-9.8.2-0.17.rc2.el5.6.x86_64")
-        self.assertFalse(left.name_dist_match(right))
-        self.assertFalse(right.name_dist_match(left))
-
-    def test_nonstandard_package(self):
-        pkg = RpmPackage("firefox-1.5.0.12-3.el5-i386")
-        self.assertEquals("i386", pkg.arch)
-        self.assertEquals("firefox", pkg.name)
-        self.assertEquals("1.5.0.12", pkg.version)
-        self.assertEquals("3.el5", pkg.release)
 
 
 class t(object):
