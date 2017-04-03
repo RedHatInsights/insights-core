@@ -38,6 +38,8 @@ srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
 drwxr-xr-x+  2 0 0       41 Jul  6 23:32 additional_ACLs
 -rw-rw----.  1 0 6 253,  10 Aug  4 16:56 comma in size currently valid
 brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
+-rwxr-xr-x.  2 0 0     1024 Jul  6 23:32 file_name_ending_with_colon:
+lrwxrwxrwx.  1 0 0       11 Aug  4  2014 link with spaces -> ../file with spaces
 """
 
 SELINUX_DIRECTORY = """
@@ -71,13 +73,15 @@ prw-rw----. 1000 1000  0 Nov 12 723:56 Hour too long
 prw-rw----. 1000 1000  0 Nov 12 23: Missing minute
 prw-rw----. 1000 1000  0 Nov 12 23:3 Minute too short
 prw-rw----. 1000 1000  0 Nov 12 23:357 Minute too long
--rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
+-rw------ 1 root root 762 Sep 23 002 permission too short
 bash: ls: command not found
 -rw------ 1 root root 762 Se
--rw------- 1 ro:t root 762 Sep 23 002 /etc/ssh/sshd_config
--rw------- 1 root r:ot 762 Sep 23 002 /etc/ssh/sshd_config
--rwasdfas- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
--rwx/----- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
+-rw------- 1 ro:t root 762 Sep 23 002 colon in uid
+-rw------- 1 root r:ot 762 Sep 23 002 colon in gid
+-rwasdfas- 1 root root 762 Sep 23 002 bad permissions block
+-rwx/----- 1 root root 762 Sep 23 002 slash in permissions block
+-rwx------ 1 root root 762 Sep 23 002 /slashes/in/filename
+/rwasdfas- 1 root root 762 Sep 23 002 slash in file type and no colon on end
 /usr/bin/ls: cannot access /boot/grub2/grub.cfg: No such file or directory
 cannot access /boot/grub2/grub.cfg: No such file or directory
 No such file or directory
@@ -169,6 +173,8 @@ def test_complicated_directory():
     assert listing['control']['minor'] == 236
     assert listing['geany_socket.c46453c2']['type'] == 's'
     assert listing['geany_socket.c46453c2']['size'] == 0
+    assert listing['link with spaces']['type'] == 'l'
+    assert listing['link with spaces']['link'] == '../file with spaces'
 
     # Check that things that _shouldn't_ be there _aren't_
     assert 'size' not in listing['dm-10']
@@ -177,8 +183,10 @@ def test_complicated_directory():
     # Tricky file names
     assert 'File name with spaces in it!' in listing
     assert 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt' in listing
+    assert 'file_name_ending_with_colon:' in listing
     assert dirs.dir_contains('/tmp', 'File name with spaces in it!')
     assert dirs.dir_contains('/tmp', 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
+    assert dirs.dir_contains('/tmp', 'file_name_ending_with_colon:')
 
     # Grey area - commas in size for ordinary files, and devices without
     # major or minor numbers

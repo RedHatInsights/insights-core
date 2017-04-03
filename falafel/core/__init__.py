@@ -602,7 +602,7 @@ class FileListing(Mapper):
     # > 23, minute > 59 or improbable year here.
     # TODO: handle non-English formatted dates here.
     date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[012]\d:\d{2}|\s\d{4}))'
-    name_regex = r'(?P<name>\S.*?)(?: -> (?P<link>\S+))?$'
+    name_regex = r'(?P<name>[^/ ][^/]*?)(?: -> (?P<link>\S.*))?$'
     normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
                               size_regex, date_regex, name_regex))
     normal_re = re.compile(normal_regex)
@@ -683,7 +683,7 @@ class FileListing(Mapper):
             l = line.strip()
             if not l:
                 continue
-            if l.endswith(':'):
+            if l.startswith('/') and l.endswith(':'):
                 # New structures for a new directory
                 this_dir = {'entries': {}, 'files': [], 'dirs': [],
                             'specials': [], 'total': 0, 'raw_list': []}
