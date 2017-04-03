@@ -138,6 +138,8 @@ static_specs = {
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
     "ip6tables"                 : CommandSpec("/sbin/ip6tables-save"),
+    "iptables_permanent"        : SimpleFileSpec("etc/sysconfig/iptables"),
+    "ip6tables_permanent"       : SimpleFileSpec("etc/sysconfig/ip6tables"),
     "ipv4_neigh"                : CommandSpec("/sbin/ip -4 neighbor show nud all"),
     "ipv6_neigh"                : CommandSpec("/sbin/ip -6 neighbor show nud all"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
