@@ -332,3 +332,6 @@ class FilePermissions(object):
             self.perms_group == _PERM_NOTHING,
             self.perms_other == _PERM_NOTHING,
         ))
+
+    def __repr__(self):
+        return 'FilePermissions(' + self.path + ')'

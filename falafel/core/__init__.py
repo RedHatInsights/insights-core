@@ -664,13 +664,14 @@ class FileListing(Mapper):
         if not this_file['link']:
             del this_file['link']
         # Now add it to our various properties
-        this_dir['entries'][this_file['name']] = this_file
+        file_name = this_file['name']
+        this_dir['entries'][file_name] = this_file
         if typ in 'bc':
-            this_dir['specials'].append(this_file['name'])
+            this_dir['specials'].append(file_name)
         if typ == 'd':
-            this_dir['dirs'].append(this_file['name'])
+            this_dir['dirs'].append(file_name)
         else:
-            this_dir['files'].append(this_file['name'])
+            this_dir['files'].append(file_name)
 
     def parse_content(self, content):
         """
