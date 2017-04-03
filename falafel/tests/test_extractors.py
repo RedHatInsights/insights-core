@@ -43,7 +43,7 @@ class TestTarExtractor(unittest.TestCase):
     def test__assert_type_gzip_tar(self):
         with archives.TarExtractor() as tar_ex:
             tar_ex._assert_type(ARC, False)
-            self.assertEquals(tar_ex.content_type, 'application/x-gzip')
+            self.assertIn(tar_ex.content_type, archives.TarExtractor.TAR_FLAGS)
 
     def test__assert_type_gzip_no_tar(self):
         tmp_dir = tempfile.mkdtemp()
