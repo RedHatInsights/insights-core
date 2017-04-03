@@ -1,4 +1,5 @@
 from falafel.mappers import lsof
+from falafel.tests import context_wrap
 
 LSOF = """
 lsof: avoiding stat(/): -b was specified.
@@ -40,7 +41,8 @@ columns = ["COMMAND", "PID", "TID", "USER", "FD", "TYPE", "DEVICE", "SIZE/OFF", 
 
 
 def test_lsof():
-    d = list(lsof.LsofParser().parse(LSOF.splitlines()))
+    ctx = context_wrap(LSOF)
+    d = list(lsof.Lsof(ctx).parse(LSOF.splitlines()))
 
     assert set(columns) == set([k for f in d for k in f.keys()])
     assert d[0] == {
@@ -77,7 +79,8 @@ def test_lsof():
 
 
 def test_lsof_good():
-    d = list(lsof.LsofParser().parse(LSOF_GOOD_V1.splitlines()))
+    ctx = context_wrap(LSOF_GOOD_V1)
+    d = list(lsof.Lsof(ctx).parse(LSOF_GOOD_V1.splitlines()))
     assert d[0] == {
         "COMMAND": "systemd-l",
         "PID": "602",
@@ -111,3 +114,41 @@ def test_lsof_good():
         "NODE": "4674",
         "NAME": "/dev/null"
     }
+
+
+def test_lsof_scan():
+    ctx = context_wrap(LSOF_GOOD_V1)
+    # Scannable provided `any` method
+    lsof.Lsof.any('systemd_commands', lambda x: 'systemd' in x['COMMAND'])
+    # Scannable provided `collect` method
+    lsof.Lsof.collect('polkitd_user', lambda x: x['USER'] == 'polkitd')
+    # Lsof provided `collect_keys` method
+    lsof.Lsof.collect_keys('root_stdin', USER='root', FD='0r', SIZE_OFF='0t0')
+    l = lsof.Lsof(ctx)
+    assert l.systemd_commands
+    assert len(l.polkitd_user) == 12
+
+    assert hasattr(l, 'root_stdin')
+    assert len(l.root_stdin) == 2
+
+    assert l.root_stdin[0]['COMMAND'] == 'abrt-watc'
+    assert l.root_stdin[0]['PID'] == '8619'
+    assert l.root_stdin[0]['TID'] == ''
+    assert l.root_stdin[0]['USER'] == 'root'
+    assert l.root_stdin[0]['FD'] == '0r'
+    assert l.root_stdin[0]['TYPE'] == 'CHR'
+    assert l.root_stdin[0]['DEVICE'] == '1,3'
+    assert l.root_stdin[0]['SIZE/OFF'] == '0t0'
+    assert l.root_stdin[0]['NODE'] == '4674'
+    assert l.root_stdin[0]['NAME'] == '/dev/null'
+
+    assert l.root_stdin[1]['COMMAND'] == 'wpa_suppl'
+    assert l.root_stdin[1]['PID'] == '641'
+    assert l.root_stdin[1]['TID'] == ''
+    assert l.root_stdin[1]['USER'] == 'root'
+    assert l.root_stdin[1]['FD'] == '0r'
+    assert l.root_stdin[1]['TYPE'] == 'CHR'
+    assert l.root_stdin[1]['DEVICE'] == '1,3'
+    assert l.root_stdin[1]['SIZE/OFF'] == '0t0'
+    assert l.root_stdin[1]['NODE'] == '4674'
+    assert l.root_stdin[1]['NAME'] == '/dev/null'
