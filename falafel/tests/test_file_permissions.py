@@ -1,5 +1,9 @@
 import pytest
 from falafel.util.file_permissions import FilePermissions
+from falafel.core import FileListing
+from falafel.tests import test_file_listing, context_wrap
+
+import unittest
 
 PERMISSIONS_TEST_EXCEPTION_VECTORS = [
     ('-rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
@@ -73,7 +77,7 @@ PERMISSIONS_TEST_VECTORS = [
 ]
 
 
-class TestPermissions(object):
+class TestPermissions(unittest.TestCase):
     def test_permissions(self):
         for vector in PERMISSIONS_TEST_VECTORS:
             (line, with_group,
@@ -111,3 +115,15 @@ class TestPermissions(object):
             else:
                 # shouldn't raise an exception
                 FilePermissions(garbage)
+
+    def test_multiple_directories(self):
+        dirs = FileListing(context_wrap(test_file_listing.MULTIPLE_DIRECTORIES))
+        self.assertIn('/etc/sysconfig', dirs)
+        self.assertIn('cbq', dirs.dirs_of('/etc/sysconfig'))
+        # drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq
+        obj = FilePermissions.from_dict(dirs.path_entry('/etc/sysconfig/cbq'))
+        self.assertTrue(hasattr(obj, 'name'))
+        self.assertEqual(obj.name, 'cbq')
+        self.assertEqual(obj.perms_owner, 'rwx')
+        self.assertEqual(obj.perms_group, 'r-x')
+        self.assertEqual(obj.perms_other, 'r-x')

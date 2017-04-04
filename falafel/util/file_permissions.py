@@ -70,7 +70,7 @@ class FilePermissions(object):
         """
         Args:
             line (str): A line from `ls -l /concrete/file` execution. Such as:
-                        -rw------- 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
+                        -rw-------. 1 root root 762 Sep 23 002 /etc/ssh/sshd_config
                         -rw-------. 1 root root 4308 Apr 22 15:57 /etc/ssh/sshd_config
                         -rw-r--r--. 1 root root 4179 Dec  1  2014 /boot/grub2/grub.cfg
         Raises:
@@ -83,6 +83,28 @@ class FilePermissions(object):
              self.owner, self.group, self.path) = r.groups()
         else:
             raise ValueError('Invalid `ls -l` line "{}"'.format(self.line))
+
+    @classmethod
+    def from_dict(self, dirent):
+        """
+        Create a new FilePermissions object from the given dictionary.  This
+        works with the FileListing mapper class, which has already done the
+        hard work of pulling many of these fields out.  We create an object
+        with all the dictionary keys available as properties, and also split
+        the ``perms`` string up into owner, group
+        """
+        # Check that we have at least as much data as the __init__ requires
+        for k in ['perms', 'owner', 'group', 'name', 'dir']:
+            if k not in dirent:
+                raise ValueError("Need required key '{k}'".format(k=k))
+        # Copy all values across
+        for k in dirent:
+            setattr(self, k, dirent[k])
+        # Create perms parts
+        self.perms_owner = self.perms[0:3]
+        self.perms_group = self.perms[3:6]
+        self.perms_other = self.perms[6:9]
+        return self
 
     def owned_by(self, owner, also_check_group=False):
         """
@@ -190,37 +212,46 @@ class FilePermissions(object):
 
     def only_root_can_read(self, root_group_can_read=True):
         """
-        Checks if only root is allowed to read the file (and anyone else is forbidden from reading).
-        Write and execute bits are not checked. The read bits for root user/group are not checked
-        because root can read/write anything regardless of the read/write permissions.
+        Checks if only root is allowed to read the file (and anyone else is
+        forbidden from reading). Write and execute bits are not checked. The
+        read bits for root user/group are not checked because root can
+        read/write anything regardless of the read/write permissions.
 
-        Usecases:
-        root_root_group_can_read=True:
-            owner must be root
-            and 'others' permissions must not contain read
-            and if group owner is not root, the 'group' permissions must not contain read
+        When called with ``root_root_group_can_read`` = ``True``:
 
-            Valid cases:
+        * owner must be root
+        * and 'others' permissions must not contain read
+        * and if group owner is not root, the 'group' permissions must not
+          contain read
+
+        Valid cases::
+
             rwxrwxrwx    owner   ownergroup
             -------------------------------
             ???-??-??    root    nonroot
             ??????-??    root    root
             r--r-----    root    root
-            r--------    root    root
+            r--------    root    nonroot
             rwxrwx---    root    root
             rwxrwx-wx    root    root
 
-            Specifically, these cases are NOT valid because the owner can chmod permissions and grant
-            themselves permissions without root's knowledge:
+        Specifically, these cases are NOT valid because the owner can chmod
+        permissions and grant themselves permissions without root's
+        knowledge::
+
+            rwxrwxrwx    owner   ownergroup
+            -------------------------------
             -??-??-??    nonroot nonroot
             -??r??-??    nonroot root
             ---------    nonroot nonroot
 
-        root_root_group_can_read=False:
-            owner must be root
-            and 'group' and 'others' permissions must not contain read
+        When called with ``root_root_group_can_read`` = ``False``:
 
-            Valid cases:
+        * owner must be root
+        * and 'group' and 'others' permissions must not contain read
+
+        Valid cases::
+
             rwxrwxrwx    owner   ownergroup
             -------------------------------
             ???-??-??    root    ?
@@ -230,16 +261,22 @@ class FilePermissions(object):
             rwx-wx---    root    nonroot
             rwx-wxrwx    root    nonroot
 
-            Specifically, these cases are NOT valid because the owner can chmod permissions and grant
-            themselves permissions without root's knowledge:
+        Specifically, these cases are NOT valid because the owner can chmod
+        permissions and grant themselves permissions without root's
+        knowledge::
+
+            rwxrwxrwx    owner   ownergroup
+            -------------------------------
             -??-??-??    nonroot nonroot
             ---------    nonroot nonroot
 
         Args:
-            root_group_can_read (bool): if set to True, also 'root' group can read the file
+            root_group_can_read (bool): if set to True, this tests whether the
+            'root' group can also read the file.
 
         Returns:
-            bool: True if only root user can read the file, or optionally root group
+            bool: True if only root user (or optionally root group) can read
+            the file.
         """
 
         requirements = True  # The final answer is progressively assembled in this variable.
@@ -255,17 +292,19 @@ class FilePermissions(object):
 
     def only_root_can_write(self, root_group_can_write=True):
         """
-        Checks if only root is allowed to write the file (and anyone else is barred from writing).
-        Read and execute bits are not checked. The write bits for root user/group are not checked
-        because root can read/write anything regardless of the read/write permissions.
+        Checks if only root is allowed to write the file (and anyone else is
+        barred from writing). Read and execute bits are not checked. The
+        write bits for root user/group are not checked because root can
+        read/write anything regardless of the read/write permissions.
 
-        Usecases:
-        root_root_group_can_write=True:
-            owner must be root
-            and 'others' permissions must not contain write
-            and if group owner is not root, the 'group' permissions must not contain write
+        When called with ``root_root_group_can_write`` = ``True``:
 
-            Valid cases:
+        * owner must be root
+        * and 'others' permissions must not contain write
+        * and if group owner is not root, the 'group' permissions must not contain write
+
+        Valid cases::
+
             rwxrwxrwx    owner   ownergroup
             -------------------------------
             ????-??-?    root    nonroot
@@ -275,17 +314,23 @@ class FilePermissions(object):
             rwxrwx---    root    root
             rwxrwxr-x    root    root
 
-            Specifically, these cases are NOT valid because the owner can chmod permissions and grant
-            themselves permissions without root's knowledge:
+        Specifically, these cases are NOT valid because the owner can chmod
+        permissions and grant themselves permissions without root's
+        knowledge::
+
+            rwxrwxrwx    owner   ownergroup
+            -------------------------------
             ?-??-??-?    nonroot nonroot
             ?-??w??-?    nonroot root
             ---------    nonroot nonroot
 
-        root_root_group_can_write=False:
-            owner must be root
-            and 'group' and 'others' permissions must not contain write
+        When called with ``root_root_group_can_write`` = ``False``:
 
-            Valid cases:
+        * owner must be root
+        * and 'group' and 'others' permissions must not contain write
+
+        Valid cases::
+
             rwxrwxrwx    owner   ownergroup
             -------------------------------
             ????-??-?    root    ?
@@ -295,16 +340,22 @@ class FilePermissions(object):
             rwxr-x---    root    nonroot
             rwxr-xrwx    root    nonroot
 
-            Specifically, these cases are NOT valid because the owner can chmod permissions and grant
-            themselves permissions without root's knowledge:
+        Specifically, these cases are NOT valid because the owner can chmod
+        permissions and grant themselves permissions without root's
+        knowledge::
+
+            rwxrwxrwx    owner   ownergroup
+            -------------------------------
             ?-??-??-?    nonroot nonroot
             ---------    nonroot nonroot
 
         Args:
-            root_group_can_write (bool): if set to True, also 'root' group can write the file
+            root_group_can_write (bool): if set to True, this tests whether
+            'root' group can also write to the file.
 
         Returns:
-            bool: True if only root user can write the file, or optionally root group
+            bool: True if only root user (or optionally root group) can write
+            the file.
         """
 
         requirements = True  # The final answer is progressively assembled in this variable.

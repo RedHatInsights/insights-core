@@ -35,21 +35,24 @@ def test_ls_dev():
     ls_dev = LsDev(context_wrap(LS_DEV))
     assert ls_dev.listing_of("/dev/rhel") == {
         'home': {'group': '0', 'name': 'home', 'links': 1, 'perms': 'rwxrwxrwx.',
-                 'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 home -> ../dm-2', 'owner': '0', 'link': '../dm-2',
-                 'date': 'Jul 25 10:00', 'type': 'l', 'size': 7},
+                 'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 home -> ../dm-2',
+                 'owner': '0', 'link': '../dm-2', 'date': 'Jul 25 10:00',
+                 'type': 'l', 'size': 7, 'dir': '/dev/rhel'},
         'root': {'group': '0', 'name': 'root', 'links': 1, 'perms': 'rwxrwxrwx.',
-                 'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 root -> ../dm-0', 'owner': '0', 'link': '../dm-0',
-                 'date': 'Jul 25 10:00', 'type': 'l', 'size': 7},
+                 'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 root -> ../dm-0',
+                 'owner': '0', 'link': '../dm-0', 'date': 'Jul 25 10:00',
+                 'type': 'l', 'size': 7, 'dir': '/dev/rhel'},
         'swap': {'group': '0', 'name': 'swap', 'links': 1, 'perms': 'rwxrwxrwx.',
-                 'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 swap -> ../dm-1', 'owner': '0', 'link': '../dm-1',
-                 'date': 'Jul 25 10:00', 'type': 'l', 'size': 7},
+                 'raw_entry': 'lrwxrwxrwx.  1 0 0    7 Jul 25 10:00 swap -> ../dm-1',
+                 'owner': '0', 'link': '../dm-1', 'date': 'Jul 25 10:00',
+                 'type': 'l', 'size': 7, 'dir': '/dev/rhel'},
         '..': {'group': '0', 'name': '..', 'links': 23, 'perms': 'rwxr-xr-x.',
-               'raw_entry': 'drwxr-xr-x. 23 0 0 3720 Jul 25 12:43 ..', 'owner': '0', 'date': 'Jul 25 12:43',
-               'type': 'd',
-               'size': 3720},
+               'raw_entry': 'drwxr-xr-x. 23 0 0 3720 Jul 25 12:43 ..',
+               'owner': '0', 'date': 'Jul 25 12:43', 'type': 'd', 'size': 3720,
+               'dir': '/dev/rhel'},
         '.': {'group': '0', 'name': '.', 'links': 2, 'perms': 'rwxr-xr-x.',
               'raw_entry': 'drwxr-xr-x.  2 0 0  100 Jul 25 10:00 .', 'owner': '0',
-              'date': 'Jul 25 10:00', 'type': 'd', 'size': 100}}
+              'date': 'Jul 25 10:00', 'type': 'd', 'size': 100, 'dir': '/dev/rhel'}}
     assert ls_dev.listings.get("/dev/mapper")['files'] == ['control', 'docker-253:0-1443032-pool', 'rhel-home',
 
                                                            'rhel-root', 'rhel-swap']

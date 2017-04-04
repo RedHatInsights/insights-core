@@ -637,6 +637,7 @@ class FileListing(Mapper):
         # Get the fields from the regex
         this_file = match.groupdict()
         this_file['raw_entry'] = line
+        this_file['dir'] = this_dir['name']
         typ = match.group('type')
 
         # There's a bunch of stuff that the SELinux listing doesn't contain:
@@ -685,9 +686,11 @@ class FileListing(Mapper):
                 continue
             if l.startswith('/') and l.endswith(':'):
                 # New structures for a new directory
+                name = l[:-1]
                 this_dir = {'entries': {}, 'files': [], 'dirs': [],
-                            'specials': [], 'total': 0, 'raw_list': []}
-                listings[l[:-1]] = this_dir
+                            'specials': [], 'total': 0, 'raw_list': [],
+                            'name': name}
+                listings[name] = this_dir
             elif l.startswith('total') and l[6:].isdigit():
                 this_dir['total'] = int(l[6:])
             elif not this_dir:
@@ -751,6 +754,24 @@ class FileListing(Mapper):
         """
         The parsed data for the given entry name in the given directory.
         """
+        return self.listings[directory]['entries'][name]
+
+    def path_entry(self, path):
+        """
+        The parsed data given a path, which is separated into its directory
+        and entry name.
+        """
+        if path[0] != '/':
+            return None
+        path_parts = path.split('/')
+        # Note that here the first element will be '' because it's before the
+        # first separator.  That's OK, the join puts it back together.
+        directory = '/'.join(path_parts[:-1])
+        name = path_parts[-1]
+        if directory not in self.listings:
+            return None
+        if name not in self.listings[directory]['entries']:
+            return None
         return self.listings[directory]['entries'][name]
 
     def raw_directory(self, directory):
