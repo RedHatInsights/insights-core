@@ -1,3 +1,65 @@
+"""
+LVDisplay - command ``/sbin/lvdisplay``
+=======================================
+
+The normal lvdisplay content looks like this::
+
+  Adding lvsapp01ap01:0 as an user of lvsapp01ap01_mlog
+  --- Volume group ---
+  VG Name               vgp01app
+  ...
+  VG Size               399.98 GiB
+  VG UUID               JVgCxE-UY84-C0Gk-8Cmn-UGXu-UHo0-9Qa4Re
+  --- Logical volume ---
+  global/lvdisplay_shows_full_device_path not found in config: defaulting to 0
+  LV Path                /dev/vgp01app/lvsapp01ap01-old
+  LV Name                lvsapp01ap01-old
+  ...
+  VG Name                vgp01app
+  --- Logical volume ---
+  global/lvdisplay_shows_full_device_path not found in config: defaulting to 0
+  LV Path                /dev/vgp01app/lvsapp01ap02
+  LV Name                lvsapp01ap02
+  ...
+  VG Name                vgp01app
+
+The data is compiled into two keys in the ``data`` attribute:
+
+* ``Logical volume``: a list of logical volume dictionaries.
+* ``Volume group``: a list of volume group dictionaries.
+
+The keys in each dictionary correspond to the headings found in the
+output - for example, the keys in each ``Volume group`` list entry will
+include ``VG Name``, ``VG Size``, etc.
+
+In addition, the ``debug`` key in both the ``data`` attribute dictionary
+and the ``Logical volume`` and ``Volume group`` dictionaries stores any
+debug or warning messages found while parsing the output for that section.
+
+Logical volumes are also available as a dictionary in the ``lvs`` property
+and volume groups in the ``vgs`` property, both arranged by name.  Both
+contain the same information as the associated list entry in the ``volumes``
+dictionary.
+
+Examples:
+
+    >>> lvs = shared(LvDisplay)
+    >>> 'volumes' in lvs # direct access via LegacyItemAccess
+    True
+    >>> 'debug' in lvs.data['volumes'] # access via data property
+    True
+    >>> for lv in lvs.data['volumes']['Logical volume']:
+    ---     print lv['LV Name']
+    ---
+    lvsapp01ap01-old
+    lvsapp01ap02
+    >>> lvs.lvs['lvsapp01ap02']['VG Name'] # access to LVs by name
+    'vgp01app'
+    >>> lvs.vgs['vgp01app']['VG Size'] # access to VGs by name
+    '399.98 GiB'
+
+"""
+
 from .. import mapper, Mapper, LegacyItemAccess
 from collections import defaultdict
 import re
@@ -6,68 +68,12 @@ import re
 @mapper('lvdisplay')
 class LvDisplay(Mapper, LegacyItemAccess):
     """
-    The normal lvdisplay content looks like this:
+    Read the output of ``/sbin/lvdisplay``.
 
-        Adding lvsapp01ap01:0 as an user of lvsapp01ap01_mlog
-      --- Volume group ---
-      VG Name               vgp01app
-      ...
-      VG Size               399.98 GiB
-      VG UUID               JVgCxE-UY84-C0Gk-8Cmn-UGXu-UHo0-9Qa4Re
-
-      --- Logical volume ---
-          global/lvdisplay_shows_full_device_path not found in config: defaulting to 0
-      LV Path                /dev/vgp01app/lvsapp01ap01-old
-      LV Name                lvsapp01ap01-old
-      ...
-      VG Name                vgp01app
-
-      --- Logical volume ---
-          global/lvdisplay_shows_full_device_path not found in config: defaulting to 0
-      LV Path                /dev/vgp01app/lvsapp01ap02
-      LV Name                lvsapp01ap02
-      ...
-      VG Name                vgp01app
-
-
-    This mapper returns a dict with volumes and debug keys.
-    'Volumne group' and 'Logical volumn' are grouped inside volumes key
-    A typical output looks like:
-    {
-        "debug": [
-            "Adding lvsapp01ap01:0 as an user of lvsapp01ap01_mlog"
-        ],
-        "volumes": {
-            "Logical volume": [
-                {
-                    "LV Name": "lvsapp01ap01-old",
-                    "LV Path": "/dev/vgp01app/lvsapp01ap01-old",
-                    ...
-                    "VG Name": "vgp01app",
-                    "debug": [
-                        "    global/lvdisplay_shows_full_device_path not found in config: defaulting to 0"
-                    ]
-                },
-                {
-                    "LV Name": "lvsapp01ap02",
-                    "LV Path": "/dev/vgp01app/lvsapp01ap02",
-                    ...
-                    "VG Name": "vgp01app",
-                    "debug": [
-                        "    global/lvdisplay_shows_full_device_path not found in config: defaulting to 0"
-                    ]
-                }
-            ],
-            "Volume group": [
-                {
-                    "VG Name": "vgp01app",
-                    "VG Size": "399.98 GiB",
-                    ...
-                    "VG UUID": "JVgCxE-UY84-C0Gk-8Cmn-UGXu-UHo0-9Qa4Re",
-                }
-            ]
-        }
-    }
+    Attributes:
+        data(dict): The full data parsed from the output of lvdisplay.
+        lvs(dict): A dictionary of logical volumes by name.
+        vgs(dict): A dictionary of volume groups by name.
     """
 
     def parse_content(self, content):
@@ -78,7 +84,7 @@ class LvDisplay(Mapper, LegacyItemAccess):
         self.data['volumes'] = defaultdict(list)
         for line in content:
             split_line = line.split()
-            if len(split_line) >= 2 and split_line[0] == '---' and split_line[-1] == '---':
+            if segment and len(split_line) >= 2 and split_line[0] == '---' and split_line[-1] == '---':
                 self.add_segment(segment_type, segment)
                 segment_type = " ".join(split_line[1:len(split_line) - 1])
                 segment = []
@@ -91,10 +97,17 @@ class LvDisplay(Mapper, LegacyItemAccess):
 
         self.data['volumes'] = dict(self.data['volumes'])
 
-    def add_segment(self, segment_type, segment):
-        if not segment:
-            return
+        # Add lvs and vgs properties with dicts from the data collected
+        if 'Volume group' in self.data['volumes']:
+            self.vgs = {}
+            for vg in self.data['volumes']['Volume group']:
+                self.vgs[vg['VG Name']] = vg
+        if 'Logical volume' in self.data['volumes']:
+            self.lvs = {}
+            for lv in self.data['volumes']['Logical volume']:
+                self.lvs[lv['LV Name']] = lv
 
+    def add_segment(self, segment_type, segment):
         schema = ()
         for line in segment:
             if line.lstrip().startswith('VG Name'):
