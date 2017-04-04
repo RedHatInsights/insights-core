@@ -72,25 +72,25 @@ from the current master branch of the upstream project.
 2. Make a branch on the fork.  Use a branch name that would be
    meaningful as it will be part of a default commit message when the
    topic branch is merged into the upstream project
-
-    git checkout -b your-topic
-
+   
+       git checkout -b your-topic
+   
 3. Make contributions on the topic branch.  Push them to your fork
    (creating a remote topic branch on your fork)
 
-    git push
+       git push
 
 4. If you need to make updates after pushing, it is useful to rebase
    with master.  This will change history, so you will need to force the
    push (this is fine on a topic branch when other developers are not
    working from the remote branch.)
 
-    git checkout master
-    git pull --rebase upstream master
-    git push
-    git checkout your-topic
-    git rebase master
-    git push --force
+       git checkout master
+       git pull --rebase upstream master
+       git push
+       git checkout your-topic
+       git rebase master
+       git push --force
 
 5. Generally, keep the number of commits on the topic branch small.
    Usually a single commit, perhaps a few in some cases.  Use the
