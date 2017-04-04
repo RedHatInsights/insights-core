@@ -6,6 +6,7 @@ from falafel.config.static import get_config
 from falafel.config import AnalysisTarget, META_FILE_LIST, CommandSpec
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.FATAL)
 
 
 class SpecMapper(object):
@@ -45,6 +46,7 @@ class SpecMapper(object):
                 yield f
 
     def add_files(self, file_map):
+        logger.debug("ROOT: %s", self.root)
         unrooted_map = {
             f.split(self.root)[1]: f
             for f in self.all_names
@@ -53,6 +55,8 @@ class SpecMapper(object):
         unrooted_files = set(unrooted_map)
         commands = set(self.filter_commands(unrooted_files))
         non_commands = unrooted_files - commands
+        if logger.level == logging.DEBUG:
+            logger.debug("\n".join(uf for uf in sorted(unrooted_files)))
 
         for symbolic_name, spec_group in file_map.iteritems():
             for spec in spec_group.get_all_specs():  # Usually just one item in paths
@@ -72,6 +76,7 @@ class SpecMapper(object):
                     filter_set = commands
                 else:
                     filter_set = non_commands
+                logger.debug("Pattern: %s", r.pattern)
                 matches = filter(r.search, filter_set)
                 if matches:
                     matches = [unrooted_map[m] for m in matches]
