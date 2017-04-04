@@ -1,4 +1,4 @@
-# Contributing 
+# Contributing
 
 ## Introduction
 
@@ -57,7 +57,7 @@ using the following commands::
     git push origin master
 
 You will need to initialize the project per the
-`readme.md <https://github.com/ansible/falafel/blob/master/README.md>`_
+[readme.md](https://github.com/ansible/falafel/blob/master/README.md)
 file.
 
 
@@ -71,19 +71,19 @@ from the current master branch of the upstream project.
 
 2. Make a branch on the fork.  Use a branch name that would be
    meaningful as it will be part of a default commit message when the
-   topic branch is merged into the upstream project::
+   topic branch is merged into the upstream project
 
     git checkout -b your-topic
 
 3. Make contributions on the topic branch.  Push them to your fork
-   (creating a remote topic branch on your fork)::
+   (creating a remote topic branch on your fork)
 
     git push
 
 4. If you need to make updates after pushing, it is useful to rebase
    with master.  This will change history, so you will need to force the
    push (this is fine on a topic branch when other developers are not
-   working from the remote branch.) ::
+   working from the remote branch.)
 
     git checkout master
     git pull --rebase upstream master
@@ -94,9 +94,9 @@ from the current master branch of the upstream project.
 
 5. Generally, keep the number of commits on the topic branch small.
    Usually a single commit, perhaps a few in some cases.  Use the
-   ``amend`` and ``rebase -i`` git commands to manage the commit history
+   `amend` and `rebase -i` git commands to manage the commit history
    of the topic branch.  Again, such manipulations change history and
-   require a ``--force`` push.
+   require a `--force` push.
 
 6. When ready, use the github UI to submit a pull request.
 
@@ -110,9 +110,9 @@ from the current master branch of the upstream project.
 
 ### Code Style
 
-Code style mostly follows `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_.
+Code style mostly follows [PEP8](https://www.python.org/dev/peps/pep-0008/).
 The style followed is essentially encoded in the
-`flake8 <http://flake8.pycqa.org/en/latest/>`_ configuration file in the
+[flake8](http://flake8.pycqa.org/en/latest/) configuration file in the
 repo's root directory.  The current configuration specifies the
 following rules as exceptions
 
@@ -123,7 +123,7 @@ following rules as exceptions
 
 In some cases, a particular bit of code may require formatting that
 violates flake8 rules.  In such cases, one can, for example, annotate
-the line with ``# noqa``.  Override flake8 checking sparingly. 
+the line with ``# noqa``.  Override flake8 checking sparingly.
 
 Code that does not pass the project's current flake8 tests
 will not be accepted.
@@ -136,7 +136,7 @@ the code base. So, they should be effective at providing useful
 descriptions of the changes for someone browsing the git log.
 
 Generally, they should follow the usual
-`git conventions <http://chris.beams.io/posts/git-commit/>`_.
+[git conventions](http://chris.beams.io/posts/git-commit/).
 
 1. Separate subject from body with a blank line
 2. Limit the subject line to 50 characters
@@ -157,9 +157,7 @@ Documentation in the form of pydoc should be considered to document
 usage of code as necessary.  In particular, code used by rule developers
 should be carefully documented.  They should be able to use generated
 documentation to understand, for example, the data models exposed by
-mapper classes.  For further details, see the
-:ref:`documentation_guidelines` included in this guide.
-
+mapper classes.
 
 ## Review Checklist
 
@@ -176,10 +174,8 @@ The following checklist is used when reviewing pull requests
 
 ### Mappers
 
-- Mapper is properly documented per the :ref:`documentation_guidelines`
-  and should include
-
-   - Example input 
+- Mapper is properly documented and should include:
+   - Example input
    - The resulting data structure represented by the mapper
    - Mapper usage is clear to a user with some knowledge of the domain
      without needing to examine the code itself
