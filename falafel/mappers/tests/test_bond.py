@@ -1,4 +1,4 @@
-from falafel.mappers.bond import bondinfo, Bond
+from falafel.mappers.bond import Bond
 from falafel.tests import context_wrap
 
 CONTEXT_PATH = "proc/net/bonding/bond0"
@@ -68,23 +68,13 @@ Aggregator ID:
 """.strip()
 
 
-def test_bondinfo():
-    """The bondinfo mapper is deprecated.  Use the Bond class
-    instead.
-    """
-    bond_info = bondinfo(context_wrap(BONDINFO_1, CONTEXT_PATH))
-    assert bond_info.file_name == 'bond0'
-    assert 'load balancing' in bond_info
-    assert bond_info.get('Slave Interface') == \
-        ['Slave Interface: eno1', 'Slave Interface: eno2']
-
-
 def test_bond_class():
 
     bond_obj = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH))
     assert bond_obj.file_name == 'bond0'
     assert not bond_obj.partner_mac_address
     assert bond_obj.bond_mode == '0'
+    assert bond_obj.slave_interface == ['eno1', 'eno2']
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_4, CONTEXT_PATH))
     assert bond_obj.bond_mode == '4'
@@ -93,3 +83,4 @@ def test_bond_class():
 
     bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
     assert not bond_obj.bond_mode
+    assert bond_obj.slave_interface == []
