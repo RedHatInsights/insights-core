@@ -1,9 +1,10 @@
 import logging
 import sys
-from falafel.contrib import toposort
 from collections import defaultdict
-from falafel.core import marshalling, Mapper, plugins
+
 from falafel.config.static import get_config
+from falafel.contrib import toposort
+from falafel.core import marshalling, Mapper, plugins
 from falafel.util import logging_level
 
 specs = get_config()
@@ -174,7 +175,7 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
     try:
         if reducer_stats:
             reducer_stats['count'] += 1
-        return func(local=local, shared=shared)
+        return plugins.REDUCER_DELEGATES[func](local=local, shared=shared)
     except Exception as e:
         if reducer_stats:
             reducer_stats['fail'] += 1
