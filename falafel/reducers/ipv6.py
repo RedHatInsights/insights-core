@@ -80,7 +80,9 @@ from ..mappers.uname import Uname
 RHEL_UNSUPPORTED_VERSION = 9999
 
 
-class IPv6Reducer(object):
+@reducer(requires=[Uname], optional=[ModProbe, LsMod, CmdLine, Sysctl],
+         shared=True)
+class IPv6(object):
     """A shared reducer which detects disabled IPv6 networking."""
 
     def __init__(self, local, shared):
@@ -164,10 +166,3 @@ class IPv6Reducer(object):
             disable IPv6 have been found.
         """
         return self.disablers
-
-
-@reducer(requires=[Uname], optional=[ModProbe, LsMod, CmdLine, Sysctl],
-         shared=True)
-class IPv6(IPv6Reducer):
-    """See class `IPv6Reducer` for attributes and methods."""
-    pass

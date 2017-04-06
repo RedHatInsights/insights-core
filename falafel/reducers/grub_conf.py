@@ -75,7 +75,8 @@ from falafel.mappers.grub1_conf import Grub1Config
 from falafel.mappers.grub2_conf import Grub2Config
 
 
-class GrubConfReducer(object):
+@reducer(optional=[Grub1Config, Grub2Config], shared=True)
+class GrubConf(object):
     """Process Grub configuration v1 or v2 based on which type is passed in
 
     Attributes:
@@ -122,9 +123,3 @@ class GrubConfReducer(object):
 
         self.is_kdump_iommu_enabled = False
         self.kernel_initrds = self.grub2.kernels_initrds
-
-
-@reducer(optional=[Grub1Config, Grub2Config], shared=True)
-class GrubConf(GrubConfReducer):
-    """See class `GrubConfReducer` for attributes and methods."""
-    pass

@@ -38,7 +38,8 @@ BOOT_DISABLED = 'selinux_conf_disabled'
 BOOT_NOT_ENFORCING = 'selinux_conf_not_enforcing'
 
 
-class SELinuxReducer(object):
+@reducer(requires=[SEStatus, GrubConfig, SelinuxConfig], shared=True)
+class SELinux(object):
     """
     A reducer for detecting that SELinux is enabled and running and also enabled at boot time.
     """
@@ -120,9 +121,3 @@ class SELinuxReducer(object):
             bool: True if SELinux is enabled and functional, false otherwise.
         """
         return not bool(self.problems)
-
-
-@reducer(requires=[SEStatus, GrubConfig, SelinuxConfig], shared=True)
-class SELinux(SELinuxReducer):
-    """See SELinuxReducer for attributes and methods."""
-    pass
