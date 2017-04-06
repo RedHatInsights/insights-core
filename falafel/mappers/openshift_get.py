@@ -81,3 +81,12 @@ class OcGetRole(YAMLMapper):
     def get_role(self):
         """ dict: Returns a dictionary of openshift role information."""
         return metadata_name_items(self.data)
+
+
+@mapper('oc_get_pv')
+class OcGetPv(YAMLMapper):
+    """Class to parse ``oc get pv -o yaml --all-namespaces``"""
+
+    def get_pv(self):
+        """ dict: Returns a dictionary of openshift pv information."""
+        return metadata_name_items(self.data)
