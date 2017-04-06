@@ -221,6 +221,7 @@ static_specs = {
     "oc_get_rolebinding"        : CommandSpec("/usr/bin/oc get rolebinding -o yaml --all-namespaces"),
     "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
     "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
+    "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
     "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}", crt=r"\S+"),
     "ose_master_config"         : SimpleFileSpec("etc/origin/master/master-config.yaml"),
     "ose_node_config"           : SimpleFileSpec("etc/origin/node/node-config.yaml"),
