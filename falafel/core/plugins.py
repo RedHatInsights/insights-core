@@ -27,6 +27,7 @@ PLUGINS = defaultdict(lambda: {
 })
 REDUCERS = {}
 CLUSTER_REDUCERS = {}
+REDUCER_DELEGATES = {}
 
 
 def cluster_reducers():
@@ -320,28 +321,29 @@ def reducer(requires=None, optional=None, cluster=False, shared=False):
                                      reason="MISSING_REQUIREMENTS",
                                      details=missing_requirements)
         if cluster:
-            register_cluster_reducer(__f)
+            register_cluster_reducer(func)
         else:
-            register_reducer(__f)
+            register_reducer(func)
 
         if requires:
             _all, _any = split_requirements(requires)
-            __f._any = _any
+            func._any = _any
             _all = set(_all)
             _any = set(i for o in _any for i in o)
         else:
-            __f._any = []
+            func._any = []
             _all, _any = set(), set()
         _optional = set(optional) if optional else set()
-        __f._all, __f._optional = _all, _optional
-        __f._requires = (_all | _any | _optional)
-        __f.shared = shared
-        __f.cluster = cluster
-        __f._reducer = True
+        func._all, func._optional = _all, _optional
+        func._requires = (_all | _any | _optional)
+        func.shared = shared
+        func.cluster = cluster
+        func._reducer = True
         if not shared:
-            register_consumer(__f)
-            __f._dependency_tree = generate_dependency_tree(__f)
-        return __f
+            register_consumer(func)
+            func._dependency_tree = generate_dependency_tree(func)
+        REDUCER_DELEGATES[func] = __f
+        return func
     return _f
 
 
