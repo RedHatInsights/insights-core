@@ -1,4 +1,4 @@
-from falafel.mappers.iptables import IPTables, IP6Tables, IPTabPermanent, IP6TabPermanent
+from falafel.mappers.iptables import IPTablesConfiguration, IPTables, IP6Tables, IPTabPermanent, IP6TabPermanent
 from falafel.tests import context_wrap
 
 IPTABLES_SAVE = """
@@ -63,6 +63,11 @@ def check_iptables_rules_parsing(iptables_obj):
     assert "tcp-reset" in ipt
     assert "--sport" not in ipt
     assert ipt.get_rule("tcp-reset") == [PARSED_TCP_REJECT_RULE]
+
+
+def test_iptables_configuration():
+    ipt = IPTablesConfiguration(context_wrap(IPTABLES_SAVE))
+    check_iptables_rules_parsing(ipt)
 
 
 def test_iptables_save():

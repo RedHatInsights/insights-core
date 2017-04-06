@@ -100,9 +100,8 @@ Examples:
 from .. import Mapper, mapper, get_active_lines
 
 
-@mapper("iptables")
-class IPTables(Mapper):
-    """Process output of the ``iptables-save`` command."""
+class IPTablesConfiguration(Mapper):
+    """A general class for parsing iptables configuration in the ``iptables-save``-like format."""
     def parse_content(self, content):
         self.chains = []
         self.rules = []
@@ -199,18 +198,28 @@ class IPTables(Mapper):
         return any(s in r["rule"] for r in self.rules)
 
 
+@mapper("iptables")
+class IPTables(IPTablesConfiguration):
+    """
+    Process output of the ``iptables-save`` command.
+
+    See ``IPTablesConfiguration`` class for additional information.
+    """
+    pass
+
+
 @mapper("ip6tables")
-class IP6Tables(IPTables):
+class IP6Tables(IPTablesConfiguration):
     """
     Process output of the ``ip6tables-save`` command.
 
-    See ``IPTables`` class for additional information.
+    See ``IPTablesConfiguration`` class for additional information.
     """
     pass
 
 
 @mapper("iptables_permanent")
-class IPTabPermanent(IPTables):
+class IPTabPermanent(IPTablesConfiguration):
     """
     Process ``iptables`` configuration saved in file ``/etc/sysconfig/iptables``.
 
@@ -218,13 +227,13 @@ class IPTabPermanent(IPTables):
     New configuration is saved by using the ``service iptables save`` command. This configuration
     file is not available on a system with ``firewalld`` service.
 
-    See ``IPTables`` class for additional information.
+    See ``IPTablesConfiguration`` class for additional information.
     """
     pass
 
 
 @mapper("ip6tables_permanent")
-class IP6TabPermanent(IPTables):
+class IP6TabPermanent(IPTablesConfiguration):
     """
     Process ``ip6tables`` configuration saved in file ``/etc/sysconfig/ip6tables``.
 
@@ -232,6 +241,6 @@ class IP6TabPermanent(IPTables):
     New configuration is saved by using the ``service ip6tables save`` command. This configuration
     file is not available on a system with ``firewalld`` service.
 
-    See ``IPTables`` class for additional information.
+    See ``IPTablesConfiguration`` class for additional information.
     """
     pass
