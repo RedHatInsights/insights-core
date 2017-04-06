@@ -64,12 +64,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
         """
         pg_dict = {}
         for line in get_active_lines(content):
-            # Remove commented remainder of line
-            if '#' in line:
-                (line, _) = [s.strip() for s in line.split('#', 1)]
-            # Ignore blank lines
-            if not line:
-                continue
+            # Comments and blank lines removed by get_active_lines
             # Split on equals or on first word
             if '=' in line:
                 key, value = [s.strip() for s in line.split("=", 1)]
@@ -87,7 +82,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
             pg_dict[key] = value
         self.data = pg_dict
 
-    def as_duration(self, item):
+    def as_duration(self, item, default=None):
         """
         Postgres's time durations for checkpoint_timeout can have 'ms', 's',
         'min', 'h', or 'd' suffixes.  We convert all of them here to seconds.
@@ -103,12 +98,15 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
         """
         if not item:
             return None
-        if item not in self.data:
-            return None
+        if item in self.data:
+            value = self.data[item]
+        else:
+            value = default
+            if isinstance(value, int) or isinstance(value, float):
+                return float(value)
         dur_re = re.compile(r'^(?P<number>\d+)(?P<suffix>ms|s|min|h|d)?$')
         length_of = {'ms': 0.001, 's': 1, 'min': 60, 'h': 3600, 'd': 86400}
 
-        value = self.data[item]
         match = dur_re.search(value)
         if match:
             # Do we have a suffix at all?  If not, assume seconds, return float
@@ -123,7 +121,7 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
                              val=value, item=item, _type='duration'
                              ))
 
-    def as_boolean(self, item):
+    def as_boolean(self, item, default=None):
         """
         See https://www.postgresql.org/docs/9.3/static/config-setting.html :-
 
@@ -132,21 +130,23 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
         """
         if not item:
             return None
-        if item not in self.data:
-            return None
+        if item in self.data:
+            value = self.data[item]
+        else:
+            value = default
+            if value is None or isinstance(value, bool):
+                return value
 
-        value = self.data[item]
         lval = value.lower()
         if lval in ('on', 't', 'tr', 'tru', 'true', 'y', 'ye', 'yes', '1'):
             return True
-        if lval in ('of', 'off', 'f', 'fa', 'fal', 'fals', 'false', 'n', 'no',
-                    '0'):
+        if lval in ('of', 'off', 'f', 'fa', 'fal', 'fals', 'false', 'n', 'no', '0'):
             return False
         raise ValueError(self._value_error_str.format(
                          val=value, item=item, _type='boolean'
                          ))
 
-    def as_memory_bytes(self, item):
+    def as_memory_bytes(self, item, default=None):
         """
         See https://www.postgresql.org/docs/9.3/static/config-setting.html :-
 
@@ -156,11 +156,19 @@ class PostgreSQLConf(LegacyItemAccess, Mapper):
         """
         if not item:
             return None
-        if item not in self.data:
-            return None
         size_of = {'kB': 1024, 'MB': 1048576, 'GB': 1048576 * 1024}
 
-        value = self.data[item]
+        if item in self.data:
+            value = self.data[item]
+        else:
+            value = default
+
+        # Don't bother to do conversions if we're already integer-esque
+        if isinstance(value, int):
+            return value
+        elif value.isdigit():
+            return int(value)
+
         suffix = value[-2:]
         if suffix in size_of:
             return int(value[:-2]) * size_of[suffix]

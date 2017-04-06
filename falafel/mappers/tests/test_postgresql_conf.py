@@ -152,6 +152,9 @@ db_user_namespace = off
 
 bgwriter_delay = 200ms			# 10-10000ms between rounds
 checkpoint_timeout = 5min
+tcp_keepalives_interval 300
+
+max_stack_depth = 2048576       # Test of as_memory_bytes with string of digits
 
 test_strange_quoting '''strange quoting\\''
 """.strip()
@@ -167,29 +170,61 @@ def test_postgresql_conf():
     # Equals signs are optional
     assert result.get("password_encryption") == "on"
     # Values can include a quote with '' or \\' - both work.
-    print result.get("test_strange_quoting")
     assert result.get("test_strange_quoting") == "'strange quoting'"
+
+    # Default value tests
+    # get method from LegacyItemAccess
+    assert result.get(None) is None
+    assert result.get('') is None
+    assert 'listen_addresses' not in result
+    assert result.get('listen_addresses', 'localhost') == 'localhost'
 
 
 def test_postgresql_conf_conversions():
     result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
     assert result.as_duration('bgwriter_delay') == 0.2
     assert result.as_duration('checkpoint_timeout') == 300
+    assert result.as_duration('tcp_keepalives_interval') == 300
+    # Default value tests do conversions as well
+    assert result.as_duration(None) is None
+    assert 'vacuum_cost_delay' not in result
+    assert result.as_duration('vacuum_cost_delay', '200ms') == 0.2
+    assert result.as_duration('tcp_keepalives_idle', '0') == 0
+    assert result.as_duration('tcp_keepalives_idle', 0) == 0
 
     assert result.as_boolean('password_encryption')
     assert not result.as_boolean('db_user_namespace')
+    # Default value tests do conversions as well
+    assert result.as_boolean(None) is None
+    assert result.as_boolean('no_such_property', True)
+    assert 'krb_caseins_users' not in result
+    assert not result.as_boolean('krb_caseins_users', 'no')
 
     assert result.as_memory_bytes('work_mem') == 2560 * 1024
     assert result.as_memory_bytes('wal_buffers') == 4 * 1048576
+    # No scaling necessary if no suffix but conversion to int done
+    assert result.as_memory_bytes('max_stack_depth') == 2048576
+    # Default value tests do conversions as well
+    assert result.as_memory_bytes(None) is None
+    assert 'temp_buffers' not in result
+    assert result.as_memory_bytes('temp_buffers', '8MB') == 8192 * 1024
+    assert result.as_memory_bytes('temp_buffers', '8388608') == 8192 * 1024
+    assert result.as_memory_bytes('temp_buffers', 8388608) == 8192 * 1024
 
 
 def test_postgresql_conf_conversion_errors():
     result = PostgreSQLConf(context_wrap(postgresql_conf_cnt))
     # Test that we raise the right errors for bad conversions
+    # Can't chain them because the raised error aborts further checks.
+    with pytest.raises(ValueError):
+        assert result.as_duration('log_filename')
+    with pytest.raises(ValueError):
+        assert result.as_duration('db_user_namespace')
     with pytest.raises(ValueError):
         assert result.as_boolean('log_directory')
+    with pytest.raises(ValueError):
         assert result.as_boolean('checkpoint_segments')
-        assert result.as_duration('log_filename')
-        assert result.as_duration('db_user_namespace')
+    with pytest.raises(ValueError):
         assert result.as_memory_bytes('log_line_prefix')
+    with pytest.raises(ValueError):
         assert result.as_memory_bytes('checkpoint_timeout')
