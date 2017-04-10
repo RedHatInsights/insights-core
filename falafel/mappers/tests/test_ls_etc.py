@@ -43,6 +43,7 @@ def test_ls_etc():
         'link': '/etc/default/grub',
         'date': 'Jul  6 23:32',
         'type': 'l',
-        'size': 17}
+        'size': 17,
+        'dir': '/etc/sysconfig'}
     assert ls_etc.files_of("/etc/rc.d/rc3.d") == ['K50netconsole',
                                                   'S10network', 'S97rhnsd']

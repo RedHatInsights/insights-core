@@ -2,6 +2,8 @@
 from falafel.core import FileListing
 from falafel.tests import context_wrap
 
+import unittest
+
 
 MULTIPLE_DIRECTORIES = """
 /etc/sysconfig:
@@ -51,6 +53,9 @@ drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2
 """
 
 BAD_DIRECTORY_ENTRIES = """
+dr-xr-xr-x.  2 0 0     4096 Mar  4 16:19 dir entry with no dir header
+total 3
+
 /badness:
     -rwxr-xr-x. 0 0    1 Sep 12 2010 indented entry
 xr-xr--r--. 0 0        1 Sep 12  2010 bad file type
@@ -94,135 +99,157 @@ adsf
 # but still fit the patterns?  What should the parser do with such entries?
 
 
-def test_multiple_directories():
-    dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
+class TestFileListing(unittest.TestCase):
+    def test_multiple_directories(self):
+        dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
 
-    assert '/etc/sysconfig' in dirs
-    assert '/etc/rc.d/rc3.d' in dirs
-    assert '/etc/rc.d/rc4.d' not in dirs
+        self.assertIn('/etc/sysconfig', dirs)
+        self.assertIn('/etc/sysconfig', dirs.listings)
+        self.assertIn('/etc/rc.d/rc3.d', dirs)
+        self.assertNotIn('/etc/rc.d/rc4.d', dirs)
 
-    assert dirs.files_of('/etc/sysconfig') == \
-        ['ebtables-config', 'firewalld', 'grub']
-    assert dirs.dirs_of('/etc/sysconfig') == ['.', '..', 'cbq', 'console']
-    assert dirs.specials_of('/etc/sysconfig') == []
+        esc = dirs.listings['/etc/sysconfig']
+        self.assertEqual(
+            sorted(esc.keys()),
+            sorted(['entries', 'files', 'dirs', 'specials', 'total', 'raw_list', 'name'])
+        )
 
-    # Testing the main features
-    listing = dirs.listing_of('/etc/sysconfig')
-    assert listing['..'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
-         'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
-         'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..'}
-    assert listing['cbq'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-         'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
-         'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq'}
-    assert listing['firewalld'] == \
-        {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
-         'group': '0', 'size': 72, 'date': 'Sep 15  2015',
-         'name': 'firewalld', 'raw_entry':
-         '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld'}
-    assert listing['grub'] == \
-        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-         'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-         'link': '/etc/default/grub', 'raw_entry':
-         'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'}
+        self.assertEqual(dirs.files_of('/etc/sysconfig'),
+            ['ebtables-config', 'firewalld', 'grub'])
+        self.assertEqual(dirs.dirs_of('/etc/sysconfig'), ['.', '..', 'cbq', 'console'])
+        self.assertEqual(dirs.specials_of('/etc/sysconfig'), [])
 
-    listing = dirs.listing_of('/etc/rc.d/rc3.d')
-    assert listing['..'] == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
-         'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
-         'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..'}
-    assert listing['K50netconsole'] == \
-        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-         'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
-         'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
-         'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole'}
+        # Testing the main features
+        listing = dirs.listing_of('/etc/sysconfig')
+        self.assertEqual(listing['..'],
+            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
+             'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
+             'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
+             'dir': '/etc/sysconfig'})
+        self.assertEqual(listing['cbq'],
+            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
+             'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+             'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
+             'dir': '/etc/sysconfig'})
+        self.assertEqual(listing['firewalld'],
+            {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
+             'group': '0', 'size': 72, 'date': 'Sep 15  2015',
+             'name': 'firewalld', 'raw_entry':
+             '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
+             'dir': '/etc/sysconfig'})
+        self.assertEqual(listing['grub'],
+            {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+             'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
+             'link': '/etc/default/grub', 'raw_entry':
+             'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+             'dir': '/etc/sysconfig'})
 
-    assert dirs.total_of('/etc/sysconfig') == 96
-    assert dirs.total_of('/etc/rc.d/rc3.d') == 4
+        listing = dirs.listing_of('/etc/rc.d/rc3.d')
+        self.assertEqual(listing['..'],
+            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
+             'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
+             'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..',
+             'dir': '/etc/rc.d/rc3.d'})
+        self.assertEqual(listing['K50netconsole'],
+            {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+             'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
+             'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
+             'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
+             'dir': '/etc/rc.d/rc3.d'})
 
-    assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
-    assert dirs.dir_entry('/etc/sysconfig', 'grub') == \
-        {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-         'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-         'link': '/etc/default/grub', 'raw_entry':
-         'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub'}
+        self.assertEqual(dirs.total_of('/etc/sysconfig'), 96)
+        self.assertEqual(dirs.total_of('/etc/rc.d/rc3.d'), 4)
 
-    assert dirs.raw_directory('/etc/sysconfig') == \
-        MULTIPLE_DIRECTORIES.split('\n')[3:10]
+        assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
+        self.assertEqual(dirs.dir_entry('/etc/sysconfig', 'grub'),
+            {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+             'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
+             'link': '/etc/default/grub', 'raw_entry':
+             'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+             'dir': '/etc/sysconfig'})
 
+        self.assertEqual(dirs.raw_directory('/etc/sysconfig'),
+            MULTIPLE_DIRECTORIES.split('\n')[3:10])
 
-def test_complicated_directory():
-    dirs = FileListing(context_wrap(COMPLICATED_FILES))
+        self.assertEqual(dirs.path_entry('/etc/sysconfig/cbq'),
+            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
+             'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+             'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
+             'dir': '/etc/sysconfig'})
+        self.assertIsNone(dirs.path_entry('no_slash'))
+        self.assertIsNone(dirs.path_entry('/'))
+        self.assertIsNone(dirs.path_entry('/foo'))
+        self.assertIsNone(dirs.path_entry('/etc/sysconfig/notfound'))
 
-    # Test the things we expect to be different:
-    listing = dirs.listing_of('/tmp')
-    assert listing['config-3.10.0-229.14.1.el7.x86_64']['type'] == '-'
-    assert listing['menu.lst']['type'] == 'l'
-    assert listing['menu.lst']['link'] == './grub.conf'
-    assert dirs.dir_entry('/tmp', 'dm-10') == \
-        {'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
-         'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
-         'name': 'dm-10', 'raw_entry':
-         'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'}
-    assert listing['dm-10']['type'] == 'b'
-    assert listing['dm-10']['major'] == 253
-    assert listing['dm-10']['minor'] == 10
-    assert listing['control']['type'] == 'c'
-    assert listing['control']['major'] == 10
-    assert listing['control']['minor'] == 236
-    assert listing['geany_socket.c46453c2']['type'] == 's'
-    assert listing['geany_socket.c46453c2']['size'] == 0
-    assert listing['link with spaces']['type'] == 'l'
-    assert listing['link with spaces']['link'] == '../file with spaces'
+    def test_complicated_directory(self):
+        dirs = FileListing(context_wrap(COMPLICATED_FILES))
 
-    # Check that things that _shouldn't_ be there _aren't_
-    assert 'size' not in listing['dm-10']
-    assert 'size' not in listing['control']
+        # Test the things we expect to be different:
+        listing = dirs.listing_of('/tmp')
+        self.assertEqual(listing['config-3.10.0-229.14.1.el7.x86_64']['type'], '-')
+        self.assertEqual(listing['menu.lst']['type'], 'l')
+        self.assertEqual(listing['menu.lst']['link'], './grub.conf')
+        self.assertEqual(dirs.dir_entry('/tmp', 'dm-10'),
+            {'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
+             'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
+             'name': 'dm-10', 'dir': '/tmp', 'raw_entry':
+             'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'})
+        self.assertEqual(listing['dm-10']['type'], 'b')
+        self.assertEqual(listing['dm-10']['major'], 253)
+        self.assertEqual(listing['dm-10']['minor'], 10)
+        self.assertEqual(listing['control']['type'], 'c')
+        self.assertEqual(listing['control']['major'], 10)
+        self.assertEqual(listing['control']['minor'], 236)
+        self.assertEqual(listing['geany_socket.c46453c2']['type'], 's')
+        self.assertEqual(listing['geany_socket.c46453c2']['size'], 0)
+        self.assertEqual(listing['link with spaces']['type'], 'l')
+        self.assertEqual(listing['link with spaces']['link'], '../file with spaces')
 
-    # Tricky file names
-    assert 'File name with spaces in it!' in listing
-    assert 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt' in listing
-    assert 'file_name_ending_with_colon:' in listing
-    assert dirs.dir_contains('/tmp', 'File name with spaces in it!')
-    assert dirs.dir_contains('/tmp', 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
-    assert dirs.dir_contains('/tmp', 'file_name_ending_with_colon:')
+        # Check that things that _shouldn't_ be there _aren't_
+        self.assertNotIn('size', listing['dm-10'])
+        self.assertNotIn('size', listing['control'])
 
-    # Grey area - commas in size for ordinary files, and devices without
-    # major or minor numbers
-    assert 'comma in size currently valid' in listing
-    # For ordinary files, commas in size leave size unconverted
-    assert listing['comma in size currently valid']['size'] == '253,  10'
-    assert 'major' not in listing['comma in size currently valid']
-    assert 'minor' not in listing['comma in size currently valid']
-    # For devices missing a comma in their 'size', size is also unconverted
-    assert 'block dev with no comma also valid' in listing
-    assert listing['block dev with no comma also valid']['size'] == '1048576'
-    assert 'major' not in listing['block dev with no comma also valid']
-    assert 'minor' not in listing['block dev with no comma also valid']
+        # Tricky file names
+        self.assertIn('File name with spaces in it!', listing)
+        self.assertIn('Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt', listing)
+        self.assertIn('file_name_ending_with_colon:', listing)
+        self.assertTrue(dirs.dir_contains('/tmp', 'File name with spaces in it!'))
+        assert dirs.dir_contains('/tmp', 'Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt')
+        assert dirs.dir_contains('/tmp', 'file_name_ending_with_colon:')
 
-    # Extended ACLs
-    assert 'additional_ACLs' in listing
-    assert listing['additional_ACLs']['perms'] == 'rwxr-xr-x+'
+        # Grey area - commas in size for ordinary files, and devices without
+        # major or minor numbers
+        self.assertIn('comma in size currently valid', listing)
+        # For ordinary files, commas in size leave size unconverted
+        self.assertEqual(listing['comma in size currently valid']['size'], '253,  10')
+        self.assertNotIn('major', listing['comma in size currently valid'])
+        self.assertNotIn('minor', listing['comma in size currently valid'])
+        # For devices missing a comma in their 'size', size is also unconverted
+        self.assertIn('block dev with no comma also valid', listing)
+        self.assertEqual(listing['block dev with no comma also valid']['size'], '1048576')
+        self.assertNotIn('major', listing['block dev with no comma also valid'])
+        self.assertNotIn('minor', listing['block dev with no comma also valid'])
 
+        # Extended ACLs
+        self.assertIn('additional_ACLs', listing)
+        self.assertEqual(listing['additional_ACLs']['perms'], 'rwxr-xr-x+')
 
-def test_selinux_directory():
-    dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux=True)
+    def test_selinux_directory(self):
+        dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux=True)
 
-    # Test that one entry is exactly what we expect it to be.
-    assert dirs.dir_entry('/boot', 'grub2') == \
-        {'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
-         'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
-         'se_mls': 's0', 'name': 'grub2', 'raw_entry':
-         'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2'}
+        # Test that one entry is exactly what we expect it to be.
+        self.assertEqual(dirs.dir_entry('/boot', 'grub2'),
+            {'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
+             'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
+             'se_mls': 's0', 'name': 'grub2', 'raw_entry':
+             'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
+             'dir': '/boot'})
 
+    def test_bad_directory(self):
+        dirs = FileListing(context_wrap(BAD_DIRECTORY_ENTRIES))
 
-def test_bad_directory():
-    dirs = FileListing(context_wrap(BAD_DIRECTORY_ENTRIES))
-
-    # None of those entries should parse.  So we should have the raw lines,
-    # but no parsed entries
-    bad_listing = [s.strip() for s in BAD_DIRECTORY_ENTRIES.split('\n')[2:] if s]
-    print bad_listing
-    assert dirs.raw_directory('/badness') == bad_listing
-    assert dirs.listing_of('/badness') == {}
+        # None of those entries should parse.  So we should have the raw lines,
+        # but no parsed entries
+        bad_listing = [s.strip() for s in BAD_DIRECTORY_ENTRIES.split('\n')[5:] if s]
+        self.assertEqual(dirs.raw_directory('/badness'), bad_listing)
+        self.assertEqual(dirs.listing_of('/badness'), {})
