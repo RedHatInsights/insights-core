@@ -36,16 +36,14 @@ def get_meta_specs():
 
 class AnalysisTarget:
 
-    ALL_DERIVED_CLASSES = []
     section_name = "unset"
 
     def __str__(self):
         return self.section_name
 
-    @classmethod
-    def add_section(cls, json, section):
-        if cls.instance not in cls.ALL_DERIVED_CLASSES:
-            raise ValueError("in AnalysisTarget:add_section: class %s not in ALL_DERIVED_CLASSES" % cls)
+    def add_section(self, json, section):
+        if self not in DefaultAnalysisTargets:
+            raise ValueError("in AnalysisTarget:add_section: class %s not in defaults" % self)
 
         if not section:
             return json
@@ -53,16 +51,16 @@ class AnalysisTarget:
         if not json:
             json = {}
 
-        if cls.section_name in json:
-            json[cls.section_name].extend(section)
+        if self.section_name in json:
+            json[self.section_name].extend(section)
         else:
-            json[cls.section_name] = section
+            json[self.section_name] = section
 
         return json
 
     @classmethod
     def get(cls, section_name):
-        for each_class in cls.ALL_DERIVED_CLASSES:
+        for each_class in DefaultAnalysisTargets:
             if section_name == each_class.section_name:
                 return each_class
         return None
@@ -126,7 +124,8 @@ class HostTarget(AnalysisTarget):
         section = [{
             "file": spec.get_for_uploader(),
             "pattern": output_filters,
-            "archive_file_name": spec.get_archive_file_name(self)}]
+            "archive_file_name": spec.get_archive_file_name(self)
+        }]
 
         return self.add_section(json, section)
 
@@ -243,7 +242,7 @@ class DockerContainerTarget(DockerTarget):
         return '{CONTAINER_MOUNT_POINT}' + path
 
 
-AnalysisTarget.ALL_DERIVED_CLASSES = DefaultAnalysisTargets = [
+DefaultAnalysisTargets = [
     HostTarget(), DockerImageTarget(), DockerContainerTarget()
 ]
 
@@ -326,11 +325,12 @@ class NoneGroup(SpecGroup):
 
 class InsightsDataSpecConfig(object):
 
-    def __init__(self, specs, meta_specs, pre_commands=None, maximum_line_size=1024 * 32):
+    def __init__(self, specs, meta_specs, pre_commands=None, maximum_line_size=1024 * 32, prefix=None):
         self.specs = group_wrap(specs)
         self.pre_commands = pre_commands if pre_commands else {}
         self.meta_specs = group_wrap(meta_specs)
         self.maximum_line_size = maximum_line_size
+        self.prefix = prefix
 
     def _get_group_and_specs(self, specs, other_specs):
         s_g = specs.__class__

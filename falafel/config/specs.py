@@ -215,13 +215,6 @@ static_specs = {
     "ntptime"                   : CommandSpec("/usr/sbin/ntptime"),
     'osa_dispatcher.log'        : First([SimpleFileSpec("var/log/rhn/osa-dispatcher.log", large_content=True),
                                          SimpleFileSpec("rhn-logs/rhn/osa-dispatcher.log", large_content=True)]),
-    "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
-    "oc_get_dc"                 : CommandSpec("/usr/bin/oc get dc -o yaml --all-namespaces"),
-    "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces"),
-    "oc_get_rolebinding"        : CommandSpec("/usr/bin/oc get rolebinding -o yaml --all-namespaces"),
-    "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
-    "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
-    "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
     "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}", crt=r"\S+"),
     "ose_master_config"         : SimpleFileSpec("etc/origin/master/master-config.yaml"),
     "ose_node_config"           : SimpleFileSpec("etc/origin/node/node-config.yaml"),
@@ -379,6 +372,16 @@ meta_files = {
     "metadata.json"             : SimpleFileSpec("metadata.json"),
     "prev_uploader_log"         : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log.1"),
     "uploader_log"              : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log"),
+}
+
+openshift = {
+    "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
+    "oc_get_dc"                 : CommandSpec("/usr/bin/oc get dc -o yaml --all-namespaces"),
+    "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces"),
+    "oc_get_rolebinding"        : CommandSpec("/usr/bin/oc get rolebinding -o yaml --all-namespaces"),
+    "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
+    "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
+    "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
 }
 
 # flake8: noqa
