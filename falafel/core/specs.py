@@ -16,13 +16,16 @@ class SpecMapper(object):
 
     def __init__(self, tf_object, data_spec_config=None):
         self.tf = tf_object
-        self.all_names = [f for f in self.tf.getnames() if not self.tf.isdir(f)]
+        self.all_names = [f for f in self.tf.getnames() if self._name_filter(f)]
         self.root = os.path.commonprefix(self.all_names)
         logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
         self.symbolic_files = defaultdict(list)
         self.analysis_target = self._determine_analysis_target()
         self.create_symbolic_file_list()
+
+    def _name_filter(self, name):
+        return not (self.tf.isdir(name) or name.endswith(".tar.gz"))
 
     def _get_first_matching(self, pattern):
         for match in filter(
