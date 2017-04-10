@@ -2,6 +2,8 @@ from falafel.mappers.ls_var_log import LsVarLog
 from falafel.tests import context_wrap
 from falafel.util.file_permissions import FilePermissions
 
+import unittest
+
 # from RHEL 7.2
 LS_1 = """
 /var/log:
@@ -74,79 +76,74 @@ drwxr-xr-x. 7 root root 4096 Oct 19 15:38 ..
 """.strip()
 
 
-def test_smoketest():
-    context = context_wrap(LS_1)
-    result = LsVarLog(context)
+class Test_Ls_Var_Log(unittest.TestCase):
+    """
+    These tests are mainly derived from the old implementation of LsVarLog,
+    which did its own parsing and used FilePermissions objects throughout.
+    The new implementation used the more completely tested and more robust
+    FileListing mapper.  So some tests are a bit ... odd.
+    """
+    def test_smoketest(self):
+        context = context_wrap(LS_1)
+        result = LsVarLog(context)
 
-    assert "/var/log:" in result.lines_unparsed
-    assert "-rw-r--r--. 1 root root 8834 Oct 19 15:39 tuned.log" in result.lines_unparsed
-    assert "/var/log" in result.dir_parsed
-    assert "/var/log/audit" in result.dir_parsed
-    assert "/var/log/ppp" in result.dir_parsed
-    assert "/var/log/rhsm" in result.dir_parsed
-    assert "/var/log/tuned" in result.dir_parsed
-    assert "audit.log" == result.dir_parsed["/var/log/audit"][2].path
-    assert "audit.log" == result.get_filepermissions("/var/log/audit", "audit.log").path
+        self.assertIn("/var/log", result)
+        self.assertIn("/var/log/audit", result)
+        self.assertIn("/var/log/ppp", result)
+        self.assertIn("/var/log/rhsm", result)
+        self.assertIn("/var/log/tuned", result)
+        self.assertIn("audit.log", result.listings["/var/log/audit"]['entries'])
+        self.assertEqual("audit.log", result.get_filepermissions("/var/log/audit", "audit.log").path)
 
+    def test_dir_parsed(self):
+        context = context_wrap(LS_1)
+        result = LsVarLog(context)
+        ls = {}
+        current_dir = ""
+        test_lines = LS_1.splitlines()
+        for line in test_lines:
+            # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
+            if line.endswith(":"):
+                current_dir = line.split(":")[0]
+                ls[current_dir] = []
+            elif line.startswith("total"):
+                pass
+            elif line:
+                fileperm = FilePermissions(line)
+                ls[current_dir].append(fileperm.path)
+        for dir in ls:
+            self.assertIn(dir, result)
+            dir_from_mapper = result.listings[dir]['entries']
+            # Two way cross-check:
+            # Were all files in our simple parse found in the mapper?
+            for fil in ls[dir]:
+                self.assertIn(fil, dir_from_mapper)
+            # Were all files in the mapper found in our simple parse?
 
-def test_lines_unparsed():
-    context = context_wrap(LS_1)
-    result = LsVarLog(context)
-    test_lines = LS_1.split("\n")
-    assert test_lines == result.lines_unparsed
+            for fil in dir_from_mapper:
+                self.assertIn(fil, ls[dir])
 
-
-def test_dir_parsed():
-    context = context_wrap(LS_1)
-    result = LsVarLog(context)
-    ls = {}
-    current_dir = ""
-    test_lines = LS_1.split("\n")
-    for line in test_lines:
-        # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
-        if line.endswith(":"):
-            current_dir = line.split(":")[0]
-            ls[current_dir] = []
-        elif line.startswith("total"):
-            pass
-        elif line:
-            fileperm = FilePermissions(line)
-            ls[current_dir].append(fileperm)
-    for dir in ls:
-        assert dir in result.dir_parsed
-        test_list = []
-        result_list = []
-        for fil in ls[dir]:
-            # saving FilePermissions().line
-            test_list.append(fil.line)
-        for fil in result.dir_parsed[dir]:
-            # saving FilePermissions().line
-            result_list.append(fil.line)
-        # comparing the "line" attributes of the FilePermissions instances
-        assert test_list == result_list
-
-
-def test_get_filepermissions():
-    context = context_wrap(LS_1)
-    result = LsVarLog(context)
-    ls = {}
-    current_dir = ""
-    test_lines = LS_1.split("\n")
-    for line in test_lines:
-        # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
-        if line.endswith(":"):
-            current_dir = line.split(":")[0]
-            ls[current_dir] = []
-        elif line.startswith("total"):
-            pass
-        elif line:
-            fileperm = FilePermissions(line)
-            ls[current_dir].append(fileperm)
-    for dir in ls:
-        assert dir in result.dir_parsed
-        for fil in ls[dir]:
-            found = result.get_filepermissions(dir, fil.path)
-            assert found is not None
-            assert fil.line == found.line
-            not_found = result.get_filepermissions(dir, "nonexisting" + fil.path)
-            assert not_found is None
+    def test_get_filepermissions(self):
+        context = context_wrap(LS_1)
+        result = LsVarLog(context)
+        ls = {}
+        current_dir = ""
+        test_lines = LS_1.splitlines()
+        for line in test_lines:
+            # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
+            if line.endswith(":"):
+                current_dir = line.split(":")[0]
+                ls[current_dir] = []
+            elif line.startswith("total"):
+                pass
+            elif line:
+                fileperm = FilePermissions(line)
+                ls[current_dir].append(fileperm)
+        for dir in ls:
+            self.assertIn(dir, result)
+            for fil in ls[dir]:
+                found = result.get_filepermissions(dir, fil.path)
+                assert found is not None
+                self.assertEqual(fil.line, found.line)
+                not_found = result.get_filepermissions(dir, "nonexisting" + fil.path)
+                assert not_found is None
