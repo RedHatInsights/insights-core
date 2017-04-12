@@ -14,7 +14,7 @@ class Marshaller(object):
     for use in the reduce phase.
     """
 
-    def marshal(self, o, use_value_list=False, shared=False):
+    def marshal(self, o, use_value_list=False):
         """
         Packages the return from a mapper for easy use in the reducer.
         """
@@ -32,10 +32,7 @@ class Marshaller(object):
             else:
                 return {o: True}
         else:
-            if shared:
-                return [o] if use_value_list else o
-            else:
-                raise TypeError("Marshaller doesn't support given type %s" % type(o))
+            raise TypeError("Marshaller doesn't support given type %s" % type(o))
 
     def unmarshal(self, doc):
         return doc
