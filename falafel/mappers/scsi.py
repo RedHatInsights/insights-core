@@ -2,10 +2,6 @@ from collections import deque
 from .. import Mapper, mapper
 from ..mappers import ParseException
 
-KEY_WORD_LINE_0 = ["Host", "Channel", "Id", "Lun"]
-KEY_WORD_LINE_1 = ["Vendor", "Model", "Rev"]
-KEY_WORD_LINE_2 = ["Type", "ANSI  SCSI revision"]
-
 
 class Device(object):
     """
@@ -58,9 +54,11 @@ class SCSI(Mapper):
         Vendor: HP       Model: P420i            Rev: 3.54
         Type:   RAID                             ANSI  SCSI revision: 05
     """
+
     HOST_KEYS = ['Host', 'Channel', 'Id', 'Lun']
     VENDOR_KEYS = ['Vendor', 'Model', 'Rev']
-    TYPE_KEYS = ['Type', 'ANSI  SCSI revision']
+    TYPE_KEYS = ['Type', 'ANSI SCSI revision']
+    TYPE_KEYS_ALT = ['Type', 'ANSI  SCSI revision']
 
     def parse_content(self, content, header='Attached devices:'):
         devices = []
@@ -74,12 +72,21 @@ class SCSI(Mapper):
             devices.append(self.parse_device(lines))
         self.data = devices
 
+    """
+    The TYPE line was defined in two different ways depending on RHEL version
+    This method now checks for which version is used and runs collect_keys
+    with the appropriate key definition
+    """
     @classmethod
     def parse_device(cls, parts):
         device = {}
         cls.collect_keys(parts.popleft(), cls.HOST_KEYS, device)
         cls.collect_keys(parts.popleft(), cls.VENDOR_KEYS, device)
-        cls.collect_keys(parts.popleft(), cls.TYPE_KEYS, device)
+        type_content = parts.popleft()
+        if cls.TYPE_KEYS[1] in type_content:
+            cls.collect_keys(type_content, cls.TYPE_KEYS, device)
+        elif cls.TYPE_KEYS_ALT[1] in type_content:
+            cls.collect_keys(type_content, cls.TYPE_KEYS_ALT, device)
         return Device(device)
 
     @classmethod
