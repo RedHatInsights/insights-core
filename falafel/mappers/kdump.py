@@ -4,59 +4,31 @@ Kernel dump configuration files
 
 This module contains the following mappers:
 
-* ``KDumpConf`` - reads the ``/etc/kdump.conf`` file.
-* ``KexecCrashLoaded`` - reads the ``/sys/kernel/kexec_crash_loaded`` file.
-* ``KexecCrashSize`` - reads the ``/sys/kernel/kexec_crash_size`` file.
-* ``SysconfigKdump`` - reads the ``/etc/sysconfig/kdump`` file.
+``KDumpConf``
+-------------
 
-The following mappers are deprecated and will be removed in the future:
+Reads the ``/etc/kdump.conf`` file.
 
-* ``crashkernel_enabled``: is 'crashkernel' in the kernel's command line?
-  Use the ``CmdLine`` mapper from the ``cmdline`` mapper module instead.
-* ``kdump_service_enabled``: is the 'kdump' service enabled?  Use the
-  ``Services`` reducer from the ``services`` reducer module instead.
-* ``kdump_using_local_disk``: is the kdump service writing to local disk or
-  not.  Use the ``KDumpConf`` mapper in this module instead.
+``KexecCrashLoaded``
+--------------------
+
+Reads the ``/sys/kernel/kexec_crash_loaded`` file.
+
+``KexecCrashSize``
+------------------
+
+Reads the ``/sys/kernel/kexec_crash_size`` file.
+
+``SysconfigKdump``
+------------------
+
+Reads the ``/etc/sysconfig/kdump`` file.
+
 """
 
 import re
 from urlparse import urlparse
 from .. import Mapper, mapper, SysconfigOptions
-
-
-@mapper("cmdline")
-def crashkernel_enabled(context):
-    """
-    Determine if kernel is configured to reserve memory for the crashkernel
-
-    **DEPRECATED** - use the 'CmdLine' shared mapper in the 'cmdline' module
-    instead.
-    """
-
-    for line in context.content:
-        if 'crashkernel' in line:
-            return True
-
-
-@mapper("systemctl_list-unit-files")
-@mapper("chkconfig")
-def kdump_service_enabled(context):
-    """
-    Determine if kdump service is enabled with system
-
-    RHEL5/6 uses chkconfig and if enabled will look something like this:
-    kdump          	0:off	1:off	2:off	3:on	4:on	5:on	6:off
-
-    RHEL7 uses systemctl list-unit-files and if enabled will look like this:
-    kdump.service                               enabled
-
-    **DEPRECATED** - use the 'Services' shared reducer in the 'services'
-    module instead.
-    """
-
-    for line in context.content:
-        if line.startswith('kdump') and (':on' in line or 'enabled' in line):
-            return True
 
 
 @mapper("kdump.conf")
@@ -297,30 +269,6 @@ class KexecCrashLoaded(Mapper):
             return
         line = list(content)[0].strip()
         self.is_loaded = line == '1'
-
-
-@mapper("kdump.conf")
-def kdump_using_local_disk(context):
-    """
-    Determine if kdump service is using local disk
-
-    **DEPRECATED** - use the 'KDumpConf' shared mapper in this module
-    instead.
-    """
-
-    KDUMP_NETWORK_REGEX = re.compile(r'^\s*(ssh|nfs4?|net)\s+', re.I)
-    KDUMP_LOCAL_DISK_REGEX = re.compile(r'^\s*(ext[234]|raw|xfs|btrfs|minix)\s+', re.I)
-
-    local_disk = True
-    for line in context.content:
-        if line.startswith('#') or line == '':
-            continue
-        elif KDUMP_NETWORK_REGEX.search(line):
-            local_disk = False
-        elif KDUMP_LOCAL_DISK_REGEX.search(line):
-            local_disk = True
-
-    return local_disk
 
 
 @mapper('kdump')
