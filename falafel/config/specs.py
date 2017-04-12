@@ -235,8 +235,8 @@ static_specs = {
     "postgresql.log"            : First([PatternSpec(r"var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
                                     PatternSpec(r"opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
                                     PatternSpec(r"database/postgresql-.+\.log", large_content=True)]),
-    "prelink_orig_md5"          : All([CommandSpec("/usr/sbin/prelink -y --md5 {so_files}", so_files=r"\S+"),
-                                    CommandSpec("/usr/bin/md5sum {so_files}", so_files=r"\S+")]),
+    "prelink_orig_md5"          : All([CommandSpec("/usr/sbin/prelink -y --md5 {md5chk_files}", md5chk_files=r"\S+"),
+                                    CommandSpec("/usr/bin/md5sum {md5chk_files}", md5chk_files=r"\S+")]),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
     "ps_auxwww"                 : SimpleFileSpec("sos_commands/process/ps_auxwww"),
@@ -363,7 +363,7 @@ pre_commands = {
     "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
     "ceph_osd_ec_profile_ls ": "/usr/bin/ceph osd erasure-code-profile ls",
     "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'",
-    "so_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /dev/null 2>/dev/null"
+    "md5chk_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null"
 }
 
 meta_files = {
