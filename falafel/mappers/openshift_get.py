@@ -90,3 +90,12 @@ class OcGetPv(YAMLMapper):
     def get_pv(self):
         """ dict: Returns a dictionary of openshift pv information."""
         return metadata_name_items(self.data)
+
+
+@mapper('oc_get_pvc')
+class OcGetPvc(YAMLMapper):
+    """Class to parse ``oc get pvc -o yaml --all-namespaces``"""
+
+    def get_pvc(self):
+        """ dict: Returns a dictionary of openshift pvc information."""
+        return metadata_name_items(self.data)
