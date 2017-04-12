@@ -24,6 +24,7 @@ static_specs = {
     "ceph_osd_dump"             : CommandSpec("/usr/bin/ceph osd dump -f json-pretty"),
     "ceph_osd_df"               : CommandSpec("/usr/bin/ceph osd df -f json-pretty"),
     "ceph_osd_ec_profile_get"   : CommandSpec("/usr/bin/ceph osd erasure-code-profile get {ceph_osd_ec_profile_ls} -f json-pretty ", ceph_osd_ec_profile_ls=r"\S+"),
+    "ceph_osd.log"              : PatternSpec(r"var/log/ceph/ceph-osd.*\.log$"),
     "ceph_s"                    : CommandSpec("/usr/bin/ceph -s -f json-pretty"),
     "ceph_v"                    : CommandSpec("/usr/bin/ceph -v"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
