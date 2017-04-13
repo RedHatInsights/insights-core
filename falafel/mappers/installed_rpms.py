@@ -231,6 +231,13 @@ class InstalledRpms(Mapper):
         else:
             return min(self.packages[package_name])
 
+    @property
+    def is_hypervisor(self):
+        """bool: True if ".el[6|7]ev" exists in "vdsm".release, else False."""
+        rpm = self.get_max("vdsm")
+        return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
+                False)
+
 
 class InstalledRpm(object):
     """
