@@ -1,4 +1,4 @@
-from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo
+from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, CephHealthDetail
 from falafel.tests import context_wrap
 
 CEPH_OSD_DUMP_INFO = """
@@ -83,6 +83,21 @@ CEPH_S_INFO = """
         "epoch": 1,
         "by_rank": []
     }
+}
+""".strip()
+
+CEPH_HEALTH_DETAIL_INFO = """
+{
+    "health": {
+    },
+    "timechecks": {
+        "epoch": 4,
+        "round": 0,
+        "round_status": "finished"
+    },
+    "summary": [],
+    "overall_status": "HEALTH_OK",
+    "detail": []
 }
 """.strip()
 
@@ -251,3 +266,22 @@ class TestCephCfgInfo():
         }
 
         assert result.max_open_files == '131072'
+
+
+class TestCephHealthDetail():
+    def test_ceph_health_detail(self):
+        result = CephHealthDetail(context_wrap(CEPH_HEALTH_DETAIL_INFO)).data
+
+        assert result == {
+            "health": {
+            },
+            "timechecks": {
+                "epoch": 4,
+                "round": 0,
+                "round_status": "finished"
+            },
+            "summary": [],
+            "overall_status": "HEALTH_OK",
+            "detail": []
+        }
+        assert result['overall_status'] == 'HEALTH_OK'

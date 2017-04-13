@@ -21,6 +21,7 @@ static_specs = {
     "ceilometer_collector_log"  : SimpleFileSpec("var/log/ceilometer/collector.log", large_content=True),
     "ceilometer.conf"           : SimpleFileSpec("etc/ceilometer/ceilometer.conf"),
     "ceph_config_show"          : CommandSpec("/usr/bin/ceph daemon {ceph_socket_files} config show", ceph_socket_files=r"\S+"),
+    "ceph_health_detail"        : CommandSpec("/usr/bin/ceph health detail -f json-pretty"),
     "ceph_osd_dump"             : CommandSpec("/usr/bin/ceph osd dump -f json-pretty"),
     "ceph_osd_df"               : CommandSpec("/usr/bin/ceph osd df -f json-pretty"),
     "ceph_osd_ec_profile_get"   : CommandSpec("/usr/bin/ceph osd erasure-code-profile get {ceph_osd_ec_profile_ls} -f json-pretty ", ceph_osd_ec_profile_ls=r"\S+"),
