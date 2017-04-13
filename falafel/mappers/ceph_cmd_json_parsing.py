@@ -17,6 +17,8 @@ e.g
 
 5. ceph daemon {ceph_socket_files} config show
 
+6. ceph health detail -f json-pretty
+
 ...
 
 
@@ -186,6 +188,21 @@ Part of the sample output of this command looks like::
     }
 
 
+    6. `ceph health detail -f json-pretty`
+
+    {
+        "health": {
+        },
+        "timechecks": {
+            "epoch": 4,
+            "round": 0,
+            "round_status": "finished"
+        },
+        "summary": [],
+        "overall_status": "HEALTH_OK",
+        "detail": []
+    }
+
 
 Examples:
 
@@ -215,6 +232,7 @@ Examples:
         ...     ]
         ... }
         ... '''.strip()
+
     >>> from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump
     >>> from falafel.tests import context_wrap
     >>> shared = {CephOsdDump: CephOsdDump(context_wrap(ceph_osd_dump_content))}
@@ -252,10 +270,18 @@ Examples:
     ...
 
     >>> from falafel.tests import context_wrap
-    >>> from falafel.mappers.ceph_config_show import CephCfgInfo
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephCfgInfo
     >>> ceph_info = CephCfgInfo(context_wrap(CEPHINFO))
     >>> cpu_info.max_open_files
     131072
+
+    ...
+
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephHealthDetail
+    >>> result = CephHealthDetail(context_wrap(ceph_health_detail_content)).data
+    >>> result["overall_status"]
+    "HEALTH_OK"
 """
 
 import json
@@ -296,6 +322,14 @@ class CephOsdDf(CephJsonParsing):
 class CephS(CephJsonParsing):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
+    """
+    pass
+
+
+@mapper("ceph_health_detail")
+class CephHealthDetail(CephJsonParsing):
+    """
+    Class to parse the output of ``ceph health detail -f json-pretty``.
     """
     pass
 
