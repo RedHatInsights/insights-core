@@ -93,10 +93,18 @@ oracleasm-support-2.1.3-1.el5.x86_64
 oracle-validated-1.0.0-18.el5.x86_64
 '''.strip()
 
+RHV_HYPERVISOR_RPMS = '''
+vdsm-jsonrpc-4.18.15.3-1.el7ev.noarch
+vdsm-hook-vmfex-dev-4.18.15.3-1.el7ev.noarch
+vdsm-cli-4.18.15.3-1.el7ev.noarch
+vdsm-4.18.15.3-1.el7ev.x86_64
+'''.strip()
+
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
     assert rpms.packages['openssh-server'][0].package == 'openssh-server-5.3p1-104.el6'
+    assert not rpms.is_hypervisor
 
 
 def test_from_line():
@@ -282,3 +290,9 @@ def test_oracleasmrpms():
     ora_rpms = OracleAsmRpms(context_wrap(NON_ORACLEASM_RPMS))
     assert ora_rpms is not None
     assert ora_rpms.rpms_installed == []
+
+
+def test_is_hypervisor():
+    rpms = InstalledRpms(context_wrap(RHV_HYPERVISOR_RPMS))
+    assert "vdsm" in rpms.packages
+    assert rpms.is_hypervisor
