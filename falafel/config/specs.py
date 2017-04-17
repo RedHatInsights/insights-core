@@ -140,6 +140,8 @@ static_specs = {
                                     SimpleFileSpec("sos_commands/networking/ip_address"),
                                     SimpleFileSpec("ip_a")]),
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
+    "ipcs_s"                    : CommandSpec("/usr/bin/ipcs -s"),
+    "ipcs_s_i"                  : CommandSpec("/usr/bin/ipcs -s -i {semid}", semid=r"\S+"),
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
     "ip6tables"                 : CommandSpec("/sbin/ip6tables-save"),
     "iptables_permanent"        : SimpleFileSpec("etc/sysconfig/iptables"),
@@ -365,7 +367,8 @@ pre_commands = {
     "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
     "ceph_osd_ec_profile_ls ": "/usr/bin/ceph osd erasure-code-profile ls",
     "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'",
-    "md5chk_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null"
+    "md5chk_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
+    "semid": "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'",
 }
 
 meta_files = {

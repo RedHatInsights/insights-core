@@ -74,6 +74,10 @@ class ProcessList(Mapper):
         """list: Returns the list of values from the COMMAND column."""
         return [row["COMMAND"] for row in self.data if "COMMAND" in row]
 
+    def running_pids(self):
+        """list: Returns the list of PIDs from the PID column."""
+        return [row["PID"] for row in self.data if "PID" in row]
+
     def cpu_usage(self, proc):
         """str: Returns the %CPU column corresponding to ``proc`` in COMMAND or
         ``None`` if ``proc`` is not found.

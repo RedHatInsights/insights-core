@@ -75,6 +75,11 @@ class TestPS(unittest.TestCase):
         self.assertEqual(d[-2]["COMMAND"], 'libvirtd')
 
 
+def test_ps_auxcww_pid():
+    ps_auxcww = ps.PsAuxcww(context_wrap(PsAuxcww_TEST))
+    assert ps_auxcww.running_pids() == ['1', '1821', '1864', '20160', '20161', '20357', '22673', '27323']
+
+
 def test_ps_auxcww_alternate():
     ps_auxcww = ps.PsAuxcww(context_wrap(PsAuxcww_TEST))
     assert ps_auxcww.services == [
