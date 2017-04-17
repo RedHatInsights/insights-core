@@ -69,3 +69,7 @@ def test_lvdisplay():
     assert 'vgp01app' == lvs.get('volumes')['Volume group'][0]['VG Name']
     assert '399.98 GiB' == lvs.get('volumes')['Volume group'][0]['VG Size']
     assert 'vgp01app' == lvs.get('volumes')['Logical volume'][1]['VG Name']
+    assert 'vgp01app' in lvs.vgs
+    assert lvs.vgs['vgp01app'] == lvs.get('volumes')['Volume group'][0]
+    assert 'lvsapp01ap02' in lvs.lvs
+    assert lvs.lvs['lvsapp01ap02'] == lvs.get('volumes')['Logical volume'][1]
