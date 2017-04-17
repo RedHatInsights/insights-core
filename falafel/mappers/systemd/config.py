@@ -7,7 +7,7 @@ Service systemd files are in ``/usr/lib/systemd/system``, and Their content form
 
 from ConfigParser import RawConfigParser as cp
 import StringIO
-from falafel.core import Mapper
+from falafel.core import Mapper, LegacyItemAccess
 from falafel.core.plugins import mapper
 
 
@@ -76,7 +76,7 @@ class SystemdDocker(Mapper):
 
 
 @mapper('systemd_system.conf')
-class SystemdSystemConf(Mapper):
+class SystemdSystemConf(LegacyItemAccess, Mapper):
     """Class for system systemd configuration.
 
     Systemd configuration files are recorded via INI format as well, we can
@@ -103,6 +103,9 @@ class SystemdSystemConf(Mapper):
 
     def parse_content(self, content):
         self.data = parse_systemd_ini(content)
+
+    def __contains__(self, conf):
+        return conf in self.data
 
 
 @mapper('systemd_openshift_node')

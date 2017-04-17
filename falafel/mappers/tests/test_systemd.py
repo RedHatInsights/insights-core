@@ -156,5 +156,6 @@ openvswitch.service"""
 
 def test_common_conf():
     common_conf_info = config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF))
-    assert common_conf_info.data["Manager"]["RuntimeWatchdogSec"] == "0"
-    assert common_conf_info.data["Manager"]["ShutdownWatchdogSec"] == "10min"
+    assert "Manager" in common_conf_info
+    assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"
+    assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
