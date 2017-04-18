@@ -7,7 +7,9 @@ _configs = {}
 
 
 def _get_config(static_spec_module=static_specs):
-    return InsightsDataSpecConfig(static_spec_module.static_specs,
+    all_specs = static_spec_module.static_specs
+    all_specs.update(static_spec_module.openshift)
+    return InsightsDataSpecConfig(all_specs,
             static_spec_module.meta_files, pre_commands=static_specs.pre_commands)
 
 
