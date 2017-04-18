@@ -154,7 +154,7 @@ def test_openshift_node():
 openvswitch.service"""
 
 
-def test_common_conf():
+def test_systemd_common_conf():
     common_conf_info = config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF))
     assert "Manager" in common_conf_info
     assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"

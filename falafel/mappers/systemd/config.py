@@ -1,6 +1,6 @@
 """
 Service systemd file - File
-======================================================================================
+===========================
 Service systemd files are in ``/usr/lib/systemd/system``, and Their content format is
 ``config``.
 """
@@ -113,18 +113,6 @@ class SystemdOpenshiftNode(Mapper):
     """Class for atomic-openshift-node systemd configuration. Example is like SystemdDocker"""
     def parse_content(self, content):
         self.data = parse_systemd_ini(content)
-
-
-@mapper('systemd_docker')
-def docker(context):
-    """Deprecated, do not use."""
-    return SystemdDocker(context).data
-
-
-@mapper('systemd_system.conf')
-def common_conf(context):
-    """Deprecated, do not use."""
-    return SystemdSystemConf(context).data
 
 
 class MultiOrderedDict(dict):
