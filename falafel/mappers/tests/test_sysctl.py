@@ -1,5 +1,3 @@
-import unittest
-
 from falafel.mappers import sysctl
 from falafel.tests import context_wrap
 from falafel.util import keys_in
@@ -19,16 +17,16 @@ SYSCTL_CONF_TEST = """
 """.strip()
 
 
-class TestSysctl(unittest.TestCase):
-    def test_sysctl(self):
-        r = sysctl.Sysctl(context_wrap(SYSCTL_TEST))
-        self.assertTrue(keys_in(["a", "b", "c"], r.data))
-        self.assertEqual(r.data["a"], "1")
-        self.assertEqual(r.data["b"], "2")
-        self.assertEqual(r.data["c"], "include an = sign")
+def test_sysctl():
+    r = sysctl.Sysctl(context_wrap(SYSCTL_TEST))
+    assert keys_in(["a", "b", "c"], r.data)
+    assert r.data["a"] == "1"
+    assert r.data["b"] == "2"
+    assert r.data["c"] == "include an = sign"
 
-    def test_sysctl_conf(self):
-        r = sysctl.SysctlConf(context_wrap(SYSCTL_CONF_TEST))
-        self.assertTrue(keys_in(['kernel.domainname', 'kernel.modprobe'], r.data))
-        self.assertEqual(r.data['kernel.domainname'], 'example.com')
-        self.assertEqual(r.data['kernel.modprobe'], '/sbin/mod probe')
+
+def test_sysctl_conf():
+    r = sysctl.SysctlConf(context_wrap(SYSCTL_CONF_TEST))
+    assert keys_in(['kernel.domainname', 'kernel.modprobe'], r.data)
+    assert r.data['kernel.domainname'] == 'example.com'
+    assert r.data['kernel.modprobe'] == '/sbin/mod probe'

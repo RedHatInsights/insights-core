@@ -1,4 +1,12 @@
-from .. import Mapper, LogFileOutput, mapper
+"""
+sysctl - Command and File
+=========================
+
+Share mappers for parsing file ``/etc/sysctl.conf`` and command ``sysctl -a``.
+
+
+"""
+from .. import Mapper, LogFileOutput, mapper, LegacyItemAccess
 from ..mappers import split_kv_pairs
 
 
@@ -38,7 +46,23 @@ class SysctlConf(Mapper):
 
 
 @mapper('sysctl')
-class Sysctl(Mapper):
+class Sysctl(LegacyItemAccess, Mapper):
+    """Parse the output of `sysctl -a` command.
+
+    Sample input::
+
+        kernel.domainname = example.com
+        kernel.modprobe = /sbin/modprobe
+
+    Examples
+    --------
+    >>> shared[Sysctl]['kernel.domainname']
+    'example.com'
+    >>> shared[Sysctl].get('kernel.modprobe')
+    '/sbin/modprobe'
+    >>> 'kernel.modules_disabled' in shared[Sysctl]
+    False
+    """
 
     def parse_content(self, content):
         self.data = split_kv_pairs(content)
