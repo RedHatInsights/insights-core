@@ -83,9 +83,3 @@ class SysctlConfInitramfs(LogFileOutput):
     certain strings, this approach will suffice.
     """
     pass
-
-
-@mapper('sysctl')
-def runtime(context):
-    """Deprecated, do not use."""
-    return Sysctl(context).data
