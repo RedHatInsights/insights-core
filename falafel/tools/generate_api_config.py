@@ -27,7 +27,6 @@ except ImportError:
 from falafel.config import CommandSpec, SimpleFileSpec
 from falafel.config import get_meta_specs
 from falafel.core import plugins, DEFAULT_PLUGIN_MODULE
-from falafel.config.factory import get_config
 from falafel.config import InsightsDataSpecConfig, specs as config_specs
 
 log = logging.getLogger()
@@ -36,14 +35,19 @@ log = logging.getLogger()
 class APIConfigGenerator(object):
 
     def __init__(self,
-                 data_spec_config=get_config(),
+                 data_spec_config=None,
                  uploader_config_filename="uploader.json",
                  file_plugin_map_filename="file_plugin_mapping.json",
                  rule_spec_mapping_filename="rule_spec_mapping.json",
                  plugin_package=None,
                  version_number=None):
 
-        self.data_spec_config = data_spec_config
+        if data_spec_config is None:
+            self.data_spec_config = InsightsDataSpecConfig(
+                config_specs.static_specs,
+                config_specs.meta_files, pre_commands=config_specs.pre_commands)
+        else:
+            self.data_spec_config = data_spec_config
         self.openshift_config = InsightsDataSpecConfig(config_specs.openshift,
                                                        {}, prefix="openshift")
         self.uploader_config_filename = uploader_config_filename
@@ -208,7 +212,7 @@ def main():
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s",
                         level=level)
     log.info("Generating config files from %s.", falafel.get_nvr())
-    config_generator = APIConfigGenerator(get_config(), plugin_package=args[0])
+    config_generator = APIConfigGenerator(plugin_package=args[0])
     config_generator.create_file_content()
 
 

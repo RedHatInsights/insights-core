@@ -7,10 +7,12 @@ _configs = {}
 
 
 def _get_config(static_spec_module=static_specs):
-    all_specs = static_spec_module.static_specs
+    all_specs = dict(static_spec_module.static_specs)
     all_specs.update(static_spec_module.openshift)
-    return InsightsDataSpecConfig(all_specs,
-            static_spec_module.meta_files, pre_commands=static_specs.pre_commands)
+    return InsightsDataSpecConfig(
+        all_specs,
+        static_spec_module.meta_files,
+        pre_commands=static_specs.pre_commands)
 
 
 def get_config(module=static_specs):
