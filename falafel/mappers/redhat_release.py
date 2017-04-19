@@ -72,8 +72,3 @@ class RedhatRelease(Mapper):
     def product(self):
         """string: product of this OS."""
         return self.parsed["product"]
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
