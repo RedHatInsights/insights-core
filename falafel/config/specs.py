@@ -240,7 +240,7 @@ static_specs = {
     "postgresql.log"            : First([PatternSpec(r"var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
                                     PatternSpec(r"opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-.+\.log", large_content=True),
                                     PatternSpec(r"database/postgresql-.+\.log", large_content=True)]),
-    "prelink_orig_md5"          : All([CommandSpec("/usr/sbin/prelink -y --md5 {md5chk_files}", md5chk_files=r"\S+"),
+    "prelink_orig_md5"          : NoneGroup([CommandSpec("/usr/sbin/prelink -y --md5 {md5chk_files}", md5chk_files=r"\S+"),
                                     CommandSpec("/usr/bin/md5sum {md5chk_files}", md5chk_files=r"\S+")]),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
