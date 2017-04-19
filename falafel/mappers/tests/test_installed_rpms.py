@@ -250,6 +250,19 @@ def test_version_compare():
     assert rpm2 >= rpm1
     assert rpm1 <= rpm2
 
+    assert not rpm1 < None
+    assert not rpm1 <= None
+    assert not rpm1 > None
+    assert not rpm1 >= None
+    assert not rpm1.__eq__(None)
+
+    assert not [rpm1, rpm2] > rpm2
+    assert not rpm1 > ""
+    assert not rpm1 > 4
+    assert not rpm1 > {}
+    assert not rpm1 > set()
+    assert not rpm1 > []
+
 
 def test_formatting():
     rpm = InstalledRpm.from_package('kernel-3.10.0-327.el7.x86_64')

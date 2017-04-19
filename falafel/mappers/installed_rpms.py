@@ -476,6 +476,9 @@ class InstalledRpm(object):
         return str(self)
 
     def __eq__(self, other):
+        if not isinstance(other, InstalledRpm):
+            return False
+
         if self.name != other.name:
             raise ValueError('Cannot compare packages with differing names {} != {}'
                              .format(self.name, other.name))
@@ -494,6 +497,9 @@ class InstalledRpm(object):
             return eq_ret
 
     def __lt__(self, other):
+        if not isinstance(other, InstalledRpm):
+            return False
+
         if self == other:
             return False
 
@@ -518,13 +524,13 @@ class InstalledRpm(object):
         return not self == other
 
     def __gt__(self, other):
-        return other < self
+        return isinstance(other, InstalledRpm) and other.__lt__(self)
 
     def __ge__(self, other):
-        return not self < other
+        return isinstance(other, InstalledRpm) and not self.__lt__(other)
 
     def __le__(self, other):
-        return not other < self
+        return isinstance(other, InstalledRpm) and not other.__lt__(self)
 
 
 @mapper('installed-rpms')
