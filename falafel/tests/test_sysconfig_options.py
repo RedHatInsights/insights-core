@@ -29,6 +29,8 @@ DOUBLE_EQUALS==included
   # blank lines with a comment are ignored
 
 # blank lines without comments are ignored too.
+# Comments with apostrophes shouldn't fool the dequoting process
+VALUE_ON_QUOTE_COMMENT_LINE=this_is_OK # but this hasn't been read
 this line should be in unparsed lines afterward
 AND = 'so should this'
 """ + "SPACES_AFTER_VALUE=should_be_ignored    \n" + "  \n"
@@ -67,28 +69,29 @@ class Test_Sysconfig_Options(unittest.TestCase):
     def test_tricky_config(self):
         config = SysconfigOptions(context_wrap(TRICKY_CONFIG))
 
-        print config.data.keys()
-        assert sorted(config.data.keys()) == sorted([
+        self.assertEqual(sorted(config.data.keys()), sorted([
             'SELECTOR', 'SPACES_IN_FRONT', 'SPACES_AFTER_VALUE',
             'COMMENT_SPACE_OK', 'SPACE_COMMENT_IGNORED', 'COMMENT_NOSPACE_OK',
             'COMMENT_QUOTED_IN_VALUE', 'MANY_QUOTES', 'QUOTE_HANDLING',
-            'OPTION_WITH_NO_VALUE', 'DOUBLE_EQUALS'])
+            'OPTION_WITH_NO_VALUE', 'DOUBLE_EQUALS',
+            'VALUE_ON_QUOTE_COMMENT_LINE'
+        ]))
 
-        assert config.data['SELECTOR'] == 'and all that'
-        assert config.data['SPACES_IN_FRONT'] == 'yes'
-        assert config.data['SPACES_AFTER_VALUE'] == 'should_be_ignored'
-        assert config.data['COMMENT_SPACE_OK'] == 'value_with_#'
-        assert config.data['SPACE_COMMENT_IGNORED'] == 'value_with'
-        assert config.data['COMMENT_NOSPACE_OK'] == 'value_with_#_in_it'
-        assert config.data['COMMENT_QUOTED_IN_VALUE'] == \
-            "This value should have a # character in it"
-        assert config.data['MANY_QUOTES'] == "this is valid"
-        assert config.data['QUOTE_HANDLING'] == "single ' allowed"
-        assert config.data['OPTION_WITH_NO_VALUE'] == ''
-        assert config.data['DOUBLE_EQUALS'] == '=included'
+        self.assertEqual(config.data['SELECTOR'], 'and all that')
+        self.assertEqual(config.data['SPACES_IN_FRONT'], 'yes')
+        self.assertEqual(config.data['SPACES_AFTER_VALUE'], 'should_be_ignored')
+        self.assertEqual(config.data['COMMENT_SPACE_OK'], 'value_with_#')
+        self.assertEqual(config.data['SPACE_COMMENT_IGNORED'], 'value_with')
+        self.assertEqual(config.data['COMMENT_NOSPACE_OK'], 'value_with_#_in_it')
+        self.assertEqual(config.data['COMMENT_QUOTED_IN_VALUE'],
+            "This value should have a # character in it")
+        self.assertEqual(config.data['MANY_QUOTES'], "this is valid")
+        self.assertEqual(config.data['QUOTE_HANDLING'], "single ' allowed")
+        self.assertEqual(config.data['OPTION_WITH_NO_VALUE'], '')
+        self.assertEqual(config.data['DOUBLE_EQUALS'], '=included')
+        self.assertEqual(config.data['VALUE_ON_QUOTE_COMMENT_LINE'], 'this_is_OK')
 
-        print config.unparsed_lines
-        assert config.unparsed_lines == [
+        self.assertEqual(config.unparsed_lines, [
             'this line should be in unparsed lines afterward',
             "AND = 'so should this'",
-        ]
+        ])

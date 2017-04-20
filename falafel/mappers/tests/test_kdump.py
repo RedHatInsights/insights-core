@@ -146,6 +146,7 @@ KDUMP_IMG_EXT=""
 
 SYSCONFIG_KDUMP_SOME = """
 # Comments
+# Comments with apostrophes won't fool the dequoting process
 KDUMP_COMMANDLINE_APPEND="irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never"
 KDUMP_IMG="vmlinuz"
 """
