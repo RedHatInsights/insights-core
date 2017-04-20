@@ -1,4 +1,4 @@
-from falafel.mappers.virt_what import VirtWhat
+from falafel.mappers.virt_what import VirtWhat, errors
 from falafel.tests import context_wrap
 
 T1 = """
@@ -38,3 +38,11 @@ def test_has_specific():
     assert v3.generic == "xen"
     assert v3.specific == "xen-dom0"
     assert v3.has_specific is True
+
+
+def test_error_handling():
+    v = VirtWhat(context_wrap(errors[0]))
+    assert v.generic == 'Failed'
+    assert v.specific == errors[0]
+    assert not v.is_virtual
+    assert v.has_specific

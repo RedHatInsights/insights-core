@@ -8,7 +8,7 @@ class VirtWhat(Mapper):
 
     @property
     def is_virtual(self):
-        return self.generic != "Baremetal"
+        return self.generic != "Baremetal" and self.generic != 'Failed'
 
     @property
     def has_specific(self):
@@ -16,8 +16,9 @@ class VirtWhat(Mapper):
 
     def parse_content(self, content):
         if content and content[0] in errors:
-            pass
-        if content:
+            self.generic = 'Failed'
+            self.specific = content[0]
+        elif content:
             self.generic = content[0]
             self.specific = content[-1]
         else:
