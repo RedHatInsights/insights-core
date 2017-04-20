@@ -1,6 +1,8 @@
 from falafel.mappers.yum import YumRepoList
 from falafel.tests import context_wrap
 
+import unittest
+
 YUM_REPOLIST_CONTENT = """
 Loaded plugins: product-id, search-disabled-repos, subscription-manager
 repo id                                         repo name                status
@@ -22,6 +24,13 @@ repolist: 3,787
 
 """.strip()
 
+YUM_REPOLIST_CONTENT_MISSING_STATUS = """
+Loaded plugins: product-id, rhnplugin, security, subscription-manager
+Updating certificate-based repositories.
+repo id                              repo name                            status
+clone-6u5-server-x86_64              clone-6u5-server-x86_64
+"""
+
 
 def test_yum_repolist():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
@@ -29,6 +38,7 @@ def test_yum_repolist():
     assert repo_list[0] == {"id": "rhel-7-server-rpms/7Server/x86_64",
                             "name": "Red Hat Enterprise Linux",
                             "status": "10415"}
+    assert repo_list['rhel-7-server-rpms/7Server/x86_64'] == repo_list[0]
     assert repo_list.eus == []
 
 
@@ -39,3 +49,9 @@ def test_eus():
                             "name": "clone-6u5-server-x86_64",
                             "status": "3,787"}
     assert repo_list.eus == ["6.2.aus"]
+
+
+class test_bad(unittest.TestCase):
+    def test_valueerror_in_parse(self):
+        repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
+        self.assertEqual(repo_list[0]['name'], '')

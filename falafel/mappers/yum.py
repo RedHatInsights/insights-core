@@ -56,11 +56,12 @@ class YumRepoList(Mapper):
     def __getitem__(self, idx):
         if isinstance(idx, int):
             return self.data[idx]
-        else:
-            return super(YumRepoList, self).__getitem__(idx)
+        elif isinstance(idx, str):
+            return self.repos[idx]
 
     def parse_content(self, content):
         self.data = list(_parse(content))
+        self.repos = {d['id']: d for d in self.data}
 
     @property
     def eus(self):
