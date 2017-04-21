@@ -36,9 +36,6 @@ class Device(object):
         for k in Device.keys:
             setattr(self, k, data.get(k))
 
-    def __getitem__(self, item):
-        return self.__dict__[item]
-
     def get(self, item, default=None):
         return self.__dict__.get(item, default)
 
@@ -107,11 +104,3 @@ class SCSI(Mapper):
 
     def __getitem__(self, key):
         return self.data[key]
-
-
-@mapper('scsi')
-def get_scsi(context):
-    """
-    Backward compat function based mapper for SCSI
-    """
-    return SCSI(context).data
