@@ -140,6 +140,15 @@ Daemon Status:
   pcsd: active/enabled
 """.strip()
 
+CLUSTER_NOT_RUNNING = """
+Error: cluster is not currently running on this node
+"""
+
+CLUSTER_WARNINGS = """
+WARNING: We don't know where, but something awful is going to happen
+WARNING: This is another made-up warning, please supply real ones
+"""
+
 
 def test_pcs_status():
     pcs = PCSStatus(context_wrap(pcs_0))
@@ -150,3 +159,18 @@ def test_pcs_status():
     assert pcs.get("Nodes configured") == "3"
     assert pcs.get("Resources configured") == "143"
     assert pcs.get("Online") == "[ myhost15 myhost16 myhost17 ]"
+    assert pcs.get('Nonexistent key') is None
+
+
+def test_cluster_not_running():
+    pcs = PCSStatus(context_wrap(CLUSTER_NOT_RUNNING))
+    assert pcs.nodes == []
+
+
+def test_cluster_warning():
+    pcs = PCSStatus(context_wrap(CLUSTER_WARNINGS))
+    assert pcs.nodes == []
+    assert pcs.data['WARNING'] == [
+        "WARNING: We don't know where, but something awful is going to happen",
+        "WARNING: This is another made-up warning, please supply real ones"
+    ]
