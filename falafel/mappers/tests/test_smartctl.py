@@ -28,9 +28,9 @@ Offline data collection status:  (0x00) Offline data collection activity
                     was never started.
                     Auto Offline Data Collection: Disabled.
 Self-test execution status:      (   0) The previous self-test routine completed
-                    without error or no self-test has ever 
+                    without error or no self-test has ever
                     been run.
-Total time to complete Offline 
+Total time to complete Offline
 data collection:        (    0) seconds.
 Offline data collection
 capabilities:            (0x73) SMART execute Offline immediate.
@@ -46,7 +46,7 @@ SMART capabilities:            (0x0003) Saves SMART data before entering
                     Supports SMART auto save timer.
 Error logging capability:        (0x01) Error logging supported.
                     General Purpose Logging supported.
-Short self-test routine 
+Short self-test routine
 recommended polling time:    (   1) minutes.
 Extended self-test routine
 recommended polling time:    (  78) minutes.
@@ -106,8 +106,8 @@ CISCO_DRIVE = """
 smartctl 5.43 2012-06-30 r3573 [x86_64-linux-2.6.32-573.8.1.el6.x86_64] (local build)
 Copyright (C) 2002-12 by Bruce Allen, http://smartmontools.sourceforge.net
 
-Vendor:               Cisco   
-Product:              UCSC-MRAID12G   
+Vendor:               Cisco
+Product:              UCSC-MRAID12G
 Revision:             4.27
 User Capacity:        898,999,779,328 bytes [898 GB]
 Logical block size:   512 bytes
@@ -125,8 +125,8 @@ NETAPP_DRIVE = """
 smartctl 5.43 2012-06-30 r3573 [x86_64-linux-2.6.32-573.8.1.el6.x86_64] (local build)
 Copyright (C) 2002-12 by Bruce Allen, http://smartmontools.sourceforge.net
 
-Vendor:               NETAPP  
-Product:              LUN             
+Vendor:               NETAPP
+Product:              LUN
 Revision:             820a
 User Capacity:        5,243,081,326,592 bytes [5.24 TB]
 Logical block size:   512 bytes
@@ -183,6 +183,7 @@ def test_standard_drive():
     assert data.info['values']['Extended self-test routine recommended polling time'] == '78'
     assert data.info['values']['Conveyance self-test routine recommended polling time'] == '2'
     assert data.info['values']['SCT capabilities'] == '0x1031'
+    assert data.info['values']['SMART Attributes Data Structure revision number'] == '10'
 
     # Attribute assertions
     # Don't bother to test every single key for every single attribute - test

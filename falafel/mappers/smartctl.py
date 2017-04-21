@@ -87,8 +87,6 @@ class SMARTctl(Mapper):
 
         # Values section:
         def parse_values(line):
-            if line.startswith('=== START OF READ SMART DATA SECTION ==='):
-                return PARSE_FREEFORM_INFO
             if line.startswith('Vendor Specific SMART Attributes with Thres'):
                 return PARSE_ATTRIBUTE_INFO
             if line.startswith('SMART overall-health self-assessment test r'):
@@ -114,14 +112,16 @@ class SMARTctl(Mapper):
                 (key, value) = match.group('key', 'value')
                 drive_info['values'][key] = value
                 drive_info['full_line'] = ''
+            elif drive_info['full_line'].startswith('SMART Attributes Data Structure revision number: '):
+                (key, value) = drive_info['full_line'].split(': ')
+                drive_info['values'][key] = value
+                drive_info['full_line'] = ''
             return PARSE_FREEFORM_INFO
 
         # Attributes sections
         def parse_attributes(line):
             if line.startswith('SMART Error Log Version:'):
                 return PARSE_COMPLETE
-            if line.startswith('Vendor Specific SMART Attributes with Thres'):
-                return PARSE_ATTRIBUTE_INFO
             if len(line) == 0:
                 return PARSE_ATTRIBUTE_INFO
             match = self.ATTR_LINE_RE.match(line)
