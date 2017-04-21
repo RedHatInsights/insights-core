@@ -33,6 +33,7 @@ class SSSD_Config(IniConfigFile):
     domains that sssd is to manage.
     """
 
+    @property
     def domains(self):
         """
         Returns the list of domains defined in the 'sssd' section.  This is

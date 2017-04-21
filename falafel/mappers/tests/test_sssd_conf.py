@@ -47,6 +47,17 @@ krb5_server = kerberos.example.com
 krb5_realm = EXAMPLE.COM
 """
 
+sssd_conf_no_domains = """
+[sssd]
+debug_level = 5
+"""
+
+sssd_conf_blank_domains = """
+[sssd]
+debug_level = 5
+domains =
+"""
+
 
 def test_sssd_conf():
     result = SSSD_Config(context_wrap(sssd_conf_cnt))
@@ -55,8 +66,20 @@ def test_sssd_conf():
 
     assert result.getint('pam', 'reconnection_retries') == 3
 
-    assert ['example.com'] == result.domains()
+    assert ['example.com'] == result.domains
 
     domain = result.domain_config('example.com')
     assert type(domain) == dict
     assert domain['id_provider'] == 'ldap'
+
+    absent_domain = result.domain_config('example.org')
+    assert type(absent_domain) == dict
+    assert absent_domain == {}
+
+
+def test_sssd_conf_empty_domains():
+    conf = SSSD_Config(context_wrap(sssd_conf_no_domains))
+    assert conf.domains == []
+
+    conf = SSSD_Config(context_wrap(sssd_conf_blank_domains))
+    assert conf.domains == []
