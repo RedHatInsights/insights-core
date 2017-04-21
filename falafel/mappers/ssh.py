@@ -84,8 +84,3 @@ class SshDConfig(Mapper):
         entries = self.__getitem__(keyword)
         if entries:
             return entries[-1]
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
