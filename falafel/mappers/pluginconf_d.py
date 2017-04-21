@@ -1,4 +1,4 @@
-from .. import Mapper, mapper, get_active_lines, LegacyItemAccess
+from .. import Mapper, mapper, get_active_lines, LegacyItemAccess, IniConfigFile
 
 
 @mapper('pluginconf.d')
@@ -45,9 +45,18 @@ class PluginConfD(LegacyItemAccess, Mapper):
                 section_dict[key] = value.strip()
             else:
                 if key:
-                    section_dict[key] = ','.join([section_dict.get(key), line])
+                    section_dict[key] = ','.join([section_dict[key], line])
         self.data = plugin_dict
 
     def __iter__(self):
         for sec in self.data:
             yield sec
+
+
+@mapper('pluginconf.d')
+class PluginConfDIni(IniConfigFile):
+    """
+    Read yum plugin config files, in INI format, using the standard INI file
+    mapper class.
+    """
+    pass
