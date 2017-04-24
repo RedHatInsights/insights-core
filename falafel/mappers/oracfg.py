@@ -35,7 +35,7 @@ from .. import Mapper, mapper, get_active_lines
 CLEANUP = re.compile('(C")?[\01\00].*\00')
 
 GRID_REGEX = re.compile(r'.grid.dbs.')
-VERSION_REGEX = re.compile(r'[\d+\.*]+')
+VERSION_REGEX = re.compile(r'(\d+\.*)+')
 SPFILE_REGEX = re.compile(r'spfile.*ora$')
 PFILE_REGEX = re.compile(r'init.*ora$')
 
