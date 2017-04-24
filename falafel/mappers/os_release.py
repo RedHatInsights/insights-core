@@ -53,8 +53,3 @@ class OsRelease(LegacyItemAccess, Mapper):
             if _ == "=" and k:
                 data[k] = v.strip('"') if v else None
         self.data = data
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
