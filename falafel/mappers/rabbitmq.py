@@ -207,6 +207,8 @@ class RabbitMQQueues(Mapper):
     def parse_content(self, content):
         self.data = []
         for line in content:
+            if "Listing queues ..." in line:
+                continue
             parts = line.split()
             if len(parts) == 4 and not line.startswith('Error:'):
                 if parts[3].lower() in TRUE_FALSE:
