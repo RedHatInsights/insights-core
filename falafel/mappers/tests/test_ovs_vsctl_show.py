@@ -73,6 +73,11 @@ e4d4f521-086d-4479-a88f-d531cd1646b8
     ovs_version: "2.3.2"
 """.strip()
 
+ovs_vsctl_show_missing_lines = """
+e4d4f521-086d-4479-a88f-d531cd1646b8
+    Bridge br-ex
+"""
+
 
 def test_ovs_vsctl_show():
     ovs_ctl_cls = OVSvsctlshow(context_wrap(ovs_vsctl_show_output))
@@ -88,3 +93,6 @@ def test_ovs_vsctl_show():
     assert options.get("df_default") == "true"
     assert options.get("local_ip") == "172.168.1.26"
     assert options.get("out_key") == "flow"
+
+    bad = OVSvsctlshow(context_wrap(ovs_vsctl_show_missing_lines))
+    assert not hasattr(bad, 'data')
