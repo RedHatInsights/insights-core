@@ -8,7 +8,7 @@ Shared mappers for parsing and extracting data from variations of the
 
 from collections import defaultdict
 from ..mappers import ParseException
-from .. import Mapper, mapper, parse_table
+from .. import Mapper, mapper, parse_table, LegacyItemAccess
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
@@ -27,7 +27,7 @@ SSTULPN_TABLE_HEARDER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-
 
 
 @mapper('netstat-s')
-class NetstatS(Mapper):
+class NetstatS(LegacyItemAccess, Mapper):
     """
     Parses data from the ```netstat -s``` command.
 
