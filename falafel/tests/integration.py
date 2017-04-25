@@ -7,7 +7,7 @@ def integration_test(module, test_func, input_data, expected):
     test_func(tests.integrate(input_data, module), expected)
 
 
-def generate_tests(metafunc, test_func, package_names):
+def generate_tests(metafunc, test_func, package_names, pattern=None):
     """
     This function hooks in to pytest's test collection framework and provides a
     test for every (input_data, expected) tuple that is generated from all
@@ -17,7 +17,7 @@ def generate_tests(metafunc, test_func, package_names):
         if type(package_names) not in (list, tuple):
             package_names = [package_names]
         for package_name in package_names:
-            load_package(package_name)
+            load_package(package_name, pattern=pattern)
         args = []
         ids = []
         for f in tests.ARCHIVE_GENERATORS:
@@ -25,6 +25,5 @@ def generate_tests(metafunc, test_func, package_names):
                 for t in f():
                     args.append(t)
                     input_data_name = t[2].name if not isinstance(t[2], list) else "multi-node"
-                    fn_name = f.serializable_id.split(".")[-1]
-                    ids.append("#".join([fn_name, input_data_name]))
+                    ids.append("#".join([f.serializable_id, input_data_name]))
         metafunc.parametrize("module,test_func,input_data,expected", args, ids=ids)
