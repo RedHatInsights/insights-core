@@ -1,5 +1,6 @@
 from falafel import tests
 from falafel.core import load_package
+from itertools import islice
 import pytest
 
 
@@ -20,10 +21,14 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
             load_package(package_name, pattern=pattern)
         args = []
         ids = []
+        slow_mode = pytest.config.getoption("--runslow")
+        fast_mode = pytest.config.getoption("--smokey")
         for f in tests.ARCHIVE_GENERATORS:
-            if not f.slow or pytest.config.getoption("--runslow"):
-                for t in f():
-                    args.append(t)
-                    input_data_name = t[2].name if not isinstance(t[2], list) else "multi-node"
-                    ids.append("#".join([f.serializable_id, input_data_name]))
+            ts = f(stride=1 if slow_mode else f.stride)
+            if fast_mode:
+                ts = islice(ts, 0, 1)
+            for t in ts:
+                args.append(t)
+                input_data_name = t[2].name if not isinstance(t[2], list) else "multi-node"
+                ids.append("#".join([f.serializable_id, input_data_name]))
         metafunc.parametrize("module,test_func,input_data,expected", args, ids=ids)
