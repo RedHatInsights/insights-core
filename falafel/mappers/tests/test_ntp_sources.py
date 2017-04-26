@@ -21,6 +21,12 @@ ntpd_output = """
 +ntp104.cm4.tbsi 10.228.209.150   2 u  163  256  377    0.459   -0.234   0.05
 """.strip()
 
+ntpd_qn = """
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
+ 202.118.1.81    .INIT.          16 u    - 1024    0    0.000    0.000   0.000
+"""
+
 
 def test_get_chrony_sources():
     mapper_result = ChronycSources(context_wrap(chrony_output))
@@ -39,3 +45,7 @@ def test_get_ntpd_sources():
     assert mapper_result.data[0].get("source") == "ntp103.cm4.tbsi"
     assert mapper_result.data[1].get("flag") == "+"
     assert mapper_result.data[1].get("source") == "ntp104.cm4.tbsi"
+
+    mapper_result2 = NtpqPn(context_wrap(ntpd_qn))
+    assert mapper_result2.data[0].get("source") == "202.118.1.81"
+    assert mapper_result2.data[0].get("flag") == " "

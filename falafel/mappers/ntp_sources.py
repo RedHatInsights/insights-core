@@ -118,4 +118,7 @@ class NtpqPn(Mapper):
         for row in content[2:]:
             if row.strip():
                 values = row.split(" ", 2)
-                self.data.append({"source": values[0][1:], "flag": values[0][0]})
+                if row.startswith(" "):
+                    self.data.append({"source": values[1], "flag": " "})
+                else:
+                    self.data.append({"source": values[0][1:], "flag": values[0][0]})
