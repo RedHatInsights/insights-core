@@ -28,6 +28,7 @@ static_specs = {
     "ceph_osd.log"              : PatternSpec(r"var/log/ceph/ceph-osd.*\.log$"),
     "ceph_s"                    : CommandSpec("/usr/bin/ceph -s -f json-pretty"),
     "ceph_v"                    : CommandSpec("/usr/bin/ceph -v"),
+    "certificates_enddate"      : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt_new}", crt_new=r"\S+"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chrony.conf"               : SimpleFileSpec("etc/chrony.conf"),
@@ -368,8 +369,9 @@ pre_commands = {
     "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
     "ceph_osd_ec_profile_ls ": "/usr/bin/ceph osd erasure-code-profile ls",
     "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'",
+    "crt_new": "/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f",
     "md5chk_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
-    "semid": "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'",
+    "semid": "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'"
 }
 
 meta_files = {
