@@ -126,6 +126,7 @@ class Sysconfigdockercheck(unittest.TestCase):
         )
         self.assertTrue('OPTIONS' in sysconf.data)
         self.assertEqual(sysconf.data['OPTIONS'], '--selinux-enabled')
+        self.assertEqual(sysconf.options, '--selinux-enabled')
         self.assertTrue('DOCKER_CERT_PATH' in sysconf.data)
         self.assertEqual(sysconf.data['DOCKER_CERT_PATH'], '/etc/docker')
         self.assertTrue('ADD_REGISTRY' in sysconf.data)
