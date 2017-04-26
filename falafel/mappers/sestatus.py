@@ -43,7 +43,16 @@ class SEStatus(LegacyItemAccess, Mapper):
     """
 
     def parse_content(self, content):
-        sestatus_info = {}
+        # Default to disabled if not found
+        sestatus_info = {
+            'loaded_policy_name': None,
+            'current_mode': 'disabled',
+            'mode_from_config_file': 'disabled',
+            'policy_mls_status': 'disabled',
+            'policy_deny_unknown_status': 'disabled',
+            'max_kernel_policy_version': None,
+            'policy_booleans': {},
+        }
         booleans = {}
 
         for line in content:
@@ -61,6 +70,11 @@ class SEStatus(LegacyItemAccess, Mapper):
 
         if 'policy_booleans' in sestatus_info:
             sestatus_info['policy_booleans'] = booleans
+        # When SELinux is disabled, sestatus has simply 'SELinux status: disabled'
+        # in its output.  But 'SELinux status' is not included in the output
+        # when SELinux is enabled.  So we include it as a nicety.
+        if sestatus_info['current_mode'] != 'disabled' and 'selinux_status' not in sestatus_info:
+            sestatus_info['selinux_status'] = sestatus_info['current_mode']
 
         self.data = sestatus_info
 
