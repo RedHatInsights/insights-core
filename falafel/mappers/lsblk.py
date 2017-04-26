@@ -93,6 +93,8 @@ Examples:
     ['vda']
     >>> lsblk_info.rows[3].parent_names
     ['vda', 'vda2']
+    >>> lsblk_info.device_data['vda'] # Access devices by name
+    'disk:vda'
 """
 
 import re
@@ -124,9 +126,6 @@ class BlockDevice(object):
     def __eq__(self, other):
         return self.data == other
 
-    def __ne__(self, other):
-        return not self.data == other
-
     def get(self, k, default=None):
         """Get any value by keyword (column) name."""
         return self.__dict__.get(k, default)
@@ -137,10 +136,11 @@ class BlockDevice(object):
                 type=self.data['TYPE'], name=self.data['NAME'],
                 mnt=self.data['MOUNTPOINT']
             )
-        elif 'TYPE' in self.data:
-            return '{type}:{name}'.format(type=self.data['TYPE'], name=self.data['NAME'])
         else:
-            return self.data['NAME']
+            # As long as the regular expression in LsBlock works, we must end
+            # up with NAME and TYPE records here.
+            assert 'TYPE' in self.data
+            return '{type}:{name}'.format(type=self.data['TYPE'], name=self.data['NAME'])
 
 
 class BlockDevices(Mapper):
@@ -212,6 +212,7 @@ class LSBlock(BlockDevices):
                 device_list.append(device)
 
         self.rows = [BlockDevice(d) for d in device_list]
+        self.device_data = {dev.name: dev for dev in self.rows}
 
 
 @mapper('lsblk_pairs')
