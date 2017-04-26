@@ -15,6 +15,10 @@ CONTAINER ID                                                       IMAGE        
 95516ea08b565e37e2a4bca3333af40a240c368131b77276da8dec629b7fe102   bd8638c869ea40a9269d87e9af6741574562af9ee013e03ac2745fb5f59e2478   "/bin/sh -c 'yum install -y vsftpd-2.2.2-6.el6'"   18 hours ago        Exited (137) 18 hours ago                          tender_rosalind     4.751 MB (virtual 200.4 MB)
 """.strip()
 
+DOCKER_LIST_IMAGES_NO_DATA = """
+REPOSITORY                           TAG                 DIGEST              IMAGE ID                                                           CREATED             VIRTUAL SIZE
+"""
+
 
 class Testdockerlist(unittest.TestCase):
     def test_docker_list_images(self):
@@ -41,6 +45,12 @@ class Testdockerlist(unittest.TestCase):
         assert result.data['rhel6_vsftpd'] == result.rows[0]
         # Can't list repositories if they don't have a repository name
         assert '<none>' not in result.data
+
+    def test_docker_list_images_no_data(self):
+        result = docker_list.DockerListImages(context_wrap(DOCKER_LIST_IMAGES_NO_DATA))
+        # All rows get read:
+        self.assertEqual(len(result.rows), 0)
+        self.assertTrue(result.no_data)
 
     def test_docker_list_containers(self):
         result = docker_list.DockerListContainers(context_wrap(DOCKER_LIST_CONTAINERS))
