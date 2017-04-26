@@ -4,6 +4,7 @@ import tempfile
 import subprocess
 import shlex
 import gzip
+import zipfile
 from falafel.core import archives
 from falafel.core.specs import SpecMapper
 
@@ -71,7 +72,19 @@ class TestZipFileExtractor(unittest.TestCase):
         except:
             pass
 
-        subprocess.call(shlex.split("zip -r /tmp/test.zip %s" % tmp_dir))
+        # stolen from zipfile.py:main
+        def _add_to_zip(zf, path, zippath):
+            if os.path.isfile(path):
+                zf.write(path, zippath, zipfile.ZIP_DEFLATED)
+            elif os.path.isdir(path):
+                if zippath:
+                    zf.write(path, zippath)
+                for nm in os.listdir(path):
+                    _add_to_zip(zf, os.path.join(path, nm), os.path.join(zippath, nm))
+            # else: ignore
+
+        with zipfile.ZipFile("/tmp/test.zip", "w") as zf:
+            _add_to_zip(zf, tmp_dir, os.path.basename(tmp_dir))
 
         with archives.ZipExtractor() as ex:
             ex.from_path("/tmp/test.zip")
