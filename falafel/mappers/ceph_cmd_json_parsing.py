@@ -19,6 +19,8 @@ e.g
 
 6. ceph health detail -f json-pretty
 
+7. ceph df detail -f json-pretty
+
 ...
 
 
@@ -204,6 +206,36 @@ Part of the sample output of this command looks like::
     }
 
 
+    7. `ceph df detail -f json-pretty`
+
+    {
+        "stats": {
+            "total_bytes": 17113243648,
+            "total_used_bytes": 203120640,
+            "total_avail_bytes": 16910123008,
+            "total_objects": 0
+        },
+        "pools": [
+            {
+                "name": "rbd",
+                "id": 0,
+                "stats": {
+                    "kb_used": 0,
+                    "bytes_used": 0,
+                    "max_avail": 999252180,
+                    "objects": 0,
+                    "dirty": 0,
+                    "rd": 0,
+                    "rd_bytes": 0,
+                    "wr": 0,
+                    "wr_bytes": 0,
+                    "raw_bytes_used": 0
+                }
+            }
+        ]
+    }
+
+
 Examples:
 
     >>> ceph_osd_dump_content = '''
@@ -282,6 +314,14 @@ Examples:
     >>> result = CephHealthDetail(context_wrap(ceph_health_detail_content)).data
     >>> result["overall_status"]
     "HEALTH_OK"
+
+    ...
+
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephDfDetail
+    >>> result = CephDfDetail(context_wrap(ceph_health_df_content)).data
+    >>> result['stats']['total_avail_bytes']
+    16910123008
 """
 
 import json
@@ -322,6 +362,14 @@ class CephOsdDf(CephJsonParsing):
 class CephS(CephJsonParsing):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
+    """
+    pass
+
+
+@mapper("ceph_df_detail")
+class CephDfDetail(CephJsonParsing):
+    """
+    Class to parse the output of ``ceph df detail -f json-pretty``.
     """
     pass
 

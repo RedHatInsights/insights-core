@@ -1,4 +1,5 @@
-from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, CephHealthDetail
+from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, \
+    CephHealthDetail, CephDfDetail
 from falafel.tests import context_wrap
 
 CEPH_OSD_DUMP_INFO = """
@@ -83,6 +84,51 @@ CEPH_S_INFO = """
         "epoch": 1,
         "by_rank": []
     }
+}
+""".strip()
+
+CEPH_DF_DETAIL_INFO = """
+{
+    "stats": {
+        "total_bytes": 17113243648,
+        "total_used_bytes": 203120640,
+        "total_avail_bytes": 16910123008,
+        "total_objects": 0
+    },
+    "pools": [
+        {
+            "name": "rbd",
+            "id": 0,
+            "stats": {
+                "kb_used": 0,
+                "bytes_used": 0,
+                "max_avail": 999252180,
+                "objects": 0,
+                "dirty": 0,
+                "rd": 0,
+                "rd_bytes": 0,
+                "wr": 0,
+                "wr_bytes": 0,
+                "raw_bytes_used": 0
+            }
+        },
+        {
+            "name": "ecpool",
+            "id": 2,
+            "stats": {
+                "kb_used": 0,
+                "bytes_used": 0,
+                "max_avail": 1998504360,
+                "objects": 0,
+                "dirty": 0,
+                "rd": 0,
+                "rd_bytes": 0,
+                "wr": 0,
+                "wr_bytes": 0,
+                "raw_bytes_used": 0
+            }
+        }
+    ]
 }
 """.strip()
 
@@ -285,3 +331,52 @@ class TestCephHealthDetail():
             "detail": []
         }
         assert result['overall_status'] == 'HEALTH_OK'
+
+
+class TestCephDfDetail():
+    def test_ceph_df_detail(self):
+        result = CephDfDetail(context_wrap(CEPH_DF_DETAIL_INFO)).data
+
+        assert result == {
+            "stats": {
+                "total_bytes": 17113243648,
+                "total_used_bytes": 203120640,
+                "total_avail_bytes": 16910123008,
+                "total_objects": 0
+            },
+            "pools": [
+                {
+                    "name": "rbd",
+                    "id": 0,
+                    "stats": {
+                        "kb_used": 0,
+                        "bytes_used": 0,
+                        "max_avail": 999252180,
+                        "objects": 0,
+                        "dirty": 0,
+                        "rd": 0,
+                        "rd_bytes": 0,
+                        "wr": 0,
+                        "wr_bytes": 0,
+                        "raw_bytes_used": 0
+                    }
+                },
+                {
+                    "name": "ecpool",
+                    "id": 2,
+                    "stats": {
+                        "kb_used": 0,
+                        "bytes_used": 0,
+                        "max_avail": 1998504360,
+                        "objects": 0,
+                        "dirty": 0,
+                        "rd": 0,
+                        "rd_bytes": 0,
+                        "wr": 0,
+                        "wr_bytes": 0,
+                        "raw_bytes_used": 0
+                    }
+                }
+            ]
+        }
+        assert result['stats']['total_avail_bytes'] == 16910123008
