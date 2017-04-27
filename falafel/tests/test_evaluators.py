@@ -1,10 +1,11 @@
 import os
 import unittest
 from falafel.core.specs import SpecMapper
-from falafel.core.evaluators import SingleEvaluator, MultiEvaluator
+from falafel.core.evaluators import SingleEvaluator, InsightsMultiEvaluator
 from falafel.core import plugins
 from falafel.core.archives import TarExtractor
 from falafel.plugins.insights_heartbeat import is_insights_heartbeat
+from falafel.mappers.multinode import osp
 import tarfile
 import tempfile
 import subprocess
@@ -196,6 +197,8 @@ tmp/sdc-appblx002-15.corp.com_sosreport/var/log/messages-20140406
 tmp/sdc-appblx002-15.corp.com_sosreport/uname
 """.strip()
 
+HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
+
 
 class MockTarFile(object):
     """
@@ -261,12 +264,16 @@ def make_cluster_archive(fd, content_type):
         json.dump({
             "systems": [
                 {
-                    "system_id": "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614",
-                    "type": "Director"
+                    "system_id": HEARTBEAT_ID,
+                    "product": "OSP",
+                    "type": "Director",
+                    "links": []
                 }
             ],
             "system_id": "test-id",
-            "name": "test"
+            "name": "test",
+            "product": "OSP",
+            "display_name": "insights-heartbeat"
         }, mdf)
 
     with open(inner_path, "wb") as fp:
@@ -289,13 +296,11 @@ def make_cluster_archive(fd, content_type):
 
 class TestSingleEvaluator(unittest.TestCase):
 
-    system_id = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
-
     def test_unpack_archive(self):
         with TarExtractor().from_path(os.path.join(HERE, "insights_heartbeat.tar.gz")) as ex:
             plugins.load("falafel.plugins")
             spec_mapper = SpecMapper(ex)
-            self.assertEquals(spec_mapper.get_content("machine-id", split=False), self.system_id)
+            self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
             p = SingleEvaluator(spec_mapper)
             p.pre_mapping()
             p.run_mappers()
@@ -320,8 +325,9 @@ class TestMultiEvaluator(unittest.TestCase):
 
             with TarExtractor().from_buffer(cluster_arc) as ex:
                 spec_mapper = SpecMapper(ex)
-                p = MultiEvaluator(spec_mapper)
+                p = InsightsMultiEvaluator(spec_mapper)
                 self.assertEquals(p.archive_metadata["system_id"], "test-id")
                 response = p.process()
                 self.assertEquals(len(response["archives"]), 1)
                 self.assertEquals(response["system"]["type"], "cluster")
+                assert osp in p.mapper_results[HEARTBEAT_ID]
