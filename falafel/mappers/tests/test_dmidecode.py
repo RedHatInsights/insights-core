@@ -1,6 +1,9 @@
 from falafel.mappers.dmidecode import DMIDecode
 from falafel.tests import context_wrap
 
+from datetime import date
+import unittest
+
 DMIDECODE = '''
 # dmidecode 2.11
 SMBIOS 2.7 present.
@@ -291,10 +294,15 @@ BIOS Language Information
 \t\ten-US
 \tCurrently Installed Language: en-US
 
+Handle 0x000A, DMI type 134, 13 bytes
+OEM-specific Type
+\tHeader and Data:
+\t\t01 02 03 04 05 06 07 08
+
 """
 
 
-class TestDmidecode():
+class TestDmidecode(unittest.TestCase):
 
     def test_get_dmidecode(self):
         '''
@@ -367,6 +375,13 @@ class TestDmidecode():
         # Check for 'nonsense' keys
         assert 'table_at_0xbffcb000.' not in ret
 
+        # Test property accessors
+        self.assertEqual(ret.system_info, ret['system_information'][0])
+        self.assertEqual(ret.bios, ret['bios_information'][0])
+        self.assertEqual(ret.bios_vendor, 'HP')
+        self.assertEqual(ret.bios_date, date(2013, 3, 1))
+        self.assertEqual(ret.processor_manufacturer, 'Bochs')
+
     def test_get_dmidecode_fail(self):
         '''
         Test for faied raw data
@@ -437,15 +452,16 @@ class TestDmidecode():
     def test_dmidecode_oddities(self):
         dmi = DMIDecode(context_wrap(DMIDECODE_ODDITIES))
 
-        print dmi.data
-
-        assert len(dmi['oem-specific_type']) == 2
+        assert len(dmi['oem-specific_type']) == 3
         assert dmi['oem-specific_type'][0] == {
             'header_and_data': '81 08 09 00 01 01 02 01',
             'strings': ['Intel_ASF', 'Intel_ASF_001'],
         }
         assert dmi['oem-specific_type'][1] == {
             'header_and_data': '86 0D 0A 00 28 06 14 20 00 00 00 00 00',
+        }
+        assert dmi['oem-specific_type'][2] == {
+            'header_and_data': '01 02 03 04 05 06 07 08',
         }
 
         assert len(dmi['port_connector_information']) == 2

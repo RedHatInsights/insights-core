@@ -259,9 +259,6 @@ def parse_dmidecode(dmidecode_content, pythonic_keys=False):
                     key, value = nbline.split(":", 1)
                     key = fix_key(key)
                     value = value.strip()
-                else:
-                    key = nbline
-                    value = ""
 
                 if "\t" in value:
                     current[key] = filter(None, value.split("\t"))
