@@ -125,3 +125,6 @@ def test_ipcs_semaphores():
     for sem in rst:
         i += 1
     assert i == rst.count_of_all_sems()
+    rst.orphan_sems() == ['622502', '622602', '655371']
+    rst.orphan_sems('apache') == ['622502', '622602', '655371']
+    rst.orphan_sems('postgres') == []

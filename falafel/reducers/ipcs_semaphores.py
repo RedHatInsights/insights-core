@@ -68,7 +68,8 @@ class IpcsSemaphores(object):
         for sem in sem_si:
             semid = sem.semid
             pid_list = sem.pid_list
-            data = sem_s.get(sem.semid)
+            data = sem_s.get(semid)
+            data['semid'] = semid
             data['pid_list'] = pid_list
             # check if it is orphan
             is_orphan = False
@@ -115,6 +116,25 @@ class IpcsSemaphores(object):
                 cnt += 1 if sem.owner == owner else 0
             return cnt
         return len(self._orphan_sems)
+
+    def orphan_sems(self, owner=None):
+        """
+        Return all the orphan semaphores by default, when ``owner`` is
+        provided return the orphan semaphores belong to ``owner``.
+
+        Parameters:
+            owner(str): Owner of semaphores.
+
+        Returns:
+            (list): the ID list of orphan semaphores
+        """
+        orphans = []
+        if owner:
+            for sem in self._orphan_sems:
+                if sem.owner == owner:
+                    orphans.append(sem.semid)
+            return orphans
+        return [sem.semid for sem in self._orphan_sems]
 
     def get_sem(self, semid):
         """
