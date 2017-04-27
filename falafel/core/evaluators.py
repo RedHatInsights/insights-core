@@ -37,12 +37,13 @@ class Evaluator(object):
         self.rule_results = []
         self.archive_metadata = metadata
         self.stats = self._init_stats()
+        self.hostname = ""
 
     def _init_stats(self):
         return {
-                "mapper": {"count": 0, "fail": 0},
-                "reducer": {"count": 0, "fail": 0},
-                "skips": {"count": 0}
+            "mapper": {"count": 0, "fail": 0},
+            "reducer": {"count": 0, "fail": 0},
+            "skips": {"count": 0}
         }
 
     def pre_mapping(self):
@@ -67,9 +68,6 @@ class Evaluator(object):
         def default_error_handler(func, e, local, shared):
             log.exception("Reducer [%s] failed", ".".join([func.__module__, func.__name__]))
         return default_error_handler
-
-    def get_contextual_hostname(self, default=""):
-        return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
     def _execute_mapper(self, mapper, context):
         self.stats["mapper"]["count"] += 1
@@ -99,7 +97,7 @@ class Evaluator(object):
         kwargs.update({
             "content": content,
             "path": path,
-            "hostname": self.get_contextual_hostname(),
+            "hostname": self.hostname,
             "release": self.release if hasattr(self, "release") else "",
             "version": self.uname.rhel_release if hasattr(self, "uname") and hasattr(self.uname, "rhel_release") else ['-1', '-1'],
         })
@@ -163,7 +161,7 @@ class SingleEvaluator(Evaluator):
             return default
 
     def _pull_md_fragment(self):
-        hn = self.get_contextual_hostname()
+        hn = self.hostname
         sub_systems = [s for s in self.archive_metadata["systems"] if s["system_id"] == hn]
         assert len(sub_systems) == 1
         return sub_systems[0]
@@ -269,7 +267,7 @@ class MultiEvaluator(Evaluator):
             sub_spec_mapper = specs.SpecMapper(extractor)
             sub_evaluator = self.SubEvaluator(sub_spec_mapper, metadata=self.archive_metadata)
             host_result = sub_evaluator.process()
-            hn = sub_evaluator.get_contextual_hostname(default=i)
+            hn = sub_evaluator.hostname or i
             self.archive_results[hn] = host_result
             self.mapper_results[hn] = sub_evaluator.mapper_results
 
@@ -312,14 +310,12 @@ class InsightsEvaluator(SingleEvaluator):
     def __init__(self, spec_mapper, url="not set", system_id=None, metadata=None):
         super(InsightsEvaluator, self).__init__(spec_mapper, metadata=metadata)
         self.system_id = system_id
+        self.hostname = system_id
         self.url = url
 
     def format_result(self, result):
         result["system_id"] = self.system_id
         return result
-
-    def get_contextual_hostname(self, default=""):
-        return self.system_id
 
     def set_branch_info(self, system):
         branch_info = json.loads(self.spec_mapper.get_content("branch_info",
@@ -338,7 +334,7 @@ class InsightsEvaluator(SingleEvaluator):
         int_system_id = self.spec_mapper.get_content("machine-id")[0]
         if self.system_id and self.system_id != int_system_id:
             raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
-        self.system_id = int_system_id
+        self.system_id = self.hostname = int_system_id
 
     def format_response(self, response):
         serialize_skips(response["skips"])
