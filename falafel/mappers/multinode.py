@@ -8,7 +8,12 @@ def _metadata(context, product_filter=None):
             md = marshalling.unmarshal("\n".join(context.content))
             product = md["product"]
             if "links" in md:
+                # Parent metadata.json won't have "links" as a top level key
                 product += "Child"
+            elif "systems" not in md:
+                # This case is for single-node systems that have a
+                # metadata.json
+                return
             return globals()[product](md)
         except:
             pass
