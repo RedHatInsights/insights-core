@@ -70,16 +70,25 @@ class BrctlShow(Mapper):
     """
     @property
     def group_by_iface(self):
+        """
+        Return a dict, key is the bridge name, the value is a dic with keys: bridge id,
+        STP enabled and interfaces
+        """
         return self._group_by_iface
 
     def parse_content(self, content):
         self._group_by_iface = {}
         self.data = []
-        head_line = filter(None, [v.strip() for v in content[0].split('  ')])
+        if "/usr/sbin/brctl: file not found" in content[0]:
+            return
+        elif "\t" in content[0]:
+            head_line = filter(None, [v.strip() for v in content[0].split('\t')])
+        else:
+            head_line = filter(None, [v.strip() for v in content[0].split('  ')])
         iface = head_line[3]
 
         for line in content[1:]:
-            if not line.startswith(' '):
+            if not line.startswith((' ', '\t')):
                 iface_lst = []
                 br_mapping = {}
                 br_mapping = dict(zip(head_line, line.split()))

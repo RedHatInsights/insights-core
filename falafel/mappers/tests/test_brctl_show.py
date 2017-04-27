@@ -13,11 +13,34 @@ br2             8000.0800278cdb63       yes             eth6
 docker0         8000.0242d4cf2112       no
 """
 
+BRCTL_SHOW_TAB = """
+bridge name	bridge id		STP enabled	interfaces
+br0		8000.2047478aa2e8	no		em1
+							vnet0
+							vnet1
+virbr9		8000.525400263a23	yes		virbr9-nic
+"""# noqa: W191, E101
+
+BRCTL_SHOW_NO_BRIDGES = """
+bridge name     bridge id   STP enabled     interfaces
+"""
+
+BRCTL_SHOW_ERROR = """
+/usr/sbin/brctl: file not found
+"""
+
 
 def test_get_brctl_show():
+    # the content is splitted with tab     # noqa: E101
+    result1 = BrctlShow(context_wrap(BRCTL_SHOW_TAB)).group_by_iface
+    assert result1["br0"] == {
+                "bridge id": "8000.2047478aa2e8",
+                "STP enabled": "no",
+                "interfaces": ['em1', 'vnet0', 'vnet1']
+            }
 
+    # the content is split with space
     result = BrctlShow(context_wrap(BRCTL_SHOW)).group_by_iface
-
     assert len(result) == 4
 
     assert result["br0"] == {
@@ -39,3 +62,13 @@ def test_get_brctl_show():
                 "bridge id": "8000.0242d4cf2112",
                 "STP enabled": "no"
             }
+
+    # Test handling of system with no bridges
+    no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_NO_BRIDGES))
+    assert len(no_bridges.data) == 0
+    assert len(no_bridges.group_by_iface) == 0
+
+    # Test handling of error output
+    no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_ERROR))
+    assert len(no_bridges.data) == 0
+    assert len(no_bridges.group_by_iface) == 0
