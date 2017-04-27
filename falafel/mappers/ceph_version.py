@@ -28,12 +28,12 @@ from .. import Mapper, mapper
 import re
 
 community_to_release_map = {
-    "0.94.1": "1.3.0",
-    "0.94.3": "1.3.1",
-    "0.94.5": "1.3.2",
-    "0.94.9": "1.3.3",
-    "10.2.2": "2.0",
-    "10.2.3": "2.1"
+    "0.94.1": {'release': "1.3.0", 'major': '1.3', 'minor': '0'},
+    "0.94.3": {'release': "1.3.1", 'major': '1.3', 'minor': '1'},
+    "0.94.5": {'release': "1.3.2", 'major': '1.3', 'minor': '2'},
+    "0.94.9": {'release': "1.3.3", 'major': '1.3', 'minor': '3'},
+    "10.2.2": {'release': "2.0", 'major': '2', 'minor': '0'},
+    "10.2.3": {'release': "2.1", 'major': '2', 'minor': '1'},
 }
 
 
@@ -68,36 +68,15 @@ class CephVersion(Mapper):
         ceph_version_line = content[-1]
         # re search pattern
         pattern_community = r'((\d{1,2})\.(\d{1,2})\.((\d{1,2})|x))((\-(\d{1,2}))?)'
-        pattern_release = r'(\d\.?\d?)\.(\d)'
         community_version_mo = re.search(pattern_community, str(ceph_version_line), 0)
         if not community_version_mo:
             raise CephVersionError("Wrong Format Ceph Version", content)
 
-        communit_version = community_version_mo.group(1)
-        self._release = community_to_release_map.get(communit_version, None)
-        if not self._release:
+        community_version = community_version_mo.group(1)
+        release_data = community_to_release_map.get(community_version, None)
+        if not release_data:
             raise CephVersionError("No Mapping Release Version. Ceph Release Number is Null", content)
 
-        release_version_mo = re.search(pattern_release, self._release)
-        if not release_version_mo:
-            raise CephVersionError("Wrong Format Release Version", content)
-
-        self._major = release_version_mo.group(1)
-        self._minor = release_version_mo.group(2)
-        if not self._major:
-            raise CephVersionError("Major Number is Null", content)
-
-        if not self._major:
-            raise CephVersionError("Major Number is Null", content)
-
-    @property
-    def release(self):
-        return self._release
-
-    @property
-    def major(self):
-        return self._major
-
-    @property
-    def minor(self):
-        return self._minor
+        self.release = release_data['release']
+        self.major = release_data['major']
+        self.minor = release_data['minor']
