@@ -317,7 +317,7 @@ class InsightsEvaluator(SingleEvaluator):
         result["system_id"] = self.system_id
         return result
 
-    def set_branch_info(self, system):
+    def get_branch_info(self):
         branch_info = json.loads(self.spec_mapper.get_content("branch_info",
                                  split=False, default="{}"))
         remote_branch = branch_info.get("remote_branch")
@@ -326,8 +326,12 @@ class InsightsEvaluator(SingleEvaluator):
         remote_leaf = branch_info.get("remote_leaf")
         if remote_leaf == -1:
             remote_leaf = None
-        system["remote_branch"] = remote_branch
-        system["remote_leaf"] = remote_leaf
+        return remote_branch, remote_leaf
+
+    def get_product_info(self):
+        md = json.loads(self.spec_mapper.get_content("metadata.json",
+                        split=False, default="{}"))
+        return md.get("product_code", "rhel"), md.get("role", "host")
 
     def pre_mapping(self):
         super(InsightsEvaluator, self).pre_mapping()
@@ -338,12 +342,12 @@ class InsightsEvaluator(SingleEvaluator):
 
     def format_response(self, response):
         serialize_skips(response["skips"])
-        response["system"]["system_id"] = self.system_id
+        system = response["system"]
+        system["system_id"] = self.system_id
         if self.release:
-            response["system"]["metadata"]["release"] = self.release
-        response["system"]["type"] = "host"
-        response["system"]["product"] = "rhel"
-        self.set_branch_info(response["system"])
+            system["metadata"]["release"] = self.release
+        system["remote_branch"], system["remote_leaf"] = self.get_branch_info()
+        system["product"], system["type"] = self.get_product_info()
         response["stats"]["skips"]["count"] = len(self.rule_skips)
         return response
 

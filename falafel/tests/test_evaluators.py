@@ -1,7 +1,7 @@
 import os
 import unittest
 from falafel.core.specs import SpecMapper
-from falafel.core.evaluators import SingleEvaluator, InsightsMultiEvaluator
+from falafel.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator
 from falafel.core import plugins
 from falafel.core.archives import TarExtractor
 from falafel.plugins.insights_heartbeat import is_insights_heartbeat
@@ -298,12 +298,12 @@ def make_cluster_archive(fd, content_type):
 class TestSingleEvaluator(unittest.TestCase):
 
     def test_unpack_archive(self):
-        arc_path = insights_heartbeat()
+        arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
         with TarExtractor().from_path(arc_path) as ex:
             plugins.load("falafel.plugins")
             spec_mapper = SpecMapper(ex)
             self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
-            p = SingleEvaluator(spec_mapper)
+            p = InsightsEvaluator(spec_mapper)
             p.pre_mapping()
             p.run_mappers()
             self.assertEquals(p.mapper_results.get(is_insights_heartbeat),
@@ -314,6 +314,9 @@ class TestSingleEvaluator(unittest.TestCase):
             r = p.get_response()
             self.assertTrue("system" in r)
             self.assertTrue("reports" in r)
+            print json.dumps(r["system"])
+            self.assertTrue(r["system"]["product"] == "ocp")
+            self.assertTrue(r["system"]["type"] == "node")
         subprocess.call("rm -rf %s" % arc_path, shell=True)
 
 

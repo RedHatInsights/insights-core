@@ -22,11 +22,12 @@ ARCHIVE_GENERATORS = []
 HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
 
 
-def insights_heartbeat():
+def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
     tmp_dir = tempfile.mkdtemp()
     hostname = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
     return TA(hostname, base_archive="rhel7", transforms=[
-        T("hostname").replace(hostname)
+        T("hostname").replace(hostname),
+        T("metadata.json").replace(json.dumps(metadata))
     ], machine_id=HEARTBEAT_ID, hostname=hostname).build(tmp_dir)
 
 
