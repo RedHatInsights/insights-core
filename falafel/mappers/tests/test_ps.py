@@ -1,5 +1,3 @@
-import unittest
-
 import pytest
 
 from ...mappers import ps
@@ -8,6 +6,11 @@ from ...util import keys_in
 
 SERVICE_RUNNING = 'SERVICE_RUNNING'
 SERVICES_RUNNING = 'SERVICES_RUNNING'
+
+PsAuxcww_BAD = """
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0
+""".strip()
 
 PsAuxcww_TEST = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
@@ -41,38 +44,63 @@ vdsm             1.3 Wed Dec 28 05:59:06 2016
 """.strip()
 
 
-class TestPS(unittest.TestCase):
-    def test_ps_auxcww(self):
-        d = ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).data
-        self.assertTrue(keys_in(["USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START", "TIME", "COMMAND"], d[0]))
-        self.assertEqual(d[0], {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': 'init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'})
-        self.assertEqual(d[2]["COMMAND"], 'irqbalance')
-        self.assertEqual(d[-2]["COMMAND"], 'qemu-kvm')
+def test_ps_auxcww():
+    d = ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).data
+    assert keys_in(["USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START", "TIME", "COMMAND"], d[0])
+    assert d[0] == {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': 'init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'}
+    assert d[2]["COMMAND"] == 'irqbalance'
+    assert d[-2]["COMMAND"] == 'qemu-kvm'
+    d1 = ps.PsAuxcww(context_wrap(PsAuxcww_BAD))
+    assert 'test' not in d1
 
-    def test_ps_aux(self):
-        d = ps.PsAux(context_wrap(PsAux_TEST)).data
-        self.assertTrue(keys_in(["USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START", "TIME", "COMMAND"], d[0]))
-        self.assertEqual(d[0], {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '/sbin/init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'})
-        self.assertEqual(d[2]["COMMAND"], 'irqbalance --pid=/var/run/irqbalance.pid')
-        self.assertEqual(d[-1]["COMMAND"].split()[0], "/usr/libexec/qemu-kvm")
-        self.assertEqual(d[-1]["COMMAND"].split()[-2:], ["-uuid", "13798ffc-bc1e-d437-4f3f-2e0fa6c923ad"])
 
-    def test_running_procs(self):
-        proc_list = ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).running
-        for proc in ["init", "kondemand/0", "irqbalance", "bash", "dhclient", "qemu-kvm"]:
-            self.assertTrue(proc in proc_list)
-        for proc in ["dummy-proc", "kondemand"]:
-            self.assertFalse(proc in proc_list)
+def test_ps_aux():
+    d = ps.PsAux(context_wrap(PsAux_TEST)).data
+    assert keys_in(["USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START", "TIME", "COMMAND"], d[0])
+    assert d[0] == {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '/sbin/init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'}
+    assert d[2]["COMMAND"] == 'irqbalance --pid=/var/run/irqbalance.pid'
+    assert d[-1]["COMMAND"].split()[0] == "/usr/libexec/qemu-kvm"
+    assert d[-1]["COMMAND"].split()[-2:] == ["-uuid", "13798ffc-bc1e-d437-4f3f-2e0fa6c923ad"]
+    d1 = ps.PsAux(context_wrap(""))
+    assert d1.data == []
 
-    def test_cpu_usage(self):
-        self.assertEqual(ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).cpu_usage("vdsm"), "98.0")
 
-    def test_ps_axcwwo(self):
-        d = ps.PsAxcwwo(context_wrap(PsAxcwwo_TEST)).data
-        self.assertTrue(keys_in(["COMMAND", "%CPU", "STARTED"], d[0]))
-        self.assertEqual(d[0], {'STARTED': 'Thu Dec  8 01:19:25 2016', 'COMMAND': 'systemd', '%CPU': '0.0'})
-        self.assertEqual(d[2]["COMMAND"], 'ksoftirqd/0')
-        self.assertEqual(d[-2]["COMMAND"], 'libvirtd')
+def test_running_procs():
+    proc_list = ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).running
+    for proc in ["init", "kondemand/0", "irqbalance", "bash", "dhclient", "qemu-kvm"]:
+        assert proc in proc_list
+    for proc in ["dummy-proc", "kondemand"]:
+        assert not (proc in proc_list)
+
+
+def test_cpu_usage():
+    assert ps.PsAuxcww(context_wrap(PsAuxcww_TEST)).cpu_usage("vdsm") == "98.0"
+
+
+def test_users():
+    ps_obj = ps.PsAuxcww(context_wrap(PsAuxcww_TEST))
+    assert ps_obj.users("qemu-kvm") == {'qemu': ['22673']}
+    assert ps_obj.users("sshd") == {}
+
+
+def test_fuzzy_match():
+    ps_obj = ps.PsAuxcww(context_wrap(PsAuxcww_TEST))
+    assert 'sshd' not in ps_obj
+    assert ps_obj.fuzzy_match("sshd") is False
+    for p in ps_obj:
+        assert p == {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': 'init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'}
+        break
+
+
+def test_ps_axcwwo():
+    d = ps.PsAxcwwo(context_wrap(PsAxcwwo_TEST)).data
+    assert keys_in(["COMMAND", "%CPU", "STARTED"], d[0])
+    assert d[0] == {'STARTED': 'Thu Dec  8 01:19:25 2016', 'COMMAND': 'systemd', '%CPU': '0.0'}
+    assert d[2]["COMMAND"] == 'ksoftirqd/0'
+    assert d[-2]["COMMAND"] == 'libvirtd'
+    with pytest.raises(ValueError):
+        d1 = ps.PsAxcwwo(context_wrap("test"))
+        assert d1.data == []
 
 
 def test_ps_auxcww_pid():

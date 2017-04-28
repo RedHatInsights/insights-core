@@ -50,6 +50,8 @@ Examples:
     ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
     >>> ps_info.cpu_usage('vdsm')
     '98.0'
+    >>> ps_info.users('qemu-kvm')
+    {'qemu': ['22673']}
     >>> ps_info.fuzzy_match('qemu')
     True
     >>> 'bash' in ps_info
@@ -85,6 +87,18 @@ class ProcessList(Mapper):
         for row in self.data:
             if proc == row["COMMAND"]:
                 return row["%CPU"]
+
+    def users(self, proc):
+        """dict: Returns the dict of ``USER`` and ``PID`` column in format of
+        ``{USER: (PID1, PID2)}`` corresponding to ``proc`` in COMMAND
+        """
+        ret = {}
+        for row in self.data:
+            if proc == row["COMMAND"]:
+                if row["USER"] not in ret:
+                    ret.update({row["USER"]: []})
+                ret[row["USER"]].append(row["PID"])
+        return ret
 
     def fuzzy_match(self, proc):
         """boolean: Returns ``True`` if ``proc`` is in the COMMAND column."""
