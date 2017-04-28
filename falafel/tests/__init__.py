@@ -4,6 +4,7 @@ import logging
 import pprint
 import json
 import sys
+import tempfile
 from collections import defaultdict
 from functools import wraps
 from itertools import islice
@@ -11,9 +12,22 @@ from falafel.core import mapper, reducer, marshalling, plugins
 from falafel.core.context import Context, PRODUCT_NAMES
 from falafel.util import make_iter
 
+# Need to change the name of TestArchive since pytest looks at it becuase it
+# starts with "Test"
+from falafel.archive.tool import TestArchive as TA, Transform as T
+
 logger = logging.getLogger("test.util")
 
 ARCHIVE_GENERATORS = []
+HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
+
+
+def insights_heartbeat():
+    tmp_dir = tempfile.mkdtemp()
+    hostname = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
+    return TA(hostname, base_archive="rhel7", transforms=[
+        T("hostname").replace(hostname)
+    ], machine_id=HEARTBEAT_ID, hostname=hostname).build(tmp_dir)
 
 
 def unordered_compare(result, expected):

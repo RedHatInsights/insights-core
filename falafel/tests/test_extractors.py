@@ -7,22 +7,19 @@ import gzip
 import zipfile
 from falafel.core import archives
 from falafel.core.specs import SpecMapper
-
-HERE = os.path.abspath(os.path.dirname(__file__))
-ARC = os.path.join(HERE, "insights_heartbeat.tar.gz")
+from . import insights_heartbeat
 
 
 class TestTarExtractor(unittest.TestCase):
     def test_from_buffer_with_directory(self):
-
+        arc_path = insights_heartbeat()
         tmp_dir = tempfile.mkdtemp()
-
-        command = "tar -a -x -f %s -C %s" % (ARC, tmp_dir)
+        command = "tar -a -x -f %s -C %s" % (arc_path, tmp_dir)
         subprocess.call(shlex.split(command))
 
         with archives.TarExtractor() as tar_ex:
             with archives.TarExtractor() as dir_ex:
-                tar_tf = tar_ex.from_path(ARC)
+                tar_tf = tar_ex.from_path(arc_path)
                 tar_all_files = tar_tf.getnames()
 
                 dir_tf = dir_ex.from_path(tmp_dir)
@@ -38,13 +35,16 @@ class TestTarExtractor(unittest.TestCase):
                         dir_content = dir_tf.extractfile(dir_path)
                         self.assertEqual(tar_content, dir_content)
 
-        command = "rm -rf %s" % tmp_dir
-        subprocess.call(shlex.split(command))
+        command = "rm -rf %s"
+        subprocess.call(shlex.split(command % tmp_dir))
+        subprocess.call(shlex.split(command % arc_path))
 
     def test__assert_type_gzip_tar(self):
+        arc_path = insights_heartbeat()
         with archives.TarExtractor() as tar_ex:
-            tar_ex._assert_type(ARC, False)
+            tar_ex._assert_type(arc_path, False)
             self.assertIn(tar_ex.content_type, archives.TarExtractor.TAR_FLAGS)
+        subprocess.call(shlex.split("rm -rf %s" % arc_path))
 
     def test__assert_type_gzip_no_tar(self):
         tmp_dir = tempfile.mkdtemp()
@@ -64,7 +64,8 @@ class TestZipFileExtractor(unittest.TestCase):
     def test_with_zip(self):
 
         tmp_dir = tempfile.mkdtemp()
-        command = "tar -a -x -f %s -C %s" % (ARC, tmp_dir)
+        arc_path = insights_heartbeat()
+        command = "tar -a -x -f %s -C %s" % (arc_path, tmp_dir)
         subprocess.call(shlex.split(command))
 
         try:
@@ -89,7 +90,7 @@ class TestZipFileExtractor(unittest.TestCase):
         with archives.ZipExtractor() as ex:
             ex.from_path("/tmp/test.zip")
             self.assertFalse("foo" in ex.getnames())
-            self.assertTrue(any(f.endswith("insights_heartbeat/sys/kernel/kexec_crash_loaded") for f in ex.getnames()))
+            self.assertTrue(any(f.endswith("/sys/kernel/kexec_crash_loaded") for f in ex.getnames()))
 
             spec_mapper = SpecMapper(ex)
             self.assertEquals(spec_mapper.get_content("hostname"), ["insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"])
@@ -100,3 +101,4 @@ class TestZipFileExtractor(unittest.TestCase):
             pass
 
         subprocess.call(shlex.split("rm -rf %s" % tmp_dir))
+        subprocess.call(shlex.split("rm -rf %s" % arc_path))
