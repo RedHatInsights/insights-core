@@ -195,6 +195,10 @@ def integrate(input_data, module):
         is_multi_node = True
         if isinstance(input_data[0], dict):
             # Assume it's metadata.json
+            if "systems" not in input_data[0]:
+                # The multinode mappers use the presence of the "system" key to
+                # validate this really is a multinode metadata.json
+                input_data[0]["systems"] = []
             records.append({
                 "content": json.dumps(input_data[0]),
                 "release": "default-release",
