@@ -82,7 +82,7 @@ class Evaluator(object):
         MD_JSON = "metadata.json"
         result_map = {}
         for plugin in plugins.get_mappers(MD_JSON):
-            context = self.build_context(content=marshalling.marshal(the_meta_data),
+            context = self.build_context(content=marshalling.marshal(the_meta_data).splitlines(),
                                          path=MD_JSON,
                                          target=MD_JSON)
             try:
