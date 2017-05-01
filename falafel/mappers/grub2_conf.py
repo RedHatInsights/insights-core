@@ -97,6 +97,7 @@ GRUB_INITRDS = 'grub_initrds'
 
 
 @mapper('grub2.cfg')
+@mapper('grub2-efi.cfg')
 class Grub2Config(LegacyItemAccess, Mapper):
     """
     Parser for configuration for GRUB version 2.
