@@ -1,12 +1,12 @@
 import os
 import unittest
 from falafel.core.specs import SpecMapper
-from falafel.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator
+from falafel.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, SingleEvaluator
 from falafel.core import plugins
 from falafel.core.archives import TarExtractor
 from falafel.plugins.insights_heartbeat import is_insights_heartbeat
 from falafel.mappers.multinode import osp
-from . import insights_heartbeat
+from . import insights_heartbeat, HEARTBEAT_ID, HEARTBEAT_NAME
 import tarfile
 import tempfile
 import subprocess
@@ -297,26 +297,44 @@ def make_cluster_archive(fd, content_type):
 
 class TestSingleEvaluator(unittest.TestCase):
 
-    def test_unpack_archive(self):
+    def _unpack_archive(self, ex, cls):
+        plugins.load("falafel.plugins")
+        spec_mapper = SpecMapper(ex)
+        self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
+        p = cls(spec_mapper)
+        p.pre_mapping()
+        p.run_mappers()
+        self.assertEquals(p.mapper_results.get(is_insights_heartbeat),
+                          [{"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}])
+        p.run_reducers()
+        return p
+
+    def _common_tests(self, p):
+        self.assertTrue("insights_heartbeat|INSIGHTS_HEARTBEAT"
+                        in [r.get("rule_id") for r in p.rule_results])
+        r = p.get_response()
+        self.assertTrue("system" in r)
+        self.assertTrue("reports" in r)
+        print json.dumps(r["system"])
+        self.assertTrue(r["system"]["hostname"] == HEARTBEAT_NAME)
+        return r
+
+    def test_single_evaluator(self):
         arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
         with TarExtractor().from_path(arc_path) as ex:
-            plugins.load("falafel.plugins")
-            spec_mapper = SpecMapper(ex)
-            self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
-            p = InsightsEvaluator(spec_mapper)
-            p.pre_mapping()
-            p.run_mappers()
-            self.assertEquals(p.mapper_results.get(is_insights_heartbeat),
-                              [{"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}])
-            p.run_reducers()
-            self.assertTrue("insights_heartbeat|INSIGHTS_HEARTBEAT"
-                            in [r.get("rule_id") for r in p.rule_results])
-            r = p.get_response()
-            self.assertTrue("system" in r)
-            self.assertTrue("reports" in r)
-            print json.dumps(r["system"])
-            self.assertTrue(r["system"]["product"] == "ocp")
-            self.assertTrue(r["system"]["type"] == "node")
+            p = self._unpack_archive(ex, SingleEvaluator)
+            self._common_tests(p)
+        subprocess.call("rm -rf %s" % arc_path, shell=True)
+
+    def test_insights_evalutor(self):
+        arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
+        with TarExtractor().from_path(arc_path) as ex:
+            p = self._unpack_archive(ex, InsightsEvaluator)
+            r = self._common_tests(p)
+            system = r["system"]
+            self.assertTrue(system["product"] == "ocp")
+            self.assertTrue(system["type"] == "node")
+            self.assertTrue(system["system_id"] == HEARTBEAT_ID)
         subprocess.call("rm -rf %s" % arc_path, shell=True)
 
 
