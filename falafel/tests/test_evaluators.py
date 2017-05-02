@@ -198,8 +198,6 @@ tmp/sdc-appblx002-15.corp.com_sosreport/var/log/messages-20140406
 tmp/sdc-appblx002-15.corp.com_sosreport/uname
 """.strip()
 
-HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
-
 
 class MockTarFile(object):
     """
