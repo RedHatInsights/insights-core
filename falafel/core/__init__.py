@@ -789,6 +789,41 @@ class FileListing(Mapper):
         return self.listings[directory]['raw_list']
 
 
+class AttributeDict(dict):
+    """
+    Class to convert the access to each item in a dict as attribute.
+
+    Examples:
+        >>> data = {
+        ... "fact1":"fact 1"
+        ... "fact2":"fact 2"
+        ... "fact3":"fact 3"
+        ... }
+        >>> d_obj = AttributeDict(data)
+        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
+        >>> d_obj['fact1']
+        'fact 1'
+        >>> d_obj.get('fact1')
+        'fact 1'
+        >>> d_obj.fact1
+        'fact 1'
+        >>> 'fact2' in d_obj
+        True
+        >>> d_obj.get('fact3', default='no fact')
+        'fact 3'
+        >>> d_obj.get('fact4', default='no fact')
+        'no fact'
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(AttributeDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
+
+    def __iter__(self):
+        for k, v in self.__dict__.iteritems():
+            yield k, v
+
+
 class ErrorCollector(object):
     errors = defaultdict(lambda: {
         "count": 0,

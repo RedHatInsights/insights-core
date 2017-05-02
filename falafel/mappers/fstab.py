@@ -48,6 +48,7 @@ Typical content of the ``fstab`` looks like::
 
     localhost:/ /mnt/hdfs nfs rw,vers=3,proto=tcp,nolock,timeo=600 0 0
 
+    /dev/mapper/vg0-lv2     /test1     ext4 defaults,data=writeback     1 1
     nfs_hostname.redhat.com:/nfs_share/data     /srv/rdu/cases/000  nfs     ro,defaults,hard,intr,bg,noatime,nodev,nosuid,nfsvers=3,tcp,rsize=32768,wsize=32768     0
 
 Examples:
@@ -72,58 +73,12 @@ Examples:
 
 from collections import namedtuple
 
-from .. import Mapper, mapper, get_active_lines, parse_table
+from .. import Mapper, mapper, get_active_lines, parse_table, AttributeDict
 from ..mappers import optlist_to_dict
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype fs_mntops    fs_freq fs_passno"
 
 type_info = namedtuple('type_info', field_names=['type', 'default'])
-
-
-class MountOpts(object):
-    """
-    An object representing the mount options found in the ``fs_mntops``
-    field of the fstab entry.  Each option in the comma-separated list is
-    a key, and 'key=value' pairs such as 'gid=5' are split so that e.g. the
-    key is 'gid' and the value is '5'.  Otherwise, the key is the option
-    name and its value is 'True'.
-
-    In addition, the properties ``rw``, ``rq``, ``ro``, ``sw``, ``xx``,
-    ``relatime``, ``seclabel``, ``attr2``, ``inode64`` and ``noquota`` will
-    always be available and are False if not defined in the options list.
-    """
-    type_infos = {
-        'rw': type_info(bool, False),
-        'rq': type_info(bool, False),
-        'ro': type_info(bool, False),
-        'sw': type_info(bool, False),
-        'xx': type_info(bool, False),
-        'relatime': type_info(bool, False),
-        'seclabel': type_info(bool, False),
-        'attr2': type_info(bool, False),
-        'inode64': type_info(bool, False),
-        'noquota': type_info(bool, False)
-    }
-
-    def __init__(self, data):
-        self.data = data
-        for k, v in MountOpts.type_infos.iteritems():
-            if k not in data:
-                data[k] = v.default
-
-        for k, v in data.iteritems():
-            setattr(self, k, v)
-
-
-class FSTabEntry(object):
-    """
-    An object representing an entry in ``/etc/fstab``.  The fields are
-    stored as attributes.  ``fs_mntops`` is a MountOpts object.
-    """
-    def __init__(self, data):
-        for k, v in data.iteritems():
-            v = v if k != 'fs_mntops' else MountOpts(v)
-            setattr(self, k, v)
 
 
 @mapper("fstab")
@@ -140,10 +95,13 @@ class FSTab(Mapper):
 
     Attributes:
         data (list): a list of parsed fstab entries as dictionaries.
-        rows (list): a list of parsed fstab entries as FSTabEntry objects.
-        mounted_on (dict): a dictionary of FSTabEntry objects keyed on mount
+        rows (list): a list of parsed fstab entries as AttributeDict objects.
+        mounted_on (dict): a dictionary of AttributeDict objects keyed on mount
             point.
     """
+    def __getitem__(self, item):
+        return self.rows[item]
+
     def __len__(self):
         return len(self.rows)
 
@@ -156,13 +114,14 @@ class FSTab(Mapper):
         Parse each line in the file ``/etc/fstab``.
         """
         fstab_output = parse_table([FS_HEADINGS] + get_active_lines(content))
+        self.rows = []
         for line in fstab_output:
             line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
-            line['fs_mntops'] = optlist_to_dict(line['fs_mntops'])
+            line['fs_mntops'] = AttributeDict(optlist_to_dict(line['fs_mntops']))
+            self.rows.append(AttributeDict(line))
         self.data = fstab_output
-        self.rows = [FSTabEntry(datum) for datum in self.data]
         # assert: all mount points of valid entries are unique by definition
         self.mounted_on = {row.fs_file: row for row in self.rows}
