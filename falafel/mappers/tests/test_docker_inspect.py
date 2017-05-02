@@ -1,6 +1,8 @@
 from falafel.mappers import docker_inspect
 from falafel.tests import context_wrap
 
+import unittest
+
 DOCKER_CONTAINER_INSPECT = """
 [
 {
@@ -271,7 +273,16 @@ DOCKER_IMAGE_INSPECT = """
 """.splitlines()
 
 
-class Testdockerinspect():
+DOCKER_CONTAINER_INSPECT_TRUNCATED = """
+[
+{
+    "Id": "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07",
+    "Created": "2016-06-23T05:12:25.433469799Z",
+    "Path": "/bin/bash",
+"""
+
+
+class Testdockerinspect(unittest.TestCase):
     def test_docker_container_inspect(self):
         result = docker_inspect.container(context_wrap(DOCKER_CONTAINER_INSPECT))
         assert result.get('Id') == "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
@@ -299,3 +310,7 @@ class Testdockerinspect():
         assert result.get('Size') == 580094174
         assert result.get('Config').get('AttachStdin') is False
         assert result.get('RepoDigests') == []
+
+    def test_docker_container_inspect_truncated_input(self):
+        result = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
+        self.assertEqual(result.data, {})
