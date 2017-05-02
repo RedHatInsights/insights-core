@@ -69,8 +69,6 @@ class Mount(Mapper):
     Raises:
         ParseException: Raised when any problem parsing the command output.
     """
-    def __getitem__(self, item):
-        return self.rows[item]
 
     def __len__(self):
         return len(self.rows)

@@ -99,8 +99,6 @@ class FSTab(Mapper):
         mounted_on (dict): a dictionary of AttributeDict objects keyed on mount
             point.
     """
-    def __getitem__(self, item):
-        return self.rows[item]
 
     def __len__(self):
         return len(self.rows)
@@ -121,6 +119,7 @@ class FSTab(Mapper):
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
             line['fs_mntops'] = AttributeDict(optlist_to_dict(line['fs_mntops']))
+            line['raw'] = [l for l in content if l.startswith(line['fs_spec'])][0]
             self.rows.append(AttributeDict(line))
         self.data = fstab_output
         # assert: all mount points of valid entries are unique by definition
