@@ -109,7 +109,7 @@ class ServerXMLRPCLog(LogFileOutput):
         for l in reversed(self.lines[-2:]):
             msg_info = self.parse_line(l)
             # assume parse is successful if we got an IP address
-            if msg_info['client_ip']:
+            if 'client_ip' in msg_info:
                 break
         # Get the last one even if it didn't parse.
         self.last = msg_info

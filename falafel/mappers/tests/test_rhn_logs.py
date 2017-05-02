@@ -3,7 +3,6 @@ from falafel.mappers.rhn_logs import TaskomaticDaemonLog, SearchDaemonLog
 from falafel.mappers.rhn_logs import ServerXMLRPCLog
 from datetime import datetime
 
-
 search_daemon_log = """
 STATUS | wrapper  | 2013/01/28 14:22:38 | TERM trapped.  Shutting down.
 STATUS | wrapper  | 2013/01/28 14:22:39 | <-- Wrapper Stopped
@@ -27,6 +26,10 @@ INFO   | jvm 1    | 2016/05/18 15:13:40 | INFO: Initializing c3p0 pool... com.mc
 INFO   | jvm 1
 """.strip()
 
+taskomatic_daemon_bad_date = """
+INFO   | jvm 1    | rbad/da/ta 15:13:40 | INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@ea9d5b40
+"""
+
 SERVER_XMLRPC_LOG_DATA = """
 2016/04/11 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
 2016/04/11 05:52:26 -04:00 12911 10.4.4.17: xmlrpc/registration.create_system("token = '1-RegKey'", '6Server', 'x86_64')
@@ -37,6 +40,10 @@ SERVER_XMLRPC_LOG_DATA = """
 2016/04/11 10:49:17 -04:00 11599 192.168.18.163: xmlrpc/registration.register_osad_jid
 2016/04/11 12:57:26 -04:00 11594 192.168.18.28: rhnServer/server_certificate.valid('Server id ID-1000010124 not found in database',)
 2016/07/27 04:44:41 -04:00 25923 2620:10a:0:4::40: xmlrpc/queue.get(1000014812, 2, 'checkins enabled')
+"""
+
+SERVER_XMLRPC_LOG_BAD_DATE = """
+2016/13/35 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
 """
 
 
@@ -53,6 +60,12 @@ def test_rhn_taskomatic_daemon_log():
     assert len(out_log.get("jvm")) == 9
     assert out_log.get("jvm")[2] == 'INFO   | jvm 1    | 2016/05/18 15:13:39 | May 18, 2016 3:13:39 PM com.mchange.v2.log.MLog <clinit>'
     assert out_log.last_log_date == datetime(2016, 5, 18, 15, 13, 40)
+
+
+def test_bad_date_handling():
+    out_log = TaskomaticDaemonLog(context_wrap(taskomatic_daemon_bad_date))
+    assert 'Initializing c3p0 pool..' in out_log
+    assert out_log.last_log_date is None
 
 
 def test_server_xmlrpc_log_data():
@@ -96,3 +109,10 @@ def test_server_xmlrpc_log_data():
     # Test last attribute
     last = log.last
     assert line == last
+
+
+def test_server_xmlrpc_log_bad_date():
+    log = ServerXMLRPCLog(context_wrap(SERVER_XMLRPC_LOG_BAD_DATE))
+    line = log.get('registration.welcome_message')[0]
+    assert line['timestamp'] == '2016/13/35 05:52:01 -04:00'
+    assert 'datetime' not in line
