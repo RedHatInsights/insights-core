@@ -104,6 +104,7 @@ static_specs = {
     "glance-registry.conf"      : SimpleFileSpec("etc/glance/glance-registry.conf"),
     "grub.conf"                 : SimpleFileSpec("boot/grub/grub.conf"),
     "grub2.cfg"                 : SimpleFileSpec("boot/grub2/grub.cfg"),
+    "grub2-efi.cfg"             : SimpleFileSpec("boot/efi/EFI/redhat/grub.cfg"),
     "grub_config_perms"         : CommandSpec("/bin/ls -l /boot/grub2/grub.cfg"),  # only RHEL7 and updwards
     "grub1_config_perms"        : CommandSpec("/bin/ls -l /boot/grub/grub.conf"),  # RHEL6
     "hammer_ping"               : CommandSpec("/usr/bin/hammer ping"),
