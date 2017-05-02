@@ -56,8 +56,3 @@ from .. import YAMLMapper, mapper
 class ForemanProxyConf(YAMLMapper):
     """ Class for parsing the content of ``foreman_proxy_conf``."""
     pass
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
