@@ -68,6 +68,10 @@ INT_INVALID_2 = """
 
 """.strip()
 
+INT_NO_INTERRUPTS = """
+           CPU0
+"""
+
 
 def test_interrupts():
     all_ints = Interrupts(context_wrap(INT_MULTI))
@@ -92,3 +96,6 @@ def test_interrupts():
 
     with pytest.raises(ParseException):
         Interrupts(context_wrap(INT_INVALID_2))
+
+    with pytest.raises(ParseException):
+        Interrupts(context_wrap(INT_NO_INTERRUPTS))
