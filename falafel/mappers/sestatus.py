@@ -77,7 +77,3 @@ class SEStatus(LegacyItemAccess, Mapper):
             sestatus_info['selinux_status'] = sestatus_info['current_mode']
 
         self.data = sestatus_info
-
-    def __iter__(self):
-        for sec in self.data:
-            yield sec

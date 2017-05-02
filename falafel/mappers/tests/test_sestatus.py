@@ -64,6 +64,11 @@ def test_sestatus():
                                                 'antivirus_can_scan_system': False,
                                                 'antivirus_use_jit': False,
                                                 'auditadm_exec_content': True}
+    assert sorted(sestatus_info) == sorted([
+        'loaded_policy_name', 'current_mode', 'mode_from_config_file',
+        'policy_mls_status', 'policy_deny_unknown_status',
+        'max_kernel_policy_version', 'policy_booleans', 'selinux_status'
+    ])
 
     perm_info = SEStatus(context_wrap(SESTATUS_PERMISSIVE))
     assert perm_info is not None
