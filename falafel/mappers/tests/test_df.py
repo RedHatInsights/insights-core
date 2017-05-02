@@ -73,6 +73,16 @@ def test_df_li():
     assert df_list.get_filesystem('devtmpfs')[0].mounted_on == '/dev'
     assert df_list.get_mount('/V M T o o l s').available == '1499678'
     assert df_list.get_filesystem('/dev/mapper/vg_lxcrhel6sat56-lv_root')[0].mounted_on == '/'
+    sorted_mount_names = sorted([
+        '/', '/dev', '/dev/shm', '/run', '/sys/fs/cgroup', '/tmp', '/home',
+        '/boot', '/V M T o o l s', '/VM Tools'
+    ])
+    assert sorted([d.mounted_on for d in df_list]) == sorted_mount_names
+    assert sorted(df_list.mount_names) == sorted_mount_names
+    assert sorted(df_list.filesystem_names) == sorted([
+        '/dev/mapper/vg_lxcrhel6sat56-lv_root', 'devtmpfs', 'tmpfs',
+        '/dev/sda2', '/dev/sda1'
+    ])
 
 
 def test_df_alP():
