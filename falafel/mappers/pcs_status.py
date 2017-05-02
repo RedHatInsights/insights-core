@@ -160,9 +160,3 @@ class PCSStatus(Mapper):
     def get(self, i_key):
         """str/list: Returns the data associated with ``i_key`` or ``None`` if ``i_key`` is not present"""
         return self.data.get(i_key)
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
