@@ -2,6 +2,8 @@ from falafel.mappers.certificates_enddate import CertificatesEnddate
 from falafel.tests import context_wrap
 import datetime
 
+import pytest
+
 CRT1 = """
 notAfter=Nov 24 02:58:22 2021 GMT
 """.strip()
@@ -73,7 +75,9 @@ def test_certificates_enddate():
     Cert5 = CertificatesEnddate(context_wrap(CRT5, path=CRT5_PATH))
     assert Cert5.file_path == CRT5_PATH
     assert Cert5.file_name == 'what-ever'
-    # assert Cert5.get_expiration_date() # will get exception here as expected
+    with pytest.raises(Exception) as e:
+        assert Cert5.get_expiration_date()
+    assert 'Unable to parse the expiration data of' in str(e)
 
     Cert6 = CertificatesEnddate(context_wrap(CRT6, path=CRT6_PATH))
     assert Cert6.file_name == 'README'
