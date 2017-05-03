@@ -27,6 +27,9 @@ options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the valu
 ``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in`` operator
 may be used to determine if an option is present.
 
+MountEntry lines are also available in a ``mounts`` property, keyed on the
+mount point.
+
 Examples:
     >>> mnt_info = shared[Mount]
     >>> mnt_info
@@ -52,10 +55,14 @@ Examples:
     >>> mnt_info[3].mount_options.dmode
     >>> 'dmode' in mnt_info[3].mount_options
     True
+    >>> mnt_info.mounts['/run/media/root/VMware Tools'].filesystem
+    'dev/sr0'
 """
 
-from ..mappers import optlist_to_dict, ParseException
+from ..mappers import optlist_to_dict
 from .. import Mapper, mapper, get_active_lines, AttributeDict
+
+import re
 
 
 @mapper('mount')
@@ -77,19 +84,37 @@ class Mount(Mapper):
         for row in self.rows:
             yield row
 
+    def __getitem__(self, idx):
+        if isinstance(idx, int):
+            return self.rows[idx]
+        elif isinstance(idx, str):
+            return self.mounts[idx]
+
+    # /dev/mapper/fedora-home on /home type ext4 (rw,relatime,seclabel,data=ordered) [HOME]
+    mount_line_re = r'^(?P<filesystem>\S+) on (?P<mount_point>.+?) type ' + \
+        r'(?P<mount_type>\S+) \((?P<mount_options>[^)]+)\)' + \
+        r'(?: \[(?P<mount_label>.*)\])?$'
+    mount_line_rex = re.compile(mount_line_re)
+
     def parse_content(self, content):
         self.rows = []
+        self.mounts = {}
         for line in get_active_lines(content):
             mount = {}
-            try:
-                mount['mount_clause'] = line
-                mount['filesystem'], rest = line.split(' on ', 1)
-                mount['mount_point'], rest = rest.split(' type ', 1)
-                mount['mount_type'], rest = rest.split(' (', 1)
-                mount_options, rest = rest.split(')', 1)
+            mount['mount_clause'] = line
+            match = self.mount_line_rex.search(line)
+            if match:
+                mount['filesystem'] = match.group('filesystem')
+                mount['mount_point'] = match.group('mount_point')
+                mount['mount_type'] = match.group('mount_type')
+                mount_options = match.group('mount_options')
                 mount['mount_options'] = AttributeDict(optlist_to_dict(mount_options))
-                if len(rest) > 0:
-                    mount['mount_label'] = rest.strip(' []')
-                self.rows.append(AttributeDict(mount))
-            except:
-                raise ParseException("Mount unable to parse content: ", line)
+                if match.group('mount_label'):
+                    mount['mount_label'] = match.group('mount_label')
+            else:
+                mount['parse_error'] = 'Unable to parse line'
+
+            entry = AttributeDict(mount)
+            self.rows.append(entry)
+            if match:
+                self.mounts[mount['mount_point']] = entry

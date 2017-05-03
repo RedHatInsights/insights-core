@@ -2,11 +2,8 @@
 test mount
 ==========
 """
-import pytest
-
-from falafel.mappers import ParseException
 from falafel.mappers.mount import Mount
-from falafel.core.context import Context
+from falafel.tests import context_wrap
 
 MOUNT_DATA = """
 tmpfs on /tmp type tmpfs (rw,seclabel)
@@ -31,8 +28,7 @@ hugetlbfs /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 
 
 def test_mount():
-    context = Context(content=MOUNT_DATA.splitlines())
-    results = Mount(context)
+    results = Mount(context_wrap(MOUNT_DATA))
     assert results is not None
     assert len(results) == 12
     sr0 = None
@@ -44,6 +40,9 @@ def test_mount():
             sda1 = result
     assert sr0 is not None
     assert sr0['mount_point'] == '/run/media/root/VMware Tools'
+    # test get method
+    assert sr0.get('mount_point') == '/run/media/root/VMware Tools'
+    assert sr0.get('does not exist', 'failure') == 'failure'
     assert sr0['mount_type'] == 'iso9660'
     assert 'ro' in sr0['mount_options']
     assert sr0.mount_options.ro
@@ -59,6 +58,18 @@ def test_mount():
     assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
 
-    context = Context(content=MOUNT_ERR_DATA.splitlines())
-    with pytest.raises(ParseException):
-        Mount(context)
+    # Test getitem
+    assert results[11] == sr0
+    assert results['/etc/shadow'] == results[10]
+
+    # Test mounts dictionary
+    assert results.mounts['/run/media/root/VMware Tools'] == sr0
+
+    # Test parse failure
+    errors = Mount(context_wrap(MOUNT_ERR_DATA))
+    assert errors is not None
+    assert len(errors) == 2
+    assert not hasattr(errors[0], 'parse_error')
+    assert errors[0].filesystem == 'tmpfs'
+    assert hasattr(errors[1], 'parse_error')
+    assert errors[1].parse_error == 'Unable to parse line'
