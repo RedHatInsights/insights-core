@@ -23,9 +23,3 @@ class SelinuxConfig(Mapper):
             key, _, value = line.partition("=")
             result[key.strip()] = value.strip()
         self.data = result
-
-
-@mapper("selinux-config")
-def parse_selinux_config(context):
-    """Deprecated, do not use."""
-    return SelinuxConfig(context).data
