@@ -148,8 +148,3 @@ class YumLog(Mapper):
     def present_packages(self):
         """``list`` of latest ``Entry`` instances for installed packages."""
         return self._packages_currently([self.INSTALLED, self.UPDATED])
-
-
-if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
