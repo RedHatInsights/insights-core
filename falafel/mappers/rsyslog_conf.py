@@ -50,8 +50,3 @@ class RsyslogConf(Mapper):
     def __iter__(self):
         for d in self.data:
             yield d
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
