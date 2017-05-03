@@ -1,8 +1,10 @@
 from falafel.mappers import xfs_info
 from falafel.tests import context_wrap
 
+import unittest
 
-class TestXFSInfo():
+
+class TestXFSInfo(unittest.TestCase):
     def test_example_xfs_info(self):
         xfs_obj = xfs_info.XFSInfo(context_wrap("""
 meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
@@ -122,6 +124,9 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         # Calculated information checks
         assert xfs_obj.data_size == 1280000 * 4096
         assert xfs_obj.log_size == 2560 * 4096
+
+        self.assertEqual(repr(xfs_obj), 'xfs_info of /dev/mapper/vgSys-lvRoot' +
+            ' with sections [data, log, meta-data, naming, realtime]')
 
     def test_ext_log_xfs_info(self):
         xfs_obj = xfs_info.XFSInfo(context_wrap("""

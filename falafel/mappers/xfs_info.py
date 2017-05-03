@@ -62,4 +62,4 @@ class XFSInfo(Mapper):
 
     def __repr__(self):
         return 'xfs_info of ' + self.xfs_info['meta-data']['specifier']\
-            + ' with sections [' + ', '.join(self.xfs_info.keys()) + ']'
+            + ' with sections [' + ', '.join(sorted(self.xfs_info.keys())) + ']'
