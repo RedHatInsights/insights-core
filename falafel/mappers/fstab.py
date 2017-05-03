@@ -60,6 +60,8 @@ Examples:
     '/dev/mapper/rhel_hadoop--test--1-root'
     >>> fstab.data[0]['fs_mntops']
     'defaults'
+    >>> fstab.rows[0].raw
+    '/dev/mapper/rhel_hadoop--test--1-root /                       xfs    defaults        0 0'
     >>> fstab.rows[0].fs_spec
     '/dev/mapper/rhel_hadoop--test--1-root'
     >>> fstab.rows[0].fs_mntops.defaults
@@ -92,6 +94,7 @@ class FSTab(Mapper):
         >>> if len(fstab) > 0:
         >>>     for fs in fstab:
         >>>         print fs.fs_file
+        >>>         print fs.raw
 
     Attributes:
         data (list): a list of parsed fstab entries as dictionaries.
@@ -119,6 +122,7 @@ class FSTab(Mapper):
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
             line['fs_mntops'] = AttributeDict(optlist_to_dict(line['fs_mntops']))
+            # add `raw` here for displaying convenience on front-end
             line['raw'] = [l for l in content if l.startswith(line['fs_spec'])][0]
             self.rows.append(AttributeDict(line))
         self.data = fstab_output
