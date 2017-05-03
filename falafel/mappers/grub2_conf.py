@@ -97,7 +97,6 @@ GRUB_INITRDS = 'grub_initrds'
 
 
 @mapper('grub2.cfg')
-@mapper('grub2-efi.cfg')
 class Grub2Config(LegacyItemAccess, Mapper):
     """
     Parser for configuration for GRUB version 2.
@@ -251,6 +250,12 @@ def _parse_kernels_initrds_value(line):
     initrds lines  in the grub v2 config
     """
     return line.split()[0].split('/')[-1]
+
+
+@mapper('grub2-efi.cfg')
+class Grub2EFIConfig(Grub2Config):
+    """Parses grub2 configuration for EFI-based systems"""
+    pass
 
 
 if __name__ == "__main__":
