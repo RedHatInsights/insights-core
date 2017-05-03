@@ -77,7 +77,9 @@ def test_meminfo():
     for i in range(len(actual)):
         assert isinstance(actual[i], int), "Line %d's value is not an int: %s" % (i, type(actual[i]))
         assert str(actual[i] / 1024) == values[i], "Line %d failed to match" % i
-        assert m.swap.used == (int(values[14]) - int(values[15]) - int(values[5])) * 1024
+
+    assert m.swap.used == (int(values[14]) - int(values[15]) - int(values[5])) * 1024
+    assert m.used == (8009912 - 538760) * 1024
 
 
 def test_using_huge_pages():

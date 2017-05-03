@@ -22,10 +22,7 @@ class SwapMemInfo(SubMemInfo):
 
     @property
     def used(self):
-        try:
-            return self.total - self.free - self.cached
-        except:
-            pass
+        return self.total - self.free - self.cached
 
 
 class AnonMemInfo(SubMemInfo):
@@ -175,16 +172,4 @@ class MemInfo(Mapper):
 
     @property
     def used(self):
-        try:
-            return self.total - self.free
-        except:
-            pass
-
-    def get(self, key):
-        try:
-            self.__getitem__(key)
-        except KeyError:
-            pass
-
-    def __getitem__(self, key):
-        return super(MemInfo, self).__getitem__(key.lower())
+        return self.total - self.free
