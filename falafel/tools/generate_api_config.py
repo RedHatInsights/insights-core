@@ -107,7 +107,7 @@ class APIConfigGenerator(object):
                 {"file": "/etc/redhat-access-insights/machine-id", "pattern": []},
                 {"file": "/etc/redhat_access_proactive/machine-id", "pattern": []}
             ],
-            "openshift": {"files": [], "commands": []}
+            "openshift": [],
         }
 
         # these lists are used to allow for sorting of the output mapping
@@ -132,12 +132,15 @@ class APIConfigGenerator(object):
                     cmd = {"command": path, "pattern": output_filter}
                     if pk_key:
                         cmd["pre_command"] = pk_key
-                    conf["commands"].append(cmd)
+
+                    lst = conf if sc.prefix else conf["commands"]
+                    lst.append(cmd)
                     spec_key = "commands"
 
                 else:
                     if path not in added_paths[sc]:
-                        conf["files"].append({
+                        lst = conf if sc.prefix else conf["files"]
+                        lst.append({
                             "file": path,
                             "pattern": output_filter
                         })
