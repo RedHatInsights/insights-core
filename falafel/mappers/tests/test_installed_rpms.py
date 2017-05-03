@@ -1,5 +1,5 @@
 import pytest
-from falafel.mappers.installed_rpms import InstalledRpms, InstalledRpm, OracleAsmRpms
+from falafel.mappers.installed_rpms import InstalledRpms, InstalledRpm
 from falafel.tests import context_wrap
 
 
@@ -296,13 +296,17 @@ def test_no_suffixes():
 
 
 def test_oracleasmrpms():
-    ora_rpms = OracleAsmRpms(context_wrap(ORACLEASM_RPMS))
+    ora_rpms = InstalledRpms(context_wrap(ORACLEASM_RPMS))
     assert ora_rpms is not None
-    assert ora_rpms.rpms_installed == ['oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64']
-
-    ora_rpms = OracleAsmRpms(context_wrap(NON_ORACLEASM_RPMS))
-    assert ora_rpms is not None
-    assert ora_rpms.rpms_installed == []
+    assert 'oracleasm' in ora_rpms.packages
+    assert ora_rpms.get_max('oracleasm').version == '2.6.18-164.el5-2.0.5'
+    assert ora_rpms.get_max('oracleasm').release == '1.el5'
+    assert 'oracleasmlib' in ora_rpms.packages
+    assert ora_rpms.get_max('oracleasmlib').version == '2.0.4'
+    assert ora_rpms.get_max('oracleasmlib').release == '1.el5'
+    assert 'oracleasm-support' in ora_rpms.packages
+    assert ora_rpms.get_max('oracleasm-support').version == '2.1.3'
+    assert ora_rpms.get_max('oracleasm-support').release == '1.el5'
 
 
 def test_is_hypervisor():

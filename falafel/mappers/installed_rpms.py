@@ -402,6 +402,10 @@ class InstalledRpm(object):
             pkg, arch = (package_string, None)
         pkg, release = rsplit(pkg, '-')
         name, version = rsplit(pkg, '-')
+        # oracleasm packages have a dash in their version string, fix that
+        if name.startswith('oracleasm') and name.endswith('.el5'):
+            name, version2 = name.split('-', 1)
+            version = version2 + '-' + version
         return {
             'name': name,
             'version': version,
@@ -515,10 +519,9 @@ class InstalledRpm(object):
         if self_rl != other_rl:
             return self_rl < other_rl
 
-        if self._distribution:
-            return LV(self._distribution) < LV(other._distribution)
-
-        return False
+        # If we reach this point, the self == other test has determined that
+        # we have a _distribution, so we rely on that.
+        return LV(self._distribution) < LV(other._distribution)
 
     def __ne__(self, other):
         return not self == other
