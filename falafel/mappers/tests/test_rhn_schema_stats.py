@@ -106,6 +106,9 @@ schema\t\t\t       2014-05-01 2014-05-01 satellite-schema\t\t\t  5.5.0.22   1.el
 8 rows selected.
 """.strip()
 
+NO_LOG = """
+"""
+
 
 def test_rhn_schema_stats_pgs():
 
@@ -133,3 +136,8 @@ def test_rhn_schema_stats_ora():
          'SEARCH CONDITION': '"LABEL" IS NOT NULL',
          'TABLE NAME': 'RHNERRATASEVERITY', 'TYPE': 'C'}
     ]
+
+
+def test_rhn_schema_stats_none():
+    log = DBStatsLog(context_wrap(NO_LOG))
+    assert log.data.keys() == []

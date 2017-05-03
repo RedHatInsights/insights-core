@@ -111,10 +111,6 @@ class DBStatsLog(Mapper):
         s = s.lower()
         return s in self.data.get("table_summary", []) or s in self.data.get("constraint_table", [])
 
-    def get(self, name, default=None):
-        """ This is not allowed. (temporary) """
-        pass
-
     def get_table(self, s, ic=True):
         """
         Return the table info in which the table name contains
