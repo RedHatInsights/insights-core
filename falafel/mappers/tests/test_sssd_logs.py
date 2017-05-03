@@ -19,6 +19,7 @@ SSSD_LOG_NORMAL = """
 (Tue Feb 14 09:45:02 2017) [sssd] [sbus_dispatch] (0x4000): dbus conn: 0x7f5aceb58360
 (Tue Feb 14 09:45:02 2017) [sssd] [monitor_hup] (0x0020): Received SIGHUP.
 (Tue Feb 14 09:45:02 2017) [sssd] [te_server_hup] (0x0020): Received SIGHUP. Rotating logfiles.
+(Tue Feb 73 09:45:02 rock) Fake line to check that date parsing handles corrupted dates
 """
 
 SSSDLog.keep_scan('sighups', 'SIGHUP')
@@ -38,6 +39,7 @@ def test_normal_sssd_logs():
     assert SSSDLog.parse_lines(
         sssd_logs.get('0x7f5aceb6a970')
     )[0]['module'] == 'sssd'
+    assert len(SSSDLog.parse_lines(sssd_logs.get('Fake line'))) == 1
 
     # Check keep_scan to find data.
     sighups = sssd_logs.sighups
