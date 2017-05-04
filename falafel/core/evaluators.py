@@ -6,7 +6,7 @@ from falafel.core.marshalling import Marshaller
 from falafel.core.plugins import validate_response, stringify_requirements
 from falafel.core.context import Context
 from falafel.core.archives import InvalidArchive
-from falafel.util.uname import Uname
+from falafel.mappers.uname import Uname
 from falafel.core import reducer
 from datetime import datetime
 
