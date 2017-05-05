@@ -7,6 +7,7 @@ import pytest
 from falafel.core.context import Context
 from falafel.mappers import ParseException
 from falafel.mappers.parted import PartedL
+from falafel.tests import context_wrap
 
 PARTED_DATA = """
 Model: Virtio Block Device (virtblk)
@@ -19,6 +20,18 @@ Number  Start   End     Size    Type     File system  Flags
  1      1049kB  525MB   524MB   primary  xfs          boot
  2      525MB   9664MB  9138MB  primary               lvm
 """.strip()
+
+PARTED_DATA_NO_SECTOR_SPLIT = """
+Model: Virtio Block Device (virtblk)
+Disk /dev/vda: 9664MB
+Sector size (logical/physical): 512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+ 1      1049kB  525MB   524MB   primary  xfs          boot
+ 2      525MB   9664MB  9138MB  primary               lvm
+"""
 
 PARTED_DATA_2 = """
 Model: IBM 2107900 (scsi)
@@ -116,3 +129,11 @@ def test_parted():
     context = Context(content=PARTED_ERR_DATA_2.splitlines())
     with pytest.raises(ParseException):
         PartedL(context)
+
+    # Test failure to find a slash in sector size
+    results = PartedL(context_wrap(PARTED_DATA_NO_SECTOR_SPLIT))
+    assert results is not None
+    assert results.disk == '/dev/vda'
+    assert results._sector_size is None
+    assert results.logical_sector_size is None
+    assert results.physical_sector_size is None

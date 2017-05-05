@@ -189,57 +189,52 @@ class PartedL(Mapper):
         dev_info = {}
         table_lines = []
         for line in content:
-            try:
-                if line.strip():
-                    if ':' in line:
-                        label_value = line.split(':')
-                        label = label_value[0].strip().lower()
-                        value = label_value[1] if len(label_value) == 2 else None
-                        value = value.strip() if value.strip() else None
-                        if value:
-                            # Single word labels
-                            if ' ' not in label:
-                                dev_info[label] = value
-                            else:
-                                if label.startswith("disk") and '/' in label:
-                                    disk_parts = label.split()
-                                    dev_info['disk'] = disk_parts[1].strip()
-                                    dev_info['size'] = value
-                                elif label.startswith("sector"):
-                                    dev_info['sector_size'] = value
-                                else:
-                                    label = label.replace(' ', '_')
-                                    dev_info[label] = value
+            if not line.strip():
+                continue
+            if ':' in line:
+                label_value = line.split(':')
+                label = label_value[0].strip().lower()
+                value = label_value[1] if len(label_value) == 2 else None
+                value = value.strip() if value.strip() else None
+                if value:
+                    # Single word labels
+                    if ' ' not in label:
+                        dev_info[label] = value
                     else:
-                        table_lines.append(line)
-            except:
-                raise ValueError("PartedL unable to parse line content: ", line)
+                        if label.startswith("disk") and '/' in label:
+                            disk_parts = label.split()
+                            dev_info['disk'] = disk_parts[1].strip()
+                            dev_info['size'] = value
+                        elif label.startswith("sector"):
+                            dev_info['sector_size'] = value
+                        else:
+                            label = label.replace(' ', '_')
+                            dev_info[label] = value
+            else:
+                table_lines.append(line)
 
         if 'disk' not in dev_info:
             raise ParseException("PartedL unable to locate Disk in content")
 
         partitions = []
         if table_lines:
-            try:
-                line = table_lines[0].replace('File system', 'File_system')
-                cols = line.strip().split()
-                columns = {}
-                for n in cols:
-                    columns[n] = {'name': n.lower()}
-                    columns[n]['start'] = line.find(n)
-                    columns[n]['end'] = columns[n]['start'] + len(n)
-                for line in table_lines[1:]:
-                    line = line.rstrip()
-                    part = {}
-                    for col in columns.values():
-                        if len(line) > col['start']:
-                            val = line[col['start']:]
-                            val = val.strip().split(None, 1)[0]
-                            part[col['name']] = val
-                    if part:
-                        partitions.append(part)
-            except:
-                raise ValueError("PartedL unable to parse partition content: ", table_lines)
+            line = table_lines[0].replace('File system', 'File_system')
+            cols = line.strip().split()
+            columns = {}
+            for n in cols:
+                columns[n] = {'name': n.lower()}
+                columns[n]['start'] = line.find(n)
+                columns[n]['end'] = columns[n]['start'] + len(n)
+            for line in table_lines[1:]:
+                line = line.rstrip()
+                part = {}
+                for col in columns.values():
+                    if len(line) > col['start']:
+                        val = line[col['start']:]
+                        val = val.strip().split(None, 1)[0]
+                        part[col['name']] = val
+                if part:
+                    partitions.append(part)
 
         self._partitions = []
         self._boot_partition = None
@@ -257,8 +252,3 @@ class PartedL(Mapper):
                 self._sector_size = self.data['sector_size'].split('/', 1)
                 if len(self._sector_size) != 2:
                     self._sector_size = None
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
