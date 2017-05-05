@@ -534,30 +534,3 @@ class InstalledRpm(object):
 
     def __le__(self, other):
         return isinstance(other, InstalledRpm) and not other.__lt__(self)
-
-
-@mapper('installed-rpms')
-class OracleAsmRpms(Mapper):
-    """Parse installed rpms for oracleasm RPM.
-
-    This class parses the installed rpms and saves all versions of the
-    oracleasm RPM that is installed. The Oracle Asm RPM has two version
-    numbers embedded, like this `oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64`.
-
-    This mapper filters out the `oracleasmlib` and `oracleasm-support` rpms.
-
-    Examples:
-        >>> shared[OracleAsmRpms].rpms_installed
-        ['oracleasm-2.6.18-164.el5-2.0.5-1.el5.x86_64']
-    """
-    def parse_content(self, content):
-        self._data = []
-        for line in get_active_lines(content, comment_char='COMMAND>'):
-            if line.startswith('oracleasm-'):
-                if 'support' not in line:
-                    self._data.append(line)
-
-    @property
-    def rpms_installed(self):
-        """list (str): Returns a list of the installed oracleasm rpms."""
-        return self._data

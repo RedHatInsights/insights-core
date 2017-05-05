@@ -296,6 +296,7 @@ def test_no_suffixes():
 
 
 def test_oracleasmrpms():
+    # Oracle RPMs have a weird format - fix that in the read process
     ora_rpms = InstalledRpms(context_wrap(ORACLEASM_RPMS))
     assert ora_rpms is not None
     assert 'oracleasm' in ora_rpms.packages
