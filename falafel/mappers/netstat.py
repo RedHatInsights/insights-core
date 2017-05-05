@@ -18,7 +18,7 @@ NETSTAT_SECTION_ID = {
     ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
 }
 
-NETSTAT_TEXT_RIGHT_ALLIGNMENT = {
+NETSTAT_TEXT_RIGHT_ALIGNMENT = {
     ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
 }
 COMPONENT_LEN = "__component_len__"
@@ -265,10 +265,11 @@ class NetstatSection(object):
         self.name = name.strip()
         assert self.name in NETSTAT_SECTION_ID
         self.meta = NETSTAT_SECTION_ID[self.name]
-        self.data = defaultdict(list)
+        self.data = {}
         for m in self.meta:
             self.data[m] = []
-        self.data = dict(self.data)
+        self.datalist = []
+        self.lines = []
 
     def add_meta_data(self, line):
         data = []
@@ -283,20 +284,20 @@ class NetstatSection(object):
         self.meta = meta
 
     def add_data(self, line):
+        self.lines.append(line)
         indexes = self.indexes
 
         i = 1
         from_index = 0
         while i < len(indexes):
-            value = line[from_index: indexes[i]].strip()
-            if not value:
-                value = None
-
-            self.data[i - 1].append(value)
+            self.data[i - 1].append(line[from_index: indexes[i]].strip())
             from_index = indexes[i]
             i += 1
 
         self.data[i - 1].append(line[indexes[i - 1]:])
+        self.datalist.append({m: d for m, d in zip(
+            NETSTAT_SECTION_ID[self.name], [r[-1] for r in self.data]
+        )})
 
     def _merge_data_index(self):
         merged_data = {}
@@ -364,9 +365,7 @@ class Netstat(Mapper):
         sections = []
         cur_section = None
         is_meta_data = False
-        num_active_lines = 0
         for line in content:
-            num_active_lines += 1
             if line in NETSTAT_SECTION_ID:
 
                 # this is a new section
@@ -375,35 +374,39 @@ class Netstat(Mapper):
                 is_meta_data = True
                 continue
 
-            if is_meta_data:
-                cur_section.add_meta_data(line)
-                is_meta_data = False
-            else:
-                cur_section.add_data(line)
+            if cur_section:
+                if is_meta_data:
+                    cur_section.add_meta_data(line)
+                    is_meta_data = False
+                else:
+                    cur_section.add_data(line)
 
         if not sections:
-            if num_active_lines < 1:
-                raise ParseException("Input content is empty")
-            else:
-                raise ParseException("Input content is not empty but there is no useful parsed data")
+            raise ParseException("Found no section headers in content")
 
         self.data = {s.name: s._merge_data_index() for s in sections}
+        self.lines = {s.name: s.lines for s in sections}
+        self.datalist = {s.name: s.datalist for s in sections}
 
     @property
     def running_processes(self):
+        """
+        List all the running processes given in the netstat output.
+
+        Returns:
+            set: set of process names (with spaces, as given in netstat output)
+        """
 
         process_names = set()
 
         if ACTIVE_INTERNET_CONNECTIONS in self.data:
             for pg in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']:
-                try:
-                    if not pg:
-                        continue
-
-                    pid, name = pg.split("/", 1)
-                    process_names.add(name.strip())
-                except Exception:
-                    pass
+                if not pg:
+                    continue
+                if '/' not in pg:
+                    continue
+                pid, name = pg.split("/", 1)
+                process_names.add(name.strip())
 
         return process_names
 
@@ -422,21 +425,18 @@ class Netstat(Mapper):
                 ... '''
         """
         pids = {}
-        connections = self.data.get(ACTIVE_INTERNET_CONNECTIONS, {})
-        for i, s in enumerate(connections.get('State', [])):
-            try:
-                if s.strip() == 'LISTEN':
-                    addr, port = connections['Local Address'][i].strip().split(":", 1)
-                    pid, name = connections['PID/Program name'][i].strip().split("/", 1)
-                    pids[pid] = {"addr": addr, "port": port, "name": name}
-
-            except Exception:
-                # sometimes netstat provide "-" for empty value, so the parser will throw exception for those fields
-                # just ignore it
-                pass
-
-        if pids:
-            return pids
+        # Is it possible to have a machine that has no active connections?
+        assert ACTIVE_INTERNET_CONNECTIONS in self.datalist
+        connlist = self.datalist[ACTIVE_INTERNET_CONNECTIONS]
+        for line in connlist:
+            if line['State'] != 'LISTEN':
+                continue
+            if not (':' in line['Local Address'] and '/' in line['PID/Program name']):
+                continue
+            addr, port = line['Local Address'].strip().split(":", 1)
+            pid, name = line['PID/Program name'].strip().split('/', 1)
+            pids[pid] = {'addr': addr, 'port': port, 'name': name}
+        return pids
 
     def get_original_line(self, section_id, index):
         """
@@ -444,24 +444,7 @@ class Netstat(Mapper):
         """
         if section_id not in self.data:
             return
-
-        data = self.data[section_id]
-        component_len = data[COMPONENT_LEN]
-
-        line = ""
-        for component_label in NETSTAT_SECTION_ID[section_id]:
-            len = component_len[component_label]
-
-            str = data[component_label][index] if data[component_label][index] else ""
-            if len:
-                if component_label in NETSTAT_TEXT_RIGHT_ALLIGNMENT[section_id]:
-                    line += str.rjust(len - 1) + ' '
-                else:
-                    line += str.ljust(len)
-            else:
-                line += str
-
-        return line.strip()
+        return self.lines[section_id][index]
 
 
 @mapper("netstat-i")
