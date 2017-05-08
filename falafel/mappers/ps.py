@@ -151,11 +151,8 @@ class PsAuxcww(ProcessList):
         """
         for line in content[1:]:  # skip header
             parts = line.split(None, 10)
-            try:
+            if len(parts) > 10:
                 service, user = parts[10], parts[0]
-            except IndexError:
-                pass
-            else:
                 self.services.append((service, user, line))
 
 
@@ -208,5 +205,5 @@ class PsAxcwwo(ProcessList):
         if len(content) > 0 and "COMMAND" in content[0]:
             self.data = parse_table(content, max_splits=2)
         else:
-            raise ValueError("PsAuxcww: Unable to parse content: {} ({})".format(len(content),
+            raise ValueError("PsAuxcww: Unable to parse {} line(s) of content:({})".format(len(content),
                                                                                  content[0]))
