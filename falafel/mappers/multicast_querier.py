@@ -9,17 +9,16 @@ The specs handled by this CommandSpec::
     "multicast_querier"         : CommandSpec("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;"),
 
 Sample output of this command looks like::
-    ---
+
     /sys/devices/virtual/net/br0/bridge/multicast_querier
     0
     /sys/devices/virtual/net/br1/bridge/multicast_querier
     1
     /sys/devices/virtual/net/br2/bridge/multicast_querier
     0
-    ---
 
 The ``bri_val`` method is to return a dictionary contains bridge interface and
-its multicast_querier value as the parsing result:
+its multicast_querier value as the parsing result::
 
 {'br0': 0, 'br1': 1, 'br2': 0}
 

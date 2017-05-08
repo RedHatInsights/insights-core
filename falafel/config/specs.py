@@ -193,6 +193,7 @@ static_specs = {
     "meminfo"                   : First([SimpleFileSpec("proc/meminfo"),
                                     SimpleFileSpec("meminfo")]),
     "messages"                  : SimpleFileSpec("var/log/messages", large_content=True),
+    "mlx4_port"                 : CommandSpec("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;"),
     "modinfo"                   : CommandSpec("/usr/sbin/modinfo {module}", module=r"\S+"),
     "modprobe.conf"             : SimpleFileSpec("etc/modprobe.conf"),
     "modprobe.d"                : PatternSpec(r"etc/modprobe.d/.*\.conf"),
