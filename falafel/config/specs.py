@@ -212,7 +212,7 @@ static_specs = {
     "neutron_plugin.ini"        : SimpleFileSpec("etc/neutron/plugin.ini"),
     "neutron_server_log"        : SimpleFileSpec("var/log/neutron/server.log", large_content=True),
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
-    "nfs_exports"               : PatternSpec(r"etc/exports"),
+    "nfs_exports"               : SimpleFileSpec("etc/exports"),
     "nfs_exports.d"             : PatternSpec(r"etc/exports.d/.*\.exports"),
     "nova-api_log"              : SimpleFileSpec("var/log/nova/nova-api.log", large_content=True),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
