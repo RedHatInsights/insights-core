@@ -1,6 +1,8 @@
 from falafel.mappers import meminfo
 from falafel.tests import context_wrap
 
+import pytest
+
 """
 The following meminfo comes from a RHEL 7.1 box.  There are three values that
 are currently accounted for in MemInfo that aren't in here:
@@ -76,10 +78,26 @@ def test_meminfo():
     ]
     for i in range(len(actual)):
         assert isinstance(actual[i], int), "Line %d's value is not an int: %s" % (i, type(actual[i]))
-        assert str(actual[i] / 1024) == values[i], "Line %d failed to match" % i
+        assert actual[i] == int(values[i]) * 1024, "Line %d failed to match" % i
 
     assert m.swap.used == (int(values[14]) - int(values[15]) - int(values[5])) * 1024
     assert m.used == (8009912 - 538760) * 1024
+
+
+MEMINFO_SHORT = """
+MemTotal:        8009912 kB
+MemAvailable:    6820236 kB
+"""
+
+
+def test_meminfo_short():
+    # Test the various calculated properties when little or no data is
+    # available.
+    m = meminfo.MemInfo(context_wrap(MEMINFO_SHORT))
+    with pytest.raises(TypeError):
+        assert m.swap.used is None
+    with pytest.raises(TypeError):
+        assert m.used is None
 
 
 def test_using_huge_pages():
