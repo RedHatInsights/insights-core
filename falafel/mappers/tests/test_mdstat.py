@@ -12,14 +12,17 @@ md_d0 : active raid5 sde1[0] sdf1[4] sdb1[5] sdd1[2] cciss/c0d0p1[6] sdc1[1]
 unused devices: <none>
 """.strip()
 
-MDSTAT_RESULT_1 = {"personalities": ["raid1", "raid6", "raid5", "raid4"],
-        "components": [{"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sde1", "device_flag": '', "role": 0, "up": True},
-            {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdf1", "device_flag": '', "role": 4, "up": True},
-            {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdb1", "device_flag": '', "role": 5, "up": True},
-            {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdd1", "device_flag": '', "role": 2, "up": True},
-            {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "cciss/c0d0p1", "device_flag": '', "role": 6, "up": True},
-            {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdc1", "device_flag": '', "role": 1, "up": True}]
-                   }
+MDSTAT_RESULT_1 = {
+    "personalities": ["raid1", "raid6", "raid5", "raid4"],
+    "components": [
+        {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sde1", "device_flag": '', "role": 0, "up": True, 'blocks': 1250241792, 'level': 5, 'chunk': '64k', 'algorithm': 2},
+        {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdf1", "device_flag": '', "role": 4, "up": True, 'blocks': 1250241792, 'level': 5, 'chunk': '64k', 'algorithm': 2},
+        {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdb1", "device_flag": '', "role": 5, "up": True, 'blocks': 1250241792, 'level': 5, 'chunk': '64k', 'algorithm': 2},
+        {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdd1", "device_flag": '', "role": 2, "up": True, 'blocks': 1250241792, 'level': 5, 'chunk': '64k', 'algorithm': 2},
+        {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "cciss/c0d0p1", "device_flag": '', "role": 6, "up": True, 'blocks': 1250241792, 'level': 5, 'chunk': '64k', 'algorithm': 2},
+        {"device_name": "md_d0", "active": True, "auto_read_only": False, "raid": "raid5", "component_name": "sdc1", "device_flag": '', "role": 1, "up": True, 'blocks': 1250241792, 'level': 5, 'chunk': '64k', 'algorithm': 2}
+    ]
+}
 
 MDSTAT_TEST_2 = """
 Personalities : [raid1] [raid6] [raid5] [raid4]
@@ -35,14 +38,17 @@ md0 : active raid1 sdb1[1](F) sda1[0]
 unused devices: <none>
 """.strip()
 
-MDSTAT_RESULT_2 = {"personalities": ["raid1", "raid6", "raid5", "raid4"],
-        "components": [{"device_name": "md1", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sdb2", "device_flag": '', "role": 1, "up": True},
-            {"device_name": "md1", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sda2", "device_flag": '', "role": 0, "up": True},
-            {"device_name": "md2", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sdb3", "device_flag": '', "role": 1, "up": True},
-            {"device_name": "md2", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sda3", "device_flag": '', "role": 0, "up": False},
-            {"device_name": "md0", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sdb1", "device_flag": 'F', "role": 1, "up": False},
-            {"device_name": "md0", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sda1", "device_flag": '', "role": 0, "up": True}]
-                   }
+MDSTAT_RESULT_2 = {
+    "personalities": ["raid1", "raid6", "raid5", "raid4"],
+    "components": [
+        {"device_name": "md1", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sdb2", "device_flag": '', "role": 1, "up": True, 'blocks': 136448},
+        {"device_name": "md1", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sda2", "device_flag": '', "role": 0, "up": True, 'blocks': 136448},
+        {"device_name": "md2", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sdb3", "device_flag": '', "role": 1, "up": True, 'blocks': 129596288},
+        {"device_name": "md2", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sda3", "device_flag": '', "role": 0, "up": False, 'blocks': 129596288},
+        {"device_name": "md0", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sdb1", "device_flag": 'F', "role": 1, "up": False, 'blocks': 16787776},
+        {"device_name": "md0", "active": True, "auto_read_only": False, "raid": "raid1", "component_name": "sda1", "device_flag": '', "role": 0, "up": True, 'blocks': 16787776}
+    ]
+}
 
 MDSTAT_TEST_3 = """
 Personalities : [linear] [raid0] [raid1]
@@ -59,10 +65,13 @@ md0 : inactive sdb[1](S) sda[0](S)
 unused devices: <none>
 """.strip()
 
-MDSTAT_RESULT_4 = {"personalities": ["linear", "raid0", "raid1"], "components": [
-    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 1, 'active': False, 'auto_read_only': False, 'component_name': 'sdb'},
-    {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 0, 'active': False, 'auto_read_only': False, 'component_name': 'sda'}
-]}
+MDSTAT_RESULT_4 = {
+    "personalities": ["linear", "raid0", "raid1"],
+    "components": [
+        {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 1, 'active': False, 'auto_read_only': False, 'component_name': 'sdb', 'blocks': 6306},
+        {'device_flag': 'S', 'raid': None, 'device_name': 'md0', 'role': 0, 'active': False, 'auto_read_only': False, 'component_name': 'sda', 'blocks': 6306}
+    ]
+}
 
 PERSONALITIES_TEST = "Personalities : [linear] [raid0] [raid1] [raid5] [raid4] [raid6]\n"
 
@@ -150,14 +159,46 @@ class TestMdstat(unittest.TestCase):
             mdstat.apply_upstring('U_U', test_dict)
 
     def test_mdstat_construction(self):
+        def compare_mdstat_data(test_data, mapper_obj):
+            """
+            Because the dictionaries are huge and comparing them usually
+            ends up with too many differences, it's better to compare them
+            part by part
+            """
+            self.assertEqual(test_data['personalities'], mapper_obj.data['personalities'])
+            for testdata, objdata in zip(test_data['components'], mapper_obj.data['components']):
+                self.assertEqual(testdata, objdata)
+
         mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_1))
-        self.assertEqual(MDSTAT_RESULT_1, mdstat_obj.data)
+        compare_mdstat_data(MDSTAT_RESULT_1, mdstat_obj)
+
+        self.assertEqual(len(mdstat_obj.mds), 1)
+        self.assertEqual(sorted(mdstat_obj.mds.keys()), ['md_d0'])
+        md_d0 = mdstat_obj.mds['md_d0']
+        self.assertEqual(md_d0['name'], 'md_d0')
+        self.assertTrue(md_d0['active'])
+        self.assertEqual(md_d0['raid'], 'raid5')
+        self.assertEqual(len(md_d0['devices']), 6)
+        self.assertEqual(
+            sorted(md_d0['devices'][0].keys()),
+            sorted(['component_name', 'role', 'up'])
+        )
+        self.assertEqual(md_d0['devices'][0]['component_name'], 'sde1')
+        self.assertEqual(md_d0['devices'][0]['role'], 0)
+        self.assertEqual(md_d0['devices'][0]['up'], True)
+
+        # State line attributes
+        #       1250241792 blocks super 1.2 level 5, 64k chunk, algorithm 2 [5/5] [UUUUUU]
+        self.assertEqual(md_d0['blocks'], 1250241792)
+        self.assertEqual(md_d0['level'], 5)
+        self.assertEqual(md_d0['chunk'], '64k')
+        self.assertEqual(md_d0['algorithm'], 2)
 
         result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_2))
-        self.assertEqual(MDSTAT_RESULT_2, result.data)
+        compare_mdstat_data(MDSTAT_RESULT_2, result)
 
         mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_3))
-        self.assertEqual(MDSTAT_RESULT_3, mdstat_obj.data)
+        compare_mdstat_data(MDSTAT_RESULT_3, mdstat_obj)
 
         result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_4))
-        self.assertEqual(MDSTAT_RESULT_4, result.data)
+        compare_mdstat_data(MDSTAT_RESULT_4, result)

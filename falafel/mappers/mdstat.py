@@ -1,6 +1,55 @@
 """
-mdstat
-======
+Mdstat - file ``/proc/mdstat``
+==============================
+
+Represents the information in the ``/proc/mdstat`` file.  Several
+examples of possible data containe in the file can be found on the
+`MDstat kernel.org wiki page <https://raid.wiki.kernel.org/index.php/Mdstat>`_.
+
+In particular, the discussion here will focus on initial extraction of information
+form lines such as::
+
+    Personalities : [raid1] [raid6] [raid5] [raid4]
+    md1 : active raid1 sdb2[1] sda2[0]
+          136448 blocks [2/2] [UU]
+
+    md2 : active raid1 sdb3[1] sda3[0]
+          129596288 blocks [2/2] [UU]
+
+    md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
+          1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
+
+The data contained in ``mdstat`` is represented with three top level members -
+``personalities``, ``components`` and ``mds``.
+
+Examples:
+
+    >>> mdstat = shared[Mdstat]
+    >>> mdstat.personalities
+    ['raid1', 'raid6', 'raid5', 'raid4']
+    >>> len(mdstat.components) # The individual component devices
+    14
+    >>> mdstat.components[0]['device_name']
+    'md1'
+    >>> sdb2 = mdstat.components[0]
+    >>> sdb2['component_name']
+    'sdb2'
+    >>> sdb2['active']
+    True
+    >>> sdb2['raid']
+    'raid1'
+    >>> sdb2['role']
+    1
+    >>> sdb2['up']
+    True
+    >>> sorted(mdstat.mds.keys()) # dictionary of MD devices by device name
+    ['md1', 'md2', 'md3']
+    >>> mdstat.mds['md1']['active']
+    True
+    >>> len(mdstat.mds['md1']['devices']) # list of devices in this MD
+    2
+    >>> mdstat.mds['md1']['devices'][0]['component_name'] # device information
+    'sdb2'
 """
 import re
 from .. import Mapper, mapper
@@ -9,24 +58,7 @@ from .. import Mapper, mapper
 @mapper("mdstat")
 class Mdstat(Mapper):
     """
-    Represents the information in the ``/proc/mdstat`` file.  Several
-    examples of possible data containe in the file can be found on the
-    `MDstat kernel.org wiki page<https://raid.wiki.kernel.org/index.php/Mdstat>`_.
-
-    In particular, the discussion here will focus on initial extraction of information
-    form lines such as:
-
-        Personalities : [raid1] [raid6] [raid5] [raid4]
-        md1 : active raid1 sdb2[1] sda2[0]
-              136448 blocks [2/2] [UU]
-
-        md2 : active raid1 sdb3[1] sda3[0]
-              129596288 blocks [2/2] [UU]
-
-        md3 : active raid5 sdl1[9] sdk1[8] sdj1[7] sdi1[6] sdh1[5] sdg1[4] sdf1[3] sde1[2] sdd1[1] sdc1[0]
-              1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
-
-    The data contained in ``mdstat`` is represented with two top level members
+    Represents the information in the ``/proc/mdstat`` file.
 
     Attributes
     ----------
@@ -38,20 +70,37 @@ class Mdstat(Mapper):
         A list containing a dict of md component device information
         Each of these dicts contains the following keys
 
-        - device_name: string - name of the array device
-        - active: boolean - ``True`` if the array is active, ``False``
+        - ``device_name`` : string - name of the array device
+        - ``active`` : boolean - ``True`` if the array is active, ``False``
           if it is inactive.
-        - component_name: string - name of the component device
-        - raid: string - with the raid level, e.g., "raid1" for "md1"
-        - role: int - raid role number
-        - device_flag: str - device component status flag.  Known values
+        - ``component_name`` : string - name of the component device
+        - ``raid`` : string - with the raid level, e.g., "raid1" for "md1"
+        - ``role`` : int - raid role number
+        - ``device_flag`` : str - device component status flag.  Known values
           include 'F' (failed device), 'S', and 'W'
-        - up: boolean - ``True`` if the component device is up
-        - auto_read_only: boolean - ``True`` if the array device is
+        - ``up`` : boolean - ``True`` if the component device is up
+        - ``auto_read_only`` : boolean - ``True`` if the array device is
           "auto-read-only"
+        - ``blocks`` : the number of blocks in the device
+        - ``level`` : the current RAID level, if found in the status line
+        - ``chunk`` : the device chunk size, if found in the status line
+        - ``algorithm`` : the current conflict resolution algorithm, if found
+          in the status line
+
+    mds : dict of dicts
+        A dictionary keyed on the MD device name, with the following keys
+
+         - ``name``: Name of the MD device
+         - ``active``: Whether the MD device is active
+         - ``raid``: The RAID type string
+         - ``devices``: a list of the devices in this
+         - ``blocks``, ``level``, ``chunk`` and ``algorithm`` - the same
+           information given above per component device (if found)
+
     """
 
     def parse_content(self, content):
+        self.mds = {}
         self.components = []
         self.personalities = []
 
@@ -73,9 +122,28 @@ class Mdstat(Mapper):
                 in_component = False
             else:
                 if in_component:
+                    parse_array_status(line, current_components)
                     upstring = parse_upstring(line)
                     if upstring:
                         apply_upstring(upstring, current_components)
+
+        # Map component devices into MDs dictionary by device name
+        for comp in self.components:
+            devname = comp['device_name']
+            if devname not in self.mds:
+                #     md2 : active raid1 sdb3[1] sda3[0]
+                #           129596288 blocks [2/2] [UU]
+                self.mds[devname] = {
+                    'name': devname, 'active': comp['active'],
+                    'raid': comp['raid'], 'blocks': comp['blocks'],
+                    'devices': []
+                }
+                for opt in ['level', 'chunk', 'algorithm']:
+                    if opt in comp:
+                        self.mds[devname][opt] = comp[opt]
+            self.mds[devname]['devices'].append({
+                k: comp[k] for k in comp if k in ['component_name', 'role', 'up']
+            })
 
         # Keep self.data just for backwards compat
         self.data = {
@@ -189,9 +257,56 @@ def parse_array_start(md_line):
     return components
 
 
+def parse_array_status(line, components):
+    """
+    Parse the array status line, e.g.::
+
+        1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [UUUUUUUUUU]
+
+    This retrieves the following pieces of information:
+
+    * ``blocks`` - (int) number of blocks in the whole MD device (always present)
+    * ``level`` - (int) if found, the present RAID level
+    * ``chunksize`` - (str) if found, the size of the data chunk in kilobytes
+    * ``algorithm`` - (int) if found, the current algorithm in use.
+
+    Because of the way data is stored per-component and not per-array, this
+    then puts the above keys into each of the component dictionaries in the
+    list we've been given.
+
+    Sample data::
+
+        1250241792 blocks super 1.2 level 5, 64k chunk, algorithm 2 [5/5] [UUUUUU]
+        1465151808 blocks level 5, 64k chunk, algorithm 2 [4/3] [UUU_]
+        136448 blocks [2/2] [UU]
+        6306 blocks super external:imsm<Paste>
+    """
+    status_line_re = r'(?P<blocks>\d+) blocks' + \
+        r'(?: super (?P<super>\S+))?' + \
+        r'(?: level (?P<level>\d+),)?' + \
+        r'(?: (?P<chunk>\d+k) chunk,)?' + \
+        r'(?: algorithm (?P<algorithm>\d+))?'
+    # Since we're only called once per line, unless there's a good way to
+    # cache this regular expression in compiled form we're going to have to
+    # compile it each time.
+    status_line_rex = re.compile(status_line_re)
+    match = status_line_rex.search(line)
+    if match:
+        attributes = {'blocks': int(match.group('blocks'))}
+        if match.group('level'):
+            attributes['level'] = int(match.group('level'))
+        if match.group('chunk'):
+            attributes['chunk'] = match.group('chunk')
+        if match.group('algorithm'):
+            attributes['algorithm'] = int(match.group('algorithm'))
+        for comp in components:
+            comp.update(attributes)
+
+
 def parse_upstring(line):
-    """Parse the subsequent lines of a  device array stanza in ``/proc/mdstat`` for the "up" indictor
-    string.
+    """
+    Parse the subsequent lines of a device array stanza in ``/proc/mdstat``
+    for the "up" indictor string.
 
     Lines are expected to be like:
 
@@ -212,8 +327,9 @@ def parse_upstring(line):
 
     Returns
     -------
-        The string containing a series of ``U``s and ``_``s if found in
-        the string, and ``None`` if the uptime string is not found.
+
+        The string containing a series of ``U`` and ``\_`` characters if
+        found in the string, and ``None`` if the uptime string is not found.
     """
     UP_STRING_REGEX = r"\[(U|_)+]"
 
