@@ -32,3 +32,70 @@ def test_sshd_config():
     assert len(ports) == 2
     assert ports[0].value == '22'
     assert sshd_config.last('ListenAddress') == '10.110.1.1'
+
+
+SSHD_CONFIG_COMPLETE = """
+# Standard /etc/ssh/sshd_config without comments and blank lines
+HostKey /etc/ssh/ssh_host_rsa_key
+HostKey /etc/ssh/ssh_host_ecdsa_key
+HostKey /etc/ssh/ssh_host_ed25519_key
+SyslogFacility AUTHPRIV
+AuthorizedKeysFile	.ssh/authorized_keys
+PasswordAuthentication yes
+ChallengeResponseAuthentication no
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials no
+UsePAM yes
+X11Forwarding yes
+UsePrivilegeSeparation sandbox		# Default for new installations.
+AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+AcceptEnv XMODIFIERS
+Subsystem	sftp	/usr/libexec/openssh/sftp-server
+"""
+
+
+def test_sshd_config_complete():
+    config = SshDConfig(context_wrap(SSHD_CONFIG_COMPLETE))
+    assert config is not None
+    assert 'HostKey' in config
+    hostkeys = config.get('HostKey')
+    assert len(hostkeys) == 3
+    for hostkey in hostkeys:
+        assert hostkey.keyword == 'HostKey'
+        assert hostkey.kw_lower == 'hostkey'
+    assert hostkeys[0].value == '/etc/ssh/ssh_host_rsa_key'
+    assert hostkeys[1].value == '/etc/ssh/ssh_host_ecdsa_key'
+    assert hostkeys[2].value == '/etc/ssh/ssh_host_ed25519_key'
+    assert hostkeys[0].line == 'HostKey /etc/ssh/ssh_host_rsa_key'
+    assert hostkeys[1].line == 'HostKey /etc/ssh/ssh_host_ecdsa_key'
+    assert hostkeys[2].line == 'HostKey /etc/ssh/ssh_host_ed25519_key'
+    assert config['HostKey'] == [
+        '/etc/ssh/ssh_host_rsa_key',
+        '/etc/ssh/ssh_host_ecdsa_key',
+        '/etc/ssh/ssh_host_ed25519_key'
+    ]
+    assert config.last('UsePAM') == 'yes'
+    assert config.last('ClientAliveInterval') is None
+    assert config.last('ClientAliveCountMax', '0') == '0'
+    assert config.get_line('UsePAM') == 'UsePAM yes'
+    assert config.get_line('ClientAliveInterval') == 'ClientAliveInterval   # Implicit default'
+    assert config.get_line('ClientAliveCountMax', '0') == 'ClientAliveCountMax 0  # Implicit default'
+    assert config.get_values('SyslogFacility') == ['AUTHPRIV']
+    assert config.get_values('SyslogFacility', join_with='') == 'AUTHPRIV'
+    assert config.get_values('ClientAliveInterval', default='') == ['']
+    assert config.get_values('HostKey', default='no_key', join_with=' ') == \
+        '/etc/ssh/ssh_host_rsa_key /etc/ssh/ssh_host_ecdsa_key /etc/ssh/ssh_host_ed25519_key'
+    # Splitting does not occur if joining has not occurred:
+    assert config.get_values('HostKey', default='no_key', split_on='/') == [
+        '/etc/ssh/ssh_host_rsa_key',
+        '/etc/ssh/ssh_host_ecdsa_key',
+        '/etc/ssh/ssh_host_ed25519_key'
+    ]
+    assert config.get_values('AcceptEnv', join_with=' ', split_on=' ') == [
+        'LANG', 'LC_CTYPE', 'LC_NUMERIC', 'LC_TIME', 'LC_COLLATE',
+        'LC_MONETARY', 'LC_MESSAGES', 'LC_PAPER', 'LC_NAME', 'LC_ADDRESS',
+        'LC_TELEPHONE', 'LC_MEASUREMENT', 'LC_IDENTIFICATION', 'LC_ALL',
+        'LANGUAGE', 'XMODIFIERS'
+    ]
