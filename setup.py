@@ -24,7 +24,7 @@ runtime = {
     'pyyaml',
     'tornado',
     'futures',
-    'requests',
+    'requests==2.13.0',
 }
 
 develop = {
