@@ -7,7 +7,7 @@ env:
 
 build:
     ci:
-    - pip install --upgrade pip
+    - pip install --upgrade pip setuptools
     - pip install -e .[develop]
     - mkdir -p shippable/testresults shippable/codecoverage
     - if [ $PHASE == "test" ]; then py.test --cov=falafel --cov-report=xml --junit-xml=shippable/testresults/results.xml; fi
