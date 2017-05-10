@@ -52,7 +52,13 @@ def get_module_names(package_name, pattern=None):
     for loader, name, ispkg in pkgutil.walk_packages(search_paths, package_name + '.'):
         if not ispkg:
             # absolute path of the module
-            filename = loader.find_module(name).filename
+            module = loader.find_module(name)
+            try:
+                filename = module.filename
+            except AttributeError:
+                # create a virtual filename to feed to the filter
+                filename = "%s.py" % name.replace('.', '/')
+
             if name_filter(filename):
                 yield name
 
