@@ -1,28 +1,18 @@
 """
-ceph commands with json-pretty para - Command
-=============================================
+ceph commands set with json-pretty para - Command
+=================================================
 
-This module provides processing for the output of the ceph related
+This module provides processing for the output of the following ceph related
 commands with `-f json-pretty` parameter.
 
-e.g
-
 1. ceph osd dump -f json-pretty
-
 2. ceph osd df -f json-pretty
-
 3. ceph -s -f json-pretty
-
 4. ceph osd erasure-code-profile get default -f json-pretty
-
 5. ceph daemon {ceph_socket_files} config show
-
 6. ceph health detail -f json-pretty
-
 7. ceph df detail -f json-pretty
-
-...
-
+8. ceph osd tree -f json-pretty
 
 Since all of the commands above have similar json pattern, so
 we could define a base class to implement shared code.
@@ -54,9 +44,6 @@ Part of the sample output of this command looks like::
                 "pg_num": 256,
             }
         ]
-
-    ...
-
     ...
 
     }
@@ -119,8 +106,6 @@ Part of the sample output of this command looks like::
                                 },
                                 "health": "HEALTH_OK"
         ...
-        ...
-        ...
 
         "pgmap": {
             "pgs_by_state": [
@@ -136,13 +121,7 @@ Part of the sample output of this command looks like::
             "bytes_avail": 8373190385664
             "bytes_total": 8397595996160
         },
-
         ...
-
-        ...
-            }
-
-        }
 
     }
 
@@ -185,7 +164,6 @@ Part of the sample output of this command looks like::
         "ms_bind_port_max": "7300",
         "ms_bind_retry_count": "3",
         "ms_bind_retry_delay": "5",
-        ...
         ...
     }
 
@@ -235,8 +213,89 @@ Part of the sample output of this command looks like::
         ]
     }
 
+    8. `ceph osd tree -f json-pretty`
 
-Examples:
+    {
+    "nodes": [
+        {
+            "id": -1,
+            "name": "default",
+            "type": "root",
+            "type_id": 10,
+            "children": [
+                -5,
+                -4,
+                -3,
+                -2
+            ]
+        },
+        {
+            "id": -2,
+            "name": "dhcp-192-56",
+            "type": "host",
+            "type_id": 1,
+            "children": []
+        },
+        {
+            "id": -3,
+            "name": "dhcp-192-104",
+            "type": "host",
+            "type_id": 1,
+            "children": []
+        },
+        {
+            "id": -4,
+            "name": "dhcp-192-67",
+            "type": "host",
+            "type_id": 1,
+            "children": []
+        },
+        {
+            "id": -5,
+            "name": "localhost",
+            "type": "host",
+            "type_id": 1,
+            "children": [
+                1,
+                3,
+                5,
+                2,
+                4,
+                0
+            ]
+        },
+        ...
+    ],
+    "stray": []
+    }
+"""
+
+import json
+from .. import Mapper, mapper
+
+
+class CephJsonParsing(Mapper):
+    """Base class implementing shared code."""
+
+    def parse_content(self, content):
+        """
+        Parse the output of the ceph related commands in Json pattern.
+
+        ceph commands with `-f json-pretty` para will print the result
+        in the format of a dictionary in which the items are key:value
+        pairs.
+
+        """
+        self.data = json.loads(''.join(content))
+        return
+
+
+@mapper("ceph_osd_dump")
+class CephOsdDump(CephJsonParsing):
+    """
+    Class to parse the output of ``ceph osd dump -f json-pretty``.
+
+    Examples:
 
     >>> ceph_osd_dump_content = '''
         ... {
@@ -271,81 +330,6 @@ Examples:
     >>> result = CephOsdDump(context_wrap(ceph_osd_dump_content)).data
     >>> result['pools'][0]['min_size']
     2
-
-    ...
-
-    >>> ceph_osd_dump_content = ''.strip()
-    >>> from falafel.mappers.ceph_cmd_json_parsing import CephOsdDf
-    >>> from falafel.tests import context_wrap
-    >>> shared = {CephOsdDf: CephOsdDf(context_wrap(ceph_osd_df_content))}
-    >>> result = CephOsdDf(context_wrap(ceph_osd_df_content)).data
-    >>> result['nodes'][0]['pgs']
-    945
-
-    ...
-
-    >>> ceph_s_content = ''.strip()
-    >>> result = CephS(context_wrap(ceph_s_content)).data
-    >>> result['pgmap']['pgs_by_state'][0]['state_name']
-    'active+clean'
-
-    ...
-
-    >>> ceph_osd_ec_profile_get_content = ''.strip()
-    >>> from falafel.mappers.ceph_cmd_json_parsing import CephECProfileGet
-    >>> from falafel.tests import context_wrap
-    >>> shared = {CephECProfileGet: CephECProfileGet(context_wrap(ceph_osd_ec_profile_get_content))}
-    >>> result = CephECProfileGet(context_wrap(ceph_osd_ec_profile_get_content)).data
-    >>> result['k']
-    "2"
-
-    ...
-
-    >>> from falafel.tests import context_wrap
-    >>> from falafel.mappers.ceph_cmd_json_parsing import CephCfgInfo
-    >>> ceph_info = CephCfgInfo(context_wrap(CEPHINFO))
-    >>> cpu_info.max_open_files
-    131072
-
-    ...
-
-    >>> from falafel.tests import context_wrap
-    >>> from falafel.mappers.ceph_cmd_json_parsing import CephHealthDetail
-    >>> result = CephHealthDetail(context_wrap(ceph_health_detail_content)).data
-    >>> result["overall_status"]
-    "HEALTH_OK"
-
-    ...
-
-    >>> from falafel.tests import context_wrap
-    >>> from falafel.mappers.ceph_cmd_json_parsing import CephDfDetail
-    >>> result = CephDfDetail(context_wrap(ceph_health_df_content)).data
-    >>> result['stats']['total_avail_bytes']
-    16910123008
-"""
-
-import json
-from .. import Mapper, mapper
-
-
-class CephJsonParsing(Mapper):
-    """Base class implementing shared code."""
-
-    def parse_content(self, content):
-        """
-        Parse the output of the ceph related commands in Json pattern.
-
-        ceph commands with `-f json-pretty` para will
-
-        """
-        self.data = json.loads(''.join(content))
-        return
-
-
-@mapper("ceph_osd_dump")
-class CephOsdDump(CephJsonParsing):
-    """
-    Class to parse the output of ``ceph osd dump -f json-pretty``.
     """
     pass
 
@@ -354,6 +338,16 @@ class CephOsdDump(CephJsonParsing):
 class CephOsdDf(CephJsonParsing):
     """
     Class to parse the output of ``ceph osd df -f json-pretty``.
+
+    Examples:
+
+    >>> ceph_osd_dump_content = ''.strip()
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephOsdDf
+    >>> from falafel.tests import context_wrap
+    >>> shared = {CephOsdDf: CephOsdDf(context_wrap(ceph_osd_df_content))}
+    >>> result = CephOsdDf(context_wrap(ceph_osd_df_content)).data
+    >>> result['nodes'][0]['pgs']
+    945
     """
     pass
 
@@ -362,6 +356,13 @@ class CephOsdDf(CephJsonParsing):
 class CephS(CephJsonParsing):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
+
+    Examples:
+
+    >>> ceph_s_content = ''.strip()
+    >>> result = CephS(context_wrap(ceph_s_content)).data
+    >>> result['pgmap']['pgs_by_state'][0]['state_name']
+    'active+clean'
     """
     pass
 
@@ -370,6 +371,14 @@ class CephS(CephJsonParsing):
 class CephDfDetail(CephJsonParsing):
     """
     Class to parse the output of ``ceph df detail -f json-pretty``.
+
+    Examples:
+
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephDfDetail
+    >>> result = CephDfDetail(context_wrap(ceph_health_df_content)).data
+    >>> result['stats']['total_avail_bytes']
+    16910123008
     """
     pass
 
@@ -378,6 +387,14 @@ class CephDfDetail(CephJsonParsing):
 class CephHealthDetail(CephJsonParsing):
     """
     Class to parse the output of ``ceph health detail -f json-pretty``.
+
+    Examples:
+
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephHealthDetail
+    >>> result = CephHealthDetail(context_wrap(ceph_health_detail_content)).data
+    >>> result["overall_status"]
+    "HEALTH_OK"
     """
     pass
 
@@ -386,6 +403,16 @@ class CephHealthDetail(CephJsonParsing):
 class CephECProfileGet(CephJsonParsing):
     """
     Class to parse the output of ``ceph osd erasure-code-profile get default -f json-pretty``.
+
+    Examples:
+
+    >>> ceph_osd_ec_profile_get_content = ''.strip()
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephECProfileGet
+    >>> from falafel.tests import context_wrap
+    >>> shared = {CephECProfileGet: CephECProfileGet(context_wrap(ceph_osd_ec_profile_get_content))}
+    >>> result = CephECProfileGet(context_wrap(ceph_osd_ec_profile_get_content)).data
+    >>> result['k']
+    "2"
     """
     pass
 
@@ -394,8 +421,15 @@ class CephECProfileGet(CephJsonParsing):
 class CephCfgInfo(CephJsonParsing):
     """
     Class to parse the output of ``ceph daemon .. config show``
+
+    Examples:
+
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephCfgInfo
+    >>> ceph_info = CephCfgInfo(context_wrap(CEPHINFO))
+    >>> cpu_info.max_open_files
+    131072
     """
-    pass
 
     @property
     def max_open_files(self):
@@ -403,3 +437,19 @@ class CephCfgInfo(CephJsonParsing):
         str: Return the value of max_open_files
         """
         return self.data["max_open_files"]
+
+
+@mapper("ceph_osd_tree")
+class CephOsdTree(CephJsonParsing):
+    """
+    Class to parse the output of the command "ceph osd tree -f json-pretty
+
+    Examples:
+
+    >>> from falafel.tests import context_wrap
+    >>> from falafel.mappers.ceph_cmd_json_parsing import CephOsdTree
+    >>> result = CephOsdTree(context_wrap(ceph_osd_tree_content))
+    >>> len(result['nodes'][0]['children'])
+    4
+    """
+    pass

@@ -1,5 +1,5 @@
 from falafel.mappers.ceph_cmd_json_parsing import CephOsdDump, CephOsdDf, CephS, CephECProfileGet, CephCfgInfo, \
-    CephHealthDetail, CephDfDetail
+    CephHealthDetail, CephDfDetail, CephOsdTree
 from falafel.tests import context_wrap
 
 CEPH_OSD_DUMP_INFO = """
@@ -184,6 +184,133 @@ CEPHINFO = """
     "ms_bind_port_max": "7300",
     "ms_bind_retry_count": "3",
     "ms_bind_retry_delay": "5"
+}
+""".strip()
+
+CEPH_OSD_TREE = """
+{
+    "nodes": [
+        {
+            "id": -1,
+            "name": "default",
+            "type": "root",
+            "type_id": 10,
+            "children": [
+                -5,
+                -4,
+                -3,
+                -2
+            ]
+        },
+        {
+            "id": -2,
+            "name": "dhcp-192-56",
+            "type": "host",
+            "type_id": 1,
+            "children": []
+        },
+        {
+            "id": -3,
+            "name": "dhcp-192-104",
+            "type": "host",
+            "type_id": 1,
+            "children": []
+        },
+        {
+            "id": -4,
+            "name": "dhcp-192-67",
+            "type": "host",
+            "type_id": 1,
+            "children": []
+        },
+        {
+            "id": -5,
+            "name": "localhost",
+            "type": "host",
+            "type_id": 1,
+            "children": [
+                1,
+                3,
+                5,
+                2,
+                4,
+                0
+            ]
+        },
+        {
+            "id": 0,
+            "name": "osd.0",
+            "type": "osd",
+            "type_id": 0,
+            "crush_weight": 0.002991,
+            "depth": 2,
+            "exists": 1,
+            "status": "up",
+            "reweight": 1.000000,
+            "primary_affinity": 1.000000
+        },
+        {
+            "id": 4,
+            "name": "osd.4",
+            "type": "osd",
+            "type_id": 0,
+            "crush_weight": 0.002991,
+            "depth": 2,
+            "exists": 1,
+            "status": "down",
+            "reweight": 1.000000,
+            "primary_affinity": 1.000000
+        },
+        {
+            "id": 2,
+            "name": "osd.2",
+            "type": "osd",
+            "type_id": 0,
+            "crush_weight": 0.002991,
+            "depth": 2,
+            "exists": 1,
+            "status": "up",
+            "reweight": 1.000000,
+            "primary_affinity": 1.000000
+        },
+        {
+            "id": 5,
+            "name": "osd.5",
+            "type": "osd",
+            "type_id": 0,
+            "crush_weight": 0.002991,
+            "depth": 2,
+            "exists": 1,
+            "status": "up",
+            "reweight": 1.000000,
+            "primary_affinity": 1.000000
+        },
+        {
+            "id": 3,
+            "name": "osd.3",
+            "type": "osd",
+            "type_id": 0,
+            "crush_weight": 0.002991,
+            "depth": 2,
+            "exists": 1,
+            "status": "up",
+            "reweight": 1.000000,
+            "primary_affinity": 1.000000
+        },
+        {
+            "id": 1,
+            "name": "osd.1",
+            "type": "osd",
+            "type_id": 0,
+            "crush_weight": 0.002991,
+            "depth": 2,
+            "exists": 1,
+            "status": "up",
+            "reweight": 1.000000,
+            "primary_affinity": 1.000000
+        }
+    ],
+    "stray": []
 }
 """.strip()
 
@@ -380,3 +507,134 @@ class TestCephDfDetail():
             ]
         }
         assert result['stats']['total_avail_bytes'] == 16910123008
+
+
+class TestCephOsdTree():
+    def test_ceph_osd_tree(self):
+        result = CephOsdTree(context_wrap(CEPH_OSD_TREE)).data
+        assert result == {
+            "nodes": [
+                {
+                    "id": -1,
+                    "name": "default",
+                    "type": "root",
+                    "type_id": 10,
+                    "children": [
+                        -5,
+                        -4,
+                        -3,
+                        -2
+                    ]
+                },
+                {
+                    "id": -2,
+                    "name": "dhcp-192-56",
+                    "type": "host",
+                    "type_id": 1,
+                    "children": []
+                },
+                {
+                    "id": -3,
+                    "name": "dhcp-192-104",
+                    "type": "host",
+                    "type_id": 1,
+                    "children": []
+                },
+                {
+                    "id": -4,
+                    "name": "dhcp-192-67",
+                    "type": "host",
+                    "type_id": 1,
+                    "children": []
+                },
+                {
+                    "id": -5,
+                    "name": "localhost",
+                    "type": "host",
+                    "type_id": 1,
+                    "children": [
+                        1,
+                        3,
+                        5,
+                        2,
+                        4,
+                        0
+                    ]
+                },
+                {
+                    "id": 0,
+                    "name": "osd.0",
+                    "type": "osd",
+                    "type_id": 0,
+                    "crush_weight": 0.002991,
+                    "depth": 2,
+                    "exists": 1,
+                    "status": "up",
+                    "reweight": 1.000000,
+                    "primary_affinity": 1.000000
+                },
+                {
+                    "id": 4,
+                    "name": "osd.4",
+                    "type": "osd",
+                    "type_id": 0,
+                    "crush_weight": 0.002991,
+                    "depth": 2,
+                    "exists": 1,
+                    "status": "down",
+                    "reweight": 1.000000,
+                    "primary_affinity": 1.000000
+                },
+                {
+                    "id": 2,
+                    "name": "osd.2",
+                    "type": "osd",
+                    "type_id": 0,
+                    "crush_weight": 0.002991,
+                    "depth": 2,
+                    "exists": 1,
+                    "status": "up",
+                    "reweight": 1.000000,
+                    "primary_affinity": 1.000000
+                },
+                {
+                    "id": 5,
+                    "name": "osd.5",
+                    "type": "osd",
+                    "type_id": 0,
+                    "crush_weight": 0.002991,
+                    "depth": 2,
+                    "exists": 1,
+                    "status": "up",
+                    "reweight": 1.000000,
+                    "primary_affinity": 1.000000
+                },
+                {
+                    "id": 3,
+                    "name": "osd.3",
+                    "type": "osd",
+                    "type_id": 0,
+                    "crush_weight": 0.002991,
+                    "depth": 2,
+                    "exists": 1,
+                    "status": "up",
+                    "reweight": 1.000000,
+                    "primary_affinity": 1.000000
+                },
+                {
+                    "id": 1,
+                    "name": "osd.1",
+                    "type": "osd",
+                    "type_id": 0,
+                    "crush_weight": 0.002991,
+                    "depth": 2,
+                    "exists": 1,
+                    "status": "up",
+                    "reweight": 1.000000,
+                    "primary_affinity": 1.000000
+                }
+            ],
+            "stray": []
+        }
+
+        assert len(result['nodes'][0]['children']) == 4

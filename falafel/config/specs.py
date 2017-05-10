@@ -23,6 +23,7 @@ static_specs = {
     "ceph_config_show"          : CommandSpec("/usr/bin/ceph daemon {ceph_socket_files} config show", ceph_socket_files=r"\S+"),
     "ceph_df_detail"            : CommandSpec("/usr/bin/ceph df detail -f json-pretty"),
     "ceph_health_detail"        : CommandSpec("/usr/bin/ceph health detail -f json-pretty"),
+    "ceph_osd_tree"             : CommandSpec("/usr/bin/ceph osd tree -f json-pretty"),
     "ceph_osd_dump"             : CommandSpec("/usr/bin/ceph osd dump -f json-pretty"),
     "ceph_osd_df"               : CommandSpec("/usr/bin/ceph osd df -f json-pretty"),
     "ceph_osd_ec_profile_get"   : CommandSpec("/usr/bin/ceph osd erasure-code-profile get {ceph_osd_ec_profile_ls} -f json-pretty ", ceph_osd_ec_profile_ls=r"\S+"),
