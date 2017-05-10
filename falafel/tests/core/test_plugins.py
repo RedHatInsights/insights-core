@@ -92,3 +92,7 @@ def test_inject_host_too_many_keys():
             {"key1": True, "key2": False},
             "my_host"
         )
+
+
+def test_make_response_too_big():
+    assert plugins.make_response("TESTING", big="foo" * 50000) == {"type": "rule", "error_key": "TESTING"}

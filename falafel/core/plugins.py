@@ -1,9 +1,11 @@
 import logging
 import types
+import json
 from collections import defaultdict
 from functools import wraps
 from falafel.config.factory import get_config
 from falafel.core import load_package
+from falafel import settings
 
 data_spec_config = get_config()
 log = logging.getLogger(__name__)
@@ -434,8 +436,19 @@ def make_response(error_key, **kwargs):
         "type": "rule",
         "error_key": error_key
     }
-    r.update(kwargs)
-    return r
+    kwargs.update(r)
+
+    detail_length = len(json.dumps(kwargs))
+
+    if detail_length > settings.defaults["max_detail_length"]:
+        log.error("Length of data in make_response is too long.", extra={
+            "max_detail_length": settings.defaults["max_detail_length"],
+            "error_key": error_key,
+            "len": detail_length
+        })
+        return r
+
+    return kwargs
 
 
 def make_metadata(**kwargs):

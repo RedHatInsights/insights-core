@@ -62,6 +62,9 @@ defaults:
   # Location of log file.  Null value means stderr.
   log_file: null
 
+  # Maximum length in bytes of rule response details
+  max_detail_length: 65535
+
 test:
   host: localhost:52346
   start_server: true
