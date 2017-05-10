@@ -7,11 +7,15 @@ from falafel.util.command import retarget_command_for_mountpoint
 COMMANDS_ARCHIVE_DIR = "/insights_commands"
 DATA_ARCHIVE_DIR = "/insights_data"
 
+# This separate meta spec list tells us what to put in the "meta_specs" key of
+# uploader.json.  Unfortunately it means there's two separate meta specs to
+# maintain.
 META_FILE_LIST = {
     "analysis_target": DATA_ARCHIVE_DIR + "/analysis_target",
     "machine-id": DATA_ARCHIVE_DIR + "/machine-id",
     "branch_info": "/branch_info",
-    "uploader_log": DATA_ARCHIVE_DIR + "/insights_logs/insights.log"
+    "uploader_log": DATA_ARCHIVE_DIR + "/insights_logs/insights.log",
+    "metadata.json": "metadata.json"
 }
 
 
