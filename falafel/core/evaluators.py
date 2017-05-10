@@ -173,6 +173,10 @@ class SingleEvaluator(Evaluator):
             md = self.run_metadata_mappers(self._pull_md_fragment())
             self.mapper_results.update(md)
         for symbolic_name, files in self.spec_mapper.symbolic_files.items():
+
+            if not plugins.get_mappers(symbolic_name):
+                continue
+
             for f in files:
                 content = []
                 try:
