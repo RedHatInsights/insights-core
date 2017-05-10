@@ -21,20 +21,20 @@ entry_points = {
 data_files = []
 
 runtime = {
-    'pyyaml',
-    'tornado',
-    'futures',
+    'pyyaml==3.12',
+    'tornado==4.4.2',
+    'futures==3.0.5',
     'requests==2.13.0',
 }
 
 develop = {
-    'flake8',
-    'coverage',
+    'flake8==3.3.0',
+    'coverage==4.3.4',
     'pytest==3.0.6',
-    'pytest-cov',
+    'pytest-cov==2.4.0',
     'Sphinx',
     'sphinx_rtd_theme',
-    'Jinja2',
+    'Jinja2==2.9.6',
     'wheel',
 }
 
