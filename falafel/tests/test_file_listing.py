@@ -4,7 +4,6 @@ from falafel.tests import context_wrap
 
 import unittest
 
-
 MULTIPLE_DIRECTORIES = """
 /etc/sysconfig:
 total 96
@@ -50,6 +49,13 @@ total 3
 -rw-r--r--. root root system_u:object_r:boot_t:s0      config-3.10.0-267
 drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2
 -rw-r--r--. root root system_u:object_r:boot_t:s0      initramfs-0-rescue
+"""
+
+FILES_CREATED_WITH_SELINUX_DISABLED = """
+/dev/mapper:
+total 2
+lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7
+lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_redo01 -> ../dm-8
 """
 
 BAD_DIRECTORY_ENTRIES = """
@@ -115,67 +121,67 @@ class TestFileListing(unittest.TestCase):
         )
 
         self.assertEqual(dirs.files_of('/etc/sysconfig'),
-            ['ebtables-config', 'firewalld', 'grub'])
+                         ['ebtables-config', 'firewalld', 'grub'])
         self.assertEqual(dirs.dirs_of('/etc/sysconfig'), ['.', '..', 'cbq', 'console'])
         self.assertEqual(dirs.specials_of('/etc/sysconfig'), [])
 
         # Testing the main features
         listing = dirs.listing_of('/etc/sysconfig')
         self.assertEqual(listing['..'],
-            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
-             'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
-             'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
-             'dir': '/etc/sysconfig'})
+                         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 77, 'owner': '0',
+                          'group': '0', 'size': 8192, 'date': 'Jul 13 03:55', 'name': '..',
+                          'raw_entry': 'drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..',
+                          'dir': '/etc/sysconfig'})
         self.assertEqual(listing['cbq'],
-            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-             'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
-             'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-             'dir': '/etc/sysconfig'})
+                         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
+                          'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+                          'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
+                          'dir': '/etc/sysconfig'})
         self.assertEqual(listing['firewalld'],
-            {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
-             'group': '0', 'size': 72, 'date': 'Sep 15  2015',
-             'name': 'firewalld', 'raw_entry':
-             '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
-             'dir': '/etc/sysconfig'})
+                         {'type': '-', 'perms': 'rw-r--r--.', 'links': 1, 'owner': '0',
+                          'group': '0', 'size': 72, 'date': 'Sep 15  2015',
+                          'name': 'firewalld', 'raw_entry':
+                              '-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld',
+                          'dir': '/etc/sysconfig'})
         self.assertEqual(listing['grub'],
-            {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-             'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-             'link': '/etc/default/grub', 'raw_entry':
-             'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
-             'dir': '/etc/sysconfig'})
+                         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+                          'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
+                          'link': '/etc/default/grub', 'raw_entry':
+                              'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+                          'dir': '/etc/sysconfig'})
 
         listing = dirs.listing_of('/etc/rc.d/rc3.d')
         self.assertEqual(listing['..'],
-            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
-             'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
-             'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..',
-             'dir': '/etc/rc.d/rc3.d'})
+                         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 10, 'owner': '0',
+                          'group': '0', 'size': 4096, 'date': 'Sep 16  2015', 'name': '..',
+                          'raw_entry': 'drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..',
+                          'dir': '/etc/rc.d/rc3.d'})
         self.assertEqual(listing['K50netconsole'],
-            {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-             'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
-             'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
-             'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
-             'dir': '/etc/rc.d/rc3.d'})
+                         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+                          'group': '0', 'size': 20, 'date': 'Jul  6 23:32',
+                          'name': 'K50netconsole', 'link': '../init.d/netconsole', 'raw_entry':
+                              'lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole',
+                          'dir': '/etc/rc.d/rc3.d'})
 
         self.assertEqual(dirs.total_of('/etc/sysconfig'), 96)
         self.assertEqual(dirs.total_of('/etc/rc.d/rc3.d'), 4)
 
         assert dirs.dir_contains('/etc/sysconfig', 'firewalld')
         self.assertEqual(dirs.dir_entry('/etc/sysconfig', 'grub'),
-            {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
-             'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
-             'link': '/etc/default/grub', 'raw_entry':
-             'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
-             'dir': '/etc/sysconfig'})
+                         {'type': 'l', 'perms': 'rwxrwxrwx.', 'links': 1, 'owner': '0',
+                          'group': '0', 'size': 17, 'date': 'Jul  6 23:32', 'name': 'grub',
+                          'link': '/etc/default/grub', 'raw_entry':
+                              'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub',
+                          'dir': '/etc/sysconfig'})
 
         self.assertEqual(dirs.raw_directory('/etc/sysconfig'),
-            MULTIPLE_DIRECTORIES.split('\n')[3:10])
+                         MULTIPLE_DIRECTORIES.split('\n')[3:10])
 
         self.assertEqual(dirs.path_entry('/etc/sysconfig/cbq'),
-            {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
-             'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
-             'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
-             'dir': '/etc/sysconfig'})
+                         {'type': 'd', 'perms': 'rwxr-xr-x.', 'links': 2, 'owner': '0',
+                          'group': '0', 'size': 41, 'date': 'Jul  6 23:32', 'name': 'cbq',
+                          'raw_entry': 'drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq',
+                          'dir': '/etc/sysconfig'})
         self.assertIsNone(dirs.path_entry('no_slash'))
         self.assertIsNone(dirs.path_entry('/'))
         self.assertIsNone(dirs.path_entry('/foo'))
@@ -190,10 +196,10 @@ class TestFileListing(unittest.TestCase):
         self.assertEqual(listing['menu.lst']['type'], 'l')
         self.assertEqual(listing['menu.lst']['link'], './grub.conf')
         self.assertEqual(dirs.dir_entry('/tmp', 'dm-10'),
-            {'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
-             'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
-             'name': 'dm-10', 'dir': '/tmp', 'raw_entry':
-             'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'})
+                         {'type': 'b', 'perms': 'rw-rw----.', 'links': 1, 'owner': '0',
+                          'group': '6', 'major': 253, 'minor': 10, 'date': 'Aug  4 16:56',
+                          'name': 'dm-10', 'dir': '/tmp', 'raw_entry':
+                              'brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10'})
         self.assertEqual(listing['dm-10']['type'], 'b')
         self.assertEqual(listing['dm-10']['major'], 253)
         self.assertEqual(listing['dm-10']['minor'], 10)
@@ -239,11 +245,20 @@ class TestFileListing(unittest.TestCase):
 
         # Test that one entry is exactly what we expect it to be.
         self.assertEqual(dirs.dir_entry('/boot', 'grub2'),
-            {'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
-             'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
-             'se_mls': 's0', 'name': 'grub2', 'raw_entry':
-             'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
-             'dir': '/boot'})
+                         {'type': 'd', 'perms': 'rwxr-xr-x.', 'owner': 'root', 'group': 'root',
+                          'se_user': 'system_u', 'se_role': 'object_r', 'se_type': 'boot_t',
+                          'se_mls': 's0', 'name': 'grub2', 'raw_entry':
+                              'drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2',
+                          'dir': '/boot'})
+
+    def test_files_created_with_selinux_disabled(self):
+        dirs = FileListing(context_wrap(FILES_CREATED_WITH_SELINUX_DISABLED))
+
+        # Test that one entry is exactly what we expect it to be.
+        self.assertEqual(dirs.dir_entry('/dev/mapper', 'lv_cpwtk001_data01'),
+                         {'group': '0', 'name': 'lv_cpwtk001_data01', 'links': 1, 'perms': 'rwxrwxrwx',
+                          'raw_entry': 'lrwxrwxrwx 1 0 0 7 Apr 27 05:34 lv_cpwtk001_data01 -> ../dm-7', 'owner': '0',
+                          'link': '../dm-7', 'date': 'Apr 27 05:34', 'type': 'l', 'dir': '/dev/mapper', 'size': 7})
 
     def test_bad_directory(self):
         dirs = FileListing(context_wrap(BAD_DIRECTORY_ENTRIES))
