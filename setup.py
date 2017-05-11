@@ -21,7 +21,7 @@ entry_points = {
 data_files = []
 
 runtime = {
-    'pyyaml==3.12',
+    'pyyaml>=3.10,<=3.12',
     'tornado==4.4.2',
     'futures==3.0.5',
     'requests==2.13.0',
