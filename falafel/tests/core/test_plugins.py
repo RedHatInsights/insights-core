@@ -1,3 +1,4 @@
+import json
 import pytest
 from falafel.core import plugins
 
@@ -95,4 +96,9 @@ def test_inject_host_too_many_keys():
 
 
 def test_make_response_too_big():
-    assert plugins.make_response("TESTING", big="foo" * 50000) == {"type": "rule", "error_key": "TESTING"}
+    content = "foo" * 50000
+    assert plugins.make_response("TESTING", big=content) == {
+        "type": "rule",
+        "error_key": "TESTING",
+        "max_detail_length_error": len(json.dumps({"error_key": "TESTING", "type": "rule", "big": content}))
+    }

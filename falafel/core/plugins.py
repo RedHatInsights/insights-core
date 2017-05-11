@@ -446,6 +446,7 @@ def make_response(error_key, **kwargs):
             "error_key": error_key,
             "len": detail_length
         })
+        r["max_detail_length_error"] = detail_length
         return r
 
     return kwargs
