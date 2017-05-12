@@ -271,10 +271,10 @@ Part of the sample output of this command looks like::
 """
 
 import json
-from .. import Mapper, mapper
+from .. import Mapper, mapper, LegacyItemAccess
 
 
-class CephJsonParsing(Mapper):
+class CephJsonParsing(LegacyItemAccess, Mapper):
     """Base class implementing shared code."""
 
     def parse_content(self, content):
@@ -287,7 +287,6 @@ class CephJsonParsing(Mapper):
 
         """
         self.data = json.loads(''.join(content))
-        return
 
 
 @mapper("ceph_osd_dump")

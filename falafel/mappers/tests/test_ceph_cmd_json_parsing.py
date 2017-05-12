@@ -317,9 +317,9 @@ CEPH_OSD_TREE = """
 
 class TestCephOsdDump():
     def test_ceph_osd_dump(self):
-        result = CephOsdDump(context_wrap(CEPH_OSD_DUMP_INFO)).data
+        result = CephOsdDump(context_wrap(CEPH_OSD_DUMP_INFO))
 
-        assert result == {
+        assert result.data == {
             'pool_max': 12, 'max_osd': 8,
             'created': '2016-11-12 16:08:46.307206',
             'modified': '2017-03-07 08:55:53.301911',
@@ -340,9 +340,9 @@ class TestCephOsdDump():
 
 class TestCephOsdDf():
     def test_ceph_osd_df(self):
-        result = CephOsdDf(context_wrap(CEPH_OSD_DF_INFO)).data
+        result = CephOsdDf(context_wrap(CEPH_OSD_DF_INFO))
 
-        assert result == {
+        assert result.data == {
             "nodes": [
                 {
                     "id": 0,
@@ -376,9 +376,9 @@ class TestCephOsdDf():
 
 class TestCephS():
     def test_ceph_s(self):
-        result = CephS(context_wrap(CEPH_S_INFO)).data
+        result = CephS(context_wrap(CEPH_S_INFO))
 
-        assert result == {
+        assert result.data == {
             "health": {
 
             },
@@ -406,9 +406,9 @@ class TestCephS():
 
 class TestCephECProfileGet():
     def test_ceph_ec_profile_get(self):
-        result = CephECProfileGet(context_wrap(CEPH_OSD_EC_PROFILE_GET)).data
+        result = CephECProfileGet(context_wrap(CEPH_OSD_EC_PROFILE_GET))
 
-        assert result == {
+        assert result.data == {
             "k": "2",
             "m": "1",
             "plugin": "jerasure",
@@ -443,9 +443,9 @@ class TestCephCfgInfo():
 
 class TestCephHealthDetail():
     def test_ceph_health_detail(self):
-        result = CephHealthDetail(context_wrap(CEPH_HEALTH_DETAIL_INFO)).data
+        result = CephHealthDetail(context_wrap(CEPH_HEALTH_DETAIL_INFO))
 
-        assert result == {
+        assert result.data == {
             "health": {
             },
             "timechecks": {
@@ -462,9 +462,9 @@ class TestCephHealthDetail():
 
 class TestCephDfDetail():
     def test_ceph_df_detail(self):
-        result = CephDfDetail(context_wrap(CEPH_DF_DETAIL_INFO)).data
+        result = CephDfDetail(context_wrap(CEPH_DF_DETAIL_INFO))
 
-        assert result == {
+        assert result.data == {
             "stats": {
                 "total_bytes": 17113243648,
                 "total_used_bytes": 203120640,
@@ -511,8 +511,8 @@ class TestCephDfDetail():
 
 class TestCephOsdTree():
     def test_ceph_osd_tree(self):
-        result = CephOsdTree(context_wrap(CEPH_OSD_TREE)).data
-        assert result == {
+        result = CephOsdTree(context_wrap(CEPH_OSD_TREE))
+        assert result.data == {
             "nodes": [
                 {
                     "id": -1,
