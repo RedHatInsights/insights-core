@@ -13,7 +13,6 @@ entry_points = {
     'console_scripts': [
         'insights-run = falafel.core:main',
         'gen_api = falafel.tools.generate_api_config:main',
-        'compare_api = falafel.tools.compare_uploader_configs:main',
         'falafel-scaffold = falafel.scaffold:main',
         'falafel-perf = falafel.tools.perf:main'
     ]
@@ -22,7 +21,7 @@ data_files = []
 
 runtime = {
     'pyyaml>=3.10,<=3.12',
-    'tornado==4.4.2',
+    'tornado>=4.2.1',
     'futures==3.0.5',
     'requests==2.13.0',
 }
