@@ -9,8 +9,9 @@ of fields, named according to their definitions in ``man fstab``:
 * ``fs_file`` - the mount point
 * ``fs_vfstype`` - the type of file system
 * ``fs_mntops`` - any mount options
-* ``fs_freq`` - the dump frequency - not used
+* ``fs_freq`` - the dump frequency
 * ``fs_passno`` - check the filesystem on reboot in this pass number
+* ``raw`` - the RAW line which is useful to front-end
 
 ``fs_freq`` and ``fs_passno`` are recorded as integers if found, and zero if
 not present.
@@ -18,18 +19,15 @@ not present.
 The ``fs_mntops`` mount options are converted to a dictionary, so that each
 option's value set to True so it can be conveniently searched.
 
-This data, as above, is available in the ``data`` property.  The class also
-presents the ``rows`` property, which is the same rows converted to
-objects:
+This data, as above, is available in the ``data`` property:
 
-* Each column becomes a property with the same name.
-* The mount options are a special object with properties corresponding to the
-  common mount options: ``rw``, ``ro``, ``relatime``, ``seclabel``,
-  ``attr2``, ``inode61``, and ``noquota``, as well as the ``rq``, ``sw``, and
-  ``xx`` options which are not documented in ``man mount``.
+* As wrapped as an AttributeDict, each column can also be accessed as a property
+  with the same name.
+* The mount options are also an AttributeDict object with properties
+  corresponding to the common mount options.
 
 The data for each mount point is also available via the ``mounted_on``
-property; the data is the same as that stored in the ``rows`` list.
+property; the data is the same as that stored in the ``data`` list.
 
 Typical content of the ``fstab`` looks like::
 
@@ -58,16 +56,16 @@ Examples:
     9
     >>> fstab.data[0]['fs_spec'] # Note that data is a list not a dict here
     '/dev/mapper/rhel_hadoop--test--1-root'
-    >>> fstab.data[0]['fs_mntops']
-    'defaults'
-    >>> fstab.rows[0].raw
-    '/dev/mapper/rhel_hadoop--test--1-root /                       xfs    defaults        0 0'
-    >>> fstab.rows[0].fs_spec
+    >>> fstab.data[0].fs_spec
     '/dev/mapper/rhel_hadoop--test--1-root'
-    >>> fstab.rows[0].fs_mntops.defaults
+    >>> fstab.data[0].raw
+    '/dev/mapper/rhel_hadoop--test--1-root /                       xfs    defaults        0 0'
+    >>> fstab.data[0].fs_mntops.defaults
     True
-    >>> fstab.rows[0].fs_mntops.relatime
+    >>> 'relatime' in fstab.data[0].fs_mntops
     False
+    >>> fstab.data[0].fs_mntops.get('relatime')
+    None
     >>> fstab.mounted_on['/hdfs/data3'].fs_spec
     '/dev/sdd1'
 
@@ -89,7 +87,7 @@ class FSTab(Mapper):
     Parse the content of ``/etc/fstab``.
 
     This object provides the '__len__' and '__iter__' methods to allow it to
-    be used as a list to iterate over the ``rows`` data, e.g.::
+    be used as a list to iterate over the ``data`` data, e.g.::
 
         >>> if len(fstab) > 0:
         >>>     for fs in fstab:
@@ -97,17 +95,16 @@ class FSTab(Mapper):
         >>>         print fs.raw
 
     Attributes:
-        data (list): a list of parsed fstab entries as dictionaries.
-        rows (list): a list of parsed fstab entries as AttributeDict objects.
+        data (list): a list of parsed fstab entries as AttributeDict objects.
         mounted_on (dict): a dictionary of AttributeDict objects keyed on mount
             point.
     """
 
     def __len__(self):
-        return len(self.rows)
+        return len(self.data)
 
     def __iter__(self):
-        for row in self.rows:
+        for row in self.data:
             yield row
 
     def parse_content(self, content):
@@ -115,7 +112,7 @@ class FSTab(Mapper):
         Parse each line in the file ``/etc/fstab``.
         """
         fstab_output = parse_table([FS_HEADINGS] + get_active_lines(content))
-        self.rows = []
+        self.data = []
         for line in fstab_output:
             line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
@@ -124,7 +121,6 @@ class FSTab(Mapper):
             line['fs_mntops'] = AttributeDict(optlist_to_dict(line['fs_mntops']))
             # add `raw` here for displaying convenience on front-end
             line['raw'] = [l for l in content if l.startswith(line['fs_spec'])][0]
-            self.rows.append(AttributeDict(line))
-        self.data = fstab_output
+            self.data.append(AttributeDict(line))
         # assert: all mount points of valid entries are unique by definition
-        self.mounted_on = {row.fs_file: row for row in self.rows}
+        self.mounted_on = {row.fs_file: row for row in self.data}
