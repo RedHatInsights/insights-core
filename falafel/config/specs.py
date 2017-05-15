@@ -181,7 +181,7 @@ static_specs = {
     "ls_boot"                   : CommandSpec("/bin/ls -lanR /boot"),
     "ls_docker_volumes"         : CommandSpec("/bin/ls -lanR /var/lib/docker/volumes"),
     "ls_dev"                    : CommandSpec("/bin/ls -lanR /dev"),
-    "ls_disk"                   : CommandSpec("/bin/ls -lanR /dev/disk/by-*"),
+    "ls_disk"                   : CommandSpec("/bin/ls -lanR /dev/disk"),
     "ls_etc"                    : CommandSpec("/bin/ls -lanR /etc"),
     "ls_sys_firmware"           : CommandSpec("/bin/ls -lanR /sys/firmware"),
     "ls_var_log"                : CommandSpec("/bin/ls -la /var/log /var/log/audit"),
