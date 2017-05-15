@@ -1,6 +1,5 @@
 import logging
 import types
-import json
 from collections import defaultdict
 from functools import wraps
 from falafel.config.factory import get_config
@@ -438,7 +437,9 @@ def make_response(error_key, **kwargs):
     }
     kwargs.update(r)
 
-    detail_length = len(json.dumps(kwargs))
+    # using str() avoids many serialization issues and runs in about 75%
+    # of the time as json.dumps
+    detail_length = len(str(kwargs))
 
     if detail_length > settings.defaults["max_detail_length"]:
         log.error("Length of data in make_response is too long.", extra={
