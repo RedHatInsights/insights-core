@@ -1,5 +1,6 @@
 import pytest
 from falafel.mappers.pam import PamConf, PamDConf, PamConfEntry
+from falafel.mappers import get_active_lines
 from falafel.tests import context_wrap
 
 PAM_CONF_DATA = """
@@ -11,7 +12,8 @@ vsftpd      account     optional    pam_unix.so
 other       password    include     pam_cracklib.so retry=3 logging=verbose
 other       password    required    pam_unix.so shadow nullok use_authtok
 other       session     required    pam_unix.so
-""".strip()
+"""
+
 PAMD_CONF_DATA = """
 #%PAM-1.0
 auth        required    pam_securetty.so
@@ -24,35 +26,17 @@ password    required    pam_unix.so shadow nullok use_authtok
 auth        required    pam_listfile.so \
                    onerr=succeed item=user sense=deny file=/etc/ftpusers
 session     required    pam_unix.so
-""".strip()
-PAMD_CONF_DATA_BAD_INTERFACE = """
-#%PAM-1.0
-authz       required    pam_securetty.so
-auth        requisite   pam_unix.so nullok
-""".strip()
-PAMD_CONF_DATA_BAD_FLAG = """
-#%PAM-1.0
-auth        preferred   pam_securetty.so
-auth        requisite   pam_unix.so nullok
-""".strip()
-PAMD_CONF_DATA_BAD_MODULE = """
-#%PAM-1.0
-auth        required
-auth        requisite   pam_unix.so nullok
-""".strip()
+"""
+
 PAMD_MISC = """
+# Miscellaneous trickier lines
 password  required pam_cracklib.so \
                        difok=3 minlen=15 dcredit= 2 ocredit=2
 auth    requisite       pam_permit.so
 auth    [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
-auth    [default=reset]         pam_debug.so auth=success cred=perm_denied
-auth    [success=done default=die] pam_debug.so
-auth    optional        pam_debug.so auth=perm_denied cred=perm_denied
-auth    sufficient      pam_debug.so auth=success cred=success
-auth    required    pam_listfile.so \
-                   onerr=succeed item=user sense=deny file=/etc/ftpusers
 password optional pam_exec.so seteuid /usr/bin/make -C /var/yp
-""".strip()
+-session optional pam_no_module.so ignore if module not found
+"""
 
 
 def test_pamd_conf():
@@ -87,8 +71,10 @@ def test_pamd_conf():
 
     # auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
     assert len(pamd_conf[3].control_flags) == 2
-    assert pamd_conf[3].control_flags == [PamConfEntry.ControlFlag(flag='success', value='2'),
-                                          PamConfEntry.ControlFlag(flag='default', value='ok')]
+    assert pamd_conf[3].control_flags == [
+        PamConfEntry.ControlFlag(flag='success', value='2'),
+        PamConfEntry.ControlFlag(flag='default', value='ok')
+    ]
 
     # auth        required    pam_listfile.so \
     #                   onerr=succeed item=user sense=deny file=/etc/ftpusers
@@ -99,5 +85,94 @@ def test_pamd_conf():
     assert pamd_conf[7].module_name == 'pam_listfile.so'
     assert pamd_conf[7].module_args == 'onerr=succeed item=user sense=deny file=/etc/ftpusers'
 
-    with pytest.raises(ValueError):
-        pamd_conf = PamDConf(context_wrap(PAMD_CONF_DATA_BAD_MODULE))
+    # Miscellaneous complicated line handling tests
+    misc = PamDConf(context_wrap(PAMD_MISC, path='etc/pamd.d/misc'))
+    assert misc
+    assert len(misc) == 5
+
+    # password  required pam_cracklib.so \
+    #                        difok=3 minlen=15 dcredit= 2 ocredit=2
+    assert misc[0].service == 'misc'
+    assert misc[0].interface == 'password'
+    assert len(misc[0].control_flags) == 1
+    assert misc[0].control_flags[0].flag == 'required'
+    assert misc[0].control_flags[0].value is None
+    assert misc[0].module_name == 'pam_cracklib.so'
+    assert misc[0].module_args == 'difok=3 minlen=15 dcredit= 2 ocredit=2'
+
+    # auth    requisite       pam_permit.so
+    assert misc[1].service == 'misc'
+    assert misc[1].interface == 'auth'
+    assert len(misc[1].control_flags) == 1
+    assert misc[1].control_flags[0].flag == 'requisite'
+    assert misc[1].control_flags[0].value is None
+    assert misc[1].module_name == 'pam_permit.so'
+    assert misc[1].module_args is None
+
+    # auth    [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
+    assert misc[2].service == 'misc'
+    assert misc[2].interface == 'auth'
+    assert len(misc[2].control_flags) == 2
+    assert misc[2].control_flags[0].flag == 'success'
+    assert misc[2].control_flags[0].value == '2'
+    assert misc[2].control_flags[1].flag == 'default'
+    assert misc[2].control_flags[1].value == 'ok'
+    assert misc[2].module_name == 'pam_debug.so'
+    assert misc[2].module_args == 'auth=perm_denied cred=success'
+
+    # password optional pam_exec.so seteuid /usr/bin/make -C /var/yp
+    assert misc[3].service == 'misc'
+    assert misc[3].interface == 'password'
+    assert len(misc[3].control_flags) == 1
+    assert misc[3].control_flags[0].flag == 'optional'
+    assert misc[3].control_flags[0].value is None
+    assert misc[3].module_name == 'pam_exec.so'
+    assert misc[3].module_args == 'seteuid /usr/bin/make -C /var/yp'
+
+    # -account optional pam_no_module.so ignore if module not found
+    assert misc[4].service == 'misc'
+    assert misc[4]._type_raw == '-session'
+    assert misc[4].ignored_if_module_not_found
+    assert misc[4].interface == 'session'
+    assert len(misc[4].control_flags) == 1
+    assert misc[4].control_flags[0].flag == 'optional'
+    assert misc[4].control_flags[0].value is None
+    assert misc[4].module_name == 'pam_no_module.so'
+    assert misc[4].module_args == 'ignore if module not found'
+
+
+PAMD_CONF_DATA_BAD_LINES = """
+#%PAM-1.0
+unrecognised_type
+auth
+auth badcontrol
+auth [success=2 default] no_equals_in_group
+auth required
+"""
+
+
+def test_bad_pamd_files():
+    pamd_conf = PamDConf(context_wrap(PAMD_CONF_DATA_BAD_LINES, path='etc/pamd.d/bad'))
+    assert pamd_conf
+    assert len(pamd_conf) == 5
+    for entry in pamd_conf:
+        assert entry.service == 'bad'
+        assert entry.interface is None
+        assert entry.control_flags == []
+        assert entry.module_name is None
+        assert entry.module_args is None
+        assert entry._errors == ["Cannot parse line '{f}' as a valid pam.d entry".format(f=entry._full_line)]
+
+
+class PamDConfNoService(PamDConf):
+    def parse_content(self, content):
+        self.data = []
+        for line in get_active_lines(content):
+            self.data.append(PamConfEntry(line, pamd_conf=True))
+
+
+def test_bad_pamd_subclass():
+    with pytest.raises(ValueError) as exc:
+        pamd_conf = PamDConfNoService(context_wrap(PAMD_CONF_DATA))
+        assert pamd_conf is None
+    assert 'Service name must be provided for pam.d conf file' in str(exc)
