@@ -2,8 +2,9 @@
 pcs status - Command
 ====================
 
-This module provides the classs ``PCSStatus`` which processes  ``/usr/sbin/pcs status`` command output.
-Typical output of the ``pcs status`` command looks like::
+This module provides the classs ``PCSStatus`` which processes
+``/usr/sbin/pcs status`` command output. Typical output of the ``pcs status``
+command looks like::
 
         Cluster name: mycluster
         Last updated: Thu Dec  1 02:33:50 2016		Last change: Wed Aug  3 03:47:11 2016 by root via cibadmin on nodea.example.com
@@ -28,11 +29,13 @@ Typical output of the ``pcs status`` command looks like::
           pacemaker: active/enabled
           pcsd: active/enabled
 
-The class ``PCSStatus`` has one attribute ``data`` which is a dict containing the whole
-the output and one attribute ``nodes`` is a list containing all node names that from ``PCSD Status`` section.
+The class ``PCSStatus`` has one attribute ``data`` which is a dict containing
+the whole the output and one attribute ``nodes`` is a list containing all
+node names that from ``PCSD Status`` section.
 
 
 Examples:
+
     >>> pcsstatus_content = '''
     ... Cluster name: openstack
     ... Last updated: Fri Oct 14 15:45:32 2016
@@ -71,10 +74,6 @@ Examples:
     ['myhost15', 'myhost17', 'myhost16']
     >>> len(pcsstatus_info.get("Full list of resources"))
     3
-Note:
-    The examples in this module may be executed with the following command:
-
-    ``python -m falafel.mappers.pcs_status``
 """
 from .. import Mapper, mapper
 
@@ -136,19 +135,19 @@ class PCSStatus(Mapper):
                 self.data[line.split(":")[0]] = multiple_lines
                 continue
             if key_nextline_start == 0:
+                linesplit = line.split()
                 if line.startswith(key_oneline):
-                    key, _, value = line.partition(":")
+                    key, value = line.split(":", 1)
                     self.data[key.strip()] = value.strip()
                 elif "Nodes configured" in line:
-                    self.data["Nodes configured"] = line.split()[0]
+                    self.data["Nodes configured"] = linesplit[0]
                 elif "Resources configured" in line:
-                    self.data["Resources configured"] = line.split()[0]
+                    self.data["Resources configured"] = linesplit[0]
                 elif "resources configured" in line:
                     if "and" in line:  # 3 nodes and 3 resources configured
-                        self.data["Resources configured"] = line.split()[3]
-                    else:
-                        self.data["Resources configured"] = line.split()[0]
-            else:  # key_nextline_start ==
+                        self.data['Nodes configured'] = linesplit[0]
+                        self.data["Resources configured"] = linesplit[3]
+            else:  # key_nextline_start > 0
                 if line.strip():
                     multiple_lines.append(line.strip())
         pcsd_status = self.data.get("PCSD Status")

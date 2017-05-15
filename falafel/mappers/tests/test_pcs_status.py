@@ -1,7 +1,7 @@
 from falafel.mappers.pcs_status import PCSStatus
 from falafel.tests import context_wrap
 
-pcs_0 = """
+CLUSTER_NORMAL = """
 Cluster name: openstack
 Last updated: Fri Oct 14 15:45:32 2016
 Last change: Thu Oct 13 20:02:27 2016
@@ -140,6 +140,52 @@ Daemon Status:
   pcsd: active/enabled
 """.strip()
 
+CLUSTER_NODES_AND_RESOURCES = """
+Cluster name: tripleo_cluster
+Last updated: Tue May  2 03:08:03 2017          Last change: Tue May  2 01:54:35 2017 by root via crm_resource on overcloud-controller-0
+Stack: corosync
+Current DC: overcloud-controller-0 (version 1.1.13-10.el7_2.2-44eb2dd) - partition with quorum
+3 nodes and 112 resources configured
+
+Online: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+
+Full list of resources:
+
+ ip-172.20.20.10        (ocf::heartbeat:IPaddr2):       Started overcloud-controller-0
+ Clone Set: haproxy-clone [haproxy]
+     Started: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+ ip-10.67.16.160        (ocf::heartbeat:IPaddr2):       Started overcloud-controller-2
+ ip-172.40.40.10        (ocf::heartbeat:IPaddr2):       Started overcloud-controller-0
+ ip-172.50.50.10        (ocf::heartbeat:IPaddr2):       Started overcloud-controller-1
+ ip-192.0.2.31  (ocf::heartbeat:IPaddr2):       Started overcloud-controller-0
+ ip-172.20.20.11        (ocf::heartbeat:IPaddr2):       Started overcloud-controller-2
+ Master/Slave Set: redis-master [redis]
+     Masters: [ overcloud-controller-0 ]
+     Slaves: [ overcloud-controller-1 overcloud-controller-2 ]
+ Master/Slave Set: galera-master [galera]
+     Masters: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+ Clone Set: mongod-clone [mongod]
+     Started: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+ Clone Set: rabbitmq-clone [rabbitmq]
+     Started: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+ Clone Set: memcached-clone [memcached]
+     Started: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+ Clone Set: openstack-nova-scheduler-clone [openstack-nova-scheduler]
+     Started: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+ Clone Set: neutron-l3-agent-clone [neutron-l3-agent]
+     Started: [ overcloud-controller-0 overcloud-controller-1 overcloud-controller-2 ]
+
+PCSD Status:
+  overcloud-controller-0: Online
+  overcloud-controller-1: Online
+  overcloud-controller-2: Online
+
+Daemon Status:
+  corosync: active/enabled
+  pacemaker: active/enabled
+  pcsd: active/enabled
+"""
+
 CLUSTER_NOT_RUNNING = """
 Error: cluster is not currently running on this node
 """
@@ -151,7 +197,7 @@ WARNING: This is another made-up warning, please supply real ones
 
 
 def test_pcs_status():
-    pcs = PCSStatus(context_wrap(pcs_0))
+    pcs = PCSStatus(context_wrap(CLUSTER_NORMAL))
     assert pcs.nodes == ['myhost15', 'myhost17', 'myhost16']
     assert pcs.get('Stack') == 'corosync'
     assert pcs.get('Cluster name') == 'openstack'
@@ -160,6 +206,19 @@ def test_pcs_status():
     assert pcs.get("Resources configured") == "143"
     assert pcs.get("Online") == "[ myhost15 myhost16 myhost17 ]"
     assert pcs.get('Nonexistent key') is None
+
+
+def test_pcs_nodes_and_resources():
+    pcs = PCSStatus(context_wrap(CLUSTER_NODES_AND_RESOURCES))
+    assert pcs.nodes == ['overcloud-controller-0', 'overcloud-controller-1', 'overcloud-controller-2']
+    # 3 nodes and 112 resources configured
+    assert pcs.data['Nodes configured'] == '3'
+    assert pcs.data['Resources configured'] == '112'
+    assert pcs.data['Daemon Status'] == [
+        'corosync: active/enabled',
+        'pacemaker: active/enabled',
+        'pcsd: active/enabled',
+    ]
 
 
 def test_cluster_not_running():

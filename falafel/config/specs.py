@@ -240,6 +240,7 @@ static_specs = {
     "parted_-s-sos"             : First([PatternSpec(r"sos_commands/block/parted-s_.+"),
                                     PatternSpec(r"sos_commands/filesys/parted_-s_.+")]),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
+    'pcs_status'                : CommandSpec("/usr/sbin/pcs status"),
     "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf.d/\w+\.conf"),
     "postgresql.conf"           : First([SimpleFileSpec("var/lib/pgsql/data/postgresql.conf"),
                                     SimpleFileSpec("opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf"),
