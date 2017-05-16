@@ -19,7 +19,7 @@ br0		8000.2047478aa2e8	no		em1
 							vnet0
 							vnet1
 virbr9		8000.525400263a23	yes		virbr9-nic
-"""# noqa: W191, E101
+"""  # noqa: W191, E101
 
 BRCTL_SHOW_NO_BRIDGES = """
 bridge name     bridge id   STP enabled     interfaces
