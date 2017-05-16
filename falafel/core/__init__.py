@@ -56,6 +56,7 @@ def get_module_names(package_name, pattern=None):
             try:
                 filename = module.filename
             except AttributeError:
+                # filename attribute is not populated for modules from eggs
                 # create a virtual filename to feed to the filter
                 filename = "%s.py" % name.replace('.', '/')
 
