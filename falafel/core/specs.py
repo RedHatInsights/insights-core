@@ -107,7 +107,9 @@ class SpecMapper(object):
 
     def _add_meta_files(self):
         for symbolic_name, suffix in META_FILE_LIST.items():
-            self._extend_symbolic_files(symbolic_name, [self._get_first_matching(suffix)])
+            archive_path = self._get_first_matching(suffix)
+            if archive_path:
+                self._extend_symbolic_files(symbolic_name, [archive_path])
 
     def create_symbolic_file_list(self):
         self.add_files(self.data_spec_config.get_spec_lists())
