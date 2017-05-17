@@ -221,7 +221,7 @@ class SingleEvaluator(Evaluator):
             r = self._marshal(r, symbolic_name, plugin.shared)
             self.mapper_results[plugin].append(r)
 
-    def handle_result(self, r, plugin):
+    def handle_result(self, plugin, r):
         validate_response(r)
         type_ = r["type"]
         del r["type"]
@@ -236,10 +236,14 @@ class SingleEvaluator(Evaluator):
             self.rule_skips.append(r)
 
     def run_reducers(self):
+        self.all_output = {}
         generator = reducer.run_host(
-            self.mapper_results, self.handle_reducer_error(), reducer_stats=self.stats['reducer'])
+            self.mapper_results,
+            self.all_output,
+            self.handle_reducer_error(),
+            reducer_stats=self.stats['reducer'])
         for plugin, r in generator:
-            self.handle_result(r, plugin)
+            self.handle_result(plugin, r)
 
 
 class MultiEvaluator(Evaluator):
@@ -278,10 +282,14 @@ class MultiEvaluator(Evaluator):
             self.mapper_results[hn] = sub_evaluator.mapper_results
 
     def run_reducers(self, metadata=None):
+        self.all_output = {}
         generator = reducer.run_multi(
-            self.mapper_results, self.handle_reducer_error(), reducer_stats=self.stats['reducer'])
+            self.mapper_results,
+            self.all_output,
+            self.handle_reducer_error(),
+            reducer_stats=self.stats['reducer'])
         for plugin, r in generator:
-            self.handle_result(r, plugin)
+            self.handle_result(plugin, r)
 
     def handle_result(self, r, plugin):
         validate_response(r)

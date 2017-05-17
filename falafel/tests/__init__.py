@@ -237,11 +237,12 @@ def integrate(input_data, module):
     if is_multi_node:
         shared_reducers = {}
         for r in reducers.values():
-            shared_reducers = {i: i for i in r._requires if i.shared and i._reducer}
+            requires = plugins.COMPONENT_DEPENDENCIES[r]
+            shared_reducers = {i: i for i in requires if i.shared and i._reducer}
         if shared_reducers:
             for k, v in mapper_output.iteritems():
-                list(reducer.run_host(v, error_handler, reducers=shared_reducers))
-        gen = reducer.run_multi(mapper_output, error_handler, reducers=reducers)
+                list(reducer.run_host(v, {}, error_handler, reducers=shared_reducers))
+        gen = reducer.run_multi(mapper_output, {}, error_handler, reducers=reducers)
         return [result for func, result in gen if result["type"] != "skip"]
     else:
         host_outputs = mapper_output.values()
@@ -253,7 +254,7 @@ def integrate(input_data, module):
         if not reducers:
             # Assume we're expecting a mapper to make_response.
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
-        gen = reducer.run_host(single_host, error_handler, reducers=reducers)
+        gen = reducer.run_host(single_host, {}, error_handler, reducers=reducers)
         reducer_modules = [r.__module__ for r in reducers.values()]
         return [r for func, r in gen if func.__module__ in reducer_modules and r["type"] != "skip"]
 

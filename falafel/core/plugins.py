@@ -1,7 +1,7 @@
 import logging
 import types
 from collections import defaultdict
-from functools import wraps
+from functools import reduce as _reduce, wraps
 from falafel.config.factory import get_config
 from falafel.core import load_package
 from falafel import settings
@@ -28,7 +28,12 @@ PLUGINS = defaultdict(lambda: {
 })
 REDUCERS = {}
 CLUSTER_REDUCERS = {}
-REDUCER_DELEGATES = {}
+
+TYPE_OF_COMPONENT = {}
+COMPONENTS_BY_TYPE = defaultdict(set)
+COMPONENT_DEPENDENCIES = defaultdict(set)
+EMITTERS = set()
+DELEGATES = {}
 
 
 def cluster_reducers():
@@ -91,15 +96,15 @@ def inject_host(r, host):
         return r
 
 
-def register_cluster_mapper(path, func, filters=[]):
+def register_cluster_mapper(name, func, filters=[]):
     @wraps(func)
     def host_inject_wrapper(context):
         r = func(context)
         return inject_host(r, context.hostname) if r else None
-    register_mapper(path, host_inject_wrapper, filters)
+    register_mapper(name, host_inject_wrapper, filters, cluster=True)
 
 
-def register_mapper(name, func, filters=None, shared=False):
+def register_mapper(name, func, filters=None, shared=False, cluster=False):
     '''
     Associate a mapping function to a sosreport file.
 
@@ -145,8 +150,14 @@ def register_mapper(name, func, filters=None, shared=False):
         f_module = func.__module__
         for r in [r for r in REDUCERS.values() if r.__module__ == f_module]:
             func.consumers.add(r)
-        func._requires = set()
-        func._reducer = False
+        shared = shared or ('mappers' in func.__module__)
+        component_type = cluster_mapper if cluster else mapper
+        register_component(func, func, component_type,
+                           requires=None,
+                           optional=None,
+                           shared=shared,
+                           cluster=cluster,
+                           emitter=False)
     except Exception:
         log.exception("Failed to register mapper: %s", func.__name__)
         raise
@@ -202,6 +213,9 @@ def mapper(filename, filters=[], shared=False):
     return _register
 
 
+parser = mapper
+
+
 def cluster_mapper(filename, filters=[]):
     """
     Convenience decorator for mapper callables in clustered modules.
@@ -237,115 +251,56 @@ def cluster_mapper(filename, filters=[]):
     return _register
 
 
-def visit_mappers(root, visitor=None):
+cluster_parser = cluster_mapper
+
+
+def walk_dependencies(root, visitor):
     """
-    Call visitor on all mappers reachable from root.
+    Call visitor on all dependencies reachable from root.
 
     :param function root: non shared reducer function
-    :param function visitor: function to call on each mapper that is
-        reachable as a dependency of root.
-
-    Returns root's dependency tree.
+    :param function visitor: function to call on each dependencies that is
+        reachable from root.
     """
 
-    # ensure root is a non-shared reducer
-    if not root._reducer or root.shared:
-        log.warn("Tried to visit mapper or shared reducer as visitor %s", root)
-        return
+    def _visit_mappers(parent, visitor):
+        requires = COMPONENT_DEPENDENCIES[parent]
+        for r in requires:
+            visitor(parent, r)
+            if r.shared:
+                _visit_mappers(r, visitor)
 
-    def _visit_mappers(parent, deps, visitor):
-        if not parent._requires or not parent._reducer:
-            return deps
-        for r in parent._requires:
-            if not r._reducer:
-                if visitor:
-                    visitor(r)
-                deps[r] = 1
-            elif r.shared:
-                deps[r] = _visit_mappers(r, {}, visitor)
-        return deps
-
-    deps = _visit_mappers(root, {}, visitor)
+    _visit_mappers(root, visitor)
 
     # Non-shared mappers defined in same module are implicitly consumed
     root_module = root.__module__
     for mappers in MAPPERS.values():
         for m in mappers:
             if m.__module__ == root_module:
-                if visitor:
-                    visitor(m)
-                deps[m] = 1
-    return deps
+                visitor(root, m)
 
 
-def generate_dependency_tree(f):
-    """
-    Generate the dependency tree of non shared reducer f.
+def get_dependency_graph(component):
+    graph = defaultdict(set)
 
-    This is currently only used for debugging.
-    """
+    def visitor(parent, component):
+        graph[parent].add(component)
 
-    return visit_mappers(f)
+    walk_dependencies(component, visitor)
 
-
-def register_consumer(c):
-    """ Register non shared reducers as consumers of mappers. """
-
-    def register(mapper):
-        mapper.consumers.add(c)
-
-    visit_mappers(c, register)
+    graph = dict(graph)
+    # Find all items that don't depend on anything.
+    extra_items_in_deps = _reduce(set.union, graph.values()) - set(graph.keys())
+    # Add empty dependences where needed.
+    graph.update({item: set() for item in extra_items_in_deps})
+    return graph
 
 
-def reducer(requires=None, optional=None, cluster=False, shared=False):
-    # I know. We suck. We'll make it better later when the
-    # reducer api changes to just take context.
-    is_shared = shared
-
-    def _f(func):
-        @wraps(func)
-        def __f(local, shared):
-            missing_requirements = get_missing_requirements(requires, shared)
-            if not requires or not missing_requirements:
-                if cluster:
-                    return func(box(local), shared)
-                else:
-                    return func(local, shared)
-            else:
-                log.debug("Reducer [%s] is missing requirements: %s",
-                          func.__module__,
-                          stringify_requirements(missing_requirements))
-                if not is_shared:
-                    rule_name = ".".join([func.__module__, func.__name__])
-                    log.debug("Non-shared reducer %s is being skipped due to missing requirements", rule_name)
-                    return make_skip(rule_name,
-                                     reason="MISSING_REQUIREMENTS",
-                                     details=missing_requirements)
-        if cluster:
-            register_cluster_reducer(func)
-        else:
-            register_reducer(func)
-
-        if requires:
-            _all, _any = split_requirements(requires)
-            func._any = _any
-            _all = set(_all)
-            _any = set(i for o in _any for i in o)
-        else:
-            func._any = []
-            _all, _any = set(), set()
-        _optional = set(optional) if optional else set()
-        func._all, func._optional = _all, _optional
-        func._requires = (_all | _any | _optional)
-        func.shared = shared
-        func.cluster = cluster
-        func._reducer = True
-        if not shared:
-            register_consumer(func)
-            func._dependency_tree = generate_dependency_tree(func)
-        REDUCER_DELEGATES[func] = __f
-        return func
-    return _f
+def group_by_type(components):
+    graph = defaultdict(set)
+    for c in components:
+        graph[TYPE_OF_COMPONENT[c]].add(c)
+    return dict(graph)
 
 
 def split_requirements(requires):
@@ -396,6 +351,151 @@ def box_value(v):
             return v
     else:
         return []
+
+
+def register_consumer(c):
+    """ Register non shared reducers as consumers of mappers. """
+
+    def register(parent, component):
+        if not component._reducer:
+            component.consumers.add(c)
+
+    walk_dependencies(c, register)
+
+
+def register_component(
+        component,
+        delegate,
+        component_type,
+        requires=None,
+        optional=None,
+        shared=True,
+        cluster=False,
+        emitter=False):
+    """
+    Registers any component that is not a mapper or cluster_mapper.
+
+    This is a single registration interface for combiners, rules, cluster_rules,
+    etc.
+
+    Args:
+        component: function or class decorated as a component
+        delegate: function that wraps the component to enforce met dependencies
+        component_type: parser, rule, combiner, etc.
+        requires: list of components the component needs
+        optional: list of optional components the component can use
+        shared: True for most mappers and shared reducers
+        cluster: True for cluster mappers and cluster reducers
+        emitter: True for components that return make_response(...)
+    """
+    is_reducer = component_type not in (mapper, cluster_mapper)
+    if is_reducer:
+        if cluster:
+            register_cluster_reducer(component)
+        else:
+            register_reducer(component)
+
+    component._reducer = is_reducer
+    component.shared = shared
+    component.cluster = cluster
+
+    TYPE_OF_COMPONENT[component] = component_type
+    COMPONENTS_BY_TYPE[component_type].add(component)
+    DELEGATES[component] = delegate
+
+    if requires:
+        _all, _any = split_requirements(requires)
+        _all = set(_all)
+        _any = set(i for o in _any for i in o)
+    else:
+        _all, _any = set(), set()
+    _optional = set(optional) if optional else set()
+
+    COMPONENT_DEPENDENCIES[component] |= (_all | _any | _optional)
+
+    if emitter:
+        EMITTERS.add(component)
+        register_consumer(component)
+
+
+def new_component_type(name=None, shared=True, cluster=False, emitter=False):
+    """
+    Factory that creates component decorators.
+
+    The functions this factory produces are decorators for shared reducers,
+    rules, cluster rules, etc. They don't yet define mappers or cluster_mappers.
+
+    Args:
+        name (str): the name of the type of component this decorator will define
+        shared (bool): should the component be used outside its defining module
+        cluster (bool): should the component run for multi-node archives
+        emitter (bool): the components returns make_response(...)
+
+    Returns:
+        A decorator function for a given type of component
+    """
+
+    def decorator(requires=None, optional=None):
+        is_shared = shared
+
+        def _f(func):
+            @wraps(func)
+            def __f(local, shared):
+                missing_requirements = get_missing_requirements(requires, shared)
+                if not requires or not missing_requirements:
+                    if cluster:
+                        return func(box(local), shared)
+                    else:
+                        return func(local, shared)
+                else:
+                    log.debug("Component [%s] is missing requirements: %s",
+                              func.__module__,
+                              stringify_requirements(missing_requirements))
+                    if emitter:
+                        rule_name = ".".join([func.__module__, func.__name__])
+                        log.debug("Component %s is being skipped due to missing requirements", rule_name)
+                        return make_skip(rule_name,
+                                         reason="MISSING_REQUIREMENTS",
+                                         details=missing_requirements)
+            register_component(func, __f, decorator,
+                               requires=requires,
+                               optional=optional,
+                               shared=is_shared,
+                               cluster=cluster,
+                               emitter=emitter)
+            return func
+        return _f
+    if name:
+        decorator.__name__ = name
+    return decorator
+
+
+combiner = new_component_type("combiner", shared=True, cluster=False, emitter=False)
+""" The same as a shared reducer."""
+
+cluster_rule = new_component_type("cluster_reducer", shared=False, cluster=True, emitter=True)
+""" A cluster reducer."""
+
+rule = new_component_type("rule", shared=False, cluster=False, emitter=True)
+""" A regular, non-cluster reducer."""
+
+condition = new_component_type("condition", shared=True, cluster=False, emitter=False)
+""" A component used within rules that allows statistical analysis."""
+
+incident = new_component_type("incident", shared=True, cluster=False, emitter=False)
+""" A component used within rules that allows statistical analysis."""
+
+
+def reducer(requires=None, optional=None, cluster=False, shared=False):
+    """ Helper for backward compatibility with existing rule declarations. """
+
+    def _f(func):
+        if cluster:
+            return cluster_rule(requires, optional)(func)
+        if shared:
+            return combiner(requires, optional)(func)
+        return rule(requires, optional)(func)
+    return _f
 
 
 def make_skip(rule_fqdn, reason, details=None):

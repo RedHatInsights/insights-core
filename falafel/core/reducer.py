@@ -81,31 +81,40 @@ def collect_results_multi(results_dict):
     return combined_local_output, combined_shared_output
 
 
-def run_multi(mapper_output, error_handler, reducers=plugins.CLUSTER_REDUCERS, reducer_stats=None, ):
+def run_multi(mapper_output, all_output, error_handler, reducers=plugins.CLUSTER_REDUCERS, reducer_stats=None, ):
     logger.debug("Multi-node reducer run started")
     if reducers != plugins.CLUSTER_REDUCERS:
         log_reducers(reducers)
     plugin_output, shared_output = collect_results_multi(mapper_output)
     for func, r in _run(reducers, plugin_output, shared_output, error_handler, reducer_stats=reducer_stats):
         yield func, r
+    all_output.update(mapper_output)
+    all_output.update(shared_output)
 
 
 def run(mapper_output, error_handler):
     logger.debug("Batch-mode reducer run started")
     for host, mapper_dict in mapper_output.iteritems():
-        for func, r in run_host(mapper_dict, error_handler):
+        for func, r in run_host(mapper_dict, {}, error_handler):
             yield host, func, r
 
 
-def run_host(mapper_dict, error_handler, reducers=plugins.REDUCERS, reducer_stats=None):
+def run_host(mapper_dict, all_output, error_handler, reducers=plugins.REDUCERS, reducer_stats=None):
     logger.debug("Single-node reducer run started")
     if reducers != plugins.REDUCERS:
         log_reducers(reducers)
-    plugin_output, shared_output = collect_results(mapper_dict)
-    for func, r in _run(reducers, plugin_output, shared_output, error_handler,
+    local_output, shared_output = collect_results(mapper_dict)
+
+    all_output.update(mapper_dict)
+    for func, r in _run(reducers, local_output, shared_output, error_handler,
                         output_dict=mapper_dict, reducer_stats=reducer_stats):
         yield func, r
-    for func, r in default_reducer_results(plugin_output):
+    items = list(default_reducer_results(local_output))
+#    for func, r in default_reducer_results(local_output):
+#        yield func, r
+    all_output.update(shared_output)
+    all_output.update(dict(items))
+    for func, r in items:
         yield func, r
 
 
@@ -127,21 +136,19 @@ def log_mapper_outputs(func, local_output, shared_output):
     logger.debug("\tShared mapper outputs: %s", mapper_outputs)
 
 
-def run_order(reducers):
-    """ Returns reducers in the order they should be run so that
-    dependencies among reducers are met.
+def run_order(components):
+    """ Returns components in the order they should be run so that
+    dependencies among components are met.
     """
 
     graph = {}
-    for r in reducers:
-        graph[r] = r._requires
+    for c in components:
+        graph[c] = plugins.COMPONENT_DEPENDENCIES[c]
     ordered = toposort.toposort_flatten(graph)
-    for o in ordered:
-        if o._reducer:
-            yield o
+    return [o for o in ordered if o._reducer]
 
 
-def _run(reducers, plugin_output, shared_output, error_handler, output_dict=None, reducer_stats=None):
+def _run(reducers, local_output, shared_output, error_handler, output_dict=None, reducer_stats=None):
     clustered = any(r.cluster for r in reducers.values())
     for func in run_order(reducers.values()):
 
@@ -152,21 +159,20 @@ def _run(reducers, plugin_output, shared_output, error_handler, output_dict=None
         if clustered and func.shared and not func.cluster:
             continue
         real_module = sys.modules[func.__module__]
-        local_output = plugin_output[real_module]
-        log_mapper_outputs(func, local_output, shared_output)
-        r = run_reducer(func, local_output, shared_output, error_handler, reducer_stats=reducer_stats)
+        local = local_output[real_module]
+        log_mapper_outputs(func, local, shared_output)
+        r = run_reducer(func, local, shared_output, error_handler, reducer_stats=reducer_stats)
         if r:
+            shared_output[func] = r
             logger.debug("Reducer output: %s", r)
-            if func.shared:
-                shared_output[func] = r
-                if output_dict:
-                    output_dict[func] = r
+            if func.shared and output_dict:
+                output_dict[func] = r
             else:
                 yield func, r
 
 
-def default_reducer_results(plugin_output):
-    for module, output in plugin_output.iteritems():
+def default_reducer_results(local_output):
+    for module, output in local_output.iteritems():
         if "type" in output and output["type"] in ["metadata", "rule"]:
             yield plugins.PLUGINS[module.__name__]["mappers"][0], output
 
@@ -175,7 +181,7 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
     try:
         if reducer_stats:
             reducer_stats['count'] += 1
-        return plugins.REDUCER_DELEGATES[func](local=local, shared=shared)
+        return plugins.DELEGATES[func](local=local, shared=shared)
     except Exception as e:
         if reducer_stats:
             reducer_stats['fail'] += 1
