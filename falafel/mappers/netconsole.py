@@ -1,15 +1,38 @@
-from .. import get_active_lines, mapper, Mapper, LegacyItemAccess
+'''
+NetConsole - file ``/etc/sysconfig/netconsole``
+===============================================
+
+This mapper reads the ``/etc/sysconfig/netconsole`` file.  It uses the
+``SysconfigOptions`` mapper class to convert the file into a dictionary of
+options.
+
+Sample data::
+
+    # This is the configuration file for the netconsole service.  By starting
+    # this service you allow a remote syslog daemon to record console output
+    # from this system.
+
+    # The local port number that the netconsole module will use
+    LOCALPORT=6666
+
+
+Examples:
+
+    >>> config = shared[NetConsole]
+    >>> 'LOCALPORT' in config.data
+    True
+    >>> 'DEV' in config # Direct access to options
+    False
+
+'''
+
+from .. import mapper, SysconfigOptions, LegacyItemAccess
 
 
 @mapper('netconsole')
-class NetConsole(LegacyItemAccess, Mapper):
-
-    def parse_content(self, content):
-        result = {}
-        for line in get_active_lines(content):
-            if '=' in line:
-                k, v = line.split('=')
-                k = k.strip()
-                v = v.split('#', 1)[0].strip()
-                result[k] = v
-        self.data = result
+class NetConsole(SysconfigOptions, LegacyItemAccess):
+    '''
+    Contents of the ``/etc/sysconfig/netconsole`` file.  Uses the
+    ``SysconfigOptions`` shared mapper class.
+    '''
+    pass
