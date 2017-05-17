@@ -1,5 +1,5 @@
 from falafel import tests
-from falafel.core import load_package
+from falafel.core.plugins import load
 from itertools import islice
 import pytest
 
@@ -18,7 +18,7 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
         if type(package_names) not in (list, tuple):
             package_names = [package_names]
         for package_name in package_names:
-            load_package(package_name, pattern=pattern)
+            load(package_name, pattern)
         args = []
         ids = []
         slow_mode = pytest.config.getoption("--runslow")
