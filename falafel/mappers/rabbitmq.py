@@ -117,7 +117,7 @@ class RabbitMQReport(Mapper):
             self.result = None
 
 
-@mapper("rabbitmq_report", ["total_limit"])
+@mapper("rabbitmq_report")
 def fd_total_limit(context):
     """Deprecated, do not use."""
     for line in context.content:
@@ -127,7 +127,7 @@ def fd_total_limit(context):
                 return int(line_splits[2])
 
 
-@mapper("rabbitmq_report", ["total_limit"])
+@mapper("rabbitmq_report")
 class RabbitMQFileDescriptors(Mapper):
 
     NO_VALUE = -1

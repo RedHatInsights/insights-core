@@ -339,10 +339,14 @@ class InputData(object):
         the_clone.name = name
         return the_clone
 
-    def add(self, target, content, path=None):
+    def add(self, target, content, path=None, do_filter=True):
         if not path:  # path must change to allow mappers to fire
             path = str(next_gn()) + "BOGUS"
-        ctx = Context(content="\n".join(make_iter(content)),
+        if do_filter:
+            content_iter = mapper.filter_lines(make_iter(content), target)
+        else:
+            content_iter = make_iter(content)
+        ctx = Context(content="\n".join(content_iter),
                       release=self.release,
                       version=self.version,
                       path=path,

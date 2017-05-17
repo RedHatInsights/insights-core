@@ -63,7 +63,7 @@ Examples:
 from .. import Scannable, mapper
 
 
-@mapper('lsof')
+@mapper('lsof', ['COMMAND'])
 class Lsof(Scannable):
     """
     A parser for the output of ``/usr/sbin/lsof`` - determines the column
