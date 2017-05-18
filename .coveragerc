@@ -5,6 +5,7 @@ omit = falafel/contrib/*
        # Exclude test files from coverage.
        falafel/tests/*
        falafel/mappers/tests/*
+branch = True
 
 [report]
 show_missing = True
