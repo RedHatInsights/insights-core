@@ -224,7 +224,6 @@ static_specs = {
     "ntpq_leap"                 : CommandSpec("/usr/sbin/ntpq -c 'rv 0 leap'"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
     "ntptime"                   : CommandSpec("/usr/sbin/ntptime"),
-    "openshift_certificates"    : CommandSpec("/usr/bin/openssl x509 -noout -enddate -in {crt}", crt=r"\S+"),
     "openvswitch_server_log"    : SimpleFileSpec('var/log/openvswitch/ovsdb-server.log'),
     "openvswitch_daemon_log"    : SimpleFileSpec('var/log/openvswitch/ovs-vswitchd.log'),
     "os-release"                : SimpleFileSpec("etc/os-release"),
@@ -376,7 +375,6 @@ pre_commands = {
     "module": "/bin/ls /sys/module",
     "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
     "ceph_osd_ec_profile_ls ": "/usr/bin/ceph osd erasure-code-profile ls",
-    "crt": "/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'",
     "md5chk_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
     "semid": "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'"
 }
