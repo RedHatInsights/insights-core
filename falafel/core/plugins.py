@@ -418,7 +418,12 @@ def register_component(
         register_consumer(component)
 
 
-def new_component_type(name=None, shared=True, cluster=False, emitter=False):
+def new_component_type(name=None,
+                       auto_requires=[],
+                       auto_optional=[],
+                       shared=True,
+                       cluster=False,
+                       emitter=False):
     """
     Factory that creates component decorators.
 
@@ -426,17 +431,29 @@ def new_component_type(name=None, shared=True, cluster=False, emitter=False):
     rules, cluster rules, etc. They don't yet define mappers or cluster_mappers.
 
     Args:
-        name (str): the name of the type of component this decorator will define
-        shared (bool): should the component be used outside its defining module
-        cluster (bool): should the component run for multi-node archives
-        emitter (bool): the components returns make_response(...)
+        name (str): the name of the component type the produced decorator
+            will define
+        auto_requires (list): All decorated components automatically have
+            this requires spec. Anything specified when decorating a component
+            is added to this spec.
+        auto_optional (list): All decorated components automatically have
+            this optional spec. Anything specified when decorating a component
+            is added to this spec.
+        shared (bool): the component should be used outside its defining module?
+        cluster (bool): the component should be run for multi-node archives?
+        emitter (bool): the components returns make_response(...)?
 
     Returns:
-        A decorator function for a given type of component
+        A decorator function used to define components of the new type
     """
 
     def decorator(requires=None, optional=None):
         is_shared = shared
+        requires = requires or []
+        optional = optional or []
+
+        requires.extend(auto_requires)
+        optional.extend(auto_optional)
 
         def _f(func):
             @wraps(func)
