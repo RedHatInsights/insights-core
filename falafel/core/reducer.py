@@ -167,7 +167,7 @@ def _run(reducers, local_output, shared_output, error_handler, output_dict=None,
             logger.debug("Reducer output: %s", r)
             if func.shared and output_dict:
                 output_dict[func] = r
-            else:
+            if func in plugins.EMITTERS:
                 yield func, r
 
 
