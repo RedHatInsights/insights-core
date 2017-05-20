@@ -1,20 +1,34 @@
+"""
+lvm mapper
+==========
+Mappers for lvm data based on output of various commands and file contents.
+
+This module contains the classes that parse the output of the commands `lvs`,
+`pvs`, and `vgs`, and the contents of the file `/etc/lvm/lvm.conf`.
+"""
 import json
 from ..util import parse_keypair_lines
 from .. import Mapper, mapper, parse_table, get_active_lines, LegacyItemAccess
+from . import parse_fixed_table
 
 
 def map_keys(pvs, keys):
+    """
+    Add human readable key names to dictionary while leaving any existing key names.
+    """
     rs = []
     for pv in pvs:
         r = {v: None for k, v in keys.iteritems()}
         for k, v in pv.iteritems():
             if k in keys:
                 r[keys[k]] = v
+            r[k] = v
         rs.append(r)
     return rs
 
 
 def replace_spaces_in_keys(header):
+    """Replaces spaces in key values with `_`."""
     for k in KEYS_WITH_SPACES:
         if k in header:
             header = header.replace(k, k.replace(" ", "_"))
@@ -22,6 +36,7 @@ def replace_spaces_in_keys(header):
 
 
 def find_warnings(content):
+    """Look for lines containing warning/error/info strings instead of data."""
     keywords = [k.lower() for k in [
         "WARNING", "Couldn't find device", "Configuration setting",
         "read failed", "Was device resized?", "Invalid argument",
@@ -37,11 +52,31 @@ def find_warnings(content):
     ]]
     for l in content:
         lower = l.strip().lower()
-        if any(k in lower for k in keywords):
-            yield l
+        # Avoid hitting keywords inside the data
+        if not lower.startswith('lvm2'):
+            if any(k in lower for k in keywords):
+                yield l
+
+
+class LvmHeadings(Mapper):
+    """Base class for parsing LVM data in table format."""
+
+    def parse_content(self, content):
+        pass
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, item):
+        if isinstance(item, int):
+            return self.data[item]
 
 
 class Lvm(Mapper):
+    """Base class for parsing LVM data in key=value format."""
 
     def parse_content(self, content):
         d = {"warnings": set(find_warnings(content))}
@@ -67,44 +102,45 @@ class Lvm(Mapper):
 
     @property
     def locking_disabled(self):
+        """bool: Returns True if any lines in input data indicate locking is disabled."""
         return len([l for l in self.data["warnings"] if "Locking disabled" in l]) > 0
 
     @property
     def warnings(self):
+        """list: Returns a list of lines from input data containing
+            warning/error/info strings.
+        """
         return self.data["warnings"]
 
 
-@mapper('pvs')
 @mapper('pvs_noheadings')
 class Pvs(Lvm):
     """
     The CommandSpec of "pvs" defined as:
-    /sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all
+    `/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all`
 
     Parse each line in the output of pvs based on the CommandSpec of "pvs" in
-    specs.py:
-    ---------------- Output sample of pvs ---------------
+    `specs.py` Output sample of pvs::
 
-    LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='500.00m'|...
-    LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl'|LVM2_DEV_SIZE='476.45g'|...
+        LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='500.00m'|...
+        LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl'|LVM2_DEV_SIZE='476.45g'|...
 
-    -----------------------------------------------------
+    Returns a list like::
 
-    - Returns a list like:
-    [
-        {
-            'LVM2_PV_FMT'    : '',
-            'LVM2_PV_UUID'    : '',
-            'LVM2_DEV_SIZE'   : '500.00m',
-            ...
-        },
-        {
-            'LVM2_PV_FMT'    : 'lvm2',
-            'LVM2_PV_UUID'    : 'JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl',
-            'LVM2_DEV_SIZE'   : '476.45g',
-            ...
-        }
-    ]
+        [
+            {
+                'LVM2_PV_FMT'    : '',
+                'LVM2_PV_UUID'    : '',
+                'LVM2_DEV_SIZE'   : '500.00m',
+                ...
+            },
+            {
+                'LVM2_PV_FMT'    : 'lvm2',
+                'LVM2_PV_UUID'    : 'JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl',
+                'LVM2_DEV_SIZE'   : '476.45g',
+                ...
+            }
+        ]
     """
     KEYS = {
         "LVM2_PV_MDA_USED_COUNT": "#PMdaUse",
@@ -138,37 +174,96 @@ class Pvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
-@mapper('vgs')
+@mapper('pvs')
+class PvsHeadings(LvmHeadings):
+    """
+    Parses the output of the command
+    `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"`.
+
+    Sample input::
+
+          WARNING: Locking disabled. Be careful! This could corrupt your metadata.
+            Scanning all devices to update lvmetad.
+            No PV label found on /dev/loop0.
+            No PV label found on /dev/loop1.
+            No PV label found on /dev/sda1.
+            No PV label found on /dev/fedora/root.
+            No PV label found on /dev/sda2.
+            No PV label found on /dev/fedora/swap.
+            No PV label found on /dev/fedora/home.
+            No PV label found on /dev/mapper/docker-253:1-2361272-pool.
+            Wiping internal VG cache
+            Wiping cache of LVM-capable devices
+          PV                                                    VG     Fmt  Attr PSize   PFree DevSize PV UUID                                PMdaFree  PMdaSize  #PMda #PMdaUse PE
+          /dev/fedora/home                                                  ---       0     0  418.75g                                               0         0      0        0      0
+          /dev/fedora/root                                                  ---       0     0   50.00g                                               0         0      0        0      0
+          /dev/fedora/swap                                                  ---       0     0    7.69g                                               0         0      0        0      0
+          /dev/loop0                                                        ---       0     0  100.00g                                               0         0      0        0      0
+          /dev/loop1                                                        ---       0     0    2.00g                                               0         0      0        0      0
+          /dev/mapper/docker-253:1-2361272-pool                             ---       0     0  100.00g                                               0         0      0        0      0
+          /dev/mapper/luks-7430952e-7101-4716-9b46-786ce4684f8d fedora lvm2 a--  476.45g 4.00m 476.45g FPLCRf-d918-LVL7-6e3d-n3ED-aiZv-EesuzY        0   1020.00k     1        1 121970
+          /dev/sda1                                                         ---       0     0  500.00m                                               0         0      0        0      0
+          /dev/sda2                                                         ---       0     0  476.45g                                               0         0      0        0      0
+            Reloading config files
+            Wiping internal VG cache
+
+    Attributes:
+        data (list): List of dicts, each dict containing one row of the table
+            with column headings as keys.
+
+    Examples:
+        >>> pvs_data = shared[PvsHeadings]
+        >>> pvs_data[0]
+        {'PV': '/dev/fedora/home', 'VG': '', 'Fmt': '', 'Attr': '---', 'PSize': '0',
+         'PFree': '0', 'DevSize': '418.75g', 'PV_UUID': '', 'PMdaFree': '0',
+         'PMdaSize': '0', '#PMda': '0', '#PMdaUse': '0', 'PE': '0'}
+        >>> pvs_data[0]['PV']
+        '/dev/fedora/home'
+
+    """
+    PRIMARY_KEY = Pvs.PRIMARY_KEY
+
+    def parse_content(self, content):
+        self.data = parse_fixed_table(content,
+                                      heading_ignore=['PV '],
+                                      header_substitute=[('PV UUID', 'PV_UUID'),
+                                                         ('1st PE', '1st_PE')],
+                                      trailing_ignore=['Reloading', 'Wiping'])
+        self.data = map_keys(self.data, Pvs.KEYS)
+
+    def vg(self, name):
+        """Return all physical volumes assigned to the given volume group"""
+        return [i for i in self.data if i["VG"] == name]
+
+
 @mapper('vgs_noheadings')
 class Vgs(Lvm):
     """
     The CommandSpec of "vgs" defined as:
-    /sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all
+    `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all`
 
     Parse each line in the output of vgs based on the CommandSpec of "vgs" in
-    specs.py:
-    ---------------- Output sample of vgs ---------------
+    `specs.py` Output sample of vgs::
 
-    LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|...
-    LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG_NAME='fedora'|LVM2_VG_ATTR='wz--n-'|...
+        LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|...
+        LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG_NAME='fedora'|LVM2_VG_ATTR='wz--n-'|...
 
-    -----------------------------------------------------
+    Returns a list like::
 
-    - Returns a list like:
-    [
-        {
-            'LVM2_PV_FMT'    : 'lvm2',
-            'LVM2_VG_UUID'    : 'YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx',
-            'LVM2_VG_NAME'   : 'rhel',
-            ...
-        },
-        {
-            'LVM2_PV_FMT'    : 'lvm2',
-            'LVM2_VG_UUID'    : '123456-LEly-THGL-YXhC-t3q6-mUQV-123456',
-            'LVM2_VG_NAME'   : 'fedora',
-            ...
-        }
-    ]
+        [
+            {
+                'LVM2_PV_FMT'    : 'lvm2',
+                'LVM2_VG_UUID'    : 'YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx',
+                'LVM2_VG_NAME'   : 'rhel',
+                ...
+            },
+            {
+                'LVM2_PV_FMT'    : 'lvm2',
+                'LVM2_VG_UUID'    : '123456-LEly-THGL-YXhC-t3q6-mUQV-123456',
+                'LVM2_VG_NAME'   : 'fedora',
+                ...
+            }
+        ]
     """
     KEYS = {
         "LVM2_VG_EXTENDABLE": "Extendable",
@@ -208,38 +303,78 @@ class Vgs(Lvm):
     PRIMARY_KEY = "VG"
 
 
-@mapper('lvs')
+@mapper('vgs')
+class VgsHeadings(LvmHeadings):
+    """
+    Parses output of the command
+    `vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"`
+
+    Sample input::
+
+          WARNING: Locking disabled. Be careful! This could corrupt your metadata.
+            Using volume group(s) on command line.
+          VG            Attr   Ext   #PV #LV #SN VSize   VFree    VG UUID                                VProfile #VMda VMdaFree  VMdaSize  #VMdaUse VG Tags
+          DATA_OTM_VG   wz--n- 4.00m   6   1   0   2.05t 1020.00m xK6HXk-xl2O-cqW5-2izb-LI9M-4fV0-dAzfcc              6   507.00k  1020.00k        6
+          ITM_VG        wz--n- 4.00m   1   1   0  16.00g    4.00m nws5dd-INe6-1db6-9U1N-F0G3-S1z2-5XTdO4              1   508.00k  1020.00k        1
+          ORABIN_OTM_VG wz--n- 4.00m   2   3   0 190.00g       0  hfJwg8-hset-YgUY-X6NJ-gkWE-EunZ-KuCXGP              2   507.50k  1020.00k        2
+          REDO_OTM_VG   wz--n- 4.00m   1   3   0  50.00g       0  Q2YtGy-CWKU-sEYj-mqHk-rbdP-Hzup-wi8jsf              1   507.50k  1020.00k        1
+          SWAP_OTM_VG   wz--n- 4.00m   1   1   0  24.00g    8.00g hAerzZ-U8QU-ICkc-xxCj-N2Ny-rWzq-pmTpWJ              1   508.00k  1020.00k        1
+          rootvg        wz--n- 4.00m   1   6   0  19.51g    1.95g p4tLLb-ikeo-Ankk-2xJ6-iHYf-D4E6-KFCFvr              1   506.50k  1020.00k        1
+            Reloading config files
+            Wiping internal VG cache
+
+    Attributes:
+        data (list): List of dicts, each dict containing one row of the table
+            with column headings as keys.
+
+    Examples:
+        >>> vgs_info = shared[VgsHeadings]
+        >>> vgs_info.data[0]
+        {}
+        >>> vgs_info.data[2]['LSize']
+        '2.00g'
+    """
+    PRIMARY_KEY = Vgs.PRIMARY_KEY
+
+    def parse_content(self, content):
+        self.data = parse_fixed_table(content,
+                                      heading_ignore=['VG '],
+                                      header_substitute=[('VG Tags', 'VG_Tags'),
+                                                         ('VG UUID', 'VG_UUID')],
+                                      trailing_ignore=['Reloading', 'Wiping'])
+        self.data = map_keys(self.data, Vgs.KEYS)
+
+
 @mapper('lvs_noheadings')
 class Lvs(Lvm):
     """
     The CommandSpec of "lvs" defined as:
-    /sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all
+    `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all`
 
     Parse each line in the output of lvs based on the CommandSpec of "lvs" in
-    specs.py:
+    `specs.py`:
 
-    ---------------------------------- Output sample of lvs -----------------------------------
+    Output sample of lvs::
 
-    LVM2_LV_UUID='KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m'|LVM2_LV_NAME='docker-poolmeta'|LVM2_LV_FULL_NAME='rhel/docker-poolmeta'|...
-    LVM2_LV_UUID='123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456'|LVM2_LV_NAME='rhel_root'|LVM2_LV_FULL_NAME='rhel/rhel_root'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|...
+        LVM2_LV_UUID='KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m'|LVM2_LV_NAME='docker-poolmeta'|LVM2_LV_FULL_NAME='rhel/docker-poolmeta'|...
+        LVM2_LV_UUID='123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456'|LVM2_LV_NAME='rhel_root'|LVM2_LV_FULL_NAME='rhel/rhel_root'|LVM2_LV_PATH='/dev/rhel/docker-poolmeta'|...
 
-    -------------------------------------------------------------------------------------------
+    Return a list, as shown below::
 
-    Return a list, as shown below:
-    [
-        {
-            'LVM2_LV_UUID'      : 'KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m',
-            'LVM2_LV_NAME'      : 'docker-poolmeta',
-            'LVM2_LV_FULL_NAME'   : 'rhel/docker-poolmeta',
-            ...
-        },
-        {
-            'LVM2_LV_UUID'      : '123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456',
-            'LVM2_LV_NAME'      : 'rhel_root',
-            'LVM2_LV_FULL_NAME'   : 'rhel/rhel_root',
-            ...
-        }
-    ]
+        [
+            {
+                'LVM2_LV_UUID'      : 'KX68JI-8ISN-YedH-ZYDf-yZbK-zkqE-3aVo6m',
+                'LVM2_LV_NAME'      : 'docker-poolmeta',
+                'LVM2_LV_FULL_NAME'   : 'rhel/docker-poolmeta',
+                ...
+            },
+            {
+                'LVM2_LV_UUID'      : '123456-8ISN-YedH-ZYDf-yZbK-zkqE-123456',
+                'LVM2_LV_NAME'      : 'rhel_root',
+                'LVM2_LV_FULL_NAME'   : 'rhel/rhel_root',
+                ...
+            }
+        ]
     """
     KEYS = {
         "LVM2_POOL_LV_UUID": "Pool_UUID",
@@ -323,7 +458,7 @@ class Lvs(Lvm):
         "LVM2_DATA_LV": "Data",
         "LVM2_CACHE_READ_MISSES": "CacheReadMisses",
         "LVM2_LV_DESCENDANTS": "Descendants",
-        "LVM2_REGIONSIZE": "Region"
+        "LVM2_REGION_SIZE": "Region"
     }
 
     PRIMARY_KEY = "LV"
@@ -343,6 +478,47 @@ class Lvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
+@mapper('lvs')
+class LvsHeadings(LvmHeadings):
+    """
+    Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
+
+    Sample Input data::
+
+        WARNING: Locking disabled. Be careful! This could corrupt your metadata.
+        LV          VG      Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert LV Tags Devices
+        lv_app      vg_root -wi-ao---- 71.63g                                                             /dev/sda2(7136)
+        lv_home     vg_root -wi-ao----  2.00g                                                             /dev/sda2(2272)
+        lv_opt      vg_root -wi-ao----  5.00g                                                             /dev/sda2(2784)
+        lv_root     vg_root -wi-ao----  5.00g                                                             /dev/sda2(0)
+        lv_tmp      vg_root -wi-ao----  1.00g                                                             /dev/sda2(4064)
+        lv_usr      vg_root -wi-ao----  5.00g                                                             /dev/sda2(4320)
+        lv_usrlocal vg_root -wi-ao----  1.00g                                                             /dev/sda2(5600)
+        lv_var      vg_root -wi-ao----  5.00g                                                             /dev/sda2(5856)
+        swap        vg_root -wi-ao----  3.88g                                                             /dev/sda2(1280)
+
+    Attributes:
+        data (list): List of dicts, each dict containing one row of the table
+            with column headings as keys.
+
+    Examples:
+        >>> lvs_info = shared[LvsHeadings]
+        >>> lvs_info.data[0]
+        {'LV': 'lv_app', 'VG': 'vg_root', 'Attr': '-wi-ao----', 'LSize': '71.63',
+         'Pool': '', 'Origin': '', 'Data%': '', 'Meta%': '', 'Move': '', 'Log': '',
+         'Cpy%Sync': '', 'Convert': '', 'LV_Tags': '', 'Devices': '/dev/sda2(7136)'}
+        >>> lvs_info.data[2]['LSize']
+        '2.00g'
+    """
+    PRIMARY_KEY = Lvs.PRIMARY_KEY
+
+    def parse_content(self, content):
+        self.data = parse_fixed_table(content,
+                                      heading_ignore=['LV '],
+                                      header_substitute=[('LV Tags', 'LV_Tags')])
+        self.data = map_keys(self.data, Lvs.KEYS)
+
+
 KEYS_WITH_SPACES = []
 for cls in (Lvs, Pvs, Vgs):
     KEYS_WITH_SPACES.extend([k for k in cls.KEYS.values() if " " in k])
@@ -357,6 +533,31 @@ LVM_CONF_FILTERS = [
 
 @mapper('lvm.conf', LVM_CONF_FILTERS)
 class LvmConf(LegacyItemAccess, Mapper):
+    """
+    Parses contents of the `/etc/lvm/lvm.conf` file.
+
+    Sample Input::
+
+        locking_type = 1
+        #locking_type = 2
+        # volume_list = [ "vg1", "vg2/lvol1", "@tag1", "@*" ]
+        volume_list = [ "vg2", "vg3/lvol3", "@tag2", "@*" ]
+        # filter = [ "a|loop|", "r|/dev/hdc|", "a|/dev/ide|", "r|.*|" ]
+
+        filter = [ "r/sda[0-9]*$/",  "a/sd.*/" ]
+        filter = [ "a/sda[0-9]*$/",  "r/sd.*/" ]
+        shell {
+            history_size = 100
+        }
+
+    Examples:
+        >>> lvm_conf_data = shared[LvmConf]
+        >>> lvm_conf_data.data
+        {"locking_type": 1, "volume_list": ["vg1", "vg2/lvol1", "@tag1", "@*"],
+         "filter": ["a/sda[0-9]*$/", "r/sd.*/"], "history_size": 100}
+        >>> lvm_conf_data.get("locking_type")
+        1
+    """
 
     def parse_content(self, content):
         """
