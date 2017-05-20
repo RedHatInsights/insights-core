@@ -46,7 +46,7 @@ if __name__ == "__main__":
         version=package_info["VERSION"],
         description="Insights Application Programming Interface",
         packages=find_packages(),
-        package_data={"": package_info.keys() + ["*.json", "*.md", "*.html", "*.js", "*.yaml"]},
+        package_data={"": list(package_info) + ["*.json", "*.md", "*.html", "*.js", "*.yaml"]},
         install_requires=list(runtime),
         extras_require={
             'develop': list(runtime | develop),
