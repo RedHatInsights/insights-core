@@ -67,9 +67,3 @@ class Dcbtool(LegacyItemAccess, Mapper):
             self.data[key] = value.strip()
 
         self.is_on = (self.data['status'] == 'On')
-
-
-@mapper("dcbtool_gc_dcb")
-def dcbtool_gc_dcb(context):
-    """Deprecated, use the ``Dcbtool`` class instead."""
-    return Dcbtool(context).data
