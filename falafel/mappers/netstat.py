@@ -199,14 +199,6 @@ class NetstatS(LegacyItemAccess, Mapper):
         self.data[session] = first_layer
 
 
-@mapper('netstat-s')
-def get_netstat_s(context):
-    """
-    Deprecated, use ```NetstatS``` instead.
-    """
-    return NetstatS(context).data
-
-
 @mapper("netstat_-agn")
 class NetstatAGN(Mapper):
     """
