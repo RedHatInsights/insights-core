@@ -77,9 +77,3 @@ class HaproxyCfg(Mapper):
     """Class to parse file ``haproxy.cfg``."""
     def parse_content(self, content):
         self.data = _parse_content(content)
-
-
-@mapper('haproxy_cfg')
-def haproxy_cfg_parser(context):
-    """Deprecated, do not use."""
-    return _parse_content(context.content)
