@@ -18,19 +18,6 @@ Failed to connect to lldpad - clif_open: Connection refused
 """
 
 
-def test_dcbtool_gc_deprecated():
-    result = dcbtool_gc_dcb.dcbtool_gc_dcb(context_wrap(DCBTOOL_GC_OUTPUT))
-    assert len(result) == 5
-    assert result["command"] == "Get Config"
-    assert result["feature"] == "DCB State"
-    assert result["port"] == "eth0"
-    assert result["status"] == "Off"
-    assert result["dcbx_version"] == "FORCED CIN"
-
-    result = dcbtool_gc_dcb.dcbtool_gc_dcb(context_wrap(DCBTOOL_GC_DCB_FAILED))
-    assert len(result) == 0
-
-
 def test_dcbtool_gc():
     result = dcbtool_gc_dcb.Dcbtool(context_wrap(DCBTOOL_GC_OUTPUT))
     assert len(result.data) == 5
