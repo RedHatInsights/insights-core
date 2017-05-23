@@ -1,7 +1,7 @@
 from .. import IniConfigFile, mapper
 
 
-@mapper("samba")
+@mapper("samba", filters=["["])
 class SambaConfig(IniConfigFile):
     """
         smb.conf file mapper.
