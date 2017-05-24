@@ -18,11 +18,11 @@ phase).
 
 Clone the project::
 
-    git clone git@github.com:ansible/falafel.git
+    git clone git@github.com:RedHatInsights/falafel.git
 
 Or, alternatively, using HTTPS::
 
-    git clone https://github.com/ansible/falafel.git
+    git clone https://github.com/RedHatInsights/falafel.git
 
 Initialize a virtualenv::
 
@@ -48,7 +48,7 @@ If you wish to contribute to the falafel project you'll need to create a fork in
 
 2. Reference the original project as "upstream"::
 
-    git add remote upstream git@github.com:ansible/falafel.git
+    git add remote upstream git@github.com:RedHatInsights/falafel.git
 
 At this point, you would synchronize your fork with the upstream project
 using the following commands::
@@ -57,7 +57,7 @@ using the following commands::
     git push origin master
 
 You will need to initialize the project per the
-[readme.md](https://github.com/ansible/falafel/blob/master/README.md)
+[readme.md](https://github.com/RedHatInsights/falafel/blob/master/README.md)
 file.
 
 
