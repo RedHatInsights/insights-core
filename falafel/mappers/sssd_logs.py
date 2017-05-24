@@ -64,7 +64,7 @@ class SSSDLog(LogFileOutput):
                 ``keep_scan``
 
         Returns:
-            lines (list[dict]):
+            list[dict]:
 
                 A list of dictionaries corresponding to the data in
                 each line split into functional elements:
