@@ -75,8 +75,14 @@ from the current master branch of the upstream project.
    
        git checkout -b your-topic
    
-3. Make contributions on the topic branch.  Push them to your fork
-   (creating a remote topic branch on your fork)
+3. Make contributions on the topic branch.  This project uses the
+   [DCO](https://developercertificate.org/) to manage contributions. Commits
+   must be signed by you in order to be accepted. To sign a commit simply add
+   `-s` to the commit command.
+
+       git commit -s
+
+   Push commits to your fork (creating a remote topic branch on your fork)
 
        git push
 
