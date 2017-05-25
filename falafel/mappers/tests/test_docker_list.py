@@ -68,21 +68,3 @@ class Testdockerlist(unittest.TestCase):
         assert sorted(result.data.keys()) == sorted(['angry_saha', 'tender_rosalind'])
         assert result.data['angry_saha'] == result.rows[0]
         assert result.data['tender_rosalind'] == result.rows[1]
-
-    def test_docker_list_images_old(self):
-        result = docker_list.docker_list_images_parser(context_wrap(DOCKER_LIST_IMAGES))
-        assert result[0].get("REPOSITORY") == "rhel6_vsftpd"
-        assert result[0].get("CREATED") == "37 minutes ago"
-        assert result[0].get("VIRTUAL SIZE") == "459.5 MB"
-        assert result[1].get("REPOSITORY") == "<none>"
-        assert result[1].get("TAG") == "<none>"
-
-    def test_docker_list_containers_old(self):
-        result = docker_list.docker_list_containers_parser(context_wrap(DOCKER_LIST_CONTAINERS))
-        assert result[0].get("CONTAINER ID") == "03e2861336a76e29155836113ff6560cb70780c32f95062642993b2b3d0fc216"
-        assert result[0].get("COMMAND") == '"/usr/sbin/httpd -DFOREGROUND"'
-        assert result[1].get("COMMAND") == '"/bin/sh -c \'yum install -y vsftpd-2.2.2-6.el6\'"'
-        assert result[0].get("CREATED") == "45 seconds ago"
-        assert result[0].get("PORTS") == "0.0.0.0:8080->80/tcp"
-        assert result[1].get("PORTS") is None
-        assert result[0].get("SIZE") == "796 B (virtual 669.2 MB)"

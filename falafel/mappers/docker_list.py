@@ -51,10 +51,6 @@ Examples:
     >>> containers.data['tender_rosalind']['STATUS'] # keyed on NAMES
     'Exited (137) 50 minutes ago'
 
-Two helper functions, ``docker_list_images_parser`` and
-``docker_list_containers_parser``, exist to support previous users of docker
-list data.  These return just the list information, as that's what their
-reducers expected.
 """
 
 from .. import mapper, Mapper
@@ -130,25 +126,9 @@ class DockerListImages(DockerList):
     key_field = 'REPOSITORY'
 
 
-@mapper("docker_list_images")
-def docker_list_images_parser(context):
-    """
-    Deprecated: please use the DockerListImages mapper class.
-    """
-    return DockerListImages(context).rows
-
-
 @mapper("docker_list_containers")
 class DockerListContainers(DockerList):
     """
     Handle the list of docker images using the DockerList mapper class.
     """
     key_field = 'NAMES'
-
-
-@mapper("docker_list_containers")
-def docker_list_containers_parser(context):
-    """
-    Deprecated: please use the DockerListContainers mapper class.
-    """
-    return DockerListContainers(context).rows
