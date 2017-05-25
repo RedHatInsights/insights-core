@@ -130,7 +130,7 @@ class TarExtractor(Extractor):
             self._assert_type(path, False)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
-            command = "tar %s -x -f %s -C %s" % (tar_flag, path, self.tmp_dir)
+            command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
 
             logging.info("Extracting files in '%s'", self.tmp_dir)
             subproc.call(command, timeout=self.timeout)
