@@ -15,3 +15,4 @@ def test_mariadb_log():
     log = MariaDBLog(context_wrap(MARIADB_LOG))
     assert len(log.get("[Warning]")) == 1
     assert len(log.get("[Note]")) == 2
+    assert 'SSL_CTX_set_default_verify_paths' in log

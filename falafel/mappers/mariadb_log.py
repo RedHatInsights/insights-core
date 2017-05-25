@@ -1,6 +1,6 @@
 """
-mariadb.log - File /var/log/mariadb/mariadb.log
-===============================================
+MariaDBLog - File ``/var/log/mariadb/mariadb.log``
+==================================================
 
 Module for parsing the log file for MariaDB
 
@@ -21,6 +21,15 @@ Typical content of ``mariadb.log`` file is::
     161109 14:28:22 mysqld_safe Starting mysqld daemon with databases from /var/lib/mysql
     161109 14:28:22 mysqld_safe WSREP: Running position recovery with --log_error='/var/lib/mysql/wsrep_recovery.OkURTZ' --pid-file='/var/lib/mysql/overcloud-controller-0.localdomain-recover.pid'
     161109 14:28:22 [Warning] option 'open_files_limit': unsigned value 18446744073709551615 adjusted to 4294967295
+
+Examples:
+
+    >>> mdb = shared[MariaDBLog]
+    >>> mdb.get('mysqld_safe')
+    ['161109 14:28:22 mysqld_safe Starting mysqld daemon with databases from /var/lib/mysql',
+     "161109 14:28:22 mysqld_safe WSREP: Running position recovery with --log_error='/var/lib/mysql/wsrep_recovery.OkURTZ' --pid-file='/var/lib/mysql/overcloud-controller-0.localdomain-recover.pid'"]
+    >>> 'SSL_CTX_set_default_verify_paths' in mdb
+    True
 """
 
 from .. import LogFileOutput, mapper
