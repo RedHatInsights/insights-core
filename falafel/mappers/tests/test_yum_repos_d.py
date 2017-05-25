@@ -16,6 +16,7 @@ name=Red Hat Enterprise Linux $releasever Beta - $basearch - Source
 baseurl=ftp://ftp.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/,ftp://ftp2.redhat.com/pub/redhat/linux/beta/$releasever/en/os/SRPMS/
 enabled=0
 gpgcheck=1
+    0 # This should be ignored
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 '''
 
