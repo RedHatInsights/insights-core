@@ -41,15 +41,15 @@ class YumReposD(LegacyItemAccess, Mapper):
                 section_dict = {}
                 repos_dict[line[1:-1]] = section_dict
             elif '=' in line:
-                key, _, value = line.partition("=")
-                key = key.strip()
+                key, value = [s.strip() for s in line.split("=", 1)]
                 if key in ('baseurl', 'gpgkey'):
                     section_dict[key] = [v.strip() for v in value.split(",")]
                 else:
-                    section_dict[key] = value.strip()
+                    section_dict[key] = value
             else:
                 if key and isinstance(section_dict[key], list):
                     section_dict[key].extend(v.strip() for v in line.split(","))
+                # Otherwise ignore line if no key or we don't store multiple values
         self.data = repos_dict
 
     def __iter__(self):
