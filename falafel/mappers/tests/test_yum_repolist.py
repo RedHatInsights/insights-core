@@ -55,3 +55,7 @@ class test_bad(unittest.TestCase):
     def test_valueerror_in_parse(self):
         repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
         self.assertEqual(repo_list[0]['name'], '')
+
+    def test_invalid_get_type(self):
+        repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
+        self.assertIsNone(repo_list[YumRepoList])
