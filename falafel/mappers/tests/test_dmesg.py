@@ -1,4 +1,4 @@
-from falafel.mappers import dmesg
+from falafel.mappers.dmesg import DmesgLineList
 from falafel.tests import context_wrap
 
 MSGINFO = """
@@ -21,11 +21,11 @@ HP HPSA Driver (v 3.4.4-1-RH2)
 lo: Dropping TSO features since no CSUM feature duplicated.
 """.strip()
 
-dmesg.dmesg.filters.extend(["HPSA", "Dropping", "bonding:"])
+DmesgLineList.filters.extend(["HPSA", "Dropping", "bonding:"])
 
 
 def test_dmesg():
-    dmesg_info = dmesg.dmesg(context_wrap(MSGINFO))
+    dmesg_info = DmesgLineList(context_wrap(MSGINFO))
     assert dmesg_info.get("HPSA") == ['HP HPSA Driver (v 3.4.4-1-RH2)', 'HP HPSA Driver (v 3.4.4-1-RH2)', '[    8.687252] HP HPSA Driver (v 3.4.4-1-RH2) 2.5.0']
     assert len(dmesg_info.get("lo:")) == 2
     assert "Dropping" in dmesg_info
