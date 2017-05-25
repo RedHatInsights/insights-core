@@ -39,6 +39,9 @@ gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg
 enabled = 0
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 gpgcheck = 1
+
+[bad-repo]
+gpgkey =
 """
 
 
@@ -48,8 +51,6 @@ CONF_PATH = 'etc/yum.conf'
 def test_get_yum_conf():
     yum_conf = YumConf(context_wrap(YUM_CONF, path=CONF_PATH))
 
-    print 'main'
-    print yum_conf.items('main')
     assert yum_conf.items('main') == {
         'plugins': '1',
         'keepcache': '0',
@@ -62,8 +63,6 @@ def test_get_yum_conf():
         'logfile': '/var/log/yum.log'
     }
 
-    print 'rhel-7-server-rhn-tools-beta-debug-rpms'
-    print yum_conf.items('rhel-7-server-rhn-tools-beta-debug-rpms')
     assert yum_conf.items('rhel-7-server-rhn-tools-beta-debug-rpms') == {
          'ui_repoid_vars': 'basearch', 'sslverify': '1',
          'name': 'RHN Tools for Red Hat Enterprise Linux 7 Server Beta (Debug RPMs)',
