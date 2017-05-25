@@ -185,7 +185,8 @@ class SingleEvaluator(Evaluator):
                     self.handle_content_error(e, f)
                     continue
 
-                if len(content) == 1 and content[0] == "Command not found":
+                cmd_not_found_list = ["Command not found", "timeout: failed to run command"]
+                if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
                     continue
                 for plugin in plugins.get_mappers(symbolic_name):
                     unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
