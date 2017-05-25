@@ -54,19 +54,3 @@ class DmesgLineList(LogFileOutput):
             contains timestamps then these are considered to start the line.
         """
         return any(line.startswith(prefix) for line in self.lines)
-
-
-@mapper('dmesg')
-def dmesg(context):
-    """
-    Returns an object of DmesgLineList
-    """
-    return DmesgLineList(context)
-
-
-@mapper('vmcore-dmesg')
-def vmcore_dmesg(context):
-    """
-    Returns an object of DmesgLineList
-    """
-    return DmesgLineList(context)
