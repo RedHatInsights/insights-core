@@ -14,7 +14,7 @@ from falafel.util import make_iter
 
 # Need to change the name of TestArchive since pytest looks at it becuase it
 # starts with "Test"
-from falafel.archive.tool import TestArchive as TA, Transform as T
+from insights_archive.tool import TestArchive as TA, Transform as T
 
 logger = logging.getLogger("test.util")
 
