@@ -63,63 +63,6 @@ Another trailing line
     Yet yet another trailing line
 """.strip()
 
-FIXED_CONTENT_1 = """
-Column1    Column2    Column3
-data1      data 2     data   3
-     data4 data5      data6
-data     7            data   9
-""".strip()
-
-FIXED_CONTENT_1A = """
-    WARNING
-    Column1    Column2    Column3
-    data1      data 2     data   3
-         data4 data5      data6
-    data     7            data   9
-""".strip()
-
-FIXED_CONTENT_1B = """
-Column1    Column2    Column3
-data1      data 2
-data4      data5      data6
-  data   7            data   9
-""".strip()
-
-FIXED_CONTENT_2 = """
-WARNING WARNING WARNING
- Some message
-Another message
-Column1    Column2    Column3
-data1      data 2     data   3
-     data4 data5      data6
-data     7            data   9
-""".strip()
-
-FIXED_CONTENT_3 = """
-WARNING WARNING WARNING
- Some message
-Another message
-Column1    Column2    Column3
-data1      data 2     data   3
-     data4 data5      data6
-data     7            data   9
-Trailing non-data line
- Another trailing non-data line
-""".strip()
-
-FIXED_CONTENT_4 = """
-WARNING WARNING WARNING
- Some message
-Another message
-Column1    Column 2    Column 3
-data1      data 2      data   3
-     data4 data5       data6
-data     7             data   9
-data10
-Trailing non-data line
- Another trailing non-data line
-""".strip()
-
 
 def test_split_kv_pairs():
     kv_pairs = split_kv_pairs(SPLIT_TEST_1.splitlines())
@@ -203,6 +146,64 @@ def test_calc_offset():
                        invert_search=True) == 6
 
 
+FIXED_CONTENT_1 = """
+Column1    Column2    Column3
+data1      data 2     data   3
+     data4 data5      data6
+data     7            data   9
+""".strip()
+
+FIXED_CONTENT_1A = """
+    WARNING
+    Column1    Column2    Column3
+    data1      data 2     data   3
+         data4 data5      data6
+    data     7            data   9
+""".strip()
+
+FIXED_CONTENT_1B = """
+Column1    Column2    Column3
+data1      data 2
+data4      data5      data6
+  data   7            data   9
+""".strip()
+
+FIXED_CONTENT_2 = """
+WARNING WARNING WARNING
+ Some message
+Another message
+Column1    Column2    Column3
+data1      data 2     data   3
+     data4 data5      data6
+data     7            data   9
+""".strip()
+
+FIXED_CONTENT_3 = """
+WARNING WARNING WARNING
+ Some message
+Another message
+Column1    Column2    Column3
+data1      data 2     data   3
+     data4 data5      data6
+data     7            data   9
+Trailing non-data line
+ Another trailing non-data line
+""".strip()
+
+FIXED_CONTENT_4 = """
+WARNING WARNING WARNING
+ Some message
+Another message
+Column1    Column 2    Column 3
+data1      data 2      data   3
+     data4 data5       data6
+data     7             data   9
+data10
+Trailing non-data line
+ Another trailing non-data line
+""".strip()
+
+
 def test_parse_fixed_table():
     data = parse_fixed_table(FIXED_CONTENT_1.splitlines())
     assert len(data) == 3
@@ -245,3 +246,15 @@ def test_parse_fixed_table():
     assert data[1] == {'Column1': 'data4', 'Column_2': 'data5', 'Column_3': 'data6'}
     assert data[2] == {'Column1': 'data     7', 'Column_2': '', 'Column_3': 'data   9'}
     assert data[3] == {'Column1': 'data10', 'Column_2': '', 'Column_3': ''}
+
+    # Test that if we search for trailing data that is always found, then we
+    # should get the whole thing parsed as a table from the header line
+    data = parse_fixed_table(
+        ['foo' + line for line in FIXED_CONTENT_4.splitlines()],
+        heading_ignore=['fooColumn1 '],
+        header_substitute=[('fooColumn1', 'Column1'), ('Column 2', 'Column_2'), ('Column 3', 'Column_3')],
+        trailing_ignore=['foo']
+    )
+    assert len(data) == 6
+    assert data[4] == {'Column1': 'fooTrailing', 'Column_2': 'non-data li', 'Column_3': 'ne'}
+    assert data[5] == {'Column1': 'foo Another', 'Column_2': 'trailing no', 'Column_3': 'n-data line'}
