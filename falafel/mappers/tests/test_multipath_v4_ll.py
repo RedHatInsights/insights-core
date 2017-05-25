@@ -67,6 +67,8 @@ size=16G features='0' hwhandler='0' wp=rw
 | `- 3:0:0:1 sdb 8:16 active ready running
 `-+- policy='round-robin 0' prio=1 status=enabled
   `- 4:0:0:1 sdc 8:32 active ready running
+mpathc (test_with_no_devs) dm-1 uninitialized
+size=10G features='0' hwhandler='0' wp=rw
 """.strip()
 
 MULTIPATH_V4_LL_INFO_RHEL_5 = """
@@ -143,6 +145,94 @@ status = 2 0 1 0 2 1 A 0 2 0 8:64 A 0 65:48 A 0 E 0 2 0 8:144 A 0 8:224 A 0
 """
 
 
+def test_class_RHEL6():
+    mp = multipath_v4_ll.MultipathDevices(context_wrap(MULTIPATH_V4_LL_INFO))
+    assert len(mp.devices) == 7
+    assert mp.devices[0] == {
+        "alias": "mpathg",
+        "wwid": "36f01faf000da360b0000033c528fea6d",
+        "dm_name": "dm-2",
+        "venprod": "DELL,MD36xxi",
+        "size": "54T",
+        "features": "3 queue_if_no_path pg_init_retries 50",
+        "hwhandler": "1 rdac",
+        "wp": "rw",
+        "path_group": [{
+            "policy": "round-robin 0",
+            "prio": "0",
+            "status": "active",
+            "path": [
+                ['12:0:0:1', 'sdc', '8:32', 'active', 'ready', 'running'],
+                ['11:0:0:1', 'sdi', '8:128', 'active', 'ready', 'running'],
+                ['15:0:0:1', 'sdo', '8:224', 'active', 'ready', 'running'],
+                ['17:0:0:1', 'sdv', '65:80', 'active', 'ready', 'running']
+            ]
+        }, {
+            "policy": "round-robin 0",
+            "prio": "0",
+            "status": "enabled",
+            "path": [
+                ['13:0:0:1', 'sdf', '8:80', 'active', 'ready', 'running'],
+                ['14:0:0:1', 'sdl', '8:176', 'active', 'ready', 'running'],
+                ['16:0:0:1', 'sdr', '65:16', 'active', 'ready', 'running'],
+                ['18:0:0:1', 'sdx', '65:112', 'active', 'ready', 'running']
+            ]
+        }]
+    }
+    assert mp.devices[0].get('size') == '54T'
+    assert mp.devices[1].get('path_group') == [{
+        "policy": "round-robin 0",
+        "prio": "1",
+        "status": "active",
+        "path": [
+            ['12:0:0:2', 'sdc', '8:32', 'active', 'ready', 'running'],
+            ['11:0:0:2', 'sdi', '8:128', 'active', 'ready', 'running'],
+            ['15:0:0:2', 'sdo', '8:224', 'active', 'ready', 'running'],
+            ['17:0:0:2', 'sdv', '65:80', 'active', 'ready', 'running']
+        ]
+    }, {
+        "policy": "round-robin 0",
+        "prio": "1",
+        "status": "enabled",
+        "path": [
+            ['13:0:0:2', 'sdf', '8:80', 'active', 'ready', 'running'],
+            ['14:0:0:2', 'sdl', '8:176', 'active', 'ready', 'running'],
+            ['16:0:0:2', 'sdr', '65:16', 'active', 'ready', 'running'],
+            ['18:0:0:2', 'sdx', '65:112', 'active', 'ready', 'running']
+        ]
+    }]
+    assert mp.devices[2].get('hwhandler') == "0"
+    assert mp.devices[3].get('alias') == "mpatha"
+    assert mp.devices[4].get('wwid') == "1IET     00080001"
+    assert mp.devices[5].get('venprod') == "COMPELNT,Compellent Vol"
+    assert mp.devices[5].get('dm_name') == "dm-8"
+    assert mp.devices[6].get('venprod') == "COMPELNT,Compellent Vol"
+    assert mp.devices[6].get('dm_name') == "dm-19"
+    # Note that there's no data for the made-up 'mpathc', since there's no
+    # path group information and only devices with path group information
+    # get saved.
+    assert mp.dms == ['dm-2', 'dm-4', 'dm-5', 'dm-0', 'dm-0', 'dm-8', 'dm-19']
+    assert mp.by_dm['dm-2'] == mp.devices[0]
+    assert mp.aliases == ['mpathg', 'mpathe', 'mpatha', 'mpathb']
+    assert mp.by_alias['mpathg'] == mp.devices[0]
+    assert mp.wwids == [
+        '36f01faf000da360b0000033c528fea6d',
+        '36f01faf000da3761000004323aa6fbce',
+        '36001405b1629f80d52a4c898f8856e43',
+        '1IET     00080001',
+        '1IET     00080001',
+        '1IET     00080002',
+        '1IET     00080007'
+    ]
+    assert mp.by_wwid['1IET     00080001'] == mp.devices[4]
+
+    # Pseudo list accessors
+    assert len(mp) == 7
+    for i, item in enumerate(mp):
+        assert item == mp.devices[i]
+        assert item == mp[i]
+
+
 def test_get_multipath_v4_ll():
     multipath_v4_ll_list = multipath_v4_ll.get_multipath_v4_ll(context_wrap(MULTIPATH_V4_LL_INFO))
     assert len(multipath_v4_ll_list) == 7
@@ -178,7 +268,6 @@ def test_get_multipath_v4_ll():
         }]
     }
     assert multipath_v4_ll_list[0].get('size') == '54T'
-    print multipath_v4_ll_list[1]
     assert multipath_v4_ll_list[1].get('path_group') == [{
         "policy": "round-robin 0",
         "prio": "1",
@@ -207,6 +296,9 @@ def test_get_multipath_v4_ll():
     assert multipath_v4_ll_list[5].get('dm_name') == "dm-8"
     assert multipath_v4_ll_list[6].get('venprod') == "COMPELNT,Compellent Vol"
     assert multipath_v4_ll_list[6].get('dm_name') == "dm-19"
+    # Note that there's no data for the made-up 'mpathc', since there's no
+    # path group information and only devices with path group information
+    # get saved.
 
 
 def test_get_multipath_v4_ll_RHEL_5():
@@ -243,5 +335,4 @@ L004 (360060160ade32800f2e3baf47665e211) dm-9 DGC,RAID 5
     assert len(path_dev['path_group'][0]['path']) == 2
     paths = path_dev['path_group'][0]['path']
     assert len(paths) == 2
-    print paths
     assert paths[0] == ['3:0:1:4', 'sdk', '8:160', 'active', 'ready']

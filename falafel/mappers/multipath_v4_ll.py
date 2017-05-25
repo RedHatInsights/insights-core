@@ -1,47 +1,51 @@
 """
-get_multipath_v4_ll - Command output
-====================================
+MultipathDevices - Command ``multipath -v4 -ll``
+================================================
 
-This function converts the output of ``multipath -v4 -ll`` into a series of
-data structures.  Examples of input data and resultant structure are given in
-the help for the function.
+This function converts the output of the ``multipath -v4 -ll`` command and
+stores the data around each multipath device given.
 
-Example:
-    >>> mpaths = shared[get_multipath_v4_ll]
-    >>> length(mpaths)
+Examples:
+    >>> mpaths = shared[MultipathDevices]
+    >>> len(mpaths)  # Can treat the object as a list to iterate through
     2
-    >>> mpath[0]['alias']
+    >>> mpaths[0]['alias']
     'mpathg'
-    >>> mpath[0]['size']
+    >>> mpaths[0]['size']
     '54T'
-    >>> groups = mpath[0]['path_group']
+    >>> mpaths[0]['dm_name']
+    'dm-2'
+    >>> mpaths[0]['wwid']
+    '36f01faf000da360b0000033c528fea6d'
+    >>> groups = mpath[0]['path_group']  # List of path groups for this device
     >>> groups[0]['status']
     'active'
     >>> length(groups[0]['path'])
     4
-    >>> path0 = groups[0]['path'][0]
-    >>> path0[1]
+    >>> path0 = groups[0]['path'][0]  # Each path group has an array of paths
+    >>> path0[1]  # Paths are stored as a list of items
     'sdc'
     >>> path0[-1]
     'running'
+    >>> mpaths.dms  # List of device names found
+    ['dm-2', 'dm-4', 'dm-5', 'dm-0', 'dm-0', 'dm-8', 'dm-19']
+    >>> mpaths.by_dm['dm-2']['alias']  # Access by device name
+    'mpathg'
+    >>> mpaths.aliases  # Aliases found (again, in order)
+    ['mpathg', 'mpathe', 'mpatha', 'mpathb']
+    >>> mpaths.by_alias['mpathg']['dm_name']  # Access by alias
+    'dm-2'
+    >>> mpaths.by_wwid['36f01faf000da360b0000033c528fea6d']['dm_name']
+    'dm-2'
 """
 
 import re
 import shlex
-from .. import mapper
-
-MPATH_WWID_REG = re.compile(r'\(?([A-Za-z0-9_\s]+)\)?\s+dm-')
-PROPERTY_SQBRKT_REG = re.compile(r"\[(?P<key>\w+)=(?P<value>[^\]]+)\]")
-PATHGROUP_POLICY_STR = \
-    r"(?:policy=')?(?P<policy>(?:round-robin|queue-length|service-time) \d)" + \
-    r"(?:' | \[)prio=(?P<priority>\d+)(?:\]\[| status=)" + \
-    r"(?P<status>\w+)(?:\]|)"
-PATHGROUP_POLICY_REG = re.compile(PATHGROUP_POLICY_STR)
-HCTL_REG = re.compile(r'(?:[`|]-(?:\+-)?|\\_) (\d+:){3}\d+')
+from falafel import mapper, Mapper
 
 
 @mapper('multipath_-v4_-ll')
-def get_multipath_v4_ll(context):
+class MultipathDevices(Mapper):
     """
     ``multipath_-v4_ll`` command output
 
@@ -91,8 +95,8 @@ def get_multipath_v4_ll(context):
 
     Example data structure produced::
 
-        [
-         {
+        devices = [
+          {
             "alias": "mpathg",
             "wwid": "36f01faf000da360b0000033c528fea6d",
             "dm_name": "dm-2",
@@ -112,8 +116,7 @@ def get_multipath_v4_ll(context):
                         ['15:0:0:1', 'sdo', '8:224', 'active', 'ready', 'running'],
                         ['17:0:0:1', 'sdv', '65:80', 'active', 'ready', 'running']
                     ]
-                 },
-                 {
+                 }, {
                     "policy": "round-robin 0",
                     "prio": "0"
                     "status": "enabled"
@@ -125,118 +128,137 @@ def get_multipath_v4_ll(context):
                     ]
                 }
             ]
-          },
-
-         {
-            "alias": "mpathe",
-            "wwid": "36f01faf000da3761000004323aa6fbce",
-            "dm_name": "dm-4",
-            "venprod": "DELL,MD36xxi",
-            "size": "44T",
-            "features": "3 queue_if_no_path pg_init_retries 55",
-            "hwhandler": "1 rdac",
-            "wp": "rw",
-            "path_group": [
-                 {
-                    "policy": "round-robin 0",
-                    "prio": "0"
-                    "status": "active"
-                    "path": [
-                        ['13:0:0:2', 'sdc', '8:32',  'active', 'ready', 'running'],
-                        ['14:0:0:2', 'sdi', '8:128', 'active', 'ready', 'running'],
-                        ['16:0:0:2', 'sdo', '8:224', 'active', 'ready', 'running'],
-                        ['18:0:0:2', 'sdv', '65:80', 'active', 'ready', 'running']
-                    ]
-                 },
-                 {
-                    "policy": "round-robin 0",
-                    "prio": "0"
-                    "status": "enabled"
-                    "path": [
-                        ['12:0:0:2', 'sdf', '8:80',  'active', 'ready', 'running'],
-                        ['11:0:0:2', 'sdl', '8:176', 'active', 'ready', 'running'],
-                        ['15:0:0:2', 'sdr', '65:16', 'active', 'ready', 'running'],
-                        ['17:0:0:2', 'sdx', '65:112','active', 'ready', 'running']
-                    ]
-                }
-            ]
-          }
+          },...
         ]
+
+    Attributes:
+        devices (list): List of devices found, in order
+        dms (list): Device mapper names of each device, in order found
+        aliases (list): Alias of each device, in order found
+        wwids (list):  World Wide ID
+        by_dm (dict): Access to each device by device mapper name
+        by_alias (dict): Access to each device by alias
+        by_wwid (dict): Access to each device by World Wide ID
     """
 
-    mpath_dev_all = []
-    mpath_dev = {}
-    path_info = []
-    path_group = []
-    path_group_attr = {}
-    for line in context.content:
-        m = MPATH_WWID_REG.search(line)
+    def parse_content(self, content):
+        self.devices = []
 
-        if m:
-            # Save previous path group info if we have any:
-            # Now that we've got a valid path, append the group data if we
-            # haven't already
-            if path_info:
-                path_group_attr['path'] = path_info
-                path_group.append(path_group_attr)
-                # Must reset path group info to not carry on into new device
+        mpath_dev_all = []
+        mpath_dev = {}
+        path_info = []
+        path_group = []
+        path_group_attr = {}
+
+        MPATH_WWID_REG = re.compile(r'\(?([A-Za-z0-9_\s]+)\)?\s+dm-')
+        PROPERTY_SQBRKT_REG = re.compile(r"\[(?P<key>\w+)=(?P<value>[^\]]+)\]")
+        PATHGROUP_POLICY_STR = \
+            r"(?:policy=')?(?P<policy>(?:round-robin|queue-length|service-time) \d)" + \
+            r"(?:' | \[)prio=(?P<priority>\d+)(?:\]\[| status=)" + \
+            r"(?P<status>\w+)(?:\]|)"
+        PATHGROUP_POLICY_REG = re.compile(PATHGROUP_POLICY_STR)
+        HCTL_REG = re.compile(r'(?:[`|]-(?:\+-)?|\\_) (\d+:){3}\d+')
+
+        for line in content:
+            m = MPATH_WWID_REG.search(line)
+
+            if m:
+                # Save previous path group info if we have any:
+                # Now that we've got a valid path, append the group data if we
+                # haven't already
+                if path_info:
+                    path_group_attr['path'] = path_info
+                    path_group.append(path_group_attr)
+                    # Must reset path group info to not carry on into new device
+                    path_group_attr = {}
+                    path_info = []
+                    mpath_dev['path_group'] = path_group
+                    mpath_dev_all.append(mpath_dev)
+
+                mpath_dev = {}
+                path_group = []
+                wwid = m.group(1)
+                no_alias = line.startswith(wwid)
+                (dm, venprod) = re.findall(r".*(dm-\S+)\s+(.*)", line)[0]
+                if not no_alias:
+                    (dm, venprod) = re.findall(r"\w+\s+\(.*\)\s+(dm-\S+)\s+(.*)", line)[0]
+                    mpath_dev['alias'] = line.split()[0]
+                mpath_dev['wwid'] = wwid
+                mpath_dev['dm_name'] = dm
+                mpath_dev['venprod'] = venprod
+
+            elif 'size=' in line:
+                if '][' in line:
+                    # Old RHEL 5 format:
+                    for (k, v) in PROPERTY_SQBRKT_REG.findall(line):
+                        mpath_dev[k] = v
+                    # Handle un-named write policy attribute on the end:
+                    mpath_dev['wp'] = line[-3:-1]
+                else:
+                    # Newer RHEL 6 format:
+                    attr_line = shlex.split(line)
+                    for item in attr_line:
+                        (k, v) = item.split('=', 1)
+                        mpath_dev[k] = v
+
+            elif PATHGROUP_POLICY_REG.search(line):
+                m = PATHGROUP_POLICY_REG.search(line)
+                # New path info - save the previous if we have one:
+                if path_info:
+                    path_group_attr['path'] = path_info
+                    path_group.append(path_group_attr)
+
                 path_group_attr = {}
                 path_info = []
-                mpath_dev['path_group'] = path_group
-                mpath_dev_all.append(mpath_dev)
+                path_group_attr['policy'] = m.group('policy')
+                path_group_attr['prio'] = m.group('priority')
+                path_group_attr['status'] = m.group('status')
 
-            mpath_dev = {}
-            path_group = []
-            wwid = m.group(1)
-            no_alias = line.startswith(wwid)
-            (dm, venprod) = re.findall(r".*(dm-\S+)\s+(.*)", line)[0]
-            if not no_alias:
-                (dm, venprod) = re.findall(r"\w+\s+\(.*\)\s+(dm-\S+)\s+(.*)", line)[0]
-                mpath_dev['alias'] = line.split()[0]
-            mpath_dev['wwid'] = wwid
-            mpath_dev['dm_name'] = dm
-            mpath_dev['venprod'] = venprod
+            elif HCTL_REG.search(line):
+                colon_index = line.index(":")
+                # Dodgy hack to convert RHEL 5 attributes in square brackets into
+                # spaced out words to combine into the list
+                line = line.replace('[', ' ').replace(']', ' ')
+                path_info.append(line[colon_index - 2:].split())
 
-        elif 'size=' in line:
-            if '][' in line:
-                # Old RHEL 5 format:
-                for (k, v) in PROPERTY_SQBRKT_REG.findall(line):
-                    mpath_dev[k] = v
-                # Handle un-named write policy attribute on the end:
-                mpath_dev['wp'] = line[-3:-1]
-            else:
-                # Newer RHEL 6 format:
-                attr_line = shlex.split(line)
-                for item in attr_line:
-                    (k, v) = item.split('=', 1)
-                    mpath_dev[k] = v
+        # final save of outstanding path and path group data:
+        if path_info:
+            path_group_attr['path'] = path_info
+            path_group.append(path_group_attr)
+        if path_group:
+            mpath_dev['path_group'] = path_group
+            mpath_dev_all.append(mpath_dev)
 
-        elif PATHGROUP_POLICY_REG.search(line):
-            m = PATHGROUP_POLICY_REG.search(line)
-            # New path info - save the previous if we have one:
-            if path_info:
-                path_group_attr['path'] = path_info
-                path_group.append(path_group_attr)
+        self.devices = mpath_dev_all
 
-            path_group_attr = {}
-            path_info = []
-            path_group_attr['policy'] = m.group('policy')
-            path_group_attr['prio'] = m.group('priority')
-            path_group_attr['status'] = m.group('status')
+        # Create some extra accessor properties
+        self.dms = [path['dm_name'] for path in self.devices if 'dm_name' in path]
+        self.by_dm = {path['dm_name']: path for path in self.devices if 'dm_name' in path}
+        self.aliases = [path['alias'] for path in self.devices if 'alias' in path]
+        self.by_alias = {path['alias']: path for path in self.devices if 'alias' in path}
+        self.wwids = [path['wwid'] for path in self.devices if 'wwid' in path]
+        self.by_wwid = {path['wwid']: path for path in self.devices if 'wwid' in path}
 
-        elif HCTL_REG.search(line):
-            colon_index = line.index(":")
-            # Dodgy hack to convert RHEL 5 attributes in square brackets into
-            # spaced out words to combine into the list
-            line = line.replace('[', ' ').replace(']', ' ')
-            path_info.append(line[colon_index - 2:].split())
+    def __len__(self):
+        """
+        The length of the devices list
+        """
+        return len(self.devices)
 
-    # final save of outstanding path and path group data:
-    if path_info:
-        path_group_attr['path'] = path_info
-        path_group.append(path_group_attr)
-    if path_group:
-        mpath_dev['path_group'] = path_group
-        mpath_dev_all.append(mpath_dev)
+    def __iter__(self):
+        """
+        Iterate through the devices list
+        """
+        for device in self.devices:
+            yield device
 
-    return mpath_dev_all
+    def __getitem__(self, idx):
+        """
+        Fetch a device by index in devices list
+        """
+        return self.devices[idx]
+
+
+@mapper('multipath_-v4_-ll')
+def get_multipath_v4_ll(context):
+    return MultipathDevices(context).devices
