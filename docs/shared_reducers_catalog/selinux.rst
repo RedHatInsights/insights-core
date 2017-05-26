@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.selinux
+.. automodule:: insights.reducers.selinux
    :members:
    :show-inheritance:

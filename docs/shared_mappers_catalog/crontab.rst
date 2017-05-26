@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.crontab
+.. automodule:: insights.mappers.crontab
    :members:
    :show-inheritance:

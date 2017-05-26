@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.date
+.. automodule:: insights.mappers.date
     :members:
     :show-inheritance:

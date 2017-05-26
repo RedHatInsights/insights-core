@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.systemd.config
+.. automodule:: insights.mappers.systemd.config
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.cobbler_settings
+.. automodule:: insights.mappers.cobbler_settings
    :members:
    :show-inheritance:

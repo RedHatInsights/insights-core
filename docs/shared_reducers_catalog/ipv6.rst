@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.ipv6
+.. automodule:: insights.reducers.ipv6
    :members:
    :show-inheritance:

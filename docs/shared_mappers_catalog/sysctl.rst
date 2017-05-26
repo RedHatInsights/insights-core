@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.sysctl
+.. automodule:: insights.mappers.sysctl
    :members:
    :show-inheritance:

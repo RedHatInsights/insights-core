@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.netstat
+.. automodule:: insights.mappers.netstat
    :members:
    :show-inheritance:

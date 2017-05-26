@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.user_namespaces
+.. automodule:: insights.reducers.user_namespaces
    :members:
    :show-inheritance:

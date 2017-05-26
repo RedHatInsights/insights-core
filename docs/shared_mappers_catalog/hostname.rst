@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.hostname
+.. automodule:: insights.mappers.hostname
    :members:
    :show-inheritance:

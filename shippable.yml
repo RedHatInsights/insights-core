@@ -10,7 +10,7 @@ build:
     - pip install git+ssh://git@github.com/RedHatInsights/insights-archive.git#master
     - pip install -e .[develop]
     - mkdir -p shippable/testresults shippable/codecoverage
-    - if [ $PHASE == "test" ]; then py.test --cov=falafel --cov-report=xml --junit-xml=shippable/testresults/results.xml; fi
+    - if [ $PHASE == "test" ]; then py.test --cov=insights --cov-report=xml --junit-xml=shippable/testresults/results.xml; fi
     - if [ $PHASE == "test" ]; then mv coverage.xml shippable/codecoverage; fi
     - if [ $PHASE == "syntax" ]; then flake8; fi
     - if [ $PHASE == "docs" ]; then sphinx-build -W -b html -qa -E docs docs/_build/html; fi

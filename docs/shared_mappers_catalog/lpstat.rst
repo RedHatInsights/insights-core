@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.lpstat
+.. automodule:: insights.mappers.lpstat
    :members:
    :show-inheritance:

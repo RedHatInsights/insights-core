@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.pcs_status
+.. automodule:: insights.mappers.pcs_status
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.lspci
+.. automodule:: insights.mappers.lspci
    :members:
    :show-inheritance:

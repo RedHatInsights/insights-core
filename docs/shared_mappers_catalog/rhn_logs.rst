@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.rhn_logs
+.. automodule:: insights.mappers.rhn_logs
    :members:
    :show-inheritance:

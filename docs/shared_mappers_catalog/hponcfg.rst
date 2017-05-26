@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.hponcfg
+.. automodule:: insights.mappers.hponcfg
    :members:
    :show-inheritance:

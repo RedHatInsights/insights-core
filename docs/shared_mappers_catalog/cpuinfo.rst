@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.cpuinfo
+.. automodule:: insights.mappers.cpuinfo
    :members:
    :show-inheritance:

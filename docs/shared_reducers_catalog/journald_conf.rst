@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.journald_conf
+.. automodule:: insights.reducers.journald_conf
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.cmdline
+.. automodule:: insights.mappers.cmdline
    :members:
    :show-inheritance:

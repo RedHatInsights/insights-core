@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.mlx4_port
+.. automodule:: insights.mappers.mlx4_port
     :members:
     :show-inheritance:

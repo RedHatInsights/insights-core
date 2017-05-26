@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.modprobe
+.. automodule:: insights.mappers.modprobe
    :members:
    :show-inheritance:

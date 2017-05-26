@@ -1,12 +1,12 @@
-Falafel
-=======
+insights-core
+=============
 
 Contents:
 
 .. toctree::
     :maxdepth: 4
 
-    what_is_falafel
+    what_is_insights_core
     rule_tutorial_index
     api
     api_index

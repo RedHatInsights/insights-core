@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.lvm
+.. automodule:: insights.reducers.lvm
    :members:
    :show-inheritance:

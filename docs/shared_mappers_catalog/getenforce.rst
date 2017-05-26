@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.getenforce
+.. automodule:: insights.mappers.getenforce
    :members:
    :show-inheritance:

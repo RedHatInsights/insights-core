@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ip
+.. automodule:: insights.mappers.ip
    :members:
    :show-inheritance:

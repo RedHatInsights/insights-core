@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.services
+.. automodule:: insights.reducers.services
    :members:
    :show-inheritance:

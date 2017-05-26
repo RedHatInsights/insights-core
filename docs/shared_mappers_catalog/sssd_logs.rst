@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.sssd_logs
+.. automodule:: insights.mappers.sssd_logs
    :members:
    :show-inheritance:

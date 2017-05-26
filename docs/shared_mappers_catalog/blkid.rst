@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.blkid
+.. automodule:: insights.mappers.blkid
    :members:
    :show-inheritance:

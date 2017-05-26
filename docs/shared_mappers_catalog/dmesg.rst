@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.dmesg
+.. automodule:: insights.mappers.dmesg
    :members:
    :show-inheritance:

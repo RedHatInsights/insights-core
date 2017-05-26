@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.keystone
+.. automodule:: insights.mappers.keystone
    :members:
    :show-inheritance:

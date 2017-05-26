@@ -2,7 +2,7 @@ Input Data Formats
 ==================
 
 Before any data reaches the rules framework, it obviously has to be generated.
-There are currently several input data formats that can be processed by falafel:
+There are currently several input data formats that can be processed by insights-core:
 
 SoSReports
 ----------
@@ -104,7 +104,7 @@ Choosing a Module
 -----------------
 
 Currently all shared mappers are defined in the package
-``falafel.mappers``.  From there, the mappers are separated into
+``insights.mappers``.  From there, the mappers are separated into
 modules based on the command or file that the mapper consumes.  Commands or
 files that are logically grouped together can go in the same module, e.g. the
 ``ethtool`` based commands and ``ps`` based commands.
@@ -128,12 +128,12 @@ never be found by the framework.
 
 Symbolic names represent all the possible file content types that can be
 analyzed by mappers.  The rules framework uses the symbolic name mapping
-defined in ``falafel.specs.static`` to map a symbolic name to either a
+defined in ``insights.specs.static`` to map a symbolic name to either a
 command or absolute file path.  The same mapping is used to create the
 ``uploader.json`` file consumed by Insights clients to collect data from
 customer systems.
 
-.. autofunction:: falafel.core.plugins.mapper
+.. autofunction:: insights.core.plugins.mapper
    :noindex:
 
 Mapper Contexts
@@ -142,7 +142,7 @@ Mapper Contexts
 Each mapper takes exactly one parameter, which is expected to be of type
 ``Context``.  All information available to a mapper is found in the
 ``Context`` object.  Please refer to the `Context API documentation
-</api_index.html#falafel.core.context.Context>`_ for
+</api_index.html#insights.core.context.Context>`_ for
 more details.
 
 Mapper Outputs
@@ -155,7 +155,7 @@ class.  This makes plugin developers able to query for higher-level facts about
 a particular file, while also exporting the higher level facts for use outside
 of Insights plugins.
 
-.. autoclass:: falafel.core.Mapper
+.. autoclass:: insights.core.Mapper
    :members:
    :noindex:
 
@@ -173,7 +173,7 @@ with:
     - A longer description of what the plugin identifies
     - A Trello/Jira link
 
-.. autofunction:: falafel.core.plugins.reducer
+.. autofunction:: insights.core.plugins.reducer
    :noindex:
 
 Reducer Context
@@ -208,12 +208,12 @@ system metadata.
 
 To return a rule "hit", return the result of ``make_response``:
 
-.. autofunction:: falafel.core.plugins.make_response
+.. autofunction:: insights.core.plugins.make_response
    :noindex:
 
 To return system metadata, return the result of ``make_metadata``:
 
-.. autofunction:: falafel.core.plugins.make_metadata
+.. autofunction:: insights.core.plugins.make_metadata
    :noindex:
 
 

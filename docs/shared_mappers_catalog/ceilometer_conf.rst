@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ceilometer_conf
+.. automodule:: insights.mappers.ceilometer_conf
    :members:
    :show-inheritance:

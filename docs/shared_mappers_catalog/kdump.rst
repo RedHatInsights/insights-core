@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.kdump
+.. automodule:: insights.mappers.kdump
    :members:
    :show-inheritance:

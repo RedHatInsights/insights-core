@@ -18,8 +18,8 @@ the reducer function and imports.
 .. code-block:: python
    :linenos:
 
-    from falafel.mappers import rpm, lsof, netstat
-    from falafel.core.plugins import reducer, make_response
+    from insights.mappers import rpm, lsof, netstat
+    from insights.core.plugins import reducer, make_response
 
     @reducer(requires=[rpm, lsof, netstat])
     def heartburn(local, shared):
@@ -30,7 +30,7 @@ Let's go over each line and describe the details:
 .. code-block:: python
    :lineno-start: 1
 
-    from falafel.mappers import rpm, lsof, netstat
+    from insights.mappers import rpm, lsof, netstat
 
 Mappers you want to use must be imported.  There are two main uses:
 
@@ -40,7 +40,7 @@ Mappers you want to use must be imported.  There are two main uses:
 .. code-block:: python
    :lineno-start: 2
 
-    from falafel.core.plugins import reducer, make_response
+    from insights.core.plugins import reducer, make_response
 
 ``reducer`` is a function decorator used to specify your main plugin function.
 Reducers have a set of optional dependencies that are specified via the

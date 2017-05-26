@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.satellite_version
+.. automodule:: insights.reducers.satellite_version
    :members:
    :show-inheritance:

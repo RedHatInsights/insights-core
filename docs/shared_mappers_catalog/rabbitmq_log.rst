@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.rabbitmq_log
+.. automodule:: insights.mappers.rabbitmq_log
     :members:
     :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.tuned
+.. automodule:: insights.mappers.tuned
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.redhat_release
+.. automodule:: insights.mappers.redhat_release
    :members:
    :show-inheritance:

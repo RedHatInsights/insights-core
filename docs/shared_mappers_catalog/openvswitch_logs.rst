@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.openvswitch_logs
+.. automodule:: insights.mappers.openvswitch_logs
    :members:
    :show-inheritance:

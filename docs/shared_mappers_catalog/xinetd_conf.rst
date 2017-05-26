@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.xinetd_conf
+.. automodule:: insights.mappers.xinetd_conf
    :members:
    :show-inheritance:

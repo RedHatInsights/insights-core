@@ -1,7 +1,7 @@
 Rule Tutorial
 =============
 
-In this tutorial we'll walk through authoring a new falafel rule. 
+In this tutorial we'll walk through authoring a new insights-core rule. 
 
 There are three primary phases to developing a rule:
 

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ksmstate
+.. automodule:: insights.mappers.ksmstate
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.corosync
+.. automodule:: insights.mappers.corosync
    :members:
    :show-inheritance:

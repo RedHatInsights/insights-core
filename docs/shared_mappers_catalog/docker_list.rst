@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.docker_list
+.. automodule:: insights.mappers.docker_list
    :members:
    :show-inheritance:

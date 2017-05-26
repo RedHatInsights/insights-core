@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.bond
+.. automodule:: insights.mappers.bond
    :members:
    :show-inheritance:

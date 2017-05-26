@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.fstab
+.. automodule:: insights.mappers.fstab
    :members:
    :show-inheritance:

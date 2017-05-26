@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.ipcs_semaphores
+.. automodule:: insights.reducers.ipcs_semaphores
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.hammer_ping
+.. automodule:: insights.mappers.hammer_ping
    :members:
    :show-inheritance:

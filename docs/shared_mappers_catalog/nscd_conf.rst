@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.nscd_conf
+.. automodule:: insights.mappers.nscd_conf
    :members:
    :show-inheritance:

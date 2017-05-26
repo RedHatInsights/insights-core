@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.lvdisplay
+.. automodule:: insights.mappers.lvdisplay
    :members:
    :show-inheritance:
