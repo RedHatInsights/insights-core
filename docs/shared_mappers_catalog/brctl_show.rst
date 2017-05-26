@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.brctl_show
+.. automodule:: insights.mappers.brctl_show
     :members:
     :show-inheritance:

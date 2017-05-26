@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.hostname
+.. automodule:: insights.reducers.hostname
    :members:
    :show-inheritance:

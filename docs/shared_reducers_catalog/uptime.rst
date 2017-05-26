@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.uptime
+.. automodule:: insights.reducers.uptime
    :members:
    :show-inheritance:

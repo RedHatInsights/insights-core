@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.vdsm_conf
+.. automodule:: insights.mappers.vdsm_conf
    :members:
    :show-inheritance:

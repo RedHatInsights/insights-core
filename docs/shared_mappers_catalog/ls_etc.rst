@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ls_etc
+.. automodule:: insights.mappers.ls_etc
    :members:
    :show-inheritance:

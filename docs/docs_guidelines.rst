@@ -5,16 +5,16 @@ Documentation Guidelines
 ************************
 
 
-Shared Mappers and Reducers that are developed for the Falafel component of
+Shared Mappers and Reducers that are developed for the insights-core component of
 Insights are documented via comments in the code. This makes it easier to
-produce documentation that is consistent and up-to-date. The Falafel project
+produce documentation that is consistent and up-to-date. The insights-core project
 utilizes `Sphinx`_ and `reStructuredText`_ for documentation generation.
 Sphinx can create documentation in multiple output formats, and documentation
 that can be easily published on websites like `Read The Docs`_. There are a
 few simple steps that should be followed by developers when creating or modifying
-code to be merged into the Falafel project. First, provide useful comments to
+code to be merged into the insights-core project. First, provide useful comments to
 allow a user of your mapper to understand what it does and how to use it. Second
-follow the style chosen for the Falafel project. And Third, test your docs by
+follow the style chosen for the insights-core project. And Third, test your docs by
 generating them and making sure that they are correct.
 
 This document demonstrates a mapper, but reducers may be documented following
@@ -22,7 +22,7 @@ the same guidelines and examples.
 
 Goal of Documentation in Code
 =============================
-The goal of these guidelines is to provide a standard for documentation of Falafel
+The goal of these guidelines is to provide a standard for documentation of insights-core
 code.  Having standard for the code documentation (docstrings) makes it more likely
 that the code will be used and helps to reduce the number of problems encountered by
 developers. Using a standard format for docstrings will also insure that the project
@@ -42,9 +42,9 @@ these mappers and see how the documentation has been organized.
 Example Mapper
 ==============
 
-The Falafel project follows the `Google Docstring Style`_ for docstring comments.
+The insights-core project follows the `Google Docstring Style`_ for docstring comments.
 The following code provides an example of how docstring comments should be used
-in code contributed to the Falafel project:
+in code contributed to the insights-core project:
 
 .. code-block:: python
    :linenos:
@@ -68,12 +68,12 @@ in code contributed to the Falafel project:
    ``obj.get("filter string")`` method.  This method will return a list of lines
    containing only "filter string".  The ``in`` operator may also be used to test
    whether a particular string is in the ``lspci`` output.  Other methods/operators
-   are also supported, see the :py:class:`falafel.core.LogFileOutput` class for more information.
+   are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
 
    Note:
        The examples in this module may be executed with the following command:
 
-       ``python -m falafel.mappers.lspci``
+       ``python -m insights.mappers.lspci``
 
    Examples:
        >>> lspci_content = '''
@@ -82,7 +82,7 @@ in code contributed to the Falafel project:
        ... 03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
        ... 0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
        ... '''.strip()
-       >>> from falafel.tests import context_wrap
+       >>> from insights.tests import context_wrap
        >>> shared = {LsPci: LsPci(context_wrap(lspci_content))}
        >>> pci_info = shared[LsPci]
        >>> pci_info.get("Intel Corporation")
@@ -153,7 +153,7 @@ Description
    ``obj.get("filter string")`` method.  This method will return a list of lines
    containing only "filter string".  The ``in`` operator may also be used to test
    whether a particular string is in the ``lspci`` output.  Other methods/operators
-   are also supported, see the :py:class:`falafel.core.LogFileOutput` class for more information.
+   are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
 
 Next comes the description of the module. 
 Since this description is the first thing a developer will see when viewing
@@ -177,7 +177,7 @@ Notes/References
    Note:
        The examples in this module may be executed with the following command:
 
-       ``python -m falafel.mappers.lspci``
+       ``python -m insights.mappers.lspci``
 
 Module notes and/or references are not necessary unless there is information
 that should be included to aid a developer in understanding the mapper. In
@@ -200,7 +200,7 @@ Examples
        ... 03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
        ... 0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
        ... '''.strip()
-       >>> from falafel.tests import context_wrap
+       >>> from insights.tests import context_wrap
        >>> shared = {LsPci: LsPci(context_wrap(lspci_content))}
        >>> pci_info = shared[LsPci]
        >>> pci_info.get("Intel Corporation")
@@ -227,19 +227,19 @@ Testing Your Docstring
 ======================
 
 Once you have implemented a mapper with the recommended documentation style you will
-need to include it in the Falafel documentation.  You can do this by creating a file
-in the directory ``falafel/docs/shared_mappers_catalog/`` that has the same name
+need to include it in the insights-core documentation.  You can do this by creating a file
+in the directory ``insights-core/docs/shared_mappers_catalog/`` that has the same name
 as your mapper
 module name, except with a ``.rst`` extension instead of a ``.py`` extension.  For
 example if your mapper module is named ``your_mapper.py`` then create a file
-``falafel/docs/shared_mappers_catalog/your_mapper.rst`` and include the following
+``insights-core/docs/shared_mappers_catalog/your_mapper.rst`` and include the following
 three lines in the file::
 
-   .. automodule:: falafel.mappers.your_mapper
+   .. automodule:: insights.mappers.your_mapper
       :members:
       :show-inheritance:
 
-Once you have created this file, switch to the directory ``falafel/docs`` and type
+Once you have created this file, switch to the directory ``insights-core/docs`` and type
 the following commands to create the HTML documentation::
 
     $ make clean
@@ -249,12 +249,12 @@ If you have errors in your comments you may see them in the output of the make c
 Sphinx will only report errors if it cannot parse the comments. If you notice a
 message similar to the following you may safely ignore it::
 
-  "Didn't find BlockIDInfo.data in falafel.mappers.blkid"
+  "Didn't find BlockIDInfo.data in insights-core.mappers.blkid"
 
 Once the ``make`` command
 executes without any error messages the next step is to review the generated HTML and
 ensure that it looks correct.  The generated HTML is located in
-``falafel/docs/_build/html/``.  You may view the files
+``insights-core/docs/_build/html/``.  You may view the files
 in a browser such as Firefox by executing the following command from the ``html``
 directory::
 

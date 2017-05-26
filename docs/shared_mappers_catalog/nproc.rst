@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.nproc
+.. automodule:: insights.mappers.nproc
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.grub_conf
+.. automodule:: insights.reducers.grub_conf
    :members:
    :show-inheritance:

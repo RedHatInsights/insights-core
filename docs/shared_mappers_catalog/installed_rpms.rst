@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.installed_rpms
+.. automodule:: insights.mappers.installed_rpms
    :members:
    :show-inheritance:

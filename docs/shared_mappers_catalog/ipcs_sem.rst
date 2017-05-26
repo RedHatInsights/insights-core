@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ipcs_sem
+.. automodule:: insights.mappers.ipcs_sem
    :members:
    :show-inheritance:

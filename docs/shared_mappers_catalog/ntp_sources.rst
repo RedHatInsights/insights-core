@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ntp_sources
+.. automodule:: insights.mappers.ntp_sources
    :members:
    :show-inheritance:

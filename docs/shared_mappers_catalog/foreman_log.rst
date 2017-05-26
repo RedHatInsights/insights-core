@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.foreman_log
+.. automodule:: insights.mappers.foreman_log
    :members:
    :show-inheritance:

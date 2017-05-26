@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.interrupts
+.. automodule:: insights.mappers.interrupts
    :members:
    :show-inheritance:

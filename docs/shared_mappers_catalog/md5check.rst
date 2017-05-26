@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.md5check
+.. automodule:: insights.mappers.md5check
    :members:
    :show-inheritance:

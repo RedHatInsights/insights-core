@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.meminfo
+.. automodule:: insights.mappers.meminfo
    :members:
    :show-inheritance:

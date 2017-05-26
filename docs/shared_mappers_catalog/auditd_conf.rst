@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.auditd_conf
+.. automodule:: insights.mappers.auditd_conf
    :members:
    :show-inheritance:

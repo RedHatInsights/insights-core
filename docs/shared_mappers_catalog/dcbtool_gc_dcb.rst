@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.dcbtool_gc_dcb
+.. automodule:: insights.mappers.dcbtool_gc_dcb
    :members:
    :show-inheritance:

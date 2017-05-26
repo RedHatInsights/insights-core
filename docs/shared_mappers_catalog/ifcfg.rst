@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ifcfg
+.. automodule:: insights.mappers.ifcfg
    :members:
    :show-inheritance:

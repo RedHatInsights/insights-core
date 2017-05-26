@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.catalina_out
+.. automodule:: insights.mappers.catalina_out
    :members:
    :show-inheritance:

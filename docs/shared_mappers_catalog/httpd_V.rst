@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.httpd_V
+.. automodule:: insights.mappers.httpd_V
    :members:
    :show-inheritance:

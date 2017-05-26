@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.autofs_conf
+.. automodule:: insights.mappers.autofs_conf
    :members:
    :show-inheritance:

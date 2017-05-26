@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.yum_conf
+.. automodule:: insights.mappers.yum_conf
    :members:
    :show-inheritance:

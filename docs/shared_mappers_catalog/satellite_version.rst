@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.satellite_version
+.. automodule:: insights.mappers.satellite_version
    :members:
    :show-inheritance:

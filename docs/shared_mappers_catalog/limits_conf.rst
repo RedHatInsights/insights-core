@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.limits_conf
+.. automodule:: insights.mappers.limits_conf
    :members:
    :show-inheritance:

@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.dmidecode
+.. automodule:: insights.mappers.dmidecode
    :members:
    :show-inheritance:

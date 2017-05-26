@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.httpd_conf
+.. automodule:: insights.reducers.httpd_conf
    :members:
    :show-inheritance:

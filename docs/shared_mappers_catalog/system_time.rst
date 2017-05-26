@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.system_time
+.. automodule:: insights.mappers.system_time
    :members:
    :show-inheritance:

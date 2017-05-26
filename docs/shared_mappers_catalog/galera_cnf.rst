@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.galera_cnf
+.. automodule:: insights.mappers.galera_cnf
    :members:
    :show-inheritance:

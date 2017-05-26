@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.journald_conf
+.. automodule:: insights.mappers.journald_conf
    :members:
    :show-inheritance:

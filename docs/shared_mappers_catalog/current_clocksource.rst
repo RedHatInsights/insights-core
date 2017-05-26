@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.current_clocksource
+.. automodule:: insights.mappers.current_clocksource
    :members:
    :show-inheritance:

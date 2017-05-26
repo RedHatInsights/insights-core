@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ceph_version
+.. automodule:: insights.mappers.ceph_version
    :members:
    :show-inheritance:

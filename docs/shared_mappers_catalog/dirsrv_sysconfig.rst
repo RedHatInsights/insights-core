@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.dirsrv_sysconfig
+.. automodule:: insights.mappers.dirsrv_sysconfig
    :members:
    :show-inheritance:

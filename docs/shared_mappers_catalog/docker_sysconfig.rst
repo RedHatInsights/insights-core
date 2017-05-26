@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.docker_sysconfig
+.. automodule:: insights.mappers.docker_sysconfig
    :members:
    :show-inheritance:

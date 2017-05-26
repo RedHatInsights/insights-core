@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.display_java
+.. automodule:: insights.mappers.display_java
    :members:
    :show-inheritance:

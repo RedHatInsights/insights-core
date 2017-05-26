@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.parted
+.. automodule:: insights.mappers.parted
    :members:
    :show-inheritance:

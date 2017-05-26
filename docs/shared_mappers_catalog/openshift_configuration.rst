@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.openshift_configuration
+.. automodule:: insights.mappers.openshift_configuration
    :members:
    :show-inheritance:

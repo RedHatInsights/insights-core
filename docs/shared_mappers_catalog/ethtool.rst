@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ethtool
+.. automodule:: insights.mappers.ethtool
    :members:
    :show-inheritance:

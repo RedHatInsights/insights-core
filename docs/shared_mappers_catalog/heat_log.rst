@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.heat_log
+.. automodule:: insights.mappers.heat_log
    :members:
    :show-inheritance:

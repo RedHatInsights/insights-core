@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.mariadb_log
+.. automodule:: insights.mappers.mariadb_log
     :members:
     :show-inheritance:

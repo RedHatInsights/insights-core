@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.grub1_conf
+.. automodule:: insights.mappers.grub1_conf
    :members:
    :show-inheritance:

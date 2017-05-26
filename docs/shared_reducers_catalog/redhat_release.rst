@@ -1,3 +1,3 @@
-.. automodule:: falafel.reducers.redhat_release
+.. automodule:: insights.reducers.redhat_release
    :members:
    :show-inheritance:

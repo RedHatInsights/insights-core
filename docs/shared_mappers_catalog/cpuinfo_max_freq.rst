@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.cpuinfo_max_freq
+.. automodule:: insights.mappers.cpuinfo_max_freq
    :members:
    :show-inheritance:

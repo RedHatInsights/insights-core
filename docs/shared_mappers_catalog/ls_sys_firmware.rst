@@ -1,3 +1,3 @@
-.. automodule:: falafel.mappers.ls_sys_firmware
+.. automodule:: insights.mappers.ls_sys_firmware
    :members:
    :show-inheritance:

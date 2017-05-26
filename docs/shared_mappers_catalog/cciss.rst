@@ -1,4 +1,4 @@
-.. automodule:: falafel.mappers.cciss
+.. automodule:: insights.mappers.cciss
     :members:
     :show-inheritance:
 
