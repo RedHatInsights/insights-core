@@ -160,12 +160,6 @@ class Uname(Mapper):
       ``version-release``.
     - `rhel_release`: A list of two elements, the major and minor RHEL product
       release numbers.
-
-    Further discussion of uname parsing and evaluation can be found in this
-    article:
-
-    `Using uname content in Insights rules <https://mojo.redhat.com/groups/red-hat-insights/blog/2016/03/23/using-uname-content-in-insights-rules>`_
-
     """
     keys = [
         'os',

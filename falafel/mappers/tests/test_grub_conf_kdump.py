@@ -256,8 +256,6 @@ class TestGrubConfKdump(unittest.TestCase):
     def test_nonetype_group(self):
         """
         Check that a search has a non-None result before attempting to get the ``group``.
-
-        See https://projects.engineering.redhat.com/browse/CEECBA-1239
         """
         assert GrubConfig(context_wrap(NOMATCH_CRASH_PARAM)).crash_kernel_offset is None
         assert GrubConfig(context_wrap(NOMATCH_MEMORY)).crash_kernel_offset is None
