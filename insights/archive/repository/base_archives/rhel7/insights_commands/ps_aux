@@ -1,0 +1,2 @@
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+chrony     437  0.0  0.1 115848  1840 ?        S    11:51   0:00 /usr/sbin/chronyd

@@ -1,0 +1,2 @@
+dumpe2fs 1.41.12 (17-May-2010)
+Usage: /sbin/dumpe2fs [-bfhixV] [-o superblock=<num>] [-o blocksize=<num>] device

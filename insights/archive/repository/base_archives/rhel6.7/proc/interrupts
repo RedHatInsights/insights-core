@@ -1,0 +1,31 @@
+CPU0       
+  0:        140   IO-APIC-edge      timer
+  1:          6   IO-APIC-edge      i8042
+  4:        226   IO-APIC-edge    
+  8:          1   IO-APIC-edge      rtc0
+  9:          0   IO-APIC-fasteoi   acpi
+ 12:        104   IO-APIC-edge      i8042
+ 14:          0   IO-APIC-edge      ata_piix
+ 15:          0   IO-APIC-edge      ata_piix
+928:       7590   xen-dyn-event     eth0
+929:      32180   xen-dyn-event     blkif
+930:        203   xen-dyn-event     xenbus
+931:          0  xen-percpu-ipi       callfuncsingle0
+932:          0  xen-percpu-virq      debug0
+933:          0  xen-percpu-ipi       callfunc0
+934:          0  xen-percpu-ipi       resched0
+935:      90396  xen-percpu-virq      timer0
+NMI:          0   Non-maskable interrupts
+LOC:          0   Local timer interrupts
+SPU:          0   Spurious interrupts
+PMI:          0   Performance monitoring interrupts
+IWI:          0   IRQ work interrupts
+RES:          0   Rescheduling interrupts
+CAL:          0   Function call interrupts
+TLB:          0   TLB shootdowns
+TRM:          0   Thermal event interrupts
+THR:          0   Threshold APIC interrupts
+MCE:          0   Machine check exceptions
+MCP:         16   Machine check polls
+ERR:          0
+MIS:          0

@@ -1,0 +1,2 @@
+Linux version 2.6.32-573.el6.x86_64 (mockbuild@x86-027.build.eng.bos.redhat.com) (gcc version 4.4.7 20120313 (Red Hat 4.4.7-16) (GCC) ) #1 SMP Wed Jul 1 18:23:37 EDT 2015
+crashkernel=auto resulted in zero bytes of reserved memory.

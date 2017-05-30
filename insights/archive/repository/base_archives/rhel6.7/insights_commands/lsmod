@@ -1,0 +1,31 @@
+Module                  Size  Used by
+tcp_diag                1041  0 
+inet_diag               8735  1 tcp_diag
+bridge                 84537  0 
+stp                     2218  1 bridge
+llc                     5418  2 bridge,stp
+autofs4                27000  3 
+ip6t_REJECT             4340  2 
+nf_conntrack_ipv6       7985  3 
+nf_defrag_ipv6         26468  1 nf_conntrack_ipv6
+xt_state                1492  3 
+nf_conntrack           79206  2 nf_conntrack_ipv6,xt_state
+ip6table_filter         2889  1 
+ip6_tables             18732  1 ip6table_filter
+ipv6                  335589  58 bridge,ip6t_REJECT,nf_conntrack_ipv6,nf_defrag_ipv6
+microcode             112205  0 
+serio_raw               4626  0 
+xen_netfront           18994  0 
+i2c_piix4              11232  0 
+i2c_core               29132  1 i2c_piix4
+ext4                  378683  1 
+jbd2                   93252  1 ext4
+mbcache                 8193  1 ext4
+xen_blkfront           21998  2 
+pata_acpi               3701  0 
+ata_generic             3837  0 
+ata_piix               24409  0 
+dm_mirror              14384  0 
+dm_region_hash         12085  1 dm_mirror
+dm_log                  9930  2 dm_mirror,dm_region_hash
+dm_mod                 99200  2 dm_mirror,dm_log

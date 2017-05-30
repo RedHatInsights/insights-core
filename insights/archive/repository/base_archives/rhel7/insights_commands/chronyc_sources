@@ -1,0 +1,7 @@
+210 Number of sources = 4
+MS Name/IP address         Stratum Poll Reach LastRx Last sample
+===============================================================================
+^- linode227395.stevemeacham     2   9    27   167  +3454us[+3886us] +/-   88ms
+^* utcnist2.colorado.edu         1   9   377    42  -1297us[ -863us] +/-   21ms
+^- 194.177.34.116                3   8   377   235  -1133us[ -703us] +/-  113ms
+^+ clock.trit.net                2   9   377    42  +2308us[+2742us] +/-   30ms

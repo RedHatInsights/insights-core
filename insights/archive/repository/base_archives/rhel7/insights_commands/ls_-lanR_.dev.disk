@@ -1,0 +1,19 @@
+/dev/disk:
+total 0
+drwxr-xr-x.  4 0 0   80 May 30 11:50 .
+drwxr-xr-x. 18 0 0 2720 May 30 11:51 ..
+drwxr-xr-x.  2 0 0   80 May 30 11:50 by-partuuid
+drwxr-xr-x.  2 0 0   60 May 30 11:50 by-uuid
+
+/dev/disk/by-partuuid:
+total 0
+drwxr-xr-x. 2 0 0 80 May 30 11:50 .
+drwxr-xr-x. 4 0 0 80 May 30 11:50 ..
+lrwxrwxrwx. 1 0 0 11 May 30 11:51 c843fd89-76d8-448e-87d3-112fa6702a5b -> ../../xvda2
+lrwxrwxrwx. 1 0 0 11 May 30 11:51 f68dfd0d-5084-47aa-a788-bf86e150916c -> ../../xvda1
+
+/dev/disk/by-uuid:
+total 0
+drwxr-xr-x. 2 0 0 60 May 30 11:50 .
+drwxr-xr-x. 4 0 0 80 May 30 11:50 ..
+lrwxrwxrwx. 1 0 0 11 May 30 11:51 3ed41454-00c8-4803-bf61-2ee88aa54dbf -> ../../xvda2

@@ -1,0 +1,11 @@
+Available profiles:
+- balanced                    - General non-specialized tuned profile
+- desktop                     - Optmize for the desktop use-case
+- latency-performance         - Optimize for deterministic performance at the cost of increased power consumption
+- network-latency             - Optimize for deterministic performance at the cost of increased power consumption, focused on low latency network performance
+- network-throughput          - Optimize for streaming network throughput.  Generally only necessary on older CPUs or 40G+ networks.
+- powersave                   - Optimize for low power consumption
+- throughput-performance      - Broadly applicable tuning that provides excellent performance across a variety of common server workloads.  This is the default profile for RHEL7.
+- virtual-guest               - Optimize for running inside a virtual guest.
+- virtual-host                - Optimize for running KVM guests
+Current active profile: virtual-guest
