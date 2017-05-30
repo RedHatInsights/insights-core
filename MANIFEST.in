@@ -1,1 +1,2 @@
 include insights/defaults.yaml
+graft insights/archive/repository/base_archives
