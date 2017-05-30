@@ -1,0 +1,54 @@
+Ip:
+    42046 total packets received
+    2 with invalid addresses
+    0 forwarded
+    0 incoming packets discarded
+    42044 incoming packets delivered
+    3911 requests sent out
+Icmp:
+    0 ICMP messages received
+    0 input ICMP message failed.
+    ICMP input histogram:
+    0 ICMP messages sent
+    0 ICMP messages failed
+    ICMP output histogram:
+Tcp:
+    93 active connections openings
+    3 passive connection openings
+    1 failed connection attempts
+    11 connection resets received
+    2 connections established
+    41888 segments received
+    3751 segments send out
+    4 segments retransmited
+    0 bad segments received.
+    26 resets sent
+Udp:
+    156 packets received
+    0 packets to unknown port received.
+    0 packet receive errors
+    156 packets sent
+UdpLite:
+TcpExt:
+    1 resets received for embryonic SYN_RECV sockets
+    41 TCP sockets finished time wait in fast timer
+    26 delayed acks sent
+    Quick ack mode was activated 4 times
+    209 packets directly queued to recvmsg prequeue.
+    60771 packets directly received from prequeue
+    40479 packets header predicted
+    43 packets header predicted and directly queued to user
+    320 acknowledgments not containing data received
+    312 predicted acknowledgments
+    4 congestion windows recovered after partial ack
+    0 TCP data loss events
+    4 other TCP timeouts
+    4 DSACKs sent for old packets
+    5 DSACKs received
+    6 connections reset due to unexpected data
+    11 connections reset due to early user close
+    TCPDSACKIgnoredNoUndo: 2
+    TCPSackShiftFallback: 1
+IpExt:
+    InOctets: 60961161
+    OutOctets: 454860

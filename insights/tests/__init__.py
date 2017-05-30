@@ -12,6 +12,10 @@ from insights.core import mapper, reducer, marshalling, plugins
 from insights.core.context import Context, PRODUCT_NAMES
 from insights.util import make_iter
 
+# Need to alias the name of TestArchive since pytest looks at it becuase it
+# starts with "Test".
+from insights.archive.tool import TestArchive as TA, Transform as T
+
 
 logger = logging.getLogger("test.util")
 
@@ -21,12 +25,6 @@ HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
 
 
 def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
-    # Do the import in this function so that the archive tool project isn't
-    # pulled in unless you're running this project's unit tests.
-
-    # Need to alias the name of TestArchive since pytest looks at it becuase it
-    # starts with "Test".
-    from insights_archive.tool import TestArchive as TA, Transform as T
     tmp_dir = tempfile.mkdtemp()
     hostname = HEARTBEAT_NAME
     return TA(hostname, base_archive="rhel7", transforms=[

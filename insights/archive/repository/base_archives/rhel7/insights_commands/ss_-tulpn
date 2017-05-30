@@ -1,0 +1,10 @@
+Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port              
+udp    UNCONN     0      0      127.0.0.1:323                   *:*                   users:(("chronyd",pid=437,fd=1))
+udp    UNCONN     0      0         *:68                    *:*                   users:(("dhclient",pid=514,fd=6))
+udp    UNCONN     0      0         *:7354                  *:*                   users:(("dhclient",pid=514,fd=20))
+udp    UNCONN     0      0       ::1:323                  :::*                   users:(("chronyd",pid=437,fd=2))
+udp    UNCONN     0      0        :::20132                :::*                   users:(("dhclient",pid=514,fd=21))
+tcp    LISTEN     0      128       *:22                    *:*                   users:(("sshd",pid=3479,fd=3))
+tcp    LISTEN     0      100    127.0.0.1:25                    *:*                   users:(("master",pid=1358,fd=13))
+tcp    LISTEN     0      128      :::22                   :::*                   users:(("sshd",pid=3479,fd=4))
+tcp    LISTEN     0      100     ::1:25                   :::*                   users:(("master",pid=1358,fd=14))

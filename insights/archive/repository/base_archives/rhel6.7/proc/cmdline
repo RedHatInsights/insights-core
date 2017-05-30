@@ -1,0 +1,1 @@
+console=ttyS0 ro root=UUID=0e6b1614-7bbe-4d6e-bc78-a5556a123ba8 rd_NO_LUKS  KEYBOARDTYPE=pc KEYTABLE=us LANG=en_US.UTF-8 xen_blkfront.sda_is_xvda=1 console=ttyS0,115200n8 console=tty0 rd_NO_MD SYSFONT=latarcyrheb-sun16  rd_NO_LVM rd_NO_DM

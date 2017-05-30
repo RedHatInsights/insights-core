@@ -87,18 +87,16 @@ class TestZipFileExtractor(unittest.TestCase):
         with zipfile.ZipFile("/tmp/test.zip", "w") as zf:
             _add_to_zip(zf, tmp_dir, os.path.basename(tmp_dir))
 
-        with archives.ZipExtractor() as ex:
-            ex.from_path("/tmp/test.zip")
-            self.assertFalse("foo" in ex.getnames())
-            self.assertTrue(any(f.endswith("/sys/kernel/kexec_crash_loaded") for f in ex.getnames()))
-
-            spec_mapper = SpecMapper(ex)
-            self.assertEquals(spec_mapper.get_content("hostname"), ["insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"])
-
         try:
+            with archives.ZipExtractor() as ex:
+                ex.from_path("/tmp/test.zip")
+                self.assertFalse("foo" in ex.getnames())
+                self.assertTrue(any(f.endswith("/sys/kernel/kexec_crash_size") for f in ex.getnames()))
+
+                spec_mapper = SpecMapper(ex)
+                self.assertEquals(spec_mapper.get_content("hostname"), ["insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"])
+        finally:
             os.unlink("/tmp/test.zip")
-        except:
-            pass
 
         subprocess.call(shlex.split("rm -rf %s" % tmp_dir))
         subprocess.call(shlex.split("rm -rf %s" % arc_path))

@@ -1,0 +1,6 @@
+Loaded plugins: amazon-id, rhui-lb, security
+repo id                            repo name                              status
+rhui-REGION-client-config-server-6 Red Hat Update Infrastructure 2.0 Clie     7
+rhui-REGION-rhel-server-releases   Red Hat Enterprise Linux Server 6 (RPM 19525
+rhui-REGION-rhel-server-rh-common  Red Hat Enterprise Linux Server 6 RH C   129
+repolist: 19661

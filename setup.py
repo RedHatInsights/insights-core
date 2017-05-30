@@ -33,8 +33,7 @@ develop = {
     'Sphinx',
     'sphinx_rtd_theme',
     'Jinja2==2.9.6',
-    'wheel',
-    'insights-archive'
+    'wheel'
 }
 
 if __name__ == "__main__":

@@ -1,0 +1,684 @@
+/dev:
+total 4
+drwxr-xr-x. 15  0  0     3340 May 30 11:53 .
+dr-xr-xr-x. 26  0  0     4096 May 30 13:07 ..
+drwxr-xr-x.  2  0  0       40 May 30 11:52 .mdadm
+drwxr-xr-x.  7  0  0      160 May 30 11:52 .udev
+lrwxrwxrwx.  1  0  0       13 May 30 11:52 MAKEDEV -> /sbin/MAKEDEV
+crw-rw----.  1  0  0  10,  57 May 30 11:52 autofs
+drwxr-xr-x.  2  0  0      560 May 30 11:52 block
+crw-------.  1  0  0  10, 234 May 30 11:52 btrfs-control
+drwxr-xr-x.  2  0  0     2420 May 30 11:53 char
+crw-------.  1  0  0   5,   1 May 30 11:52 console
+lrwxrwxrwx.  1  0  0       11 May 30 11:52 core -> /proc/kcore
+drwxr-xr-x.  3  0  0       80 May 30 11:52 cpu
+crw-rw----.  1  0  0  10,  61 May 30 11:52 cpu_dma_latency
+crw-rw----.  1  0  0  10,  62 May 30 11:52 crash
+drwxr-xr-x.  4  0  0       80 May 30 11:52 disk
+lrwxrwxrwx.  1  0  0        3 May 30 11:52 fb -> fb0
+crw-rw----.  1  0  0  29,   0 May 30 11:52 fb0
+lrwxrwxrwx.  1  0  0       13 May 30 11:52 fd -> /proc/self/fd
+crw-rw-rw-.  1  0  0   1,   7 May 30 11:52 full
+crw-rw-rw-.  1  0  0  10, 229 May 30 11:52 fuse
+crw-rw----.  1  0  0  10, 228 May 30 11:52 hpet
+drwxr-xr-x.  2  0  0       40 May 30 11:52 hugepages
+crw-------.  1  0  0 229,   0 May 30 11:52 hvc0
+drwxr-xr-x.  3  0  0      220 May 30 11:52 input
+crw-rw----.  1  0  0   1,  11 May 30 11:52 kmsg
+srw-rw-rw-.  1  0  0        0 May 30 11:52 log
+brw-rw----.  1  0  6   7,   0 May 30 11:52 loop0
+brw-rw----.  1  0  6   7,   1 May 30 11:52 loop1
+brw-rw----.  1  0  6   7,   2 May 30 11:52 loop2
+brw-rw----.  1  0  6   7,   3 May 30 11:52 loop3
+brw-rw----.  1  0  6   7,   4 May 30 11:52 loop4
+brw-rw----.  1  0  6   7,   5 May 30 11:52 loop5
+brw-rw----.  1  0  6   7,   6 May 30 11:52 loop6
+brw-rw----.  1  0  6   7,   7 May 30 11:52 loop7
+crw-rw----.  1  0  7   6,   0 May 30 11:52 lp0
+crw-rw----.  1  0  7   6,   1 May 30 11:52 lp1
+crw-rw----.  1  0  7   6,   2 May 30 11:52 lp2
+crw-rw----.  1  0  7   6,   3 May 30 11:52 lp3
+drwxr-xr-x.  2  0  0       60 May 30 11:52 mapper
+crw-rw----.  1  0  0  10, 227 May 30 11:52 mcelog
+crw-r-----.  1  0  9   1,   1 May 30 11:52 mem
+drwxr-xr-x.  2  0  0       60 May 30 11:52 net
+crw-rw----.  1  0  0  10,  60 May 30 11:52 network_latency
+crw-rw----.  1  0  0  10,  59 May 30 11:52 network_throughput
+crw-rw-rw-.  1  0  0   1,   3 May 30 11:52 null
+crw-r-----.  1  0  9  10, 144 May 30 11:52 nvram
+crw-rw----.  1  0  0   1,  12 May 30 11:52 oldmem
+crw-r-----.  1  0  9   1,   4 May 30 11:52 port
+crw-------.  1  0  0 108,   0 May 30 11:52 ppp
+crw-rw-rw-.  1  0  5   5,   2 May 30 13:08 ptmx
+drwxr-xr-x.  2  0  0        0 May 30 11:52 pts
+brw-rw----.  1  0  6   1,   0 May 30 11:52 ram0
+brw-rw----.  1  0  6   1,   1 May 30 11:52 ram1
+brw-rw----.  1  0  6   1,  10 May 30 11:52 ram10
+brw-rw----.  1  0  6   1,  11 May 30 11:52 ram11
+brw-rw----.  1  0  6   1,  12 May 30 11:52 ram12
+brw-rw----.  1  0  6   1,  13 May 30 11:52 ram13
+brw-rw----.  1  0  6   1,  14 May 30 11:52 ram14
+brw-rw----.  1  0  6   1,  15 May 30 11:52 ram15
+brw-rw----.  1  0  6   1,   2 May 30 11:52 ram2
+brw-rw----.  1  0  6   1,   3 May 30 11:52 ram3
+brw-rw----.  1  0  6   1,   4 May 30 11:52 ram4
+brw-rw----.  1  0  6   1,   5 May 30 11:52 ram5
+brw-rw----.  1  0  6   1,   6 May 30 11:52 ram6
+brw-rw----.  1  0  6   1,   7 May 30 11:52 ram7
+brw-rw----.  1  0  6   1,   8 May 30 11:52 ram8
+brw-rw----.  1  0  6   1,   9 May 30 11:52 ram9
+crw-rw-rw-.  1  0  0   1,   8 May 30 11:52 random
+drwxr-xr-x.  2  0  0       60 May 30 11:52 raw
+lrwxrwxrwx.  1  0  0        5 May 30 11:53 root -> xvda1
+lrwxrwxrwx.  1  0  0        4 May 30 11:52 rtc -> rtc0
+crw-rw----.  1  0  0 254,   0 May 30 11:52 rtc0
+drwxrwxrwt.  2  0  0       40 May 30 11:52 shm
+crw-rw----.  1  0  0  10, 231 May 30 11:52 snapshot
+lrwxrwxrwx.  1  0  0       15 May 30 11:52 stderr -> /proc/self/fd/2
+lrwxrwxrwx.  1  0  0       15 May 30 11:52 stdin -> /proc/self/fd/0
+lrwxrwxrwx.  1  0  0       15 May 30 11:52 stdout -> /proc/self/fd/1
+lrwxrwxrwx.  1  0  0        4 May 30 11:52 systty -> tty0
+crw-rw-rw-.  1  0  5   5,   0 May 30 13:06 tty
+crw--w----.  1  0  5   4,   0 May 30 11:52 tty0
+crw-------.  1  0  0   4,   1 May 30 11:53 tty1
+crw--w----.  1  0  5   4,  10 May 30 11:52 tty10
+crw--w----.  1  0  5   4,  11 May 30 11:52 tty11
+crw--w----.  1  0  5   4,  12 May 30 11:52 tty12
+crw--w----.  1  0  5   4,  13 May 30 11:52 tty13
+crw--w----.  1  0  5   4,  14 May 30 11:52 tty14
+crw--w----.  1  0  5   4,  15 May 30 11:52 tty15
+crw--w----.  1  0  5   4,  16 May 30 11:52 tty16
+crw--w----.  1  0  5   4,  17 May 30 11:52 tty17
+crw--w----.  1  0  5   4,  18 May 30 11:52 tty18
+crw--w----.  1  0  5   4,  19 May 30 11:52 tty19
+crw-------.  1  0  0   4,   2 May 30 11:53 tty2
+crw--w----.  1  0  5   4,  20 May 30 11:52 tty20
+crw--w----.  1  0  5   4,  21 May 30 11:52 tty21
+crw--w----.  1  0  5   4,  22 May 30 11:52 tty22
+crw--w----.  1  0  5   4,  23 May 30 11:52 tty23
+crw--w----.  1  0  5   4,  24 May 30 11:52 tty24
+crw--w----.  1  0  5   4,  25 May 30 11:52 tty25
+crw--w----.  1  0  5   4,  26 May 30 11:52 tty26
+crw--w----.  1  0  5   4,  27 May 30 11:52 tty27
+crw--w----.  1  0  5   4,  28 May 30 11:52 tty28
+crw--w----.  1  0  5   4,  29 May 30 11:52 tty29
+crw-------.  1  0  0   4,   3 May 30 11:53 tty3
+crw--w----.  1  0  5   4,  30 May 30 11:52 tty30
+crw--w----.  1  0  5   4,  31 May 30 11:52 tty31
+crw--w----.  1  0  5   4,  32 May 30 11:52 tty32
+crw--w----.  1  0  5   4,  33 May 30 11:52 tty33
+crw--w----.  1  0  5   4,  34 May 30 11:52 tty34
+crw--w----.  1  0  5   4,  35 May 30 11:52 tty35
+crw--w----.  1  0  5   4,  36 May 30 11:52 tty36
+crw--w----.  1  0  5   4,  37 May 30 11:52 tty37
+crw--w----.  1  0  5   4,  38 May 30 11:52 tty38
+crw--w----.  1  0  5   4,  39 May 30 11:52 tty39
+crw-------.  1  0  0   4,   4 May 30 11:53 tty4
+crw--w----.  1  0  5   4,  40 May 30 11:52 tty40
+crw--w----.  1  0  5   4,  41 May 30 11:52 tty41
+crw--w----.  1  0  5   4,  42 May 30 11:52 tty42
+crw--w----.  1  0  5   4,  43 May 30 11:52 tty43
+crw--w----.  1  0  5   4,  44 May 30 11:52 tty44
+crw--w----.  1  0  5   4,  45 May 30 11:52 tty45
+crw--w----.  1  0  5   4,  46 May 30 11:52 tty46
+crw--w----.  1  0  5   4,  47 May 30 11:52 tty47
+crw--w----.  1  0  5   4,  48 May 30 11:52 tty48
+crw--w----.  1  0  5   4,  49 May 30 11:52 tty49
+crw-------.  1  0  0   4,   5 May 30 11:53 tty5
+crw--w----.  1  0  5   4,  50 May 30 11:52 tty50
+crw--w----.  1  0  5   4,  51 May 30 11:52 tty51
+crw--w----.  1  0  5   4,  52 May 30 11:52 tty52
+crw--w----.  1  0  5   4,  53 May 30 11:52 tty53
+crw--w----.  1  0  5   4,  54 May 30 11:52 tty54
+crw--w----.  1  0  5   4,  55 May 30 11:52 tty55
+crw--w----.  1  0  5   4,  56 May 30 11:52 tty56
+crw--w----.  1  0  5   4,  57 May 30 11:52 tty57
+crw--w----.  1  0  5   4,  58 May 30 11:52 tty58
+crw--w----.  1  0  5   4,  59 May 30 11:52 tty59
+crw-------.  1  0  0   4,   6 May 30 11:53 tty6
+crw--w----.  1  0  5   4,  60 May 30 11:52 tty60
+crw--w----.  1  0  5   4,  61 May 30 11:52 tty61
+crw--w----.  1  0  5   4,  62 May 30 11:52 tty62
+crw--w----.  1  0  5   4,  63 May 30 11:52 tty63
+crw--w----.  1  0  5   4,   7 May 30 11:52 tty7
+crw--w----.  1  0  5   4,   8 May 30 11:52 tty8
+crw--w----.  1  0  5   4,   9 May 30 11:52 tty9
+crw-rw----.  1  0 18   4,  64 May 30 11:53 ttyS0
+crw-rw----.  1  0 18   4,  65 May 30 11:52 ttyS1
+crw-rw----.  1  0 18   4,  66 May 30 11:52 ttyS2
+crw-rw----.  1  0 18   4,  67 May 30 11:52 ttyS3
+crw-rw-rw-.  1  0  0   1,   9 May 30 11:52 urandom
+crw-rw----.  1  0  0 250,   0 May 30 11:52 usbmon0
+crw-rw----.  1 69  5   7,   0 May 30 11:52 vcs
+crw-rw----.  1 69  5   7,   1 May 30 11:52 vcs1
+crw-rw----.  1 69  5   7,   2 May 30 11:53 vcs2
+crw-rw----.  1 69  5   7,   3 May 30 11:53 vcs3
+crw-rw----.  1 69  5   7,   4 May 30 11:53 vcs4
+crw-rw----.  1 69  5   7,   5 May 30 11:53 vcs5
+crw-rw----.  1 69  5   7,   6 May 30 11:53 vcs6
+crw-rw----.  1 69  5   7, 128 May 30 11:52 vcsa
+crw-rw----.  1 69  5   7, 129 May 30 11:52 vcsa1
+crw-rw----.  1 69  5   7, 130 May 30 11:53 vcsa2
+crw-rw----.  1 69  5   7, 131 May 30 11:53 vcsa3
+crw-rw----.  1 69  5   7, 132 May 30 11:53 vcsa4
+crw-rw----.  1 69  5   7, 133 May 30 11:53 vcsa5
+crw-rw----.  1 69  5   7, 134 May 30 11:53 vcsa6
+crw-rw----.  1  0  0  10,  63 May 30 11:52 vga_arbiter
+brw-rw----.  1  0  6 202,   0 May 30 11:52 xvda
+brw-rw----.  1  0  6 202,   1 May 30 11:53 xvda1
+crw-rw-rw-.  1  0  0   1,   5 May 30 11:52 zero
+
+/dev/.mdadm:
+total 0
+drwxr-xr-x.  2 0 0   40 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+
+/dev/.udev:
+total 4
+drwxr-xr-x.  7 0 0  160 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+drwxr-xr-x.  2 0 0 2960 May 30 11:53 db
+drwxr-xr-x.  2 0 0   60 May 30 11:52 firmware-missing
+drwxr-xr-x. 10 0 0  200 May 30 11:52 links
+-rw-r--r--.  1 0 0 1294 May 30 13:08 queue.bin
+drwxr-xr-x.  2 0 0   60 May 30 11:52 rules.d
+drwxr-xr-x.  2 0 0  520 May 30 11:53 watch
+
+/dev/.udev/db:
+total 132
+drwxr-xr-x. 2 0 0 2960 May 30 11:53 .
+drwxr-xr-x. 7 0 0  160 May 30 11:52 ..
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop0
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop1
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop2
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop3
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop4
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop5
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop6
+-rw-r--r--. 1 0 0   61 May 30 11:52 block:loop7
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram0
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram1
+-rw-r--r--. 1 0 0   62 May 30 11:52 block:ram10
+-rw-r--r--. 1 0 0   62 May 30 11:52 block:ram11
+-rw-r--r--. 1 0 0   62 May 30 11:52 block:ram12
+-rw-r--r--. 1 0 0   62 May 30 11:52 block:ram13
+-rw-r--r--. 1 0 0   62 May 30 11:52 block:ram14
+-rw-r--r--. 1 0 0   62 May 30 11:52 block:ram15
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram2
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram3
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram4
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram5
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram6
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram7
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram8
+-rw-r--r--. 1 0 0   60 May 30 11:52 block:ram9
+-rw-r--r--. 1 0 0  136 May 30 11:52 block:xvda
+-rw-r--r--. 1 0 0  355 May 30 11:53 block:xvda1
+lrwxrwxrwx. 1 0 0   22 May 30 11:52 cpuid:cpu0 -> cpu/0/cpuid char/203:0
+-rw-r--r--. 1 0 0   45 May 30 11:52 input:event0
+-rw-r--r--. 1 0 0   45 May 30 11:52 input:event1
+-rw-r--r--. 1 0 0   45 May 30 11:52 input:event2
+-rw-r--r--. 1 0 0  163 May 30 11:52 input:event3
+-rw-r--r--. 1 0 0  167 May 30 11:52 input:event4
+lrwxrwxrwx. 1 0 0   21 May 30 11:52 input:mice -> input/mice char/13:63
+lrwxrwxrwx. 1 0 0   23 May 30 11:52 input:mouse0 -> input/mouse0 char/13:32
+-rw-r--r--. 1 0 0  144 May 30 11:52 input:mouse1
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 mem:full -> full char/1:7
+lrwxrwxrwx. 1 0 0   14 May 30 11:52 mem:kmsg -> kmsg char/1:11
+lrwxrwxrwx. 1 0 0   12 May 30 11:52 mem:mem -> mem char/1:1
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 mem:null -> null char/1:3
+lrwxrwxrwx. 1 0 0   16 May 30 11:52 mem:oldmem -> oldmem char/1:12
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 mem:port -> port char/1:4
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 mem:random -> random char/1:8
+lrwxrwxrwx. 1 0 0   16 May 30 11:52 mem:urandom -> urandom char/1:9
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 mem:zero -> zero char/1:5
+lrwxrwxrwx. 1 0 0   17 May 30 11:52 misc:autofs -> autofs char/10:57
+lrwxrwxrwx. 1 0 0   26 May 30 11:52 misc:cpu_dma_latency -> cpu_dma_latency char/10:61
+lrwxrwxrwx. 1 0 0   16 May 30 11:52 misc:crash -> crash char/10:62
+lrwxrwxrwx. 1 0 0   25 May 30 11:52 misc:device-mapper -> mapper/control char/10:58
+lrwxrwxrwx. 1 0 0   16 May 30 11:52 misc:hpet -> hpet char/10:228
+lrwxrwxrwx. 1 0 0   18 May 30 11:52 misc:mcelog -> mcelog char/10:227
+lrwxrwxrwx. 1 0 0   25 May 30 11:52 misc:microcode -> cpu/microcode char/10:184
+lrwxrwxrwx. 1 0 0   26 May 30 11:52 misc:network_latency -> network_latency char/10:60
+lrwxrwxrwx. 1 0 0   29 May 30 11:52 misc:network_throughput -> network_throughput char/10:59
+lrwxrwxrwx. 1 0 0   17 May 30 11:52 misc:nvram -> nvram char/10:144
+lrwxrwxrwx. 1 0 0   20 May 30 11:52 misc:snapshot -> snapshot char/10:231
+lrwxrwxrwx. 1 0 0   22 May 30 11:52 misc:vga_arbiter -> vga_arbiter char/10:63
+lrwxrwxrwx. 1 0 0   20 May 30 11:52 msr:msr0 -> cpu/0/msr char/202:0
+lrwxrwxrwx. 1 0 0   21 May 30 11:52 raw:rawctl -> raw/rawctl char/162:0
+lrwxrwxrwx. 1 0 0   19 May 30 11:52 rtc:rtc0 -> rtc0 char/254:0 rtc
+-rw-r--r--. 1 0 0   17 May 30 11:52 serio:serio0
+lrwxrwxrwx. 1 0 0   16 May 30 11:52 tty:console -> console char/5:1
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:ptmx -> ptmx char/5:2
+lrwxrwxrwx. 1 0 0   12 May 30 11:52 tty:tty -> tty char/5:0
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty0 -> tty0 char/4:0
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty1 -> tty1 char/4:1
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty10 -> tty10 char/4:10
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty11 -> tty11 char/4:11
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty12 -> tty12 char/4:12
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty13 -> tty13 char/4:13
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty14 -> tty14 char/4:14
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty15 -> tty15 char/4:15
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty16 -> tty16 char/4:16
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty17 -> tty17 char/4:17
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty18 -> tty18 char/4:18
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty19 -> tty19 char/4:19
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty2 -> tty2 char/4:2
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty20 -> tty20 char/4:20
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty21 -> tty21 char/4:21
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty22 -> tty22 char/4:22
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty23 -> tty23 char/4:23
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty24 -> tty24 char/4:24
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty25 -> tty25 char/4:25
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty26 -> tty26 char/4:26
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty27 -> tty27 char/4:27
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty28 -> tty28 char/4:28
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty29 -> tty29 char/4:29
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty3 -> tty3 char/4:3
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty30 -> tty30 char/4:30
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty31 -> tty31 char/4:31
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty32 -> tty32 char/4:32
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty33 -> tty33 char/4:33
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty34 -> tty34 char/4:34
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty35 -> tty35 char/4:35
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty36 -> tty36 char/4:36
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty37 -> tty37 char/4:37
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty38 -> tty38 char/4:38
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty39 -> tty39 char/4:39
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty4 -> tty4 char/4:4
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty40 -> tty40 char/4:40
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty41 -> tty41 char/4:41
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty42 -> tty42 char/4:42
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty43 -> tty43 char/4:43
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty44 -> tty44 char/4:44
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty45 -> tty45 char/4:45
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty46 -> tty46 char/4:46
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty47 -> tty47 char/4:47
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty48 -> tty48 char/4:48
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty49 -> tty49 char/4:49
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty5 -> tty5 char/4:5
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty50 -> tty50 char/4:50
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty51 -> tty51 char/4:51
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty52 -> tty52 char/4:52
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty53 -> tty53 char/4:53
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty54 -> tty54 char/4:54
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty55 -> tty55 char/4:55
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty56 -> tty56 char/4:56
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty57 -> tty57 char/4:57
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty58 -> tty58 char/4:58
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty59 -> tty59 char/4:59
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty6 -> tty6 char/4:6
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty60 -> tty60 char/4:60
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty61 -> tty61 char/4:61
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty62 -> tty62 char/4:62
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:tty63 -> tty63 char/4:63
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty7 -> tty7 char/4:7
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty8 -> tty8 char/4:8
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 tty:tty9 -> tty9 char/4:9
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:ttyS0 -> ttyS0 char/4:64
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:ttyS1 -> ttyS1 char/4:65
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:ttyS2 -> ttyS2 char/4:66
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 tty:ttyS3 -> ttyS3 char/4:67
+lrwxrwxrwx. 1 0 0   18 May 30 11:52 usbmon:usbmon0 -> usbmon0 char/250:0
+lrwxrwxrwx. 1 0 0   12 May 30 11:52 vc:vcs -> vcs char/7:0
+lrwxrwxrwx. 1 0 0   13 May 30 11:52 vc:vcs1 -> vcs1 char/7:1
+lrwxrwxrwx. 1 0 0   13 May 30 11:53 vc:vcs2 -> vcs2 char/7:2
+lrwxrwxrwx. 1 0 0   13 May 30 11:53 vc:vcs3 -> vcs3 char/7:3
+lrwxrwxrwx. 1 0 0   13 May 30 11:53 vc:vcs4 -> vcs4 char/7:4
+lrwxrwxrwx. 1 0 0   13 May 30 11:53 vc:vcs5 -> vcs5 char/7:5
+lrwxrwxrwx. 1 0 0   13 May 30 11:53 vc:vcs6 -> vcs6 char/7:6
+lrwxrwxrwx. 1 0 0   15 May 30 11:52 vc:vcsa -> vcsa char/7:128
+lrwxrwxrwx. 1 0 0   16 May 30 11:52 vc:vcsa1 -> vcsa1 char/7:129
+lrwxrwxrwx. 1 0 0   16 May 30 11:53 vc:vcsa2 -> vcsa2 char/7:130
+lrwxrwxrwx. 1 0 0   16 May 30 11:53 vc:vcsa3 -> vcsa3 char/7:131
+lrwxrwxrwx. 1 0 0   16 May 30 11:53 vc:vcsa4 -> vcsa4 char/7:132
+lrwxrwxrwx. 1 0 0   16 May 30 11:53 vc:vcsa5 -> vcsa5 char/7:133
+lrwxrwxrwx. 1 0 0   16 May 30 11:53 vc:vcsa6 -> vcsa6 char/7:134
+
+/dev/.udev/firmware-missing:
+total 0
+drwxr-xr-x. 2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 7 0 0 160 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0  46 May 30 11:52 intel-ucode\x2f06-3f-02 -> /devices/platform/microcode/firmware/microcode
+
+/dev/.udev/links:
+total 0
+drwxr-xr-x. 10 0 0 200 May 30 11:52 .
+drwxr-xr-x.  7 0 0 160 May 30 11:52 ..
+drwxr-xr-x.  2 0 0  60 May 30 11:52 disk\x2fby-path\x2fxen-vbd-768
+drwxr-xr-x.  2 0 0  60 May 30 11:52 disk\x2fby-path\x2fxen-vbd-768-part1
+drwxr-xr-x.  2 0 0  60 May 30 11:52 disk\x2fby-uuid\x2f0e6b1614-7bbe-4d6e-bc78-a5556a123ba8
+drwxr-xr-x.  2 0 0  60 May 30 11:52 input\x2fby-path\x2fplatform-i8042-serio-0-event-kbd
+drwxr-xr-x.  2 0 0  60 May 30 11:52 input\x2fby-path\x2fplatform-i8042-serio-1-event-mouse
+drwxr-xr-x.  2 0 0  60 May 30 11:52 input\x2fby-path\x2fplatform-i8042-serio-1-mouse
+drwxr-xr-x.  2 0 0  60 May 30 11:52 root
+drwxr-xr-x.  2 0 0  60 May 30 11:52 rtc
+
+/dev/.udev/links/disk\x2fby-path\x2fxen-vbd-768:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  27 May 30 11:52 b202:0 -> /devices/vbd-768/block/xvda
+
+/dev/.udev/links/disk\x2fby-path\x2fxen-vbd-768-part1:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  33 May 30 11:52 b202:1 -> /devices/vbd-768/block/xvda/xvda1
+
+/dev/.udev/links/disk\x2fby-uuid\x2f0e6b1614-7bbe-4d6e-bc78-a5556a123ba8:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  33 May 30 11:52 b202:1 -> /devices/vbd-768/block/xvda/xvda1
+
+/dev/.udev/links/input\x2fby-path\x2fplatform-i8042-serio-0-event-kbd:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  50 May 30 11:52 c13:67 -> /devices/platform/i8042/serio0/input/input3/event3
+
+/dev/.udev/links/input\x2fby-path\x2fplatform-i8042-serio-1-event-mouse:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  50 May 30 11:52 c13:68 -> /devices/platform/i8042/serio1/input/input4/event4
+
+/dev/.udev/links/input\x2fby-path\x2fplatform-i8042-serio-1-mouse:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  50 May 30 11:52 c13:33 -> /devices/platform/i8042/serio1/input/input4/mouse1
+
+/dev/.udev/links/root:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  33 May 30 11:52 b202:1 -> /devices/vbd-768/block/xvda/xvda1
+
+/dev/.udev/links/rtc:
+total 0
+drwxr-xr-x.  2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 10 0 0 200 May 30 11:52 ..
+lrwxrwxrwx.  1 0 0  28 May 30 11:52 c254:0 -> /devices/pnp0/00:05/rtc/rtc0
+
+/dev/.udev/rules.d:
+total 4
+drwxr-xr-x. 2 0 0  60 May 30 11:52 .
+drwxr-xr-x. 7 0 0 160 May 30 11:52 ..
+-rw-r--r--. 1 0 0 155 May 30 11:52 99-root.rules
+
+/dev/.udev/watch:
+total 0
+drwxr-xr-x. 2 0 0 520 May 30 11:53 .
+drwxr-xr-x. 7 0 0 160 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 12 -> /devices/virtual/block/loop2
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 13 -> /devices/virtual/block/loop1
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 14 -> /devices/virtual/block/ram3
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 15 -> /devices/virtual/block/loop0
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 18 -> /devices/virtual/block/loop4
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 19 -> /devices/virtual/block/ram4
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 20 -> /devices/virtual/block/loop5
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 21 -> /devices/virtual/block/loop7
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 22 -> /devices/virtual/block/ram0
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 23 -> /devices/virtual/block/ram1
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 24 -> /devices/virtual/block/loop6
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 25 -> /devices/virtual/block/ram10
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 26 -> /devices/virtual/block/ram11
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 27 -> /devices/virtual/block/ram12
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 28 -> /devices/virtual/block/ram13
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 29 -> /devices/virtual/block/ram14
+lrwxrwxrwx. 1 0 0  28 May 30 11:52 30 -> /devices/virtual/block/ram15
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 31 -> /devices/virtual/block/ram5
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 32 -> /devices/virtual/block/ram6
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 33 -> /devices/virtual/block/ram7
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 34 -> /devices/virtual/block/ram8
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 35 -> /devices/virtual/block/ram9
+lrwxrwxrwx. 1 0 0  27 May 30 11:52 36 -> /devices/vbd-768/block/xvda
+lrwxrwxrwx. 1 0 0  33 May 30 11:53 39 -> /devices/vbd-768/block/xvda/xvda1
+
+/dev/block:
+total 0
+drwxr-xr-x.  2 0 0  560 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:0 -> ../ram0
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:1 -> ../ram1
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 1:10 -> ../ram10
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 1:11 -> ../ram11
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 1:12 -> ../ram12
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 1:13 -> ../ram13
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 1:14 -> ../ram14
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 1:15 -> ../ram15
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:2 -> ../ram2
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:3 -> ../ram3
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:4 -> ../ram4
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:5 -> ../ram5
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:6 -> ../ram6
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:7 -> ../ram7
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:8 -> ../ram8
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:9 -> ../ram9
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 202:0 -> ../xvda
+lrwxrwxrwx.  1 0 0    8 May 30 11:53 202:1 -> ../xvda1
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:0 -> ../loop0
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:1 -> ../loop1
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:2 -> ../loop2
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:3 -> ../loop3
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:4 -> ../loop4
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:5 -> ../loop5
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:6 -> ../loop6
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:7 -> ../loop7
+
+/dev/char:
+total 0
+drwxr-xr-x.  2 0 0 2420 May 30 11:53 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 10:144 -> ../nvram
+lrwxrwxrwx.  1 0 0   16 May 30 11:52 10:184 -> ../cpu/microcode
+lrwxrwxrwx.  1 0 0    9 May 30 11:52 10:227 -> ../mcelog
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 10:228 -> ../hpet
+lrwxrwxrwx.  1 0 0   11 May 30 11:52 10:231 -> ../snapshot
+lrwxrwxrwx.  1 0 0    9 May 30 11:52 10:57 -> ../autofs
+lrwxrwxrwx.  1 0 0   17 May 30 11:52 10:58 -> ../mapper/control
+lrwxrwxrwx.  1 0 0   21 May 30 11:52 10:59 -> ../network_throughput
+lrwxrwxrwx.  1 0 0   18 May 30 11:52 10:60 -> ../network_latency
+lrwxrwxrwx.  1 0 0   18 May 30 11:52 10:61 -> ../cpu_dma_latency
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 10:62 -> ../crash
+lrwxrwxrwx.  1 0 0   14 May 30 11:52 10:63 -> ../vga_arbiter
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:32 -> ../input/mouse0
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:33 -> ../input/mouse1
+lrwxrwxrwx.  1 0 0   13 May 30 11:52 13:63 -> ../input/mice
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:64 -> ../input/event0
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:65 -> ../input/event1
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:66 -> ../input/event2
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:67 -> ../input/event3
+lrwxrwxrwx.  1 0 0   15 May 30 11:52 13:68 -> ../input/event4
+lrwxrwxrwx.  1 0 0   13 May 30 11:52 162:0 -> ../raw/rawctl
+lrwxrwxrwx.  1 0 0    6 May 30 11:52 1:1 -> ../mem
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:11 -> ../kmsg
+lrwxrwxrwx.  1 0 0    9 May 30 11:52 1:12 -> ../oldmem
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:3 -> ../null
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:4 -> ../port
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:5 -> ../zero
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 1:7 -> ../full
+lrwxrwxrwx.  1 0 0    9 May 30 11:52 1:8 -> ../random
+lrwxrwxrwx.  1 0 0   10 May 30 11:52 1:9 -> ../urandom
+lrwxrwxrwx.  1 0 0   12 May 30 11:52 202:0 -> ../cpu/0/msr
+lrwxrwxrwx.  1 0 0   14 May 30 11:52 203:0 -> ../cpu/0/cpuid
+lrwxrwxrwx.  1 0 0   10 May 30 11:52 250:0 -> ../usbmon0
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 254:0 -> ../rtc0
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:0 -> ../tty0
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:1 -> ../tty1
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:10 -> ../tty10
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:11 -> ../tty11
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:12 -> ../tty12
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:13 -> ../tty13
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:14 -> ../tty14
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:15 -> ../tty15
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:16 -> ../tty16
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:17 -> ../tty17
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:18 -> ../tty18
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:19 -> ../tty19
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:2 -> ../tty2
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:20 -> ../tty20
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:21 -> ../tty21
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:22 -> ../tty22
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:23 -> ../tty23
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:24 -> ../tty24
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:25 -> ../tty25
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:26 -> ../tty26
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:27 -> ../tty27
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:28 -> ../tty28
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:29 -> ../tty29
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:3 -> ../tty3
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:30 -> ../tty30
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:31 -> ../tty31
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:32 -> ../tty32
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:33 -> ../tty33
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:34 -> ../tty34
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:35 -> ../tty35
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:36 -> ../tty36
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:37 -> ../tty37
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:38 -> ../tty38
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:39 -> ../tty39
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:4 -> ../tty4
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:40 -> ../tty40
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:41 -> ../tty41
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:42 -> ../tty42
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:43 -> ../tty43
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:44 -> ../tty44
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:45 -> ../tty45
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:46 -> ../tty46
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:47 -> ../tty47
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:48 -> ../tty48
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:49 -> ../tty49
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:5 -> ../tty5
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:50 -> ../tty50
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:51 -> ../tty51
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:52 -> ../tty52
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:53 -> ../tty53
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:54 -> ../tty54
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:55 -> ../tty55
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:56 -> ../tty56
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:57 -> ../tty57
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:58 -> ../tty58
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:59 -> ../tty59
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:6 -> ../tty6
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:60 -> ../tty60
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:61 -> ../tty61
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:62 -> ../tty62
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:63 -> ../tty63
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:64 -> ../ttyS0
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:65 -> ../ttyS1
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:66 -> ../ttyS2
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 4:67 -> ../ttyS3
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:7 -> ../tty7
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:8 -> ../tty8
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 4:9 -> ../tty9
+lrwxrwxrwx.  1 0 0    6 May 30 11:52 5:0 -> ../tty
+lrwxrwxrwx.  1 0 0   10 May 30 11:52 5:1 -> ../console
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 5:2 -> ../ptmx
+lrwxrwxrwx.  1 0 0    6 May 30 11:52 7:0 -> ../vcs
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 7:1 -> ../vcs1
+lrwxrwxrwx.  1 0 0    7 May 30 11:52 7:128 -> ../vcsa
+lrwxrwxrwx.  1 0 0    8 May 30 11:52 7:129 -> ../vcsa1
+lrwxrwxrwx.  1 0 0    8 May 30 11:53 7:130 -> ../vcsa2
+lrwxrwxrwx.  1 0 0    8 May 30 11:53 7:131 -> ../vcsa3
+lrwxrwxrwx.  1 0 0    8 May 30 11:53 7:132 -> ../vcsa4
+lrwxrwxrwx.  1 0 0    8 May 30 11:53 7:133 -> ../vcsa5
+lrwxrwxrwx.  1 0 0    8 May 30 11:53 7:134 -> ../vcsa6
+lrwxrwxrwx.  1 0 0    7 May 30 11:53 7:2 -> ../vcs2
+lrwxrwxrwx.  1 0 0    7 May 30 11:53 7:3 -> ../vcs3
+lrwxrwxrwx.  1 0 0    7 May 30 11:53 7:4 -> ../vcs4
+lrwxrwxrwx.  1 0 0    7 May 30 11:53 7:5 -> ../vcs5
+lrwxrwxrwx.  1 0 0    7 May 30 11:53 7:6 -> ../vcs6
+
+/dev/cpu:
+total 0
+drwxr-xr-x.  3 0 0      80 May 30 11:52 .
+drwxr-xr-x. 15 0 0    3340 May 30 11:53 ..
+drwxr-xr-x.  2 0 0      80 May 30 11:52 0
+crw-rw----.  1 0 0 10, 184 May 30 11:52 microcode
+
+/dev/cpu/0:
+total 0
+drwxr-xr-x. 2 0 0     80 May 30 11:52 .
+drwxr-xr-x. 3 0 0     80 May 30 11:52 ..
+cr--r--r--. 1 0 0 203, 0 May 30 11:52 cpuid
+crw-rw----. 1 0 0 202, 0 May 30 11:52 msr
+
+/dev/disk:
+total 0
+drwxr-xr-x.  4 0 0   80 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+drwxr-xr-x.  2 0 0   80 May 30 11:52 by-path
+drwxr-xr-x.  2 0 0   60 May 30 11:52 by-uuid
+
+/dev/disk/by-path:
+total 0
+drwxr-xr-x. 2 0 0 80 May 30 11:52 .
+drwxr-xr-x. 4 0 0 80 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0 10 May 30 11:52 xen-vbd-768 -> ../../xvda
+lrwxrwxrwx. 1 0 0 11 May 30 11:53 xen-vbd-768-part1 -> ../../xvda1
+
+/dev/disk/by-uuid:
+total 0
+drwxr-xr-x. 2 0 0 60 May 30 11:52 .
+drwxr-xr-x. 4 0 0 80 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0 11 May 30 11:53 0e6b1614-7bbe-4d6e-bc78-a5556a123ba8 -> ../../xvda1
+
+/dev/hugepages:
+total 0
+drwxr-xr-x.  2 0 0   40 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+
+/dev/input:
+total 0
+drwxr-xr-x.  3 0 0    220 May 30 11:52 .
+drwxr-xr-x. 15 0 0   3340 May 30 11:53 ..
+drwxr-xr-x.  2 0 0    100 May 30 11:52 by-path
+crw-r-----.  1 0 0 13, 64 May 30 11:52 event0
+crw-r-----.  1 0 0 13, 65 May 30 11:52 event1
+crw-r-----.  1 0 0 13, 66 May 30 11:52 event2
+crw-r-----.  1 0 0 13, 67 May 30 11:52 event3
+crw-r-----.  1 0 0 13, 68 May 30 11:52 event4
+crw-r-----.  1 0 0 13, 63 May 30 11:52 mice
+crw-r-----.  1 0 0 13, 32 May 30 11:52 mouse0
+crw-r-----.  1 0 0 13, 33 May 30 11:52 mouse1
+
+/dev/input/by-path:
+total 0
+drwxr-xr-x. 2 0 0 100 May 30 11:52 .
+drwxr-xr-x. 3 0 0 220 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0   9 May 30 11:52 platform-i8042-serio-0-event-kbd -> ../event3
+lrwxrwxrwx. 1 0 0   9 May 30 11:52 platform-i8042-serio-1-event-mouse -> ../event4
+lrwxrwxrwx. 1 0 0   9 May 30 11:52 platform-i8042-serio-1-mouse -> ../mouse1
+
+/dev/mapper:
+total 0
+drwxr-xr-x.  2 0 0     60 May 30 11:52 .
+drwxr-xr-x. 15 0 0   3340 May 30 11:53 ..
+crw-rw----.  1 0 0 10, 58 May 30 11:52 control
+
+/dev/net:
+total 0
+drwxr-xr-x.  2 0 0      60 May 30 11:52 .
+drwxr-xr-x. 15 0 0    3340 May 30 11:53 ..
+crw-rw-rw-.  1 0 0 10, 200 May 30 11:52 tun
+
+/dev/pts:
+total 0
+drwxr-xr-x.  2   0 0      0 May 30 11:52 .
+drwxr-xr-x. 15   0 0   3340 May 30 11:53 ..
+crw--w----.  1 500 5 136, 0 May 30 13:08 0
+c---------.  1   0 0   5, 2 May 30 11:52 ptmx
+
+/dev/raw:
+total 0
+drwxr-xr-x.  2 0 0     60 May 30 11:52 .
+drwxr-xr-x. 15 0 0   3340 May 30 11:53 ..
+crw-rw----.  1 0 6 162, 0 May 30 11:52 rawctl
+
+/dev/shm:
+total 0
+drwxrwxrwt.  2 0 0   40 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..

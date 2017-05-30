@@ -1,0 +1,36 @@
+/var/log:
+total 744
+drwxr-xr-x. 12 root root   4096 May 30 13:07 .
+drwxr-xr-x. 20 root root   4096 Jul 14  2015 ..
+drwxr-xr-x.  2 root root   4096 Jan  5  2010 ConsoleKit
+drwxr-x---.  2 root root   4096 May 30 11:52 audit
+-rw-r--r--.  2 root root   7043 May 30 11:53 boot.log
+-rw-------.  1 root utmp    384 May 30 12:22 btmp
+-rw-r--r--.  1 root root   1134 May 30 11:52 choose_repo.log
+-rw-r--r--.  1 root root   1617 May 30 11:53 cloud-init-output.log
+-rw-r--r--.  1 root root      0 May 30 11:52 cloud-init.log
+-rw-------.  1 root root   3927 May 30 13:07 cron
+drwxr-xr-x.  2 lp   sys    4096 Jun 10  2015 cups
+-rw-r--r--.  1 root root  22697 May 30 11:52 dmesg
+-rw-r--r--.  1 root root 576330 Jul 14  2015 dracut.log
+-rw-r--r--.  1 root root 146292 May 30 13:08 lastlog
+-rw-------.  1 root root    209 May 30 11:53 maillog
+-rw-------.  1 root root  34259 May 30 13:07 messages
+drwxr-xr-x.  2 ntp  ntp    4096 Apr 28  2015 ntpstats
+drwxr-xr-x.  2 root root   4096 May 30 12:17 prelink
+drwx------.  2 root root   4096 May 30 13:08 redhat-access-insights
+drwxr-xr-x.  2 root root   4096 May 30 11:55 rhsm
+drwxr-xr-x.  2 root root   4096 May 30 11:52 sa
+drwx------.  3 root root   4096 Jul 14  2015 samba
+-rw-------.  1 root root   2167 May 30 13:08 secure
+-rw-------.  1 root root      0 Jul 14  2015 spooler
+drwxr-x---.  2 root root   4096 Jun 22  2015 sssd
+-rw-------.  1 root root      0 Jul 14  2015 tallylog
+-rw-rw-r--.  1 root utmp   4224 May 30 13:08 wtmp
+-rw-------.  1 root root     68 May 30 13:07 yum.log
+
+/var/log/audit:
+total 52
+drwxr-x---.  2 root root  4096 May 30 11:52 .
+drwxr-xr-x. 12 root root  4096 May 30 13:07 ..
+-rw-------.  1 root root 38322 May 30 13:08 audit.log

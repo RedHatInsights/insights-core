@@ -1,0 +1,143 @@
+# The amazon ec2 region is now dynamically set via yum.  REGION can be replaced by the amazon ec2 region for debugging
+[rhui-REGION-rhel-server-releases]
+name=Red Hat Enterprise Linux Server 6 (RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/os
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-releases-optional]
+name=Red Hat Enterprise Linux Server 6 Optional (RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/optional/os
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-releases-source]
+name=Red Hat Enterprise Linux Server 6 (SRPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/source/SRPMS
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-releases-optional-source]
+name=Red Hat Enterprise Linux Server 6 Optional (SRPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/optional/source/SRPMS
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-supplementary]
+name=Red Hat Enterprise Linux Server 6 Supplementary (RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/supplementary/os
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-source-supplementary]
+name=Red Hat Enterprise Linux Server 6 Supplementary (SRPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/supplementary/source/SRPMS
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-debug-supplementary]
+name=Red Hat Enterprise Linux Server 6 Supplementary (Debug RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/supplementary/debug
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-rhscl]
+name=Red Hat Enterprise Linux Server 6 RHSCL (RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/rhscl/1/os
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-source-rhscl]
+name=Red Hat Enterprise Linux Server 6 RHSCL (SRPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/rhscl/1/source/SRPMS
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-debug-rhscl]
+name=Red Hat Enterprise Linux Server 6 RHSCL (Debug RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/rhscl/1/debug
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-rh-common]
+name=Red Hat Enterprise Linux Server 6 RH Common (RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/rh-common/os
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-source-rh-common]
+name=Red Hat Enterprise Linux Server 6 RH Common (SRPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/rh-common/source/SRPMS
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+
+[rhui-REGION-rhel-server-debug-rh-common]
+name=Red Hat Enterprise Linux Server 6 RH Common (Debug RPMs)
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/content/dist/rhel/rhui/server/6/$releasever/$basearch/rh-common/debug
+enabled=0
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslclientkey=/etc/pki/rhui/content-rhel6.key
+sslclientcert=/etc/pki/rhui/product/content-rhel6.crt
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
