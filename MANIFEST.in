@@ -1,2 +1,6 @@
 include insights/defaults.yaml
+include insights/NAME
+include insights/VERSION
+include insights/COMMIT
+include insights/RELEASE
 graft insights/archive/repository/base_archives
