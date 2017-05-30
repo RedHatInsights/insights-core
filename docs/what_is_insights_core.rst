@@ -18,11 +18,11 @@ Rule Development Setup
 
 Clone the project::
 
-    git clone git@github.com:ansible/insights-core.git
+    git clone git@github.com:RedHatInsights/insights-core.git
 
 Or, alternatively, using HTTPS::
 
-    git clone https://github.com/ansible/insights-core.git
+    git clone https://github.com/RedHatInsights/insights-core.git
 
 Initialize a virtualenv::
 
@@ -49,7 +49,7 @@ If you wish to contribute to the insights-core project you'll need to create a f
 
 2. Reference the original project as "upstream"::
 
-    git add remote upstream git@github.com:ansible/insights-core.git
+    git add remote upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
 using the following commands::
@@ -58,7 +58,7 @@ using the following commands::
     git push origin master
 
 You will need to initialize the project per the
-`readme.md <https://github.com/ansible/insights-core/blob/master/README.md>`_
+`readme.md <https://github.com/RedHatInsights/insights-core/blob/master/README.md>`_
 file.
 
 
