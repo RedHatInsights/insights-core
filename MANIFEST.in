@@ -1,1 +1,6 @@
 include falafel/defaults.yaml
+include falafel/NAME
+include falafel/VERSION
+include falafel/COMMIT
+include falafel/RELEASE
+graft falafel/archive/repository/base_archives

@@ -17,7 +17,6 @@ entry_points = {
         'falafel-perf = falafel.tools.perf:main'
     ]
 }
-data_files = []
 
 runtime = {
     'pyyaml>=3.10,<=3.12',
@@ -46,12 +45,11 @@ if __name__ == "__main__":
         version=package_info["VERSION"],
         description="Insights Application Programming Interface",
         packages=find_packages(),
-        package_data={"": list(package_info) + ["*.json", "*.md", "*.html", "*.js", "*.yaml"]},
         install_requires=list(runtime),
         extras_require={
             'develop': list(runtime | develop),
             'optional': ['python-cjson', 'python-logstash', 'python-statsd', 'watchdog'],
         },
         entry_points=entry_points,
-        data_files=data_files
+        include_package_data=True
     )
