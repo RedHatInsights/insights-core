@@ -46,7 +46,6 @@ static_specs = {
     "corosync"                  : SimpleFileSpec("etc/sysconfig/corosync"),
     "cpuinfo"                   : First([SimpleFileSpec("proc/cpuinfo"),
                                     SimpleFileSpec("cpuinfo")]),
-    "cpuinfo_max_freq"          : PatternSpec(r"sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq"),
     "current_clocksource"       : SimpleFileSpec("sys/devices/system/clocksource/clocksource0/current_clocksource"),
     "date"                      : CommandSpec("/bin/date"),
     "date_iso"                  : CommandSpec("/bin/date --iso-8601=seconds"),
