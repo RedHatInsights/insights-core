@@ -1,0 +1,10 @@
+driver: vif
+version: 
+firmware-version: 
+expansion-rom-version: 
+bus-info: vif-0
+supports-statistics: yes
+supports-test: no
+supports-eeprom-access: no
+supports-register-dump: no
+supports-priv-flags: no

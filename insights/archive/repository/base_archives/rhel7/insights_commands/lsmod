@@ -1,0 +1,46 @@
+Module                  Size  Used by
+tcp_diag               12591  0 
+udp_diag               12801  0 
+inet_diag              18949  2 tcp_diag,udp_diag
+binfmt_misc            17468  1 
+isofs                  39844  0 
+intel_powerclamp       14419  0 
+intel_rapl             19321  0 
+iosf_mbi               13523  1 intel_rapl
+crc32_pclmul           13113  0 
+ghash_clmulni_intel    13259  0 
+aesni_intel            69884  0 
+lrw                    13286  1 aesni_intel
+gf128mul               14951  1 lrw
+glue_helper            13990  1 aesni_intel
+ablk_helper            13597  1 aesni_intel
+cryptd                 20359  3 ghash_clmulni_intel,aesni_intel,ablk_helper
+cirrus                 24597  1 
+ttm                    93908  1 cirrus
+drm_kms_helper        146456  1 cirrus
+syscopyarea            12529  1 drm_kms_helper
+sysfillrect            12701  1 drm_kms_helper
+sysimgblt              12640  1 drm_kms_helper
+fb_sys_fops            12703  1 drm_kms_helper
+ppdev                  17671  0 
+drm                   372540  4 ttm,drm_kms_helper,cirrus
+i2c_piix4              22106  0 
+pcspkr                 12718  0 
+i2c_core               40756  3 drm,i2c_piix4,drm_kms_helper
+parport_pc             28165  0 
+parport                42348  2 ppdev,parport_pc
+ip_tables              27115  0 
+xfs                   985426  1 
+libcrc32c              12644  1 xfs
+ata_generic            12910  0 
+pata_acpi              13038  0 
+crct10dif_pclmul       14289  0 
+crct10dif_common       12595  1 crct10dif_pclmul
+ata_piix               35038  0 
+xen_netfront           26720  0 
+xen_blkfront           26971  2 
+crc32c_intel           22079  1 
+serio_raw              13462  0 
+libata                247095  3 pata_acpi,ata_generic,ata_piix
+floppy                 69417  0 
+fjes                   32197  0 
