@@ -292,7 +292,7 @@ class MultiEvaluator(Evaluator):
         for plugin, r in generator:
             self.handle_result(plugin, r)
 
-    def handle_result(self, r, plugin):
+    def handle_result(self, plugin, r):
         validate_response(r)
         type_ = r["type"]
         del r["type"]
