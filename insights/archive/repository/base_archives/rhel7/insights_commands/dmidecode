@@ -1,0 +1,110 @@
+# dmidecode 3.0
+Scanning /dev/mem for entry point.
+SMBIOS 2.4 present.
+11 structures occupying 310 bytes.
+Table at 0x000EB01F.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+	Vendor: Xen
+	Version: 4.2.amazon
+	Release Date: 02/16/2017
+	Address: 0xE8000
+	Runtime Size: 96 kB
+	ROM Size: 64 kB
+	Characteristics:
+		PCI is supported
+		EDD is supported
+		Targeted content distribution is supported
+	BIOS Revision: 4.2
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+	Manufacturer: Xen
+	Product Name: HVM domU
+	Version: 4.2.amazon
+	Serial Number: ec2f8808-5d33-52db-94bd-dea82a8d91c6
+	UUID: EC2F8808-5D33-52DB-94BD-DEA82A8D91C6
+	Wake-up Type: Power Switch
+	SKU Number: Not Specified
+	Family: Not Specified
+
+Handle 0x0300, DMI type 3, 13 bytes
+Chassis Information
+	Manufacturer: Xen
+	Type: Other
+	Lock: Not Present
+	Version: Not Specified
+	Serial Number: Not Specified
+	Asset Tag: Not Specified
+	Boot-up State: Safe
+	Power Supply State: Safe
+	Thermal State: Safe
+	Security Status: Unknown
+
+Handle 0x0401, DMI type 4, 26 bytes
+Processor Information
+	Socket Designation: CPU 1
+	Type: Central Processor
+	Family: Other
+	Manufacturer: Intel
+	ID: F2 06 03 00 FF FB 89 17
+	Version: Not Specified
+	Voltage: Unknown
+	External Clock: Unknown
+	Max Speed: 2400 MHz
+	Current Speed: 2400 MHz
+	Status: Populated, Enabled
+	Upgrade: Other
+
+Handle 0x0B00, DMI type 11, 5 bytes
+OEM Strings
+	String 1: Xen
+
+Handle 0x1000, DMI type 16, 15 bytes
+Physical Memory Array
+	Location: Other
+	Use: System Memory
+	Error Correction Type: Multi-bit ECC
+	Maximum Capacity: 1 GB
+	Error Information Handle: Not Provided
+	Number Of Devices: 1
+
+Handle 0x1100, DMI type 17, 21 bytes
+Memory Device
+	Array Handle: 0x1000
+	Error Information Handle: 0x0000
+	Total Width: 64 bits
+	Data Width: 64 bits
+	Size: 1024 MB
+	Form Factor: DIMM
+	Set: None
+	Locator: DIMM 0
+	Bank Locator: Not Specified
+	Type: RAM
+	Type Detail: None
+
+Handle 0x1300, DMI type 19, 15 bytes
+Memory Array Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x0003FFFFFFF
+	Range Size: 1 GB
+	Physical Array Handle: 0x1000
+	Partition Width: 1
+
+Handle 0x1400, DMI type 20, 19 bytes
+Memory Device Mapped Address
+	Starting Address: 0x00000000000
+	Ending Address: 0x0003FFFFFFF
+	Range Size: 1 GB
+	Physical Device Handle: 0x1100
+	Memory Array Mapped Address Handle: 0x1300
+	Partition Row Position: 1
+
+Handle 0x2000, DMI type 32, 11 bytes
+System Boot Information
+	Status: No errors detected
+
+Handle 0x7F00, DMI type 127, 4 bytes
+End Of Table
+

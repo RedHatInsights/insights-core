@@ -15,7 +15,7 @@ p.add_argument("-c", "--clean", dest="clean", action="store_true", default=False
 p.add_argument("-d", "--destination", dest="destination", default="")
 p.add_argument("-u", "--upload", action="store_true", default=False)
 p.add_argument("-H", "--host", default="localhost:8080")
-p.add_argument("-a", "--auth", default="rhn-insights-demo:alittlebitmoresecurethanjustbojangles")
+p.add_argument("-a", "--auth", default="")
 p.add_argument("-s", "--systems", default="")
 p.add_argument("-x", "--exclude", type=int, default=0)
 p.add_argument("package")

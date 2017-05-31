@@ -1,0 +1,57 @@
+Ip:
+    4122 total packets received
+    0 forwarded
+    0 incoming packets discarded
+    4120 incoming packets delivered
+    3159 requests sent out
+    16 dropped because of missing route
+Icmp:
+    0 ICMP messages received
+    0 input ICMP message failed.
+    ICMP input histogram:
+    0 ICMP messages sent
+    0 ICMP messages failed
+    ICMP output histogram:
+Tcp:
+    108 active connections openings
+    4 passive connection openings
+    4 failed connection attempts
+    18 connection resets received
+    2 connections established
+    3796 segments received
+    2932 segments send out
+    1 segments retransmited
+    0 bad segments received.
+    25 resets sent
+Udp:
+    324 packets received
+    0 packets to unknown port received.
+    0 packet receive errors
+    335 packets sent
+    0 receive buffer errors
+    0 send buffer errors
+UdpLite:
+TcpExt:
+    1 invalid SYN cookies received
+    4 resets received for embryonic SYN_RECV sockets
+    36 TCP sockets finished time wait in fast timer
+    29 delayed acks sent
+    90 packets directly queued to recvmsg prequeue.
+    51018 bytes directly received in process context from prequeue
+    2004 packet headers predicted
+    47 packets header predicted and directly queued to user
+    423 acknowledgments not containing data payload received
+    454 predicted acknowledgments
+    TCPLossProbes: 1
+    1 DSACKs received
+    3 connections reset due to unexpected data
+    18 connections reset due to early user close
+    TCPRcvCoalesce: 179
+    TCPOFOQueue: 13
+    TCPAutoCorking: 12
+    TCPOrigDataSent: 1073
+IpExt:
+    InNoRoutes: 2
+    InOctets: 42428087
+    OutOctets: 542831
+    InNoECTPkts: 31232

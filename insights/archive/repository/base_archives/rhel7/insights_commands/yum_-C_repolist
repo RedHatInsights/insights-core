@@ -1,0 +1,6 @@
+Loaded plugins: amazon-id, rhui-lb, search-disabled-repos
+repo id                                          repo name                status
+rhui-REGION-client-config-server-7/x86_64        Red Hat Update Infrastru     6
+rhui-REGION-rhel-server-releases/7Server/x86_64  Red Hat Enterprise Linux 14438
+rhui-REGION-rhel-server-rh-common/7Server/x86_64 Red Hat Enterprise Linux   228
+repolist: 14672

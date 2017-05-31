@@ -1,0 +1,7 @@
+May 30 11:50:57 ip-172-31-44-94 systemd-udevd: starting version 219
+May 30 11:50:57 ip-172-31-44-94 systemd-udevd: Network interface NamePolicy= disabled on kernel command line, ignoring.
+May 30 11:50:58 ip-172-31-44-94 systemd: Starting Cleanup udevd DB...
+May 30 11:50:58 ip-172-31-44-94 systemd: Started Cleanup udevd DB.
+May 30 11:50:59 ip-172-31-44-94 systemd-udevd: starting version 219
+May 30 11:50:59 ip-172-31-44-94 systemd-udevd: Network interface NamePolicy= disabled on kernel command line, ignoring.
+May 30 11:51:00 ip-172-31-44-94 systemd-udevd: Network interface NamePolicy= disabled on kernel command line, ignoring.

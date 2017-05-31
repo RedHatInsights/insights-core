@@ -8,7 +8,7 @@ from insights.core.specs import SpecMapper
 
 TRANSFORMS = [
     T("redhat-release").replace("Fedora 24"),
-    T("messages").append("This is a test line")
+    T("messages").append("\nThis is a test line")
 ]
 
 
