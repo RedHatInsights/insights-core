@@ -1,0 +1,19 @@
+/dev/disk:
+total 0
+drwxr-xr-x.  4 0 0   80 May 30 11:52 .
+drwxr-xr-x. 15 0 0 3340 May 30 11:53 ..
+drwxr-xr-x.  2 0 0   80 May 30 11:52 by-path
+drwxr-xr-x.  2 0 0   60 May 30 11:52 by-uuid
+
+/dev/disk/by-path:
+total 0
+drwxr-xr-x. 2 0 0 80 May 30 11:52 .
+drwxr-xr-x. 4 0 0 80 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0 10 May 30 11:52 xen-vbd-768 -> ../../xvda
+lrwxrwxrwx. 1 0 0 11 May 30 11:53 xen-vbd-768-part1 -> ../../xvda1
+
+/dev/disk/by-uuid:
+total 0
+drwxr-xr-x. 2 0 0 60 May 30 11:52 .
+drwxr-xr-x. 4 0 0 80 May 30 11:52 ..
+lrwxrwxrwx. 1 0 0 11 May 30 11:53 0e6b1614-7bbe-4d6e-bc78-a5556a123ba8 -> ../../xvda1

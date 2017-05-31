@@ -1,0 +1,6 @@
+
+------ Semaphore Arrays --------
+key        semid      owner      perms      nsems     
+0x00000000 0          root       600        1         
+0x00000000 32769      root       600        1         
+

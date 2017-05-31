@@ -1,0 +1,3 @@
+ff02::16 dev eth0 lladdr 33:33:00:00:00:16 NOARP
+ff02::2 dev eth0 lladdr 33:33:00:00:00:02 NOARP
+ff02::1:ffa3:25ee dev eth0 lladdr 33:33:ff:a3:25:ee NOARP

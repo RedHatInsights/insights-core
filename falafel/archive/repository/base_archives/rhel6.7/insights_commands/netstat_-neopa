@@ -1,0 +1,136 @@
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address               Foreign Address             State       User       Inode      PID/Program name    Timer
+tcp        0      0 0.0.0.0:111                 0.0.0.0:*                   LISTEN      0          11352      1086/rpcbind        off (0.00/0/0)
+tcp        0      0 0.0.0.0:22                  0.0.0.0:*                   LISTEN      0          12822      1419/sshd           off (0.00/0/0)
+tcp        0      0 127.0.0.1:631               0.0.0.0:*                   LISTEN      0          11660      1164/cupsd          off (0.00/0/0)
+tcp        0      0 0.0.0.0:53847               0.0.0.0:*                   LISTEN      29         11457      1108/rpc.statd      off (0.00/0/0)
+tcp        0      0 127.0.0.1:25                0.0.0.0:*                   LISTEN      0          13198      1519/master         off (0.00/0/0)
+tcp        0      0 172.31.45.56:22             52.15.81.218:59934          ESTABLISHED 0          37605      24979/sshd          keepalive (7181.59/0/0)
+tcp        0      0 172.31.45.56:34801          23.52.93.4:443              ESTABLISHED 0          37793      25005/python        off (0.00/0/0)
+tcp        0      0 :::55751                    :::*                        LISTEN      29         11465      1108/rpc.statd      off (0.00/0/0)
+tcp        0      0 :::111                      :::*                        LISTEN      0          11357      1086/rpcbind        off (0.00/0/0)
+tcp        0      0 :::22                       :::*                        LISTEN      0          12824      1419/sshd           off (0.00/0/0)
+tcp        0      0 ::1:631                     :::*                        LISTEN      0          11659      1164/cupsd          off (0.00/0/0)
+tcp        0      0 ::1:25                      :::*                        LISTEN      0          13200      1519/master         off (0.00/0/0)
+udp        0      0 0.0.0.0:54042               0.0.0.0:*                               29         11453      1108/rpc.statd      off (0.00/0/0)
+udp        0      0 0.0.0.0:68                  0.0.0.0:*                               0          10997      965/dhclient        off (0.00/0/0)
+udp        0      0 0.0.0.0:837                 0.0.0.0:*                               0          11351      1086/rpcbind        off (0.00/0/0)
+udp        0      0 127.0.0.1:863               0.0.0.0:*                               0          11448      1108/rpc.statd      off (0.00/0/0)
+udp        0      0 0.0.0.0:111                 0.0.0.0:*                               0          11349      1086/rpcbind        off (0.00/0/0)
+udp        0      0 0.0.0.0:631                 0.0.0.0:*                               0          11663      1164/cupsd          off (0.00/0/0)
+udp        0      0 :::837                      :::*                                    0          11356      1086/rpcbind        off (0.00/0/0)
+udp        0      0 :::40409                    :::*                                    29         11461      1108/rpc.statd      off (0.00/0/0)
+udp        0      0 :::111                      :::*                                    0          11354      1086/rpcbind        off (0.00/0/0)
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node PID/Program name    Path
+unix  2      [ ACC ]     STREAM     LISTENING     11347  1086/rpcbind        /var/run/rpcbind.sock
+unix  2      [ ACC ]     STREAM     LISTENING     11579  1142/dbus-daemon    /var/run/dbus/system_bus_socket
+unix  2      [ ACC ]     STREAM     LISTENING     11661  1164/cupsd          /var/run/cups/cups.sock
+unix  2      [ ACC ]     STREAM     LISTENING     11746  1196/acpid          /var/run/acpid.socket
+unix  2      [ ACC ]     STREAM     LISTENING     8770   1/init              @/com/ubuntu/upstart
+unix  2      [ ]         DGRAM                    11829  1208/hald           @/org/freedesktop/hal/udev_event
+unix  2      [ ]         DGRAM                    9205   448/udevd           @/org/kernel/udev/udevd
+unix  2      [ ACC ]     STREAM     LISTENING     13206  1519/master         public/cleanup
+unix  2      [ ACC ]     STREAM     LISTENING     13213  1519/master         private/tlsmgr
+unix  2      [ ACC ]     STREAM     LISTENING     13217  1519/master         private/rewrite
+unix  2      [ ACC ]     STREAM     LISTENING     13221  1519/master         private/bounce
+unix  2      [ ACC ]     STREAM     LISTENING     13225  1519/master         private/defer
+unix  2      [ ACC ]     STREAM     LISTENING     13229  1519/master         private/trace
+unix  2      [ ACC ]     STREAM     LISTENING     13233  1519/master         private/verify
+unix  2      [ ACC ]     STREAM     LISTENING     13237  1519/master         public/flush
+unix  2      [ ACC ]     STREAM     LISTENING     13241  1519/master         private/proxymap
+unix  2      [ ACC ]     STREAM     LISTENING     13245  1519/master         private/proxywrite
+unix  2      [ ACC ]     STREAM     LISTENING     13249  1519/master         private/smtp
+unix  2      [ ACC ]     STREAM     LISTENING     13253  1519/master         private/relay
+unix  2      [ ACC ]     STREAM     LISTENING     13257  1519/master         public/showq
+unix  2      [ ACC ]     STREAM     LISTENING     13261  1519/master         private/error
+unix  2      [ ACC ]     STREAM     LISTENING     13265  1519/master         private/retry
+unix  2      [ ACC ]     STREAM     LISTENING     13269  1519/master         private/discard
+unix  2      [ ACC ]     STREAM     LISTENING     13273  1519/master         private/local
+unix  2      [ ACC ]     STREAM     LISTENING     13277  1519/master         private/virtual
+unix  2      [ ACC ]     STREAM     LISTENING     13281  1519/master         private/lmtp
+unix  2      [ ACC ]     STREAM     LISTENING     13285  1519/master         private/anvil
+unix  2      [ ACC ]     STREAM     LISTENING     13289  1519/master         private/scache
+unix  2      [ ACC ]     STREAM     LISTENING     13329  1548/abrtd          /var/run/abrt/abrt.socket
+unix  12     [ ]         DGRAM                    11199  1046/rsyslogd       /dev/log
+unix  2      [ ACC ]     STREAM     LISTENING     11792  1208/hald           @/var/run/hald/dbus-HVuwAINE5d
+unix  2      [ ACC ]     STREAM     LISTENING     11785  1208/hald           @/var/run/hald/dbus-T4WGX7wVaA
+unix  2      [ ]         DGRAM                    37765  25004/sudo          
+unix  3      [ ]         STREAM     CONNECTED     37682  24979/sshd          
+unix  3      [ ]         STREAM     CONNECTED     37681  24982/sshd          
+unix  2      [ ]         DGRAM                    37677  24979/sshd          
+unix  2      [ ]         DGRAM                    31978  965/dhclient        
+unix  3      [ ]         STREAM     CONNECTED     13929  1142/dbus-daemon    /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     13928  1608/certmonger     
+unix  2      [ ]         DGRAM                    13360  1560/crond          
+unix  2      [ ]         DGRAM                    13331  1548/abrtd          
+unix  2      [ ]         DGRAM                    13310  1546/pickup         
+unix  2      [ ]         DGRAM                    13295  1547/qmgr           
+unix  3      [ ]         STREAM     CONNECTED     13292  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13291  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13288  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13287  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13284  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13283  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13280  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13279  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13276  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13275  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13272  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13271  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13268  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13267  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13264  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13263  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13260  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13259  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13256  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13255  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13252  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13251  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13248  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13247  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13244  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13243  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13240  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13239  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13236  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13235  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13232  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13231  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13228  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13227  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13224  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13223  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13220  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13219  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13216  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13215  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13212  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13211  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13209  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13208  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13205  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13204  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13202  1519/master         
+unix  3      [ ]         STREAM     CONNECTED     13201  1519/master         
+unix  2      [ ]         DGRAM                    13109  1519/master         
+unix  2      [ ]         DGRAM                    12105  1272/automount      
+unix  3      [ ]         STREAM     CONNECTED     12023  1196/acpid          /var/run/acpid.socket
+unix  3      [ ]         STREAM     CONNECTED     12022  1247/hald-addon-acp 
+unix  3      [ ]         STREAM     CONNECTED     12017  1208/hald           @/var/run/hald/dbus-T4WGX7wVaA
+unix  3      [ ]         STREAM     CONNECTED     12016  1247/hald-addon-acp 
+unix  3      [ ]         STREAM     CONNECTED     11927  1208/hald           @/var/run/hald/dbus-T4WGX7wVaA
+unix  3      [ ]         STREAM     CONNECTED     11926  1239/hald-addon-inp 
+unix  3      [ ]         STREAM     CONNECTED     11812  1208/hald           @/var/run/hald/dbus-HVuwAINE5d
+unix  3      [ ]         STREAM     CONNECTED     11811  1209/hald-runner    
+unix  3      [ ]         STREAM     CONNECTED     11787  1142/dbus-daemon    /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     11786  1208/hald           
+unix  2      [ ]         DGRAM                    11750  1196/acpid          
+unix  3      [ ]         STREAM     CONNECTED     11599  1142/dbus-daemon    /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     11598  1/init              
+unix  3      [ ]         STREAM     CONNECTED     11597  1142/dbus-daemon    
+unix  3      [ ]         STREAM     CONNECTED     11596  1142/dbus-daemon    
+unix  2      [ ]         DGRAM                    11439  1108/rpc.statd      
+unix  3      [ ]         DGRAM                    9221   448/udevd           
+unix  3      [ ]         DGRAM                    9220   448/udevd           

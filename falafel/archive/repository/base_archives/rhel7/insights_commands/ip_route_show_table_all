@@ -1,0 +1,24 @@
+default via 172.31.32.1 dev eth0  proto static  metric 100 
+172.31.32.0/20 dev eth0  proto kernel  scope link  src 172.31.44.94  metric 100 
+broadcast 127.0.0.0 dev lo  table local  proto kernel  scope link  src 127.0.0.1 
+local 127.0.0.0/8 dev lo  table local  proto kernel  scope host  src 127.0.0.1 
+local 127.0.0.1 dev lo  table local  proto kernel  scope host  src 127.0.0.1 
+broadcast 127.255.255.255 dev lo  table local  proto kernel  scope link  src 127.0.0.1 
+broadcast 172.31.32.0 dev eth0  table local  proto kernel  scope link  src 172.31.44.94 
+local 172.31.44.94 dev eth0  table local  proto kernel  scope host  src 172.31.44.94 
+broadcast 172.31.47.255 dev eth0  table local  proto kernel  scope link  src 172.31.44.94 
+unreachable ::/96 dev lo  metric 1024  error -113
+unreachable ::ffff:0.0.0.0/96 dev lo  metric 1024  error -113
+unreachable 2002:a00::/24 dev lo  metric 1024  error -113
+unreachable 2002:7f00::/24 dev lo  metric 1024  error -113
+unreachable 2002:a9fe::/32 dev lo  metric 1024  error -113
+unreachable 2002:ac10::/28 dev lo  metric 1024  error -113
+unreachable 2002:c0a8::/32 dev lo  metric 1024  error -113
+unreachable 2002:e000::/19 dev lo  metric 1024  error -113
+unreachable 3ffe:ffff::/32 dev lo  metric 1024  error -113
+fe80::/64 dev eth0  proto kernel  metric 256  mtu 9001
+unreachable default dev lo  table unspec  proto kernel  metric 4294967295  error -101
+local ::1 dev lo  table local  proto none  metric 0 
+local fe80::cee:d5ff:fea3:25ee dev lo  table local  proto none  metric 0 
+ff00::/8 dev eth0  table local  metric 256  mtu 9001
+unreachable default dev lo  table unspec  proto kernel  metric 4294967295  error -101

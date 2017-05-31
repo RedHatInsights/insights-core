@@ -1,0 +1,17 @@
+# The default requires explicit activation of protocol 1
+#Protocol 2
+# HostKey for protocol version 1
+# HostKeys for protocol version 2
+# Ciphers and keying
+#PermitRootLogin yes
+#MaxAuthTries 6
+# similar for protocol version 2
+#ChallengeResponseAuthentication yes
+ChallengeResponseAuthentication no
+# be allowed through the ChallengeResponseAuthentication and
+# PAM authentication via ChallengeResponseAuthentication may bypass
+# the setting of "PermitRootLogin without-password".
+# and ChallengeResponseAuthentication to 'no'.
+# WARNING: 'UsePAM no' is not supported in Red Hat Enterprise Linux and may cause several
+UsePAM yes
+#MaxStartups 10:30:100

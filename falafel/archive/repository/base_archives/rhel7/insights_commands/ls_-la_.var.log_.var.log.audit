@@ -1,0 +1,31 @@
+/var/log:
+total 168
+drwxr-xr-x.  9 root   root     4096 May 30 12:30 .
+drwxr-xr-x. 19 root   root      267 May 30 11:51 ..
+drwxr-xr-x.  2 root   root      288 Oct 20  2016 anaconda
+drwx------.  2 root   root       23 May 30 11:51 audit
+-rw-r--r--.  1 root   root        0 Oct 20  2016 boot.log
+-rw-------.  1 root   utmp      384 May 30 12:26 btmp
+-rw-r--r--.  1 root   root     1134 May 30 11:51 choose_repo.log
+drwxr-xr-x.  2 chrony chrony      6 Jun 28  2016 chrony
+-rw-r--r--.  1 root   root     2646 May 30 11:51 cloud-init.log
+-rw-r--r--.  1 root   root      933 May 30 12:31 cron
+-rw-r--r--.  1 root   root    30374 May 30 11:51 dmesg
+-rw-r--r--.  1 root   root   292292 May 30 12:28 lastlog
+-rw-------.  1 root   root      210 May 30 11:51 maillog
+-rw-------.  1 root   root    83334 May 30 12:31 messages
+drwx------.  2 root   root        6 Jan 26  2014 ppp
+drwx------.  2 root   root       76 May 30 12:31 redhat-access-insights
+drwxr-xr-x.  2 root   root       22 Oct 20  2016 rhsm
+-rw-------.  1 root   root     3855 May 30 12:31 secure
+-rw-------.  1 root   root        0 Oct 20  2016 spooler
+-rw-------.  1 root   root        0 Oct 20  2016 tallylog
+drwxr-xr-x.  2 root   root       23 May 30 11:51 tuned
+-rw-rw-r--.  1 root   utmp     3456 May 30 12:28 wtmp
+-rw-------.  1 root   root      196 May 30 12:30 yum.log
+
+/var/log/audit:
+total 60
+drwx------. 2 root root    23 May 30 11:51 .
+drwxr-xr-x. 9 root root  4096 May 30 12:30 ..
+-rw-------. 1 root root 53437 May 30 12:31 audit.log

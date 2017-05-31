@@ -1,0 +1,9 @@
+driver: vif
+version: 
+firmware-version: 
+bus-info: vif-0
+supports-statistics: no
+supports-test: no
+supports-eeprom-access: no
+supports-register-dump: no
+supports-priv-flags: no

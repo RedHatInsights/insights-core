@@ -1,0 +1,149 @@
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
+tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN      0          19484      3479/sshd            off (0.00/0/0)
+tcp        0      0 127.0.0.1:25            0.0.0.0:*               LISTEN      0          17319      1358/master          off (0.00/0/0)
+tcp        0      0 172.31.44.94:22         52.15.81.218:54268      ESTABLISHED 0          25509      9394/sshd: ec2-user  keepalive (7024.89/0/0)
+tcp        0      0 172.31.44.94:58722      209.132.183.108:443     TIME_WAIT   0          0          -                    timewait (18.31/0/0)
+tcp        0      0 172.31.44.94:58720      209.132.183.108:443     TIME_WAIT   0          0          -                    timewait (5.92/0/0)
+tcp        0      0 172.31.44.94:58724      209.132.183.108:443     TIME_WAIT   0          0          -                    timewait (41.95/0/0)
+tcp        0      0 172.31.44.94:58778      209.132.183.108:443     TIME_WAIT   0          0          -                    timewait (58.78/0/0)
+tcp        0      0 172.31.44.94:46738      184.50.213.212:443      ESTABLISHED 0          28612      9806/python          off (0.00/0/0)
+tcp6       0      0 :::22                   :::*                    LISTEN      0          19486      3479/sshd            off (0.00/0/0)
+tcp6       0      0 ::1:25                  :::*                    LISTEN      0          17320      1358/master          off (0.00/0/0)
+udp        0      0 127.0.0.1:323           0.0.0.0:*                           997        13797      437/chronyd          off (0.00/0/0)
+udp        0      0 0.0.0.0:68              0.0.0.0:*                           0          14864      514/dhclient         off (0.00/0/0)
+udp        0      0 0.0.0.0:7354            0.0.0.0:*                           0          14853      514/dhclient         off (0.00/0/0)
+udp6       0      0 ::1:323                 :::*                                997        13798      437/chronyd          off (0.00/0/0)
+udp6       0      0 :::20132                :::*                                0          14854      514/dhclient         off (0.00/0/0)
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  2      [ ACC ]     STREAM     LISTENING     17323    1358/master          public/pickup
+unix  2      [ ACC ]     STREAM     LISTENING     17327    1358/master          public/cleanup
+unix  2      [ ACC ]     STREAM     LISTENING     17334    1358/master          private/tlsmgr
+unix  2      [ ACC ]     STREAM     LISTENING     17330    1358/master          public/qmgr
+unix  2      [ ACC ]     STREAM     LISTENING     17352    1358/master          public/flush
+unix  2      [ ACC ]     STREAM     LISTENING     17337    1358/master          private/rewrite
+unix  2      [ ACC ]     STREAM     LISTENING     17368    1358/master          public/showq
+unix  2      [ ACC ]     STREAM     LISTENING     17340    1358/master          private/bounce
+unix  2      [ ACC ]     STREAM     LISTENING     17343    1358/master          private/defer
+unix  2      [ ACC ]     STREAM     LISTENING     17346    1358/master          private/trace
+unix  2      [ ACC ]     STREAM     LISTENING     17349    1358/master          private/verify
+unix  2      [ ACC ]     STREAM     LISTENING     17356    1358/master          private/proxymap
+unix  2      [ ACC ]     STREAM     LISTENING     17359    1358/master          private/proxywrite
+unix  2      [ ACC ]     STREAM     LISTENING     17362    1358/master          private/smtp
+unix  2      [ ACC ]     STREAM     LISTENING     17365    1358/master          private/relay
+unix  2      [ ACC ]     STREAM     LISTENING     17371    1358/master          private/error
+unix  2      [ ACC ]     STREAM     LISTENING     17374    1358/master          private/retry
+unix  2      [ ACC ]     STREAM     LISTENING     17377    1358/master          private/discard
+unix  2      [ ACC ]     STREAM     LISTENING     17380    1358/master          private/local
+unix  2      [ ACC ]     STREAM     LISTENING     17383    1358/master          private/virtual
+unix  2      [ ACC ]     STREAM     LISTENING     17386    1358/master          private/lmtp
+unix  2      [ ACC ]     STREAM     LISTENING     11423    1/systemd            /run/systemd/private
+unix  2      [ ACC ]     STREAM     LISTENING     17389    1358/master          private/anvil
+unix  2      [ ACC ]     STREAM     LISTENING     17392    1358/master          private/scache
+unix  2      [ ACC ]     SEQPACKET  LISTENING     11436    1/systemd            /run/udev/control
+unix  2      [ ]         DGRAM                    11438    1/systemd            /run/systemd/shutdownd
+unix  2      [ ACC ]     STREAM     LISTENING     13266    1/systemd            /var/run/dbus/system_bus_socket
+unix  2      [ ACC ]     STREAM     LISTENING     14810    447/NetworkManager   /var/run/NetworkManager/private-dhcp
+unix  2      [ ]         DGRAM                    7644     1/systemd            /run/systemd/notify
+unix  2      [ ]         DGRAM                    7646     1/systemd            /run/systemd/cgroups-agent
+unix  2      [ ACC ]     STREAM     LISTENING     7654     1/systemd            /run/systemd/journal/stdout
+unix  5      [ ]         DGRAM                    7657     1/systemd            /run/systemd/journal/socket
+unix  15     [ ]         DGRAM                    7659     1/systemd            /dev/log
+unix  3      [ ]         STREAM     CONNECTED     17329    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13879    447/NetworkManager   
+unix  3      [ ]         STREAM     CONNECTED     17341    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17342    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13804    435/dbus-daemon      /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     17344    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17332    1358/master          
+unix  3      [ ]         DGRAM                    12427    355/systemd-udevd    
+unix  3      [ ]         STREAM     CONNECTED     13803    423/polkitd          
+unix  3      [ ]         STREAM     CONNECTED     13880    332/systemd-journal  /run/systemd/journal/stdout
+unix  3      [ ]         DGRAM                    12428    355/systemd-udevd    
+unix  3      [ ]         STREAM     CONNECTED     17331    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13786    435/dbus-daemon      
+unix  2      [ ]         DGRAM                    17412    1364/pickup          
+unix  2      [ ]         DGRAM                    14107    435/dbus-daemon      
+unix  3      [ ]         STREAM     CONNECTED     14042    332/systemd-journal  /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     12745    371/auditd           
+unix  3      [ ]         STREAM     CONNECTED     12746    371/auditd           
+unix  3      [ ]         STREAM     CONNECTED     14041    459/crond            
+unix  3      [ ]         STREAM     CONNECTED     17351    1358/master          
+unix  2      [ ]         DGRAM                    17430    1365/qmgr            
+unix  3      [ ]         STREAM     CONNECTED     17338    1358/master          
+unix  2      [ ]         DGRAM                    13956    423/polkitd          
+unix  2      [ ]         DGRAM                    12301    355/systemd-udevd    
+unix  3      [ ]         STREAM     CONNECTED     17325    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13785    435/dbus-daemon      
+unix  3      [ ]         STREAM     CONNECTED     17348    1358/master          
+unix  2      [ ]         DGRAM                    28580    9805/sudo            
+unix  3      [ ]         STREAM     CONNECTED     13788    435/dbus-daemon      /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     17358    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13745    434/systemd-logind   
+unix  2      [ ]         DGRAM                    14064    459/crond            
+unix  2      [ ]         DGRAM                    12738    371/auditd           
+unix  3      [ ]         STREAM     CONNECTED     17393    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17391    1358/master          
+unix  2      [ ]         DGRAM                    13732    434/systemd-logind   
+unix  3      [ ]         STREAM     CONNECTED     17361    1358/master          
+unix  2      [ ]         DGRAM                    13723    437/chronyd          
+unix  3      [ ]         STREAM     CONNECTED     12298    355/systemd-udevd    
+unix  3      [ ]         STREAM     CONNECTED     17394    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     12299    332/systemd-journal  /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     17328    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17360    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17384    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17350    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13672    434/systemd-logind   
+unix  3      [ ]         STREAM     CONNECTED     14207    447/NetworkManager   
+unix  3      [ ]         STREAM     CONNECTED     17385    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13787    435/dbus-daemon      /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     13719    1/systemd            
+unix  3      [ ]         STREAM     CONNECTED     17387    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13715    332/systemd-journal  /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     17339    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     14208    435/dbus-daemon      /var/run/dbus/system_bus_socket
+unix  3      [ ]         STREAM     CONNECTED     17388    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13714    435/dbus-daemon      
+unix  3      [ ]         STREAM     CONNECTED     17347    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17390    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     13673    332/systemd-journal  /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     17345    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     14061    447/NetworkManager   
+unix  3      [ ]         STREAM     CONNECTED     17375    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17370    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17373    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     15810    755/python           
+unix  3      [ ]         STREAM     CONNECTED     17367    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17321    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17354    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17379    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17369    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17335    1358/master          
+unix  2      [ ]         DGRAM                    14052    447/NetworkManager   
+unix  3      [ ]         STREAM     CONNECTED     25622    9394/sshd: ec2-user  
+unix  2      [ ]         DGRAM                    25617    9394/sshd: ec2-user  
+unix  3      [ ]         STREAM     CONNECTED     17336    1358/master          
+unix  2      [ ]         DGRAM                    26315    1/systemd            
+unix  2      [ ]         DGRAM                    14852    514/dhclient         
+unix  3      [ ]         STREAM     CONNECTED     17381    1358/master          
+unix  2      [ ]         DGRAM                    16590    947/rhnsd            
+unix  3      [ ]         STREAM     CONNECTED     17378    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17322    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17376    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     14062    435/dbus-daemon      /var/run/dbus/system_bus_socket
+unix  2      [ ]         DGRAM                    24865    9334/anacron         
+unix  3      [ ]         STREAM     CONNECTED     17382    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     16976    435/dbus-daemon      /var/run/dbus/system_bus_socket
+unix  2      [ ]         DGRAM                    17294    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17324    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     16975    755/python           
+unix  3      [ ]         STREAM     CONNECTED     17363    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     25621    9397/sshd: ec2-user  
+unix  3      [ ]         STREAM     CONNECTED     17357    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17364    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17366    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     15811    332/systemd-journal  /run/systemd/journal/stdout
+unix  3      [ ]         STREAM     CONNECTED     17372    1358/master          
+unix  3      [ ]         STREAM     CONNECTED     17355    1358/master          

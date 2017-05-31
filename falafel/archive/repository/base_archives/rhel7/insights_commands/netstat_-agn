@@ -1,0 +1,10 @@
+IPv6/IPv4 Group Memberships
+Interface       RefCnt Group
+--------------- ------ ---------------------
+lo              1      224.0.0.1
+eth0            1      224.0.0.1
+lo              1      ff02::1
+lo              1      ff01::1
+eth0            1      ff02::1:ffa3:25ee
+eth0            1      ff02::1
+eth0            1      ff01::1

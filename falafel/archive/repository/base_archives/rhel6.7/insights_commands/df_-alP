@@ -1,0 +1,7 @@
+Filesystem     1024-blocks    Used Available Capacity Mounted on
+/dev/xvda1        10189092 2048876   7616032      22% /
+proc                     0       0         0        - /proc
+sysfs                    0       0         0        - /sys
+devpts                   0       0         0        - /dev/pts
+tmpfs               509256       0    509256       0% /dev/shm
+none                     0       0         0        - /proc/sys/fs/binfmt_misc

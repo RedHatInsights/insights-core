@@ -1,0 +1,11 @@
+# The amazon ec2 region is now dynamically set via yum.  REGION can be replaced by the amazon ec2 region for debugging
+[rhui-REGION-client-config-server-6]
+name=Red Hat Update Infrastructure 2.0 Client Configuration Server 6
+mirrorlist=https://rhui2-cds01.REGION.aws.ce.redhat.com/pulp/mirror/rhui-client-config/rhel/server/6/$basearch/os
+enabled=1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+sslverify=1
+sslcacert=/etc/pki/rhui/cdn.redhat.com-chain.crt
+sslclientcert=/etc/pki/rhui/product/rhui-client-config-server-6.crt
+sslclientkey=/etc/pki/rhui/rhui-client-config-server-6.key

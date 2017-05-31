@@ -1,0 +1,3 @@
+Filesystem     Inodes IUsed  IFree IUse% Mounted on
+/dev/xvda1     655360 56397 598963    9% /
+tmpfs          127314     1 127313    1% /dev/shm
