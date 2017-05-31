@@ -27,7 +27,7 @@ def dummy_dict(l):
     return {k: 1 for k in l}
 
 
-class TestReducerRequirements(unittest.TestCase):
+class TestComponentRequirements(unittest.TestCase):
 
     requires = [t("a"), t("b"), [t("d"), t("e")], t("c"), [t("f"), t("g")]]
 

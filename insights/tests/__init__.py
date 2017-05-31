@@ -8,7 +8,7 @@ import tempfile
 from collections import defaultdict
 from functools import wraps
 from itertools import islice
-from insights.core import mapper, reducer, marshalling, plugins
+from insights.core import parser, reducer, marshalling, plugins
 from insights.core.context import Context, PRODUCT_NAMES
 from insights.util import make_iter
 
@@ -134,9 +134,9 @@ def prep_for_reducer(list_, use_value_list=False):
     return marshalling.unmarshal_to_context(marshalling.marshal(o, use_value_list=use_value_list) for o in list_)
 
 
-def get_mappers_for(module):
-    for m in set(itertools.chain(plugins.PLUGINS[module.__name__]["mappers"],
-                                 plugins.SHARED_MAPPERS)):
+def get_parsers_for(module):
+    for m in set(itertools.chain(plugins.PLUGINS[module.__name__]["parsers"],
+                                 plugins.SHARED_PARSERS)):
         for symbolic_name in m.symbolic_names:
             yield symbolic_name, m
 
@@ -179,15 +179,15 @@ def integrate(input_data, module):
     This method drives the mapreduce framework with test `input_data`.
 
     :param InputData input_data: InputData object filled with test data
-    :param module module: module containing mappers and reducers to test with
+    :param module module: module containing parsers and rules to test with
 
-    mappers and reducers registered by `module` are isolated and passed data
+    parsers and rules registered by `module` are isolated and passed data
     from the `input_data` parameter. The function returns a list of reducer
     results. In most cases this will be a list of length 1.
     """
-    mapper_map = defaultdict(list)
-    for target, f in get_mappers_for(module):
-        mapper_map[target].append(f)
+    parser_map = defaultdict(list)
+    for target, f in get_parsers_for(module):
+        parser_map[target].append(f)
 
     records = []
     if isinstance(input_data, InputData):
@@ -198,7 +198,7 @@ def integrate(input_data, module):
         if isinstance(input_data[0], dict):
             # Assume it's metadata.json
             if "systems" not in input_data[0]:
-                # The multinode mappers use the presence of the "system" key to
+                # The multinode parsers use the presence of the "system" key to
                 # validate this really is a multinode metadata.json
                 input_data[0]["systems"] = []
             records.append({
@@ -232,7 +232,7 @@ def integrate(input_data, module):
             new_rec.update({k: v for k, v in in_d.extra_context.items() if k in PRODUCT_NAMES})
             records.append(new_rec)
 
-    _, mapper_output = mapper.run(iter(records), mappers=mapper_map)
+    _, parser_output = parser.run(iter(records), parsers=parser_map)
     reducers = get_reducer_for(module)
 
     if is_multi_node:
@@ -241,19 +241,19 @@ def integrate(input_data, module):
             requires = plugins.COMPONENT_DEPENDENCIES[r]
             shared_reducers = {i: i for i in requires if i.shared and i._reducer}
         if shared_reducers:
-            for k, v in mapper_output.iteritems():
+            for k, v in parser_output.iteritems():
                 list(reducer.run_host(v, {}, error_handler, reducers=shared_reducers))
-        gen = reducer.run_multi(mapper_output, {}, error_handler, reducers=reducers)
+        gen = reducer.run_multi(parser_output, {}, error_handler, reducers=reducers)
         return [result for func, result in gen if result["type"] != "skip"]
     else:
-        host_outputs = mapper_output.values()
+        host_outputs = parser_output.values()
         if len(host_outputs) == 0:
             return []
         else:
             single_host = host_outputs[0]
         assert all(not r.cluster for r in reducers.values()), "Cluster reducers not allowed in single node test"
         if not reducers:
-            # Assume we're expecting a mapper to make_response.
+            # Assume we're expecting a parser to make_response.
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
         gen = reducer.run_host(single_host, {}, error_handler, reducers=reducers)
         reducer_modules = [r.__module__ for r in reducers.values()]
@@ -276,7 +276,7 @@ def next_gn():
 class InputData(object):
     """
     Helper class used with integrate. The role of this class is to represent
-    data files sent to mappers and reducers in a format similar to what lays on
+    data files sent to parsers and rules in a format similar to what lays on
     disk.
 
     Example Usage::
@@ -286,12 +286,12 @@ class InputData(object):
         input_data.add("uname", "this is some uname content")
 
     If `release` is specified when InputData is constructed, it will be
-    added to every *mock* record when added. This is useful for testing mappers
+    added to every *mock* record when added. This is useful for testing parsers
     that rely on context.release.
 
     If `path` is specified when calling the `add` method, the record will
     contain the specified value in the context.path field.  This is useful for
-    testing pattern-like file mappers.
+    testing pattern-like file parsers.
     """
 
     def __init__(self, name=None, release=None, version=["-1", "-1"], hostname=None, machine_id=None, **kwargs):
@@ -341,10 +341,10 @@ class InputData(object):
         return the_clone
 
     def add(self, target, content, path=None, do_filter=True):
-        if not path:  # path must change to allow mappers to fire
+        if not path:  # path must change to allow parsers to fire
             path = str(next_gn()) + "BOGUS"
         if do_filter:
-            content_iter = mapper.filter_lines(make_iter(content), target)
+            content_iter = parser.filter_lines(make_iter(content), target)
         else:
             content_iter = make_iter(content)
         ctx = Context(content="\n".join(content_iter),

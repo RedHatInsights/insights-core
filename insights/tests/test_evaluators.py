@@ -5,7 +5,7 @@ from insights.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, 
 from insights.core import plugins
 from insights.core.archives import TarExtractor
 from insights.plugins.insights_heartbeat import is_insights_heartbeat
-from insights.mappers.multinode import osp
+from insights.parsers.multinode import osp
 from . import insights_heartbeat, HEARTBEAT_ID, HEARTBEAT_NAME
 import tarfile
 import tempfile
@@ -301,8 +301,8 @@ class TestSingleEvaluator(unittest.TestCase):
         self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
         p = cls(spec_mapper)
         p.pre_mapping()
-        p.run_mappers()
-        self.assertEquals(p.mapper_results.get(is_insights_heartbeat),
+        p.run_parsers()
+        self.assertEquals(p.parser_results.get(is_insights_heartbeat),
                           [{"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}])
         p.run_reducers()
         return p
@@ -350,5 +350,5 @@ class TestMultiEvaluator(unittest.TestCase):
                 response = p.process()
                 self.assertEquals(len(response["archives"]), 1)
                 self.assertEquals(response["system"]["type"], "cluster")
-                assert osp in p.mapper_results[HEARTBEAT_ID]
+                assert osp in p.parser_results[HEARTBEAT_ID]
         subprocess.call("rm -rf %s" % arc_path, shell=True)

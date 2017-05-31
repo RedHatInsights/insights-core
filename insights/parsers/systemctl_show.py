@@ -1,0 +1,32 @@
+from .. import Parser
+from .. import parser
+from .. import get_active_lines
+
+
+@parser('systemctl_cinder-volume')
+class SystemctlShowCinderVolume(Parser):
+
+    def parse_content(self, content):
+        """
+        Sample Input:
+            TimeoutStartUSec=1min 30s
+            LimitNOFILE=65536
+            LimitMEMLOCK=
+            LimitLOCKS=18446744073709551615
+
+        Sample Output:
+            {"LimitNOFILE"     : "65536",
+            "TimeoutStartUSec" : "1min 30s",
+            "LimitLOCKS"       : "18446744073709551615"}
+
+        In CMD's output, empty properties are suppressed by default.
+        We will also suppressed empty properties in return data.
+        """
+        data = {}
+
+        for line in get_active_lines(content):
+            key, _, value = line.strip().partition("=")
+            if value:
+                data[key.strip()] = value.strip()
+
+        self.data = data

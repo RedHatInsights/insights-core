@@ -153,8 +153,8 @@ class APIConfigGenerator(object):
                     for rule_id in self.get_rule_ids_for(plugin):
                         self.rule_spec_mapping[rule_id][spec_key].append(path)
 
-        for name in sorted(plugins.MAPPERS):
-            plugins_ = plugins.MAPPERS[name]
+        for name in sorted(plugins.PARSERS):
+            plugins_ = plugins.PARSERS[name]
             if not any(m for m in plugins_ if m.consumers):
                 continue
             spec_configs = (self.data_spec_config, self.openshift_config)
@@ -191,7 +191,7 @@ class APIConfigGenerator(object):
         # Holds the data that becomes file_plugin_mapping.json
         file_plugins_map = defaultdict(list)
 
-        for filename, plugin_classes in plugins.MAPPERS.iteritems():
+        for filename, plugin_classes in plugins.PARSERS.iteritems():
             for plugin_class in plugin_classes:
                 file_plugins_map[filename].append(plugin_class.__module__)
 

@@ -8,7 +8,7 @@ SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 PLUGINS       = plugins
-SHARED_MAPPERS= shared_mappers
+SHARED_PARSERS= shared_parsers
 
 # User-friendly check for sphinx-build
 ifeq ($(shell which $(SPHINXBUILD) >/dev/null 2>&1; echo $$?), 1)

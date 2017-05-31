@@ -1,6 +1,6 @@
 # insights-core
 
-**insights-core** is the framework, common components and utilities, and mappers for Insights rules.
+**insights-core** is the framework, common components, and utilities for Insights rules.
 
 To get the project set up: 
 

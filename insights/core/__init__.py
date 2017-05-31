@@ -1,4 +1,3 @@
-import argparse
 import io
 import logging
 import os
@@ -10,7 +9,6 @@ import yaml
 from ConfigParser import RawConfigParser
 from collections import defaultdict
 
-from insights.core import marshalling
 
 DEFAULT_PATTERN = r'.*py$'
 DEFAULT_PLUGIN_MODULE = "insights.plugins"
@@ -64,9 +62,9 @@ def get_module_names(package_name, pattern=None):
                 yield name
 
 
-class Mapper(object):
+class Parser(object):
     """
-    Base class designed to be subclassed by mappers.
+    Base class designed to be subclassed by parsers.
 
     The framework will construct your object with a `Context` that will
     provide *at least* the content as an interable of lines and the path
@@ -78,7 +76,7 @@ class Mapper(object):
         self.fact = "123"
 
     Examples:
-        >>> class MyMapper(Mapper):
+        >>> class MyParser(Parser):
         ...     def parse_content(self, content):
         ...         self.facts = []
         ...         for line in content:
@@ -90,12 +88,12 @@ class Mapper(object):
         ... fact=fact 2
         ... fact=fact 3
         ... '''.strip()
-        >>> my_mapper = MyMapper(context_wrap(content, path='/etc/path_to_content/content.conf'))
-        >>> my_mapper.facts
+        >>> my_parser = MyParser(context_wrap(content, path='/etc/path_to_content/content.conf'))
+        >>> my_parser.facts
         ['fact=fact 1', 'fact=fact 2', 'fact=fact 3']
-        >>> my_mapper.file_path
+        >>> my_parser.file_path
         '/etc/path_to_content/content.conf'
-        >>> my_mapper.file_name
+        >>> my_parser.file_name
         'content.conf'
     """
 
@@ -116,17 +114,17 @@ class Mapper(object):
         pass
 
 
-class YAMLMapper(Mapper):
+class YAMLParser(Parser):
     """
-    A mapper class that reads YAML files.  Base your own mapper on this.
+    A parser class that reads YAML files.  Base your own parser on this.
     """
     def parse_content(self, content):
         self.data = yaml.load('\n'.join(content))
 
 
-class SysconfigOptions(Mapper):
+class SysconfigOptions(Parser):
     """
-    A mapper to handle the standard 'keyword=value' format of files in the
+    A parser to handle the standard 'keyword=value' format of files in the
     ``/etc/sysconfig`` directory.  These are provided in the standard 'data'
     dictionary.
 
@@ -221,11 +219,11 @@ class LegacyItemAccess(object):
 
     Provides expected passthru functionality for classes that still use
     ``self.data`` as the primary data structure for all parsed information.  Use
-    this as a mixin on mappers that expect these methods to be present as they
+    this as a mixin on parsers that expect these methods to be present as they
     were previously.
 
     Examples:
-        >>> class MyMapper(LegacyItemAccess, Mapper):
+        >>> class MyParser(LegacyItemAccess, Parser):
         ...     def parse_content(self, content):
         ...         self.data = {}
         ...         for line in content:
@@ -238,18 +236,18 @@ class LegacyItemAccess(object):
         ... fact2=fact 2
         ... fact3=fact 3
         ... '''.strip()
-        >>> my_mapper = MyMapper(context_wrap(content, path='/etc/path_to_content/content.conf'))
-        >>> my_mapper.data
+        >>> my_parser = MyParser(context_wrap(content, path='/etc/path_to_content/content.conf'))
+        >>> my_parser.data
         {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> my_mapper.file_path
+        >>> my_parser.file_path
         '/etc/path_to_content/content.conf'
-        >>> my_mapper.file_name
+        >>> my_parser.file_name
         'content.conf'
-        >>> my_mapper['fact1']
+        >>> my_parser['fact1']
         'fact 1'
-        >>> 'fact2' in my_mapper
+        >>> 'fact2' in my_parser
         True
-        >>> my_mapper.get('fact3', default='no fact')
+        >>> my_parser.get('fact3', default='no fact')
         'fact 3'
     """
 
@@ -280,7 +278,7 @@ class ScanMeta(type):
         return super(ScanMeta, cls).__new__(cls, name, parents, dct)
 
 
-class Scannable(Mapper):
+class Scannable(Parser):
 
     __metaclass__ = ScanMeta
 
@@ -340,7 +338,7 @@ class Scannable(Mapper):
                 scanner(self, obj)
 
 
-class LogFileOutput(Mapper):
+class LogFileOutput(Parser):
     """Class for parsing log file content.
 
     Log file content is stored in raw format in the ``lines`` attribute.
@@ -430,7 +428,7 @@ class LogFileOutput(Mapper):
         cls.scan(result_key, _scan)
 
 
-class IniConfigFile(Mapper):
+class IniConfigFile(Parser):
     """
     A class specifically for reading configuration files in 'ini' format.
 
@@ -544,7 +542,7 @@ class IniConfigFile(Mapper):
                    sections=self.data.sections())
 
 
-class FileListing(Mapper):
+class FileListing(Parser):
     """
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
@@ -841,7 +839,7 @@ class ErrorCollector(object):
     def __init__(self, verbose):
         self.verbose = verbose
 
-    def reducer_error(self, func, e, local, shared):
+    def rule_error(self, func, e, local, shared):
         key = "".join([func.__module__, str(type(e)), str(e.message)])
         error = self.errors[key]
         error["count"] = error["count"] + 1
@@ -864,103 +862,3 @@ class ErrorCollector(object):
                 import traceback
                 traceback.print_exception(type(e), e, error["tb"])
                 yield ""
-
-
-def print_result(r, case=None, min_key_len=0):
-    if r["type"] == "rule":
-        heading = r["error_key"]
-        del r["error_key"]
-    elif len(r.keys()) == 1:
-        return
-    else:
-        heading = "metadata"
-    del r["type"]
-    if min_key_len:
-        heading = heading.ljust(min_key_len)
-    case_prefix = "({0}) ".format(case) if case else ""
-    print "%s: %s" % (case_prefix + heading, marshalling.marshal(r))
-
-
-def print_results(results, cases=None, error_collector=None):
-    results.sort(key=lambda x: x[1].__module__)
-    min_key_len = max([0] + [len(r["error_key"]) for h, f, r in results
-                             if "error_key" in r])
-    result_count = len([r for host, f, r in results if "error_key" in r])
-    for host, func, r in results:
-        # like result_count, filter result with "error_key"
-        if "error_key" in r:
-            case = cases.get(host) if cases else None
-            print_result(r, case=case, min_key_len=min_key_len)
-    print "Result count:", result_count
-    if error_collector and error_collector.has_errors():
-        print "\n===== ERRORS ====="
-        for error_str in error_collector.format_errors():
-            print error_str
-
-
-def main():
-    from insights.core import mapper, reducer
-    p = argparse.ArgumentParser("insights-run")
-    p.add_argument(
-        "-p", "--pattern", dest="pattern",
-        help="Pattern used to filter out plugins for execution."
-    )
-    p.add_argument(
-        "-t", "--tracebacks", dest="tracebacks", action="store_true",
-        default=False,
-        help="Print a traceback for each kind of error caught."
-    )
-    p.add_argument(
-        "-v", "--verbose", dest="verbose", action="store_true",
-        default=False,
-        help="Verbose console logging (n.b. it's *very* verbose)."
-    )
-    p.add_argument(
-        "-r", "--reduce-only", dest="reduce_only",
-        action="store_true", default=False,
-        help="Only run reducers.  Expect mapper output from stdin."
-    )
-    p.add_argument(
-        "-m", "--map-only", dest="map_only", action="store_true",
-        default=False,
-        help="Only run mappers.  Pipes mapper output to stdout."
-    )
-    p.add_argument("packages", nargs="*")
-    args = p.parse_args()
-    if len(args.packages) == 0:
-        p.print_help()
-        print "\nERROR: Please provide at least one plugin package"
-        return
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
-    logging.getLogger(__name__).warning("Loading plugins")
-    for package in args.packages:
-        load_package(package, pattern=args.pattern)
-    log = logging.getLogger("main")
-    if args.map_only and args.reduce_only:
-        print """
-    Cannot specify map_only and reduce_only.
-    Don't specify either if you want to both map and reduce
-        """.strip()
-    elif args.map_only:
-        log.warning("Map-only run")
-        _, mapper_results = mapper.run(sys.stdin)
-        # print mapper.serialize(mapper_results)
-        # as there is no serialize method, print the result directly
-        print mapper_results
-    elif args.reduce_only:
-        mapper_results = reducer.deserialize(sys.stdin.read())
-        log.warning("Reduce-only run")
-        ec = ErrorCollector(args.tracebacks)
-        results = list(reducer.run(mapper_results, ec.reducer_error))
-        print_results(results, error_collector=ec)
-    else:
-        log.warning("Running mappers")
-        cases, mapper_results = mapper.run(sys.stdin)
-        log.warning("Running reducers")
-        ec = ErrorCollector(args.tracebacks)
-        results = list(reducer.run(mapper_results, ec.reducer_error))
-        print_results(results, cases, ec)
-
-
-if __name__ == "__main__":
-    main()

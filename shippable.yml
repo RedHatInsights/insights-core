@@ -7,8 +7,6 @@ env:
 
 build:
     ci:
-    - pip install -e .
-    - pip install git+ssh://git@github.com/RedHatInsights/insights-archive.git#master
     - pip install -e .[develop]
     - mkdir -p shippable/testresults shippable/codecoverage
     - if [ $PHASE == "test" ]; then py.test --cov=insights --cov-report=xml --junit-xml=shippable/testresults/results.xml; fi

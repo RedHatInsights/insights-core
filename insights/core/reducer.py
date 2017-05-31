@@ -4,40 +4,12 @@ from collections import defaultdict
 
 from insights.config.static import get_config
 from insights.contrib import toposort
-from insights.core import marshalling, Mapper, plugins
+from insights.core import marshalling, plugins
 from insights.util import logging_level
 
 specs = get_config()
 logger = logging.getLogger("reducer")
 marshaller = marshalling.Marshaller()
-
-
-def string_to_mapper(o):
-    try:
-        module, fn_name = o.split("#")
-        return getattr(sys.modules[module], fn_name)
-    except:
-        raise ValueError("Invalid mapper key: %s" % o)
-
-
-def value_to_class(o):
-    if len(o) > 0 and Mapper.is_serialized(o[0]):
-        return [Mapper.deserialize(i) for i in o]
-    else:
-        return o
-
-
-def deserialize(s):
-    logger.debug("Deserializing")
-    mapper_output = marshalling.unmarshal(s)
-    new_output = {}
-    for host, mapper_dict in mapper_output.iteritems():
-        new_dict = {}
-        for mapper_name, value in mapper_dict.iteritems():
-            new_key = string_to_mapper(mapper_name)
-            new_dict[new_key] = value_to_class(value)
-        new_output[host] = new_dict
-    return new_output
 
 
 def pattern_file(symbolic_name):
@@ -76,38 +48,38 @@ def collect_results_multi(results_dict):
         for plugin, output in plugin_output.iteritems():
             for k, v in output.iteritems():
                 combined_local_output[plugin][k].append(v)
-        for mapper, output in shared_output.iteritems():
-            combined_shared_output[mapper][host] = output
+        for parser, output in shared_output.iteritems():
+            combined_shared_output[parser][host] = output
     return combined_local_output, combined_shared_output
 
 
-def run_multi(mapper_output, all_output, error_handler, reducers=plugins.CLUSTER_REDUCERS, reducer_stats=None, ):
+def run_multi(parser_output, all_output, error_handler, reducers=plugins.CLUSTER_REDUCERS, stats=None):
     logger.debug("Multi-node reducer run started")
     if reducers != plugins.CLUSTER_REDUCERS:
-        log_reducers(reducers)
-    plugin_output, shared_output = collect_results_multi(mapper_output)
-    for func, r in _run(reducers, plugin_output, shared_output, error_handler, reducer_stats=reducer_stats):
+        log_components(reducers)
+    plugin_output, shared_output = collect_results_multi(parser_output)
+    for func, r in _run(reducers, plugin_output, shared_output, error_handler, stats=stats):
         yield func, r
-    all_output.update(mapper_output)
+    all_output.update(parser_output)
     all_output.update(shared_output)
 
 
-def run(mapper_output, error_handler):
+def run(parser_output, error_handler):
     logger.debug("Batch-mode reducer run started")
-    for host, mapper_dict in mapper_output.iteritems():
-        for func, r in run_host(mapper_dict, {}, error_handler):
+    for host, parser_dict in parser_output.iteritems():
+        for func, r in run_host(parser_dict, {}, error_handler):
             yield host, func, r
 
 
-def run_host(mapper_dict, all_output, error_handler, reducers=plugins.REDUCERS, reducer_stats=None):
+def run_host(parser_dict, all_output, error_handler, reducers=plugins.REDUCERS, stats=None):
     logger.debug("Single-node reducer run started")
     if reducers != plugins.REDUCERS:
-        log_reducers(reducers)
-    local_output, shared_output = collect_results(mapper_dict)
+        log_components(reducers)
+    local_output, shared_output = collect_results(parser_dict)
 
-    all_output.update(mapper_dict)
+    all_output.update(parser_dict)
     for func, r in _run(reducers, local_output, shared_output, error_handler,
-                        output_dict=mapper_dict, reducer_stats=reducer_stats):
+                        output_dict=parser_dict, stats=stats):
         yield func, r
     items = list(default_reducer_results(local_output))
 #    for func, r in default_reducer_results(local_output):
@@ -119,21 +91,21 @@ def run_host(mapper_dict, all_output, error_handler, reducers=plugins.REDUCERS, 
 
 
 @logging_level(logger, logging.DEBUG)
-def log_reducers(reducers):
+def log_components(reducers):
     logger.debug("Custom reducer listing:")
     for reducer in sorted(reducers.values()):
         logger.debug("\t" + reducer.serializable_id)
 
 
 @logging_level(logger, logging.DEBUG)
-def log_mapper_outputs(func, local_output, shared_output):
-    logger.debug("Invoking reducer [%s]", func.serializable_id)
+def log_component_outputs(func, local_output, shared_output):
+    logger.debug("Invoking component[%s]", func.serializable_id)
     logger.debug("\tLocal keys: %s", sorted(local_output.keys()))
     if len(shared_output) > 0 and hasattr(shared_output.keys()[0], "serializable_id"):
-        mapper_outputs = [o.serializable_id for o in sorted(shared_output.keys())]
+        parser_outputs = [o.serializable_id for o in sorted(shared_output.keys())]
     else:
-        mapper_outputs = [o for o in sorted(shared_output.keys())]
-    logger.debug("\tShared mapper outputs: %s", mapper_outputs)
+        parser_outputs = [o for o in sorted(shared_output.keys())]
+    logger.debug("\tShared parser outputs: %s", parser_outputs)
 
 
 def run_order(components):
@@ -148,7 +120,7 @@ def run_order(components):
     return [o for o in ordered if o._reducer]
 
 
-def _run(reducers, local_output, shared_output, error_handler, output_dict=None, reducer_stats=None):
+def _run(reducers, local_output, shared_output, error_handler, output_dict=None, stats=None):
     clustered = any(r.cluster for r in reducers.values())
     for func in run_order(reducers.values()):
 
@@ -160,8 +132,8 @@ def _run(reducers, local_output, shared_output, error_handler, output_dict=None,
             continue
         real_module = sys.modules[func.__module__]
         local = local_output[real_module]
-        log_mapper_outputs(func, local, shared_output)
-        r = run_reducer(func, local, shared_output, error_handler, reducer_stats=reducer_stats)
+        log_component_outputs(func, local, shared_output)
+        r = run_reducer(func, local, shared_output, error_handler, stats=stats)
         if r:
             shared_output[func] = r
             logger.debug("Reducer output: %s", r)
@@ -174,15 +146,15 @@ def _run(reducers, local_output, shared_output, error_handler, output_dict=None,
 def default_reducer_results(local_output):
     for module, output in local_output.iteritems():
         if "type" in output and output["type"] in ["metadata", "rule"]:
-            yield plugins.PLUGINS[module.__name__]["mappers"][0], output
+            yield plugins.PLUGINS[module.__name__]["parsers"][0], output
 
 
-def run_reducer(func, local, shared, error_handler, reducer_stats=None):
+def run_reducer(func, local, shared, error_handler, stats=None):
     try:
-        if reducer_stats:
-            reducer_stats['count'] += 1
+        if stats:
+            stats['count'] += 1
         return plugins.DELEGATES[func](local=local, shared=shared)
     except Exception as e:
-        if reducer_stats:
-            reducer_stats['fail'] += 1
+        if stats:
+            stats['fail'] += 1
         error_handler(func, e, local, shared)

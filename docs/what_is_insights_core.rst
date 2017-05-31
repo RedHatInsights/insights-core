@@ -163,7 +163,7 @@ Documentation in the form of pydoc should be considered to document
 usage of code as necessary.  In particular, code used by rule developers
 should be carefully documented.  They should be able to use generated
 documentation to understand, for example, the data models exposed by
-mapper classes.  For further details, see the
+parser classes.  For further details, see the
 :ref:`documentation_guidelines` included in this guide.
 
 
@@ -182,15 +182,15 @@ General (all submissions)
   be heavily questioned
 
 
-Mappers
+Parsers
 -------
 
-- Mapper is properly documented per the :ref:`documentation_guidelines`
+- Parser is properly documented per the :ref:`documentation_guidelines`
   and should include
 
    - Example input 
-   - The resulting data structure represented by the mapper
-   - Mapper usage is clear to a user with some knowledge of the domain
+   - The resulting data structure represented by the parser
+   - Parser usage is clear to a user with some knowledge of the domain
      without needing to examine the code itself
    - Meaning and usage of an "empty" (falsy data object) is clear
 
@@ -199,5 +199,5 @@ Mappers
   generation in archives used for integration testing and product
   demonstrations.
 
-- Mappers do not expose a ``defaultdict`` or any other data structure that
+- Parsers do not expose a ``defaultdict`` or any other data structure that
   would mutate as a side effect of accessing the object.
