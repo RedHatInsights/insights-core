@@ -6,7 +6,7 @@ from insights.core.marshalling import Marshaller
 from insights.core.plugins import validate_response, stringify_requirements
 from insights.core.context import Context
 from insights.core.archives import InvalidArchive
-from insights.mappers.uname import Uname
+from insights.parsers.uname import Uname
 from insights.core import reducer
 from datetime import datetime
 
@@ -71,24 +71,24 @@ class Evaluator(object):
     def get_contextual_hostname(self, default=""):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
-    def _execute_mapper(self, mapper, context):
+    def _execute_parser(self, parser, context):
         self.stats["mapper"]["count"] += 1
-        return mapper(context)
+        return parser(context)
 
-    def run_metadata_mappers(self, the_meta_data):
+    def run_metadata_parsers(self, the_meta_data):
         """
-        Special case of running the mapper for metadata.json.  This is special
+        Special case of running the parser for metadata.json.  This is special
         because metadata.json is the only file not contained in an individual
         Insights archive.
         """
         MD_JSON = "metadata.json"
         result_map = {}
-        for plugin in plugins.get_mappers(MD_JSON):
+        for plugin in plugins.get_parsers(MD_JSON):
             context = self.build_context(content=marshalling.marshal(the_meta_data).splitlines(),
                                          path=MD_JSON,
                                          target=MD_JSON)
             try:
-                result = self._execute_mapper(plugin, context)
+                result = self._execute_parser(plugin, context)
                 if result:
                     result_map[plugin] = [result]
             except Exception as e:
@@ -111,7 +111,7 @@ class Evaluator(object):
 
     def process(self):
         self.pre_mapping()
-        self.run_mappers()
+        self.run_parsers()
         self.run_reducers()
         self.post_process()
         return self.get_response()
@@ -121,7 +121,7 @@ class Evaluator(object):
 
     def handle_map_error(self, e, context):
         self.stats["mapper"]["fail"] += 1
-        log.exception("Mapper failed")
+        log.exception("Parser failed")
 
     def handle_content_error(self, e, filename):
         log.exception("Unable to extract content from %s.", filename)
@@ -131,7 +131,7 @@ class SingleEvaluator(Evaluator):
 
     def __init__(self, spec_mapper, metadata=None):
         super(SingleEvaluator, self).__init__(spec_mapper, metadata)
-        self.mapper_results = defaultdict(list)
+        self.parser_results = defaultdict(list)
 
     def append_metadata(self, r, plugin):
         for k, v in r.iteritems():
@@ -168,13 +168,13 @@ class SingleEvaluator(Evaluator):
         assert len(sub_systems) == 1
         return sub_systems[0]
 
-    def run_mappers(self):
+    def run_parsers(self):
         if self.archive_metadata:
-            md = self.run_metadata_mappers(self._pull_md_fragment())
-            self.mapper_results.update(md)
+            md = self.run_metadata_parsers(self._pull_md_fragment())
+            self.parser_results.update(md)
         for symbolic_name, files in self.spec_mapper.symbolic_files.items():
 
-            if not plugins.get_mappers(symbolic_name):
+            if not plugins.get_parsers(symbolic_name):
                 continue
 
             for f in files:
@@ -188,13 +188,13 @@ class SingleEvaluator(Evaluator):
                 cmd_not_found_list = ["Command not found", "timeout: failed to run command"]
                 if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
                     continue
-                for plugin in plugins.get_mappers(symbolic_name):
+                for plugin in plugins.get_parsers(symbolic_name):
                     unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
                     context = self.build_context(content=content,
                                                  path=unrooted_path,
                                                  target=symbolic_name)
                     try:
-                        self.add_result(self._execute_mapper(plugin, context),
+                        self.add_result(self._execute_parser(plugin, context),
                                         symbolic_name, plugin)
                     except Exception as e:
                         self.handle_map_error(e, context)
@@ -220,7 +220,7 @@ class SingleEvaluator(Evaluator):
     def add_result(self, r, symbolic_name, plugin):
         if r is not None:
             r = self._marshal(r, symbolic_name, plugin.shared)
-            self.mapper_results[plugin].append(r)
+            self.parser_results[plugin].append(r)
 
     def handle_result(self, plugin, r):
         validate_response(r)
@@ -239,10 +239,10 @@ class SingleEvaluator(Evaluator):
     def run_reducers(self):
         self.all_output = {}
         generator = reducer.run_host(
-            self.mapper_results,
+            self.parser_results,
             self.all_output,
             self.handle_reducer_error(),
-            reducer_stats=self.stats['reducer'])
+            stats=self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(plugin, r)
 
@@ -251,7 +251,7 @@ class MultiEvaluator(Evaluator):
 
     def __init__(self, spec_mapper, metadata=None):
         super(MultiEvaluator, self).__init__(spec_mapper)
-        self.mapper_results = {}
+        self.parser_results = {}
         self.SubEvaluator = self.sub_evaluator_class()
         self.archive_results = defaultdict(lambda: {
             "system": {
@@ -269,8 +269,8 @@ class MultiEvaluator(Evaluator):
     def sub_evaluator_class(self):
         return SingleEvaluator
 
-    def run_mappers(self, **kwargs):
-        self.mapper_results[None] = self.run_metadata_mappers(self.archive_metadata)
+    def run_parsers(self, **kwargs):
+        self.parser_results[None] = self.run_metadata_parsers(self.archive_metadata)
         subarchives = [a for a in self.spec_mapper.tf.getnames() if a.endswith(".tar")]
         for i, archive in enumerate(subarchives):
             content = self.spec_mapper.get_content(archive, split=False, symbolic=False)
@@ -280,15 +280,15 @@ class MultiEvaluator(Evaluator):
             host_result = sub_evaluator.process()
             hn = sub_evaluator.get_contextual_hostname(default=i)
             self.archive_results[hn] = host_result
-            self.mapper_results[hn] = sub_evaluator.mapper_results
+            self.parser_results[hn] = sub_evaluator.parser_results
 
     def run_reducers(self, metadata=None):
         self.all_output = {}
         generator = reducer.run_multi(
-            self.mapper_results,
+            self.parser_results,
             self.all_output,
             self.handle_reducer_error(),
-            reducer_stats=self.stats['reducer'])
+            stats=self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(plugin, r)
 
@@ -374,7 +374,7 @@ class InsightsEvaluator(SingleEvaluator):
 
     def handle_map_error(self, e, context):
         self.stats["mapper"]["fail"] += 1
-        log.warning("Mapper failed with message %s. Ignoring. context: %s [%s]",
+        log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
                     e, context, self.url, exc_info=True)
 
     def handle_reduce_error(self, e, context):

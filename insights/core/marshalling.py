@@ -10,13 +10,13 @@ except ImportError:
 
 class Marshaller(object):
     """
-    Marshalling class that restructures mapper output
+    Marshalling class that restructures parser output
     for use in the reduce phase.
     """
 
     def marshal(self, o, use_value_list=False):
         """
-        Packages the return from a mapper for easy use in the reducer.
+        Packages the return from a parser for easy use in a rule.
         """
 
         if o is None:
@@ -39,8 +39,8 @@ class Marshaller(object):
 
     def unmarshal_to_context(self, data, func_keys=False):
         """
-        Given a list of marshalled mapper output, returns a single dictionary
-        for use with a reducer
+        Given a list of marshalled parser output, returns a single dictionary
+        for use with a rule.
         """
         if func_keys:
             from insights.core import plugins
@@ -48,7 +48,7 @@ class Marshaller(object):
         for t in data:
             for k, v in self.unmarshal(t).items():
                 if func_keys:
-                    k = plugins.MAPPER_FUNCS[k]
+                    k = plugins.PARSER_FUNCS[k]
                 if k not in context:
                     context[k] = v
                 else:

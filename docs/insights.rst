@@ -83,12 +83,12 @@ https://github.com/RedHatInsights/insights-core
 Plugin Components - Analysis
 ****************************
 
-insights-core coordinates analaysis of the information via the plugins. There
-are two primary types of plugins that are used in the analysis, mappers
-and reducers.  Mapper plugins are responsible for analyzing the raw data
-and converting it into a usable *facts* that can be evaluated by the
-reducers.  The reducer plugins then evaluate these facts and to produce
-additional facts and results.  These results are then accumulated and
+insights-core coordinates analysis of the information via the plugins. There
+are two primary types of plugins that are used in the analysis, parsers 
+and rules.  Parser plugins are responsible for analyzing the raw data
+and converting it into usable *facts* that can be evaluated by the
+rules.  The rules plugins then evaluate these facts to produce
+additional facts and results.  These results are accumulated and
 consolidated by insights-core to provide to the Customer Inferface.
 
 insights-core evalutes the information and only invokes plugins if the
@@ -111,46 +111,46 @@ Plugins are the primary mechanism to add functionality to Insights.
 insights-core is the framework upon which Red Hat Insights rules are built and
 delivered.  The basic purpose is to apply "rules" to a set of files collected
 from a system at a given point in time. There are two basic types of plugins,
-Mappers and Reducers.  Reducer plugins may be further divided into Fact
-Reducers and Rules.  Mappers analyze raw input data of a particular type
-to produce *facts* about the information.  Fact Reducers analyze the
-fact outputs of one or more Mappers to produce additional *facts*.
-Rules consume facts from Mappers and Reducers to produce *results*.
+Parsers and Combiners.  Combiner plugins may be further divided into Fact
+Combiners and Rules.  Parsers analyze raw input data of a particular type
+to produce *facts* about the information.  Fact Combiners analyze the
+fact outputs of one or more Parsers to produce additional *facts*.
+Rules consume facts from Parsers and Combiners to produce *results*.
 
 ****************
-Role of a Mapper
+Role of a Parser
 ****************
 
-Mappers depend upon the presence of specific items in the input
+Parsers depend upon the presence of specific items in the input
 information such as the contents of file such as ``/etc/fstab`` or
-the output of a command such as ``/usr/bin/lsblk``.  Mappers read
+the output of a command such as ``/usr/bin/lsblk``.  Parsers read
 the content and generate facts such as a list of devices and
 mount points from ``/etc/fstab``, and relationships between
-block devices from the ``/usr/bin/lsblk`` command. Mappers
+block devices from the ``/usr/bin/lsblk`` command. Parsers
 also compensate for differences between the output from
 different versions of Red Hat Enterprise Linux.  This allows
-all Reducers and Rules to focus analysis on the facts regardless
+all Combiners and Rules to focus analysis on the facts regardless
 of OS version, unless OS version is the fact of interest.
 
-**********************
-Role of a Fact Reducer
-**********************
+***********************
+Role of a Fact Combiner
+***********************
 
-Fact Reducers are useful when multiple facts may need to be evaluated
+Fact Combiners are useful when multiple facts may need to be evaluated
 in order to determine another fact about a system.  A simple example is
 the fact indicating the Red Hat release running on a system. For example
 the fact could indicate that Red Hat 6.7 or 7.2 is running on a system.
 Red Hat 6.7 or 7.2. One
 source of facts about Red Hat release is the ``/usr/bin/uname -a``
 command.  Another source of facts is the file ``/etc/redhat_release``.
-So a Uname Mapper could provide one fact about the release, and a
-Redhat_Release Mapper could provide another face.  A Fact Reducer
+So a Uname Parser could provide one fact about the release, and a
+Redhat_Release Parser could provide another face.  A Fact Combiner
 could then be used to look at each of these facts and provide
 an additional fact about the release.  The advantage of using
-the Reducer is that it provides a consistent fact regardless of
+the Combiner is that it provides a consistent fact regardless of
 whether the the Uname information or Redhat_Release information
 is present in the Insights data.  As long as one of them is present
-the Red Hat release Fact Reducer will provide its fact.
+the Red Hat release Fact Combiner will provide its fact.
 
 **************
 Role of a Rule
@@ -213,15 +213,15 @@ Further requirements can be found in the readme.md files associated with the
 specific project.
 
 ******************
-Mapper Development
+Parser Development
 ******************
 
-The purpose of a Mapper is to process raw content and map it
-into format that is usable by reducers and rules.  Raw content
+The purpose of a Parser is to process raw content and map it
+into format that is usable by combiners and rules.  Raw content
 is content obtained directly from a system file or command, and
 may collected by Insights Aspect, or from some other source such
 as a SOS Report.  The following examples will demonstrate development of
-different types of mappers.
+different types of parsers.
 
 Preparing Your Development Environment
 ======================================
@@ -261,7 +261,7 @@ to create a virtual environment and set it up for development::
     (insights-core)[bfahr@bfahrvm2 insights-core]$ pip install -e .[develop]
 
 Once these steps have been completed you will have a complete development
-environment for mappers and reducers.  You can confirm that everything is setup
+environment for parsers and combiners.  You can confirm that everything is setup
 correctly by running the tests, ``py.test``.  Your results should look
 something like this::
 
@@ -276,7 +276,7 @@ something like this::
     [leaving out a long list of test names]
     insights/web/tests/test_urls.py .
     ====================== short test summary info ===========================
-    XFAIL insights/mappers/tests/test_installed_rpms.py::test_max_min_kernel
+    XFAIL insights/parsers/tests/test_installed_rpms.py::test_max_min_kernel
       Incorrect implementation
 
     =============== 413 passed, 1 xfailed in 3.81 seconds ====================
@@ -286,7 +286,7 @@ on to the next section.  If you had problems with any of these steps then
 double check that you have completed all of the steps in order and if it still
 doesn't work, open a `Github issue <https://github.com/RedHatInsights/insights-core/issues/new>`_.
 
-Secure Shell Mapper
+Secure Shell Parser
 ===================
 
 Overview
@@ -314,53 +314,53 @@ Here is a portion of the configuration file showing the syntax::
 
 Many lines begin with a ``#`` indicating comments, and blank lines are used
 to aid readability.  The important lines have a configuration keyword followed
-by space and then a configuration value.  So in the mapper we want to make sure
+by space and then a configuration value.  So in the parser we want to make sure
 we capture the important lines and ignore the comments and blank lines.
 
-Creating the Initial Mapper Files
+Creating the Initial Parser Files
 ---------------------------------
 
-First we need to create the mapper file.  Mapper files are implemented in modules.
+First we need to create the parser file.  Parser files are implemented in modules.
 The module should be limited to one type of applications.  In this case we are
 working with ``ssh`` applications so we will create an ``ssh`` module.  Create
-the module file ``insights/mappers/ssh.py`` in the mappers directory::
+the module file ``insights/parsers/ssh.py`` in the parsers directory::
 
-    $ touch insights/mappers/ssh.py
+    $ touch insights/parsers/ssh.py
 
-Now edit the file and create the mapper skeleton:
+Now edit the file and create the parser skeleton:
 
 .. code-block:: python
     :linenos:
 
-    from .. import Mapper, mapper
+    from .. import Parser, parser
 
 
-    @mapper('sshd_config')
-    class SshDConfig(Mapper):
+    @parser('sshd_config')
+    class SshDConfig(Parser):
 
         def parse_content(content):
             pass
 
-We start by importing the ``Mapper`` class and the ``mapper`` decorator.  Our
-mapper will inherit from the ``Mapper`` class and it will be associated with
-the ``sshd_config`` input data using the ``mapper`` decorator. Finally we
+We start by importing the ``Parser`` class and the ``parser`` decorator.  Our
+parser will inherit from the ``Parser`` class and it will be associated with
+the ``sshd_config`` input data using the ``parser`` decorator. Finally we
 need to implement the ``parse_content`` subroutine which is required to parse
-store the input data in our class.  The base class ``Mapper`` implements a
+store the input data in our class.  The base class ``Parser`` implements a
 constructor that will invoke our ``parse_content`` method when the class
 is created.
 
 .. note:: The ``from .. import`` here is equivalent to
-       ``from insights.mappers import`` and is implemented by some *magic*
-       code elsewhere to help minimize changes to all mappers if the project
+       ``from insights.parsers import`` and is implemented by some *magic*
+       code elsewhere to help minimize changes to all parsers if the project
        name changes.
 
-Next we'll create the mapper test file ``insights/mappers/tests/test_ssh.py``
-as a skeleton that will aid in the mapper development process:
+Next we'll create the parser test file ``insights/parsers/tests/test_ssh.py``
+as a skeleton that will aid in the parser development process:
 
 .. code-block:: python
     :linenos:
 
-    from insights.mappers.ssh import SshDConfig
+    from insights.parsers.ssh import SshDConfig
 
 
     def test_sshd_config():
@@ -379,7 +379,7 @@ to make sure everything is setup correctly:
     plugins: cov-2.4.0
     collected 415 items
     
-    insights/mappers/tests/test_ssh.py .
+    insights/parsers/tests/test_ssh.py .
     
     ================== 414 tests deselected =======================
     ========= 1 passed, 414 deselected in 0.46 seconds ============
@@ -398,30 +398,29 @@ test passed as expected.
        about virtual environments here: 
        http://docs.python-guide.org/en/latest/dev/virtualenvs/
 
-Mapper Implementation
+Parser Implementation
 ---------------------
 
-Typically mapper and reducer development is driven by rules that need facts
-generated by the mappers and redcucers.  Regardless of the specific
+Typically parser and combiner development is driven by rules that need facts
+generated by the parsers and combiners.  Regardless of the specific
 requirements, it is important (1) to implement basic functionality by getting
 the raw data into a usable format, and (2) to not overdo the implementation
-because we can't anticipate every use of the mapper output.  In our example
+because we can't anticipate every use of the parser output.  In our example
 we will eventually be implementing the rules that will warn us about systems
-that are not configured properly. Initially
-our mapper implementation will parsing the input data into
-key/value pairs.  We may later discover that we can optimize rules by moving
-duplicate or complex processing into the mapper.
+that are not configured properly. Initially our parser implementation will
+be parsing the input data into key/value pairs.  We may later discover that
+we can optimize rules by moving duplicate or complex processing into the parser.
 
 Test Code
 ^^^^^^^^^
 
 Referring back to our :ref:`sample SSHD input <sample-sshd-input>` we will
-start by creating a test for the output that we want from our mapper:
+start by creating a test for the output that we want from our parser:
 
 .. code-block:: python
    :linenos:
 
-   from insights.mappers.ssh import SshDConfig
+   from insights.parsers.ssh import SshDConfig
    from insights.tests import context_wrap
 
    SSHD_CONFIG_INPUT = """
@@ -463,7 +462,7 @@ constructor:
    :linenos:
    :emphasize-lines: 2
 
-   from insights.mappers.ssh import SshDConfig
+   from insights.parsers.ssh import SshDConfig
    from insights.tests import context_wrap
 
 Next we include the sample data that will be used for the test.  Use of the
@@ -490,7 +489,7 @@ of the data are removed:
    """.strip()
 
 Next, to the body of the test, we add code to create an instance of our
-mapper class:
+parser class:
 
 
 .. code-block:: python
@@ -537,13 +536,13 @@ so we can make it easy by performing case insensitive compares and assuming
 all lowercase for access.  This may not always work, but in this example
 it is a safe assumption.
 
-Mapper Code
+Parser Code
 ^^^^^^^^^^^
 
 The subroutine ``parse_content`` is responsible for parsing the input data and
 storing the results in class attributes.  You may choose the attributes that
-are necessary for your mapper, there are no requirements to use specific names
-or types.  Some general recommendations for mapper class implementation are:
+are necessary for your parser, there are no requirements to use specific names
+or types.  Some general recommendations for parser class implementation are:
 
 * Choose attributes that make sense for use by actual rules, or how you
   anticipate rules to use the information. If rules need to iterate over
@@ -555,17 +554,17 @@ or types.  Some general recommendations for mapper class implementation are:
 * Use the ``@property`` decorator to create readonly getters and simplify
   access to information.
 
-Now we need to implement the mapper that will satisify our tests.
+Now we need to implement the parser that will satisify our tests.
 
 .. code-block:: python
    :linenos:
 
     from collections import namedtuple
-    from .. import Mapper, mapper, get_active_lines
+    from .. import Parser, parser, get_active_lines
 
 
-    @mapper('sshd_config')
-    class SshDConfig(Mapper):
+    @parser('sshd_config')
+    class SshDConfig(Parser):
 
         KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower'])
 
@@ -590,19 +589,19 @@ Now we need to implement the mapper that will satisify our tests.
 
 We added an imports to our skeleton to utilize ``get_active_lines()`` and
 ``namedtuples``. ``get_active_lines()`` is one of the many helper methods
-that you can find in ``insights/mappers/__init__.py``, ``insights/core/__init__.py``,
+that you can find in ``insights/parsers/__init__.py``, ``insights/core/__init__.py``,
 and ``insights/util/__init__.py``.  ``get_active_lines()`` will remove all
-blank lines and comments from the input which simplifies your mappers
+blank lines and comments from the input which simplifies your parsers
 parsing logic.
 
 .. code-block:: python
    :linenos:
 
     from collections import namedtuple
-    from .. import Mapper, mapper, get_active_lines
+    from .. import Parser, parser, get_active_lines
 
 We can use ``namedtuples`` to help simplify access to the information we
-are storing in our mapper by creating a namedtuple with the named attributes
+are storing in our parser by creating a namedtuple with the named attributes
 ``keyword``, ``value``, and ``kw_lower`` where *kw_lower* is the lowercase
 version of the *keyword*.
 
@@ -612,7 +611,7 @@ version of the *keyword*.
 
         KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower'])
 
-In this particular mapper we have chosen to store all lines (``self.lines``)
+In this particular parser we have chosen to store all lines (``self.lines``)
 as ``KeyValue`` named tuples since we don't know what future rules might.
 We are also storing the ``set`` of lowercase keywords (``self.keywords``)
 to make it easier to
@@ -651,20 +650,20 @@ Finally we implement some "dunder" methods to simplify use of the class.
             if kw in self.keywords:
                 return [kv.value for kv in self.lines if kv.kw_lower == kw]
 
-We now have a complete implementation of our mapper.  It could certainly
+We now have a complete implementation of our parser.  It could certainly
 perform further analysis of the data and more methods for access, but
-it is better keep the mapper simple in the beginning.  Once it is in
-use by rules it will be easy to add functionality to the mapper to
+it is better keep the parser simple in the beginning.  Once it is in
+use by rules it will be easy to add functionality to the parser to
 allow simplification of the rules.
 
-Mapper Documentation
+Parser Documentation
 --------------------
 
-The last step to complete implementation of our mapper is to create
-the documentation.  The guidelines and examples for mapper documentation is
+The last step to complete implementation of our parser is to create
+the documentation.  The guidelines and examples for parser documentation is
 provided in the section :doc:`docs_guidelines`.
 
-The following shows our completed mapper including documentation.
+The following shows our completed parser including documentation.
 
 .. code-block:: python
    :linenos:
@@ -714,11 +713,11 @@ The following shows our completed mapper including documentation.
        '10.110.1.1'
    """
    from collections import namedtuple
-   from .. import Mapper, mapper, get_active_lines
+   from .. import Parser, parser, get_active_lines
 
 
-   @mapper('sshd_config')
-   class SshDConfig(Mapper):
+   @parser('sshd_config')
+   class SshDConfig(Parser):
        """Parsing for ``sshd_config`` file.
 
        Attributes:
@@ -761,11 +760,11 @@ The following shows our completed mapper including documentation.
        import doctest
        doctest.testmod()
 
-Mapper Testing
+Parser Testing
 --------------
 
 It is important that we ensure our tests will run successfully after any change
-to our mapper. We are able to do that in two ways, first by running ``doctest``
+to our parser. We are able to do that in two ways, first by running ``doctest``
 to test our *Examples* section of the ``ssh`` module, and second by running
 ``pytest``.
 
@@ -777,10 +776,10 @@ to test our *Examples* section of the ``ssh`` module, and second by running
 
 To execute the ``doctest`` use the following command::
 
-    $ python -m insights.mappers.ssh
+    $ python -m insights.parsers.ssh
 
 If no errors are displayed then ``doctest`` was successful. To run
-``pytest`` on just the ``ssh`` mapper execute the following command::
+``pytest`` on just the ``ssh`` parser execute the following command::
 
     $ py.test -k test_ssh
 
@@ -788,11 +787,11 @@ You should also run all tests by executing the following command::
 
     $ py.test
 
-Once your tests all run successfully your mapper is complete.
+Once your tests all run successfully your parser is complete.
 
-*******************
-Reducer Development
-*******************
+********************
+Combiner Development
+********************
 
 TODO: write this section
 
@@ -911,13 +910,13 @@ Here's the basic contents of the rule file:
 .. code-block:: python
    :linenos:
 
-   from insights.core.plugins import make_response, reducer
-   from insights.mappers.ssh import SshDConfig
+   from insights.core.plugins import make_response, rule
+   from insights.parsers.ssh import SshDConfig
 
    ERROR_KEY = "SSHD_SECURE"
 
 
-   @reducer(requires=[SshDConfig])
+   @rule(requires=[SshDConfig])
    def report(local, shared):
        sshd_config = shared[SshDConfig]
        """
@@ -928,15 +927,15 @@ Here's the basic contents of the rule file:
            return make_response(ERROR_KEY, results=the_results)
 
 First we import the insights-core methods ``make_response()`` for creating
-a response and ``reducer()`` to decorate our rule method so that it
-will be invoked by insights-core with the appropriate mapper information.
-Then we import the mappers that provide the facts we need.
+a response and ``rule()`` to decorate our rule method so that it
+will be invoked by insights-core with the appropriate parser information.
+Then we import the parsers that provide the facts we need.
 
 .. code-block:: python
    :linenos:
 
-   from insights.core.plugins import make_response, reducer
-   from insights.mappers.ssh import SshDConfig
+   from insights.core.plugins import make_response, rule 
+   from insights.parsers.ssh import SshDConfig
 
 Next we define a unique error key string, ``ERROR_KEY`` that will be
 collected by insights-core when our rule is executed, and provided in the results for
@@ -950,33 +949,32 @@ with the same key.
 
    ERROR_KEY = "SSHD_SECURE"
 
-The ``@reducer()`` decorator is used to mark the rule method that will be
-invoked by insights-core.  Arguments to ``@reducer()`` are listed in the
-following table.
+The ``@rule()`` decorator is used to mark the rule method that will be
+invoked by insights-core.  Arguments to ``@rule()`` are listed in the
+following table. If the rule should handle Satellite clusters, use
+`@cluster_rule` instead of `@rule`.
 
 ========  =======  ==================================================
 Arg Name  Type     Description
 ========  =======  ==================================================
-required  list     List of required shared mappers, it may include
+required  list     List of required shared parsers, it may include
                    an embedded list meaning any one in the list is
                    sufficient.
-optional  list     List of options shared mappers.
-cluster   boolean  Flag indicating whether this reducer handles
-                   Satellite clusters.
+optional  list     List of options shared parsers.
 ========  =======  ==================================================
 
-Our rule requires one shared mapper ``SshDConfig``.  We will add a
+Our rule requires one shared parser ``SshDConfig``.  We will add a
 requirement to obtain facts about installed RPMs in the final code.
 
 .. code-block:: python
    :linenos:
    :lineno-start: 7
 
-   @reducer(requires=[SshDConfig])
+   @rule(requires=[SshDConfig])
 
 The name of our
 rule method is ``report``, but the name may be any valid method name.
-The purpose of the method is to access the mapper facts stored
+The purpose of the method is to access the parser facts stored
 in ``shared[SshDConfig]``, evaluate the facts.  If any results
 are found in the evaluation then a response is created with the
 ``ERROR_KEY`` and any data that you want to be associated with
@@ -999,9 +997,9 @@ argument names as it helps in understanding of the results.
            return make_response(ERROR_KEY, results=the_results)
 
 In order to perform the evaluation we need the facts for ``sshd_config``
-and for the OpenSSH version.  The ``SshDConfig`` mapper we developed
+and for the OpenSSH version.  The ``SshDConfig`` parser we developed
 will provide
-the facts for ``sshd_config`` and we can use another mapper,
+the facts for ``sshd_config`` and we can use another parser,
 ``InstalledRpms`` to help us determine facts about installed software.
 
 Here is our updated rule with check for the configuration options and
@@ -1010,14 +1008,14 @@ the software version:
 .. code-block:: python
    :linenos:
 
-   from insights.core.plugins import make_response, reducer
-   from insights.mappers.ssh import SshDConfig
-   from insights.mappers.installed_rpms import InstalledRpms
+   from insights.core.plugins import make_response, rule
+   from insights.parsers.ssh import SshDConfig
+   from insights.parsers.installed_rpms import InstalledRpms
 
    ERROR_KEY = "SSHD_SECURE"
 
 
-   @reducer(requires=[InstalledRpms, SshDConfig])
+   @rule(requires=[InstalledRpms, SshDConfig])
    def report(local, shared):
        sshd_config = shared[SshDConfig]
        errors = {}
@@ -1056,7 +1054,7 @@ the software version:
 This rules code implements the checking of the four configuration values
 ``AuthenticationMethods``, ``LogLevel``, ``PermitRootLogin``, and ``Protocol``,
 and returns any errors found using ``make_response`` in the return. Also,
-if errors are found, the ``InstalledRpms`` mapper facts are queried to determine
+if errors are found, the ``InstalledRpms`` parser facts are queried to determine
 the version of `OpenSSH` installed and that value is also returned.  If
 no values are found then an implicit ``None`` is returned.
 
@@ -1079,8 +1077,8 @@ by viewing the test code:
    from insights.tests import InputData, archive_provider, context_wrap
    from insights.core.plugins import make_response
    # The following imports are not necessary for integration tests
-   from insights.mappers.ssh import SshDConfig
-   from insights.mappers.installed_rpms import InstalledRpms
+   from insights.parsers.ssh import SshDConfig
+   from insights.parsers.installed_rpms import InstalledRpms
 
    OPENSSH_RPM = """
    openssh-6.6.1p1-31.el7.x86_64
@@ -1215,10 +1213,10 @@ as the name begins with ``test_`` which is what ``py.test`` looks
 for to identify tests.  As with all unit tests, no framework is
 provided so you must create all of the necessary structures for
 your tests.  In this case we need a ``shared`` parameter which
-is a ``dict`` object, and it need keys for each mapper that we
+is a ``dict`` object, and it need keys for each parser that we
 require in our rule, here ``SshDConfig`` and ``InstalledRpms``.
-This looks very similar to our mapper test code except that 
-we may have to support multiple mappers.  We invoke our 
+This looks very similar to our parser test code except that 
+we may have to support multiple parsers.  We invoke our 
 rule ``ssh_secure.report`` and compare the results to the
 expected results using the ``assert`` statement:
 
@@ -1262,11 +1260,11 @@ Integration Tests
 Integration tests are performed within the insights-core framework.  The
 ``InputData`` class is used to define the raw data that we want to be
 present, and the framework creates an archive file to be input to
-the insights-core framework so that the mappers will be invoked, and then
+the insights-core framework so that the parsers will be invoked, and then
 the rules will be invoked.  You need to create ``InputData`` objects
-will all of the information that is necessary for mappers required
-by your rules.  If input data is not present then mappers will not be
-executed, and if your rule requires any of those mappers, your rule.
+will all of the information that is necessary for parsers required
+by your rules.  If input data is not present then parsers will not be
+executed, and if your rule requires any of those parsers, your rule.
 
 To create your integration tests you must first create a method that
 does not begin with ``test_`` and decorate that method with

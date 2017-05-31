@@ -17,12 +17,12 @@ SYMBOLIC_NAME_FILTER_MAPPING = defaultdict(lambda: defaultdict(list))
 # Data structures that hold different sets of plugin metadata
 # These are all populated via decorators while loading plugins
 NAME_TO_FILTER_MAP = defaultdict(set)
-MAPPERS = defaultdict(list)
-MAPPER_FUNCS = {}
-SHARED_MAPPERS = []
+PARSERS = defaultdict(list)
+PARSER_FUNCS = {}
+SHARED_PARSERS = []
 PLUGINS = defaultdict(lambda: {
     "module": None,
-    "mappers": [],
+    "parsers": [],
     "reducers": [],
     "cluster_reducers": []
 })
@@ -51,7 +51,7 @@ def load(package_name, pattern_list=None):
 
 
 def build_filter_map():
-    for name, plugins in MAPPERS.iteritems():
+    for name, plugins in PARSERS.iteritems():
         filter_list = [f for plugin in plugins for f in plugin.filters]
         # TODO: Make all large files filtered so we can test for the thing below
         # if data_spec_config.is_large(name) and len(filter_list) == 0:
@@ -65,11 +65,11 @@ def get_name(plugin):
 
 def add_to_map(name, handler, filters, shared=False):
 
-    handler.shared = shared or "insights.mappers" in handler.__module__
+    handler.shared = shared or "insights.parsers" in handler.__module__
     if handler.shared:
-        SHARED_MAPPERS.append(handler)
+        SHARED_PARSERS.append(handler)
 
-    MAPPERS[name].append(handler)
+    PARSERS[name].append(handler)
 
     handler.filters = filters if filters else []
 
@@ -77,7 +77,7 @@ def add_to_map(name, handler, filters, shared=False):
     SYMBOLIC_NAME_FILTER_MAPPING[name][bool(filters)].append(plugin_name)
 
 
-def get_mappers(name, mapping=MAPPERS):
+def get_parsers(name, mapping=PARSERS):
     return mapping.get(name, [])
 
 
@@ -87,24 +87,24 @@ def inject_host(r, host):
     elif isinstance(r, types.DictType):
         keys = r.keys()
         if len(keys) != 1:
-            raise Exception("Cluster mapper response can't have multiple keys")
-        mapper_key = keys[0]
-        if not isinstance(r[mapper_key], types.DictType):
-            v = r[mapper_key]
-            r[mapper_key] = {"value": v}
-        r[mapper_key]["host"] = host
+            raise Exception("Cluster parser response can't have multiple keys")
+        parser_key = keys[0]
+        if not isinstance(r[parser_key], types.DictType):
+            v = r[parser_key]
+            r[parser_key] = {"value": v}
+        r[parser_key]["host"] = host
         return r
 
 
-def register_cluster_mapper(name, func, filters=[]):
+def register_cluster_parser(name, func, filters=[]):
     @wraps(func)
     def host_inject_wrapper(context):
         r = func(context)
         return inject_host(r, context.hostname) if r else None
-    register_mapper(name, host_inject_wrapper, filters, cluster=True)
+    register_parser(name, host_inject_wrapper, filters, cluster=True)
 
 
-def register_mapper(name, func, filters=None, shared=False, cluster=False):
+def register_parser(name, func, filters=None, shared=False, cluster=False):
     '''
     Associate a mapping function to a sosreport file.
 
@@ -114,7 +114,7 @@ def register_mapper(name, func, filters=None, shared=False, cluster=False):
 
     .. py:attribute:: func
 
-       Mapper function which will process the file identified by ``name``.
+       Parser function which will process the file identified by ``name``.
 
     .. py:attribute:: filters
 
@@ -125,8 +125,8 @@ def register_mapper(name, func, filters=None, shared=False, cluster=False):
 
     .. py:attribute:: shared
 
-       Mapper function will be added to the shared mapper namespace. The output
-       of this mapper will be available to all reducers.
+       Parser function will be added to the shared parser namespace. The output
+       of this parser will be available to all combiners and rules.
 
     '''
 
@@ -140,18 +140,18 @@ def register_mapper(name, func, filters=None, shared=False, cluster=False):
         func.serializable_id = "#".join([func.__module__, func.__name__])
         func.consumers = set()
         add_symbolic_name(func, name)
-        MAPPER_FUNCS[func.serializable_id] = func
+        PARSER_FUNCS[func.serializable_id] = func
         p = PLUGINS[func.__module__]
-        p["mappers"].append(func)
+        p["parsers"].append(func)
         p["module"] = func.__module__
 
-        # Need to add already-registered reducers defined in same module to consumer list
-        # Should only happen if a @reducer is defined above a @mapper in the same module
+        # Need to add already-registered rules defined in same module to consumer list
+        # Should only happen if a @rule is defined above a @parser in the same module
         f_module = func.__module__
         for r in [r for r in REDUCERS.values() if r.__module__ == f_module]:
             func.consumers.add(r)
-        shared = shared or ('mappers' in func.__module__)
-        component_type = cluster_mapper if cluster else mapper
+        shared = shared or ('parsers' in func.__module__)
+        component_type = cluster_parser if cluster else parser
         register_component(func, func, component_type,
                            requires=None,
                            optional=None,
@@ -159,7 +159,7 @@ def register_mapper(name, func, filters=None, shared=False, cluster=False):
                            cluster=cluster,
                            emitter=False)
     except Exception:
-        log.exception("Failed to register mapper: %s", func.__name__)
+        log.exception("Failed to register parser: %s", func.__name__)
         raise
 
 
@@ -185,50 +185,47 @@ def register_cluster_reducer(func):
     p["module"] = func.__module__
 
 
-def mapper(filename, filters=[], shared=False):
+def parser(filename, filters=[], shared=False):
     """
-    Convenience decorator for mapper callables.
+    Convenience decorator for parser callables.
 
     :param str filename: symbolic name of the file to register against
     :param list filters: list of plain strings that should be kept when removing
         lines from a large-format file
 
-    Registering a mapper for /var/log/messages ::
+    Registering a parser for /var/log/messages ::
 
-      @mapper('messages', ['interesting_plain_text_indicator'])
+      @parser('messages', ['interesting_plain_text_indicator'])
       def my_func(context):
           pass
 
-    Registering a mapper for dmidecode ::
+    Registering a parser for dmidecode ::
 
-      @mapper('dmidecode')
+      @parser('dmidecode')
       def my_func(context):
           pass
 
     """
     def _register(func):
-        register_mapper(filename, func, filters, shared=shared)
+        register_parser(filename, func, filters, shared=shared)
         return func
 
     return _register
 
 
-parser = mapper
-
-
-def cluster_mapper(filename, filters=[]):
+def cluster_parser(filename, filters=[]):
     """
-    Convenience decorator for mapper callables in clustered modules.
+    Convenience decorator for parser callables in clustered modules.
 
-    See the mapper decorator for a description of parameters and registration.
+    See the parser decorator for a description of parameters and registration.
 
-    Since cluster reducers need to be host-aware, mappers need to include
-    the hostname in all responses so the reducer can differentiate between
-    hosts.  This can be cumbersome, therefore the @cluster_mapper has been
+    Since cluster rules need to be host-aware, parsers need to include
+    the hostname in all responses so the rule can differentiate between
+    hosts.  This can be cumbersome, therefore the @cluster_parser has been
     added.  It will inject the hostname into the response returned from a
-    mapper that uses the @cluster_mapper decorator.
+    parser that uses the @cluster_parser decorator.
 
-    There are three cases based on what type is returned by a mapper:
+    There are three cases based on what type is returned by a parser:
 
     1. String e.g. "FOOBAR" -> {
     "FOOBAR": hostname
@@ -240,42 +237,39 @@ def cluster_mapper(filename, filters=[]):
     "FOO": {"host": hostname, "FOO": 1, "BAZ": 2}
     }
 
-    NOTE: Mapper shallow dict responses must only have one key, which
-    represents a sort of "mapper key" to be later referenced in the reducer.
+    NOTE: Parser shallow dict responses must only have one key, which
+    represents a sort of "parser key" to be later referenced in the rule.
     If multiple keys are used, an error will be thrown.
     """
     def _register(func):
-        register_cluster_mapper(filename, func, filters)
+        register_cluster_parser(filename, func, filters)
         return func
 
     return _register
-
-
-cluster_parser = cluster_mapper
 
 
 def walk_dependencies(root, visitor):
     """
     Call visitor on all dependencies reachable from root.
 
-    :param function root: non shared reducer function
+    :param function root: rule function
     :param function visitor: function to call on each dependencies that is
         reachable from root.
     """
 
-    def _visit_mappers(parent, visitor):
+    def _visit_parsers(parent, visitor):
         requires = COMPONENT_DEPENDENCIES[parent]
         for r in requires:
             visitor(parent, r)
             if r.shared:
-                _visit_mappers(r, visitor)
+                _visit_parsers(r, visitor)
 
-    _visit_mappers(root, visitor)
+    _visit_parsers(root, visitor)
 
-    # Non-shared mappers defined in same module are implicitly consumed
+    # Non-shared parsers defined in same module are implicitly consumed
     root_module = root.__module__
-    for mappers in MAPPERS.values():
-        for m in mappers:
+    for parsers in PARSERS.values():
+        for m in parsers:
             if m.__module__ == root_module:
                 visitor(root, m)
 
@@ -354,7 +348,7 @@ def box_value(v):
 
 
 def register_consumer(c):
-    """ Register non shared reducers as consumers of mappers. """
+    """ Register rules as consumers of parsers. """
 
     def register(parent, component):
         if not component._reducer:
@@ -373,7 +367,7 @@ def register_component(
         cluster=False,
         emitter=False):
     """
-    Registers any component that is not a mapper or cluster_mapper.
+    Registers any component that is not a parser or cluster_parser.
 
     This is a single registration interface for combiners, rules, cluster_rules,
     etc.
@@ -384,11 +378,11 @@ def register_component(
         component_type: parser, rule, combiner, etc.
         requires: list of components the component needs
         optional: list of optional components the component can use
-        shared: True for most mappers and shared reducers
-        cluster: True for cluster mappers and cluster reducers
+        shared: True for parsers and combiners
+        cluster: True for cluster parsers and cluster rules
         emitter: True for components that return make_response(...)
     """
-    is_reducer = component_type not in (mapper, cluster_mapper)
+    is_reducer = component_type not in (parser, cluster_parser)
     if is_reducer:
         if cluster:
             register_cluster_reducer(component)
@@ -418,17 +412,30 @@ def register_component(
         register_consumer(component)
 
 
+def default_executor(func,
+                     local,
+                     broker,
+                     shared=True,
+                     cluster=False,
+                     emitter=False):
+    if cluster:
+        return func(box(local), broker)
+    else:
+        return func(local, broker)
+
+
 def new_component_type(name=None,
                        auto_requires=[],
                        auto_optional=[],
                        shared=True,
                        cluster=False,
-                       emitter=False):
+                       emitter=False,
+                       executor=default_executor):
     """
     Factory that creates component decorators.
 
-    The functions this factory produces are decorators for shared reducers,
-    rules, cluster rules, etc. They don't yet define mappers or cluster_mappers.
+    The functions this factory produces are decorators for combiners,
+    rules, cluster rules, etc. They don't yet define parsers or cluster_parsers.
 
     Args:
         name (str): the name of the component type the produced decorator
@@ -442,13 +449,17 @@ def new_component_type(name=None,
         shared (bool): the component should be used outside its defining module?
         cluster (bool): the component should be run for multi-node archives?
         emitter (bool): the components returns make_response(...)?
+        executor (func): an optional function that controls how a component is
+            executed. It can impose restrictions on return value types, perform
+            component type specific exception handling, etc. The signature is
+            `executor(component, broker, shared=?, cluster=?, emitter=?)`. The
+            default behavior is to directly call `func(broker)`.
 
     Returns:
         A decorator function used to define components of the new type
     """
 
-    def decorator(requires=None, optional=None):
-        is_shared = shared
+    def decorator(requires=None, optional=None, executor=executor):
         requires = requires or []
         optional = optional or []
 
@@ -457,13 +468,12 @@ def new_component_type(name=None,
 
         def _f(func):
             @wraps(func)
-            def __f(local, shared):
-                missing_requirements = get_missing_requirements(requires, shared)
+            def __f(local, broker):
+                missing_requirements = get_missing_requirements(requires, broker)
                 if not requires or not missing_requirements:
-                    if cluster:
-                        return func(box(local), shared)
-                    else:
-                        return func(local, shared)
+                    if executor:
+                        return executor(func, local, broker, shared=shared, cluster=cluster, emitter=emitter)
+                    return func(local, broker)
                 else:
                     log.debug("Component [%s] is missing requirements: %s",
                               func.__module__,
@@ -477,7 +487,7 @@ def new_component_type(name=None,
             register_component(func, __f, decorator,
                                requires=requires,
                                optional=optional,
-                               shared=is_shared,
+                               shared=shared,
                                cluster=cluster,
                                emitter=emitter)
             return func
@@ -487,32 +497,23 @@ def new_component_type(name=None,
     return decorator
 
 
-combiner = new_component_type("combiner", shared=True, cluster=False, emitter=False)
-""" The same as a shared reducer."""
+data_provider = new_component_type("combiner", shared=True, cluster=False, emitter=False)
+""" Defines a component that a `Parser` will consume."""
 
-cluster_rule = new_component_type("cluster_reducer", shared=False, cluster=True, emitter=True)
-""" A cluster reducer."""
+combiner = new_component_type("combiner", shared=True, cluster=False, emitter=False)
+""" Combines several parsers or other combiners."""
+
+cluster_rule = new_component_type("cluster_rule", shared=False, cluster=True, emitter=True)
+""" A rule that can see parser and combiner results for all hosts in a cluster."""
 
 rule = new_component_type("rule", shared=False, cluster=False, emitter=True)
-""" A regular, non-cluster reducer."""
+""" A component that can see all parsers and combiners for a single host."""
 
 condition = new_component_type("condition", shared=True, cluster=False, emitter=False)
-""" A component used within rules that allows statistical analysis."""
+""" A component used within rules that allows automated statistical analysis."""
 
 incident = new_component_type("incident", shared=True, cluster=False, emitter=False)
-""" A component used within rules that allows statistical analysis."""
-
-
-def reducer(requires=None, optional=None, cluster=False, shared=False):
-    """ Helper for backward compatibility with existing rule declarations. """
-
-    def _f(func):
-        if cluster:
-            return cluster_rule(requires, optional)(func)
-        if shared:
-            return combiner(requires, optional)(func)
-        return rule(requires, optional)(func)
-    return _f
+""" A component used within rules that allows automated statistical analysis."""
 
 
 def make_skip(rule_fqdn, reason, details=None):

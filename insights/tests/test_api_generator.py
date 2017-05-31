@@ -6,7 +6,7 @@ class TestAPIGen(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from insights.mappers import *  # noqa
+        from insights.parsers import *  # noqa
         pass
 
     def setUp(self):

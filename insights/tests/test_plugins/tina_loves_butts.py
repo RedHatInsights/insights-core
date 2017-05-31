@@ -1,9 +1,9 @@
-from insights import reducer
+from insights import rule
 
 ERROR_KEY_YEAH = "OH_YEAH"
 ERROR_KEY_NO = "OH_NO"
 
 
-@reducer()
-def report(local, shared):
+@rule()
+def report(shared):
     pass

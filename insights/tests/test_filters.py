@@ -10,7 +10,7 @@ ERROR_MESSAGE = """
 
 def _symbolic_names(plugin):
     names = []
-    for m in plugin["mappers"]:
+    for m in plugin["parsers"]:
         names.extend(m.symbolic_names)
     if [n for n in names if 'rabbit' in n]:
         print plugin
@@ -22,12 +22,12 @@ def _check_filter(name, states):
     if True in states:
         return True
     else:
-        for handler in plugins.MAPPERS[name]:
+        for handler in plugins.PARSERS[name]:
             if handler.filters:
                 return True
         # At this point we there are no filters defined
         # But we need to make sure this symbolic name is really used before reporting
-        return False if any(m.consumers for m in plugins.MAPPERS[name]) else True
+        return False if any(m.consumers for m in plugins.PARSERS[name]) else True
 
 
 def check_filters(name, states):

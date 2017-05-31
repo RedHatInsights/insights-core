@@ -17,10 +17,10 @@ insights.core.context
     :show-inheritance:
     :undoc-members:
 
-insights.mappers
+insights.parsers
 ----------------
 
-.. automodule:: insights.mappers
+.. automodule:: insights.parsers
     :members: ParseException, get_active_lines, optlist_to_dict, split_kv_pairs, unsplit_lines
     :show-inheritance:
     :undoc-members:

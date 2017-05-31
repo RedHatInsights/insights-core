@@ -88,7 +88,7 @@ class FilePermissions(object):
     def from_dict(self, dirent):
         """
         Create a new FilePermissions object from the given dictionary.  This
-        works with the FileListing mapper class, which has already done the
+        works with the FileListing parser class, which has already done the
         hard work of pulling many of these fields out.  We create an object
         with all the dictionary keys available as properties, and also split
         the ``perms`` string up into owner, group

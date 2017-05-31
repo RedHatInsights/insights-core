@@ -50,160 +50,129 @@ To build rules effectively, one should have a general idea of how data
 is executed against each rule.  At a high level:
 
 - Each unit of input data is mapped to a symbolic name
-- Each mapper that "subscribes" to that symbolic name is executed with
+- Each parser that "subscribes" to that symbolic name is executed with
   the given content as part of a ``Context`` object.
-- The outputs of all mappers are sorted by host
-- For each host, every reducer is invoked with the local context,
-  populated by mappers from the same plugin, and the shared reducer
-  context, the combination of all shared mapper outputs for this
+- The outputs of all parsers are sorted by host
+- For each host, every rule is invoked with the local context,
+  populated by parsers from the same plugin, and the shared
+  context, the combination of all shared parser outputs for this
   particular host.
-- The outputs of all reducers is returned, along with other various bits
+- The outputs of all rules is returned, along with other various bits
   of metadata, to the client, depending on what invoked the rules
   framework.
 
-Mappers
+Parsers
 =======
 
-A mapper takes the raw content of a particular file or command output (from our
+A parser takes the raw content of a particular file or command output (from our
 specs), parses it, and then provides a small API for plugins to query.  The
 parsed data and computed facts available via the API are also serialized to be
 used in downstream processes.
 
-Legacy Mappers
---------------
-
-It was once standard to write all mappers in the same plugin module as
-the reducers.  This is now considered **deprecated** and will be removed
-in a future release.
-
-The deprecation of "local mappers" is due to a number of reasons:
-
-Code Maintenance
-    Many plugins were parsing the same file in very similar ways,
-    causing maintenance overhead (i.e. if one mapper had to change, it
-    was likely that all of them had to change).  Many plugin mappers
-    were implemented slightly differently, potentially introducing bugs
-    that are difficult to catch since only one reducer is using the
-    output of a local mapper.
-Performance
-    Many plugin mappers would parse the same symbolic file that other
-    mappers were parsing, which is much more expensive than analyzing
-    pre-parsed data structures provided by a single shared mapper.
-Usability
-    Shared mappers are generally designed to produce more user-friendly
-    output.
-
-.. note::
-   "Shared mappers" will be known simply as "mappers" once the
-   deprecated legacy mappers have been removed from the framework.
-
-Much of a plugin's "business logic" was placed in legacy mappers, but with new
-"shared mappers", all business logic must be placed in the *reducer*.
-
 Choosing a Module
 -----------------
 
-Currently all shared mappers are defined in the package
-``insights.mappers``.  From there, the mappers are separated into
-modules based on the command or file that the mapper consumes.  Commands or
+Currently all shared parsers are defined in the package
+``insights.parsers``.  From there, the parsers are separated into
+modules based on the command or file that the parser consumes.  Commands or
 files that are logically grouped together can go in the same module, e.g. the
 ``ethtool`` based commands and ``ps`` based commands.
 
-Defining Mappers
+Defining Parsers
 ----------------
 
-There are a couple things that make a function a mapper:
+There are a couple things that make a function a parser:
 
-1. The function is decorated with the ``@mapper`` decorator
+1. The function is decorated with the ``@parser`` decorator
 2. The function takes one parameter, which is expected to be of type
    ``Context``.
 
 Registration and Symbolic Names
 -------------------------------
 
-Mappers are registered with the framework by use of the ``@mapper`` decorator.
-This decorator will add the function object to the list of mappers associated
-with the given symbolic name.  Without the decorator, the mapper will
+Parsers are registered with the framework by use of the ``@parser`` decorator.
+This decorator will add the function object to the list of parsers associated
+with the given symbolic name.  Without the decorator, the parser will
 never be found by the framework.
 
 Symbolic names represent all the possible file content types that can be
-analyzed by mappers.  The rules framework uses the symbolic name mapping
+analyzed by parsers.  The rules framework uses the symbolic name mapping
 defined in ``insights.specs.static`` to map a symbolic name to either a
 command or absolute file path.  The same mapping is used to create the
 ``uploader.json`` file consumed by Insights clients to collect data from
 customer systems.
 
-.. autofunction:: insights.core.plugins.mapper
+.. autofunction:: insights.core.plugins.parser
    :noindex:
 
-Mapper Contexts
+Parser Contexts
 ---------------
 
-Each mapper takes exactly one parameter, which is expected to be of type
-``Context``.  All information available to a mapper is found in the
+Each parser takes exactly one parameter, which is expected to be of type
+``Context``.  All information available to a parser is found in the
 ``Context`` object.  Please refer to the `Context API documentation
 </api_index.html#insights.core.context.Context>`_ for
 more details.
 
-Mapper Outputs
+Parser Outputs
 --------------
 
-Mappers can return any value, as long as it's serializable.
+Parsers can return any value, as long as it's serializable.
 
-Mapper developers are encouraged to wrap output data in a ``Mapper``
+Parser developers are encouraged to wrap output data in a ``Parser``
 class.  This makes plugin developers able to query for higher-level facts about
 a particular file, while also exporting the higher level facts for use outside
 of Insights plugins.
 
-.. autoclass:: insights.core.Mapper
+.. autoclass:: insights.core.Parser
    :members:
    :noindex:
 
-Plugins (Reducers)
+Plugins (Rules)
 ==================
 
 The purpose of "plugins" is to identify a particular problem in a given system
 based on certain facts about that system.  Each plugin consists of a module
 with:
 
-- One ``@reducer``-decorated function
+- One ``@rule``-decorated function
 - An ``ERROR_KEY`` member (recommended)
 - A docstring for the module that includes
     - A summary of the plugin
     - A longer description of what the plugin identifies
     - A Trello/Jira link
 
-.. autofunction:: insights.core.plugins.reducer
+.. autofunction:: insights.core.plugins.rule
    :noindex:
 
-Reducer Context
+Rule Context
 ---------------
 
-Each reducer function must have only two parameters, named ``local`` and
-``shared``.  The ``local`` parameter contains mapper outputs from local (i.e.
-legacy) mappers, and the ``shared`` parameter contains mapper outputs from
-shared mappers.  Since local mappers are considered deprecated, the ``local``
+Each rule function must have only two parameters, named ``local`` and
+``shared``.  The ``local`` parameter contains parser outputs from local (i.e.
+legacy) parsers, and the ``shared`` parameter contains parser outputs from
+shared parsers.  Since local parsers are considered deprecated, the ``local``
 parameter will eventually be removed.
 
 .. note::
    New plugins should avoid using the ``local`` context since it is deprecated.
 
 The ``shared`` context is a dictionary where the keys are the function object
-of the mapper that produced the output.  This means that plugins must import
-every mapper that they intend to use, and they should list the function objects
-in the ``requires`` keyword argument to the ``@reducer`` decorator, if
-applicable.  If the symbolic name for the given mapper is a pattern file, then
-the value of the mapper's output will be a list, otherwise it will be whatever
-the mapper returns.  If the given mapper returns a ``Mapper`` instance,
+of the parser that produced the output.  This means that plugins must import
+every parser that they intend to use, and they should list the function objects
+in the ``requires`` keyword argument to the ``@rule`` decorator, if
+applicable.  If the symbolic name for the given parser is a pattern file, then
+the value of the parser's output will be a list, otherwise it will be whatever
+the parser returns.  If the given parser returns a ``Parser`` instance,
 plugins are are encouraged to use the higher-level functions defined on the
-given ``Mapper`` object to perform its business logic over functions
+given ``Parser`` object to perform its business logic over functions
 performed directly on the built-in data structures found in the
-``Mapper`` instance.
+``Parser`` instance.
 
-Reducer Output
+Rule Output
 --------------
 
-Reducers can return two types of responses:  a rule "hit" or "action", or
+Rules can return two types of responses:  a rule "hit" or "action", or
 system metadata.
 
 To return a rule "hit", return the result of ``make_response``:

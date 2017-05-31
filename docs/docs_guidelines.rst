@@ -5,7 +5,7 @@ Documentation Guidelines
 ************************
 
 
-Shared Mappers and Reducers that are developed for the insights-core component of
+Shared Parsers and Combiners that are developed for the insights-core component of
 Insights are documented via comments in the code. This makes it easier to
 produce documentation that is consistent and up-to-date. The insights-core project
 utilizes `Sphinx`_ and `reStructuredText`_ for documentation generation.
@@ -13,11 +13,11 @@ Sphinx can create documentation in multiple output formats, and documentation
 that can be easily published on websites like `Read The Docs`_. There are a
 few simple steps that should be followed by developers when creating or modifying
 code to be merged into the insights-core project. First, provide useful comments to
-allow a user of your mapper to understand what it does and how to use it. Second
+allow a user of your parser to understand what it does and how to use it. Second
 follow the style chosen for the insights-core project. And Third, test your docs by
 generating them and making sure that they are correct.
 
-This document demonstrates a mapper, but reducers may be documented following
+This document demonstrates a parser, but combiners may be documented following
 the same guidelines and examples.
 
 Goal of Documentation in Code
@@ -30,16 +30,16 @@ documentation generated from the code will be useful and current with the code.
 
 When adding comments to the code it is desirable to make it easy for a developer to
 access.  This means putting the information at the top, in the module section, and
-only moving the documentation down into each mapper when it is specific to the mapper.
-For instance if there is only one mapper in a module then almost all of the documentation
-will be in the module section.  If there are multiple mappers that are very similar then
+only moving the documentation down into each parser when it is specific to the parser.
+For instance if there is only one parser in a module then almost all of the documentation
+will be in the module section.  If there are multiple parsers that are very similar then
 most of the documentation will be in the module section and only the unique details will
-be in each mapper's class.  
+be in each parser's class.  
 
 Look at the example code in this article and also review the source files for
-these mappers and see how the documentation has been organized.
+these parsers and see how the documentation has been organized.
 
-Example Mapper
+Example Parser
 ==============
 
 The insights-core project follows the `Google Docstring Style`_ for docstring comments.
@@ -73,7 +73,7 @@ in code contributed to the insights-core project:
    Note:
        The examples in this module may be executed with the following command:
 
-       ``python -m insights.mappers.lspci``
+       ``python -m insights.parsers.lspci``
 
    Examples:
        >>> lspci_content = '''
@@ -94,10 +94,10 @@ in code contributed to the insights-core project:
        >>> "0d:00.0" in pci_info
        True
    """
-   from .. import LogFileOutput, mapper
+   from .. import LogFileOutput, parser 
 
 
-   @mapper('lspci')
+   @parser('lspci')
    class LsPci(LogFileOutput):
        """Parses output of the ``lspci`` command."""
        pass
@@ -126,7 +126,7 @@ Title
 The docstring module begins at the first line of the file using three double quotes.
 The second line is the name of the module and a descriptive phrase.  In this case
 the file is **lspci.py**, the module is **lspci** and it is a command.  An example
-of a file mapper would be file **fstab.py**, module name **fstab** and descriptive
+of a file parser would be file **fstab.py**, module name **fstab** and descriptive
 phrase'File /etc/fstab'.  The module
 name line is followed by a line of ``=`` characters that is the same length as the 
 entire module line.  A blank line follows the module information.
@@ -160,12 +160,12 @@ Since this description is the first thing a developer will see when viewing
 the documentation it is important that the description is clear, concise and useful.
 Include elements of the module that would not be obvious from looking at the code.
 This description should provide an overview that complements detail shown in the
-*Examples* section.  If there are multiple mappers in the module, this section should
-provide a brief description of each mapper.  If mapper input is similar for each mapper
+*Examples* section.  If there are multiple parsers in the module, this section should
+provide a brief description of each parser.  If parser input is similar for each parser
 then a code samples can be shown in the module description and/or in the *Examples*.  If
-there are important details in the output for each mapper then put that information
+there are important details in the output for each parser then put that information
 in the class docstrings instead.  You may use multiple *Examples* sections in the
-module description if necessary to fully demonstrate usage of the mapper.
+module description if necessary to fully demonstrate usage of the parser.
 
 Notes/References
 ----------------
@@ -177,10 +177,10 @@ Notes/References
    Note:
        The examples in this module may be executed with the following command:
 
-       ``python -m insights.mappers.lspci``
+       ``python -m insights.parsers.lspci``
 
 Module notes and/or references are not necessary unless there is information
-that should be included to aid a developer in understanding the mapper. In
+that should be included to aid a developer in understanding the parser. In
 this particular case this information is only provided as an aid to the
 reader of this sample code that the *Examples* section is executable using
 ``doctest``.  It is not recommended to include this note in any contributed code
@@ -215,7 +215,7 @@ Examples
 
 This section of the documentation is the most important section because of the
 information it conveys to the reader.  Make sure to include examples that
-show use of the mapper to access the facts provided by the mapper.  You can
+show use of the parser to access the facts provided by the parser.  You can
 ensure that the examples are accurate by executing them in the Python interactive
 shell.  If you implement an *Examples* section including input data as shown in
 the above code, you
@@ -226,16 +226,16 @@ refer to the input samples provide in the *Examples* section from the comments.
 Testing Your Docstring
 ======================
 
-Once you have implemented a mapper with the recommended documentation style you will
+Once you have implemented a parser with the recommended documentation style you will
 need to include it in the insights-core documentation.  You can do this by creating a file
-in the directory ``insights-core/docs/shared_mappers_catalog/`` that has the same name
-as your mapper
+in the directory ``insights-core/docs/shared_parsers_catalog/`` that has the same name
+as your parser
 module name, except with a ``.rst`` extension instead of a ``.py`` extension.  For
-example if your mapper module is named ``your_mapper.py`` then create a file
-``insights-core/docs/shared_mappers_catalog/your_mapper.rst`` and include the following
+example if your parser module is named ``your_parser.py`` then create a file
+``insights-core/docs/shared_parsers_catalog/your_parser.rst`` and include the following
 three lines in the file::
 
-   .. automodule:: insights.mappers.your_mapper
+   .. automodule:: insights.parsers.your_parser
       :members:
       :show-inheritance:
 
@@ -249,7 +249,7 @@ If you have errors in your comments you may see them in the output of the make c
 Sphinx will only report errors if it cannot parse the comments. If you notice a
 message similar to the following you may safely ignore it::
 
-  "Didn't find BlockIDInfo.data in insights-core.mappers.blkid"
+  "Didn't find BlockIDInfo.data in insights-core.parser.blkid"
 
 Once the ``make`` command
 executes without any error messages the next step is to review the generated HTML and
@@ -275,7 +275,7 @@ Rendered HTML
 The following show how the ``lspci`` module documentation is rendered as HTML.
 
 .. figure:: lspci_doc.png
-   :alt: LSPCI Mapper Module Web Page
+   :alt: LSPCI Parser Module Web Page
 
 References
 ==========

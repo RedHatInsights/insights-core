@@ -12,7 +12,7 @@ from contextlib import contextmanager
 
 from insights.config import CommandSpec
 from insights.config.static import get_config
-from insights.mappers.uname import rhel_release_map
+from insights.parsers.uname import rhel_release_map
 from insights.core import context as ctx
 from insights.util import fs
 

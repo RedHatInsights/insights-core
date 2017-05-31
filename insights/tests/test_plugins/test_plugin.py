@@ -1,7 +1,7 @@
-from insights.core.plugins import reducer
-from insights.mappers import installed_rpms, uname
+from insights.core.plugins import rule
+from insights.parsers import installed_rpms, uname
 
 
-@reducer(optional=[installed_rpms.InstalledRpms, uname.Uname])
-def report(local, shared):
+@rule(optional=[installed_rpms.InstalledRpms, uname.Uname])
+def report(shared):
     pass
