@@ -1,0 +1,292 @@
+/sys/firmware:
+total 0
+drwxr-xr-x.  5 0 0 0 May 30 11:50 .
+dr-xr-xr-x. 13 0 0 0 May 30 11:50 ..
+drwxr-xr-x.  5 0 0 0 May 30 11:50 acpi
+drwxr-xr-x.  3 0 0 0 May 30 11:51 dmi
+drwxr-xr-x.  7 0 0 0 May 30 12:31 memmap
+
+/sys/firmware/acpi:
+total 0
+drwxr-xr-x. 5 0 0    0 May 30 11:50 .
+drwxr-xr-x. 5 0 0    0 May 30 11:50 ..
+drwxr-xr-x. 6 0 0    0 May 30 12:31 hotplug
+drwxr-xr-x. 2 0 0    0 May 30 12:31 interrupts
+-r--r--r--. 1 0 0 4096 May 30 12:31 pm_profile
+drwxr-xr-x. 3 0 0    0 May 30 11:50 tables
+
+/sys/firmware/acpi/hotplug:
+total 0
+drwxr-xr-x. 6 0 0    0 May 30 12:31 .
+drwxr-xr-x. 5 0 0    0 May 30 11:50 ..
+drwxr-xr-x. 2 0 0    0 May 30 12:31 container
+-rw-r--r--. 1 0 0 4096 May 30 12:31 force_remove
+drwxr-xr-x. 2 0 0    0 May 30 12:31 memory
+drwxr-xr-x. 2 0 0    0 May 30 12:31 pci_root
+drwxr-xr-x. 2 0 0    0 May 30 12:31 processor
+
+/sys/firmware/acpi/hotplug/container:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 6 0 0    0 May 30 12:31 ..
+-rw-r--r--. 1 0 0 4096 May 30 12:31 enabled
+
+/sys/firmware/acpi/hotplug/memory:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 6 0 0    0 May 30 12:31 ..
+-rw-r--r--. 1 0 0 4096 May 30 12:31 enabled
+
+/sys/firmware/acpi/hotplug/pci_root:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 6 0 0    0 May 30 12:31 ..
+-rw-r--r--. 1 0 0 4096 May 30 12:31 enabled
+
+/sys/firmware/acpi/hotplug/processor:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 6 0 0    0 May 30 12:31 ..
+-rw-r--r--. 1 0 0 4096 May 30 12:31 enabled
+
+/sys/firmware/acpi/interrupts:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 5 0 0    0 May 30 11:50 ..
+-rw-r--r--. 1 0 0 4096 May 30 12:31 error
+-rw-r--r--. 1 0 0 4096 May 30 12:31 ff_gbl_lock
+-rw-r--r--. 1 0 0 4096 May 30 12:31 ff_pmtimer
+-rw-r--r--. 1 0 0 4096 May 30 12:31 ff_pwr_btn
+-rw-r--r--. 1 0 0 4096 May 30 12:31 ff_rt_clk
+-rw-r--r--. 1 0 0 4096 May 30 12:31 ff_slp_btn
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe00
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe01
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe02
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe03
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe04
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe05
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe06
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe07
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe08
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe09
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe0A
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe0B
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe0C
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe0D
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe0E
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe0F
+-rw-r--r--. 1 0 0 4096 May 30 12:31 gpe_all
+-rw-r--r--. 1 0 0 4096 May 30 12:31 sci
+-rw-r--r--. 1 0 0 4096 May 30 12:31 sci_not
+
+/sys/firmware/acpi/tables:
+total 0
+drwxr-xr-x. 3 0 0 0 May 30 11:50 .
+drwxr-xr-x. 5 0 0 0 May 30 11:50 ..
+-r--------. 1 0 0 0 May 30 12:31 APIC
+-r--------. 1 0 0 0 May 30 12:31 DSDT
+-r--------. 1 0 0 0 May 30 12:31 FACP
+-r--------. 1 0 0 0 May 30 12:31 FACS
+-r--------. 1 0 0 0 May 30 12:31 HPET
+-r--------. 1 0 0 0 May 30 12:31 SSDT1
+-r--------. 1 0 0 0 May 30 12:31 SSDT2
+-r--------. 1 0 0 0 May 30 12:31 WAET
+drwxr-xr-x. 2 0 0 0 May 30 12:31 dynamic
+
+/sys/firmware/acpi/tables/dynamic:
+total 0
+drwxr-xr-x. 2 0 0 0 May 30 12:31 .
+drwxr-xr-x. 3 0 0 0 May 30 11:50 ..
+
+/sys/firmware/dmi:
+total 0
+drwxr-xr-x.  3 0 0 0 May 30 11:51 .
+drwxr-xr-x.  5 0 0 0 May 30 11:50 ..
+drwxr-xr-x. 13 0 0 0 May 30 12:31 entries
+
+/sys/firmware/dmi/entries:
+total 0
+drwxr-xr-x. 13 0 0 0 May 30 12:31 .
+drwxr-xr-x.  3 0 0 0 May 30 11:51 ..
+drwxr-xr-x.  2 0 0 0 May 30 12:31 0-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 1-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 11-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 127-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 16-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 17-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 19-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 20-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 3-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 32-0
+drwxr-xr-x.  2 0 0 0 May 30 12:31 4-0
+
+/sys/firmware/dmi/entries/0-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/1-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/11-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/127-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/16-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/17-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/19-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/20-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/3-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/32-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/dmi/entries/4-0:
+total 0
+drwxr-xr-x.  2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 13 0 0    0 May 30 12:31 ..
+-r--------.  1 0 0 4096 May 30 12:31 handle
+-r--------.  1 0 0 4096 May 30 12:31 instance
+-r--------.  1 0 0 4096 May 30 12:31 length
+-r--------.  1 0 0 4096 May 30 12:31 position
+-r--------.  1 0 0    0 May 30 12:31 raw
+-r--------.  1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/memmap:
+total 0
+drwxr-xr-x. 7 0 0 0 May 30 12:31 .
+drwxr-xr-x. 5 0 0 0 May 30 11:50 ..
+drwxr-xr-x. 2 0 0 0 May 30 12:31 0
+drwxr-xr-x. 2 0 0 0 May 30 12:31 1
+drwxr-xr-x. 2 0 0 0 May 30 12:31 2
+drwxr-xr-x. 2 0 0 0 May 30 12:31 3
+drwxr-xr-x. 2 0 0 0 May 30 12:31 4
+
+/sys/firmware/memmap/0:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 7 0 0    0 May 30 12:31 ..
+-r--r--r--. 1 0 0 4096 May 30 12:31 end
+-r--r--r--. 1 0 0 4096 May 30 12:31 start
+-r--r--r--. 1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/memmap/1:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 7 0 0    0 May 30 12:31 ..
+-r--r--r--. 1 0 0 4096 May 30 12:31 end
+-r--r--r--. 1 0 0 4096 May 30 12:31 start
+-r--r--r--. 1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/memmap/2:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 7 0 0    0 May 30 12:31 ..
+-r--r--r--. 1 0 0 4096 May 30 12:31 end
+-r--r--r--. 1 0 0 4096 May 30 12:31 start
+-r--r--r--. 1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/memmap/3:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 7 0 0    0 May 30 12:31 ..
+-r--r--r--. 1 0 0 4096 May 30 12:31 end
+-r--r--r--. 1 0 0 4096 May 30 12:31 start
+-r--r--r--. 1 0 0 4096 May 30 12:31 type
+
+/sys/firmware/memmap/4:
+total 0
+drwxr-xr-x. 2 0 0    0 May 30 12:31 .
+drwxr-xr-x. 7 0 0    0 May 30 12:31 ..
+-r--r--r--. 1 0 0 4096 May 30 12:31 end
+-r--r--r--. 1 0 0 4096 May 30 12:31 start
+-r--r--r--. 1 0 0 4096 May 30 12:31 type

@@ -1,0 +1,4 @@
+/usr/bin/ipcs: option requires an argument -- 'i'
+usage : /usr/bin/ipcs -asmq -tclup 
+	/usr/bin/ipcs [-s -m -q] -i id
+	/usr/bin/ipcs -h for help.

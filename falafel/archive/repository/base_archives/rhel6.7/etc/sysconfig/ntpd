@@ -1,0 +1,2 @@
+# Drop root to id 'ntp:ntp' by default.
+OPTIONS="-u ntp:ntp -p /var/run/ntpd.pid -g"
