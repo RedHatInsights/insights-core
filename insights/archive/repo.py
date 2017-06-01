@@ -8,7 +8,7 @@ from insights.tests import InputData
 from insights.core import load_package
 
 ARCHIVES = [
-    TestArchive("base_rhel66", base_archive="rhel6.6"),
+    TestArchive("base_rhel67", base_archive="rhel6.7"),
     TestArchive("insights_heartbeat", transforms=[
         Transform("hostname").replace("insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614")
     ], machine_id=hashlib.sha224("TEST-HEARTBEAT-RHAI2").hexdigest())
