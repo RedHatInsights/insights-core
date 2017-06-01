@@ -12,9 +12,22 @@ test    [administrator]
 ...done.
 """
 
+RABBITMQ_LIST_USERS_BAD = """
+Listing users ...
+ENODATA
+guest   [administrator]
+test    [administrator]
+...done.
+"""
+
 
 def test_rabbitmq_list_users():
     context = context_wrap(RABBITMQ_LIST_USERS, hostname="controller_1", osp=osp_controller)
+    result = RabbitMQUsers(context)
+    expect = {"guest": "administrator", "test": "administrator"}
+    assert result.data == expect
+
+    context = context_wrap(RABBITMQ_LIST_USERS_BAD, hostname="controller_1", osp=osp_controller)
     result = RabbitMQUsers(context)
     expect = {"guest": "administrator", "test": "administrator"}
     assert result.data == expect

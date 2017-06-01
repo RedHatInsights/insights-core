@@ -117,31 +117,6 @@ class RabbitMQReport(Parser):
             self.result = None
 
 
-@parser("rabbitmq_report")
-def fd_total_limit(context):
-    """Deprecated, do not use."""
-    for line in context.content:
-        if "file_descriptors" in line and "total_limit" in line:
-            line_splits = line.replace("}", "").split(",")
-            if len(line_splits) > 3:
-                return int(line_splits[2])
-
-
-@parser("rabbitmq_report")
-class RabbitMQFileDescriptors(Parser):
-
-    NO_VALUE = -1
-
-    def parse_content(self, content):
-        self.fd_total_limit = self.NO_VALUE
-        for line in content:
-            if "file_descriptors" in line and "total_limit" in line:
-                line_splits = line.replace("}", "").split(",")
-                if len(line_splits) > 3:
-                    self.fd_total_limit = int(line_splits[2])
-                    break
-
-
 @parser("rabbitmq_users")
 class RabbitMQUsers(Parser):
 
