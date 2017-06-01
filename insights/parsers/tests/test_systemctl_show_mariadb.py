@@ -1,4 +1,4 @@
-from insights.mappers.systemctl_show import SystemctlShowMariaDB
+from insights.parsers.systemctl_show import SystemctlShowMariaDB
 from insights.tests import context_wrap
 
 SYSTEMCTL_SHOW_MARIADB = """
