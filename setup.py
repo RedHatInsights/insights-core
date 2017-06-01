@@ -19,9 +19,6 @@ entry_points = {
 
 runtime = {
     'pyyaml>=3.10,<=3.12',
-    'tornado>=4.2.1',
-    'futures==3.0.5',
-    'requests==2.13.0',
 }
 
 develop = {
@@ -32,6 +29,8 @@ develop = {
     'Sphinx',
     'sphinx_rtd_theme',
     'Jinja2==2.9.6',
+    'futures==3.0.5',
+    'requests==2.13.0',
     'wheel'
 }
 
@@ -43,6 +42,16 @@ if __name__ == "__main__":
         name=name,
         version=package_info["VERSION"],
         description="Insights Application Programming Interface",
+        author_email="insights@redhat.com",
+        license="Apache 2",
+        url="https://access.redhat.com/insights",
+        classifiers=[
+            "Development Status :: 5 - Production/Stable",
+            "License :: OSI Approved :: Apache Software License",
+            "Programming Language :: Python :: 2.7",
+            "Topic :: System :: Monitoring",
+            "Intended Audience :: Information Technology"
+        ],
         packages=find_packages(),
         install_requires=list(runtime),
         extras_require={
