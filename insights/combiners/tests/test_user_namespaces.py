@@ -1,6 +1,6 @@
 from ..user_namespaces import UserNamespaces
 from ...parsers.cmdline import CmdLine
-from ...parsers.grub_conf import Grub2Config
+from ...parsers.grub_conf import GrubConfig
 from ...tests import context_wrap
 
 ENABLE_TOK_A = '''
@@ -87,7 +87,7 @@ def test_integration():
         context = {}
         context[CmdLine] = CmdLine(context_wrap(case[0][0]))
         if case[0][1] is not None:
-            context[Grub2Config] = Grub2Config(context_wrap(case[0][1]))
+            context[GrubConfig] = GrubConfig(context_wrap(case[0][1]))
 
         un = UserNamespaces({}, context)
         assert un.enabled() == case[1][0]
