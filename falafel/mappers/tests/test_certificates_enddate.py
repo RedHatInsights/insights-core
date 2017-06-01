@@ -1,4 +1,3 @@
-import unittest
 from datetime import datetime
 from falafel.mappers.certificates_enddate import CertificatesEnddate
 from falafel.tests import context_wrap
@@ -69,7 +68,9 @@ def test_certificates_enddate():
 
     Cert1 = CertificatesEnddate(context_wrap(CRT1))
     assert PATH1 in Cert1.certificates_path
-    assert Cert1.get_expiration_date(PATH1) == datetime(2019, 05, 25, 16, 39, 40)
+    expiration_date = Cert1.expiration_date(PATH1)
+    assert expiration_date.str == 'May 25 16:39:40 2019'
+    assert expiration_date.datetime == datetime(2019, 5, 25, 16, 39, 40)
 
     Cert2 = CertificatesEnddate(context_wrap(CRT2))
     assert Cert2.certificates_path == []
@@ -89,11 +90,15 @@ def test_certificates_enddate():
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
 
 
-class TestCertificatesEnddateRaise(unittest.TestCase):
-    def test_certificates_enddate_raise(self):
-        Cert6 = CertificatesEnddate(context_wrap(CRT6))
-        assert (Cert6.certificates_path == [
-                '/etc/pki/consumer/cert.pem',
-                '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
-        with self.assertRaises(Exception):
-            Cert6.get_expiration_date('/etc/pki/consumer/cert.pem')
+def test_certificates_enddate_unparsable_datatime():
+    Cert6 = CertificatesEnddate(context_wrap(CRT6))
+    assert (Cert6.certificates_path == [
+            '/etc/pki/consumer/cert.pem',
+            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
+    assert Cert6.expiration_date('/etc/pki/consumer/cert.pem').datetime is None
+    assert (Cert6.expiration_date(
+                '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').str ==
+                'May 25 16:39:40')
+    assert (Cert6.expiration_date(
+        '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').datetime is None)
+    assert (Cert6.expiration_date('/etc/pki/email-ca-bundle.pem') is None)
