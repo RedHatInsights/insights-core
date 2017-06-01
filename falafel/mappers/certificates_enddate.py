@@ -29,21 +29,27 @@ Examples:
     >>> cert_enddate = shared[CertificatesEnddate]
     >>> paths = cert_enddate.get_certificates_path
     >>> paths[0]
-    /etc/origin/node/cert.pem
-    >>> cert_enddate.get_expiration_date(paths[0])
+    '/etc/origin/node/cert.pem'
+    >>> cert_enddate.expiration_date(paths[0]).datetime
     datetime(2019, 05, 25, 16, 39, 40)
+    >>> cert_enddate.expiration_date(paths[0]).str
+    'May 25 16:39:40 2019'
 """
 
 from datetime import datetime
-from .. import Mapper, mapper
+from collections import namedtuple
+from .. import Mapper, mapper, LegacyItemAccess
 
 
 @mapper("certificates_enddate")
-class CertificatesEnddate(Mapper):
-    "Class to parse the expiration dates"
+class CertificatesEnddate(LegacyItemAccess, Mapper):
+    """Class to parse the expiration dates."""
+
+    ExpirationDate = namedtuple('ExpirationDate', ['str', 'datetime'])
+    """namedtuple: contains the expiration date in string and datetime format."""
 
     def parse_content(self, content):
-        """Parse the content of crt files"""
+        """Parse the content of crt files."""
         self.data = {}
         datestamp = None
         for l in content:
@@ -57,13 +63,34 @@ class CertificatesEnddate(Mapper):
 
     @property
     def certificates_path(self):
-        """return filepaths in list"""
+        """list: Return filepaths in list or []."""
         return self.data.keys() if self.data else []
 
     def get_expiration_date(self, path):
-        """datetime: return the expiration date in datetime format"""
+        """ Deprecated - Do not use.
+        datetime: Return the expiration date in datetime format.
+        """
         try:
             return (datetime.strptime(self.data[path], '%b %d %H:%M:%S %Y')
                     if self.data and path in self.data else None)
         except:
             raise Exception("Unable to parse the expiration data of %s" % path)
+
+    def expiration_date(self, path):
+        """This will return a namedtuple(['str', 'datetime']) contains the
+        expiration date in string and datetime format. If the expiration date
+        is unparsable, the ExpirationDate.datetime should be None.
+
+        Args:
+            path(str): The certificate file path.
+
+        Returns:
+            A ExpirationDate for available path. None otherwise.
+        """
+        path_date = self.data.get(path)
+        if path_date:
+            try:
+                path_datetime = datetime.strptime(path_date, '%b %d %H:%M:%S %Y')
+                return self.ExpirationDate(path_date, path_datetime)
+            except:
+                return self.ExpirationDate(path_date, None)
