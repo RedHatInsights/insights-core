@@ -331,6 +331,7 @@ static_specs = {
     "sysctl.conf_initramfs"     : CommandSpec("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf"),
     "systemctl_cinder-volume"   : CommandSpec("/bin/systemctl show openstack-cinder-volume"),
     "systemctl_list-unit-files" : CommandSpec("/bin/systemctl list-unit-files"),
+    "systemctl_mariadb"         : CommandSpec("/bin/systemctl show mariadb"),
     "systemd_docker"            : SimpleFileSpec("usr/lib/systemd/system/docker.service"),
     "systemd_openshift_node"    : SimpleFileSpec("usr/lib/systemd/system/atomic-openshift-node.service"),
     "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
