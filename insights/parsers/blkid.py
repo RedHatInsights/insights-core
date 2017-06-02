@@ -60,7 +60,7 @@ class BlockIDInfo(Parser):
     """
     def parse_content(self, content):
         blkid_output = []
-        for line in content:
+        for line in (l for l in content if l.strip()):
             dev_name, attributes = line.split(":", 1)
             device = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line)}
             device['NAME'] = dev_name.strip()
