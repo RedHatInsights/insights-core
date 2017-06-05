@@ -282,6 +282,8 @@ def walk_dependencies(root, visitor):
 
 def get_dependency_graph(component):
     graph = defaultdict(set)
+    if not COMPONENT_DEPENDENCIES[component]:
+        return {component: set()}
 
     def visitor(parent, component):
         graph[parent].add(component)
@@ -290,7 +292,7 @@ def get_dependency_graph(component):
 
     graph = dict(graph)
     # Find all items that don't depend on anything.
-    extra_items_in_deps = _reduce(set.union, graph.values()) - set(graph.keys())
+    extra_items_in_deps = _reduce(set.union, graph.values(), set()) - set(graph.keys())
     # Add empty dependences where needed.
     graph.update({item: set() for item in extra_items_in_deps})
     return graph
