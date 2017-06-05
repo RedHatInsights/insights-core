@@ -143,7 +143,7 @@ def run_order(components):
 
     graph = {}
     for c in components:
-        graph[c] = plugins.COMPONENT_DEPENDENCIES[c]
+        graph.update(plugins.get_dependency_graph(c))
     ordered = toposort.toposort_flatten(graph)
     return [o for o in ordered if o._reducer]
 
@@ -161,14 +161,15 @@ def _run(reducers, local_output, shared_output, error_handler, output_dict=None,
         real_module = sys.modules[func.__module__]
         local = local_output[real_module]
         log_mapper_outputs(func, local, shared_output)
-        r = run_reducer(func, local, shared_output, error_handler, reducer_stats=reducer_stats)
-        if r:
-            shared_output[func] = r
-            logger.debug("Reducer output: %s", r)
-            if func.shared and output_dict:
-                output_dict[func] = r
-            if func in plugins.EMITTERS:
-                yield func, r
+        if func not in shared_output:
+            r = run_reducer(func, local, shared_output, error_handler, reducer_stats=reducer_stats)
+            if r:
+                shared_output[func] = r
+                logger.debug("Reducer output: %s", r)
+                if func.shared and output_dict:
+                    output_dict[func] = r
+                if func in plugins.EMITTERS:
+                    yield func, r
 
 
 def default_reducer_results(local_output):
