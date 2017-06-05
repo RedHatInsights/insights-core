@@ -20,15 +20,20 @@ There are a few checks which are presently left to callers:
 
 from ..core.plugins import combiner
 from ..parsers.cmdline import CmdLine
-from ..parsers.grub_conf import GrubConfig
+from ..parsers.grub_conf import Grub2Config
 
 
-@combiner(requires=[CmdLine], optional=[GrubConfig])
+@combiner(requires=[CmdLine], optional=[Grub2Config])
 class UserNamespaces(object):
     """A combiner which determines if user namespaces are enabled."""
 
     def __init__(self, local, shared):
-        self.grub = getattr(shared.get(GrubConfig), "data", {})
+        self.grub_cmdline = {}
+        # Even if technically possible, it is extremely unlikely that Red Hat will ever
+        # ship or support grub1 on a system with kernel > 3.8, so only grub2 config
+        # is analyzed here.
+        if Grub2Config in shared:
+            self.grub_cmdline = shared.get(Grub2Config).boot_entries
         self.cmdline = getattr(shared.get(CmdLine), "data", {})
 
     def enabled(self):
@@ -45,25 +50,10 @@ class UserNamespaces(object):
         """Get boot configs for which user namespaces are enabled.
 
         Returns:
-            list: grub menu entries in which user namespaces are enabled. Returns
-            an empty list if user namespaces aren't supported or grub data isn't
-            available.
+            list: A list of grub menu entries in which user namespaces are
+            enabled.  An empty list if user namespaces aren't supported or grub
+            data isn't available.
         """
-        enabled_in = []
-        # Even if technically possible, it is extremely unlikely that Red Hat will ever
-        # ship or support grub1 on a system with kernel > 3.8, so only grub2 config
-        # is analyzed here.
-        for entry in self.grub.get('menuentry', []):
-            me_name = ''
-            me_enabled = False
-            for command, option in entry:
-                if command == 'menuentry_name':
-                    me_name = option
-                elif command.startswith('linux'):
-                    if ('user_namespaces.enable=1' in option or
-                            'user-namespaces.enable=1' in option):
-                        me_enabled = True
-            if me_enabled:
-                enabled_in.append(me_name)
-
-        return enabled_in
+        return [entry.name for entry in self.grub_cmdline
+                    if 'user_namespaces.enable=1' in entry.cmdline or
+                       'user-namespaces.enable=1' in entry.cmdline]
