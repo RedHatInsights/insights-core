@@ -107,6 +107,7 @@ Ip:
     0 incoming packets discarded
     6437 incoming packets delivered
     4777 requests sent out
+    three hundred and eighty eight packets glanced at
 '''
 
 
@@ -250,12 +251,76 @@ tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      
 tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
 tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
 tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+tcp        0      0 10.24.1.245:80          10.24.36.145:32790      SYN_RECV    0          0          -                    on (0.79/0/0)
 Active UNIX domain sockets (servers and established)
 Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
 unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
 unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
 unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
 """
+
+
+def test_get_netstat():
+    ns = Netstat(context_wrap(NETSTAT))
+    assert len(ns.data) == 2
+    assert netstat.ACTIVE_INTERNET_CONNECTIONS in ns.data
+    assert 'PID/Program name' in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]
+    assert 'Local Address' in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]
+    assert netstat.ACTIVE_UNIX_DOMAIN_SOCKETS in ns.data
+
+    assert "1279/qpidd" in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']
+    assert "738/NetworkManager" in ns.data[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS]['PID/Program name']
+
+    # Datalist access
+    assert hasattr(ns, 'datalist')
+    nsdl = ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS]
+    assert len(nsdl) == 6
+    assert nsdl[0] == {
+        'Proto': 'tcp', 'Recv-Q': '0', 'Send-Q': '0',
+        'Local Address': '192.168.0.1:53', 'Local IP': '192.168.0.1',
+        'Port': '53', 'Foreign Address': '192.168.0.53:53',
+        'State': 'ESTABLISHED', 'User': '0', 'Inode': '1817',
+        'PID/Program name': '12/dnsd', 'PID': '12', 'Program name': 'dnsd',
+        'Timer': 'off (0.00/0/0)',
+    }
+    # tcp        0      0 10.24.1.245:80          10.24.36.145:32790      SYN_RECV    0          0          -                    on (0.79/0/0)
+    assert nsdl[5] == {
+        'Proto': 'tcp', 'Recv-Q': '0', 'Send-Q': '0',
+        'Local Address': '10.24.1.245:80', 'Local IP': '10.24.1.245',
+        'Port': '80', 'Foreign Address': '10.24.36.145:32790',
+        'State': 'SYN_RECV', 'User': '0', 'Inode': '0',
+        'PID/Program name': '-',
+        'Timer': 'on (0.79/0/0)',
+    }
+
+    # Search for rows by:
+    results = ns.rows_by(netstat.ACTIVE_INTERNET_CONNECTIONS, {'State': 'ESTABLISHED'})
+    assert results == [{
+        'Proto': 'tcp', 'Recv-Q': '0', 'Send-Q': '0',
+        'Local Address': '192.168.0.1:53', 'Local IP': '192.168.0.1',
+        'Port': '53', 'Foreign Address': '192.168.0.53:53',
+        'State': 'ESTABLISHED', 'User': '0', 'Inode': '1817',
+        'PID/Program name': '12/dnsd', 'PID': '12', 'Program name': 'dnsd',
+        'Timer': 'off (0.00/0/0)',
+        'raw line': 'tcp        0      0 192.168.0.1:53          192.168.0.53:53         ESTABLISHED 0          1817       12/dnsd              off (0.00/0/0)'
+    }]
+
+
+def test_listening_pid():
+    ns = Netstat(context_wrap(NETSTAT))
+    assert len(ns.data) == 2
+    assert ns.listening_pid['12387'] == {'addr': '127.0.0.1', 'name': 'Passenger Rac', 'port': '53644'}
+    assert ns.listening_pid['1272'] == {'addr': '0.0.0.0', 'name': 'qdrouterd', 'port': '5646'}
+
+
+def test_get_original_line():
+    ns = Netstat(context_wrap(NETSTAT))
+    assert len(ns.data) == 2
+    assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 1)
+    assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 2)
+    assert ns.get_original_line("Fabulous Green", 1) is None
+    assert NETSTAT.splitlines()[11].strip() == ns.get_original_line(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, 0)
+
 
 NETSTAT_NOMATCH1 = """
 Active Internet connections (servers and established)
@@ -281,6 +346,13 @@ tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      0          11821      4009/httpd           off (0.00/0/0)
 """
 
+
+def test_is_httpd_running():
+    assert "httpd" in Netstat(context_wrap(NETSTAT_MATCH1)).running_processes
+    assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH1)).running_processes
+    assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes
+
+
 NETSTAT_BLANK = ''
 
 NETSTAT_TRUNCATED = """
@@ -294,39 +366,29 @@ tcp        0      0 ::1:25                  :::*                    LISTEN      
 tcp        0      0 :::8443                 :::*                    LISTEN      91         14065      1641/java            off (0.00/0/0)
 """
 
+NETSTAT_CONTENT_BUT_NO_PID_PROGRAM = """
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      Timer
+tcp        0      0 0.0.0.0:7788            0.0.0.0:*               LISTEN      0          97305      off (0.00/0/0)
+tcp        0      0 ::1:5432                :::*                    LISTEN      26         14071      off (0.00/0/0)
+tcp        0      0 ::1:25                  :::*                    LISTEN      0          12554      off (0.00/0/0)
+tcp        0      0 :::8443                 :::*                    LISTEN      91         14065      off (0.00/0/0)
+"""
 
-def test_get_netstat():
-    ns = Netstat(context_wrap(NETSTAT))
-    assert len(ns.data) == 2
-    assert netstat.ACTIVE_INTERNET_CONNECTIONS in ns.data
-    assert 'PID/Program name' in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]
-    assert 'Local Address' in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]
-    assert netstat.ACTIVE_UNIX_DOMAIN_SOCKETS in ns.data
+NETSTAT_CONTENT_BUT_NO_LOCAL_ADDR_COLON = """
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address     Port  Foreign Address   Port  State       User       Inode      PID/Program name     Timer
+tcp        0      0 0.0.0.0           7788  0.0.0.0           *     LISTEN      0          97305      7661/httpd.worker    off (0.00/0/0)
+tcp        0      0 ::1               5432  ::                *     LISTEN      26         14071      1474/postmaster      off (0.00/0/0)
+"""
 
-    assert "1279/qpidd" in ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']
-    assert "738/NetworkManager" in ns.data[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS]['PID/Program name']
-
-
-def test_listening_pid():
-    ns = Netstat(context_wrap(NETSTAT))
-    assert len(ns.data) == 2
-    assert ns.listening_pid['12387'] == {'addr': '127.0.0.1', 'name': 'Passenger Rac', 'port': '53644'}
-    assert ns.listening_pid['1272'] == {'addr': '0.0.0.0', 'name': 'qdrouterd', 'port': '5646'}
-
-
-def test_get_original_line():
-    ns = Netstat(context_wrap(NETSTAT))
-    assert len(ns.data) == 2
-    assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 1)
-    assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 2)
-    assert ns.get_original_line("Fabulous Green", 1) is None
-    assert NETSTAT.splitlines()[10].strip() == ns.get_original_line(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, 0)
-
-
-def test_is_httpd_running():
-    assert "httpd" in Netstat(context_wrap(NETSTAT_MATCH1)).running_processes
-    assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH1)).running_processes
-    assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes
+NETSTAT_SOCKETS_ONLY = """
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+"""
 
 
 def test_short_outputs():
@@ -341,6 +403,18 @@ def test_short_outputs():
     with pytest.raises(ParseException) as exc:
         Netstat(context_wrap(NETSTAT_CONTENT_BUT_NO_PARSED_LINES))
     assert 'Found no section headers in content' in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        Netstat(context_wrap(NETSTAT_CONTENT_BUT_NO_PID_PROGRAM))
+    assert "Did not find 'PID/Program name' heading in header" in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        Netstat(context_wrap(NETSTAT_CONTENT_BUT_NO_LOCAL_ADDR_COLON))
+    assert "Local Address is expected to have a colon separating address and port" in str(exc)
+
+    ns = Netstat(context_wrap(NETSTAT_SOCKETS_ONLY))
+    assert ns.running_processes == set()
+    assert ns.listening_pid == {}
 
 
 NETSTAT_TEST_RUNNING_PROCESSES = """
