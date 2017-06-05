@@ -1,9 +1,25 @@
 """
-netstat and ss - Command
-========================
+netstat and ss - Commands
+=========================
 
-Shared parsers for parsing and extracting data from variations of the
-``netstat`` and ``ss`` commands.
+Shared mappers for parsing and extracting data from variations of the
+``netstat`` and ``ss`` commands.  Mappers contained in this module are:
+
+NetstatS - command ``netstat -s``
+---------------------------------
+
+NetstatAGN - command ``netstat -agn``
+-------------------------------------
+
+Netstat - command ``netstat -neopa``
+------------------------------------
+
+Netstat_I - command ``netstat -i``
+----------------------------------
+
+SsTULPN - command ``ss -tulpn``
+-------------------------------
+
 """
 
 from collections import defaultdict
@@ -12,7 +28,9 @@ from .. import Parser, parser, parse_table, LegacyItemAccess
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
+"str: The key in Netstat data to internet connection information"
 ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and established)'
+"str: The key in Netstat data  UNIX domain socket information"
 NETSTAT_SECTION_ID = {
     ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
     ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
@@ -173,14 +191,16 @@ class NetstatS(LegacyItemAccess, Parser):
                         # Some line's end has a '.', it'll be removed
                         tmp_data = data[-1]
                         if tmp_data[-1] == ".":
-                            data.remove(tmp_data)
-                            data.append(tmp_data[:-1])
+                            data[-1] = tmp_data[:-1]
                         for d in data:
                             if d.isdigit():
-                                tmp = d
+                                val = d
                                 break
-                        data.remove(tmp)
-                        key, val = "_".join([k.lower() for k in data]), tmp
+                        else:
+                            # Line contained no number, ignore
+                            continue
+                        data.remove(val)
+                        key = "_".join([k.lower() for k in data])
                         first_layer[key] = val
                 else:
                     if has_scd_layer:
@@ -268,6 +288,8 @@ class NetstatSection(object):
         meta = {}
 
         for m in NETSTAT_SECTION_ID[self.name]:
+            if m not in line:
+                raise ParseException("Did not find '{h}' heading in header".format(h=m))
             meta[line.index(m)] = m
             data.append([])
 
@@ -285,22 +307,38 @@ class NetstatSection(object):
             self.data[i - 1].append(line[from_index: indexes[i]].strip())
             from_index = indexes[i]
             i += 1
-
         self.data[i - 1].append(line[indexes[i - 1]:])
+
         self.datalist.append({m: d for m, d in zip(
             NETSTAT_SECTION_ID[self.name], [r[-1] for r in self.data]
         )})
+        # For convenience, unpack 'PID/Program name' into 'PID' and 'Program name'
+        # This field must exist because of NETSTAT_SECTION_ID and the
+        # exception in add_meta_data
+        pidprogram = self.datalist[-1]['PID/Program name']
+        if '/' in pidprogram:
+            pid, program = pidprogram.split('/')
+            self.datalist[-1]['PID'] = pid
+            self.datalist[-1]['Program name'] = program
+        # For convenience, unpack 'Local Address' into 'Local IP' and 'Port'
+        if 'Local Address' in self.datalist[-1]:
+            local_addr = self.datalist[-1]['Local Address']
+            if ':' not in local_addr:
+                raise ParseException('Local Address is expected to have a colon separating address and port')
+            # Remember, IPv6 addresses have colons in them.  The port
+            # is the last part.
+            parts = local_addr.split(':')
+            self.datalist[-1]['Local IP'] = ':'.join(parts[:-1])
+            self.datalist[-1]['Port'] = parts[-1]
+        # Unix socket information doesn't have Local Address.
 
     def _merge_data_index(self):
         merged_data = {}
         component_len = {}
-        i = 0
-        while i < len(self.indexes):
-            index = self.indexes[i]
+        for i, index in enumerate(self.indexes):
             m = self.meta[index]
             merged_data[m] = self.data[i]
             component_len[m] = self.indexes[i + 1] - self.indexes[i] if i != len(self.indexes) - 1 else None
-            i += 1
 
         self.data = merged_data
         self.data[COMPONENT_LEN] = component_len
@@ -330,21 +368,55 @@ class Netstat(Parser):
         ... unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
         ... '''
 
-    Output Examples:
-        >>> content = '''
-        ... {
-        ...     'Active Internet connections (servers and established)': {
-        ...         'Proto': ['tcp', 'tcp', 'tcp', 'tcp'],
-        ...         'Recv-Q': ['0', '0', '0', '0'],
-        ...         'PID/Program name': ['1279/qpidd', '2007/mongod', '2387/Passenger Rac', '1272/qdrouterd'],
-        ...     },
-        ...     'Active UNIX domain sockets (servers and established)': {
-        ...         'Proto': ['unix', 'unix', 'unix'],
-        ...         'RefCnt': ['2', '2', '2'],
-        ...         'PID/Program name': ['1/systemd', '1/systemd', '738/NetworkManager'],
-        ...     }
-        ... }
-        ... '''
+    The following attributes are all keyed on the header as it appears
+    complete in the input - e.g. active connections are stored by the key
+    'Active Internet connections (servers and established)'.  For convenience,
+    these two keys are stored in this module under the constant names:
+
+        * ACTIVE_INTERNET_CONNECTIONS
+        * ACTIVE_UNIX_DOMAIN_SOCKETS
+
+    Access to the data in this class is using the following attributes:
+
+    Attributes:
+        data(dict): Keyed as above, each item is a dictionary of lists,
+            corresponding to a column and row lookup from the table data.
+            For example, the first line's State is ['State'][0]
+        datalist(dict): Keyed as above, each item is a list of dictionaries
+            corresponding to a row and column lookup from the table.
+            For example, the first line's State is [0]['State']
+        lines(dict): Keyed as above, each item is a list of the original
+            line of data from the input, in the same order that the data
+            appears in the ``datalist`` attribute's list.
+
+    The keys in the ``data`` dictionary and each element of the ``datalist``
+    lists are the same as the headers in the table (e.g. ``Proto``,
+    ``Recv-Q``, etc for 'Active Internet connections (servers and
+    established)' and ``Proto``, ``RefCnt``, ``Flags``, etc. for 'Active UNIX
+    domain sockets (servers and established)').  The ``datalist`` row
+    dictionaries also have the following keys:
+
+    * ``Local IP`` - (for internet connections) the address portion of the
+      'Local Address' field.
+    * ``Port`` - (for internet connections) the port portion of the 'Local
+      Address' field.
+    * ``PID`` - the process ID from the 'PID/Program name' field.
+    * ``Program name`` - the process ID from the 'PID/Program name' field.
+
+    Examples:
+        >>> from insights.mappers import netstat
+        >>> ns = netstat.Netstat(context_wrap(content))
+        >>> ns.data[netstat.ACTIVE_INTERNET_CONNECTIONS]['Local Address'][1]
+        '127.0.0.1:27017'  # access by column then row
+        >>> ns.lines[netstat.ACTIVE_INTERNET_CONNECTIONS][1]  # original line
+        'tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)'
+        >>> nsdl = ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS]
+        >>> nsdl[1]['Local Address']  # access by row then column
+        '127.0.0.1:27017'
+        >>> nsdl[1]['PID']  # convenience split of 'PID/Program name' column
+        '2007'  # - note string
+        >>> nsdl[1]['Port']  # convenience split of 'Local address' column
+        '27017'
     """
 
     def parse_content(self, content):
@@ -389,18 +461,14 @@ class Netstat(Parser):
             set: set of process names (with spaces, as given in netstat output)
         """
 
-        process_names = set()
-
-        if ACTIVE_INTERNET_CONNECTIONS in self.data:
-            for pg in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']:
-                if not pg:
-                    continue
-                if '/' not in pg:
-                    continue
-                pid, name = pg.split("/", 1)
-                process_names.add(name.strip())
-
-        return process_names
+        # Is it possible to have a machine that has no active connections?
+        if ACTIVE_INTERNET_CONNECTIONS not in self.data:
+            return set()
+        return set({
+            pg.split('/', 1)[1].strip()
+            for pg in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']
+            if '/' in pg
+        })
 
     @property
     def listening_pid(self):
@@ -408,17 +476,15 @@ class Netstat(Parser):
             Find PIDs of all LISTEN processes
 
             Returns:
-                dict: If any are found, they are returned in a dictionary following the format:
-                >>> content = '''
-                ... [
-                ...     {'pid': ("addr": 'ip_address', 'port', 'process_name')},
-                ...     {'pid': ('ip_address', 'port', 'process_name)}
-                ... ]
-                ... '''
+                dict: If any are found, they are returned in a dictionary
+                following the format::
+
+                    {'pid': ("addr": ip_address, 'port': port, 'name': process_name)}
         """
         pids = {}
         # Is it possible to have a machine that has no active connections?
-        assert ACTIVE_INTERNET_CONNECTIONS in self.datalist
+        if ACTIVE_INTERNET_CONNECTIONS not in self.datalist:
+            return pids
         connlist = self.datalist[ACTIVE_INTERNET_CONNECTIONS]
         for line in connlist:
             if line['State'] != 'LISTEN':
@@ -437,6 +503,35 @@ class Netstat(Parser):
         if section_id not in self.data:
             return
         return self.lines[section_id][index]
+
+    def rows_by(self, section_id, search_dict):
+        """
+        Find all the rows in datalist where the data is the same as the search
+        dictionary.  This operates as a kind of free-form search utility
+        function - for example::
+
+            ns.rows_by(
+                netstat.ACTIVE_INTERNET_CONNECTIONS,
+                {'State': 'LISTEN', 'Port': '5672'}
+            )
+
+        Would list all rows where the socket state was LISTEN and the local
+        port was '5672'.
+
+        Returns:
+
+            list: A list of rows in the same dictionaries given in the
+            ``datalist`` property, with an extra key '``raw line``' set to
+            the original line of input that produced this row.
+        """
+        results = []
+        for line, row in enumerate(self.datalist[section_id]):
+            for key, value in search_dict.iteritems():
+                if key in row and row[key] == value:
+                    copy = dict(row)
+                    copy['raw line'] = self.lines[section_id][line]
+                    results.append(copy)
+        return results
 
 
 @parser("netstat-i")
