@@ -33,11 +33,11 @@ def uptime(local, shared):
     Prefer uptime to facts.
 
     Returns:
-        Uptime: A named tuple with `currtime`, `updays`, `uphhmm`,
-        `users`, `loadavg` and `uptime` components.
+        insights.combiners.uptime.Uptime: A named tuple with `currtime`,
+        `updays`, `uphhmm`, `users`, `loadavg` and `uptime` components.
 
     Raises:
-        Exception: If nothing can be gotten from both the two parsers.
+        Exception: If no data is available from both of the parsers.
     """
 
     ut = shared.get(upt)

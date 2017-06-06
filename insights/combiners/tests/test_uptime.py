@@ -67,8 +67,9 @@ def test_get_both_uptime():
     assert upt.uptime.total_seconds() == c.total_seconds()
 
 
-def test_uptime_raise():
-    ut = Uptime(context_wrap("test, wrong test wrong"))
-    shared = {Uptime: ut}
-    with pytest.raises(Exception):
+# Don't need to test the Uptime's handling of invalid data here.
+def test_uptime_raise_no_data():
+    with pytest.raises(Exception) as exc:
+        shared = {}
         uptime(None, shared)
+    assert 'Unable to get uptime information' in str(exc)
