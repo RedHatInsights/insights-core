@@ -83,6 +83,8 @@ class IfCFG(LegacyItemAccess, Parser):
     def parse_content(self, content):
         self.data = {}
         for line in get_active_lines(content):
+            if "=" not in line:
+                continue
             key, value = line.split("=", 1)
             # Since keys are variable names in bash, stripping quotes and
             # spaces off them makes no sense.

@@ -113,7 +113,7 @@ def plugin_tests(module_name):
 def context_wrap(lines, path='path', hostname='hostname',
                  release='release', version='-1.-1', machine_id="machine_id", **kwargs):
     if isinstance(lines, basestring):
-        lines = lines.strip().splitlines()
+        lines = lines.lstrip().splitlines()
 
     return Context(content=lines,
                    path=path, hostname=hostname,
