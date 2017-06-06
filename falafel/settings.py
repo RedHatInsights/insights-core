@@ -1,32 +1,43 @@
 import sys
 import os
 import yaml
+import pkgutil
 
 INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
 NAME = "falafel.yaml"
 DEFAULTS_NAME = "defaults.yaml"
 
 PATHS = [
-    os.path.join(INSTALL_DIR, DEFAULTS_NAME),  # Defaults
-    os.path.join("/etc", NAME),  # System-wide config
-    os.path.join(os.path.expanduser("~/.local"), NAME),  # User-specific config
-    "." + NAME  # Directory-specific config
+    ("resource", DEFAULTS_NAME),  # Defaults
+    ("path", os.path.join("/etc", NAME)),  # System-wide config
+    ("path", os.path.join(os.path.expanduser("~/.local"), NAME)),  # User-specific config
+    ("path", "." + NAME),  # Directory-specific config
 ]
 
 config = {}
 
-for path in PATHS:
-    if os.path.exists(path):
-        try:
+for type, path in PATHS:
+
+    try:
+        if type == "path":
             with open(path) as fp:
-                y = yaml.load(fp.read())
-                for name, section in y.iteritems():
-                    if name in config:
-                        config[name].update(section)
-                    else:
-                        config[name] = section
-        except:
-            pass
+                content = fp.read()
+        elif type == "resource":
+            # content = pkg_resources.resource_string(__name__, path)
+            content = pkgutil.get_data(__name__, path)
+        else:
+            raise ValueError("unknown type = %s" % type)
+
+        y = yaml.load(content)
+        for name, section in y.iteritems():
+            if name in config:
+                config[name].update(section)
+            else:
+                config[name] = section
+    except ValueError:
+        raise
+    except:
+        pass
 
 # The defaults section is for keys that belong in every section and can be
 # overridden in particular sections if desired.  This adds the default values

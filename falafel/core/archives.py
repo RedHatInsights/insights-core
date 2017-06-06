@@ -111,10 +111,10 @@ class TarExtractor(Extractor):
         if inner_type != 'application/x-tar':
             raise InvalidArchive('No compressed tar archive')
 
-    def from_buffer(self, buf):
+    def from_buffer(self, buf, extract_dir=None):
         self._assert_type(buf, True)
         tar_flag = self.TAR_FLAGS.get(self.content_type)
-        self.tmp_dir = tempfile.mkdtemp()
+        self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
         command = "tar %s -x -f - -C %s" % (tar_flag, self.tmp_dir)
         p = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE)
         p.stdin.write(buf)
