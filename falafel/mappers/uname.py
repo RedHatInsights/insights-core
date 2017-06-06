@@ -340,7 +340,7 @@ class Uname(Mapper):
             data['_sv_version'] = None
         # LooseVersion doesn't raise errors, it just goes with what it gets
         data['_lv_version'] = LooseVersion(data['version'])
-        num_sections = 7 if 'rt' in data['release'] else 4
+        num_sections = 7 if 'rt' in data['release'] else 5
         data['_lv_release'] = LooseVersion(pad_release(data['release'], num_sections=num_sections))
         data['ver_rel'] = '%s-%s' % (data['version'], data['release'])
         return data
