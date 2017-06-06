@@ -1,56 +1,55 @@
 from insights.parsers.uptime import Uptime
+from insights.parsers import ParseException
 from insights.tests import context_wrap
 import datetime
 
-UPTIME1 = " 14:28:24 up  5:55,  4 users,  load average: 0.04, 0.03, 0.05"
-UPTIME2 = " 10:55:22 up 40 days, 21:17,  1 user,  load average: 0.49, 0.12, 0.04"
-UPTIME3 = " 10:55:22 up 40 days, 3 min,  1 user,  load average: 0.49, 0.12, 0.04"
-UPTIME4 = " 10:55:22 up 30 min,  1 user,  load average: 0.49, 0.12, 0.04"
+import pytest
+
+UPTIME_TEST_DATA = [
+    {
+        'test_data': " 14:28:24 up  5:55,  4 users,  load average: 0.04, 0.03, 0.05",
+        'currtime': '14:28:24', 'updays': '', 'uphhmm': '5:55', 'users': '4',
+        'loadavg': ['0.04', '0.03', '0.05'],
+        'uptime': datetime.timedelta(days=0, hours=5, minutes=55)
+    }, {
+        'test_data': " 10:55:22 up 40 days, 21:17,  1 user,  load average: 0.49, 0.12, 0.04",
+        'currtime': '10:55:22', 'updays': '40', 'uphhmm': '21:17', 'users': '1',
+        'loadavg': ['0.49', '0.12', '0.04'],
+        'uptime': datetime.timedelta(days=40, hours=21, minutes=17)
+    }, {
+        'test_data': " 10:55:22 up 40 days, 3 min,  1 user,  load average: 0.49, 0.12, 0.04",
+        'currtime': '10:55:22', 'updays': '40', 'uphhmm': '00:03', 'users': '1',
+        'loadavg': ['0.49', '0.12', '0.04'],
+        'uptime': datetime.timedelta(days=40, hours=0, minutes=3)
+    }, {
+        'test_data': " 10:55:22 up 30 min,  1 user,  load average: 0.49, 0.12, 0.04",
+        'currtime': '10:55:22', 'updays': '', 'uphhmm': '00:30', 'users': '1',
+        'loadavg': ['0.49', '0.12', '0.04'],
+        'uptime': datetime.timedelta(days=0, hours=0, minutes=30)
+    }, {
+        'test_data': " 16:33:40 up 2 days, 12 users,  load average: 9.32, 8.96, 8.87",
+        'currtime': '16:33:40', 'updays': '2', 'uphhmm': '', 'users': '12',
+        'loadavg': ['9.32', '8.96', '8.87'],
+        'uptime': datetime.timedelta(days=2, hours=0, minutes=0)
+    }
+]
+NOT_AN_UPTIME = "10:55:22 up 30 min"
 
 
-def test_get_uptime1():
-    uptime = Uptime(context_wrap(UPTIME1))
-    assert len(uptime.data) == 6
-    assert uptime.currtime == '14:28:24'
-    assert uptime.updays == ""
-    assert uptime.uphhmm == '5:55'
-    assert uptime.users == '4'
-    assert uptime.loadavg == ['0.04', '0.03', '0.05']
-    c = datetime.timedelta(days=0, hours=5, minutes=55)
-    assert uptime.uptime.total_seconds() == c.total_seconds()
+def test_get_uptimes():
+    for test_data in UPTIME_TEST_DATA:
+        uptime = Uptime(context_wrap(test_data['test_data']))
+        assert len(uptime.data) == 6
+        assert uptime.currtime == test_data['currtime']
+        assert uptime.updays == test_data['updays']
+        assert uptime.uphhmm == test_data['uphhmm']
+        assert uptime.users == test_data['users']
+        assert uptime.loadavg == test_data['loadavg']
+        assert uptime.uptime.total_seconds() == test_data['uptime'].total_seconds()
 
 
-def test_get_uptime2():
-    uptime = Uptime(context_wrap(UPTIME2))
-    assert len(uptime.data) == 6
-    assert uptime.currtime == '10:55:22'
-    assert uptime.updays == '40'
-    assert uptime.uphhmm == '21:17'
-    assert uptime.users == '1'
-    assert uptime.loadavg == ['0.49', '0.12', '0.04']
-    c = datetime.timedelta(days=40, hours=21, minutes=17)
-    assert uptime.uptime.total_seconds() == c.total_seconds()
-
-
-def test_get_uptime3():
-    uptime = Uptime(context_wrap(UPTIME3))
-    assert len(uptime.data) == 6
-    assert uptime.currtime == '10:55:22'
-    assert uptime.updays == '40'
-    assert uptime.uphhmm == '00:03'
-    assert uptime.users == '1'
-    assert uptime.loadavg == ['0.49', '0.12', '0.04']
-    c = datetime.timedelta(days=40, hours=0, minutes=3)
-    assert uptime.uptime.total_seconds() == c.total_seconds()
-
-
-def test_get_uptime4():
-    uptime = Uptime(context_wrap(UPTIME4))
-    assert len(uptime.data) == 6
-    assert uptime.currtime == '10:55:22'
-    assert uptime.updays == ""
-    assert uptime.uphhmm == '00:30'
-    assert uptime.users == '1'
-    assert uptime.loadavg == ['0.49', '0.12', '0.04']
-    c = datetime.timedelta(days=0, hours=0, minutes=30)
-    assert uptime.uptime.total_seconds() == c.total_seconds()
+def test_get_no_uptime():
+    with pytest.raises(ParseException) as exc:
+        uptime = Uptime(context_wrap(NOT_AN_UPTIME))
+        assert len(uptime.data) == 0
+    assert 'No uptime data found on ' in str(exc)

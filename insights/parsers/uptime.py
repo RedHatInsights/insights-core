@@ -1,98 +1,91 @@
+"""
+Uptime - command ``/usr/bin/uptime``
+====================================
+
+Parse the output of the ``uptime`` command into six attributes:
+
+* ``currtime``: the time on the system as a string.
+* ``loadavg``: a three element array of strings for the one, five and
+  fifteen minute load averages.
+* ``updays``: a string of the number of days the system has been up, or ''
+  if the system has been running for less than a day.
+* ``uphhmm``: a string of the fraction of a day in hours and minutes that the
+  system has been running.  Times reported by ``uptime`` as e.g. '30 mins' are
+  converted in to hh:mm format.
+* ``users``: a string containing the number of users ``uptime`` reports as
+  using the system.
+* ``uptime``: a ``datetime.timedelta`` object of the total duration of uptime.
+
+These can also be queried as named keys in the ``data`` attribute.
+
+Sample output::
+
+     11:51:06 up  3:17,  1 user,  load average: 0.12, 0.20, 0.28
+
+Examples:
+    >>> uptime = shared[Uptime]
+    >>> from datetime import timedelta
+    >>> uptime.uptime > timedelta(days=1)
+    False
+    >>> uptime.updays
+    ''
+    >>> uptime.users
+    '1'
+    >>> uptime.loadavg[1]
+    '0.20'
+    >>> uptime.data['currtime']
+    '11:51:06'
+"""
+
 import re
 import datetime
 from .. import Parser, parser
+from insights.parsers import ParseException
 
 
 @parser("uptime")
 class Uptime(Parser):
-    """Class for uptime content."""
+    """Parser class to parse the output of ``uptime``."""
 
     def parse_content(self, content):
-        """
-        Sample uptime outputs:
-            " 11:51:06 up  3:17,  1 user,  load average: 0.12, 0.20, 0.28"
-        Return a dict with 6 keys with information available:
-        {
-            'currtime': '11:51:06',
-            'loadavg': ['0.12', '0.20', '0.28'],
-            'updays': '',
-            'uphhmm': '3:17',
-            'users': '1'
-            'uptime': datetime.timedelta()
-
-        }
-        --- time printing logic of uptime ---
-        if (!human_readable) {
-            if (updays)
-                pos += sprintf(buf + pos, "%d day%s, ", updays, (updays != 1) ? "s" : "");
-            }
-        upminutes = (int) uptime_secs / 60;
-        uphours = upminutes / 60;
-        uphours = uphours % 24;
-        upminutes = upminutes % 60;
-
-        if (!human_readable) {
-            if(uphours)
-                pos += sprintf(buf + pos, "%2d:%02d, ", uphours, upminutes);
-            else
-                pos += sprintf(buf + pos, "%d min, ", upminutes);
-        -------------------------------------
-        """
         self.currtime = None
         self.loadavg = None
         self.updays = None
         self.uphhmm = None
         self.users = None
         self.uptime = None
-
         uptime_info = {}
+        self.data = uptime_info
+
+        # Use only the first line
         line = content[0].strip()
-        line_split = re.split(', |: ', line)
-        has_day = False
 
-        mix_part = line_split[0].strip().split()
-        uptime_info['updays'] = ""
-        uptime_info['currtime'] = mix_part[0]
-        uptime_info['uphhmm'] = ""
-        uptime_info['users'] = ""
-        uptime_info['loadavg'] = []
+        #  10:55:22 up 40 days, 21:17,  1 user,  load average: 0.49, 0.12, 0.04
+        curr_time_re = r'(?P<currtime>\d\d:\d\d:\d\d)'
+        # Duration Variations:
+        # 30 mins |  5:55 | 1 day, 3 mins | 2 days,  8:05
+        duration_re = r' up  ?(?:(?P<days>\d+) days?)?(?:, )?' + \
+            r'(?:(?:(?P<mins>\d+) mins?)?|(?: ?(?P<hhmm>\d?\d:\d\d)))'
+        users_re = r',  ?(?P<users>\d+) users?'
+        load_re = r',  ?load average: (?P<load1>\d+.\d\d), (?P<load5>\d+.\d\d), (?P<load15>\d+.\d\d)'
+        line_rex = re.compile(curr_time_re + duration_re + users_re + load_re)
+
+        match = line_rex.search(line)
+        if not match:
+            raise ParseException("No uptime data found on '{line}'".format(line=line))
+
+        uptime_info['updays'] = match.group('days') if match.group('days') else ''
+        uptime_info['currtime'] = match.group('currtime')
+        uptime_info['uphhmm'] = match.group('hhmm') if match.group('hhmm') else ''
+        uptime_info['users'] = match.group('users')
+        uptime_info['loadavg'] = [match.group('load1'), match.group('load5'), match.group('load15')]
         uptime_info['uptime'] = datetime.timedelta()
-
-        if len(mix_part) == 4:
-            # check days
-            if 'day' in mix_part[3]:
-                uptime_info['updays'] = mix_part[2]
-                has_day = True
-            # check min
-            if 'min' in mix_part[3]:
-                uptime_info['uphhmm'] = '00:%02d' % int(mix_part[2])
-
-        if len(mix_part) == 3:
-            uptime_info['uphhmm'] = mix_part[2]
-
-        if has_day:
-            hhmm_data = line_split[1].strip().split()
-            if len(hhmm_data) == 2:
-                if 'min' in hhmm_data[1]:
-                    uptime_info['uphhmm'] = '00:%02d' % int(hhmm_data[0])
-            else:
-                uptime_info['uphhmm'] = hhmm_data[0]
-            regular_data = line_split[2:]
-        else:
-            regular_data = line_split[1:]
-        # users
-        users_info = regular_data[0].strip().split()
-        if len(users_info) == 2:
-            uptime_info['users'] = users_info[0]
-        # load
-        load_values = regular_data[2:]
-        if len(load_values) == 3:
-            uptime_info['loadavg'] = load_values
+        if not match.group('hhmm') and match.group('mins'):
+            uptime_info['uphhmm'] = '00:{m:02}'.format(m=int(match.group('mins')))
 
         if uptime_info['uphhmm']:
-            hours, _, mins = uptime_info['uphhmm'].partition(':')
-            uptime_info['uptime'] += datetime.timedelta(hours=int(hours))
-            uptime_info['uptime'] += datetime.timedelta(minutes=int(mins))
+            hours, mins = uptime_info['uphhmm'].split(':')
+            uptime_info['uptime'] += datetime.timedelta(hours=int(hours), minutes=int(mins))
         if uptime_info['updays']:
             uptime_info['uptime'] += datetime.timedelta(days=int(uptime_info['updays']))
 
