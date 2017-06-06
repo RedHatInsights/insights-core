@@ -1,4 +1,4 @@
-from insights.parsers import xfs_info
+from insights.parsers import xfs_info, ParseException
 from insights.tests import context_wrap
 
 import unittest
@@ -15,7 +15,7 @@ naming   =version 2     bsize=4096
 log      =internal      bsize=4096   blocks=32768, version=2
          =              sectsz=512   sunit=32 blks, lazy-count=1
 realtime =none          extsz=524288 blocks=0, rtextents=0
-        """.strip()))
+        """, path='sos_commands/xfs/xfs_info_.'))
         xfs = xfs_obj.xfs_info
 
         # Section checks
@@ -59,8 +59,10 @@ realtime =none          extsz=524288 blocks=0, rtextents=0
         assert xfs['realtime']['rtextents'] == 0
 
         # Calculated information checks
+        assert xfs_obj.device == '/dev/sda'
         assert xfs_obj.data_size == 536869888 * 4096
         assert xfs_obj.log_size == 32768 * 4096
+        assert xfs_obj.mount == '/'
 
     def test_root_xfs_info(self):
         xfs_obj = xfs_info.XFSInfo(context_wrap("""
@@ -73,7 +75,7 @@ naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
 log      =internal               bsize=4096   blocks=2560, version=2
          =                       sectsz=512   sunit=0 blks, lazy-count=1
 realtime =none                   extsz=4096   blocks=0, rtextents=0
-        """.strip()))
+        """, path='sos_commands/xfs/xfs_info_.'))
         xfs = xfs_obj.xfs_info
 
         # Section checks
@@ -122,11 +124,12 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         assert xfs['realtime']['rtextents'] == 0
 
         # Calculated information checks
+        assert xfs_obj.device == '/dev/mapper/vgSys-lvRoot'
         assert xfs_obj.data_size == 1280000 * 4096
         assert xfs_obj.log_size == 2560 * 4096
+        assert xfs_obj.mount == '/'
 
-        self.assertEqual(repr(xfs_obj), 'xfs_info of /dev/mapper/vgSys-lvRoot' +
-            ' with sections [data, log, meta-data, naming, realtime]')
+        self.assertEqual(repr(xfs_obj), 'xfs_info of /dev/mapper/vgSys-lvRoot')
 
     def test_ext_log_xfs_info(self):
         xfs_obj = xfs_info.XFSInfo(context_wrap("""
@@ -139,7 +142,7 @@ naming   =version 2              bsize=4096   ascii-ci=0 ftype=0
 log      =log.xfs.image          bsize=4096   blocks=25600, version=2
          =                       sectsz=512   sunit=0 blks, lazy-count=1
 realtime =none                   extsz=4096   blocks=0, rtextents=0
-        """.strip()))
+        """))
         xfs = xfs_obj.xfs_info
 
         # Just test the few things that might be different
@@ -149,3 +152,38 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         # Calculated information checks
         assert xfs_obj.data_size == 262144 * 4096
         assert xfs_obj.log_size == 25600 * 4096
+
+    def test_bad_xfs_info(self):
+        for input_data, exception in [  # input data, expected exception
+            ("xfs_info: bad command or file name",
+                "No 'meta-data' section found"),
+            ("meta-data=         isize=256    agcount=4, agsize=65536 blks",
+                "Device specifier not found in meta-data"),
+            ("meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks",
+                "No 'data' section found"),
+            ("""
+meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
+data     =                       sunit=0      swidth=0 blks
+             """, "'blocks' not defined in data section"),
+            ("""
+meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
+data     =                       sunit=0      blocks=262144
+             """, "'bsize' not defined in data section"),
+            ("""
+meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
+data     =                       bsize=4096   blocks=262144, imaxpct=25
+             """, "No 'log' section found"),
+            ("""
+meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
+data     =                       bsize=4096   blocks=262144, imaxpct=25
+log      =log.xfs.image          bsize=4096   sunit=0 blks, lazy-count=1
+             """, "'blocks' not defined in log section"),
+            ("""
+meta-data=data.xfs.image         isize=256    agcount=4, agsize=65536 blks
+data     =                       bsize=4096   blocks=262144, imaxpct=25
+log      =log.xfs.image          sectsz=512   blocks=25600, version=2
+             """, "'bsize' not defined in log section"),
+        ]:
+            with self.assertRaisesRegexp(ParseException, exception):
+                xfs_obj = xfs_info.XFSInfo(context_wrap(input_data))
+                self.assertIsNone(xfs_obj)
