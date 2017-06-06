@@ -1204,3 +1204,32 @@ xml_content = """
 def test_get_tmo():
     result = TomcatWebXml(context_wrap(xml_content)).data
     assert result.get("session-timeout") == 30
+
+
+xml_content_missing_timeout = """
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
+
+    <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>listings</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+</web-app>
+"""
+
+
+def test_get_tmo_missing_timeout():
+    result = TomcatWebXml(context_wrap(xml_content_missing_timeout)).data
+    assert result.get("session-timeout") is None
