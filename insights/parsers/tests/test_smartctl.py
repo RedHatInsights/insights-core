@@ -1,5 +1,8 @@
 from insights.parsers.smartctl import SMARTctl
+from insights.parsers import ParseException
 from insights.tests import context_wrap
+
+import pytest
 
 STANDARD_DRIVE = """
 smartctl 6.2 2013-07-26 r3841 [x86_64-linux-3.10.0-267.el7.x86_64] (local build)
@@ -255,3 +258,12 @@ def test_netapp_drive():
     assert data.info['info']['Temperature Warning'] == 'Disabled or Not Supported'
     assert data.info['info']['Error Counter logging'] == 'Not supported'
     assert data.info['info']['Self Test logging'] == 'Not supported'
+
+
+def test_no_device_in_path():
+    with pytest.raises(ParseException) as exc:
+        data = SMARTctl(context_wrap(
+            NETAPP_DRIVE, path='sos_commands/ata/smartctl_-a'
+        ))
+        assert data.device is None
+    assert 'No device name found in path ' in str(exc)
