@@ -1,5 +1,5 @@
 from ..selinux import SELinux
-from ...mappers.grub_conf import GrubConfig
+from ...mappers.grub_conf import Grub1Config, Grub2Config
 from ...mappers.selinux_config import SelinuxConfig
 from ...mappers.sestatus import SEStatus
 from ...tests import context_wrap
@@ -379,21 +379,13 @@ GRUB2_OUTPUTS = [
     ),
 ]
 
-TEST_CASES = [
+TEST_CASES_1 = [
     ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE),
      (True, {})),
     ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE.format(kernel_boot_options='selinux=0')),
      (False, {GRUB_DISABLED: ['/vmlinuz-2.6.32-642.el6.x86_64 selinux=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet']})),
     ((SESTATUS_OUT, SELINUX_CONF, GRUB1_TEMPLATE.format(kernel_boot_options='enforcing=0')),
      (False, {GRUB_NOT_ENFORCING: ['/vmlinuz-2.6.32-642.el6.x86_64 enforcing=0 ro root=/dev/mapper/VolGroup-lv_root rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet']})),
-    ((SESTATUS_OUT, SELINUX_CONF, GRUB2_TEMPLATE % ('selinux=0', 'selinux=0')),
-     (False, {GRUB_DISABLED: ['/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
-                              '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
-                              ]})),
-    ((SESTATUS_OUT_DISABLED, SELINUX_CONF, GRUB2_TEMPLATE),
-     (False, {RUNTIME_DISABLED: 'disabled'})),
-    ((SESTATUS_OUT_NOT_ENFORCING, SELINUX_CONF, GRUB2_TEMPLATE),
-     (False, {RUNTIME_NOT_ENFORCING: 'permissive'})),
     ((SESTATUS_OUT, SELINUX_CONF_DISABLED, GRUB1_TEMPLATE),
      (False, {BOOT_DISABLED: 'disabled'})),
     ((SESTATUS_OUT, SELINUX_CONF_NOT_ENFORCING, GRUB1_TEMPLATE),
@@ -406,19 +398,42 @@ TEST_CASES = [
               BOOT_DISABLED: 'disabled'
               })),
 ]
+TEST_CASES_2 = [
+    ((SESTATUS_OUT, SELINUX_CONF, GRUB2_TEMPLATE % ('selinux=0', 'selinux=0')),
+     (False, {GRUB_DISABLED: ['/vmlinuz-3.10.0-327.el7.x86_64 selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8',
+                              '/vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f selinux=0 root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet',
+                              ]})),
+    ((SESTATUS_OUT_DISABLED, SELINUX_CONF, GRUB2_TEMPLATE),
+     (False, {RUNTIME_DISABLED: 'disabled'})),
+    ((SESTATUS_OUT_NOT_ENFORCING, SELINUX_CONF, GRUB2_TEMPLATE),
+     (False, {RUNTIME_NOT_ENFORCING: 'permissive'})),
+]
 
 
 def test_integration():
-    for inputs, outputs in TEST_CASES:
+    import pprint
+    for inputs, outputs in TEST_CASES_1:
         sestatus = SEStatus(context_wrap(inputs[0]))
         selinux_config = SelinuxConfig(context_wrap(inputs[1]))
-        grub_config = GrubConfig(context_wrap(inputs[2]))
+        grub_config = Grub1Config(context_wrap(inputs[2]))
         selinux = SELinux(None,
                           {SEStatus: sestatus,
                            SelinuxConfig: selinux_config,
-                           GrubConfig: grub_config}
+                           Grub1Config: grub_config}
                           )
         assert selinux.ok() == outputs[0]
         assert selinux.problems == outputs[1]
-        import pprint
+        pprint.pprint(selinux.problems)
+
+    for inputs, outputs in TEST_CASES_2:
+        sestatus = SEStatus(context_wrap(inputs[0]))
+        selinux_config = SelinuxConfig(context_wrap(inputs[1]))
+        grub_config = Grub2Config(context_wrap(inputs[2]))
+        selinux = SELinux(None,
+                          {SEStatus: sestatus,
+                           SelinuxConfig: selinux_config,
+                           Grub2Config: grub_config}
+                          )
+        assert selinux.ok() == outputs[0]
+        assert selinux.problems == outputs[1]
         pprint.pprint(selinux.problems)

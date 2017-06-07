@@ -2,11 +2,12 @@
 SELinux
 =======
 
-Shared reducer for more complex handling of SELinux being disabled by any means available to the
-users. It uses results of ``SEStatus``, ``GrubConfig``, and ``SelinuxConfig`` mappers.
+Shared reducer for more complex handling of SELinux being disabled by any means
+available to the users. It uses results of ``SEStatus``, ``Grub1Config``,
+``Grub2Config``, ``Grub2EFIConfig`` and ``SelinuxConfig`` mappers.
 
-It contains a dictionary ``problems`` in which it stores detected problems with keys as follows
-and values are parsed lines with detected problem:
+It contains a dictionary ``problems`` in which it stores detected problems with
+keys as follows and values are parsed lines with detected problem:
 
 * ``sestatus_disabled`` - SELinux is disabled on runtime.
 * ``sestatus_not_enforcing`` - SELinux is not in enforcing mode.
@@ -27,8 +28,11 @@ Examples:
 
 from .. import reducer
 from ..mappers.sestatus import SEStatus
-from ..mappers.grub_conf import GrubConfig
+from ..mappers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
 from ..mappers.selinux_config import SelinuxConfig
+# TODO:
+# Below line should be removed after insights-plugins used the new interface
+from ..mappers.grub_conf import GrubConfig
 
 GRUB_DISABLED = 'grub_disabled'
 GRUB_NOT_ENFORCING = 'grub_not_enforcing'
@@ -38,7 +42,8 @@ BOOT_DISABLED = 'selinux_conf_disabled'
 BOOT_NOT_ENFORCING = 'selinux_conf_not_enforcing'
 
 
-@reducer(requires=[SEStatus, GrubConfig, SelinuxConfig], shared=True)
+@reducer(requires=[SEStatus, SelinuxConfig],
+         optional=[GrubConfig, Grub1Config, Grub2Config, Grub2EFIConfig], shared=True)
 class SELinux(object):
     """
     A reducer for detecting that SELinux is enabled and running and also enabled at boot time.
@@ -47,7 +52,17 @@ class SELinux(object):
         self.problems = {}
         self.sestatus = shared[SEStatus]
         self.selinux_config = shared[SelinuxConfig]
-        self.grub_config = shared[GrubConfig]
+        self.grub_config = None
+        if Grub1Config in shared:
+            self.grub_config = shared[Grub1Config]
+        elif Grub2Config in shared:
+            self.grub_config = shared[Grub2Config]
+        elif Grub2EFIConfig in shared:
+            self.grub_config = shared[Grub2EFIConfig]
+        # TODO:
+        # Below lines should be removed
+        elif GrubConfig in shared:
+            self.grub_config = shared[GrubConfig]
 
         self._check_sestatus()
         self._check_boot_config()
@@ -87,31 +102,14 @@ class SELinux(object):
         grub 2 is in rhel-7 and the boot line looks usually like
             linux16 /vmlinuz-0-rescue-9f20b35c9faa49aebe171f62a11b236f root=/dev/mapper/rhel-root ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet
         """
-        kernel_lines = []
 
-        # grub2 line
-        if self.grub_config.get('menuentry'):
-            for line in self.grub_config.get('menuentry'):
-                for name, options in line:
-                    if name.startswith('linux'):
-                        kernel_lines.append(options)
-        # Fallback to grub1 detection
-        elif self.grub_config.get('title'):
-            for line in self.grub_config.get('title'):
-                for name, options in line:
-                    if name.startswith('kernel'):
-                        kernel_lines.append(options)
-
-        # Detection of problems
-        for line in kernel_lines:
-            if 'selinux=0' in line:
-                if GRUB_DISABLED not in self.problems:
-                    self.problems[GRUB_DISABLED] = []
-                self.problems[GRUB_DISABLED].append(line)
-            if 'enforcing=0' in line:
-                if GRUB_NOT_ENFORCING not in self.problems:
-                    self.problems[GRUB_NOT_ENFORCING] = []
-                self.problems[GRUB_NOT_ENFORCING].append(line)
+        conf = self.grub_config.boot_entries if self.grub_config is not None else []
+        se_dis = [e.cmdline for e in conf if 'selinux=0' in e.cmdline]
+        if se_dis:
+            self.problems[GRUB_DISABLED] = se_dis
+        se_noe = [e.cmdline for e in conf if 'enforcing=0' in e.cmdline]
+        if se_noe:
+            self.problems[GRUB_NOT_ENFORCING] = se_noe
 
     def ok(self):
         """
