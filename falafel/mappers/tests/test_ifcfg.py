@@ -38,6 +38,7 @@ DEFROUTE=yes
 UUID=284549c8-0e07-41d3-a1e8-91ac9a9fca75
 HWADDR=00:50:56:89:0B:B0
 PEERDNS=yes
+~
 """.strip()
 
 IFCFG_PATH_2 = "ssocommand/etc/sysconfig/network-scripts/ifcfg-=eno1"

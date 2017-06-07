@@ -95,7 +95,8 @@ class BrctlShow(Mapper):
                 if len(line.split()) == 4:
                     iface_lst.append(line.split()[3])
                     br_mapping[iface] = iface_lst
-                self.data.append(br_mapping)
+                if br_mapping:
+                    self.data.append(br_mapping)
 
             else:
                 iface_lst.append(line.strip())

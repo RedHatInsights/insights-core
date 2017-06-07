@@ -167,17 +167,17 @@ ff02::fb dev enp0s25  metric 0
 ff00::/8 dev enp0s25  table local  metric 256  mtu 1492
 unreachable default dev lo  table unspec  proto kernel  metric 4294967295  error -101
 
-"""
+""".strip()
 
 IP_ROUTE_CANNOT_DETECT_THESE_ERRORS_YET = """
 /usr/sbin/ip: bad command or file name
-"""
+""".strip()
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST_BAD = """
 ff00::/16
 ff01::/16 dev
 ff02::/16 dev enp0s25 metric
-"""
+""".strip()
 
 
 class Test_ip_route(unittest.TestCase):
