@@ -1,5 +1,6 @@
 from insights.core import Parser
 from insights.core.plugins import parser
+from insights.parsers import ParseException
 
 import re
 
@@ -35,12 +36,13 @@ class SMARTctl(Parser):
 
     def __init__(self, context):
         super(SMARTctl, self).__init__(context)
+        self.data = {}
         filename_re = re.compile(r'smartctl_-a_\.dev\.(?P<device>\w+)$')
         match = filename_re.search(context.path)
-        self.data = {}
         if match:
             self.device = match.group('device')
-        # Else warn?  fail?
+        else:
+            raise ParseException("No device name found in path {p}".format(p=context.path))
 
     def parse_content(self, content):
         drive_info = {
