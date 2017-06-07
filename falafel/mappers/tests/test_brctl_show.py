@@ -11,7 +11,7 @@ br1             8000.0800278cdb62       no              eth4
                                                         eth5
 br2             8000.0800278cdb63       yes             eth6
 docker0         8000.0242d4cf2112       no
-"""
+""".strip()
 
 BRCTL_SHOW_TAB = """
 bridge name	bridge id		STP enabled	interfaces
@@ -19,15 +19,16 @@ br0		8000.2047478aa2e8	no		em1
 							vnet0
 							vnet1
 virbr9		8000.525400263a23	yes		virbr9-nic
-"""  # noqa: W191, E101
+""".strip()  # noqa: W191, E101
 
 BRCTL_SHOW_NO_BRIDGES = """
 bridge name     bridge id   STP enabled     interfaces
+
 """
 
 BRCTL_SHOW_ERROR = """
 /usr/sbin/brctl: file not found
-"""
+""".strip()
 
 
 def test_get_brctl_show():
