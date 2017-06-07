@@ -159,6 +159,8 @@ def test_grub1():
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-642.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-642.el6.x86_64.img'
     assert result.is_kdump_iommu_enabled is True
+    assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
+    assert len(result.get_grub_cmdlines()) == 3
     assert result.version == 1
     assert result.is_efi is False
 
@@ -172,6 +174,8 @@ def test_grub2():
     assert result.is_kdump_iommu_enabled is False
     assert result.get_grub_cmdlines('/vmlinuz-3.10.0')[0].name == "'Red Hat Enterprise Linux Server (3.10.0-327.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-327.el7.x86_64-advanced-4f80b3d4-90ba-4545-869c-febdecc586ce'"
     assert result.get_grub_cmdlines('test') == []
+    assert result.get_grub_cmdlines('') == []
+    assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
     assert result.version == 2
     assert result.is_efi is False
 
@@ -181,6 +185,9 @@ def test_grub2efi():
     shared = {Grub2EFIConfig: config}
     result = GrubConf(None, shared)
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-514.16.1.el7.x86_64.img'
+    assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
+    assert result.get_grub_cmdlines('rescue')[0].name.startswith("'Red Hat Enterprise Linux Server (0-rescue")
+    assert len(result.get_grub_cmdlines()) == 4
     assert result.version == 2
     assert result.is_efi is True
 
@@ -189,3 +196,4 @@ def test_get_grub_cmdlines_none():
     shared = {}
     ret = GrubConf(None, shared)
     assert ret.get_grub_cmdlines() == []
+    assert ret.get_grub_cmdlines('') == []

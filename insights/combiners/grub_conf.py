@@ -135,3 +135,4 @@ class GrubConf(object):
             return [entry for entry in self.grub.boot_entries]
         elif search_text:
             return [entry for entry in self.grub.boot_entries if search_text in entry.cmdline]
+        return []
