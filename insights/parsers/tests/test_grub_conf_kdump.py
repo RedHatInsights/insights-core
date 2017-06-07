@@ -241,7 +241,7 @@ menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2
 """
 
 
-class Grub2ModuleTest():
+class TestGrub2Module():
 
     def test_mod_internal(self):
         config = Grub2Config(context_wrap(MODULE_TEST))
