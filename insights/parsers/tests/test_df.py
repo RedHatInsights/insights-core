@@ -1,5 +1,7 @@
-from insights.parsers import df
+from insights.parsers import df, ParseException
 from insights.tests import context_wrap
+
+import pytest
 
 DF_ALP = """
 Filesystem                           1024-blocks      Used Available Capacity Mounted on
@@ -139,3 +141,17 @@ def test_df_al():
     assert df_list.get_mount('/sys/fs/cgroup').capacity == '0%'
     assert df_list.get_mount('/').filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
     assert df_list.get_mount('/').capacity == '5%'
+
+
+DF_AL_BAD = """
+Filesystem                             1K-blocks      Used Available     Use% Mounted on
+/dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
+sysfs                                          0
+"""
+
+
+def test_df_al_bad():
+    with pytest.raises(ParseException) as exc:
+        df_list = df.DiskFree_AL(context_wrap(DF_AL_BAD))
+        assert len(df_list) == 2
+    assert 'Could not parse line' in str(exc)
