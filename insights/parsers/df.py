@@ -47,6 +47,8 @@ Examples:
 from .. import Parser, parser
 from collections import namedtuple, defaultdict
 
+from insights.parsers import ParseException
+
 Record = namedtuple("Record", ['filesystem', 'total', 'used', 'available', 'capacity', 'mounted_on'])
 """namedtuple: Represents the information parsed from ``df`` command output."""
 
@@ -102,6 +104,8 @@ def parse_df_lines(df_content):
             is_sep = False
         elif not line_splits:  # Skip empty lines (might in sosreport)
             continue
+        else:
+            raise ParseException("Could not parse line '{l}'".format(l=line))
         if not is_sep:
             # Last column is mount point
             df_ls[columns[-1]] = line_splits[-1]
