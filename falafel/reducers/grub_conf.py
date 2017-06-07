@@ -1,17 +1,13 @@
 """
-Shared reducer for grub v1 and v2 configs
-=========================================
+Shared reducer for grub v1 and v2 configurations
+================================================
 
 Shared reducer for Red Hat Grub v1 and Grub v2 information.
-This reducer uses bot the Grb1Config and the Grub2Config mappers.
-It determines which mapper was used by checking the class atribute in shared.
+This reducer uses both the Grub1Config and the Grub2Config mappers.
+It determines which mapper was used by checking the class attribute in shared.
 When the appropriate Grub mapper class is determined it executes the reducer
 method for that class.
 Successful completion of the reducer yields the following information
-kernel_initrds - list of kernel_initrds for in the configuration file
-is_kdump_iommu_enabled - returns true if any kernel entry in the list of titles has
-kdump_iommu_enabled (Grub v1 only). Grub v2 will return False.
-
 
 Examples:
     >>> GRUB1_TEMPLATE = '''
@@ -31,8 +27,9 @@ Examples:
 
     >>> config = Grub1Config(context_wrap(GRUB1_TEMPLATE))
     >>> shared = {Grub1Config: config}
-    >>> result = GrubConf(None, shared)
     >>> grub_conf = shared[GrubConf]
+    >>> grub_conf.version
+    1
     >>> grub_conf.kernel_initrds
     {'grub_initrds': [
         'initramfs-2.6.32-642.el6.x86_64.img',
@@ -42,6 +39,11 @@ Examples:
         'vmlinuz-2.6.32-642.el6.x86_64']}
     >>> grub_conf.is_kdump_iommu_enabled
     False
+    >>> grub_conf.get_grub_cmdlines('vmlinuz')[0].name
+    'Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64)'
+    >>> grub_conf.get_grub_cmdlines()[1].name
+    'Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64-2)'
+
 
 
     >>> GRUB2_TEMPLATE = '''
@@ -60,66 +62,77 @@ Examples:
 
     >>> config = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     >>> shared = {Grub2Config: config}
-    >>> result = GrubConf(None, shared)
-    >>> result.kernel_initrds
+    >>> grub_conf = shared[GrubConf]
+    >>> grub_conf.is_efi
+    False
+    >>> grub_conf.kernel_initrds
     {'grub_initrds': [
         '/initramfs-3.10.0-327.36.3.el7.x86_64.img'],
      'grub_kernels': [
         '/vmlinuz-3.10.0-327.36.3.el7.x86_64']}
-    >>> result.is_kdump_iommu_enabled
+    >>> grub_conf.is_kdump_iommu_enabled
     False
+    >>> grub_conf.get_grub_cmdlines('')
+    []
 """
 
+from .. import defaults
 from falafel.core.plugins import reducer
-from falafel.mappers.grub1_conf import Grub1Config
-from falafel.mappers.grub2_conf import Grub2Config
+from falafel.mappers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
 
 
-@reducer(optional=[Grub1Config, Grub2Config], shared=True)
+@reducer(optional=[Grub1Config, Grub2Config, Grub2EFIConfig], shared=True)
 class GrubConf(object):
     """Process Grub configuration v1 or v2 based on which type is passed in
 
     Attributes:
-        kernel_initrds (list)
-        is_kdump_iommu_enabled (bool)
+        version (int): returns 1 or 2, version of the GRUB configuration
+        is_efi (bool): returns true if grub configuration for EFI-based system
+        kernel_initrds (dict): returns a dict of the `kernel` and `initrd`
+            files referenced in GRUB configuration files
+        is_kdump_iommu_enabled (bool): returns true if any kernel entry
+            contains "intel_iommu=on"
 
-    Raises:
-        Exeption: If shared is not Grub1Config pr Grub2Config
     """
 
     def __init__(self, local, shared):
 
-        self.kernel_initrds = []
-        self.crash_kernel_offset = ""
-        self.is_kdump_iommu_enabled = False
+        self.version = self.is_efi = self.is_kdump_iommu_enabled = None
+        self.grub = self.kernel_initrds = None
+        # get grub configuration
+        if Grub1Config in shared:
+            self.grub = shared.get(Grub1Config)
+        elif Grub2Config in shared:
+            self.grub = shared.get(Grub2Config)
+        elif Grub2EFIConfig in shared:
+            self.grub = shared.get(Grub2EFIConfig)
 
-        # get grub configuartion
-        self.grub1 = shared.get(Grub1Config)
-        self.grub2 = shared.get(Grub2Config)
+        if self.grub:
+            self.version = self.grub._version
+            self.is_efi = self.grub._efi
+            self.is_kdump_iommu_enabled = self.grub.is_kdump_iommu_enabled
+            self.kernel_initrds = self.grub.kernel_initrds
 
-        # grub1
-        if (self.grub1):
-            return self._get_grub1_info()
-
-        # grub2
-        elif (self.grub2):
-            return self._get_grub2_info()
-
-        raise Exception("Not Grub v1 or Grub v2.")
-
-    def _get_grub1_info(self):
+    @defaults([])
+    def get_grub_cmdlines(self, search_text=None):
         """
-        Process Grub v1 configuration file.
+        Get the boot entries in which `cmdline` contains the `search_text`,
+        return all the boot entries by default.
+
+        Arguments:
+            search_text(str): keyword to find in the `cmdline`, being set to
+                None by default.
+
+        Returns:
+            A list of AttributeDict objects for each boot entry in which the
+                `cmdline` contains the `search_text`. The AttributeDict boot
+                entry looks like:
+
+                - 'name': "Red Hat Enterprise Linux Server"
+                - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 rhgb quiet"
         """
-
-        self.is_kdump_iommu_enabled = self.grub1.is_kdump_iommu_enabled
-        self.kernel_initrds = self.grub1.kernels_initrds
-
-    def _get_grub2_info(self):
-
-        """
-        Process Grub v2 configuration file.
-        """
-
-        self.is_kdump_iommu_enabled = False
-        self.kernel_initrds = self.grub2.kernels_initrds
+        if search_text is None:
+            return [entry for entry in self.grub.boot_entries]
+        elif search_text:
+            return [entry for entry in self.grub.boot_entries if search_text in entry.cmdline]
+        return []

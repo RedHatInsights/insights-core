@@ -1,6 +1,5 @@
-import unittest
 from falafel.tests import context_wrap
-from falafel.mappers.grub2_conf import Grub2EFIConfig
+from falafel.mappers.grub_conf import Grub2EFIConfig
 
 GRUB2_EFI_CFG = """
 ### BEGIN /etc/grub.d/10_linux ###
@@ -68,7 +67,7 @@ menuentry 'Red Hat Enterprise Linux Server (0-rescue-f1340b5dd6ee4c26b5876215661
 """.strip()  # noqa
 
 
-class TestGrub2EFI(unittest.TestCase):
+class TestGrub2EFI():
     def test_get_grub_kernel_initrd(self):
         expected = {'grub_kernels': ['vmlinuz-3.10.0-514.16.1.el7.x86_64',
                                      'vmlinuz-3.10.0-514.10.2.el7.x86_64',
@@ -79,4 +78,4 @@ class TestGrub2EFI(unittest.TestCase):
                                      'initramfs-3.10.0-514.el7.x86_64.img',
                                      'initramfs-0-rescue-f1340b5dd6ee4c26b587621566111421.img']}
 
-        assert expected == Grub2EFIConfig((context_wrap(GRUB2_EFI_CFG))).kernels_initrds
+        assert expected == Grub2EFIConfig((context_wrap(GRUB2_EFI_CFG))).kernel_initrds
