@@ -22,7 +22,7 @@ Examples:
     '/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b15.el7_2.x86_64/jre/bin/java'
 """
 
-from .. import parser
+from .. import parser, AlternativesOutput
 
 JAVA_LINK_FLAG = 'link currently points to'
 
@@ -33,9 +33,19 @@ def default_java(context):
     str: Returns the full path of the linked java, e.g.
     "/usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java"
     If no line contains 'link currently points to', then `None` is returned.
+
+    ** Deprecated - do not use **
     """
     for line in context.content:
         if JAVA_LINK_FLAG in line:
             line_splits = line.split()
             if len(line_splits) == 5:
                 return line_splits[-1]
+
+
+@parser('display_java')
+class JavaAlternatives(AlternativesOutput):
+    """
+    Class to read the ``/usr/sbin/alternatives --display java`` output.
+    """
+    pass

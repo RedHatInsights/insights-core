@@ -1,7 +1,7 @@
 import pkgutil
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
-from .core import YAMLParser  # noqa: F401
+from .core import YAMLParser, AlternativesOutput                   # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core.plugins import parser, rule, make_response, make_metadata  # noqa: F401
 from .parsers import get_active_lines  # noqa: F401
