@@ -1,5 +1,8 @@
 from insights.parsers.bond import Bond
+from insights.parsers import ParseException
 from insights.tests import context_wrap
+
+import pytest
 
 CONTEXT_PATH = "proc/net/bonding/bond0"
 
@@ -67,6 +70,10 @@ Permanent HW addr: 00:16:35:5e:02:7e
 Aggregator ID:
 """.strip()
 
+BONDINFO_UNKNOWN_BOND_MODE = """
+Bonding Mode: reverse proximity hash combination mode
+""".strip()
+
 
 def test_bond_class():
 
@@ -84,3 +91,8 @@ def test_bond_class():
     bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
     assert not bond_obj.bond_mode
     assert bond_obj.slave_interface == []
+
+    with pytest.raises(ParseException) as exc:
+        bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
+        assert not bond_obj.bond_mode
+    assert 'Unrecognised bonding mode' in str(exc)
