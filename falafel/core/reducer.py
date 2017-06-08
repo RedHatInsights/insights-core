@@ -163,7 +163,7 @@ def _run(reducers, local_output, shared_output, error_handler, output_dict=None,
         log_mapper_outputs(func, local, shared_output)
         if func not in shared_output:
             r = run_reducer(func, local, shared_output, error_handler, reducer_stats=reducer_stats)
-            if r:
+            if r is not None:
                 shared_output[func] = r
                 logger.debug("Reducer output: %s", r)
                 if func.shared and output_dict:
