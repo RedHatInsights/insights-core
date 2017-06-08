@@ -525,12 +525,13 @@ class Netstat(Parser):
             the original line of input that produced this row.
         """
         results = []
+        if search_dict == {}:
+            return results
         for line, row in enumerate(self.datalist[section_id]):
-            for key, value in search_dict.iteritems():
-                if key in row and row[key] == value:
-                    copy = dict(row)
-                    copy['raw line'] = self.lines[section_id][line]
-                    results.append(copy)
+            if all([key in row and row[key] == value for key, value in search_dict.iteritems()]):
+                copy = dict(row)
+                copy['raw line'] = self.lines[section_id][line]
+                results.append(copy)
         return results
 
 

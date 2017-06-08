@@ -304,6 +304,13 @@ def test_get_netstat():
         'Timer': 'off (0.00/0/0)',
         'raw line': 'tcp        0      0 192.168.0.1:53          192.168.0.53:53         ESTABLISHED 0          1817       12/dnsd              off (0.00/0/0)'
     }]
+    # Rows_by should only return true if all of its requirements are found
+    results = ns.rows_by(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, {'State': 'LISTENING', 'Program name': 'systemd'})
+    assert len(results) == 1
+    assert results[0]['I-Node'] == '535'
+    # No search criteria, no results
+    results = ns.rows_by(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, {})
+    assert len(results) == 0
 
 
 def test_listening_pid():
