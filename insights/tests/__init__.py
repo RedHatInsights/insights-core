@@ -142,7 +142,7 @@ def get_parsers_for(module):
 
 def get_combiner_for(module):
     module_name = module.__name__.rpartition(".")[-1]
-    f = plugins.REDUCERS.get(module_name, plugins.CLUSTER_REDUCERS.get(module_name))
+    f = plugins.COMBINERS.get(module_name, plugins.CLUSTER_COMBINERS.get(module_name))
     if f:
         return {module_name: f}
     else:
