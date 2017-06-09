@@ -21,7 +21,8 @@ insights.parsers
 ----------------
 
 .. automodule:: insights.parsers
-    :members: ParseException, get_active_lines, optlist_to_dict, split_kv_pairs, unsplit_lines
+    :members: ParseException, get_active_lines, optlist_to_dict, split_kv_pairs, unsplit_lines,
+              calc_offset, parse_fixed_table
     :show-inheritance:
     :undoc-members:
 

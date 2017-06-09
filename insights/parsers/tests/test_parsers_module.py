@@ -1,6 +1,7 @@
 import pytest
 from collections import OrderedDict
 from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table, calc_offset
+from insights.parsers import optlist_to_dict
 
 SPLIT_TEST_1 = """
 # Comment line
@@ -258,3 +259,20 @@ def test_parse_fixed_table():
     assert len(data) == 6
     assert data[4] == {'Column1': 'fooTrailing', 'Column_2': 'non-data li', 'Column_3': 'ne'}
     assert data[5] == {'Column1': 'foo Another', 'Column_2': 'trailing no', 'Column_3': 'n-data line'}
+
+
+def test_optlist_standard():
+    d = optlist_to_dict('key1,key2=val2,key1=val1,key3')
+    assert sorted(d.keys()) == sorted(['key1', 'key2', 'key3'])
+    assert d['key1'] == 'val1'
+    assert d['key2'] == 'val2'
+    assert d['key3'] is True
+
+
+def test_optlist_no_vals():
+    d = optlist_to_dict('key1,key2=val2,key1=val1,key3', kv_sep=None)
+    assert sorted(d.keys()) == sorted(['key1', 'key1=val1', 'key2=val2', 'key3'])
+    assert d['key1'] is True
+    assert d['key1=val1'] is True
+    assert d['key2=val2'] is True
+    assert d['key3'] is True
