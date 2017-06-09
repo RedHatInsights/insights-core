@@ -1,6 +1,6 @@
-include insights-core/defaults.yaml
-include insights-core/NAME
-include insights-core/VERSION
-include insights-core/COMMIT
-include insights-core/RELEASE
-graft insights-core/archive/repository/base_archives
+include insights/defaults.yaml
+include insights/NAME
+include insights/VERSION
+include insights/COMMIT
+include insights/RELEASE
+graft insights/archive/repository/base_archives
