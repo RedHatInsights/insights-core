@@ -1,6 +1,6 @@
-# Falafel
+# Insights-core
 
-**Falafel** is the framework, common components and utilities, and mappers for Insights rules.
+**Insights-core** is the framework, common components and utilities, and mappers for Insights rules.
 
 To get the project set up: 
 
@@ -27,15 +27,15 @@ And they can be found under `docs/_build/html`.
 
 ## Configuration
 
-Falafel also houses the centralized configuration module for the Insights
+Insights-core also houses the centralized configuration module for the Insights
 Engine and Insights Content Server.  This is to enable each project to use the
-same file(s) and code module for configuration.  Falafel checks several locations for the configuration file, in this order:
+same file(s) and code module for configuration.  Insights-core checks several locations for the configuration file, in this order:
 
-- `$FALAFEL_HOME/falafel/defaults.yaml`
-- `/etc/falafel.yaml`
-- `$HOME/.local/falafel.yaml`
-- `$PWD/.falafel.yaml`
+- `$INSIGHTS_CORE_HOME/insights/defaults.yaml`
+- `/etc/insights-core.yaml`
+- `$HOME/.local/insights-core.yaml`
+- `$PWD/.insights-core.yaml`
 
 Options from files read later will override options from files read earlier.
 
-To see the layout of the file and the available options, please take a look at [defaults.yaml](falafel/defaults.yaml) in this repo.
+To see the layout of the file and the available options, please take a look at [defaults.yaml](insights-core/defaults.yaml) in this repo.
