@@ -6,15 +6,15 @@ __here__ = os.path.dirname(os.path.abspath(__file__))
 package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
 
 for name in package_info:
-    with open(os.path.join(__here__, "falafel", name)) as f:
+    with open(os.path.join(__here__, "insights", name)) as f:
         package_info[name] = f.read().strip()
 
 entry_points = {
     'console_scripts': [
-        'insights-run = falafel.core:main',
-        'gen_api = falafel.tools.generate_api_config:main',
-        'falafel-scaffold = falafel.scaffold:main',
-        'falafel-perf = falafel.tools.perf:main'
+        'insights-run = insights.core:main',
+        'gen_api = insights.tools.generate_api_config:main',
+        'insights-scaffold = insights.scaffold:main',
+        'insights-perf = insights.tools.perf:main'
     ]
 }
 
@@ -38,7 +38,7 @@ develop = {
 
 if __name__ == "__main__":
     # allows for runtime modification of rpm name
-    name = os.environ.get("FALAFEL_NAME", package_info["NAME"])
+    name = os.environ.get("INSIGHTS_NAME", package_info["NAME"])
 
     setup(
         name=name,

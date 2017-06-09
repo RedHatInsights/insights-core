@@ -1,0 +1,111 @@
+cli:
+  # Directory used to extract archives into
+  extract_dir: /tmp
+
+  # Max width of console output.  Default (0) means to use the entire width of
+  # the given screen.  If no screen is available, then 80 will be used.
+  max_width: 0
+
+  specs: ''
+
+  # Level of verbosity in logs and console output.  Valid levels are 0, 1, or
+  # 2, from least verbosity to most.
+  verbose: 0
+
+  # Command options:
+  external_files: []
+  list_missing: false
+  list_plugins: false
+  mem_only: false
+  spec_map: false
+
+content:
+  # api_* opations are used mainly to pull content parameters from production.
+
+  # RHN username.
+  # api_password: changeme
+
+  # URL of target Insights API.  Must include /r/insights at the end.
+  api_url: http://localhost:9002/r/insights
+
+  # RHN password
+  # api_user: changeme
+
+  # Path to content git repos
+  git_paths:
+  - .
+
+  playbook_path: null
+
+  # Port used by content server
+  port: 8080
+
+  # DO NOT ENABLE: Will enable endpoint that will update/write content against
+  # configured Insights API
+  enable_sync: false
+
+defaults:
+  # All options in this section can also be overridden in other sections,
+  # though they aren't explicitly defined there.
+
+  # List of plugin packages to load
+  plugin_packages:
+  - insights.plugins
+
+  # List of test plugin packages to load
+  test_packages:
+  - insights.tests.test_plugins
+
+  # Default logging level
+  log_level: INFO
+
+  # Location of log file.  Null value means stderr.
+  log_file: null
+
+  # Maximum length in bytes of rule response details
+  max_detail_length: 65535
+
+test:
+  host: localhost:52346
+  start_server: true
+
+web:
+
+  # Distruted=true means logstash, false is local logging.
+  distributed: true
+
+  log_level: 20
+
+  # Name of the log type found in logstash messages
+  log_type: insights
+
+  logstash_host: localhost
+  logstash_port: 5000
+
+  # Size (MB) of largest allowable archive
+  max_upload_size: 150
+
+  # Enables some expensive diagnostic information logging
+  enable_archive_diagnostics: false
+
+  # Kind of a silly option which should never change.  This is the name of the
+  # key used to pull out the archive from the multipart HTTP request.  While
+  # multipart isn't desirable from insights's perspective, it's necessary since
+  # all clients still use it.
+  multipart_file_key: file
+
+  # Web server bind port
+  port: 8080
+
+  # Whether to retain processed archives or not.
+  retain_data: true
+
+  # Statsd is used for a handful of runtime metrics in production.
+  statsd_enabled: true
+  statsd_host: localhost
+  statsd_port: 8125
+  statsd_sample_rate: 0.05
+  #
+  # Tornado's logging can be very noisy, so we can turn it off unless we need
+  # to debug something.
+  tornado_logging_enabled: false

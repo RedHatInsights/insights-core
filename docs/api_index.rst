@@ -1,47 +1,47 @@
 API Documentation
 =================
 
-falafel.core
-------------
+insights.core
+-------------
 
-.. automodule:: falafel.core
+.. automodule:: insights.core
     :members:
     :show-inheritance:
     :undoc-members:
 
-falafel.core.context
---------------------
+insights.core.context
+---------------------
 
-.. automodule:: falafel.core.context
+.. automodule:: insights.core.context
     :members:
     :show-inheritance:
     :undoc-members:
 
-falafel.mappers
----------------
+insights.parsers
+----------------
 
-.. automodule:: falafel.mappers
+.. automodule:: insights.parsers
     :members: ParseException, get_active_lines, optlist_to_dict, split_kv_pairs, unsplit_lines
     :show-inheritance:
     :undoc-members:
 
-falafel.tests
+insights.tests
+--------------
+
+.. automodule:: insights.tests
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.util
 -------------
 
-.. automodule:: falafel.tests
+.. automodule:: insights.util
     :members:
     :show-inheritance:
     :undoc-members:
 
-falafel.util
-------------
-
-.. automodule:: falafel.util
-    :members:
-    :show-inheritance:
-    :undoc-members:
-
-.. automodule:: falafel.util.file_permissions
+.. automodule:: insights.util.file_permissions
     :members:
     :show-inheritance:
     :undoc-members:

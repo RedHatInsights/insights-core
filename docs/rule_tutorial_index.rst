@@ -1,12 +1,12 @@
 Rule Tutorial
 =============
 
-In this tutorial we'll walk through authoring a new falafel rule. 
+In this tutorial we'll walk through authoring a new insights-core rule. 
 
 There are three primary phases to developing a rule:
 
-1. Determine rule logic and identify mappers
-2. Develop the reducer
+1. Determine rule logic and identify parsers
+2. Develop the rule
 3. Develop the tests
 
 We'll cover each step in detail in the sections ahead, so let's get started!
@@ -14,6 +14,6 @@ We'll cover each step in detail in the sections ahead, so let's get started!
 .. toctree::
     :hidden:
 
-    ruletut_mappers
-    ruletut_reducer
+    ruletut_parsers
+    ruletut_rule
     ruletut_tests

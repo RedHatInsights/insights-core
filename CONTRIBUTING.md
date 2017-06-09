@@ -2,11 +2,11 @@
 
 ## Introduction
 
-Falafel is the framework upon which Red Hat Insights rules are built and
+Insights-core is the framework upon which Red Hat Insights rules are built and
 delivered.  The basic purpose is to apply "rules" to a set of files collected
 from a system at a given point in time.
 
-Falafel rule "plugins" are written in python.  The rules follow a
+Insights-core rule "plugins" are written in python.  The rules follow a
 "MapReduce" approach, dividing the logic between "mapping" and
 "reducing" methods.  This is a convenient approach where a rule's logic
 takes place in two steps.  First, there is a "gathering of facts" (the
@@ -18,15 +18,15 @@ phase).
 
 Clone the project::
 
-    git clone git@github.com:RedHatInsights/falafel.git
+    git clone git@github.com:RedHatInsights/insights-core.git
 
 Or, alternatively, using HTTPS::
 
-    git clone https://github.com/RedHatInsights/falafel.git
+    git clone https://github.com/RedHatInsights/insights-core.git
 
 Initialize a virtualenv::
 
-    cd falafel
+    cd insights-core
     virtualenv .
 
 Install the project and its dependencies::
@@ -40,15 +40,15 @@ Install a rule repository::
 
 ## Contributor Setup
 
-If you wish to contribute to the falafel project you'll need to create a fork in github.
+If you wish to contribute to the insights-core project you'll need to create a fork in github.
 
 1. Clone your fork::
 
-    git clone git@github.com:your-user/falafel.git
+    git clone git@github.com:your-user/insights-core.git
 
 2. Reference the original project as "upstream"::
 
-    git add remote upstream git@github.com:RedHatInsights/falafel.git
+    git add remote upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
 using the following commands::
@@ -57,7 +57,7 @@ using the following commands::
     git push origin master
 
 You will need to initialize the project per the
-[readme.md](https://github.com/RedHatInsights/falafel/blob/master/README.md)
+[readme.md](https://github.com/RedHatInsights/insights-core/blob/master/README.md)
 file.
 
 
