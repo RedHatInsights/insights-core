@@ -6,7 +6,7 @@ import shlex
 import gzip
 import zipfile
 from insights.core import archives
-from insights.core.specs import SpecParser
+from insights.core.specs import SpecMapper
 from . import insights_heartbeat
 
 
@@ -93,8 +93,8 @@ class TestZipFileExtractor(unittest.TestCase):
                 self.assertFalse("foo" in ex.getnames())
                 self.assertTrue(any(f.endswith("/sys/kernel/kexec_crash_size") for f in ex.getnames()))
 
-                spec_parser = SpecParser(ex)
-                self.assertEquals(spec_parser.get_content("hostname"), ["insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"])
+                spec_mapper = SpecMapper(ex)
+                self.assertEquals(spec_mapper.get_content("hostname"), ["insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"])
         finally:
             os.unlink("/tmp/test.zip")
 

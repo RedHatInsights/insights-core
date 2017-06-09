@@ -1,6 +1,6 @@
 import os
 import unittest
-from insights.core.specs import SpecParser
+from insights.core.specs import SpecMapper
 from insights.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, SingleEvaluator
 from insights.core import plugins
 from insights.core.archives import TarExtractor
@@ -234,22 +234,22 @@ class TestDetermineRoot(unittest.TestCase):
 
     def test_single_node(self):
         with MockTarFile(SINGLE_NODE_UPLOAD) as mtf:
-            spec = SpecParser(mtf)
+            spec = SpecMapper(mtf)
             self.assertEqual(spec.root, "insights-davxapasnp03-20151007031606/")
 
     def test_multi_node(self):
         with MockTarFile(CLUSTER_UPLOAD) as mtf:
-            spec = SpecParser(mtf)
+            spec = SpecMapper(mtf)
             self.assertEqual(spec.root, "./")
 
     def test_soscleaned(self):
         with MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD) as mtf:
-            spec = SpecParser(mtf)
+            spec = SpecMapper(mtf)
             self.assertEquals(spec.root, "soscleaner-7704572305004757/")
 
     def test_deep_root(self):
         with MockTarFile(DEEP_ROOT) as mtf:
-            spec = SpecParser(mtf)
+            spec = SpecMapper(mtf)
             self.assertEquals(spec.root, "tmp/sdc-appblx002-15.corp.com_sosreport/")
 
 
@@ -297,14 +297,14 @@ class TestSingleEvaluator(unittest.TestCase):
 
     def _unpack_archive(self, ex, cls):
         plugins.load("insights.plugins")
-        spec_parser = SpecParser(ex)
-        self.assertEquals(spec_parser.get_content("machine-id", split=False), HEARTBEAT_ID)
-        p = cls(spec_parser)
+        spec_mapper = SpecMapper(ex)
+        self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
+        p = cls(spec_mapper)
         p.pre_mapping()
         p.run_parsers()
         self.assertEquals(p.parser_results.get(is_insights_heartbeat),
                           [{"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}])
-        p.run_combiners()
+        p.run_reducers()
         return p
 
     def _common_tests(self, p):
@@ -344,8 +344,8 @@ class TestMultiEvaluator(unittest.TestCase):
         with open(arc_path, "rb") as fd:
             cluster_arc = make_cluster_archive(fd, "application/x-gzip")
             with TarExtractor().from_buffer(cluster_arc) as ex:
-                spec_parser = SpecParser(ex)
-                p = InsightsMultiEvaluator(spec_parser)
+                spec_mapper = SpecMapper(ex)
+                p = InsightsMultiEvaluator(spec_mapper)
                 self.assertEquals(p.archive_metadata["system_id"], "test-id")
                 response = p.process()
                 self.assertEquals(len(response["archives"]), 1)

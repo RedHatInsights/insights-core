@@ -7,7 +7,7 @@ from insights.core.plugins import validate_response, stringify_requirements
 from insights.core.context import Context
 from insights.core.archives import InvalidArchive
 from insights.parsers.uname import Uname
-from insights.core import combiner
+from insights.core import reducer
 from datetime import datetime
 
 import logging
@@ -28,10 +28,10 @@ def serialize_skips(skips):
 class Evaluator(object):
 
     def is_pattern_file(self, symbolic_name):
-        return self.spec_parser.data_spec_config.is_multi_output(symbolic_name)
+        return self.spec_mapper.data_spec_config.is_multi_output(symbolic_name)
 
-    def __init__(self, spec_parser, metadata=None):
-        self.spec_parser = spec_parser
+    def __init__(self, spec_mapper, metadata=None):
+        self.spec_mapper = spec_mapper
         self.metadata = defaultdict(dict)
         self.rule_skips = []
         self.rule_results = []
@@ -41,7 +41,7 @@ class Evaluator(object):
     def _init_stats(self):
         return {
             "parser": {"count": 0, "fail": 0},
-            "combiner": {"count": 0, "fail": 0},
+            "reducer": {"count": 0, "fail": 0},
             "skips": {"count": 0}
         }
 
@@ -61,8 +61,8 @@ class Evaluator(object):
         """
         return result
 
-    def handle_combiner_error(self):
-        self.stats["combiner"]["fail"] += 1
+    def handle_reducer_error(self):
+        self.stats["reducer"]["fail"] += 1
 
         def default_error_handler(func, e, local, shared):
             log.exception("Reducer [%s] failed", ".".join([func.__module__, func.__name__]))
@@ -112,7 +112,7 @@ class Evaluator(object):
     def process(self):
         self.pre_mapping()
         self.run_parsers()
-        self.run_combiners()
+        self.run_reducers()
         self.post_process()
         return self.get_response()
 
@@ -129,8 +129,8 @@ class Evaluator(object):
 
 class SingleEvaluator(Evaluator):
 
-    def __init__(self, spec_parser, metadata=None):
-        super(SingleEvaluator, self).__init__(spec_parser, metadata)
+    def __init__(self, spec_mapper, metadata=None):
+        super(SingleEvaluator, self).__init__(spec_mapper, metadata)
         self.parser_results = defaultdict(list)
 
     def append_metadata(self, r, plugin):
@@ -146,7 +146,7 @@ class SingleEvaluator(Evaluator):
         self.calc_last_client_run()
 
     def calc_last_client_run(self):
-        content = self.spec_parser.get_content("prev_uploader_log")
+        content = self.spec_mapper.get_content("prev_uploader_log")
         if content and len(content) > 1:
             date_str = " ".join(content[0:1]).split(",")[0]
             self.last_client_run = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
@@ -158,7 +158,7 @@ class SingleEvaluator(Evaluator):
 
     def _protected_parse(self, sym_name, parser, default=""):
         try:
-            return parser(self.spec_parser.get_content(sym_name))
+            return parser(self.spec_mapper.get_content(sym_name))
         except:
             return default
 
@@ -172,7 +172,7 @@ class SingleEvaluator(Evaluator):
         if self.archive_metadata:
             md = self.run_metadata_parsers(self._pull_md_fragment())
             self.parser_results.update(md)
-        for symbolic_name, files in self.spec_parser.symbolic_files.items():
+        for symbolic_name, files in self.spec_mapper.symbolic_files.items():
 
             if not plugins.get_parsers(symbolic_name):
                 continue
@@ -180,7 +180,7 @@ class SingleEvaluator(Evaluator):
             for f in files:
                 content = []
                 try:
-                    content = self.spec_parser.get_content(f, symbolic=False)
+                    content = self.spec_mapper.get_content(f, symbolic=False)
                 except Exception as e:
                     self.handle_content_error(e, f)
                     continue
@@ -189,7 +189,7 @@ class SingleEvaluator(Evaluator):
                 if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
                     continue
                 for plugin in plugins.get_parsers(symbolic_name):
-                    unrooted_path = f.split(self.spec_parser.root)[1].lstrip("/")
+                    unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
                     context = self.build_context(content=content,
                                                  path=unrooted_path,
                                                  target=symbolic_name)
@@ -236,21 +236,21 @@ class SingleEvaluator(Evaluator):
         elif type_ == "skip":
             self.rule_skips.append(r)
 
-    def run_combiners(self):
+    def run_reducers(self):
         self.all_output = {}
-        generator = combiner.run_host(
+        generator = reducer.run_host(
             self.parser_results,
             self.all_output,
-            self.handle_combiner_error(),
-            combiner_stats=self.stats['combiner'])
+            self.handle_reducer_error(),
+            reducer_stats=self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(plugin, r)
 
 
 class MultiEvaluator(Evaluator):
 
-    def __init__(self, spec_parser, metadata=None):
-        super(MultiEvaluator, self).__init__(spec_parser)
+    def __init__(self, spec_mapper, metadata=None):
+        super(MultiEvaluator, self).__init__(spec_mapper)
         self.parser_results = {}
         self.SubEvaluator = self.sub_evaluator_class()
         self.archive_results = defaultdict(lambda: {
@@ -263,7 +263,7 @@ class MultiEvaluator(Evaluator):
         if metadata:
             self.archive_metadata = metadata
         else:
-            md_str = spec_parser.get_content("metadata.json", split=False, default="{}")
+            md_str = spec_mapper.get_content("metadata.json", split=False, default="{}")
             self.archive_metadata = marshalling.unmarshal(md_str)
 
     def sub_evaluator_class(self):
@@ -271,24 +271,24 @@ class MultiEvaluator(Evaluator):
 
     def run_parsers(self, **kwargs):
         self.parser_results[None] = self.run_metadata_parsers(self.archive_metadata)
-        subarchives = [a for a in self.spec_parser.tf.getnames() if a.endswith(".tar")]
+        subarchives = [a for a in self.spec_mapper.tf.getnames() if a.endswith(".tar")]
         for i, archive in enumerate(subarchives):
-            content = self.spec_parser.get_content(archive, split=False, symbolic=False)
+            content = self.spec_mapper.get_content(archive, split=False, symbolic=False)
             extractor = archives.TarExtractor().from_buffer(content)
-            sub_spec_parser = specs.SpecParser(extractor)
-            sub_evaluator = self.SubEvaluator(sub_spec_parser, metadata=self.archive_metadata)
+            sub_spec_mapper = specs.SpecMapper(extractor)
+            sub_evaluator = self.SubEvaluator(sub_spec_mapper, metadata=self.archive_metadata)
             host_result = sub_evaluator.process()
             hn = sub_evaluator.get_contextual_hostname(default=i)
             self.archive_results[hn] = host_result
             self.parser_results[hn] = sub_evaluator.parser_results
 
-    def run_combiners(self, metadata=None):
+    def run_reducers(self, metadata=None):
         self.all_output = {}
-        generator = combiner.run_multi(
+        generator = reducer.run_multi(
             self.parser_results,
             self.all_output,
-            self.handle_combiner_error(),
-            combiner_stats=self.stats['combiner'])
+            self.handle_reducer_error(),
+            reducer_stats=self.stats['reducer'])
         for plugin, r in generator:
             self.handle_result(plugin, r)
 
@@ -322,8 +322,8 @@ class MultiEvaluator(Evaluator):
 
 class InsightsEvaluator(SingleEvaluator):
 
-    def __init__(self, spec_parser, url="not set", system_id=None, metadata=None):
-        super(InsightsEvaluator, self).__init__(spec_parser, metadata=metadata)
+    def __init__(self, spec_mapper, url="not set", system_id=None, metadata=None):
+        super(InsightsEvaluator, self).__init__(spec_mapper, metadata=metadata)
         self.system_id = system_id
         self.url = url
 
@@ -335,7 +335,7 @@ class InsightsEvaluator(SingleEvaluator):
         return self.system_id
 
     def get_branch_info(self):
-        branch_info = json.loads(self.spec_parser.get_content("branch_info",
+        branch_info = json.loads(self.spec_mapper.get_content("branch_info",
                                  split=False, default="{}"))
         remote_branch = branch_info.get("remote_branch")
         if remote_branch == -1:
@@ -346,13 +346,13 @@ class InsightsEvaluator(SingleEvaluator):
         return remote_branch, remote_leaf
 
     def get_product_info(self):
-        md = json.loads(self.spec_parser.get_content("metadata.json",
+        md = json.loads(self.spec_mapper.get_content("metadata.json",
                         split=False, default="{}"))
         return md.get("product_code", "rhel"), md.get("role", "host")
 
     def pre_mapping(self):
         super(InsightsEvaluator, self).pre_mapping()
-        int_system_id = self.spec_parser.get_content("machine-id")[0]
+        int_system_id = self.spec_mapper.get_content("machine-id")[0]
         if self.system_id and self.system_id != int_system_id:
             raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
         self.system_id = int_system_id
@@ -378,15 +378,15 @@ class InsightsEvaluator(SingleEvaluator):
                     e, context, self.url, exc_info=True)
 
     def handle_reduce_error(self, e, context):
-        self.stats["combiner"]["fail"] += 1
+        self.stats["reducer"]["fail"] += 1
         log.warning("Reducer failed with message %s. Ignoring. context: %s [%s]",
                     e, context, self.url, exc_info=True)
 
 
 class InsightsMultiEvaluator(MultiEvaluator):
 
-    def __init__(self, spec_parser, system_id=None, metadata=None):
-        super(InsightsMultiEvaluator, self).__init__(spec_parser, metadata=metadata)
+    def __init__(self, spec_mapper, system_id=None, metadata=None):
+        super(InsightsMultiEvaluator, self).__init__(spec_mapper, metadata=metadata)
         self.system_id = system_id
 
     def pre_mapping(self):
