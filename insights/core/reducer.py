@@ -153,7 +153,7 @@ def run_reducer(func, local, shared, error_handler, stats=None):
     try:
         if stats:
             stats['count'] += 1
-        return plugins.DELEGATES[func](local=local, shared=shared)
+        return plugins.DELEGATES[func](local, shared)
     except Exception as e:
         if stats:
             stats['fail'] += 1
