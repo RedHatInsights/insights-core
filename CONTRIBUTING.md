@@ -2,11 +2,11 @@
 
 ## Introduction
 
-Insights-core is the framework upon which Red Hat Insights rules are built and
+insights-core is the framework upon which Red Hat Insights rules are built and
 delivered.  The basic purpose is to apply "rules" to a set of files collected
 from a system at a given point in time.
 
-Insights-core rule "plugins" are written in python.  The rules follow a
+insights-core rule "plugins" are written in python.  The rules follow a
 "MapReduce" approach, dividing the logic between "mapping" and
 "reducing" methods.  This is a convenient approach where a rule's logic
 takes place in two steps.  First, there is a "gathering of facts" (the
@@ -163,7 +163,7 @@ Documentation in the form of pydoc should be considered to document
 usage of code as necessary.  In particular, code used by rule developers
 should be carefully documented.  They should be able to use generated
 documentation to understand, for example, the data models exposed by
-mapper classes.
+parser classes.
 
 ## Review Checklist
 
@@ -178,12 +178,12 @@ The following checklist is used when reviewing pull requests
   be heavily questioned
 
 
-### Mappers
+### Parsers
 
-- Mapper is properly documented and should include:
+- Parser is properly documented and should include:
    - Example input
-   - The resulting data structure represented by the mapper
-   - Mapper usage is clear to a user with some knowledge of the domain
+   - The resulting data structure represented by the parser
+   - Parser usage is clear to a user with some knowledge of the domain
      without needing to examine the code itself
    - Meaning and usage of an "empty" (falsy data object) is clear
 
@@ -192,5 +192,5 @@ The following checklist is used when reviewing pull requests
   generation in archives used for integration testing and product
   demonstrations.
 
-- Mappers do not expose a ``defaultdict`` or any other data structure that
+- Parsers do not expose a ``defaultdict`` or any other data structure that
   would mutate as a side effect of accessing the object.
