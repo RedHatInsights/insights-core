@@ -8,7 +8,9 @@ __all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]
 class ParseException(Exception):
     """
     Exception that should be thrown from parsers that encounter
-    exceptions they recognize while parsing.
+    exceptions they recognize while parsing. When this exception
+    is thrown, the exception message and data are logged and no
+    parser output data is saved.
     """
     pass
 
@@ -19,6 +21,25 @@ def get_active_lines(lines, comment_char="#"):
     or completely empty.  The resulting lines are all individually stripped.
 
     This is useful for parsing many config files such as ifcfg.
+
+    Parameters:
+        lines (list): List of strings to parse.
+        comment_char (str): String indicating that all chars following
+            are part of a comment and will be removed from the output.
+
+    Returns:
+        list: List of valid lines remaining in the input.
+
+    Examples:
+        >>> lines = [
+        ... 'First line',
+        ... '   ',
+        ... '# Comment line',
+        ... 'Inline comment # comment',
+        ... '          Whitespace          ',
+        ... 'Last line']
+        >>> get_active_lines(lines)
+        ['First line', 'Inline comment', 'Whitespace', 'Last line']
     """
     return filter(None, (line.split(comment_char, 1)[0].strip() for line in lines))
 
@@ -31,6 +52,23 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='='):
     is specified then key/value options ``key=value`` are parsed.  Useful
     for parsing options such as mount options in the format
     ``rw,ro,rsize=32168,xyz``.
+
+    Parameters:
+        optlist (str): String of options to parse.
+        opt_sep (str): Separater used to split options.
+        kv_sep (str): If not `None` then `optlist` includes key=value pairs
+            to be split, and this str is used to split them.
+
+    Returns:
+        dict: Returns a dictionary of names present in the list.  If `kv_sep`
+        is not `None` then the values will be the str on the right-hand side
+        of `kv_sep`.  If `kv_sep` is `None` then each key will have a default
+        value of `True`.
+
+    Examples:
+        >>> optlist = 'rw,ro,rsize=32168,xyz'
+        >>> optlist_to_dict(optlist)
+        {'rw': True, 'ro': True, 'rsize': '32168', 'xyz': True}
     """
     if kv_sep is not None:
         optdict = {opt: True for opt in optlist.split(opt_sep) if kv_sep not in opt}
@@ -51,62 +89,55 @@ def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", us
     will be ignored. ::func:`get_active_lines` is called to strip comments and
     blank lines from the data.
 
-    Parameters
-    ----------
-    lines: list of str
-        List of the strings to be split.
-    comment_char: char default=`#`
-        Char that when present in the line indicates all following chars are part
-        of a comment.  If this is present, all comments and all blank lines are
-        removed from list before further processing.  The default comment char is
-        the `#` character.
-    filter_string: str
-        If the filter string is present, then only lines containing the filter will
-        will be processed, other lines will be ignored.
-    split_on: char default=`=`
-        Character to use when splitting a line.  Only the first occurence of the
-        char is used when splitting, so only one split is performed at the first
-        occurrence of `split_on`.
-    use_partition: boolean default=`False`
-        If this parameter is `True` then the python `partition` function will be used
-        to split the line. If `False` then the pyton `split` function will be used.
-        The difference is that when `False`, if the split character is not present
-        in the line then the line is ignored and when `True` the line will be parsed
-        regardless.  Set `use_partition` to `True` if you have valid lines that
-        do not contain the `split_on` character.  Set `use_partition` to `False`
-        if you want to ignore lines that do not contain the `split_on` character.
-    ordered: boolean default=`False`
-        If this parameter is `True` then the resulting dictionary will be in the
-        same order as in the original file, a python `OrderedDict` type is used.
-        If this parameter is `False` then the resulting dictionary is in no
-        particular order, a base python `dict` type is used.
+    Parameters:
+        lines (list of str): List of the strings to be split.
+        comment_char (str): Char that when present in the line indicates all
+            following chars are part of a comment.  If this is present, all
+            comments and all blank lines are removed from list before further
+            processing.  The default comment char is the `#` character.
+        filter_string (str): If the filter string is present, then only lines
+            containing the filter will be processed, other lines will be ignored.
+        split_on (str): Character to use when splitting a line.  Only the first
+            occurence of the char is used when splitting, so only one split is
+            performed at the first occurrence of `split_on`.  The default string is `=`.
+        use_partition (bool): If this parameter is `True` then the python `partition`
+            function will be used to split the line. If `False` then the pyton `split`
+            function will be used. The difference is that when `False`, if the split
+            character is not present in the line then the line is ignored and when
+            `True` the line will be parsed regardless. Set `use_partition` to `True`
+            if you have valid lines that do not contain the `split_on` character.
+            Set `use_partition` to `False` if you want to ignore lines that do not
+            contain the `split_on` character. The default value is `False`.
+        ordered (bool): If this parameter is `True` then the resulting dictionary
+            will be in the same order as in the original file, a python
+            `OrderedDict` type is used. If this parameter is `False` then the resulting
+            dictionary is in no particular order, a base python `dict` type is used.
+            The default is `False`.
 
-    Returns
-    -------
-    dictionary: dict or OrderedDict
-        Return value is a dictionary of the key/value pairs.  If parameter `keyword` is `True`
-        then an OrderedDict is returned, otherwise a dict is returned.
+    Returns:
+        dict: Return value is a dictionary of the key/value pairs.  If parameter
+        `keyword` is `True` then an OrderedDict is returned, otherwise a dict
+        is returned.
 
-    Examples
-    --------
-    >>> from .. import split_kv_pairs
-    >>> for line in lines:
-    ...     print line
-    # Comment line
-    # Blank lines will also be removed
-    keyword1 = value1   # Inline comments
-    keyword2 = value2a=True, value2b=100M
-    keyword3     # Key with no separator
-    >>> split_kv_pairs(lines)
-    {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
-    >>> split_kv_pairs(lines, comment_char='#')
-    {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
-    >>> split_kv_pairs(lines, filter_string='keyword2')
-    {'keyword2': 'value2a=True, value2b=100M'}
-    >>> split_kv_pairs(lines, use_partition=True)
-    {'keyword3': '', 'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
-    >>> split_kv_pairs(lines, use_partition=True, ordered=True)
-    OrderedDict([('keyword1', 'value1'), ('keyword2', 'value2a=True, value2b=100M'), ('keyword3', '')])
+    Examples:
+        >>> from .. import split_kv_pairs
+        >>> for line in lines:
+        ...     print line
+        # Comment line
+        # Blank lines will also be removed
+        keyword1 = value1   # Inline comments
+        keyword2 = value2a=True, value2b=100M
+        keyword3     # Key with no separator
+        >>> split_kv_pairs(lines)
+        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
+        >>> split_kv_pairs(lines, comment_char='#')
+        {'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
+        >>> split_kv_pairs(lines, filter_string='keyword2')
+        {'keyword2': 'value2a=True, value2b=100M'}
+        >>> split_kv_pairs(lines, use_partition=True)
+        {'keyword3': '', 'keyword2': 'value2a=True, value2b=100M', 'keyword1': 'value1'}
+        >>> split_kv_pairs(lines, use_partition=True, ordered=True)
+        OrderedDict([('keyword1', 'value1'), ('keyword2', 'value2a=True, value2b=100M'), ('keyword3', '')])
 
     """
     _lines = lines if comment_char is None else get_active_lines(lines, comment_char=comment_char)
@@ -179,13 +210,27 @@ def calc_offset(lines, target, invert_search=False):
 
     Returns:
         int: index into the `lines` indicating the location of `target`. If
-            `target` is `None` or an empty string `0` is returned as the offset.
-            If `invert_search` is `True` the index returned will point to the line
-            after the last target was found.
+        `target` is `None` or an empty string `0` is returned as the offset.
+        If `invert_search` is `True` the index returned will point to the line
+        after the last target was found.
 
     Raises:
         ValueError: Exception is raised if `target` string is specified and it
             was not found in the input lines.
+
+    Examples:
+        >>> lines = [
+        ... '#   ',
+        ... 'Warning line',
+        ... 'Error line',
+        ... '    data 1 line',
+        ... '    data 2 line']
+        >>> target = ['data']
+        >>> calc_offset(lines, target)
+        3
+        >>> target = ['#', 'Warning', 'Error']
+        >>> calc_offset(lines, target, invert_search=True)
+        3
     """
     if target and target[0] is not None:
         for offset, line in enumerate(l.strip() for l in lines):
