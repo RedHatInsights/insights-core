@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.FATAL)
 
 
-class SpecParser(object):
+class SpecMapper(object):
     """
     This class wraps a tarfile-like object with spec mapping of names.
     """
@@ -18,7 +18,7 @@ class SpecParser(object):
         self.tf = tf_object
         self.all_names = [f for f in self.tf.getnames() if self._name_filter(f)]
         self.root = os.path.commonprefix(self.all_names)
-        logger.debug("SpecParser.root: %s", self.root)
+        logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
         self.symbolic_files = defaultdict(list)
         self.analysis_target = self._determine_analysis_target()

@@ -8,7 +8,7 @@ import tempfile
 from collections import defaultdict
 from functools import wraps
 from itertools import islice
-from insights.core import parser, combiner, marshalling, plugins
+from insights.core import parser, reducer, marshalling, plugins
 from insights.core.context import Context, PRODUCT_NAMES
 from insights.util import make_iter
 
@@ -34,7 +34,7 @@ def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
 
 def unordered_compare(result, expected):
     """
-    Deep compare rule combiner results when testing.  Developed to find
+    Deep compare rule reducer results when testing.  Developed to find
     arbitrarily nested lists and remove differences based on ordering.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
@@ -129,7 +129,7 @@ def construct_lines(package):
     ]
 
 
-def prep_for_combiner(list_, use_value_list=False):
+def prep_for_reducer(list_, use_value_list=False):
     return marshalling.unmarshal_to_context(marshalling.marshal(o, use_value_list=use_value_list) for o in list_)
 
 
@@ -140,9 +140,9 @@ def get_parsers_for(module):
             yield symbolic_name, m
 
 
-def get_combiner_for(module):
+def get_reducer_for(module):
     module_name = module.__name__.rpartition(".")[-1]
-    f = plugins.COMBINERS.get(module_name, plugins.CLUSTER_COMBINERS.get(module_name))
+    f = plugins.REDUCERS.get(module_name, plugins.CLUSTER_REDUCERS.get(module_name))
     if f:
         return {module_name: f}
     else:
@@ -178,10 +178,10 @@ def integrate(input_data, module):
     This method drives the mapreduce framework with test `input_data`.
 
     :param InputData input_data: InputData object filled with test data
-    :param module module: module containing parsers and combiners to test with
+    :param module module: module containing parsers and reducers to test with
 
-    parsers and combiners registered by `module` are isolated and passed data
-    from the `input_data` parameter. The function returns a list of combiner
+    parsers and reducers registered by `module` are isolated and passed data
+    from the `input_data` parameter. The function returns a list of reducer
     results. In most cases this will be a list of length 1.
     """
     parser_map = defaultdict(list)
@@ -232,17 +232,17 @@ def integrate(input_data, module):
             records.append(new_rec)
 
     _, parser_output = parser.run(iter(records), parsers=parser_map)
-    combiners = get_combiner_for(module)
+    reducers = get_reducer_for(module)
 
     if is_multi_node:
-        shared_combiners = {}
-        for r in combiners.values():
+        shared_reducers = {}
+        for r in reducers.values():
             requires = plugins.COMPONENT_DEPENDENCIES[r]
-            shared_combiners = {i: i for i in requires if i.shared and i._combiner}
-        if shared_combiners:
+            shared_reducers = {i: i for i in requires if i.shared and i._reducer}
+        if shared_reducers:
             for k, v in parser_output.iteritems():
-                list(combiner.run_host(v, {}, error_handler, combiners=shared_combiners))
-        gen = combiner.run_multi(parser_output, {}, error_handler, combiners=combiners)
+                list(reducer.run_host(v, {}, error_handler, reducers=shared_reducers))
+        gen = reducer.run_multi(parser_output, {}, error_handler, reducers=reducers)
         return [result for func, result in gen if result["type"] != "skip"]
     else:
         host_outputs = parser_output.values()
@@ -250,13 +250,13 @@ def integrate(input_data, module):
             return []
         else:
             single_host = host_outputs[0]
-        assert all(not r.cluster for r in combiners.values()), "Cluster combiners not allowed in single node test"
-        if not combiners:
+        assert all(not r.cluster for r in reducers.values()), "Cluster reducers not allowed in single node test"
+        if not reducers:
             # Assume we're expecting a parser to make_response.
             return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
-        gen = combiner.run_host(single_host, {}, error_handler, combiners=combiners)
-        combiner_modules = [r.__module__ for r in combiners.values()]
-        return [r for func, r in gen if func.__module__ in combiner_modules and r["type"] != "skip"]
+        gen = reducer.run_host(single_host, {}, error_handler, reducers=reducers)
+        reducer_modules = [r.__module__ for r in reducers.values()]
+        return [r for func, r in gen if func.__module__ in reducer_modules and r["type"] != "skip"]
 
 
 input_data_cache = {}
@@ -275,7 +275,7 @@ def next_gn():
 class InputData(object):
     """
     Helper class used with integrate. The role of this class is to represent
-    data files sent to parsers and combiners in a format similar to what lays on
+    data files sent to parsers and reducers in a format similar to what lays on
     disk.
 
     Example Usage::

@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from .tool import TestArchive as TA, Transform as T
 from insights.core.archives import TarExtractor
-from insights.core.specs import SpecParser
+from insights.core.specs import SpecMapper
 
 
 TRANSFORMS = [
@@ -18,7 +18,7 @@ def spec_mapper():
     tmp_path = tempfile.mkdtemp()
     path = test_archive.build(tmp_path)
     with TarExtractor() as tar_ex:
-        yield SpecParser(tar_ex.from_path(path))
+        yield SpecMapper(tar_ex.from_path(path))
     shutil.rmtree(tmp_path)
 
 

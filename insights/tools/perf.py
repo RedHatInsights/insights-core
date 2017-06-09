@@ -13,7 +13,7 @@ from random import sample
 from insights.core import archives
 from insights.core import load_package
 from insights.core.evaluators import MultiEvaluator, SingleEvaluator
-from insights.core.specs import SpecParser
+from insights.core.specs import SpecMapper
 
 try:
     from insights_nexus.config.factory import get_config
@@ -87,9 +87,9 @@ def get_paths(roots):
 def process_report(path, tmp_dir):
     with archives.TarExtractor() as extractor:
         if config is None:
-            spec_mapper = SpecParser(extractor.from_path(path, tmp_dir))
+            spec_mapper = SpecMapper(extractor.from_path(path, tmp_dir))
         else:
-            spec_mapper = SpecParser(extractor.from_path(path, tmp_dir), config)
+            spec_mapper = SpecMapper(extractor.from_path(path, tmp_dir), config)
         md = json.loads(spec_mapper.get_content("metadata.json", split=False, default="{}"))
         evaluator = MultiEvaluator(spec_mapper) if md and 'systems' in md else SingleEvaluator(spec_mapper)
         return evaluator.process()

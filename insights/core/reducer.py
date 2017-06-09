@@ -8,7 +8,7 @@ from insights.core import marshalling, plugins
 from insights.util import logging_level
 
 specs = get_config()
-logger = logging.getLogger("combiner")
+logger = logging.getLogger("reducer")
 marshaller = marshalling.Marshaller()
 
 
@@ -29,7 +29,7 @@ def collect_results(results_dict):
     shared_output = {}
     for producer, output in results_dict.iteritems():
         if producer.shared:
-            if not producer._combiner:
+            if not producer._reducer:
                 is_pattern = pattern_file(producer.symbolic_names[0])
                 shared_output[producer] = output if is_pattern else output[0]
             else:
@@ -53,36 +53,36 @@ def collect_results_multi(results_dict):
     return combined_local_output, combined_shared_output
 
 
-def run_multi(parser_output, all_output, error_handler, combiners=plugins.CLUSTER_COMBINERS, combiner_stats=None, ):
-    logger.debug("Multi-node combiner run started")
-    if combiners != plugins.CLUSTER_COMBINERS:
-        log_combiners(combiners)
+def run_multi(parser_output, all_output, error_handler, reducers=plugins.CLUSTER_REDUCERS, reducer_stats=None, ):
+    logger.debug("Multi-node reducer run started")
+    if reducers != plugins.CLUSTER_REDUCERS:
+        log_reducers(reducers)
     plugin_output, shared_output = collect_results_multi(parser_output)
-    for func, r in _run(combiners, plugin_output, shared_output, error_handler, combiner_stats=combiner_stats):
+    for func, r in _run(reducers, plugin_output, shared_output, error_handler, reducer_stats=reducer_stats):
         yield func, r
     all_output.update(parser_output)
     all_output.update(shared_output)
 
 
 def run(parser_output, error_handler):
-    logger.debug("Batch-mode combiner run started")
+    logger.debug("Batch-mode reducer run started")
     for host, parser_dict in parser_output.iteritems():
         for func, r in run_host(parser_dict, {}, error_handler):
             yield host, func, r
 
 
-def run_host(parser_dict, all_output, error_handler, combiners=plugins.COMBINERS, combiner_stats=None):
-    logger.debug("Single-node combiner run started")
-    if combiners != plugins.COMBINERS:
-        log_combiners(combiners)
+def run_host(parser_dict, all_output, error_handler, reducers=plugins.REDUCERS, reducer_stats=None):
+    logger.debug("Single-node reducer run started")
+    if reducers != plugins.REDUCERS:
+        log_reducers(reducers)
     local_output, shared_output = collect_results(parser_dict)
 
     all_output.update(parser_dict)
-    for func, r in _run(combiners, local_output, shared_output, error_handler,
-                        output_dict=parser_dict, combiner_stats=combiner_stats):
+    for func, r in _run(reducers, local_output, shared_output, error_handler,
+                        output_dict=parser_dict, reducer_stats=reducer_stats):
         yield func, r
-    items = list(default_combiner_results(local_output))
-#    for func, r in default_combiner_results(local_output):
+    items = list(default_reducer_results(local_output))
+#    for func, r in default_reducer_results(local_output):
 #        yield func, r
     all_output.update(shared_output)
     all_output.update(dict(items))
@@ -91,15 +91,15 @@ def run_host(parser_dict, all_output, error_handler, combiners=plugins.COMBINERS
 
 
 @logging_level(logger, logging.DEBUG)
-def log_combiners(combiners):
-    logger.debug("Custom combiner listing:")
-    for combiner in sorted(combiners.values()):
-        logger.debug("\t" + combiner.serializable_id)
+def log_reducers(reducers):
+    logger.debug("Custom reducer listing:")
+    for reducer in sorted(reducers.values()):
+        logger.debug("\t" + reducer.serializable_id)
 
 
 @logging_level(logger, logging.DEBUG)
 def log_parser_outputs(func, local_output, shared_output):
-    logger.debug("Invoking combiner [%s]", func.serializable_id)
+    logger.debug("Invoking reducer [%s]", func.serializable_id)
     logger.debug("\tLocal keys: %s", sorted(local_output.keys()))
     if len(shared_output) > 0 and hasattr(shared_output.keys()[0], "serializable_id"):
         parser_outputs = [o.serializable_id for o in sorted(shared_output.keys())]
@@ -117,15 +117,15 @@ def run_order(components):
     for c in components:
         graph.update(plugins.get_dependency_graph(c))
     ordered = toposort.toposort_flatten(graph)
-    return [o for o in ordered if o._combiner]
+    return [o for o in ordered if o._reducer]
 
 
-def _run(combiners, local_output, shared_output, error_handler, output_dict=None, combiner_stats=None):
-    clustered = any(r.cluster for r in combiners.values())
-    for func in run_order(combiners.values()):
+def _run(reducers, local_output, shared_output, error_handler, output_dict=None, reducer_stats=None):
+    clustered = any(r.cluster for r in reducers.values())
+    for func in run_order(reducers.values()):
 
-        # if a cluster combiner depends on a regular shared combiner, that
-        # shared combiner will already have run in a sub evaluator
+        # if a cluster reducer depends on a regular shared reducer, that
+        # shared reducer will already have run in a sub evaluator
         # and been shifted to the top of this dict. Don't try to
         # run it again in a clustered context.
         if clustered and func.shared and not func.cluster:
@@ -134,7 +134,7 @@ def _run(combiners, local_output, shared_output, error_handler, output_dict=None
         local = local_output[real_module]
         log_parser_outputs(func, local, shared_output)
         if func not in shared_output:
-            r = run_combiner(func, local, shared_output, error_handler, combiner_stats=combiner_stats)
+            r = run_reducer(func, local, shared_output, error_handler, reducer_stats=reducer_stats)
             if r is not None:
                 shared_output[func] = r
                 logger.debug("Reducer output: %s", r)
@@ -144,18 +144,18 @@ def _run(combiners, local_output, shared_output, error_handler, output_dict=None
                     yield func, r
 
 
-def default_combiner_results(local_output):
+def default_reducer_results(local_output):
     for module, output in local_output.iteritems():
         if "type" in output and output["type"] in ["metadata", "rule"]:
             yield plugins.PLUGINS[module.__name__]["parsers"][0], output
 
 
-def run_combiner(func, local, shared, error_handler, combiner_stats=None):
+def run_reducer(func, local, shared, error_handler, reducer_stats=None):
     try:
-        if combiner_stats:
-            combiner_stats['count'] += 1
+        if reducer_stats:
+            reducer_stats['count'] += 1
         return plugins.DELEGATES[func](local, shared)
     except Exception as e:
-        if combiner_stats:
-            combiner_stats['fail'] += 1
+        if reducer_stats:
+            reducer_stats['fail'] += 1
         error_handler(func, e, local, shared)

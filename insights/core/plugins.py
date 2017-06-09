@@ -23,11 +23,11 @@ SHARED_PARSERS = []
 PLUGINS = defaultdict(lambda: {
     "module": None,
     "parsers": [],
-    "combiners": [],
-    "cluster_combiners": []
+    "reducers": [],
+    "cluster_reducers": []
 })
-COMBINERS = {}
-CLUSTER_COMBINERS = {}
+REDUCERS = {}
+CLUSTER_REDUCERS = {}
 
 TYPE_OF_COMPONENT = {}
 COMPONENTS_BY_TYPE = defaultdict(set)
@@ -36,12 +36,12 @@ EMITTERS = set()
 DELEGATES = {}
 
 
-def cluster_combiners():
-    return [k.rpartition(".")[-1] for k, v in PLUGINS.iteritems() if v["cluster_combiners"]]
+def cluster_reducers():
+    return [k.rpartition(".")[-1] for k, v in PLUGINS.iteritems() if v["cluster_reducers"]]
 
 
-def single_combiners():
-    return [k.rpartition(".")[-1] for k, v in PLUGINS.iteritems() if not v["cluster_combiners"]]
+def single_reducers():
+    return [k.rpartition(".")[-1] for k, v in PLUGINS.iteritems() if not v["cluster_reducers"]]
 
 
 def load(package_name, pattern_list=None):
@@ -148,7 +148,7 @@ def register_parser(name, func, filters=None, shared=False, cluster=False):
         # Need to add already-registered rules defined in same module to consumer list
         # Should only happen if a @rule is defined above a @parser in the same module
         f_module = func.__module__
-        for r in [r for r in COMBINERS.values() if r.__module__ == f_module]:
+        for r in [r for r in REDUCERS.values() if r.__module__ == f_module]:
             func.consumers.add(r)
         shared = shared or ('parsers' in func.__module__)
         component_type = cluster_parser if cluster else parser
@@ -169,19 +169,19 @@ def add_symbolic_name(f, name):
     f.symbolic_names.append(name)
 
 
-def register_combiner(func):
-    COMBINERS[get_name(func)] = func
+def register_reducer(func):
+    REDUCERS[get_name(func)] = func
     func.serializable_id = "#".join([func.__module__, func.__name__])
     p = PLUGINS[func.__module__]
-    p["combiners"].append(func)
+    p["reducers"].append(func)
     p["module"] = func.__module__
 
 
-def register_cluster_combiner(func):
-    CLUSTER_COMBINERS[get_name(func)] = func
+def register_cluster_reducer(func):
+    CLUSTER_REDUCERS[get_name(func)] = func
     func.serializable_id = "#".join([func.__module__, func.__name__])
     p = PLUGINS[func.__module__]
-    p["cluster_combiners"].append(func)
+    p["cluster_reducers"].append(func)
     p["module"] = func.__module__
 
 
@@ -353,7 +353,7 @@ def register_consumer(c):
     """ Register rules as consumers of parsers. """
 
     def register(parent, component):
-        if not component._combiner:
+        if not component._reducer:
             component.consumers.add(c)
 
     walk_dependencies(c, register)
@@ -384,14 +384,14 @@ def register_component(
         cluster: True for cluster parsers and cluster rules
         emitter: True for components that return make_response(...)
     """
-    is_combiner = component_type not in (parser, cluster_parser)
-    if is_combiner:
+    is_reducers = component_type not in (parser, cluster_parser)
+    if is_reducers:
         if cluster:
-            register_cluster_combiner(component)
+            register_cluster_reducer(component)
         else:
-            register_combiner(component)
+            register_reducer(component)
 
-    component._combiner = is_combiner
+    component._reducer = is_reducers
     component.shared = shared
     component.cluster = cluster
 
