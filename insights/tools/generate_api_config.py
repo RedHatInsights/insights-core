@@ -27,7 +27,7 @@ except ImportError:
 from insights.config import CommandSpec, SimpleFileSpec
 from insights.config import get_meta_specs
 from insights.core import plugins, DEFAULT_PLUGIN_MODULE
-from insights.config import InsightsDataSpecConfig, specs as config_specs
+from insights.config import InsightsDataSpecConfig, specs as config_specs, group_wrap
 
 log = logging.getLogger()
 
@@ -117,11 +117,13 @@ class APIConfigGenerator(object):
 
         specs_list.add("machine-id1", SimpleFileSpec("etc/redhat-access-insights/machine-id"), [])
         specs_list.add("machine-id2", SimpleFileSpec("etc/redhat_access_proactive/machine-id"), [])
-
         added_paths = defaultdict(set)
+        utilized_specs = set()
 
         def add_name(name, plugins, sc):
             specs = sc.get_specs(name)
+            for s in specs:
+                utilized_specs.add(s)
             conf = upload_conf[sc.prefix] if sc.prefix else upload_conf
             for spec in specs:
                 output_filter = sorted(self.get_filters_for(name))
@@ -167,6 +169,17 @@ class APIConfigGenerator(object):
             for sc in spec_configs:
                 add_name(name, plugins_, sc)
 
+        print "*" * 80
+        all_specs = set()
+        reverse_map = {}
+        for symbolic_name, sc in group_wrap(config_specs.static_specs).iteritems():
+            for s in sc.get_specs():
+                reverse_map[s] = symbolic_name
+                all_specs.add(s)
+        missing_specs = " ".join(sorted(set(reverse_map[i] for i in (all_specs - utilized_specs))))
+        print "%d specs not included in uploader.json: %s" % (
+            len(all_specs - utilized_specs),
+            missing_specs)
         # placing the log at the end of the list ensures that we log as much
         # as possible before copying the logfile
         upload_conf["files"].append({
