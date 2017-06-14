@@ -335,15 +335,31 @@ class InsightsEvaluator(SingleEvaluator):
         return self.system_id
 
     def get_branch_info(self):
+        version = None
+        hostname = None
         branch_info = json.loads(self.spec_mapper.get_content("branch_info",
                                  split=False, default="{}"))
+        product = branch_info.get("product")
         remote_branch = branch_info.get("remote_branch")
         if remote_branch == -1:
             remote_branch = None
         remote_leaf = branch_info.get("remote_leaf")
         if remote_leaf == -1:
             remote_leaf = None
-        return remote_branch, remote_leaf
+        if hasattr(product, "type") and product["type"] == "Satellite":
+            version = "{}.{}".format(product["major_version"], product["minor_version"])
+            hostname = branch_info.get("hostname")
+
+        return {
+            'remote_branch': remote_branch,
+            'remote_leaf': remote_leaf,
+            'metadata': {
+                'satellite_information': {
+                    'version': version,
+                    'hostname': hostname
+                }
+            }
+        }
 
     def get_product_info(self):
         md = json.loads(self.spec_mapper.get_content("metadata.json",
@@ -360,12 +376,16 @@ class InsightsEvaluator(SingleEvaluator):
     def format_response(self, response):
         serialize_skips(response["skips"])
         system = response["system"]
+        branch_info = self.get_branch_info()
+        system['metadata'].update(branch_info['metadata'])
+        system['remote_branch'] = branch_info['remote_branch']
+        system['remote_leaf'] = branch_info['remote_leaf']
         system["system_id"] = self.system_id
         if self.release:
             system["metadata"]["release"] = self.release
-        system["remote_branch"], system["remote_leaf"] = self.get_branch_info()
         system["product"], system["type"] = self.get_product_info()
         response["stats"]["skips"]["count"] = len(self.rule_skips)
+
         return response
 
     def handle_content_error(self, e, filename):
