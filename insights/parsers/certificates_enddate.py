@@ -66,16 +66,6 @@ class CertificatesEnddate(LegacyItemAccess, Parser):
         """list: Return filepaths in list or []."""
         return self.data.keys() if self.data else []
 
-    def get_expiration_date(self, path):
-        """ Deprecated - Do not use.
-        datetime: Return the expiration date in datetime format.
-        """
-        try:
-            return (datetime.strptime(self.data[path], '%b %d %H:%M:%S %Y')
-                    if self.data and path in self.data else None)
-        except:
-            raise Exception("Unable to parse the expiration data of %s" % path)
-
     def expiration_date(self, path):
         """This will return a namedtuple(['str', 'datetime']) contains the
         expiration date in string and datetime format. If the expiration date
