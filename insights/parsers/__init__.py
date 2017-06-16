@@ -322,3 +322,38 @@ def parse_fixed_table(table_lines,
         table_data.append(col_data)
 
     return table_data
+
+
+def keyword_search(rows, **kwargs):
+    """
+    Takes a list of dictionaries and finds all the dictionaries where the
+    keys and values match those found in the keyword arguments.
+
+    Arguments:
+        rows (list): A list of dictionaries representing the data to be
+            searched.
+        **kwargs (dict): keyword-value pairs corresponding to the fields that
+            need to be found and their required values in the data rows.
+
+    Returns:
+        (list): The list of rows that match the search keywords.  If no
+            keyword arguments are given, no rows are returned.
+
+    Examples:
+        >>> rows = [
+        ...     {'domain': 'oracle', 'type': 'soft', 'item': 'nofile', 'value': 1024},
+        ...     {'domain': 'oracle', 'type': 'hard', 'item': 'nofile', 'value': 65536},
+        ...     {'domain': 'oracle', 'type': 'soft', 'item': 'stack', 'value': 10240},
+        ...     {'domain': 'oracle', 'type': 'hard', 'item': 'stack', 'value': 3276},
+        ...     {'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
+        ...
+        >>> keyword_search(rows, domain='root')
+        [{'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
+    """
+    results = []
+    if not kwargs:
+        return results
+    return [
+        row for row in rows
+        if all([key in row and row[key] == value for key, value in kwargs.iteritems()])
+    ]

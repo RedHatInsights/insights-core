@@ -1,7 +1,7 @@
 import pytest
 from collections import OrderedDict
-from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table, calc_offset
-from insights.parsers import optlist_to_dict
+from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table
+from insights.parsers import calc_offset, optlist_to_dict, keyword_search
 
 SPLIT_TEST_1 = """
 # Comment line
@@ -276,3 +276,39 @@ def test_optlist_no_vals():
     assert d['key1=val1'] is True
     assert d['key2=val2'] is True
     assert d['key3'] is True
+
+
+DATA_LIST = [
+    {'name': 'test 1', 'role': 'server', 'memory_gb': 16, 'ssd': True},
+    {'name': 'test 2', 'role': 'server', 'memory_gb': 256, 'ssd': False},
+    {'name': 'test 3', 'role': 'server', 'memory_gb': 16, 'ssd': False},
+    {'name': 'test 4', 'role': 'embedded', 'memory_gb': 1, 'ssd': False},
+    {'name': 'test 5', 'role': 'workstation', 'memory_gb': 16, 'ssd': True},
+]
+
+
+def test_keyword_search():
+    # No keywords, no result
+    assert len(keyword_search(DATA_LIST)) == 0
+    # Search on absent keywords produces empty list
+    assert keyword_search(DATA_LIST, cpu_count=4) == []
+    # Search on present but non-matching keyword produces empty list
+    assert keyword_search(DATA_LIST, memory_gb=8) == []
+    # Single result - search on string
+    results = keyword_search(DATA_LIST, role='embedded')
+    assert len(results) == 1
+    assert results[0] == DATA_LIST[3]
+    # Multiple results, name has underscore - search on integer
+    results = keyword_search(DATA_LIST, memory_gb=16)
+    assert len(results) == 3
+    assert results[0] == DATA_LIST[0]
+    assert results[1] == DATA_LIST[2]
+    assert results[2] == DATA_LIST[4]
+    # Search on boolean
+    results = keyword_search(DATA_LIST, ssd=False)
+    assert len(results) == 3
+    assert results[0] == DATA_LIST[1]
+    assert results[1] == DATA_LIST[2]
+    assert results[2] == DATA_LIST[3]
+    # No data, no results.
+    assert len(keyword_search([], role='server')) == 0
