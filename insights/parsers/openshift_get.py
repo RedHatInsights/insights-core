@@ -99,3 +99,12 @@ class OcGetPvc(YAMLParser):
     def get_pvc(self):
         """ dict: Returns a dictionary of openshift pvc information."""
         return metadata_name_items(self.data)
+
+
+@parser('oc_get_endpoints')
+class OcGetEndPonits(YAMLParser):
+    """Class to parse ``oc get endpoints -o yaml --all-namespaces``"""
+
+    def get_endpoints(self):
+        """ dict: Returns a dictionary of openshift endpoints information."""
+        return metadata_name_items(self.data)
