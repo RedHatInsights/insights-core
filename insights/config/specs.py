@@ -394,6 +394,7 @@ openshift = {
     "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
     "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
     "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
+    "oc_get_endpoints"          : CommandSpec("/usr/bin/oc get endpoints -o yaml --all-namespaces")
 }
 
 # flake8: noqa
