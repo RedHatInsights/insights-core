@@ -420,6 +420,10 @@ def _create_metadata_json(archives):
 
     return metadata
 
+def fetch_rules():
+    pconn = InsightsConnection()
+    pc = InsightsConfig(pconn)
+    return pc.get_conf(InsightsClient.options.update, {})
 
 def collect(rc=0):
     """
@@ -436,24 +440,9 @@ def collect(rc=0):
         logger.debug("No targets were found. Exiting.")
         sys.exit(1)
 
-    if InsightsClient.options.offline:
-        logger.warning("Assuming remote branch and leaf value of -1")
-        pconn = None
-        branch_info = constants.default_branch_info
-    else:
-        pconn = InsightsConnection()
-
-    if pconn:
-        try:
-            branch_info = pconn.branch_info()
-        except requests.ConnectionError:
-            raise
-            branch_info = handle_branch_info_error(
-                "Could not connect to determine branch information")
-        except LookupError:
-            raise
-            branch_info = handle_branch_info_error(
-                "Could not determine branch information")
+    logger.warning("Assuming remote branch and leaf value of -1")
+    pconn = None
+    branch_info = constants.default_branch_info
 
     pc = InsightsConfig(pconn)
     tar_file = None
