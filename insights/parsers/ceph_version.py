@@ -34,6 +34,7 @@ community_to_release_map = {
     "0.94.9": {'release': "1.3.3", 'major': '1.3', 'minor': '3'},
     "10.2.2": {'release': "2.0", 'major': '2', 'minor': '0'},
     "10.2.3": {'release': "2.1", 'major': '2', 'minor': '1'},
+    "10.2.5": {'release': "2.2", 'major': '2', 'minor': '2'}
 }
 
 
