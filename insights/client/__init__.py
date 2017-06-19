@@ -70,6 +70,7 @@ def fetch(egg_url=constants.egg_path):
 
     return tmp_egg_path
 
+
 def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
     """
         returns (dict): {'gpg': if the egg checks out, 
@@ -84,6 +85,14 @@ def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
     success = True if rc == 0 else False
     return {'gpg': success, 'stderr': stderr, 'stdout': stdout, 'rc': rc}
 
+
+def fetch_rules(options=None, config=None):
+    '''
+        returns (dict): new client rules
+    '''
+    InsightsClient.config, InsightsClient.options = parse_options()
+    try_auto_configuration()
+    return client.fetch_rules()
 
 
 def collect(format="json", options=None, config=None):

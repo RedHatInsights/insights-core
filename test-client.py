@@ -41,6 +41,17 @@ print 'New egg GPG: %s' % (verification)
 print ''
 
 
+'''
+Fetching new rules
+'''
+new_rules = client.fetch_rules()
+print '============'
+print 'New rules'
+print '---------'
+print ''
+print new_rules
+
+
 
 '''
 Collect stuff
