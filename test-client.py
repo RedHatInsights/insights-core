@@ -27,6 +27,19 @@ print '----------------'
 print client_options
 print ''
 
+'''
+Fetch the new egg
+'''
+new_egg = client.fetch('https://raw.githubusercontent.com/RedHatInsights/insights-client/master/insights-core.egg')
+verification = client.verify(new_egg)
+print '============'
+print 'New egg'
+print '------------'
+print ''
+print 'New egg path: %s' % (new_egg)
+print 'New egg GPG: %s' % (verification)
+print ''
+
 
 
 '''
@@ -35,6 +48,18 @@ Collect stuff
 print '================'
 print 'Collecting'
 print '---------'
-collection = client.collect()
+collection = client.collect(options={'verbose': True})
 print collection
+print ''
+
+
+
+'''
+Upload stuff
+'''
+print '==============='
+print 'Uploading'
+print '---------'
+upload = client.upload(collection)
+print upload
 print ''

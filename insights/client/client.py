@@ -426,6 +426,7 @@ def collect(rc=0):
     All the heavy lifting done here
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
+    handler = set_up_logging()
     # initialize collection targets
     # for now we do either containers OR host -- not both at same time
     targets = constants.default_target
@@ -442,16 +443,17 @@ def collect(rc=0):
     else:
         pconn = InsightsConnection()
 
-    try:
-        branch_info = pconn.branch_info()
-    except requests.ConnectionError:
-        raise
-        branch_info = handle_branch_info_error(
-            "Could not connect to determine branch information")
-    except LookupError:
-        raise
-        branch_info = handle_branch_info_error(
-            "Could not determine branch information")
+    if pconn:
+        try:
+            branch_info = pconn.branch_info()
+        except requests.ConnectionError:
+            raise
+            branch_info = handle_branch_info_error(
+                "Could not connect to determine branch information")
+        except LookupError:
+            raise
+            branch_info = handle_branch_info_error(
+                "Could not determine branch information")
 
     pc = InsightsConfig(pconn)
     tar_file = None
@@ -537,6 +539,7 @@ def collect(rc=0):
 
 
 def upload(tar_file, collection_duration=None):
+    handler = set_up_logging()
     logger.info('Uploading Insights data. This may take a few minutes.')
     pconn = InsightsConnection()
     for tries in range(InsightsClient.options.retries):

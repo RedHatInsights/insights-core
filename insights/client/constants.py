@@ -35,3 +35,5 @@ class InsightsConstants(object):
     default_branch_info = {'remote_branch': -1, 'remote_leaf': -1}
     docker_image_name = None
     default_cmd_timeout = 600  # default command execution to ten minutes, prevents long running commands that will hang
+    egg_path = 'https://cert-api.access.redhat.com/r/insights/static/insights-core.egg'
+    default_egg_gpg_key = os.path.join(default_conf_dir, 'insights-core.gpg')

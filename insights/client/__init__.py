@@ -10,7 +10,39 @@ def get_version():
     """
     return constants.version
 
+
+def run(egg_url=constants.egg_path, 
+    gpg_key=constants.default_egg_gpg_key,
+    collection_format='json',
+    options=None,
+    config=None,
+    skip_update=False,
+    skip_verify=False,
+    skip_upload=False):
+    '''
+        do everything
+    '''
+    new_egg = None
+    verification = True
+    results = None
+    if not skip_update:
+        new_egg = fetch(egg_url)
+    if new_egg and not skip_verify:
+        verification = verify(new_egg, gpg_key)
+    if verification:
+        results = collect(collection_format, options, config)
+    else:
+        results = False
+    if not skip_upload:
+        return upload(results)
+    else:
+        return results
+
+
 def parse_options():
+    '''
+        returns (tuple): returns a tuple with configparser and argparser options
+    '''
     parser = optparse.OptionParser()
     set_up_options(parser)
     options, args = parser.parse_args()
@@ -19,15 +51,45 @@ def parse_options():
     return parse_config_file(options.conf), options
 
 
-def fetch():
+def fetch(egg_url=constants.egg_path):
     """
         returns (str): path to new egg.  None if no update.
     """
-    pass
+    import tempfile
+    import os
+    tmpdir = tempfile.mkdtemp()
+    tmp_egg_path = os.path.join(tmpdir, 'insights-core.egg')
+
+    import requests
+    r = requests.get(egg_url, stream=True)
+    r.raise_for_status()
+
+    with open(tmp_egg_path, 'wb') as handle:
+        for block in r.iter_content(1024):
+            handle.write(block)
+
+    return tmp_egg_path
+
+def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
+    """
+        returns (dict): {'gpg': if the egg checks out, 
+                         'stderr': error message if present,
+                         'stdout': stdout,
+                         'rc': return code}
+    """
+    from subprocess import Popen, PIPE
+    process = Popen(['gpg', '--verify', gpg_key, egg_path], stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    rc = process.returncode
+    success = True if rc == 0 else False
+    return {'gpg': success, 'stderr': stderr, 'stdout': stdout, 'rc': rc}
+
 
 
 def collect(format="json", options=None, config=None):
-    # Configure Insights uploader
+    '''
+        returns (str, json): will return a string path to archive, or json facts
+    '''
     InsightsClient.config, InsightsClient.options = parse_options()
     try_auto_configuration()
     if options:
@@ -40,4 +102,4 @@ def collect(format="json", options=None, config=None):
 
 
 def upload(path):
-    client.upload(path)
+    return client.upload(path)
