@@ -9,7 +9,7 @@ import logging
 import copy
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
-from soscleaner import SOSCleaner
+from ..contrib.soscleaner import SOSCleaner
 from utilities import _expand_paths, generate_analysis_target_id
 from constants import InsightsConstants as constants
 from insights_spec import InsightsFile, InsightsCommand

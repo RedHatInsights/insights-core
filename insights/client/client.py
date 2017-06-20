@@ -5,7 +5,6 @@ import logging
 import logging.handlers
 import optparse
 import os
-import requests
 import shutil
 import time
 import traceback
@@ -420,17 +419,19 @@ def _create_metadata_json(archives):
 
     return metadata
 
+
 def fetch_rules():
     pconn = InsightsConnection()
     pc = InsightsConfig(pconn)
     return pc.get_conf(InsightsClient.options.update, {})
+
 
 def collect(rc=0):
     """
     All the heavy lifting done here
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
-    handler = set_up_logging()
+    set_up_logging()
     # initialize collection targets
     # for now we do either containers OR host -- not both at same time
     targets = constants.default_target
@@ -528,7 +529,7 @@ def collect(rc=0):
 
 
 def upload(tar_file, collection_duration=None):
-    handler = set_up_logging()
+    set_up_logging()
     logger.info('Uploading Insights data. This may take a few minutes.')
     pconn = InsightsConnection()
     for tries in range(InsightsClient.options.retries):
