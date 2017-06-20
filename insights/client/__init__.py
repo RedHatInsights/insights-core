@@ -4,6 +4,7 @@ from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
 from .client_config import parse_config_file, InsightsClient, set_up_options
 
+
 def get_version():
     """
         returns (str): version of the client
@@ -11,14 +12,14 @@ def get_version():
     return constants.version
 
 
-def run(egg_url=constants.egg_path, 
-    gpg_key=constants.default_egg_gpg_key,
-    collection_format='json',
-    options=None,
-    config=None,
-    skip_update=False,
-    skip_verify=False,
-    skip_upload=False):
+def run(egg_url=constants.egg_path,
+        gpg_key=constants.default_egg_gpg_key,
+        collection_format='json',
+        options=None,
+        config=None,
+        skip_update=False,
+        skip_verify=False,
+        skip_upload=False):
     '''
         do everything
     '''
@@ -73,7 +74,7 @@ def fetch(egg_url=constants.egg_path):
 
 def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
     """
-        returns (dict): {'gpg': if the egg checks out, 
+        returns (dict): {'gpg': if the egg checks out,
                          'stderr': error message if present,
                          'stdout': stdout,
                          'rc': return code}

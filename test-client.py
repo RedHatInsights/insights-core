@@ -19,7 +19,7 @@ print 'Getting Config'
 print '--------------'
 print ''
 for config in client_config.items('insights-client'):
-	print config
+    print config
 print ''
 print '================'
 print 'Getting Options'
@@ -52,7 +52,6 @@ print ''
 print new_rules
 
 
-
 '''
 Collect stuff
 '''
@@ -62,7 +61,6 @@ print '---------'
 collection = client.collect(options={'verbose': True})
 print collection
 print ''
-
 
 
 '''
