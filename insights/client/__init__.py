@@ -1,4 +1,5 @@
 import optparse
+import urllib2
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
@@ -56,20 +57,43 @@ def fetch(egg_url=constants.egg_path):
     """
         returns (str): path to new egg.  None if no update.
     """
-    import tempfile
+    current_etag = None
     import os
-    tmpdir = tempfile.mkdtemp()
-    tmp_egg_path = os.path.join(tmpdir, 'insights-core.egg')
+    if os.path.isfile(constants.core_etag_file):
+        f = open(constants.core_etag_file, 'r')
+        current_etag = f.read().strip()
+        f.close()
 
-    import requests
-    r = requests.get(egg_url, stream=True)
-    r.raise_for_status()
+    request = urllib2.Request(egg_url)
+    if current_etag:
+        request.add_header('If-None-Match', current_etag)
+    opener = urllib2.build_opener(DefaultErrorHandler())
+    datastream = opener.open(request)
+    data = datastream.read()
 
-    with open(tmp_egg_path, 'wb') as handle:
-        for block in r.iter_content(1024):
-            handle.write(block)
+    f = open(constants.core_etag_file, 'w')
+    f.write(datastream.headers.dict['etag'])
+    f.close()
 
-    return tmp_egg_path
+    if data:
+        import tempfile
+        tmpdir = tempfile.mkdtemp()
+        tmp_egg_path = os.path.join(tmpdir, 'insights-core.egg')
+
+        with open(tmp_egg_path, 'wb') as handle:
+            handle.write(data)
+
+        return tmp_egg_path
+
+    else:
+        return None
+
+
+class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
+        def http_error_default(self, req, fp, code, msg, headers):
+            result = urllib2.HTTPError(req.get_full_url(), code, msg, headers, fp)
+            result.status = code
+            return result
 
 
 def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
