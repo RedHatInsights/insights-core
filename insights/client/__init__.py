@@ -20,7 +20,8 @@ def run(egg_url=constants.egg_path,
         config=None,
         skip_update=False,
         skip_verify=False,
-        skip_upload=False):
+        skip_upload=False,
+        force_fetch=False):
     '''
         do everything
     '''
@@ -28,7 +29,7 @@ def run(egg_url=constants.egg_path,
     verification = True
     results = None
     if not skip_update:
-        new_egg = fetch(egg_url)
+        new_egg = fetch(egg_url, force_fetch)
     if new_egg and not skip_verify:
         verification = verify(new_egg, gpg_key)
     if verification:
@@ -53,7 +54,7 @@ def parse_options():
     return parse_config_file(options.conf), options
 
 
-def fetch(egg_url=constants.egg_path):
+def fetch(egg_url=constants.egg_path, force=False):
     """
         returns (str): path to new egg.  None if no update.
     """
@@ -65,7 +66,7 @@ def fetch(egg_url=constants.egg_path):
         f.close()
 
     request = urllib2.Request(egg_url)
-    if current_etag:
+    if current_etag and not force:
         request.add_header('If-None-Match', current_etag)
     opener = urllib2.build_opener(DefaultErrorHandler())
     datastream = opener.open(request)
