@@ -61,9 +61,8 @@ def fetch(egg_url=constants.egg_path, force=False):
     current_etag = None
     import os
     if os.path.isfile(constants.core_etag_file):
-        f = open(constants.core_etag_file, 'r')
-        current_etag = f.read().strip()
-        f.close()
+        with open(constants.core_etag_file, 'r') as etag_file:
+            current_etag = etag_file.read().strip()
 
     request = urllib2.Request(egg_url)
     if current_etag and not force:
@@ -72,9 +71,8 @@ def fetch(egg_url=constants.egg_path, force=False):
     datastream = opener.open(request)
     data = datastream.read()
 
-    f = open(constants.core_etag_file, 'w')
-    f.write(datastream.headers.dict['etag'])
-    f.close()
+    with open(constants.core_etag_file, 'w') as etag_file:
+        etag_file.write(datastream.headers.dict['etag'])
 
     if data:
         import tempfile
