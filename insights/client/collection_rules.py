@@ -21,7 +21,7 @@ class InsightsConfig(object):
     Insights configuration
     """
 
-    def __init__(self, conn):
+    def __init__(self, conn=None):
         """
         Load config from parent
         """

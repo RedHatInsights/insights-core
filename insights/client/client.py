@@ -442,10 +442,9 @@ def collect(rc=0):
         sys.exit(1)
 
     logger.warning("Assuming remote branch and leaf value of -1")
-    pconn = None
     branch_info = constants.default_branch_info
 
-    pc = InsightsConfig(pconn)
+    pc = InsightsConfig()
     tar_file = None
 
     # load config from stdin/file if specified
@@ -529,13 +528,14 @@ def collect(rc=0):
 
 
 def upload(tar_file, collection_duration=None):
-    set_up_logging()
     logger.info('Uploading Insights data. This may take a few minutes.')
     pconn = InsightsConnection()
+    upload_status = False
     for tries in range(InsightsClient.options.retries):
         upload = pconn.upload_archive(tar_file, collection_duration,
                                       cluster=generate_machine_id(
                                           docker_group=InsightsClient.options.container_mode))
+        upload_status = upload.status_code
         if upload.status_code == 201:
             write_lastupload_file()
             machine_id = generate_machine_id()
@@ -558,6 +558,7 @@ def upload(tar_file, collection_duration=None):
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information",
                              constants.default_log_file)
+    return upload_status
 
 
 def handle_file_output(tar_file, archive):
