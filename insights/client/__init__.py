@@ -126,7 +126,6 @@ def collect(format="json", options=None, config=None):
         returns (str, json): will return a string path to archive, or json facts
     '''
     InsightsClient.config, InsightsClient.options = parse_options()
-    try_auto_configuration()
     if options:
         for key in options:
             setattr(InsightsClient.options, key, options[key])
@@ -137,4 +136,6 @@ def collect(format="json", options=None, config=None):
 
 
 def upload(path):
+    InsightsClient.config, InsightsClient.options = parse_options()
+    try_auto_configuration()
     return client.upload(path)
