@@ -53,23 +53,20 @@ class SEStatus(LegacyItemAccess, Parser):
             'max_kernel_policy_version': None,
             'policy_booleans': {},
         }
-        booleans = {}
 
         for line in content:
             if ":" in line:
                 if 'Policy booleans' in line:
-                    sestatus_info['policy_booleans'] = {}
+                    pass
                 else:
-                    key, val = line.split(":", 1)
-                    sestatus_info[key.strip().lower().replace(" ", "_")] = val.strip()
+                    key, val = [s.strip() for s in line.split(":", 1)]
+                    sestatus_info[key.lower().replace(" ", "_")] = val
             else:
                 if line.strip():
                     key, val = line.split()
                     #  convert 'on' and 'off' strings to actual boolean values
-                    booleans[key] = val == 'on'
+                    sestatus_info['policy_booleans'][key] = val == 'on'
 
-        if 'policy_booleans' in sestatus_info:
-            sestatus_info['policy_booleans'] = booleans
         # When SELinux is disabled, sestatus has simply 'SELinux status: disabled'
         # in its output.  But 'SELinux status' is not included in the output
         # when SELinux is enabled.  So we include it as a nicety.
