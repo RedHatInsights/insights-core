@@ -71,9 +71,6 @@ def fetch(egg_url=constants.egg_path, force=False):
     datastream = opener.open(request)
     data = datastream.read()
 
-    with open(constants.core_etag_file, 'w') as etag_file:
-        etag_file.write(datastream.headers.dict['etag'])
-
     if data:
         import tempfile
         tmpdir = tempfile.mkdtemp()
@@ -81,6 +78,9 @@ def fetch(egg_url=constants.egg_path, force=False):
 
         with open(tmp_egg_path, 'wb') as handle:
             handle.write(data)
+
+        with open(constants.core_etag_file, 'w') as etag_file:
+            etag_file.write(datastream.headers.dict['etag'])
 
         return tmp_egg_path
 
