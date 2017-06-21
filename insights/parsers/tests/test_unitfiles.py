@@ -26,6 +26,15 @@ test.service                                static
 3 unit files listed.
 """.strip()
 
+UNIT_INVALID_VS_VALID = """
+UNIT FILE                                   STATE
+svca.service                                enabled
+svcb.service                                masked
+svcc.service                                somenonsense
+
+3 unit files listed.
+"""
+
 
 def test_unitfiles():
     context = context_wrap(KDUMP_DISABLED_RHEL7)
@@ -53,3 +62,13 @@ def test_unitfiles():
     assert unitfiles.is_on('test.service')
     assert len(unitfiles.services) == 3
     assert len(unitfiles.parsed_lines) == 3
+
+    context = context_wrap(UNIT_INVALID_VS_VALID)
+    unitfiles = UnitFiles(context)
+    assert unitfiles.is_on('svca.service')
+    assert 'svca.service' in unitfiles.services
+    assert 'svca.service' in unitfiles.service_list
+    assert 'svcb.service' in unitfiles.services
+    assert 'svcb.service' in unitfiles.service_list
+    assert 'svcc.service' not in unitfiles.services
+    assert 'svcc.service' not in unitfiles.service_list
