@@ -139,3 +139,8 @@ def upload(path):
     InsightsClient.config, InsightsClient.options = parse_options()
     try_auto_configuration()
     return client.upload(path)
+
+
+def delete_archive(path):
+    InsightsClient.config, InsightsClient.options = parse_options()
+    return client.delete_archive(path)

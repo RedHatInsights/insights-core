@@ -8,7 +8,7 @@ import os
 import shutil
 import time
 import traceback
-import atexit
+# import atexit
 from auto_config import try_auto_configuration
 from utilities import (validate_remove_file,
                        generate_machine_id,
@@ -35,6 +35,7 @@ __author__ = 'Richard Brantley <rbrantle@redhat.com>, Jeremy Crafts <jcrafts@red
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
 logger = logging.getLogger(APP_NAME)
+handler = None
 
 
 def set_up_logging():
@@ -42,52 +43,54 @@ def set_up_logging():
     """
     Initialize Logging
     """
-    log_dir = constants.log_dir
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir, 0700)
-    logging_file = os.path.join(log_dir, APP_NAME + '.log')
-    valid_levels = ['ERROR', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL']
-    handler = logging.handlers.RotatingFileHandler(logging_file,
-                                                   backupCount=3)
+    global handler
+    if not handler:
+        log_dir = constants.log_dir
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, 0700)
+        logging_file = os.path.join(log_dir, APP_NAME + '.log')
+        valid_levels = ['ERROR', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL']
+        handler = logging.handlers.RotatingFileHandler(logging_file,
+                                                       backupCount=3)
 
-    # from_stdin mode implies to_stdout
-    InsightsClient.options.to_stdout = (InsightsClient.options.to_stdout or
-                                        InsightsClient.options.from_stdin or
-                                        InsightsClient.options.from_file)
-    if InsightsClient.options.to_stdout and not InsightsClient.options.verbose:
-        InsightsClient.options.quiet = True
+        # from_stdin mode implies to_stdout
+        InsightsClient.options.to_stdout = (InsightsClient.options.to_stdout or
+                                            InsightsClient.options.from_stdin or
+                                            InsightsClient.options.from_file)
+        if InsightsClient.options.to_stdout and not InsightsClient.options.verbose:
+            InsightsClient.options.quiet = True
 
-    # Send anything INFO+ to stdout and log
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setLevel(logging.ERROR)
-    logging.root.addHandler(stderr_handler)
-    if not InsightsClient.options.verbose:
-        stdout_handler.setLevel(logging.INFO)
-    if InsightsClient.options.quiet:
-        stdout_handler.setLevel(logging.ERROR)
-    if not InsightsClient.options.silent:
-        logging.root.addHandler(stdout_handler)
+        # Send anything INFO+ to stdout and log
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stderr_handler = logging.StreamHandler(sys.stderr)
+        stderr_handler.setLevel(logging.ERROR)
+        logging.root.addHandler(stderr_handler)
+        if not InsightsClient.options.verbose:
+            stdout_handler.setLevel(logging.INFO)
+        if InsightsClient.options.quiet:
+            stdout_handler.setLevel(logging.ERROR)
+        if not InsightsClient.options.silent:
+            logging.root.addHandler(stdout_handler)
 
-    logging.root.addHandler(handler)
+        logging.root.addHandler(handler)
 
-    formatter = logging.Formatter(LOG_FORMAT)
-    handler.setFormatter(formatter)
-    logging.root.setLevel(logging.WARNING)
-    if InsightsClient.options.verbose:
-        config_level = 'DEBUG'
-    else:
-        config_level = InsightsClient.config.get(APP_NAME, 'loglevel')
+        formatter = logging.Formatter(LOG_FORMAT)
+        handler.setFormatter(formatter)
+        logging.root.setLevel(logging.WARNING)
+        if InsightsClient.options.verbose:
+            config_level = 'DEBUG'
+        else:
+            config_level = InsightsClient.config.get(APP_NAME, 'loglevel')
 
-    if config_level in valid_levels:
-        init_log_level = logging.getLevelName(config_level)
-    else:
-        print "Invalid log level %s, defaulting to DEBUG" % config_level
-        init_log_level = logging.getLevelName("DEBUG")
+        if config_level in valid_levels:
+            init_log_level = logging.getLevelName(config_level)
+        else:
+            print "Invalid log level %s, defaulting to DEBUG" % config_level
+            init_log_level = logging.getLevelName("DEBUG")
 
-    logger.setLevel(init_log_level)
-    logging.root.setLevel(init_log_level)
-    logger.debug("Logging initialized")
+        logger.setLevel(init_log_level)
+        logging.root.setLevel(init_log_level)
+        logger.debug("Logging initialized")
     return handler
 
 
@@ -421,6 +424,7 @@ def _create_metadata_json(archives):
 
 
 def fetch_rules():
+    set_up_logging()
     pconn = InsightsConnection()
     pc = InsightsConfig(pconn)
     return pc.get_conf(InsightsClient.options.update, {})
@@ -491,7 +495,7 @@ def collect(rc=0):
                 compressor = InsightsClient.options.compressor
 
             archive = InsightsArchive(compressor=compressor, target_name=t['name'])
-            atexit.register(_delete_archive, archive)
+            # atexit.register(_delete_archive, archive)
             dc = DataCollector(archive,
                                InsightsClient.config,
                                mountpoint=mp,
@@ -528,6 +532,7 @@ def collect(rc=0):
 
 
 def upload(tar_file, collection_duration=None):
+    set_up_logging()
     logger.info('Uploading Insights data. This may take a few minutes.')
     pconn = InsightsConnection()
     upload_status = False
@@ -559,6 +564,31 @@ def upload(tar_file, collection_duration=None):
                 logger.error("Please see %s for additional information",
                              constants.default_log_file)
     return upload_status
+
+
+def delete_archive(path):
+    set_up_logging()
+
+    import os
+    import shutil
+    removed_archive = False
+
+    try:
+        logger.info("Removing archive %s", path)
+        removed_archive = os.remove(path)
+
+        dirname = os.path.dirname
+        abspath = os.path.abspath
+        parent_tmp_dir = dirname(abspath(path))
+
+        logger.info("Detected parent temporary directory %s", parent_tmp_dir)
+        if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
+            logger.info("Removing %s", parent_tmp_dir)
+            shutil.rmtree(parent_tmp_dir)
+    except:
+        logger.info("Error removing %s", path)
+
+    return removed_archive
 
 
 def handle_file_output(tar_file, archive):
