@@ -336,6 +336,7 @@ static_specs = {
     "systemd_system.conf"       : SimpleFileSpec("etc/systemd/system.conf"),
     "systemid"                  : First([SimpleFileSpec("etc/sysconfig/rhn/systemid"),
                                     SimpleFileSpec("conf/rhn/sysconfig/rhn/systemid")]),
+    "teamdctl_state_dump"       : CommandSpec("/usr/bin/teamdctl {iface} state dump", iface=r"team\S+"),
     "tomcat_web.xml"            : First([PatternSpec(r"etc/tomcat.*/web\.xml"),
                                     PatternSpec(r"conf/tomcat/tomcat.*/web\.xml")]),
     "tuned-adm"                 : CommandSpec("/sbin/tuned-adm list"),
