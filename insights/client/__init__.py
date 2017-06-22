@@ -114,8 +114,8 @@ def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
             'rc': rc}
     else:
         return {'gpg': False,
-            'stderr': 'Must specify a valid core.',
-            'stdout': 'Must specify a valid core.',
+            'stderr': 'Must specify a valid core and gpg key.',
+            'stdout': 'Must specify a valid core and gpg key.',
             'rc': 1}
 
 
