@@ -2,7 +2,6 @@
 Module handling HTTP Requests and Connection Diagnostics
 """
 import requests
-import sys
 import os
 import json
 

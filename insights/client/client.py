@@ -3,32 +3,26 @@ import getpass
 import json
 import logging
 import logging.handlers
-import optparse
 import os
 import shutil
 import time
-import traceback
 # import atexit
-from auto_config import try_auto_configuration
-from utilities import (validate_remove_file,
-                       generate_machine_id,
+from utilities import (generate_machine_id,
                        generate_analysis_target_id,
                        write_lastupload_file,
                        write_registered_file,
                        write_unregistered_file,
                        delete_registered_file,
                        delete_unregistered_file,
-                       delete_machine_id,
                        determine_hostname,
                        modify_config_file)
 from collection_rules import InsightsConfig
 from data_collector import DataCollector
-from schedule import InsightsSchedule
 from connection import InsightsConnection
 from archive import InsightsArchive
-from support import InsightsSupport, registration_check
+from support import registration_check
 from constants import InsightsConstants as constants
-from client_config import InsightsClient, set_up_options, parse_config_file
+from client_config import InsightsClient
 
 __author__ = 'Richard Brantley <rbrantle@redhat.com>, Jeremy Crafts <jcrafts@redhat.com>, Dan Varga <dvarga@redhat.com>'
 
@@ -183,49 +177,6 @@ def _delete_archive(archive):
             InsightsClient.config.getboolean(APP_NAME, "obfuscate")):
         archive.delete_tmp_dir()
         archive.delete_archive_file()
-
-
-def _create_metadata_json(archives):
-    metadata = {'display_name': archives[-1]['display_name'],
-                'product': 'Docker',
-                'system_id': generate_machine_id(docker_group=True),
-                'systems': []}
-
-    # host archive is appended to the end of the targets array,
-    #   so it will always be the last one (index -1)
-    docker_links = []
-    c_i_links = container_image_links()
-    for a in archives:
-        system = {}
-        if a['type'] == 'host':
-            system['links'] = docker_links
-        else:
-            docker_links.append({
-                'system_id': a['system_id'],
-                'type': a['type']
-            })
-            system['links'] = [{'system_id': archives[-1]['system_id'],
-                                'type': 'host'}]
-            if a['docker_id'] in c_i_links:
-                system['links'].extend(c_i_links[a['docker_id']])
-            system['docker_id'] = a['docker_id']
-        system['display_name'] = a['display_name']
-        system['product'] = a['product']
-        system['system_id'] = a['system_id']
-        system['type'] = a['type']
-        metadata['systems'].append(system)
-
-    # merge additional metadata that can be passed in from the config file, --from-file
-    if InsightsClient.options.from_file:
-        stdin_config = {}
-        with open(InsightsClient.options.from_file, 'r') as f:
-            stdin_config = json.load(f)
-        if 'metadata' in stdin_config:
-            new_metadata = metadata.copy()
-            new_metadata.update(stdin_config['metadata'])
-            metadata = new_metadata
-
-    return metadata
 
 
 def fetch_rules():
