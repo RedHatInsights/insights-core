@@ -3,7 +3,6 @@ Rules for data collection
 """
 import json
 import logging
-import sys
 import six
 import shlex
 import os

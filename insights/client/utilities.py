@@ -3,7 +3,6 @@ Utility functions
 """
 import socket
 import os
-import sys
 import logging
 import uuid
 import datetime
