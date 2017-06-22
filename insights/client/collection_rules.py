@@ -61,7 +61,8 @@ class InsightsConfig(object):
         logger.debug("STDERR: %s", stderr)
         logger.debug("Status: %s", proc.returncode)
         if proc.returncode:
-            sys.exit("ERROR: Unable to validate GPG signature! Exiting!")
+            logger.error("ERROR: Unable to validate GPG signature! Exiting!")
+            return False
         else:
             logger.debug("GPG signature verified")
             return True
@@ -82,7 +83,7 @@ class InsightsConfig(object):
                     return json_config
                 except ValueError:
                     logger.error("ERROR: Invalid JSON in %s", path)
-                    sys.exit(1)
+                    return False
             else:
                 logger.warn("WARNING: %s was an empty file", path)
                 return
@@ -107,7 +108,7 @@ class InsightsConfig(object):
             logger.error("ERROR: Could not download dynamic configuration")
             logger.error("Debug Info: \nConf status: %s", req.status_code)
             logger.error("Debug Info: \nConf message: %s", req.text)
-            sys.exit(1)
+            return False
 
         if self.gpg:
             self.get_collection_rules_gpg(json_response)
@@ -133,7 +134,7 @@ class InsightsConfig(object):
         else:
             logger.error("ERROR: Download of GPG Signature failed!")
             logger.error("Sig status: %s", config_sig.status_code)
-            sys.exit(1)
+            return False
 
     def get_collection_rules_gpg(self, collection_rules):
         """
@@ -187,12 +188,12 @@ class InsightsConfig(object):
                 logger.error('ERROR: Cannot update rules in --offline mode. '
                              'Either run without the --update-collection-rules '
                              'option or disable auto_update in config file.')
-                sys.exit(1)
+                return False
             dyn_conf = self.get_collection_rules()
             version = dyn_conf.get('version', None)
             if version is None:
                 logger.error("ERROR: Could not find version in json")
-                sys.exit(1)
+                return False
             dyn_conf['file'] = self.collection_rules_file
             logger.debug("Success reading config")
             logger.debug(json.dumps(dyn_conf))
@@ -205,11 +206,11 @@ class InsightsConfig(object):
                     version = conf.get('version', None)
                     if version is None:
                         logger.error("ERROR: Could not find version in json")
-                        sys.exit(1)
+                        return False
 
                     conf['file'] = conf_file
                     logger.debug("Success reading config")
                     logger.debug(json.dumps(conf))
                     return conf, rm_conf
         logger.error("ERROR: Unable to download conf or read it from disk!")
-        sys.exit(1)
+        return False

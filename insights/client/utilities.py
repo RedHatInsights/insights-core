@@ -208,12 +208,14 @@ def validate_remove_file():
     """
     import stat
     if not os.path.isfile(constants.collection_remove_file):
-        sys.exit("WARN: Remove file does not exist")
+        logger.warn("WARN: Remove file does not exist")
+        return False
     # Make sure permissions are 600
     mode = stat.S_IMODE(os.stat(constants.collection_remove_file).st_mode)
     if not mode == 0o600:
-        sys.exit("ERROR: Invalid remove file permissions"
+        logger.error("ERROR: Invalid remove file permissions"
                  "Expected 0600 got %s" % oct(mode))
+        return False
     else:
         print "Correct file permissions"
 
