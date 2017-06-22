@@ -102,12 +102,21 @@ def verify(egg_path, gpg_key=constants.default_egg_gpg_key):
                          'stdout': stdout,
                          'rc': return code}
     """
-    from subprocess import Popen, PIPE
-    process = Popen(['gpg', '--verify', gpg_key, egg_path], stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-    rc = process.returncode
-    success = True if rc == 0 else False
-    return {'gpg': success, 'stderr': stderr, 'stdout': stdout, 'rc': rc}
+    if egg_path and gpg_key:
+        from subprocess import Popen, PIPE
+        process = Popen(['gpg', '--verify', gpg_key, egg_path], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        rc = process.returncode
+        success = True if rc == 0 else False
+        return {'gpg': success,
+            'stderr': stderr,
+            'stdout': stdout,
+            'rc': rc}
+    else:
+        return {'gpg': False,
+            'stderr': 'Must specify a valid core.',
+            'stdout': 'Must specify a valid core.',
+            'rc': 1}
 
 
 def fetch_rules(options=None, config=None):
