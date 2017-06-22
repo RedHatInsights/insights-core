@@ -4,10 +4,6 @@ from itertools import islice
 import pytest
 
 
-def integration_test(module, test_func, input_data, expected):
-    test_func(tests.integrate(input_data, module), expected)
-
-
 def generate_tests(metafunc, test_func, package_names, pattern=None):
     """
     This function hooks in to pytest's test collection framework and provides a
@@ -31,4 +27,4 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
                 args.append(t)
                 input_data_name = t[2].name if not isinstance(t[2], list) else "multi-node"
                 ids.append("#".join([f.serializable_id, input_data_name]))
-        metafunc.parametrize("module,test_func,input_data,expected", args, ids=ids)
+        metafunc.parametrize("module,comparison_func,input_data,expected", args, ids=ids)
