@@ -94,158 +94,6 @@ def set_up_logging():
     return handler
 
 
-def handle_startup():
-    """
-    Handle startup options
-    """
-    # ----do X and exit options----
-    # show version and exit
-    if InsightsClient.options.version:
-        print constants.version
-        sys.exit()
-
-    if (InsightsClient.options.container_mode and
-            not InsightsClient.options.run_here and
-            insights_client_container_is_available()):
-        sys.exit(run_in_container())
-
-    if (InsightsClient.options.container_mode and
-            not InsightsClient.options.only):
-        logger.error("Client running in container mode but no image/container specified via --only.")
-        sys.exit(1)
-
-    if InsightsClient.options.only is not None and len(InsightsClient.options.only) < 12:
-        logger.error("Image/Container ID must be atleast twelve characters long.")
-        sys.exit(1)
-
-    if InsightsClient.options.validate:
-        validate_remove_file()
-        sys.exit()
-
-    if InsightsClient.options.enable_schedule and InsightsClient.options.disable_schedule:
-        logger.error('Conflicting options: --enable-schedule and --disable-schedule')
-        sys.exit(1)
-
-    if InsightsClient.options.enable_schedule:
-        # enable automatic scheduling
-        InsightsSchedule()
-        InsightsClient.config.set(APP_NAME, 'no_schedule', False)
-        logger.info('Automatic scheduling for Insights has been enabled.')
-        logger.debug('Updating config...')
-        modify_config_file({'no_schedule': 'False'})
-        sys.exit()
-
-    if InsightsClient.options.disable_schedule:
-        # disable automatic schedling
-        InsightsSchedule(set_cron=False).remove_scheduling()
-        InsightsClient.config.set(APP_NAME, 'no_schedule', True)
-        logger.info('Automatic scheduling for Insights has been disabled.')
-        logger.debug('Updating config...')
-        modify_config_file({'no_schedule': 'True'})
-        sys.exit()
-
-    # do auto_config here, for connection-related 'do X and exit' options
-    if InsightsClient.config.getboolean(APP_NAME, 'auto_config') and not InsightsClient.options.offline:
-        # Try to discover if we are connected to a satellite or not
-        try_auto_configuration()
-
-    if InsightsClient.options.test_connection:
-        pconn = InsightsConnection()
-        rc = pconn.test_connection()
-        sys.exit(rc)
-
-    if InsightsClient.options.status:
-        reg_check = registration_check()
-        logger.info('\n'.join(reg_check['messages']))
-        # exit with !status, 0 for True, 1 for False
-        sys.exit(not reg_check['status'])
-
-    if InsightsClient.options.support:
-        support = InsightsSupport()
-        support.collect_support_info()
-        sys.exit()
-
-    # ----config options----
-    # log the config
-    # ignore password and proxy -- proxy might have pw
-    for item, value in InsightsClient.config.items(APP_NAME):
-        if item != 'password' and item != 'proxy':
-            logger.debug("%s:%s", item, value)
-
-    if InsightsClient.config.getboolean(APP_NAME, 'auto_update') and not InsightsClient.options.offline:
-        # TODO: config updates option, but in GPG option, the option updates
-        # the config.  make this consistent
-        InsightsClient.options.update = True
-
-    # disable automatic scheduling if it was set in the config, and if the job exists
-    if InsightsClient.config.getboolean(APP_NAME, 'no_schedule'):
-        cron = InsightsSchedule(set_cron=False)
-        if cron.already_linked():
-            cron.remove_scheduling()
-            logger.debug('Automatic scheduling for Insights has been disabled.')
-
-    # ----modifier options----
-    if InsightsClient.options.no_gpg:
-        logger.warn("WARNING: GPG VERIFICATION DISABLED")
-        InsightsClient.config.set(APP_NAME, 'gpg', 'False')
-
-    if InsightsClient.options.just_upload:
-        if InsightsClient.options.offline or InsightsClient.options.no_upload:
-            logger.error('Cannot use --just-upload in combination with --offline or --no-upload.')
-            sys.exit(1)
-        # override these for great justice
-        InsightsClient.options.no_tar_file = False
-        InsightsClient.options.keep_archive = True
-
-    # if InsightsClient.options.container_mode and InsightsClient.options.no_tar_file:
-    #    logger.error('Invalid combination: --container and --no-tar-file')
-    #    sys.exit(1)
-
-    # can't use bofa
-    if InsightsClient.options.from_stdin and InsightsClient.options.from_file:
-        logger.error('Can\'t use both --from-stdin and --from-file.')
-        sys.exit(1)
-
-    # handle some docker/atomic flags
-    if InsightsClient.options.use_docker and InsightsClient.options.use_atomic:
-        logger.error('Cant\'t use both --use-docker and --use-atomic.')
-        sys.exit(1)
-
-    if InsightsClient.options.to_stdout:
-        InsightsClient.options.no_upload = True
-
-    # ----register options----
-    # put this first to avoid conflicts with register
-    if InsightsClient.options.unregister:
-        pconn = InsightsConnection()
-        pconn.unregister()
-        sys.exit()
-
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    new = False
-    if InsightsClient.options.reregister:
-        new = True
-        InsightsClient.options.register = True
-        delete_registered_file()
-        delete_unregistered_file()
-        delete_machine_id()
-    logger.debug('Machine-id: %s', generate_machine_id(new))
-
-    if InsightsClient.options.register:
-        try_register()
-        if not InsightsClient.config.getboolean(APP_NAME, 'no_schedule'):
-            InsightsSchedule()
-
-    # check registration before doing any uploads
-    # Ignore if in offline mode
-    if not InsightsClient.options.register and not InsightsClient.options.offline:
-        msg, is_registered = _is_client_registered()
-        if not is_registered:
-            logger.error(msg)
-            sys.exit(1)
-
-
 def _is_client_registered():
     msg_notyet = 'This machine has not yet been registered.'
     msg_unreg = 'This machine has been unregistered.'
@@ -275,49 +123,6 @@ def _is_client_registered():
         # delete any stray unregistered
         delete_unregistered_file()
         return '', True
-
-
-def handle_branch_info_error(msg):
-    if InsightsClient.options.offline or InsightsClient.options.no_upload:
-        logger.warning(msg)
-        logger.warning("Assuming remote branch and leaf value of -1")
-        return constants.default_branch_info
-    else:
-        logger.error("ERROR: %s", msg)
-        sys.exit(1)
-
-
-def handle_exception(exc_type, exc_value, exc_traceback):
-    """
-    Exception handler so exception messages land in our log instead of them
-    vanishing into thin air, or abrt picking them up
-    """
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.exit(1)
-    if logger:
-        logger.error(
-            traceback.format_exception(exc_type, exc_value, exc_traceback))
-    else:
-        print traceback.format_exception(exc_type, exc_value, exc_traceback)
-        sys.exit('Caught unhandled exception, check log for more information')
-
-
-def trace_calls(frame, event, arg):
-    if event != 'call':
-        return
-    co = frame.f_code
-    func_name = co.co_name
-    if func_name == 'write':
-        return
-    func_line_no = frame.f_lineno
-    func_filename = co.co_filename
-    caller = frame.f_back
-    caller_line_no = caller.f_lineno
-    caller_filename = caller.f_code.co_filename
-    print 'Call to %s on line %s of %s from line %s of %s' % \
-        (func_name, func_line_no, func_filename,
-         caller_line_no, caller_filename)
-    return
 
 
 def try_register():
@@ -443,7 +248,7 @@ def collect(rc=0):
     # if there are no targets to scan then bail
     if not len(targets):
         logger.debug("No targets were found. Exiting.")
-        sys.exit(1)
+        return False
 
     logger.warning("Assuming remote branch and leaf value of -1")
     branch_info = constants.default_branch_info
@@ -469,7 +274,7 @@ def collect(rc=0):
     except:
         logger.error('ERROR: Invalid config for %s! Exiting...',
                      ('--from-file' if InsightsClient.options.from_file else '--from-stdin'))
-        sys.exit(1)
+        return False
 
     collection_rules, rm_conf = pc.get_conf(InsightsClient.options.update, stdin_config)
     individual_archives = []
@@ -599,70 +404,3 @@ def handle_file_output(tar_file, archive):
         archive.delete_archive_file()
     else:
         logger.info('See Insights data in %s', tar_file)
-
-
-def _main():
-    """
-    Main entry point
-    Parse cmdline options
-    Parse config file
-    Call data collector
-    """
-    if os.geteuid() is not 0:
-        sys.exit("Red Hat Insights must be run as root")
-
-    sys.excepthook = handle_exception
-
-    parser = optparse.OptionParser()
-    set_up_options(parser)
-    options, args = parser.parse_args()
-    if len(args) > 0:
-        parser.error("Unknown arguments: %s" % args)
-        sys.exit(1)
-    config = parse_config_file(options.conf)
-
-    # copy to global config object
-    InsightsClient.config = config
-    InsightsClient.options = options
-    InsightsClient.argv = sys.argv
-    handler = set_up_logging()
-
-    if InsightsClient.config.getboolean(APP_NAME, 'trace'):
-        sys.settrace(trace_calls)
-
-    # Defer logging till it's ready
-    logger.debug('invoked with args: %s', InsightsClient.options)
-    logger.debug("Version: " + constants.version)
-
-    # import container stuff after options and config initialized
-    global open_image, open_container, get_targets
-    global run_in_container, insights_client_container_is_available
-    global docker_display_name, container_image_links
-    if InsightsClient.options.container_mode:
-        from containers import (open_image,
-                                open_container,
-                                get_targets,
-                                run_in_container,
-                                insights_client_container_is_available,
-                                docker_display_name,
-                                container_image_links)
-
-    # Handle all the options
-    handle_startup()
-
-    # Vaccuum up the data
-    try:
-        path = collect()
-        upload(path)
-        rc = 0
-    except:
-        rc = 1
-
-    # Roll log over on successful upload
-    if not rc:
-        handler.doRollover()
-    sys.exit(rc)
-
-
-if __name__ == '__main__':
-    _main()

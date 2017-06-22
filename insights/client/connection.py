@@ -222,7 +222,7 @@ class InsightsConnection(object):
                              "(e.g. https://) and a "
                              "fully qualified domain name in " +
                              constants.default_conf_file)
-                sys.exit()
+                return False
             endpoint_addr = socket.gethostbyname(
                 endpoint_url.netloc.split(':')[0])
             logger.debug(
@@ -231,7 +231,7 @@ class InsightsConnection(object):
             logger.debug(e)
             logger.error(
                 "Could not resolve hostname: %s", endpoint_url.geturl())
-            sys.exit(1)
+            return False
         if self.proxies is not None:
             proxy_url = urlparse(self.proxies['https'])
             try:
@@ -241,7 +241,7 @@ class InsightsConnection(object):
                     logger.error("Invalid proxy!"
                                  "Please verify the proxy setting"
                                  " in " + constants.default_conf_file)
-                    sys.exit()
+                    return False
                 proxy_addr = socket.gethostbyname(
                     proxy_url.netloc.split(':')[0])
                 logger.debug(
@@ -249,7 +249,7 @@ class InsightsConnection(object):
             except socket.gaierror as e:
                 logger.debug(e)
                 logger.error("Could not resolve proxy %s", proxy_url.geturl())
-                sys.exit(1)
+                return False
 
     def _test_urls(self, url, method):
         """
@@ -326,25 +326,25 @@ class InsightsConnection(object):
             except Exception as e:
                 logger.debug(e)
                 logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
-                sys.exit(1)
+                return False
             sock.send(connect_str)
             res = sock.recv(4096)
             if '200 Connection established' not in res:
                 logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
-                sys.exit(1)
+                return False
         else:
             try:
                 sock.connect((hostname[0], 443))
             except socket.gaierror:
                 logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
-                sys.exit(1)
+                return False
         ctx = SSL.Context(SSL.TLSv1_METHOD)
         if type(self.cert_verify) is not bool:
             if os.path.isfile(self.cert_verify):
                 ctx.load_verify_locations(self.cert_verify, None)
             else:
                 logger.error('Error: Invalid cert path: %s', self.cert_verify)
-                sys.exit(1)
+                return False
         ctx.set_verify(SSL.VERIFY_PEER, self._verify_check)
         ssl_conn = SSL.Connection(ctx, sock)
         ssl_conn.set_connect_state()
@@ -410,8 +410,8 @@ class InsightsConnection(object):
                          'Please check your network configuration')
             logger.error('Additional information may be in'
                          ' /var/log/' + APP_NAME + "/" + APP_NAME + ".log")
-            sys.exit(1)
-        sys.exit(rc)
+            return 1
+        return rc
 
     def handle_fail_rcs(self, req):
         """
@@ -474,7 +474,7 @@ class InsightsConnection(object):
                 except:
                     unreg_date = "412, but no unreg_date or message"
                     logger.debug("HTTP Response Text: %s", req.text)
-            sys.exit(1)
+            return False
 
     def get_satellite5_info(self, branch_info):
         """
@@ -494,7 +494,8 @@ class InsightsConnection(object):
                     logger.debug("Found leaf id: %s", leaf_id)
                     branch_info['remote_leaf'] = leaf_id
             if leaf_id is None:
-                sys.exit("Could not determine leaf_id!  Exiting!")
+                logger.error("Could not determine leaf_id!  Exiting!")
+                return False
 
     def branch_info(self):
         """
