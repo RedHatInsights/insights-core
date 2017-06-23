@@ -7,7 +7,6 @@ import shlex
 import sys
 import yaml
 from ConfigParser import RawConfigParser
-from collections import defaultdict
 
 from insights.parsers import ParseException
 
@@ -954,38 +953,3 @@ class AttributeDict(dict):
     def __iter__(self):
         for k, v in self.__dict__.iteritems():
             yield k, v
-
-
-class ErrorCollector(object):
-    errors = defaultdict(lambda: {
-        "count": 0,
-        "exception": None,
-        "func": None
-    })
-
-    def __init__(self, verbose):
-        self.verbose = verbose
-
-    def rule_error(self, func, e, local, shared):
-        key = "".join([func.__module__, str(type(e)), str(e.message)])
-        error = self.errors[key]
-        error["count"] = error["count"] + 1
-        error["exception"] = e
-        error["tb"] = sys.exc_info()[2]
-        error["func"] = func
-
-    def has_errors(self):
-        return len(self.errors) > 0
-
-    def format_errors(self):
-        for error in self.errors.values():
-            e = error["exception"]
-            func = error["func"]
-            count = error["count"]
-            ename = e.__class__.__name__
-            yield "%d count(s) of [%s]: %s: %s" % \
-                  (count, func.__module__, ename, e.message)
-            if self.verbose:
-                import traceback
-                traceback.print_exception(type(e), e, error["tb"])
-                yield ""
