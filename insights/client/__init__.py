@@ -118,13 +118,12 @@ class InsightsClientApi(object):
         data = datastream.read()
 
         # Debug information
-        if datastream:
-            for attr in ['status', 'code', 'message', 'msg']:
-                if hasattr(datastream, attr):
-                    logger.debug('%s: %s', attr, getattr(datastream, attr))
-            if datastream.headers:
-                for header in datastream.headers.dict:
-                    logger.debug('%s: %s', header, datastream.headers.dict[header])
+        for attr in ['status', 'code', 'message', 'msg']:
+            if hasattr(datastream, attr):
+                logger.debug('%s: %s', attr, getattr(datastream, attr))
+        if datastream.headers:
+            for header in datastream.headers.dict:
+                logger.debug('%s: %s', header, datastream.headers.dict[header])
 
         # If data was received, write the new egg and etag
         if data and datastream.code == 200:
