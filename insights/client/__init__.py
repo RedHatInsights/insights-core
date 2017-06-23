@@ -31,10 +31,10 @@ class InsightsClientApi(object):
         client.set_up_logging()
 
     def version(self):
-        '''
+        """
         returns (dict): {'core': str,
                         'client_api': str}
-        '''
+        """
         from .. import get_nvr
         core_version = get_nvr()
         client_api_version = constants.version
@@ -43,9 +43,9 @@ class InsightsClientApi(object):
             'client_api': client_api_version}
 
     def parse_options(self):
-        '''
+        """
             returns (tuple): returns a tuple with configparser and argparser options
-        '''
+        """
         parser = optparse.OptionParser()
         set_up_options(parser)
         options, args = parser.parse_args()
@@ -61,9 +61,9 @@ class InsightsClientApi(object):
             skip_verify=False,
             skip_upload=False,
             force_fetch=False):
-        '''
+        """
             do everything
-        '''
+        """
         new_egg = None
         verification = True
         results = None
@@ -189,9 +189,9 @@ class InsightsClientApi(object):
     def fetch_rules(self,
             options=None,
             config=None):
-        '''
+        """
             returns (dict): new client rules
-        '''
+        """
         try_auto_configuration()
         return client.fetch_rules()
 
@@ -199,14 +199,20 @@ class InsightsClientApi(object):
             format="json",
             options=None,
             config=None):
-        '''
+        """
             returns (str, json): will return a string path to archive, or json facts
-        '''
+        """
         return client.collect()
 
     def upload(self, path):
+        """
+            returns (int): upload status code
+        """
         try_auto_configuration()
         return client.upload(path)
 
     def delete_archive(self, path):
+        """
+            returns (bool): successful archive deletion
+        """
         return client.delete_archive(path)
