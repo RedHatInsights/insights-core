@@ -180,7 +180,6 @@ def _delete_archive(archive):
 
 
 def fetch_rules():
-    set_up_logging()
     pconn = InsightsConnection()
     pc = InsightsConfig(pconn)
     return pc.get_conf(InsightsClient.options.update, {})
@@ -191,7 +190,6 @@ def collect(rc=0):
     All the heavy lifting done here
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
-    set_up_logging()
     # initialize collection targets
     # for now we do either containers OR host -- not both at same time
     targets = constants.default_target
@@ -288,7 +286,6 @@ def collect(rc=0):
 
 
 def upload(tar_file, collection_duration=None):
-    set_up_logging()
     logger.info('Uploading Insights data. This may take a few minutes.')
     pconn = InsightsConnection()
     upload_status = False
@@ -323,8 +320,6 @@ def upload(tar_file, collection_duration=None):
 
 
 def delete_archive(path):
-    set_up_logging()
-
     import os
     import shutil
     removed_archive = False
