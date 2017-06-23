@@ -1,4 +1,7 @@
-import insights.client as client
+from insights.client import InsightsClientApi
+
+
+client = InsightsClientApi()
 
 '''
 Get version
@@ -6,7 +9,7 @@ Get version
 print '================'
 print 'Getting version'
 print '---------------'
-print client.get_version()
+print client.version()
 print ''
 
 
