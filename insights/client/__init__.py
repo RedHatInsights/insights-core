@@ -12,26 +12,17 @@ logger = logging.getLogger(APP_NAME)
 handler = None
 
 
-def get_versions():
+def version():
     '''
-    returns (dict): {'core': str, 'client_api': str}
-    '''
-    return {'core': get_core_version(), 'client_api': get_client_api_version()}
-
-
-def get_core_version():
-    '''
-        returns (str): version of the core
+    returns (dict): {'core': str,
+                    'client_api': str}
     '''
     from .. import get_nvr
-    return get_nvr()
+    core_version = get_nvr()
+    client_api_version = constants.version
 
-
-def get_client_api_version():
-    """
-        returns (str): version of the client api
-    """
-    return constants.version
+    return {'core': core_version,
+        'client_api': client_api_version}
 
 
 def run(egg_url=constants.egg_path,
