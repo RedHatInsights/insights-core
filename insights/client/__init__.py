@@ -46,7 +46,15 @@ class InsightsClientApi(object):
         """
             returns (tuple): returns a tuple with configparser and argparser options
         """
-        parser = optparse.OptionParser()
+        class NoErrOptionParser(optparse.OptionParser):
+            def __init__(self, *args, **kwargs):
+                self.valid_args_cre_list = []
+                optparse.OptionParser.__init__(self, *args, **kwargs)
+
+            def error(self, msg):
+                pass
+
+        parser = NoErrOptionParser()
         set_up_options(parser)
         options, args = parser.parse_args()
         if len(args) > 0:
