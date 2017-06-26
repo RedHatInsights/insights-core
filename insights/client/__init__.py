@@ -218,6 +218,20 @@ class InsightsClientApi(object):
         try_auto_configuration()
         return client.upload(path)
 
+
+    def get_last_upload_results(self):
+        """
+            returns (json): returns last upload json results or False
+        """
+        import os
+        if os.path.isfile(constants.last_upload_results_file):
+            logger.debug('Last upload file %s found, reading results.', constants.last_upload_results_file)
+            with open(constants.last_upload_results_file, 'r') as handler:
+                return handler.read()
+        else:
+            logger.debug('Last upload file %s not found, cannot read results', constants.last_upload_results_file)
+            return False
+
     def delete_archive(self, path):
         """
             returns (bool): successful archive deletion

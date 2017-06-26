@@ -295,6 +295,8 @@ def upload(tar_file, collection_duration=None):
                                           docker_group=InsightsClient.options.container_mode))
         upload_status = upload.status_code
         if upload.status_code == 201:
+            with open(constants.last_upload_results_file, 'w') as handler:
+                handler.write(upload.text)
             write_lastupload_file()
             machine_id = generate_machine_id()
             try:
