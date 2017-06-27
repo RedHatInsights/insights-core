@@ -37,7 +37,6 @@ kernel strings::
 
 from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
-import re
 from .. import Parser, parser
 from insights.core.context import Context
 
@@ -210,13 +209,13 @@ class Uname(Parser):
             raise UnameError('Empty uname line', '')
 
         data = {}
-        uname_line = content[-1]  # read the last line instead of the first
+        uname_list = [line for line in content if line.startswith("Linux")]
+        if not uname_list:
+            raise UnameError("Uname string appears invalid", '')
+        uname_line = uname_list[0]
         uname_parts = uname_line.split(' ')
         if len(uname_parts) < 3:
-            ver_rel_match = re.match("[0-9](\.[0-9]+){2}-[0-9]+", uname_parts[0])
-            if not ver_rel_match:
-                raise UnameError("Uname string appears invalid", uname_line)
-            data['kernel'] = uname_parts[0]
+            raise UnameError("Uname string appears invalid", uname_line)
         else:
             data['kernel'] = uname_parts[2]
             data['name'] = uname_parts[0]
@@ -255,7 +254,7 @@ class Uname(Parser):
         """
         data = cls.parse_nvr(kernel, arch=False)
         content = ["{name} {nodename} {kernel} {kernel_type} {kernel_date} {machine} {processor} {hw_platform} {os}".format(
-            name=data['name'],
+            name="Linux",
             nodename=data['nodename'],
             kernel=kernel,
             kernel_type=data['kernel_type'],
@@ -274,6 +273,8 @@ class Uname(Parser):
         :Parameters:
             - `uname_str` - the string output of `uname -a`
         """
+        if len(uname_str.split(' ')) == 1:
+            uname_str = "Linux " + "hostname " + uname_str
         return cls(Context(content=[uname_str.strip()], path=None))
 
     @classmethod
