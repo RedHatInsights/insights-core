@@ -30,21 +30,6 @@ SPLIT_TEST_2 = """
   keyword3     @ Key with no separator
 """.strip()
 
-SPLIT_LINES = """
-Line one
-Line two part 1 \\
-         line two part 2\\
-         line two part 3
-Line three
-""".strip()
-SPLIT_LINES_2 = """
-Line one
-Line two part 1 ^
-         line two part 2^
-         line two part 3
-Line three
-""".strip()
-
 OFFSET_CONTENT_1 = """
   data 1 line
 data 2 line
@@ -113,6 +98,22 @@ def test_split_kv_pairs():
     }
 
 
+SPLIT_LINES = """
+Line one
+Line two part 1 \\
+         line two part 2\\
+         line two part 3
+Line three
+""".strip()
+SPLIT_LINES_2 = """
+Line one
+Line two part 1 ^
+         line two part 2^
+         line two part 3
+Line three^
+""".strip()
+
+
 def test_unsplit_lines():
     lines = list(unsplit_lines(SPLIT_LINES.splitlines()))
     assert len(lines) == 3
@@ -124,7 +125,7 @@ def test_unsplit_lines():
     assert len(lines) == 3
     assert lines[0] == 'Line one'
     assert lines[1] == 'Line two part 1          line two part 2         line two part 3'
-    assert lines[2] == 'Line three'
+    assert lines[2] == 'Line three'  # test continuation on last line
 
 
 def test_calc_offset():
