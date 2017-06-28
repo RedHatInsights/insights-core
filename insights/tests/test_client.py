@@ -6,7 +6,7 @@ from insights.client.constants import InsightsConstants as constants
 
 class TestClient(unittest.TestCase):
 
-    client = InsightsClientApi()
+    client = InsightsClientApi(options={'logging_file': '/tmp/insights.log'})
 
     def test_version(self):
         result = self.client.version()

@@ -109,6 +109,10 @@ def set_up_options(parser):
                       help=optparse.SUPPRESS_HELP,
                       action='store_true',
                       dest='container_mode')
+    parser.add_option('--logging-file',
+                      help='path to log file location',
+                      default=constants.default_log_file
+                      )
     group = optparse.OptionGroup(parser, "Debug options")
     parser.add_option('--version',
                       help="Display version",
@@ -233,6 +237,7 @@ def parse_config_file(conf_file=constants.default_conf_file):
          'insecure_connection': 'False',
          'no_schedule': 'False',
          'docker_image_name': '',
+         'logging_file': constants.default_log_file,
          'display_name': None})
     try:
         parsedconfig.read(conf_file)

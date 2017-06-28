@@ -43,6 +43,10 @@ def set_up_logging():
         if not os.path.exists(log_dir):
             os.makedirs(log_dir, 0700)
         logging_file = os.path.join(log_dir, APP_NAME + '.log')
+        if InsightsClient.config.get(APP_NAME, 'logging_file'):
+            logging_file = InsightsClient.config.get(APP_NAME, 'logging_file')
+        if InsightsClient.options.logging_file:
+            logging_file = InsightsClient.options.logging_file
         valid_levels = ['ERROR', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL']
         handler = logging.handlers.RotatingFileHandler(logging_file,
                                                        backupCount=3)
