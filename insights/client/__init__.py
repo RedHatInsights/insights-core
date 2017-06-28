@@ -17,8 +17,19 @@ class InsightsClientApi(object):
     def __init__(self,
                  options=None,
                  config=None):
+        """
+            Intialize an instance of the Insights Client API for the Core
+            params:
+                (optional) options=dict
+                (optional) config=dict
+            returns:
+                InsightsClientApi()
+        """
 
+        # Setup the base config and options
         InsightsClient.config, InsightsClient.options = self.parse_options()
+
+        # Overwrite anything passed in
         if options:
             for key in options:
                 setattr(InsightsClient.options, key, options[key])
@@ -28,19 +39,19 @@ class InsightsClientApi(object):
                                           new_config_var,
                                           config[new_config_var])
 
+        # Set up logging
         client.set_up_logging()
 
-    def version(self):
-        """
-        returns (dict): {'core': str,
-                        'client_api': str}
-        """
-        from .. import get_nvr
-        core_version = get_nvr()
-        client_api_version = constants.version
+        # Disable GPG verification
+        if InsightsClient.options.no_gpg:
+            logger.warn("WARNING: GPG VERIFICATION DISABLED")
+            InsightsClient.config.set(APP_NAME, 'gpg', 'False')
 
-        return {'core': core_version,
-                'client_api': client_api_version}
+        # Log config except the password
+        # and proxy as it might have a pw as well
+        for item, value in InsightsClient.config.items(APP_NAME):
+            if item != 'password' and item != 'proxy':
+                logger.debug("%s:%s", item, value)
 
     def parse_options(self):
         """
@@ -61,6 +72,18 @@ class InsightsClientApi(object):
             parser.error("Unknown arguments: %s" % args)
         return parse_config_file(options.conf), options
 
+    def version(self):
+        """
+        returns (dict): {'core': str,
+                        'client_api': str}
+        """
+        from .. import get_nvr
+        core_version = get_nvr()
+        client_api_version = constants.version
+
+        return {'core': core_version,
+                'client_api': client_api_version}
+
     def run(self,
             egg_url=constants.egg_path,
             gpg_key=constants.default_egg_gpg_key,
@@ -68,24 +91,54 @@ class InsightsClientApi(object):
             skip_update=False,
             skip_verify=False,
             skip_upload=False,
-            force_fetch=False):
+            force_fetch=False,
+            force_register=False):
         """
             do everything
         """
         new_egg = None
         verification = True
         results = None
+        registration = None
+
+        # Update things
         if not skip_update:
             new_egg = self.fetch(egg_url, force_fetch)
+            logger.debug('Fetching new core: %s', new_egg)
+
+        # Verify things
         if new_egg and not skip_verify:
             verification = self.verify(new_egg, gpg_key)
+            logger.debug('Core was verified: %s', verification)
+
+        # Register
+        is_registered = self.get_registration_information()['is_registered']
+        logger.debug('System is registered: %s', is_registered)
+        if not InsightsClient.options.offline and not is_registered:
+            registration = self.register(force_register)
+            is_registered = registration['registration']['status']
+            logger.debug('Registration response: %s', registration)
+            logger.debug('System is now registered: %s', is_registered)
+
+        # Collect things
         if verification:
+            logger.debug('New Core was verified. Collecting information.')
             results = self.collect(collection_format)
+            logger.debug('Results: %s', results)
         else:
+            logger.debug('New Core was not verified, not collecting information.')
             results = False
-        if not skip_upload:
-            return self.upload(results)
+
+        # Upload things
+        if not skip_upload and not InsightsClient.options.no_upload and not InsightsClient.options.offline and is_registered:
+            logger.debug('Not skipping upload, or running offline.')
+            logger.debug('System is registered, proceeding with upload.')
+            upload_results = self.upload(results)
+            logger.debug('Upload results: %s', upload_results)
         else:
+            logger.debug('Skipping upload, running offline, or system is not properly registered.')
+            logger.debug('Skipping upload.')
+            logger.debug('Insights results: %s', results)
             return results
 
     def fetch(self,
@@ -205,6 +258,30 @@ class InsightsClientApi(object):
             returns (str, json): will return a string path to archive, or json facts
         """
         return client.collect()
+
+    def register(self, force_register=False):
+        """
+        returns (json): {'success': bool,
+                        'machine-id': uuid from API,
+                        'response': response from API,
+                        'code': http code}
+        """
+        try_auto_configuration()
+        setattr(InsightsClient.options, 'register', True)
+        if force_register:
+            setattr(InsightsClient.options, 'reregister', True)
+        return client.handle_registration()
+
+    def get_registration_information(self):
+        """
+        returns (json): {'machine-id': uuid from API,
+                        'response': response from API}
+        """
+        try_auto_configuration()
+        registration_status = client.get_registration_status()
+        return {'machine-id': client.get_machine_id(),
+                'registration_status': registration_status,
+                'is_registered': registration_status['status']}
 
     def upload(self, path):
         """

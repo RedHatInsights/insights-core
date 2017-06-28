@@ -19,11 +19,11 @@ def registration_check():
     # check local registration record
     unreg_date = None
     if os.path.isfile(constants.registered_file):
-        local_record = 'System is registered.'
+        local_record = 'System is registered locally via .registered file.'
         with open(constants.registered_file) as reg_file:
             local_record += ' Registered at ' + reg_file.readline()
     else:
-        local_record = 'System is NOT registered.'
+        local_record = 'System is NOT registered locally via .registered file.'
     if os.path.isfile(constants.unregistered_file):
         with open(constants.unregistered_file) as reg_file:
             local_record += ' Unregistered at ' + reg_file.readline()
