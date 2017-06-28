@@ -18,7 +18,7 @@ def determine_hostname(display_name=None):
     Find fqdn if we can
     """
     if display_name:
-        # if display_name is given (like for a container), just barf back the given name
+        # if display_name is provided, just return the given name
         return display_name
     else:
         socket_gethostname = socket.gethostname()
@@ -26,9 +26,7 @@ def determine_hostname(display_name=None):
 
         try:
             socket_ex = socket.gethostbyname_ex(socket_gethostname)[0]
-        except LookupError:
-            socket_ex = ''
-        except socket.gaierror:
+        except (LookupError, socket.gaierror):
             socket_ex = ''
 
         gethostname_len = len(socket_gethostname)
@@ -49,10 +47,12 @@ def _write_machine_id(machine_id, destination_file):
     Write machine-id (or docker-group-id) out to disk
     """
     logger.debug("Creating %s", destination_file)
-    machine_id_file = open(destination_file, "w")
-    machine_id_file.write(machine_id)
-    machine_id_file.flush()
-    machine_id_file.close()
+    with open(destination_file, "w") as machine_id_file:
+        machine_id_file.write(machine_id)
+
+
+def get_time():
+    return datetime.datetime.isoformat(datetime.datetime.now())
 
 
 def write_unregistered_file(date=None):
@@ -62,7 +62,7 @@ def write_unregistered_file(date=None):
     delete_registered_file()
     rc = 0
     if date is None:
-        date = datetime.datetime.isoformat(datetime.datetime.now())
+        date = get_time()
     else:
         rc = 1
 
@@ -76,7 +76,7 @@ def write_registered_file():
     Write .registered out to disk
     """
     reg = file(constants.registered_file, 'w')
-    reg.write(datetime.datetime.isoformat(datetime.datetime.now()))
+    reg.write(get_time())
 
 
 def delete_registered_file():
@@ -95,13 +95,14 @@ def delete_unregistered_file():
         os.remove(constants.unregistered_file)
 
 
-def generate_machine_id(new=False, docker_group=False):
+def generate_machine_id(new=False,
+                        docker_group=False,
+                        destination_file=constants.machine_id_file):
     """
     Generate a machine-id if /etc/insights-client/machine-id does not exist
     """
     machine_id = None
     machine_id_file = None
-    destination_file = constants.machine_id_file
     logging_name = 'machine-id'
     if docker_group:
         # generate a docker group ("docking station") id
@@ -110,9 +111,8 @@ def generate_machine_id(new=False, docker_group=False):
         logging_name = 'docker-group-id'
     if os.path.isfile(destination_file) and not new:
         logger.debug('Found %s', destination_file)
-        machine_id_file = open(destination_file, 'r')
-        machine_id = machine_id_file.read()
-        machine_id_file.close()
+        with open(destination_file, 'r') as machine_id_file:
+            machine_id = machine_id_file.read()
     else:
         logger.debug('Could not find %s file, creating', logging_name)
         machine_id = str(uuid.uuid4())
@@ -198,7 +198,7 @@ def write_lastupload_file():
     Write .lastupload out to disk
     """
     reg = file(constants.lastupload_file, 'w')
-    reg.write(datetime.datetime.isoformat(datetime.datetime.now()))
+    reg.write(get_time())
 
 
 def validate_remove_file():
@@ -213,7 +213,7 @@ def validate_remove_file():
     mode = stat.S_IMODE(os.stat(constants.collection_remove_file).st_mode)
     if not mode == 0o600:
         logger.error("ERROR: Invalid remove file permissions"
-                 "Expected 0600 got %s" % oct(mode))
+                     "Expected 0600 got %s" % oct(mode))
         return False
     else:
         print "Correct file permissions"
@@ -285,4 +285,3 @@ def modify_config_file(updates):
     status = run_command_get_output(cmd)
     with open(constants.default_conf_file, 'w') as config_file:
         config_file.write(status['output'])
-        config_file.flush()
