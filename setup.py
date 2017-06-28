@@ -13,7 +13,8 @@ entry_points = {
     'console_scripts': [
         'insights-run = insights.core:main',
         'gen_api = insights.tools.generate_api_config:main',
-        'insights-perf = insights.tools.perf:main'
+        'insights-perf = insights.tools.perf:main',
+        'client = insights.client:run'
     ]
 }
 
