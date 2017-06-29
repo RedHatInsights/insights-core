@@ -90,6 +90,14 @@ def set_up_logging():
     return handler
 
 
+def test_connection():
+    """
+    Test the connection
+    """
+    pconn = InsightsConnection()
+    return pconn.test_connection()
+
+
 def _is_client_registered():
     msg_notyet = 'This machine has not yet been registered.'
     msg_unreg = 'This machine has been unregistered.'
@@ -160,14 +168,6 @@ def register():
     return pconn.register()
 
 
-def test_connection():
-    """
-    Test the connection
-    """
-    pconn = InsightsConnection()
-    return pconn.test_connection()
-
-
 def handle_registration():
     """
         returns (json): {'success': bool,
@@ -196,6 +196,10 @@ def handle_registration():
             'registration': registration}
 
 
+def get_registration_status():
+    return registration_check()
+
+
 def handle_unregistration():
     """
         returns (bool): True success, False failure
@@ -206,10 +210,6 @@ def handle_unregistration():
 
 def get_machine_id():
     return generate_machine_id()
-
-
-def get_registration_status():
-    return registration_check()
 
 
 def fetch_rules():
