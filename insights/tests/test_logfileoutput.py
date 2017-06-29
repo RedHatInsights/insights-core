@@ -1,0 +1,168 @@
+# -*- coding: UTF-8 -*-
+from insights.core import LogFileOutput
+from insights.parsers import ParseException
+from insights.tests import context_wrap
+
+from datetime import datetime
+import pytest
+
+
+class FakeMessagesClass(LogFileOutput):
+    def get_after(self, timestamp, lines=None):
+        return super(FakeMessagesClass, self).get_after(timestamp, lines, '%b %d %H:%M:%S')
+
+    def bad_get_after(self, timestamp, lines=None):
+        return super(FakeMessagesClass, self).get_after(timestamp, lines, '%q/%1 %z:%v:%j')
+
+    def superget(self, s):
+        for line in self.lines:
+            if s in line:
+                parts = line.split(None, 6)
+                yield {
+                    'timestamp': ' '.join(parts[0:3]),
+                    'hostname': parts[3],
+                    'service': parts[4][:-1],  # strip colon
+                    'message': parts[5]
+                }
+
+    def listget(self, s):
+        # Silly function to split lines containing s.
+        for line in self.lines:
+            if s in line:
+                yield s.split(None, 6)
+
+
+MESSAGES = """
+Mar 27 03:18:15 system rsyslogd: [origin software="rsyslogd" swVersion="5.8.10" x-pid="1870" x-info="http://www.rsyslog.com"] rsyslogd was HUPed
+Mar 27 03:18:16 system rsyslogd-2177: imuxsock lost 141 messages from pid 55082 due to rate-limiting
+Mar 27 03:18:19 system rsyslogd-2177: imuxsock begins to drop messages from pid 55082 due to rate-limiting
+Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Attempting Database connection with seeds = localhost:27017
+Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Connection Arguments: {'max_pool_size': 10}
+Mar 27 03:18:21 system pulp: pulp.server.db.connection:INFO: Database connection established with: seeds = localhost:27017, name = pulp_database
+Mar 27 03:18:22 system rsyslogd-2177: imuxsock lost 145 messages from pid 55082 due to rate-limiting
+Mar 27 03:18:24 system puppet-master[48226]: Setting manifest is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations
+Mar 27 03:18:24 system puppet-master[48226]:    (at /usr/lib/ruby/site_ruby/1.8/puppet/settings.rb:1095:in `issue_deprecations')
+Mar 27 03:18:24 system puppet-master[48226]: Setting modulepath is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations
+Mar 27 03:18:24 system puppet-master[48226]:    (at /usr/lib/ruby/site_ruby/1.8/puppet/settings.rb:1095:in `issue_deprecations')
+Mar 27 03:18:24 system puppet-master[48226]: Setting config_version is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations
+Mar 27 03:18:24 system puppet-master[48226]:    (at /usr/lib/ruby/site_ruby/1.8/puppet/settings.rb:1095:in `issue_deprecations')
+Mar 27 03:18:25 system rsyslogd-2177: imuxsock begins to drop messages from pid 55082 due to rate-limiting
+Mar 27 03:39:43 system pulp: pulp.server.webservices.middleware.exception:ERROR:   File "/usr/lib/python2.6/site-packages/web/application.py", line 230, in handle
+     return self._delegate(fn, self.fvars, args)
+   File "/usr/lib/python2.6/site-packages/web/application.py", line 405, in _delegate
+     return handle_class(f)
+   File "/usr/lib/python2.6/site-packages/web/application.py", line 396, in handle_class
+     return tocall(*args)
+   File "/usr/lib/python2.6/site-packages/pulp/server/webservices/controllers/decorators.py", line 227, in _auth_decorator
+     value = method(self, *args, **kwargs)
+   File "/usr/lib/python2.6/site-packages/pulp/server/webservices/controllers/consumers.py", line 503, in GET
+     profile = manager.get_profile(consumer_id, content_type)
+   File "/usr/lib/python2.6/site-packages/pulp/server/managers/consumer/profile.py", line 120, in get_profile
+     raise MissingResource(profile_id=profile_id)
+MissingResource: Missing resource(s): profile_id={'content_type': u'rpm', 'consumer_id': u'1786cd7f-2ab2-4212-9798-c0a454e97900'}
+Mar 27 03:39:43 system rsyslogd-2177: imuxsock begins to drop messages from pid 55082 due to rate-limiting
+Mar 27 03:39:46 system rsyslogd-2177: imuxsock lost 165 messages from pid 55082 due to rate-limiting
+Mar 27 03:39:49 system rsyslogd-2177: imuxsock begins to drop messages from pid 55082 due to rate-limiting
+Mar 27 03:49:10 system pulp: pulp.server.webservices.middleware.exception:ERROR: Missing resource(s): profile_id={'content_type': u'rpm', 'consumer_id': u'79d5aed1-5631-4f40-b970-585ee974eb87'}
+"""
+
+
+def test_messages_get_after():
+    ctx = context_wrap(MESSAGES, path='/var/log/messages')
+    log = FakeMessagesClass(ctx)
+    assert len(log.lines) == 31
+
+    # Get lines after date
+    # Remember, logs with no date are assumed to be in year we give it
+    assert len(list(log.get_after(datetime(2017, 3, 27, 3, 39, 46)))) == 3
+    # Get subset of lines after date
+    pulp = log.get('pulp')  # includes /pulp/ in traceback
+    assert len(pulp) == 8
+    # Includes lines from traceback
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 20, 30), pulp))
+    assert len(after) == 5
+    # Does not include traceback
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), pulp))
+    assert len(after) == 1
+
+    # get_after should only supply strptime that _get_after recognises
+    with pytest.raises(ParseException) as exc:
+        assert list(log.bad_get_after(datetime(2017, 3, 27, 3, 39, 46))) is None
+    assert '_get_after does not understand strptime format ' in str(exc)
+
+    # Get lines after date from fields
+    pulp = list(log.superget('pulp'))  # includes /pulp/ in traceback
+    assert len(pulp) == 8
+    # Includes lines from traceback
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 20, 30), pulp))
+    assert len(after) == 5
+    # Does not include traceback
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), pulp))
+    assert len(after) == 1
+
+    # get_after should only supply strptime that _get_after recognises
+    with pytest.raises(ValueError) as exc:
+        assert list(log.get_after(datetime(2017, 3, 27, 3, 39, 46), log.listget('pulp'))) is None
+    assert 'Cannot search objects of type ' in str(exc)
+
+
+MESSAGES_ROLLOVER_YEAR = """
+Dec 31 21:43:00 duradm13 [CMA]: Logger failed to open catalog file
+Dec 31 22:03:05 duradm13 xinetd[21465]: START: bgssd pid=28021 from=10.20.40.7
+Dec 31 22:03:05 duradm13 xinetd[21465]: EXIT: bgssd status=0 pid=28021 duration=0(sec)
+Dec 31 23:03:07 duradm13 xinetd[21465]: START: bgssd pid=31307 from=10.20.40.7
+Dec 31 23:03:07 duradm13 xinetd[21465]: EXIT: bgssd status=0 pid=31307 duration=0(sec)
+Dec 31 23:07:00 duradm13 [CMA]: Logger failed to open catalog file
+Jan  1 00:00:00 duradm13 [CMA]: Logger failed to open catalog file
+Jan  1 00:03:09 duradm13 xinetd[21465]: START: bgssd pid=2203 from=10.20.40.7
+Jan  1 00:03:09 duradm13 xinetd[21465]: EXIT: bgssd status=0 pid=2203 duration=0(sec)
+Jan  1 00:11:45 duradm13 xinetd[21465]: START: vnetd pid=2670 from=10.20.40.36
+Jan  1 00:11:47 duradm13 xinetd[21465]: START: vnetd pid=2671 from=10.20.40.36
+Jan  1 00:11:48 duradm13 xinetd[21465]: EXIT: vnetd status=0 pid=2671 duration=1(sec)
+Jan  1 01:00:08 duradm13 xinetd[21465]: START: nrpe pid=6189 from=10.20.40.240
+Jan  1 01:00:08 duradm13 xinetd[21465]: EXIT: nrpe status=0 pid=6189 duration=0(sec)
+Jan  1 01:00:27 duradm13 xinetd[21465]: START: nrpe pid=6207 from=10.20.40.240
+Jan  1 01:00:27 duradm13 xinetd[21465]: EXIT: nrpe status=0 pid=6207 duration=0(sec)
+Jan  1 01:00:29 duradm13 xinetd[21465]: START: nrpe pid=6210 from=10.20.40.240
+Jan  1 01:00:29 duradm13 xinetd[21465]: EXIT: nrpe status=0 pid=6210 duration=0(sec)
+""".strip()
+
+
+def test_messages_log_time_wrap():
+    # Check rollover process for when dates in logs without a year go from
+    # December from January.
+    ctx = context_wrap(MESSAGES_ROLLOVER_YEAR, path='/var/log/messages')
+    log = FakeMessagesClass(ctx)
+    assert len(log.lines) == 18
+
+    # If sought date is in January, we should not get logs from December
+    found = list(log.get_after(datetime(2017, 1, 1, 1, 0, 0)))
+    assert len(found) == 6
+    # If sought date is in December, we should get logs from January
+    found = list(log.get_after(datetime(2017, 12, 31, 23, 0, 0)))
+    assert len(found) == 15
+
+
+HTTPD_ACCESS_LOG = """
+192.168.220.42 - - [14/Feb/2016:03:18:54 -0600] "POST /XMLRPC HTTP/1.1" 200 1381 "-" "rhn.rpclib.py/$Revision$"
+192.168.220.42 - - [14/Feb/2016:03:18:54 -0600] "POST /XMLRPC HTTP/1.1" 200 3282 "-" "rhn.rpclib.py/$Revision$"
+192.168.220.42 - - [14/Feb/2016:03:18:54 -0600] "POST /XMLRPC HTTP/1.1" 200 163 "-" "rhn.rpclib.py/$Revision$"
+192.168.220.42 - - [14/Feb/2016:03:18:54 -0600] "POST /XMLRPC HTTP/1.1" 200 138 "-" "rhn.rpclib.py/$Revision$"
+192.168.128.243 - - [14/Feb/2016:03:19:00 -0600] "POST /cobbler_api HTTP/1.1" 200 144 "-" "Java/1.6.0"
+192.168.128.243 - - [14/Feb/2016:03:19:00 -0600] "POST /cobbler_api HTTP/1.1" 200 129 "-" "Java/1.6.0"
+192.168.128.243 - - [14/Feb/2016:03:20:00 -0600] "POST /cobbler_api HTTP/1.1" 200 144 "-" "Java/1.6.0"
+192.168.128.243 - - [14/Feb/2016:03:20:00 -0600] "POST /cobbler_api HTTP/1.1" 200 129 "-" "Java/1.6.0"
+"""
+
+
+class FakeAccessLog(LogFileOutput):
+    def get_after(self, timestamp, lines=None):
+        return super(FakeAccessLog, self).get_after(timestamp, lines, '%d/%b/%Y:%H:%M:%S')
+
+
+def test_logs_with_year():
+    ctx = context_wrap(HTTPD_ACCESS_LOG, path='/var/log/httpd/access_log')
+    log = FakeAccessLog(ctx)
+    assert len(log.lines) == 8
+
+    assert len(list(log.get_after(datetime(2016, 2, 14, 3, 18, 55)))) == 4
