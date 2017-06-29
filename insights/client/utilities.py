@@ -201,16 +201,16 @@ def write_lastupload_file():
     reg.write(get_time())
 
 
-def validate_remove_file():
+def validate_remove_file(remove_file=constants.collection_remove_file):
     """
     Validate the remove file
     """
     import stat
-    if not os.path.isfile(constants.collection_remove_file):
+    if not os.path.isfile(remove_file):
         logger.warn("WARN: Remove file does not exist")
         return False
     # Make sure permissions are 600
-    mode = stat.S_IMODE(os.stat(constants.collection_remove_file).st_mode)
+    mode = stat.S_IMODE(os.stat(remove_file).st_mode)
     if not mode == 0o600:
         logger.error("ERROR: Invalid remove file permissions"
                      "Expected 0600 got %s" % oct(mode))
@@ -218,10 +218,10 @@ def validate_remove_file():
     else:
         print "Correct file permissions"
 
-    if os.path.isfile(constants.collection_remove_file):
+    if os.path.isfile(remove_file):
         from ConfigParser import RawConfigParser
         parsedconfig = RawConfigParser()
-        parsedconfig.read(constants.collection_remove_file)
+        parsedconfig.read(remove_file)
         rm_conf = {}
         for item, value in parsedconfig.items('remove'):
             rm_conf[item] = value.strip().split(',')
@@ -251,7 +251,6 @@ def magic_plan_b(filename):
     for whatever reason
     '''
     import shlex
-    from subprocess import PIPE
     cmd = shlex.split('file --mime-type --mime-encoding ' + filename)
     stdout, stderr = Popen(cmd, stdout=PIPE).communicate()
     mime_str = stdout.split(filename + ': ')[1].strip()
