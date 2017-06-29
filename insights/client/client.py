@@ -5,7 +5,9 @@ import logging.handlers
 import os
 import shutil
 import time
-from utilities import (generate_machine_id,
+from auto_config import try_auto_configuration
+from utilities import (validate_remove_file,
+                       generate_machine_id,
                        generate_analysis_target_id,
                        write_lastupload_file,
                        write_registered_file,
@@ -18,7 +20,7 @@ from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
 from archive import InsightsArchive
-from support import registration_check
+from support import InsightsSupport, registration_check
 from constants import InsightsConstants as constants
 from client_config import InsightsClient
 
@@ -373,3 +375,78 @@ def delete_archive(path):
         logger.info("Error removing %s", path)
 
     return removed_archive
+
+
+def handle_startup():
+    """
+    Handle startup options
+    """
+    # ----do X and exit options----
+    # show version and exit
+    if InsightsClient.options.version:
+        return constants.version
+
+    if InsightsClient.options.validate:
+        return validate_remove_file()
+
+    # do auto_config here, for connection-related 'do X and exit' options
+    if InsightsClient.config.getboolean(APP_NAME, 'auto_config') and not InsightsClient.options.offline:
+        # Try to discover if we are connected to a satellite or not
+        try_auto_configuration()
+
+    if InsightsClient.options.test_connection:
+        pconn = InsightsConnection()
+        rc = pconn.test_connection()
+        return rc
+
+    if InsightsClient.options.status:
+        reg_check = registration_check()
+        logger.info('\n'.join(reg_check['messages']))
+        # exit with !status, 0 for True, 1 for False
+        return reg_check['status']
+
+    if InsightsClient.options.support:
+        support = InsightsSupport()
+        support.collect_support_info()
+        return True
+
+    if InsightsClient.config.getboolean(APP_NAME, 'auto_update') and not InsightsClient.options.offline:
+        # TODO: config updates option, but in GPG option, the option updates
+        # the config.  make this consistent
+        InsightsClient.options.update = True
+
+    # can't use bofa
+    if InsightsClient.options.from_stdin and InsightsClient.options.from_file:
+        logger.error('Can\'t use both --from-stdin and --from-file.')
+        return False
+
+    if InsightsClient.options.to_stdout:
+        InsightsClient.options.no_upload = True
+
+    # ----register options----
+    # put this first to avoid conflicts with register
+    if InsightsClient.options.unregister:
+        pconn = InsightsConnection()
+        return pconn.unregister()
+
+    # force-reregister -- remove machine-id files and registration files
+    # before trying to register again
+    new = False
+    if InsightsClient.options.reregister:
+        new = True
+        InsightsClient.options.register = True
+        delete_registered_file()
+        delete_unregistered_file()
+        delete_machine_id()
+    logger.debug('Machine-id: %s', generate_machine_id(new))
+
+    if InsightsClient.options.register:
+        try_register()
+
+    # check registration before doing any uploads
+    # Ignore if in offline mode
+    if not InsightsClient.options.register and not InsightsClient.options.offline:
+        msg, is_registered = _is_client_registered()
+        if not is_registered:
+            logger.error(msg)
+            return False
