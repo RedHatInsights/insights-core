@@ -49,7 +49,7 @@ If you wish to contribute to the insights-core project you'll need to create a f
 
 2. Reference the original project as "upstream"::
 
-    git add remote upstream git@github.com:RedHatInsights/insights-core.git
+    git remote add upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
 using the following commands::
