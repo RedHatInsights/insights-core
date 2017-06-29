@@ -196,6 +196,14 @@ def handle_registration():
             'registration': registration}
 
 
+def handle_unregistration():
+    """
+        returns (bool): True success, False failure
+    """
+    pconn = InsightsConnection()
+    return pconn.unregister()
+
+
 def get_machine_id():
     return generate_machine_id()
 

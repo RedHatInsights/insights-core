@@ -74,8 +74,8 @@ class InsightsClientApi(object):
 
     def version(self):
         """
-        returns (dict): {'core': str,
-                        'client_api': str}
+            returns (dict): {'core': str,
+                            'client_api': str}
         """
         from .. import get_nvr
         core_version = get_nvr()
@@ -86,10 +86,10 @@ class InsightsClientApi(object):
 
     def test_connection(self):
         """
-        returns (int): 0 if success 1 if failure
+            returns (int): 0 if success 1 if failure
         """
-        from client import test_connection
-        return test_connection()
+        try_auto_configuration()
+        return client.test_connection()
 
     def run(self,
             egg_url=constants.egg_path,
@@ -268,10 +268,10 @@ class InsightsClientApi(object):
 
     def register(self, force_register=False):
         """
-        returns (json): {'success': bool,
-                        'machine-id': uuid from API,
-                        'response': response from API,
-                        'code': http code}
+            returns (json): {'success': bool,
+                            'machine-id': uuid from API,
+                            'response': response from API,
+                            'code': http code}
         """
         try_auto_configuration()
         setattr(InsightsClient.options, 'register', True)
@@ -279,10 +279,17 @@ class InsightsClientApi(object):
             setattr(InsightsClient.options, 'reregister', True)
         return client.handle_registration()
 
+    def unregister(self):
+        """
+            returns (bool): True success, False failure
+        """
+        try_auto_configuration()
+        return client.handle_unregistration()
+
     def get_registration_information(self):
         """
-        returns (json): {'machine-id': uuid from API,
-                        'response': response from API}
+            returns (json): {'machine-id': uuid from API,
+                            'response': response from API}
         """
         try_auto_configuration()
         registration_status = client.get_registration_status()

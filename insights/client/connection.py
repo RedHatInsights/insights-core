@@ -673,9 +673,11 @@ class InsightsConnection(object):
                 "Successfully unregistered from the Red Hat Insights Service")
             write_unregistered_file()
             InsightsSchedule().remove_scheduling()
+            return True
         except requests.ConnectionError as e:
             logger.debug(e)
             logger.error("Could not unregister this system")
+            return False
 
     def register(self):
         """
