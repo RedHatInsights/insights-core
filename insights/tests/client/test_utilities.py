@@ -31,15 +31,13 @@ class TestUtilites(unittest.TestCase):
         import re
         time_regex = re.match('\d{4}-\d{2}-\d{2}\D\d{2}:\d{2}:\d{2}\.\d+',
                               util.get_time())
-        if time_regex.group(0) is not None:
-            assert True
+        assert time_regex.group(0) is not None
 
     def test_generate_machine_id(self):
         import re
         machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
                                     util.generate_machine_id(destination_file='/tmp/testmachineid'))
-        if machine_id_regex.group(0) is not None:
-            assert True
+        assert machine_id_regex.group(0) is not None
         with open('/tmp/testmachineid', 'r') as _file:
             machine_id = _file.read()
         self.assertEquals(machine_id, util.generate_machine_id(destination_file='/tmp/testmachineid'))
