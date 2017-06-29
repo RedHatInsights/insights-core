@@ -84,6 +84,13 @@ class InsightsClientApi(object):
         return {'core': core_version,
                 'client_api': client_api_version}
 
+    def test_connection(self):
+        """
+        returns (int): 0 if success 1 if failure
+        """
+        from client import test_connection
+        return test_connection()
+
     def run(self,
             egg_url=constants.egg_path,
             gpg_key=constants.default_egg_gpg_key,
