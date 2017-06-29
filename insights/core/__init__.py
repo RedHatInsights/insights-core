@@ -1,3 +1,4 @@
+import datetime
 import io
 import logging
 import os
@@ -426,6 +427,161 @@ class LogFileOutput(Parser):
             return self.get(token)
 
         cls.scan(result_key, _scan)
+
+    def get_after(self, timestamp, lines=None, time_format='%Y-%m-%d %H:%M:%S'):
+        """
+        Find all the (available) logs that are after the given time stamp.
+
+        This method should be used by the subclass to provide an actual
+        ``get_after()`` method which provides the standard time stamp format
+        used by its particular log.  This method should only be used if the
+        subclass does not present its own or the caller needs to override
+        the default time format.
+
+        If 'lines' is not supplied, then all lines are used.  Otherwise, the
+        caller can provide a list of lines from a scanner or the ``get()``
+        method.
+
+        This method then finds all lines in that list which have a time stamp
+        after the given timestamp.  Lines that do not contain a time stamp
+        are considered to be part of the previous line and are therefore
+        included if the last log line was included or excluded otherwise.
+
+        This works by converting the time format into a regular expression
+        which matches the time format in the string.  This is then searched
+        for in each line in turn.  Only lines with a time stamp matching this
+        expression will trigger the decision to include or exclude lines.
+        Therefore, if the log for some reason does not contain a time stamp
+        that matches this format, no lines will be returned.
+
+        Lines can be either a single string or a dictionary.  String lines
+        search for a time stamp in the entire line.  Dictionary lines look
+        for a field named 'timestamp', which is (still) searched for a valid
+        time format as above - lines without the 'timestamp' field are
+        treated as continuation lines (see above).
+
+        Note: Some logs - notably /var/log/messages - do not contain a year
+        in the timestamp.  This detected by the absence of a '%y' or '%Y' in
+        the time format.  If that year field is absent, the year is assumed
+        to be the year in the given timestamp being sought.  Some attempt is
+        made to handle logs with a rollover from December to January, by
+        finding when the log's timestamp (with current year assumed) is over
+        eleven months (specifically, 330 days) ahead of or behind the
+        timestamp date and shifting that log date by 365 days so that it is
+        more likely to be in the sought range.  This paragraph is sponsored
+        by syslog.
+
+        No attempt is made to order the lines by date.  This also means that
+        lines can be out of order, as each timestamp is evaluated individually.
+
+        Parameters:
+
+            timestamp(datetime.datetime): lines before this time are ignored.
+            lines(list): an optional list of lines from this parser to search.
+            time_format(str): the ``strptime()`` string of the format of the
+                dates in this log.
+
+        Yields:
+            (string/dict): the lines with timestamps after this date in the
+            same formet they were supplied.
+
+        Raises:
+            ParseException: If the format conversion string contains a
+                format that we don't recognise.  In particular, no attempt is
+                made to recognise or parse the time zone or other obscure
+                values like day of year or week of year.
+        """
+        if lines is None:
+            lines = self.lines
+
+        logs_have_year = ('%Y' in time_format or '%y' in time_format)
+
+        # Annoyingly, strptime insists that it get the whole time string and
+        # nothing but the time string.  However, for most logs we only have a
+        # string with the timestamp in it.  We can't just catch the ValueError
+        # because at that point we do not actually have a valid datetime
+        # object.  So we convert the time format string to a regex, use that
+        # to find just the timestamp, and then use strptime on that.  Thanks,
+        # Python.  All these need to cope with different languages and
+        # character sets.  Note that we don't include time zone or other
+        # outputs (e.g. day-of-year) that don't usually occur in time stamps.
+        format_conversion_for = {
+            'a': r'\w{3}', 'A': r'\w+',  # Week day name
+            'w': r'[0123456]',  # Week day number
+            'd': r'([0 ][123456789]|[12]\d|3[01])',  # Day of month
+            'b': r'\w{3}', 'B': r'\w+',  # Month name
+            'm': r'(0\d|1[012])',  # Month number
+            'y': r'\d{2}', 'Y': r'\d{4}',  # Year
+            'H': r'([01]\d|2[0123])',  # Hour - 24 hour format
+            'I': r'(0\d|1[012])',  # Hour - 12 hour format
+            'p': r'\w[2}',  # AM / PM
+            'M': r'([012345]\d)',  # Minutes
+            'S': r'([012345]\d|60)',  # Seconds, including leap second
+            'f': r'\d{6}',  # Microseconds
+        }
+
+        # Construct the regex from the time string
+        timefmt_re = re.compile(r'%(\w)')
+
+        def replacer(match):
+            if match.group(1) in format_conversion_for:
+                return format_conversion_for[match.group(1)]
+            else:
+                raise ParseException(
+                    "_get_after does not understand strptime format '{c}'".format(
+                        c=match.group(0)
+                    )
+                )
+
+        # Please do not attempt to be tricky and put a regular expression
+        # inside your time format, as we are going to also use it in
+        # strptime too and that may not work out so well.
+        time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
+
+        # Most logs will appear in string format, but some logs (e.g.
+        # Messages) are available in list-of-dicts format.  So we choose one
+        # of two 'date_compare' functions.  HOWEVER: we still have to check
+        # the string found for a valid date, because log parsing often fails.
+        # Because of generators, we check this per line
+
+        # Now try to find the time stamp in each log line and add lines to
+        # our output if they are currently being included in the log.
+        eleven_months = datetime.timedelta(days=330)
+        including_lines = False
+        for line in lines:
+            # Evaluate here because of generators
+            if type(line) == str:
+                s = line
+            elif type(line) == dict:
+                s = line.get('timestamp', '')
+            else:
+                raise ValueError("Cannot search objects of type {t} for timestamps")
+
+            match = time_re.search(s)
+            if match:
+                logstamp = datetime.datetime.strptime(match.group(0), time_format)
+                if not logs_have_year:
+                    # Substitute timestamp year for logstamp year
+                    logstamp = logstamp.replace(year=timestamp.year)
+                    if logstamp - timestamp > eleven_months:
+                        # If timestamp in January and log in December, move
+                        # log to previous year
+                        logstamp = logstamp.replace(year=timestamp.year - 1)
+                    elif timestamp - logstamp > eleven_months:
+                        # If timestamp in December and log in January, move
+                        # log to next year
+                        logstamp = logstamp.replace(year=timestamp.year + 1)
+                if logstamp >= timestamp:
+                    # Later - include
+                    including_lines = True
+                    yield line
+                else:
+                    # Earlier - start excluding
+                    including_lines = False
+            else:
+                # If we're including lines, add this continuation line
+                if including_lines:
+                    yield line
 
 
 class IniConfigFile(Parser):
