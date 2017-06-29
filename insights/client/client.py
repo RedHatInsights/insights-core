@@ -160,6 +160,14 @@ def register():
     return pconn.register()
 
 
+def test_connection():
+    """
+    Test the connection
+    """
+    pconn = InsightsConnection()
+    return pconn.test_connection()
+
+
 def handle_registration():
     """
         returns (json): {'success': bool,
