@@ -91,6 +91,10 @@ class InsightsClientApi(object):
         try_auto_configuration()
         return client.test_connection()
 
+    def handle_startup(self):
+        try_auto_configuration()
+        return client.handle_startup()
+
     def run(self,
             egg_url=constants.egg_path,
             gpg_key=constants.default_egg_gpg_key,
@@ -326,4 +330,13 @@ class InsightsClientApi(object):
 
 def run():
     c = InsightsClientApi()
-    c.run()
+    startup = c.handle_startup()
+
+    # If startup has a value it means
+    # An option was thrown that returns something
+    if startup is not None:
+        return startup
+
+    # Otherwise the Client should run
+    else:
+        return c.run()
