@@ -25,17 +25,20 @@ class TestUtilites(unittest.TestCase):
         self.assertEquals(hostname or fqdn, util.determine_hostname())
         self.assertNotEquals('foo', util.determine_hostname())
 
-    def test_write_machine_id(self):
-        tf = tempfile.NamedTemporaryFile()
-        util._write_machine_id(machine_id, tf.name)
-        with open(tf.name, 'r') as f:
-            written_file = f.read()
-        self.assertEquals(machine_id, written_file)
-
     def test_get_time(self):
         time_regex = re.match('\d{4}-\d{2}-\d{2}\D\d{2}:\d{2}:\d{2}\.\d+',
                               util.get_time())
         assert time_regex.group(0) is not None
+
+    def test_write_to_disk(self):
+        content = 'boop'
+        filename = '/tmp/testing'
+        util.write_to_disk(filename, content=content)
+        assert os.path.isfile(filename)
+        with open(filename, 'r') as f:
+            result = f.read()
+        assert result == 'boop'
+        self.assertEquals(util.write_to_disk(filename, delete=True), None)
 
     def test_generate_machine_id(self):
         machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',

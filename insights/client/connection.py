@@ -8,9 +8,8 @@ import json
 import logging
 from utilities import (determine_hostname,
                        generate_machine_id,
-                       delete_unregistered_file,
-                       write_unregistered_file,
-                       write_registered_file)
+                       write_to_disk,
+                       write_unregistered_file)
 from cert_auth import rhsmCertificate
 from constants import InsightsConstants as constants
 from client_config import InsightsClient
@@ -684,7 +683,7 @@ class InsightsConnection(object):
         Register this machine
         """
 
-        delete_unregistered_file()
+        write_to_disk(constants.unregistered_file, delete=True)
 
         client_hostname = determine_hostname()
         # This will undo a blacklist
@@ -700,7 +699,7 @@ class InsightsConnection(object):
 
         message = system.headers.get("x-rh-message", "")
 
-        write_registered_file()
+        write_to_disk(constants.registered_file)
 
         # Do grouping
         if InsightsClient.options.group is not None:
