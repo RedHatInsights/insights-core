@@ -9,13 +9,9 @@ from auto_config import try_auto_configuration
 from utilities import (validate_remove_file,
                        generate_machine_id,
                        generate_analysis_target_id,
-                       write_lastupload_file,
-                       write_registered_file,
+                       write_to_disk,
                        write_unregistered_file,
-                       delete_registered_file,
-                       delete_unregistered_file,
-                       determine_hostname,
-                       delete_machine_id)
+                       determine_hostname)
 from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
@@ -119,15 +115,15 @@ def _is_client_registered():
             # no record of system in remote
             msg = '\n'.join([msg_notyet, msg_doreg, msg_exit])
             # clear any local records
-            delete_registered_file()
-            delete_unregistered_file()
+            write_to_disk(constants.registered_file, delete=True)
+            write_to_disk(constants.unregistered_file, delete=True)
             return msg, False
     else:
         # API confirms reg
         if not os.path.isfile(constants.registered_file):
-            write_registered_file()
+            write_to_disk(constants.registered_file)
         # delete any stray unregistered
-        delete_unregistered_file()
+        write_to_disk(constants.unregistered_file, delete=True)
         return '', True
 
 
@@ -140,7 +136,7 @@ def try_register():
     if reg_check['status']:
         logger.info('This host has already been registered.')
         # regenerate the .registered file
-        write_registered_file()
+        write_to_disk(constants.registered_file)
         return
     message, hostname, group, display_name = register()
     if InsightsClient.options.display_name is None and InsightsClient.options.group is None:
@@ -184,9 +180,9 @@ def handle_registration():
         logger.debug('Re-register set, forcing registration.')
         new = True
         InsightsClient.options.register = True
-        delete_registered_file()
-        delete_unregistered_file()
-        delete_machine_id()
+        write_to_disk(constants.registered_file, delete=True)
+        write_to_disk(constants.unregistered_file, delete=True)
+        write_to_disk(constants.machine_id_file, delete=True)
     logger.debug('Machine-id: %s', generate_machine_id(new))
 
     logger.debug('Trying registration.')
@@ -331,7 +327,7 @@ def upload(tar_file, collection_duration=None):
         if upload.status_code == 201:
             with open(constants.last_upload_results_file, 'w') as handler:
                 handler.write(upload.text)
-            write_lastupload_file()
+            write_to_disk(constants.lastupload_file)
             machine_id = generate_machine_id()
             try:
                 logger.info("You successfully uploaded a report from %s to account %s." % (machine_id, InsightsClient.account_number))
@@ -435,9 +431,9 @@ def handle_startup():
     if InsightsClient.options.reregister:
         new = True
         InsightsClient.options.register = True
-        delete_registered_file()
-        delete_unregistered_file()
-        delete_machine_id()
+        write_to_disk(constants.registered_file, delete=True)
+        write_to_disk(constants.registered_file, delete=True)
+        write_to_disk(constants.machine_id_file, delete=True)
     logger.debug('Machine-id: %s', generate_machine_id(new))
 
     if InsightsClient.options.register:
