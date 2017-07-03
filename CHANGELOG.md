@@ -1,19 +1,35 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.41.0-43...HEAD)
+## [insights-core-1.42.0-63](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.42.0-63) (2017-07-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.41.0-43...insights-core-1.42.0-63)
 
 **Closed issues:**
 
+- Parser module test coverage at 100% \#148 [\#154](https://github.com/RedHatInsights/insights-core/issues/154)
+- Kerberos KDC log parser for 2.x branch [\#153](https://github.com/RedHatInsights/insights-core/issues/153)
+- Add new shared parser iscsiadm\_mode\_session.py \#136 [\#137](https://github.com/RedHatInsights/insights-core/issues/137)
+- Enhance httpd\_conf to support nested sections \#84 [\#120](https://github.com/RedHatInsights/insights-core/issues/120)
 - Simplify Policy booleans handling \#96 [\#97](https://github.com/RedHatInsights/insights-core/issues/97)
+- Uname not properly parsed for RHEL 6.3 sosreports [\#90](https://github.com/RedHatInsights/insights-core/issues/90)
 - Falafel reference in image [\#23](https://github.com/RedHatInsights/insights-core/issues/23)
 
 **Merged pull requests:**
 
+- Enhance2 parser openshift\_get 1x [\#168](https://github.com/RedHatInsights/insights-core/pull/168) ([wushiqinlou](https://github.com/wushiqinlou))
+- Parsers for the 389 Directory Server access and errors log files - 1.x branch [\#165](https://github.com/RedHatInsights/insights-core/pull/165) ([PaulWay](https://github.com/PaulWay))
+- minor doc fix: ordering of 'git remote' command [\#163](https://github.com/RedHatInsights/insights-core/pull/163) ([bobcallaway](https://github.com/bobcallaway))
+- Add mitigation for CVE-2017-2636 to demo base archives [\#156](https://github.com/RedHatInsights/insights-core/pull/156) ([wcmitchell](https://github.com/wcmitchell))
+- Parser module test coverage at 100% [\#148](https://github.com/RedHatInsights/insights-core/pull/148) ([PaulWay](https://github.com/PaulWay))
+- Kerberos KDC log parser for 1.x branch [\#147](https://github.com/RedHatInsights/insights-core/pull/147) ([PaulWay](https://github.com/PaulWay))
+- Removing no longer used ErrorCollector class - 1.x branch [\#142](https://github.com/RedHatInsights/insights-core/pull/142) ([PaulWay](https://github.com/PaulWay))
+- Add new shared parser iscsiadm\_mode\_session.py [\#136](https://github.com/RedHatInsights/insights-core/pull/136) ([xiaoyu74](https://github.com/xiaoyu74))
+- Enhance2 parser uname 1x [\#134](https://github.com/RedHatInsights/insights-core/pull/134) ([wushiqinlou](https://github.com/wushiqinlou))
+- Enhance httpd\_conf to support nested sections [\#133](https://github.com/RedHatInsights/insights-core/pull/133) ([xiangce](https://github.com/xiangce))
 - Add new shared parser teamdctl\_state\_dump.py [\#128](https://github.com/RedHatInsights/insights-core/pull/128) ([xiaoyu74](https://github.com/xiaoyu74))
+- LogFileOutput parser class `get\_after\(\)` method - 1.x branch [\#119](https://github.com/RedHatInsights/insights-core/pull/119) ([PaulWay](https://github.com/PaulWay))
 - Unitfiles parser enhanced to deal with all unit states. [\#115](https://github.com/RedHatInsights/insights-core/pull/115) ([jsvob](https://github.com/jsvob))
 - Simplify 'Policy booleans' handling [\#111](https://github.com/RedHatInsights/insights-core/pull/111) ([PaulWay](https://github.com/PaulWay))
+- Improve docs, test coverage and parsing of the system\_time parser for the 1.x branch [\#109](https://github.com/RedHatInsights/insights-core/pull/109) ([PaulWay](https://github.com/PaulWay))
 
 ## [insights-core-1.41.0-43](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.41.0-43) (2017-06-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/falafel-1.40.0-23...insights-core-1.41.0-43)
