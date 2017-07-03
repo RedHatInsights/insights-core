@@ -115,14 +115,6 @@ class Parser(object):
         pass
 
 
-class YAMLParser(Parser):
-    """
-    A parser class that reads YAML files.  Base your own parser on this.
-    """
-    def parse_content(self, content):
-        self.data = yaml.load('\n'.join(content))
-
-
 class SysconfigOptions(Parser):
     """
     A parser to handle the standard 'keyword=value' format of files in the
@@ -270,6 +262,14 @@ class LegacyItemAccess(object):
             (str): String value of the stored item, or the default if not found.
         """
         return self.data.get(item, default)
+
+
+class YAMLParser(Parser, LegacyItemAccess):
+    """
+    A parser class that reads YAML files.  Base your own parser on this.
+    """
+    def parse_content(self, content):
+        self.data = yaml.load('\n'.join(content))
 
 
 class ScanMeta(type):
