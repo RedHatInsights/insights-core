@@ -163,6 +163,7 @@ static_specs = {
     "keystone.conf"             : SimpleFileSpec("etc/keystone/keystone.conf"),
     "keystone.log"              : SimpleFileSpec("var/log/keystone/keystone.log"),
     "keystone_crontab"          : CommandSpec("/usr/bin/crontab -l -u keystone"),
+    "kerberos_kdc_log"          : SimpleFileSpec("var/log/krb5kdc.log"),
     "ksmstate"                  : SimpleFileSpec("sys/kernel/mm/ksm/run"),
     "lastupload"                : All([SimpleFileSpec("etc/redhat-access-insights/.lastupload"),
                                     SimpleFileSpec("etc/insights-client/.lastupload")]),
