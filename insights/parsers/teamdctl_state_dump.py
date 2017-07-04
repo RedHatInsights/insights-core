@@ -41,6 +41,8 @@ Examples:
     'eno1'
     >>> result.runner_type
     'activebackup'
+    >>> result.team_ifname
+    'team0'
 """
 
 import json
@@ -63,3 +65,11 @@ class TeamdctlStateDump(Parser, LegacyItemAccess):
         str: Return the type of the teaming runner
         """
         return self.data["setup"]["runner_name"]
+
+    @property
+    @defaults()
+    def team_ifname(self):
+        """
+        str: Return the teaming device name
+        """
+        return self.data["team_device"]["ifinfo"]["ifname"]
