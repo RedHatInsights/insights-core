@@ -280,6 +280,63 @@ class ScanMeta(type):
 
 
 class Scannable(Parser):
+    """
+    A class to enable early and easy collection of data in a file.
+
+    The `Scannable` class makes it easy to collect two common types of
+    information from a data file:
+
+    * A flag to indicate that the data contains one or more lines with a given
+      string.
+    * a list of lines containing a given string.
+
+    To create a parser from the Scannable parser class, the main job is to
+    override the `parse()` method, returning your choice of data structure
+    to represent the information in the file.  This takes the form of a
+    generator that yields structures for users of your parser.  You can
+    yield more than object per line, or you can condense multiple lines into
+    one object.  Each object is then scanned with all the defined scanners
+    for this class.
+
+    How does that work?  Well, the individual rules using your parser will
+    use the `any()` and `collect()` methods on the class object itself to set
+    up new attributes of the class that will be given values based on the
+    results of a function that checks each object from your parser for the
+    properties it's looking for.  That's pretty vague, so let's give some
+    examples - imagine a parser defined as:
+
+        class AnacondaLog(Scannable):
+            pass
+
+    (Which uses the default parse() function that simply yields each line in
+    turn.)  A rule using this parser then does:
+
+        def warnings(line):
+            return line if 'WARNING' in line
+
+        def has_fcoe_edd(line):
+            return '/usr/libexec/fcoe/fcoe_edd.sh' in line
+
+        AnacondaLog.any('has_fcoe', has_fcoe_edd)
+        AnacondaLog.collect('warnings', warnings)
+
+    These then act in the following way:
+
+    * When an object is instantiated from the AnacondaLog class, it will have
+      the 'has_fcoe' attribute.  This will be set to True if
+      '/usr/libexec/fcoe/fcoe_edd.sh' was found in any line in the file, or
+      False otherwise.
+    * When an object is instantiated from the AnacondaLog class, it will have
+      the 'warnings' attribute.  This will be a list containing all the lines
+      found.
+
+    Users of your class can supply any function to either `any()` or
+    `collect()`.  Functions given to `collect()` can return anything they want
+    to be collected - if they return something that evaluates to `False` then
+    nothing is collected (so avoid returning empty lists, empty dicts, empty
+    strings or False).
+
+    """
 
     __metaclass__ = ScanMeta
 
