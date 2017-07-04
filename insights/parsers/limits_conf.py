@@ -229,14 +229,8 @@ class LimitsConf(Parser):
         if not search_params:
             return matched
 
-        params_to_match = len(search_params)
         for rule in self.rules:
-            # Count up the matched parameters and append if they all match.
-            param_matches = 0
-            for param in search_params:
-                if self._matches(param, rule[param], kwargs[param]):
-                    param_matches += 1
-            if param_matches == params_to_match:
+            if all([self._matches(param, rule[param], kwargs[param]) for param in search_params]):
                 matched.append(rule)
 
         return matched
