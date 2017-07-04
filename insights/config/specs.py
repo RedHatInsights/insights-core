@@ -168,7 +168,7 @@ static_specs = {
     "lastupload"                : All([SimpleFileSpec("etc/redhat-access-insights/.lastupload"),
                                     SimpleFileSpec("etc/insights-client/.lastupload")]),
     "libvirtd.log"              : SimpleFileSpec("var/log/libvirt/libvirtd.log"),
-    "limits.conf"               : SimpleFileSpec("etc/security/limits.conf"),
+    "limits.conf"               : PatternSpec("etc/security/limits.conf"),
     "limits.d"                  : PatternSpec(r"etc/security/limits.d/.*"),
     "locale"                    : CommandSpec("/usr/bin/locale"),
     "localtime"                 : CommandSpec("/usr/bin/file -L /etc/localtime"),
