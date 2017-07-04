@@ -58,7 +58,7 @@ static_specs = {
     "dig"                       : CommandSpec("/usr/bin/dig +dnssec . DNSKEY"),
     "dirsrv"                    : SimpleFileSpec("etc/sysconfig/dirsrv"),
     "dirsrv_access"             : PatternSpec("var/lib/dirsrv/.*/access"),
-    "dirsrv_errs"               : PatternSpec("var/lib/dirsrv/.*/errors"),
+    "dirsrv_errors"             : PatternSpec("var/lib/dirsrv/.*/errors"),
     "display_java"              : CommandSpec("/usr/sbin/alternatives --display java"),
     "dmesg"                     : CommandSpec("/bin/dmesg", large_content=True),
     "dmidecode"                 : CommandSpec("/usr/sbin/dmidecode"),
