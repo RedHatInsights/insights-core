@@ -373,14 +373,15 @@ static_specs = {
 }
 
 pre_commands = {
-    "block": "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
-    "iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
-    "getblockschedulers": "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
-    "module": "/bin/ls /sys/module",
-    "ceph_socket_files": "/bin/ls /var/run/ceph/ceph-*.*.asok",
-    "ceph_osd_ec_profile_ls ": "/usr/bin/ceph osd erasure-code-profile ls",
-    "md5chk_files": "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
-    "semid": "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'"
+    "block"                     : "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
+    "ceph_osd_ec_profile_ls "   : "/usr/bin/ceph osd erasure-code-profile ls",
+    "ceph_socket_files"         : "/bin/ls /var/run/ceph/ceph-*.*.asok",
+    "dumpdev"                   : "/bin/awk '/ext[234]/ { print $1; }' /proc/mounts",
+    "getblockschedulers"        : "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
+    "iface"                     : "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
+    "md5chk_files"              : "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
+    "module"                    : "/bin/ls /sys/module",
+    "semid"                     : "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'"
 }
 
 meta_files = {

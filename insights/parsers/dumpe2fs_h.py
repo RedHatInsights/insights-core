@@ -31,35 +31,35 @@ Examples:
     >>> e2fs = shared[DumpE2fs]
     >>> e2fs.dev_name
     '/dev/device'
-    >>> e2fs.data['Filesystem volume name']
+    >>> e2fs['Filesystem volume name']
     '<none>'
-    >>> e2fs.data['Last mounted on']
+    >>> e2fs['Last mounted on']
     '/usr'
-    >>> e2fs.data['Filesystem UUID']
+    >>> e2fs['Filesystem UUID']
     '1b332c5d-2410-4934-9118-466f8a14841f'
-    >>> e2fs.data['Filesystem magic number']
+    >>> e2fs['Filesystem magic number']
     '0xEF53'
-    >>> e2fs.data['Filesystem revision #']
+    >>> e2fs['Filesystem revision #']
     '1 (dynamic)'
-    >>> e2fs.data['Filesystem features']
+    >>> e2fs['Filesystem features']
     ['has_journal', 'ext_attr', 'resize_inode', 'dir_index', 'filetype',
      'needs_recovery', 'extent', 'flex_bg', 'sparse_super', 'large_file',
      'huge_file', 'uninit_bg', 'dir_nlink', 'extra_isize'],
-    >>> e2fs.data['Filesystem flags']
+    >>> e2fs['Filesystem flags']
     ['signed_directory_hash']
-    >>> e2fs.data['Default mount options']
+    >>> e2fs['Default mount options']
     ['user_xattr', 'acl']
 
 
 """
 
-from .. import parser, Parser
+from .. import parser, Parser, LegacyItemAccess
 
 COMPOUND_FIELDS = ['Filesystem features', 'Filesystem flags', 'Default mount options']
 
 
 @parser('dumpe2fs-h')
-class DumpE2fs(Parser):
+class DumpE2fs(Parser, LegacyItemAccess):
     """
     Parse each line in the output of the ``dumpe2fs`` command.
     """
