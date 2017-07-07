@@ -325,10 +325,39 @@ def upload(tar_file, collection_duration=None):
                                           docker_group=InsightsClient.options.container_mode))
         upload_status = upload.status_code
         if upload.status_code == 201:
+
+            machine_id = generate_machine_id()
+
+            # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
                 handler.write(upload.text)
             write_to_disk(constants.lastupload_file)
-            machine_id = generate_machine_id()
+
+            # Write to ansible facts directory
+            if os.path.isdir(constants.insights_ansible_facts_dir):
+                import json
+                insights_facts = {}
+                insights_facts['last_upload'] = json.loads(upload.text)
+
+                from auto_config import (_try_satellite6_configuration,
+                                        _try_satellite5_configuration)
+
+                sat6 = _try_satellite6_configuration()
+                sat5 = None
+                if not sat6:
+                    sat5 = _try_satellite5_configuration()
+
+                if sat6:
+                    connection = 'sat6'
+                elif sat5:
+                    connection = 'sat5'
+                else:
+                    connection = 'rhsm'
+
+                insights_facts['conf'] = {'machine-id': machine_id, 'connection': connection}
+                with open(constants.insights_ansible_facts_file, 'w') as handler:
+                    handler.write(json.dumps(insights_facts))
+
             try:
                 logger.info("You successfully uploaded a report from %s to account %s." % (machine_id, InsightsClient.account_number))
             except:
