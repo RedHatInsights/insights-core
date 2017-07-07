@@ -39,3 +39,5 @@ class InsightsConstants(object):
     default_egg_gpg_key = os.path.join(default_conf_dir, 'insights-core.gpg')
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
     last_upload_results_file = os.path.join(default_conf_dir, '.last-upload.results')
+    insights_ansible_facts_dir = os.path.join('/', 'etc', 'ansible', 'facts.d')
+    insights_ansible_facts_file = os.path.join(insights_ansible_facts_dir, 'insights.fact')
