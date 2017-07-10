@@ -13,27 +13,28 @@ logger = logging.getLogger(APP_NAME)
 
 
 class InsightsSchedule(object):
+
     """
     Set the cron schedule
     """
     def __init__(self, set_cron=True):
-        if set_cron and not self.already_linked():
-            self.set_daily()
+        if set_cron and not self.already_linked(CRON_WEEKLY + APP_NAME) and not self.already_linked(CRON_DAILY + APP_NAME):
+            self.set_daily(CRON_DAILY + APP_NAME)
 
-    def already_linked(self):
+    def already_linked(self, cronfile):
         """
         Determine if we are already scheduled
         """
-        if os.path.isfile(CRON_WEEKLY + APP_NAME):
+        if os.path.isfile(cronfile):
             logger.debug('Found cron.weekly')
             return True
-        elif os.path.isfile(CRON_DAILY + APP_NAME):
+        elif os.path.isfile(cronfile):
             logger.debug('Found cron.daily')
             return True
         else:
             return False
 
-    def set_daily(self):
+    def set_daily(self, cronfile):
         """
         Set cron task to daily
         """
@@ -44,13 +45,14 @@ class InsightsSchedule(object):
             logger.debug('Could not remove cron.weekly')
 
         try:
-            os.symlink(
-                '/etc/' + APP_NAME + '/' + APP_NAME + (
-                    '-container' if InsightsClient.options.container_mode else ''
-                ) + '.cron',
-                CRON_DAILY + APP_NAME)
+            os.symlink('/etc/' + APP_NAME + '/' + APP_NAME + (
+                       '-container' if InsightsClient.options.container_mode else ''
+                       ), cronfile)
         except OSError:
             logger.debug('Could not link cron.daily')
+
+        if os.path.islink(cronfile):
+            return True
 
     def remove_scheduling(self):
         '''
