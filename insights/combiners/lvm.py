@@ -1,6 +1,6 @@
 """
-Lvm - Shared combiner for lvm information
-=========================================
+Lvm - Combiner for lvm information
+==================================
 
 This shared combiner for LVM parsers consolidates all of the information for
 the following information:

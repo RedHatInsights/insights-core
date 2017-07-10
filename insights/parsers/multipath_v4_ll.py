@@ -136,7 +136,7 @@ class MultipathDevices(Parser):
         dms (list): Device mapper names of each device, in order found
         aliases (list): Alias of each device, in order found
         wwids (list):  World Wide ID
-        by_dm (dict): Access to each device by device parser name
+        by_dm (dict): Access to each device by device mapper name
         by_alias (dict): Access to each device by alias
         by_wwid (dict): Access to each device by World Wide ID
     """

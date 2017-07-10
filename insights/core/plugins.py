@@ -378,7 +378,7 @@ def register_component(
         component_type: parser, rule, combiner, etc.
         requires: list of components the component needs
         optional: list of optional components the component can use
-        shared: True for parsers and combiners
+        shared: True for most parsers and shared combiners
         cluster: True for cluster parsers and cluster rules
         emitter: True for components that return make_response(...)
     """

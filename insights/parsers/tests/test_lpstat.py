@@ -1,6 +1,6 @@
 """
 Tests for lpstat parser
-======================
+=======================
 
 Note, that date time is localized (according to LC_TIME).
 
