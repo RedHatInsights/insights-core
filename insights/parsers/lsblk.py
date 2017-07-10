@@ -2,8 +2,8 @@
 Block device listing - Command ``lsblk``
 ========================================
 
-Module for processing output of the ``lsblk`` command. Different information
-is provided by the ``lsblk`` command depending upon the options. Parsers
+Module for processing output of the ``lsblk`` command.  Different information
+is provided by the ``lsblk`` command depending upon the options.  Parsers
 included here are:
 
 LSBlock

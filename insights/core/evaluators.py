@@ -40,7 +40,7 @@ class Evaluator(object):
 
     def _init_stats(self):
         return {
-            "mapper": {"count": 0, "fail": 0},
+            "parser": {"count": 0, "fail": 0},
             "reducer": {"count": 0, "fail": 0},
             "skips": {"count": 0}
         }
@@ -72,7 +72,7 @@ class Evaluator(object):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
     def _execute_parser(self, parser, context):
-        self.stats["mapper"]["count"] += 1
+        self.stats["parser"]["count"] += 1
         return parser(context)
 
     def run_metadata_parsers(self, the_meta_data):
@@ -120,7 +120,7 @@ class Evaluator(object):
         pass
 
     def handle_map_error(self, e, context):
-        self.stats["mapper"]["fail"] += 1
+        self.stats["parser"]["fail"] += 1
         log.exception("Parser failed")
 
     def handle_content_error(self, e, filename):
@@ -292,7 +292,7 @@ class MultiEvaluator(Evaluator):
         for plugin, r in generator:
             self.handle_result(plugin, r)
 
-    def handle_result(self, r, plugin):
+    def handle_result(self, plugin, r):
         validate_response(r)
         type_ = r["type"]
         del r["type"]
@@ -393,7 +393,7 @@ class InsightsEvaluator(SingleEvaluator):
                     filename, self.url, e, exc_info=True)
 
     def handle_map_error(self, e, context):
-        self.stats["mapper"]["fail"] += 1
+        self.stats["parser"]["fail"] += 1
         log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
                     e, context, self.url, exc_info=True)
 

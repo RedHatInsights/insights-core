@@ -52,7 +52,8 @@ class LsBoot(FileListing):
         """
         Parse the directory content.
 
-        One usage example requires a 'data' property for these operations::
+        At the moment, one plugin (telemetry/rules/plugins/kernel/missing_boot_files.py)
+        requires a 'data' property for these operations::
 
             missing_kernels = [k for k in grub_kernels if k not in boot_files]
             missing_initrds = [i for i in grub_initrds if i not in boot_files]

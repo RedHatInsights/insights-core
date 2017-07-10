@@ -1,10 +1,11 @@
 [run]
-omit = falafel/contrib/*
-       falafel/archive/*
-       falafel/*/__main__.py
+omit = insights/contrib/*
+       insights/archive/*
+       insights/*/__main__.py
        # Exclude test files from coverage.
-       falafel/tests/*
-       falafel/mappers/tests/*
+       insights/tests/*
+       insights/parsers/tests/*
+       insights/combiners/tests/*
 branch = True
 
 [report]

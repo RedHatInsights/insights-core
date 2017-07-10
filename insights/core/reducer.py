@@ -92,7 +92,7 @@ def run_host(parser_dict, all_output, error_handler, reducers=plugins.REDUCERS, 
 
 @logging_level(logger, logging.DEBUG)
 def log_components(reducers):
-    logger.debug("Custom reducer listing:")
+    logger.debug("Custom component listing:")
     for reducer in sorted(reducers.values()):
         logger.debug("\t" + reducer.serializable_id)
 
@@ -110,7 +110,7 @@ def log_component_outputs(func, local_output, shared_output):
 
 def run_order(components):
     """ Returns components in the order they should be run so that
-    dependencies among components are met.
+        dependencies among components are met.
     """
 
     graph = {}

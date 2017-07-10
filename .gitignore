@@ -38,6 +38,5 @@ integration_tests/
 demo-archives/
 archives/
 .engine_logs/
-falafel.yaml
 *.zip
 *.gz
