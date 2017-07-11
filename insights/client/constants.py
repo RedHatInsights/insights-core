@@ -41,3 +41,4 @@ class InsightsConstants(object):
     last_upload_results_file = os.path.join(default_conf_dir, '.last-upload.results')
     insights_ansible_facts_dir = os.path.join('/', 'etc', 'ansible', 'facts.d')
     insights_ansible_facts_file = os.path.join(insights_ansible_facts_dir, 'insights.fact')
+    insights_ansible_machine_id_file = os.path.join(insights_ansible_facts_dir, 'insights_machine_id.fact')
