@@ -16,6 +16,6 @@ class TestSchedule(unittest.TestCase):
 
     def test_set_daily(self):
         cronfile = '/tmp/crontest.cron'
-        schedule.set_daily(cronfile)
+        schedule.set_schedule(cronfile)
         self.assertTrue(os.path.islink(cronfile))
         os.remove(cronfile)
