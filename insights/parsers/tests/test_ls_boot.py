@@ -1,14 +1,13 @@
 from insights.parsers.ls_boot import LsBoot
 from insights.tests import context_wrap
 
-import unittest
-
 LS_BOOT = """
 /boot:
 total 187380
 dr-xr-xr-x.  3 0 0     4096 Mar  4 16:19 .
 dr-xr-xr-x. 19 0 0     4096 Jul 14 09:10 ..
 -rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
+drwxr-xr-x.  6 0 0      111 Jun 15 09:51 grub2
 
 /boot/grub2:
 total 36
@@ -29,32 +28,28 @@ lrwxrwxrwx.  1 root root       34 May 11 11:00 vmlinuz -> vmlinuz-2.6.32-504.12.
 """
 
 
-class LsBootTests(unittest.TestCase):
-    def test_ls_boot(self):
-        ls_boot = LsBoot(context_wrap(LS_BOOT))
-        self.assertIn('/boot', ls_boot)
-        self.assertIn('/boot/grub2', ls_boot)
-        self.assertIn('config-3.10.0-229.14.1.el7.x86_64', ls_boot.files_of('/boot'))
-        self.assertIn('menu.lst', ls_boot.files_of('/boot/grub2'))
-        self.assertIn('device.map', ls_boot.files_of('/boot/grub2'))
-        self.assertIn('grub.cfg', ls_boot.files_of('/boot/grub2'))
+def test_ls_boot():
+    ls_boot = LsBoot(context_wrap(LS_BOOT))
+    assert '/boot' in ls_boot
+    assert '/boot/grub2' in ls_boot
+    assert ls_boot.dirs_of('/boot') == ['.', '..', 'grub2']
 
-        # Note: for the 'data' list, we don't care what order the items are in
-        self.assertIn("config-3.10.0-229.14.1.el7.x86_64", ls_boot.data)
-        self.assertIn("menu.lst", ls_boot.data)
-        self.assertIn("device.map", ls_boot.data)
-        self.assertIn("grub.cfg", ls_boot.data)
-        self.assertEqual(len(ls_boot.data), 4)
+    grub2_files = ls_boot.files_of('/boot/grub2')
+    assert 'menu.lst' in grub2_files
+    assert 'device.map' in grub2_files
+    assert 'grub.cfg' in grub2_files
+    assert len(grub2_files) == 3
 
-    def test_boot_links(self):
-        ls_boot = LsBoot(context_wrap(LS_BOOT_LINKS))
-        self.assertIn('/boot', ls_boot)
-        self.assertIn('initramfs-2.6.32-504.el6.x86_64.img', ls_boot.files_of('/boot'))
-        self.assertIn('initrd', ls_boot.files_of('/boot'))
-        self.assertIn('vmlinuz', ls_boot.files_of('/boot'))
-        self.assertIn('vmlinuz-2.6.32-504.el6.x86_64', ls_boot.files_of('/boot'))
-        # data list gives files even if they're links to missing files
-        self.assertIn('initramfs-2.6.32-504.el6.x86_64.img', ls_boot.data)
-        self.assertIn('vmlinuz-2.6.32-504.el6.x86_64', ls_boot.data)
-        self.assertIn('initrd', ls_boot.data)
-        self.assertIn('vmlinuz', ls_boot.data)
+    boot_files = ls_boot.files_of('/boot')
+    assert "config-3.10.0-229.14.1.el7.x86_64" in boot_files
+    assert len(boot_files) == 1
+
+
+def test_boot_links():
+    ls_boot = LsBoot(context_wrap(LS_BOOT_LINKS))
+    boot_files = ls_boot.files_of('/boot')
+    assert '/boot' in ls_boot
+    assert 'initramfs-2.6.32-504.el6.x86_64.img' in boot_files
+    assert 'initrd' in boot_files
+    assert 'vmlinuz' in boot_files
+    assert 'vmlinuz-2.6.32-504.el6.x86_64' in boot_files
