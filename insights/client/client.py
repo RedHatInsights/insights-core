@@ -272,7 +272,10 @@ def collect(rc=0):
             archive_meta['display_name'] = determine_hostname(InsightsClient.options.display_name)
             archive_meta['type'] = t['type'].replace('docker_', '')
             archive_meta['product'] = 'Docker'
-            archive_meta['system_id'] = generate_analysis_target_id(t['type'], t['name'])
+
+            machine_id = generate_analysis_target_id(t['type'], t['name'])
+            archive_meta['system_id'] = machine_id
+            archive_meta['machine_id'] = machine_id
 
             if InsightsClient.options.container_mode:
                 compressor = "none"
