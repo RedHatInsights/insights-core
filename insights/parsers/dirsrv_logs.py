@@ -44,11 +44,7 @@ class DirSrvAccessLog(LogFileOutput):
         Path: /var/log/dirsrv/slapd-EXAMPLE-COM/access
         Connection lines: 2
     '''
-    def get_after(self, timestamp, lines=None):
-        '''
-        Return the list of lines after the given timestamp.
-        '''
-        return super(DirSrvAccessLog, self).get_after(timestamp, lines, '%d/%b/%Y:%H:%M:%S')
+    time_format = '%d/%b/%Y:%H:%M:%S'
 
 
 @parser('dirsrv_errors')
@@ -88,8 +84,4 @@ class DirSrvErrorsLog(LogFileOutput):
         TLS send error lines: 6
         Connections not before 23:22:31: 4
     '''
-    def get_after(self, timestamp, lines=None):
-        '''
-        Return the list of lines after the given timestamp.
-        '''
-        return super(DirSrvErrorsLog, self).get_after(timestamp, lines, '%d/%b/%Y:%H:%M:%S')
+    time_format = '%d/%b/%Y:%H:%M:%S'
