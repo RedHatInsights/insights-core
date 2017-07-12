@@ -48,7 +48,13 @@ from .. import LogFileOutput, parser
 class Messages(LogFileOutput):
     """
     Read the ``/var/log/messages`` file using the LogFileOutput parser class.
+
+    NOTE:
+        Because /var/log/messages timestamps by default have no year,
+        the year of the logs will be inferred from the year in your timestamp.
+        This will also work around December/January crossovers.
     """
+    time_format = '%b %d %H:%M:%S'
 
     def get(self, s):
         """
@@ -86,23 +92,3 @@ class Messages(LogFileOutput):
                     msg_info['procname'] = info_splits[4]
                 r.append(msg_info)
         return r
-
-    def get_after(self, timestamp, lines=None):
-        """
-        Get a list of lines after the given time stamp.
-
-        Parameters:
-            timestamp(datetime.datetime): log lines after this time are
-                returned.
-            lines(list): the list of log lines to search (e.g. from a get).
-                If not supplied, all available lines are searched.
-
-        Returns:
-            (list): The list of log lines with time stamps after the given
-            date and time.
-
-        *NOTE*: Because /var/log/messages timestamps by default have no year,
-        the year of the logs will be inferred from the year in your timestamp.
-        This will also work around December/January crossovers.
-        """
-        return super(Messages, self).get_after(timestamp, lines, '%b %d %H:%M:%S')
