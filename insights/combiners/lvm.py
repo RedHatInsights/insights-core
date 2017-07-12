@@ -173,7 +173,7 @@ class Lvm(object):
     LvVgName = namedtuple('LvVgName', ['LV', 'VG'])
     """Named tuple used as key for logical volumes."""
 
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         # Volume Groups information
         self.volume_groups = merge_lvm_data(get_shared_data(Vgs, shared),
                                             get_shared_data(VgsHeadings, shared),

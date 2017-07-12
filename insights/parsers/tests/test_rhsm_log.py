@@ -1,3 +1,4 @@
+from insights.config.factory import add_filter
 from insights.parsers.rhsm_log import RhsmLog
 from insights.tests import context_wrap
 
@@ -16,7 +17,7 @@ LOG2 = """
     File "/usr/share/rhsm/subscription_manager/managercli.py", line 600, in _do_command
 """.strip()
 
-RhsmLog.filters.extend([
+add_filter("rhsm.log", [
     "[ERROR]",
     "[Errno"
 ])

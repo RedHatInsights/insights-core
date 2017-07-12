@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-Creates the content used to describe files and command output to be
-collected by the client-side Red Hat Insights uploder.  That is,
-it creates the ``uploader.json`` file.
+Creates the content used to describe files and command output to be collected
+by the client-side Red Hat Insights uploader.  That is, it creates the
+``uploader.json`` file.
 
 In addition, it creates a mapping of files to plugins,
 ``file_plugin_mapping.json``, to be used to identify what plugins would
@@ -17,7 +17,7 @@ import os
 import sys
 from optparse import OptionParser
 
-# This is pretty hacky, but lets us run this w/o a virtualenv
+# This is pretty hacky but lets us run this w/o a virtualenv
 try:
     import insights
 except ImportError:
@@ -26,8 +26,9 @@ except ImportError:
 
 from insights.config import CommandSpec, SimpleFileSpec
 from insights.config import get_meta_specs
-from insights.core import plugins, DEFAULT_PLUGIN_MODULE
 from insights.config import InsightsDataSpecConfig, specs as config_specs, group_wrap
+from insights.config.factory import FILTERS
+from insights.core import dr
 
 log = logging.getLogger()
 
@@ -61,7 +62,7 @@ class APIConfigGenerator(object):
             self.version_number = os.environ.get("BUILD_NUMBER",
                                                  datetime.now().isoformat())
 
-        plugins.load(plugin_package if plugin_package else DEFAULT_PLUGIN_MODULE)
+        dr.load_components(plugin_package or "insights.plugins")
 
     @staticmethod
     def writefile(filename, o):
@@ -70,7 +71,8 @@ class APIConfigGenerator(object):
 
     @staticmethod
     def get_filters_for(name):
-        return list(plugins.NAME_TO_FILTER_MAP.get(name, ()))
+        return FILTERS.get(name, ())
+#        return list(plugins.NAME_TO_FILTER_MAP.get(name, ()))
 
     @staticmethod
     def get_rule_ids_for(plugin):
@@ -120,12 +122,9 @@ class APIConfigGenerator(object):
         added_paths = defaultdict(set)
         utilized_specs = set()
 
-        def add_name(name, plugins, sc):
-            specs = sc.get_specs(name)
-            for s in specs:
-                utilized_specs.add(s)
+        def add_name(name, specs_):
             conf = upload_conf[sc.prefix] if sc.prefix else upload_conf
-            for spec in specs:
+            for spec in specs_.get_specs():
                 output_filter = sorted(self.get_filters_for(name))
                 specs_list.add(name, spec, output_filter)
                 path = spec.get_for_uploader()
@@ -137,8 +136,6 @@ class APIConfigGenerator(object):
 
                     lst = conf if sc.prefix else conf["commands"]
                     lst.append(cmd)
-                    spec_key = "commands"
-
                 else:
                     if path not in added_paths[sc]:
                         lst = conf if sc.prefix else conf["files"]
@@ -146,28 +143,13 @@ class APIConfigGenerator(object):
                             "file": path,
                             "pattern": output_filter
                         })
-                        spec_key = "files"
                         added_paths[sc].add(path)
                     else:
                         continue
 
-                for plugin in plugins_:
-                    for rule_id in self.get_rule_ids_for(plugin):
-                        self.rule_spec_mapping[rule_id][spec_key].append(path)
-
-        for name in sorted(plugins.PARSERS):
-            plugins_ = plugins.PARSERS[name]
-            if not any(m for m in plugins_ if m.consumers):
-                continue
-            spec_configs = (self.data_spec_config, self.openshift_config)
-            if all(map(lambda sc: sc.get_specs(name) == [], spec_configs)):
-                error_msg = ("Symbolic name '{0}' is referenced by '{1}', "
-                             "but is not available via configuration.")
-                dependent_plugins = ", ".join([p.__module__ for p in plugins_])
-                print error_msg.format(name, dependent_plugins)
-                continue
-            for sc in spec_configs:
-                add_name(name, plugins_, sc)
+        for sc in (self.data_spec_config, self.openshift_config):
+            for name, specs in sc.iteritems():
+                add_name(name, specs)
 
         print "*" * 80
         all_specs = set()
@@ -201,16 +183,7 @@ class APIConfigGenerator(object):
 
         upload_conf = self.serialize_data_spec()
 
-        # Holds the data that becomes file_plugin_mapping.json
-        file_plugins_map = defaultdict(list)
-
-        for filename, plugin_classes in plugins.PARSERS.iteritems():
-            for plugin_class in plugin_classes:
-                file_plugins_map[filename].append(plugin_class.__module__)
-
         self.writefile(self.uploader_config_filename, upload_conf)
-        self.writefile(self.file_plugin_map_filename, file_plugins_map)
-        self.writefile(self.rule_spec_mapping_filename, self.rule_spec_mapping)
 
 
 def main():

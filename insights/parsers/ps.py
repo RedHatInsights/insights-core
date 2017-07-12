@@ -65,7 +65,7 @@ Examples:
     >>> [p['COMMAND'] for p in ps_info]
     ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
 """
-from .. import Parser, parser, parse_table
+from .. import add_filter, Parser, parser, parse_table
 
 
 class ProcessList(Parser):
@@ -156,7 +156,10 @@ class PsAuxcww(ProcessList):
                 self.services.append((service, user, line))
 
 
-@parser('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
+add_filter('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
+
+
+@parser('ps_aux')
 class PsAux(ProcessList):
     """Class to parse ``ps aux`` command output.
 

@@ -19,7 +19,7 @@ uptime_seconds => 1893598
 def test_get_uptime_uptime1():
     ut = Uptime(context_wrap(UPTIME1))
     shared = {Uptime: ut}
-    upt = uptime(None, shared)
+    upt = uptime(shared)
     assert upt.currtime == '14:28:24'
     assert upt.updays == ""
     assert upt.uphhmm == '5:55'
@@ -32,7 +32,7 @@ def test_get_uptime_uptime1():
 def test_get_uptime_uptime2():
     ut = Uptime(context_wrap(UPTIME2))
     shared = {Uptime: ut}
-    upt = uptime(None, shared)
+    upt = uptime(shared)
     assert upt.currtime == '10:55:22'
     assert upt.updays == '40'
     assert upt.uphhmm == '00:03'
@@ -45,7 +45,7 @@ def test_get_uptime_uptime2():
 def test_get_facter_uptime():
     ft = Facter(context_wrap(UPTIME3))
     shared = {Facter: ft}
-    upt = uptime(None, shared)
+    upt = uptime(shared)
     assert upt.updays == "21"
     assert upt.uphhmm == '21:59'
     assert upt.loadavg is None
@@ -57,7 +57,7 @@ def test_get_both_uptime():
     ut = Uptime(context_wrap(UPTIME2))
     ft = Facter(context_wrap(UPTIME3))
     shared = {Uptime: ut, Facter: ft}
-    upt = uptime(None, shared)
+    upt = uptime(shared)
     assert upt.currtime == '10:55:22'
     assert upt.updays == '40'
     assert upt.uphhmm == '00:03'
@@ -71,5 +71,5 @@ def test_get_both_uptime():
 def test_uptime_raise_no_data():
     with pytest.raises(Exception) as exc:
         shared = {}
-        uptime(None, shared)
+        uptime(shared)
     assert 'Unable to get uptime information' in str(exc)

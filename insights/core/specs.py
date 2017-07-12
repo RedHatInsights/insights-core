@@ -2,6 +2,7 @@ import re
 import os
 import logging
 from collections import defaultdict
+from insights.core import archives
 from insights.config.static import get_config
 from insights.config import AnalysisTarget, META_FILE_LIST, CommandSpec
 
@@ -23,6 +24,7 @@ class SpecMapper(object):
         self.symbolic_files = defaultdict(list)
         self.analysis_target = self._determine_analysis_target()
         self.create_symbolic_file_list()
+        self.content_cache = dict()
 
     def _name_filter(self, name):
         return not (self.tf.isdir(name) or name.endswith(".tar.gz"))
@@ -47,6 +49,13 @@ class SpecMapper(object):
         for f in files:
             if "sos_commands" in f or "insights_commands" in f or "commands/" in f:
                 yield f
+
+    def sub_spec_mappers(self):
+        subarchives = [a for a in self.tf.getnames() if a.endswith(".tar")]
+        for i, archive in enumerate(subarchives):
+            content = self.get_content(archive, split=False, symbolic=False)
+            extractor = archives.TarExtractor().from_buffer(content)
+            yield SpecMapper(extractor)
 
     def add_files(self, file_map):
         logger.debug("ROOT: %s", self.root)
@@ -121,10 +130,15 @@ class SpecMapper(object):
     def get_content(self, path, split=True, symbolic=True, default=""):
         """Returns file content from path, where path is the full pathname inside
         the archive"""
+        key = (path, split, symbolic, default)
+        if key in self.content_cache:
+            return self.content_cache[key]
         if symbolic:
             path = self.symbolic_files.get(path, [""])[0]
         content = self.tf.extractfile(path) if path in self.all_names else default
-        return list(content.splitlines()) if split else content
+        result = content.splitlines() if split else content
+        self.content_cache[key] = result
+        return result
 
     def exists(self, path, symbolic=True):
         return path in self.symbolic_files if symbolic else path in self.all_names

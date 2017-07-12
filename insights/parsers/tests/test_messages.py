@@ -1,3 +1,4 @@
+from insights.config.factory import add_filter
 from insights.parsers.messages import Messages
 from insights.tests import context_wrap
 
@@ -13,7 +14,7 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
 
-Messages.filters.extend([
+add_filter("messages", [
     "LIST",
     "CROND",
     "jabberd",

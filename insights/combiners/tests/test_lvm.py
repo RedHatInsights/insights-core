@@ -287,8 +287,6 @@ def test_set_defaults():
 
 @pytest.fixture
 def lvm_data():
-    local = {}
-
     vgs = Vgs(context_wrap(VGS_NO_HEADINGS))
     vgs_headings = VgsHeadings(context_wrap(VGS_HEADINGS))
     pvs = Pvs(context_wrap(PVS_NO_HEADINGS))
@@ -307,7 +305,7 @@ def lvm_data():
         {LvsHeadings: lvs_headings}
     ]
     LvmData = namedtuple('LvmData', ['lvm_info', 'shared'])
-    yield [LvmData(Lvm(local, shared), shared) for shared in shared_list]
+    yield [LvmData(Lvm(shared), shared) for shared in shared_list]
 
 
 def test_combiner_vgs(lvm_data):

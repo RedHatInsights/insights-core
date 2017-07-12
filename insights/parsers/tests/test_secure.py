@@ -1,3 +1,4 @@
+from insights.config.factory import add_filter
 from insights.parsers.secure import Secure
 from insights.tests import context_wrap
 
@@ -13,7 +14,7 @@ Aug 25 14:04:04 localhost sshd[23089]: Received disconnect from 10.66.192.100: 1
 Aug 25 14:04:04 localhost sshd[23085]: pam_unix(sshd:session): session closed for user zjj
 """.strip()
 
-Secure.filters.extend([
+add_filter("secure", [
     "polkitd",
     "sshd"
 ])

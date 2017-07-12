@@ -4,19 +4,20 @@ import logging
 import pprint
 import json
 import tempfile
-from collections import defaultdict
 from functools import wraps
 from itertools import islice
-from insights.core import parser, reducer, marshalling, plugins
-from insights.core.context import Context, PRODUCT_NAMES
+from insights.core.evaluators import MultiEvaluator, SingleEvaluator
+from insights.core.context import Context
+from insights.config.factory import apply_filters
 from insights.util import make_iter
+from collections import defaultdict
 
-# Need to alias the name of TestArchive since pytest looks at it becuase it
+# Need to alias the name of TestArchive since pytest looks at it because it
 # starts with "Test".
 from insights.archive.tool import TestArchive as TA, Transform as T
 
 
-logger = logging.getLogger("test.util")
+logger = logging.getLogger(__name__)
 
 ARCHIVE_GENERATORS = []
 HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
@@ -54,7 +55,7 @@ def unordered_compare(result, expected):
         assert result == expected
 
 
-def archive_provider(module, test_func=unordered_compare, stride=1):
+def archive_provider(component, test_func=unordered_compare, stride=1):
     """
     Decorator used to register generator functions that yield InputData and
     expected response tuples.  These generators will be consumed by py.test
@@ -66,179 +67,111 @@ def archive_provider(module, test_func=unordered_compare, stride=1):
 
     Parameters
     ----------
-    module: (str)
-        The module to be tested.
+    component: (str)
+        The component to be tested.
     test_func: function
-        A custom comparison function with the parameters
-        (result, expected).  This will override the use of the compare() [1]
-        function.
+        A custom comparison function with the parameters (result, expected).
+        This will override the use of the compare() [1] function.
     stride: int
         yield every `stride` InputData object rather than the full set. This
         is used to provide a faster execution path in some test setups.
 
-    [1] insights.rules.tests.util.compare()
+    [1] insights.tests.unordered_compare()
     """
     def _wrap(func):
         @wraps(func)
         def __wrap(stride=stride):
             for input_data, expected in islice(func(), None, None, stride):
-                yield module, test_func, input_data, expected
+                yield component, test_func, input_data, expected
 
-        __wrap.serializable_id = "#".join([func.__module__, func.__name__])
         __wrap.stride = stride
         ARCHIVE_GENERATORS.append(__wrap)
         return __wrap
     return _wrap
 
 
+CACHED_BY_MODULE = defaultdict(list)
+
+
+def ensure_cache_populated():
+    if not CACHED_BY_MODULE:
+        for gen in ARCHIVE_GENERATORS:
+            for component, test_func, input_data, expected in gen():
+                CACHED_BY_MODULE[component].append((test_func, input_data, expected))
+
+
+def plugin_tests(component):
+    ensure_cache_populated()
+    for test_func, input_data, expected in CACHED_BY_MODULE[component]:
+        yield test_func, input_data, expected
+
+
 def context_wrap(lines, path='path', hostname='hostname',
                  release='release', version='-1.-1', machine_id="machine_id", **kwargs):
     if isinstance(lines, basestring):
-        lines = lines.lstrip().splitlines()
-
+        lines = lines.strip().splitlines()
     return Context(content=lines,
                    path=path, hostname=hostname,
                    release=release, version=version.split('.'),
                    machine_id=machine_id, **kwargs)
 
 
-def construct_lines(package):
-    return [
-        "Linewhichwillnotbesplit!",
-        "xz-libs-4.999.9-0.3.beta.20091007git.el6.x86_64             Thu 22 Aug 2013 03:59:09 PM HKT",
-        "{0}                                 Thu 22 Aug 2013 03:59:09 PM HKT".format(package),
-        "rootfiles-8.1-6.1.el6.noarch                                Thu 22 Aug 2013 04:01:12 PM HKT"
-    ]
-
-
-def prep_for_reducer(list_, use_value_list=False):
-    return marshalling.unmarshal_to_context(marshalling.marshal(o, use_value_list=use_value_list) for o in list_)
-
-
-def get_parsers_for(module):
-    for m in set(itertools.chain(plugins.PLUGINS[module.__name__]["parsers"],
-                                 plugins.SHARED_PARSERS)):
-        for symbolic_name in m.symbolic_names:
-            yield symbolic_name, m
-
-
-def get_reducer_for(module):
-    module_name = module.__name__.rpartition(".")[-1]
-    f = plugins.REDUCERS.get(module_name, plugins.CLUSTER_REDUCERS.get(module_name))
-    if f:
-        return {module_name: f}
-    else:
-        return {}
-
-
-def integrator(module):
+def integrator(component):
     """
-    Curries the integrate method with the given module. Useful for when you
+    Curries the integrate method with the given component. Useful for when you
     will be making multiple calls to integrate and want to dry those calls up.
     """
-    return lambda input_data: integrate(input_data, module)
+    return lambda input_data: integrate(input_data, component)
 
 
-def integrator_assert(module):
+def integrator_assert(component):
     def _test(input_data, expected):
-        result = integrate(input_data, module)
+        result = integrate(input_data, component)
         print "Actual:"
         pprint.pprint(result)
         print "\nExpected:"
         pprint.pprint(expected)
         assert result == expected
-    _test.module = module
+    _test.component = component
     return _test
 
 
-def error_handler(func, e, local, shared):
-    logger.exception("Error in running test")
+class MultinodeShim(object):
+    def __init__(self, input_datas):
+        self.input_datas = input_datas
+
+    def sub_spec_mappers(self):
+        return self.input_datas
+
+    def get_content(self, path, default=None, **kwargs):
+        return default
 
 
-def integrate(input_data, module):
+def integrate(input_data, component):
     """
-    This method drives the mapreduce framework with test `input_data`.
-
     :param InputData input_data: InputData object filled with test data
-    :param module module: module containing parsers and rules to test with
-
-    parsers and rules registered by `module` are isolated and passed data
-    from the `input_data` parameter. The function returns a list of reducer
-    results. In most cases this will be a list of length 1.
+    :param callable component: component to test
     """
-    parser_map = defaultdict(list)
-    for target, f in get_parsers_for(module):
-        parser_map[target].append(f)
-
-    records = []
     if isinstance(input_data, InputData):
-        input_data = [input_data]
-        is_multi_node = False
-    elif isinstance(input_data, list):
-        is_multi_node = True
+        evaluator = SingleEvaluator(input_data)
+        evaluator.process()
+        return [evaluator.broker.instances[component]]
+    if isinstance(input_data, list):
         if isinstance(input_data[0], dict):
             # Assume it's metadata.json
             if "systems" not in input_data[0]:
                 # The multinode parsers use the presence of the "system" key to
                 # validate this really is a multinode metadata.json
                 input_data[0]["systems"] = []
-            records.append({
-                "content": json.dumps(input_data[0]),
-                "release": "default-release",
-                "version": ["-1", "-1"],
-                "attachment_uuid": None,
-                "target": "metadata.json",
-                "path": "metadata.json",
-                "hostname": None,
-                "case_number": ""
-            })
+            meta = input_data[0]
             input_data = input_data[1:]
+            evaluator = MultiEvaluator(MultinodeShim(input_data), meta)
+        else:
+            evaluator = MultiEvaluator(MultinodeShim(input_data))
+        evaluator.process()
+        return [evaluator.broker.instances[component]]
     else:
         raise TypeError("Unrecognized test data: %s" % type(input_data))
-
-    for in_d in input_data:
-        for record in in_d.records:
-            ctx = record["context"]
-            new_rec = {
-                "content": ctx.content,
-                "release": ctx.release,
-                "version": ctx.version,
-                "path": ctx.path,
-                "hostname": ctx.hostname,
-                "attachment_uuid": ctx.machine_id,
-                "target": record["target"],
-                "accountnumber": record["accountnumber"],
-                "case_number": ""
-            }
-            new_rec.update({k: v for k, v in in_d.extra_context.items() if k in PRODUCT_NAMES})
-            records.append(new_rec)
-
-    _, parser_output = parser.run(iter(records), parsers=parser_map)
-    reducers = get_reducer_for(module)
-
-    if is_multi_node:
-        shared_reducers = {}
-        for r in reducers.values():
-            requires = plugins.COMPONENT_DEPENDENCIES[r]
-            shared_reducers = {i: i for i in requires if i.shared and i._reducer}
-        if shared_reducers:
-            for k, v in parser_output.iteritems():
-                list(reducer.run_host(v, {}, error_handler, reducers=shared_reducers))
-        gen = reducer.run_multi(parser_output, {}, error_handler, reducers=reducers)
-        return [result for func, result in gen if result["type"] != "skip"]
-    else:
-        host_outputs = parser_output.values()
-        if len(host_outputs) == 0:
-            return []
-        else:
-            single_host = host_outputs[0]
-        assert all(not r.cluster for r in reducers.values()), "Cluster reducers not allowed in single node test"
-        if not reducers:
-            # Assume we're expecting a parser to make_response.
-            return [v[0] for v in single_host.values() if isinstance(v[0], dict) and "error_key" in v[0]]
-        gen = reducer.run_host(single_host, {}, error_handler, reducers=reducers)
-        reducer_modules = [r.__module__ for r in reducers.values()]
-        return [r for func, r in gen if func.__module__ in reducer_modules and r["type"] != "skip"]
 
 
 input_data_cache = {}
@@ -274,12 +207,14 @@ class InputData(object):
     contain the specified value in the context.path field.  This is useful for
     testing pattern-like file parsers.
     """
-
     def __init__(self, name=None, release=None, version=["-1", "-1"], hostname=None, machine_id=None, **kwargs):
         cnt = input_data_cache.get(name, 0)
         self.name = "{0}-{1:0>5}".format(name, cnt)
         input_data_cache[name] = cnt + 1
+        self.root = "/"
         self.records = []
+        self.symbolic_files = defaultdict(list)
+        self.by_path = {}
         self.to_remove = []
         self.release = release if release else "default-release"
         self.version = version.split(".") if "." in version else version
@@ -293,6 +228,7 @@ class InputData(object):
         # TODO: Rename field to better represent its real function
         self.hostname = self.machine_id
         self.add("hostname", hostname if hostname else "hostname.example.com")
+        self.add("redhat-release", self.release)
         self.add_legacy_product_records()
 
     def add_legacy_product_records(self):
@@ -316,6 +252,16 @@ class InputData(object):
     def get_context(self):
         return self.records[0]["context"] if len(self.records) > 0 else None
 
+    def get_content(self, target, split=True, symbolic=True, default=""):
+        try:
+            if not symbolic:
+                content = self.by_path[target]
+            else:
+                content = self.by_path[self.symbolic_name[target][0]]
+            return content.splitlines() if split else content
+        except:
+            return default
+
     def clone(self, name):
         the_clone = copy.deepcopy(self)
         the_clone.name = name
@@ -325,7 +271,7 @@ class InputData(object):
         if not path:  # path must change to allow parsers to fire
             path = str(next_gn()) + "BOGUS"
         if do_filter:
-            content_iter = parser.filter_lines(make_iter(content), target)
+            content_iter = apply_filters(target, make_iter(content))
         else:
             content_iter = make_iter(content)
         ctx = Context(content="\n".join(content_iter),
@@ -336,12 +282,11 @@ class InputData(object):
                       machine_id=self.machine_id,
                       **self.extra_context)
 
+        self.by_path[path] = content
+        self.by_target[target].append(path)
+
         self.records.append({
             "target": target,
-            "accountnumber": "123456",
-            "case_number": "",
-            "attachment_uuid": self.hostname,
-            "createddate": "01-01-9999",
             "context": ctx
         })
         return self

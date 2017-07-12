@@ -30,7 +30,7 @@ Release = namedtuple("Release", field_names=["major", "minor"])
 
 
 @combiner(requires=[[rht_release, Uname]])
-def redhat_release(local, shared):
+def redhat_release(shared):
     """Check uname and redhat-release for rhel major/minor version.
 
     Prefer uname to redhat-release.

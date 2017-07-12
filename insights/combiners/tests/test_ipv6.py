@@ -176,6 +176,6 @@ def test_integration():
         if case.sysctl is not None:
             context[Sysctl] = Sysctl(context_wrap(case.sysctl))
 
-        ipv6 = IPv6({}, context)
+        ipv6 = IPv6(context)
         assert ipv6.disabled() == result[0]
         assert ipv6.disabled_by() == result[1]

@@ -84,7 +84,7 @@ RHEL_UNSUPPORTED_VERSION = 9999
 class IPv6(object):
     """A combiner which detects disabled IPv6 networking."""
 
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         self.disablers = set()
 
         if shared[Uname].rhel_release[0] == '7':

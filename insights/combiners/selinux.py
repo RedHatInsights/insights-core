@@ -45,7 +45,7 @@ class SELinux(object):
     """
     A combiner for detecting that SELinux is enabled and running and also enabled at boot time.
     """
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         self.problems = {}
         self.sestatus = shared[SEStatus]
         self.selinux_config = shared[SelinuxConfig]

@@ -27,7 +27,7 @@ from ..parsers.grub_conf import Grub2Config
 class UserNamespaces(object):
     """A combiner which determines if user namespaces are enabled."""
 
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         self.grub_cmdline = {}
         # Even if technically possible, it is extremely unlikely that Red Hat will ever
         # ship or support grub1 on a system with kernel > 3.8, so only grub2 config

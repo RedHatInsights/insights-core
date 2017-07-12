@@ -133,7 +133,7 @@ class JournaldConfAll(object):
             # key6 doesn't exist because b.conf from /usr is shadowed by b.conf from /etc
             key7=value11
     """
-    def __init__(self, local, shared):
+    def __init__(self, shared):
 
         # preparation for future possible refactoring into a more general combiner
         central_file_lowest_prio = True

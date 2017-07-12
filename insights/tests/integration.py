@@ -1,10 +1,15 @@
-from insights import tests
-from insights.core.plugins import load
-from itertools import islice
 import pytest
+from itertools import islice
+
+from insights import tests
+from insights.core.dr import get_name, load_components
 
 
-def generate_tests(metafunc, test_func, package_names, pattern=None):
+def integration_test(module, test_func, input_data, expected):
+    test_func(tests.integrate(input_data, module), expected)
+
+
+def pytest_generate_tests(metafunc, test_func, package_names, pattern=None):
     """
     This function hooks in to pytest's test collection framework and provides a
     test for every (input_data, expected) tuple that is generated from all
@@ -14,7 +19,7 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
         if type(package_names) not in (list, tuple):
             package_names = [package_names]
         for package_name in package_names:
-            load(package_name, pattern)
+            load_components(package_name, pattern)
         args = []
         ids = []
         slow_mode = pytest.config.getoption("--runslow")
@@ -26,5 +31,5 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
             for t in ts:
                 args.append(t)
                 input_data_name = t[2].name if not isinstance(t[2], list) else "multi-node"
-                ids.append("#".join([f.serializable_id, input_data_name]))
-        metafunc.parametrize("module,comparison_func,input_data,expected", args, ids=ids)
+                ids.append("#".join([get_name(f), input_data_name]))
+        metafunc.parametrize("module,test_func,input_data,expected", args, ids=ids)

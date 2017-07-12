@@ -7,6 +7,11 @@ TMP_DIR = os.path.join("/tmp", "insights-web")
 logger = logging.getLogger(__name__)
 
 
+def enum(*e):
+    enums = dict(zip(e, range(len(e))))
+    return type("Enum", (), enums)
+
+
 def defaults(default=None):
     """
     Catches any exception thrown by the wrapped function and returns `default`
