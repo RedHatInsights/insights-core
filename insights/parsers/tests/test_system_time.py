@@ -61,24 +61,9 @@ OPTIONS="-d"
 #HIDE="me"
 """.strip()
 
-LOCALTIME = "/etc/localtime: timezone data, version 2, 5 gmt time flags, \
-5 std time flags, no leap seconds, 69 transition times, 5 abbreviation chars"
-
 NTPD = """
 OPTIONS="-x -g"
 #HIDE="me"
-""".strip()
-
-NTPTIME = """
-ntp_gettime() returns code 0 (OK)
-  time dbbc595d.1adbd720  Thu, Oct 27 2016 18:45:49.104, (.104917550),
-  maximum error 263240 us, estimated error 102 us, TAI offset 0
-ntp_adjtime() returns code 0 (OK)
-  modes 0x0 (),
-  offset 0.000 us, frequency 4.201 ppm, interval 1 s,
-  maximum error 263240 us, estimated error 102 us,
-  status 0x2011 (PLL,INS,NANO),
-  time constant 2, precision 0.001 us, tolerance 500 ppm,
 """.strip()
 
 STANDARD_NTP_CONF = """
@@ -175,6 +160,12 @@ def test_chrony_conf():
     assert result['smoothtime'] == ['400 0.001 leaponly']
 
 
+LOCALTIME = "/etc/localtime: timezone data, version 2, 5 gmt time flags, \
+5 std time flags, no leap seconds, 69 transition times, 5 abbreviation chars"
+
+LOCALTIME_BAD = "/etc/localtime: file not found"
+
+
 def test_localtime():
     result = system_time.LocalTime(context_wrap(LOCALTIME)).data
     assert result['name'] == "/etc/localtime"
@@ -186,12 +177,43 @@ def test_localtime():
     assert result['abbreviation_char'] == "5"
 
 
+def test_bad_localtime():
+    result = system_time.LocalTime(context_wrap(LOCALTIME_BAD)).data
+    assert result == {'name': '/etc/localtime'}
+
+
+NTPTIME = """
+ntp_gettime() returns code 0 (OK)
+  time dbbc595d.1adbd720  Thu, Oct 27 2016 18:45:49.104, (.104917550),
+  maximum error 263240 us, estimated error 102 us, TAI offset 0
+ntp_adjtime() returns code 0 (OK)
+  modes 0x0 (),
+  offset 0.000 us, frequency 4.201 ppm, interval 1 s,
+  maximum error 263240 us, estimated error 102 us,
+  status 0x2011 (PLL,INS,NANO),
+  time constant 2, precision 0.001 us, tolerance 500 ppm,
+""".strip()
+
+
 def test_ntptime():
     result = system_time.NtpTime(context_wrap(NTPTIME)).data
     assert result['ntp_gettime'] == '0'
     assert result['ntp_adjtime'] == '0'
     assert result['status'] == '0x2011'
     assert result['flags'] == ['PLL', 'INS', 'NANO']
+
+    assert result['timecode'] == 'dbbc595d.1adbd720'
+    assert result['timestamp'] == 'Thu, Oct 27 2016 18:45:49.104, (.104917550)'
+    assert result['maximum error'] == 263240
+    assert result['estimated error'] == 102
+    assert result['TAI offset'] == 0
+    assert result['modes'] == 0x0
+    assert result['offset'] == 0.000
+    assert result['frequency'] == 4.201
+    assert result['interval'] == 1
+    assert result['time constant'] == 2
+    assert result['precision'] == 0.001
+    assert result['tolerance'] == 500
 
 
 def test_sysconfig_chronyd():
