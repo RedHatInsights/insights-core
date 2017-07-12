@@ -184,15 +184,13 @@ class InsightsConfig(object):
                 raise Exception("from_stdin mode failed to validate GPG sig")
         elif update:
             if not self.conn:
-                logger.error('ERROR: Cannot update rules in --offline mode. '
-                             'Either run without the --update-collection-rules '
-                             'option or disable auto_update in config file.')
-                return False
+                raise ValueError('ERROR: Cannot update rules in --offline mode. '
+                                 'Either run without the --update-collection-rules '
+                                 'option or disable auto_update in config file.')
             dyn_conf = self.get_collection_rules()
             version = dyn_conf.get('version', None)
             if version is None:
-                logger.error("ERROR: Could not find version in json")
-                return False
+                raise ValueError("ERROR: Could not find version in json")
             dyn_conf['file'] = self.collection_rules_file
             logger.debug("Success reading config")
             logger.debug(json.dumps(dyn_conf))
@@ -204,12 +202,10 @@ class InsightsConfig(object):
                 if conf:
                     version = conf.get('version', None)
                     if version is None:
-                        logger.error("ERROR: Could not find version in json")
-                        return False
+                        raise ValueError("ERROR: Could not find version in json")
 
                     conf['file'] = conf_file
                     logger.debug("Success reading config")
                     logger.debug(json.dumps(conf))
                     return conf, rm_conf
-        logger.error("ERROR: Unable to download conf or read it from disk!")
-        return False
+        raise ValueError("ERROR: Unable to download conf or read it from disk!")
