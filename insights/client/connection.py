@@ -501,14 +501,13 @@ class InsightsConnection(object):
         """
         logger.debug("Obtaining branch information from %s",
                      self.branch_info_url)
-        branch_info = self.session.get(self.branch_info_url)
-        logger.debug("GET branch_info status: %s", branch_info.status_code)
-        try:
-            logger.debug("Branch information: %s",
-                         json.dumps(branch_info.json()))
-        except ValueError:
-            raise LookupError
-        branch_info = branch_info.json()
+        response = self.session.get(self.branch_info_url)
+        logger.debug("GET branch_info status: %s", response.status_code)
+        if response.status_code != 200:
+            raise LookupError("Bad status from server: %s" % response.status_code)
+
+        branch_info = response.json()
+        logger.debug("Branch information: %s", json.dumps(branch_info))
 
         # Determine if we are connected to Satellite 5
         if ((branch_info['remote_branch'] is not -1 and
@@ -524,29 +523,9 @@ class InsightsConnection(object):
         client_hostname = determine_hostname()
         machine_id = generate_machine_id(new_machine_id)
 
-        try:
-            branch_info = self.branch_info()
-            remote_branch = branch_info['remote_branch']
-            remote_leaf = branch_info['remote_leaf']
-
-        except LookupError:
-            logger.error(
-                "ERROR: Could not determine branch information, exiting!")
-            logger.error(
-                "See %s for more information", constants.default_log_file)
-            logger.error(
-                "Could not register system, running configuration test")
-            self.test_connection(1)
-
-        except requests.ConnectionError as e:
-            logger.debug(e)
-            logger.error(
-                "ERROR: Could not determine branch information, exiting!")
-            logger.error(
-                "See %s for more information", constants.default_log_file)
-            logger.error(
-                "Could not register system, running configuration test")
-            self.test_connection(1)
+        branch_info = self.branch_info()
+        remote_branch = branch_info['remote_branch']
+        remote_leaf = branch_info['remote_leaf']
 
         data = {'machine_id': machine_id,
                 'remote_branch': remote_branch,
@@ -557,22 +536,12 @@ class InsightsConnection(object):
         if InsightsClient.options.display_name is not None:
             data['display_name'] = InsightsClient.options.display_name
         data = json.dumps(data)
-        headers = {'Content-Type': 'application/json'}
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
         logger.debug(data)
-        system = None
-        try:
-            system = self.session.post(post_system_url,
-                                       headers=headers,
-                                       data=data)
-            logger.debug("POST System status: %d", system.status_code)
-        except requests.ConnectionError as e:
-            logger.debug(e)
-            logger.error(
-                "Could not register system, running configuration test")
-            self.test_connection(1)
-        return system
+        return self.session.post(post_system_url,
+                                 headers={'Content-Type': 'application/json'},
+                                 data=data)
 
     def group_systems(self, group_name, systems):
         """
