@@ -34,7 +34,13 @@ class KerberosKDCLog(LogFileOutput):
         >>> from datetime import datetime
         >>> len(log.get_after(datetime(2017, 4, 1, 3, 36, 30)))  # Apr 01 03:36:30
         4
+
+    Note:
+        Because the Kerberos KDC log timestamps by default have no year,
+        the year of the logs will be inferred from the year in your timestamp.
+        This will also work around December/January crossovers.
     '''
+    time_format = '%b %d %H:%M:%S'
 
     def get(self, keyword):
         '''
@@ -72,15 +78,3 @@ class KerberosKDCLog(LogFileOutput):
                 if match:
                     data.update(match.groupdict())
                 yield data
-
-    def get_after(self, timestamp, lines=None):
-        '''
-        Get all lines after a given date.  The year of the logs is assumed to
-        be the year in the given timestamp (see LogFileOutput's documentation
-        for more details).
-
-        *NOTE*: Because /var/log/krb5kdc.log timestamps by default have no
-        year, the year of the logs will be inferred from the year in your
-        timestamp.  This will also work around December/January crossovers.
-        '''
-        return super(KerberosKDCLog, self).get_after(timestamp, lines, '%b %d %H:%M:%S')

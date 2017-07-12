@@ -8,11 +8,11 @@ import pytest
 
 
 class FakeMessagesClass(LogFileOutput):
-    def get_after(self, timestamp, lines=None):
-        return super(FakeMessagesClass, self).get_after(timestamp, lines, '%b %d %H:%M:%S')
+    time_format = '%b %d %H:%M:%S'
 
     def bad_get_after(self, timestamp, lines=None):
-        return super(FakeMessagesClass, self).get_after(timestamp, lines, '%q/%1 %z:%v:%j')
+        self.time_format = '%q/%1 %z:%v:%j'
+        return super(FakeMessagesClass, self).get_after(timestamp, lines)
 
     def superget(self, s):
         for line in self.lines:
@@ -85,11 +85,6 @@ def test_messages_get_after():
     after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), pulp))
     assert len(after) == 1
 
-    # get_after should only supply strptime that _get_after recognises
-    with pytest.raises(ParseException) as exc:
-        assert list(log.bad_get_after(datetime(2017, 3, 27, 3, 39, 46))) is None
-    assert '_get_after does not understand strptime format ' in str(exc)
-
     # Get lines after date from fields
     pulp = list(log.superget('pulp'))  # includes /pulp/ in traceback
     assert len(pulp) == 8
@@ -100,10 +95,21 @@ def test_messages_get_after():
     after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), pulp))
     assert len(after) == 1
 
-    # get_after should only supply strptime that _get_after recognises
+    # get_after should only supply strptime that get_after recognises
     with pytest.raises(ValueError) as exc:
         assert list(log.get_after(datetime(2017, 3, 27, 3, 39, 46), log.listget('pulp'))) is None
     assert 'Cannot search objects of type ' in str(exc)
+
+
+def test_messages_get_after_bad_time_format():
+    ctx = context_wrap(MESSAGES, path='/var/log/messages')
+    log = FakeMessagesClass(ctx)
+    assert len(log.lines) == 31
+
+    # The timestamp format should only contain parts that get_after recognises
+    with pytest.raises(ParseException) as exc:
+        assert list(log.bad_get_after(datetime(2017, 3, 27, 3, 39, 46))) is None
+    assert 'get_after does not understand strptime format ' in str(exc)
 
 
 MESSAGES_ROLLOVER_YEAR = """
@@ -156,8 +162,7 @@ HTTPD_ACCESS_LOG = """
 
 
 class FakeAccessLog(LogFileOutput):
-    def get_after(self, timestamp, lines=None):
-        return super(FakeAccessLog, self).get_after(timestamp, lines, '%d/%b/%Y:%H:%M:%S')
+    time_format = '%d/%b/%Y:%H:%M:%S'
 
 
 def test_logs_with_year():
@@ -166,3 +171,46 @@ def test_logs_with_year():
     assert len(log.lines) == 8
 
     assert len(list(log.get_after(datetime(2016, 2, 14, 3, 18, 55)))) == 4
+
+
+DATE_CHANGE_MARIADB_LOG = """
+161109  9:25:42 [Warning] SSL error: SSL_CTX_set_default_verify_paths failed
+161109  9:25:42 [Note] WSREP: Service disconnected.
+161109  9:25:43 [Note] WSREP: Some threads may fail to exit.
+161109 14:28:24 InnoDB: Initializing buffer pool, size = 128.0M
+161109 14:28:24 InnoDB: Completed initialization of buffer pool
+2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully
+"""
+
+
+class FakeMariaDBLog(LogFileOutput):
+    time_format = ['%y%m%d %H:%M:%S', '%Y-%m-%d %H:%M:%S']
+
+
+class DictMariaDBLog(LogFileOutput):
+    time_format = {'old': '%y%m%d %H:%M:%S', 'new': '%Y-%m-%d %H:%M:%S'}
+
+
+class BadClassMariaDBLog(LogFileOutput):
+    time_format = FakeAccessLog
+
+
+def test_logs_with_two_timestamps():
+    ctx = context_wrap(DATE_CHANGE_MARIADB_LOG, path='/var/log/mariadb/mariadb.log')
+    log = FakeMariaDBLog(ctx)
+    assert len(log.lines) == 6
+
+    new_ver = list(log.get_after(datetime(2017, 1, 1, 9, 0, 0)))
+    assert len(new_ver) == 1
+    assert new_ver[0] == '2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully'
+
+    dict_log = DictMariaDBLog(ctx)
+    new_ver_d = list(dict_log.get_after(datetime(2017, 1, 1, 9, 0, 0)))
+    assert len(new_ver_d) == 1
+    assert new_ver_d[0] == '2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully'
+
+    # get_after should only supply a string or list for time_format
+    with pytest.raises(ParseException) as exc:
+        logerr = BadClassMariaDBLog(ctx)
+        assert list(logerr.get_after(datetime(2017, 3, 27, 3, 39, 46))) is None
+    assert 'get_after does not recognise time formats of type ' in str(exc)
