@@ -426,6 +426,17 @@ class LogFileOutput(Parser):
     """
     __metaclass__ = ScanMeta
 
+    time_format = '%Y-%m-%d %H:%M:%S'
+    """
+    The timestamp format assumed for the log files.  A subclass can override
+    this for files that have a different timestamp format.  This can be:
+
+    * A string in `strptime()` format.
+    * A list of `strptime()` strings.
+    * A dictionary with each item's value being a `strptime()` string.  This
+      allows the item keys to provide some form of documentation.
+    """
+
     def parse_content(self, content):
         """
         Use all the defined scanners to search the log file, setting the
@@ -485,15 +496,9 @@ class LogFileOutput(Parser):
 
         cls.scan(result_key, _scan)
 
-    def get_after(self, timestamp, lines=None, time_format='%Y-%m-%d %H:%M:%S'):
+    def get_after(self, timestamp, lines=None):
         """
         Find all the (available) logs that are after the given time stamp.
-
-        This method should be used by the subclass to provide an actual
-        ``get_after()`` method which provides the standard time stamp format
-        used by its particular log.  This method should only be used if the
-        subclass does not present its own or the caller needs to override
-        the default time format.
 
         If 'lines' is not supplied, then all lines are used.  Otherwise, the
         caller can provide a list of lines from a scanner or the ``get()``
@@ -504,12 +509,27 @@ class LogFileOutput(Parser):
         are considered to be part of the previous line and are therefore
         included if the last log line was included or excluded otherwise.
 
-        This works by converting the time format into a regular expression
-        which matches the time format in the string.  This is then searched
-        for in each line in turn.  Only lines with a time stamp matching this
-        expression will trigger the decision to include or exclude lines.
-        Therefore, if the log for some reason does not contain a time stamp
-        that matches this format, no lines will be returned.
+        Time stamps are recognised by converting the time format into a
+        regular expression which matches the time format in the string.  This
+        is then searched for in each line in turn.  Only lines with a time
+        stamp matching this expression will trigger the decision to include
+        or exclude lines. Therefore, if the log for some reason does not
+        contain a time stamp that matches this format, no lines will be
+        returned.
+
+        The time format is given in ``strptime()`` format, in the object's
+        ``time_format`` property.  Users of the object should **not** change
+        this property; instead, the parser should subclass LogFileOutput and
+        change the ``time_format`` property.
+
+        Some logs, regrettably, change time stamps formats across different
+        lines, or change time stamp formats in different versions of the
+        program.  In order to accommodate this, the timestamp format can be a
+        list of ``strptime()`` format strings.  These are combined as
+        alternatives in the regular expression, and are given to ``strptime``
+        in order.  These can also be listed as the values of a dict, e.g.::
+
+            {'pre_10.1.5': '%y%m%d %H:%M:%S', 'post_10.1.5': '%Y-%m-%d %H:%M:%S'}
 
         Lines can be either a single string or a dictionary.  String lines
         search for a time stamp in the entire line.  Dictionary lines look
@@ -535,8 +555,11 @@ class LogFileOutput(Parser):
 
             timestamp(datetime.datetime): lines before this time are ignored.
             lines(list): an optional list of lines from this parser to search.
-            time_format(str): the ``strptime()`` string of the format of the
-                dates in this log.
+            time_format(str|list): the ``strptime()`` string of the format of
+                the dates in this log.  This can also be given as a list of
+                ``strptime()`` strings, in which case the regular expression
+                will match any of the formats and all patterns will be tried
+                in order.
 
         Yields:
             (string/dict): the lines with timestamps after this date in the
@@ -551,7 +574,7 @@ class LogFileOutput(Parser):
         if lines is None:
             lines = self.lines
 
-        logs_have_year = ('%Y' in time_format or '%y' in time_format)
+        time_format = self.time_format
 
         # Annoyingly, strptime insists that it get the whole time string and
         # nothing but the time string.  However, for most logs we only have a
@@ -567,11 +590,11 @@ class LogFileOutput(Parser):
             'w': r'[0123456]',  # Week day number
             'd': r'([0 ][123456789]|[12]\d|3[01])',  # Day of month
             'b': r'\w{3}', 'B': r'\w+',  # Month name
-            'm': r'(0\d|1[012])',  # Month number
+            'm': r'([0 ]\d|1[012])',  # Month number
             'y': r'\d{2}', 'Y': r'\d{4}',  # Year
-            'H': r'([01]\d|2[0123])',  # Hour - 24 hour format
-            'I': r'(0\d|1[012])',  # Hour - 12 hour format
-            'p': r'\w[2}',  # AM / PM
+            'H': r'([01 ]\d|2[0123])',  # Hour - 24 hour format
+            'I': r'([0 ]?\d|1[012])',  # Hour - 12 hour format
+            'p': r'\w{2}',  # AM / PM
             'M': r'([012345]\d)',  # Minutes
             'S': r'([012345]\d|60)',  # Seconds, including leap second
             'f': r'\d{6}',  # Microseconds
@@ -585,7 +608,7 @@ class LogFileOutput(Parser):
                 return format_conversion_for[match.group(1)]
             else:
                 raise ParseException(
-                    "_get_after does not understand strptime format '{c}'".format(
+                    "get_after does not understand strptime format '{c}'".format(
                         c=match.group(0)
                     )
                 )
@@ -593,7 +616,42 @@ class LogFileOutput(Parser):
         # Please do not attempt to be tricky and put a regular expression
         # inside your time format, as we are going to also use it in
         # strptime too and that may not work out so well.
-        time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
+
+        # Check time_format - must be string or list.  Set the 'logs_have_year'
+        # flag and timestamp parser function appropriately.
+        # Grab values of dict as a list first
+        if isinstance(time_format, dict):
+            time_format = time_format.values()
+        if isinstance(time_format, str):
+            logs_have_year = ('%Y' in time_format or '%y' in time_format)
+            time_re = re.compile('(' + timefmt_re.sub(replacer, time_format) + ')')
+
+            # Curry strptime with time_format string.
+            def test_parser(logstamp):
+                return datetime.datetime.strptime(logstamp, time_format)
+            parse_fn = test_parser
+        elif isinstance(time_format, list):
+            logs_have_year = all('%Y' in tf or '%y' in tf for tf in time_format)
+            time_re = re.compile('(' + '|'.join(
+                timefmt_re.sub(replacer, tf) for tf in time_format
+            ) + ')')
+
+            def test_all_parsers(logstamp):
+                # One of these must match, because the regex has selected only
+                # strings that will match.
+                for tf in time_format:
+                    try:
+                        ts = datetime.datetime.strptime(logstamp, tf)
+                    except ValueError:
+                        pass
+                return ts
+            parse_fn = test_all_parsers
+        else:
+            raise ParseException(
+                "get_after does not recognise time formats of type {t}".format(
+                    t=type(time_format)
+                )
+            )
 
         # Most logs will appear in string format, but some logs (e.g.
         # Messages) are available in list-of-dicts format.  So we choose one
@@ -603,20 +661,21 @@ class LogFileOutput(Parser):
 
         # Now try to find the time stamp in each log line and add lines to
         # our output if they are currently being included in the log.
+
         eleven_months = datetime.timedelta(days=330)
         including_lines = False
         for line in lines:
             # Evaluate here because of generators
-            if type(line) == str:
+            if isinstance(line, str):
                 s = line
-            elif type(line) == dict:
+            elif isinstance(line, dict):
                 s = line.get('timestamp', '')
             else:
                 raise ValueError("Cannot search objects of type {t} for timestamps")
 
             match = time_re.search(s)
             if match:
-                logstamp = datetime.datetime.strptime(match.group(0), time_format)
+                logstamp = parse_fn(match.group(0))
                 if not logs_have_year:
                     # Substitute timestamp year for logstamp year
                     logstamp = logstamp.replace(year=timestamp.year)
