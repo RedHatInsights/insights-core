@@ -1,5 +1,5 @@
 import optparse
-import urllib2
+import requests
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
@@ -81,8 +81,7 @@ class InsightsClientApi(object):
         core_version = get_nvr()
         client_api_version = constants.version
 
-        return {'core': core_version,
-                'client_api': client_api_version}
+        return {'core': core_version, 'client_api': client_api_version}
 
     def test_connection(self):
         """
@@ -169,36 +168,25 @@ class InsightsClientApi(object):
 
         # Setup the new request for core retrieval
         logger.debug('Making request to %s for new core', egg_url)
-        request = urllib2.Request(egg_url)
 
         # If the etag was found and we are not force fetching
         # Then add it to the request
+        kwargs = {"verify": constants.default_ca_file}
         if current_etag and not force:
             logger.debug('Requesting new core with etag %s', current_etag)
-            request.add_header('If-None-Match', current_etag)
+            kwargs["headers"] = {'If-None-Match': current_etag}
         else:
             logger.debug('Found no etag or forcing fetch')
 
-        # Initialize the data stream
-        class DefaultErrorHandler(urllib2.HTTPDefaultErrorHandler):
-            def http_error_default(self, req, fp, code, msg, headers):
-                result = urllib2.HTTPError(req.get_full_url(), code, msg, headers, fp)
-                result.status = code
-                return result
-        opener = urllib2.build_opener(DefaultErrorHandler())
-        datastream = opener.open(request)
-        data = datastream.read()
+        response = requests.get(egg_url, **kwargs)
 
         # Debug information
-        for attr in ['status', 'code', 'message', 'msg']:
-            if hasattr(datastream, attr):
-                logger.debug('%s: %s', attr, getattr(datastream, attr))
-        if datastream.headers:
-            for header in datastream.headers.dict:
-                logger.debug('%s: %s', header, datastream.headers.dict[header])
+        logger.debug('status code: %d', response.status_code)
+        for header, value in response.headers.iteritems():
+            logger.debug('%s: %s', header, value)
 
         # If data was received, write the new egg and etag
-        if data and datastream.code == 200:
+        if response.status_code == 200 and len(response.content) > 0:
 
             # Setup tmp egg path
             import tempfile
@@ -208,26 +196,26 @@ class InsightsClientApi(object):
             # Write the new core
             with open(tmp_egg_path, 'wb') as handle:
                 logger.debug('Data received, writing core to %s', tmp_egg_path)
-                handle.write(data)
+                handle.write(response.content)
 
             # Write the new etag
             with open(constants.core_etag_file, 'w') as etag_file:
                 logger.debug('Cacheing etag to %s', constants.core_etag_file)
-                etag_file.write(datastream.headers.dict['etag'])
+                etag_file.write(response.headers['etag'])
 
             # Return the tmp egg path
             return tmp_egg_path
 
         # Received a 304 not modified
         # Return nothing
-        elif datastream.code == 304:
+        elif response.status_code == 304:
             logger.debug('No data received')
             logger.debug('Tags match, not updating core')
             return None
 
         # Something unexpected received
         else:
-            logger.debug('Received Code %s', datastream.code)
+            logger.debug('Received Code %s', response.status_code)
             logger.debug('Not writing new core, or updating etag')
             logger.debug('Please check config, error reaching %s', egg_url)
             return None
