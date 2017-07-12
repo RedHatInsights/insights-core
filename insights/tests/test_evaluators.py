@@ -1,17 +1,18 @@
-import os
-import unittest
 from insights.core.specs import SpecMapper
 from insights.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, SingleEvaluator
-from insights.core import plugins
+from insights.core import dr
 from insights.core.archives import TarExtractor
 from insights.plugins.insights_heartbeat import is_insights_heartbeat
-from insights.parsers.multinode import osp
+from insights.parsers.multinode import osp, OSPChild
 from . import insights_heartbeat, HEARTBEAT_ID, HEARTBEAT_NAME
+import json
+import os
+import pprint
+import shutil
+import subprocess
 import tarfile
 import tempfile
-import subprocess
-import json
-import shutil
+import unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -296,15 +297,13 @@ def make_cluster_archive(fd, content_type):
 class TestSingleEvaluator(unittest.TestCase):
 
     def _unpack_archive(self, ex, cls):
-        plugins.load("insights.plugins")
+        dr.load_components("insights.plugins")
         spec_mapper = SpecMapper(ex)
         self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
         p = cls(spec_mapper)
-        p.pre_mapping()
-        p.run_parsers()
-        self.assertEquals(p.parser_results.get(is_insights_heartbeat),
-                          [{"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}])
-        p.run_reducers()
+        p.process()
+        self.assertEquals(p.broker.get(is_insights_heartbeat),
+                          {"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"})
         return p
 
     def _common_tests(self, p):
@@ -313,7 +312,7 @@ class TestSingleEvaluator(unittest.TestCase):
         r = p.get_response()
         self.assertTrue("system" in r)
         self.assertTrue("reports" in r)
-        print json.dumps(r["system"])
+        pprint.pprint(r["system"])
         self.assertTrue(r["system"]["hostname"] == HEARTBEAT_NAME)
         return r
 
@@ -324,7 +323,7 @@ class TestSingleEvaluator(unittest.TestCase):
             self._common_tests(p)
         subprocess.call("rm -rf %s" % arc_path, shell=True)
 
-    def test_insights_evalutor(self):
+    def test_insights_evaluator(self):
         arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
         with TarExtractor().from_path(arc_path) as ex:
             p = self._unpack_archive(ex, InsightsEvaluator)
@@ -339,7 +338,7 @@ class TestSingleEvaluator(unittest.TestCase):
 class TestMultiEvaluator(unittest.TestCase):
 
     def test_unpack(self):
-        plugins.load("insights.plugins")
+        dr.load_components("insights.plugins")
         arc_path = insights_heartbeat()
         with open(arc_path, "rb") as fd:
             cluster_arc = make_cluster_archive(fd, "application/x-gzip")
@@ -350,5 +349,7 @@ class TestMultiEvaluator(unittest.TestCase):
                 response = p.process()
                 self.assertEquals(len(response["archives"]), 1)
                 self.assertEquals(response["system"]["type"], "cluster")
-                assert osp in p.parser_results[HEARTBEAT_ID]
+                assert osp in p.broker
+                assert HEARTBEAT_ID in p.broker[OSPChild]
+
         subprocess.call("rm -rf %s" % arc_path, shell=True)

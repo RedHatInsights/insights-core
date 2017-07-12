@@ -1,6 +1,6 @@
 from collections import namedtuple
 from insights.contrib import pyparsing as p
-from .. import Parser, LogFileOutput, parser
+from .. import Parser, parser
 from . import ParseException
 
 
@@ -127,12 +127,6 @@ class RabbitMQUsers(Parser):
             if len(line_splits) > 1:
                 users_dict[line_splits[0]] = line_splits[1][1:-1]
         self.data = users_dict
-
-
-@parser("rabbitmq_startup_log")
-class RabbitMQStartupLog(LogFileOutput):
-    """Deprecated, use ``rabbitmq_log.RabbitMQStartupLog`` class instead."""
-    pass
 
 
 TRUE_FALSE = {'true': True, 'false': False}

@@ -41,7 +41,7 @@ class Services(object):
     * ``service_line(service_name)`` returns the actual line that contained
       the service name.
     """
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         self.services = {}
         self.parsed_lines = {}
         chk = shared.get(chkconfig.ChkConfig)

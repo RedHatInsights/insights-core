@@ -27,7 +27,7 @@ Uptime = namedtuple("Uptime",
 
 
 @combiner(requires=[[upt, Facter]])
-def uptime(local, shared):
+def uptime(shared):
     """Check uptime and facts to get the uptime information.
 
     Prefer uptime to facts.

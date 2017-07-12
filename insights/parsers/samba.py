@@ -1,7 +1,9 @@
-from .. import IniConfigFile, parser
+from .. import add_filter, IniConfigFile, parser
+
+add_filter("samba", ["["])
 
 
-@parser("samba", filters=["["])
+@parser("samba")
 class SambaConfig(IniConfigFile):
     """
         smb.conf file parser.

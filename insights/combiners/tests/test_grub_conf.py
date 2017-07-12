@@ -154,7 +154,7 @@ menuentry 'Red Hat Enterprise Linux Server (0-rescue-f1340b5dd6ee4c26b5876215661
 def test_grub1():
     config = Grub1Config(context_wrap(GRUB1_TEMPLATE))
     shared = {Grub1Config: config}
-    result = GrubConf(None, shared)
+    result = GrubConf(shared)
     assert config
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-2.6.32-642.el6.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-2.6.32-642.el6.x86_64.img'
@@ -168,7 +168,7 @@ def test_grub1():
 def test_grub2():
     config = Grub2Config(context_wrap(GRUB2_TEMPLATE))
     shared = {Grub2Config: config}
-    result = GrubConf(None, shared)
+    result = GrubConf(shared)
     assert result.kernel_initrds['grub_kernels'][0] == 'vmlinuz-3.10.0-327.el7.x86_64'
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-327.el7.x86_64.img'
     assert result.is_kdump_iommu_enabled is False
@@ -183,7 +183,7 @@ def test_grub2():
 def test_grub2efi():
     config = Grub2EFIConfig(context_wrap(GRUB2_EFI_CFG))
     shared = {Grub2EFIConfig: config}
-    result = GrubConf(None, shared)
+    result = GrubConf(shared)
     assert result.kernel_initrds['grub_initrds'][0] == 'initramfs-3.10.0-514.16.1.el7.x86_64.img'
     assert result.get_grub_cmdlines() == result.get_grub_cmdlines('/vmlinuz')
     assert result.get_grub_cmdlines('rescue')[0].name.startswith("'Red Hat Enterprise Linux Server (0-rescue")
@@ -194,6 +194,6 @@ def test_grub2efi():
 
 def test_get_grub_cmdlines_none():
     shared = {}
-    ret = GrubConf(None, shared)
+    ret = GrubConf(shared)
     assert ret.get_grub_cmdlines() == []
     assert ret.get_grub_cmdlines('') == []

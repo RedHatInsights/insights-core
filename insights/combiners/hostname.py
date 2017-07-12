@@ -30,7 +30,7 @@ Hostname = namedtuple("Hostname", field_names=["fqdn", "hostname", "domain"])
 
 
 @combiner(requires=[[hname, facter, systemid]])
-def hostname(local, shared):
+def hostname(shared):
     """Check hostname, facter and systemid to get the fqdn, hostname and domain.
 
     Prefer hostname to facter and systemid.

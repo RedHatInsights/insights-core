@@ -1,23 +1,19 @@
 import json
+import logging
 from collections import defaultdict
 
-from insights.core import archives, specs, marshalling, plugins
-from insights.core.marshalling import Marshaller
-from insights.core.plugins import validate_response, stringify_requirements
+from insights.core import dr
+from insights.core import marshalling, plugins
+from insights.core.dr import stringify_requirements
+from insights.core.plugins import validate_response
 from insights.core.context import Context
 from insights.core.archives import InvalidArchive
-from insights.parsers.uname import Uname
-from insights.core import reducer
-from datetime import datetime
 
-import logging
-log = logging.getLogger("eval")
-
-marshaller = Marshaller()
+log = logging.getLogger(__name__)
 
 
-def name_from_module(plugin):
-    return plugin.__name__.rpartition(".")[-1]
+def get_simple_module_name(obj):
+    return dr.SIMPLE_MODULE_NAMES.get(obj, None)
 
 
 def serialize_skips(skips):
@@ -30,23 +26,40 @@ class Evaluator(object):
     def is_pattern_file(self, symbolic_name):
         return self.spec_mapper.data_spec_config.is_multi_output(symbolic_name)
 
-    def __init__(self, spec_mapper, metadata=None):
+    def __init__(self, spec_mapper, broker=None, metadata=None):
         self.spec_mapper = spec_mapper
+        self.broker = broker or dr.Broker()
         self.metadata = defaultdict(dict)
         self.rule_skips = []
         self.rule_results = []
         self.archive_metadata = metadata
         self.stats = self._init_stats()
+        self.hostname = None
 
     def _init_stats(self):
         return {
             "parser": {"count": 0, "fail": 0},
-            "reducer": {"count": 0, "fail": 0},
+            "rule": {"count": 0, "fail": 0},
             "skips": {"count": 0}
         }
 
-    def pre_mapping(self):
+    def pre_process(self):
         pass
+
+    def post_process(self):
+        for c, exes in self.broker.exceptions.iteritems():
+            for e in exes:
+                if plugins.is_parser(c):
+                    self.handle_parse_error(c, e)
+                elif plugins.is_rule(c):
+                    self.handle_rule_error(c, e)
+
+        for c, v in self.broker.instances.iteritems():
+            if plugins.is_rule(c):
+                self.handle_result(c, v)
+
+    def run_components(self):
+        dr.run(dr.COMPONENTS[dr.GROUPS.single], broker=self.broker)
 
     def format_response(self, response):
         """
@@ -61,67 +74,21 @@ class Evaluator(object):
         """
         return result
 
-    def handle_reducer_error(self):
-        self.stats["reducer"]["fail"] += 1
-
-        def default_error_handler(func, e, local, shared):
-            log.exception("Reducer [%s] failed", ".".join([func.__module__, func.__name__]))
-        return default_error_handler
-
     def get_contextual_hostname(self, default=""):
-        return self.hostname if hasattr(self, "hostname") and self.hostname else default
-
-    def _execute_parser(self, parser, context):
-        self.stats["parser"]["count"] += 1
-        return parser(context)
-
-    def run_metadata_parsers(self, the_meta_data):
-        """
-        Special case of running the parser for metadata.json.  This is special
-        because metadata.json is the only file not contained in an individual
-        Insights archive.
-        """
-        MD_JSON = "metadata.json"
-        result_map = {}
-        for plugin in plugins.get_parsers(MD_JSON):
-            context = self.build_context(content=marshalling.marshal(the_meta_data).splitlines(),
-                                         path=MD_JSON,
-                                         target=MD_JSON)
-            try:
-                result = self._execute_parser(plugin, context)
-                if result:
-                    result_map[plugin] = [result]
-            except Exception as e:
-                self.handle_map_error(e, context)
-        return result_map
-
-    def build_context(self, content, path, **kwargs):
-        kwargs.update({
-            "content": content,
-            "path": path,
-            "hostname": self.get_contextual_hostname(),
-            "release": self.release if hasattr(self, "release") else "",
-            "version": self.uname.rhel_release if hasattr(self, "uname") and hasattr(self.uname, "rhel_release") else ['-1', '-1'],
-        })
-        if hasattr(self, "last_client_run"):
-            kwargs["last_client_run"] = self.last_client_run
-        if self.archive_metadata:
-            kwargs["metadata"] = self.archive_metadata
-        return Context(**kwargs)
+        return self.hostname or default
 
     def process(self):
-        self.pre_mapping()
-        self.run_parsers()
-        self.run_reducers()
+        self.pre_process()
+        self.run_components()
         self.post_process()
         return self.get_response()
 
-    def post_process(self):
-        pass
-
-    def handle_map_error(self, e, context):
+    def handle_parse_error(self, parser, exception):
         self.stats["parser"]["fail"] += 1
         log.exception("Parser failed")
+
+    def handle_rule_error(self, rule, exception):
+        self.stats["rule"]["fail"] += 1
 
     def handle_content_error(self, e, filename):
         log.exception("Unable to extract content from %s.", filename)
@@ -129,27 +96,12 @@ class Evaluator(object):
 
 class SingleEvaluator(Evaluator):
 
-    def __init__(self, spec_mapper, metadata=None):
-        super(SingleEvaluator, self).__init__(spec_mapper, metadata)
-        self.parser_results = defaultdict(list)
+    def __init__(self, spec_mapper, broker=None, metadata=None):
+        super(SingleEvaluator, self).__init__(spec_mapper, broker, metadata)
 
     def append_metadata(self, r, plugin):
         for k, v in r.iteritems():
             self.metadata[k] = v
-
-    def pre_mapping(self):
-        self.release = self._protected_parse("redhat-release", lambda c: c[0])
-        self.hostname = self._protected_parse("hostname", lambda c: c[0], default=None)
-        if self.hostname is None:
-            self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
-        self.uname = self._protected_parse("uname", lambda c: Uname(c[0]), None)
-        self.calc_last_client_run()
-
-    def calc_last_client_run(self):
-        content = self.spec_mapper.get_content("prev_uploader_log")
-        if content and len(content) > 1:
-            date_str = " ".join(content[0:1]).split(",")[0]
-            self.last_client_run = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
 
     def format_response(self, response):
         serialize_skips(response["skips"])
@@ -157,25 +109,48 @@ class SingleEvaluator(Evaluator):
         return response
 
     def _protected_parse(self, sym_name, parser, default=""):
+        print "_protected_parse %s" % sym_name
         try:
-            return parser(self.spec_mapper.get_content(sym_name))
+            data = self.spec_mapper.get_content(sym_name)
+            print "raw data %s" % data
+            result = parser(data)
+            print "result %s" % result
+            return result
         except:
             return default
 
     def _pull_md_fragment(self):
         hn = self.get_contextual_hostname()
+        from pprint import pprint
+        print ""
+        print "//////////////"
+        pprint(self.archive_metadata)
+        pprint("Contextual Hostname: %s" % hn)
+        pprint("hostname: %s" % self.hostname)
+        print "//////////////"
         sub_systems = [s for s in self.archive_metadata["systems"] if s["system_id"] == hn]
         assert len(sub_systems) == 1
         return sub_systems[0]
 
-    def run_parsers(self):
-        if self.archive_metadata:
-            md = self.run_metadata_parsers(self._pull_md_fragment())
-            self.parser_results.update(md)
-        for symbolic_name, files in self.spec_mapper.symbolic_files.items():
+    def pre_process(self):
+        self.release = self._protected_parse("redhat-release", lambda c: c[0], default=None)
+        self.hostname = self._protected_parse("hostname", lambda c: c[0], default=None)
+        if self.hostname is None:
+            self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
 
-            if not plugins.get_parsers(symbolic_name):
+        if self.archive_metadata:
+            self.broker["metadata.json"] = self._pull_md_fragment()
+
+        for symbolic_name, files in self.spec_mapper.symbolic_files.iteritems():
+            if symbolic_name == "metadata.json":
                 continue
+
+            is_pattern = self.is_pattern_file(symbolic_name)
+            if not is_pattern and len(files) > 1:
+                raise Exception("Multiple files for simple file spec: %s" % symbolic_name)
+
+            if is_pattern:
+                self.broker[symbolic_name] = []
 
             for f in files:
                 content = []
@@ -188,16 +163,14 @@ class SingleEvaluator(Evaluator):
                 cmd_not_found_list = ["Command not found", "timeout: failed to run command"]
                 if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
                     continue
-                for plugin in plugins.get_parsers(symbolic_name):
-                    unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
-                    context = self.build_context(content=content,
-                                                 path=unrooted_path,
-                                                 target=symbolic_name)
-                    try:
-                        self.add_result(self._execute_parser(plugin, context),
-                                        symbolic_name, plugin)
-                    except Exception as e:
-                        self.handle_map_error(e, context)
+
+                unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
+                hn = self.get_contextual_hostname()
+                context = Context(content=content, path=unrooted_path, target=symbolic_name, hostname=hn)
+                if is_pattern:
+                    self.broker[symbolic_name].append(context)
+                else:
+                    self.broker[symbolic_name] = context
 
     def get_response(self):
         return self.format_response({
@@ -210,48 +183,24 @@ class SingleEvaluator(Evaluator):
             "stats": self.stats
         })
 
-    def _marshal(self, result, symbolic_name, shared):
-        if shared:
-            return result
-        else:
-            use_value_list = self.is_pattern_file(symbolic_name)
-            return marshaller.marshal(result, use_value_list=use_value_list)
-
-    def add_result(self, r, symbolic_name, plugin):
-        if r is not None:
-            r = self._marshal(r, symbolic_name, plugin.shared)
-            self.parser_results[plugin].append(r)
-
     def handle_result(self, plugin, r):
         validate_response(r)
         type_ = r["type"]
-        del r["type"]
         if type_ == "metadata":
             self.append_metadata(r, plugin)
         elif type_ == "rule":
             self.rule_results.append(self.format_result({
-                "rule_id": "{0}|{1}".format(plugins.get_name(plugin), r["error_key"]),
+                "rule_id": "{0}|{1}".format(get_simple_module_name(plugin), r["error_key"]),
                 "details": r
             }))
         elif type_ == "skip":
             self.rule_skips.append(r)
 
-    def run_reducers(self):
-        self.all_output = {}
-        generator = reducer.run_host(
-            self.parser_results,
-            self.all_output,
-            self.handle_reducer_error(),
-            stats=self.stats['reducer'])
-        for plugin, r in generator:
-            self.handle_result(plugin, r)
-
 
 class MultiEvaluator(Evaluator):
 
-    def __init__(self, spec_mapper, metadata=None):
+    def __init__(self, spec_mapper, broker=None, metadata=None):
         super(MultiEvaluator, self).__init__(spec_mapper)
-        self.parser_results = {}
         self.SubEvaluator = self.sub_evaluator_class()
         self.archive_results = defaultdict(lambda: {
             "system": {
@@ -269,38 +218,38 @@ class MultiEvaluator(Evaluator):
     def sub_evaluator_class(self):
         return SingleEvaluator
 
-    def run_parsers(self, **kwargs):
-        self.parser_results[None] = self.run_metadata_parsers(self.archive_metadata)
-        subarchives = [a for a in self.spec_mapper.tf.getnames() if a.endswith(".tar")]
-        for i, archive in enumerate(subarchives):
-            content = self.spec_mapper.get_content(archive, split=False, symbolic=False)
-            extractor = archives.TarExtractor().from_buffer(content)
-            sub_spec_mapper = specs.SpecMapper(extractor)
+    def clean_broker(self, broker):
+        for c in [d for d in broker.keys() if not plugins.is_component(d)]:
+            del broker[c]
+        return broker
+
+    def pre_process(self):
+        sub_brokers = {}
+        for i, sub_spec_mapper in enumerate(self.spec_mapper.sub_spec_mappers()):
             sub_evaluator = self.SubEvaluator(sub_spec_mapper, metadata=self.archive_metadata)
             host_result = sub_evaluator.process()
             hn = sub_evaluator.get_contextual_hostname(default=i)
             self.archive_results[hn] = host_result
-            self.parser_results[hn] = sub_evaluator.parser_results
+            sub_brokers[hn] = self.clean_broker(sub_evaluator.broker)
+        for host, sub in sub_brokers.iteritems():
+            for c, v in sub.instances.iteritems():
+                if plugins.is_rule(c):
+                    continue
+                if c not in self.broker:
+                    self.broker[c] = {}
+                self.broker[c][host] = v
+        self.broker["metadata.json"] = self.archive_metadata
 
-    def run_reducers(self, metadata=None):
-        self.all_output = {}
-        generator = reducer.run_multi(
-            self.parser_results,
-            self.all_output,
-            self.handle_reducer_error(),
-            stats=self.stats['reducer'])
-        for plugin, r in generator:
-            self.handle_result(plugin, r)
+    def run_components(self):
+        dr.run(dr.COMPONENTS[dr.GROUPS.cluster], broker=self.broker)
 
-    def handle_result(self, plugin, r):
-        validate_response(r)
+    def handle_result(self, r, plugin):
         type_ = r["type"]
-        del r["type"]
         if type_ == "metadata":
             self.append_metadata(r, plugin)
         elif type_ == "rule":
             self.archive_results[None]["reports"].append(self.format_result({
-                "rule_id": "{0}|{1}".format(plugins.get_name(plugin), r["error_key"]),
+                "rule_id": "{0}|{1}".format(get_simple_module_name(plugin), r["error_key"]),
                 "details": r
             }))
         elif type_ == "skip":
@@ -322,8 +271,8 @@ class MultiEvaluator(Evaluator):
 
 class InsightsEvaluator(SingleEvaluator):
 
-    def __init__(self, spec_mapper, url="not set", system_id=None, metadata=None):
-        super(InsightsEvaluator, self).__init__(spec_mapper, metadata=metadata)
+    def __init__(self, spec_mapper, broker=None, url="not set", system_id=None, metadata=None):
+        super(InsightsEvaluator, self).__init__(spec_mapper, broker, metadata=metadata)
         self.system_id = system_id
         self.url = url
 
@@ -332,11 +281,10 @@ class InsightsEvaluator(SingleEvaluator):
         return result
 
     def get_contextual_hostname(self, default=""):
-        return self.system_id
+        return self.system_id or default
 
     def get_branch_info(self):
-        version = None
-        hostname = None
+        version = hostname = None
         branch_info = json.loads(self.spec_mapper.get_content("branch_info",
                                  split=False, default="{}"))
         product = branch_info.get("product")
@@ -366,12 +314,12 @@ class InsightsEvaluator(SingleEvaluator):
                         split=False, default="{}"))
         return md.get("product_code", "rhel"), md.get("role", "host")
 
-    def pre_mapping(self):
-        super(InsightsEvaluator, self).pre_mapping()
+    def pre_process(self):
         int_system_id = self.spec_mapper.get_content("machine-id")[0]
         if self.system_id and self.system_id != int_system_id:
             raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
         self.system_id = int_system_id
+        super(InsightsEvaluator, self).pre_process()
 
     def format_response(self, response):
         serialize_skips(response["skips"])
@@ -392,25 +340,21 @@ class InsightsEvaluator(SingleEvaluator):
         log.warning("Unable to extract content from %s [%s]. Failed with message %s. Ignoring.",
                     filename, self.url, e, exc_info=True)
 
-    def handle_map_error(self, e, context):
+    def handle_parse_error(self, component, exception):
+        context = self.broker.get(dr.DEPENDENCIES[component][0], "Unknown")
         self.stats["parser"]["fail"] += 1
         log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
-                    e, context, self.url, exc_info=True)
-
-    def handle_reduce_error(self, e, context):
-        self.stats["reducer"]["fail"] += 1
-        log.warning("Reducer failed with message %s. Ignoring. context: %s [%s]",
-                    e, context, self.url, exc_info=True)
+                    exception, context, self.url, exc_info=True)
 
 
 class InsightsMultiEvaluator(MultiEvaluator):
 
-    def __init__(self, spec_mapper, system_id=None, metadata=None):
-        super(InsightsMultiEvaluator, self).__init__(spec_mapper, metadata=metadata)
+    def __init__(self, spec_mapper, broker=None, system_id=None, metadata=None):
+        super(InsightsMultiEvaluator, self).__init__(spec_mapper, broker=broker, metadata=metadata)
         self.system_id = system_id
 
-    def pre_mapping(self):
-        super(InsightsMultiEvaluator, self).pre_mapping()
+    def pre_process(self):
+        super(InsightsMultiEvaluator, self).pre_process()
         int_system_id = self.archive_metadata.get("system_id", "")
         if self.system_id and self.system_id != int_system_id:
             raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)

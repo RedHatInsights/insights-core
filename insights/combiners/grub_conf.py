@@ -95,7 +95,7 @@ class GrubConf(object):
 
     """
 
-    def __init__(self, local, shared):
+    def __init__(self, shared):
 
         self.version = self.is_efi = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None

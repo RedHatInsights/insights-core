@@ -77,7 +77,7 @@ def test_1():
     # smoke test with just journald.conf
     conf1 = EtcJournaldConf(context_wrap(JOURNALD_CONF_1, path='/etc/systemd/journald.conf'))
     shared = {EtcJournaldConf: [conf1]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("persistent", "/etc/systemd/journald.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -91,7 +91,7 @@ def test_2():
     conf1 = EtcJournaldConf(context_wrap(JOURNALD_CONF_1, path='/etc/systemd/journald.conf'))
     conf2 = EtcJournaldConfD(context_wrap(JOURNALD_CONF_2, path='/etc/systemd/journald.conf.d/a.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("volatile", "/etc/systemd/journald.conf.d/a.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -110,7 +110,7 @@ def test_3():
     conf2 = EtcJournaldConfD(context_wrap(JOURNALD_CONF_2, path='/etc/systemd/journald.conf.d/a.conf'))
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path='/usr/lib/systemd/journald.conf.d/a.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2], UsrJournaldConfD: [conf3]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("volatile", "/etc/systemd/journald.conf.d/a.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -126,7 +126,7 @@ def test_4():
     conf1 = EtcJournaldConf(context_wrap(JOURNALD_CONF_1, path='/etc/systemd/journald.conf'))
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path='/usr/lib/systemd/journald.conf.d/a.conf'))
     shared = {EtcJournaldConf: [conf1], UsrJournaldConfD: [conf3]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("none", "/usr/lib/systemd/journald.conf.d/a.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -146,7 +146,7 @@ def test_5():
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path='/usr/lib/systemd/journald.conf.d/a.conf'))
     conf4 = EtcJournaldConfD(context_wrap(JOURNALD_CONF_4, path='/etc/systemd/journald.conf.d/b.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2, conf4], UsrJournaldConfD: [conf3]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("volatile", "/etc/systemd/journald.conf.d/a.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -169,7 +169,7 @@ def test_5_swap():
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path='/usr/lib/systemd/journald.conf.d/a.conf'))
     conf4 = EtcJournaldConfD(context_wrap(JOURNALD_CONF_4, path='/etc/systemd/journald.conf.d/b.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf4, conf2], UsrJournaldConfD: [conf3]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("volatile", "/etc/systemd/journald.conf.d/a.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -192,7 +192,7 @@ def test_6():
     conf4 = EtcJournaldConfD(context_wrap(JOURNALD_CONF_4, path='/etc/systemd/journald.conf.d/b.conf'))
     conf5 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_5, path='/usr/lib/systemd/journald.conf.d/b.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2, conf4], UsrJournaldConfD: [conf3, conf5]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("volatile", "/etc/systemd/journald.conf.d/a.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -213,7 +213,7 @@ def test_7():
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path='/usr/lib/systemd/journald.conf.d/a.conf'))
     conf5 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_5, path='/usr/lib/systemd/journald.conf.d/b.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2], UsrJournaldConfD: [conf3, conf5]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("auto", "/usr/lib/systemd/journald.conf.d/b.conf")
     assert result.get_active_setting_value("Seal") == "yes"
     assert result.get_active_setting_value_and_file_name("Seal") == ("yes", "/usr/lib/systemd/journald.conf.d/b.conf")
@@ -233,7 +233,7 @@ def test_8():
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path='/usr/lib/systemd/journald.conf.d/a.conf'))
     conf5 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_5, path='/usr/lib/systemd/journald.conf.d/b.conf'))
     shared = {EtcJournaldConf: [conf1], UsrJournaldConfD: [conf3, conf5]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("auto", "/usr/lib/systemd/journald.conf.d/b.conf")
     assert result.get_active_setting_value("Seal") == "yes"
     assert result.get_active_setting_value_and_file_name("Seal") == ("yes", "/usr/lib/systemd/journald.conf.d/b.conf")
@@ -257,7 +257,7 @@ def test_9():
     conf4 = EtcJournaldConfD(context_wrap("", path='/etc/systemd/journald.conf.d/b.conf'))
     conf5 = UsrJournaldConfD(context_wrap("", path='/usr/lib/systemd/journald.conf.d/b.conf'))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2, conf4], UsrJournaldConfD: [conf3, conf5]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("persistent", "/etc/systemd/journald.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -276,7 +276,7 @@ def test_10():
     conf4 = EtcJournaldConfD(context_wrap("", path=None))
     conf5 = UsrJournaldConfD(context_wrap(None, path=None))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2, conf4], UsrJournaldConfD: [conf3, conf5]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("persistent", "/etc/systemd/journald.conf")
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")
@@ -297,7 +297,7 @@ def test_11():
     conf2 = EtcJournaldConfD(context_wrap(JOURNALD_CONF_2, path=None))
     conf3 = UsrJournaldConfD(context_wrap(JOURNALD_CONF_3, path=None))
     shared = {EtcJournaldConf: [conf1], EtcJournaldConfD: [conf2], UsrJournaldConfD: [conf3]}
-    result = JournaldConfAll(None, shared)
+    result = JournaldConfAll(shared)
     assert result.active_settings_with_file_name["Storage"] == ("volatile", None)
     assert result.get_active_setting_value("Seal") == "no"
     assert result.get_active_setting_value_and_file_name("Seal") == ("no", "/etc/systemd/journald.conf")

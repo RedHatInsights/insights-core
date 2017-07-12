@@ -1,54 +1,24 @@
-from ..core import marshalling
-from .. import Parser, parser
+from ..core import dr
+from .. import metadata
 
 
-def _metadata(context, product_filter=None):
-    if product_filter is None or filter(lambda line: product_filter in line, context.content):
-        try:
-            md = marshalling.unmarshal("\n".join(context.content))
-            product = md["product"]
-            if "links" in md:
-                # Parent metadata.json won't have "links" as a top level key
-                product += "Child"
-            elif "systems" not in md:
-                # This case is for single-node systems that have a
-                # metadata.json
-                return
-            return globals()[product](md)
-        except:
-            pass
+class MultinodeMetaclass(type):
+    def __init__(cls, name, bases, dct):
+        if name != 'MultinodeMetadata' and not name.endswith("Child"):
+            cls.products.append(name)
+        super(MultinodeMetaclass, cls).__init__(name, bases, dct)
 
 
-@parser("metadata.json")
-def metadata(context):
-    return _metadata(context)
-
-
-@parser("metadata.json")
-def rhev(context):
-    return _metadata(context, MultinodeMetadata.RHEV)
-
-
-@parser("metadata.json")
-def docker(context):
-    return _metadata(context, MultinodeMetadata.DOCKER)
-
-
-@parser("metadata.json")
-def osp(context):
-    return _metadata(context, MultinodeMetadata.OSP)
-
-
-class MultinodeMetadata(Parser):
-
-    RHEV = "RHEV"
-    DOCKER = "Docker"
-    OSP = "OSP"
+class MultinodeMetadata(object):
+    __metaclass__ = MultinodeMetaclass
+    products = []
 
     common_fields = ["display_name", "insights_version"]
     fields = []
 
     def __init__(self, data, path=None):
+        if data['product'] != self.__class__.__name__:
+            raise dr.SkipComponent()
         self.data = data
         for f in self.common_fields:
             setattr(self, f, data.get(f))
@@ -70,22 +40,20 @@ class MultinodeMetadata(Parser):
             self._children = self.populate_children()
         return self._children.get(system_id)
 
-    def child_class(self):
-        return globals()[self.__class__.__name__ + "Child"]
-
     def populate_children(self):
         children = {}
         for child in self.data["systems"]:
-            children[child["system_id"]] = self.child_class()(child, parent=self)
+            children[child["system_id"]] = self.child_class(child, parent=self)
         return children
 
-    @classmethod
-    def products(cls):
-        return [cls.RHEV, cls.DOCKER, cls.OSP]
+
+@metadata(group=dr.GROUPS.cluster)
+def rhev(data):
+    return RHEV(data)
 
 
+@metadata(group=dr.GROUPS.cluster)
 class RHEV(MultinodeMetadata):
-
     fields = [
         "storagedomains", "hosts", "api_version",
         "datacenters", "networks", "rhev_version",
@@ -93,22 +61,46 @@ class RHEV(MultinodeMetadata):
         "clusters"
     ]
 
+    @property
+    def child_class(self):
+        return RHEVChild
 
+
+@metadata(group=dr.GROUPS.cluster)
+def docker(data):
+    return Docker(data)
+
+
+@metadata(group=dr.GROUPS.cluster)
 class Docker(MultinodeMetadata):
-    pass
+    @property
+    def child_class(self):
+        return DockerChild
 
 
+@metadata(group=dr.GROUPS.cluster)
+def osp(data):
+    return OSP(data)
+
+
+@metadata(group=dr.GROUPS.cluster)
 class OSP(MultinodeMetadata):
-
     fields = [
         "nova_client_api_version", "coordinator_version",
         "rhel_version", "rhosp_version"
     ]
 
+    @property
+    def child_class(self):
+        return OSPChild
+
 
 class MultinodeChild(MultinodeMetadata):
+    __metaclass__ = type
 
     def __init__(self, data, parent=None):
+        if data['product'] != self.parent_class.__name__ or "links" not in data:
+            raise dr.SkipComponent()
         self.data = data
         self.parent = parent
         for f in self.fields:
@@ -119,18 +111,22 @@ class MultinodeChild(MultinodeMetadata):
         return self.data["type"]
 
 
+@metadata()
 class OSPChild(MultinodeChild):
-
     fields = [
         "status", "ip"
     ]
+    parent_class = OSP
 
 
+@metadata()
 class RHEVChild(MultinodeChild):
-    pass
+    parent_class = RHEV
 
 
+@metadata()
 class DockerChild(MultinodeChild):
+    parent_class = Docker
 
     @property
     def image(self):

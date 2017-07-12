@@ -1,3 +1,4 @@
+from insights.config.factory import add_filter
 from insights.parsers.dmesg import DmesgLineList
 from insights.tests import context_wrap
 
@@ -21,7 +22,7 @@ HP HPSA Driver (v 3.4.4-1-RH2)
 lo: Dropping TSO features since no CSUM feature duplicated.
 """.strip()
 
-DmesgLineList.filters.extend(["HPSA", "Dropping", "bonding:"])
+add_filter("dmesg", ["HPSA", "Dropping", "bonding:"])
 
 
 def test_dmesg():

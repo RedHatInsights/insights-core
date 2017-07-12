@@ -1,7 +1,7 @@
 import pytest
 import unittest
 from insights.tests import unordered_compare
-from insights.core.plugins import split_requirements, stringify_requirements, get_missing_requirements
+from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
 
 

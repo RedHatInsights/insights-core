@@ -52,49 +52,6 @@ def test_validate_response_invalid_error_key_type():
             })
 
 
-def test_box_empty():
-    assert plugins.box({}) == {}
-
-
-def test_box_flat():
-    assert plugins.box({"foo": "bar", "baz": 10}) == {"foo": ["bar"], "baz": 10}
-
-
-def test_box_nested():
-    assert plugins.box({"foo": {"inner": "bar"}, "baz": "stuff"}) == {
-        "foo": [{"inner": "bar"}],
-        "baz": ["stuff"]
-    }
-
-
-def test_box_key_only():
-    assert plugins.box({"foo": None, "bar": {}}) == {
-        "foo": [],
-        "bar": []
-    }
-
-
-def test_inject_host_strings():
-    assert plugins.inject_host("foo", "my_host") == {"foo": "my_host"}
-
-
-def test_inject_host_mapping():
-    assert plugins.inject_host({"error_key": "test"}, "my_host") == {
-        "error_key": {
-            "host": "my_host",
-            "value": "test"
-        }
-    }
-
-
-def test_inject_host_too_many_keys():
-    with pytest.raises(Exception):
-        plugins.inject_host(
-            {"key1": True, "key2": False},
-            "my_host"
-        )
-
-
 def test_make_response_too_big():
     content = "foo" * 50000
     assert plugins.make_response("TESTING", big=content) == {

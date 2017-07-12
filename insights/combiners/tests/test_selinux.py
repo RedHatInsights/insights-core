@@ -416,8 +416,7 @@ def test_integration():
         sestatus = SEStatus(context_wrap(inputs[0]))
         selinux_config = SelinuxConfig(context_wrap(inputs[1]))
         grub_config = Grub1Config(context_wrap(inputs[2]))
-        selinux = SELinux(None,
-                          {SEStatus: sestatus,
+        selinux = SELinux({SEStatus: sestatus,
                            SelinuxConfig: selinux_config,
                            Grub1Config: grub_config}
                           )
@@ -429,8 +428,7 @@ def test_integration():
         sestatus = SEStatus(context_wrap(inputs[0]))
         selinux_config = SelinuxConfig(context_wrap(inputs[1]))
         grub_config = Grub2Config(context_wrap(inputs[2]))
-        selinux = SELinux(None,
-                          {SEStatus: sestatus,
+        selinux = SELinux({SEStatus: sestatus,
                            SelinuxConfig: selinux_config,
                            Grub2Config: grub_config}
                           )

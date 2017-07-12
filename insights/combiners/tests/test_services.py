@@ -30,7 +30,7 @@ kdump.service                               enabled
 def test_chkconfig():
     context = context_wrap(CHKCONIFG)
     chkconfig = ChkConfig(context)
-    services = Services(None, {ChkConfig: chkconfig, UnitFiles: None})
+    services = Services({ChkConfig: chkconfig, UnitFiles: None})
     assert len(services.services) == 5
     assert len(services.parsed_lines) == 5
     assert services.is_on('auditd')
@@ -47,7 +47,7 @@ def test_chkconfig():
 def test_systemctl():
     context = context_wrap(SYSTEMCTL)
     unitfiles = UnitFiles(context)
-    services = Services(None, {ChkConfig: None, UnitFiles: unitfiles})
+    services = Services({ChkConfig: None, UnitFiles: unitfiles})
     assert len(services.services) == 7
     assert len(services.parsed_lines) == 7
     assert services.is_on('auditd.service')
@@ -69,7 +69,7 @@ def test_combined():
     chkconfig = ChkConfig(context)
     context = context_wrap(SYSTEMCTL)
     unitfiles = UnitFiles(context)
-    services = Services(None, {ChkConfig: chkconfig, UnitFiles: unitfiles})
+    services = Services({ChkConfig: chkconfig, UnitFiles: unitfiles})
     assert len(services.services) == 12
     assert len(services.parsed_lines) == 12
     assert services.is_on('auditd')

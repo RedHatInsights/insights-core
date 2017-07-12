@@ -37,31 +37,6 @@ class Marshaller(object):
     def unmarshal(self, doc):
         return doc
 
-    def unmarshal_to_context(self, data, func_keys=False):
-        """
-        Given a list of marshalled parser output, returns a single dictionary
-        for use with a rule.
-        """
-        if func_keys:
-            from insights.core import plugins
-        context = {}
-        for t in data:
-            for k, v in self.unmarshal(t).items():
-                if func_keys:
-                    k = plugins.PARSER_FUNCS[k]
-                if k not in context:
-                    context[k] = v
-                else:
-                    cur = context[k]
-                    if not isinstance(cur, list):
-                        context[k] = [cur]
-                    if not isinstance(v, list):
-                        context[k].append(v)
-                    else:
-                        context[k].extend(v)
-
-        return context
-
 
 class JsonMarshaller(Marshaller):
     """
@@ -78,4 +53,3 @@ class JsonMarshaller(Marshaller):
 INSTANCE = JsonMarshaller()
 marshal = INSTANCE.marshal
 unmarshal = INSTANCE.unmarshal
-unmarshal_to_context = INSTANCE.unmarshal_to_context

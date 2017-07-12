@@ -60,10 +60,12 @@ Examples:
 
 """
 
-from .. import Scannable, parser
+from .. import add_filter, Scannable, parser
+
+add_filter('lsof', ['COMMAND'])
 
 
-@parser('lsof', ['COMMAND'])
+@parser('lsof')
 class Lsof(Scannable):
     """
     A parser for the output of ``/usr/sbin/lsof`` - determines the column

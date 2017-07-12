@@ -8,6 +8,7 @@ This module contains the classes that parse the output of the commands `lvs`,
 """
 import json
 from ..util import parse_keypair_lines
+from .. import add_filter
 from .. import Parser, parser, parse_table, get_active_lines, LegacyItemAccess
 from . import parse_fixed_table
 
@@ -529,9 +530,10 @@ LVM_CONF_FILTERS = [
     "filter",  # LVM_CONF_REMOVE_BOOTDEV HA_LVM_RELOCATE_ISSUE LVM_FILTER_ISSUE
     "volume_list"  # HA_LVM_RELOCATE_ISSUE
 ]
+add_filter('lvm.conf', LVM_CONF_FILTERS)
 
 
-@parser('lvm.conf', LVM_CONF_FILTERS)
+@parser('lvm.conf')
 class LvmConf(LegacyItemAccess, Parser):
     """
     Parses contents of the `/etc/lvm/lvm.conf` file.

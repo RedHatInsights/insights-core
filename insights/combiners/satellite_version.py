@@ -89,7 +89,7 @@ def _parse_sat_versoin(version):
 
 
 @combiner(requires=[[Sat6Ver, InstalledRpms]])
-def satellite_version(local, shared):
+def satellite_version(shared):
     """
     Check satellite_version and installed_rpms for satellite version
     information.

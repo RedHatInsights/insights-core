@@ -2,65 +2,14 @@ import datetime
 import io
 import logging
 import os
-import pkgutil
 import re
 import shlex
-import sys
 import yaml
 from ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 
-DEFAULT_PATTERN = r'.*py$'
-DEFAULT_PLUGIN_MODULE = "insights.plugins"
 log = logging.getLogger(__name__)
-
-
-def load_package(package_name, pattern=None, loaded_map=set()):
-    loaded = []
-
-    if package_name in loaded_map:
-        return
-
-    __import__(package_name, globals(), locals(), [], -1)
-
-    for module_name in get_module_names(package_name, pattern):
-        m = __import__(module_name, globals(), locals(), [package_name], -1)
-        loaded.append(m)
-        log.debug("loaded %s", module_name)
-
-    loaded_map.add(package_name)
-    log.info("Loaded %d modules", len(loaded))
-    return loaded
-
-
-def get_module_names(package_name, pattern=None):
-    matcher = re.compile('.*' + pattern + '.*' if pattern else DEFAULT_PATTERN)
-
-    def name_filter(name):
-        if "__init__" not in name and "__main__" not in name:
-            if matcher.match(name):
-                return True
-        return False
-
-    search_paths = (
-        package_name.replace('.', '/'),
-        os.path.dirname(os.path.realpath(sys.modules[package_name].__file__))
-    )
-    log.debug("looking for files that match: [%s] in [%s]", pattern, search_paths)
-    for loader, name, ispkg in pkgutil.walk_packages(search_paths, package_name + '.'):
-        if not ispkg:
-            # absolute path of the module
-            module = loader.find_module(name)
-            try:
-                filename = module.filename
-            except AttributeError:
-                # filename attribute is not populated for modules from eggs
-                # create a virtual filename to feed to the filter
-                filename = "%s.py" % name.replace('.', '/')
-
-            if name_filter(filename):
-                yield name
 
 
 class Parser(object):
@@ -112,7 +61,8 @@ class Parser(object):
 
     def parse_content(self, content):
         """This method must be implemented by classes based on this class."""
-        pass
+        msg = "Parser subclasses must implement parse_content(self, content)."
+        raise NotImplementedError(msg)
 
 
 class SysconfigOptions(Parser):
@@ -175,25 +125,20 @@ class SysconfigOptions(Parser):
         self.unparsed_lines = unparsed_lines
 
     def __getitem__(self, option):
-        """
-        Retrieves an item from the underlying data dictionary.
-        """
+        """ Retrieves an item from the underlying data dictionary."""
         return self.data[option]
 
     def __contains__(self, option):
-        """
-        Does the underlying dictionary contain this option?
-        """
+        """ Does the underlying dictionary contain this option?"""
         return option in self.data
 
     def keys(self):
-        """
-        Return the list of keys (in no order) in the underlying dictionary.
-        """
+        """ Return the list of keys (in no order) in the underlying dictionary."""
         return self.data.keys()
 
     def get(self, item, default=None):
-        """Returns value of key ``item`` in self.data or ``default``
+        """
+        Returns value of key ``item`` in self.data or ``default``
         if key is not present.
 
         Parameters:

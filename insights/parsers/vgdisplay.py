@@ -81,9 +81,3 @@ class VgDisplay(Parser):
         vginfo_dict_list.append(vginfo_dict) if vginfo_dict else None
         self.data['vginfo_dict'] = vginfo_dict_list
         self.data['debug_info'] = set_info
-
-
-@parser('vgdisplay')
-def get_vginfo(context):
-    """Deprecated, use class :py:class:`VgDisplay` instead."""
-    return VgDisplay(context).data
