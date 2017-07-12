@@ -3,7 +3,7 @@ System time configuration
 =========================
 
 This is a collection of parsers that all deal with the system's configuration
-of its time setting resources.
+of its time setting resources
 """
 
 import re
@@ -125,15 +125,15 @@ class LocalTime(Parser):
         for line in content:
             filename, info = line.strip().split(':', 1)
             result['name'] = filename.strip()
-            info_list = info.split(',')
+            info_list = info.split(', ')
             if len(info_list) == 7 and info_list[0].strip() == 'timezone data':
-                idx = 1
-                for k in title:
-                    if idx == 1:
-                        result[k] = info_list[idx].strip().split()[1]
+                # A bit of a hack - version field has the data second, all
+                # other fields have the data first.
+                for idx, k in enumerate(title):
+                    if idx == 0:
+                        result[k] = info_list[idx + 1].strip().split()[1]
                     else:
-                        result[k] = info_list[idx].strip().split()[0]
-                    idx = idx + 1
+                        result[k] = info_list[idx + 1].strip().split()[0]
         self.data = result
 
 
@@ -171,29 +171,56 @@ class NtpTime(Parser):
         '0'
         >>> ntptime.data['flags']
         ['PLL', 'INS', 'NANO']
+        >>> ntptime.data['interval']  # Other values are integers or floats
+        1
+        >>> ntptime.data['precision']  # Note floats may not be exact
+        0.001
+        >>> ntptime.data['maximum error']
+        263240
 
     """
     def parse_content(self, content):
-        funcname = [
-            'ntp_gettime',
-            'ntp_adjtime'
-        ]
         result = {}
-        return_code_re = re.compile(r'returns code (\d+) ')
-        status_code_re = re.compile(r'\((.*)\)')
+        return_code_re = re.compile(r'(?P<func>ntp_(?:get|adj)time)\(\) returns code (?P<code>\d+) ')
+        status_code_re = re.compile(r'status (?P<status>0x[0-9a-f]{4}) \((?P<flags>.*)\)')
+        time_data_re = re.compile(r'time (?P<timecode>[0-9a-f]{8}\.[0-9a-f]{8}) +(?P<timestamp>\w{3}, \w{3} \d+ .*),')
+        value_re = re.compile(r'(?P<keyword>[A-Za-z][A-Za-z ]+) (?P<value>\d+(?:\.\d+|x[0-9a-f]+)?) ?(?P<units>us|ppm|s|\(.*\))?')
+        # Note that maximum and estimated error appear in both sections but
+        # have the same value, so we don't bother to make them unique
         for line in content:
-            for func in funcname:
-                if func in line:
-                    g = return_code_re.search(line)
-                    if g and g.lastindex == 1:
-                        result[func] = g.group(1)
-            if "status " in line:
-                frags = line.split()
-                if len(frags) == 3:
-                    result['status'] = frags[1]
-                    g = status_code_re.search(frags[2])
-                    if g and g.lastindex == 1:
-                        result['flags'] = g.group(1).split(',')
+            # Check for function line
+            match = return_code_re.search(line)
+            if match:
+                function = match.group('func')
+                result[function] = match.group('code')
+                continue
+
+            # Check for status line specially
+            match = status_code_re.search(line)
+            if match:
+                result['status'] = match.group('status')
+                result['flags'] = match.group('flags').split(',')
+                continue
+
+            # Check for time data specially
+            match = time_data_re.search(line)
+            if match:
+                # Get timecode and timestamp in one go
+                result.update(match.groupdict())
+                continue
+
+            # Otherwise, try to read comma-separated key-value groups
+            # print "keyword value matched"
+            for match in value_re.finditer(line):
+                value = match.group('value')
+                if '.' in value:
+                    vnum = float(value)
+                elif 'x' in value:
+                    vnum = int(value, 16)
+                else:
+                    vnum = int(value)
+                result[match.group('keyword')] = vnum
+
         self.data = result
 
 
