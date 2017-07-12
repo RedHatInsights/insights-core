@@ -19,6 +19,12 @@ command ``file -L /etc/localtime``
    :members:
    :show-inheritance:
 
+NTPConfParser base class
+------------------------
+.. autoclass:: insights.parsers.system_time.NTPConfParser
+   :members:
+   :show-inheritance:
+
 file ``/etc/ntp.conf``
 ----------------------
 .. autoclass:: insights.parsers.system_time.NTP_conf
