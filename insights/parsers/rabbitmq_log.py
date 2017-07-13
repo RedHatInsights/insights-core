@@ -95,6 +95,22 @@ class RabbitMQLogs(LogFileOutput):
         ...
 
     Note:
-        Please refer to its super-class ``LogFileOutput``
+        Please refer to its super-class ``LogFileOutput`` for full usage.
+
+    Note:
+        Because this parser is defined using a PatternSpec, which returns
+        multiple files, the data in the shared parser state is a list of
+        these parser objects.  This means that for the moment you will have
+        to iterate across these objects directly.
+
+    Examples:
+        >>> for log in shared[RabbitMQLogs]:
+        ...     print 'log file:', log.file_path
+        ...     print 'INFO lines:', len(log.get('INFO REPORT'))
+        ...     print 'ERROR lines:', len(log.get('ERROR REPORT'))
+        ...
+        log file: /var/log/rabbitmq/rabbit@queue.example.com.log
+        INFO lines: 2
+        ERROR lines: 0
     """
-    pass
+    time_format = '%d-%b-%Y::%H:%M:%S'
