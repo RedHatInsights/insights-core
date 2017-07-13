@@ -1,17 +1,26 @@
+"""
+NovaApiLog - file ``/var/log/nova/nova-api.log``
+================================================
+"""
 from .. import LogFileOutput, parser
 
 
 @parser('nova-api_log')
 class NovaApiLog(LogFileOutput):
+    """Class for parsing the ``/var/log/nova/nova-api.log`` file.
+
+    Note:
+        Please refer to its super-class ``LogFileOutput``
+    """
     def get(self, keywords):
         """
-        Returns all lines that contain all keywords. keywords can be str or str list.
-        -- Sample --
-        keywords is a list. Example: ["WARNING","Could not find token", "404"]
-        ------------
-       2016-08-12 13:15:46.343 32386 WARNING nova.api.ec2.cloud [-] Deprecated: The in tree EC2 API is deprecated as
-        of Kilo release and may be removed in a future release. The stackforge ec2-api project
-        http://git.openstack.org/cgit/stackforge/ec2-api/ is the target replacement for this functionality.
+        Returns all lines that contain all keywords.
+
+        Parameters:
+            keywords(str or list): one or more strings to find in the lines.
+
+        Returns:
+            (list): The list of lines that contain all the keywords given.
         """
         r = []
         for l in self.lines:
