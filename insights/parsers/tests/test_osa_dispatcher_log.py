@@ -1,6 +1,8 @@
 from insights.parsers import osa_dispatcher_log
 from insights.tests import context_wrap
 
+from datetime import datetime
+
 # Note use of r'' here and in tests because of literal '\n' in text of log
 OSA_DISPATCHER_LOG = r"""
 2015/12/23 04:40:58 -04:00 28307 0.0.0.0: osad/jabber_lib.__init__
@@ -42,6 +44,15 @@ def test_get_osa_dispatcher_log():
     assert last['function'] == 'jabber_lib.main'
     # Problems with literal '\n' in line for comparison, so fall back...
     assert last['info'].startswith("""'ERROR', 'Traceback (most recent call last):""")
+
+    # Test get_after functionality with different inputs
+    assert len(list(log.get_after(datetime(2015, 12, 27, 22, 48, 40)))) == 2
+    assert len(list(log.get_after(
+        datetime(2015, 12, 23, 4, 40, 0), log.get('connection')
+    ))) == 2
+    assert len(list(log.get_after(
+        datetime(2015, 12, 23, 4, 40, 0), log.get_parsed_lines('connection')
+    ))) == 2
 
     trunc = osa_dispatcher_log.OSADispatcherLog(context_wrap(
         OSA_DISPATCHER_TRUNC, path='var/log/rhn/osa-dispatcher.log'
