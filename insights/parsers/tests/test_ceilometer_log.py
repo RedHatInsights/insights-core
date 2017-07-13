@@ -2,6 +2,7 @@ from insights.parsers.ceilometer_log import CeilometerCentralLog
 from insights.parsers.ceilometer_log import CeilometerCollectorLog
 from insights.tests import context_wrap
 
+from datetime import datetime
 
 CENTRAL_LOG = """
 2016-11-09 14:38:08.484 31654 WARNING oslo_reports.guru_meditation_report [-] Guru meditation now registers SIGUSR1 and SIGUSR2 by default for backward compatibility. SIGUSR1 will no longer be registered in a future release, so please use SIGUSR2 to generate reports.
@@ -23,8 +24,15 @@ COLLECTOR_LOG = """
 def test_ceilometer_central_log():
     log = CeilometerCentralLog(context_wrap(CENTRAL_LOG))
     assert len(log.get('INFO')) == 3
+    assert list(log.get_after(datetime(2016, 11, 9, 14, 38, 10))) == [
+        "2016-11-09 14:38:10.040 31723 INFO ceilometer.pipeline [-] Config file: {'sources': [{'interval': 600, 'meters': ['*'], 'name': 'meter_source', 'sinks': ['meter_sink']}, {'interval': 600, 'meters': ['cpu'], 'name': 'cpu_source', 'sinks': ['cpu_sink', 'cpu_delta_sink']}, {'interval': 600, 'meters': ['disk.read.bytes', 'disk.read.requests', 'disk.write.bytes', 'disk.write.requests', 'disk.device.read.bytes', 'disk.device.read.requests', 'disk.device.write.bytes', 'disk.device.write.requests'], 'name': 'disk_source', 'sinks': ['disk_sink']}, {'interval': 600, 'meters': ['network.incoming.bytes', 'network.incoming.packets', 'network.outgoing.bytes', 'network.outgoing.packets'], 'name': 'network_source', 'sinks': ['network_sink']}], 'sinks': [{'publishers': ['notifier://'], 'transformers': None, 'name': 'meter_sink'}, {'publishers': ['notifier://'], 'transformers': [{'name': 'rate_of_change', 'parameters': {'target': {'scale': '100.0 / (10**9 * (resource_metadata.cpu_number or 1))', 'type': 'gauge', 'name': 'cpu_util', 'unit': '%'}}}], 'name': 'cpu_sink'}, {'publishers': ['notifier://'], 'transformers': [{'name': 'delta', 'parameters': {'target': {'name': 'cpu.delta'}, 'growth_only': True}}], 'name': 'cpu_delta_sink'}, {'publishers': ['notifier://'], 'transformers': [{'name': 'rate_of_change', 'parameters': {'source': {'map_from': {'name': '(disk\\.device|disk)\\.(read|write)\\.(bytes|requests)', 'unit': '(B|request)'}}, 'target': {'map_to': {'name': '\\1.\\2.\\3.rate', 'unit': '\\1/s'}, 'type': 'gauge'}}}], 'name': 'disk_sink'}, {'publishers': ['notifier://'], 'transformers': [{'name': 'rate_of_change', 'parameters': {'source': {'map_from': {'name': 'network\\.(incoming|outgoing)\\.(bytes|packets)', 'unit': '(B|packet)'}}, 'target': {'map_to': {'name': 'network.\\1.\\2.rate', 'unit': '\\1/s'}, 'type': 'gauge'}}}], 'name': 'network_sink'}]}",
+        '2016-11-09 14:38:10.041 31723 INFO ceilometer.pipeline [-] detected decoupled pipeline config format'
+    ]
 
 
 def test_ceilometer_collector_log():
     log = CeilometerCollectorLog(context_wrap(COLLECTOR_LOG))
     assert len(log.get('INFO')) == 2
+    assert list(log.get_after(datetime(2016, 11, 9, 14, 38, 0))) == [
+        '2016-11-09 14:38:07.280 31638 WARNING oslo_reports.guru_meditation_report [-] Guru meditation now registers SIGUSR1 and SIGUSR2 by default for backward compatibility. SIGUSR1 will no longer be registered in a future release, so please use SIGUSR2 to generate reports.'
+    ]
