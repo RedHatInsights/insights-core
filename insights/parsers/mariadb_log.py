@@ -42,4 +42,7 @@ class MariaDBLog(LogFileOutput):
     Note:
         Please refer to its super-class ``LogFileOutput``
     """
-    pass
+    time_format = {
+        'pre_10.1.5': '%y%m%d %H:%M:%S',
+        'post_10.1.5': '%Y-%m-%d %H:%M:%S'
+    }
