@@ -1,6 +1,6 @@
 """
-rsyslog_conf - File /etc/rsyslog.conf
-=====================================
+RsyslogConf - file ``/etc/rsyslog.conf``
+========================================
 
 The rsyslog configuration files can include statements with two different
 line based formats along with snippets of 'RainerScript' that can span
@@ -28,6 +28,8 @@ Example:
 """
 from .. import Parser, parser, get_active_lines
 
+import re
+
 
 @parser('rsyslog.conf')
 class RsyslogConf(Parser):
@@ -39,10 +41,34 @@ class RsyslogConf(Parser):
     Attributes:
         data (list): List of lines in the file that don't start
             with '#' and aren't whitespace.
+        config_items(dict): Configuration items opportunistically found in the
+            configuration file, with their values as given.
     """
 
     def parse_content(self, content):
         self.data = get_active_lines(content)
+
+        self.config_items = {}
+        # Config items are e.g. "$Word value #optional comment"
+        config_re = re.compile(r'^\s*\$(?P<name>\S+)\s+(?P<value>.*?)(?:\s+#.*)?$')
+        for line in self.data:
+            lstrip = line.strip()
+            match = config_re.match(lstrip)
+            if match:
+                self.config_items[match.group('name')] = match.group('value')
+
+    def config_val(self, item, default=None):
+        """
+        Return the given configuration item, or the default if not defined.
+
+        Parameters:
+            item(str): The configuration item name
+            default: The default if the item is not found (defaults to None)
+
+        Returns:
+            The related value in the `config_items` dictionary.
+        """
+        return self.config_items.get(item, default)
 
     def __len__(self):
         return len(self.data)
