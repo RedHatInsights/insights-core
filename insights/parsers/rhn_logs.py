@@ -1,6 +1,6 @@
 """
-RHN Logs -  Files /var/log/rhn/\*.log
-=====================================
+RHN Logs -  Files ``/var/log/rhn/*.log``
+========================================
 
 Modules for parsing the content of log files under ``/rhn-logs/rhn`` directory
 in spacewalk-debug or sosreport archives of Satellite 5.x.
@@ -15,10 +15,11 @@ class TaskomaticDaemonLog(LogFileOutput):
     """Class for parsing the ``rhn_taskomatic_daemon.log`` file.
 
     Note:
-        There is a rule need to get the datetime of the last log, please DO NOT
-        filter it in any other rules.
+        Because of the need to get the datetime of the last log, please DO NOT
+        filter it.
 
     Attributes:
+        lines (list): All lines captured in this file.
         last_log_date (datetime): The last log datetime get from the last line.
 
     Examples:
@@ -32,11 +33,12 @@ class TaskomaticDaemonLog(LogFileOutput):
         >>> td_log.last_log_date
         2016-05-18 15:13:40
     """
+    time_format = '%Y/%m/%d %H:%M:%S'
+
     def parse_content(self, content):
         """
-        Parse the logs as its super class LogFileOutput.
-        And get the last log date from the last lines. If the last line is not
-        complete, then get from its previous line.
+        Once the logs are parsed, retrieve the last log date from the last
+        line which has a complete timestamp in the third field.
         """
         super(TaskomaticDaemonLog, self).parse_content(content)
         self.last_log_date = None
@@ -46,7 +48,7 @@ class TaskomaticDaemonLog(LogFileOutput):
             if len(l_sp) >= 3:
                 try:
                     self.last_log_date = datetime.strptime(
-                            l_sp[2].strip(), '%Y/%m/%d %H:%M:%S')
+                            l_sp[2].strip(), self.time_format)
                     break
                 except Exception:
                     continue
@@ -56,10 +58,12 @@ class TaskomaticDaemonLog(LogFileOutput):
 class ServerXMLRPCLog(LogFileOutput):
     """Class for parsing the ``rhn_server_xmlrpc.log`` file.
 
-    Typical line of rhn_server_xmlrpc.log:
+    Sample log line::
+
         2016/04/11 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
 
     Attributes:
+        lines (list): All lines captured in this file.
         last (dict): Dict of the last log line.
 
     Examples:
@@ -87,14 +91,13 @@ class ServerXMLRPCLog(LogFileOutput):
           'args': "'lang: None'",
           'raw_log': "..."}]
     """
+    time_format = '%Y/%m/%d %H:%M:%S'
 
-    LINE_STR = r"^(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} " + \
+    _LINE_STR = r"^(?P<timestamp>\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} " + \
         r"[+-]?\d{2}:\d{2}) (?P<pid>\d+) (?P<client_ip>\S+): " + \
         r"(?P<module>\w+)/(?P<function>[\w.-]+)" + \
         r"(?:\((?:(?P<client_id>\d+), ?)?(?P<args>.*?),?\))?$"
-    LINE_RE = re.compile(LINE_STR)
-    GROUPS = ('timestamp', 'pid', 'client_ip', 'module', 'function',
-              'client_id', 'args')
+    _LINE_RE = re.compile(_LINE_STR)
 
     def parse_content(self, content):
         """
@@ -106,14 +109,13 @@ class ServerXMLRPCLog(LogFileOutput):
         self.last = None
 
         msg_info = {}
-        for l in reversed(self.lines[-2:]):
+        for l in reversed(self.lines):
             msg_info = self.parse_line(l)
             # assume parse is successful if we got an IP address
             if 'client_ip' in msg_info:
                 break
         # Get the last one even if it didn't parse.
         self.last = msg_info
-        return msg_info
 
     def parse_line(self, line):
         """
@@ -123,16 +125,15 @@ class ServerXMLRPCLog(LogFileOutput):
         msg_info = dict()
         msg_info['raw_log'] = line
 
-        match = self.LINE_RE.search(line)
+        match = self._LINE_RE.search(line)
         if match:
-            for group in self.GROUPS:
-                msg_info[group] = match.group(group)
+            msg_info.update(match.groupdict())
             # Try converting the time stamp but move on if it fails
             try:
                 stamp = match.group('timestamp')
                 # Cannot guess time zone from e.g. '+01:00', so strip timezone
                 msg_info['datetime'] = datetime.strptime(
-                    stamp[0:19], "%Y/%m/%d %H:%M:%S")
+                    stamp[0:19], self.time_format)
             except ValueError:
                 pass
 
@@ -147,5 +148,26 @@ class ServerXMLRPCLog(LogFileOutput):
 
 @parser('rhn_search_daemon.log')
 class SearchDaemonLog(LogFileOutput):
-    """Class for parsing the ``/var/log/rhn/search/rhn_search_daemon.log``."""
-    pass
+    """
+    Class for parsing the ``/var/log/rhn/search/rhn_search_daemon.log`` file.
+
+    Sample log contents::
+
+        STATUS | wrapper  | 2013/01/28 14:41:58 | --> Wrapper Started as Daemon
+        STATUS | wrapper  | 2013/01/28 14:41:58 | Launching a JVM...
+        INFO   | jvm 1    | 2013/01/28 14:41:59 | Wrapper (Version 3.2.1) http://wrapper.tanukisoftware.org
+        STATUS | wrapper  | 2013/01/29 17:04:25 | TERM trapped.  Shutting down.
+
+    Attributes:
+        lines (list): All lines captured in this file.
+
+    Examples:
+        >>> log = shared[SearchDaemonLog]
+        >>> log.file_path
+        'var/log/rhn/search/rhn_search_daemon.log'
+        >>> log.get('Launching a JVM')
+        ['STATUS | wrapper  | 2013/01/28 14:41:58 | Launching a JVM...']
+        >>> list(log.get_after(datetime(2013, 1, 29, 0, 0, 0)))
+        ['STATUS | wrapper  | 2013/01/29 17:04:25 | TERM trapped.  Shutting down.']
+    """
+    time_format = '%Y/%m/%d %H:%M:%S'

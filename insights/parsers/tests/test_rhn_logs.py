@@ -30,6 +30,30 @@ taskomatic_daemon_bad_date = """
 INFO   | jvm 1    | rbad/da/ta 15:13:40 | INFO: Initializing c3p0 pool... com.mchange.v2.c3p0.PoolBackedDataSource@ea9d5b40
 """
 
+
+def test_rhn_search_daemon_log():
+    out_log = SearchDaemonLog(context_wrap(search_daemon_log))
+    assert "Wrapper Started as Daemon" in out_log
+    assert len(out_log.get("jvm")) == 1
+    assert out_log.get("jvm")[0] == 'INFO   | jvm 1    | 2013/01/28 14:41:59 | Wrapper (Version 3.2.1) http://wrapper.tanukisoftware.org'
+    assert len(list(out_log.get_after(datetime(2013, 1, 28, 19, 30, 0)))) == 1
+
+
+def test_rhn_taskomatic_daemon_log():
+    out_log = TaskomaticDaemonLog(context_wrap(taskomatic_daemon_log))
+    assert "Wrapper Started as Daemon" in out_log
+    assert len(out_log.get("jvm")) == 9
+    assert out_log.get("jvm")[2] == 'INFO   | jvm 1    | 2016/05/18 15:13:39 | May 18, 2016 3:13:39 PM com.mchange.v2.log.MLog <clinit>'
+    assert out_log.last_log_date == datetime(2016, 5, 18, 15, 13, 40)
+    assert len(list(out_log.get_after(datetime(2016, 5, 18, 15, 13, 38)))) == 7
+
+
+def test_bad_date_handling():
+    out_log = TaskomaticDaemonLog(context_wrap(taskomatic_daemon_bad_date))
+    assert 'Initializing c3p0 pool..' in out_log
+    assert out_log.last_log_date is None
+
+
 SERVER_XMLRPC_LOG_DATA = """
 2016/04/11 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
 2016/04/11 05:52:26 -04:00 12911 10.4.4.17: xmlrpc/registration.create_system("token = '1-RegKey'", '6Server', 'x86_64')
@@ -41,31 +65,6 @@ SERVER_XMLRPC_LOG_DATA = """
 2016/04/11 12:57:26 -04:00 11594 192.168.18.28: rhnServer/server_certificate.valid('Server id ID-1000010124 not found in database',)
 2016/07/27 04:44:41 -04:00 25923 2620:10a:0:4::40: xmlrpc/queue.get(1000014812, 2, 'checkins enabled')
 """
-
-SERVER_XMLRPC_LOG_BAD_DATE = """
-2016/13/35 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
-"""
-
-
-def test_rhn_search_daemon_log():
-    out_log = SearchDaemonLog(context_wrap(search_daemon_log))
-    assert "Wrapper Started as Daemon" in out_log
-    assert len(out_log.get("jvm")) == 1
-    assert out_log.get("jvm")[0] == 'INFO   | jvm 1    | 2013/01/28 14:41:59 | Wrapper (Version 3.2.1) http://wrapper.tanukisoftware.org'
-
-
-def test_rhn_taskomatic_daemon_log():
-    out_log = TaskomaticDaemonLog(context_wrap(taskomatic_daemon_log))
-    assert "Wrapper Started as Daemon" in out_log
-    assert len(out_log.get("jvm")) == 9
-    assert out_log.get("jvm")[2] == 'INFO   | jvm 1    | 2016/05/18 15:13:39 | May 18, 2016 3:13:39 PM com.mchange.v2.log.MLog <clinit>'
-    assert out_log.last_log_date == datetime(2016, 5, 18, 15, 13, 40)
-
-
-def test_bad_date_handling():
-    out_log = TaskomaticDaemonLog(context_wrap(taskomatic_daemon_bad_date))
-    assert 'Initializing c3p0 pool..' in out_log
-    assert out_log.last_log_date is None
 
 
 def test_server_xmlrpc_log_data():
@@ -86,6 +85,9 @@ def test_server_xmlrpc_log_data():
 
     # Check that get works
     assert len(log.get('welcome_message')) == 2
+
+    # Test get_after
+    assert len(list(log.get_after(datetime(2016, 7, 27, 0, 0, 0)))) == 1
 
     # Check that __contains__ works
     assert 'welcome_message' in log
@@ -111,8 +113,23 @@ def test_server_xmlrpc_log_data():
     assert line == last
 
 
+SERVER_XMLRPC_LOG_BAD_DATE = """
+2016/13/35 05:52:01 -04:00 23630 10.4.4.17: xmlrpc/registration.welcome_message('lang: None',)
+Received SIGHUP
+""".strip()
+
+SERVER_XMLRPC_LOG_NO_DATE = """
+/usr/bin/httpd: command or file not found
+""".strip()
+
+
 def test_server_xmlrpc_log_bad_date():
     log = ServerXMLRPCLog(context_wrap(SERVER_XMLRPC_LOG_BAD_DATE))
+    assert len(log.get('registration.welcome_message')) == 1
     line = log.get('registration.welcome_message')[0]
     assert line['timestamp'] == '2016/13/35 05:52:01 -04:00'
     assert 'datetime' not in line
+
+    log = ServerXMLRPCLog(context_wrap(SERVER_XMLRPC_LOG_NO_DATE))
+    assert len(log.get('registration.welcome_message')) == 0
+    assert log.last == {'raw_log': '/usr/bin/httpd: command or file not found'}
