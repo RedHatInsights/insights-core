@@ -328,6 +328,7 @@ static_specs = {
     "sssd_logs"                 : PatternSpec(r"var/log/sssd/.*\.log$"),
     "sysconfig_chronyd"         : SimpleFileSpec("etc/sysconfig/chronyd"),
     "sysconfig_httpd"           : SimpleFileSpec("etc/sysconfig/httpd"),
+    "sysconfig_irqbalance"      : SimpleFileSpec("etc/sysconfig/irqbalance"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
     "sysctl"                    : CommandSpec("/sbin/sysctl -a"),
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),
