@@ -40,6 +40,7 @@ class OpenVSwitchLog(LogFileOutput):
     """
     Template class for reading OpenVSwitch logs.
     """
+    time_format = '%Y-%m-%dT%H:%M:%S'
 
     def get(self, search):
         """
@@ -51,7 +52,7 @@ class OpenVSwitchLog(LogFileOutput):
         for line in self.lines:
             if search not in line:
                 continue
-            fields = line.split('|')
+            fields = line.split('|', 4)  # stop splitting after fourth | found
             line_info = {'raw_line': line}
             if len(fields) == 5:
                 line_info.update(dict(zip(fieldnames, fields)))
