@@ -50,10 +50,14 @@ def test_normal_sssd_logs():
     # Check parse_lines
     info = SSSDLog.parse_lines(sighups)
     assert info[0] == {
-        'date': 'Tue Feb 14 09:45:02 2017',
+        'timestamp': 'Tue Feb 14 09:45:02 2017',
         'datetime': datetime(2017, 2, 14, 9, 45, 2),
         'module': 'sssd',
         'function': 'monitor_hup',
         'level': '0x0020',
         'message': 'Received SIGHUP.'
     }
+
+    # Check get_after - invalid log line treated as continuation
+    assert len(list(sssd_logs.get_after(datetime(2017, 2, 14, 8, 0, 0)))) == 11
+    assert len(list(sssd_logs.get_after(datetime(2017, 2, 14, 8, 0, 0), sssd_logs.get('sbus_remove_timeout')))) == 3
