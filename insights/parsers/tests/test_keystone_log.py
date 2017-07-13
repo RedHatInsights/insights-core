@@ -1,6 +1,7 @@
 from insights.parsers.keystone_log import KeystoneLog
 from insights.tests import context_wrap
 
+from datetime import datetime
 
 KEYSTONE_LOG = """
 2016-11-09 14:31:48.681 1082 WARNING oslo_config.cfg [-] Option "rabbit_userid" from group "oslo_messaging_rabbit" is deprecated for removal.  Its value may be silently ignored in the future.
@@ -13,3 +14,4 @@ KEYSTONE_LOG = """
 def test_keystone_log():
     log = KeystoneLog(context_wrap(KEYSTONE_LOG))
     assert len(log.get('INFO')) == 2
+    assert len(list(log.get_after(datetime(2016, 11, 9, 14, 31, 0)))) == 4
