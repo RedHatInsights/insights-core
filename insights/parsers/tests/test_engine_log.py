@@ -1,6 +1,7 @@
 from insights.parsers.engine_log import EngineLog
 from insights.tests import context_wrap
 
+from datetime import datetime
 
 ENGINE_LOG = """
 2016-05-18 13:21:21,115 INFO [org.ovirt.engine.core.bll.scheduling.policyunits.EvenGuestDistributionBalancePolicyUnit] (DefaultQuartzScheduler_Worker-95) [5bc194fa] There is no host with more than 8 running guests, no balancing is needed
@@ -17,3 +18,4 @@ def test_engine_log():
     engine_log_obj = EngineLog(context_wrap(ENGINE_LOG))
     assert "storage I/O problem." in engine_log_obj
     assert matched_lines == engine_log_obj.get('has paused due to storage I/O problem')
+    assert len(list(engine_log_obj.get_after(datetime(2016, 5, 18, 14, 0, 0)))) == 3
