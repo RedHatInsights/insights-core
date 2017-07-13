@@ -1,6 +1,8 @@
 from insights.tests import context_wrap
 from insights.parsers.catalina_out import CatalinaOut
 
+from datetime import datetime
+
 OUT1 = """
 Nov 10, 2015 8:52:38 AM org.apache.jk.common.MsgAjp processHeader
 SEVERE: BAD packet signature 18245
@@ -110,3 +112,4 @@ def test_catalina_out():
     out_log = CatalinaOut(context_wrap(OUT1))
     assert "IETF RFC 4122 compliant UUID" in out_log
     assert len(out_log.get("SEVERE")) == 4
+    assert len(list(out_log.get_after(datetime(2015, 11, 10, 18, 38, 10)))) == 15
