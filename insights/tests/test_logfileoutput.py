@@ -67,6 +67,49 @@ Mar 27 03:49:10 system pulp: pulp.server.webservices.middleware.exception:ERROR:
 """
 
 
+def test_messages_scanners():
+    # Messages that are present can be kept
+    FakeMessagesClass.keep_scan('puppet_master_logs', ' puppet-master')
+    # Messages that are absent still turn up as an empty list
+    FakeMessagesClass.keep_scan('kernel_logs', ' kernel')
+    # Token scan of something that's present
+    FakeMessagesClass.token_scan('middleware_exception_present', 'pulp.server.webservices.middleware.exception')
+    # Token scan of something that's absent
+    FakeMessagesClass.token_scan('cron_present', 'CRONTAB')
+
+    # Check that duplicate scanners raise a value exception
+    with pytest.raises(ValueError) as exc:
+        FakeMessagesClass.keep_scan('kernel_logs', ' kernel')
+    assert "'kernel_logs' is already a registered scanner key" in str(exc)
+
+    def count_lost_messages(self):
+        imuxsock_lines = 0
+        lost_messages = 0
+        for line in self.lines:
+            if 'imuxsock lost' in line:
+                parts = line.split(None)
+                if parts[7].isdigit():
+                    imuxsock_lines += 1
+                    lost_messages += int(parts[7])
+        return "lost {msgs} messages in {lines} lines".format(msgs=lost_messages, lines=imuxsock_lines)
+    FakeMessagesClass.scan('lost_messages', count_lost_messages)
+
+    ctx = context_wrap(MESSAGES, path='/var/log/messages')
+    log = FakeMessagesClass(ctx)
+    assert hasattr(log, 'puppet_master_logs')
+    assert hasattr(log, 'kernel_logs')
+    assert hasattr(log, 'middleware_exception_present')
+    assert hasattr(log, 'cron_present')
+    assert hasattr(log, 'lost_messages')
+
+    assert len(log.puppet_master_logs) == 6
+    assert log.puppet_master_logs[0] == 'Mar 27 03:18:24 system puppet-master[48226]: Setting manifest is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations'
+    assert log.kernel_logs == []
+    assert log.middleware_exception_present
+    assert not log.cron_present
+    assert log.lost_messages == 'lost 451 messages in 3 lines'
+
+
 def test_messages_get_after():
     ctx = context_wrap(MESSAGES, path='/var/log/messages')
     log = FakeMessagesClass(ctx)
