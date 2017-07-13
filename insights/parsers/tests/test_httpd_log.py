@@ -2,6 +2,7 @@ from insights.tests import context_wrap
 from insights.parsers.httpd_log import HttpdSSLErrorLog, HttpdErrorLog
 from insights.parsers.httpd_log import HttpdSSLAccessLog, HttpdAccessLog
 
+from datetime import datetime
 
 SSL_ACCESS_LOG = """
 10.68.5.20 - - [29/Mar/2017:05:57:21 -0400] "GET / HTTP/1.1" 403 202 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.110 Safari/537.36"
@@ -43,21 +44,27 @@ AH00558: httpd: Could not reliably determine the server's fully qualified domain
 def test_ssl_access_log():
     log = HttpdSSLAccessLog(context_wrap(SSL_ACCESS_LOG))
     assert 2 == len(log.get("10.68.5.20"))
+    assert len(list(log.get_after(datetime(2017, 3, 29, 5, 59, 0)))) == 1
 
 
 def test_access_log():
     log = HttpdAccessLog(context_wrap(ACCESS_LOG))
     assert 9 == len(log.get("10.68.5.20"))
     assert "favicon.ico" in log
+    assert len(list(log.get_after(datetime(2017, 3, 29, 6, 0, 0)))) == 3
 
 
 def test_ssl_error_log():
     log = HttpdSSLErrorLog(context_wrap(SSL_ERROR_LOG))
     assert 1 == len(log.get("mpm_worker:notice"))
     assert "AH00558" in log
+    # Includes continuation line
+    assert len(list(log.get_after(datetime(2017, 3, 28, 3, 56, 39)))) == 2
 
 
 def test_error_log():
     log = HttpdErrorLog(context_wrap(ERROR_LOG))
     assert 2 == len(log.get("mpm_worker:notice"))
     assert "AH00558" in log
+    # Includes continuation line
+    assert len(list(log.get_after(datetime(2017, 3, 28, 3, 56, 39)))) == 6
