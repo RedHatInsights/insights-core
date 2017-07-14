@@ -121,6 +121,17 @@ class InsightsClientApi(object):
             verification = self.verify(new_egg, gpg_key)
             logger.debug('Core was verified: %s', verification)
 
+        # Need to install the new Core here
+        if new_egg and verification:
+            installation = self.install(new_egg)
+            logger.debug('Core installation: %s', installation)
+            # Return 42 to the wrapper
+            # Indicates we want to stop execution and start the new Client
+            if installation['success']:
+                return 42
+            else:
+                logger.debug('There was an error installing the new core.')
+
         # Register
         is_registered = self.get_registration_information()['is_registered']
         logger.debug('System is registered: %s', is_registered)
@@ -172,6 +183,7 @@ class InsightsClientApi(object):
         # If the etag was found and we are not force fetching
         # Then add it to the request
         kwargs = {"verify": constants.default_ca_file}
+        logger.debug("Adding %s to cert verification.", constants.default_ca_file)
         if current_etag and not force:
             logger.debug('Requesting new core with etag %s', current_etag)
             kwargs["headers"] = {'If-None-Match': current_etag}
@@ -244,6 +256,28 @@ class InsightsClientApi(object):
                     'stderr': 'Must specify a valid core and gpg key.',
                     'stdout': 'Must specify a valid core and gpg key.',
                     'rc': 1}
+
+    def install(self, new_egg):
+        """
+        returns (dict): {'success': True if the new core was installed successfull else False}
+        """
+        success = False
+        if not new_egg:
+            logger.debug('Must provide a valid Core installation path.')
+            return {'success': success}
+
+        logger.debug("Installing the new Core %s", new_egg)
+
+        from setuptools.command import easy_install
+        try:
+            easy_install.main(["-U", new_egg])  # WHY DOESNT THIS RETURN ANYTHING
+            success = True
+        except:
+            logger.debug("There was an issue installing the new Core.")
+            logger.debug("Please ensure a proper path to the Core.")
+            logger.debug("Please ensure you are running as root, or a user with root privileges.")
+
+        return {'success': success}
 
     def fetch_rules(self, options=None, config=None):
         """
