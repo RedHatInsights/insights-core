@@ -90,7 +90,7 @@ class RHEV(MultinodeMetadata):
         "storagedomains", "hosts", "api_version",
         "datacenters", "networks", "rhev_version",
         "coordinator_version", "diskprofiles", "vms",
-        "clusters"
+        "clusters", "macpools"
     ]
 
 
