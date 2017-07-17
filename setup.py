@@ -20,7 +20,9 @@ entry_points = {
 
 runtime = {
     'pyyaml>=3.10,<=3.12',
-    'six'
+    'six',
+    'setuptools',
+    'requests'
 }
 
 develop = {
