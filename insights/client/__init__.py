@@ -357,4 +357,7 @@ def run():
 
     # Otherwise the Client should run
     else:
-        return c.run()
+        try:
+            return c.run()
+        except:
+            logger.exception("Fatal error")
