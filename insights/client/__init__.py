@@ -168,15 +168,12 @@ class InsightsClientApi(object):
 
         # If the etag was found and we are not force fetching
         # Then add it to the request
-        kwargs = {"verify": constants.default_ca_file}
-        logger.debug("Adding %s to cert verification.", constants.default_ca_file)
         if current_etag and not force:
             logger.debug('Requesting new core with etag %s', current_etag)
-            kwargs["headers"] = {'If-None-Match': current_etag}
+            response = requests.get(egg_url, headers={'If-None-Match': current_etag})
         else:
             logger.debug('Found no etag or forcing fetch')
-
-        response = requests.get(egg_url, **kwargs)
+            response = requests.get(egg_url)
 
         # Debug information
         logger.debug('status code: %d', response.status_code)
