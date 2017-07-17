@@ -1,9 +1,8 @@
-import optparse
 import requests
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
-from .client_config import parse_config_file, InsightsClient, set_up_options
+from .client_config import InsightsClient
 import logging
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
@@ -27,7 +26,7 @@ class InsightsClientApi(object):
         """
 
         # Setup the base config and options
-        InsightsClient.config, InsightsClient.options = self.parse_options()
+        InsightsClient.config, InsightsClient.options = client.parse_options()
 
         # Overwrite anything passed in
         if options:
@@ -52,25 +51,6 @@ class InsightsClientApi(object):
         for item, value in InsightsClient.config.items(APP_NAME):
             if item != 'password' and item != 'proxy':
                 logger.debug("%s:%s", item, value)
-
-    def parse_options(self):
-        """
-            returns (tuple): returns a tuple with configparser and argparser options
-        """
-        class NoErrOptionParser(optparse.OptionParser):
-            def __init__(self, *args, **kwargs):
-                self.valid_args_cre_list = []
-                optparse.OptionParser.__init__(self, *args, **kwargs)
-
-            def error(self, msg):
-                pass
-
-        parser = NoErrOptionParser()
-        set_up_options(parser)
-        options, args = parser.parse_args()
-        if len(args) > 0:
-            parser.error("Unknown arguments: %s" % args)
-        return parse_config_file(options.conf), options
 
     def version(self):
         """
@@ -322,6 +302,12 @@ class InsightsClientApi(object):
         return {'machine-id': client.get_machine_id(),
                 'registration_status': registration_status,
                 'is_registered': registration_status['status']}
+
+    def get_conf(self):
+        """
+            returns (optparse): OptParse config/options
+        """
+        return InsightsClient
 
     def upload(self, path):
         """

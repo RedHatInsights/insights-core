@@ -5,6 +5,7 @@ import logging.handlers
 import os
 import shutil
 import time
+import optparse
 from auto_config import try_auto_configuration
 from utilities import (validate_remove_file,
                        generate_machine_id,
@@ -18,7 +19,7 @@ from connection import InsightsConnection
 from archive import InsightsArchive
 from support import InsightsSupport, registration_check
 from constants import InsightsConstants as constants
-from client_config import InsightsClient
+from client_config import parse_config_file, InsightsClient, set_up_options
 
 __author__ = 'Richard Brantley <rbrantle@redhat.com>, Jeremy Crafts <jcrafts@redhat.com>, Dan Varga <dvarga@redhat.com>'
 
@@ -26,6 +27,26 @@ LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
 logger = logging.getLogger(APP_NAME)
 handler = None
+
+
+def parse_options():
+    """
+        returns (tuple): returns a tuple with configparser and argparser options
+    """
+    class NoErrOptionParser(optparse.OptionParser):
+        def __init__(self, *args, **kwargs):
+            self.valid_args_cre_list = []
+            optparse.OptionParser.__init__(self, *args, **kwargs)
+
+        def error(self, msg):
+            pass
+
+    parser = NoErrOptionParser()
+    set_up_options(parser)
+    options, args = parser.parse_args()
+    if len(args) > 0:
+        parser.error("Unknown arguments: %s" % args)
+    return parse_config_file(options.conf), options
 
 
 def set_up_logging():
