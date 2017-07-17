@@ -82,7 +82,8 @@ class InsightsClientApi(object):
             skip_verify=False,
             skip_upload=False,
             force_fetch=False,
-            force_register=False):
+            force_register=False,
+            update_rules=True):
         """
             do everything
         """
@@ -124,6 +125,11 @@ class InsightsClientApi(object):
         # Collect things
         if verification:
             logger.debug('New Core was verified. Collecting information.')
+
+            if update_rules:
+                logger.debug("Updating rules.")
+                self.update_rules()  # won't be needed after we move to new egg format
+
             results = self.collect(collection_format)
             logger.debug('Results: %s', results)
         else:
@@ -259,9 +265,16 @@ class InsightsClientApi(object):
 
         return {'success': success}
 
-    def fetch_rules(self, options=None, config=None):
+    def update_rules(self, options=None, config=None):
         """
             returns (dict): new client rules
+        """
+        try_auto_configuration()
+        return client.update_rules()
+
+    def fetch_rules(self, options=None, config=None):
+        """
+            returns (dict): existing client rules
         """
         try_auto_configuration()
         return client.fetch_rules()
