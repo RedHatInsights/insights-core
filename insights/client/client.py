@@ -237,6 +237,12 @@ def fetch_rules():
     return pc.get_conf(InsightsClient.options.update, {})
 
 
+def update_rules():
+    pconn = InsightsConnection()
+    pc = InsightsConfig(pconn)
+    return pc.get_conf(True, {})
+
+
 def collect(rc=0):
     """
     All the heavy lifting done here
