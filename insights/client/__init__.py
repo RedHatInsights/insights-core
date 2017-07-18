@@ -103,7 +103,7 @@ class InsightsClientApi(object):
             logger.debug('Core was verified: %s', verification)
 
         # Need to install the new Core here
-        if new_egg and verification:
+        if new_egg and verification['gpg']:
             installation = self.install(new_egg)
             logger.debug('Core installation: %s', installation)
             # Return 42 to the wrapper
@@ -112,6 +112,10 @@ class InsightsClientApi(object):
                 return 42
             else:
                 logger.debug('There was an error installing the new core.')
+        else:
+            logger.debug('New egg was not retrieved or was retrieved but failed verification.')
+            logger.debug('Egg retrieval: ', new_egg)
+            logger.debug('Verification: ', verification)
 
         # Register
         is_registered = self.get_registration_information()['is_registered']
@@ -155,6 +159,10 @@ class InsightsClientApi(object):
         """
             returns (str): path to new egg.  None if no update.
         """
+        # was a custom egg url passed in?
+        if InsightsClient.options.core_url:
+            egg_url = InsightsClient.options.core_url
+
         # Searched for cached etag information
         current_etag = None
         import os
@@ -179,6 +187,9 @@ class InsightsClientApi(object):
         logger.debug('status code: %d', response.status_code)
         for header, value in response.headers.iteritems():
             logger.debug('%s: %s', header, value)
+
+        # Debug the ETag
+        logger.debug('ETag: %s', response.request.headers.get('If-None-Match'))
 
         # If data was received, write the new egg and etag
         if response.status_code == 200 and len(response.content) > 0:
