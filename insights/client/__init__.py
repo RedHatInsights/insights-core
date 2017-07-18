@@ -114,8 +114,8 @@ class InsightsClientApi(object):
                 logger.debug('There was an error installing the new core.')
         else:
             logger.debug('New egg was not retrieved or was retrieved but failed verification.')
-            logger.debug('Egg retrieval: ', new_egg)
-            logger.debug('Verification: ', verification)
+            logger.debug('Egg retrieval: %s', new_egg)
+            logger.debug('Verification: %s', verification)
 
         # Register
         is_registered = self.get_registration_information()['is_registered']

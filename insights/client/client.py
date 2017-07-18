@@ -26,7 +26,6 @@ __author__ = 'Richard Brantley <rbrantle@redhat.com>, Jeremy Crafts <jcrafts@red
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
 logger = logging.getLogger(APP_NAME)
-handler = None
 
 
 def parse_options():
@@ -49,64 +48,59 @@ def parse_options():
     return parse_config_file(options.conf), options
 
 
+def get_file_handler(opts, conf):
+    log_dir = constants.log_dir
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, 0700)
+    logging_file = os.path.join(log_dir, APP_NAME + '.log')
+    if conf.get(APP_NAME, 'logging_file'):
+        logging_file = conf.get(APP_NAME, 'logging_file')
+    if opts.logging_file:
+        logging_file = opts.logging_file
+    return logging.handlers.RotatingFileHandler(logging_file, backupCount=3)
+
+
+def get_console_handler(opts):
+    if opts.silent:
+        target_level = logging.NOTSET
+    elif opts.verbose:
+        target_level = logging.DEBUG
+    elif opts.to_stdout:
+        target_level = logging.ERROR
+    else:
+        target_level = logging.INFO
+
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    stdout_handler.setLevel(target_level)
+
+    return stdout_handler
+
+
+def configure_level(opts, conf):
+    config_level = 'DEBUG' if opts.verbose else conf.get(APP_NAME, 'loglevel')
+
+    init_log_level = logging.getLevelName(config_level)
+    if type(init_log_level) in (str, unicode):
+        print "Invalid log level %s, defaulting to DEBUG" % config_level
+        init_log_level = logging.DEBUG
+
+    logger.setLevel(init_log_level)
+    logging.root.setLevel(init_log_level)
+
+
 def set_up_logging():
-    # TODO: come back to this
-    """
-    Initialize Logging
-    """
-    global handler
-    if not handler:
-        log_dir = constants.log_dir
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir, 0700)
-        logging_file = os.path.join(log_dir, APP_NAME + '.log')
-        if InsightsClient.config.get(APP_NAME, 'logging_file'):
-            logging_file = InsightsClient.config.get(APP_NAME, 'logging_file')
-        if InsightsClient.options.logging_file:
-            logging_file = InsightsClient.options.logging_file
-        valid_levels = ['ERROR', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL']
-        handler = logging.handlers.RotatingFileHandler(logging_file,
-                                                       backupCount=3)
+    if len(logging.root.handlers) == 0:
+        # Just to reduce amount of text
+        opts, conf = InsightsClient.options, InsightsClient.config
 
         # from_stdin mode implies to_stdout
-        InsightsClient.options.to_stdout = (InsightsClient.options.to_stdout or
-                                            InsightsClient.options.from_stdin or
-                                            InsightsClient.options.from_file)
-        if InsightsClient.options.to_stdout and not InsightsClient.options.verbose:
-            InsightsClient.options.quiet = True
+        opts.to_stdout = (opts.to_stdout or opts.from_stdin or opts.from_file)
 
-        # Send anything INFO+ to stdout and log
-        stdout_handler = logging.StreamHandler(sys.stdout)
-        stderr_handler = logging.StreamHandler(sys.stderr)
-        stderr_handler.setLevel(logging.ERROR)
-        logging.root.addHandler(stderr_handler)
-        if not InsightsClient.options.verbose:
-            stdout_handler.setLevel(logging.INFO)
-        if InsightsClient.options.quiet:
-            stdout_handler.setLevel(logging.ERROR)
-        if not InsightsClient.options.silent:
-            logging.root.addHandler(stdout_handler)
-
-        logging.root.addHandler(handler)
-
-        formatter = logging.Formatter(LOG_FORMAT)
-        handler.setFormatter(formatter)
-        logging.root.setLevel(logging.WARNING)
-        if InsightsClient.options.verbose:
-            config_level = 'DEBUG'
-        else:
-            config_level = InsightsClient.config.get(APP_NAME, 'loglevel')
-
-        if config_level in valid_levels:
-            init_log_level = logging.getLevelName(config_level)
-        else:
-            print "Invalid log level %s, defaulting to DEBUG" % config_level
-            init_log_level = logging.getLevelName("DEBUG")
-
-        logger.setLevel(init_log_level)
-        logging.root.setLevel(init_log_level)
+        logging.root.addHandler(get_console_handler(opts))
+        logging.root.addHandler(get_file_handler(opts, conf))
+        configure_level(opts, conf)
         logger.debug("Logging initialized")
-    return handler
 
 
 def test_connection():
@@ -370,7 +364,7 @@ def upload(tar_file, collection_duration=None):
                 insights_facts['last_upload'] = json.loads(upload.text)
 
                 from auto_config import (_try_satellite6_configuration,
-                                        _try_satellite5_configuration)
+                                         _try_satellite5_configuration)
 
                 sat6 = _try_satellite6_configuration()
                 sat5 = None
