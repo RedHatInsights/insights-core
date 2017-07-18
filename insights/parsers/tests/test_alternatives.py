@@ -1,7 +1,69 @@
 from insights.tests import context_wrap
-from insights.parsers.display_java import default_java, JavaAlternatives
+from insights.parsers.alternatives import AlternativesOutput, JavaAlternatives
+from insights.core import ParseException
 
 import unittest
+
+
+ALT_MTA = """
+mta - status is auto.
+ link currently points to /usr/sbin/sendmail.postfix
+/usr/sbin/sendmail.postfix - priority 30
+ slave mta-mailq: /usr/bin/mailq.postfix
+ slave mta-newaliases: /usr/bin/newaliases.postfix
+Current `best' version is /usr/sbin/sendmail.postfix.
+"""
+
+DUPLICATED_STATUS_LINE = """
+mta - status is auto.
+Nonsense line that should be ignored
+mta - status is auto.
+"""
+
+MISSING_STATUS_LINE = """
+ link currently points to /usr/sbin/sendmail.postfix
+/usr/sbin/sendmail.postfix - priority 30
+ slave mta-mailq: /usr/bin/mailq.postfix
+ slave mta-newaliases: /usr/bin/newaliases.postfix
+Current `best' version is /usr/sbin/sendmail.postfix.
+"""
+
+
+class Test_Base_Alternatives(unittest.TestCase):
+    def test_mta_alternatives(self):
+        mtas = AlternativesOutput(context_wrap(ALT_MTA))
+
+        self.assertTrue(hasattr(mtas, 'program'))
+        self.assertEqual(mtas.program, 'mta')
+        self.assertTrue(hasattr(mtas, 'status'))
+        self.assertEqual(mtas.status, 'auto')
+        self.assertTrue(hasattr(mtas, 'link'))
+        self.assertEqual(mtas.link, '/usr/sbin/sendmail.postfix')
+        self.assertTrue(hasattr(mtas, 'best'))
+        self.assertEqual(mtas.best, '/usr/sbin/sendmail.postfix')
+
+        self.assertTrue(hasattr(mtas, 'paths'))
+        self.assertIsInstance(mtas.paths, list)
+        self.assertEqual(len(mtas.paths), 1)
+
+        self.assertIn('path', mtas.paths[0])
+        self.assertIn('priority', mtas.paths[0])
+        self.assertIn('slave', mtas.paths[0])
+
+    def test_failure_modes(self):
+        # Duplicate status line raises ParseException
+        with self.assertRaisesRegexp(ParseException, 'Program line for mta'):
+            alts = AlternativesOutput(context_wrap(DUPLICATED_STATUS_LINE))
+            self.assertIsNone(alts.program)
+
+        # Missing status line results in no data
+        alts = AlternativesOutput(context_wrap(MISSING_STATUS_LINE))
+        self.assertIsNone(alts.program)
+        self.assertIsNone(alts.status)
+        self.assertIsNone(alts.link)
+        self.assertIsNone(alts.best)
+        self.assertEqual(alts.paths, [])
+
 
 alter_java = """
 java - status is auto.
@@ -54,45 +116,25 @@ Current `best' version is /usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java.
 """.strip().encode('utf8')
 
 
-def test_no_java():
-    java = default_java(context_wrap(alter_no_java))
-    assert java is None
-
-
-def test_has_java():
-    java = default_java(context_wrap(alter_java))
-    assert java == "/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java"
-
-
-class Test_Class(unittest.TestCase):
+class Test_Java_Class(unittest.TestCase):
 
     def test_class_no_java(self):
         java = JavaAlternatives(context_wrap(alter_no_java))
-        self.assertTrue(hasattr(java, 'program'))
         self.assertIsNone(java.program)
         # Direct access
-        self.assertTrue(hasattr(java, 'status'))
         self.assertIsNone(java.status)
-        self.assertTrue(hasattr(java, 'link'))
         self.assertIsNone(java.link)
-        self.assertTrue(hasattr(java, 'paths'))
         self.assertEqual(java.paths, [])
-        self.assertTrue(hasattr(java, 'best'))
         self.assertIsNone(java.best)
 
     def test_class_has_java(self):
         java = JavaAlternatives(context_wrap(alter_java))
 
-        self.assertTrue(hasattr(java, 'program'))
         self.assertEqual(java.program, 'java')
-        self.assertTrue(hasattr(java, 'status'))
         self.assertEqual(java.status, 'auto')
-        self.assertTrue(hasattr(java, 'link'))
         self.assertEqual(java.link, '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java')
-        self.assertTrue(hasattr(java, 'best'))
         self.assertEqual(java.best, '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java')
 
-        self.assertTrue(hasattr(java, 'paths'))
         self.assertIsInstance(java.paths, list)
         self.assertEqual(len(java.paths), 2)
 
