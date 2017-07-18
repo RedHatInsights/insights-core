@@ -283,7 +283,7 @@ def collect(rc=0):
                      ('--from-file' if InsightsClient.options.from_file else '--from-stdin'))
         return False
 
-    collection_rules, rm_conf = pc.get_conf(InsightsClient.options.update, stdin_config)
+    collection_rules, rm_conf = pc.get_conf(False, stdin_config)
     individual_archives = []
 
     for t in targets:
