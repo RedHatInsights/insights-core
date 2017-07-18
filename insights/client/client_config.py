@@ -113,6 +113,10 @@ def set_up_options(parser):
                       help='path to log file location',
                       default=constants.default_log_file
                       )
+    parser.add_option('--core-url',
+                      help='url to core location',
+                      default=None
+                      )
     group = optparse.OptionGroup(parser, "Debug options")
     parser.add_option('--version',
                       help="Display version",
