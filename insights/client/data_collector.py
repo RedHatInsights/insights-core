@@ -10,7 +10,7 @@ import copy
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from ..contrib.soscleaner import SOSCleaner
-from utilities import _expand_paths, generate_analysis_target_id
+from utilities import _expand_paths, generate_analysis_target_id, logging_file
 from constants import InsightsConstants as constants
 from insights_spec import InsightsFile, InsightsCommand
 from client_config import InsightsClient
@@ -80,7 +80,7 @@ class DataCollector(object):
 
     def _write_uploader_log(self, conf):
         logger.debug('Writing insights.log to archive...')
-        with open(constants.default_log_file) as logfile:
+        with open(logging_file()) as logfile:
             self.archive.add_metadata_to_archive(logfile.read().strip().decode('utf-8'),
                                                  self._get_meta_path('uploader_log', conf))
 
