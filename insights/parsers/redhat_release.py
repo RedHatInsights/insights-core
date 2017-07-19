@@ -34,7 +34,6 @@ class RedhatRelease(Parser):
     """Parses the content of file ``/etc/redhat-release``."""
 
     def parse_content(self, content):
-        assert len(content) == 1
         self.raw = content[0]
         product, _, version_name = [v.strip() for v in content[0].partition("release")]
         version_name_split = [v.strip() for v in version_name.split(None, 1)]

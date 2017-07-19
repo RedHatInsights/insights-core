@@ -21,7 +21,7 @@ class AllLimitsConf(object):
         limits(list): a list of the original LimitsConf parser results.
         rules(list): the entire list of rules.
     """
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         rules = []
         domains = set([])
         self.limits = shared[LimitsConf]

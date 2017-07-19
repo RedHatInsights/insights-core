@@ -90,8 +90,7 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
         p = subprocess.Popen(cmd, stdout=STDOUT, stderr=STDERR, shell=shell, **kwargs)
         output = p.communicate()[0]
         rc = p.poll()
-    except BaseException as e:
-        log.exception(e)
+    except Exception as e:
         raise CalledProcessError(rc, cmd, str(e)), None, sys.exc_info()[2]
     if rc:
         raise CalledProcessError(rc, cmd, output)

@@ -104,8 +104,8 @@ def get_dependency_graph(component):
 
 
 def load_components(path, include=".*", exclude="test"):
-    include = re.compile(include).search
-    exclude = re.compile(exclude).search
+    include = re.compile(include).search if include else lambda x: True
+    exclude = re.compile(exclude).search if exclude else lambda x: False
     prefix = path.replace('/', '.') + '.'
     for _, name, _ in pkgutil.walk_packages(path=[path], prefix=prefix):
         if include(name) and not exclude(name):
@@ -254,11 +254,7 @@ def default_executor(func, broker, requires=[], optional=[]):
     missing_requirements = get_missing_requirements(requires, broker)
     if missing_requirements:
         raise MissingRequirements(missing_requirements)
-    try:
-        return func(broker)
-    except:
-        log.error(get_name(func))
-        raise
+    return func(broker)
 
 
 def new_component_type(name=None,
