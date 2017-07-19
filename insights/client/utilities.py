@@ -9,8 +9,18 @@ import datetime
 import shlex
 from subprocess import Popen, PIPE, STDOUT
 from constants import InsightsConstants as constants
+from client_config import InsightsClient
 
 logger = logging.getLogger(constants.app_name)
+
+
+def logging_file():
+    file_from_opts = InsightsClient.options.logging_file
+    file_from_conf = InsightsClient.config.get(constants.app_name, 'logging_file')
+    if file_from_opts == constants.default_log_file:
+        return file_from_conf
+    else:
+        return file_from_opts
 
 
 def determine_hostname(display_name=None):

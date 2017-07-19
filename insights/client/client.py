@@ -12,7 +12,8 @@ from utilities import (validate_remove_file,
                        generate_analysis_target_id,
                        write_to_disk,
                        write_unregistered_file,
-                       determine_hostname)
+                       determine_hostname,
+                       logging_file)
 from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
@@ -48,24 +49,20 @@ def parse_options():
     return parse_config_file(options.conf), options
 
 
-def get_file_handler(opts, conf):
-    log_dir = constants.log_dir
+def get_file_handler():
+    log_file = logging_file()
+    log_dir = os.path.dirname(log_file)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, 0700)
-    logging_file = os.path.join(log_dir, APP_NAME + '.log')
-    if conf.get(APP_NAME, 'logging_file'):
-        logging_file = conf.get(APP_NAME, 'logging_file')
-    if opts.logging_file:
-        logging_file = opts.logging_file
-    return logging.handlers.RotatingFileHandler(logging_file, backupCount=3)
+    return logging.handlers.RotatingFileHandler(log_file, backupCount=3)
 
 
-def get_console_handler(opts):
-    if opts.silent:
+def get_console_handler(silent, verbose, to_stdout):
+    if silent:
         target_level = logging.NOTSET
-    elif opts.verbose:
+    elif verbose:
         target_level = logging.DEBUG
-    elif opts.to_stdout:
+    elif to_stdout:
         target_level = logging.ERROR
     else:
         target_level = logging.INFO
@@ -77,8 +74,8 @@ def get_console_handler(opts):
     return stdout_handler
 
 
-def configure_level(opts, conf):
-    config_level = 'DEBUG' if opts.verbose else conf.get(APP_NAME, 'loglevel')
+def configure_level(conf, verbose):
+    config_level = 'DEBUG' if verbose else conf.get(APP_NAME, 'loglevel')
 
     init_log_level = logging.getLevelName(config_level)
     if type(init_log_level) in (str, unicode):
@@ -97,9 +94,10 @@ def set_up_logging():
         # from_stdin mode implies to_stdout
         opts.to_stdout = (opts.to_stdout or opts.from_stdin or opts.from_file)
 
-        logging.root.addHandler(get_console_handler(opts))
-        logging.root.addHandler(get_file_handler(opts, conf))
-        configure_level(opts, conf)
+        verbose = opts.verbose or conf.get(APP_NAME, 'verbose')
+        logging.root.addHandler(get_console_handler(opts.silent, verbose, opts.to_stdout))
+        logging.root.addHandler(get_file_handler())
+        configure_level(conf, verbose)
         logger.debug("Logging initialized")
 
 
