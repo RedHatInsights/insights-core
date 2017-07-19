@@ -354,7 +354,7 @@ def upload(tar_file, collection_duration=None):
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
-                handler.write(upload.text)
+                handler.write(upload.text.encode('utf-8'))
             write_to_disk(constants.lastupload_file)
 
             # Write to ansible facts directory
