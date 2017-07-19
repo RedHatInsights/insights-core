@@ -8,7 +8,7 @@ from functools import wraps
 from itertools import islice
 from insights.core.evaluators import MultiEvaluator, SingleEvaluator
 from insights.core.context import Context
-from insights.config.factory import apply_filters
+from insights.config.factory import apply_filters, get_config
 from insights.util import make_iter
 from collections import defaultdict
 
@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 ARCHIVE_GENERATORS = []
 HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
 HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
+
+DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
+DEFAULT_HOSTNAME = "hostname.example.com"
 
 
 def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
@@ -106,13 +109,18 @@ def plugin_tests(component):
         yield test_func, input_data, expected
 
 
-def context_wrap(lines, path='path', hostname='hostname',
-                 release='release', version='-1.-1', machine_id="machine_id", **kwargs):
+def context_wrap(lines,
+                 path="path",
+                 hostname=DEFAULT_HOSTNAME,
+                 release=DEFAULT_RELEASE,
+                 version="-1.-1",
+                 machine_id="machine_id",
+                 **kwargs):
     if isinstance(lines, basestring):
         lines = lines.strip().splitlines()
     return Context(content=lines,
                    path=path, hostname=hostname,
-                   release=release, version=version.split('.'),
+                   release=release, version=version.split("."),
                    machine_id=machine_id, **kwargs)
 
 
@@ -144,7 +152,7 @@ class MultinodeShim(object):
         return self.input_datas
 
     def get_content(self, path, default=None, **kwargs):
-        return default
+        raise NotImplementedError()
 
 
 def integrate(input_data, component):
@@ -155,7 +163,7 @@ def integrate(input_data, component):
     if isinstance(input_data, InputData):
         evaluator = SingleEvaluator(input_data)
         evaluator.process()
-        return [evaluator.broker.instances[component]]
+        return [evaluator.broker.instances.get(component)]
     if isinstance(input_data, list):
         if isinstance(input_data[0], dict):
             # Assume it's metadata.json
@@ -165,11 +173,11 @@ def integrate(input_data, component):
                 input_data[0]["systems"] = []
             meta = input_data[0]
             input_data = input_data[1:]
-            evaluator = MultiEvaluator(MultinodeShim(input_data), meta)
+            evaluator = MultiEvaluator(MultinodeShim(input_data), metadata=meta)
         else:
             evaluator = MultiEvaluator(MultinodeShim(input_data))
         evaluator.process()
-        return [evaluator.broker.instances[component]]
+        return [evaluator.broker.instances.get(component)]
     else:
         raise TypeError("Unrecognized test data: %s" % type(input_data))
 
@@ -207,57 +215,45 @@ class InputData(object):
     contain the specified value in the context.path field.  This is useful for
     testing pattern-like file parsers.
     """
-    def __init__(self, name=None, release=None, version=["-1", "-1"], hostname=None, machine_id=None, **kwargs):
+    def __init__(self, name=None,
+                 release=DEFAULT_RELEASE,
+                 version=["-1", "-1"],
+                 hostname=DEFAULT_HOSTNAME,
+                 machine_id=None,
+                 **kwargs):
         cnt = input_data_cache.get(name, 0)
         self.name = "{0}-{1:0>5}".format(name, cnt)
         input_data_cache[name] = cnt + 1
         self.root = "/"
         self.records = []
         self.symbolic_files = defaultdict(list)
-        self.by_path = {}
+        self.data_spec_config = get_config()
+        self.by_path = dict()
         self.to_remove = []
-        self.release = release if release else "default-release"
+        self.release = release
         self.version = version.split(".") if "." in version else version
         if len(self.version) == 1:
-            self.version = [self.version[0], '0']
-        self.machine_id = machine_id if machine_id else "input-data-" + str(next_gn())
+            self.version = [self.version[0], "0"]
+        self.machine_id = machine_id or "input-data-" + str(next_gn())
         self.extra_context = kwargs
 
         # InputData.hostname (as well as Context.hostname) is now used for
         # unique identification of hosts in multi-host mode.
         # TODO: Rename field to better represent its real function
         self.hostname = self.machine_id
-        self.add("hostname", hostname if hostname else "hostname.example.com")
+        self.add("hostname", hostname)
+        self.add("machine-id", machine_id)
         self.add("redhat-release", self.release)
-        self.add_legacy_product_records()
-
-    def add_legacy_product_records(self):
-        ctx_metadata = {
-            "system_id": self.hostname,
-            "links": []
-        }
-        if self.extra_context.get("osp"):
-            ctx_metadata["type"] = self.extra_context["osp"].role
-            ctx_metadata["product"] = "OSP"
-            self.add("metadata.json", json.dumps(ctx_metadata))
-        elif self.extra_context.get("rhev"):
-            ctx_metadata["type"] = self.extra_context["rhev"].role
-            ctx_metadata["product"] = "RHEV"
-            self.add("metadata.json", json.dumps(ctx_metadata))
-        elif self.extra_context.get("docker"):
-            ctx_metadata["type"] = self.extra_context["docker"].role
-            ctx_metadata["product"] = "Docker"
-            self.add("metadata.json", json.dumps(ctx_metadata))
 
     def get_context(self):
         return self.records[0]["context"] if len(self.records) > 0 else None
 
     def get_content(self, target, split=True, symbolic=True, default=""):
         try:
-            if not symbolic:
-                content = self.by_path[target]
+            if symbolic:
+                content = self.by_path[self.symbolic_files[target][0]]
             else:
-                content = self.by_path[self.symbolic_name[target][0]]
+                content = self.by_path[target]
             return content.splitlines() if split else content
         except:
             return default
@@ -270,6 +266,8 @@ class InputData(object):
     def add(self, target, content, path=None, do_filter=True):
         if not path:  # path must change to allow parsers to fire
             path = str(next_gn()) + "BOGUS"
+        if not path.startswith("/"):
+            path = "/" + path
         if do_filter:
             content_iter = apply_filters(target, make_iter(content))
         else:
@@ -283,7 +281,7 @@ class InputData(object):
                       **self.extra_context)
 
         self.by_path[path] = content
-        self.by_target[target].append(path)
+        self.symbolic_files[target].append(path)
 
         self.records.append({
             "target": target,
@@ -329,29 +327,29 @@ def redhat_release(major, minor=""):
 
     Limitation with float args: (x.10) will be parsed as minor = 1
     """
-    if isinstance(major, str) and '.' in major:
-        major, minor = major.split('.')
+    if isinstance(major, str) and "." in major:
+        major, minor = major.split(".")
     elif isinstance(major, float):
-        major, minor = str(major).split('.')
+        major, minor = str(major).split(".")
     elif isinstance(major, int):
         major = str(major)
     if isinstance(minor, int):
         minor = str(minor)
 
-    if major == '4':
+    if major == "4":
         if minor:
-            minor = "" if minor == '0' else " Update %s" % minor
+            minor = "" if minor == "0" else " Update %s" % minor
         return "Red Hat Enterprise Linux AS release %s (Nahant%s)" % (major, minor)
 
     template = "Red Hat Enterprise Linux Server release %s%s (%s)"
-    if major == '5':
+    if major == "5":
         if minor:
-            minor = "" if minor == '0' else "." + minor
+            minor = "" if minor == "0" else "." + minor
         return template % (major, minor, "Tikanga")
-    elif major == '6' or major == '7':
+    elif major == "6" or major == "7":
         if not minor:
             minor = "0"
-        name = "Santiago" if major == '6' else "Maipo"
+        name = "Santiago" if major == "6" else "Maipo"
         return template % (major, "." + minor, name)
     else:
         raise Exception("invalid major version: %s" % major)

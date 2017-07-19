@@ -5,5 +5,5 @@ ERROR_KEY_NO = "OH_NO"
 
 
 @rule()
-def report(local, shared):
+def report(shared):
     pass

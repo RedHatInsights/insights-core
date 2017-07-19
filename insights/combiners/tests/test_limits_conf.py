@@ -30,7 +30,7 @@ def test_all_limits_conf():
     data1 = LimitsConf(context_wrap(LIMITS_CONF, path=LIMITS_CONF_PATH))
     data2 = LimitsConf(context_wrap(LIMITS_D_CONF, path=LIMITS_D_PATH))
     context = {LimitsConf: [data1, data2]}
-    all_data = AllLimitsConf({}, context)
+    all_data = AllLimitsConf(context)
 
     assert len(all_data.rules) == 7
     assert all_data.rules[0] == {'domain': 'oracle', 'type': 'soft', 'item': 'nofile', 'value': 1024, 'file': LIMITS_CONF_PATH}
@@ -47,7 +47,7 @@ def test_all_limits_conf():
 
     data3 = LimitsConf(context_wrap(DUP_LIMITS_D_CONF, path=DUP_LIMITS_D_CONF_PATH))
     context = {LimitsConf: [data1, data3]}
-    all_data = AllLimitsConf({}, context)
+    all_data = AllLimitsConf(context)
     # Check de-duplication of rules
     assert len(all_data.rules) == 5  # No extra rule
     assert all_data.rules[3] == {'domain': 'oracle', 'type': 'hard', 'item': 'stack', 'value': 1926, 'file': DUP_LIMITS_D_CONF_PATH}

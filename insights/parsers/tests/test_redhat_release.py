@@ -1,6 +1,7 @@
 from insights.parsers.redhat_release import RedhatRelease
 from insights.tests import context_wrap
 
+
 REDHAT_RELEASE1 = """
 Red Hat Enterprise Linux Server release 6.7 (Santiago)
 """.strip()

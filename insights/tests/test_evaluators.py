@@ -7,7 +7,6 @@ from insights.parsers.multinode import osp, OSPChild
 from . import insights_heartbeat, HEARTBEAT_ID, HEARTBEAT_NAME
 import json
 import os
-import pprint
 import shutil
 import subprocess
 import tarfile
@@ -312,7 +311,6 @@ class TestSingleEvaluator(unittest.TestCase):
         r = p.get_response()
         self.assertTrue("system" in r)
         self.assertTrue("reports" in r)
-        pprint.pprint(r["system"])
         self.assertTrue(r["system"]["hostname"] == HEARTBEAT_NAME)
         return r
 

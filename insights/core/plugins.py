@@ -44,7 +44,7 @@ def rule_executor(func, broker, requires, optional):
     try:
         r = dr.default_executor(func, broker, requires, optional)
         if r is None:
-            raise dr.SkipComponent()
+            raise dr.SkipComponent(dr.get_name(func))
     except dr.MissingRequirements as mr:
         r = make_skip(dr.get_name(func),
                 reason="MISSING_REQUIREMENTS", details=mr.requirements)
@@ -84,10 +84,10 @@ rule = dr.new_component_type("rule", executor=rule_executor)
 """ A component that can see all parsers and combiners for a single host."""
 
 condition = dr.new_component_type("condition")
-""" A component used within rules that allows automated statistical analysis."""
+""" A component used by rules that allows automated statistical analysis."""
 
 incident = dr.new_component_type("incident")
-""" A component used within rules that allows automated statistical analysis."""
+""" A component used by rules that allows automated statistical analysis."""
 
 
 def is_parser(component):

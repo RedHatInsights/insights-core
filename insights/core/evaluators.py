@@ -5,7 +5,6 @@ from collections import defaultdict
 from insights.core import dr
 from insights.core import marshalling, plugins
 from insights.core.dr import stringify_requirements
-from insights.core.plugins import validate_response
 from insights.core.context import Context
 from insights.core.archives import InvalidArchive
 
@@ -109,31 +108,22 @@ class SingleEvaluator(Evaluator):
         return response
 
     def _protected_parse(self, sym_name, parser, default=""):
-        print "_protected_parse %s" % sym_name
         try:
             data = self.spec_mapper.get_content(sym_name)
-            print "raw data %s" % data
             result = parser(data)
-            print "result %s" % result
             return result
         except:
             return default
 
     def _pull_md_fragment(self):
-        hn = self.get_contextual_hostname()
-        from pprint import pprint
-        print ""
-        print "//////////////"
-        pprint(self.archive_metadata)
-        pprint("Contextual Hostname: %s" % hn)
-        pprint("hostname: %s" % self.hostname)
-        print "//////////////"
+        hn = self.machine_id
         sub_systems = [s for s in self.archive_metadata["systems"] if s["system_id"] == hn]
         assert len(sub_systems) == 1
         return sub_systems[0]
 
     def pre_process(self):
         self.release = self._protected_parse("redhat-release", lambda c: c[0], default=None)
+        self.machine_id = self._protected_parse("machine-id", lambda c: c[0], default=None)
         self.hostname = self._protected_parse("hostname", lambda c: c[0], default=None)
         if self.hostname is None:
             self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
@@ -184,7 +174,6 @@ class SingleEvaluator(Evaluator):
         })
 
     def handle_result(self, plugin, r):
-        validate_response(r)
         type_ = r["type"]
         if type_ == "metadata":
             self.append_metadata(r, plugin)
@@ -243,7 +232,7 @@ class MultiEvaluator(Evaluator):
     def run_components(self):
         dr.run(dr.COMPONENTS[dr.GROUPS.cluster], broker=self.broker)
 
-    def handle_result(self, r, plugin):
+    def handle_result(self, plugin, r):
         type_ = r["type"]
         if type_ == "metadata":
             self.append_metadata(r, plugin)

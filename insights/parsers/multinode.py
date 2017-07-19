@@ -87,7 +87,8 @@ def osp(data):
 class OSP(MultinodeMetadata):
     fields = [
         "nova_client_api_version", "coordinator_version",
-        "rhel_version", "rhosp_version"
+        "rhel_version", "rhosp_version", "overcloud_networks",
+        "total_overcloud_networks", "stack_networks", "total_stack_networks"
     ]
 
     @property
@@ -96,7 +97,6 @@ class OSP(MultinodeMetadata):
 
 
 class MultinodeChild(MultinodeMetadata):
-    __metaclass__ = type
 
     def __init__(self, data, parent=None):
         if data['product'] != self.parent_class.__name__ or "links" not in data:
