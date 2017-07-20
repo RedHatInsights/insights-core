@@ -1,4 +1,6 @@
-""" This module implements dependency resolution within Red Hat Insights."""
+"""
+This module implements dependency resolution and execution within Red Hat Insights.
+"""
 
 import importlib
 import inspect
@@ -18,16 +20,18 @@ log = logging.getLogger(__name__)
 
 GROUPS = enum("cluster", "single")
 
-MODULE_NAMES = dict()
-SIMPLE_MODULE_NAMES = dict()
+MODULE_NAMES = {}
+SIMPLE_MODULE_NAMES = {}
 
-ALIASES = dict()
-TYPE_OF_COMPONENT = dict()
+ALIASES = {}
+COMPONENT_METADATA = {}
+TYPE_OF_COMPONENT = {}
 COMPONENTS_BY_TYPE = defaultdict(set)
 DEPENDENCIES = defaultdict(set)
-COMPONENTS = defaultdict(lambda: defaultdict(set))
 DEPENDENTS = defaultdict(set)
-DELEGATES = dict()
+COMPONENTS = defaultdict(lambda: defaultdict(set))
+
+DELEGATES = {}
 
 
 class MissingRequirements(Exception):
@@ -44,6 +48,27 @@ def get_name(component):
     if six.callable(component):
         return '.'.join([component.__module__, component.__name__])
     return str(component)
+
+
+def get_metadata(component):
+    return COMPONENT_METADATA.get(component, {})
+
+
+def get_subgraphs(graph=DEPENDENCIES):
+    keys = set(graph)
+    frontier = set()
+    seen = set()
+    while keys:
+        frontier.add(keys.pop())
+        while frontier:
+            component = frontier.pop()
+            seen.add(component)
+            frontier |= set([d for d in DEPENDENCIES[component] if d in DEPENDENCIES])
+            frontier |= set([d for d in DEPENDENTS[component] if d in DEPENDENCIES])
+            frontier -= seen
+        yield dict((s, DEPENDENCIES[s]) for s in seen)
+        keys -= seen
+        seen.clear()
 
 
 def get_module_name(obj):
@@ -139,7 +164,7 @@ def stringify_requirements(requires):
 
 
 def register_component(component, delegate, component_type,
-        requires=None, optional=None, group=GROUPS.single, alias=None):
+        requires=None, optional=None, group=GROUPS.single, alias=None, metadata={}):
 
     if requires:
         _all, _any = split_requirements(requires)
@@ -161,6 +186,7 @@ def register_component(component, delegate, component_type,
     DELEGATES[component] = delegate
     MODULE_NAMES[component] = get_module_name(component)
     SIMPLE_MODULE_NAMES[component] = get_simple_module_name(component)
+    COMPONENT_METADATA[component] = metadata
 
     if alias:
         msg = "Alias %s already registered!"
@@ -176,10 +202,10 @@ def register_component(component, delegate, component_type,
 class Broker(object):
 
     def __init__(self):
-        self.instances = dict()
-        self.missing_dependencies = dict()
+        self.instances = {}
+        self.missing_dependencies = {}
         self.exceptions = defaultdict(list)
-        self.tracebacks = dict()
+        self.tracebacks = {}
 
     def add_exception(self, component, ex, tb=None):
         if isinstance(ex, MissingRequirements):
@@ -261,7 +287,8 @@ def new_component_type(name=None,
                        auto_requires=[],
                        auto_optional=[],
                        group=GROUPS.single,
-                       executor=default_executor):
+                       executor=default_executor,
+                       type_metadata={}):
     """ Factory that creates component decorators.
 
         The functions this factory produces are decorators for parsers, combiners,
@@ -284,17 +311,28 @@ def new_component_type(name=None,
                 component type specific exception handling, etc. The signature is
                 `executor(component, broker, requires=?, optional=?)`.
                 The default behavior is to call `default_executor`.
+            type_metadata (dict): an arbitrary dictionary to associate with all
+                components of this type.
 
         Returns:
             A decorator function used to define components of the new type.
     """
 
-    def decorator(requires=None, optional=None, group=group, executor=executor, alias=None):
+    def decorator(requires=None,
+                  optional=None,
+                  group=group,
+                  executor=executor,
+                  alias=None,
+                  metadata={}):
         requires = requires or []
         optional = optional or []
 
         requires.extend(auto_requires)
         optional.extend(auto_optional)
+
+        component_metadata = {}
+        component_metadata.update(type_metadata)
+        component_metadata.update(metadata)
 
         def _f(func):
             @six.wraps(func)
@@ -305,7 +343,8 @@ def new_component_type(name=None,
                                requires=requires,
                                optional=optional,
                                group=group,
-                               alias=alias)
+                               alias=alias,
+                               metadata=component_metadata)
             return func
         return _f
 
@@ -343,3 +382,17 @@ def run(components, broker=None):
             broker.add_exception(component, ex, traceback.format_exc())
 
     return broker
+
+
+def run_incremental(components, broker=None):
+    """ Executes components in an order that satisfies their dependency
+        relationships. Disjoint subgraphs are executed one at a time and
+        a broker containing the results for each is yielded. If a broker
+        is passed here, its instances are used to seed the broker used
+        to run each subgraph.
+    """
+    seed_broker = broker or Broker()
+    for graph in get_subgraphs(components):
+        broker = Broker()
+        broker.instances = seed_broker.instances
+        yield run(graph, broker)
