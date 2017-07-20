@@ -242,7 +242,8 @@ def parse_config_file(conf_file=constants.default_conf_file):
          'no_schedule': 'False',
          'docker_image_name': '',
          'logging_file': constants.default_log_file,
-         'display_name': None})
+         'display_name': None,
+         'verbose': False})
     try:
         parsedconfig.read(conf_file)
     except ConfigParser.Error:
