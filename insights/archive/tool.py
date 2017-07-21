@@ -285,7 +285,7 @@ class TestArchive(BaseArchive):
         return "TEST-" + h.hexdigest()
 
     def generate_branch_info(self):
-        return '{"remote_branch": "-1", "remote_leaf": "-1"}'
+        return '{"remote_branch": -1, "remote_leaf": -1}'
 
     def copy_archive(self, archive):
         for fname in archive.files():
