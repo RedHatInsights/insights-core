@@ -30,6 +30,7 @@ COMPONENTS_BY_TYPE = defaultdict(set)
 DEPENDENCIES = defaultdict(set)
 DEPENDENTS = defaultdict(set)
 COMPONENTS = defaultdict(lambda: defaultdict(set))
+GROUP_OF_COMPONENT = {}
 
 DELEGATES = {}
 
@@ -83,6 +84,30 @@ def get_simple_module_name(obj):
         return get_module_name(obj).split(".")[-1]
     except:
         return None
+
+
+def replace(old, new):
+    _type = TYPE_OF_COMPONENT[old]
+    _group = GROUP_OF_COMPONENT[old]
+
+    for k, v in DEPENDENTS.iteritems():
+        if old in v:
+            v.discard(old)
+            v.add(new)
+
+    for d in DEPENDENTS[old]:
+        DEPENDENCIES[_group][d].discard(old)
+        DEPENDENCIES[_group][d].add(new)
+
+    COMPONENTS_BY_TYPE[_type].discard(old)
+
+    del ALIASES[old]
+    del COMPONENT_METADATA[old]
+    del DEPENDENTS[old]
+    del GROUP_OF_COMPONENT[old]
+    del DEPENDENCIES[_group][old]
+    del TYPE_OF_COMPONENT[old]
+    del DELEGATES[old]
 
 
 def walk_dependencies(root, visitor):
@@ -182,6 +207,7 @@ def register_component(component, delegate, component_type,
     COMPONENTS[group][component] |= dependencies
 
     TYPE_OF_COMPONENT[component] = component_type
+    GROUP_OF_COMPONENT[component] = group
     COMPONENTS_BY_TYPE[component_type].add(component)
     DELEGATES[component] = delegate
     MODULE_NAMES[component] = get_module_name(component)
@@ -201,11 +227,46 @@ def register_component(component, delegate, component_type,
 
 class Broker(object):
 
-    def __init__(self):
+    def __init__(self, cleanup=False):
+        self.perform_cleanup = cleanup
         self.instances = {}
         self.missing_dependencies = {}
         self.exceptions = defaultdict(list)
         self.tracebacks = {}
+        self.ref_counts = defaultdict(int)
+        self.runtime_dependencies = defaultdict(set)
+        self._components = set(DEPENDENCIES)
+        self._cleaned = set()
+
+    def finalize(self):
+        if not self.perform_cleanup:
+            return
+
+        for component in self.instances:
+            if component not in self._cleaned:
+                self._cleanup(self.instances[component])
+            if self.ref_counts.get(component):
+                msg = "Non-zero ref count: %s, %s"
+                log.warn(msg % (get_name(component), self.ref_counts[component]))
+
+    def _cleanup(self, i):
+        try:
+            i.cleanup()
+        except Exception as e:
+            if isinstance(i, list):
+                for c in i:
+                    self._cleanup(c)
+            else:
+                log.debug(e)
+
+    def _sweep(self, deps):
+        seen = set()
+        for component in deps:
+            cnt = self.ref_counts[component]
+            if cnt < 1 and component in self.instances:
+                seen.add(component)
+                self._cleanup(self.instances[component])
+        self._cleaned |= seen
 
     def add_exception(self, component, ex, tb=None):
         if isinstance(ex, MissingRequirements):
@@ -213,6 +274,23 @@ class Broker(object):
         else:
             self.exceptions[component].append(ex)
             self.tracebacks[ex] = tb
+
+    def add_dependencies(self, component, dependencies):
+        if not self.perform_cleanup:
+            return
+        dependencies -= DEPENDENTS[component]
+        self.ref_counts[component] += len(dependencies)
+        for d in dependencies:
+            self.runtime_dependencies[d].add(component)
+
+    def mark_done(self, component):
+        if not self.perform_cleanup:
+            return
+        deps = ((DEPENDENCIES.get(component, set()) |
+                self.runtime_dependencies[component]) & self._components)
+        for d in deps:
+            self.ref_counts[d] -= 1
+        self._sweep(deps)
 
     def keys(self):
         return self.instances.keys()
@@ -236,6 +314,8 @@ class Broker(object):
             raise KeyError(msg % get_name(alias))
 
         self.instances[component] = instance
+        if self.perform_cleanup and component in DEPENDENCIES:
+            self.ref_counts[component] = len(DEPENDENTS[component])
 
     def __delitem__(self, component):
         if component in self.instances:
@@ -353,7 +433,7 @@ def new_component_type(name=None,
     return decorator
 
 
-def run_order(components):
+def run_order(components, broker):
     """ Returns components in an order that satisfies their dependency
         relationships.
     """
@@ -366,7 +446,7 @@ def run(components, broker=None):
     """
     broker = broker or Broker()
 
-    for component in run_order(components):
+    for component in run_order(components, broker):
         try:
             if component not in broker and component in DELEGATES:
                 log.debug("Calling %s" % get_name(component))
@@ -378,9 +458,12 @@ def run(components, broker=None):
         except SkipComponent:
             log.debug(traceback.format_exc())
         except Exception as ex:
-            log.exception(ex)
+            log.debug(ex)
             broker.add_exception(component, ex, traceback.format_exc())
+        finally:
+            broker.mark_done(component)
 
+    broker.finalize()
     return broker
 
 
@@ -394,5 +477,5 @@ def run_incremental(components, broker=None):
     seed_broker = broker or Broker()
     for graph in get_subgraphs(components):
         broker = Broker()
-        broker.instances = seed_broker.instances
+        broker.instances = dict(seed_broker.instances)
         yield run(graph, broker)

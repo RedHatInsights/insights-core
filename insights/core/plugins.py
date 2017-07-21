@@ -10,6 +10,8 @@ import types
 from insights.core import dr
 from insights import settings
 
+NO_NAMES = set()
+
 log = logging.getLogger(__name__)
 
 
@@ -55,6 +57,11 @@ def rule_executor(func, broker, requires, optional):
 datasource = dr.new_component_type("datasource")
 """ Defines a component that one or more Parser`s will consume."""
 
+
+class ContentException(Exception):
+    pass
+
+
 _metadata = dr.new_component_type("_metadata",
         auto_requires=["metadata.json"], executor=parser_executor)
 
@@ -79,6 +86,9 @@ def parser(dependency, group=dr.GROUPS.single, alias=None):
 
 
 combiner = dr.new_component_type("combiner")
+""" A component that connects other components. """
+
+stage = combiner
 
 rule = dr.new_component_type("rule", executor=rule_executor)
 """ A component that can see all parsers and combiners for a single host."""
@@ -88,6 +98,12 @@ condition = dr.new_component_type("condition")
 
 incident = dr.new_component_type("incident")
 """ A component used by rules that allows automated statistical analysis."""
+
+
+def is_datasource(component):
+    if dr.TYPE_OF_COMPONENT.get(component) is datasource:
+        return component not in NO_NAMES
+    return False
 
 
 def is_parser(component):

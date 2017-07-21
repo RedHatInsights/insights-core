@@ -46,7 +46,7 @@ class CalledProcessError(IOError):
         return '<{c}({r}, {cmd}, {o})>'.format(c=name, r=rc, cmd=cmd, o=output)
 
 
-def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
+def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, stderr=STDERR, **kwargs):
     """Call cmd with an optional timeout in seconds.
 
     If `timeout` is supplied and expires, the process is killed with
@@ -87,7 +87,7 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, **kwargs):
         if not shell:
             cmd = shlex.split(cmd)
         log.debug(cmd)
-        p = subprocess.Popen(cmd, stdout=STDOUT, stderr=STDERR, shell=shell, **kwargs)
+        p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, shell=shell, **kwargs)
         output = p.communicate()[0]
         rc = p.poll()
     except Exception as e:

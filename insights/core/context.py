@@ -1,6 +1,18 @@
+import logging
+from insights.util.subproc import call
+from subprocess import STDOUT
+
+log = logging.getLogger(__name__)
 GLOBAL_PRODUCTS = []
 PRODUCT_NAMES = []
 DEFAULT_VERSION = ["-1", "-1"]
+
+FSRoots = []
+
+
+def fs_root(thing):
+    FSRoots.append(thing)
+    return thing
 
 
 def product(klass):
@@ -77,7 +89,6 @@ class RHEL(object):
 
 
 class Context(object):
-
     def __init__(self, **kwargs):
         self.version = kwargs.pop("version", DEFAULT_VERSION)
         self.metadata = kwargs.pop("metadata", {})
@@ -101,3 +112,77 @@ class Context(object):
 
     def __repr__(self):
         return repr(dict((k, str(v)[:30]) for k, v in self.__dict__.items()))
+
+
+class ExecutionContext(object):
+
+    def check_output(self, cmd):
+        """ Subclasses can override to provide special
+            environment setup, command prefixes, etc.
+        """
+        return call(cmd, stderr=STDOUT)
+
+    def shell_out(self, cmd, split=True):
+        log.debug("Running %s" % cmd)
+        output = self.check_output(cmd)
+
+        if split:
+            return [l.rstrip() for l in output.splitlines()]
+        return output
+
+
+@fs_root
+class HostContext(ExecutionContext):
+
+    def __init__(self, hostname, root="/"):
+        super(HostContext, self).__init__()
+        self.hostname = hostname
+        self.root = root
+
+
+@fs_root
+class DockerHostContext(ExecutionContext):
+
+    def __init__(self, hostname, root="/"):
+        super(HostContext, self).__init__()
+        self.hostname = hostname
+        self.root = root
+
+
+@fs_root
+class FileArchiveContext(ExecutionContext):
+
+    def __init__(self, root, paths, stored_command_prefix="insights_commands"):
+        self.root = paths
+        self.paths = paths
+        self.stored_command_prefix = stored_command_prefix
+        super(FileArchiveContext, self).__init__()
+
+
+@fs_root
+class ClusterArchiveContext(ExecutionContext):
+
+    def __init__(self, root, paths, stored_command_prefix="insights_commands"):
+        self.root = paths
+        self.paths = paths
+        self.stored_command_prefix = stored_command_prefix
+        super(FileArchiveContext, self).__init__()
+
+
+@fs_root
+class DockerImageContext(ExecutionContext):
+    def __init__(self, root):
+        super(DockerImageContext, self).__init__()
+        self.root = root
+
+
+class OpenStackContext(ExecutionContext):
+    def __init__(self, hostname):
+        super(OpenStackContext, self).__init__()
+        self.hostname = hostname
+
+
+class OpenShiftContext(ExecutionContext):
+    def __init__(self, hostname):
+        super(OpenShiftContext, self).__init__()
+        self.hostname = hostname
