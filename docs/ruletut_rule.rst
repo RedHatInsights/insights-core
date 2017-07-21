@@ -4,7 +4,7 @@ Develop Plugin
 Now that we have identified the required parsers, let's get started on
 developing our plugin.
 
-Create a file called ``heartburn.py`` in a python package called ``tutorial``.
+Create a file called ``heartburn.py`` in a Python package called ``tutorial``.
 
 .. code-block:: shell
 
@@ -18,10 +18,12 @@ the rule function and imports.
 .. code-block:: python
    :linenos:
 
-    from insights.parsers import rpm, lsof, netstat
+    from insights.parsers.installed_rpms import InstalledRpms
+    from insights.parsers.lsof import Lsof
+    from insights.parsers.netstat import Netstat
     from insights.core.plugins import rule, make_response
 
-    @rule(requires=[rpm, lsof, netstat])
+    @rule(requires=[InstalledRpms, Lsof, Netstat])
     def heartburn(local, shared):
         pass
 
@@ -30,7 +32,9 @@ Let's go over each line and describe the details:
 .. code-block:: python
    :lineno-start: 1
 
-    from insights.parsers import rpm, lsof, netstat
+    from insights.parsers.installed_rpms import InstalledRpms
+    from insights.parsers.lsof import Lsof
+    from insights.parsers.netstat import Netstat
 
 Parsers you want to use must be imported.  There are two main uses:
 
@@ -38,7 +42,7 @@ Parsers you want to use must be imported.  There are two main uses:
 2. referencing the output of the parser in the ``shared`` context.
 
 .. code-block:: python
-   :lineno-start: 2
+   :lineno-start: 4
 
     from insights.core.plugins import rule, make_response
 
@@ -50,12 +54,12 @@ Combiners have a set of optional dependencies that are specified via the
 the `return value of a rule </api.html#rule-output>`_ function. 
 
 .. code-block:: python
-   :lineno-start: 4
+   :lineno-start: 6
 
     @rule(requires=[rpm, lsof, netstat])
 
-Here we are specifying that this rule requires the output of the ``rpm``,
-``lsof``, and ``netstat`` parsers.
+Here we are specifying that this rule requires the output of the ``InstalledRpms``,
+``Lsof``, and ``Netstat`` parsers.
 
 Now let's add the rule logic
 
@@ -65,11 +69,11 @@ Now let's add the rule logic
     @rule(requires=[rpm, lsof, netstat])
     def heartburn(local, shared):
  
-        if 'shared-library-1.0.0' not in shared[rpm]:
+        if 'shared-library-1.0.0' not in shared[InstalledRpms]:
             return  # not installed, therefore not applicable
 
-        process_list = shared[lsof].using('/usr/lib64/libshared.so.1')
-        listening = shared[netstat].listening
+        process_list = shared[Lsof].using('/usr/lib64/libshared.so.1')
+        listening = shared[Netstat].listening
 
         # get the set of processes that are using the library and listening
         vulnerable_processes = set(process_list) && set(listening)
@@ -83,26 +87,26 @@ There's a lot going on here, so lets look at some of the steps in detail.
 .. code-block:: python
    :lineno-start: 4
 
-    if 'shared-library-1.0.0' not in shared[rpm]:
+    if 'shared-library-1.0.0' not in shared[InstalledRpms]:
         return  # not installed, therefore not applicable
 
-The ``rpm`` parser defines a ``__contains__`` method that allows for simple
+The ``InstalledRpms`` parser defines a ``__contains__`` method that allows for simple
 searching of rpms by name. 
 
 .. code-block:: python
    :lineno-start: 7
 
-    process_list = shared[lsof].using('/usr/lib64/libshared.so.1')
+    process_list = shared[Lsof].using('/usr/lib64/libshared.so.1')
 
-The ``lsof`` parser provides a ``using`` method that will return a list of pid
+The ``Lsof`` parser provides a ``using`` method that will return a list of pid
 numbers that have the given file open.
 
 .. code-block:: python
    :lineno-start: 8
 
-    listening = shared[netstat].listening
+    listening = shared[Netstat].listening
 
-The ``netstat`` parser provides a ``listening`` property that returns a list of
+The ``Netstat`` parser provides a ``listening`` property that returns a list of
 all pid numbers that are bound to a non-internal address.
 
 .. code-block:: python
