@@ -1,3 +1,7 @@
+############
+Insights API
+############
+
 Input Data Formats
 ==================
 
@@ -97,10 +101,25 @@ never be found by the framework.
 
 Symbolic names represent all the possible file content types that can be
 analyzed by parsers.  The rules framework uses the symbolic name mapping
-defined in ``insights.specs.static`` to map a symbolic name to either a
-command or absolute file path.  The same mapping is used to create the
-``uploader.json`` file consumed by Insights clients to collect data from
-customer systems.
+defined in :py:mod:`insights.config.specs` to map a symbolic
+name to a command, a single file or multiple files.
+
+=========  ==============  ========================================
+Spec Name  Spec Type       Spec Identifier
+=========  ==============  ========================================
+"fstab"    SimpleFileSpec  "etc/fstab"
+"uname"    CommandSpec     "/bin/uname -a"
+"ifcfg"    PatternSpec     "etc/sysconfig/network-scripts/ifcfg-.*"
+=========  ==============  ========================================
+
+The same mapping is used to create the
+``uploader.json`` file consumed by Insights Client to collect data from
+customer systems. The Client RPM is developed and
+distributed with Red Hat Enterprise Linux as part of the base distribution.
+Updates to the Client RPM occur less frequently than to the Insights Core application.
+Additionally customers may not update the Client RPM on their systems.
+So developers need to check both the Insights Core and the Client applications
+to determine what information is available for processing in Insights.
 
 .. autofunction:: insights.core.plugins.parser
    :noindex:
@@ -110,9 +129,9 @@ Parser Contexts
 
 Each parser takes exactly one parameter, which is expected to be of type
 ``Context``.  All information available to a parser is found in the
-``Context`` object.  Please refer to the `Context API documentation
-</api_index.html#insights.core.context.Context>`_ for
-more details.
+:py:class:`insights.core.context.Context` object.
+Please refer to the Context API documentation
+:py:mod:`insights.core.context` for more details.
 
 Parser Outputs
 --------------
@@ -128,11 +147,11 @@ of Insights plugins.
    :members:
    :noindex:
 
-Plugins (Rules)
-==================
+Rule Plugins
+============
 
-The purpose of "plugins" is to identify a particular problem in a given system
-based on certain facts about that system.  Each plugin consists of a module
+The purpose of Rule plugins is to identify a particular problem in a given system
+based on certain facts about that system.  Each Rule plugin consists of a module
 with:
 
 - One ``@rule``-decorated function
@@ -140,13 +159,13 @@ with:
 - A docstring for the module that includes
     - A summary of the plugin
     - A longer description of what the plugin identifies
-    - A Trello/Jira link
+    - Links to Red Hat solutions
 
 .. autofunction:: insights.core.plugins.rule
    :noindex:
 
 Rule Context
----------------
+------------
 
 Each rule function must have only two parameters, named ``local`` and
 ``shared``.  The ``local`` parameter contains parser outputs from local (i.e.
@@ -170,7 +189,7 @@ performed directly on the built-in data structures found in the
 ``Parser`` instance.
 
 Rule Output
---------------
+-----------
 
 Rules can return two types of responses:  a rule "hit" or "action", or
 system metadata.

@@ -1,5 +1,5 @@
-Rule Tutorial
-=============
+Tutorial - Rule Using Existing Parsers
+======================================
 
 In this tutorial we'll walk through authoring a new insights-core rule. 
 

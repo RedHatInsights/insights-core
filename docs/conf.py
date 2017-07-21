@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'insights-core'
-copyright = u'2016, Red Hat, Inc'
+copyright = u'2016, 2017 Red Hat, Inc'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

@@ -6,14 +6,17 @@ Contents:
 .. toctree::
     :maxdepth: 4
 
-    what_is_insights_core
-    rule_tutorial_index
+    intro
+    quickstart_insights_core
     api
+    exception_model
     api_index
     parsers_index
     combiners_index
     docs_guidelines
-    insights
+    rule_tutorial_index
+    custom_tutorial_index
+    combiner_tutorial
 
 Indices and tables
 ==================
