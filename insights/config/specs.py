@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+Specification for data collected by Insights.
+
+These specifications represent the data that is collected by the insights client
+and processed by the parsers and combiners in insights. The client must also implement
+the spec before the data will be collected so don't just assume that data for all
+specs listed here are collected.
+"""
 
 from insights.config import SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, json_format, First, All, NoneGroup
 from insights.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, DockerHostCommandSpec
@@ -373,6 +381,7 @@ static_specs = {
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
     "yum.repos.d"               : PatternSpec(r"etc/yum.repos.d/.*.repo")
 }
+"""dict: Specifications for Insights data collection and parsers."""
 
 pre_commands = {
     "block"                     : "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
@@ -386,6 +395,7 @@ pre_commands = {
     "uname_r"                   : "/bin/uname -r",
     "semid"                     : "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'"
 }
+"""dict: Pre-commands used to generate data for specifications."""
 
 meta_files = {
     "branch_info"               : SimpleFileSpec("branch_info"),
@@ -394,6 +404,7 @@ meta_files = {
     "prev_uploader_log"         : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log.1"),
     "uploader_log"              : SimpleFileSpec("var/log/redhat-access-insights/redhat-access-insights.log"),
 }
+"""dict: Metadata files added to the Insights archive by the client."""
 
 openshift = {
     "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
@@ -405,5 +416,6 @@ openshift = {
     "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
     "oc_get_endpoints"          : CommandSpec("/usr/bin/oc get endpoints -o yaml --all-namespaces")
 }
+"""dict: Openshift specific data collection specifications."""
 
 # flake8: noqa
