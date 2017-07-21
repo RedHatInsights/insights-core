@@ -7,7 +7,7 @@ Determine rule logic
 The most effective way to get started in developing a rule is identifying the
 problem you want to address as well as a succinct solution to that problem.
 
-For the purposes of this tutorial we'll identify a ficticious security problem
+For the purposes of this tutorial we'll identify a fictitious security problem
 with a commonly shared library.  Let's imagine that this is a highly publicized
 CVE, and, therefore, it deserves a catchy name; let's call it Heartburn.
 

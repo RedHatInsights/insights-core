@@ -53,7 +53,7 @@ def rule_executor(func, broker, requires, optional):
 
 
 datasource = dr.new_component_type("datasource")
-""" Defines a component that one or more `Parser`s will consume."""
+""" Defines a component that one or more Parser`s will consume."""
 
 _metadata = dr.new_component_type("_metadata",
         auto_requires=["metadata.json"], executor=parser_executor)

@@ -1,20 +1,45 @@
-Introduction
-============
+###############################
+Quickstart Insights Development
+###############################
 
-insights-core is the framework upon which Red Hat Insights rules are built and
+.. contents:: Table of Contents
+    :depth: 6
+
+Insights-core is the framework upon which Red Hat Insights rules are built and
 delivered.  The basic purpose is to apply "rules" to a set of files collected
 from a system at a given point in time.
 
-insights-core rule "plugins" are written in python.  The rules follow a
+Insights-core rule "plugins" are written in Python.  The rules follow a
 "MapReduce" approach, dividing the logic between "mapping" and
 "reducing" methods.  This is a convenient approach where a rule's logic
 takes place in two steps.  First, there is a "gathering of facts" (the
 map phase) followed by logic being applied to the facts (the reduce
 phase).
 
+*************
+Prerequisites
+*************
 
+All Plugin code is written in Python and all Insights libraries
+and framework code necessary for development and execution are
+stored in Git repositories.  Before you begin make sure you have
+the following installed:
+
+* Python 2.7
+* Git
+* Python Virtualenv
+* Python PIP
+
+Further requirements can be found in the
+`README.md <https://github.com/RedHatInsights/insights-core/blob/master/README.md>`_
+file associated with the insights-core project.
+
+**********************
 Rule Development Setup
-======================
+**********************
+
+In order to develop rules to run in Red Hat Insights you'll need Insights
+Core (http://github.com/RedHatInsights/insights-core) as well as your own rules code.
 
 Clone the project::
 
@@ -37,9 +62,12 @@ Install a rule repository::
 
     bin/pip install -e path/to/rule/repo
 
+For a more detailed description of how to develop your own rules see the Tutorial
+section :ref:`tutorial-rule-development`.
 
+*****************
 Contributor Setup
-=================
+*****************
 
 If you wish to contribute to the insights-core project you'll need to create a fork in github.
 
@@ -59,11 +87,13 @@ using the following commands::
 
 You will need to initialize the project per the
 `readme.md <https://github.com/RedHatInsights/insights-core/blob/master/README.md>`_
-file.
+file.  For more detailed information about writing parsers and combiners see the
+tutorial sections :ref:`tutorial-parser-development` and
+:ref:`tutorial-combiner-development`.
 
-
+***********************
 Contributor Submissions
-=======================
+***********************
 
 Contributors should submit changes to the code via github "Pull
 Requests."  One would normally start a new contribution with a branch
@@ -92,7 +122,11 @@ from the current master branch of the upstream project.
     git push
     git checkout your-topic
     git rebase master
-    git push --force
+    git push
+
+    You may have to use the `git push --force` command depending upon
+    the changes you have made since the initial commit of your pull
+    request.
 
 5. Generally, keep the number of commits on the topic branch small.
    Usually a single commit, perhaps a few in some cases.  Use the
@@ -106,13 +140,13 @@ from the current master branch of the upstream project.
    topic branch will work as expected.  The pull request will be
    updated with the current view of the topic-branch.
 
-
+*****************
 Style Conventions
-=================
+*****************
 
 
 Code Style
-----------
+==========
 
 Code style mostly follows `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_.
 The style followed is essentially encoded in the
@@ -127,14 +161,16 @@ following rules as exceptions
 
 In some cases, a particular bit of code may require formatting that
 violates flake8 rules.  In such cases, one can, for example, annotate
-the line with ``# noqa``.  Override flake8 checking sparingly. 
+the line with ``# noqa`` to ignore all errors/warnings or ``# noqa: E501,W291``
+to ignore only **E501** errors and **W291** warnings.
+Override flake8 checking sparingly.
 
 Code that does not pass the project's current flake8 tests
 will not be accepted.
 
 
 Commit Message Style
---------------------
+====================
 
 Commit messages are an important description of changes taking place in
 the code base. So, they should be effective at providing useful
@@ -153,7 +189,7 @@ Generally, they should follow the usual
 
 
 Documentation
--------------
+=============
 
 Code should generally be clear enough to self-document the *how* of the
 implementation.  Of course, when a bit of code isn't clear, comments may
@@ -166,15 +202,15 @@ documentation to understand, for example, the data models exposed by
 parser classes.  For further details, see the
 :ref:`documentation_guidelines` included in this guide.
 
-
+****************
 Review Checklist
-================
+****************
 
 The following checklist is used when reviewing pull requests
 
 
 General (all submissions)
--------------------------
+=========================
 
 - Commit messages are useful and properly formatted
 - Unit tests validate the code submission
@@ -183,7 +219,7 @@ General (all submissions)
 
 
 Parsers
--------
+=======
 
 - Parser is properly documented per the :ref:`documentation_guidelines`
   and should include
