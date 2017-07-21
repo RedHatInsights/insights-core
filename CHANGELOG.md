@@ -1,5 +1,67 @@
 # Change Log
 
+## [insights-core-1.43.0-93](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.43.0-93) (2017-07-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.42.0-63...insights-core-1.43.0-93)
+
+**Implemented enhancements:**
+
+- Support python 2.6 [\#180](https://github.com/RedHatInsights/insights-core/issues/180)
+- Get \(basic\) config items from rsyslog configuration for 1.x branch [\#224](https://github.com/RedHatInsights/insights-core/pull/224) ([PaulWay](https://github.com/PaulWay))
+- Test scannner functionality in LogFileOutput for 1.x branch [\#219](https://github.com/RedHatInsights/insights-core/pull/219) ([PaulWay](https://github.com/PaulWay))
+- Catalina\_out parser add get\_after\(\) method for 1.x branch - This Time For Sure [\#216](https://github.com/RedHatInsights/insights-core/pull/216) ([PaulWay](https://github.com/PaulWay))
+- Adding NTPConfParser base class to documentation for 1.x branch [\#215](https://github.com/RedHatInsights/insights-core/pull/215) ([PaulWay](https://github.com/PaulWay))
+- Vdsm\_log parser gets full documentation and get\_after\(\) method for 1.x branch [\#214](https://github.com/RedHatInsights/insights-core/pull/214) ([PaulWay](https://github.com/PaulWay))
+- Sssd\_logs parser add get\_after for 1.x branch [\#211](https://github.com/RedHatInsights/insights-core/pull/211) ([PaulWay](https://github.com/PaulWay))
+- Libvirtd\_log parser add get\_after for 1.x branch [\#209](https://github.com/RedHatInsights/insights-core/pull/209) ([PaulWay](https://github.com/PaulWay))
+- Keystone\_log parser add get\_after for 1.x branch [\#207](https://github.com/RedHatInsights/insights-core/pull/207) ([PaulWay](https://github.com/PaulWay))
+- Httpd\_log parsers add get\_after for 1.x branch [\#206](https://github.com/RedHatInsights/insights-core/pull/206) ([PaulWay](https://github.com/PaulWay))
+- Heat\_log parser add get\_after for 1.x branch [\#205](https://github.com/RedHatInsights/insights-core/pull/205) ([PaulWay](https://github.com/PaulWay))
+- RHN\_logs parser add get\_after for 1.x branch [\#204](https://github.com/RedHatInsights/insights-core/pull/204) ([PaulWay](https://github.com/PaulWay))
+- Rabbitmq\_log parser add get\_after for 1.x branch [\#203](https://github.com/RedHatInsights/insights-core/pull/203) ([PaulWay](https://github.com/PaulWay))
+- Openvswitch\_logs parser add get\_after for 1.x branch [\#202](https://github.com/RedHatInsights/insights-core/pull/202) ([PaulWay](https://github.com/PaulWay))
+- Neutron\_ovs\_agent\_log parser add get\_after for 1.x branch [\#201](https://github.com/RedHatInsights/insights-core/pull/201) ([PaulWay](https://github.com/PaulWay))
+- Mariadb\_log parser add get\_after for 1.x branch [\#200](https://github.com/RedHatInsights/insights-core/pull/200) ([PaulWay](https://github.com/PaulWay))
+- Cinder\_log parser add get\_after for 1.x branch [\#199](https://github.com/RedHatInsights/insights-core/pull/199) ([PaulWay](https://github.com/PaulWay))
+- Engine\_log parser add get\_after for 1.x branch [\#197](https://github.com/RedHatInsights/insights-core/pull/197) ([PaulWay](https://github.com/PaulWay))
+- Foreman\_log parser add get\_after for 1.x branch [\#196](https://github.com/RedHatInsights/insights-core/pull/196) ([PaulWay](https://github.com/PaulWay))
+- Glance\_log parser add get\_after for 1.x branch [\#195](https://github.com/RedHatInsights/insights-core/pull/195) ([PaulWay](https://github.com/PaulWay))
+- Secure log parser add get\_after for 1.x branch [\#194](https://github.com/RedHatInsights/insights-core/pull/194) ([PaulWay](https://github.com/PaulWay))
+- Documentation for Postgresql\_log parser [\#193](https://github.com/RedHatInsights/insights-core/pull/193) ([PaulWay](https://github.com/PaulWay))
+- Pacemaker\_log parser add get\_after for 1.x branch [\#192](https://github.com/RedHatInsights/insights-core/pull/192) ([PaulWay](https://github.com/PaulWay))
+- Osa\_dispatcher\_log parser add get\_after for 1.x branch [\#191](https://github.com/RedHatInsights/insights-core/pull/191) ([PaulWay](https://github.com/PaulWay))
+- Ceph\_osd\_log parser add get\_after for 1.x branch [\#190](https://github.com/RedHatInsights/insights-core/pull/190) ([PaulWay](https://github.com/PaulWay))
+- Ceilometer\_log parser add get\_after for 1.x branch [\#189](https://github.com/RedHatInsights/insights-core/pull/189) ([PaulWay](https://github.com/PaulWay))
+- Nova\_api\_log parser add get\_after for 1.x branch [\#188](https://github.com/RedHatInsights/insights-core/pull/188) ([PaulWay](https://github.com/PaulWay))
+- Log file output get after improvements for 1.x branch [\#186](https://github.com/RedHatInsights/insights-core/pull/186) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- Add new shared parser irqbalance\_conf.py \#213 [\#223](https://github.com/RedHatInsights/insights-core/issues/223)
+- Should we convert this multinode parser \(metadata.json\) to class type ? [\#221](https://github.com/RedHatInsights/insights-core/issues/221)
+- NTPConfParser class is missing from the documentation [\#167](https://github.com/RedHatInsights/insights-core/issues/167)
+- Neutron server log documentation for 1.x branch \#146 [\#152](https://github.com/RedHatInsights/insights-core/issues/152)
+- Neutron plugin documentation for 1.x branch \#145 [\#151](https://github.com/RedHatInsights/insights-core/issues/151)
+- Test scannable parser class for 1.x branch \#144 [\#150](https://github.com/RedHatInsights/insights-core/issues/150)
+- Remove the deprecated `.data` from LsBoot \#103 [\#104](https://github.com/RedHatInsights/insights-core/issues/104)
+- Limits conf combiner \#70 [\#85](https://github.com/RedHatInsights/insights-core/issues/85)
+
+**Merged pull requests:**
+
+- Alternatives output into parser module 1.x [\#255](https://github.com/RedHatInsights/insights-core/pull/255) ([PaulWay](https://github.com/PaulWay))
+- INSIGHTS\_OSP: Added parser for systemctl list-units [\#220](https://github.com/RedHatInsights/insights-core/pull/220) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Add new shared parser irqbalance\_conf.py [\#213](https://github.com/RedHatInsights/insights-core/pull/213) ([lonicerae](https://github.com/lonicerae))
+- Change the wildcard \* to pre\_command for sysctl.conf\_initramfs spec [\#184](https://github.com/RedHatInsights/insights-core/pull/184) ([xiangce](https://github.com/xiangce))
+- Add pre-command for shared-mapper dumpe2fs-h [\#181](https://github.com/RedHatInsights/insights-core/pull/181) ([zhangyi733](https://github.com/zhangyi733))
+- Update the parser 'ceph\_version' to add version2.3 [\#178](https://github.com/RedHatInsights/insights-core/pull/178) ([shzhou12](https://github.com/shzhou12))
+- 389 Directory server spec fix [\#173](https://github.com/RedHatInsights/insights-core/pull/173) ([PaulWay](https://github.com/PaulWay))
+- update the shared parser "teamdctl\_state\_dump.py" [\#170](https://github.com/RedHatInsights/insights-core/pull/170) ([xiaoyu74](https://github.com/xiaoyu74))
+- Add 'macpools' field into RHEV metadata [\#161](https://github.com/RedHatInsights/insights-core/pull/161) ([JoySnow](https://github.com/JoySnow))
+- Neutron server log documentation for 1.x branch [\#146](https://github.com/RedHatInsights/insights-core/pull/146) ([PaulWay](https://github.com/PaulWay))
+- Neutron plugin documentation for 1.x branch [\#145](https://github.com/RedHatInsights/insights-core/pull/145) ([PaulWay](https://github.com/PaulWay))
+- Test scannable parser class for 1.x branch [\#144](https://github.com/RedHatInsights/insights-core/pull/144) ([PaulWay](https://github.com/PaulWay))
+- Remove the deprecated `.data` from LsBoot [\#103](https://github.com/RedHatInsights/insights-core/pull/103) ([xiangce](https://github.com/xiangce))
+- Limits\_conf combiner for 1.x branch [\#95](https://github.com/RedHatInsights/insights-core/pull/95) ([PaulWay](https://github.com/PaulWay))
+
 ## [insights-core-1.42.0-63](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.42.0-63) (2017-07-03)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.41.0-43...insights-core-1.42.0-63)
 
