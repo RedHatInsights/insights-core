@@ -10,9 +10,9 @@ import types
 from insights.core import dr
 from insights import settings
 
-NO_NAMES = set()
-
 log = logging.getLogger(__name__)
+
+HIDDEN_DATASOURCES = set()
 
 
 def parser_executor(component, broker, requires, optional):
@@ -101,9 +101,8 @@ incident = dr.new_component_type("incident")
 
 
 def is_datasource(component):
-    if dr.TYPE_OF_COMPONENT.get(component) is datasource:
-        return component not in NO_NAMES
-    return False
+    is_ds = dr.TYPE_OF_COMPONENT.get(component) is datasource
+    return is_ds and component not in HIDDEN_DATASOURCES
 
 
 def is_parser(component):

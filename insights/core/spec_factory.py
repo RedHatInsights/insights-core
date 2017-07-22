@@ -9,8 +9,9 @@ from collections import defaultdict
 from glob import glob
 
 from insights.core import dr
+from insights.core import plugins
 from insights.core.context import FileArchiveContext, FSRoots, HostContext
-from insights.core.plugins import datasource, ContentException, NO_NAMES
+from insights.core.plugins import datasource, ContentException, stage
 
 log = logging.getLogger(__name__)
 
@@ -149,8 +150,6 @@ class SpecFactory(object):
             return Kind(root, os.path.expandvars(path), filters=FILTERS[inner])
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def glob_file(self, patterns, ignore=None, name=None, context=None, Kind=TextFileProvider, alias=None):
@@ -175,8 +174,6 @@ class SpecFactory(object):
             raise ContentException("[%s] didn't match" % ','.join(patterns))
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def first_file(self, files, name=None, context=None, Kind=TextFileProvider, alias=None):
@@ -191,12 +188,10 @@ class SpecFactory(object):
             raise ContentException("None of [%s] found." % ','.join(files))
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def listdir(self, path, name=None, context=None, alias=None):
-        @datasource(requires=[context or FSRoots], alias=alias)
+        @stage(requires=[context or FSRoots], alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             p = os.path.join(root, path.lstrip('/'))
@@ -209,8 +204,6 @@ class SpecFactory(object):
             raise ContentException("Can't list %s or nothing there." % p)
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def simple_command(self, cmd, name=None, context=HostContext, split=True, alias=None):
@@ -223,8 +216,6 @@ class SpecFactory(object):
             raise ContentException("No results found for [%s]" % cmd)
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, alias=None):
@@ -249,8 +240,6 @@ class SpecFactory(object):
             raise ContentException("No results found for [%s]" % cmd)
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def stored_command(self,
@@ -282,8 +271,6 @@ class SpecFactory(object):
 
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
 
     def first_of(self, deps, name=None, alias=None):
@@ -291,6 +278,8 @@ class SpecFactory(object):
             that exists in the broker. At least one must be present, or this
             component won't fire.
         """
+        plugins.HIDDEN_DATASOURCES |= set(deps)
+
         @datasource(requires=[deps], alias=alias)
         def inner(broker):
             for c in deps:
@@ -300,6 +289,4 @@ class SpecFactory(object):
 
         if name:
             self.attach(inner, name)
-        else:
-            NO_NAMES.add(inner)
         return inner
