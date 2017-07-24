@@ -4,7 +4,6 @@
 """
 import pytest
 
-from insights.core.context import Context
 from insights.parsers import ParseException
 from insights.parsers.parted import PartedL
 from insights.tests import context_wrap
@@ -62,20 +61,9 @@ Number  Start   End     Size    Type      File system  Flags
 10      290GB   292GB   2147MB  logical   ext3
 """.strip()
 
-PARTED_ERR_DATA = ['Error: /dev/dm-1: unrecognised disk label']
-
-PARTED_ERR_DATA_2 = """
-Model: IBM 2107900 (scsi)
-Sector size (logical/physical): 512B/512B
-Partition Table: msdos
-
-Number  Start   End     Size    Type     File system  Flags
- 1      32.3kB  2580kB  2548kB  primary
-""".strip()
-
 
 def test_parted():
-    context = Context(content=PARTED_DATA.splitlines())
+    context = context_wrap(PARTED_DATA)
     results = PartedL(context)
     assert results is not None
     assert results.get('model') == 'Virtio Block Device (virtblk)'
@@ -99,7 +87,7 @@ def test_parted():
     assert results.boot_partition is not None
     assert results.boot_partition.number == '1'
 
-    assert partitions[1].get('file_system') == 'lvm'
+    assert partitions[1].get('file_system') == ''
     assert partitions[1].get('flags') == 'lvm'
     assert partitions[1].get('name') is None
     assert partitions[1].get('number') == '2'
@@ -108,13 +96,13 @@ def test_parted():
     assert partitions[1].get('size') == '9138MB'
     assert partitions[1].get('type') == 'primary'
 
-    context = Context(content=PARTED_DATA_2.splitlines())
+    context = context_wrap(PARTED_DATA_2)
     results = PartedL(context)
     assert results is not None
     assert results.disk == '/dev/sdet'
     assert len(results.partitions) == 1
 
-    context = Context(content=PARTED_DATA_3.splitlines())
+    context = context_wrap(PARTED_DATA_3)
     results = PartedL(context)
     assert results is not None
     assert results.disk == '/dev/sda'
@@ -122,11 +110,46 @@ def test_parted():
     assert results.physical_sector_size == '512B'
     assert len(results.partitions) == 10
 
-    context = Context(content=PARTED_ERR_DATA)
+
+PARTED_ERR_DATA = """
+Error: /dev/dm-1: unrecognised disk label
+"""
+
+PARTED_ERR_DATA_2 = """
+Model: IBM 2107900 (scsi)
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+
+Number  Start   End     Size    Type     File system  Flags
+ 1      32.3kB  2580kB  2548kB  primary
+""".strip()
+
+PARTED_ERR_DATA_NO_PARTITIONS = """
+Model: Virtio Block Device (virtblk)
+Disk /dev/vda: 9664MB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags:
+
+"""
+
+PARTED_ERR_DATA_EXCEPTIONS = """
+Model: Virtio Block Device (virtblk)
+Disk /dev/vda: 9664MB
+Sector size (logical:physical): 512B:512B
+Partition Table: msdos
+Disk Flags:
+
+Number  Start   End     Size    Type     File system  Flags
+"""
+
+
+def test_failure_modes():
+    context = context_wrap(PARTED_ERR_DATA)
     with pytest.raises(ParseException):
         PartedL(context)
 
-    context = Context(content=PARTED_ERR_DATA_2.splitlines())
+    context = context_wrap(PARTED_ERR_DATA_2)
     with pytest.raises(ParseException):
         PartedL(context)
 
@@ -137,3 +160,17 @@ def test_parted():
     assert results._sector_size is None
     assert results.logical_sector_size is None
     assert results.physical_sector_size is None
+
+    # Object should be complete but has no data
+    part = PartedL(context_wrap(PARTED_ERR_DATA_NO_PARTITIONS))
+    assert part is not None
+    assert part.disk == '/dev/vda'
+    assert part.data['sector_size'] == '512B/512B'
+    assert part.logical_sector_size == '512B'
+    assert part.physical_sector_size == '512B'
+    assert part.partitions == []
+
+    # Various other failure modes that aren't actual parse exceptions atm
+    part = PartedL(context_wrap(PARTED_ERR_DATA_EXCEPTIONS))
+    assert part.disk == '/dev/vda'
+    assert 'sector_size' not in part.data

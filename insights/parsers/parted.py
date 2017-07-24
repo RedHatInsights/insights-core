@@ -75,7 +75,7 @@ Examples:
     'bios_grub'
 """
 from .. import Parser, parser
-from ..parsers import ParseException
+from ..parsers import ParseException, parse_fixed_table
 
 
 class Partition(object):
@@ -141,6 +141,10 @@ class PartedL(Parser):
 
     Attributes:
         data (dict): Dictionary of information returned by ``parted`` command.
+        partitions (list): The partitions found in the output, as Partition
+            objects.
+        boot_partition (Partition): the first partition marked as bootable,
+            or ``None`` if one was not found.
 
     Raises:
         ParseException: Raised if ``parted`` output indicates "error" or
@@ -148,11 +152,6 @@ class PartedL(Parser):
             there is an error parsing the data.
         ValueError: Raised if there is an error parsing the partition table.
     """
-
-    @property
-    def partitions(self):
-        """list: List of ``Partition`` objects for each partition."""
-        return self._partitions
 
     @property
     def disk(self):
@@ -171,12 +170,6 @@ class PartedL(Parser):
         if self._sector_size:
             return self._sector_size[1]
 
-    @property
-    def boot_partition(self):
-        """Partition: Returns a ``Partition`` object if `boot` is found in
-        partition flags. ``None`` is returned otherwise."""
-        return self._boot_partition
-
     def get(self, item):
         """Returns a value for the specified ``item`` key."""
         return self.data.get(item)
@@ -194,9 +187,9 @@ class PartedL(Parser):
             if ':' in line:
                 label_value = line.split(':')
                 label = label_value[0].strip().lower()
-                value = label_value[1] if len(label_value) == 2 else None
-                value = value.strip() if value.strip() else None
-                if value:
+                if len(label_value) == 2:
+                    value = label_value[1].strip()
+                    value = value if value else None
                     # Single word labels
                     if ' ' not in label:
                         dev_info[label] = value
@@ -216,39 +209,22 @@ class PartedL(Parser):
         if 'disk' not in dev_info:
             raise ParseException("PartedL unable to locate Disk in content")
 
+        # Now construct the partition table from the fixed table
         partitions = []
         if table_lines:
-            line = table_lines[0].replace('File system', 'File_system')
-            cols = line.strip().split()
-            columns = {}
-            for n in cols:
-                columns[n] = {'name': n.lower()}
-                columns[n]['start'] = line.find(n)
-                columns[n]['end'] = columns[n]['start'] + len(n)
-            for line in table_lines[1:]:
-                line = line.rstrip()
-                part = {}
-                for col in columns.values():
-                    if len(line) > col['start']:
-                        val = line[col['start']:]
-                        val = val.strip().split(None, 1)[0]
-                        part[col['name']] = val
-                if part:
-                    partitions.append(part)
+            table_lines[0] = table_lines[0].replace('File system', 'File_system').lower()
+            partitions = parse_fixed_table(table_lines)
 
-        self._partitions = []
-        self._boot_partition = None
+        self.partitions = [Partition(n) for n in partitions]
+        self.boot_partition = None
         self._sector_size = None
-        self.data = {}
-        if dev_info:
-            if partitions:
-                dev_info['partitions'] = partitions
-                for part in partitions:
-                    self._partitions.append(Partition(part))
-                    if 'flags' in part and 'boot' in part['flags']:
-                        self._boot_partition = Partition(part)
-            self.data = dev_info
-            if 'sector_size' in self.data:
-                self._sector_size = self.data['sector_size'].split('/', 1)
-                if len(self._sector_size) != 2:
-                    self._sector_size = None
+        # If we got any partitions, find the first boot partition
+        for part in partitions:
+            if 'flags' in part and 'boot' in part['flags']:
+                self.boot_partition = Partition(part)
+                break
+        self.data = dev_info
+        if 'sector_size' in self.data:
+            self._sector_size = self.data['sector_size'].split('/', 1)
+            if len(self._sector_size) != 2:
+                self._sector_size = None
