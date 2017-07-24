@@ -153,7 +153,7 @@ class DockerHostContext(ExecutionContext):
 class FileArchiveContext(ExecutionContext):
 
     def __init__(self, root, paths, stored_command_prefix="insights_commands"):
-        self.root = paths
+        self.root = root
         self.paths = paths
         self.stored_command_prefix = stored_command_prefix
         super(FileArchiveContext, self).__init__()
@@ -163,7 +163,7 @@ class FileArchiveContext(ExecutionContext):
 class ClusterArchiveContext(ExecutionContext):
 
     def __init__(self, root, paths, stored_command_prefix="insights_commands"):
-        self.root = paths
+        self.root = root
         self.paths = paths
         self.stored_command_prefix = stored_command_prefix
         super(FileArchiveContext, self).__init__()

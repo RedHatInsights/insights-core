@@ -33,6 +33,7 @@ COMPONENTS = defaultdict(lambda: defaultdict(set))
 GROUP_OF_COMPONENT = {}
 
 DELEGATES = {}
+HIDDEN = set()
 
 
 class MissingRequirements(Exception):
@@ -55,23 +56,6 @@ def get_metadata(component):
     return COMPONENT_METADATA.get(component, {})
 
 
-def get_subgraphs(graph=DEPENDENCIES):
-    keys = set(graph)
-    frontier = set()
-    seen = set()
-    while keys:
-        frontier.add(keys.pop())
-        while frontier:
-            component = frontier.pop()
-            seen.add(component)
-            frontier |= set([d for d in DEPENDENCIES[component] if d in DEPENDENCIES])
-            frontier |= set([d for d in DEPENDENTS[component] if d in DEPENDENCIES])
-            frontier -= seen
-        yield dict((s, DEPENDENCIES[s]) for s in seen)
-        keys -= seen
-        seen.clear()
-
-
 def get_module_name(obj):
     try:
         return inspect.getmodule(obj).__name__
@@ -84,6 +68,14 @@ def get_simple_module_name(obj):
         return get_module_name(obj).split(".")[-1]
     except:
         return None
+
+
+def mark_hidden(component):
+    global HIDDEN
+    try:
+        HIDDEN |= set(component)
+    except:
+        HIDDEN.add(component)
 
 
 def replace(old, new):
@@ -151,6 +143,23 @@ def get_dependency_graph(component):
     graph.update(dict((item, set()) for item in extra_items_in_deps))
 
     return graph
+
+
+def get_subgraphs(graph=DEPENDENCIES):
+    keys = set(graph)
+    frontier = set()
+    seen = set()
+    while keys:
+        frontier.add(keys.pop())
+        while frontier:
+            component = frontier.pop()
+            seen.add(component)
+            frontier |= set([d for d in DEPENDENCIES[component] if d in DEPENDENCIES])
+            frontier |= set([d for d in DEPENDENTS[component] if d in DEPENDENCIES])
+            frontier -= seen
+        yield dict((s, DEPENDENCIES[s]) for s in seen)
+        keys -= seen
+        seen.clear()
 
 
 def load_components(path, include=".*", exclude="test"):
@@ -228,7 +237,6 @@ def register_component(component, delegate, component_type,
 class Broker(object):
 
     def __init__(self, cleanup=False):
-        self.perform_cleanup = cleanup
         self.instances = {}
         self.missing_dependencies = {}
         self.exceptions = defaultdict(list)
@@ -236,10 +244,18 @@ class Broker(object):
         self.ref_counts = defaultdict(int)
         self.runtime_dependencies = defaultdict(set)
         self._components = set(DEPENDENCIES)
+        self._perform_cleanup = cleanup
         self._cleaned = set()
 
+    def add_exception(self, component, ex, tb=None):
+        if isinstance(ex, MissingRequirements):
+            self.missing_dependencies[component] = ex.requirements
+        else:
+            self.exceptions[component].append(ex)
+            self.tracebacks[ex] = tb
+
     def finalize(self):
-        if not self.perform_cleanup:
+        if not self._perform_cleanup:
             return
 
         for component in self.instances:
@@ -268,15 +284,8 @@ class Broker(object):
                 self._cleanup(self.instances[component])
         self._cleaned |= seen
 
-    def add_exception(self, component, ex, tb=None):
-        if isinstance(ex, MissingRequirements):
-            self.missing_dependencies[component] = ex.requirements
-        else:
-            self.exceptions[component].append(ex)
-            self.tracebacks[ex] = tb
-
     def add_dependencies(self, component, dependencies):
-        if not self.perform_cleanup:
+        if not self._perform_cleanup:
             return
         dependencies -= DEPENDENTS[component]
         self.ref_counts[component] += len(dependencies)
@@ -284,7 +293,7 @@ class Broker(object):
             self.runtime_dependencies[d].add(component)
 
     def mark_done(self, component):
-        if not self.perform_cleanup:
+        if not self._perform_cleanup:
             return
         deps = ((DEPENDENCIES.get(component, set()) |
                 self.runtime_dependencies[component]) & self._components)
@@ -295,11 +304,17 @@ class Broker(object):
     def keys(self):
         return self.instances.keys()
 
+    def iteritems(self):
+        for k, v in self.instances.iteritems():
+            if k not in HIDDEN:
+                yield (k, v)
+
     def __contains__(self, component):
         if component in self.instances:
             return True
 
         alias = ALIASES.get(component)
+
         if alias and alias in self.instances:
             return True
         return False
@@ -314,7 +329,7 @@ class Broker(object):
             raise KeyError(msg % get_name(alias))
 
         self.instances[component] = instance
-        if self.perform_cleanup and component in DEPENDENCIES:
+        if self._perform_cleanup and component in DEPENDENCIES:
             self.ref_counts[component] = len(DEPENDENTS[component])
 
     def __delitem__(self, component):
