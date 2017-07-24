@@ -1,6 +1,5 @@
-from insights.parsers import limits_conf
+from insights.parsers.limits_conf import LimitsConf
 from insights.tests import context_wrap
-import unittest
 
 LIMITS_CONF = """
 #oracle soft nproc 2047
@@ -12,31 +11,7 @@ oracle hard stack 3276
 root       soft    nproc     unlimited
 """.strip()
 
-LIMITS_D_CONF = """
-@jackuser - rtprio 70
-@jackuser - memlock 4194304
-""".strip()
-
 LIMITS_CONF_PATH = "etc/security/limits.conf"
-LIMITS_D_PATH = "etc/security/limits.d/95-jack.conf"
-
-
-def test_limits_conf():
-    data = limits_conf.get_limits(context_wrap(LIMITS_CONF, path=LIMITS_CONF_PATH))
-    assert len(data.get('limits.conf')) == 5
-    assert data.get('limits.conf') == [{'domain': 'oracle', 'type': 'soft', 'item': 'nofile', 'value': 1024},
-                                       {'domain': 'oracle', 'type': 'hard', 'item': 'nofile', 'value': 65536},
-                                       {'domain': 'oracle', 'type': 'soft', 'item': 'stack', 'value': 10240},
-                                       {'domain': 'oracle', 'type': 'hard', 'item': 'stack', 'value': 3276},
-                                       {'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
-
-
-def test_limits_d():
-    data = limits_conf.get_limits(context_wrap(LIMITS_D_CONF, path=LIMITS_D_PATH))
-    assert len(data.get('95-jack.conf')) == 2
-    assert data.get('95-jack.conf') == [{'domain': '@jackuser', 'type': '-', 'item': 'rtprio', 'value': 70},
-                                        {'domain': '@jackuser', 'type': '-', 'item': 'memlock', 'value': 4194304}]
-
 
 BAD_LIMITS_CONF = """
 
@@ -74,110 +49,81 @@ managers    -    nofile 10240
 """
 
 
-class test_class(unittest.TestCase):
-    def test_class_conf(self):
-        # The tests handle only a single file at this point...
-        ctx = context_wrap(LIMITS_CONF, path=LIMITS_CONF_PATH)
-        data = limits_conf.LimitsConf(ctx)
+def test_class_conf():
+    # The tests handle only a single file at this point...
+    ctx = context_wrap(LIMITS_CONF, path=LIMITS_CONF_PATH)
+    data = LimitsConf(ctx)
 
-        self.assertEqual(
-            data.domains,
-            sorted(['oracle', 'root'])
-        )
+    assert data.domains == \
+        sorted(['oracle', 'root'])
 
-    def test_class_bad(self):
-        # The tests handle only a single file at this point...
-        ctx = context_wrap(BAD_LIMITS_CONF, path=LIMITS_CONF_PATH)
-        data = limits_conf.LimitsConf(ctx)
 
-        self.assertEqual(data.domains, [])
+def test_class_bad():
+    # The tests handle only a single file at this point...
+    ctx = context_wrap(BAD_LIMITS_CONF, path=LIMITS_CONF_PATH)
+    data = LimitsConf(ctx)
 
-    def test_class_complete(self):
-        # The tests handle only a single file at this point...
-        ctx = context_wrap(FULL_OPTS_LIMITS_CONF, path=LIMITS_CONF_PATH)
-        data = limits_conf.LimitsConf(ctx)
+    assert data.domains == []
 
-        self.assertEqual(
-            data.domains,
-            sorted(
-                ['oracle', '@dbadmins', '*', ':1001', '1000:', '2000:2020',
-                '@:101', '@100:', '@200:202', 'managers']
-            )
+
+def test_class_complete():
+    # The tests handle only a single file at this point...
+    ctx = context_wrap(FULL_OPTS_LIMITS_CONF, path=LIMITS_CONF_PATH)
+    data = LimitsConf(ctx)
+
+    assert data.domains == \
+        sorted(
+            ['oracle', '@dbadmins', '*', ':1001', '1000:', '2000:2020',
+            '@:101', '@100:', '@200:202', 'managers']
         )
 
-        # Data check
-        self.assertEqual(
-            data.rules[0],
-            {'domain': 'oracle', 'type': 'soft', 'item': 'nofile', 'value': 1024, 'file': LIMITS_CONF_PATH}
-        )
+    # Data check
+    assert data.rules[0] == \
+        {'domain': 'oracle', 'type': 'soft', 'item': 'nofile', 'value': 1024, 'file': LIMITS_CONF_PATH}
 
-        # User domain match
-        self.assertEqual(
-            data.find_all(domain='oracle'),
-            # oracle soft, wildcard, and oracle hard
-            [data.rules[x] for x in [0, 2, 9]]
-        )
-        # Group domain match
-        self.assertEqual(
-            data.find_all(domain='@dbadmins'),
-            # dbadmins group and wildcard
-            [data.rules[x] for x in [1, 2]]
-        )
-        # UID domain match
-        self.assertEqual(
-            data.find_all(domain=1001),
-            # wildcard, uid 1001 exact, and uid range 1000:
-            [data.rules[x] for x in [2, 3, 4]]
-        )
-        # UID min range domain match
-        self.assertEqual(
-            data.find_all(domain=1002),
-            # wildcard and uid range 1000:
-            [data.rules[x] for x in [2, 4]]
-        )
-        # UID min:max range match
-        self.assertEqual(
-            data.find_all(domain=2001),
-            # wildcard, uid range 1000:, and uid range 2000:2020
-            [data.rules[x] for x in [2, 4, 5]]
-        )
-        # GID domain match
-        self.assertEqual(
-            data.find_all(domain='@101'),
-            # wildcard, gid 101 exact, and gid range 100:
-            [data.rules[x] for x in [2, 6, 7]]
-        )
-        # GID min range domain match
-        self.assertEqual(
-            data.find_all(domain='@102'),
-            # wildcard and gid range 100:
-            [data.rules[x] for x in [2, 7]]
-        )
-        # GID min:max range match
-        self.assertEqual(
-            data.find_all(domain='@201'),
-            # wildcard, gid range 100:, and gid range 200:202
-            [data.rules[x] for x in [2, 7, 8]]
-        )
-        # soft type match
-        self.assertEqual(
-            data.find_all(type='soft'),
-            # most rules but not the hard rule
-            [data.rules[x] for x in [0, 1, 2, 3, 4, 5, 6, 7, 8, 10]]
-        )
-        # hard type match
-        self.assertEqual(
-            data.find_all(type='hard'),
-            # hard and both
-            [data.rules[x] for x in [9, 10]]
-        )
-        # No match at all
-        self.assertEqual(
-            data.find_all(domain='postgres', type='hard'),
-            []
-        )
-        # No rules to match
-        self.assertEqual(
-            data.find_all(),
-            []
-        )
+    # User domain match
+    # oracle soft, wildcard, and oracle hard
+    assert data.find_all(domain='oracle') == \
+        [data.rules[x] for x in [0, 2, 9]]
+    # Group domain match
+    # dbadmins group and wildcard
+    assert data.find_all(domain='@dbadmins') == \
+        [data.rules[x] for x in [1, 2]]
+    # UID domain match
+    # wildcard, uid 1001 exact, and uid range 1000:
+    assert data.find_all(domain=1001) == \
+        [data.rules[x] for x in [2, 3, 4]]
+    # UID min range domain match
+    # wildcard and uid range 1000:
+    assert data.find_all(domain=1002) == \
+        [data.rules[x] for x in [2, 4]]
+    # UID min:max range match
+    # wildcard, uid range 1000:, and uid range 2000:2020
+    assert data.find_all(domain=2001) == \
+        [data.rules[x] for x in [2, 4, 5]]
+    # GID domain match
+    # wildcard, gid 101 exact, and gid range 100:
+    assert data.find_all(domain='@101') == \
+        [data.rules[x] for x in [2, 6, 7]]
+    # GID min range domain match
+    # wildcard and gid range 100:
+    assert data.find_all(domain='@102') == \
+        [data.rules[x] for x in [2, 7]]
+    # GID min:max range match
+    # wildcard, gid range 100:, and gid range 200:202
+    assert data.find_all(domain='@201') == \
+        [data.rules[x] for x in [2, 7, 8]]
+    # soft type match
+    # most rules but not the hard rule
+    assert data.find_all(type='soft') == \
+        [data.rules[x] for x in [0, 1, 2, 3, 4, 5, 6, 7, 8, 10]]
+    # hard type match
+    # hard and both
+    assert data.find_all(type='hard') == \
+        [data.rules[x] for x in [9, 10]]
+    # No match at all
+    assert data.find_all(domain='postgres', type='hard') == \
+        []
+    # No rules to match
+    assert data.find_all() == \
+        []
