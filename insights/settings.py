@@ -1,30 +1,37 @@
 import sys
 import os
 import yaml
+import pkgutil
 
 INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
+print INSTALL_DIR
 NAME = "insights.yaml"
 DEFAULTS_NAME = "defaults.yaml"
 
-PATHS = [
-    os.path.join(INSTALL_DIR, DEFAULTS_NAME),  # Defaults
-    os.path.join("/etc", NAME),  # System-wide config
-    os.path.join(os.path.expanduser("~/.local"), NAME),  # User-specific config
-    "." + NAME  # Directory-specific config
+
+def load_and_read(path):
+    if os.path.exists(path):
+        with open(path) as fp:
+            return fp.read()
+
+
+CONFIGS = [
+    pkgutil.get_data('insights', 'defaults.yaml'),
+    load_and_read(os.path.join("/etc", NAME)),  # System-wide config
+    load_and_read(os.path.join(os.path.expanduser("~/.local"), NAME)),  # User-specific config
+    load_and_read("." + NAME)  # Directory-specific config
 ]
 
 config = {}
 
-for path in PATHS:
-    if os.path.exists(path):
+for c in CONFIGS:
         try:
-            with open(path) as fp:
-                y = yaml.load(fp.read())
-                for name, section in y.iteritems():
-                    if name in config:
-                        config[name].update(section)
-                    else:
-                        config[name] = section
+            y = yaml.load(c)
+            for name, section in y.iteritems():
+                if name in config:
+                    config[name].update(section)
+                else:
+                    config[name] = section
         except:
             pass
 
