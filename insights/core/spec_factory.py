@@ -9,7 +9,6 @@ from collections import defaultdict
 from glob import glob
 
 from insights.core import dr
-from insights.core import plugins
 from insights.core.context import FileArchiveContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, stage
 
@@ -278,7 +277,7 @@ class SpecFactory(object):
             that exists in the broker. At least one must be present, or this
             component won't fire.
         """
-        plugins.HIDDEN_DATASOURCES |= set(deps)
+        dr.mark_hidden(deps)
 
         @datasource(requires=[deps], alias=alias)
         def inner(broker):

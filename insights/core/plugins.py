@@ -12,8 +12,6 @@ from insights import settings
 
 log = logging.getLogger(__name__)
 
-HIDDEN_DATASOURCES = set()
-
 
 def parser_executor(component, broker, requires, optional):
     dependency = requires[0]
@@ -101,8 +99,7 @@ incident = dr.new_component_type("incident")
 
 
 def is_datasource(component):
-    is_ds = dr.TYPE_OF_COMPONENT.get(component) is datasource
-    return is_ds and component not in HIDDEN_DATASOURCES
+    return dr.TYPE_OF_COMPONENT.get(component) is datasource
 
 
 def is_parser(component):
