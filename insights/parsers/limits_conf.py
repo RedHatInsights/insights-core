@@ -2,18 +2,6 @@
 Limits configuration - file ``/etc/security/limits.conf`` and others
 ====================================================================
 
-There are two parsers here:
-
-get_limits
-----------
-
-The ``get_limits`` function parser simply returns a dictionary with the
-domain, type, item and value of each row found in the file, indexed in the
-dictionary by the file name.
-
-LimitsConf
-----------
-
 The ``LimitsConf`` class parser, which provides a 'rules' list that is
 similar to the above but also provides a ``find_all`` method to find all the
 rules that match a given set of criteria and other properties that make it
@@ -21,65 +9,7 @@ easier to use the contents of the parser.
 
 """
 
-import os
 from .. import Parser, parser, get_active_lines
-
-
-def parse_line(string):
-    domain, type_, item, value = string.split()
-    # Special '-1' value for unlimited, also represented as strings
-    if value == 'unlimited' or value == 'infinity':
-        value = -1
-    else:
-        value = int(value)
-    return {
-        "domain": domain,
-        "type": type_,
-        "item": item,
-        "value": value
-    }
-
-
-@parser("limits.conf")
-@parser("limits.d")
-def get_limits(context):
-    """
-    Returns a dictionary with one item, keyed to the file name, which is a
-    list of dictionaries corresponding to each rule in the file in order.
-    The dictionaries in this list have the keys 'domain', 'type', 'item'
-    and 'value' as the four fields of each rule.
-
-    Sample input::
-
-        # Default limit for number of user's processes to prevent
-        # accidental fork bombs.
-        # See rhbz #432903 for reasoning.
-
-        *          soft    nproc     4096
-        root       soft    nproc     unlimited
-
-    Examples:
-
-        >>> lfile = shared[get_limits][0] # per file list
-        >>> type(lfile)
-        <type: dict>
-        >>> lfile.keys()
-        '/etc/security/limits.d/20-nproc.conf'
-        >>> limits = lfile.values()
-        >>> type(limits)
-        <type: list>
-        >>> limits[0] # Note value is integer
-        {'domain': '*', 'type': 'soft', 'item': 'nproc', 'value': 4096}
-    """
-    result = {}
-    cfg_file = os.path.basename(context.path)
-    if cfg_file.strip():
-        lines = []
-        for line in get_active_lines(context.content):
-            parsed = parse_line(line)
-            lines.append(parsed)
-        result[cfg_file] = lines
-        return result
 
 
 @parser("limits.conf")
