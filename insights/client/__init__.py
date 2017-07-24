@@ -275,30 +275,30 @@ class InsightsClientApi(object):
             message = "There was an error creating %s for Core installation." % (constants.insights_core_lib_dir)
             return {'success': success, 'message': message, 'exception': exc}
 
-        # Copy the CURRENT egg to /var/lib/insights/current.egg
-        old_new_egg = constants.insights_core_rpm
-        new_current_egg = constants.insights_core_current
+        # Copy the NEWEST egg to /var/lib/insights/last_stable.egg
+        old_newest_egg = constants.insights_core_rpm
+        new_last_stable_egg = constants.insights_core_last_stable
         try:
-            # If the current egg does not exist, it should become the RPM egg
-            # Otherwise the current egg should become the old new egg
-            if os.path.isfile(constants.insights_core_current):
-                logger.debug("There is currently a 'current' Core. The 'current' Core will now become the old 'new' Core.")
-                old_new_egg = constants.insights_core_new
-                new_current_egg = constants.insights_core_current
+            # If the current/latest stable egg does not exist, it should become the installed egg from RPM
+            # Otherwise the current/latest stable egg should become the old newest egg
+            if os.path.isfile(constants.insights_core_last_stable):
+                logger.debug("There is currently a 'last stable' Core. The 'last stable' Core will now become the old 'newest' Core.")
+                old_newest_egg = constants.insights_core_newest
+                new_last_stable_egg = constants.insights_core_last_stable
             else:
-                logger.debug("There is not currently a 'current' Core. Using the supplied RPM Core.")
-            logger.debug("Copying %s to %s." % (old_new_egg, new_current_egg))
-            copyfile(old_new_egg, new_current_egg)
+                logger.debug("There is not currently a 'last stable' Core. Using the supplied RPM Core.")
+            logger.debug("Copying %s to %s." % (old_newest_egg, new_last_stable_egg))
+            copyfile(old_newest_egg, new_last_stable_egg)
         except IOError as exc:
-            message = "There was an error copying %s to %s." % (old_new_egg, new_current_egg)
+            message = "There was an error copying %s to %s." % (old_newest_egg, new_last_stable_egg)
             return {'success': success, 'message': message, 'exception': exc}
 
-        # Copy the NEW egg to /var/lib/insights/new.egg
+        # Copy the NEW egg to /var/lib/insights/newest.egg
         try:
-            logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_new))
-            copyfile(new_egg, constants.insights_core_new)
+            logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_newest))
+            copyfile(new_egg, constants.insights_core_newest)
         except IOError as exc:
-            message = "There was an error copying the new Core from %s to %s." % (new_egg, constants.insights_core_new)
+            message = "There was an error copying the new Core from %s to %s." % (new_egg, constants.insights_core_newest)
             return {'success': success, 'message': message, 'exception': exc}
 
         logger.debug("The new Insights Core was installed successfully.")
