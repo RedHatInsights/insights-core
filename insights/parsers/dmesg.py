@@ -5,7 +5,7 @@ DMesgLineList - command ``dmesg``
 DMesgLineList is a simple parser that is based on the ``LogFileOutput``
 parser class.
 
-It provides one additional helper method:
+It provides one additional helper method not included in ``LogFileOutput``:
 
 * ``has_startswith`` - does the log contain any line that starts with the
   given string?
@@ -30,10 +30,11 @@ Examples:
     True
     >>> dmesg.get('AGP')
     ['[    0.000000] AGP: Checking aperture...', '[    0.000000] AGP: No AGP bridge found']
-
 """
 
 from .. import LogFileOutput, parser
+
+import re
 
 
 @parser('dmesg')
@@ -41,16 +42,58 @@ class DmesgLineList(LogFileOutput):
     """
     Class for reading output of ``dmesg`` using the LogFileOutput parser class.
     """
+    _line_re = re.compile(r'^(?:\[\s+(?P<timestamp>\d+\.\d+)\]\s+)?(?P<message>.*)$')
+
     def has_startswith(self, prefix):
         """
         Parameters:
-            prefix (str): The prefix of the line to look for.
+            prefix (str): The prefix of the line to look for.  Ignores any
+                timestamp before the message body.
 
         Returns:
             (bool): Does any line start with the given prefix?
-
-        Notes:
-            Does not ignore the time stamp of the line - if the dmesg output
-            contains timestamps then these are considered to start the line.
         """
-        return any(line.startswith(prefix) for line in self.lines)
+        return any(
+            self._line_re.search(line).group('message').startswith(prefix)
+            for line in self.lines
+        )
+
+    def get_after(self, timestamp, lines=None):
+        """
+        Get a list of lines after the given time stamp.
+
+        Note that the time stamp is the floating point number of seconds
+        after the boot time, and is not related to an actual datetime.  If
+        a time stamp is not found on the line between square brackets, then
+        it is treated as a continuation of the previous line and is only
+        included if the previous line's timestamp is greater than the
+        timestamp given.  Because continuation lines are only included if a
+        previous line has matched, this means that searching in logs that do
+        not have a time stamp produces no lines.
+
+        Parameters:
+            timestamp(float): log lines after this time are returned.
+            lines(list): the list of log lines to search (e.g. from ``get``).
+                If not supplied, all available lines are searched.
+
+        Yields:
+            Log lines with time stamps after the given time.
+        """
+        if lines is None:
+            lines = self.lines
+
+        including_lines = False
+        for line in lines:
+            match = self._line_re.search(line)
+            if match and match.group('timestamp'):
+                # Get logtimestamp and compare to given timestamp
+                logstamp = float(match.group('timestamp'))
+                if logstamp >= timestamp:
+                    including_lines = True
+                    yield line
+                else:
+                    including_lines = False
+            else:
+                # If we're including lines, add this continuation line
+                if including_lines:
+                    yield line
