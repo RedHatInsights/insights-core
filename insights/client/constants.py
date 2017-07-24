@@ -42,3 +42,7 @@ class InsightsConstants(object):
     insights_ansible_facts_dir = os.path.join('/', 'etc', 'ansible', 'facts.d')
     insights_ansible_facts_file = os.path.join(insights_ansible_facts_dir, 'insights.fact')
     insights_ansible_machine_id_file = os.path.join(insights_ansible_facts_dir, 'insights_machine_id.fact')
+    insights_core_lib_dir = os.path.join('/', 'var', 'lib', 'insights')
+    insights_core_rpm = os.path.join(default_conf_dir, 'rpm.egg')
+    insights_core_current = os.path.join(insights_core_lib_dir, 'current.egg')
+    insights_core_new = os.path.join(insights_core_lib_dir, 'new.egg')

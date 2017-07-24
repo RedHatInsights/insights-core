@@ -255,22 +255,54 @@ class InsightsClientApi(object):
         """
         returns (dict): {'success': True if the new core was installed successfull else False}
         """
+        import os
+        from shutil import copyfile
+
         success = False
         if not new_egg:
-            logger.debug('Must provide a valid Core installation path.')
-            return {'success': success}
+            the_message = 'Must provide a valid Core installation path.'
+            logger.debug(the_message)
+            return {'success': success, 'message': the_message}
 
         logger.debug("Installing the new Core %s", new_egg)
 
-        from setuptools.command import easy_install
+        # Make sure /var/lib/insights exists
         try:
-            easy_install.main(["-U", new_egg])  # WHY DOESNT THIS RETURN ANYTHING
-            success = True
-        except:
-            logger.debug("There was an issue installing the new Core.")
-            logger.debug("Please ensure a proper path to the Core.")
-            logger.debug("Please ensure you are running as root, or a user with root privileges.")
+            if not os.path.isdir(constants.insights_core_lib_dir):
+                logger.debug("Creating directory %s for the Core." % (constants.insights_core_lib_dir))
+                os.mkdir(constants.insights_core_lib_dir)
+        except OSError as exc:
+            message = "There was an error creating %s for Core installation." % (constants.insights_core_lib_dir)
+            return {'success': success, 'message': message, 'exception': exc}
 
+        # Copy the CURRENT egg to /var/lib/insights/current.egg
+        old_new_egg = constants.insights_core_rpm
+        new_current_egg = constants.insights_core_current
+        try:
+            # If the current egg does not exist, it should become the RPM egg
+            # Otherwise the current egg should become the old new egg
+            if os.path.isfile(constants.insights_core_current):
+                logger.debug("There is currently a 'current' Core. The 'current' Core will now become the old 'new' Core.")
+                old_new_egg = constants.insights_core_new
+                new_current_egg = constants.insights_core_current
+            else:
+                logger.debug("There is not currently a 'current' Core. Using the supplied RPM Core.")
+            logger.debug("Copying %s to %s." % (old_new_egg, new_current_egg))
+            copyfile(old_new_egg, new_current_egg)
+        except IOError as exc:
+            message = "There was an error copying %s to %s." % (old_new_egg, new_current_egg)
+            return {'success': success, 'message': message, 'exception': exc}
+
+        # Copy the NEW egg to /var/lib/insights/new.egg
+        try:
+            logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_new))
+            copyfile(new_egg, constants.insights_core_new)
+        except IOError as exc:
+            message = "There was an error copying the new Core from %s to %s." % (new_egg, constants.insights_core_new)
+            return {'success': success, 'message': message, 'exception': exc}
+
+        logger.debug("The new Insights Core was installed successfully.")
+        success = True
         return {'success': success}
 
     def update_rules(self, options=None, config=None):
