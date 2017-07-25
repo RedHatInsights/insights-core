@@ -5,7 +5,7 @@ DMIDecode - Command ``dmidecode``
 Parses the output of the ``dmidecode`` command to catalogue the hardware
 associated with the system.
 
-In general, DMIdecode recognises the sections of device information,
+In general, DMIdecode recognizes the sections of device information,
 separated by blank lines, processed in the following way.
 
 * It uses the descriptor line that precedes the indented device information
@@ -28,9 +28,9 @@ convenience properties:
 * **bios_date** - the BIOS's 'Release Date' attribute
 * **processor_manufacturer** - the processor's 'Manufacturer' attribute
 * **virt_what** - similar to the program ``virt-what``, the product,
-  manufacturer and vendor information is checked for recognised values that
-  indicate a virtualised environment and the first found is returned.  If no
-  virtualised environment is found, ``None`` is returned.
+  manufacturer and vendor information is checked for recognized values that
+  indicate a virtualized environment and the first found is returned.  If no
+  virtualized environment is found, ``None`` is returned.
 * **is_present** - this indicates whether dmidecode information was found.
 
 Sample input::
@@ -110,7 +110,10 @@ class DMIDecode(Parser, LegacyItemAccess):
     """
     Class for DMI information.
     """
-
+    # TODO:
+    # ``virt_what`` interface will be shift to the ``VirtWhat`` combiner, below
+    # 4 dictionaries and the ``virt_what`` API should be removed after plugins
+    # being refactored to use the ``VirtWhat``
     PRODUCT_MAP = {
         "VMware": "vmware",
         "KVM": "kvm",
@@ -121,7 +124,8 @@ class DMIDecode(Parser, LegacyItemAccess):
     MANUFACTURER_MAP = {
         "Microsoft Corporation": "virtualpc",
         "innotek GmbH": "virtualbox",
-        "VMware": "vmware"
+        "VMware": "vmware",
+        "Red Hat": "kvm"
     }
 
     VENDOR_MAP = {
@@ -166,6 +170,9 @@ class DMIDecode(Parser, LegacyItemAccess):
         """(str): Convenience method to get the processor manufacturer"""
         return self["processor_information"][0]["manufacturer"]
 
+    # TODO
+    # Deprecated interface, it should be removed after plugins being refactored
+    # to use the new ``VirtWhat`` combiner
     @property
     def virt_what(self):
         '''
@@ -179,7 +186,7 @@ class DMIDecode(Parser, LegacyItemAccess):
         There are several ways and tricks to detect virtualized
         environments, but this function only focuses on using ``dmidecode``.
         As such, the argument to the function is expected to be a iterator
-        containing the lines from a ``dmmidecode`` file.  This will usually
+        containing the lines from a ``dmidecode`` file.  This will usually
         be the ``content`` attribute from the context object passed to a
         parser.
 
