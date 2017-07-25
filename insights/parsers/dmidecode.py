@@ -5,7 +5,7 @@ DMIDecode - Command ``dmidecode``
 Parses the output of the ``dmidecode`` command to catalogue the hardware
 associated with the system.
 
-In general, DMIdecode recognises the sections of device information,
+In general, DMIdecode recognizes the sections of device information,
 separated by blank lines, processed in the following way.
 
 * It uses the descriptor line that precedes the indented device information
@@ -27,10 +27,6 @@ convenience properties:
 * **bios_vendor** - the BIOS's 'Vendor' attribute
 * **bios_date** - the BIOS's 'Release Date' attribute
 * **processor_manufacturer** - the processor's 'Manufacturer' attribute
-* **virt_what** - similar to the program ``virt-what``, the product,
-  manufacturer and vendor information is checked for recognised values that
-  indicate a virtualised environment and the first found is returned.  If no
-  virtualised environment is found, ``None`` is returned.
 * **is_present** - this indicates whether dmidecode information was found.
 
 Sample input::
@@ -96,8 +92,6 @@ Examples:
     20
     >>> dmi.bios['characteristics'][0]
     'PCI is supported'
-    >>> dmi.virt_what
-    None
 """
 
 import re
@@ -110,29 +104,6 @@ class DMIDecode(Parser, LegacyItemAccess):
     """
     Class for DMI information.
     """
-
-    PRODUCT_MAP = {
-        "VMware": "vmware",
-        "KVM": "kvm",
-        "domU": "xen",
-        "Virtual Machine": "virtualpc"
-    }
-
-    MANUFACTURER_MAP = {
-        "Microsoft Corporation": "virtualpc",
-        "innotek GmbH": "virtualbox",
-        "VMware": "vmware"
-    }
-
-    VENDOR_MAP = {
-        "Parallels": "parallels",
-        "QEMU": "qemu",
-        "KVM": "kvm"
-    }
-
-    VERSION_MAP = {
-        "amazon": "amazon"
-    }
 
     def parse_content(self, content):
         self.data = parse_dmidecode(content, pythonic_keys=True)
@@ -165,43 +136,6 @@ class DMIDecode(Parser, LegacyItemAccess):
     def processor_manufacturer(self):
         """(str): Convenience method to get the processor manufacturer"""
         return self["processor_information"][0]["manufacturer"]
-
-    @property
-    def virt_what(self):
-        '''
-        Detect if this machine is running in a virtualized environment.
-        Loosely based on `virt-what <http://people.redhat.com/~rjones/virt-what/>`_.
-
-        If the virtualization environment is not actively trying to mask
-        itself, its possible to detect the environment by looking at
-        the ``product_name`` and ``vendor`` keys in ``dmidecode`` output.
-
-        There are several ways and tricks to detect virtualized
-        environments, but this function only focuses on using ``dmidecode``.
-        As such, the argument to the function is expected to be a iterator
-        containing the lines from a ``dmmidecode`` file.  This will usually
-        be the ``content`` attribute from the context object passed to a
-        parser.
-
-        Returns:
-            (str): the type of virtualized environment found, or ``None`` if
-            virtualization could not be determined.
-        '''
-        sys_info = self.data.get("system_information", [{}])[0]
-        bios_info = self.data.get("bios_information", [{}])[0]
-
-        product_name = sys_info.get("product_name")
-        manufacturer = sys_info.get("manufacturer")
-        vendor = bios_info.get("vendor")
-        version = bios_info.get("version")
-
-        for dmidecode_value, mapping in [(version, self.VERSION_MAP),
-                                         (product_name, self.PRODUCT_MAP),
-                                         (manufacturer, self.MANUFACTURER_MAP),
-                                         (vendor, self.VENDOR_MAP)]:
-            for map_key in mapping:
-                if dmidecode_value and map_key in dmidecode_value:
-                    return mapping[map_key]
 
     @property
     def is_present(self):
