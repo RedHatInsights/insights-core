@@ -75,17 +75,16 @@ class ChkConfig(Parser):
 
         # sysv services are in the form "service     0:off"
         # while xinetd services are "service:    off"
-        on_state = re.compile(r':\s*on(?:\s+|$)')
-        off_state = re.compile(r':\s*off(?:\s+|$)')
+        state_re = re.compile(r':\s*(?P<state>on|off)(?:\s+|$)')
 
-        valid_states = [on_state, off_state]
         for line in content:
-            if any(state.search(line) for state in valid_states):
+            if state_re.search(line):
                 # xinetd service names have a trailing colon ("telnet:  on")
                 service = line.split()[0].strip(' \t:')
                 # Note that for regular services this assumes the ':on' occurs
                 # in the current run level.  It does not check the run level.
-                enabled = on_state.search(line) is not None
+                # enabled = on_state.search(line) is not None
+                enabled = ':on' in line or line.endswith('on')
                 self.services[service] = enabled
                 self.parsed_lines[service] = line
                 self.service_list.append(service)
@@ -98,15 +97,22 @@ class ChkConfig(Parser):
                     # to those of xinetd if they are on, else all off
                     if len(level.split(':')) < 2:
                         if enabled:
-                            # This may except if xinetd isn't in services,
-                            # but xinetd services are only reported by
-                            # chkconfig when it's on.
-                            states = self.level_states['xinetd']
+                            if 'xinetd' in self.level_states:
+                                # A xinetd-based service is only on for the
+                                # SysV run states that xinetd itself is on.
+                                states = self.level_states['xinetd']
+                            else:
+                                # RHEL 7.3 'chkconfig' is actually faked up
+                                # by systemd, and doesn't list xinetd as a
+                                # service.  Run levels are meaningless here,
+                                # so we list 'on' for all SysV run levels.
+                                states = [self.LevelState(str(x), 'on')
+                                          for x in range(7)]
                         else:
                             # Disabled xinetd services are effectively
                             # off at every runlevel
-                            states = [self.LevelState(str(x), 'off') for
-                                        x in range(7)]
+                            states = [self.LevelState(str(x), 'off')
+                                      for x in range(7)]
                         continue
                     num, state = level.split(':')
                     states.append(self.LevelState(num.strip(), state.strip()))
