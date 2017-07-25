@@ -11,7 +11,7 @@ from .parsers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401
 
 
-package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}
+package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
 
 
 for name in package_info:
