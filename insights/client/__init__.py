@@ -273,7 +273,7 @@ class InsightsClientApi(object):
                 os.mkdir(constants.insights_core_lib_dir)
         except OSError as exc:
             message = "There was an error creating %s for Core installation." % (constants.insights_core_lib_dir)
-            return {'success': success, 'message': message, 'exception': exc}
+            raise OSError(message)
 
         # Copy the NEWEST egg to /var/lib/insights/last_stable.egg
         old_newest_egg = constants.insights_core_rpm
@@ -291,7 +291,7 @@ class InsightsClientApi(object):
             copyfile(old_newest_egg, new_last_stable_egg)
         except IOError as exc:
             message = "There was an error copying %s to %s." % (old_newest_egg, new_last_stable_egg)
-            return {'success': success, 'message': message, 'exception': exc}
+            raise IOError(message)
 
         # Copy the NEW egg to /var/lib/insights/newest.egg
         try:
@@ -299,7 +299,7 @@ class InsightsClientApi(object):
             copyfile(new_egg, constants.insights_core_newest)
         except IOError as exc:
             message = "There was an error copying the new Core from %s to %s." % (new_egg, constants.insights_core_newest)
-            return {'success': success, 'message': message, 'exception': exc}
+            raise IOError(message)
 
         logger.debug("The new Insights Core was installed successfully.")
         success = True
