@@ -20,6 +20,34 @@ ERROR = """
 -bash: chkconfig: command not found
 """
 
+RHEL_73_SERVICES = """
+Note: This output shows SysV services only and does not include native
+      systemd services. SysV configuration data might be overridden by native
+      systemd configuration.
+
+      If you want to list systemd services use 'systemctl list-unit-files'.
+      To see services enabled on particular target use
+      'systemctl list-dependencies [target]'.
+
+netconsole     	0:off	1:off	2:off	3:off	4:off	5:off	6:off
+network        	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+rhnsd          	0:off	1:off	2:on	3:on	4:on	5:on	6:off
+
+xinetd based services:
+        chargen-dgram:  off
+        chargen-stream: off
+        daytime-dgram:  off
+        daytime-stream: off
+        discard-dgram:  off
+        discard-stream: off
+        echo-dgram:     off
+        echo-stream:    off
+        rsync:          on
+        tcpmux-server:  off
+        time-dgram:     off
+        time-stream:    off
+"""
+
 
 def test_chkconfig():
     context = context_wrap(SERVICES)
@@ -60,3 +88,16 @@ def test_levels_off():
                                                     '4', '5', '6'])
     with pytest.raises(KeyError):
         assert chkconfig.levels_off('bad_name')
+
+
+def test_rhel_73():
+    chkconfig = ChkConfig(context_wrap(RHEL_73_SERVICES))
+    assert sorted(chkconfig.level_states.keys()) == sorted([
+        'netconsole', 'network', 'rhnsd', 'chargen-dgram', 'chargen-stream',
+        'daytime-dgram', 'daytime-stream', 'discard-dgram', 'discard-stream',
+        'echo-dgram', 'echo-stream', 'rsync', 'tcpmux-server', 'time-dgram',
+        'time-stream',
+    ])
+    assert chkconfig.levels_off('netconsole') == set(['0', '1', '2', '3', '4', '5', '6'])
+    assert chkconfig.levels_on('network') == set(['2', '3', '4', '5'])
+    assert chkconfig.levels_on('rsync') == set(['0', '1', '2', '3', '4', '5', '6'])
