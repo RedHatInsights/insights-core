@@ -3,24 +3,12 @@ from insights.tests import context_wrap
 
 import pytest
 
-DF_ALP = """
-Filesystem                           1024-blocks      Used Available Capacity Mounted on
-/dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
-sysfs                                          0         0         0        - /sys
-proc                                           0         0         0        - /proc
-devtmpfs                                 5988480         0   5988480       0% /dev
-securityfs                                     0         0         0        - /sys/kernel/security
-tmpfs                                    5998736    491660   5507076       9% /dev/shm
-devpts                                         0         0         0        - /dev/pts
-tmpfs                                    5998736      1380   5997356       1% /run
-
-tmpfs                                    5998736         0   5998736       0% /sys/fs/cgroup
-""".strip()
-
 DF_LI = """
 Filesystem        Inodes  IUsed     IFree IUse% Mounted on
 /dev/mapper/vg_lxcrhel6sat56-lv_root
+
                  6275072 124955   6150117    2% /
+
 devtmpfs         1497120    532   1496588    1% /dev
 tmpfs            1499684    331   1499353    1% /dev/shm
 tmpfs            1499684    728   1498956    1% /run
@@ -30,19 +18,6 @@ tmpfs            1499684     54   1499630    1% /tmp
 /dev/sda1         128016    429    127587    1% /boot
 tmpfs            1499684      6   1499678    1% /V M T o o l s
 tmpfs            1499684     15   1499669    1% /VM Tools
-""".strip()
-
-DF_AL = """
-Filesystem                             1K-blocks      Used Available     Use% Mounted on
-/dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
-sysfs                                          0         0         0        - /sys
-proc                                           0         0         0        - /proc
-devtmpfs                                 5988480         0   5988480       0% /dev
-securityfs                                     0         0         0        - /sys/kernel/security
-tmpfs                                    5998736    491660   5507076       9% /dev/shm
-devpts                                         0         0         0        - /dev/pts
-tmpfs                                    5998736      1380   5997356       1% /run
-tmpfs                                    5998736         0   5998736       0% /sys/fs/cgroup
 """.strip()
 
 
@@ -86,6 +61,37 @@ def test_df_li():
         '/dev/sda2', '/dev/sda1'
     ])
 
+    # Test get_path
+    # Root mount point works:
+    assert df_list.get_dir('/') == df_list.get_mount('/')
+    # Mount point underneath root works:
+    assert df_list.get_dir('/dev') == df_list.get_mount('/dev')
+    # Directory underneath sub-mount:
+    assert df_list.get_dir('/boot/grub2') == df_list.get_mount('/boot')
+    # Directory with / suffix:
+    assert df_list.get_dir('/boot/grub2/') == df_list.get_mount('/boot')
+    # File path also works:
+    assert df_list.get_dir('/boot/grub2/grub.cfg') == df_list.get_mount('/boot')
+    # Relative path returns None
+    assert df_list.get_dir('var/lib') is None
+    # Invalid path returns None
+    assert df_list.get_dir('"') is None
+
+
+DF_ALP = """
+Filesystem                           1024-blocks      Used Available Capacity Mounted on
+/dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
+sysfs                                          0         0         0        - /sys
+proc                                           0         0         0        - /proc
+devtmpfs                                 5988480         0   5988480       0% /dev
+securityfs                                     0         0         0        - /sys/kernel/security
+tmpfs                                    5998736    491660   5507076       9% /dev/shm
+devpts                                         0         0         0        - /dev/pts
+tmpfs                                    5998736      1380   5997356       1% /run
+
+tmpfs                                    5998736         0   5998736       0% /sys/fs/cgroup
+""".strip()
+
 
 def test_df_alP():
     df_list = df.DiskFree_ALP(context_wrap(DF_ALP))
@@ -114,6 +120,37 @@ def test_df_alP():
     assert df_list.get_mount('/').filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
     assert df_list.get_mount('/').capacity == '5%'
 
+    # Test get_path
+    # Root mount point works:
+    assert df_list.get_dir('/') == df_list.get_mount('/')
+    # Mount point underneath root works:
+    assert df_list.get_dir('/dev') == df_list.get_mount('/dev')
+    # Directory underneath sub-mount:
+    assert df_list.get_dir('/dev/v4l') == df_list.get_mount('/dev')
+    # Directory with / suffix:
+    assert df_list.get_dir('/dev/v4l/') == df_list.get_mount('/dev')
+    # File path also works:
+    assert df_list.get_dir('/dev/v4l/adapter0/control0.cfg') == df_list.get_mount('/dev')
+    # Relative path returns None
+    assert df_list.get_dir('dev/sys') is None
+    # Invalid path returns None
+    assert df_list.get_dir('"') is None
+
+
+DF_AL = """
+Filesystem                             1K-blocks      Used Available     Use% Mounted on
+/dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
+sysfs                                          0         0         0        - /sys
+proc                                           0         0         0        - /proc
+devtmpfs                                 5988480         0   5988480       0% /dev
+securityfs                                     0         0         0        - /sys/kernel/security
+
+tmpfs                                    5998736    491660   5507076       9% /dev/shm
+devpts                                         0         0         0        - /dev/pts
+tmpfs                                    5998736      1380   5997356       1% /run
+tmpfs                                    5998736         0   5998736       0% /sys/fs/cgroup
+""".strip()
+
 
 def test_df_al():
     df_list = df.DiskFree_AL(context_wrap(DF_AL))
@@ -141,6 +178,22 @@ def test_df_al():
     assert df_list.get_mount('/sys/fs/cgroup').capacity == '0%'
     assert df_list.get_mount('/').filesystem == '/dev/mapper/vg_lxcrhel6sat56-lv_root'
     assert df_list.get_mount('/').capacity == '5%'
+
+    # Test get_path
+    # Root mount point works:
+    assert df_list.get_dir('/') == df_list.get_mount('/')
+    # Mount point underneath root works:
+    assert df_list.get_dir('/dev') == df_list.get_mount('/dev')
+    # Directory underneath sub-mount:
+    assert df_list.get_dir('/dev/v4l') == df_list.get_mount('/dev')
+    # Directory with / suffix:
+    assert df_list.get_dir('/dev/v4l/') == df_list.get_mount('/dev')
+    # File path also works:
+    assert df_list.get_dir('/dev/v4l/adapter0/control0.cfg') == df_list.get_mount('/dev')
+    # Relative path returns None
+    assert df_list.get_dir('dev/sys') is None
+    # Invalid path returns None
+    assert df_list.get_dir('"') is None
 
 
 DF_AL_BAD = """
