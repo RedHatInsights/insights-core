@@ -2,7 +2,6 @@ from insights.parsers.dmidecode import DMIDecode
 from insights.tests import context_wrap
 
 from datetime import date
-import unittest
 
 DMIDECODE = '''
 # dmidecode 2.11
@@ -109,6 +108,7 @@ Processor Information
 Handle 0x0037, DMI type 127, 4 bytes.
 End Of Table
 '''
+
 DMIDECODE_V = '''
 # dmidecode 2.12
 SMBIOS 2.4 present.
@@ -203,6 +203,55 @@ Chassis Information
 \tPower Supply State: Safe
 \tThermal State: Safe
 \tSecurity Status: Unknown
+'''
+
+DMIDECODE_KVM = '''
+# dmidecode 3.0
+Scanning /dev/mem for entry point.
+SMBIOS 2.8 present.
+13 structures occupying 788 bytes.
+Table at 0xBFFFFCE0.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+\tVendor: SeaBIOS
+\tVersion: 1.9.1-5.el7_3.2
+\tRelease Date: 04/01/2014
+\tAddress: 0xE8000
+\tRuntime Size: 96 kB
+\tROM Size: 64 kB
+\tCharacteristics:
+\t\tBIOS characteristics not supported
+\t\tTargeted content distribution is supported
+\tBIOS Revision: 0.0
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+\tManufacturer: Red Hat
+\tProduct Name: RHEV Hypervisor
+\tVersion: 7.3-7.el7
+\tSerial Number: 34353737-3035-4E43-3734-353130425732
+\tUUID: 10331906-BB22-4716-8876-3DFEF8FA941E
+\tWake-up Type: Power Switch
+\tSKU Number: Not Specified
+\tFamily: Red Hat Enterprise Linux
+
+Handle 0x0300, DMI type 3, 21 bytes
+Chassis Information
+\tManufacturer: Red Hat
+\tType: Other
+\tLock: Not Present
+\tVersion: RHEL 7.2.0 PC (i440FX + PIIX, 1996)
+\tSerial Number: Not Specified
+\tAsset Tag: Not Specified
+\tBoot-up State: Safe
+\tPower Supply State: Safe
+\tThermal State: Safe
+\tSecurity Status: Unknown
+\tOEM Information: 0x00000000
+\tHeight: Unspecified
+\tNumber Of Power Cords: Unspecified
+\tContained Elements: 0
 '''
 
 DMIDECODE_FAIL = "# dmidecode 2.11\n# No SMBIOS nor DMI entry point found, sorry.\n"
@@ -302,187 +351,200 @@ OEM-specific Type
 """
 
 
-class TestDmidecode(unittest.TestCase):
+def test_get_dmidecode():
+    '''
+    Test for three kinds of output format of dmidecode parser
+    '''
+    context = context_wrap(DMIDECODE)
+    ret = DMIDecode(context)
 
-    def test_get_dmidecode(self):
-        '''
-        Test for three kinds of output format of dmidecode parser
-        '''
-        context = context_wrap(DMIDECODE)
-        ret = DMIDecode(context)
+    assert len(ret.get("bios_information")) == 1
+    assert ret.get("bios_information")[0].get("vendor") == "HP"
+    assert ret.get("bios_information")[0].get("version") == "P70"
+    assert ret.get("bios_information")[0].get("release_date") == "03/01/2013"
+    assert ret.get("bios_information")[0].get("address") == "0xF0000"
+    assert ret.get("bios_information")[0].get("runtime_size") == "64 kB"
+    assert ret.get("bios_information")[0].get("rom_size") == "8192 kB"
 
-        assert len(ret.get("bios_information")) == 1
-        assert ret.get("bios_information")[0].get("vendor") == "HP"
-        assert ret.get("bios_information")[0].get("version") == "P70"
-        assert ret.get("bios_information")[0].get("release_date") == "03/01/2013"
-        assert ret.get("bios_information")[0].get("address") == "0xF0000"
-        assert ret.get("bios_information")[0].get("runtime_size") == "64 kB"
-        assert ret.get("bios_information")[0].get("rom_size") == "8192 kB"
+    tmp = ["PCI is supported", "PNP is supported", "BIOS is upgradeable",
+           "BIOS shadowing is allowed", "ESCD support is available",
+           "Boot from CD is supported", "Selectable boot is supported",
+           "EDD is supported",
+           '5.25"/360 kB floppy services are supported (int 13h)',
+           '5.25"/1.2 MB floppy services are supported (int 13h)',
+           '3.5"/720 kB floppy services are supported (int 13h)',
+           "Print screen service is supported (int 5h)",
+           "j042 keyboard services are supported (int 9h)",
+           "Serial services are supported (int 14h)",
+           "Printer services are supported (int 17h)",
+           "CGA/mono video services are supported (int 10h)",
+           "ACPI is supported", "USB legacy is supported",
+           "BIOS boot specification is supported",
+           "Function key-initiated network boot is supported",
+           "Targeted content distribution is supported"]
+    assert ret.get("bios_information")[0].get("characteristics") == tmp
+    assert ret.get("bios_information")[0].get("firmware_revision") == "1.22"
 
-        tmp = ["PCI is supported", "PNP is supported", "BIOS is upgradeable",
-               "BIOS shadowing is allowed", "ESCD support is available",
-               "Boot from CD is supported", "Selectable boot is supported",
-               "EDD is supported",
-               '5.25"/360 kB floppy services are supported (int 13h)',
-               '5.25"/1.2 MB floppy services are supported (int 13h)',
-               '3.5"/720 kB floppy services are supported (int 13h)',
-               "Print screen service is supported (int 5h)",
-               "j042 keyboard services are supported (int 9h)",
-               "Serial services are supported (int 14h)",
-               "Printer services are supported (int 17h)",
-               "CGA/mono video services are supported (int 10h)",
-               "ACPI is supported", "USB legacy is supported",
-               "BIOS boot specification is supported",
-               "Function key-initiated network boot is supported",
-               "Targeted content distribution is supported"]
-        assert ret.get("bios_information")[0].get("characteristics") == tmp
-        assert ret.get("bios_information")[0].get("firmware_revision") == "1.22"
+    assert len(ret.get("system_information")) == 1
+    assert ret.get("system_information")[0].get("manufacturer") == "HP"
+    assert ret.get("system_information")[0].get("product_name") == "ProLiant DL380p Gen8"
+    assert ret.get("system_information")[0].get("version") == "Not Specified"
+    assert ret.get("system_information")[0].get("serial_number") == "2M23360006"
+    assert ret.get("system_information")[0].get("uuid") == "34373936-3439-4D32-3233-333630303036"
+    assert ret.get("system_information")[0].get("wake-up_type") == "Power Switch"
+    assert ret.get("system_information")[0].get("sku_number") == "697494-S01"
+    assert ret.get("system_information")[0].get("family") == "ProLiant"
 
-        assert len(ret.get("system_information")) == 1
-        assert ret.get("system_information")[0].get("manufacturer") == "HP"
-        assert ret.get("system_information")[0].get("product_name") == "ProLiant DL380p Gen8"
-        assert ret.get("system_information")[0].get("version") == "Not Specified"
-        assert ret.get("system_information")[0].get("serial_number") == "2M23360006"
-        assert ret.get("system_information")[0].get("uuid") == "34373936-3439-4D32-3233-333630303036"
-        assert ret.get("system_information")[0].get("wake-up_type") == "Power Switch"
-        assert ret.get("system_information")[0].get("sku_number") == "697494-S01"
-        assert ret.get("system_information")[0].get("family") == "ProLiant"
+    assert len(ret.get("chassis_information")) == 1
+    assert ret.get("chassis_information")[0].get("manufacturer") == "hp"
+    assert ret.get("chassis_information")[0].get("type") == "rack mount chassis"
+    assert ret.get("chassis_information")[0].get("lock") == "not present"
+    assert ret.get("chassis_information")[0].get("version") == "not specified"
+    assert ret.get("chassis_information")[0].get("serial_number") == "2m23360006"
+    assert ret.get("chassis_information")[0].get("asset_tag") == ""
+    assert ret.get("chassis_information")[0].get("boot-up_state") == "Safe"
+    assert ret.get("chassis_information")[0].get("power_supply_state") == "Safe"
+    assert ret.get("chassis_information")[0].get("thermal_state") == "Safe"
+    assert ret.get("chassis_information")[0].get("security_status") == "Unknown"
+    assert ret.get("chassis_information")[0].get("oem_information") == "0x00000000"
+    assert ret.get("chassis_information")[0].get("height") == "2 U"
+    assert ret.get("chassis_information")[0].get("number_of_power_cords") == "2"
+    assert ret.get("chassis_information")[0].get("manufacturer") == "hp"
+    assert ret.get("chassis_information")[0].get("contained_elements") == "0"
 
-        assert len(ret.get("chassis_information")) == 1
-        assert ret.get("chassis_information")[0].get("manufacturer") == "hp"
-        assert ret.get("chassis_information")[0].get("type") == "rack mount chassis"
-        assert ret.get("chassis_information")[0].get("lock") == "not present"
-        assert ret.get("chassis_information")[0].get("version") == "not specified"
-        assert ret.get("chassis_information")[0].get("serial_number") == "2m23360006"
-        assert ret.get("chassis_information")[0].get("asset_tag") == ""
-        assert ret.get("chassis_information")[0].get("boot-up_state") == "Safe"
-        assert ret.get("chassis_information")[0].get("power_supply_state") == "Safe"
-        assert ret.get("chassis_information")[0].get("thermal_state") == "Safe"
-        assert ret.get("chassis_information")[0].get("security_status") == "Unknown"
-        assert ret.get("chassis_information")[0].get("oem_information") == "0x00000000"
-        assert ret.get("chassis_information")[0].get("height") == "2 U"
-        assert ret.get("chassis_information")[0].get("number_of_power_cords") == "2"
-        assert ret.get("chassis_information")[0].get("manufacturer") == "hp"
-        assert ret.get("chassis_information")[0].get("contained_elements") == "0"
+    assert len(ret.get('processor_information')) == 2
+    assert ret.get("processor_information")[0].get("socket_designation") == "CPU 1"
+    assert ret.get("processor_information")[0].get("type") == "Central Processor"
 
-        assert len(ret.get('processor_information')) == 2
-        assert ret.get("processor_information")[0].get("socket_designation") == "CPU 1"
-        assert ret.get("processor_information")[0].get("type") == "Central Processor"
+    assert ret.get("processor_information")[1].get("socket_designation") == "CPU 2"
+    assert ret.get("processor_information")[1].get("type") == "Central Processor"
 
-        assert ret.get("processor_information")[1].get("socket_designation") == "CPU 2"
-        assert ret.get("processor_information")[1].get("type") == "Central Processor"
+    # Check for 'nonsense' keys
+    assert 'table_at_0xbffcb000.' not in ret
 
-        # Check for 'nonsense' keys
-        assert 'table_at_0xbffcb000.' not in ret
+    # Test property accessors
+    assert ret.system_info == ret['system_information'][0]
+    assert ret.bios == ret['bios_information'][0]
+    assert ret.bios_vendor == 'HP'
+    assert ret.bios_date == date(2013, 3, 1)
+    assert ret.processor_manufacturer == 'Bochs'
 
-        # Test property accessors
-        self.assertEqual(ret.system_info, ret['system_information'][0])
-        self.assertEqual(ret.bios, ret['bios_information'][0])
-        self.assertEqual(ret.bios_vendor, 'HP')
-        self.assertEqual(ret.bios_date, date(2013, 3, 1))
-        self.assertEqual(ret.processor_manufacturer, 'Bochs')
 
-    def test_get_dmidecode_fail(self):
-        '''
-        Test for faied raw data
-        '''
-        context = context_wrap(DMIDECODE_FAIL)
-        ret = DMIDecode(context)
+def test_get_dmidecode_fail():
+    '''
+    Test for faied raw data
+    '''
+    context = context_wrap(DMIDECODE_FAIL)
+    ret = DMIDecode(context)
 
-        assert ret.is_present is False
+    assert ret.is_present is False
 
-    def test_get_dmidecode_v(self):
-        '''
-        Test for get_virt()
-        '''
-        context = context_wrap(DMIDECODE_V)
-        ret = DMIDecode(context)
-        assert ret.is_present is True
-        assert ret.virt_what == "vmware"
 
-    def test_get_dmidecode_v2(self):
-            '''
-            Test for get_virt() with AWS data
-            '''
-            context = context_wrap(DMIDECODE_AWS)
-            ret = DMIDecode(context)
-            assert ret.is_present is True
-            assert ret.virt_what == "amazon"
+# def test_virt_what_1():
+#     '''
+#     Test for virt_what()
+#     '''
+#     context = context_wrap(DMIDECODE_V)
+#     ret = DMIDecode(context)
+#     assert ret.is_present is True
+#     assert ret.virt_what == "vmware"
 
-    def test_get_dmidecode_dmi(self):
-        '''
-        Test for three kinds of output format of dmidecode parser
-        with special input format:
-        "\n\tDMI" in the input
-        '''
-        context = context_wrap(DMIDECODE_DMI)
-        ret = DMIDecode(context)
 
-        assert ret.get("bios_information")[0].get("vendor") == "HP"
-        assert ret.get("bios_information")[0].get("version") == "A08"
-        assert ret.get("bios_information")[0].get("release_date") == "09/27/2008"
-        assert ret.get("bios_information")[0].get("address") == "0xF0000"
-        assert ret.get("bios_information")[0].get("runtime_size") == "64 kB"
-        assert ret.get("bios_information")[0].get("rom_size") == "4096 kB"
+# def test_virt_what_2():
+#     '''
+#     Test for virt_what() with AWS data
+#     '''
+#     context = context_wrap(DMIDECODE_AWS)
+#     ret = DMIDecode(context)
+#     assert ret.is_present is True
+#     assert ret.virt_what == "amazon"
 
-        tmp = ["PCI is supported", "PNP is supported", "BIOS is upgradeable",
-               "BIOS shadowing is allowed", "ESCD support is available",
-               "Boot from CD is supported", "Selectable boot is supported",
-               "EDD is supported",
-               '5.25"/360 KB floppy services are supported (int 13h)',
-               '5.25"/1.2 MB floppy services are supported (int 13h)',
-               '3.5"/720 KB floppy services are supported (int 13h)',
-               "Print screen service is supported (int 5h)",
-               "8042 keyboard services are supported (int 9h)",
-               "Serial services are supported (int 14h)",
-               "Printer services are supported (int 17h)",
-               "CGA/mono video services are supported (int 10h)",
-               "ACPI is supported", "USB legacy is supported",
-               "BIOS boot specification is supported",
-               "Function key-initiated network boot is supported``"]
-        assert ret.get("bios_information")[0].get("characteristics") == tmp
 
-        assert ret.get("system_information")[0].get("manufacturer") == "HP"
-        assert ret.get("system_information")[0].get("product_name") == "ProLiant BL685c G1"
-        assert ret.get("system_information")[0].get("version") == "Not Specified"
-        assert ret.get("system_information")[0].get("serial_number") == "3H6CMK2537"
-        assert ret.get("system_information")[0].get("uuid") == "58585858-5858-3348-3643-4D4B32353337"
-        assert ret.get("system_information")[0].get("wake-up_type") == "Power Switch"
+# def test_virt_what_3():
+#     '''
+#     Test for virt_what() with KVM
+#     '''
+#     context = context_wrap(DMIDECODE_KVM)
+#     ret = DMIDecode(context)
+#     assert ret.is_present is True
+#     assert ret.virt_what == "kvm"
 
-    def test_dmidecode_oddities(self):
-        dmi = DMIDecode(context_wrap(DMIDECODE_ODDITIES))
 
-        assert len(dmi['oem-specific_type']) == 3
-        assert dmi['oem-specific_type'][0] == {
-            'header_and_data': '81 08 09 00 01 01 02 01',
-            'strings': ['Intel_ASF', 'Intel_ASF_001'],
-        }
-        assert dmi['oem-specific_type'][1] == {
-            'header_and_data': '86 0D 0A 00 28 06 14 20 00 00 00 00 00',
-        }
-        assert dmi['oem-specific_type'][2] == {
-            'header_and_data': '01 02 03 04 05 06 07 08',
-        }
+def test_get_dmidecode_dmi():
+    '''
+    Test for three kinds of output format of dmidecode parser
+    with special input format:
+    "\n\tDMI" in the input
+    '''
+    context = context_wrap(DMIDECODE_DMI)
+    ret = DMIDecode(context)
 
-        assert len(dmi['port_connector_information']) == 2
-        assert dmi['port_connector_information'][0] == {
-            'internal_reference_designator': 'Not Available',
-            'internal_connector_type': 'None',
-            'external_reference_designator': 'USB 1',
-            'external_connector_type': 'Access Bus (USB)',
-            'port_type': 'USB',
-        }
-        assert dmi['port_connector_information'][0] == {
-            'internal_reference_designator': 'Not Available',
-            'internal_connector_type': 'None',
-            'external_reference_designator': 'USB 1',
-            'external_connector_type': 'Access Bus (USB)',
-            'port_type': 'USB',
-        }
+    assert ret.get("bios_information")[0].get("vendor") == "HP"
+    assert ret.get("bios_information")[0].get("version") == "A08"
+    assert ret.get("bios_information")[0].get("release_date") == "09/27/2008"
+    assert ret.get("bios_information")[0].get("address") == "0xF0000"
+    assert ret.get("bios_information")[0].get("runtime_size") == "64 kB"
+    assert ret.get("bios_information")[0].get("rom_size") == "4096 kB"
 
-        assert len(dmi['bios_language_information']) == 1
-        assert dmi['bios_language_information'][0] == {
-            'language_description_format': 'Abbreviated',
-            'installable_languages': ['1', 'en-US'],
-            'currently_installed_language': 'en-US'
-        }
+    tmp = ["PCI is supported", "PNP is supported", "BIOS is upgradeable",
+           "BIOS shadowing is allowed", "ESCD support is available",
+           "Boot from CD is supported", "Selectable boot is supported",
+           "EDD is supported",
+           '5.25"/360 KB floppy services are supported (int 13h)',
+           '5.25"/1.2 MB floppy services are supported (int 13h)',
+           '3.5"/720 KB floppy services are supported (int 13h)',
+           "Print screen service is supported (int 5h)",
+           "8042 keyboard services are supported (int 9h)",
+           "Serial services are supported (int 14h)",
+           "Printer services are supported (int 17h)",
+           "CGA/mono video services are supported (int 10h)",
+           "ACPI is supported", "USB legacy is supported",
+           "BIOS boot specification is supported",
+           "Function key-initiated network boot is supported``"]
+    assert ret.get("bios_information")[0].get("characteristics") == tmp
+
+    assert ret.get("system_information")[0].get("manufacturer") == "HP"
+    assert ret.get("system_information")[0].get("product_name") == "ProLiant BL685c G1"
+    assert ret.get("system_information")[0].get("version") == "Not Specified"
+    assert ret.get("system_information")[0].get("serial_number") == "3H6CMK2537"
+    assert ret.get("system_information")[0].get("uuid") == "58585858-5858-3348-3643-4D4B32353337"
+    assert ret.get("system_information")[0].get("wake-up_type") == "Power Switch"
+
+
+def test_dmidecode_oddities():
+    dmi = DMIDecode(context_wrap(DMIDECODE_ODDITIES))
+
+    assert len(dmi['oem-specific_type']) == 3
+    assert dmi['oem-specific_type'][0] == {
+        'header_and_data': '81 08 09 00 01 01 02 01',
+        'strings': ['Intel_ASF', 'Intel_ASF_001'],
+    }
+    assert dmi['oem-specific_type'][1] == {
+        'header_and_data': '86 0D 0A 00 28 06 14 20 00 00 00 00 00',
+    }
+    assert dmi['oem-specific_type'][2] == {
+        'header_and_data': '01 02 03 04 05 06 07 08',
+    }
+
+    assert len(dmi['port_connector_information']) == 2
+    assert dmi['port_connector_information'][0] == {
+        'internal_reference_designator': 'Not Available',
+        'internal_connector_type': 'None',
+        'external_reference_designator': 'USB 1',
+        'external_connector_type': 'Access Bus (USB)',
+        'port_type': 'USB',
+    }
+    assert dmi['port_connector_information'][0] == {
+        'internal_reference_designator': 'Not Available',
+        'internal_connector_type': 'None',
+        'external_reference_designator': 'USB 1',
+        'external_connector_type': 'Access Bus (USB)',
+        'port_type': 'USB',
+    }
+
+    assert len(dmi['bios_language_information']) == 1
+    assert dmi['bios_language_information'][0] == {
+        'language_description_format': 'Abbreviated',
+        'installable_languages': ['1', 'en-US'],
+        'currently_installed_language': 'en-US'
+    }
