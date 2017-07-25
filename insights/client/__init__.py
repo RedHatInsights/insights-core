@@ -271,7 +271,7 @@ class InsightsClientApi(object):
             if not os.path.isdir(constants.insights_core_lib_dir):
                 logger.debug("Creating directory %s for the Core." % (constants.insights_core_lib_dir))
                 os.mkdir(constants.insights_core_lib_dir)
-        except OSError as exc:
+        except OSError:
             message = "There was an error creating %s for Core installation." % (constants.insights_core_lib_dir)
             raise OSError(message)
 
@@ -289,7 +289,7 @@ class InsightsClientApi(object):
                 logger.debug("There is not currently a 'last stable' Core. Using the supplied RPM Core.")
             logger.debug("Copying %s to %s." % (old_newest_egg, new_last_stable_egg))
             copyfile(old_newest_egg, new_last_stable_egg)
-        except IOError as exc:
+        except IOError:
             message = "There was an error copying %s to %s." % (old_newest_egg, new_last_stable_egg)
             raise IOError(message)
 
@@ -297,7 +297,7 @@ class InsightsClientApi(object):
         try:
             logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_newest))
             copyfile(new_egg, constants.insights_core_newest)
-        except IOError as exc:
+        except IOError:
             message = "There was an error copying the new Core from %s to %s." % (new_egg, constants.insights_core_newest)
             raise IOError(message)
 
