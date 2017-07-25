@@ -84,11 +84,10 @@ def parse_df_lines(df_content):
     is_sep = False
     columns = Record._fields
     for line in df_content[1:]:  # [1:] -> Skip the header
-        line_splits = line.split()
+        # Stop at 5 splits to avoid splitting spaces in path
+        line_splits = line.split(None, 5)
         if len(line_splits) >= 6:
-            # Re-split to avoid this kind of "Mounted on": "VMware Tools"
-            line_splits = line.split(None, 5)
-            for i, name in enumerate(columns[:-1]):
+            for i, name in enumerate(columns):
                 df_ls[name] = line_splits[i]
             is_sep = False
         elif len(line_splits) == 1:
@@ -99,16 +98,15 @@ def parse_df_lines(df_content):
             # Re-split to avoid this kind of "Mounted on": "VMware Tools"
             line_splits = line.split(None, 4)
             # Last line of the separated line
-            for i, name in enumerate(columns[1:-1]):
+            for i, name in enumerate(columns[1:]):
                 df_ls[name] = line_splits[i]
             is_sep = False
         elif not line_splits:  # Skip empty lines (might in sosreport)
             continue
         else:
             raise ParseException("Could not parse line '{l}'".format(l=line))
-        if not is_sep:
-            # Last column is mount point
-            df_ls[columns[-1]] = line_splits[-1]
+        # Only add this record if we've got a line and it's not separated
+        if df_ls and not is_sep:
             rec = Record(**df_ls)
             df_out.append(rec)
             df_ls = {}
@@ -163,6 +161,23 @@ class DiskFree(Parser):
     def get_mount(self, name):
         """Record: Returns Record obj for mount point ``name``."""
         return self.mounts.get(name)
+
+    def get_dir(self, path):
+        """
+        Record: returns the Record object that contains the given path.
+
+        This finds the most specific mount path that contains the given path,
+        by successively removing the directory or file name on the end of
+        the path and seeing if that is a mount point.  This will always
+        terminate since / is always a mount point.  Strings that are not
+        absolute paths will return None.
+        """
+        import os
+        while path != '':
+            if path in self.mounts:
+                return self.mounts[path]
+            path = os.path.split(path)[0]
+        return None
 
 
 @parser('df_-li')
