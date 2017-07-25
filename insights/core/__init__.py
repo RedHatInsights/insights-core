@@ -727,7 +727,7 @@ class IniConfigFile(Parser):
 
     def items(self, section):
         """dict: Return a dictionary of key/value pairs for ``section``."""
-        return {k: v for (k, v) in self.data.items(section)}
+        return dict(self.data.items(section))
 
     def get(self, section, key):
         """value: Get value for ``section`` and ``key``."""
