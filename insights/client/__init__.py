@@ -253,44 +253,49 @@ class InsightsClientApi(object):
 
     def install(self, new_egg):
         """
-        returns (dict): {'success': True if the new core was installed successfull else False}
+        returns (dict): {'success': True if the core installation successfull else False}
         """
         import os
         from shutil import copyfile
 
-        success = False
         if not new_egg:
             the_message = 'Must provide a valid Core installation path.'
             logger.debug(the_message)
-            return {'success': success, 'message': the_message}
+            return {'success': False, 'message': the_message}
 
         logger.debug("Installing the new Core %s", new_egg)
 
         # Make sure /var/lib/insights exists
         try:
             if not os.path.isdir(constants.insights_core_lib_dir):
-                logger.debug("Creating directory %s for the Core." % (constants.insights_core_lib_dir))
+                logger.debug("Creating directory %s for the Core."
+                    % (constants.insights_core_lib_dir))
                 os.mkdir(constants.insights_core_lib_dir)
         except OSError:
-            message = "There was an error creating %s for Core installation." % (constants.insights_core_lib_dir)
+            message = "There was an error creating %s for Core installation." %\
+                (constants.insights_core_lib_dir)
             raise OSError(message)
 
         # Copy the NEWEST egg to /var/lib/insights/last_stable.egg
         old_newest_egg = constants.insights_core_rpm
         new_last_stable_egg = constants.insights_core_last_stable
         try:
-            # If the current/latest stable egg does not exist, it should become the installed egg from RPM
+            # If the current/latest stable egg does not exist
+            # It should become the installed egg from RPM
             # Otherwise the current/latest stable egg should become the old newest egg
             if os.path.isfile(constants.insights_core_last_stable):
-                logger.debug("There is currently a 'last stable' Core. The 'last stable' Core will now become the old 'newest' Core.")
+                logger.debug("There is currently a 'last stable' Core. The 'last stable' "
+                    "Core will now become the old 'newest' Core.")
                 old_newest_egg = constants.insights_core_newest
                 new_last_stable_egg = constants.insights_core_last_stable
             else:
-                logger.debug("There is not currently a 'last stable' Core. Using the supplied RPM Core.")
+                logger.debug("There is not currently a 'last stable' Core. "
+                    "Using the supplied RPM Core.")
             logger.debug("Copying %s to %s." % (old_newest_egg, new_last_stable_egg))
             copyfile(old_newest_egg, new_last_stable_egg)
         except IOError:
-            message = "There was an error copying %s to %s." % (old_newest_egg, new_last_stable_egg)
+            message = "There was an error copying %s to %s." %\
+                (old_newest_egg, new_last_stable_egg)
             raise IOError(message)
 
         # Copy the NEW egg to /var/lib/insights/newest.egg
@@ -298,12 +303,12 @@ class InsightsClientApi(object):
             logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_newest))
             copyfile(new_egg, constants.insights_core_newest)
         except IOError:
-            message = "There was an error copying the new Core from %s to %s." % (new_egg, constants.insights_core_newest)
+            message = "There was an error copying the new Core from %s to %s." %\
+                (new_egg, constants.insights_core_newest)
             raise IOError(message)
 
         logger.debug("The new Insights Core was installed successfully.")
-        success = True
-        return {'success': success}
+        return {'success': True}
 
     def update_rules(self, options=None, config=None):
         """
