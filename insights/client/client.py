@@ -448,7 +448,8 @@ def handle_startup():
 
     if InsightsClient.options.status:
         reg_check = registration_check()
-        logger.info('\n'.join(reg_check['messages']))
+        for msg in reg_check['messages']:
+            logger.debug(msg)
         # exit with !status, 0 for True, 1 for False
         return reg_check['status']
 
