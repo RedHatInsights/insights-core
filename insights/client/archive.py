@@ -1,7 +1,6 @@
 """
 Handle adding files and preparing the archive for upload
 """
-import tempfile
 import time
 import os
 import shutil
@@ -27,8 +26,25 @@ class InsightsArchive(object):
         Initialize the Insights Archive
         Create temp dir, archive dir, and command dir
         """
-        self.tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
-        self.archive_tmp_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        self.tmp_dir = constants.insights_tmp_dir
+        self.archive_tmp_dir = constants.insights_archive_tmp_dir
+        try:
+            if not os.path.isdir(constants.insights_core_lib_dir):
+                logger.debug("Insights core lib directory does not exist.")
+                logger.debug("Creating %s" % (constants.insights_core_lib_dir))
+                os.mkdir(constants.insights_core_lib_dir)
+            if not os.path.isdir(constants.insights_tmp_dir):
+                logger.debug("Insights temporary directory does not exist.")
+                logger.debug("Creating %s" % (constants.insights_tmp_dir))
+                os.mkdir(constants.insights_tmp_dir)
+            if not os.path.isdir(constants.insights_archive_tmp_dir):
+                logger.debug("Insights archive temporary directory does not exist.")
+                logger.debug("Creating %s" % (constants.insights_archive_tmp_dir))
+                os.mkdir(constants.insights_archive_tmp_dir)
+        except OSError:
+            logger.debug("There was an error creating directories for Insights Archives.")
+            raise OSError("Cannot create directories for Insights Archives.")
+
         name = determine_hostname(target_name)
         self.archive_name = ("insights-%s-%s" %
                              (name,
