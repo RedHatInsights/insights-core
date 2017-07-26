@@ -24,9 +24,9 @@ from client_config import parse_config_file, InsightsClient, set_up_options
 
 __author__ = 'Richard Brantley <rbrantle@redhat.com>, Jeremy Crafts <jcrafts@redhat.com>, Dan Varga <dvarga@redhat.com>'
 
-LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
+LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 APP_NAME = constants.app_name
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 def parse_options():

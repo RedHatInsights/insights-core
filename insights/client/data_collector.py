@@ -16,7 +16,7 @@ from insights_spec import InsightsFile, InsightsCommand
 from client_config import InsightsClient
 
 APP_NAME = constants.app_name
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 # python 2.7
 SOSCLEANER_LOGGER = logging.getLogger('soscleaner')
 SOSCLEANER_LOGGER.setLevel(logging.ERROR)
