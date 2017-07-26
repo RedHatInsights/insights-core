@@ -389,3 +389,9 @@ def run():
             return c.run()
         except:
             logger.exception("Fatal error")
+
+
+def collect():
+    c = InsightsClientApi()
+    if c.handle_startup():
+        return c.collect()
