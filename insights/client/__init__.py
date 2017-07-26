@@ -218,6 +218,11 @@ class InsightsClientApi(object):
             logger.debug('Please check config, error reaching %s', egg_url)
             return None
 
+    def update(self):
+        egg_path = self.fetch()
+        if egg_path and self.verify(egg_path):
+            self.install(egg_path)
+
     def verify(self,
                egg_path,
                gpg_key=constants.default_egg_gpg_key):
