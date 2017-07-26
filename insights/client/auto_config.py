@@ -9,7 +9,7 @@ from cert_auth import rhsmCertificate
 from connection import InsightsConnection
 from client_config import InsightsClient
 
-logger = logging.getLogger(constants.app_name)
+logger = logging.getLogger(__name__)
 APP_NAME = constants.app_name
 
 

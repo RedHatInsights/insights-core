@@ -8,7 +8,7 @@ import ConfigParser
 from constants import InsightsConstants as constants
 
 APP_NAME = constants.app_name
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 class InsightsClient:

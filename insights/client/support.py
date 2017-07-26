@@ -12,7 +12,7 @@ from connection import InsightsConnection
 from client_config import InsightsClient
 
 APP_NAME = constants.app_name
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 def registration_check():

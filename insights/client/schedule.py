@@ -9,7 +9,7 @@ from constants import InsightsConstants as constants
 CRON_DAILY = '/etc/cron.daily/'
 CRON_WEEKLY = '/etc/cron.weekly/'
 APP_NAME = constants.app_name
-logger = logging.getLogger(APP_NAME)
+logger = logging.getLogger(__name__)
 
 
 class InsightsSchedule(object):

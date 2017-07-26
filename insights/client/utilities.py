@@ -11,7 +11,7 @@ from subprocess import Popen, PIPE, STDOUT
 from constants import InsightsConstants as constants
 from client_config import InsightsClient
 
-logger = logging.getLogger(constants.app_name)
+logger = logging.getLogger(__name__)
 
 
 def logging_file():
