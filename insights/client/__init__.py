@@ -13,9 +13,7 @@ handler = None
 
 class InsightsClientApi(object):
 
-    def __init__(self,
-                 options=None,
-                 config=None):
+    def __init__(self, options=None, config=None):
         """
             Intialize an instance of the Insights Client API for the Core
             params:
@@ -24,9 +22,6 @@ class InsightsClientApi(object):
             returns:
                 InsightsClientApi()
         """
-
-        # Setup the base config and options
-        InsightsClient.config, InsightsClient.options = client.parse_options()
 
         # Overwrite anything passed in
         if options:
@@ -37,9 +32,6 @@ class InsightsClientApi(object):
                 InsightsClient.config.set(constants.app_name,
                                           new_config_var,
                                           config[new_config_var])
-
-        # Set up logging
-        client.set_up_logging()
 
         # Disable GPG verification
         if InsightsClient.options.no_gpg:
@@ -374,24 +366,30 @@ class InsightsClientApi(object):
         return client.delete_archive(path)
 
 
-def run():
-    c = InsightsClientApi()
-    startup = c.handle_startup()
-
-    # If startup has a value it means
-    # An option was thrown that returns something
-    if startup is not None:
-        return startup
-
-    # Otherwise the Client should run
+def run(op, *args, **kwargs):
+    # Setup the base config and options
+    InsightsClient.config, InsightsClient.options = client.parse_options()
+    client.set_up_logging()
+    try_auto_configuration()
+    status = client.handle_startup()
+    if status:
+        logger.info("Returning early due to initialization response: %s", status)
+        return status
     else:
         try:
-            return c.run()
+            c = InsightsClientApi()
+            return getattr(c, op)(*args, **kwargs)
         except:
             logger.exception("Fatal error")
 
 
+def update():
+    pass
+
+
 def collect():
-    c = InsightsClientApi()
-    if c.handle_startup():
-        return c.collect()
+    run("collect")
+
+
+def upload():
+    pass
