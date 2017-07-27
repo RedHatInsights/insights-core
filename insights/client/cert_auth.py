@@ -3,7 +3,6 @@ Module to interact with Satellite Based Certificates
 """
 import os
 import logging
-from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
