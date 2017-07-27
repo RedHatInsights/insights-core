@@ -13,7 +13,7 @@ handler = None
 
 class InsightsClientApi(object):
 
-    def __init__(self, options=None, config=None):
+    def __init__(self, **kwargs):
         """
             Intialize an instance of the Insights Client API for the Core
             params:
@@ -22,16 +22,25 @@ class InsightsClientApi(object):
             returns:
                 InsightsClientApi()
         """
+        # we dont want to assume API implementation should read/parse configs or options
+        if 'try_auto_config_and_options' in kwargs and \
+                kwargs['try_auto_config_and_options'] is True:
+            InsightsClient.config, InsightsClient.options = client.parse_options()
 
         # Overwrite anything passed in
-        if options:
-            for key in options:
-                setattr(InsightsClient.options, key, options[key])
-        if config:
-            for new_config_var in config:
+        if 'options' in kwargs and kwargs['options']:
+            for key in kwargs['options']:
+                setattr(InsightsClient.options, key, kwargs['options'][key])
+        if 'config' in kwargs and kwargs['config']:
+            for new_config_var in kwargs['config']:
                 InsightsClient.config.set(constants.app_name,
                                           new_config_var,
-                                          config[new_config_var])
+                                          kwargs['config'][new_config_var])
+
+        # we dont assume the API will set up logging
+        if 'set_up_logging' in kwargs and \
+                kwargs['set_up_logging'] is True:
+            client.set_up_logging()
 
         # Disable GPG verification
         if InsightsClient.options.no_gpg:
@@ -301,11 +310,58 @@ class InsightsClientApi(object):
         try_auto_configuration()
         return client.fetch_rules()
 
-    def collect(self, format="json", options=None, config=None):
+    def collect(self, format="json", options=None, config=None, bypass_timestamp_check=False):
         """
             returns (str, json): will return a string path to archive, or json facts
         """
-        return client.collect()
+        # If bypass_timestamp_check is flagged, then skip this check
+        if bypass_timestamp_check:
+            logger.debug("Collection timestamp check bypassed. Now collecting.")
+            return client.collect()
+        else:
+
+            import os
+            path_to_latest_archive = None
+            # archive_tmp_dir and .lastcollected must both exist
+            if os.path.isdir(constants.insights_archive_tmp_dir) and \
+                    os.path.isfile(constants.archive_last_collected_date_file):
+
+                # get .lastcollected timestamp
+                lastcollected = None
+                with open(constants.archive_last_collected_date_file) as coll_file:
+                    lastcollected = coll_file.readline().strip()
+                    lastcollected = int(float(lastcollected))
+                logger.debug("Found last collected timestamp %s." % (lastcollected))
+
+                # get the latest archive if .lastcollected is < 24hrs
+                try:
+                    import time
+                    hours_since_last_collection = (time.time() - lastcollected)/3600
+                    logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
+                    if (hours_since_last_collection) < 24:
+                        logger.debug("Time since last collection is less than 24 hours.")
+                        logger.debug("Obtaining latest archive generated from %s" %
+                            (constants.insights_archive_tmp_dir))
+                        import glob
+                        path_to_latest_archive = min(
+                                        glob.iglob(constants.insights_archive_tmp_dir + '/*'),
+                                        key=os.path.getctime)
+
+                        # debug
+                        logger.debug("Found .lastcollected: %s" % (lastcollected))
+                        logger.debug("Found latest archive: %s" % (path_to_latest_archive))
+                except:
+                    logger.debug("There was an error with the last collected timestamp"
+                        " file or archives.")
+
+            # if a lastcollected archive was found, return that path, else collect
+            if path_to_latest_archive:
+                logger.debug("Latest archive %s found.")
+                return path_to_latest_archive
+            else:
+                logger.debug("Last time collected greater than 24 hours OR less than 24"
+                    " hours but no archive found.")
+                return client.collect()
 
     def register(self, force_register=False):
         """

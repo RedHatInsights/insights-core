@@ -40,7 +40,6 @@ def parse_options():
 
         def error(self, msg):
             pass
-
     parser = NoErrOptionParser()
     set_up_options(parser)
     options, args = parser.parse_args()
@@ -333,6 +332,15 @@ def collect(rc=0):
             # called on loop iter end or unexpected exit
             if container_connection:
                 container_connection.close()
+
+    # Write the .lastcollected date
+    if tar_file is not None:
+        with open(constants.archive_last_collected_date_file, 'w') as the_file:
+            import time
+            last_collected_time = str(time.time())
+            the_file.write(last_collected_time)
+            logger.debug("Wrote %s to %s" %
+                (last_collected_time, constants.archive_last_collected_date_file))
 
     return tar_file
 
