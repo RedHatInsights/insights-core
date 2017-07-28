@@ -359,7 +359,8 @@ static_specs = {
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
     "uptime"                    : CommandSpec("/usr/bin/uptime"),
     "usr_journald.conf.d"       : PatternSpec(r"usr/lib/systemd/journald\.conf\.d/.+\.conf"),  # note that etc_journald.conf.d also exists
-    "vgdisplay"                 : CommandSpec("/sbin/vgdisplay"),
+    "vgdisplay"                 : First([CommandSpec("/sbin/vgdisplay -vv"),
+                                    CommandSpec("/sbin/vgdisplay")]),
     "vdsm.conf"                 : SimpleFileSpec("etc/vdsm/vdsm.conf"),
     "vdsm_id"                   : SimpleFileSpec("etc/vdsm/vdsm.id"),
     "vdsm.log"                  : SimpleFileSpec("var/log/vdsm/vdsm.log"),
