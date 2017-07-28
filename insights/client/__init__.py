@@ -357,10 +357,10 @@ class InsightsClientApi(object):
 
             logger.debug("Last time collected greater than 24 hours OR less than 24"
                 " hours but no archive found.")
-            return client.collect()
         else:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
-            return client.collect()
+
+        return client.collect()
 
     def register(self, force_register=False):
         """
