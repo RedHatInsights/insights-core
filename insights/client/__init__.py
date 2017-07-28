@@ -324,37 +324,46 @@ class InsightsClientApi(object):
             if os.path.isdir(constants.insights_archive_tmp_dir) and \
                     os.path.isfile(constants.archive_last_collected_date_file):
 
-                # get .lastcollected timestamp
+                # get .lastcollected timestamp and archive
+                # .lastcollected contains the timestamp on the first line
+                # .lastcollected contains the archive path and name on the second line
                 lastcollected = None
                 with open(constants.archive_last_collected_date_file) as coll_file:
                     lastcollected = coll_file.readline().strip()
-                    lastcollected = int(float(lastcollected))
+                    try:
+                        lastcollected = int(float(lastcollected))
+                    except ValueError:
+                        logger.debug("Invalid last collected timestamp detected.")
+                        lastcollected = None
+                    lastcollectedarchive = coll_file.readline().strip()
                 logger.debug("Found last collected timestamp %s." % (lastcollected))
+                logger.debug("Found last collected archive %s." % (lastcollectedarchive))
 
-                # get the latest archive if .lastcollected is < 24hrs
-                try:
-                    import time
-                    hours_since_last_collection = (time.time() - lastcollected) / 3600
-                    logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
-                    if (hours_since_last_collection) < 24:
-                        logger.debug("Time since last collection is less than 24 hours.")
-                        logger.debug("Obtaining latest archive generated from %s" %
-                            (constants.insights_archive_tmp_dir))
-                        import glob
-                        path_to_latest_archive = min(
-                                        glob.iglob(constants.insights_archive_tmp_dir + '/*'),
-                                        key=os.path.getctime)
+                # make sure the archive actually exists on the filesystem
+                if os.path.isfile(lastcollectedarchive):
 
-                        # debug
-                        logger.debug("Found .lastcollected: %s" % (lastcollected))
-                        logger.debug("Found latest archive: %s" % (path_to_latest_archive))
-                except:
-                    logger.debug("There was an error with the last collected timestamp"
-                        " file or archives.")
+                    # get the latest archive if .lastcollected is < 24hrs
+                    try:
+                        import time
+                        hours_since_last_collection = (time.time() - lastcollected) / 3600
+                        logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
+                        if (hours_since_last_collection) < 24:
+                            logger.debug("Time since last collection is less than 24 hours.")
+                            logger.debug("Obtaining latest archive generated from %s" %
+                                (constants.insights_archive_tmp_dir))
+                        path_to_latest_archive = lastcollectedarchive
+
+                    except:
+                        logger.debug("There was an error with the last collected timestamp"
+                            " file or archives.")
+
+                else:
+                    logger.debug("Found last collected archive %s in .lastcollected but file does not exist" %
+                        (lastcollectedarchive))
 
             # if a lastcollected archive was found, return that path, else collect
             if path_to_latest_archive:
-                logger.debug("Latest archive %s found.")
+                logger.debug("Latest archive %s found." % (path_to_latest_archive))
                 return path_to_latest_archive
             else:
                 logger.debug("Last time collected greater than 24 hours OR less than 24"

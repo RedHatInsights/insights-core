@@ -338,9 +338,12 @@ def collect(rc=0):
         with open(constants.archive_last_collected_date_file, 'w') as the_file:
             import time
             last_collected_time = str(time.time())
-            the_file.write(last_collected_time)
-            logger.debug("Wrote %s to %s" %
+            the_file.write(last_collected_time + "\n")
+            the_file.write(tar_file)
+            logger.debug("Wrote %s to %s as timestamp" %
                 (last_collected_time, constants.archive_last_collected_date_file))
+            logger.debug("Wrote %s to %s as last collected archive" %
+                (tar_file, constants.archive_last_collected_date_file))
 
     return tar_file
 
