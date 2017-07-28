@@ -315,9 +315,8 @@ class InsightsClientApi(object):
         # If check_timestamp is not flagged, then skip this check
         if check_timestamp:
             # archive_tmp_dir and .lastcollected must both exist
-            tmp_dir = constants.insights_archive_tmp_dir
             file_name = constants.archive_last_collected_date_file
-            if os.path.isdir(tmp_dir) and os.path.isfile(file_name):
+            if os.path.isfile(file_name):
 
                 # get .lastcollected timestamp and archive
                 # .lastcollected contains the timestamp on the first line
@@ -341,7 +340,6 @@ class InsightsClientApi(object):
                         logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
                         if (hours_since_last_collection) < 24:
                             logger.debug("Time since last collection is less than 24 hours.")
-                            logger.debug("Obtaining latest archive generated from %s" % (tmp_dir))
                             logger.debug("Latest archive %s found." % (last_collected_archive))
                             return last_collected_archive
 
