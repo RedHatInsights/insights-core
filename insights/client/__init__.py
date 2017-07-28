@@ -314,7 +314,6 @@ class InsightsClientApi(object):
         """
         # If check_timestamp is not flagged, then skip this check
         if check_timestamp:
-            path_to_latest_archive = None
             # archive_tmp_dir and .lastcollected must both exist
             if os.path.isdir(constants.insights_archive_tmp_dir) and \
                     os.path.isfile(constants.archive_last_collected_date_file):
@@ -345,7 +344,8 @@ class InsightsClientApi(object):
                             logger.debug("Time since last collection is less than 24 hours.")
                             logger.debug("Obtaining latest archive generated from %s" %
                                 (constants.insights_archive_tmp_dir))
-                        path_to_latest_archive = last_collected_archive
+                            logger.debug("Latest archive %s found." % (last_collected_archive))
+                            return last_collected_archive
 
                     except:
                         logger.debug("There was an error with the last collected timestamp"
@@ -355,14 +355,9 @@ class InsightsClientApi(object):
                     logger.debug("Found last collected archive %s in .lastcollected but file does not exist" %
                         (last_collected_archive))
 
-            # if a lastcollected archive was found, return that path, else collect
-            if path_to_latest_archive:
-                logger.debug("Latest archive %s found." % (path_to_latest_archive))
-                return path_to_latest_archive
-            else:
-                logger.debug("Last time collected greater than 24 hours OR less than 24"
-                    " hours but no archive found.")
-                return client.collect()
+            logger.debug("Last time collected greater than 24 hours OR less than 24"
+                " hours but no archive found.")
+            return client.collect()
         else:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
             return client.collect()
