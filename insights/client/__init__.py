@@ -308,12 +308,12 @@ class InsightsClientApi(object):
         try_auto_configuration()
         return client.fetch_rules()
 
-    def collect(self, format="json", options=None, config=None, bypass_timestamp_check=False):
+    def collect(self, format="json", options=None, config=None, check_timestamp=True):
         """
             returns (str, json): will return a string path to archive, or json facts
         """
-        # If bypass_timestamp_check is flagged, then skip this check
-        if bypass_timestamp_check:
+        # If check_timestamp is not flagged, then skip this check
+        if not check_timestamp:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
             return client.collect()
         else:
@@ -334,7 +334,7 @@ class InsightsClientApi(object):
                 # get the latest archive if .lastcollected is < 24hrs
                 try:
                     import time
-                    hours_since_last_collection = (time.time() - lastcollected)/3600
+                    hours_since_last_collection = (time.time() - lastcollected) / 3600
                     logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
                     if (hours_since_last_collection) < 24:
                         logger.debug("Time since last collection is less than 24 hours.")
