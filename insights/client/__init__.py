@@ -313,11 +313,7 @@ class InsightsClientApi(object):
             returns (str, json): will return a string path to archive, or json facts
         """
         # If check_timestamp is not flagged, then skip this check
-        if not check_timestamp:
-            logger.debug("Collection timestamp check bypassed. Now collecting.")
-            return client.collect()
-        else:
-
+        if check_timestamp:
             path_to_latest_archive = None
             # archive_tmp_dir and .lastcollected must both exist
             if os.path.isdir(constants.insights_archive_tmp_dir) and \
@@ -367,6 +363,9 @@ class InsightsClientApi(object):
                 logger.debug("Last time collected greater than 24 hours OR less than 24"
                     " hours but no archive found.")
                 return client.collect()
+        else:
+            logger.debug("Collection timestamp check bypassed. Now collecting.")
+            return client.collect()
 
     def register(self, force_register=False):
         """
