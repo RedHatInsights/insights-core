@@ -4,7 +4,6 @@ import yaml
 import pkgutil
 
 INSTALL_DIR = os.path.dirname(os.path.abspath(__file__))
-print INSTALL_DIR
 NAME = "insights.yaml"
 DEFAULTS_NAME = "defaults.yaml"
 
