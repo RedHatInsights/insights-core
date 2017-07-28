@@ -7,6 +7,7 @@ import re
 import os
 import requests
 from subprocess import Popen, PIPE, STDOUT
+
 from constants import InsightsConstants as constants
 from connection import InsightsConnection
 from client_config import InsightsClient

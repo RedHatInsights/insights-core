@@ -4,8 +4,13 @@ Module handling HTTP Requests and Connection Diagnostics
 import requests
 import os
 import json
-
 import logging
+import xml.etree.ElementTree as ET
+import warnings
+import socket
+from urlparse import urlparse
+from OpenSSL import SSL, crypto
+
 from utilities import (determine_hostname,
                        generate_machine_id,
                        write_to_disk,
@@ -15,12 +20,8 @@ from constants import InsightsConstants as constants
 from client_config import InsightsClient
 from schedule import InsightsSchedule
 
-import xml.etree.ElementTree as ET
-import warnings
 warnings.simplefilter('ignore')
-
 APP_NAME = constants.app_name
-
 logger = logging.getLogger(__name__)
 """
 urllib3's logging is chatty
@@ -133,7 +134,6 @@ class InsightsConnection(object):
         Determine proxy configuration
         """
         # Get proxy from ENV or Config
-        from urlparse import urlparse
         proxies = None
         proxy_auth = None
         no_proxy = os.environ.get('NO_PROXY')
@@ -209,8 +209,6 @@ class InsightsConnection(object):
         """
         Validate that the hostnames we got from config are sane
         """
-        from urlparse import urlparse
-        import socket
         endpoint_url = urlparse(self.upload_url)
         try:
             # Ensure we have something in the scheme and netloc
@@ -253,7 +251,6 @@ class InsightsConnection(object):
         """
         Actually test the url
         """
-        from urlparse import urlparse
         # tell the api we're just testing the URL
         test_flag = {'test': 'test'}
         url = urlparse(url)
@@ -306,9 +303,6 @@ class InsightsConnection(object):
         '''
         Run a test with openssl to detect any MITM proxies
         '''
-        from urlparse import urlparse
-        from OpenSSL import SSL, crypto
-        import socket
         success = True
         hostname = urlparse(self.base_url).netloc.split(':')
         sock = socket.socket()
@@ -455,7 +449,6 @@ class InsightsConnection(object):
                     logger.debug("HTTP Response Text: %s", req.text)
             if req.status_code == 403 and self.auto_config:
                 # Insights disabled in satellite
-                from urlparse import urlparse
                 rhsm_hostname = urlparse(self.base_url).hostname
                 if (rhsm_hostname != 'subscription.rhn.redhat.com' and
                    rhsm_hostname != 'subscription.rhsm.redhat.com'):
