@@ -1,0 +1,9 @@
+include insights/defaults.yaml
+include insights/NAME
+include insights/VERSION
+include insights/COMMIT
+include insights/RELEASE
+prune insights/tests
+prune insights/parsers/tests
+prune insights/combiners/tests
+prune insights/archive
