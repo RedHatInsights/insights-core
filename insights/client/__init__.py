@@ -54,9 +54,10 @@ class InsightsClientApi(object):
 
         # Log config except the password
         # and proxy as it might have a pw as well
+        config_log = logging.getLogger("Insights Config")
         for item, value in InsightsClient.config.items(APP_NAME):
             if item != 'password' and item != 'proxy':
-                logger.debug("%s:%s", item, value)
+                config_log.debug("%s:%s", item, value)
 
     def version(self):
         """
