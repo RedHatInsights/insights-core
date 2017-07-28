@@ -402,12 +402,65 @@ class InsightsClientApi(object):
         """
         return InsightsClient
 
-    def upload(self, path):
+    def upload(self, path, rotate_eggs=True):
         """
             returns (int): upload status code
         """
+        # auto-configure satellite and other network stuff
         try_auto_configuration()
-        return client.upload(path)
+
+        # do the upload
+        upload_status = client.upload(path)
+
+        # if we are rotating the eggs and success on upload do rotation
+        if rotate_eggs and upload_status == 201:
+            try:
+                self.rotate_eggs()
+            except IOError:
+                message = ("Failed to rotate %s to %s" %
+                            (constants.insights_core_newest,
+                            constants.insights_core_last_stable))
+                logger.debug(message)
+                raise IOError(message)
+
+        # return status code
+        return upload_status
+
+    def rotate_eggs(self):
+        """
+            moves newest.egg to last_stable.egg
+            this is used by the upload() function upon 2XX return
+            returns (bool): if eggs rotated successfully
+            raises (IOError): if it cant copy the egg from newest to last_stable
+        """
+        # make sure the library directory exists
+        if os.path.isdir(constants.insights_core_lib_dir):
+            # make sure the newest.egg exists
+            if os.path.isfile(constants.insights_core_newest):
+                # try copying newest to latest_stable
+                try:
+                    copyfile(constants.insights_core_newest, constants.insights_core_last_stable)
+                except IOError:
+                    message = ("There was a problem copying %s to %s." %
+                                (constants.insights_core_newest,
+                                constants.insights_core_last_stable))
+                    logger.debug(message)
+                    raise IOError(message)
+                return True
+            else:
+                message = ("Cannot copy %s to %s because %s does not exist." %
+                            (constants.insights_core_newest,
+                            constants.insights_core_last_stable,
+                            constants.insights_core_newest))
+                logger.debug(message)
+                return False
+        else:
+            logger.debug("Cannot copy %s to %s because the %s directory does not exist." %
+                (constants.insights_core_newest,
+                    constants.insights_core_last_stable,
+                    constants.insights_core_lib_dir))
+            logger.debug("Try installing the Core first.")
+            return False
 
     def get_last_upload_results(self):
         """
