@@ -330,12 +330,12 @@ class InsightsClientApi(object):
                     except ValueError:
                         logger.debug("Invalid last collected timestamp detected.")
                         lastcollected = None
-                    lastcollectedarchive = coll_file.readline().strip()
+                    last_collected_archive = coll_file.readline().strip()
                 logger.debug("Found last collected timestamp %s." % (lastcollected))
-                logger.debug("Found last collected archive %s." % (lastcollectedarchive))
+                logger.debug("Found last collected archive %s." % (last_collected_archive))
 
                 # make sure the archive actually exists on the filesystem
-                if os.path.isfile(lastcollectedarchive):
+                if os.path.isfile(last_collected_archive):
 
                     # get the latest archive if .lastcollected is < 24hrs
                     try:
@@ -345,7 +345,7 @@ class InsightsClientApi(object):
                             logger.debug("Time since last collection is less than 24 hours.")
                             logger.debug("Obtaining latest archive generated from %s" %
                                 (constants.insights_archive_tmp_dir))
-                        path_to_latest_archive = lastcollectedarchive
+                        path_to_latest_archive = last_collected_archive
 
                     except:
                         logger.debug("There was an error with the last collected timestamp"
@@ -353,7 +353,7 @@ class InsightsClientApi(object):
 
                 else:
                     logger.debug("Found last collected archive %s in .lastcollected but file does not exist" %
-                        (lastcollectedarchive))
+                        (last_collected_archive))
 
             # if a lastcollected archive was found, return that path, else collect
             if path_to_latest_archive:
