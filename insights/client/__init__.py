@@ -37,10 +37,8 @@ class InsightsClientApi(object):
                                           new_config_var,
                                           kwargs['config'][new_config_var])
 
-        # we dont assume the API will set up logging
-        if 'set_up_logging' in kwargs and \
-                kwargs['set_up_logging'] is True:
-            client.set_up_logging()
+        # set up logging
+        client.set_up_logging()
 
         # Disable GPG verification
         if InsightsClient.options.no_gpg:
