@@ -7,7 +7,13 @@ import logging
 import uuid
 import datetime
 import shlex
+import re
+import stat
+import json
+import shlex
 from subprocess import Popen, PIPE, STDOUT
+from ConfigParser import RawConfigParser
+
 from constants import InsightsConstants as constants
 from client_config import InsightsClient
 
@@ -110,7 +116,6 @@ def generate_machine_id(new=False,
     # update the ansible machine id facts file
     if os.path.isdir(constants.insights_ansible_facts_dir):
         if not (os.path.isfile(constants.insights_ansible_machine_id_file) and machine_id) or new:
-            import json
             machine_id_json = {'machine-id': machine_id}
             with open(constants.insights_ansible_machine_id_file, 'w') as handler:
                 logger.debug('Writing Ansible machine-id facts file %s', constants.insights_ansible_machine_id_file)
@@ -167,7 +172,6 @@ def _expand_paths(path):
     """
     Expand wildcarded paths
     """
-    import re
     dir_name = os.path.dirname(path)
     paths = []
     logger.debug("Attempting to expand %s", path)
@@ -188,7 +192,6 @@ def validate_remove_file(remove_file=constants.collection_remove_file):
     """
     Validate the remove file
     """
-    import stat
     if not os.path.isfile(remove_file):
         logger.warn("WARN: Remove file does not exist")
         return False
@@ -202,7 +205,6 @@ def validate_remove_file(remove_file=constants.collection_remove_file):
         print "Correct file permissions"
 
     if os.path.isfile(remove_file):
-        from ConfigParser import RawConfigParser
         parsedconfig = RawConfigParser()
         parsedconfig.read(remove_file)
         rm_conf = {}
@@ -232,7 +234,6 @@ def magic_plan_b(filename):
     python-magic is MIA and can't be installed
     for whatever reason
     '''
-    import shlex
     cmd = shlex.split('file --mime-type --mime-encoding ' + filename)
     stdout, stderr = Popen(cmd, stdout=PIPE).communicate()
     mime_str = stdout.split(filename + ': ')[1].strip()

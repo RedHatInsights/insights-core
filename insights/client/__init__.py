@@ -1,9 +1,16 @@
+import os
 import requests
+import logging
+import tempfile
+import time
+from subprocess import Popen, PIPE
+from shutil import copyfile
+
+from .. import get_nvr
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
 from .client_config import InsightsClient
-import logging
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
@@ -56,7 +63,6 @@ class InsightsClientApi(object):
             returns (dict): {'core': str,
                             'client_api': str}
         """
-        from .. import get_nvr
         core_version = get_nvr()
         client_api_version = constants.version
 
@@ -164,7 +170,6 @@ class InsightsClientApi(object):
 
         # Searched for cached etag information
         current_etag = None
-        import os
         if os.path.isfile(constants.core_etag_file):
             with open(constants.core_etag_file, 'r') as etag_file:
                 current_etag = etag_file.read().strip()
@@ -194,7 +199,6 @@ class InsightsClientApi(object):
         if response.status_code == 200 and len(response.content) > 0:
 
             # Setup tmp egg path
-            import tempfile
             tmpdir = tempfile.mkdtemp()
             tmp_egg_path = os.path.join(tmpdir, 'insights-core.egg')
 
@@ -240,7 +244,6 @@ class InsightsClientApi(object):
                              'rc': return code}
         """
         if egg_path and gpg_key:
-            from subprocess import Popen, PIPE
             process = Popen(['gpg', '--verify', gpg_key, egg_path], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             rc = process.returncode
@@ -261,9 +264,6 @@ class InsightsClientApi(object):
         raises OSError if cannot create /var/lib/insights
         raises IOError if cannot copy /tmp/insights-core.egg to /var/lib/insights/newest.egg
         """
-        import os
-        from shutil import copyfile
-
         if not new_egg:
             the_message = 'Must provide a valid Core installation path.'
             logger.debug(the_message)
@@ -318,7 +318,6 @@ class InsightsClientApi(object):
             return client.collect()
         else:
 
-            import os
             path_to_latest_archive = None
             # archive_tmp_dir and .lastcollected must both exist
             if os.path.isdir(constants.insights_archive_tmp_dir) and \
@@ -344,7 +343,6 @@ class InsightsClientApi(object):
 
                     # get the latest archive if .lastcollected is < 24hrs
                     try:
-                        import time
                         hours_since_last_collection = (time.time() - lastcollected) / 3600
                         logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
                         if (hours_since_last_collection) < 24:
@@ -418,7 +416,6 @@ class InsightsClientApi(object):
         """
             returns (json): returns last upload json results or False
         """
-        import os
         if os.path.isfile(constants.last_upload_results_file):
             logger.debug('Last upload file %s found, reading results.', constants.last_upload_results_file)
             with open(constants.last_upload_results_file, 'r') as handler:

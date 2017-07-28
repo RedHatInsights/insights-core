@@ -6,7 +6,12 @@ import os
 import shutil
 import time
 import optparse
-from auto_config import try_auto_configuration
+import time
+import json
+
+from auto_config import (try_auto_configuration,
+                        _try_satellite6_configuration,
+                        _try_satellite5_configuration)
 from utilities import (validate_remove_file,
                        generate_machine_id,
                        generate_analysis_target_id,
@@ -334,7 +339,6 @@ def collect(rc=0):
     # Write the .lastcollected date
     if tar_file is not None:
         with open(constants.archive_last_collected_date_file, 'w') as the_file:
-            import time
             last_collected_time = str(time.time())
             the_file.write(last_collected_time + "\n")
             the_file.write(tar_file)
@@ -366,12 +370,8 @@ def upload(tar_file, collection_duration=None):
 
             # Write to ansible facts directory
             if os.path.isdir(constants.insights_ansible_facts_dir):
-                import json
                 insights_facts = {}
                 insights_facts['last_upload'] = json.loads(upload.text)
-
-                from auto_config import (_try_satellite6_configuration,
-                                         _try_satellite5_configuration)
 
                 sat6 = _try_satellite6_configuration()
                 sat5 = None
@@ -412,7 +412,6 @@ def upload(tar_file, collection_duration=None):
 
 
 def delete_archive(path):
-    import os
     removed_archive = False
 
     try:

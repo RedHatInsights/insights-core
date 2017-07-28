@@ -1,11 +1,12 @@
 import os
 import re
-from subprocess import Popen, PIPE, STDOUT
 import errno
 import shlex
 import logging
 import six
+from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+
 from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)

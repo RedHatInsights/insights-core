@@ -4,6 +4,8 @@ Auto Configuration Helper
 import logging
 import os
 import requests
+from urlparse import urlparse
+
 from constants import InsightsConstants as constants
 from cert_auth import rhsmCertificate
 from connection import InsightsConnection
@@ -157,7 +159,6 @@ def _try_satellite5_configuration():
         hostname = None
         for line in rhn_conf_file:
             if line.startswith('serverURL='):
-                from urlparse import urlparse
                 url = urlparse(line.split('=')[1])
                 hostname = url.netloc + '/redhat_access'
                 logger.debug("Found hostname %s", hostname)

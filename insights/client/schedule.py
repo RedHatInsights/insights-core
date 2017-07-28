@@ -3,6 +3,7 @@ Module responsible for scheduling Insights data collection
 """
 import os
 import logging
+
 from client_config import InsightsClient
 from constants import InsightsConstants as constants
 

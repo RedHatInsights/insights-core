@@ -7,8 +7,10 @@ import json
 import archive
 import logging
 import copy
+import glob
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+
 from ..contrib.soscleaner import SOSCleaner
 from utilities import _expand_paths, generate_analysis_target_id, logging_file
 from constants import InsightsConstants as constants
@@ -132,7 +134,6 @@ class DataCollector(object):
         '''
         Grab globs of things
         '''
-        import glob
         some_globs = glob.glob(spec['glob'])
         if not some_globs:
             return []

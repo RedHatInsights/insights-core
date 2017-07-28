@@ -6,6 +6,8 @@ import logging
 import six
 import shlex
 import os
+from ConfigParser import RawConfigParser
+
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from constants import InsightsConstants as constants
@@ -163,7 +165,6 @@ class InsightsConfig(object):
         rm_conf = None
         # Convert config object into dict
         if os.path.isfile(self.remove_file):
-            from ConfigParser import RawConfigParser
             parsedconfig = RawConfigParser()
             parsedconfig.read(self.remove_file)
             rm_conf = {}
