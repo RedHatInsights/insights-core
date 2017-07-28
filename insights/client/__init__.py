@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import logging
 import tempfile
@@ -499,12 +500,13 @@ def run(op, *args, **kwargs):
 
 
 def update():
-    pass
+    run("update")
 
 
 def collect():
-    run("collect")
+    print run("collect")
 
 
 def upload():
-    pass
+    egg_path = sys.stdin.read().strip()
+    run("upload", egg_path)
