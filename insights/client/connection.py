@@ -693,7 +693,7 @@ class InsightsConnection(object):
         """
         file_name = os.path.basename(data_collected)
         try:
-            import magic
+            from insights.contrib import magic
             m = magic.open(magic.MAGIC_MIME)
             m.load()
             mime_type = m.file(data_collected)
