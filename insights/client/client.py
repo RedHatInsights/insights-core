@@ -6,8 +6,6 @@ import os
 import shutil
 import time
 import optparse
-import time
-import json
 
 from auto_config import (try_auto_configuration,
                         _try_satellite6_configuration,
