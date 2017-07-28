@@ -358,6 +358,7 @@ class InsightsClientApi(object):
         if check_timestamp:
             cached_results = self._cached_results()
             if cached_results:
+                logger.info("Using cached collection: %s", cached_results)
                 return cached_results
         else:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
