@@ -311,44 +311,43 @@ class InsightsClientApi(object):
     def _cached_results(self):
         # archive_tmp_dir and .lastcollected must both exist
         file_name = constants.archive_last_collected_date_file
-        if os.path.isfile(file_name):
+        if not os.path.isfile(file_name):
+            return
 
-            # get .lastcollected timestamp and archive
-            # .lastcollected contains the timestamp on the first line
-            # .lastcollected contains the archive path and name on the second line
-            with open(file_name) as coll_file:
-                try:
-                    lastcollected = int(float(coll_file.readline().strip()))
-                    logger.debug("Found last collected timestamp %s." % (lastcollected))
-                except ValueError:
-                    logger.debug("Invalid last collected timestamp detected.")
-                    lastcollected = 0
-                last_collected_archive = coll_file.readline().strip()
+        # get .lastcollected timestamp and archive
+        # .lastcollected contains the timestamp on the first line
+        # .lastcollected contains the archive path and name on the second line
+        with open(file_name) as coll_file:
+            try:
+                lastcollected = int(float(coll_file.readline().strip()))
+                logger.debug("Found last collected timestamp %s." % (lastcollected))
+            except ValueError:
+                logger.debug("Invalid last collected timestamp detected.")
+                lastcollected = 0
+            last_collected_archive = coll_file.readline().strip()
 
+        # make sure the archive actually exists on the filesystem
+        if not os.path.isfile(last_collected_archive):
+            logger.debug("Found last collected archive %s in .lastcollected"
+                         " but file does not exist" % (last_collected_archive))
+            return
+        else:
             logger.debug("Found last collected archive %s." % (last_collected_archive))
 
-            # make sure the archive actually exists on the filesystem
-            if os.path.isfile(last_collected_archive):
-
-                # get the latest archive if .lastcollected is < 24hrs
-                try:
-                    hours_since_last_collection = (time.time() - lastcollected) / 3600
-                    logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
-                    if (hours_since_last_collection) < 24:
-                        logger.debug("Time since last collection is less than 24 hours.")
-                        logger.debug("Latest archive %s found." % (last_collected_archive))
-                        return last_collected_archive
-
-                except:
-                    logger.debug("There was an error with the last collected timestamp"
-                                 " file or archives.")
-
+        # get the latest archive if .lastcollected is < 24hrs
+        try:
+            hours_since_last_collection = (time.time() - lastcollected) / 3600
+            logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
+            if (hours_since_last_collection) < 24:
+                logger.debug("Time since last collection is less than 24 hours.")
+                logger.debug("Latest archive %s found." % (last_collected_archive))
+                return last_collected_archive
             else:
-                logger.debug("Found last collected archive %s in .lastcollected but file does not exist" %
-                             (last_collected_archive))
+                logger.debug("Last time collected greater than 24 hours")
 
-        logger.debug("Last time collected greater than 24 hours OR less than 24"
-                     " hours but no archive found.")
+        except:
+            logger.debug("There was an error with the last collected timestamp"
+                         " file or archives.")
 
     def collect(self, format="json", options=None, config=None, check_timestamp=True):
         """
