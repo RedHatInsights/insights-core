@@ -10,7 +10,6 @@ import shlex
 import re
 import stat
 import json
-import shlex
 from subprocess import Popen, PIPE, STDOUT
 from ConfigParser import RawConfigParser
 
