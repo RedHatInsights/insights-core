@@ -68,7 +68,10 @@ def get_console_handler(silent, verbose, to_stdout):
         target_level = logging.INFO
 
     stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+
+    log_format = LOG_FORMAT if verbose else "%(message)s"
+    stdout_handler.setFormatter(logging.Formatter(log_format))
+
     stdout_handler.setLevel(target_level)
 
     return stdout_handler
