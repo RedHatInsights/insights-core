@@ -321,16 +321,14 @@ class InsightsClientApi(object):
                 # get .lastcollected timestamp and archive
                 # .lastcollected contains the timestamp on the first line
                 # .lastcollected contains the archive path and name on the second line
-                lastcollected = None
                 with open(constants.archive_last_collected_date_file) as coll_file:
-                    lastcollected = coll_file.readline().strip()
                     try:
-                        lastcollected = int(float(lastcollected))
+                        lastcollected = int(float(coll_file.readline().strip()))
+                        logger.debug("Found last collected timestamp %s." % (lastcollected))
                     except ValueError:
                         logger.debug("Invalid last collected timestamp detected.")
-                        lastcollected = None
+                        lastcollected = 0
                     last_collected_archive = coll_file.readline().strip()
-                logger.debug("Found last collected timestamp %s." % (lastcollected))
                 logger.debug("Found last collected archive %s." % (last_collected_archive))
 
                 # make sure the archive actually exists on the filesystem
