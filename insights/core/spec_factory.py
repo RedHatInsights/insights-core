@@ -10,7 +10,8 @@ from glob import glob
 
 from insights.core import dr
 from insights.core.context import FileArchiveContext, FSRoots, HostContext
-from insights.core.plugins import datasource, ContentException, stage
+from insights.core.plugins import datasource, ContentException
+from insights.core.serde import deserializer, serializer
 
 log = logging.getLogger(__name__)
 
@@ -40,17 +41,16 @@ def mangle_command(command, name_max=255):
 
 class ContentProvider(object):
     def __init__(self):
+        self.cmd = None
+        self.args = None
+        self.path = None
         self._content = None
         self._exception = None
-        self._clean = False
 
     @property
     def content(self):
         if self._exception:
             raise self._exception
-
-        if self._clean:
-            raise ContentException("cleanup() already called")
 
         if not self._content:
             try:
@@ -60,10 +60,6 @@ class ContentProvider(object):
                 raise
 
         return self._content
-
-    def cleanup(self):
-        self._clean = True
-        self._content = None
 
     def __unicode__(self):
         return self.content
@@ -92,7 +88,7 @@ class FileProvider(ContentProvider):
             raise ContentException("Cannot access %s" % self.path)
 
     def __repr__(self):
-        return '%s("%s") - %s, %s, %s' % (self.__class__.__name__, self.path, self.root, self.relative_path, self.file_name)
+        return '%s("%s") - %s' % (self.__class__.__name__, self.path, self.root)
 
 
 class RawFileProvider(FileProvider):
@@ -116,9 +112,11 @@ class CommandOutputProvider(ContentProvider):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.ctx = ctx
-        self.args = None
-        self.split = split
+
+        # args are already interpolated into cmd. They're stored here for context."
+        self.args = args
         self._content = content
+        self.split = split
 
     def load(self):
         return self.ctx.shell_out(self.cmd, self.split)
@@ -151,7 +149,7 @@ class SpecFactory(object):
             self.attach(inner, name)
         return inner
 
-    def glob_file(self, patterns, ignore=None, name=None, context=None, Kind=TextFileProvider, alias=None):
+    def glob_file(self, patterns, name=None, ignore=None, context=None, Kind=TextFileProvider, alias=None):
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
 
@@ -190,7 +188,7 @@ class SpecFactory(object):
         return inner
 
     def listdir(self, path, name=None, context=None, alias=None):
-        @stage(requires=[context or FSRoots], alias=alias)
+        @datasource(requires=[context or FSRoots], alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             p = os.path.join(root, path.lstrip('/'))
@@ -283,9 +281,33 @@ class SpecFactory(object):
         def inner(broker):
             for c in deps:
                 if c in broker:
-                    broker.add_dependencies(c, dr.DEPENDENTS[inner])
                     return broker[c]
 
         if name:
             self.attach(inner, name)
         return inner
+
+
+@serializer(TextFileProvider)
+def serialize_text_provider(obj):
+    d = {}
+    d["path"] = obj.path
+    d["_content"] = obj.content
+    return d
+
+
+@serializer(CommandOutputProvider)
+def serialize_command_provider(obj):
+    d = {}
+    d["cmd"] = obj.cmd
+    d["args"] = obj.args
+    d["_content"] = obj.content
+    return d
+
+
+@deserializer(ContentProvider)
+def deserialize_content(obj):
+    c = ContentProvider()
+    for k, v in obj.items():
+        setattr(c, k, v)
+    return c

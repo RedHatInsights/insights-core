@@ -98,16 +98,20 @@ incident = dr.new_component_type("incident")
 """ A component used by rules that allows automated statistical analysis."""
 
 
+def is_type(component, _type):
+    return dr.TYPE_OF_COMPONENT.get(component) is _type
+
+
 def is_datasource(component):
-    return dr.TYPE_OF_COMPONENT.get(component) is datasource
+    return is_type(component, datasource)
 
 
 def is_parser(component):
-    return dr.TYPE_OF_COMPONENT.get(component) is parser
+    return is_type(component, parser)
 
 
 def is_rule(component):
-    return dr.TYPE_OF_COMPONENT.get(component) is rule
+    return is_type(component, rule)
 
 
 def is_component(obj):

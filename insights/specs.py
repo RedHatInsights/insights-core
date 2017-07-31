@@ -28,7 +28,9 @@ bond = sf.glob_file("/proc/net/bonding/bond*", name="bond")
 branch_info = sf.simple_file("/branch_info", name="branch_info")
 brctl_show = sf.simple_command("/usr/sbin/brctl show", name="brctl_show")
 candlepin_log = sf.simple_file("/var/log/candlepin/candlepin.log", name="candlepin_log")
-catalina_out = sf.first_of([sf.glob_file("/var/log/tomcat*/catalina.out"), sf.glob_file("/tomcat-logs/tomcat*/catalina.out")], name="catalina_out")
+catalina_out_var = sf.glob_file("/var/log/tomcat*/catalina.out", name="catalina_out_var")
+catalina_out_tomcat = sf.glob_file("/tomcat-logs/tomcat*/catalina.out", name="catalina_out_tomcat")
+catalina_out = sf.first_of([catalina_out_var, catalina_out_tomcat], name="catalina_out")
 cciss = sf.glob_file("/proc/driver/cciss/cciss*", name="cciss")
 ceilometer_central_log = sf.simple_file("/var/log/ceilometer/central.log", name="ceilometer_central_log")
 ceilometer_collector_log = sf.simple_file("/var/log/ceilometer/collector.log", name="ceilometer_collector_log")
@@ -63,11 +65,11 @@ date_utc = sf.simple_command("/bin/date --utc", name="date_utc")
 df_al = sf.simple_command("/bin/df -al", name="df_al")
 df_alP = sf.simple_command("/bin/df -alP", name="df_alP")
 df_li = sf.simple_command("/bin/df -li", name="df_li")
-dirsrv = sf.simple_file("/etc/sysconfig/dirsrv", name="dirsrv"),
+dirsrv = sf.simple_file("/etc/sysconfig/dirsrv", name="dirsrv")
 display_java = sf.simple_command("/usr/sbin/alternatives --display java", name="display_java")
 dmesg = sf.simple_command("/bin/dmesg", name="dmesg")
 dmidecode = sf.simple_command("/usr/sbin/dmidecode", name="dmidecode")
-docker_info = sf.simple_command("/usr/bin/docker info", "docker_info")
+docker_info = sf.simple_command("/usr/bin/docker info", name="docker_info")
 docker_list_containers = sf.simple_command("/usr/bin/docker ps --all --no-trunc", name="docker_list_containers")
 docker_list_images = sf.simple_command("/usr/bin/docker images --all --no-trunc --digests", name="docker_list_images")
 
@@ -106,9 +108,9 @@ docker_storage = sf.simple_file("/etc/sysconfig/docker-storage", name="docker_st
 docker_storage_setup = sf.simple_file("/etc/sysconfig/docker-storage-setup", name="docker_storage_setup", context=DockerHostContext)
 docker_sysconfig = sf.simple_file("/etc/sysconfig/docker", name="docker_sysconfig", context=DockerHostContext)
 # dumpe2fs_h = sf.with_args_from(, "/sbin/dumpe2fs -h %s")
-engine_log = sf.simple_file("/var/log/ovirt-engine/engine.log")
+engine_log = sf.simple_file("/var/log/ovirt-engine/engine.log", name="engine_log")
 
-ethernet_interfaces = sf.listdir("/sys/class/net", "ethernet_interfaces", HostContext)
+ethernet_interfaces = sf.listdir("/sys/class/net", name="ethernet_interfaces", context=HostContext)
 ethtool = sf.with_args_from(ethernet_interfaces, "/sbin/ethtool %s", name="ethtool")
 ethtool_S = sf.with_args_from(ethernet_interfaces, "/sbin/ethtool -S %s", name="ethtool_S")
 ethtool_a = sf.with_args_from(ethernet_interfaces, "/sbin/ethtool -a %s", name="ethtool_a")
@@ -140,13 +142,13 @@ heat_api_log = sf.simple_file("/var/log/heat/heat-api.log", name="heat_api_log")
 heat_conf = sf.simple_file("/etc/heat/heat.conf", name="heat_conf")
 heat_crontab = sf.simple_command("/usr/bin/crontab -l -u heat", name="heat_crontab")
 heat_engine_log = sf.simple_file("/var/log/heat/heat-engine.log", name="heat_engine_log")
-hostname = sf.simple_command("/usr/bin/hostname -f", "hostname")
+hostname = sf.simple_command("/usr/bin/hostname -f", name="hostname")
 hosts = sf.simple_file("/etc/hosts", name="hosts")
 hponcfg_g = sf.simple_command("/sbin/hponcfg -g", name="hponcfg_g")
 httpd_access_log = sf.simple_file("/var/log/httpd/access_log", name="httpd_access_log")
 httpd_conf = sf.first_file(["/etc/httpd/conf/httpd.conf", "/conf/httpd/conf/httpd.conf"], name="httpd_conf")
-httpd_conf_d = sf.first_of([sf.glob_file("/etc/httpd/conf.d/*.conf"),
-                            sf.glob_file("/conf/httpd/conf.d/*.conf")],
+httpd_conf_d = sf.first_of([sf.glob_file("/etc/httpd/conf.d/*.conf", name="httpd_conf_d_etc"),
+                            sf.glob_file("/conf/httpd/conf.d/*.conf", name="httpd_conf_d_conf")],
                             name="httpd_conf_d")
 httpd_error_log = sf.simple_file("var/log/httpd/error_log", name="httpd_error_log")
 httpd_ssl_access_log = sf.simple_file("/var/log/httpd/ssl_access_log", name="httpd_ssl_access_log")
@@ -157,7 +159,7 @@ ifconfig = sf.simple_command("/sbin/ifconfig -a", name="ifconfig")
 imagemagick_policy = sf.glob_file(["/etc/ImageMagick/policy.xml",
                                    "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"],
                                    name="imagemagick_policy")
-init_ora = sf.simple_file("${ORACLE_HOME}/dbs/init.ora")
+init_ora = sf.simple_file("${ORACLE_HOME}/dbs/init.ora", name="init_ora")
 interrupts = sf.simple_file("/proc/interrupts", name="interrupts")
 ip_addr = sf.simple_command("/sbin/ip addr", name="ip_addr")
 ip_route_show_table_all = sf.simple_command("/sbin/ip route show table all", name="ip_route_show_table_all")
@@ -189,8 +191,8 @@ lpstat_p = sf.simple_command("/usr/bin/lpstat -p", name="lpstat_p")
 lsblk = sf.simple_command("/bin/lsblk", name="lsblk")
 lsblk_pairs = sf.simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO", name="lsblk_pairs")
 lscpu = sf.simple_command("/usr/bin/lscpu", name="lscpu")
-lsinitrd_lvm_conf = sf.first_of([sf.simple_command("/sbin/lsinitrd -f /etc/lvm/lvm.conf"),
-                                 sf.simple_command("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")],
+lsinitrd_lvm_conf = sf.first_of([sf.simple_command("/sbin/lsinitrd -f /etc/lvm/lvm.conf", name="lsinitrd_sbin"),
+                                 sf.simple_command("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf", name="lsinitrd_usrbin")],
                                  name="lsinitrd_lvm_conf")
 lsmod = sf.simple_command("/sbin/lsmod", name="lsmod")
 lspci = sf.simple_command("/sbin/lspci", name="lspci")
@@ -273,9 +275,9 @@ postgresql_conf = sf.first_file(["/var/lib/pgsql/data/postgresql.conf",
                                  "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
                                  "database/postgresql.conf"],
                                  name="postgresql_conf")
-postgresql_log = sf.first_of([sf.glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
-                              sf.glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
-                              sf.glob_file("/database/postgresql-*.log")], name="postgresql_log")
+postgresql_log = sf.first_of([sf.glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log", name="postgresql_var"),
+                              sf.glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log", name="postgresql_opt"),
+                              sf.glob_file("/database/postgresql-*.log", name="postgresql_database")], name="postgresql_log")
 md5chk_files = sf.simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null", name="md5chk_files")
 prelink_orig_md5 = None
 prev_uploader_log = sf.simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1", "prev_uploader_log")
@@ -300,8 +302,8 @@ redhat_release = sf.simple_file("/etc/redhat-release", name="redhat_release")
 resolv_conf = sf.simple_file("/etc/resolv.conf", name="resolve_conf")
 rhn_charsets = sf.simple_command("/usr/bin/rhn-charsets", name="rhn_charsets")
 rhn_conf = sf.first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"], name="rhn_conf")
-rhn_entitlement_cert_xml = sf.first_of([sf.glob_file("/etc/sysconfig/rhn/rhn-entitlement-cert.xml*"),
-                               sf.glob_file("/conf/rhn/sysconfig/rhn/rhn-entitlement-cert.xml*")],
+rhn_entitlement_cert_xml = sf.first_of([sf.glob_file("/etc/sysconfig/rhn/rhn-entitlement-cert.xml*", name="rhn_entitlement_cert_xml_etc"),
+                               sf.glob_file("/conf/rhn/sysconfig/rhn/rhn-entitlement-cert.xml*", name="rhn_entitlement_cert_xml_conf")],
                                name="rhn_entitlement_cert_xml")
 rhn_hibernate_conf = sf.first_file(["/usr/share/rhn/config-defaults/rhn_hibernate.conf", "/config-defaults/rhn_hibernate.conf"], name="rhn_hibernate_conf")
 rhn_schema_stats = sf.simple_command("/usr/bin/rhn-schema-stats -", name="rhn_schema_stats")
@@ -332,7 +334,7 @@ selinux_config = sf.simple_file("/etc/selinux/config", name="selinux_config")
 sestatus = sf.simple_command("/usr/sbin/sestatus -b", name="sestatus")
 block = sf.simple_command("/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'", name="block")
 smartctl = sf.with_args_from(block, "/sbin/smartctl -a %s", name="smartctl")
-spfile_ora = sf.glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
+spfile_ora = sf.glob_file("${ORACLE_HOME}/dbs/spfile*.ora", name="spfile_ora")
 ss = sf.simple_command("/usr/sbin/ss -tulpn", name="ss")
 ssh_config = sf.simple_file("/etc/ssh/ssh_config", name="ssh_config")
 sshd_config = sf.simple_file("/etc/ssh/sshd_config", name="sshd_config")
@@ -343,18 +345,18 @@ sysconfig_chronyd = sf.simple_file("/etc/sysconfig/chronyd", name="sysconfig_chr
 sysconfig_httpd = sf.simple_file("/etc/sysconfig/httpd", name="sysconfig_httpd")
 sysconfig_ntpd = sf.simple_file("/etc/sysconfig/ntpd", name="sysconfig_ntpd")
 sysctl = sf.simple_command("/sbin/sysctl -a", name="sysctl")
-sysctl_conf = sf.simple_file("/etc/sysctl.conf", name="sysctl_conf"),
+sysctl_conf = sf.simple_file("/etc/sysctl.conf", name="sysctl_conf")
 sysctl_conf_initramfs = sf.simple_command("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf", name="sysctl_conf_initramfs")
 systemctl_cinder_volume = sf.simple_command("/bin/systemctl show openstack-cinder-volume", name="systemctl_cinder_volume")
 systemctl_list_unit_files = sf.simple_command("/bin/systemctl list-unit-files", name="systemctl_list_unit_files")
 systemd_docker = sf.simple_file("/usr/lib/systemd/system/docker.service", name="docker_service")
 systemd_openshift_node = sf.simple_file("/usr/lib/systemd/system/atomic-openshift-node.service", name="systemd_openshift_node")
 systemd_system_conf = sf.simple_file("/etc/systemd/system.conf", name="system_conf")
-systemid = sf.first_of([sf.simple_file("/etc/sysconfig/rhn/systemid"),
-                        sf.simple_file("/conf/rhn/sysconfig/rhn/systemid")],
+systemid = sf.first_of([sf.simple_file("/etc/sysconfig/rhn/systemid", name="system_id_etc"),
+                        sf.simple_file("/conf/rhn/sysconfig/rhn/systemid", name="system_id_conf")],
                         name="systemid")
-tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml"),
-                              sf.glob_file("/conf/tomcat/tomcat*/web.xml")],
+tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml", name="tomcat_web_xml_etc"),
+                              sf.glob_file("/conf/tomcat/tomcat*/web.xml", name="tomcat_web_xml_conf")],
                               name="tomcat_web_xml")
 tuned_adm = sf.simple_command("/sbin/tuned-adm list", name="tuned_adm")
 udev_persistent_net_rules = sf.simple_file("/etc/udev/rules.d/70-persistent-net.rules", name="udev_persistent_net_rules")
@@ -383,7 +385,7 @@ yum_repos_d = sf.glob_file("/etc/yum.repos.d/*", name="yum_repos")
 
 rpm_format = format_rpm()
 
-host_installed_rpms = sf.simple_command("/usr/bin/rpm -qa --qf '%s'" % rpm_format, "host_installed_rpms", HostContext)
+host_installed_rpms = sf.simple_command("/usr/bin/rpm -qa --qf '%s'" % rpm_format, name="host_installed_rpms", context=HostContext)
 
 
 @datasource(requires=[DockerImageContext])
@@ -397,4 +399,4 @@ def docker_installed_rpms(broker):
 
 
 # unify the different installed rpm provider types
-installed_rpms = sf.first_of([host_installed_rpms, docker_installed_rpms], "installed_rpms")
+installed_rpms = sf.first_of([host_installed_rpms, docker_installed_rpms], name="installed_rpms")

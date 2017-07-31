@@ -16,20 +16,15 @@ with open(this_file) as f:
 smpl_file = sf.simple_file(this_file)
 many = sf.glob_file(here + "/*.py")
 smpl_cmd = sf.simple_command("/usr/bin/uptime")
-ethernet_interfaces = sf.listdir("/sys/class/net")
-ethtool = ethtool = sf.with_args_from(ethernet_interfaces, "ethtool %s")
 
 stage = dr.new_component_type()
 
 
-@stage(requires=[smpl_file, many, smpl_cmd, ethtool])
+@stage(requires=[smpl_file, many, smpl_cmd])
 def dostuff(broker):
     assert smpl_file in broker
     assert many in broker
     assert smpl_cmd in broker
-    assert ethernet_interfaces in broker
-    assert ethtool in broker
-    assert len(broker[ethtool]) == len(broker[ethernet_interfaces])
 
 
 def test_spec_factory():

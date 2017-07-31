@@ -84,6 +84,9 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, s
         cmd = cmd.encode('utf-8', 'replace')
         if timeout is not None:
             cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
+
+        log.debug("Running %s" % cmd)
+
         if not shell:
             cmd = shlex.split(cmd)
         log.debug(cmd)
