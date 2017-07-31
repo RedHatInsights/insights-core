@@ -23,7 +23,7 @@ def worker(args):
 
 
 def run_graph(seed_broker, g, output_dir):
-    to_save = [plugins.datasource]
+    to_save = [plugins.datasource, plugins.parser, plugins.combiner, plugins.rule]
     broker = dr.Broker()
     broker.instances = dict(seed_broker.instances)
     for _type in to_save:
@@ -47,11 +47,13 @@ def run_serial(args):
 
 
 def main():
-    ctx = HostContext(platform.node())
+    hostname = platform.node()
+    ctx = HostContext(hostname)
     broker = dr.Broker()
     broker[HostContext] = ctx
     out_path = "output"
-    fs.ensure_path(out_path)
+    dr.load_components("insights/parsers")
+    dr.load_components("insights/combiners")
     graphs = dr.get_subgraphs(dr.COMPONENTS[dr.GROUPS.single])
     args = [(broker, g, out_path) for g in graphs]
     run_serial(args)
