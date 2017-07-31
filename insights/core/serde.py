@@ -1,8 +1,8 @@
 import json as ser
 import logging
 import os
-
 from insights.core import dr
+from insights.util import fs
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +35,7 @@ def deserializer(_type):
 
 
 def get_serializer(obj):
+
     """ Get a registered serializer for the given object.
 
         This function walks the mro of obj looking for serializers.
@@ -44,7 +45,7 @@ def get_serializer(obj):
         if o not in SERIALIZERS:
             continue
         return lambda x: {"type": dr.get_name(o), "object": SERIALIZERS[o](x)}
-    return lambda x: {"type": "Unknown", "object": x}
+    return lambda x: {"type": "", "object": x}
 
 
 def get_deserializer(name):
@@ -52,7 +53,7 @@ def get_deserializer(name):
     def ident(x):
         return x
 
-    if name == "Unknown":
+    if name == "":
         return ident
     try:
         obj = dr.get_component(name)
@@ -96,8 +97,11 @@ def persister(output_dir, ignore_hidden=True):
         doc["time"] = broker.exec_times[c]
         doc["results"] = content
         path = os.path.join(output_dir, name + "." + ser.__name__)
-        with open(path, "wb") as f:
-            ser.dump(doc, f)
+        try:
+            with open(path, "wb") as f:
+                ser.dump(doc, f)
+        except:
+            fs.remove(path)
 
     return observer
 
