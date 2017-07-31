@@ -22,7 +22,8 @@ runtime = {
     'pyyaml>=3.10,<=3.12',
     'six',
     'setuptools',
-    'requests'
+    'requests',
+    'pyOpenSSL'
 }
 
 develop = {
