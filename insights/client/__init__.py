@@ -31,15 +31,14 @@ class InsightsClientApi(object):
                 InsightsClientApi()
         """
         # we dont want to assume API implementation should read/parse configs or options
-        if 'try_auto_config_and_options' in kwargs and \
-                kwargs['try_auto_config_and_options'] is True:
+        if kwargs.get('try_auto_config_and_options') is True:
             InsightsClient.config, InsightsClient.options = client.parse_options()
 
         # Overwrite anything passed in
-        if 'options' in kwargs and kwargs['options']:
+        if kwargs.get('options'):
             for key in kwargs['options']:
                 setattr(InsightsClient.options, key, kwargs['options'][key])
-        if 'config' in kwargs and kwargs['config']:
+        if kwargs.get('config'):
             for new_config_var in kwargs['config']:
                 InsightsClient.config.set(constants.app_name,
                                           new_config_var,
