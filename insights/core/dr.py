@@ -6,9 +6,10 @@ import importlib
 import inspect
 import logging
 import pkgutil
-import pprint
 import re
 import six
+import sys
+import time
 import traceback
 
 from collections import defaultdict
@@ -23,6 +24,8 @@ GROUPS = enum("cluster", "single")
 MODULE_NAMES = {}
 SIMPLE_MODULE_NAMES = {}
 
+TYPE_OBSERVERS = defaultdict(set)
+
 ALIASES = {}
 COMPONENT_METADATA = {}
 TYPE_OF_COMPONENT = {}
@@ -31,9 +34,36 @@ DEPENDENCIES = defaultdict(set)
 DEPENDENTS = defaultdict(set)
 COMPONENTS = defaultdict(lambda: defaultdict(set))
 GROUP_OF_COMPONENT = {}
+COMPONENT_NAME_CACHE = {}
 
 DELEGATES = {}
 HIDDEN = set()
+
+ANY_TYPE = object()
+
+
+def get_component(name):
+    """ Returns a class or function specified by the fully qualified name string."""
+    try:
+        if name not in COMPONENT_NAME_CACHE:
+            mod, _, name = name.rpartition(".")
+            importlib.import_module(mod)
+            COMPONENT_NAME_CACHE[name] = getattr(sys.modules[mod], name)
+
+        return COMPONENT_NAME_CACHE[name]
+    except:
+        pass
+
+
+def add_observer(o, _type=ANY_TYPE):
+    TYPE_OBSERVERS[_type].add(o)
+
+
+def observer(_type=ANY_TYPE):
+    def inner(func):
+        add_observer(func, _type)
+        return func
+    return inner
 
 
 class MissingRequirements(Exception):
@@ -49,6 +79,12 @@ class SkipComponent(Exception):
 def get_name(component):
     if six.callable(component):
         return '.'.join([component.__module__, component.__name__])
+    return str(component)
+
+
+def get_simple_name(component):
+    if six.callable(component):
+        return component.__name__
     return str(component)
 
 
@@ -72,17 +108,22 @@ def get_simple_module_name(obj):
 
 def mark_hidden(component):
     global HIDDEN
-    try:
+    if isinstance(component, (list, set)):
         HIDDEN |= set(component)
-    except:
+    else:
         HIDDEN.add(component)
 
 
+def is_hidden(component):
+    return component in HIDDEN
+
+
+# TODO: review global vars
 def replace(old, new):
     _type = TYPE_OF_COMPONENT[old]
     _group = GROUP_OF_COMPONENT[old]
 
-    for k, v in DEPENDENTS.iteritems():
+    for k, v in DEPENDENTS.items():
         if old in v:
             v.discard(old)
             v.add(new)
@@ -235,17 +276,43 @@ def register_component(component, delegate, component_type,
 
 
 class Broker(object):
-
     def __init__(self, cleanup=False):
         self.instances = {}
         self.missing_dependencies = {}
         self.exceptions = defaultdict(list)
         self.tracebacks = {}
+        self.exec_times = {}
+
         self.ref_counts = defaultdict(int)
         self.runtime_dependencies = defaultdict(set)
         self._components = set(DEPENDENCIES)
         self._perform_cleanup = cleanup
         self._cleaned = set()
+
+        self.observers = defaultdict(set)
+        self.observers[ANY_TYPE] = set()
+        for k, v in TYPE_OBSERVERS.items():
+            self.observers[k] = set(v)
+
+    def observer(self, _type=ANY_TYPE):
+        def inner(func):
+            self.add_observer(func, _type)
+            return func
+        return inner
+
+    def add_observer(self, o, _type=ANY_TYPE):
+        self.observers[_type].add(o)
+
+    def fire_observers(self, component):
+        _type = TYPE_OF_COMPONENT.get(component, None)
+        if not _type:
+            return
+
+        for o in self.observers.get(_type, set()) | self.observers[ANY_TYPE]:
+            try:
+                o(component, self)
+            except Exception as e:
+                log.exception(e)
 
     def add_exception(self, component, ex, tb=None):
         if isinstance(ex, MissingRequirements):
@@ -254,60 +321,11 @@ class Broker(object):
             self.exceptions[component].append(ex)
             self.tracebacks[ex] = tb
 
-    def finalize(self):
-        if not self._perform_cleanup:
-            return
-
-        for component in self.instances:
-            if component not in self._cleaned:
-                self._cleanup(self.instances[component])
-            if self.ref_counts.get(component):
-                msg = "Non-zero ref count: %s, %s"
-                log.warn(msg % (get_name(component), self.ref_counts[component]))
-
-    def _cleanup(self, i):
-        try:
-            i.cleanup()
-        except Exception as e:
-            if isinstance(i, list):
-                for c in i:
-                    self._cleanup(c)
-            else:
-                log.debug(e)
-
-    def _sweep(self, deps):
-        seen = set()
-        for component in deps:
-            cnt = self.ref_counts[component]
-            if cnt < 1 and component in self.instances:
-                seen.add(component)
-                self._cleanup(self.instances[component])
-        self._cleaned |= seen
-
-    def add_dependencies(self, component, dependencies):
-        if not self._perform_cleanup:
-            return
-        dependencies -= DEPENDENTS[component]
-        self.ref_counts[component] += len(dependencies)
-        for d in dependencies:
-            self.runtime_dependencies[d].add(component)
-
-    def mark_done(self, component):
-        if not self._perform_cleanup:
-            return
-        deps = ((DEPENDENCIES.get(component, set()) |
-                self.runtime_dependencies[component]) & self._components)
-        for d in deps:
-            self.ref_counts[d] -= 1
-        self._sweep(deps)
-
     def keys(self):
         return self.instances.keys()
 
-    def iteritems(self):
-        for k, v in self.instances.iteritems():
-            if k not in HIDDEN:
-                yield (k, v)
+    def items(self):
+        return self.instances.items()
 
     def __contains__(self, component):
         if component in self.instances:
@@ -464,9 +482,11 @@ def run(components, broker=None):
     for component in run_order(components, broker):
         try:
             if component not in broker and component in DELEGATES:
-                log.debug("Calling %s" % get_name(component))
+                log.info("Calling %s" % get_name(component))
+
+                start = time.time()
                 result = DELEGATES[component](broker)
-                log.debug("Result: %s" % pprint.pformat(result))
+                broker.exec_times[component] = time.time() - start
                 broker[component] = result
         except MissingRequirements as mr:
             broker.add_exception(component, mr)
@@ -476,9 +496,8 @@ def run(components, broker=None):
             log.debug(ex)
             broker.add_exception(component, ex, traceback.format_exc())
         finally:
-            broker.mark_done(component)
+            broker.fire_observers(component)
 
-    broker.finalize()
     return broker
 
 

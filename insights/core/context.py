@@ -115,16 +115,17 @@ class Context(object):
 
 
 class ExecutionContext(object):
+    def __init__(self, timeout=None):
+        self.timeout = timeout
 
-    def check_output(self, cmd):
+    def check_output(self, cmd, timeout=None):
         """ Subclasses can override to provide special
             environment setup, command prefixes, etc.
         """
-        return call(cmd, stderr=STDOUT)
+        return call(cmd, timeout=timeout or self.timeout, stderr=STDOUT)
 
-    def shell_out(self, cmd, split=True):
-        log.debug("Running %s" % cmd)
-        output = self.check_output(cmd)
+    def shell_out(self, cmd, split=True, timeout=None):
+        output = self.check_output(cmd, timeout=timeout)
 
         if split:
             return [l.rstrip() for l in output.splitlines()]
@@ -133,25 +134,19 @@ class ExecutionContext(object):
 
 @fs_root
 class HostContext(ExecutionContext):
-
-    def __init__(self, hostname, root="/"):
-        super(HostContext, self).__init__()
+    def __init__(self, hostname, root="/", timeout=None):
+        super(HostContext, self).__init__(timeout)
         self.hostname = hostname
         self.root = root
 
 
-@fs_root
-class DockerHostContext(ExecutionContext):
-
-    def __init__(self, hostname, root="/"):
-        super(HostContext, self).__init__()
-        self.hostname = hostname
-        self.root = root
+# No fs_root here. Dependence on this context should be explicit.
+class DockerHostContext(HostContext):
+    pass
 
 
 @fs_root
 class FileArchiveContext(ExecutionContext):
-
     def __init__(self, root, paths, stored_command_prefix="insights_commands"):
         self.root = root
         self.paths = paths
@@ -161,7 +156,6 @@ class FileArchiveContext(ExecutionContext):
 
 @fs_root
 class ClusterArchiveContext(ExecutionContext):
-
     def __init__(self, root, paths, stored_command_prefix="insights_commands"):
         self.root = root
         self.paths = paths
