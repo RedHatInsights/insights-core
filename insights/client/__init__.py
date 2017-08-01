@@ -366,7 +366,7 @@ class InsightsClientApi(object):
         scanning_host = True
         if (kwargs.get('image_id') or
                 kwargs.get('tar_file') or
-                kwargs.get('mount_point')):
+                kwargs.get('mountpoint')):
             scanning_host = False
 
         # setup other scanning cases

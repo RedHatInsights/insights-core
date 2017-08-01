@@ -161,7 +161,10 @@ def generate_analysis_target_id(analysis_target, name):
 
     if analysis_target == "host":
         return generate_machine_id()
-    elif analysis_target == "docker_image" or analysis_target == "docker_container":
+    elif (analysis_target == "docker_image" or
+            analysis_target == "docker_container" or
+            analysis_target == "compressed_file" or
+            analysis_target == "mountpoint"):
         return generate_container_id(name)
     else:
         raise ValueError("Unknown analysis target: %s" % analysis_target)
