@@ -140,7 +140,7 @@ class InsightsClientApi(object):
                 logger.debug("Updating rules.")
                 self.update_rules()  # won't be needed after we move to new egg format
 
-            results = self.collect(collection_format)
+            results = self.collect()
             logger.debug('Results: %s', results)
         else:
             logger.debug('New Core was not verified, not collecting information.')
@@ -350,12 +350,44 @@ class InsightsClientApi(object):
             logger.debug("There was an error with the last collected timestamp"
                          " file or archives.")
 
-    def collect(self, format="json", options=None, config=None, check_timestamp=True):
+    def collect(self, **kwargs):
         """
+            kwargs: check_timestamp=True,
+                    image_id=UUID,
+                    tar_file=/path/to/tar,
+                    mountpoint=/path/to/mountpoint
             returns (str, json): will return a string path to archive, or json facts
         """
-        # If check_timestamp is not flagged, then skip this check
-        if check_timestamp:
+        # check if we are scanning a host or scanning one of the following:
+        # image/container running in docker
+        # tar_file
+        # OR a mount point (FS that is already mounted somewhere)
+        scanning_host = True
+        if (kwargs.get('image_id', False) or
+                kwargs.get('tar_file', False) or
+                kwargs.get('mount_point', False)):
+            scanning_host = False
+
+        # setup other scanning cases
+        # scanning images/containers running in docker
+        if kwargs.get('image_id', False):
+            InsightsClient.options.container_mode = True
+            InsightsClient.options.only = kwargs.get('image_id', False)
+
+        # compressed filesystems (tar files)
+        if kwargs.get('tar_file', False):
+            InsightsClient.options.container_mode = True
+            InsightsClient.options.analyze_compressed_file = kwargs.get('tar_file', False)
+
+        # FSs already mounted somewhere
+        if kwargs.get('mountpoint', False):
+            InsightsClient.options.container_mode = True
+            InsightsClient.options.mountpoint = kwargs.get('mountpoint', False)
+
+        # If check_timestamp is not flagged, then skip this check AND
+        # we are also scanning a host
+        # bypass timestamp checks for other cases
+        if kwargs.get('check_timestamp', True) and scanning_host:
             cached_results = self._cached_results()
             if cached_results:
                 logger.info("Using cached collection: %s", cached_results)
@@ -363,6 +395,7 @@ class InsightsClientApi(object):
         else:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
 
+        # return collection results
         return client.collect()
 
     def register(self, force_register=False):
