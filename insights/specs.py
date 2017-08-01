@@ -8,6 +8,8 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
+import os
+
 from insights.config import format_rpm
 
 from insights.core.context import ClusterArchiveContext
@@ -326,14 +328,22 @@ rsyslog_conf = sf.simple_file("/etc/rsyslog.conf", name="rsyslog_conf")
 samba = sf.simple_file("/etc/samba/smb.conf", name="samba")
 satellite_version_rb = sf.simple_file("/usr/share/foreman/lib/satellite/version.rb", name="satellite_version_rb")
 block_devices = sf.listdir("/sys/block", name="block_devices")
-get_block_schedulers = sf.with_args_from(block_devices, "echo /sys/block/%s/queue/scheduler", name="get_block_schedulers")
-scheduler = sf.with_args_from(get_block_schedulers, "/bin/cat %s", name="scheduler")
+scheduler = sf.with_args_from(block_devices, "/bin/cat /sys/block/%s/queue/scheduler", name="scheduler")
 scsi = sf.simple_file("/proc/scsi/scsi", name="scsi")
 secure = sf.simple_file("/var/log/secure", name="secure")
 selinux_config = sf.simple_file("/etc/selinux/config", name="selinux_config")
 sestatus = sf.simple_command("/usr/sbin/sestatus -b", name="sestatus")
-block = sf.simple_command("/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'", name="block")
-smartctl = sf.with_args_from(block, "/sbin/smartctl -a %s", name="smartctl")
+# block = sf.simple_command("/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'", name="block")
+
+
+@datasource(requires=[HostContext])
+def block(broker):
+    remove = (".", "ram", "dm-", "loop")
+    tmp = "/dev/%s"
+    return[(tmp % f) for f in os.listdir("/sys/block") if not f.startswith(remove)]
+
+
+smartctl = sf.with_args_from(block, "/sbin/smartctl -a %s", name="smartctl", keep_rc=True)
 spfile_ora = sf.glob_file("${ORACLE_HOME}/dbs/spfile*.ora", name="spfile_ora")
 ss = sf.simple_command("/usr/sbin/ss -tulpn", name="ss")
 ssh_config = sf.simple_file("/etc/ssh/ssh_config", name="ssh_config")

@@ -108,18 +108,23 @@ class TextFileProvider(FileProvider):
 
 
 class CommandOutputProvider(ContentProvider):
-    def __init__(self, cmd, ctx, args=None, content=None, split=True):
+    def __init__(self, cmd, ctx, args=None, content=None, rc=None, split=True, keep_rc=False):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.ctx = ctx
-
         # args are already interpolated into cmd. They're stored here for context."
         self.args = args
         self._content = content
+        self.rc = rc
         self.split = split
+        self.keep_rc = keep_rc
 
     def load(self):
-        return self.ctx.shell_out(self.cmd, self.split)
+        if self.keep_rc:
+            self.rc, result = self.ctx.shell_out(self.cmd, self.split, keep_rc=True)
+            return result
+        else:
+            return self.ctx.shell_out(self.cmd, self.split)
 
     def __repr__(self):
         return 'CommandOutputProvider("%s")' % self.cmd
@@ -203,19 +208,22 @@ class SpecFactory(object):
             self.attach(inner, name)
         return inner
 
-    def simple_command(self, cmd, name=None, context=HostContext, split=True, alias=None):
+    def simple_command(self, cmd, name=None, context=HostContext, split=True, keep_rc=False, alias=None):
         @datasource(requires=[context], alias=alias)
         def inner(broker):
             ctx = broker[context]
-            result = ctx.shell_out(cmd, split)
-            if result:
-                return CommandOutputProvider(cmd, ctx, content=result)
-            raise ContentException("No results found for [%s]" % cmd)
+            rc = None
+            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc)
+            if keep_rc:
+                rc, result = raw
+            else:
+                result = raw
+            return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
         if name:
             self.attach(inner, name)
         return inner
 
-    def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, alias=None):
+    def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, alias=None):
         @datasource(requires=[provider, context], alias=alias)
         def inner(broker):
             result = []
@@ -228,8 +236,13 @@ class SpecFactory(object):
             for e in source:
                 try:
                     the_cmd = cmd % e
-                    r = ctx.shell_out(the_cmd, split)
-                    result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=r))
+                    rc = None
+                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc)
+                    if keep_rc:
+                        rc, output = raw
+                    else:
+                        output = raw
+                    result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split, keep_rc=keep_rc))
                 except:
                     log.debug(traceback.format_exc())
             if result:
@@ -299,6 +312,7 @@ def serialize_text_provider(obj):
 @serializer(CommandOutputProvider)
 def serialize_command_provider(obj):
     d = {}
+    d["rc"] = obj.rc
     d["cmd"] = obj.cmd
     d["args"] = obj.args
     d["_content"] = obj.content

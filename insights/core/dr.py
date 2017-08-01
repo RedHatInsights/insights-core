@@ -195,8 +195,8 @@ def get_subgraphs(graph=DEPENDENCIES):
         while frontier:
             component = frontier.pop()
             seen.add(component)
-            frontier |= set([d for d in DEPENDENCIES[component] if d in DEPENDENCIES])
-            frontier |= set([d for d in DEPENDENTS[component] if d in DEPENDENCIES])
+            frontier |= set([d for d in DEPENDENCIES[component] if d in graph])
+            frontier |= set([d for d in DEPENDENTS[component] if d in graph])
             frontier -= seen
         yield dict((s, DEPENDENCIES[s]) for s in seen)
         keys -= seen
@@ -283,12 +283,6 @@ class Broker(object):
         self.tracebacks = {}
         self.exec_times = {}
 
-        self.ref_counts = defaultdict(int)
-        self.runtime_dependencies = defaultdict(set)
-        self._components = set(DEPENDENCIES)
-        self._perform_cleanup = cleanup
-        self._cleaned = set()
-
         self.observers = defaultdict(set)
         self.observers[ANY_TYPE] = set()
         for k, v in TYPE_OBSERVERS.items():
@@ -347,8 +341,6 @@ class Broker(object):
             raise KeyError(msg % get_name(alias))
 
         self.instances[component] = instance
-        if self._perform_cleanup and component in DEPENDENCIES:
-            self.ref_counts[component] = len(DEPENDENTS[component])
 
     def __delitem__(self, component):
         if component in self.instances:

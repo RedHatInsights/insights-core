@@ -118,18 +118,24 @@ class ExecutionContext(object):
     def __init__(self, timeout=None):
         self.timeout = timeout
 
-    def check_output(self, cmd, timeout=None):
+    def check_output(self, cmd, timeout=None, keep_rc=False):
         """ Subclasses can override to provide special
             environment setup, command prefixes, etc.
         """
-        return call(cmd, timeout=timeout or self.timeout, stderr=STDOUT)
+        return call(cmd, timeout=timeout or self.timeout, stderr=STDOUT, keep_rc=keep_rc)
 
-    def shell_out(self, cmd, split=True, timeout=None):
-        output = self.check_output(cmd, timeout=timeout)
+    def shell_out(self, cmd, split=True, timeout=None, keep_rc=False):
+        rc = None
+        raw = self.check_output(cmd, timeout=timeout, keep_rc=keep_rc)
+        if keep_rc:
+            rc, output = raw
+        else:
+            output = raw
 
         if split:
-            return [l.rstrip() for l in output.splitlines()]
-        return output
+            output = [l.rstrip() for l in output.splitlines()]
+
+        return (rc, output) if keep_rc else output
 
 
 @fs_root
