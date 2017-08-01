@@ -244,13 +244,41 @@ def collect(rc=0):
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
     # initialize collection targets
-    # for now we do either containers OR host -- not both at same time
-    targets = constants.default_target
+    # container mode
+    if InsightsClient.options.container_mode:
+        logger.debug("Client running in container/image mode.")
+        logger.debug("Scanning for matching container/image.")
+
+        from containers import get_targets
+        targets = get_targets()
+
+    # tar files
+    elif InsightsClient.options.analyze_compressed_file is not None:
+        logger.debug("Client analyzing a compress filesystem.")
+        targets = [{'type': 'compressed_file',
+                    'name': os.path.splitext(
+                        os.path.basename(InsightsClient.options.analyze_compressed_file))[0],
+                    'location': InsightsClient.options.analyze_compressed_file}]
+
+    # mountpoints
+    elif InsightsClient.options.mountpoint is not None:
+        logger.debug("Client analyzing a filesystem already mounted.")
+        targets = [{'type': 'mountpoint',
+                    'name': os.path.splitext(
+                        os.path.basename(InsightsClient.options.mountpoint))[0],
+                    'location': InsightsClient.options.mountpoint}]
+
+    # the host
+    else:
+        logger.debug("Host selected as scanning target.")
+        targets = constants.default_target
 
     # if there are no targets to scan then bail
     if not len(targets):
         logger.debug("No targets were found. Exiting.")
         return False
+    logger.debug("Found targets: ")
+    logger.debug(targets)
 
     logger.warning("Assuming remote branch and leaf value of -1")
     branch_info = constants.default_branch_info
@@ -286,12 +314,84 @@ def collect(rc=0):
         archive = None
         container_connection = None
         mp = None
+        compressed_filesystem = None
         # archive metadata
         archive_meta = {}
 
         try:
-            logging_name = determine_hostname()
-            archive_meta['display_name'] = determine_hostname(InsightsClient.options.display_name)
+
+            # analyze docker images
+            if t['type'] == 'docker_image':
+
+                from containers import open_image
+                container_connection = open_image(t['name'])
+                logging_name = 'Docker image ' + t['name']
+                archive_meta['docker_id'] = t['name']
+
+                from containers import docker_display_name
+                archive_meta['display_name'] = docker_display_name(
+                    t['name'], t['type'].replace('docker_', ''))
+
+                logger.debug('Docker display_name: %s', archive_meta['display_name'])
+                logger.debug('Docker docker_id: %s', archive_meta['docker_id'])
+
+                if container_connection:
+                    mp = container_connection.get_fs()
+                else:
+                    logger.error('Could not open %s for analysis', logging_name)
+                    return False
+
+            # analyze docker containers
+            elif t['type'] == 'docker_container':
+                from containers import open_container
+                container_connection = open_container(t['name'])
+
+                logging_name = 'Docker container ' + t['name']
+                archive_meta['docker_id'] = t['name']
+
+                from containers import docker_display_name
+                archive_meta['display_name'] = docker_display_name(
+                    t['name'], t['type'].replace('docker_', ''))
+                logger.debug('Docker display_name: %s', archive_meta['display_name'])
+                logger.debug('Docker docker_id: %s', archive_meta['docker_id'])
+
+                if container_connection:
+                    mp = container_connection.get_fs()
+                else:
+                    logger.error('Could not open %s for analysis', logging_name)
+                    return False
+
+            # analyze compressed files
+            elif t['type'] == 'compressed_file':
+
+                logging_name = 'Compressed file ' + t['name'] + ' at location ' + t['location']
+
+                from compressed_file import InsightsCompressedFile
+                compressed_filesystem = InsightsCompressedFile(t['location'])
+
+                if compressed_filesystem.is_tarfile is False:
+                    logger.debug("Could not access compressed tar filesystem.")
+                    return False
+
+                mp = compressed_filesystem.get_filesystem_path()
+
+            # analyze mountpoints
+            elif t['type'] == 'mountpoint':
+
+                logging_name = 'Filesystem ' + t['name'] + ' at location ' + t['location']
+                mp = InsightsClient.options.mountpoint
+
+            # analyze the host
+            elif t['type'] == 'host':
+                logging_name = determine_hostname()
+                archive_meta['display_name'] = determine_hostname(
+                    InsightsClient.options.display_name)
+
+            # nothing found to analyze
+            else:
+                logger.error('Unexpected analysis target: %s', t['type'])
+                return False
+
             archive_meta['type'] = t['type'].replace('docker_', '')
             archive_meta['product'] = 'Docker'
 
@@ -299,12 +399,9 @@ def collect(rc=0):
             archive_meta['system_id'] = machine_id
             archive_meta['machine_id'] = machine_id
 
-            if InsightsClient.options.container_mode:
-                compressor = "none"
-            else:
-                compressor = InsightsClient.options.compressor
-
-            archive = InsightsArchive(compressor=compressor, target_name=t['name'])
+            archive = InsightsArchive(compressor=InsightsClient.options.compressor
+                                        if not InsightsClient.options.container_mode else "none",
+                                      target_name=t['name'])
             dc = DataCollector(archive,
                                InsightsClient.config,
                                mountpoint=mp,
@@ -347,6 +444,10 @@ def collect(rc=0):
                 (last_collected_time, constants.archive_last_collected_date_file))
             logger.debug("Wrote %s to %s as last collected archive" %
                 (tar_file, constants.archive_last_collected_date_file))
+
+    # cleanup the temporary stuff for analyzing tar files
+    if InsightsClient.options.analyze_compressed_file is not None:
+        compressed_filesystem.cleanup_temp_filesystem()
 
     return tar_file
 
@@ -442,6 +543,17 @@ def handle_startup():
     if InsightsClient.options.version:
         return constants.version
 
+    # container/image stuff
+    if (InsightsClient.options.container_mode and
+            not InsightsClient.options.only):
+        logger.error("Client running in container mode but no image/container specified via --only.")
+        return False
+
+    if (InsightsClient.options.only is not None) and (len(InsightsClient.options.only) < 12):
+        logger.error("Image/Container ID must be atleast twelve characters long.")
+        return False
+
+    # validate the remove file
     if InsightsClient.options.validate:
         return validate_remove_file()
 
