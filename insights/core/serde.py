@@ -96,11 +96,12 @@ def persister(output_dir, ignore_hidden=True):
         doc["name"] = name
         doc["time"] = broker.exec_times[c]
         doc["results"] = content
-        path = os.path.join(output_dir, name + "." + ser.__name__)
+        path = os.path.join(output_dir, name + "." + dr.get_simple_module_name(ser))
         try:
             with open(path, "wb") as f:
                 ser.dump(doc, f)
-        except:
+        except Exception as boom:
+            log.exception(boom)
             fs.remove(path)
 
     return observer

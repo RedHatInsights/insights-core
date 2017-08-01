@@ -46,7 +46,7 @@ class CalledProcessError(IOError):
         return '<{c}({r}, {cmd}, {o})>'.format(c=name, r=rc, cmd=cmd, o=output)
 
 
-def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, stderr=STDERR, **kwargs):
+def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, stderr=STDERR, keep_rc=False, **kwargs):
     """Call cmd with an optional timeout in seconds.
 
     If `timeout` is supplied and expires, the process is killed with
@@ -95,6 +95,8 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, s
         rc = p.poll()
     except Exception as e:
         raise CalledProcessError(rc, cmd, str(e)), None, sys.exc_info()[2]
+    if keep_rc:
+        return rc, output
     if rc:
         raise CalledProcessError(rc, cmd, output)
     return output
