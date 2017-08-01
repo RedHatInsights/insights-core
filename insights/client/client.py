@@ -244,16 +244,8 @@ def collect(rc=0):
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
     # initialize collection targets
-    # container mode
-    if InsightsClient.options.container_mode:
-        logger.debug("Client running in container/image mode.")
-        logger.debug("Scanning for matching container/image.")
-
-        from containers import get_targets
-        targets = get_targets()
-
     # tar files
-    elif InsightsClient.options.analyze_compressed_file is not None:
+    if InsightsClient.options.analyze_compressed_file is not None:
         logger.debug("Client analyzing a compress filesystem.")
         targets = [{'type': 'compressed_file',
                     'name': os.path.splitext(
@@ -267,6 +259,14 @@ def collect(rc=0):
                     'name': os.path.splitext(
                         os.path.basename(InsightsClient.options.mountpoint))[0],
                     'location': InsightsClient.options.mountpoint}]
+
+    # container mode
+    elif InsightsClient.options.container_mode:
+        logger.debug("Client running in container/image mode.")
+        logger.debug("Scanning for matching container/image.")
+
+        from containers import get_targets
+        targets = get_targets()
 
     # the host
     else:
@@ -446,7 +446,8 @@ def collect(rc=0):
                 (tar_file, constants.archive_last_collected_date_file))
 
     # cleanup the temporary stuff for analyzing tar files
-    if InsightsClient.options.analyze_compressed_file is not None:
+    if (InsightsClient.options.analyze_compressed_file is not None and
+            compressed_filesystem is not None):
         compressed_filesystem.cleanup_temp_filesystem()
 
     return tar_file
