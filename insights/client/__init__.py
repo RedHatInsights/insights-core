@@ -364,26 +364,26 @@ class InsightsClientApi(object):
         # tar_file
         # OR a mount point (FS that is already mounted somewhere)
         scanning_host = True
-        if (kwargs.get('image_id', False) or
-                kwargs.get('tar_file', False) or
-                kwargs.get('mount_point', False)):
+        if (kwargs.get('image_id') or
+                kwargs.get('tar_file') or
+                kwargs.get('mount_point')):
             scanning_host = False
 
         # setup other scanning cases
         # scanning images/containers running in docker
-        if kwargs.get('image_id', False):
+        if kwargs.get('image_id'):
             InsightsClient.options.container_mode = True
-            InsightsClient.options.only = kwargs.get('image_id', False)
+            InsightsClient.options.only = kwargs.get('image_id')
 
         # compressed filesystems (tar files)
-        if kwargs.get('tar_file', False):
+        if kwargs.get('tar_file'):
             InsightsClient.options.container_mode = True
-            InsightsClient.options.analyze_compressed_file = kwargs.get('tar_file', False)
+            InsightsClient.options.analyze_compressed_file = kwargs.get('tar_file')
 
         # FSs already mounted somewhere
-        if kwargs.get('mountpoint', False):
+        if kwargs.get('mountpoint'):
             InsightsClient.options.container_mode = True
-            InsightsClient.options.mountpoint = kwargs.get('mountpoint', False)
+            InsightsClient.options.mountpoint = kwargs.get('mountpoint')
 
         # If check_timestamp is not flagged, then skip this check AND
         # we are also scanning a host
