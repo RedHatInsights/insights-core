@@ -20,6 +20,11 @@ def set_up_options(parser):
     """
     Add options to the option parser
     """
+    parser.add_option('--version',
+                      help="Display version",
+                      action="store_true",
+                      dest="version",
+                      default=False)
     parser.add_option('--register',
                       help=('Register system to the Red Hat '
                             'Insights Service'),
@@ -118,12 +123,17 @@ def set_up_options(parser):
                       help='url to core location',
                       default=None
                       )
+    parser.add_option('--analyze-compressed-file',
+                     help=optparse.SUPPRESS_HELP,
+                     action="store",
+                     dest="analyze_compressed_file",
+                     default=None)
+    parser.add_option('--mountpoint',
+                     help=optparse.SUPPRESS_HELP,
+                     action="store",
+                     dest="mountpoint",
+                     default=None)
     group = optparse.OptionGroup(parser, "Debug options")
-    parser.add_option('--version',
-                      help="Display version",
-                      action="store_true",
-                      dest="version",
-                      default=False)
     group.add_option('--test-connection',
                      help='Test connectivity to Red Hat',
                      action="store_true",
