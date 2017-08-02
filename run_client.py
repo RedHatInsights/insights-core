@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from insights.client.config import compile_config, CONFIG as config
 from insights.client import InsightsClient
 from insights.client.client import set_up_logging, handle_startup
