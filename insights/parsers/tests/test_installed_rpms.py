@@ -100,6 +100,15 @@ vdsm-cli-4.18.15.3-1.el7ev.noarch
 vdsm-4.18.15.3-1.el7ev.x86_64
 '''.strip()
 
+RPMS_PACKAGE_WITH_UNICODE = u'''
+openjpeg-libs-1.3-9.el6_3.x86_64
+openldap-2.4.23-31.el6.x86_64
+openobex\u018e-1.4-7.el6.x86_64
+openssh-server-5.3p1-104.el6.x86_64
+openssh-askpass-5.3p1-84.1.el6.x86_64
+openssl-1.0.0-27.el6.x86_64
+'''.strip()
+
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
@@ -314,3 +323,10 @@ def test_is_hypervisor():
     rpms = InstalledRpms(context_wrap(RHV_HYPERVISOR_RPMS))
     assert "vdsm" in rpms.packages
     assert rpms.is_hypervisor
+
+
+def test_unicode_char_in_rpms():
+    rpms = InstalledRpms(context_wrap(RPMS_PACKAGE_WITH_UNICODE))
+    assert u"openobex\u018e" in rpms.packages
+    rpm = rpms.get_max(u'openobex\u018e')
+    assert rpm.package == u'openobex\u018e-1.4-7.el6'
