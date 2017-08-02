@@ -4,7 +4,7 @@ Module responsible for scheduling Insights data collection
 import os
 import logging
 
-from client_config import InsightsClient
+from config import CONFIG as config
 from constants import InsightsConstants as constants
 
 CRON_DAILY = '/etc/cron.daily/'
@@ -44,7 +44,7 @@ class InsightsSchedule(object):
 
         try:
             os.symlink('/etc/' + APP_NAME + '/' + APP_NAME + (
-                       '-container' if InsightsClient.options.container_mode else ''
+                       '-container' if config['container_mode'] else ''
                        ), cronfile)
         except OSError:
             logger.debug('Could not link cron.daily')

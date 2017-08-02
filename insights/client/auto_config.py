@@ -9,7 +9,7 @@ from urlparse import urlparse
 from constants import InsightsConstants as constants
 from cert_auth import rhsmCertificate
 from connection import InsightsConnection
-from client_config import InsightsClient
+from config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 APP_NAME = constants.app_name
@@ -20,7 +20,7 @@ def verify_connectivity():
     Verify connectivity to satellite server
     """
     logger.debug("Verifying Connectivity")
-    for item, value in InsightsClient.config.items(APP_NAME):
+    for item, value in config.iteritems():
         if item != 'password' and item != 'proxy' and item != 'systemid':
             logger.debug("%s:%s", item, value)
     ic = InsightsConnection()
@@ -52,26 +52,26 @@ def set_auto_configuration(hostname, ca_cert, proxy):
     logger.debug("Attempting to auto configure hostname: %s", hostname)
     logger.debug("Attempting to auto configure CA cert: %s", ca_cert)
     logger.debug("Attempting to auto configure proxy: %s", proxy)
-    saved_base_url = InsightsClient.config.get(APP_NAME, 'base_url')
+    saved_base_url = config['base_url']
     if ca_cert is not None:
-        saved_cert_verify = InsightsClient.config.get(APP_NAME, 'cert_verify')
-        InsightsClient.config.set(APP_NAME, 'cert_verify', ca_cert)
+        saved_cert_verify = config['cert_verify']
+        config['cert_verify'] = ca_cert
     if proxy is not None:
-        saved_proxy = InsightsClient.config.get(APP_NAME, 'proxy')
-        InsightsClient.config.set(APP_NAME, 'proxy', proxy)
-    InsightsClient.config.set(APP_NAME, 'base_url', hostname + '/r/insights')
+        saved_proxy = config['proxy']
+        config['proxy'] = proxy
+    config['base_url'] = hostname + '/r/insights'
 
     if not verify_connectivity():
         logger.warn("Could not auto configure, falling back to static config")
         logger.warn("See %s for additional information",
                     constants.default_log_file)
-        InsightsClient.config.set(APP_NAME, 'base_url', saved_base_url)
+        config['base_url'] = saved_base_url
         if proxy is not None:
             if saved_proxy is not None and saved_proxy.lower() == 'none':
                 saved_proxy = None
-            InsightsClient.config.set(APP_NAME, 'proxy', saved_proxy)
+            config['proxy'] = saved_proxy
         if ca_cert is not None:
-            InsightsClient.config.set(APP_NAME, 'cert_verify', saved_cert_verify)
+            config['cert_verify'] = saved_cert_verify
 
 
 def _try_satellite6_configuration():
@@ -112,7 +112,7 @@ def _try_satellite6_configuration():
         rhsm_ca = rhsm_config.get('rhsm', 'repo_ca_cert')
         logger.debug("Found CA: %s", rhsm_ca)
         logger.debug("Setting authmethod to CERT")
-        InsightsClient.config.set(APP_NAME, 'authmethod', 'CERT')
+        config['authmethod'] = 'CERT'
 
         # Directly connected to Red Hat, use cert auth directly with the api
         if (rhsm_hostname == 'subscription.rhn.redhat.com' or
@@ -149,7 +149,7 @@ def _try_satellite5_configuration():
     systemid = '/etc/sysconfig/rhn/systemid'
     if os.path.isfile(rhn_config):
         if os.path.isfile(systemid):
-            InsightsClient.config.set(APP_NAME, 'systemid', _read_systemid_file(systemid))
+            config['systemid'] = _read_systemid_file(systemid)
         else:
             logger.debug("Could not find Satellite 5 systemid file.")
             return False
