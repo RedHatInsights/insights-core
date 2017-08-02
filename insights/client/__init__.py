@@ -349,24 +349,24 @@ class InsightsClient(object):
         # tar_file
         # OR a mount point (FS that is already mounted somewhere)
         scanning_host = True
-        if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mount_point')):
+        if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mountpoint')):
             scanning_host = False
 
         # setup other scanning cases
         # scanning images/containers running in docker
-        if kwargs.get('image_id', False):
+        if kwargs.get('image_id'):
             config['container_mode'] = True
-            config['only'] = kwargs.get('image_id', False)
+            config['only'] = kwargs.get('image_id')
 
         # compressed filesystems (tar files)
-        if kwargs.get('tar_file', False):
+        if kwargs.get('tar_file'):
             config['container_mode'] = True
-            config['analyze_compressed_file'] = kwargs.get('tar_file', False)
+            config['analyze_compressed_file'] = kwargs.get('tar_file')
 
         # FSs already mounted somewhere
-        if kwargs.get('mountpoint', False):
+        if kwargs.get('mountpoint'):
             config['container_mode'] = True
-            config['mountpoint'] = kwargs.get('mountpoint', False)
+            config['mountpoint'] = kwargs.get('mountpoint')
 
         # If check_timestamp is not flagged, then skip this check AND
         # we are also scanning a host
