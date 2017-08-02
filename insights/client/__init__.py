@@ -59,11 +59,9 @@ class InsightsClient(object):
         """
             returns (int): 0 if success 1 if failure
         """
-        try_auto_configuration()
         return client.test_connection()
 
     def handle_startup(self):
-        try_auto_configuration()
         return client.handle_startup()
 
     def run(self,
@@ -285,14 +283,12 @@ class InsightsClient(object):
         """
             returns (dict): new client rules
         """
-        try_auto_configuration()
         return client.update_rules()
 
     def fetch_rules(self, options=None, config=None):
         """
             returns (dict): existing client rules
         """
-        try_auto_configuration()
         return client.fetch_rules()
 
     def _cached_results(self):
@@ -389,7 +385,6 @@ class InsightsClient(object):
                             'response': response from API,
                             'code': http code}
         """
-        try_auto_configuration()
         config['register'] = True
         if force_register:
             config['reregister'] = True
@@ -399,7 +394,6 @@ class InsightsClient(object):
         """
             returns (bool): True success, False failure
         """
-        try_auto_configuration()
         return client.handle_unregistration()
 
     def get_registration_information(self):
@@ -407,7 +401,6 @@ class InsightsClient(object):
             returns (json): {'machine-id': uuid from API,
                             'response': response from API}
         """
-        try_auto_configuration()
         registration_status = client.get_registration_status()
         return {'machine-id': client.get_machine_id(),
                 'registration_status': registration_status,
@@ -423,9 +416,6 @@ class InsightsClient(object):
         """
             returns (int): upload status code
         """
-        # auto-configure satellite and other network stuff
-        try_auto_configuration()
-
         # do the upload
         upload_status = client.upload(path)
 
