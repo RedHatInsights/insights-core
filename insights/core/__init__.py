@@ -48,6 +48,13 @@ class Parser(object):
     """
 
     def __init__(self, context):
+        if context is None:
+            self.file_path = None
+            self.file_name = None
+            self.last_client_run = None
+            self.args = None
+            return
+
         self.file_path = context.path
         """str: Full context path of the input file."""
         self.file_name = os.path.basename(context.path) \
@@ -57,6 +64,7 @@ class Parser(object):
             self.last_client_run = context.last_client_run
         else:
             self.last_client_run = None
+        self.args = context.args if hasattr(context, "args") else None
         self.parse_content(context.content)
 
     def parse_content(self, content):

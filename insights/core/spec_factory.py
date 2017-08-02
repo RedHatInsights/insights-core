@@ -320,7 +320,7 @@ def serialize_command_provider(obj):
 
 
 @deserializer(ContentProvider)
-def deserialize_content(obj):
+def deserialize_content(_type, obj):
     c = ContentProvider()
     for k, v in obj.items():
         setattr(c, k, v)
