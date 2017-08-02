@@ -11,7 +11,7 @@ from ConfigParser import RawConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from constants import InsightsConstants as constants
-from client_config import InsightsClient
+from config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -30,15 +30,15 @@ class InsightsConfig(object):
         self.remove_file = constants.collection_remove_file
         self.collection_rules_file = constants.collection_rules_file
         protocol = "https://"
-        insecure_connection = InsightsClient.config.getboolean(APP_NAME, "insecure_connection")
+        insecure_connection = config["insecure_connection"]
         if insecure_connection:
             # This really should not be used.
             protocol = "http://"
-        self.base_url = protocol + InsightsClient.config.get(APP_NAME, 'base_url')
-        self.collection_rules_url = InsightsClient.config.get(APP_NAME, 'collection_rules_url')
+        self.base_url = protocol + config['base_url']
+        self.collection_rules_url = config['collection_rules_url']
         if self.collection_rules_url is None:
             self.collection_rules_url = self.base_url + '/v1/static/uploader.json'
-        self.gpg = InsightsClient.config.getboolean(APP_NAME, 'gpg')
+        self.gpg = config['gpg']
         self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):

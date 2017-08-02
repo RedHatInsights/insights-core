@@ -11,9 +11,10 @@ import os
 import logging
 import shlex
 import subprocess
+import sys
 
 from constants import InsightsConstants as constants
-from client_config import InsightsClient
+from config import CONFIG as config
 
 
 APP_NAME = constants.app_name
@@ -71,10 +72,10 @@ if not HaveDocker and HaveAtomic:
     UseDocker = False
 
 # force atomic or docker
-if InsightsClient.options.use_docker is True:
+if config['use_docker']:
     UseAtomic = False
     UseDocker = True
-if InsightsClient.options.use_atomic is True:
+if config['use_atomic']:
     UseAtomic = True
     UseDocker = False
 
@@ -111,15 +112,13 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         return "insights-client"
 
     def get_image_name():
-        if InsightsClient.options.docker_image_name:
-            logger.debug("found docker_image_name in options: %s" %
-                         InsightsClient.options.docker_image_name)
-            return InsightsClient.options.docker_image_name
+        if config['docker_image_name']:
+            logger.debug("found docker_image_name in options: %s" % config['docker_image_name'])
+            return config['docker_image_name']
 
-        elif InsightsClient.config.get(APP_NAME, 'docker_image_name'):
-            logger.debug("found docker_image_name in config: %s" %
-                         InsightsClient.config.get(APP_NAME, 'docker_image_name'))
-            return InsightsClient.config.get(APP_NAME, 'docker_image_name')
+        elif config['docker_image_name']:
+            logger.debug("found docker_image_name in config: %s" % config['docker_image_name'])
+            return config['docker_image_name']
 
         else:
             logger.debug("found docker_image_name in constants: %s" % constants.docker_image_name)
@@ -129,7 +128,7 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         return UseAtomic and HaveAtomic
 
     def use_atomic_mount():
-        return (UseAtomic and HaveAtomicMount) and not InsightsClient.options.run_here
+        return (UseAtomic and HaveAtomicMount) and not config['run_here']
 
     def pull_image(image):
         return runcommand(shlex.split("docker pull") + [image])
@@ -151,17 +150,17 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         targets = []
         logger.debug('Getting targets to scan...')
         for d in _docker_all_image_ids():
-            logger.debug('Checking if %s equals %s.' % (d, InsightsClient.options.only))
-            # if InsightsClient.options.only is None or InsightsClient.options.only == d:
-            if InsightsClient.options.only == d or d.startswith(InsightsClient.options.only):
-                logger.debug('%s equals %s' % (d, InsightsClient.options.only))
+            logger.debug('Checking if %s equals %s.' % (d, config['only']))
+            # if config['only'] is None or config['only'] == d:
+            if config['only'] == d or d.startswith(config['only']):
+                logger.debug('%s equals %s' % (d, config['only']))
                 targets.append({'type': 'docker_image', 'name': d})
                 return targets  # return the first one that matches
         for d in _docker_all_container_ids():
-            logger.debug('Checking if %s equals %s.' % (d, InsightsClient.options.only))
-            # if InsightsClient.options.only is None or InsightsClient.options.only == d:
-            if InsightsClient.options.only == d or d.startswith(InsightsClient.options.only):
-                logger.debug('%s equals %s' % (d, InsightsClient.options.only))
+            logger.debug('Checking if %s equals %s.' % (d, config['only']))
+            # if config['only'] is None or config['only'] == d:
+            if config['only'] == d or d.startswith(config['only']):
+                logger.debug('%s equals %s' % (d, config['only']))
                 targets.append({'type': 'docker_container', 'name': d})
                 return targets  # return the first one that matches
         logger.debug('Done collecting targets')
@@ -210,12 +209,12 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
 
     def run_in_container():
 
-        if InsightsClient.options.from_file:
+        if config['from_file']:
             logger.error('--from-file is incompatible with transfering to a container.')
             return 1
 
         if use_atomic_run():
-            return runcommand(["atomic", "run", "--name", get_container_name(), get_image_name(), "redhat-access-insights", "--run-here"] + InsightsClient.argv[1:])
+            return runcommand(["atomic", "run", "--name", get_container_name(), get_image_name(), "redhat-access-insights", "--run-here"] + sys.argv[1:])
         else:
             run_string = _get_run_string(get_image_name(), get_container_name())
             if not run_string:
@@ -225,7 +224,7 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
 
             docker_args = shlex.split(run_string + " redhat-access-insights")
 
-            return runcommand(docker_args + ["--run-here"] + InsightsClient.argv[1:])
+            return runcommand(docker_args + ["--run-here"] + sys.argv[1:])
 
     def _get_run_string(imagename, containername):
         labelstring = _get_label(imagename, "RUN")

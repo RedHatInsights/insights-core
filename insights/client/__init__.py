@@ -11,7 +11,8 @@ from .. import get_nvr
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
-from .client_config import InsightsClient
+from .config import CONFIG as config, parse_config_file, parse_options
+from insights import settings
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
@@ -30,32 +31,18 @@ class InsightsClientApi(object):
             returns:
                 InsightsClientApi()
         """
-        # we dont want to assume API implementation should read/parse configs or options
-        if kwargs.get('try_auto_config_and_options') is True:
-            InsightsClient.config, InsightsClient.options = client.parse_options()
-
-        # Overwrite anything passed in
-        if kwargs.get('options'):
-            for key in kwargs['options']:
-                setattr(InsightsClient.options, key, kwargs['options'][key])
-        if kwargs.get('config'):
-            for new_config_var in kwargs['config']:
-                InsightsClient.config.set(constants.app_name,
-                                          new_config_var,
-                                          kwargs['config'][new_config_var])
-
         # set up logging
         client.set_up_logging()
 
         # Disable GPG verification
-        if InsightsClient.options.no_gpg:
+        if config['no_gpg']:
             logger.warn("WARNING: GPG VERIFICATION DISABLED")
-            InsightsClient.config.set(APP_NAME, 'gpg', 'False')
+            config['gpg'] = False
 
         # Log config except the password
         # and proxy as it might have a pw as well
         config_log = logging.getLogger("Insights Config")
-        for item, value in InsightsClient.config.items(APP_NAME):
+        for item, value in config.items():
             if item != 'password' and item != 'proxy':
                 config_log.debug("%s:%s", item, value)
 
@@ -126,7 +113,7 @@ class InsightsClientApi(object):
         # Register
         is_registered = self.get_registration_information()['is_registered']
         logger.debug('System is registered: %s', is_registered)
-        if not InsightsClient.options.offline and not is_registered:
+        if not config['offline'] and not is_registered:
             registration = self.register(force_register)
             is_registered = registration['registration']['status']
             logger.debug('Registration response: %s', registration)
@@ -147,7 +134,7 @@ class InsightsClientApi(object):
             results = False
 
         # Upload things
-        if not skip_upload and not InsightsClient.options.no_upload and not InsightsClient.options.offline and is_registered:
+        if not skip_upload and not config['no_upload'] and not config['offline'] and is_registered:
             logger.debug('Not skipping upload, or running offline.')
             logger.debug('System is registered, proceeding with upload.')
             upload_results = self.upload(results)
@@ -166,8 +153,8 @@ class InsightsClientApi(object):
             returns (str): path to new egg.  None if no update.
         """
         # was a custom egg url passed in?
-        if InsightsClient.options.core_url:
-            egg_url = InsightsClient.options.core_url
+        if config['core_url']:
+            egg_url = config['core_url']
 
         # Searched for cached etag information
         current_etag = None
@@ -363,26 +350,24 @@ class InsightsClientApi(object):
         # tar_file
         # OR a mount point (FS that is already mounted somewhere)
         scanning_host = True
-        if (kwargs.get('image_id', False) or
-                kwargs.get('tar_file', False) or
-                kwargs.get('mount_point', False)):
+        if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mount_point')):
             scanning_host = False
 
         # setup other scanning cases
         # scanning images/containers running in docker
         if kwargs.get('image_id', False):
-            InsightsClient.options.container_mode = True
-            InsightsClient.options.only = kwargs.get('image_id', False)
+            config['container_mode'] = True
+            config['only'] = kwargs.get('image_id', False)
 
         # compressed filesystems (tar files)
         if kwargs.get('tar_file', False):
-            InsightsClient.options.container_mode = True
-            InsightsClient.options.analyze_compressed_file = kwargs.get('tar_file', False)
+            config['container_mode'] = True
+            config['analyze_compressed_file'] = kwargs.get('tar_file', False)
 
         # FSs already mounted somewhere
         if kwargs.get('mountpoint', False):
-            InsightsClient.options.container_mode = True
-            InsightsClient.options.mountpoint = kwargs.get('mountpoint', False)
+            config['container_mode'] = True
+            config['mountpoint'] = kwargs.get('mountpoint', False)
 
         # If check_timestamp is not flagged, then skip this check AND
         # we are also scanning a host
@@ -406,9 +391,9 @@ class InsightsClientApi(object):
                             'code': http code}
         """
         try_auto_configuration()
-        setattr(InsightsClient.options, 'register', True)
+        config['register'] = True
         if force_register:
-            setattr(InsightsClient.options, 'reregister', True)
+            config['reregister'] = True
         return client.handle_registration()
 
     def unregister(self):
@@ -433,7 +418,7 @@ class InsightsClientApi(object):
         """
             returns (optparse): OptParse config/options
         """
-        return InsightsClient
+        return config
 
     def upload(self, path, rotate_eggs=True):
         """
@@ -516,7 +501,10 @@ class InsightsClientApi(object):
 
 def run(op, *args, **kwargs):
     # Setup the base config and options
-    InsightsClient.config, InsightsClient.options = client.parse_options()
+    config.update(parse_config_file())
+    if "client" in settings.config:
+        config.update(settings.config)
+    config.update(parse_options())
     client.set_up_logging()
     try_auto_configuration()
     status = client.handle_startup()

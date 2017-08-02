@@ -12,10 +12,10 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from ..contrib.soscleaner import SOSCleaner
-from utilities import _expand_paths, generate_analysis_target_id, logging_file
+from utilities import _expand_paths, generate_analysis_target_id
 from constants import InsightsConstants as constants
 from insights_spec import InsightsFile, InsightsCommand
-from client_config import InsightsClient
+from config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -68,9 +68,9 @@ class DataCollector(object):
     def _write_analysis_target_id(self, conf):
         # AKA machine-id
         logger.debug('Writing machine-id to archive...')
-        if InsightsClient.options.from_file is not None:
+        if config['from_file'] is not None:
             try:
-                with open(InsightsClient.options.from_file) as f:
+                with open(config['from_file']) as f:
                     stdin_config = json.load(f)
                     machine_id = stdin_config['machine-id']
             except:
@@ -82,7 +82,7 @@ class DataCollector(object):
 
     def _write_uploader_log(self, conf):
         logger.debug('Writing insights.log to archive...')
-        with open(logging_file()) as logfile:
+        with open(config['logging_file']) as logfile:
             self.archive.add_metadata_to_archive(logfile.read().strip().decode('utf-8'),
                                                  self._get_meta_path('uploader_log', conf))
 
@@ -250,15 +250,15 @@ class DataCollector(object):
             except LookupError:
                 logger.debug('Could not parse remove.conf. Ignoring...')
 
-        if InsightsClient.options.run_specific_specs is not None:
-            logger.debug('Running specific specs %s', InsightsClient.options.run_specific_specs)
-            for specific_spec in InsightsClient.options.run_specific_specs.split(','):
+        if config['run_specific_specs'] is not None:
+            logger.debug('Running specific specs %s', config['run_specific_specs'])
+            for specific_spec in config['run_specific_specs'].split(','):
                 logger.debug('Running specific spec %s', specific_spec)
                 self.run_specific_specs(specific_spec, conf, rm_conf, exclude, branch_info)
                 logger.debug('Finished running specific spec %s', specific_spec)
             return
 
-        if 'specs' not in conf or InsightsClient.options.original_style_specs:
+        if 'specs' not in conf or config['original_style_specs']:
             # old style collection
             self._run_old_collection(conf, rm_conf, exclude, branch_info)
             return
@@ -315,7 +315,7 @@ class DataCollector(object):
         Do finalization stuff
         """
         self._write_uploader_log(conf)
-        if InsightsClient.config.getboolean(APP_NAME, "obfuscate"):
+        if config["obfuscate"]:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(self.archive.tmp_dir, rm_conf)
             fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
@@ -349,7 +349,7 @@ class CleanOptions(object):
             except LookupError:
                 pass
 
-        if InsightsClient.config.getboolean(APP_NAME, "obfuscate_hostname"):
+        if config["obfuscate_hostname"]:
             self.hostname_path = "insights_commands/hostname"
         else:
             self.hostname_path = None

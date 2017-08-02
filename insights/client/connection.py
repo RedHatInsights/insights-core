@@ -17,7 +17,7 @@ from utilities import (determine_hostname,
                        write_unregistered_file)
 from cert_auth import rhsmCertificate
 from constants import InsightsConstants as constants
-from client_config import InsightsClient
+from config import CONFIG as config
 from schedule import InsightsSchedule
 
 warnings.simplefilter('ignore')
@@ -50,37 +50,35 @@ class InsightsConnection(object):
 
     def __init__(self):
         self.user_agent = constants.user_agent
-        self.username = InsightsClient.config.get(APP_NAME, "username")
-        self.password = InsightsClient.config.get(APP_NAME, "password")
+        self.username = config["username"]
+        self.password = config["password"]
 
-        self.cert_verify = InsightsClient.config.get(APP_NAME, "cert_verify")
+        self.cert_verify = config["cert_verify"]
         if self.cert_verify.lower() == 'false':
             self.cert_verify = False
         elif self.cert_verify.lower() == 'true':
             self.cert_verify = True
 
         protocol = "https://"
-        insecure_connection = InsightsClient.config.getboolean(APP_NAME,
-                                                               "insecure_connection")
+        insecure_connection = config["insecure_connection"]
         if insecure_connection:
             # This really should not be used.
             protocol = "http://"
             self.cert_verify = False
 
-        self.auto_config = InsightsClient.config.getboolean(APP_NAME,
-                                                            'auto_config')
-        self.base_url = protocol + InsightsClient.config.get(APP_NAME, "base_url")
-        self.upload_url = InsightsClient.config.get(APP_NAME, "upload_url")
+        self.auto_config = config['auto_config']
+        self.base_url = protocol + config["base_url"]
+        self.upload_url = config["upload_url"]
         if self.upload_url is None:
             self.upload_url = self.base_url + "/uploads"
-        self.api_url = InsightsClient.config.get(APP_NAME, "api_url")
+        self.api_url = config["api_url"]
         if self.api_url is None:
             self.api_url = self.base_url
-        self.branch_info_url = InsightsClient.config.get(APP_NAME, "branch_info_url")
+        self.branch_info_url = config["branch_info_url"]
         if self.branch_info_url is None:
             self.branch_info_url = self.base_url + "/v1/branch_info"
-        self.authmethod = InsightsClient.config.get(APP_NAME, 'authmethod')
-        self.systemid = InsightsClient.config.get(APP_NAME, 'systemid')
+        self.authmethod = config['authmethod']
+        self.systemid = config['systemid']
         self.get_proxies()
         self._validate_hostnames()
         self.session = self._init_session()
@@ -140,7 +138,7 @@ class InsightsConnection(object):
         logger.debug("NO PROXY: %s", no_proxy)
 
         # CONF PROXY TAKES PRECEDENCE OVER ENV PROXY
-        conf_proxy = InsightsClient.config.get(APP_NAME, 'proxy')
+        conf_proxy = config['proxy']
         if ((conf_proxy is not None and
              conf_proxy.lower() != 'None'.lower() and
              conf_proxy != "")):
@@ -524,10 +522,10 @@ class InsightsConnection(object):
                 'remote_branch': remote_branch,
                 'remote_leaf': remote_leaf,
                 'hostname': client_hostname}
-        if InsightsClient.config.get(APP_NAME, 'display_name') is not None:
-            data['display_name'] = InsightsClient.config.get(APP_NAME, 'display_name')
-        if InsightsClient.options.display_name is not None:
-            data['display_name'] = InsightsClient.options.display_name
+        if config['display_name'] is not None:
+            data['display_name'] = config['display_name']
+        if config['display_name'] is not None:
+            data['display_name'] = config['display_name']
         data = json.dumps(data)
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
@@ -581,7 +579,7 @@ class InsightsConnection(object):
         """
         Do grouping on register
         """
-        group_id = InsightsClient.options.group
+        group_id = config['group']
         systems = {'machine_id': generate_machine_id()}
         self.group_systems(group_id, systems)
 
@@ -608,7 +606,7 @@ class InsightsConnection(object):
             # check the 'unregistered_at' key of the response
             unreg_status = json.loads(res.content).get('unregistered_at', 'undefined')
             # set the global account number
-            InsightsClient.account_number = json.loads(res.content).get('account_number', 'undefined')
+            config['account_number'] = json.loads(res.content).get('account_number', 'undefined')
         except ValueError:
             # bad response, no json object
             return False
@@ -664,7 +662,7 @@ class InsightsConnection(object):
         write_to_disk(constants.registered_file)
 
         # Do grouping
-        if InsightsClient.options.group is not None:
+        if config['group'] is not None:
             self.do_group()
 
         # Display registration success messasge to STDOUT and logs
@@ -680,10 +678,10 @@ class InsightsConnection(object):
                 logger.debug(system)
                 logger.debug(system.json())
 
-        if InsightsClient.options.group is not None:
-            return (message, client_hostname, InsightsClient.options.group, InsightsClient.options.display_name)
-        elif InsightsClient.options.display_name is not None:
-            return (message, client_hostname, "None", InsightsClient.options.display_name)
+        if config['group'] is not None:
+            return (message, client_hostname, config['group'], config['display_name'])
+        elif config['display_name'] is not None:
+            return (message, client_hostname, "None", config['display_name'])
         else:
             return (message, client_hostname, "None", "")
 
@@ -720,8 +718,8 @@ class InsightsConnection(object):
                      upload.status_code, upload.reason, upload.text)
         the_json = json.loads(upload.text)
         try:
-            InsightsClient.account_number = the_json["upload"]["account_number"]
+            config['account_number'] = the_json["upload"]["account_number"]
         except:
-            InsightsClient.account_number = None
+            config['account_number'] = None
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
