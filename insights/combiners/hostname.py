@@ -21,12 +21,23 @@ Examples:
 
 from collections import namedtuple
 from insights.core.plugins import combiner
+from insights.core.serde import deserializer, serializer
 from insights.parsers.hostname import Hostname as hname
 from insights.parsers.facter import Facter as facter
 from insights.parsers.systemid import SystemID as systemid
 
 Hostname = namedtuple("Hostname", field_names=["fqdn", "hostname", "domain"])
 """namedtuple: Type for storing the hostname information."""
+
+
+@serializer(Hostname)
+def serialize(obj):
+    return {"fqdn": obj.fqdn, "hostname": obj.hostname, "domain": obj.domain}
+
+
+@deserializer(Hostname)
+def deserialize(_type, obj):
+    return Hostname(**obj)
 
 
 @combiner(requires=[[hname, facter, systemid]])

@@ -24,9 +24,20 @@ from collections import namedtuple
 from insights.core.plugins import combiner
 from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
+from insights.core.serde import deserializer, serializer
 
 Release = namedtuple("Release", field_names=["major", "minor"])
 """namedtuple: Type for storing the release information."""
+
+
+@serializer(Release)
+def serialize(obj):
+    return {"major": obj.major, "minor": obj.minor}
+
+
+@deserializer(Release)
+def deserialize(_type, obj):
+    return Release(**obj)
 
 
 @combiner(requires=[[rht_release, Uname]])

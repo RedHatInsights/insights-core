@@ -250,6 +250,7 @@ def register_component(component, delegate, component_type,
     _optional = set(optional) if optional else set()
 
     dependencies = _all | _any | _optional
+    dependencies = set(ALIASES.get(d, d) for d in dependencies)
     for d in dependencies:
         DEPENDENTS[d].add(component)
 
@@ -272,7 +273,6 @@ def register_component(component, delegate, component_type,
             raise Exception(msg % get_name(component))
 
         ALIASES[alias] = component
-        ALIASES[component] = alias
 
 
 class Broker(object):
@@ -428,6 +428,7 @@ def new_component_type(name=None,
                   group=group,
                   executor=executor,
                   alias=None,
+                  component_type=None,
                   metadata={}):
         requires = requires or []
         optional = optional or []
@@ -444,7 +445,7 @@ def new_component_type(name=None,
             def __f(broker):
                 return executor(func, broker, requires, optional)
 
-            register_component(func, __f, decorator,
+            register_component(func, __f, component_type or decorator,
                                requires=requires,
                                optional=optional,
                                group=group,

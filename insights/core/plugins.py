@@ -66,7 +66,7 @@ _metadata = dr.new_component_type("_metadata",
 
 def metadata(group=dr.GROUPS.single):
     def _f(func):
-        return _metadata(group=group)(func)
+        return _metadata(group=group, component_type=metadata)(func)
     return _f
 
 
@@ -79,7 +79,7 @@ def parser(dependency, group=dr.GROUPS.single, alias=None):
         of the general component interface.
     """
     def _f(component):
-        return _parser(requires=[dependency], group=group, alias=alias)(component)
+        return _parser(requires=[dependency], group=group, alias=alias, component_type=parser)(component)
     return _f
 
 

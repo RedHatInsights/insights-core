@@ -1,6 +1,7 @@
 import json as ser
 import logging
 import os
+
 from insights.core import dr
 from insights.util import fs
 
@@ -41,28 +42,19 @@ def get_serializer(obj):
         This function walks the mro of obj looking for serializers.
         Returns None if no valid serializer is found.
     """
-    for o in type(obj).mro():
+    _type = type(obj)
+    for o in _type.mro():
         if o not in SERIALIZERS:
             continue
-        return lambda x: {"type": dr.get_name(o), "object": SERIALIZERS[o](x)}
-    return lambda x: {"type": "", "object": x}
+        return lambda x: {"type": dr.get_name(_type), "object": SERIALIZERS[o](x)}
+    return lambda x: {"type": None, "object": x}
 
 
-def get_deserializer(name):
+def get_deserializer(obj):
     """ Returns a deserializer based on the fully qualified name string."""
-    def ident(x):
-        return x
-
-    if name == "":
-        return ident
-    try:
-        obj = dr.get_component(name)
-        for o in obj.mro():
-            if o in DESERIALIZERS:
-                return DESERIALIZERS[o]
-    except:
-        pass
-    return ident
+    for o in obj.mro():
+        if o in DESERIALIZERS:
+            return DESERIALIZERS[o]
 
 
 def serialize(obj):
@@ -71,25 +63,34 @@ def serialize(obj):
 
 
 def deserialize(data):
-    if "type" not in data:
-        return data
+    if not data.get("type"):
+        return data["object"]
 
-    to_obj = get_deserializer(data["type"])
-    return to_obj(data["object"])
+    _type = dr.get_component(data["type"])
+    if not _type:
+        raise Exception("Unrecognized type: %s" % data["type"])
+
+    to_obj = get_deserializer(_type)
+    if not to_obj:
+        raise Exception("No deserializer for type: %s" % data["type"])
+
+    return to_obj(_type, data["object"])
 
 
 def persister(output_dir, ignore_hidden=True):
     def observer(c, broker):
+        log.debug("Firing for %s!" % dr.get_name(c))
         if c not in broker:
+            log.debug("Not in broker %s!" % dr.get_name(c))
             return
 
         if ignore_hidden and dr.is_hidden(c):
             return
 
         value = broker[c]
-        try:
+        if isinstance(value, list):
             content = [serialize(t) for t in value]
-        except:
+        else:
             content = serialize(value)
         name = dr.get_name(c)
         doc = {}
