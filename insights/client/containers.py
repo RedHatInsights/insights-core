@@ -16,7 +16,6 @@ import sys
 from constants import InsightsConstants as constants
 from config import CONFIG as config
 
-
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
@@ -119,7 +118,6 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         elif config['docker_image_name']:
             logger.debug("found docker_image_name in config: %s" % config['docker_image_name'])
             return config['docker_image_name']
-
         else:
             logger.debug("found docker_image_name in constants: %s" % constants.docker_image_name)
             return constants.docker_image_name

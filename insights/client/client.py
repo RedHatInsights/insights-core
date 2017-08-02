@@ -220,16 +220,8 @@ def collect(rc=0):
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
     # initialize collection targets
-    # container mode
-    if config['container_mode']:
-        logger.debug("Client running in container/image mode.")
-        logger.debug("Scanning for matching container/image.")
-
-        from containers import get_targets
-        targets = get_targets()
-
     # tar files
-    elif config['analyze_compressed_file'] is not None:
+    if config['analyze_compressed_file'] is not None:
         logger.debug("Client analyzing a compress filesystem.")
         targets = [{'type': 'compressed_file',
                     'name': os.path.splitext(
@@ -243,6 +235,14 @@ def collect(rc=0):
                     'name': os.path.splitext(
                         os.path.basename(config['mountpoint']))[0],
                     'location': config['mountpoint']}]
+
+    # container mode
+    elif config['container_mode']:
+        logger.debug("Client running in container/image mode.")
+        logger.debug("Scanning for matching container/image.")
+
+        from containers import get_targets
+        targets = get_targets()
 
     # the host
     else:
@@ -360,8 +360,7 @@ def collect(rc=0):
             # analyze the host
             elif t['type'] == 'host':
                 logging_name = determine_hostname()
-                archive_meta['display_name'] = determine_hostname(
-                    config['display_name'])
+                archive_meta['display_name'] = determine_hostname(config['display_name'])
 
             # nothing found to analyze
             else:
@@ -376,7 +375,7 @@ def collect(rc=0):
             archive_meta['machine_id'] = machine_id
 
             archive = InsightsArchive(compressor=config['compressor']
-                                        if not config['container_mode'] else "none",
+                                      if not config['container_mode'] else "none",
                                       target_name=t['name'])
             dc = DataCollector(archive,
                                config,
@@ -422,7 +421,7 @@ def collect(rc=0):
                 (tar_file, constants.archive_last_collected_date_file))
 
     # cleanup the temporary stuff for analyzing tar files
-    if config['analyze_compressed_file'] is not None:
+    if config['analyze_compressed_file'] is not None and compressed_filesystem is not None:
         compressed_filesystem.cleanup_temp_filesystem()
 
     return tar_file
