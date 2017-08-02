@@ -200,5 +200,6 @@ def try_auto_configuration():
     """
     Try to auto-configure if we are attached to a sat5/6
     """
-    if not _try_satellite6_configuration():
-        _try_satellite5_configuration()
+    if config['auto_config'] and not config['offline']:
+        if not _try_satellite6_configuration():
+            _try_satellite5_configuration()

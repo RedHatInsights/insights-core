@@ -6,9 +6,8 @@ import os
 import shutil
 import time
 
-from auto_config import (try_auto_configuration,
-                        _try_satellite6_configuration,
-                        _try_satellite5_configuration)
+from auto_config import (_try_satellite6_configuration,
+                         _try_satellite5_configuration)
 from utilities import (validate_remove_file,
                        generate_machine_id,
                        generate_analysis_target_id,
@@ -530,11 +529,6 @@ def handle_startup():
     # validate the remove file
     if config['validate']:
         return validate_remove_file()
-
-    # do auto_config here, for connection-related 'do X and exit' options
-    if config['auto_config'] and not config['offline']:
-        # Try to discover if we are connected to a satellite or not
-        try_auto_configuration()
 
     if config['test_connection']:
         pconn = InsightsConnection()
