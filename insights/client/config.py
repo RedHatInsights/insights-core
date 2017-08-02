@@ -18,7 +18,7 @@ CONFIG = {
     'app_name': 'insights-client',
     'authmethod': 'BASIC',
     'auto_config': True,
-    'auto_update': 'True',
+    'auto_update': True,  # legacy
     'base_url': 'cert-api.access.redhat.com/r/insights',
     'branch_info_url': None,
     'cert_verify': os.path.join(CONF_DIR, 'cert-api.access.redhat.com.pem'),
@@ -338,6 +338,13 @@ def parse_config_file(conf_file=constants.default_conf_file):
 
 def compile_config():
     CONFIG.update(parse_config_file())
+
+    # Map legacy options to the key that's used.
+    # This is done here specifically because it's after the legacy config file
+    # has been read yet before the new config file and command line arguments
+    # have been parsed.
+    CONFIG['update'] = CONFIG['auto_update']
+
     if "client" in settings.config:
         CONFIG.update(settings.config)
     CONFIG.update(parse_options())

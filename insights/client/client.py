@@ -553,11 +553,6 @@ def handle_startup():
         support.collect_support_info()
         return True
 
-    if config['auto_update'] and not config['offline']:
-        # TODO: config updates option, but in GPG option, the option updates
-        # the config.  make this consistent
-        config['update'] = True
-
     # can't use bofa
     if config['from_stdin'] and config['from_file']:
         logger.error('Can\'t use both --from-stdin and --from-file.')
