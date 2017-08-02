@@ -440,9 +440,9 @@ class InstalledRpm(object):
     @property
     def package(self):
         """str: Package `name-version-release` string."""
-        return '{}-{}-{}'.format(self.name,
-                                 self.version,
-                                 self.release)
+        return u'{}-{}-{}'.format(self.name,
+                                  self.version,
+                                  self.release)
 
     @property
     def nvr(self):
