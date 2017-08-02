@@ -11,8 +11,7 @@ from .. import get_nvr
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
-from .config import CONFIG as config, parse_config_file, parse_options
-from insights import settings
+from .config import CONFIG as config, compile_config
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
@@ -500,15 +499,11 @@ class InsightsClient(object):
 
 
 def run(op, *args, **kwargs):
-    # Setup the base config and options
-    config.update(parse_config_file())
-    if "client" in settings.config:
-        config.update(settings.config)
-    config.update(parse_options())
+    compile_config()
     client.set_up_logging()
     try_auto_configuration()
     status = client.handle_startup()
-    if status:
+    if status is not None:
         logger.info("Returning early due to initialization response: %s", status)
         return status
     else:
