@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 handler = None
 
 
-class InsightsClientApi(object):
+class InsightsClient(object):
 
     def __init__(self, **kwargs):
         """
@@ -29,7 +29,7 @@ class InsightsClientApi(object):
                 (optional) options=dict
                 (optional) config=dict
             returns:
-                InsightsClientApi()
+                InsightsClient()
         """
         # set up logging
         client.set_up_logging()
@@ -513,7 +513,7 @@ def run(op, *args, **kwargs):
         return status
     else:
         try:
-            c = InsightsClientApi()
+            c = InsightsClient()
             return getattr(c, op)(*args, **kwargs)
         except:
             logger.exception("Fatal error")
