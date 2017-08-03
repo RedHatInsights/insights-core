@@ -19,7 +19,6 @@ FILTERS = defaultdict(set)
 
 
 def add_filter(name, patterns):
-    name = dr.resolve_alias(name)
     if isinstance(patterns, six.string_types):
         FILTERS[name].add(patterns)
     elif isinstance(patterns, list):
@@ -28,6 +27,17 @@ def add_filter(name, patterns):
         FILTERS[name] |= patterns
     else:
         raise TypeError("patterns must be string, list, or set.")
+
+
+def get_filters(component):
+    filters = set()
+    if component in FILTERS:
+        filters |= FILTERS[component]
+
+    alias = dr.get_alias_for(component)
+    if alias and alias in FILTERS:
+        filters |= FILTERS[alias]
+    return filters
 
 
 def mangle_command(command, name_max=255):
@@ -152,7 +162,7 @@ class SpecFactory(object):
         @datasource(requires=[context or FSRoots], alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
-            return Kind(root, os.path.expandvars(path), filters=FILTERS[inner])
+            return Kind(root, os.path.expandvars(path), filters=get_filters(inner))
         if name:
             self.attach(inner, name)
         return inner
@@ -171,7 +181,7 @@ class SpecFactory(object):
                     if ignore and re.search(ignore, path):
                         continue
                     try:
-                        results.append(Kind(root, path[len(root):], filters=FILTERS[inner]))
+                        results.append(Kind(root, path[len(root):], filters=get_filters(inner)))
                     except:
                         log.debug(traceback.format_exc())
             if results:
@@ -187,7 +197,7 @@ class SpecFactory(object):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             for f in files:
                 try:
-                    return Kind(root, f, filters=FILTERS[inner])
+                    return Kind(root, f, filters=get_filters(inner))
                 except:
                     pass
             raise ContentException("None of [%s] found." % ','.join(files))
@@ -274,7 +284,7 @@ class SpecFactory(object):
             for path in broker[context].file_paths:
                 m = re.match(pat, path)
                 if m:
-                    results.append(Kind(root, path, filters=FILTERS[inner]))
+                    results.append(Kind(root, path, filters=get_filters(inner)))
             if not results:
                 raise ContentException("[%s] didn't match." % pat)
 

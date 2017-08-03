@@ -26,6 +26,7 @@ BASE_MODULE_NAMES = {}
 
 TYPE_OBSERVERS = defaultdict(set)
 
+ALIASES_BY_COMPONENT = {}
 ALIASES = {}
 COMPONENT_METADATA = {}
 TYPE_OF_COMPONENT = {}
@@ -47,10 +48,23 @@ def resolve_alias(c):
 
 
 def resolve_aliases(graph):
-    g = {}
-    for k, v in graph.items():
-        g[k] = set(resolve_alias(d) for d in v)
-    return g
+    if isinstance(graph, dict):
+        g = {}
+        for k, v in graph.items():
+            g[k] = set(resolve_alias(d) for d in v)
+        return g
+
+    if isinstance(graph, list):
+        return [resolve_alias(c) for c in graph]
+
+    if isinstance(graph, set):
+        return set(resolve_alias(c) for c in graph)
+
+    return resolve_alias(graph)
+
+
+def get_alias_for(component):
+    return ALIASES_BY_COMPONENT.get(component)
 
 
 def get_component(name):
@@ -310,6 +324,7 @@ def register_component(component, delegate, component_type,
             raise Exception(msg % get_name(component))
 
         ALIASES[alias] = component
+        ALIASES_BY_COMPONENT[component] = alias
 
 
 class Broker(object):
@@ -357,6 +372,13 @@ class Broker(object):
 
     def items(self):
         return self.instances.items()
+
+    def get_by_type(self, _type):
+        r = {}
+        for k, v in self.items():
+            if get_component_type(k) is _type:
+                r[k] = v
+        return r
 
     def __contains__(self, component):
         if component in self.instances:
@@ -409,6 +431,8 @@ def get_missing_requirements(requires, d):
     if not requires:
         return None
     req_all, req_any = split_requirements(requires)
+    req_all = resolve_aliases(req_all)
+    req_any = [resolve_aliases(c) for c in req_any]
     d = set(d.keys())
     req_all = [r for r in req_all if r not in d]
     req_any = [r for r in req_any if set(r).isdisjoint(d)]
@@ -503,7 +527,7 @@ def run_order(components, broker):
     return toposort_flatten(resolve_aliases(components))
 
 
-def run(components, broker=None):
+def run(components=COMPONENTS[GROUPS.single], broker=None):
     """ Executes components in an order that satisfies their dependency
         relationships.
     """
@@ -530,7 +554,7 @@ def run(components, broker=None):
     return broker
 
 
-def run_incremental(components, broker=None):
+def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
     """ Executes components in an order that satisfies their dependency
         relationships. Disjoint subgraphs are executed one at a time and
         a broker containing the results for each is yielded. If a broker
