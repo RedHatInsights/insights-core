@@ -19,6 +19,7 @@ FILTERS = defaultdict(set)
 
 
 def add_filter(name, patterns):
+    name = dr.resolve_alias(name)
     if isinstance(patterns, six.string_types):
         FILTERS[name].add(patterns)
     elif isinstance(patterns, list):
@@ -43,6 +44,7 @@ class ContentProvider(object):
     def __init__(self):
         self.cmd = None
         self.args = None
+        self.rc = None
         self.path = None
         self._content = None
         self._exception = None
@@ -111,6 +113,7 @@ class CommandOutputProvider(ContentProvider):
     def __init__(self, cmd, ctx, args=None, content=None, rc=None, split=True, keep_rc=False):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
+        self.path = os.path.join("insights_commands", mangle_command(cmd))
         self.ctx = ctx
         # args are already interpolated into cmd. They're stored here for context."
         self.args = args
@@ -315,6 +318,7 @@ def serialize_command_provider(obj):
     d["rc"] = obj.rc
     d["cmd"] = obj.cmd
     d["args"] = obj.args
+    d["path"] = obj.path
     d["_content"] = obj.content
     return d
 

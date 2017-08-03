@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 def get_simple_module_name(obj):
-    return dr.SIMPLE_MODULE_NAMES.get(obj, None)
+    return dr.BASE_MODULE_NAMES.get(obj, None)
 
 
 def serialize_skips(skips):
@@ -330,7 +330,7 @@ class InsightsEvaluator(SingleEvaluator):
                     filename, self.url, e, exc_info=True)
 
     def handle_parse_error(self, component, exception):
-        context = self.broker.get(dr.DEPENDENCIES[component][0], "Unknown")
+        context = self.broker.get(dr.get_dependencies(component).pop(), "Unknown")
         self.stats["parser"]["fail"] += 1
         log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
                     exception, context, self.url, exc_info=True)

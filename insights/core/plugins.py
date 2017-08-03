@@ -99,7 +99,7 @@ incident = dr.new_component_type("incident")
 
 
 def is_type(component, _type):
-    return dr.TYPE_OF_COMPONENT.get(component) is _type
+    return dr.get_component_type(component) is _type
 
 
 def is_datasource(component):
@@ -115,7 +115,7 @@ def is_rule(component):
 
 
 def is_component(obj):
-    return obj in dr.TYPE_OF_COMPONENT
+    return bool(dr.get_component_type(obj))
 
 
 def make_skip(rule_fqdn, reason, details=None):
