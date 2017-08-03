@@ -348,3 +348,17 @@ def compile_config():
     if "client" in settings.config:
         CONFIG.update(settings.config)
     CONFIG.update(parse_options())
+
+    # to_stdout implies no_upload
+    if CONFIG['to_stdout']:
+        CONFIG['no_upload'] = True
+
+    if (CONFIG['container_mode'] and not CONFIG['only']):
+        raise ValueError("Client running in container mode "
+                         "but no image/container specified via --only.")
+
+    if (CONFIG['only'] is not None) and (len(CONFIG['only']) < 12):
+        raise ValueError("Image/Container ID must be at least twelve characters long.")
+
+    if CONFIG['from_stdin'] and CONFIG['from_file']:
+        raise ValueError("Can't use both --from-stdin and --from-file.")

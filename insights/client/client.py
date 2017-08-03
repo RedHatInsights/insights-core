@@ -516,16 +516,6 @@ def handle_startup():
     if config['version']:
         return constants.version
 
-    # container/image stuff
-    if (config['container_mode'] and
-            not config['only']):
-        logger.error("Client running in container mode but no image/container specified via --only.")
-        return False
-
-    if (config['only'] is not None) and (len(config['only']) < 12):
-        logger.error("Image/Container ID must be atleast twelve characters long.")
-        return False
-
     # validate the remove file
     if config['validate']:
         return validate_remove_file()
@@ -546,14 +536,6 @@ def handle_startup():
         support = InsightsSupport()
         support.collect_support_info()
         return True
-
-    # can't use bofa
-    if config['from_stdin'] and config['from_file']:
-        logger.error('Can\'t use both --from-stdin and --from-file.')
-        return False
-
-    if config['to_stdout']:
-        config['no_upload'] = True
 
     # ----register options----
     # put this first to avoid conflicts with register
