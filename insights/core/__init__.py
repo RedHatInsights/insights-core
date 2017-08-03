@@ -8,6 +8,7 @@ import yaml
 from ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
+from insights.core.serde import deserializer, serializer
 
 log = logging.getLogger(__name__)
 
@@ -71,6 +72,19 @@ class Parser(object):
         """This method must be implemented by classes based on this class."""
         msg = "Parser subclasses must implement parse_content(self, content)."
         raise NotImplementedError(msg)
+
+
+@serializer(Parser)
+def default_parser_serializer(obj):
+    return vars(obj)
+
+
+@deserializer(Parser)
+def default_parser_deserializer(_type, data):
+    obj = _type(None)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    return obj
 
 
 class SysconfigOptions(Parser):

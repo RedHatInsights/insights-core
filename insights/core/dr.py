@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 GROUPS = enum("cluster", "single")
 
 MODULE_NAMES = {}
-SIMPLE_MODULE_NAMES = {}
+BASE_MODULE_NAMES = {}
 
 TYPE_OBSERVERS = defaultdict(set)
 
@@ -34,12 +34,23 @@ DEPENDENCIES = defaultdict(set)
 DEPENDENTS = defaultdict(set)
 COMPONENTS = defaultdict(lambda: defaultdict(set))
 GROUP_OF_COMPONENT = {}
-COMPONENT_NAME_CACHE = {}
 
 DELEGATES = {}
 HIDDEN = set()
 
 ANY_TYPE = object()
+COMPONENT_NAME_CACHE = {}
+
+
+def resolve_alias(c):
+    return ALIASES.get(c, c)
+
+
+def resolve_aliases(graph):
+    g = {}
+    for k, v in graph.items():
+        g[k] = set(resolve_alias(d) for d in v)
+    return g
 
 
 def get_component(name):
@@ -47,12 +58,31 @@ def get_component(name):
     try:
         if name not in COMPONENT_NAME_CACHE:
             mod, _, name = name.rpartition(".")
-            importlib.import_module(mod)
+            if mod not in sys.modules:
+                importlib.import_module(mod)
             COMPONENT_NAME_CACHE[name] = getattr(sys.modules[mod], name)
 
         return COMPONENT_NAME_CACHE[name]
     except:
-        pass
+        log.debug("Couldn't load module for %s" % name)
+        COMPONENT_NAME_CACHE[name] = None
+
+
+def get_component_type(component):
+    component = resolve_alias(component)
+    return TYPE_OF_COMPONENT.get(component)
+
+
+def get_dependencies(component):
+    component = resolve_alias(component)
+    return set(resolve_alias(d) for d in DEPENDENCIES.get(component, set()))
+
+
+def get_dependents(component):
+    deps = set(resolve_alias(d) for d in DEPENDENTS.get(component, set()))
+    if component in ALIASES:
+        deps |= get_dependents(ALIASES[component])
+    return deps
 
 
 def add_observer(o, _type=ANY_TYPE):
@@ -77,18 +107,21 @@ class SkipComponent(Exception):
 
 
 def get_name(component):
+    component = resolve_alias(component)
     if six.callable(component):
         return '.'.join([component.__module__, component.__name__])
     return str(component)
 
 
 def get_simple_name(component):
+    component = resolve_alias(component)
     if six.callable(component):
         return component.__name__
     return str(component)
 
 
 def get_metadata(component):
+    component = resolve_alias(component)
     return COMPONENT_METADATA.get(component, {})
 
 
@@ -99,7 +132,7 @@ def get_module_name(obj):
         return None
 
 
-def get_simple_module_name(obj):
+def get_base_module_name(obj):
     try:
         return get_module_name(obj).split(".")[-1]
     except:
@@ -109,12 +142,14 @@ def get_simple_module_name(obj):
 def mark_hidden(component):
     global HIDDEN
     if isinstance(component, (list, set)):
-        HIDDEN |= set(component)
+        HIDDEN |= set(resolve_alias(c) for c in component)
     else:
+        component = resolve_alias(component)
         HIDDEN.add(component)
 
 
 def is_hidden(component):
+    component = resolve_alias(component)
     return component in HIDDEN
 
 
@@ -152,7 +187,7 @@ def walk_dependencies(root, visitor):
             The call on root is `visitor(root, None)`.
     """
     def visit(parent, visitor):
-        for d in DEPENDENCIES[parent]:
+        for d in get_dependencies(parent):
             visitor(d, parent)
             visit(d, visitor)
 
@@ -161,6 +196,7 @@ def walk_dependencies(root, visitor):
 
 
 def get_dependency_graph(component):
+    component = resolve_alias(component)
     if component not in DEPENDENCIES:
         raise Exception("%s is not a registered component." % get_name(component))
 
@@ -187,6 +223,7 @@ def get_dependency_graph(component):
 
 
 def get_subgraphs(graph=DEPENDENCIES):
+    graph = resolve_aliases(graph)
     keys = set(graph)
     frontier = set()
     seen = set()
@@ -195,10 +232,10 @@ def get_subgraphs(graph=DEPENDENCIES):
         while frontier:
             component = frontier.pop()
             seen.add(component)
-            frontier |= set([d for d in DEPENDENCIES[component] if d in graph])
-            frontier |= set([d for d in DEPENDENTS[component] if d in graph])
+            frontier |= set([d for d in get_dependencies(component) if d in graph])
+            frontier |= set([d for d in get_dependents(component) if d in graph])
             frontier -= seen
-        yield dict((s, DEPENDENCIES[s]) for s in seen)
+        yield dict((s, get_dependencies(s)) for s in seen)
         keys -= seen
         seen.clear()
 
@@ -250,7 +287,7 @@ def register_component(component, delegate, component_type,
     _optional = set(optional) if optional else set()
 
     dependencies = _all | _any | _optional
-    dependencies = set(ALIASES.get(d, d) for d in dependencies)
+    dependencies = set(resolve_alias(d) for d in dependencies)
     for d in dependencies:
         DEPENDENTS[d].add(component)
 
@@ -262,7 +299,7 @@ def register_component(component, delegate, component_type,
     COMPONENTS_BY_TYPE[component_type].add(component)
     DELEGATES[component] = delegate
     MODULE_NAMES[component] = get_module_name(component)
-    SIMPLE_MODULE_NAMES[component] = get_simple_module_name(component)
+    BASE_MODULE_NAMES[component] = get_base_module_name(component)
     COMPONENT_METADATA[component] = metadata
 
     if alias:
@@ -463,7 +500,7 @@ def run_order(components, broker):
     """ Returns components in an order that satisfies their dependency
         relationships.
     """
-    return toposort_flatten(components)
+    return toposort_flatten(resolve_aliases(components))
 
 
 def run(components, broker=None):
@@ -476,7 +513,6 @@ def run(components, broker=None):
         try:
             if component not in broker and component in DELEGATES:
                 log.info("Calling %s" % get_name(component))
-
                 start = time.time()
                 result = DELEGATES[component](broker)
                 broker.exec_times[component] = time.time() - start

@@ -79,9 +79,7 @@ def deserialize(data):
 
 def persister(output_dir, ignore_hidden=True):
     def observer(c, broker):
-        log.debug("Firing for %s!" % dr.get_name(c))
         if c not in broker:
-            log.debug("Not in broker %s!" % dr.get_name(c))
             return
 
         if ignore_hidden and dr.is_hidden(c):
@@ -93,11 +91,13 @@ def persister(output_dir, ignore_hidden=True):
         else:
             content = serialize(value)
         name = dr.get_name(c)
+        c_type = dr.get_component_type(c)
         doc = {}
         doc["name"] = name
+        doc["dr_type"] = dr.get_name(c_type) if c_type else None
         doc["time"] = broker.exec_times[c]
         doc["results"] = content
-        path = os.path.join(output_dir, name + "." + dr.get_simple_module_name(ser))
+        path = os.path.join(output_dir, name + "." + dr.get_base_module_name(ser))
         try:
             with open(path, "wb") as f:
                 ser.dump(doc, f)
@@ -109,7 +109,7 @@ def persister(output_dir, ignore_hidden=True):
 
 
 def hydrate(payload):
-    key = dr.get_component(payload["name"])
+    key = dr.get_component(payload["name"]) or payload["name"]
     data = payload["results"]
     try:
         value = [deserialize(d) for d in data]
