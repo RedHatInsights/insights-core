@@ -1,6 +1,3 @@
-"""
-Constants
-"""
 import os
 
 
@@ -8,19 +5,15 @@ class InsightsConstants(object):
     app_name = 'insights-client'
     version = '3.0.0-0'
     auth_method = 'BASIC'
-    log_level = 'DEBUG'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 300
+    default_conf_file = '/etc/insights-client/insights-client.conf'
     user_agent = os.path.join(app_name, 'version')
-    default_conf_dir = '/etc/' + app_name + '/'
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
-    default_log_file = os.path.join(log_dir, app_name) + '.log'
-    default_conf_file_name = app_name + '.conf'
-    default_conf_file = os.path.join(default_conf_dir, default_conf_file_name)
+    default_conf_dir = '/etc/insights-client'
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
-    default_ca_file = os.path.join(default_conf_dir, 'cert-api.access.redhat.com.pem')
-    base_url = 'cert-api.access.redhat.com/r/insights'
+    base_url = ''
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
     collection_fallback_file = os.path.join(default_conf_dir, '.fallback.json')
     collection_remove_file_name = 'remove.conf'

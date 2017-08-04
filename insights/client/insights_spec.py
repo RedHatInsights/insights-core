@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from constants import InsightsConstants as constants
+from config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +68,7 @@ class InsightsCommand(InsightsSpec):
         '''
         # all commands should timeout after a long interval so the client does not hang
         # get the command timeout interval
-        if self.config and self.config.has_option(constants.app_name, 'cmd_timeout'):
+        if 'cmd_timeout' in config:
             timeout_interval = self.config.getint(constants.app_name, 'cmd_timeout')
         else:
             timeout_interval = constants.default_cmd_timeout

@@ -10,7 +10,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 from constants import InsightsConstants as constants
 from connection import InsightsConnection
-from client_config import InsightsClient
+from config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -73,11 +73,11 @@ class InsightsSupport(object):
                 lastupload = upl_file.readline().strip()
         cfg_block.append('Last successful upload was ' + lastupload)
 
-        cfg_block.append('auto_config: ' + str(InsightsClient.config.getboolean(APP_NAME, 'auto_config')))
-        if InsightsClient.config.get(APP_NAME, 'proxy'):
+        cfg_block.append('auto_config: ' + str(config['auto_config']))
+        if config['proxy']:
             obfuscated_proxy = re.sub(r'(.*)(:)(.*)(@.*)',
                                       r'\1\2********\4',
-                                      InsightsClient.config.get(APP_NAME, 'proxy'))
+                                      config['proxy'])
         else:
             obfuscated_proxy = 'None'
         cfg_block.append('proxy: ' + obfuscated_proxy)
