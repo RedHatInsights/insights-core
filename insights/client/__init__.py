@@ -21,29 +21,26 @@ handler = None
 
 class InsightsClient(object):
 
-    def __init__(self, **kwargs):
+    def __init__(self, read_config=True):
         """
-            Intialize an instance of the Insights Client API for the Core
-            params:
-                (optional) options=dict
-                (optional) config=dict
-            returns:
-                InsightsClient()
+            Arguments:
+                read_config: Whether or not to read config files to
+                  determine configuration.  If False, defaults are
+                  assumed and can be overridden programmatically.
         """
+        if read_config:
+            client.compile_config()
+
         # set up logging
         client.set_up_logging()
 
-        # Disable GPG verification
-        if config['no_gpg']:
-            logger.warn("WARNING: GPG VERIFICATION DISABLED")
-            config['gpg'] = False
-
         # Log config except the password
         # and proxy as it might have a pw as well
-        config_log = logging.getLogger("Insights Config")
-        for item, value in config.items():
-            if item != 'password' and item != 'proxy':
-                config_log.debug("%s:%s", item, value)
+        if logging.root.level == logging.DEBUG:
+            config_log = logging.getLogger("Insights Config")
+            for item, value in config.items():
+                if item != 'password' and item != 'proxy':
+                    config_log.debug("%s:%s", item, value)
 
     def version(self):
         """
@@ -219,9 +216,7 @@ class InsightsClient(object):
         if egg_path and self.verify(egg_path):
             self.install(egg_path)
 
-    def verify(self,
-               egg_path,
-               gpg_key=constants.default_egg_gpg_key):
+    def verify(self, egg_path, gpg_key=constants.default_egg_gpg_key):
         """
             returns (dict): {'gpg': if the egg checks out,
                              'stderr': error message if present,

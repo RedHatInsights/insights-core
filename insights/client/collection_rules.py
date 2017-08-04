@@ -158,7 +158,7 @@ class InsightsConfig(object):
         dyn_conf_file.write(data)
         dyn_conf_file.close()
 
-    def get_conf(self, stdin_config=None):
+    def get_conf(self, update, stdin_config=None):
         """
         Get the config
         """
@@ -183,7 +183,7 @@ class InsightsConfig(object):
             else:
                 logger.error("Unable to validate GPG signature in from_stdin mode.")
                 raise Exception("from_stdin mode failed to validate GPG sig")
-        elif config['update'] and not config['offline']:
+        elif update:
             if not self.conn:
                 raise ValueError('ERROR: Cannot update rules in --offline mode. '
                                  'Either run without the --update-collection-rules '

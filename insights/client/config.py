@@ -41,7 +41,7 @@ CONFIG = {
     'logging_file': os.path.join(constants.log_dir, APP_NAME) + '.log',
     'loglevel': 'DEBUG',
     'mountpoint': None,
-    'no_gpg': False,
+    'no_gpg': False,  # legacy
     'no_schedule': False,
     'no_tar_file': False,
     'no_upload': False,
@@ -224,8 +224,8 @@ OPTS = [{
 }, {
     'opt': ['--no-gpg'],
     'help': "Do not verify GPG signature",
-    'action': "store_true",
-    'dest': "no_gpg",
+    'action': "store_false",
+    'dest': "gpg",
     'group': 'debug'
 }, {
     'opt': ['--no-upload'],
@@ -336,14 +336,25 @@ def parse_config_file(conf_file=constants.default_conf_file):
     return dict(parsedconfig.items(APP_NAME))
 
 
+def apply_legacy_config():
+    """
+    Map legacy options to the key that's used.
+    """
+    CONFIG['update'] = CONFIG['auto_update']
+    if CONFIG['no_gpg']:
+        CONFIG['gpg'] = False
+
+
 def compile_config():
+    # TODO: If the defaults.yaml file ever fills in all the client config, then
+    # they will clobber the legacy file, even if the user has no insights.yaml
+    # defined!!
     CONFIG.update(parse_config_file())
 
-    # Map legacy options to the key that's used.
     # This is done here specifically because it's after the legacy config file
     # has been read yet before the new config file and command line arguments
     # have been parsed.
-    CONFIG['update'] = CONFIG['auto_update']
+    apply_legacy_config()
 
     if "client" in settings.config:
         CONFIG.update(settings.config)
@@ -362,3 +373,6 @@ def compile_config():
 
     if CONFIG['from_stdin'] and CONFIG['from_file']:
         raise ValueError("Can't use both --from-stdin and --from-file.")
+
+    if CONFIG['update'] and CONFIG['offline']:
+        raise ValueError("Cannot update rules in offline mode")
