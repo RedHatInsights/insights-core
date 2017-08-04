@@ -523,6 +523,10 @@ def handle_startup():
     if config['test_connection']:
         pconn = InsightsConnection()
         rc = pconn.test_connection()
+        if rc == 0:
+            logger.info("Passed connection test")
+        else:
+            logger.info("Failed connection test.  See %s for details." % config['logging_file'])
         return rc
 
     if config['status']:
@@ -535,6 +539,7 @@ def handle_startup():
     if config['support']:
         support = InsightsSupport()
         support.collect_support_info()
+        logger.info("Support information collected in %s" % config['logging_file'])
         return True
 
     # ----register options----
