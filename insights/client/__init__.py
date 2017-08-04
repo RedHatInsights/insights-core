@@ -21,7 +21,7 @@ handler = None
 
 class InsightsClient(object):
 
-    def __init__(self, read_config=True):
+    def __init__(self, read_config=True, **kwargs):
         """
             Arguments:
                 read_config: Whether or not to read config files to
@@ -29,7 +29,14 @@ class InsightsClient(object):
                   assumed and can be overridden programmatically.
         """
         if read_config:
-            client.compile_config()
+            compile_config()
+
+        invalid_keys = [k for k in kwargs if k not in config]
+        if invalid_keys:
+            raise ValueError("Invalid argument(s): %s" % invalid_keys)
+
+        for key, value in kwargs.items():
+            config[key] = value
 
         # set up logging
         client.set_up_logging()
