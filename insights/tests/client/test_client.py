@@ -1,13 +1,13 @@
 import unittest
-from insights.client import InsightsClientApi
+from insights.client import InsightsClient
 from insights import get_nvr
 from insights.client.constants import InsightsConstants as constants
 
 
 class TestClient(unittest.TestCase):
 
-    client = InsightsClientApi(options={'logging_file': '/tmp/insights.log'},
-                               try_auto_config_and_options=True)
+    client = InsightsClient(options={'logging_file': '/tmp/insights.log'},
+                            try_auto_config_and_options=True)
 
     def test_version(self):
         result = self.client.version()

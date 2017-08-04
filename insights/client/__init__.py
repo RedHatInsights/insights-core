@@ -11,7 +11,7 @@ from .. import get_nvr
 from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
-from .client_config import InsightsClient
+from .config import CONFIG as config, compile_config
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
@@ -19,45 +19,28 @@ logger = logging.getLogger(__name__)
 handler = None
 
 
-class InsightsClientApi(object):
+class InsightsClient(object):
 
-    def __init__(self, **kwargs):
+    def __init__(self, read_config=True):
         """
-            Intialize an instance of the Insights Client API for the Core
-            params:
-                (optional) options=dict
-                (optional) config=dict
-            returns:
-                InsightsClientApi()
+            Arguments:
+                read_config: Whether or not to read config files to
+                  determine configuration.  If False, defaults are
+                  assumed and can be overridden programmatically.
         """
-        # we dont want to assume API implementation should read/parse configs or options
-        if kwargs.get('try_auto_config_and_options') is True:
-            InsightsClient.config, InsightsClient.options = client.parse_options()
-
-        # Overwrite anything passed in
-        if kwargs.get('options'):
-            for key in kwargs['options']:
-                setattr(InsightsClient.options, key, kwargs['options'][key])
-        if kwargs.get('config'):
-            for new_config_var in kwargs['config']:
-                InsightsClient.config.set(constants.app_name,
-                                          new_config_var,
-                                          kwargs['config'][new_config_var])
+        if read_config:
+            client.compile_config()
 
         # set up logging
         client.set_up_logging()
 
-        # Disable GPG verification
-        if InsightsClient.options.no_gpg:
-            logger.warn("WARNING: GPG VERIFICATION DISABLED")
-            InsightsClient.config.set(APP_NAME, 'gpg', 'False')
-
         # Log config except the password
         # and proxy as it might have a pw as well
-        config_log = logging.getLogger("Insights Config")
-        for item, value in InsightsClient.config.items(APP_NAME):
-            if item != 'password' and item != 'proxy':
-                config_log.debug("%s:%s", item, value)
+        if logging.root.level == logging.DEBUG:
+            config_log = logging.getLogger("Insights Config")
+            for item, value in config.items():
+                if item != 'password' and item != 'proxy':
+                    config_log.debug("%s:%s", item, value)
 
     def version(self):
         """
@@ -73,11 +56,9 @@ class InsightsClientApi(object):
         """
             returns (int): 0 if success 1 if failure
         """
-        try_auto_configuration()
         return client.test_connection()
 
     def handle_startup(self):
-        try_auto_configuration()
         return client.handle_startup()
 
     def run(self,
@@ -126,7 +107,7 @@ class InsightsClientApi(object):
         # Register
         is_registered = self.get_registration_information()['is_registered']
         logger.debug('System is registered: %s', is_registered)
-        if not InsightsClient.options.offline and not is_registered:
+        if not config['offline'] and not is_registered:
             registration = self.register(force_register)
             is_registered = registration['registration']['status']
             logger.debug('Registration response: %s', registration)
@@ -140,14 +121,14 @@ class InsightsClientApi(object):
                 logger.debug("Updating rules.")
                 self.update_rules()  # won't be needed after we move to new egg format
 
-            results = self.collect(collection_format)
+            results = self.collect()
             logger.debug('Results: %s', results)
         else:
             logger.debug('New Core was not verified, not collecting information.')
             results = False
 
         # Upload things
-        if not skip_upload and not InsightsClient.options.no_upload and not InsightsClient.options.offline and is_registered:
+        if not skip_upload and not config['no_upload'] and not config['offline'] and is_registered:
             logger.debug('Not skipping upload, or running offline.')
             logger.debug('System is registered, proceeding with upload.')
             upload_results = self.upload(results)
@@ -166,8 +147,8 @@ class InsightsClientApi(object):
             returns (str): path to new egg.  None if no update.
         """
         # was a custom egg url passed in?
-        if InsightsClient.options.core_url:
-            egg_url = InsightsClient.options.core_url
+        if config['core_url']:
+            egg_url = config['core_url']
 
         # Searched for cached etag information
         current_etag = None
@@ -235,9 +216,7 @@ class InsightsClientApi(object):
         if egg_path and self.verify(egg_path):
             self.install(egg_path)
 
-    def verify(self,
-               egg_path,
-               gpg_key=constants.default_egg_gpg_key):
+    def verify(self, egg_path, gpg_key=constants.default_egg_gpg_key):
         """
             returns (dict): {'gpg': if the egg checks out,
                              'stderr': error message if present,
@@ -299,14 +278,12 @@ class InsightsClientApi(object):
         """
             returns (dict): new client rules
         """
-        try_auto_configuration()
         return client.update_rules()
 
     def fetch_rules(self, options=None, config=None):
         """
             returns (dict): existing client rules
         """
-        try_auto_configuration()
         return client.fetch_rules()
 
     def _cached_results(self):
@@ -350,12 +327,42 @@ class InsightsClientApi(object):
             logger.debug("There was an error with the last collected timestamp"
                          " file or archives.")
 
-    def collect(self, format="json", options=None, config=None, check_timestamp=True):
+    def collect(self, **kwargs):
         """
+            kwargs: check_timestamp=True,
+                    image_id=UUID,
+                    tar_file=/path/to/tar,
+                    mountpoint=/path/to/mountpoint
             returns (str, json): will return a string path to archive, or json facts
         """
-        # If check_timestamp is not flagged, then skip this check
-        if check_timestamp:
+        # check if we are scanning a host or scanning one of the following:
+        # image/container running in docker
+        # tar_file
+        # OR a mount point (FS that is already mounted somewhere)
+        scanning_host = True
+        if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mountpoint')):
+            scanning_host = False
+
+        # setup other scanning cases
+        # scanning images/containers running in docker
+        if kwargs.get('image_id'):
+            config['container_mode'] = True
+            config['only'] = kwargs.get('image_id')
+
+        # compressed filesystems (tar files)
+        if kwargs.get('tar_file'):
+            config['container_mode'] = True
+            config['analyze_compressed_file'] = kwargs.get('tar_file')
+
+        # FSs already mounted somewhere
+        if kwargs.get('mountpoint'):
+            config['container_mode'] = True
+            config['mountpoint'] = kwargs.get('mountpoint')
+
+        # If check_timestamp is not flagged, then skip this check AND
+        # we are also scanning a host
+        # bypass timestamp checks for other cases
+        if kwargs.get('check_timestamp', True) and scanning_host:
             cached_results = self._cached_results()
             if cached_results:
                 logger.info("Using cached collection: %s", cached_results)
@@ -363,6 +370,7 @@ class InsightsClientApi(object):
         else:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
 
+        # return collection results
         return client.collect()
 
     def register(self, force_register=False):
@@ -372,17 +380,15 @@ class InsightsClientApi(object):
                             'response': response from API,
                             'code': http code}
         """
-        try_auto_configuration()
-        setattr(InsightsClient.options, 'register', True)
+        config['register'] = True
         if force_register:
-            setattr(InsightsClient.options, 'reregister', True)
+            config['reregister'] = True
         return client.handle_registration()
 
     def unregister(self):
         """
             returns (bool): True success, False failure
         """
-        try_auto_configuration()
         return client.handle_unregistration()
 
     def get_registration_information(self):
@@ -390,7 +396,6 @@ class InsightsClientApi(object):
             returns (json): {'machine-id': uuid from API,
                             'response': response from API}
         """
-        try_auto_configuration()
         registration_status = client.get_registration_status()
         return {'machine-id': client.get_machine_id(),
                 'registration_status': registration_status,
@@ -400,15 +405,12 @@ class InsightsClientApi(object):
         """
             returns (optparse): OptParse config/options
         """
-        return InsightsClient
+        return config
 
     def upload(self, path, rotate_eggs=True):
         """
             returns (int): upload status code
         """
-        # auto-configure satellite and other network stuff
-        try_auto_configuration()
-
         # do the upload
         upload_status = client.upload(path)
 
@@ -482,17 +484,16 @@ class InsightsClientApi(object):
 
 
 def run(op, *args, **kwargs):
-    # Setup the base config and options
-    InsightsClient.config, InsightsClient.options = client.parse_options()
+    compile_config()
     client.set_up_logging()
     try_auto_configuration()
     status = client.handle_startup()
-    if status:
+    if status is not None:
         logger.info("Returning early due to initialization response: %s", status)
         return status
     else:
         try:
-            c = InsightsClientApi()
+            c = InsightsClient()
             return getattr(c, op)(*args, **kwargs)
         except:
             logger.exception("Fatal error")

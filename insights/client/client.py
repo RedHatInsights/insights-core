@@ -5,52 +5,30 @@ import logging.handlers
 import os
 import shutil
 import time
-import optparse
 
-from auto_config import (try_auto_configuration,
-                        _try_satellite6_configuration,
-                        _try_satellite5_configuration)
+from auto_config import (_try_satellite6_configuration,
+                         _try_satellite5_configuration)
 from utilities import (validate_remove_file,
                        generate_machine_id,
                        generate_analysis_target_id,
                        write_to_disk,
                        write_unregistered_file,
-                       determine_hostname,
-                       logging_file)
+                       determine_hostname)
 from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
 from archive import InsightsArchive
 from support import InsightsSupport, registration_check
 from constants import InsightsConstants as constants
-from client_config import parse_config_file, InsightsClient, set_up_options
+from config import CONFIG as config
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def parse_options():
-    """
-        returns (tuple): returns a tuple with configparser and argparser options
-    """
-    class NoErrOptionParser(optparse.OptionParser):
-        def __init__(self, *args, **kwargs):
-            self.valid_args_cre_list = []
-            optparse.OptionParser.__init__(self, *args, **kwargs)
-
-        def error(self, msg):
-            pass
-    parser = NoErrOptionParser()
-    set_up_options(parser)
-    options, args = parser.parse_args()
-    if len(args) > 0:
-        parser.error("Unknown arguments: %s" % args)
-    return parse_config_file(options.conf), options
-
-
 def get_file_handler():
-    log_file = logging_file()
+    log_file = config['logging_file']
     log_dir = os.path.dirname(log_file)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, 0700)
@@ -77,8 +55,8 @@ def get_console_handler(silent, verbose, to_stdout):
     return stdout_handler
 
 
-def configure_level(conf, verbose):
-    config_level = 'DEBUG' if verbose else conf.get(APP_NAME, 'loglevel')
+def configure_level():
+    config_level = 'DEBUG' if config['verbose'] else config['loglevel']
 
     init_log_level = logging.getLevelName(config_level)
     if type(init_log_level) in (str, unicode):
@@ -91,16 +69,13 @@ def configure_level(conf, verbose):
 
 def set_up_logging():
     if len(logging.root.handlers) == 0:
-        # Just to reduce amount of text
-        opts, conf = InsightsClient.options, InsightsClient.config
-
         # from_stdin mode implies to_stdout
-        opts.to_stdout = (opts.to_stdout or opts.from_stdin or opts.from_file)
+        config['to_stdout'] = (config['to_stdout'] or config['from_stdin'] or config['from_file'])
 
-        verbose = opts.verbose or conf.get(APP_NAME, 'verbose')
-        logging.root.addHandler(get_console_handler(opts.silent, verbose, opts.to_stdout))
+        verbose = config['verbose'] or config['verbose']
+        logging.root.addHandler(get_console_handler(config['silent'], verbose, config['to_stdout']))
         logging.root.addHandler(get_file_handler())
-        configure_level(conf, verbose)
+        configure_level()
         logger.debug("Logging initialized")
 
 
@@ -155,9 +130,9 @@ def try_register():
         write_to_disk(constants.registered_file)
         return
     message, hostname, group, display_name = register()
-    if InsightsClient.options.display_name is None and InsightsClient.options.group is None:
+    if config['display_name'] is None and config['group'] is None:
         logger.info('Successfully registered host %s', hostname)
-    elif InsightsClient.options.display_name is None:
+    elif config['display_name'] is None:
         logger.info('Successfully registered host %s in group %s', hostname, group)
     else:
         logger.info('Successfully registered host %s as %s in group %s',
@@ -171,10 +146,10 @@ def register():
     """
     Do registration using basic auth
     """
-    username = InsightsClient.config.get(APP_NAME, 'username')
-    password = InsightsClient.config.get(APP_NAME, 'password')
-    authmethod = InsightsClient.config.get(APP_NAME, 'authmethod')
-    auto_config = InsightsClient.config.getboolean(APP_NAME, 'auto_config')
+    username = config['username']
+    password = config['password']
+    authmethod = config['authmethod']
+    auto_config = config['auto_config']
     if not username and not password and not auto_config and authmethod == 'BASIC':
         logger.debug('Username and password must be defined in configuration file with BASIC authentication method.')
         return False
@@ -192,10 +167,10 @@ def handle_registration():
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
     new = False
-    if InsightsClient.options.reregister:
+    if config['reregister']:
         logger.debug('Re-register set, forcing registration.')
         new = True
-        InsightsClient.options.register = True
+        config['register'] = True
         write_to_disk(constants.registered_file, delete=True)
         write_to_disk(constants.unregistered_file, delete=True)
         write_to_disk(constants.machine_id_file, delete=True)
@@ -229,7 +204,7 @@ def get_machine_id():
 def fetch_rules():
     pconn = InsightsConnection()
     pc = InsightsConfig(pconn)
-    return pc.get_conf(InsightsClient.options.update, {})
+    return pc.get_conf(config['update'], {})
 
 
 def update_rules():
@@ -244,13 +219,41 @@ def collect(rc=0):
     Run through "targets" - could be just ONE (host, default) or ONE (container/image)
     """
     # initialize collection targets
-    # for now we do either containers OR host -- not both at same time
-    targets = constants.default_target
+    # tar files
+    if config['analyze_compressed_file'] is not None:
+        logger.debug("Client analyzing a compress filesystem.")
+        targets = [{'type': 'compressed_file',
+                    'name': os.path.splitext(
+                        os.path.basename(config['analyze_compressed_file']))[0],
+                    'location': config['analyze_compressed_file']}]
+
+    # mountpoints
+    elif config['mountpoint'] is not None:
+        logger.debug("Client analyzing a filesystem already mounted.")
+        targets = [{'type': 'mountpoint',
+                    'name': os.path.splitext(
+                        os.path.basename(config['mountpoint']))[0],
+                    'location': config['mountpoint']}]
+
+    # container mode
+    elif config['container_mode']:
+        logger.debug("Client running in container/image mode.")
+        logger.debug("Scanning for matching container/image.")
+
+        from containers import get_targets
+        targets = get_targets()
+
+    # the host
+    else:
+        logger.debug("Host selected as scanning target.")
+        targets = constants.default_target
 
     # if there are no targets to scan then bail
     if not len(targets):
         logger.debug("No targets were found. Exiting.")
         return False
+    logger.debug("Found targets: ")
+    logger.debug(targets)
 
     logger.warning("Assuming remote branch and leaf value of -1")
     branch_info = constants.default_branch_info
@@ -261,21 +264,21 @@ def collect(rc=0):
     # load config from stdin/file if specified
     try:
         stdin_config = {}
-        if InsightsClient.options.from_file:
-            with open(InsightsClient.options.from_file, 'r') as f:
+        if config['from_file']:
+            with open(config['from_file'], 'r') as f:
                 stdin_config = json.load(f)
-        elif InsightsClient.options.from_stdin:
+        elif config['from_stdin']:
             stdin_config = json.load(sys.stdin)
-        if ((InsightsClient.options.from_file or InsightsClient.options.from_stdin) and
+        if ((config['from_file'] or config['from_stdin']) and
             ('uploader.json' not in stdin_config or
              'sig' not in stdin_config)):
             raise ValueError
-        if ((InsightsClient.options.from_file or InsightsClient.options.from_stdin) and
+        if ((config['from_file'] or config['from_stdin']) and
                 'branch_info' in stdin_config and stdin_config['branch_info'] is not None):
             branch_info = stdin_config['branch_info']
     except:
         logger.error('ERROR: Invalid config for %s! Exiting...',
-                     ('--from-file' if InsightsClient.options.from_file else '--from-stdin'))
+                     ('--from-file' if config['from_file'] else '--from-stdin'))
         return False
 
     collection_rules, rm_conf = pc.get_conf(False, stdin_config)
@@ -286,12 +289,83 @@ def collect(rc=0):
         archive = None
         container_connection = None
         mp = None
+        compressed_filesystem = None
         # archive metadata
         archive_meta = {}
 
         try:
-            logging_name = determine_hostname()
-            archive_meta['display_name'] = determine_hostname(InsightsClient.options.display_name)
+
+            # analyze docker images
+            if t['type'] == 'docker_image':
+
+                from containers import open_image
+                container_connection = open_image(t['name'])
+                logging_name = 'Docker image ' + t['name']
+                archive_meta['docker_id'] = t['name']
+
+                from containers import docker_display_name
+                archive_meta['display_name'] = docker_display_name(
+                    t['name'], t['type'].replace('docker_', ''))
+
+                logger.debug('Docker display_name: %s', archive_meta['display_name'])
+                logger.debug('Docker docker_id: %s', archive_meta['docker_id'])
+
+                if container_connection:
+                    mp = container_connection.get_fs()
+                else:
+                    logger.error('Could not open %s for analysis', logging_name)
+                    return False
+
+            # analyze docker containers
+            elif t['type'] == 'docker_container':
+                from containers import open_container
+                container_connection = open_container(t['name'])
+
+                logging_name = 'Docker container ' + t['name']
+                archive_meta['docker_id'] = t['name']
+
+                from containers import docker_display_name
+                archive_meta['display_name'] = docker_display_name(
+                    t['name'], t['type'].replace('docker_', ''))
+                logger.debug('Docker display_name: %s', archive_meta['display_name'])
+                logger.debug('Docker docker_id: %s', archive_meta['docker_id'])
+
+                if container_connection:
+                    mp = container_connection.get_fs()
+                else:
+                    logger.error('Could not open %s for analysis', logging_name)
+                    return False
+
+            # analyze compressed files
+            elif t['type'] == 'compressed_file':
+
+                logging_name = 'Compressed file ' + t['name'] + ' at location ' + t['location']
+
+                from compressed_file import InsightsCompressedFile
+                compressed_filesystem = InsightsCompressedFile(t['location'])
+
+                if compressed_filesystem.is_tarfile is False:
+                    logger.debug("Could not access compressed tar filesystem.")
+                    return False
+
+                mp = compressed_filesystem.get_filesystem_path()
+
+            # analyze mountpoints
+            elif t['type'] == 'mountpoint':
+
+                logging_name = 'Filesystem ' + t['name'] + ' at location ' + t['location']
+                mp = config['mountpoint']
+
+            # analyze the host
+            elif t['type'] == 'host':
+                logging_name = determine_hostname()
+                archive_meta['display_name'] = determine_hostname(config['display_name'])
+
+            # nothing found to analyze
+            else:
+                logger.error('Unexpected analysis target: %s', t['type'])
+                return False
+
             archive_meta['type'] = t['type'].replace('docker_', '')
             archive_meta['product'] = 'Docker'
 
@@ -299,14 +373,11 @@ def collect(rc=0):
             archive_meta['system_id'] = machine_id
             archive_meta['machine_id'] = machine_id
 
-            if InsightsClient.options.container_mode:
-                compressor = "none"
-            else:
-                compressor = InsightsClient.options.compressor
-
-            archive = InsightsArchive(compressor=compressor, target_name=t['name'])
+            archive = InsightsArchive(compressor=config['compressor']
+                                      if not config['container_mode'] else "none",
+                                      target_name=t['name'])
             dc = DataCollector(archive,
-                               InsightsClient.config,
+                               config,
                                mountpoint=mp,
                                target_name=t['name'],
                                target_type=t['type'])
@@ -316,13 +387,13 @@ def collect(rc=0):
 
             # add custom metadata about a host if provided by from_file
             # use in the OSE case
-            if InsightsClient.options.from_file:
-                with open(InsightsClient.options.from_file, 'r') as f:
+            if config['from_file']:
+                with open(config['from_file'], 'r') as f:
                     stdin_config = json.load(f)
                     if 'metadata' in stdin_config:
                         archive.add_metadata_to_archive(json.dumps(stdin_config['metadata']), 'metadata.json')
 
-            if InsightsClient.options.no_tar_file:
+            if config['no_tar_file']:
                 logger.info('See Insights data in %s', dc.archive.archive_dir)
                 return dc.archive.archive_dir
 
@@ -348,6 +419,10 @@ def collect(rc=0):
             logger.debug("Wrote %s to %s as last collected archive" %
                 (tar_file, constants.archive_last_collected_date_file))
 
+    # cleanup the temporary stuff for analyzing tar files
+    if config['analyze_compressed_file'] is not None and compressed_filesystem is not None:
+        compressed_filesystem.cleanup_temp_filesystem()
+
     return tar_file
 
 
@@ -355,10 +430,10 @@ def upload(tar_file, collection_duration=None):
     logger.info('Uploading Insights data. This may take a few minutes.')
     pconn = InsightsConnection()
     upload_status = False
-    for tries in range(InsightsClient.options.retries):
+    for tries in range(config['retries']):
         upload = pconn.upload_archive(tar_file, collection_duration,
                                       cluster=generate_machine_id(
-                                          docker_group=InsightsClient.options.container_mode))
+                                          docker_group=config['container_mode']))
         upload_status = upload.status_code
         if upload.status_code == 201:
 
@@ -391,7 +466,7 @@ def upload(tar_file, collection_duration=None):
                     handler.write(json.dumps(insights_facts))
 
             try:
-                logger.info("You successfully uploaded a report from %s to account %s." % (machine_id, InsightsClient.account_number))
+                logger.info("You successfully uploaded a report from %s to account %s." % (machine_id, config['account_number']))
             except:
                 pass
             logger.info("Upload completed successfully!")
@@ -400,15 +475,14 @@ def upload(tar_file, collection_duration=None):
             pconn.handle_fail_rcs(upload)
         else:
             logger.error("Upload attempt %d of %d failed! Status Code: %s",
-                         tries + 1, InsightsClient.options.retries, upload.status_code)
-            if tries + 1 != InsightsClient.options.retries:
+                         tries + 1, config['retries'], upload.status_code)
+            if tries + 1 != config['retries']:
                 logger.info("Waiting %d seconds then retrying",
                             constants.sleep_time)
                 time.sleep(constants.sleep_time)
             else:
                 logger.error("All attempts to upload have failed!")
-                logger.error("Please see %s for additional information",
-                             constants.default_log_file)
+                logger.error("Please see %s for additional information", config['logging_file'])
     return upload_status
 
 
@@ -439,70 +513,53 @@ def handle_startup():
     """
     # ----do X and exit options----
     # show version and exit
-    if InsightsClient.options.version:
+    if config['version']:
         return constants.version
 
-    if InsightsClient.options.validate:
+    # validate the remove file
+    if config['validate']:
         return validate_remove_file()
 
-    # do auto_config here, for connection-related 'do X and exit' options
-    if InsightsClient.config.getboolean(APP_NAME, 'auto_config') and not InsightsClient.options.offline:
-        # Try to discover if we are connected to a satellite or not
-        try_auto_configuration()
-
-    if InsightsClient.options.test_connection:
+    if config['test_connection']:
         pconn = InsightsConnection()
         rc = pconn.test_connection()
         return rc
 
-    if InsightsClient.options.status:
+    if config['status']:
         reg_check = registration_check()
         for msg in reg_check['messages']:
             logger.debug(msg)
         # exit with !status, 0 for True, 1 for False
         return reg_check['status']
 
-    if InsightsClient.options.support:
+    if config['support']:
         support = InsightsSupport()
         support.collect_support_info()
         return True
 
-    if InsightsClient.config.getboolean(APP_NAME, 'auto_update') and not InsightsClient.options.offline:
-        # TODO: config updates option, but in GPG option, the option updates
-        # the config.  make this consistent
-        InsightsClient.options.update = True
-
-    # can't use bofa
-    if InsightsClient.options.from_stdin and InsightsClient.options.from_file:
-        logger.error('Can\'t use both --from-stdin and --from-file.')
-        return False
-
-    if InsightsClient.options.to_stdout:
-        InsightsClient.options.no_upload = True
-
     # ----register options----
     # put this first to avoid conflicts with register
-    if InsightsClient.options.unregister:
+    if config['unregister']:
         pconn = InsightsConnection()
         return pconn.unregister()
 
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
     new = False
-    if InsightsClient.options.reregister:
+    if config['reregister']:
         new = True
-        InsightsClient.options.register = True
+        config['register'] = True
         write_to_disk(constants.registered_file, delete=True)
         write_to_disk(constants.registered_file, delete=True)
         write_to_disk(constants.machine_id_file, delete=True)
     logger.debug('Machine-id: %s', generate_machine_id(new))
 
-    if InsightsClient.options.register:
+    if config['register']:
         try_register()
 
     # check registration before doing any uploads
     # Ignore if in offline mode
-    if not InsightsClient.options.register and not InsightsClient.options.offline:
+    if not config['register'] and not config['offline']:
         msg, is_registered = _is_client_registered()
         if not is_registered:
             logger.error(msg)
