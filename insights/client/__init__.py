@@ -496,8 +496,9 @@ def run(op, *args, **kwargs):
     try_auto_configuration()
     status = client.handle_startup()
     if status is not None:
-        logger.info("Returning early due to initialization response: %s", status)
-        return status
+        logger.debug("Returning early due to initialization response: %s", status)
+        print "INIT: %s" % (status if type(status) in (str, unicode) else "")
+        return
     else:
         try:
             c = InsightsClient()

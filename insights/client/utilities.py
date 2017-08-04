@@ -194,7 +194,7 @@ def validate_remove_file(remove_file=constants.collection_remove_file):
                      "Expected 0600 got %s" % oct(mode))
         return False
     else:
-        print "Correct file permissions"
+        logger.debug("Correct file permissions")
 
     if os.path.isfile(remove_file):
         parsedconfig = RawConfigParser()
@@ -203,9 +203,10 @@ def validate_remove_file(remove_file=constants.collection_remove_file):
         for item, value in parsedconfig.items('remove'):
             rm_conf[item] = value.strip().split(',')
         # Using print here as this could contain sensitive information
-        print "Remove file parsed contents"
-        print rm_conf
+        logger.debug("Remove file parsed contents")
+        logger.debug(rm_conf)
     logger.info("JSON parsed correctly")
+    return True
 
 
 def write_data_to_file(data, filepath):

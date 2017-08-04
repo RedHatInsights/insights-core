@@ -93,16 +93,20 @@ class InsightsSupport(object):
                     'sestatus',
                     'subscription-manager identity']
         for cmd in commands:
-            proc = Popen(
-                shlex.split(cmd), shell=False, stdout=PIPE, stderr=STDOUT, close_fds=True)
-            stdout, stderr = proc.communicate()
+            logger.info("Running command: %s", cmd)
+            try:
+                proc = Popen(
+                    shlex.split(cmd), shell=False, stdout=PIPE, stderr=STDOUT, close_fds=True)
+                stdout, stderr = proc.communicate()
+            except Exception as e:
+                logger.info("Process failed: %s", e)
             if 'test-connection' in cmd:
                 if proc.returncode == 0:
                     logger.info('Connection test: PASS\n')
                 else:
                     logger.info('Connection test: FAIL\n')
             else:
-                logger.info(stdout)
+                logger.info("Process output: \n%s", stdout)
 
         # check available disk space for /var/tmp
         tmp_dir = '/var/tmp'
