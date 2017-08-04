@@ -27,6 +27,7 @@ CONFIG = {
     'conf': os.path.join(CONF_DIR, 'insights-client.conf'),
     'container_mode': None,
     'core_url': None,
+    'debug': False,  # Used by client wrapper script
     'disable_schedule': False,
     'display_name': None,
     'docker_image_name': None,
@@ -292,6 +293,12 @@ OPTS = [{
     'help': optparse.SUPPRESS_HELP,
     'action': 'store',
     'dest': 'just_upload',
+    'group': 'debug'
+}, {
+    'opt': ['--debug'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store_true',
+    'dest': 'debug',
     'group': 'debug'
 }]
 
