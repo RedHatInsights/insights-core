@@ -352,7 +352,25 @@ def apply_legacy_config():
         CONFIG['gpg'] = False
 
 
+def boolify(v):
+    if v.lower() == "true":
+        return True
+    elif v.lower() == "false":
+        return False
+    else:
+        return v
+
+
 def compile_config():
+    # Options can be set as environment variables
+    # The formula for the key is `"INSIGHTS_%s" % key.upper()`
+    # In English, that's the uppercase version of the config key with
+    # "INSIGHTS_" prepended to it.
+    insights_env_opts = dict((k.upper().split("_", 1)[1], boolify(v))
+                             for k, v in os.environ.iteritems()
+                             if k.upper().startswith("INSIGHTS_"))
+    CONFIG.update(insights_env_opts)
+
     # TODO: If the defaults.yaml file ever fills in all the client config, then
     # they will clobber the legacy file, even if the user has no insights.yaml
     # defined!!
