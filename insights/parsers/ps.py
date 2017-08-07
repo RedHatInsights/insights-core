@@ -66,6 +66,7 @@ Examples:
     ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
 """
 from .. import add_filter, Parser, parser, parse_table
+from insights.parsers import ParseException
 
 
 class ProcessList(Parser):
@@ -124,7 +125,7 @@ class PsAuxcww(ProcessList):
                          for security rules and their debugging.
 
     Raises:
-        ValueError: Raised if any error occurs parsing the content.
+        ParseException: Raised if any error occurs parsing the content.
     """
     def __init__(self, *args, **kwargs):
         self.data = {}
@@ -136,8 +137,9 @@ class PsAuxcww(ProcessList):
             self.data = parse_table(content)
             self.parse_services(content)
         else:
-            raise ValueError("PsAuxcww: Unable to parse content: {} ({})".format(len(content),
-                                                                                 content[0]))
+            raise ParseException(
+                    "PsAuxcww: Unable to parse content: {} ({})".format(
+                        len(content), content))
 
     def parse_services(self, content):
         """
@@ -201,12 +203,13 @@ class PsAxcwwo(ProcessList):
             headers and each item in the list represents a process.
 
     Raises:
-        ValueError: Raised if any error occurs parsing the content.
+        ParseException: Raised if any error occurs parsing the content.
     """
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
             self.data = parse_table(content, max_splits=2)
         else:
-            raise ValueError("PsAuxcww: Unable to parse {} line(s) of content:({})".format(len(content),
-                                                                                 content[0]))
+            raise ParseException(
+                    "PsAxcwwo: Unable to parse {} line(s) of content:({})".format(
+                        len(content), content))
