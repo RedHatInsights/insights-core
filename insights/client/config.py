@@ -74,6 +74,9 @@ CONFIG = {
     'validate': False,
     'verbose': False,
     'version': False,
+    'check_timestamp': True,
+    'image_id': None,
+    'tar_file': None
 }
 
 OPTS = [{
@@ -300,6 +303,21 @@ OPTS = [{
     'action': 'store_true',
     'dest': 'debug',
     'group': 'debug'
+}, {
+    'opt': ['--check-timestamp'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store',
+    'dest': 'check_timestamp'
+}, {
+    'opt': ['--image-id'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store',
+    'dest': 'image_id'
+}, {
+    'opt': ['--tar-file'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store',
+    'dest': 'tar_file'
 }]
 
 

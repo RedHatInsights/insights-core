@@ -348,21 +348,25 @@ class InsightsClient(object):
         # OR a mount point (FS that is already mounted somewhere)
         scanning_host = True
         if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mountpoint')):
+            logger.debug('Not scanning host.')
             scanning_host = False
 
         # setup other scanning cases
         # scanning images/containers running in docker
         if kwargs.get('image_id'):
+            logger.debug('Scanning an image id.')
             config['container_mode'] = True
             config['only'] = kwargs.get('image_id')
 
         # compressed filesystems (tar files)
         if kwargs.get('tar_file'):
+            logger.debug('Scanning a tar file.')
             config['container_mode'] = True
             config['analyze_compressed_file'] = kwargs.get('tar_file')
 
         # FSs already mounted somewhere
         if kwargs.get('mountpoint'):
+            logger.debug('Scanning a mount point.')
             config['container_mode'] = True
             config['mountpoint'] = kwargs.get('mountpoint')
 
@@ -512,7 +516,10 @@ def update():
 
 
 def collect():
-    print run("collect")
+    print run("collect", check_timestamp=config["check_timestamp"],
+                        image_id=(config["image_id"] or config["only"]),
+                        tar_file=config["tar_file"],
+                        mountpoint=config["mountpoint"])
 
 
 def upload():
