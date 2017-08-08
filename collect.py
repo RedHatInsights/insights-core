@@ -2,8 +2,8 @@
 
 import logging
 import multiprocessing as mp
-import platform
 import os
+import platform
 from contextlib import closing
 
 from insights import specs  # noqa: F401
@@ -24,8 +24,7 @@ def worker(args):
 
 def run_graph(seed_broker, g, output_dir):
     to_save = [plugins.datasource, plugins.parser, plugins.combiner, plugins.rule]
-    broker = dr.Broker()
-    broker.instances = dict(seed_broker.instances)
+    broker = dr.Broker(seed_broker)
     for _type in to_save:
         path = os.path.join(output_dir, dr.get_simple_name(_type))
         fs.ensure_path(path)
@@ -49,11 +48,14 @@ def run_serial(args):
 def main():
     hostname = platform.node()
     ctx = HostContext(hostname)
+
     broker = dr.Broker()
     broker[HostContext] = ctx
+
     out_path = "output"
     dr.load_components("insights/parsers")
     dr.load_components("insights/combiners")
+
     graphs = dr.get_subgraphs(dr.COMPONENTS[dr.GROUPS.single])
     args = [(broker, g, out_path) for g in graphs]
     run_serial(args)

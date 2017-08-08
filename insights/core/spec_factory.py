@@ -15,6 +15,7 @@ from insights.core.serde import deserializer, serializer
 
 log = logging.getLogger(__name__)
 
+# TODO: consider case insensitive and regex
 FILTERS = defaultdict(set)
 
 
