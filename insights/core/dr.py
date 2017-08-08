@@ -328,8 +328,8 @@ def register_component(component, delegate, component_type,
 
 
 class Broker(object):
-    def __init__(self, cleanup=False):
-        self.instances = {}
+    def __init__(self, seed_broker=None):
+        self.instances = dict(seed_broker.instances) if seed_broker else {}
         self.missing_dependencies = {}
         self.exceptions = defaultdict(list)
         self.tracebacks = {}
@@ -449,6 +449,25 @@ def default_executor(func, broker, requires=[], optional=[]):
     return func(broker)
 
 
+def splat_executor(func, broker, requires=[], optional=[]):
+    """ Use this executor if your component signature matches your
+        dependency list. Can be used on individual components or
+        in component type definitions.
+    """
+    missing_requirements = get_missing_requirements(requires, broker)
+    if missing_requirements:
+        raise MissingRequirements(missing_requirements)
+    args = []
+    for r in requires:
+        if isinstance(r, list):
+            args.extend(r)
+        else:
+            args.append(r)
+    args.extend(optional)
+    args = [broker.get(a) for a in args]
+    return func(*args)
+
+
 def new_component_type(name=None,
                        auto_requires=[],
                        auto_optional=[],
@@ -559,10 +578,9 @@ def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
         relationships. Disjoint subgraphs are executed one at a time and
         a broker containing the results for each is yielded. If a broker
         is passed here, its instances are used to seed the broker used
-        to run each subgraph.
+        to hold state for each sub graph.
     """
     seed_broker = broker or Broker()
     for graph in get_subgraphs(components):
-        broker = Broker()
-        broker.instances = dict(seed_broker.instances)
+        broker = Broker(seed_broker)
         yield run(graph, broker)
