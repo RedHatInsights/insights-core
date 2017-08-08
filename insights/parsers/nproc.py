@@ -1,6 +1,10 @@
 """
 limits : Files ``limits.conf`` and ``*-nproc.conf``
 ===================================================
+.. warning::
+    Deprecated parser, please use the
+    :class:`insights.combiners.limits_conf.AllLimitsConf` combiner instead.
+
 Parses lines from ``/etc/security/limits.conf`` and from
 ``/etc/security/limits.d/*-nproc.conf``.  Contents of
 all files are the same but the path of each file is
