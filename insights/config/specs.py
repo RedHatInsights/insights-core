@@ -177,7 +177,7 @@ static_specs = {
                                     SimpleFileSpec("etc/insights-client/.lastupload")]),
     "libvirtd.log"              : SimpleFileSpec("var/log/libvirt/libvirtd.log"),
     "limits.conf"               : PatternSpec("etc/security/limits.conf"),
-    "limits.d"                  : PatternSpec(r"etc/security/limits.d/.*"),
+    "limits.d"                  : PatternSpec(r"etc/security/limits.d/.*\.conf"),
     "locale"                    : CommandSpec("/usr/bin/locale"),
     "localtime"                 : CommandSpec("/usr/bin/file -L /etc/localtime"),
     "lpstat_p"                  : CommandSpec("/usr/bin/lpstat -p"),
