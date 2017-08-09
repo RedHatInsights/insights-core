@@ -212,7 +212,7 @@ class LSBlock(BlockDevices):
                 device_list.append(device)
 
         self.rows = [BlockDevice(d) for d in device_list]
-        self.device_data = {dev.name: dev for dev in self.rows}
+        self.device_data = dict((dev.name, dev) for dev in self.rows)
 
 
 @parser('lsblk_pairs')
@@ -259,7 +259,7 @@ class LSBlockPairs(BlockDevices):
     def parse_content(self, content):
         self.rows = []
         for line in content:
-            d = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line) if len(v) > 0}
+            d = dict((k, v) for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line) if len(v) > 0)
 
             def str2bool(s):
                 return bool(int(s))

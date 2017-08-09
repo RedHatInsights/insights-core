@@ -59,11 +59,11 @@ class SpecMapper(object):
 
     def add_files(self, file_map):
         logger.debug("ROOT: %s", self.root)
-        unrooted_map = {
-            f.split(self.root)[1]: f
+        unrooted_map = dict(
+            (f.split(self.root)[1], f)
             for f in self.all_names
             if f != self.root
-        }
+        )
         unrooted_files = set(unrooted_map)
         commands = set(self.filter_commands(unrooted_files))
         non_commands = unrooted_files - commands

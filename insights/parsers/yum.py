@@ -61,7 +61,7 @@ class YumRepoList(Parser):
 
     def parse_content(self, content):
         self.data = list(_parse(content))
-        self.repos = {d['id']: d for d in self.data}
+        self.repos = dict((d['id'], d) for d in self.data)
 
     @property
     def eus(self):

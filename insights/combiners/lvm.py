@@ -105,7 +105,7 @@ def to_name_key_dict(data, name_key):
         dict: Dictionary keyed by `name_key` values having the information
             contained in the original input list `data`.
     """
-    return {row[name_key]: row for row in data}
+    return dict((row[name_key], row) for row in data)
 
 
 def merge_lvm_data(primary, secondary, name_key):
@@ -148,10 +148,10 @@ def merge_lvm_data(primary, secondary, name_key):
             combined_data[name] = pri_data[name]
         else:
             # Data in both primary and secondary, pick primary if better or no secondary
-            combined_data[name].update({
-                k: v for k, v in pri_data[name].iteritems()
+            combined_data[name].update(dict(
+                (k, v) for k, v in pri_data[name].iteritems()
                 if v is not None or k not in combined_data[name]
-            })
+            ))
 
     return set_defaults(combined_data)
 
@@ -177,14 +177,14 @@ class Lvm(object):
         # Volume Groups information
         self.volume_groups = merge_lvm_data(get_shared_data(Vgs, shared),
                                             get_shared_data(VgsHeadings, shared),
-                                             'VG')
+                                            'VG')
         """dict: Contains a dictionary of volume group data with keys
             from the original output."""
 
         # Physical Volumes information
         self.physical_volumes = merge_lvm_data(get_shared_data(Pvs, shared),
                                                get_shared_data(PvsHeadings, shared),
-                                                'PV')
+                                               'PV')
         """dict: Contains a dictionary of physical volume data with keys
             from the original output."""
 
@@ -200,7 +200,7 @@ class Lvm(object):
             l['LVVG'] = Lvm.LvVgName(LV=l['LV'], VG=l['VG'])
         self.logical_volumes = merge_lvm_data(pri_lvs_data,
                                               sec_lvs_data,
-                                               'LVVG')
+                                              'LVVG')
         """dict: Contains a dictionary of logical volume data with keys
             from the original output. The key is a tuple of the
             logical volume name and the volume group name. This tuple
@@ -227,20 +227,20 @@ class Lvm(object):
     def filter_volume_groups(self, vg_filter):
         """dict: Returns dictionary of volume group information with keys
             containing `vg_filter`."""
-        return {k: v for k, v in self.volume_groups.iteritems() if vg_filter in k}
+        return dict((k, v) for k, v in self.volume_groups.iteritems() if vg_filter in k)
 
     def filter_physical_volumes(self, pv_filter):
         """dict: Returns dictionary of physical volume information with keys
             containing `pv_filter`."""
-        return {k: v for k, v in self.physical_volumes.iteritems() if pv_filter in k}
+        return dict((k, v) for k, v in self.physical_volumes.iteritems() if pv_filter in k)
 
     def filter_logical_volumes(self, lv_filter, vg_filter=None):
         """dict: Returns dictionary of logical volume information having the
             `lv_filter` in the logical volume and if specified `vg_filter` in the
             volume group."""
         if vg_filter is None:
-            return {k: v for k, v in self.logical_volumes.iteritems()
-                    if lv_filter in k.LV}
+            return dict((k, v) for k, v in self.logical_volumes.iteritems()
+                        if lv_filter in k.LV)
         else:
-            return {k: v for k, v in self.logical_volumes.iteritems()
-                    if lv_filter in k.LV and vg_filter in k.VG}
+            return dict((k, v) for k, v in self.logical_volumes.iteritems()
+                        if lv_filter in k.LV and vg_filter in k.VG)

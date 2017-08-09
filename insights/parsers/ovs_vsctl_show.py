@@ -113,10 +113,10 @@ class OVSvsctlshow(Parser):
                 port_dict["type"] = value
             elif prefix == "options:":
                 options_items = value[1:-1].split(", ")
-                port_dict["options"] = {
-                    item.split("=")[0]: item.split("=")[1].replace('"', "")
+                port_dict["options"] = dict(
+                    (item.split("=")[0], item.split("=")[1].replace('"', ""))
                     for item in options_items
-                }
+                )
 
     def get_ovs_version(self):
         return self.data.get("ovs_version")

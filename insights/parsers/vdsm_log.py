@@ -76,7 +76,7 @@ class VDSMLog(LogFileOutput):
         for line in lines:
             parts = line.split('::', 6)
             fields = {'raw_line': line}
-            fields.update({k: v for k, v in zip(fieldnames, parts)})
+            fields.update(dict((k, v) for k, v in zip(fieldnames, parts)))
             if len(parts) == 7:
                 func, msg = parts[6].split(' ', 1)
                 fields['funcname'] = func[1:-1]  # remove surrounding brackets

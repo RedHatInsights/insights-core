@@ -26,7 +26,7 @@ from .. import YAMLParser, parser
 
 
 def metadata_name_items(data):
-    return {item['metadata']['name']: item for item in data['items']}
+    return dict((item['metadata']['name'], item) for item in data['items'])
 
 
 @parser('oc_get_pod')

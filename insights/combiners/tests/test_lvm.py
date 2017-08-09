@@ -2,7 +2,7 @@ from collections import namedtuple
 
 import pytest
 from insights.parsers.lvm import (Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs,
-                                 VgsHeadings)
+                                  VgsHeadings)
 from insights.combiners.lvm import Lvm
 from insights.combiners import lvm
 from insights.tests import context_wrap
@@ -315,18 +315,18 @@ def test_combiner_vgs(lvm_data):
             assert lvm_info.volume_groups is not None
             assert len(list(lvm_info.volume_groups)) == 8
             assert lvm_info.volume_groups['data7']['VG_UUID'] == 'r58iLs-sYla-lC4h-UURW-bZOG-P2Yd-lambpM'
-            assert lvm_info.volume_group_names == {
+            assert lvm_info.volume_group_names == set([
                 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7',
                 'rhel_ceehadoop1'
-            }
+            ])
             if Vgs in data.shared:
                 assert lvm_info.volume_groups['data1']['VPerms'] == 'writeable'
             else:
                 assert lvm_info.volume_groups['data1']['VPerms'] is None
             filtered_lvm_info = lvm_info.filter_volume_groups('data')
-            assert set(filtered_lvm_info.keys()) == {
+            assert set(filtered_lvm_info.keys()) == set([
                 'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7'
-            }
+            ])
             assert filtered_lvm_info['data7']['VG_UUID'] == 'r58iLs-sYla-lC4h-UURW-bZOG-P2Yd-lambpM'
 
 
@@ -337,7 +337,7 @@ def test_combiner_pvs(lvm_data):
             assert lvm_info.physical_volumes is not None
             assert len(list(lvm_info.physical_volumes)) == 31
             assert lvm_info.physical_volumes['/dev/sdh1']['VG'] == 'data7'
-            assert lvm_info.physical_volume_names == {
+            assert lvm_info.physical_volume_names == set([
                 '/dev/data1/lv_brick1',
                 '/dev/data1/lv_hdfs1',
                 '/dev/data2/lv_brick2',
@@ -369,7 +369,7 @@ def test_combiner_pvs(lvm_data):
                 '/dev/sdf1',
                 '/dev/sdg1',
                 '/dev/sdh1'
-            }
+            ])
             assert '/dev/sdg1' in lvm_info.physical_volume_names
             if Pvs in data.shared:
                 assert lvm_info.physical_volumes['/dev/sdg1']['LVM2_PV_MINOR'] == '97'
@@ -378,7 +378,7 @@ def test_combiner_pvs(lvm_data):
                 assert 'LVM2_PV_MINOR' not in lvm_info.physical_volumes['/dev/sdg1']
                 assert lvm_info.physical_volumes['/dev/sdg1']['Missing'] is None
             filtered_lvm_info = lvm_info.filter_physical_volumes('sda')
-            assert set(filtered_lvm_info.keys()) == {'/dev/sda2', '/dev/sda3'}
+            assert set(filtered_lvm_info.keys()) == set(['/dev/sda2', '/dev/sda3'])
             assert filtered_lvm_info['/dev/sda2']['DevSize'] == '1.00g'
 
 
@@ -399,7 +399,7 @@ def test_combiner_lvs(lvm_data):
             if LvsHeadings in data.shared:
                 for k, v in LVS_HEADINGS_POOL7.iteritems():
                     assert pool7[k] == v
-            assert lvm_info.logical_volume_names == {
+            assert lvm_info.logical_volume_names == set([
                 Lvm.LvVgName(LV='lv_brick1', VG='data1'),
                 Lvm.LvVgName(LV='lv_hdfs1', VG='data1'),
                 Lvm.LvVgName(LV='pool1', VG='data1'),
@@ -440,7 +440,7 @@ def test_combiner_lvs(lvm_data):
                 Lvm.LvVgName(LV='root', VG='rhel_ceehadoop1'),
                 Lvm.LvVgName(LV='swap', VG='rhel_ceehadoop1'),
                 Lvm.LvVgName(LV='var', VG='rhel_ceehadoop1'),
-            }
+            ])
             filtered_lvm_info = lvm_info.filter_logical_volumes('pool7')
             for lv in filtered_lvm_info:
                 assert lv.LV in ['pool7', '[pool7_tdata]', '[pool7_tmeta]']

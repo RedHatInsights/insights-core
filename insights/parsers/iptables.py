@@ -180,7 +180,7 @@ class IPTablesConfiguration(Parser):
         Returns:
             dict: chains with set of defined rules
         """
-        return {c["name"]: self.get_chain(c["name"], table) for c in self.get_table(table)}
+        return dict((c["name"], self.get_chain(c["name"], table)) for c in self.get_table(table))
 
     def get_rule(self, s):
         """

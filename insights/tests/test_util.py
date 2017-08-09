@@ -24,7 +24,7 @@ class t(object):
 
 
 def dummy_dict(l):
-    return {k: 1 for k in l}
+    return dict((k, 1) for k in l)
 
 
 class TestComponentRequirements(unittest.TestCase):

@@ -5,5 +5,5 @@ from .. import Parser, parser, LegacyItemAccess
 class OvirtEngineConfd(LegacyItemAccess, Parser):
 
     def parse_content(self, content):
-        self.data = {k.strip('" '): v.strip('" ')
-                     for k, _, v in [l.partition("=") for l in content]}
+        self.data = dict((k.strip('" '), v.strip('" '))
+                         for k, _, v in [l.partition("=") for l in content])

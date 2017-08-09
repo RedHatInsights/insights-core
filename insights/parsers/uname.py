@@ -93,7 +93,7 @@ rhel_release_map = {
     "3.10.0-514": "7.3"
 }
 
-release_to_kernel_map = {v: k for k, v in rhel_release_map.items()}
+release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())
 RedhatRelease = namedtuple("RedhatRelease", ("major", "minor"))
 
 
@@ -183,7 +183,7 @@ class Uname(Parser):
         '_lv_version'
     ]
 
-    defaults = {k: None for k in keys}
+    defaults = dict((k, None) for k in keys)
 
     def __init__(self, context):
         super(Uname, self).__init__(context)
@@ -427,7 +427,7 @@ class Uname(Parser):
         s_version, o_version = self._best_version(other_uname)
 
         return s_version < o_version or \
-           (s_version == o_version and self._lv_release < other_uname._lv_release)
+            (s_version == o_version and self._lv_release < other_uname._lv_release)
 
     def __le__(self, other):
         """
@@ -453,7 +453,7 @@ class Uname(Parser):
         s_version, o_version = self._best_version(other_uname)
 
         return s_version > o_version or \
-           (s_version == o_version and self._lv_release > other_uname._lv_release)
+            (s_version == o_version and self._lv_release > other_uname._lv_release)
 
     def __ge__(self, other):
         """

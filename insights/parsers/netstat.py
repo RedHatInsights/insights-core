@@ -262,13 +262,13 @@ class NetstatAGN(Parser):
         """
         result = defaultdict(list)
         for entry in self.data:
-            result[entry["interface"]].append({k.lower(): v for (k, v) in entry.iteritems() if k in ["refcnt", "group"]})
+            result[entry["interface"]].append(dict(k.lower((), v) for (k, v) in entry.iteritems() if k in ["refcnt", "group"]))
         return dict(result)
 
     def parse_content(self, content):
         content = content[1:2] + content[3:]
         table = parse_table(content)
-        self.data = map(lambda item: {k.lower(): v for (k, v) in item.iteritems()}, table)
+        self.data = map(lambda item: dict(k.lower((), v) for (k, v) in item.iteritems()), table)
 
 
 class NetstatSection(object):
@@ -309,9 +309,9 @@ class NetstatSection(object):
             i += 1
         self.data[i - 1].append(line[indexes[i - 1]:])
 
-        self.datalist.append({m: d for m, d in zip(
+        self.datalist.append(dict((m, d) for m, d in zip(
             NETSTAT_SECTION_ID[self.name], [r[-1] for r in self.data]
-        )})
+        )))
         # For convenience, unpack 'PID/Program name' into 'PID' and 'Program name'
         # This field must exist because of NETSTAT_SECTION_ID and the
         # exception in add_meta_data
@@ -448,9 +448,9 @@ class Netstat(Parser):
         if not sections:
             raise ParseException("Found no section headers in content")
 
-        self.data = {s.name: s._merge_data_index() for s in sections}
-        self.lines = {s.name: s.lines for s in sections}
-        self.datalist = {s.name: s.datalist for s in sections}
+        self.data = dict((s.name, s._merge_data_index()) for s in sections)
+        self.lines = dict((s.name, s.lines) for s in sections)
+        self.datalist = dict((s.name, s.datalist) for s in sections)
 
     @property
     def running_processes(self):
@@ -464,11 +464,11 @@ class Netstat(Parser):
         # Is it possible to have a machine that has no active connections?
         if ACTIVE_INTERNET_CONNECTIONS not in self.data:
             return set()
-        return set({
+        return set(
             pg.split('/', 1)[1].strip()
             for pg in self.data[ACTIVE_INTERNET_CONNECTIONS]['PID/Program name']
             if '/' in pg
-        })
+        )
 
     @property
     def listening_pid(self):
@@ -578,10 +578,10 @@ class Netstat_I(Parser):
         self._group_by_iface = {}
         table = parse_table(content[1:])
         self.data = map(lambda item:
-                        {k: v for (k, v) in item.iteritems()}, table)
+                        dict((k, v) for (k, v) in item.iteritems()), table)
         for entry in self.data:
             self._group_by_iface[entry["Iface"]] = \
-                {k: v for (k, v) in entry.iteritems() if k != 'Iface'}
+                dict((k, v) for (k, v) in entry.iteritems() if k != 'Iface')
         return
 
 
@@ -636,12 +636,12 @@ class SsTULPN(Parser):
         return [l for l in self.data if l.get("Process", None) and service in l["Process"]]
 
     def get_localport(self, port):
-        return [l for l in self.data if l.get("Local-Address-Port", None) and
-                        port in l["Local-Address-Port"]]
+        return [l for l in self.data if l.get("Local-Address-Port") and
+                port in l["Local-Address-Port"]]
 
     def get_peerport(self, port):
-        return [l for l in self.data if l.get("Peer-Address-Port", None) and
-                        port in l["Peer-Address-Port"]]
+        return [l for l in self.data if l.get("Peer-Address-Port") and
+                port in l["Peer-Address-Port"]]
 
     def get_port(self, port):
         return self.get_localport(port) + self.get_peerport(port)

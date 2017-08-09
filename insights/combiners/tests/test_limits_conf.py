@@ -41,7 +41,7 @@ def test_all_limits_conf():
     assert all_data.rules[5] == {'domain': '@jackuser', 'type': '-', 'item': 'rtprio', 'value': 70, 'file': LIMITS_D_PATH}
     assert all_data.rules[6] == {'domain': '@jackuser', 'type': '-', 'item': 'memlock', 'value': 4194304, 'file': LIMITS_D_PATH}
 
-    assert all_data.domains == set({'oracle', 'root', '@jackuser'})
+    assert all_data.domains == set(['oracle', 'root', '@jackuser'])
 
     assert all_data.find_all(domain='root') == [all_data.rules[4]]
 
