@@ -1,4 +1,3 @@
-import unittest
 from insights.parsers.tuned import Tuned
 from insights.tests import context_wrap
 
@@ -32,32 +31,31 @@ Preset profile: virtual-guest
 '''.strip()
 
 
-class CheckTuned(unittest.TestCase):
+def test_active_profile():
+    tuned_output = Tuned(context_wrap(TUNED_OUTPUT))
+    assert len(tuned_output.data.get('available')) == 9
+    assert tuned_output.data.get('active') == 'virtual-guest'
+    assert tuned_output.data.get('available') == ['balanced',
+                                                  'desktop',
+                                                  'latency-performance',
+                                                  'network-latency',
+                                                  'network-throughput',
+                                                  'powersave',
+                                                  'throughput-performance',
+                                                  'virtual-guest',
+                                                  'virtual-host']
 
-    def test_active_profile(self):
-        tuned_output = Tuned(context_wrap(TUNED_OUTPUT))
-        assert len(tuned_output.data.get('available')) == 9
-        assert tuned_output.data.get('active') == 'virtual-guest'
-        assert tuned_output.data.get('available') == ['balanced',
-                                                      'desktop',
-                                                      'latency-performance',
-                                                      'network-latency',
-                                                      'network-throughput',
-                                                      'powersave',
-                                                      'throughput-performance',
-                                                      'virtual-guest',
-                                                      'virtual-host']
 
-    def test_preset_profile(self):
-        tuned_output = Tuned(context_wrap(TUNED_OUTPUT2))
-        assert len(tuned_output.data.get('available')) == 9
-        assert tuned_output.data.get('preset') == 'virtual-guest'
-        assert tuned_output.data.get('available') == ['balanced',
-                                                      'desktop',
-                                                      'latency-performance',
-                                                      'network-latency',
-                                                      'network-throughput',
-                                                      'powersave',
-                                                      'throughput-performance',
-                                                      'virtual-guest',
-                                                      'virtual-host']
+def test_preset_profile():
+    tuned_output = Tuned(context_wrap(TUNED_OUTPUT2))
+    assert len(tuned_output.data.get('available')) == 9
+    assert tuned_output.data.get('preset') == 'virtual-guest'
+    assert tuned_output.data.get('available') == ['balanced',
+                                                  'desktop',
+                                                  'latency-performance',
+                                                  'network-latency',
+                                                  'network-throughput',
+                                                  'powersave',
+                                                  'throughput-performance',
+                                                  'virtual-guest',
+                                                  'virtual-host']

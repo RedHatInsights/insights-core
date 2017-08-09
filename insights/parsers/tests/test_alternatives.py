@@ -1,9 +1,8 @@
+import pytest
+
 from insights.tests import context_wrap
 from insights.parsers.alternatives import AlternativesOutput, JavaAlternatives
 from insights.core import ParseException
-
-import unittest
-
 
 ALT_MTA = """
 mta - status is auto.
@@ -29,40 +28,37 @@ Current `best' version is /usr/sbin/sendmail.postfix.
 """
 
 
-class Test_Base_Alternatives(unittest.TestCase):
-    def test_mta_alternatives(self):
-        mtas = AlternativesOutput(context_wrap(ALT_MTA))
+def test_mta_alternatives():
+    mtas = AlternativesOutput(context_wrap(ALT_MTA))
 
-        self.assertTrue(hasattr(mtas, 'program'))
-        self.assertEqual(mtas.program, 'mta')
-        self.assertTrue(hasattr(mtas, 'status'))
-        self.assertEqual(mtas.status, 'auto')
-        self.assertTrue(hasattr(mtas, 'link'))
-        self.assertEqual(mtas.link, '/usr/sbin/sendmail.postfix')
-        self.assertTrue(hasattr(mtas, 'best'))
-        self.assertEqual(mtas.best, '/usr/sbin/sendmail.postfix')
+    assert hasattr(mtas, 'program')
+    assert mtas.program == 'mta'
+    assert hasattr(mtas, 'status')
+    assert mtas.status == 'auto'
+    assert hasattr(mtas, 'link')
+    assert mtas.link == '/usr/sbin/sendmail.postfix'
+    assert hasattr(mtas, 'best')
+    assert mtas.best == '/usr/sbin/sendmail.postfix'
 
-        self.assertTrue(hasattr(mtas, 'paths'))
-        self.assertIsInstance(mtas.paths, list)
-        self.assertEqual(len(mtas.paths), 1)
+    assert hasattr(mtas, 'paths')
+    assert isinstance(mtas.paths, list)
+    assert len(mtas.paths) == 1
 
-        self.assertIn('path', mtas.paths[0])
-        self.assertIn('priority', mtas.paths[0])
-        self.assertIn('slave', mtas.paths[0])
+    for i in ('path', 'priority', 'slave'):
+        assert i in mtas.paths[0]
 
-    def test_failure_modes(self):
-        # Duplicate status line raises ParseException
-        with self.assertRaisesRegexp(ParseException, 'Program line for mta'):
-            alts = AlternativesOutput(context_wrap(DUPLICATED_STATUS_LINE))
-            self.assertIsNone(alts.program)
 
-        # Missing status line results in no data
-        alts = AlternativesOutput(context_wrap(MISSING_STATUS_LINE))
-        self.assertIsNone(alts.program)
-        self.assertIsNone(alts.status)
-        self.assertIsNone(alts.link)
-        self.assertIsNone(alts.best)
-        self.assertEqual(alts.paths, [])
+def test_failure_modes():
+    # Duplicate status line raises ParseException
+    with pytest.raises(ParseException, match='Program line for mta'):
+        alts = AlternativesOutput(context_wrap(DUPLICATED_STATUS_LINE))
+        assert alts.program is None
+
+    # Missing status line results in no data
+    alts = AlternativesOutput(context_wrap(MISSING_STATUS_LINE))
+    for i in (alts.program, alts.status, alts.link, alts.best):
+        assert i is None
+    assert alts.paths == []
 
 
 alter_java = """
@@ -116,48 +112,44 @@ Current `best' version is /usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java.
 """.strip().encode('utf8')
 
 
-class Test_Java_Class(unittest.TestCase):
+def test_class_no_java():
+    java = JavaAlternatives(context_wrap(alter_no_java))
+    for i in (java.program, java.status, java.link, java.best):
+        assert i is None
+    assert java.paths == []
 
-    def test_class_no_java(self):
-        java = JavaAlternatives(context_wrap(alter_no_java))
-        self.assertIsNone(java.program)
-        # Direct access
-        self.assertIsNone(java.status)
-        self.assertIsNone(java.link)
-        self.assertEqual(java.paths, [])
-        self.assertIsNone(java.best)
 
-    def test_class_has_java(self):
-        java = JavaAlternatives(context_wrap(alter_java))
+def test_class_has_java():
+    java = JavaAlternatives(context_wrap(alter_java))
 
-        self.assertEqual(java.program, 'java')
-        self.assertEqual(java.status, 'auto')
-        self.assertEqual(java.link, '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java')
-        self.assertEqual(java.best, '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java')
+    assert java.program == 'java'
+    assert java.status == 'auto'
+    assert java.link == '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
+    assert java.best == '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
 
-        self.assertIsInstance(java.paths, list)
-        self.assertEqual(len(java.paths), 2)
+    assert isinstance(java.paths, list)
+    assert len(java.paths) == 2
 
-        self.assertIn('path', java.paths[0])
-        self.assertIn('priority', java.paths[0])
-        self.assertIn('slave', java.paths[0])
-        self.assertEqual(java.paths[0]['path'], '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java')
-        self.assertEqual(java.paths[0]['priority'], 16091)
-        self.assertIsInstance(java.paths[0]['slave'], dict)
-        self.assertEqual(sorted(java.paths[0]['slave'].keys()), sorted([
-            'ControlPanel', 'keytool', 'policytool', 'rmid', 'rmiregistry',
-            'tnameserv', 'jre_exports', 'jre'
-        ]))
-        self.assertEqual(java.paths[0]['slave']['ControlPanel'], '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/ControlPanel')
+    for i in ('path', 'priority', 'slave'):
+        assert i in java.paths[0]
 
-        self.assertIn('path', java.paths[1])
-        self.assertIn('priority', java.paths[1])
-        self.assertIn('slave', java.paths[1])
-        self.assertEqual(java.paths[1]['path'], '/usr/lib/jvm/jre-1.4.2-gcj/bin/java')
-        self.assertEqual(java.paths[1]['priority'], 1420)
-        self.assertIsInstance(java.paths[1]['slave'], dict)
-        self.assertEqual(sorted(java.paths[1]['slave'].keys()), sorted([
-            'ControlPanel', 'keytool', 'policytool', 'rmid', 'rmiregistry',
-            'tnameserv', 'jre_exports', 'jre'
-        ]))
-        self.assertEqual(java.paths[1]['slave']['ControlPanel'], '(null)')
+    assert java.paths[0]['path'] == '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java'
+    assert java.paths[0]['priority'] == 16091
+    assert isinstance(java.paths[0]['slave'], dict)
+    assert sorted(java.paths[0]['slave'].keys()) == sorted([
+        'ControlPanel', 'keytool', 'policytool', 'rmid', 'rmiregistry',
+        'tnameserv', 'jre_exports', 'jre'
+    ])
+    assert java.paths[0]['slave']['ControlPanel'] == '/usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/ControlPanel'
+
+    for i in ('path', 'priority', 'slave'):
+        assert i in java.paths[1]
+
+    assert java.paths[1]['path'] == '/usr/lib/jvm/jre-1.4.2-gcj/bin/java'
+    assert java.paths[1]['priority'] == 1420
+    assert isinstance(java.paths[1]['slave'], dict)
+    assert sorted(java.paths[1]['slave'].keys()) == sorted([
+        'ControlPanel', 'keytool', 'policytool', 'rmid', 'rmiregistry',
+        'tnameserv', 'jre_exports', 'jre'
+    ])
+    assert java.paths[1]['slave']['ControlPanel'] == '(null)'

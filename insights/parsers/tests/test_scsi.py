@@ -1,8 +1,7 @@
+import pytest
 from insights.parsers.scsi import SCSI
 from insights.parsers import ParseException
 from insights.tests import context_wrap
-
-import unittest
 
 SCSI_OUTPUT = """
 Attached devices:
@@ -46,36 +45,37 @@ Host: scsi0 Channel: 03 Id: 00 Lun: 00
 """
 
 
-class TestSCSIParser(unittest.TestCase):
-    def test_parse(self):
-        context = context_wrap(SCSI_OUTPUT)
-        result = SCSI(context)
-        self.assertEqual(len(result), 5)
-        r = result[0]
-        self.assertEqual(r.host, "scsi0")
-        self.assertEqual(r.get('host'), 'scsi0')
-        self.assertEqual(r.channel, "03")
-        self.assertEqual(r.id, "00")
-        self.assertEqual(r.lun, "00")
-        self.assertEqual(r.vendor, "HP")
-        self.assertEqual(r.model, "P420i")
-        self.assertEqual(r.rev, "3.54")
-        self.assertEqual(r.type, "RAID")
-        self.assertEqual(r.ansi__scsi_revision, "05")
+def test_parse():
+    context = context_wrap(SCSI_OUTPUT)
+    result = SCSI(context)
+    assert len(result), 5
+    r = result[0]
+    assert r.host == "scsi0"
+    assert r.get('host') == 'scsi0'
+    assert r.channel == "03"
+    assert r.id == "00"
+    assert r.lun == "00"
+    assert r.vendor == "HP"
+    assert r.model == "P420i"
+    assert r.rev == "3.54"
+    assert r.type == "RAID"
+    assert r.ansi__scsi_revision == "05"
 
-        r = result[1]
-        self.assertEqual(r.model, "LOGICAL VOLUME")
+    r = result[1]
+    assert r.model == "LOGICAL VOLUME"
 
-        r = result[4]
-        self.assertEqual(r.type, "Direct-Access")
+    r = result[4]
+    assert r.type == "Direct-Access"
 
-        self.assertEqual([disc.vendor for disc in result], ['HP'] * 5)
+    assert [disc.vendor for disc in result] == ['HP'] * 5
 
-    def test_single_spaced_ansi_scsi(self):
-        result = SCSI(context_wrap(SCSI_OUTPUT_SINGLE_SPACED_ANSI_SCSI))
-        self.assertEqual(len(result), 4)
 
-    def test_missing_header(self):
-        with self.assertRaisesRegexp(ParseException, 'Expected Header: Attached devices:'):
-            result = SCSI(context_wrap(SCSI_OUTPUT_MISSING_HEADER))
-            self.assertIsNone(result)
+def test_single_spaced_ansi_scsi():
+    result = SCSI(context_wrap(SCSI_OUTPUT_SINGLE_SPACED_ANSI_SCSI))
+    assert len(result) == 4
+
+
+def test_missing_header():
+    with pytest.raises(ParseException) as e_info:
+        SCSI(context_wrap(SCSI_OUTPUT_MISSING_HEADER))
+    assert "Expected Header: Attached devices:" in str(e_info.value)

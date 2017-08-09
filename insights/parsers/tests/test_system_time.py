@@ -1,4 +1,3 @@
-import unittest
 from insights.tests import context_wrap
 from insights.parsers import system_time
 
@@ -228,54 +227,54 @@ def test_sysconfig_ntpd():
     assert result.get('HIDE') is None
 
 
-class TestNTPConfig(unittest.TestCase):
-    def test_standard_ntp_conf(self):
-        ntp_obj = system_time.NTP_conf(context_wrap(STANDARD_NTP_CONF))
-        assert ntp_obj
-        assert hasattr(ntp_obj, 'data')
+def test_standard_ntp_conf():
+    ntp_obj = system_time.NTP_conf(context_wrap(STANDARD_NTP_CONF))
+    assert ntp_obj
+    assert hasattr(ntp_obj, 'data')
 
-        # Test configuration dictionary
-        data = ntp_obj.data
-        assert data == {
-            'driftfile': ['/var/lib/ntp/drift'],
-            'restrict': [
-                'default nomodify notrap nopeer noquery',
-                '127.0.0.1',
-                '::1',
-            ],
-            'includefile': ['/etc/ntp/crypto/pw'],
-            'keys': ['/etc/ntp/keys'],
-            'broadcastclient': None,
-            'iburst': None,
-            'server': [
-                '127.127.1.0',
-                '10.20.30.40',
-                '192.168.1.111',
-            ],
-            'fudge': ['127.127.1.0 stratum 10'],
-            'peer': [
-                'ntp1.example.com',
-                'ntp2.example.com',
-                'ntp3.example.com',
-            ]
-        }
+    # Test configuration dictionary
+    data = ntp_obj.data
+    assert data == {
+        'driftfile': ['/var/lib/ntp/drift'],
+        'restrict': [
+            'default nomodify notrap nopeer noquery',
+            '127.0.0.1',
+            '::1',
+        ],
+        'includefile': ['/etc/ntp/crypto/pw'],
+        'keys': ['/etc/ntp/keys'],
+        'broadcastclient': None,
+        'iburst': None,
+        'server': [
+            '127.127.1.0',
+            '10.20.30.40',
+            '192.168.1.111',
+        ],
+        'fudge': ['127.127.1.0 stratum 10'],
+        'peer': [
+            'ntp1.example.com',
+            'ntp2.example.com',
+            'ntp3.example.com',
+        ]
+    }
 
-        # Test other attributes
-        assert hasattr(ntp_obj, 'servers')
-        assert ntp_obj.servers == \
-            ['10.20.30.40', '127.127.1.0', '192.168.1.111']
-        assert hasattr(ntp_obj, 'peers')
-        assert ntp_obj.peers == \
-            ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
+    # Test other attributes
+    assert hasattr(ntp_obj, 'servers')
+    assert ntp_obj.servers == \
+        ['10.20.30.40', '127.127.1.0', '192.168.1.111']
+    assert hasattr(ntp_obj, 'peers')
+    assert ntp_obj.peers == \
+        ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
 
-    def test_zero_hosts_ntp_conf(self):
-        ntp_obj = system_time.NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
-        assert ntp_obj
-        assert hasattr(ntp_obj, 'data')
-        assert ntp_obj.data == {
-            'broadcastclient': None
-        }
-        assert hasattr(ntp_obj, 'servers')
-        assert ntp_obj.servers == []
-        assert hasattr(ntp_obj, 'peers')
-        assert ntp_obj.peers == []
+
+def test_zero_hosts_ntp_conf():
+    ntp_obj = system_time.NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
+    assert ntp_obj
+    assert hasattr(ntp_obj, 'data')
+    assert ntp_obj.data == {
+        'broadcastclient': None
+    }
+    assert hasattr(ntp_obj, 'servers')
+    assert ntp_obj.servers == []
+    assert hasattr(ntp_obj, 'peers')
+    assert ntp_obj.peers == []

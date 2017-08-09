@@ -1,4 +1,4 @@
-import unittest
+import pytest
 from insights.parsers import kdump
 from insights.tests import context_wrap
 
@@ -47,89 +47,88 @@ raw /dev/sda5
 """.strip()
 
 
-class TestKDumpConf(unittest.TestCase):
-    def test_with_normal_comments(self):
-        context = context_wrap(KDUMP_WITH_NORMAL_COMMENTS)
-        kd = kdump.KDumpConf(context)
-        expected = "# this is a comment"
-        self.assertEqual(expected, kd.comments[0])
-        # Also test is_* properties
-        self.assertFalse(kd.is_nfs())
-        self.assertTrue(kd.is_ssh())
-        # Not a local disk then.
-        self.assertFalse(kd.using_local_disk)
+def test_with_normal_comments():
+    context = context_wrap(KDUMP_WITH_NORMAL_COMMENTS)
+    kd = kdump.KDumpConf(context)
+    expected = "# this is a comment"
+    assert expected == kd.comments[0]
+    # Also test is_* properties
+    assert not kd.is_nfs()
+    assert kd.is_ssh()
+    # Not a local disk then.
+    assert not kd.using_local_disk
 
-    def test_with_inline_comments(self):
-        context = context_wrap(KDUMP_WITH_INLINE_COMMENTS)
-        kd = kdump.KDumpConf(context)
-        expected = "path /kdump/raw #some path stuff"
-        self.assertEqual(expected, kd.inline_comments[0])
-        self.assertEqual("/kdump/raw", kd["path"])
-        # Also test is_* properties
-        self.assertTrue(kd.is_nfs())
-        self.assertFalse(kd.is_ssh())
-        # Not a local disk then.
-        self.assertFalse(kd.using_local_disk)
 
-    def test_with_equal(self):
-        context = context_wrap(KDUMP_WITH_EQUAL)
-        kd = kdump.KDumpConf(context)
-        expected = '"blah=3"'
-        self.assertEqual(expected, kd['some_var'])
-        self.assertIn('options', kd.data)
-        self.assertIsInstance(kd.data['options'], dict)
-        self.assertIn('bonding', kd.data['options'])
-        self.assertEqual(
-            'mode=active-backup miimon=100',
-            kd.data['options']['bonding']
-        )
-        # Alternate accessor for options:
-        self.assertEqual(kd.options('bonding'), 'mode=active-backup miimon=100')
-        # Also test is_* properties
-        self.assertTrue(kd.is_nfs())
-        self.assertFalse(kd.is_ssh())
-        # Not a local disk then.
-        self.assertFalse(kd.using_local_disk)
+def test_with_inline_comments():
+    context = context_wrap(KDUMP_WITH_INLINE_COMMENTS)
+    kd = kdump.KDumpConf(context)
+    expected = "path /kdump/raw #some path stuff"
+    assert expected == kd.inline_comments[0]
+    assert "/kdump/raw" == kd["path"]
+    # Also test is_* properties
+    assert kd.is_nfs()
+    assert not kd.is_ssh()
+    # Not a local disk then.
+    assert not kd.using_local_disk
 
-    def test_get_hostname(self):
-        context = context_wrap(KDUMP_WITH_EQUAL)
-        kd = kdump.KDumpConf(context)
-        self.assertEquals('10.209.136.62', kd.hostname)
 
-        context = context_wrap(KDUMP_MATCH_1)
-        kd = kdump.KDumpConf(context)
-        self.assertEquals('raw.server.com', kd.hostname)
+def test_with_equal():
+    context = context_wrap(KDUMP_WITH_EQUAL)
+    kd = kdump.KDumpConf(context)
+    expected = '"blah=3"'
+    assert expected == kd['some_var']
+    assert 'options' in kd.data
+    assert isinstance(kd.data['options'], dict)
+    assert 'bonding' in kd.data['options']
+    assert 'mode=active-backup miimon=100' == kd.data['options']['bonding']
+    # Alternate accessor for options:
+    assert kd.options('bonding') == 'mode=active-backup miimon=100'
+    # Also test is_* properties
+    assert kd.is_nfs()
+    assert not kd.is_ssh()
+    # Not a local disk then.
+    assert not kd.using_local_disk
 
-    def test_get_ip(self):
-        context = context_wrap(KDUMP_WITH_EQUAL)
-        kd = kdump.KDumpConf(context)
-        self.assertEquals('10.209.136.62', kd.ip)
 
-        context = context_wrap(KDUMP_MATCH_1)
-        kd = kdump.KDumpConf(context)
-        self.assertIsNone(kd.ip)
+def test_get_hostname():
+    context = context_wrap(KDUMP_WITH_EQUAL)
+    kd = kdump.KDumpConf(context)
+    assert '10.209.136.62' == kd.hostname
 
-    def test_blacklist_repeated(self):
-        context = context_wrap(KDUMP_WITH_BLACKLIST)
-        kd = kdump.KDumpConf(context)
-        self.assertIn('blacklist', kd.data)
-        self.assertEqual(
-            kd.data['blacklist'],
-            ['vxfs', 'vxportal', 'vxted', 'vxcafs', 'fdd']
-        )
-        # Also test is_* properties
-        self.assertFalse(kd.is_nfs())
-        self.assertFalse(kd.is_ssh())
-        self.assertTrue(kd.using_local_disk)
+    context = context_wrap(KDUMP_MATCH_1)
+    kd = kdump.KDumpConf(context)
+    assert 'raw.server.com' == kd.hostname
 
-    def test_net_and_raw(self):
-        context = context_wrap(KDUMP_WITH_NET)
-        kd = kdump.KDumpConf(context)
-        self.assertIn('net', kd.data)
-        self.assertIn('raw', kd.data)
-        self.assertTrue(kd.using_local_disk)
-        with self.assertRaises(TypeError):
-            self.assertTrue(kd[3])
+
+def test_get_ip():
+    context = context_wrap(KDUMP_WITH_EQUAL)
+    kd = kdump.KDumpConf(context)
+    assert '10.209.136.62' == kd.ip
+
+    context = context_wrap(KDUMP_MATCH_1)
+    kd = kdump.KDumpConf(context)
+    assert kd.ip is None
+
+
+def test_blacklist_repeated():
+    context = context_wrap(KDUMP_WITH_BLACKLIST)
+    kd = kdump.KDumpConf(context)
+    assert 'blacklist' in kd.data
+    assert kd.data['blacklist'] == ['vxfs', 'vxportal', 'vxted', 'vxcafs', 'fdd']
+    # Also test is_* properties
+    assert not kd.is_nfs()
+    assert not kd.is_ssh()
+    assert kd.using_local_disk
+
+
+def test_net_and_raw():
+    context = context_wrap(KDUMP_WITH_NET)
+    kd = kdump.KDumpConf(context)
+    assert 'net' in kd.data
+    assert 'raw' in kd.data
+    assert kd.using_local_disk
+    with pytest.raises(TypeError):
+        assert kd[3]
 
 
 SYSCONFIG_KDUMP_ALL = """
@@ -195,15 +194,16 @@ KDUMP_CRASH_LOADED = '1'
 KDUMP_CRASH_LOADED_BAD = ''
 
 
-class TestKexecCrashLoaded(unittest.TestCase):
-    def test_loaded(self):
-        ctx = context_wrap(KDUMP_CRASH_LOADED, path='/sys/kernel/kexec_crash_loaded')
-        self.assertTrue(kdump.KexecCrashLoaded(ctx).is_loaded)
+def test_loaded():
+    ctx = context_wrap(KDUMP_CRASH_LOADED, path='/sys/kernel/kexec_crash_loaded')
+    assert kdump.KexecCrashLoaded(ctx).is_loaded
 
-    def test_not_loaded(self):
-        ctx = context_wrap(KDUMP_CRASH_NOT_LOADED, path='/sys/kernel/kexec_crash_loaded')
-        self.assertFalse(kdump.KexecCrashLoaded(ctx).is_loaded)
 
-    def test_loaded_bad(self):
-        ctx = context_wrap(KDUMP_CRASH_LOADED_BAD, path='/sys/kernel/kexec_crash_loaded')
-        self.assertFalse(kdump.KexecCrashLoaded(ctx).is_loaded)
+def test_not_loaded():
+    ctx = context_wrap(KDUMP_CRASH_NOT_LOADED, path='/sys/kernel/kexec_crash_loaded')
+    assert not kdump.KexecCrashLoaded(ctx).is_loaded
+
+
+def test_loaded_bad():
+    ctx = context_wrap(KDUMP_CRASH_LOADED_BAD, path='/sys/kernel/kexec_crash_loaded')
+    assert not kdump.KexecCrashLoaded(ctx).is_loaded

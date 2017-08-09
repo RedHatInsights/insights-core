@@ -11,7 +11,6 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
-import unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
@@ -230,27 +229,28 @@ class MockTarFile(object):
         self.tmp_file.close()
 
 
-class TestDetermineRoot(unittest.TestCase):
+def test_single_node():
+    with MockTarFile(SINGLE_NODE_UPLOAD) as mtf:
+        spec = SpecMapper(mtf)
+        assert spec.root == "insights-davxapasnp03-20151007031606/"
 
-    def test_single_node(self):
-        with MockTarFile(SINGLE_NODE_UPLOAD) as mtf:
-            spec = SpecMapper(mtf)
-            self.assertEqual(spec.root, "insights-davxapasnp03-20151007031606/")
 
-    def test_multi_node(self):
-        with MockTarFile(CLUSTER_UPLOAD) as mtf:
-            spec = SpecMapper(mtf)
-            self.assertEqual(spec.root, "./")
+def test_multi_node():
+    with MockTarFile(CLUSTER_UPLOAD) as mtf:
+        spec = SpecMapper(mtf)
+        assert spec.root == "./"
 
-    def test_soscleaned(self):
-        with MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD) as mtf:
-            spec = SpecMapper(mtf)
-            self.assertEquals(spec.root, "soscleaner-7704572305004757/")
 
-    def test_deep_root(self):
-        with MockTarFile(DEEP_ROOT) as mtf:
-            spec = SpecMapper(mtf)
-            self.assertEquals(spec.root, "tmp/sdc-appblx002-15.corp.com_sosreport/")
+def test_soscleaned():
+    with MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD) as mtf:
+        spec = SpecMapper(mtf)
+        assert spec.root == "soscleaner-7704572305004757/"
+
+
+def test_deep_root():
+    with MockTarFile(DEEP_ROOT) as mtf:
+        spec = SpecMapper(mtf)
+        assert spec.root == "tmp/sdc-appblx002-15.corp.com_sosreport/"
 
 
 def make_cluster_archive(fd, content_type):
@@ -293,61 +293,59 @@ def make_cluster_archive(fd, content_type):
         return cluster_tar_fp.read()
 
 
-class TestSingleEvaluator(unittest.TestCase):
-
-    def _unpack_archive(self, ex, cls):
-        dr.load_components("insights.plugins")
-        spec_mapper = SpecMapper(ex)
-        self.assertEquals(spec_mapper.get_content("machine-id", split=False), HEARTBEAT_ID)
-        p = cls(spec_mapper)
-        p.process()
-        self.assertEquals(p.broker.get(is_insights_heartbeat),
-                          {"type": "rule", "error_key": "INSIGHTS_HEARTBEAT"})
-        return p
-
-    def _common_tests(self, p):
-        self.assertTrue("insights_heartbeat|INSIGHTS_HEARTBEAT"
-                        in [r.get("rule_id") for r in p.rule_results])
-        r = p.get_response()
-        self.assertTrue("system" in r)
-        self.assertTrue("reports" in r)
-        self.assertTrue(r["system"]["hostname"] == HEARTBEAT_NAME)
-        return r
-
-    def test_single_evaluator(self):
-        arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
-        with TarExtractor().from_path(arc_path) as ex:
-            p = self._unpack_archive(ex, SingleEvaluator)
-            self._common_tests(p)
-        subprocess.call("rm -rf %s" % arc_path, shell=True)
-
-    def test_insights_evaluator(self):
-        arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
-        with TarExtractor().from_path(arc_path) as ex:
-            p = self._unpack_archive(ex, InsightsEvaluator)
-            r = self._common_tests(p)
-            system = r["system"]
-            self.assertTrue(system["product"] == "ocp")
-            self.assertTrue(system["type"] == "node")
-            self.assertTrue(system["system_id"] == HEARTBEAT_ID)
-        subprocess.call("rm -rf %s" % arc_path, shell=True)
+def _unpack_archive(ex, cls):
+    dr.load_components("insights.plugins")
+    spec_mapper = SpecMapper(ex)
+    assert spec_mapper.get_content("machine-id", split=False) == HEARTBEAT_ID
+    p = cls(spec_mapper)
+    p.process()
+    assert p.broker.get(is_insights_heartbeat) == {
+        "type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}
+    return p
 
 
-class TestMultiEvaluator(unittest.TestCase):
+def _common_tests(p):
+    assert "insights_heartbeat|INSIGHTS_HEARTBEAT" in [r.get("rule_id") for r in p.rule_results]
+    r = p.get_response()
+    assert "system" in r
+    assert "reports" in r
+    assert r["system"]["hostname"] == HEARTBEAT_NAME
+    return r
 
-    def test_unpack(self):
-        dr.load_components("insights.plugins")
-        arc_path = insights_heartbeat()
-        with open(arc_path, "rb") as fd:
-            cluster_arc = make_cluster_archive(fd, "application/x-gzip")
-            with TarExtractor().from_buffer(cluster_arc) as ex:
-                spec_mapper = SpecMapper(ex)
-                p = InsightsMultiEvaluator(spec_mapper)
-                self.assertEquals(p.archive_metadata["system_id"], "test-id")
-                response = p.process()
-                self.assertEquals(len(response["archives"]), 1)
-                self.assertEquals(response["system"]["type"], "cluster")
-                assert osp in p.broker
-                assert HEARTBEAT_ID in p.broker[OSPChild]
 
-        subprocess.call("rm -rf %s" % arc_path, shell=True)
+def test_single_evaluator():
+    arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
+    with TarExtractor().from_path(arc_path) as ex:
+        p = _unpack_archive(ex, SingleEvaluator)
+        _common_tests(p)
+    subprocess.call("rm -rf %s" % arc_path, shell=True)
+
+
+def test_insights_evaluator():
+    arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
+    with TarExtractor().from_path(arc_path) as ex:
+        p = _unpack_archive(ex, InsightsEvaluator)
+        r = _common_tests(p)
+        system = r["system"]
+        assert system["product"] == "ocp"
+        assert system["type"] == "node"
+        assert system["system_id"] == HEARTBEAT_ID
+    subprocess.call("rm -rf %s" % arc_path, shell=True)
+
+
+def test_unpack():
+    dr.load_components("insights.plugins")
+    arc_path = insights_heartbeat()
+    with open(arc_path, "rb") as fd:
+        cluster_arc = make_cluster_archive(fd, "application/x-gzip")
+        with TarExtractor().from_buffer(cluster_arc) as ex:
+            spec_mapper = SpecMapper(ex)
+            p = InsightsMultiEvaluator(spec_mapper)
+            assert p.archive_metadata["system_id"] == "test-id"
+            response = p.process()
+            assert len(response["archives"]) == 1
+            assert response["system"]["type"] == "cluster"
+            assert osp in p.broker
+            assert HEARTBEAT_ID in p.broker[OSPChild]
+
+    subprocess.call("rm -rf %s" % arc_path, shell=True)

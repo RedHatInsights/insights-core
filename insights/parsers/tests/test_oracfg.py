@@ -1,7 +1,5 @@
 # coding=utf-8
 
-import unittest
-
 from insights.parsers import oracfg
 from insights.tests import context_wrap
 
@@ -115,59 +113,62 @@ perftest.__streams_pool_size=0
 """.strip()
 
 
-class TestOracle(unittest.TestCase):
+def test_str_to_byte():
+    assert 68719476736 == oracfg.str_to_byte('64G')
+    assert 67108864 == oracfg.str_to_byte('64M')
+    assert 65536 == oracfg.str_to_byte('64K')
+    assert 64 == oracfg.str_to_byte('64')
+    assert 0 == oracfg.str_to_byte('asdf')
 
-    def test_str_to_byte(self):
-        self.assertEquals(68719476736, oracfg.str_to_byte('64G'))
-        self.assertEquals(67108864, oracfg.str_to_byte('64M'))
-        self.assertEquals(65536, oracfg.str_to_byte('64K'))
-        self.assertEquals(64, oracfg.str_to_byte('64'))
-        self.assertEquals(0, oracfg.str_to_byte('asdf'))
 
-    def test_pfile(self):
-        p = oracfg.OracleConfig(context_wrap(PFILE, path='/u01/oracle/12/dbs/initorcl.ora'))
-        cfg = p.data
-        self.assertEqual(p.db_name, 'orcl')
-        self.assertEqual(p.dbname, 'orcl')
-        self.assertEqual(p.amm_enabled, True)
-        self.assertEqual(p.amm, True)
-        self.assertEqual(p.p_file, True)
-        self.assertEqual(p.pfile, True)
-        self.assertEqual(p.sp_file, False)
-        self.assertEqual(p.spfile, False)
-        self.assertEqual(p.file_path, '/u01/oracle/12/dbs/initorcl.ora')
-        # Is the version really 01?  Should it be 12?
-        self.assertEqual(p.dbversion, '01')
-        self.assertEqual(p.db_version, '01')
-        self.assertEqual(cfg['processes'], '150')
+def test_pfile():
+    p = oracfg.OracleConfig(context_wrap(PFILE, path='/u01/oracle/12/dbs/initorcl.ora'))
+    cfg = p.data
+    assert p.db_name == 'orcl'
+    assert p.dbname == 'orcl'
+    assert p.amm_enabled
+    assert p.amm
+    assert p.p_file
+    assert p.pfile
+    assert not p.sp_file
+    assert not p.spfile
+    assert p.file_path == '/u01/oracle/12/dbs/initorcl.ora'
+    # Is the version really 01?  Should it be 12?
+    assert p.dbversion == '01'
+    assert p.db_version == '01'
+    assert cfg['processes'] == '150'
 
-    def test_spfile(self):
-        s = oracfg.OracleConfig(context_wrap(SPFILE, path='/u01/oracle/12/dbs/spfileperftest.ora'))
-        cfg = s.data
-        self.assertEqual(s.db_name, 'perf_test')
-        self.assertEqual(s.amm_enabled, False)
-        self.assertEqual(s.pfile, False)
-        self.assertEqual(s.spfile, True)
-        self.assertEqual(cfg['*.compatible'], '12.1.0.2.0')
-        self.assertEqual(cfg['*.dispatchers'], '(protocol=tcp) (service=perftestxdb)')
-        self.assertEquals(cfg['*.control_files'], ['/u01/app/oracle/oradata/perf_test/controlfile/o1_mf_cko573p9_.ctl', '/u01/app/oracle/fast_recovery_area/perf_test/controlfile/o1_mf_cko573qn_.ctl'])
-        self.assertEquals(s.file_path, '/u01/oracle/12/dbs/spfileperftest.ora')
 
-    def test_pfile_sga_target(self):
-        p = oracfg.OracleConfig(context_wrap(
-            PFILE_10_8_AMM_TEST, path='/opt/oracle/10.8/dbs/initorcl.ora'
-        ))
-        self.assertEqual(p.amm, True)
+def test_spfile():
+    s = oracfg.OracleConfig(context_wrap(SPFILE, path='/u01/oracle/12/dbs/spfileperftest.ora'))
+    cfg = s.data
+    assert s.db_name == 'perf_test'
+    assert not s.amm_enabled
+    assert not s.pfile
+    assert s.spfile
+    assert cfg['*.compatible'] == '12.1.0.2.0'
+    assert cfg['*.dispatchers'] == '(protocol=tcp) (service=perftestxdb)'
+    assert cfg['*.control_files'] == ['/u01/app/oracle/oradata/perf_test/controlfile/o1_mf_cko573p9_.ctl', '/u01/app/oracle/fast_recovery_area/perf_test/controlfile/o1_mf_cko573qn_.ctl']
+    assert s.file_path == '/u01/oracle/12/dbs/spfileperftest.ora'
 
-    def test_pfile_no_grid_products(self):
-        p = oracfg.OracleConfig(context_wrap(
-            PFILE_10_8_AMM_TEST, path='/opt/oracle/10.8/grid.dbs/initorcl.ora'
-        ))
-        self.assertEqual(hasattr(p, 'data'), False)
 
-    def test_pfile_no_version(self):
-        p = oracfg.OracleConfig(context_wrap(
-            PFILE, path='/opt/oracle/dbs/initorcl.ora'
-        ))
-        self.assertEqual(hasattr(p, 'data'), True)
-        self.assertIsNone(p.dbversion)
+def test_pfile_sga_target():
+    p = oracfg.OracleConfig(context_wrap(
+        PFILE_10_8_AMM_TEST, path='/opt/oracle/10.8/dbs/initorcl.ora'
+    ))
+    assert p.amm
+
+
+def test_pfile_no_grid_products():
+    p = oracfg.OracleConfig(context_wrap(
+        PFILE_10_8_AMM_TEST, path='/opt/oracle/10.8/grid.dbs/initorcl.ora'
+    ))
+    assert not hasattr(p, 'data')
+
+
+def test_pfile_no_version():
+    p = oracfg.OracleConfig(context_wrap(
+        PFILE, path='/opt/oracle/dbs/initorcl.ora'
+    ))
+    assert hasattr(p, 'data')
+    assert p.dbversion is None

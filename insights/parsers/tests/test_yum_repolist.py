@@ -1,8 +1,6 @@
 from insights.parsers.yum import YumRepoList
 from insights.tests import context_wrap
 
-import unittest
-
 YUM_REPOLIST_CONTENT = """
 Loaded plugins: product-id, search-disabled-repos, subscription-manager
 repo id                                         repo name                status
@@ -51,11 +49,11 @@ def test_eus():
     assert repo_list.eus == ["6.2.aus"]
 
 
-class test_bad(unittest.TestCase):
-    def test_valueerror_in_parse(self):
-        repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
-        self.assertEqual(repo_list[0]['name'], '')
+def test_valueerror_in_parse():
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
+    assert repo_list[0]['name'] == ''
 
-    def test_invalid_get_type(self):
-        repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
-        self.assertIsNone(repo_list[YumRepoList])
+
+def test_invalid_get_type():
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
+    assert repo_list[YumRepoList] is None

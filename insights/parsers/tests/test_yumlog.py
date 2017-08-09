@@ -1,8 +1,7 @@
+import pytest
 from insights.parsers.yumlog import YumLog
 from insights.parsers import ParseException
 from insights.tests import context_wrap
-
-import unittest
 
 OKAY = """
 May 23 18:06:24 Installed: wget-1.14-10.el7_0.1.x86_64
@@ -70,11 +69,10 @@ def test_error():
     assert len(yl) == 8
 
 
-class test_throws_parseexception(unittest.TestCase):
-    def test_exception_throwing(self):
-        with self.assertRaisesRegexp(ParseException, 'YumLog could not parse'):
-            yl = YumLog(context_wrap(THROWS_PARSEEXCEPTION))
-            self.assertIsNone(yl)
+def test_exception_throwing():
+    with pytest.raises(ParseException) as e_info:
+        YumLog(context_wrap(THROWS_PARSEEXCEPTION))
+    assert "YumLog could not parse" in str(e_info.value)
 
 
 def test_erased():

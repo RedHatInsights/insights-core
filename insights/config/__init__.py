@@ -519,6 +519,12 @@ class SimpleFileSpec(InsightsDataSpecBase):
 
         return path
 
+    def __eq__(self, other):
+        if isinstance(other, SimpleFileSpec):
+            return self.path == other.path and self.multi_output == other.multi_output
+        else:
+            return False
+
     def get_archive_file_name(self, analysis_target):
         return self.get_path(analysis_target=analysis_target, for_archive_file_name=True)
 
@@ -584,6 +590,14 @@ class CommandSpec(InsightsDataSpecBase):
 
     def __str__(self):
         return '<Command "{0}">'.format(self.command)
+
+    def __eq__(self, other):
+        if isinstance(other, CommandSpec):
+            return (self.command == other.command and
+                    self.multi_output == other.multi_output and
+                    self.path_groups == other.path_groups)
+        else:
+            return False
 
     def __init__(self, command, multi_output=True, large_content=False, **kwargs):
         if command[0] != '/':
