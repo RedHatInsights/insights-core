@@ -141,9 +141,9 @@ class Mdstat(Parser):
                 for opt in ['level', 'chunk', 'algorithm']:
                     if opt in comp:
                         self.mds[devname][opt] = comp[opt]
-            self.mds[devname]['devices'].append({
-                k: comp[k] for k in comp if k in ['component_name', 'role', 'up']
-            })
+            self.mds[devname]['devices'].append(dict(
+                (k, comp[k]) for k in comp if k in ['component_name', 'role', 'up']
+            ))
 
         # Keep self.data just for backwards compat
         self.data = {

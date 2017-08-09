@@ -69,9 +69,9 @@ class Hosts(Parser):
         A dictionary of host name lists, keyed on IP address, that are not
         the 'localhost' addresses '127.0.0.1' or '::1'.
         """
-        return {ip: host_list
-                for ip, host_list in self.data.items()
-                if ip not in ("127.0.0.1", "::1")}
+        return dict((ip, host_list)
+                    for ip, host_list in self.data.items()
+                    if ip not in ("127.0.0.1", "::1"))
 
     def ip_of(self, hostname):
         """

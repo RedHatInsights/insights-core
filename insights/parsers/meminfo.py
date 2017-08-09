@@ -117,7 +117,7 @@ class SubMemInfo(object):
     sub_keys = []
 
     def __init__(self, data):
-        sub_dict = {sk: data.get(k) for k, sk in self.sub_keys}
+        sub_dict = dict((sk, data.get(k)) for k, sk in self.sub_keys)
         self.data = sub_dict
         for k, v in sub_dict.iteritems():
             setattr(self, k, v)

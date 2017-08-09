@@ -42,7 +42,7 @@ EXPECTED_RESULTS = [{'NAME': "/dev/sda1",
 class TestBLKID():
     def test_get_blkid_info(self):
         blkid_info = BlockIDInfo(context_wrap(BLKID_INFO))
-        expected_list = {r['NAME']: r for r in EXPECTED_RESULTS}
+        expected_list = dict((r['NAME'], r) for r in EXPECTED_RESULTS)
         assert len(blkid_info.data) == 8
         for result in blkid_info.data:
             assert result == expected_list[result['NAME']]
@@ -52,7 +52,7 @@ class TestBLKID():
                                 'UUID': "d403bcbd-0eea-4bff-95b9-2237740f5c8b",
                                 'TYPE': "ext4"}
         xfs_only = blkid_info.filter_by_type("xfs")
-        expected_list = {r['NAME']: r for r in EXPECTED_RESULTS if r['TYPE'] == "xfs"}
+        expected_list = dict((r['NAME'], r) for r in EXPECTED_RESULTS if r['TYPE'] == "xfs")
         assert len(xfs_only) == 3
         for result in xfs_only:
             assert result == expected_list[result['NAME']]

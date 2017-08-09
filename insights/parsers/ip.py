@@ -41,7 +41,7 @@ def parse_ip_addr(content):
             parse_link(line, current)
         elif line.startswith("inet"):
             parse_inet(line, current)
-    return {k: NetworkInterface(v) for k, v in r.iteritems()}
+    return dict((k, NetworkInterface(v)) for k, v in r.iteritems())
 
 
 def parse_interface(line):
@@ -344,7 +344,7 @@ class RouteDevices(Parser):
 
     def parse_route(self, parts):
         required_parts = ['via', 'dev', 'type', 'netmask', 'prefix', 'table']
-        route = {part: None for part in required_parts}
+        route = dict((part, None) for part in required_parts)
         table_type = None
         if parts[0] in self.IGNORE_TYPES:
             return None
@@ -526,8 +526,8 @@ class IpNeighParser(Parser):
             # OK, good to go, split everything in the middle up
             key_value_content = split_result[1:-1]
             if len(key_value_content) >= 2:
-                entry = {k: v for k, v in zip(key_value_content[0::2],
-                                              key_value_content[1::2])}
+                entry = dict((k, v) for k, v in zip(key_value_content[0::2],
+                                                    key_value_content[1::2]))
             else:
                 entry = {}
             entry["nud"] = split_result[-1]

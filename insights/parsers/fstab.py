@@ -123,4 +123,4 @@ class FSTab(Parser):
             line['raw'] = [l for l in content if l.startswith(line['fs_spec'])][0]
             self.data.append(AttributeDict(line))
         # assert: all mount points of valid entries are unique by definition
-        self.mounted_on = {row.fs_file: row for row in self.data}
+        self.mounted_on = dict((row.fs_file, row) for row in self.data)

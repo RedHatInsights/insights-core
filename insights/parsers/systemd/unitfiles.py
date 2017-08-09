@@ -73,11 +73,11 @@ class UnitFiles(Parser):
         """
         # 'static' means 'on' to fulfill dependency of something else that is on
         # man systemctl - "is-enabled" knows these states
-        valid_states = {'enabled', 'enabled-runtime', 'linked', 'linked-runtime', 'masked',
-                        'masked-runtime', 'static', 'indirect', 'disabled', 'generated',
-                        'transient', 'bad', 'invalid'}
+        valid_states = set(['enabled', 'enabled-runtime', 'linked', 'linked-runtime', 'masked',
+                            'masked-runtime', 'static', 'indirect', 'disabled', 'generated',
+                            'transient', 'bad', 'invalid'])
         # man systemctl - "is-enabled" considers these to be enabled
-        on_states = {'enabled', 'enabled-runtime', 'static', 'indirect', 'generated', 'transient'}
+        on_states = set(['enabled', 'enabled-runtime', 'static', 'indirect', 'generated', 'transient'])
 
         for line in get_active_lines(content):
             parts = line.split(None)  # AWK like split, strips whitespaces
@@ -153,11 +153,11 @@ class ListUnits(Parser):
         """
         # 'static' means 'on' to fulfill dependency of something else that is on
         # man systemctl - "is-enabled" knows these states
-        valid_states = {'invalid', 'loaded', 'inactive', 'active',
-                        'exited', 'running', 'failed', 'mounted', 'waiting', 'plugged'}
+        valid_states = set(['invalid', 'loaded', 'inactive', 'active',
+                            'exited', 'running', 'failed', 'mounted', 'waiting', 'plugged'])
 
-        valid_units = {'service', 'socket', 'device', 'mount', 'automount', 'swap', 'target',
-                       'path', 'timer', 'slice', 'scope'}
+        valid_units = set(['service', 'socket', 'device', 'mount', 'automount', 'swap', 'target',
+                           'path', 'timer', 'slice', 'scope'])
 
         for line in get_active_lines(content):
             parts = line.split(None)  # AWK like split, strips whitespaces

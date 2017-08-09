@@ -45,7 +45,7 @@ class IpcsS(Parser):
     def parse_content(self, content):
         content = get_active_lines(content, "-")
         table = parse_table(content)
-        data = map(lambda item: {k: v for (k, v) in item.iteritems()}, table)
+        data = map(lambda item: dict((k, v) for (k, v) in item.iteritems()), table)
         self.data = {}
         for item in data:
             self.data[item.pop('semid')] = item

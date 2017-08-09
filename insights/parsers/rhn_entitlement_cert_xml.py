@@ -73,8 +73,8 @@ class RHNCertConf(LegacyItemAccess, Parser):
             for field in rhntree.findall(".//rhn-cert-field"):
                 family = field.get('family')
                 if family:
-                    channel_familes[family] = {
-                        k: v for k, v in field.items() if k not in ('name', 'family')}
+                    channel_familes[family] = dict(
+                        (k, v) for k, v in field.items() if k not in ('name', 'family'))
                 elif field.text:
                     rhn_cert[field.get('name')] = field.text
             # for all channel families

@@ -233,11 +233,11 @@ class MultipathDevices(Parser):
 
         # Create some extra accessor properties
         self.dms = [path['dm_name'] for path in self.devices if 'dm_name' in path]
-        self.by_dm = {path['dm_name']: path for path in self.devices if 'dm_name' in path}
+        self.by_dm = dict((path['dm_name'], path) for path in self.devices if 'dm_name' in path)
         self.aliases = [path['alias'] for path in self.devices if 'alias' in path]
-        self.by_alias = {path['alias']: path for path in self.devices if 'alias' in path}
+        self.by_alias = dict((path['alias'], path) for path in self.devices if 'alias' in path)
         self.wwids = [path['wwid'] for path in self.devices if 'wwid' in path]
-        self.by_wwid = {path['wwid']: path for path in self.devices if 'wwid' in path}
+        self.by_wwid = dict((path['wwid'], path) for path in self.devices if 'wwid' in path)
 
     def __len__(self):
         """

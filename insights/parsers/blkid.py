@@ -62,7 +62,7 @@ class BlockIDInfo(Parser):
         blkid_output = []
         for line in (l for l in content if l.strip()):
             dev_name, attributes = line.split(":", 1)
-            device = {k: v for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line)}
+            device = dict((k, v) for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line))
             device['NAME'] = dev_name.strip()
             blkid_output.append(device)
 

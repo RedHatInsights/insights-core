@@ -104,5 +104,5 @@ class BrctlShow(Parser):
 
         for entry in self.data:
             self._group_by_iface[entry['bridge name']] = \
-                    {k: v for (k, v) in entry.iteritems() if k != 'bridge name'}
+                dict((k, v) for (k, v) in entry.iteritems() if k != 'bridge name')
         return

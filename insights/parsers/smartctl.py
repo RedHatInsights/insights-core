@@ -129,8 +129,8 @@ class SMARTctl(Parser):
             match = self.ATTR_LINE_RE.match(line)
             if match:
                 name = match.group('name')
-                drive_info['attributes'][name] = {
-                    key: match.group(key) for key in self.ATTR_KEYS}
+                drive_info['attributes'][name] = dict(
+                    (key, match.group(key)) for key in self.ATTR_KEYS)
             return PARSE_ATTRIBUTE_INFO
 
         parse_for_state = [

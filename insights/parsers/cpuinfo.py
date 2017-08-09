@@ -203,4 +203,4 @@ class CpuInfo(LegacyItemAccess, Parser):
         Returns:
             dict: A dictionary of the information for that CPU.
         """
-        return {k: v[index] for k, v in self.data.items()}
+        return dict((k, v[index]) for k, v in self.data.items())

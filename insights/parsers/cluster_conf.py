@@ -163,5 +163,5 @@ def get_cluster_conf(context):
     result["fencedevices"] += [fencedevice.attrib for fencedevice in cluster_xml.findall(".//fencedevices//")]
 
     result["resources"] = {}
-    result["resources"].update({key: value for key, value in [(sub.tag, sub.attrib) for sub in cluster_xml.findall("./rm/resources//")]})
+    result["resources"].update(dict((key, value) for key, value in [(sub.tag, sub.attrib) for sub in cluster_xml.findall("./rm/resources//")]))
     return result

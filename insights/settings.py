@@ -39,7 +39,7 @@ for c in CONFIGS:
 # to each section if they aren't already there.
 
 for k in config["defaults"]:
-    for section in {s for s in config if s != "defaults"}:
+    for section in set(s for s in config if s != "defaults"):
         if k not in config[section]:
             config[section][k] = config["defaults"][k]
 

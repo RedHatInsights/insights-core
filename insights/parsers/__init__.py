@@ -71,10 +71,10 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='='):
         {'rw': True, 'ro': True, 'rsize': '32168', 'xyz': True}
     """
     if kv_sep is not None:
-        optdict = {opt: True for opt in optlist.split(opt_sep) if kv_sep not in opt}
-        optdict.update({opt.split(kv_sep)[0]: opt.split(kv_sep)[1] for opt in optlist.split(opt_sep) if kv_sep in opt})
+        optdict = dict((opt, True) for opt in optlist.split(opt_sep) if kv_sep not in opt)
+        optdict.update(dict((opt.split(kv_sep)[0], opt.split(kv_sep)[1]) for opt in optlist.split(opt_sep) if kv_sep in opt))
     else:
-        optdict = {opt: True for opt in optlist.split(opt_sep)}
+        optdict = dict((opt, True) for opt in optlist.split(opt_sep))
     return optdict
 
 
@@ -314,10 +314,10 @@ def parse_fixed_table(table_lines,
 
     table_data = []
     for line in table_lines[first_line + 1:last_line]:
-        col_data = {
-            col_headers[c]: line[col_index[c]:col_index[c + 1]].strip()
+        col_data = dict(
+            (col_headers[c], line[col_index[c]:col_index[c + 1]].strip())
             for c in range(len(col_index) - 1)
-        }
+        )
         col_data[col_headers[-1]] = line[col_index[-1]:].strip()
         table_data.append(col_data)
 
