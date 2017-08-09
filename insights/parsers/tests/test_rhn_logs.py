@@ -1,6 +1,7 @@
 from insights.tests import context_wrap
 from insights.parsers.rhn_logs import TaskomaticDaemonLog, SearchDaemonLog
 from insights.parsers.rhn_logs import ServerXMLRPCLog
+from insights.parsers.rhn_logs import SatelliteServerLog
 from datetime import datetime
 
 search_daemon_log = """
@@ -129,7 +130,27 @@ def test_server_xmlrpc_log_bad_date():
     line = log.get('registration.welcome_message')[0]
     assert line['timestamp'] == '2016/13/35 05:52:01 -04:00'
     assert 'datetime' not in line
-
     log = ServerXMLRPCLog(context_wrap(SERVER_XMLRPC_LOG_NO_DATE))
     assert len(log.get('registration.welcome_message')) == 0
     assert log.last == {'raw_log': '/usr/bin/httpd: command or file not found'}
+
+
+RHN_SERVER_SATELLITE_LOG = """
+2016/11/19 01:13:35 -04:00    Retrieving / parsing errata data: rhel-x86_64-server-optional-6-debuginfo (0)
+2016/11/19 01:13:35 -04:00 Downloading errata data complete
+2016/11/19 01:13:35 -04:00
+2016/11/19 01:13:35 -04:00 Downloading kickstartable trees metadata
+2016/11/19 01:13:35 -04:00    Retrieving / parsing kickstart data: rhel-x86_64-server-optional-6-debuginfo (NONE RELEVANT)
+2016/11/19 01:13:35 -04:00
+2016/11/19 01:13:35 -04:00 Downloading kickstartable trees files
+2016/11/19 01:13:35 -04:00    Retrieving / parsing kickstart tree files: rhel-x86_64-server-optional-6-debuginfo (NONE RELEVANT)
+2016/11/19 01:13:44 -04:00 channel-families data complete
+2016/11/19 01:13:44 -04:00
+2016/11/19 01:13:44 -04:00 RHN Entitlement Certificate sync
+"""
+
+
+def test_rhn_server_satellite_get():
+    log = SatelliteServerLog(context_wrap(RHN_SERVER_SATELLITE_LOG))
+    assert len(log.get('Downloading')) == 3
+    assert len(list(log.get_after(datetime(2016, 11, 19, 1, 13, 44)))) == 3
