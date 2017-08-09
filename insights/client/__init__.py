@@ -373,7 +373,8 @@ class InsightsClient(object):
         # If check_timestamp is not flagged, then skip this check AND
         # we are also scanning a host
         # bypass timestamp checks for other cases
-        if kwargs.get('check_timestamp', True) and scanning_host:
+        if bool(kwargs.get('check_timestamp', True)) and scanning_host:
+            logger.debug('Check timestamp is True and we are scanning a host.')
             cached_results = self._cached_results()
             if cached_results:
                 logger.info("Using cached collection: %s", cached_results)
