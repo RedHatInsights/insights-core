@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 
 def get_simple_module_name(obj):
-    return dr.SIMPLE_MODULE_NAMES.get(obj, None)
+    return dr.BASE_MODULE_NAMES.get(obj, None)
 
 
 def serialize_skips(skips):
@@ -46,14 +46,14 @@ class Evaluator(object):
         pass
 
     def post_process(self):
-        for c, exes in self.broker.exceptions.iteritems():
+        for c, exes in self.broker.exceptions.items():
             for e in exes:
                 if plugins.is_parser(c):
                     self.handle_parse_error(c, e)
                 elif plugins.is_rule(c):
                     self.handle_rule_error(c, e)
 
-        for c, v in self.broker.instances.iteritems():
+        for c, v in self.broker.items():
             if plugins.is_rule(c):
                 self.handle_result(c, v)
 
@@ -99,7 +99,7 @@ class SingleEvaluator(Evaluator):
         super(SingleEvaluator, self).__init__(spec_mapper, broker, metadata)
 
     def append_metadata(self, r, plugin):
-        for k, v in r.iteritems():
+        for k, v in r.items():
             self.metadata[k] = v
 
     def format_response(self, response):
@@ -131,7 +131,7 @@ class SingleEvaluator(Evaluator):
         if self.archive_metadata:
             self.broker["metadata.json"] = self._pull_md_fragment()
 
-        for symbolic_name, files in self.spec_mapper.symbolic_files.iteritems():
+        for symbolic_name, files in self.spec_mapper.symbolic_files.items():
             if symbolic_name == "metadata.json":
                 continue
 
@@ -220,8 +220,8 @@ class MultiEvaluator(Evaluator):
             hn = sub_evaluator.get_contextual_hostname(default=i)
             self.archive_results[hn] = host_result
             sub_brokers[hn] = self.clean_broker(sub_evaluator.broker)
-        for host, sub in sub_brokers.iteritems():
-            for c, v in sub.instances.iteritems():
+        for host, sub in sub_brokers.items():
+            for c, v in sub.items():
                 if plugins.is_rule(c):
                     continue
                 if c not in self.broker:
@@ -245,14 +245,14 @@ class MultiEvaluator(Evaluator):
             self.rule_skips.append(r)
 
     def append_metadata(self, r, plugin):
-        for k, v in r.iteritems():
+        for k, v in r.items():
             self.archive_results[None]["system"]["metadata"][k] = v
 
     def get_response(self):
         return self.format_response({
             "system": self.archive_results[None]["system"],
             "reports": self.archive_results[None]["reports"],
-            "archives": [v for k, v in self.archive_results.iteritems() if k is not None],
+            "archives": [v for k, v in self.archive_results.items() if k is not None],
             "skips": self.rule_skips,
             "stats": self.stats
         })
@@ -330,7 +330,7 @@ class InsightsEvaluator(SingleEvaluator):
                     filename, self.url, e, exc_info=True)
 
     def handle_parse_error(self, component, exception):
-        context = self.broker.get(dr.DEPENDENCIES[component][0], "Unknown")
+        context = self.broker.get(dr.get_dependencies(component).pop(), "Unknown")
         self.stats["parser"]["fail"] += 1
         log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
                     exception, context, self.url, exc_info=True)

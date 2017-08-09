@@ -8,6 +8,7 @@ import yaml
 from ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
+from insights.core.serde import deserializer, serializer
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +49,13 @@ class Parser(object):
     """
 
     def __init__(self, context):
+        if context is None:
+            self.file_path = None
+            self.file_name = None
+            self.last_client_run = None
+            self.args = None
+            return
+
         self.file_path = context.path
         """str: Full context path of the input file."""
         self.file_name = os.path.basename(context.path) \
@@ -57,12 +65,26 @@ class Parser(object):
             self.last_client_run = context.last_client_run
         else:
             self.last_client_run = None
+        self.args = context.args if hasattr(context, "args") else None
         self.parse_content(context.content)
 
     def parse_content(self, content):
         """This method must be implemented by classes based on this class."""
         msg = "Parser subclasses must implement parse_content(self, content)."
         raise NotImplementedError(msg)
+
+
+@serializer(Parser)
+def default_parser_serializer(obj):
+    return vars(obj)
+
+
+@deserializer(Parser)
+def default_parser_deserializer(_type, data):
+    obj = _type(None)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    return obj
 
 
 class SysconfigOptions(Parser):
