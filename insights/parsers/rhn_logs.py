@@ -171,3 +171,32 @@ class SearchDaemonLog(LogFileOutput):
         ['STATUS | wrapper  | 2013/01/29 17:04:25 | TERM trapped.  Shutting down.']
     """
     time_format = '%Y/%m/%d %H:%M:%S'
+
+
+@parser('rhn_server_satellite.log')
+class SatelliteServerLog(LogFileOutput):
+    """
+    Class for parsing the ``var/log/rhn/rhn_server_satellite.log`` file
+
+    Sample log contents::
+
+        2016/11/19 01:13:35 -04:00 Downloading errata data complete
+        2016/11/19 01:13:35 -04:00 Downloading kickstartable trees metadata
+        2016/11/19 01:13:35 -04:00    Retrieving / parsing kickstart tree files: rhel-x86_64-server-optional-6-debuginfo (NONE RELEVANT)
+        2016/11/19 01:13:39 -04:00    debug/output level: 1
+        2016/11/19 01:13:39 -04:00    db:  rhnsat/<password>@rhnsat
+        2016/11/19 01:13:39 -04:00
+        2016/11/19 01:13:39 -04:00 Retrieving / parsing channel-families data
+        2016/11/19 01:13:44 -04:00 channel-families data complete
+        2016/11/19 01:13:44 -04:00
+        2016/11/19 01:13:44 -04:00 RHN Entitlement Certificate sync
+
+    Examples:
+        >>> log = shared[SatelliteServerLog]
+        >>> log.get('Downloading')
+        ['2016/11/19 01:13:35 -04:00 Downloading errata data complete', '2016/11/19 01:13:35 -04:00 Downloading kickstartable trees metadata']
+
+        >>> log.get_after(datetime(2016, 11, 19, 1, 13, 44))
+        ['2016/11/19 01:13:44 -04:00 channel-families data complete', '2016/11/19 01:13:44 -04:00 ', '2016/11/19 01:13:44 -04:00 RHN Entitlement Certificate sync']
+    """
+    time_format = '%Y/%m/%d %H:%M:%S'

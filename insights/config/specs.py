@@ -300,6 +300,7 @@ static_specs = {
                                     SimpleFileSpec("database/schema-stats.log")]),
     "rhn-schema-version"        : First([CommandSpec("/usr/bin/rhn-schema-version"),
                                     SimpleFileSpec("database-schema-version")]),
+    "rhn_server_satellite.log"  : SimpleFileSpec("var/log/rhn/rhn_server_satellite.log"),
     "rhn_server_xmlrpc.log"     : First([SimpleFileSpec("var/log/rhn/rhn_server_xmlrpc.log", large_content=True),
                                     SimpleFileSpec("rhn-logs/rhn/rhn_server_xmlrpc.log", large_content=True)]),
     "rhn_search_daemon.log"     : First([SimpleFileSpec("var/log/rhn/search/rhn_search_daemon.log", large_content=True),
