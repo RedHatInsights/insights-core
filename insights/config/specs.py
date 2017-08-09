@@ -392,7 +392,7 @@ pre_commands = {
     "md5chk_files"              : "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
     "module"                    : "/bin/ls /sys/module",
     "uname_r"                   : "/bin/uname -r",
-    "semid"                     : "/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'"
+    "semid"                     : "/usr/bin/ipcs -s | awk '{if (NF == 5 && $2 ~ /^[0-9]+$/) print $2}'"
 }
 """dict: Pre-commands used to generate data for specifications."""
 
