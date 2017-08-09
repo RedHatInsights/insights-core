@@ -2,8 +2,6 @@ from insights.parsers.ls_var_log import LsVarLog
 from insights.tests import context_wrap
 from insights.util.file_permissions import FilePermissions
 
-import unittest
-
 # from RHEL 7.2
 LS_1 = """
 /var/log:
@@ -76,74 +74,77 @@ drwxr-xr-x. 7 root root 4096 Oct 19 15:38 ..
 """.strip()
 
 
-class Test_Ls_Var_Log(unittest.TestCase):
-    """
-    These tests are mainly derived from the old implementation of LsVarLog,
-    which did its own parsing and used FilePermissions objects throughout.
-    The new implementation used the more completely tested and more robust
-    FileListing parser.  So some tests are a bit ... odd.
-    """
-    def test_smoketest(self):
-        context = context_wrap(LS_1)
-        result = LsVarLog(context)
+"""
+These tests are mainly derived from the old implementation of LsVarLog,
+which did its own parsing and used FilePermissions objects throughout.
+The new implementation used the more completely tested and more robust
+FileListing parser.  So some tests are a bit ... odd.
+"""
 
-        self.assertIn("/var/log", result)
-        self.assertIn("/var/log/audit", result)
-        self.assertIn("/var/log/ppp", result)
-        self.assertIn("/var/log/rhsm", result)
-        self.assertIn("/var/log/tuned", result)
-        self.assertIn("audit.log", result.listings["/var/log/audit"]['entries'])
-        self.assertEqual("audit.log", result.get_filepermissions("/var/log/audit", "audit.log").path)
 
-    def test_dir_parsed(self):
-        context = context_wrap(LS_1)
-        result = LsVarLog(context)
-        ls = {}
-        current_dir = ""
-        test_lines = LS_1.splitlines()
-        for line in test_lines:
-            # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
-            if line.endswith(":"):
-                current_dir = line.split(":")[0]
-                ls[current_dir] = []
-            elif line.startswith("total"):
-                pass
-            elif line:
-                fileperm = FilePermissions(line)
-                ls[current_dir].append(fileperm.path)
-        for dir in ls:
-            self.assertIn(dir, result)
-            dir_from_parser = result.listings[dir]['entries']
-            # Two way cross-check:
-            # Were all files in our simple parse found in the parser?
-            for fil in ls[dir]:
-                self.assertIn(fil, dir_from_parser)
-            # Were all files in the parser found in our simple parse?
+def test_smoketest():
+    context = context_wrap(LS_1)
+    result = LsVarLog(context)
 
-            for fil in dir_from_parser:
-                self.assertIn(fil, ls[dir])
+    assert "/var/log" in result
+    assert "/var/log/audit" in result
+    assert "/var/log/ppp" in result
+    assert "/var/log/rhsm" in result
+    assert "/var/log/tuned" in result
+    assert "audit.log" in result.listings["/var/log/audit"]['entries']
+    assert "audit.log" == result.get_filepermissions("/var/log/audit", "audit.log").path
 
-    def test_get_filepermissions(self):
-        context = context_wrap(LS_1)
-        result = LsVarLog(context)
-        ls = {}
-        current_dir = ""
-        test_lines = LS_1.splitlines()
-        for line in test_lines:
-            # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
-            if line.endswith(":"):
-                current_dir = line.split(":")[0]
-                ls[current_dir] = []
-            elif line.startswith("total"):
-                pass
-            elif line:
-                fileperm = FilePermissions(line)
-                ls[current_dir].append(fileperm)
-        for dir in ls:
-            self.assertIn(dir, result)
-            for fil in ls[dir]:
-                found = result.get_filepermissions(dir, fil.path)
-                assert found is not None
-                self.assertEqual(fil.line, found.line)
-                not_found = result.get_filepermissions(dir, "nonexisting" + fil.path)
-                assert not_found is None
+
+def test_dir_parsed():
+    context = context_wrap(LS_1)
+    result = LsVarLog(context)
+    ls = {}
+    current_dir = ""
+    test_lines = LS_1.splitlines()
+    for line in test_lines:
+        # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
+        if line.endswith(":"):
+            current_dir = line.split(":")[0]
+            ls[current_dir] = []
+        elif line.startswith("total"):
+            pass
+        elif line:
+            fileperm = FilePermissions(line)
+            ls[current_dir].append(fileperm.path)
+    for dir in ls:
+        assert dir in result
+        dir_from_parser = result.listings[dir]['entries']
+        # Two way cross-check:
+        # Were all files in our simple parse found in the parser?
+        for fil in ls[dir]:
+            assert fil in dir_from_parser
+        # Were all files in the parser found in our simple parse?
+
+        for fil in dir_from_parser:
+            assert fil in ls[dir]
+
+
+def test_get_filepermissions():
+    context = context_wrap(LS_1)
+    result = LsVarLog(context)
+    ls = {}
+    current_dir = ""
+    test_lines = LS_1.splitlines()
+    for line in test_lines:
+        # wonky parsing from memory to test the actual implementation; doesn't expect evil input!
+        if line.endswith(":"):
+            current_dir = line.split(":")[0]
+            ls[current_dir] = []
+        elif line.startswith("total"):
+            pass
+        elif line:
+            fileperm = FilePermissions(line)
+            ls[current_dir].append(fileperm)
+    for dir in ls:
+        assert dir in result
+        for fil in ls[dir]:
+            found = result.get_filepermissions(dir, fil.path)
+            assert found is not None
+            assert fil.line == found.line
+            not_found = result.get_filepermissions(dir, "nonexisting" + fil.path)
+            assert not_found is None

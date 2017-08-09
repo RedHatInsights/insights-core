@@ -3,8 +3,6 @@ from insights.util.file_permissions import FilePermissions
 from insights.core import FileListing
 from insights.tests import test_file_listing, context_wrap
 
-import unittest
-
 PERMISSIONS_TEST_EXCEPTION_VECTORS = [
     ('-rw------ 1 root root 762 Sep 23 002 /etc/ssh/sshd_config', True),
     ('bash: ls: command not found', True),
@@ -77,53 +75,54 @@ PERMISSIONS_TEST_VECTORS = [
 ]
 
 
-class TestPermissions(unittest.TestCase):
-    def test_permissions(self):
-        for vector in PERMISSIONS_TEST_VECTORS:
-            (line, with_group,
-             permissions_owner, permissions_group, permissions_other, owner, group, path,
-             owned_by_root_user, owned_by_root_user_and_group,
-             only_root_can_read, only_root_can_write) = vector
-            p = FilePermissions(line)
-            assert p.perms_owner == permissions_owner
-            assert p.perms_group == permissions_group
-            assert p.perms_other == permissions_other
-            assert p.owner == owner
-            assert p.group == group
-            assert p.owned_by('root', also_check_group=False) == owned_by_root_user
-            assert p.owned_by('root', also_check_group=True) == owned_by_root_user_and_group
-            assert p.only_root_can_read(root_group_can_read=with_group) == only_root_can_read
-            assert p.only_root_can_write(root_group_can_write=with_group) == only_root_can_write
-            assert p.all_zero() == all((p.perms_owner == '---', p.perms_group == '---',
-                                        p.perms_other == '---'))
-            assert p.owner_can_read() == ('r' in p.perms_owner)
-            assert p.owner_can_write() == ('w' in p.perms_owner)
-            assert p.owner_can_only_read() == ('r--' == p.perms_owner)
-            assert p.group_can_read() == ('r' in p.perms_group)
-            assert p.group_can_write() == ('w' in p.perms_group)
-            assert p.group_can_only_read() == ('r--' == p.perms_group)
-            assert p.others_can_read() == ('r' in p.perms_other)
-            assert p.others_can_write() == ('w' in p.perms_other)
-            assert p.others_can_only_read() == ('r--' == p.perms_other)
+def test_permissions():
+    for vector in PERMISSIONS_TEST_VECTORS:
+        (line, with_group,
+         permissions_owner, permissions_group, permissions_other, owner, group, path,
+         owned_by_root_user, owned_by_root_user_and_group,
+         only_root_can_read, only_root_can_write) = vector
+        p = FilePermissions(line)
+        assert p.perms_owner == permissions_owner
+        assert p.perms_group == permissions_group
+        assert p.perms_other == permissions_other
+        assert p.owner == owner
+        assert p.group == group
+        assert p.owned_by('root', also_check_group=False) == owned_by_root_user
+        assert p.owned_by('root', also_check_group=True) == owned_by_root_user_and_group
+        assert p.only_root_can_read(root_group_can_read=with_group) == only_root_can_read
+        assert p.only_root_can_write(root_group_can_write=with_group) == only_root_can_write
+        assert p.all_zero() == all((p.perms_owner == '---', p.perms_group == '---',
+                                    p.perms_other == '---'))
+        assert p.owner_can_read() == ('r' in p.perms_owner)
+        assert p.owner_can_write() == ('w' in p.perms_owner)
+        assert p.owner_can_only_read() == ('r--' == p.perms_owner)
+        assert p.group_can_read() == ('r' in p.perms_group)
+        assert p.group_can_write() == ('w' in p.perms_group)
+        assert p.group_can_only_read() == ('r--' == p.perms_group)
+        assert p.others_can_read() == ('r' in p.perms_other)
+        assert p.others_can_write() == ('w' in p.perms_other)
+        assert p.others_can_only_read() == ('r--' == p.perms_other)
 
-    def test_permissions_invalid(self):
-        for vector in PERMISSIONS_TEST_EXCEPTION_VECTORS:
-            garbage, should_raise = vector
-            if should_raise:
-                with pytest.raises(ValueError):
-                    FilePermissions(garbage)
-            else:
-                # shouldn't raise an exception
+
+def test_permissions_invalid():
+    for vector in PERMISSIONS_TEST_EXCEPTION_VECTORS:
+        garbage, should_raise = vector
+        if should_raise:
+            with pytest.raises(ValueError):
                 FilePermissions(garbage)
+        else:
+            # shouldn't raise an exception
+            FilePermissions(garbage)
 
-    def test_multiple_directories(self):
-        dirs = FileListing(context_wrap(test_file_listing.MULTIPLE_DIRECTORIES))
-        self.assertIn('/etc/sysconfig', dirs)
-        self.assertIn('cbq', dirs.dirs_of('/etc/sysconfig'))
-        # drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq
-        obj = FilePermissions.from_dict(dirs.path_entry('/etc/sysconfig/cbq'))
-        self.assertTrue(hasattr(obj, 'name'))
-        self.assertEqual(obj.name, 'cbq')
-        self.assertEqual(obj.perms_owner, 'rwx')
-        self.assertEqual(obj.perms_group, 'r-x')
-        self.assertEqual(obj.perms_other, 'r-x')
+
+def test_multiple_directories():
+    dirs = FileListing(context_wrap(test_file_listing.MULTIPLE_DIRECTORIES))
+    assert '/etc/sysconfig' in dirs
+    assert 'cbq' in dirs.dirs_of('/etc/sysconfig')
+    # drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq
+    obj = FilePermissions.from_dict(dirs.path_entry('/etc/sysconfig/cbq'))
+    assert hasattr(obj, 'name')
+    assert obj.name == 'cbq'
+    assert obj.perms_owner == 'rwx'
+    assert obj.perms_group == 'r-x'
+    assert obj.perms_other == 'r-x'

@@ -1,8 +1,6 @@
 from insights.parsers import docker_inspect
 from insights.tests import context_wrap
 
-import unittest
-
 DOCKER_CONTAINER_INSPECT = """
 [
 {
@@ -282,35 +280,38 @@ DOCKER_CONTAINER_INSPECT_TRUNCATED = """
 """
 
 
-class Testdockerinspect(unittest.TestCase):
-    def test_docker_container_inspect(self):
-        result = docker_inspect.container(context_wrap(DOCKER_CONTAINER_INSPECT))
-        assert result.get('Id') == "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
-        assert result.get('NetworkSettings').get('HairpinMode') is False
-        assert result.get('Config').get('Env') == ['container=docker', 'PKGM=yum', 'PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin']
-        assert result.get('GraphDriver').get('Data').get('DeviceSize') == '107374182400'
+def test_docker_container_inspect():
+    result = docker_inspect.container(context_wrap(DOCKER_CONTAINER_INSPECT))
+    assert result.get('Id') == "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
+    assert result.get('NetworkSettings').get('HairpinMode') is False
+    assert result.get('Config').get('Env') == ['container=docker', 'PKGM=yum', 'PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin']
+    assert result.get('GraphDriver').get('Data').get('DeviceSize') == '107374182400'
 
-    def test_docker_image_inspect(self):
-        result = docker_inspect.image(context_wrap(DOCKER_IMAGE_INSPECT))
-        assert result.get('Id') == "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2"
-        assert result.get('Size') == 580094174
-        assert result.get('Config').get('AttachStdin') is False
-        assert result.get('RepoDigests') == []
 
-    def test_docker_object_container_inspect(self):
-        result = docker_inspect.DockerInspect(context_wrap(DOCKER_CONTAINER_INSPECT))
-        assert result.get('Id') == "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
-        assert result.get('NetworkSettings').get('HairpinMode') is False
-        assert result.get('Config').get('Env') == ['container=docker', 'PKGM=yum', 'PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin']
-        assert result.get('GraphDriver').get('Data').get('DeviceSize') == '107374182400'
+def test_docker_image_inspect():
+    result = docker_inspect.image(context_wrap(DOCKER_IMAGE_INSPECT))
+    assert result.get('Id') == "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2"
+    assert result.get('Size') == 580094174
+    assert result.get('Config').get('AttachStdin') is False
+    assert result.get('RepoDigests') == []
 
-    def test_docker_object_image_inspect(self):
-        result = docker_inspect.DockerInspect(context_wrap(DOCKER_IMAGE_INSPECT))
-        assert result.get('Id') == "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2"
-        assert result.get('Size') == 580094174
-        assert result.get('Config').get('AttachStdin') is False
-        assert result.get('RepoDigests') == []
 
-    def test_docker_container_inspect_truncated_input(self):
-        result = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
-        self.assertEqual(result.data, {})
+def test_docker_object_container_inspect():
+    result = docker_inspect.DockerInspect(context_wrap(DOCKER_CONTAINER_INSPECT))
+    assert result.get('Id') == "97d7cd1a5d8fd7730e83bb61ecbc993742438e966ac5c11910776b5d53f4ae07"
+    assert result.get('NetworkSettings').get('HairpinMode') is False
+    assert result.get('Config').get('Env') == ['container=docker', 'PKGM=yum', 'PATH=/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin']
+    assert result.get('GraphDriver').get('Data').get('DeviceSize') == '107374182400'
+
+
+def test_docker_object_image_inspect():
+    result = docker_inspect.DockerInspect(context_wrap(DOCKER_IMAGE_INSPECT))
+    assert result.get('Id') == "882ab98aae5394aebe91fe6d8a4297fa0387c3cfd421b2d892bddf218ac373b2"
+    assert result.get('Size') == 580094174
+    assert result.get('Config').get('AttachStdin') is False
+    assert result.get('RepoDigests') == []
+
+
+def test_docker_container_inspect_truncated_input():
+    result = docker_inspect.DockerInspectContainer(context_wrap(DOCKER_CONTAINER_INSPECT_TRUNCATED))
+    assert result.data == {}

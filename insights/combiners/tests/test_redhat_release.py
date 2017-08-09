@@ -1,4 +1,4 @@
-import unittest
+import pytest
 from insights.parsers.uname import Uname
 from insights.parsers.redhat_release import RedhatRelease
 from insights.combiners.redhat_release import redhat_release
@@ -16,34 +16,36 @@ Fedora release 23 (Twenty Three)
 """.strip()
 
 
-class TestRedhatRelease(unittest.TestCase):
-    def test_uname(self):
-        un = Uname(context_wrap(UNAME))
-        shared = {Uname: un}
-        expected = (7, 2)
-        result = redhat_release(shared)
-        self.assertEqual(result.major, expected[0])
-        self.assertEqual(result.minor, expected[1])
+def test_uname():
+    un = Uname(context_wrap(UNAME))
+    shared = {Uname: un}
+    expected = (7, 2)
+    result = redhat_release(shared)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
 
-    def test_redhat_release(self):
-        rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
-        shared = {RedhatRelease: rel}
-        expected = (7, 2)
-        result = redhat_release(shared)
-        self.assertEqual(result.major, expected[0])
-        self.assertEqual(result.minor, expected[1])
 
-    def test_both(self):
-        un = Uname(context_wrap(UNAME))
-        rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
-        shared = {Uname: un, RedhatRelease: rel}
-        expected = (7, 2)
-        result = redhat_release(shared)
-        self.assertEqual(result.major, expected[0])
-        self.assertEqual(result.minor, expected[1])
+def test_redhat_release():
+    rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
+    shared = {RedhatRelease: rel}
+    expected = (7, 2)
+    result = redhat_release(shared)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
 
-    def test_raise(self):
-        un = Uname(context_wrap(BAD_UNAME))
-        shared = {Uname: un}
-        with self.assertRaises(Exception):
-            redhat_release(shared)
+
+def test_both():
+    un = Uname(context_wrap(UNAME))
+    rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
+    shared = {Uname: un, RedhatRelease: rel}
+    expected = (7, 2)
+    result = redhat_release(shared)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+
+
+def test_raise():
+    un = Uname(context_wrap(BAD_UNAME))
+    shared = {Uname: un}
+    with pytest.raises(Exception):
+        redhat_release(shared)

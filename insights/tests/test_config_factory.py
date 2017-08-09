@@ -1,4 +1,3 @@
-import unittest
 import sys
 
 import insights.config.factory as cf
@@ -23,59 +22,60 @@ meta_files = {
 openshift = {}
 
 
-class TestConfigFactory(unittest.TestCase):
+def test_get_config_factory():
+    config = cf.get_config()
+    sc = scf.get_config()
+    db = dbcf.get_config()
 
-    def test_get_config_factory(self):
-        config = cf.get_config()
-        sc = scf.get_config()
-        db = dbcf.get_config()
+    sc.compose(db)
 
-        sc.compose(db)
-
-        self.assertEqual(config, sc)
-
-    def test_get_spec_list(self):
-        config = cf.get_config()
-        specs = config.get_spec_list('cciss')
-        self.assertTrue(specs is not None)
-        self.assertTrue(len(specs) == 1)
-
-    def test_get_spec_list_not_exists(self):
-        config = cf.get_config()
-        specs = config.get_spec_list('not_here')
-        self.assertTrue(len(specs) == 0)
-
-    def test_get_meta_spec_list(self):
-        config = cf.get_config()
-        specs = config.get_meta_spec_list('uploader_log')
-        self.assertTrue(specs is not None)
-        self.assertTrue(len(specs) == 1)
-
-    def test_get_meta_spec_list_not_exists(self):
-        config = cf.get_config()
-        specs = config.get_meta_spec_list('not_here')
-        self.assertTrue(len(specs) == 0)
-
-    def test_get_specs(self):
-        config = cf.get_config()
-        specs = config.get_specs('cciss')
-        self.assertTrue(specs is not None)
-        self.assertTrue(len(specs) == 1)
-
-    def test_get_specs_not_exists(self):
-        config = cf.get_config()
-        specs = config.get_specs('not_here')
-        self.assertTrue(len(specs) == 0)
+    assert config == sc
 
 
-class TestStaticConfigFactory(unittest.TestCase):
-    def test_get_config_factory(self):
-        config = scf.get_config(module=sys.modules[__name__])
-        self.assertEqual(config.get_specs('blkid')[0], static_specs.get('blkid'))
+def test_get_spec_list():
+    config = cf.get_config()
+    specs = config.get_spec_list('cciss')
+    assert specs is not None
+    assert len(specs) == 1
 
 
-class TestDatabaseConfigFactory(unittest.TestCase):
+def test_get_spec_list_not_exists():
+    config = cf.get_config()
+    specs = config.get_spec_list('not_here')
+    assert len(specs) == 0
 
-    def test_get_config_factory(self):
-        config = dbcf.get_config()
-        self.assertTrue(config is not None)
+
+def test_get_meta_spec_list():
+    config = cf.get_config()
+    specs = config.get_meta_spec_list('uploader_log')
+    assert specs is not None
+    assert len(specs) == 1
+
+
+def test_get_meta_spec_list_not_exists():
+    config = cf.get_config()
+    specs = config.get_meta_spec_list('not_here')
+    assert len(specs) == 0
+
+
+def test_get_specs():
+    config = cf.get_config()
+    specs = config.get_specs('cciss')
+    assert specs is not None
+    assert len(specs) == 1
+
+
+def test_get_specs_not_exists():
+    config = cf.get_config()
+    specs = config.get_specs('not_here')
+    assert len(specs) == 0
+
+
+def test_get_static_config_factory():
+    config = scf.get_config(module=sys.modules[__name__])
+    assert config.get_specs('blkid')[0] == static_specs.get('blkid')
+
+
+def test_get_db_config_factory():
+    config = dbcf.get_config()
+    assert config is not None

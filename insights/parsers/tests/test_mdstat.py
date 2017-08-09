@@ -1,5 +1,4 @@
-import unittest
-
+import pytest
 from insights.parsers import mdstat
 from insights.tests import context_wrap
 
@@ -114,91 +113,91 @@ UPSTRING_TEST_2 = "1318680576 blocks level 5, 1024k chunk, algorithm 2 [10/10] [
 UPSTRING_TEST_3 = "[==>..................]  recovery = 12.6% (37043392/292945152) finish=127.5min speed=33440K/sec"
 
 
-class TestMdstat(unittest.TestCase):
-    def test_parse_personalities(self):
-        result = mdstat.parse_personalities(PERSONALITIES_TEST)
-        self.assertEquals(["linear", "raid0", "raid1", "raid5", "raid4", "raid6"], result)
+def test_parse_personalities():
+    result = mdstat.parse_personalities(PERSONALITIES_TEST)
+    assert ["linear", "raid0", "raid1", "raid5", "raid4", "raid6"] == result
 
-        for line in PERSONALITIES_FAIL:
-            with self.assertRaises(AssertionError):
-                mdstat.parse_personalities(line)
+    for line in PERSONALITIES_FAIL:
+        with pytest.raises(AssertionError):
+            mdstat.parse_personalities(line)
 
-    def test_parse_array_start(self):
-        result = mdstat.parse_array_start(MD_TEST_1)
-        self.assertEquals(MD_RESULT_1, result)
 
-        result = mdstat.parse_array_start(MD_TEST_2)
-        self.assertEquals(MD_RESULT_2, result)
+def test_parse_array_start():
+    result = mdstat.parse_array_start(MD_TEST_1)
+    assert MD_RESULT_1 == result
 
-        for md_line in MD_FAIL:
-            with self.assertRaises(AssertionError):
-                mdstat.parse_array_start(md_line)
+    result = mdstat.parse_array_start(MD_TEST_2)
+    assert MD_RESULT_2 == result
 
-    def test_parse_upstring(self):
-        result = mdstat.parse_upstring(UPSTRING_TEST_1)
-        self.assertEquals('_UUU_U', result)
+    for md_line in MD_FAIL:
+        with pytest.raises(AssertionError):
+            mdstat.parse_array_start(md_line)
 
-        result = mdstat.parse_upstring(UPSTRING_TEST_2)
-        self.assertEquals('UUUUUUUUUU', result)
 
-        result = mdstat.parse_upstring(UPSTRING_TEST_3)
-        self.assertEquals(None, result)
+def test_parse_upstring():
+    result = mdstat.parse_upstring(UPSTRING_TEST_1)
+    assert '_UUU_U' == result
 
-    def test_apply_upstring(self):
-        test_dict = [{}, {}, {}, {}]
-        mdstat.apply_upstring('U_U_', test_dict)
-        self.assertTrue(test_dict[0]['up'])
-        self.assertFalse(test_dict[1]['up'])
-        self.assertTrue(test_dict[2]['up'])
-        self.assertFalse(test_dict[3]['up'])
+    result = mdstat.parse_upstring(UPSTRING_TEST_2)
+    assert 'UUUUUUUUUU' == result
 
-        with self.assertRaises(AssertionError):
-            mdstat.apply_upstring('U?_U', test_dict)
+    result = mdstat.parse_upstring(UPSTRING_TEST_3)
+    assert result is None
 
-        with self.assertRaises(AssertionError):
-            mdstat.apply_upstring('U_U', test_dict)
 
-    def test_mdstat_construction(self):
-        def compare_mdstat_data(test_data, parser_obj):
-            """
-            Because the dictionaries are huge and comparing them usually
-            ends up with too many differences, it's better to compare them
-            part by part
-            """
-            self.assertEqual(test_data['personalities'], parser_obj.data['personalities'])
-            for testdata, objdata in zip(test_data['components'], parser_obj.data['components']):
-                self.assertEqual(testdata, objdata)
+def test_apply_upstring():
+    test_dict = [{}, {}, {}, {}]
+    mdstat.apply_upstring('U_U_', test_dict)
+    assert test_dict[0]['up']
+    assert not test_dict[1]['up']
+    assert test_dict[2]['up']
+    assert not test_dict[3]['up']
 
-        mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_1))
-        compare_mdstat_data(MDSTAT_RESULT_1, mdstat_obj)
+    with pytest.raises(AssertionError):
+        mdstat.apply_upstring('U?_U', test_dict)
 
-        self.assertEqual(len(mdstat_obj.mds), 1)
-        self.assertEqual(sorted(mdstat_obj.mds.keys()), ['md_d0'])
-        md_d0 = mdstat_obj.mds['md_d0']
-        self.assertEqual(md_d0['name'], 'md_d0')
-        self.assertTrue(md_d0['active'])
-        self.assertEqual(md_d0['raid'], 'raid5')
-        self.assertEqual(len(md_d0['devices']), 6)
-        self.assertEqual(
-            sorted(md_d0['devices'][0].keys()),
-            sorted(['component_name', 'role', 'up'])
-        )
-        self.assertEqual(md_d0['devices'][0]['component_name'], 'sde1')
-        self.assertEqual(md_d0['devices'][0]['role'], 0)
-        self.assertEqual(md_d0['devices'][0]['up'], True)
+    with pytest.raises(AssertionError):
+        mdstat.apply_upstring('U_U', test_dict)
 
-        # State line attributes
-        #       1250241792 blocks super 1.2 level 5, 64k chunk, algorithm 2 [5/5] [UUUUUU]
-        self.assertEqual(md_d0['blocks'], 1250241792)
-        self.assertEqual(md_d0['level'], 5)
-        self.assertEqual(md_d0['chunk'], '64k')
-        self.assertEqual(md_d0['algorithm'], 2)
 
-        result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_2))
-        compare_mdstat_data(MDSTAT_RESULT_2, result)
+def test_mdstat_construction():
+    def compare_mdstat_data(test_data, parser_obj):
+        """
+        Because the dictionaries are huge and comparing them usually
+        ends up with too many differences, it's better to compare them
+        part by part
+        """
+        assert test_data['personalities'] == parser_obj.data['personalities']
+        for testdata, objdata in zip(test_data['components'], parser_obj.data['components']):
+            assert testdata == objdata
 
-        mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_3))
-        compare_mdstat_data(MDSTAT_RESULT_3, mdstat_obj)
+    mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_1))
+    compare_mdstat_data(MDSTAT_RESULT_1, mdstat_obj)
 
-        result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_4))
-        compare_mdstat_data(MDSTAT_RESULT_4, result)
+    assert len(mdstat_obj.mds) == 1
+    assert sorted(mdstat_obj.mds.keys()) == ['md_d0']
+    md_d0 = mdstat_obj.mds['md_d0']
+    assert md_d0['name'] == 'md_d0'
+    assert md_d0['active']
+    assert md_d0['raid'] == 'raid5'
+    assert len(md_d0['devices']) == 6
+    assert sorted(md_d0['devices'][0].keys()) == sorted(['component_name', 'role', 'up'])
+    assert md_d0['devices'][0]['component_name'] == 'sde1'
+    assert md_d0['devices'][0]['role'] == 0
+    assert md_d0['devices'][0]['up']
+
+    # State line attributes
+    #       1250241792 blocks super 1.2 level 5, 64k chunk, algorithm 2 [5/5] [UUUUUU]
+    assert md_d0['blocks'] == 1250241792
+    assert md_d0['level'] == 5
+    assert md_d0['chunk'] == '64k'
+    assert md_d0['algorithm'] == 2
+
+    result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_2))
+    compare_mdstat_data(MDSTAT_RESULT_2, result)
+
+    mdstat_obj = mdstat.Mdstat(context_wrap(MDSTAT_TEST_3))
+    compare_mdstat_data(MDSTAT_RESULT_3, mdstat_obj)
+
+    result = mdstat.Mdstat(context_wrap(MDSTAT_TEST_4))
+    compare_mdstat_data(MDSTAT_RESULT_4, result)

@@ -1,21 +1,18 @@
-import unittest
+import pytest
 
 from insights.util import subproc
 
 
-class TestSubproc(unittest.TestCase):
-    def test_call(self):
-        cmd = 'echo -n hello'
-        result = subproc.call(cmd)
-        expected = 'hello'
-        self.assertEqual(expected, result)
+def test_call():
+    result = subproc.call('echo -n hello')
+    assert result == 'hello'
 
-    def test_call_timeout(self):
-        cmd = 'sleep 3'
-        with self.assertRaises(subproc.CalledProcessError):
-            subproc.call(cmd, timeout=1)
 
-    def test_call_invalid_args(self):
-        cmd = [1, 2, 3]
-        with self.assertRaises(subproc.CalledProcessError):
-            subproc.call(cmd)
+def test_call_timeout():
+    with pytest.raises(subproc.CalledProcessError):
+        subproc.call('sleep 3', timeout=1)
+
+
+def test_call_invalid_args():
+    with pytest.raises(subproc.CalledProcessError):
+        subproc.call([1, 2, 3])
