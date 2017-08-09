@@ -304,9 +304,9 @@ OPTS = [{
     'dest': 'debug',
     'group': 'debug'
 }, {
-    'opt': ['--check-timestamp'],
+    'opt': ['--bypass-timestamp-check'],
     'help': optparse.SUPPRESS_HELP,
-    'action': 'store',
+    'action': 'store_false',
     'dest': 'check_timestamp'
 }, {
     'opt': ['--image-id'],
