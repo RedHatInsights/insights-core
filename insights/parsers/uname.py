@@ -187,6 +187,8 @@ class Uname(Parser):
 
     def __init__(self, context):
         super(Uname, self).__init__(context)
+        if not context:
+            return
         data = dict(self.defaults)
         data.update(self.data)
         self.data = data

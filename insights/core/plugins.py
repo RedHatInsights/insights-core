@@ -55,13 +55,18 @@ def rule_executor(func, broker, requires, optional):
 datasource = dr.new_component_type("datasource")
 """ Defines a component that one or more Parser`s will consume."""
 
+
+class ContentException(Exception):
+    pass
+
+
 _metadata = dr.new_component_type("_metadata",
         auto_requires=["metadata.json"], executor=parser_executor)
 
 
 def metadata(group=dr.GROUPS.single):
     def _f(func):
-        return _metadata(group=group)(func)
+        return _metadata(group=group, component_type=metadata)(func)
     return _f
 
 
@@ -74,11 +79,14 @@ def parser(dependency, group=dr.GROUPS.single, alias=None):
         of the general component interface.
     """
     def _f(component):
-        return _parser(requires=[dependency], group=group, alias=alias)(component)
+        return _parser(requires=[dependency], group=group, alias=alias, component_type=parser)(component)
     return _f
 
 
 combiner = dr.new_component_type("combiner")
+""" A component that connects other components. """
+
+stage = combiner
 
 rule = dr.new_component_type("rule", executor=rule_executor)
 """ A component that can see all parsers and combiners for a single host."""
@@ -90,16 +98,24 @@ incident = dr.new_component_type("incident")
 """ A component used by rules that allows automated statistical analysis."""
 
 
+def is_type(component, _type):
+    return dr.get_component_type(component) is _type
+
+
+def is_datasource(component):
+    return is_type(component, datasource)
+
+
 def is_parser(component):
-    return dr.TYPE_OF_COMPONENT.get(component) is parser
+    return is_type(component, parser)
 
 
 def is_rule(component):
-    return dr.TYPE_OF_COMPONENT.get(component) is rule
+    return is_type(component, rule)
 
 
 def is_component(obj):
-    return obj in dr.TYPE_OF_COMPONENT
+    return bool(dr.get_component_type(obj))
 
 
 def make_skip(rule_fqdn, reason, details=None):
