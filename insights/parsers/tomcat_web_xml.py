@@ -22,11 +22,10 @@ class TomcatWebXml(LegacyItemAccess, Parser):
         # default namespace
         xmlns_0 = 'http://java.sun.com/xml/ns/javaee'
         xmlns_1 = 'http://java.sun.com/xml/ns/j2ee'
-        keyword_0 = '*{%s}%s' % (xmlns_0, TIMEOUT_KEYWORD)
-        keyword_1 = '*{%s}%s' % (xmlns_1, TIMEOUT_KEYWORD)
+        keyword_0 = './/{%s}%s' % (xmlns_0, TIMEOUT_KEYWORD)
+        keyword_1 = './/{%s}%s' % (xmlns_1, TIMEOUT_KEYWORD)
 
-        key_field = xmltree.findall(keyword_0)
-        key_field = key_field if key_field else xmltree.findall(keyword_1)
+        key_field = xmltree.findall(keyword_0) or xmltree.findall(keyword_1)
         field_text = key_field[0].text if key_field else None
 
         tmo_dict = {}
