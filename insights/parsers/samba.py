@@ -23,5 +23,25 @@ class SambaConfig(IniConfigFile):
     """
 
     def parse_content(self, content):
-        lstripped = [line.lstrip() for line in content]
-        return super(SambaConfig, self).parse_content(lstripped)
+        # smb.conf is special from other ini files in the property that whatever is before the first
+        # section (before the first section) belongs to the [global] section. Therefore, the
+        # [global] section is appended right at the beginning so that everything that would be
+        # parsed as outside section belongs to [global].
+        # Python 2.7 RawConfigParser automatically merges multiple instances of the same section.
+        #  (And if that ever changes, test_samba.py will catch it.)
+        lstripped = ["[global]"] + [line.lstrip() for line in content]
+
+        super(SambaConfig, self).parse_content(lstripped)
+
+        # Create a new instance of the same dict type used by the underlying RawConfigParser.
+        new_dict = self.data._dict()
+        # Transform the section names so that whitespace around is stripped and they are lowercase.
+        # smb.conf is special in the property that section names and option names are
+        # case-insensitive and treated like lower-case.
+        for old_key, old_section in self.data._sections.iteritems():
+            new_key = old_key.strip().lower()
+            if new_key not in new_dict:
+                new_dict[new_key] = self.data._dict()
+            # Merge same-named sections just as samba's `testparm` does.
+            new_dict[new_key].update(old_section)
+        self.data._sections = new_dict
