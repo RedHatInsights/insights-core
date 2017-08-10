@@ -1,21 +1,22 @@
-from insights.core.specs import SpecMapper
-from insights.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, SingleEvaluator
-from insights.core import dr
-from insights.core.archives import TarExtractor
-from insights.plugins.insights_heartbeat import is_insights_heartbeat
-from insights.parsers.multinode import osp, OSPChild
-from . import insights_heartbeat, HEARTBEAT_ID, HEARTBEAT_NAME
 import json
 import os
 import shutil
 import subprocess
 import tarfile
 import tempfile
+from contextlib import closing
+
+from insights.core.specs import SpecMapper
+from insights.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, SingleEvaluator
+from insights.core import dr
+from insights.core.archives import TarExtractor, DirectoryAdapter
+from insights.plugins.insights_heartbeat import is_insights_heartbeat
+from insights.parsers.multinode import osp, OSPChild
+from . import insights_heartbeat, HEARTBEAT_ID, HEARTBEAT_NAME
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
 CLUSTER_UPLOAD = """
-./
 ./insights-overcloud-compute-0.localdomain-20150930193932.tar
 ./insights-overcloud-compute-1.localdomain-20150930193956.tar
 ./insights-overcloud-controller-1.localdomain-20150930193924.tar
@@ -145,7 +146,6 @@ insights-davxapasnp03-20151007031606/etc/kdump.conf
 insights-davxapasnp03-20151007031606/etc/lvm/lvm.conf
 insights-davxapasnp03-20151007031606/etc/pam.d/password-auth
 insights-davxapasnp03-20151007031606/etc/rc.d/rc.local
-insights-davxapasnp03-20151007031606/etc/redhat-access-insights/
 insights-davxapasnp03-20151007031606/etc/redhat-access-insights/machine-id
 insights-davxapasnp03-20151007031606/etc/redhat-release
 insights-davxapasnp03-20151007031606/etc/rsyslog.conf
@@ -166,7 +166,6 @@ insights-davxapasnp03-20151007031606/sys/devices/system/clocksource/clocksource0
 insights-davxapasnp03-20151007031606/sys/kernel/kexec_crash_loaded
 insights-davxapasnp03-20151007031606/var/log/messages
 insights-davxapasnp03-20151007031606/var/log/yum.log
-insights-davxapasnp03-20151007031606/var/log/redhat-access-insights/
 insights-davxapasnp03-20151007031606/var/log/redhat-access-insights/redhat-access-insights.log
 insights-davxapasnp03-20151007031606/branch_info
 """.strip()
@@ -205,52 +204,53 @@ class MockTarFile(object):
     """
 
     def __init__(self, names):
-        self.tmp_file = tempfile.TemporaryFile()
-        self.tf = tarfile.open(fileobj=self.tmp_file, mode="w")
-        with tempfile.NamedTemporaryFile() as zero_byte_file:
-            filename = zero_byte_file.name
-            for name in names.splitlines():
-                self.tf.add(filename, arcname=name)
+        self.tmpdir = tempfile.mkdtemp()
+        for name in names.splitlines():
+            new_path = os.path.join(self.tmpdir, name)
+            if not os.path.exists(os.path.dirname(new_path)):
+                os.makedirs(os.path.dirname(new_path))
+            with open(new_path, "w") as fp:
+                fp.write("\n")
+        self.tf = DirectoryAdapter(self.tmpdir)
 
     def getnames(self):
         return self.tf.getnames()
 
     def issym(self, name):
-        return self.tf.getmember(name).issym()
+        return self.tf.issym(name)
 
     def isdir(self, name):
-        return self.tf.getmember(name).isdir()
+        return self.tf.isdir(name)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.tf.close()
-        self.tmp_file.close()
+        shutil.rmtree(self.tmpdir)
 
 
 def test_single_node():
     with MockTarFile(SINGLE_NODE_UPLOAD) as mtf:
         spec = SpecMapper(mtf)
-        assert spec.root == "insights-davxapasnp03-20151007031606/"
+        assert spec.root.endswith("insights-davxapasnp03-20151007031606/")
 
 
 def test_multi_node():
     with MockTarFile(CLUSTER_UPLOAD) as mtf:
         spec = SpecMapper(mtf)
-        assert spec.root == "./"
+        assert spec.root.startswith("/tmp")
 
 
 def test_soscleaned():
     with MockTarFile(SOSCLEANER_SINGLE_NODE_UPLOAD) as mtf:
         spec = SpecMapper(mtf)
-        assert spec.root == "soscleaner-7704572305004757/"
+        assert spec.root.endswith("soscleaner-7704572305004757/")
 
 
 def test_deep_root():
     with MockTarFile(DEEP_ROOT) as mtf:
         spec = SpecMapper(mtf)
-        assert spec.root == "tmp/sdc-appblx002-15.corp.com_sosreport/"
+        assert spec.root.endswith("tmp/sdc-appblx002-15.corp.com_sosreport/")
 
 
 def make_cluster_archive(fd, content_type):
@@ -282,8 +282,8 @@ def make_cluster_archive(fd, content_type):
         return os.path.join(os.path.basename(os.path.dirname(p)),
                             os.path.basename(p))
 
-    with tempfile.TemporaryFile() as cluster_tar_fp:
-        with tarfile.open(fileobj=cluster_tar_fp, mode="w") as tf:
+    with closing(tempfile.TemporaryFile()) as cluster_tar_fp:
+        with closing(tarfile.open(fileobj=cluster_tar_fp, mode="w")) as tf:
             tf.add(metadata_path, arcname=re_path(metadata_path))
             tf.add(inner_path, arcname=re_path(inner_path))
 
