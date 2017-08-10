@@ -1,4 +1,5 @@
 from insights import tests
+from insights.tests import integrate
 from insights.core.plugins import load
 from itertools import islice
 import pytest
@@ -28,3 +29,20 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
                 input_data_name = t[2].name if not isinstance(t[2], list) else "multi-node"
                 ids.append("#".join([f.serializable_id, input_data_name]))
         metafunc.parametrize("module,comparison_func,input_data,expected", args, ids=ids)
+
+
+# The folowing two functions run any integration tests found in the insights directory
+# to be run during py.test testing.
+#
+# The insights-core repo didn't have any plugins so no need for integration testing till
+# the fava plugins got added, partly to test that integration testing worked for fava plugins.
+
+
+def test_integration(module, comparison_func, input_data, expected):
+    actual = integrate(input_data, module)
+    comparison_func(actual, expected)
+
+
+def pytest_generate_tests(metafunc):
+    pattern = pytest.config.getoption("-k")
+    generate_tests(metafunc, test_integration, "insights.tests", pattern=pattern)

@@ -16,11 +16,28 @@ from insights.util import make_iter
 # starts with "Test".
 from insights.archive.tool import TestArchive as TA, Transform as T
 
+import insights
+import insights.core.fava
+import insights.parsers.installed_rpms
+import insights.parsers.uname
+
 logger = logging.getLogger("test.util")
 
 ARCHIVE_GENERATORS = []
 HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
 HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
+
+
+# Here we initialize the Fava translator with two Shared Parsers
+# and load all Fava rule plugins within insights.plugins
+#
+# Eventually i think it makes sense for the @parser decorator to do the add_shared_parser
+# bit, but i wanted to keep it all together for now.
+#
+
+insights.core.fava.add_shared_parser('InstalledRpms', insights.parsers.installed_rpms.InstalledRpms)
+insights.core.fava.add_shared_parser('Uname', insights.parsers.uname.Uname)
+insights.core.fava.fava_load('insights.plugins')
 
 
 def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
