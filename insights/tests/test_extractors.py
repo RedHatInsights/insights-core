@@ -58,8 +58,7 @@ def test__assert_type_gzip_no_tar():
     with archives.TarExtractor() as tar_ex:
         with pytest.raises(archives.InvalidArchive) as cm:
             tar_ex._assert_type(archive_path, False)
-
-        assert cm.exception.msg == "No compressed tar archive"
+            assert cm.msg == "No compressed tar archive"
 
 
 def test_with_zip():

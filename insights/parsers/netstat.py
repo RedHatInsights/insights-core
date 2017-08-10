@@ -262,13 +262,13 @@ class NetstatAGN(Parser):
         """
         result = defaultdict(list)
         for entry in self.data:
-            result[entry["interface"]].append(dict(k.lower((), v) for (k, v) in entry.iteritems() if k in ["refcnt", "group"]))
+            result[entry["interface"]].append(dict((k.lower(), v) for (k, v) in entry.iteritems() if k in ["refcnt", "group"]))
         return dict(result)
 
     def parse_content(self, content):
         content = content[1:2] + content[3:]
         table = parse_table(content)
-        self.data = map(lambda item: dict(k.lower((), v) for (k, v) in item.iteritems()), table)
+        self.data = map(lambda item: dict((k.lower(), v) for (k, v) in item.iteritems()), table)
 
 
 class NetstatSection(object):

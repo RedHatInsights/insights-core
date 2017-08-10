@@ -1,19 +1,22 @@
+import pytest
+
 from insights.tools import generate_api_config
 from insights.parsers import *  # noqa
 
 
+@pytest.fixture
 def latest():
     return generate_api_config.APIConfigGenerator(plugin_package="insights.tests.test_plugins").serialize_data_spec()
 
 
-def test_top_level():
+def test_top_level(latest):
     # these sections must exist and not be empty
     for each in ['version', 'files', 'commands', 'specs', 'pre_commands', 'meta_specs']:
         assert each in latest
         assert len(latest[each]) > 0
 
 
-def test_meta_specs():
+def test_meta_specs(latest):
     # these sections must exist in the meta_specs, have a 'archive_file_name' field,
     #   and it must not be empty
     for each in ['analysis_target', 'branch_info', 'machine-id', 'uploader_log']:
@@ -22,7 +25,7 @@ def test_meta_specs():
         assert len(latest['meta_specs'][each]['archive_file_name']) > 0
 
 
-def test_specs():
+def test_specs(latest):
     # check that each spec only has target sections for known targets
     for eachspec in latest['specs']:
         for eachtarget in latest['specs'][eachspec]:

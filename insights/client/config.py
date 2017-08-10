@@ -418,5 +418,5 @@ def compile_config():
         raise ValueError("Can't use both --from-stdin and --from-file.")
 
     if CONFIG['update'] and CONFIG['offline']:
-        #raise ValueError("Cannot update rules in offline mode")
+        # raise ValueError("Cannot update rules in offline mode")
         CONFIG['update'] = False
