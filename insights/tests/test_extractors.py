@@ -5,6 +5,7 @@ import shlex
 import subprocess
 import tempfile
 import zipfile
+from contextlib import closing
 
 from insights.core import archives
 from insights.core.specs import SpecMapper
@@ -52,7 +53,7 @@ def test__assert_type_gzip_no_tar():
     tmp_dir = tempfile.mkdtemp()
 
     archive_path = os.path.join(tmp_dir, "file.log.gz")
-    with gzip.open(archive_path, 'wb') as f:
+    with closing(gzip.open(archive_path, 'wb')) as f:
         f.write("testing contents")
 
     with archives.TarExtractor() as tar_ex:
@@ -84,7 +85,7 @@ def test_with_zip():
                 _add_to_zip(zf, os.path.join(path, nm), os.path.join(zippath, nm))
         # else: ignore
 
-    with zipfile.ZipFile("/tmp/test.zip", "w") as zf:
+    with closing(zipfile.ZipFile("/tmp/test.zip", "w")) as zf:
         _add_to_zip(zf, tmp_dir, os.path.basename(tmp_dir))
 
     try:
