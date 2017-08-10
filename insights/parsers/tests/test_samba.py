@@ -7,6 +7,13 @@ SAMBA_CONFIG = """
 #...
 #======================= Global Settings =====================================
 
+# By running `testparm`, it is apparent that options outside the [global]
+# section before the [global] section are treated as if they were in the
+# [global] section.
+# `testparm` is a program from the samba package.
+
+this option should be in global = yes
+
 [global]
 
 #...
@@ -124,12 +131,27 @@ SAMBA_CONFIG = """
 ;   writable = yes
 ;   printable = no
 ;   write list = +staff
+
+[ GlObAl  ]
+
+# Samba also automatically treats non-lowercase section names as lowercase and strips whitespace.
+# This behavior can be checked with `testparm` again.
+this option should also be in global = true
+
+[ GlObAl  ]
+
+# This tests specifically that two same-named sections are automatically merged in case the
+# RawConfigParser's behavior ever changes.
+this another option should also be in global = 1
 """
 
 
 def test_match():
     config = samba.SambaConfig(context_wrap(SAMBA_CONFIG))
 
+    assert config.get('global', 'this option should be in global') == 'yes'
+    assert config.get('global', 'this option should also be in global') == 'true'
+    assert config.get('global', 'this another option should also be in global') == '1'
     assert config.get('global', 'workgroup') == 'MYGROUP'
     assert config.get('global', 'workgroup') == 'MYGROUP'
     assert config.get('global', 'server string') == 'Samba Server Version %v'
