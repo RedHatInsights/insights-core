@@ -9,7 +9,7 @@ class InsightsConstants(object):
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 300
     default_conf_file = '/etc/insights-client/insights-client.conf'
-    user_agent = os.path.join(app_name, 'version')
+    user_agent = os.path.join(app_name, version)
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
     default_conf_dir = '/etc/insights-client'
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
