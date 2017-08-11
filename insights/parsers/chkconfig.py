@@ -136,7 +136,7 @@ class ChkConfig(Parser):
                         for l in self.level_states[service_name]
                         if l.state == state])
         else:
-            raise KeyError("Service {} not in Chkconfig".format(service_name))
+            raise KeyError("Service {0} not in Chkconfig".format(service_name))
 
     def levels_on(self, service_name):
         """set (str): Returns set of level numbers where `service_name` is `on`.
