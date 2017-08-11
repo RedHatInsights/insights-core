@@ -213,6 +213,22 @@ def update_rules():
     return pc.get_conf(True, {})
 
 
+def get_branch_info():
+    """
+    Get branch info for a system
+    returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
+    """
+    branch_info = constants.default_branch_info
+    try:
+        pconn = InsightsConnection()
+        branch_info = pconn.branch_info()
+    except LookupError:
+        logger.debug("There was an error obtaining branch information.")
+        logger.debug("Assuming default branch information %s" % branch_info)
+    logger.debug("Obtained branch information: %s" % branch_info)
+    return branch_info
+
+
 def collect(rc=0):
     """
     All the heavy lifting done here
@@ -255,9 +271,7 @@ def collect(rc=0):
     logger.debug("Found targets: ")
     logger.debug(targets)
 
-    logger.warning("Assuming remote branch and leaf value of -1")
-    branch_info = constants.default_branch_info
-
+    branch_info = get_branch_info()
     pc = InsightsConfig()
     tar_file = None
 
