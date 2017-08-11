@@ -6,7 +6,7 @@ import logging
 import six
 import shlex
 import os
-from ConfigParser import RawConfigParser
+from insights.contrib.ConfigParser import RawConfigParser
 
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile

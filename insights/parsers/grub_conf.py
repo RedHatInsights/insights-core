@@ -373,7 +373,7 @@ def _parse_menu_entry(line_iter, cur_line, conf):
 
     entry_name, v = _parse_line("{", entry)
     if not entry_name:
-        raise Exception("Cannot parse menuentry line: {}".format(cur_line))
+        raise Exception("Cannot parse menuentry line: {0}".format(cur_line))
 
     menu.append(('menuentry_name', entry_name))
     if v:

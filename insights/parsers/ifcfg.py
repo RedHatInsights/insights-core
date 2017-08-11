@@ -44,7 +44,7 @@ Examples:
 """
 
 import json
-from collections import OrderedDict
+from insights.contrib.collections import OrderedDict
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 
 JSON_FIELDS = ["TEAM_CONFIG", "TEAM_PORT_CONFIG"]

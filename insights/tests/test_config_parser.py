@@ -1,6 +1,6 @@
 from insights.core import IniConfigFile
 from insights.tests import context_wrap
-from ConfigParser import NoOptionError
+from insights.contrib.ConfigParser import NoOptionError
 import pytest
 
 # An example config file with a few tricks and traps for the parser

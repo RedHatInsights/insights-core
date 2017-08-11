@@ -23,7 +23,9 @@ runtime = set([
     'six',
     'setuptools',
     'requests',
-    'pyOpenSSL'
+    'pyOpenSSL',
+    'importlib',
+    'ordereddict'
 ])
 
 develop = set([
