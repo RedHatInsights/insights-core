@@ -440,9 +440,9 @@ class InstalledRpm(object):
     @property
     def package(self):
         """str: Package `name-version-release` string."""
-        return u'{}-{}-{}'.format(self.name,
-                                  self.version,
-                                  self.release)
+        return u'{0}-{1}-{2}'.format(self.name,
+                                     self.version,
+                                     self.release)
 
     @property
     def nvr(self):
@@ -471,7 +471,7 @@ class InstalledRpm(object):
         return getattr(self, item)
 
     def __str__(self):
-        return '{}:{}'.format(self.epoch, self.package)
+        return '{0}:{1}'.format(self.epoch, self.package)
 
     def __unicode__(self):
         return unicode(str(self))
@@ -484,10 +484,10 @@ class InstalledRpm(object):
             return False
 
         if self.name != other.name:
-            raise ValueError('Cannot compare packages with differing names {} != {}'
+            raise ValueError('Cannot compare packages with differing names {0} != {1}'
                              .format(self.name, other.name))
         if (not self._distribution) != (not other._distribution):
-            raise ValueError('Cannot compare packages that one has distribution while the other does not {} != {}'
+            raise ValueError('Cannot compare packages that one has distribution while the other does not {0} != {1}'
                              .format(self.package, other.package))
 
         eq_ret = (type(self) == type(other) and

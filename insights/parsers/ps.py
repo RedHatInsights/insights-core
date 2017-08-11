@@ -137,9 +137,8 @@ class PsAuxcww(ProcessList):
             self.data = parse_table(content)
             self.parse_services(content)
         else:
-            raise ParseException(
-                    "PsAuxcww: Unable to parse content: {} ({})".format(
-                        len(content), content))
+            raise ParseException("PsAuxcww: Unable to parse content: {0} ({1})".format(len(content),
+                                                                                       content))
 
     def parse_services(self, content):
         """
@@ -211,5 +210,5 @@ class PsAxcwwo(ProcessList):
             self.data = parse_table(content, max_splits=2)
         else:
             raise ParseException(
-                    "PsAxcwwo: Unable to parse {} line(s) of content:({})".format(
-                        len(content), content))
+                "PsAxcwwo: Unable to parse {0} line(s) of content:({1})".format(
+                    len(content), content))
