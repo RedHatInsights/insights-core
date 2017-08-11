@@ -187,6 +187,6 @@ class RabbitMQQueues(Parser):
                                                               TRUE_FALSE[parts[3].lower()]))
                 else:
                     raise ParseException(
-                        "auto_delete should be true or false: {}".format(line))
+                        "auto_delete should be true or false: {0}".format(line))
             else:
-                raise ParseException("Data appears invalid: {}".format(line))
+                raise ParseException("Data appears invalid: {0}".format(line))

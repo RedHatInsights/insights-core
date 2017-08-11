@@ -16,6 +16,10 @@ uptime_seconds => 1893598
 """.strip()
 
 
+def total_seconds(time_delta):
+    return (time_delta.days * 24 * 60 * 60) + time_delta.seconds
+
+
 def test_get_uptime_uptime1():
     ut = Uptime(context_wrap(UPTIME1))
     shared = {Uptime: ut}
@@ -26,7 +30,7 @@ def test_get_uptime_uptime1():
     assert upt.users == '4'
     assert upt.loadavg == ['0.04', '0.03', '0.05']
     c = datetime.timedelta(days=0, hours=5, minutes=55)
-    assert upt.uptime.total_seconds() == c.total_seconds()
+    assert total_seconds(upt.uptime) == total_seconds(c)
 
 
 def test_get_uptime_uptime2():
@@ -39,7 +43,7 @@ def test_get_uptime_uptime2():
     assert upt.users == '1'
     assert upt.loadavg == ['0.49', '0.12', '0.04']
     c = datetime.timedelta(days=40, hours=0, minutes=3)
-    assert upt.uptime.total_seconds() == c.total_seconds()
+    assert total_seconds(upt.uptime) == total_seconds(c)
 
 
 def test_get_facter_uptime():
@@ -50,7 +54,7 @@ def test_get_facter_uptime():
     assert upt.uphhmm == '21:59'
     assert upt.loadavg is None
     c = datetime.timedelta(days=0, hours=0, minutes=0, seconds=1893598)
-    assert upt.uptime.total_seconds() == c.total_seconds()
+    assert total_seconds(upt.uptime) == total_seconds(c)
 
 
 def test_get_both_uptime():
@@ -64,7 +68,7 @@ def test_get_both_uptime():
     assert upt.users == '1'
     assert upt.loadavg == ['0.49', '0.12', '0.04']
     c = datetime.timedelta(days=40, hours=0, minutes=3)
-    assert upt.uptime.total_seconds() == c.total_seconds()
+    assert total_seconds(upt.uptime) == total_seconds(c)
 
 
 # Don't need to test the Uptime's handling of invalid data here.

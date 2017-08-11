@@ -36,6 +36,10 @@ UPTIME_TEST_DATA = [
 NOT_AN_UPTIME = "10:55:22 up 30 min"
 
 
+def total_seconds(time_delta):
+    return (time_delta.days * 24 * 60 * 60) + time_delta.seconds
+
+
 def test_get_uptimes():
     for test_data in UPTIME_TEST_DATA:
         uptime = Uptime(context_wrap(test_data['test_data']))
@@ -45,7 +49,7 @@ def test_get_uptimes():
         assert uptime.uphhmm == test_data['uphhmm']
         assert uptime.users == test_data['users']
         assert uptime.loadavg == test_data['loadavg']
-        assert uptime.uptime.total_seconds() == test_data['uptime'].total_seconds()
+        assert total_seconds(uptime.uptime) == total_seconds(test_data['uptime'])
 
 
 def test_get_no_uptime():
