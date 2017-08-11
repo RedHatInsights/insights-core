@@ -88,7 +88,7 @@ ConfigParser -- responsible for parsing a list of
 """
 
 try:
-    from collections import OrderedDict as _default_dict
+    from insights.contrib.collections import OrderedDict as _default_dict
 except ImportError:
     # fallback for setup.py which hasn't yet built _collections
     _default_dict = dict
