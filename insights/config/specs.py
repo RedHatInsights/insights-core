@@ -164,6 +164,7 @@ static_specs = {
     "ipv4_neigh"                : CommandSpec("/sbin/ip -4 neighbor show nud all"),
     "ipv6_neigh"                : CommandSpec("/sbin/ip -6 neighbor show nud all"),
     "iscsiadm_m_session"        : CommandSpec("/usr/sbin/iscsiadm -m session"),
+    "katello-service_status"    : CommandSpec("/usr/bin/katello-service status"),
     "kdump"                     : SimpleFileSpec("etc/sysconfig/kdump"),
     "kdump.conf"                : SimpleFileSpec("etc/kdump.conf"),
     "kexec_crash_loaded"        : SimpleFileSpec("sys/kernel/kexec_crash_loaded"),
