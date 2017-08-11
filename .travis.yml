@@ -8,5 +8,5 @@ python:
 install: pip install -e .[develop]
 script:
     - py.test
-    - flake8
-    - sphinx-build -W -b html -qa -E docs docs/_build/html
+    - if [ "`python -V 2>&1`" != "Python 2.6.9" ]; then flake8; fi
+    - if [ "`python -V 2>&1`" != "Python 2.6.9" ]; then sphinx-build -W -b html -qa -E docs docs/_build/html; fi
