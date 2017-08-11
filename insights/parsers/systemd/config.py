@@ -5,7 +5,7 @@ Service systemd files are in ``/usr/lib/systemd/system``, and Their content form
 ``config``.
 """
 
-from ConfigParser import RawConfigParser as cp
+from insights.contrib.ConfigParser import RawConfigParser as cp
 import StringIO
 from insights.core import Parser, LegacyItemAccess
 from insights.core.plugins import parser
