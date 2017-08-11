@@ -11,7 +11,7 @@ import re
 import stat
 import json
 from subprocess import Popen, PIPE, STDOUT
-from ConfigParser import RawConfigParser
+from insights.contrib.ConfigParser import RawConfigParser
 
 from constants import InsightsConstants as constants
 

@@ -5,7 +5,7 @@ import os
 import re
 import shlex
 import yaml
-from ConfigParser import RawConfigParser
+from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 from insights.core.serde import deserializer, serializer

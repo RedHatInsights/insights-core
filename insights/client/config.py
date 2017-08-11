@@ -1,7 +1,7 @@
 import logging
 import optparse
 import os
-import ConfigParser
+from insights.contrib import ConfigParser
 
 from insights import settings
 from constants import InsightsConstants as constants

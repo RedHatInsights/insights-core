@@ -57,7 +57,7 @@ Examples:
      'logfile': '/var/log/yum.log'}
 """
 
-from ConfigParser import NoOptionError
+from insights.contrib.ConfigParser import NoOptionError
 from .. import parser, IniConfigFile
 
 
