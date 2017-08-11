@@ -65,6 +65,12 @@ class InsightsClient(object):
         """
         return client.test_connection()
 
+    def branch_info(self):
+        """
+            returns (dict): {'remote_leaf': -1, 'remote_branch': -1}
+        """
+        return client.get_branch_info()
+
     def handle_startup(self):
         return client.handle_startup()
 
