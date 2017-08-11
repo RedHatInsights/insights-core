@@ -146,22 +146,22 @@ def get_cluster_conf(context):
             }
         }
     """
-    cluster_xml = ET.fromstringlist(context.content)
+    cluster_xml = ET.fromstring("\n".join(context.content))
     result = {"nodes": []}
-    for node in cluster_xml.iter('clusternode'):
+    for node in cluster_xml.getiterator('clusternode'):
         attr = node.attrib
         attr["fences"] = []
-        for fence in node.iter('fence'):
+        for fence in node.getiterator('fence'):
             # There are only one fence in one node part
-            for method in fence.iter("method"):
+            for method in fence.getiterator("method"):
                 attr["fences"].append({
                     "meth_name": method.attrib["name"],
-                    "device": [device.attrib for device in method.iter("device")]
+                    "device": [device.attrib for device in method.getiterator("device")]
                 })
         result["nodes"].append(attr)
     result["fencedevices"] = []
-    result["fencedevices"] += [fencedevice.attrib for fencedevice in cluster_xml.findall(".//fencedevices//")]
+    result["fencedevices"] += [fencedevice.attrib for fencedevice in cluster_xml.findall(".//fencedevices/*")]
 
     result["resources"] = {}
-    result["resources"].update(dict((key, value) for key, value in [(sub.tag, sub.attrib) for sub in cluster_xml.findall("./rm/resources//")]))
+    result["resources"].update(dict((key, value) for key, value in [(sub.tag, sub.attrib) for sub in cluster_xml.findall("./rm/resources/*")]))
     return result
