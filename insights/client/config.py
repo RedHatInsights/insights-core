@@ -384,7 +384,7 @@ def compile_config():
     # The formula for the key is `"INSIGHTS_%s" % key.upper()`
     # In English, that's the uppercase version of the config key with
     # "INSIGHTS_" prepended to it.
-    insights_env_opts = dict((k.upper().split("_", 1)[1], boolify(v))
+    insights_env_opts = dict((k.lower().split("_", 1)[1], boolify(v))
                              for k, v in os.environ.iteritems()
                              if k.upper().startswith("INSIGHTS_"))
     CONFIG.update(insights_env_opts)
