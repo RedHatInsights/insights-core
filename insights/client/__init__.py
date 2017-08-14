@@ -232,13 +232,17 @@ class InsightsClient(object):
 
     def verify(self, egg_path, gpg_key=constants.default_egg_gpg_key):
         """
+            Verifies the GPG signature of the egg.  The signature is assumed to
+            be in the same directory as the egg and named the same as the egg
+            except with an additional ".asc" extension.
+
             returns (dict): {'gpg': if the egg checks out,
                              'stderr': error message if present,
                              'stdout': stdout,
                              'rc': return code}
         """
         if egg_path and gpg_key:
-            cmd = 'gpg --verify --keyring %s %s' % (gpg_key, egg_path)
+            cmd = 'gpg --verify --keyring %s %s' % (gpg_key, egg_path + '.asc')
             process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             rc = process.returncode
