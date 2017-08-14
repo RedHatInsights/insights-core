@@ -4,6 +4,7 @@ import requests
 import logging
 import tempfile
 import time
+import shlex
 from subprocess import Popen, PIPE
 from shutil import copyfile
 
@@ -237,7 +238,8 @@ class InsightsClient(object):
                              'rc': return code}
         """
         if egg_path and gpg_key:
-            process = Popen(['gpg', '--verify', gpg_key, egg_path], stdout=PIPE, stderr=PIPE)
+            cmd = 'gpg --verify --keyring %s %s' % (gpg_key, egg_path)
+            process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             rc = process.returncode
             success = True if rc == 0 else False
