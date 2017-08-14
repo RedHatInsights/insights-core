@@ -2,7 +2,6 @@
 This module implements dependency resolution and execution within Red Hat Insights.
 """
 
-import importlib
 import inspect
 import logging
 import pkgutil
@@ -14,6 +13,7 @@ import traceback
 
 from collections import defaultdict
 from functools import reduce as _reduce
+from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.util import enum
 
