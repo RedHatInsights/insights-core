@@ -1,3 +1,8 @@
+"""
+SMARTctl - command ``/sbin/smartctl -a {device}``
+=================================================
+"""
+
 from insights.core import Parser
 from insights.core.plugins import parser
 from insights.parsers import ParseException
@@ -8,50 +13,101 @@ import re
 @parser('smartctl')
 class SMARTctl(Parser):
     """
-        Parser for output of smartctl -a for each drive in system.
-        This returns a dict with keys:
-         * 'device' - the name of the device after /dev/ - e.g. sda
-         * 'info' - the -i info (vendor, product, etc)
-         * 'health' - overall health assessment (-H)
-         * 'values' - the SMART values (-c) - SMART config on drive firmware
-         * 'attributes' - the SMART attributes (-A) - run time data
-        This function gets called once per detected file, so we don't have to
-        deal with file changes within this process.
+    Parser for output of ``smartctl -a`` for each drive in system.
+
+    This stores the information from the output of `smartctl` in the
+    following properties:
+
+     * ``device`` - the name of the device after /dev/ - e.g. sda
+     * ``information`` - the -i info (vendor, product, etc)
+     * ``health`` - overall health assessment (-H)
+     * ``values`` - the SMART values (-c) - SMART config on drive firmware
+     * ``attributes`` - the SMART attributes (-A) - run time data
+
+    For legacy access, these are also available as values in the ``info``
+    dictionary property, keyed to their name (i.e. info['device'])
+
+    Each object contains a different device; the shared information for this
+    parser in Insights will be one or more devices, so see the example below
+    for how to iterate through the available SMARTctl information for each
+    device.
+
+    Sample (abbreviated) output::
+
+        smartctl 6.2 2013-07-26 r3841 [x86_64-linux-3.10.0-267.el7.x86_64] (local build)
+        Copyright (C) 2002-13, Bruce Allen, Christian Franke, www.smartmontools.org
+
+        === START OF INFORMATION SECTION ===
+        Device Model:     ST500LM021-1KJ152
+        Serial Number:    W620AT02
+        LU WWN Device Id: 5 000c50 07817bb36
+        ...
+
+        === START OF READ SMART DATA SECTION ===
+        SMART overall-health self-assessment test result: PASSED
+
+        General SMART Values:
+        Offline data collection status:  (0x00) Offline data collection activity
+                            was never started.
+                            Auto Offline Data Collection: Disabled.
+        ...
+
+        SMART Attributes Data Structure revision number: 10
+        Vendor Specific SMART Attributes with Thresholds:
+        ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
+          1 Raw_Read_Error_Rate     0x000f   118   099   034    Pre-fail  Always       -       179599704
+          3 Spin_Up_Time            0x0003   098   098   000    Pre-fail  Always       -       0
+          4 Start_Stop_Count        0x0032   100   100   020    Old_age   Always       -       546
+          5 Reallocated_Sector_Ct   0x0033   100   100   036    Pre-fail  Always       -       0
+        ...
+
+    Examples:
+        >>> for drive in shared[SMARTctl]:
+        ...     print "Device:", drive.device
+        ...     print "Model:", drive.information['Device Model']
+        ...     print "Health check:", drive.health
+        ...     print "Last self-test status:", drive.values['Self-test execution status']
+        ...     print "Raw read error rate:", drive.attributes['Raw_Read_Error_Rate']['RAW_VALUE']
+        ...
+        Device: /dev/sda
+        Model: ST500LM021-1KJ152
+        Health check: PASSED
+        Last self-test status: 0
+        Raw read error rate: 179599704
+
     """
 
-    INFO_LINE_STR = r'(?P<key>\w+(?:\s\w+)*):\s+' + \
+    _INFO_LINE_STR = r'(?P<key>\w+(?:\s\w+)*):\s+' + \
         r'(?P<value>\S.*?)\s*$'
-    INFO_LINE_RE = re.compile(INFO_LINE_STR)
-    VALUE_LINE_STR = r'(?P<key>\w[A-Za-z _.-]+):\s+' + \
+    _INFO_LINE_RE = re.compile(_INFO_LINE_STR)
+    _VALUE_LINE_STR = r'(?P<key>\w[A-Za-z _.-]+):\s+' + \
         r'\(\s*(?P<value>\S.*?)\)'
-    VALUE_LINE_RE = re.compile(VALUE_LINE_STR)
-    ATTR_LINE_STR = r'^\s*(?P<id>\d+)\s(?P<name>\w+)\s+' + \
+    _VALUE_LINE_RE = re.compile(_VALUE_LINE_STR)
+    _ATTR_LINE_STR = r'^\s*(?P<id>\d+)\s(?P<name>\w+)\s+' + \
         r'(?P<flag>0x[0-9a-fA-F]{4})\s+(?P<value>\d{3})\s+' + \
         r'(?P<worst>\d{3})\s+(?P<threshold>\d{3})\s+' + \
         r'(?P<type>[A-Za-z_-]+)\s+(?P<updated>[A-Za-z_-]+)\s+' + \
         r'(?P<when_failed>\S+)\s+(?P<raw_value>\S.*)$'
-    ATTR_LINE_RE = re.compile(ATTR_LINE_STR)
-    ATTR_KEYS = ['id', 'flag', 'value', 'worst', 'threshold', 'type',
-                 'updated', 'when_failed', 'raw_value']
+    _ATTR_LINE_RE = re.compile(_ATTR_LINE_STR)
 
     def __init__(self, context):
-        super(SMARTctl, self).__init__(context)
-        self.data = {}
         filename_re = re.compile(r'smartctl_-a_\.dev\.(?P<device>\w+)$')
         match = filename_re.search(context.path)
         if match:
-            self.device = match.group('device')
+            self.device = '/dev/' + match.group('device')
         else:
-            raise ParseException("No device name found in path {p}".format(p=context.path))
+            raise ParseException('Cannot parse device name from path {p}'.format(p=context.path))
+        super(SMARTctl, self).__init__(context)
 
     def parse_content(self, content):
-        drive_info = {
-            'info': {},
-            'health': 'not parsed',
-            'values': {},
-            'attributes': {},
-            'full_line': '',  # hack for persistent line storage
-        }
+        self.information = {}
+        self.health = 'not parsed'
+        self.values = {}
+        self.attributes = {}
+        # hack for persistent line storage in parse_content context -
+        # otherwise it gets treated as a local variable within the sub-
+        # functions
+        self.full_line = ''
 
         # Parsing using a state machine, sorry.  We use a state variable, and
         # functions to parse lines in each of the different states.  The
@@ -68,22 +124,22 @@ class SMARTctl(Parser):
             # Exit parsing information section if we go into the next section
             if line.startswith('=== START OF READ SMART DATA SECTION ==='):
                 return PARSE_FREEFORM_INFO
-            match = self.INFO_LINE_RE.search(line)
+            match = self._INFO_LINE_RE.search(line)
             if match:
-                drive_info['info'][match.group('key')] = match.group('value')
+                self.information[match.group('key')] = match.group('value')
             else:
                 # Translate some of the less structured information
                 if line == 'Device does not support SMART':
-                    drive_info['info']['SMART support is'] = 'Not supported'
+                    self.information['SMART support is'] = 'Not supported'
                 elif line == 'Device supports SMART and is Enabled':
-                    drive_info['info']['SMART support is'] = 'Enabled'
+                    self.information['SMART support is'] = 'Enabled'
                 elif line == 'Error Counter logging not supported':
-                    drive_info['info']['Error Counter logging'] = \
+                    self.information['Error Counter logging'] = \
                         'Not supported'
                 elif line == 'Device does not support Self Test logging':
-                    drive_info['info']['Self Test logging'] = 'Not supported'
+                    self.information['Self Test logging'] = 'Not supported'
                 elif line == 'Temperature Warning Disabled or Not Supported':
-                    drive_info['info']['Temperature Warning'] = \
+                    self.information['Temperature Warning'] = \
                         'Disabled or Not Supported'
             return PARSE_FORMATTED_INFO
 
@@ -92,7 +148,7 @@ class SMARTctl(Parser):
             if line.startswith('Vendor Specific SMART Attributes with Thres'):
                 return PARSE_ATTRIBUTE_INFO
             if line.startswith('SMART overall-health self-assessment test r'):
-                drive_info['health'] = ''.join((line.split(': '))[1:])
+                self.health = ''.join((line.split(': '))[1:])
                 return PARSE_FREEFORM_INFO
             # Values section begins with this - ignore:
             if line.startswith('General SMART Values:'):
@@ -103,21 +159,21 @@ class SMARTctl(Parser):
             if len(line) == 0 or line[0] == ' ' or line[0] == "\t":
                 return PARSE_FREEFORM_INFO
             # Otherwise, join this line to the full line
-            if drive_info['full_line']:
-                drive_info['full_line'] += ' '
-            drive_info['full_line'] += line.strip()
+            if self.full_line:
+                self.full_line += ' '
+            self.full_line += line.strip()
 
-            match = self.VALUE_LINE_RE.search(drive_info['full_line'])
+            match = self._VALUE_LINE_RE.search(self.full_line)
             if match:
                 # Handle the recommended polling time lines, which are joined
                 # with the previous line and values are in minutes.
                 (key, value) = match.group('key', 'value')
-                drive_info['values'][key] = value
-                drive_info['full_line'] = ''
-            elif drive_info['full_line'].startswith('SMART Attributes Data Structure revision number: '):
-                (key, value) = drive_info['full_line'].split(': ')
-                drive_info['values'][key] = value
-                drive_info['full_line'] = ''
+                self.values[key] = value
+                self.full_line = ''
+            elif self.full_line.startswith('SMART Attributes Data Structure revision number: '):
+                (key, value) = self.full_line.split(': ')
+                self.values[key] = value
+                self.full_line = ''
             return PARSE_FREEFORM_INFO
 
         # Attributes sections
@@ -126,11 +182,10 @@ class SMARTctl(Parser):
                 return PARSE_COMPLETE
             if len(line) == 0:
                 return PARSE_ATTRIBUTE_INFO
-            match = self.ATTR_LINE_RE.match(line)
+            match = self._ATTR_LINE_RE.match(line)
             if match:
                 name = match.group('name')
-                drive_info['attributes'][name] = dict(
-                    (key, match.group(key)) for key in self.ATTR_KEYS)
+                self.attributes[name] = match.groupdict()
             return PARSE_ATTRIBUTE_INFO
 
         parse_for_state = [
@@ -145,6 +200,4 @@ class SMARTctl(Parser):
                 break
 
         # Delete temporary full line storage
-        del drive_info['full_line']
-
-        self.info = drive_info
+        del self.full_line
