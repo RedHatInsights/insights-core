@@ -42,6 +42,7 @@ CONFIG = {
     'logging_file': os.path.join(constants.log_dir, APP_NAME) + '.log',
     'loglevel': 'DEBUG',
     'mountpoint': None,
+    'net_debug': False,
     'no_gpg': False,  # legacy
     'no_schedule': False,
     'no_tar_file': False,
@@ -76,7 +77,7 @@ CONFIG = {
     'version': False,
     'check_timestamp': True,
     'image_id': None,
-    'tar_file': None
+    'tar_file': None,
 }
 
 OPTS = [{
@@ -318,6 +319,11 @@ OPTS = [{
     'help': optparse.SUPPRESS_HELP,
     'action': 'store',
     'dest': 'tar_file'
+}, {
+    'opt': ['--net-debug'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store_true',
+    'dest': 'net_debug',
 }]
 
 

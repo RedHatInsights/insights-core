@@ -23,6 +23,8 @@ from schedule import InsightsSchedule
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
+net_logger = logging.getLogger("network")
+
 """
 urllib3's logging is chatty
 """
@@ -111,6 +113,7 @@ class InsightsConnection(object):
             # HACKY
             try:
                 # Need to make a request that will fail to get proxies set up
+                net_logger.info("GET https://cert-api.access.redhat.com/r/insights")
                 session.request(
                     "GET", "https://cert-api.access.redhat.com/r/insights")
             except requests.ConnectionError:
@@ -491,6 +494,7 @@ class InsightsConnection(object):
         """
         logger.debug("Obtaining branch information from %s",
                      self.branch_info_url)
+        net_logger.info("GET %s", self.branch_info_url)
         response = self.session.get(self.branch_info_url)
         logger.debug("GET branch_info status: %s", response.status_code)
         if response.status_code != 200:
@@ -529,6 +533,7 @@ class InsightsConnection(object):
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
         logger.debug(data)
+        net_logger.info("POST %s", post_system_url)
         return self.session.post(post_system_url,
                                  headers={'Content-Type': 'application/json'},
                                  data=data)
@@ -547,6 +552,7 @@ class InsightsConnection(object):
         group_get_path = group_path + ('?display_name=%s' % group_name)
 
         logger.debug("GET group: %s", group_get_path)
+        net_logger.info("GET %s", group_get_path)
         get_group = self.session.get(group_get_path)
         logger.debug("GET group status: %s", get_group.status_code)
         if get_group.status_code == 200:
@@ -556,6 +562,7 @@ class InsightsConnection(object):
             # Group does not exist, POST to create
             logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
+            net_logger.info("POST", group_path)
             post_group = self.session.post(group_path,
                                            headers=headers,
                                            data=data)
@@ -566,6 +573,7 @@ class InsightsConnection(object):
 
         logger.debug("PUT group")
         data = json.dumps(systems)
+        netlogger.info("PUT %s", group_path + ('/%s/systems' % api_group_id))
         put_group = self.session.put(group_path +
                                      ('/%s/systems' % api_group_id),
                                      headers=headers,
@@ -626,7 +634,9 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             logger.debug("Unregistering %s", machine_id)
-            self.session.delete(self.api_url + "/v1/systems/" + machine_id)
+            url = self.api_url + "/v1/systems/" + machine_id
+            net_logger.info("DELETE %s", url)
+            self.session.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
             write_unregistered_file()
@@ -711,6 +721,7 @@ class InsightsConnection(object):
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         headers = {'x-rh-collection-time': duration}
+        net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
         logger.debug("Upload status: %s %s %s",

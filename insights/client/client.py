@@ -66,6 +66,9 @@ def configure_level():
     logger.setLevel(init_log_level)
     logging.root.setLevel(init_log_level)
 
+    net_debug_level = logging.INFO if config['net_debug'] else logging.ERROR
+    logging.getLogger('network').setLevel(net_debug_level)
+
 
 def set_up_logging():
     if len(logging.root.handlers) == 0:
