@@ -21,11 +21,8 @@ entry_points = {
 runtime = set([
     'pyyaml>=3.10,<=3.12',
     'six',
-    'setuptools',
     'requests',
-    'pyOpenSSL',
-    'importlib',
-    'ordereddict'
+    'pyOpenSSL'
 ])
 
 develop = set([
