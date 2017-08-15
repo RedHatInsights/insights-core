@@ -17,7 +17,7 @@ from .config import CONFIG as config, compile_config
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-handler = None
+net_logger = logging.getLogger("network")
 
 
 class InsightsClient(object):
@@ -98,6 +98,7 @@ class InsightsClient(object):
 
         # If the etag was found and we are not force fetching
         # Then add it to the request
+        net_logger.info("GET %s", egg_url)
         if current_etag and not force:
             logger.debug('Requesting new core with etag %s', current_etag)
             response = requests.get(egg_url, headers={'If-None-Match': current_etag})
