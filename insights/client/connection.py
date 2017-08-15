@@ -573,7 +573,7 @@ class InsightsConnection(object):
 
         logger.debug("PUT group")
         data = json.dumps(systems)
-        netlogger.info("PUT %s", group_path + ('/%s/systems' % api_group_id))
+        net_logger.info("PUT %s", group_path + ('/%s/systems' % api_group_id))
         put_group = self.session.put(group_path +
                                      ('/%s/systems' % api_group_id),
                                      headers=headers,
