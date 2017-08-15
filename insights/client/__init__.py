@@ -230,7 +230,7 @@ class InsightsClient(object):
         if egg_path and self.verify(egg_path):
             self.install(egg_path)
 
-    def verify(self, egg_path, gpg_key=constants.default_egg_gpg_key):
+    def verify(self, egg_path, gpg_key=constants.pub_gpg_path):
         """
             Verifies the GPG signature of the egg.  The signature is assumed to
             be in the same directory as the egg and named the same as the egg
