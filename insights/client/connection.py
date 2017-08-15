@@ -408,10 +408,9 @@ class InsightsConnection(object):
         Bail out if we get a 401 and leave a message
         """
 
-        # always display HTTP response information
         try:
-            logger.info("HTTP Status Code: %s", req.status_code)
-            logger.info("HTTP Response Text: %s", req.text)
+            logger.debug("HTTP Status Code: %s", req.status_code)
+            logger.debug("HTTP Response Text: %s", req.text)
             logger.debug("HTTP Response Reason: %s", req.reason)
             logger.debug("HTTP Response Content: %s", req.content)
         except:
@@ -419,7 +418,7 @@ class InsightsConnection(object):
 
         # attempt to read the HTTP response JSON message
         try:
-            logger.info("HTTP Response Message: %s", req.json()["message"])
+            logger.debug("HTTP Response Message: %s", req.json()["message"])
         except:
             logger.debug("No HTTP Response message present.")
 
