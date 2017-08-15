@@ -321,17 +321,8 @@ OPTS = [{
 }]
 
 
-class NoErrOptionParser(optparse.OptionParser):
-    def __init__(self, *args, **kwargs):
-        self.valid_args_cre_list = []
-        optparse.OptionParser.__init__(self, *args, **kwargs)
-
-    def error(self, msg):
-        pass
-
-
 def parse_options():
-    parser = NoErrOptionParser()
+    parser = optparse.OptionParser()
     group = optparse.OptionGroup(parser, "Debug options")
     for d in (dict(d) for d in OPTS):
         g = group if d.pop("group", None) == "debug" else parser
