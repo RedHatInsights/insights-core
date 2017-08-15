@@ -26,7 +26,7 @@ CONFIG = {
     'compressor': 'gz',
     'conf': os.path.join(CONF_DIR, 'insights-client.conf'),
     'container_mode': None,
-    'core_url': None,
+    'core_url': constants.egg_path,
     'debug': False,  # Used by client wrapper script
     'disable_schedule': False,
     'display_name': None,
