@@ -479,11 +479,8 @@ def upload(tar_file, collection_duration=None):
                 with open(constants.insights_ansible_facts_file, 'w') as handler:
                     handler.write(json.dumps(insights_facts))
 
-            try:
-                logger.info("You successfully uploaded a report from %s to account %s." % (machine_id, config['account_number']))
-            except:
-                pass
-            logger.info("Upload completed successfully!")
+            logger.info("Successfully uploaded report from %s to account %s." % (
+                        machine_id, config.get('account_number', '[unknown]')))
             break
         elif upload.status_code == 412:
             pconn.handle_fail_rcs(upload)
