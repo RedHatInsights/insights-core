@@ -38,7 +38,7 @@ static_specs = {
     "ceph_osd.log"              : PatternSpec(r"var/log/ceph/ceph-osd.*\.log$", large_content=True),
     "ceph_s"                    : CommandSpec("/usr/bin/ceph -s -f json-pretty"),
     "ceph_v"                    : CommandSpec("/usr/bin/ceph -v"),
-    "certificates_enddate"      : CommandSpec("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo '{}' \;"),
+    "certificates_enddate"      : CommandSpec("/usr/bin/find /etc/origin/node /etc/origin/master /etc/pki -type f -exec /usr/bin/openssl x509 -noout -enddate -in '{}' \; -exec echo 'FileName= {}' \;"),
     "cinder_volume.log"         : SimpleFileSpec("var/log/cinder/volume.log", large_content=True),
     "chkconfig"                 : CommandSpec("/sbin/chkconfig --list"),
     "chrony.conf"               : SimpleFileSpec("etc/chrony.conf"),
