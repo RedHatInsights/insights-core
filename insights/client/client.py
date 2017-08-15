@@ -441,7 +441,7 @@ def collect(rc=0):
 
 
 def upload(tar_file, collection_duration=None):
-    logger.info('Uploading Insights data. This may take a few minutes.')
+    logger.info('Uploading Insights data.')
     pconn = InsightsConnection()
     upload_status = False
     for tries in range(config['retries']):
