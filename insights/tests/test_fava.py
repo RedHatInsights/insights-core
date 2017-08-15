@@ -1,11 +1,19 @@
 
 import unittest
 import pytest
+import string
 
 from insights.core import fava
 import insights
 
-from insights.parsers import uname
+from insights.parsers.uname import Uname
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.fstab import FSTab
+from insights.parsers.ethtool import Ethtool
+from insights.parsers.ifcfg import IfCFG
+
+from insights.combiners.hostname import hostname
+
 from insights.tests import context_wrap
 
 
@@ -14,7 +22,7 @@ UNAME1 = "Linux ceehadoop1.gsslab.rdu2.redhat.com 2.6.32-504.el6.x86_64 #1 SMP T
 
 class TestUname(unittest.TestCase):
     def test_uname(self):
-        uname1 = insights.parsers.uname.Uname(context_wrap(UNAME1))
+        uname1 = Uname(context_wrap(UNAME1))
 
         # Test all the properties
         self.assertEqual(uname1.arch, 'x86_64')
@@ -27,7 +35,6 @@ class TestUname(unittest.TestCase):
         self.assertEqual(uname1.nodename, 'ceehadoop1.gsslab.rdu2.redhat.com')
         self.assertEqual(uname1.os, 'GNU/Linux')
         self.assertEqual(uname1.processor, 'x86_64')
-        self.assertEqual(uname1.redhat_release, uname.RedhatRelease(major=6, minor=6))
         self.assertEqual(uname1.release, '504.el6')
         self.assertEqual(uname1.release_arch, '504.el6.x86_64')
         self.assertEqual(uname1.release_tuple, (6, 6,))
@@ -137,11 +144,11 @@ class TestBasicCompile(unittest.TestCase):
                 'when': self.make_uname_fixed_by_call(uname_input, intro),
             },
         }, {
-            uname.Uname: uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
             },
         } if len(expected) > 0 else None,
             'test1 ' + test_name)
@@ -157,11 +164,11 @@ class TestBasicCompile(unittest.TestCase):
                 'when': self.make_uname_fixed_by_call(uname_input, intro),
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
                 'fixed_by': expected,
             },
         } if len(expected) > 0 else None,
@@ -181,11 +188,11 @@ class TestBasicCompile(unittest.TestCase):
                 },
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
                 'fixed_by': expected,
             },
         } if len(expected) > 0 else None,
@@ -201,7 +208,7 @@ class TestBasicCompile(unittest.TestCase):
                 'when': False,
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         },
             None,
             'compile test one'
@@ -215,11 +222,11 @@ class TestBasicCompile(unittest.TestCase):
                 'when': True,
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
             },
         },
             'compile test two'
@@ -233,11 +240,11 @@ class TestBasicCompile(unittest.TestCase):
                 'when': 'Uname.kernel',
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
             },
         },
             'compile test three'
@@ -254,11 +261,11 @@ class TestBasicCompile(unittest.TestCase):
                 },
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
             },
         },
             'compile test four'
@@ -272,11 +279,11 @@ class TestBasicCompile(unittest.TestCase):
                 'when': "Uname.fixed_by('2.6.32-509.el6')",
             },
         }, {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }, {
             'name': "BASIC_ONE",
             'pydata': {
-                'kernel': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'kernel': Uname(context_wrap(UNAME1)).kernel,
             },
         },
             'compile test five'
@@ -581,12 +588,12 @@ class TestJinjaExpressions(unittest.TestCase):
             },
         }
         shared_parsers = {
-            uname.Uname: uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }
         expected = {
             'name': "BASIC_ONE",
             'pydata': {
-                'uname': insights.parsers.uname.Uname(context_wrap(UNAME1)),
+                'uname': Uname(context_wrap(UNAME1)),
             },
         }
         self.compare(rule, shared_parsers, expected, 'test jinja test7')
@@ -602,12 +609,12 @@ class TestJinjaExpressions(unittest.TestCase):
             },
         }
         shared_parsers = {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }
         expected = {
             'name': "BASIC_ONE",
             'pydata': {
-                'uname': insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel,
+                'uname': Uname(context_wrap(UNAME1)).kernel,
             },
         }
         self.compare(rule, shared_parsers, expected, 'test jinja test8')
@@ -647,7 +654,7 @@ class TestJinjaExpressions(unittest.TestCase):
             },
         }
         shared_parsers = {
-            insights.parsers.uname.Uname: insights.parsers.uname.Uname(context_wrap(UNAME1))
+            Uname: Uname(context_wrap(UNAME1))
         }
         expected = {
             'name': "BASIC_ONE",
@@ -658,27 +665,27 @@ class TestJinjaExpressions(unittest.TestCase):
         self.compare(rule, shared_parsers, expected, test_name)
 
     def test_uname_test1(self):
-        self.compare_uname("{{ Uname.kernel }}", insights.parsers.uname.Uname(context_wrap(UNAME1)).kernel, "uname test1")
+        self.compare_uname("{{ Uname.kernel }}", Uname(context_wrap(UNAME1)).kernel, "uname test1")
 
     def test_uname_test2(self):
-        self.compare_uname("{{ Uname.arch }}", insights.parsers.uname.Uname(context_wrap(UNAME1)).arch, "uname test2")
+        self.compare_uname("{{ Uname.arch }}", Uname(context_wrap(UNAME1)).arch, "uname test2")
 
     def test_uname_test3(self):
-        self.compare_uname("{{ Uname.version }}", insights.parsers.uname.Uname(context_wrap(UNAME1)).version, "uname test3")
+        self.compare_uname("{{ Uname.version }}", Uname(context_wrap(UNAME1)).version, "uname test3")
 
     def test_uname_test4(self):
         self.compare_uname("{{ Uname.fixed_by('2.6.32-600.el6') }}",
-                           insights.parsers.uname.Uname(context_wrap(UNAME1)).fixed_by('2.6.32-600.el6'),
+                           Uname(context_wrap(UNAME1)).fixed_by('2.6.32-600.el6'),
                            "uname test4")
 
     def test_uname_test5(self):
         self.compare_uname("{{ Uname.fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6') }}",
-                           insights.parsers.uname.Uname(context_wrap(UNAME1)).fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6'),
+                           Uname(context_wrap(UNAME1)).fixed_by('2.6.32-220.1.el6', '2.6.32-504.el6'),
                            "uname test5")
 
     def test_uname_test6(self):
         self.compare_uname("{{ Uname.fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504.1.el6') }}",
-                           insights.parsers.uname.Uname(context_wrap(UNAME1)).fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504.1.el6'),
+                           Uname(context_wrap(UNAME1)).fixed_by('2.6.32-600.el6', introduced_in='2.6.32-504.1.el6'),
                            "uname test6")
 
 
@@ -808,16 +815,57 @@ def test_yaml_tests(yaml2jsonTest):
     assert yaml2jsonTest[1] == fava.FavaRule.yaml_deserialize(yaml2jsonTest[0])
 
 
+PARSER_NAMES_TEST_TEMPLATE = string.Template("""
+---
+rule:
+  name: "PARSER_NAME_${name}s_TEST_KEY"
+  pydata:
+    kernel: "{{ ${name} }}"
+  when: True
+""")
+
+
+PARSERS_TO_TEST = [
+    Uname,
+    InstalledRpms,
+    FSTab,
+    IfCFG,
+    Ethtool,
+]
+
+
+@pytest.fixture(params=PARSERS_TO_TEST)
+def each_parser_to_test(request):
+    return request.param
+
+
+def test_parser_names_test(each_parser_to_test):
+    # this should not raise exception
+    fava.FavaRule(PARSER_NAMES_TEST_TEMPLATE.substitute({"name": each_parser_to_test.__name__}))
+
+
+def test_parser_names_nosuchparser():
+    # arbitrary names should not work in Fava
+    with pytest.raises(fava.FavaTranslationError):
+        fava.FavaRule(PARSER_NAMES_TEST_TEMPLATE.substitute({"name": "Nosuchparser"}))
+
+
+def test_parser_names_combiner():
+    # combiner names should not work in Fava
+    with pytest.raises(fava.FavaTranslationError):
+        fava.FavaRule(PARSER_NAMES_TEST_TEMPLATE.substitute({"name": hostname.__name__}))
+
+
 class TestFAVA3(unittest.TestCase):
 
     def test_do_template1(self):
         src = 'Uname'
         self.assertEqual(set(['Uname']),
                          fava.find_undeclared_variables_from_expression(src))
-        self.assertEqual(insights.parsers.uname.Uname,
+        self.assertEqual(Uname,
                          fava.fava_render_jinja_expression(
                              src,
-                             **{'Uname': insights.parsers.uname.Uname}))
+                             **{'Uname': Uname}))
 
     def test_do_template2(self):
         src = "Uname['PACKAGES'][0]"
