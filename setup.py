@@ -23,6 +23,7 @@ runtime = {
     'tornado>=4.2.1',
     'futures==3.0.5',
     'requests==2.13.0',
+    'Jinja2==2.9.6',
 }
 
 develop = {
@@ -32,7 +33,6 @@ develop = {
     'pytest-cov==2.4.0',
     'Sphinx',
     'sphinx_rtd_theme',
-    'Jinja2==2.9.6',
     'wheel'
 }
 
