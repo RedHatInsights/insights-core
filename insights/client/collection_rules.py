@@ -15,6 +15,7 @@ from config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
+net_logger = logging.getLogger('network')
 
 
 class InsightsConfig(object):
@@ -96,6 +97,7 @@ class InsightsConfig(object):
         logger.debug("Attemping to download collection rules from %s",
                      self.collection_rules_url)
 
+        net_logger.info("GET %s", self.collection_rules_url)
         req = self.conn.session.get(
             self.collection_rules_url, headers=({'accept': 'text/plain'}))
 
@@ -127,6 +129,7 @@ class InsightsConfig(object):
                      self.collection_rules_url + ".asc")
 
         headers = ({'accept': 'text/plain'})
+        net_logger.info("GET %s", self.collection_rules_url + '.asc')
         config_sig = self.conn.session.get(self.collection_rules_url + '.asc',
                                            headers=headers)
         if config_sig.status_code == 200:
