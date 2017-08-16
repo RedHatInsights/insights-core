@@ -63,7 +63,7 @@ class InsightsConfig(object):
         logger.debug("STDERR: %s", stderr)
         logger.debug("Status: %s", proc.returncode)
         if proc.returncode:
-            logger.error("ERROR: Unable to validate GPG signature! Exiting!")
+            logger.error("ERROR: Unable to validate GPG signature: %s", path)
             return False
         else:
             logger.debug("GPG signature verified")
