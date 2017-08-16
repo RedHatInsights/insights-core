@@ -29,8 +29,10 @@ class InsightsConstants(object):
     docker_image_name = None
     default_cmd_timeout = 600  # default command execution to ten minutes, prevents long running commands that will hang
     egg_path = 'https://access.redhat.com/insights/static/core/insights-core.egg'
+    gpg_sig_path = 'https://access.redhat.com/insights/static/core/insights-core.egg.asc'
     default_egg_gpg_key = os.path.join(default_conf_dir, 'insights-core.gpg')
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
+    core_gpg_sig_etag_file = os.path.join(default_conf_dir, '.insights-core-gpg-sig.etag')
     last_upload_results_file = os.path.join(default_conf_dir, '.last-upload.results')
     insights_ansible_facts_dir = os.path.join('/', 'etc', 'ansible', 'facts.d')
     insights_ansible_facts_file = os.path.join(insights_ansible_facts_dir, 'insights.fact')
@@ -38,7 +40,9 @@ class InsightsConstants(object):
     insights_core_lib_dir = os.path.join('/', 'var', 'lib', 'insights')
     insights_core_rpm = os.path.join(default_conf_dir, 'rpm.egg')
     insights_core_last_stable = os.path.join(insights_core_lib_dir, 'last_stable.egg')
+    insights_core_last_stable_gpg_sig = os.path.join(insights_core_lib_dir, 'last_stable.egg.asc')
     insights_core_newest = os.path.join(insights_core_lib_dir, 'newest.egg')
+    insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
     insights_archive_generation = os.path.join(insights_core_lib_dir, 'archive')
     insights_tmp_dir = os.path.join(insights_core_lib_dir, 'tmp_dir')
     insights_archive_tmp_dir = os.path.join(insights_core_lib_dir, 'archive_tmp_dir')

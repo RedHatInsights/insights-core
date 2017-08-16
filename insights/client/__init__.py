@@ -75,12 +75,44 @@ class InsightsClient(object):
     def handle_startup(self):
         return client.handle_startup()
 
-    def fetch(self, egg_url=None, force=False):
+    def fetch(self,
+              egg_url=constants.egg_path,
+              gpg_sig_url=constants.gpg_sig_path,
+              force=False):
         """
-            parms:
-                egg_url (str): URL to retrieve egg from
-                force (bool): force fetch egg (dont check etags)
-            returns (str): path to new egg.  None if no update.
+            returns (dict): {'core': path to new egg, None if no update,
+                             'gpg_sig': path to new sig, None if no update}
+        """
+        # was a custom egg url passed in?
+        if config['core_url']:
+            egg_url = config['core_url']
+
+        # was a custom gpg_sig_url passed?
+        if config['gpg_sig_url']:
+            gpg_sig_url = config['gpg_sig_url']
+
+        # fetch new core
+        fetch_results = {'core': None, 'gpg_sig': None}
+        tmpdir = tempfile.mkdtemp()
+
+        logger.debug("Beginning core fetch...")
+        fetch_results['core'] = self.fetch_core(egg_url, force, tmpdir)
+
+        # if new core was fetched, get new core sig
+        if fetch_results['core'] is not None:
+            logger.debug("New core was fetched.")
+            logger.debug("Beginning fetch for core gpg signature.")
+            fetch_results['gpg_sig'] = self.fetch_core_sig(gpg_sig_url, force, tmpdir)
+
+        # return new core path and gpg sig or None
+        return fetch_results
+
+    def fetch_core(self,
+                   egg_url=constants.egg_path,
+                   force=False,
+                   tmpdir=tempfile.mkdtemp()):
+        """
+            returns (str): path to new egg. None if no update.
         """
         # was a custom egg url passed in?
         if config['core_url']:
@@ -112,13 +144,12 @@ class InsightsClient(object):
             logger.debug('%s: %s', header, value)
 
         # Debug the ETag
-        logger.debug('ETag: %s', response.request.headers.get('If-None-Match'))
+        logger.debug('ETag for Core: %s', response.request.headers.get('If-None-Match'))
 
         # If data was received, write the new egg and etag
         if response.status_code == 200 and len(response.content) > 0:
 
-            # Setup tmp egg path
-            tmpdir = tempfile.mkdtemp()
+            # setup the tmp egg path
             tmp_egg_path = os.path.join(tmpdir, 'insights-core.egg')
 
             # Write the new core
@@ -128,7 +159,7 @@ class InsightsClient(object):
 
             # Write the new etag
             with open(constants.core_etag_file, 'w') as etag_file:
-                logger.debug('Cacheing etag to %s', constants.core_etag_file)
+                logger.debug('Cacheing etag for core to %s', constants.core_etag_file)
                 etag_file.write(response.headers['etag'])
 
             # Return the tmp egg path
@@ -148,10 +179,84 @@ class InsightsClient(object):
             logger.debug('Please check config, error reaching %s', egg_url)
             return None
 
+    def fetch_core_sig(self,
+                       gpg_sig_url=constants.gpg_sig_path,
+                       force=False,
+                       tmpdir=tempfile.mkdtemp()):
+        """
+            returns (str): path to new core gpg sig. None if no update.
+        """
+        # was a custom core gpg sig url passed in?
+        if config['gpg_sig_url']:
+            gpg_sig_url = config['gpg_sig_url']
+
+        # Searched for cached etag information
+        current_etag = None
+        if os.path.isfile(constants.core_gpg_sig_etag_file):
+            with open(constants.core_gpg_sig_etag_file, 'r') as etag_file:
+                current_etag = etag_file.read().strip()
+                logger.debug('Found etag for core gpg sig %s', current_etag)
+
+        # Setup the new request for core retrieval
+        logger.debug('Making request to %s for new core gpg sig', gpg_sig_url)
+
+        # If the etag was found and we are not force fetching
+        # Then add it to the request
+        if current_etag and not force:
+            logger.debug('Requesting new core gpg sig with etag %s', current_etag)
+            response = requests.get(gpg_sig_url, headers={'If-None-Match': current_etag})
+        else:
+            logger.debug('Found no etag or forcing fetch')
+            response = requests.get(gpg_sig_url)
+
+        # Debug information
+        logger.debug('status code: %d', response.status_code)
+        for header, value in response.headers.iteritems():
+            logger.debug('%s: %s', header, value)
+
+        # Debug the ETag
+        logger.debug('ETag for Core GPG Sig: %s', response.request.headers.get('If-None-Match'))
+
+        # If data was received, write the new egg and etag
+        if response.status_code == 200 and len(response.content) > 0:
+
+            # setup the tmp path
+            tmp_path = os.path.join(tmpdir, 'insights-core.egg.asc')
+
+            # Write the new core gpg sig
+            with open(tmp_path, 'wb') as handle:
+                logger.debug('Data received, writing core gpg sig to %s', tmp_path)
+                handle.write(response.content)
+
+            # Write the new etag
+            with open(constants.core_gpg_sig_etag_file, 'w') as etag_file:
+                logger.debug('Cacheing etag to %s', constants.core_gpg_sig_etag_file)
+                etag_file.write(response.headers['etag'])
+
+            # Return the tmp egg path
+            return tmp_path
+
+        # Received a 304 not modified
+        # Return nothing
+        elif response.status_code == 304:
+            logger.debug('No data received')
+            logger.debug('Tags match, not updating core gpg sig')
+            return None
+
+        # Something unexpected received
+        else:
+            logger.debug('Received Code %s', response.status_code)
+            logger.debug('Not writing new core gpg sig, or updating etag')
+            logger.debug('Please check config, error reaching %s', gpg_sig_url)
+            return None
+
     def update(self):
         egg_path = self.fetch()
-        if egg_path and self.verify(egg_path)['gpg']:
-            return self.install(egg_path)
+        if (egg_path and
+                ('core' in egg_path) and
+                egg_path['core'] is not None and
+                self.verify(egg_path['core'])):
+            self.install(egg_path['core'], egg_path['gpg_sig'])
 
     def verify(self, egg_path, gpg_key=constants.pub_gpg_path):
         """
@@ -180,7 +285,7 @@ class InsightsClient(object):
                     'stdout': 'Must specify a valid core and gpg key.',
                     'rc': 1}
 
-    def install(self, new_egg):
+    def install(self, new_egg, new_egg_gpg_sig):
         """
         returns (dict): {'success': True if the core installation successfull else False}
         raises OSError if cannot create /var/lib/insights
@@ -208,6 +313,7 @@ class InsightsClient(object):
         try:
             logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_newest))
             copyfile(new_egg, constants.insights_core_newest)
+            copyfile(new_egg_gpg_sig, constants.insights_core_gpg_sig_newest)
         except IOError:
             message = "There was an error copying the new Core from %s to %s." %\
                 (new_egg, constants.insights_core_newest)
@@ -388,7 +494,12 @@ class InsightsClient(object):
             if os.path.isfile(constants.insights_core_newest):
                 # try copying newest to latest_stable
                 try:
-                    copyfile(constants.insights_core_newest, constants.insights_core_last_stable)
+                    # copy the core
+                    copyfile(constants.insights_core_newest,
+                             constants.insights_core_last_stable)
+                    # copy the core sig
+                    copyfile(constants.insights_core_gpg_sig_newest,
+                             constants.insights_core_last_stable_gpg_sig)
                 except IOError:
                     message = ("There was a problem copying %s to %s." %
                                 (constants.insights_core_newest,

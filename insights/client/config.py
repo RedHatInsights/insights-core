@@ -35,6 +35,7 @@ CONFIG = {
     'from_file': False,
     'from_stdin': False,
     'gpg': True,
+    'gpg_sig_url': None,
     'group': None,
     'insecure_connection': False,
     'just_upload': None,
@@ -320,10 +321,14 @@ OPTS = [{
     'action': 'store',
     'dest': 'tar_file'
 }, {
+    'opt': ['--gpg-sig-url'],
+    'help': 'url to gpg sig location for core',
+    'dest': 'gpg_sig_url'
+}, {
     'opt': ['--net-debug'],
     'help': optparse.SUPPRESS_HELP,
     'action': 'store_true',
-    'dest': 'net_debug',
+    'dest': 'net_debug'
 }]
 
 
