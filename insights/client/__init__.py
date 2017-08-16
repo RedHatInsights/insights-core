@@ -269,8 +269,9 @@ class InsightsClient(object):
                              'rc': return code}
         """
         if egg_path and gpg_key:
-            cmd = 'gpg --verify --keyring %s %s' % (gpg_key, egg_path + '.asc')
-            process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
+            cmd = '/usr/bin/gpg --verify --keyring %s %s %s'
+            process = Popen(shlex.split(cmd % (gpg_key, egg_path + '.asc', egg_path)),
+                            stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             rc = process.returncode
             success = True if rc == 0 else False
