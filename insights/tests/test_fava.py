@@ -636,6 +636,144 @@ def test_jinja_test9():
     compare(rule, shared_parsers, expected, 'test jinja test9')
 
 
+def test_when_with_list():
+    # when with a list
+
+    # of 2 elements true
+    rule = {
+        'rule': {
+            'name': "BASIC_ONE",
+            'pydata': {
+                'kernel': 70,
+            },
+            'when': [
+                "v1",
+                "v2",
+            ],
+            'vars': {
+                'v1': True,
+                'v2': True,
+            },
+        },
+    }
+    shared_parsers = {}
+    expected = {
+        'name': "BASIC_ONE",
+        'pydata': {
+            'kernel': 70,
+        },
+    }
+    compare(rule, shared_parsers, expected, 'test jinja test9')
+
+    # of 2 elements false
+    rule = {
+        'rule': {
+            'name': "BASIC_ONE",
+            'pydata': {
+                'kernel': 70,
+            },
+            'when': [
+                "v1",
+                "v2",
+            ],
+            'vars': {
+                'v1': True,
+                'v2': False,
+            },
+        },
+    }
+    shared_parsers = {}
+    expected = None
+    compare(rule, shared_parsers, expected, 'test jinja test9')
+
+    # of 1 elements true
+    rule = {
+        'rule': {
+            'name': "BASIC_ONE",
+            'pydata': {
+                'kernel': 70,
+            },
+            'when': [
+                "v1",
+            ],
+            'vars': {
+                'v1': False,
+            },
+        },
+    }
+    shared_parsers = {}
+    expected = None
+    compare(rule, shared_parsers, expected, 'test jinja test9')
+
+    # of 1 elements false
+    rule = {
+        'rule': {
+            'name': "BASIC_ONE",
+            'pydata': {
+                'kernel': 70,
+            },
+            'when': [
+                "v1",
+            ],
+            'vars': {
+                'v1': False,
+            },
+        },
+    }
+    shared_parsers = {}
+    expected = None
+    compare(rule, shared_parsers, expected, 'test jinja test9')
+
+    # of a list in a list true
+    rule = {
+        'rule': {
+            'name': "BASIC_ONE",
+            'pydata': {
+                'kernel': 70,
+            },
+            'when': [
+                "v1",
+                ["v2", "v3"],
+            ],
+            'vars': {
+                'v1': True,
+                'v2': True,
+                'v3': True,
+            },
+        },
+    }
+    shared_parsers = {}
+    expected = {
+        'name': "BASIC_ONE",
+        'pydata': {
+            'kernel': 70,
+        },
+    }
+    compare(rule, shared_parsers, expected, 'test jinja test9')
+
+    # of a list in a list false
+    rule = {
+        'rule': {
+            'name': "BASIC_ONE",
+            'pydata': {
+                'kernel': 70,
+            },
+            'when': [
+                "v1",
+                ["v2", "v3"],
+            ],
+            'vars': {
+                'v1': True,
+                'v2': False,
+                'v3': True,
+            },
+        },
+    }
+    shared_parsers = {}
+    expected = None
+    compare(rule, shared_parsers, expected, 'test jinja test9')
+
+
 def compare_uname(jinja_expr, expected_value, test_name):
     rule = {
         'rule': {
