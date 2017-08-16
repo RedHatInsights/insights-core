@@ -91,164 +91,88 @@ class InsightsClient(object):
         if config['gpg_sig_url']:
             gpg_sig_url = config['gpg_sig_url']
 
-        # fetch new core
-        fetch_results = {'core': None, 'gpg_sig': None}
         tmpdir = tempfile.mkdtemp()
+        fetch_results = {
+            'core': os.path.join(tmpdir, 'insights-core.egg'),
+            'gpg_sig': os.path.join(tmpdir, 'insights-core.egg.asc')
+        }
 
-        logger.debug("Beginning core fetch...")
-        fetch_results['core'] = self.fetch_core(egg_url, force, tmpdir)
+        logger.debug("Beginning core fetch.")
+        updated = self._fetch(egg_url,
+                              constants.core_etag_file,
+                              fetch_results['core'],
+                              force)
 
         # if new core was fetched, get new core sig
-        if fetch_results['core'] is not None:
+        if updated:
             logger.debug("New core was fetched.")
             logger.debug("Beginning fetch for core gpg signature.")
-            fetch_results['gpg_sig'] = self.fetch_core_sig(gpg_sig_url, force, tmpdir)
+            self._fetch(gpg_sig_url,
+                        constants.core_gpg_sig_etag_file,
+                        fetch_results['gpg_sig'],
+                        force)
 
         # return new core path and gpg sig or None
         return fetch_results
 
-    def fetch_core(self,
-                   egg_url=constants.egg_path,
-                   force=False,
-                   tmpdir=tempfile.mkdtemp()):
+    def _fetch(self, url, etag_file, target_path, force):
         """
             returns (str): path to new egg. None if no update.
         """
-        # was a custom egg url passed in?
-        if config['core_url']:
-            egg_url = config['core_url']
-
         # Searched for cached etag information
         current_etag = None
-        if os.path.isfile(constants.core_etag_file):
-            with open(constants.core_etag_file, 'r') as etag_file:
-                current_etag = etag_file.read().strip()
+        if os.path.isfile(etag_file):
+            with open(etag_file, 'r') as fp:
+                current_etag = fp.read().strip()
                 logger.debug('Found etag %s', current_etag)
 
         # Setup the new request for core retrieval
-        logger.debug('Making request to %s for new core', egg_url)
+        logger.debug('Making request to %s for new core', url)
 
         # If the etag was found and we are not force fetching
         # Then add it to the request
-        net_logger.info("GET %s", egg_url)
+        net_logger.info("GET %s", url)
         if current_etag and not force:
-            logger.debug('Requesting new core with etag %s', current_etag)
-            response = requests.get(egg_url, headers={'If-None-Match': current_etag})
+            logger.debug('Requesting new file with etag %s', current_etag)
+            response = requests.get(url, headers={'If-None-Match': current_etag})
         else:
             logger.debug('Found no etag or forcing fetch')
-            response = requests.get(egg_url)
+            response = requests.get(url)
 
         # Debug information
-        logger.debug('status code: %d', response.status_code)
+        logger.debug('Status code: %d', response.status_code)
         for header, value in response.headers.iteritems():
             logger.debug('%s: %s', header, value)
 
         # Debug the ETag
-        logger.debug('ETag for Core: %s', response.request.headers.get('If-None-Match'))
+        logger.debug('ETag: %s', response.request.headers.get('If-None-Match'))
 
         # If data was received, write the new egg and etag
         if response.status_code == 200 and len(response.content) > 0:
 
-            # setup the tmp egg path
-            tmp_egg_path = os.path.join(tmpdir, 'insights-core.egg')
-
             # Write the new core
-            with open(tmp_egg_path, 'wb') as handle:
-                logger.debug('Data received, writing core to %s', tmp_egg_path)
+            with open(target_path, 'wb') as handle:
+                logger.debug('Data received, writing core to %s', target_path)
                 handle.write(response.content)
 
             # Write the new etag
-            with open(constants.core_etag_file, 'w') as etag_file:
-                logger.debug('Cacheing etag for core to %s', constants.core_etag_file)
-                etag_file.write(response.headers['etag'])
+            with open(etag_file, 'w') as handle:
+                logger.debug('Cacheing etag to %s', etag_file)
+                handle.write(response.headers['etag'])
 
-            # Return the tmp egg path
-            return tmp_egg_path
+            return True
 
         # Received a 304 not modified
         # Return nothing
         elif response.status_code == 304:
             logger.debug('No data received')
             logger.debug('Tags match, not updating core')
-            return None
 
         # Something unexpected received
         else:
             logger.debug('Received Code %s', response.status_code)
             logger.debug('Not writing new core, or updating etag')
-            logger.debug('Please check config, error reaching %s', egg_url)
-            return None
-
-    def fetch_core_sig(self,
-                       gpg_sig_url=constants.gpg_sig_path,
-                       force=False,
-                       tmpdir=tempfile.mkdtemp()):
-        """
-            returns (str): path to new core gpg sig. None if no update.
-        """
-        # was a custom core gpg sig url passed in?
-        if config['gpg_sig_url']:
-            gpg_sig_url = config['gpg_sig_url']
-
-        # Searched for cached etag information
-        current_etag = None
-        if os.path.isfile(constants.core_gpg_sig_etag_file):
-            with open(constants.core_gpg_sig_etag_file, 'r') as etag_file:
-                current_etag = etag_file.read().strip()
-                logger.debug('Found etag for core gpg sig %s', current_etag)
-
-        # Setup the new request for core retrieval
-        logger.debug('Making request to %s for new core gpg sig', gpg_sig_url)
-
-        # If the etag was found and we are not force fetching
-        # Then add it to the request
-        if current_etag and not force:
-            logger.debug('Requesting new core gpg sig with etag %s', current_etag)
-            response = requests.get(gpg_sig_url, headers={'If-None-Match': current_etag})
-        else:
-            logger.debug('Found no etag or forcing fetch')
-            response = requests.get(gpg_sig_url)
-
-        # Debug information
-        logger.debug('status code: %d', response.status_code)
-        for header, value in response.headers.iteritems():
-            logger.debug('%s: %s', header, value)
-
-        # Debug the ETag
-        logger.debug('ETag for Core GPG Sig: %s', response.request.headers.get('If-None-Match'))
-
-        # If data was received, write the new egg and etag
-        if response.status_code == 200 and len(response.content) > 0:
-
-            # setup the tmp path
-            tmp_path = os.path.join(tmpdir, 'insights-core.egg.asc')
-
-            # Write the new core gpg sig
-            with open(tmp_path, 'wb') as handle:
-                logger.debug('Data received, writing core gpg sig to %s', tmp_path)
-                handle.write(response.content)
-
-            # Write the new etag
-            with open(constants.core_gpg_sig_etag_file, 'w') as etag_file:
-                logger.debug('Cacheing etag to %s', constants.core_gpg_sig_etag_file)
-                etag_file.write(response.headers['etag'])
-
-            # Return the tmp egg path
-            return tmp_path
-
-        # Received a 304 not modified
-        # Return nothing
-        elif response.status_code == 304:
-            logger.debug('No data received')
-            logger.debug('Tags match, not updating core gpg sig')
-            return None
-
-        # Something unexpected received
-        else:
-            logger.debug('Received Code %s', response.status_code)
-            logger.debug('Not writing new core gpg sig, or updating etag')
-            logger.debug('Please check config, error reaching %s', gpg_sig_url)
-            return None
+            logger.debug('Please check config, error reaching %s', url)
 
     def update(self):
         egg_path = self.fetch()
@@ -269,13 +193,14 @@ class InsightsClient(object):
                              'rc': return code}
         """
         if egg_path and gpg_key:
-            cmd = '/usr/bin/gpg --verify --keyring %s %s %s'
-            process = Popen(shlex.split(cmd % (gpg_key, egg_path + '.asc', egg_path)),
-                            stdout=PIPE, stderr=PIPE)
+            cmd_template = '/usr/bin/gpg --verify --keyring %s %s %s'
+            cmd = cmd_template % (gpg_key, egg_path + '.asc', egg_path)
+            logger.debug(cmd)
+            process = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             rc = process.returncode
-            success = True if rc == 0 else False
-            return {'gpg': success,
+            logger.debug("GPG return code: %s" % rc)
+            return {'gpg': True if rc == 0 else False,
                     'stderr': stderr,
                     'stdout': stdout,
                     'rc': rc}
