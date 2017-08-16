@@ -252,11 +252,10 @@ class InsightsClient(object):
 
     def update(self):
         egg_path = self.fetch()
-        if (egg_path and
-                ('core' in egg_path) and
-                egg_path['core'] is not None and
-                self.verify(egg_path['core'])):
-            self.install(egg_path['core'], egg_path['gpg_sig'])
+        if (egg_path.get('core') is not None and self.verify(egg_path['core'])['gpg']):
+            return self.install(egg_path['core'], egg_path['gpg_sig'])
+        else:
+            return False
 
     def verify(self, egg_path, gpg_key=constants.pub_gpg_path):
         """
