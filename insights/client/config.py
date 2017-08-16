@@ -12,6 +12,17 @@ APP_NAME = 'insights-client'
 CONF_DIR = os.path.join('/etc', APP_NAME)
 CONF_FILE = os.path.join(CONF_DIR, 'insights-client.conf')
 
+BOOLEAN_KEYS = [
+    'analyze_compressed_file', 'auto_config', 'auto_update', 'check_timestamp',
+    'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
+    'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
+    'no_schedule', 'no_tar_file', 'no_upload', 'obfuscate',
+    'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
+    'register', 'reregister', 'run_here', 'silent', 'status', 'support',
+    'test_connection', 'to_stdout', 'unregister', 'update', 'validate',
+    'verbose', 'version'
+]
+
 CONFIG = {
     'analyze_compressed_file': None,
     'api_url': None,
@@ -360,7 +371,10 @@ def parse_config_file(conf_file=constants.default_conf_file):
         parsedconfig.add_section('redhat_access_insights')
     except ConfigParser.Error:
         pass
-    return dict(parsedconfig.items(APP_NAME))
+    d = dict(parsedconfig.items(APP_NAME))
+    for key in (k for k in BOOLEAN_KEYS if type(d.get(k)) in (str, unicode)):
+        d[key] = parsedconfig.getboolean(APP_NAME, key)
+    return d
 
 
 def apply_legacy_config():
