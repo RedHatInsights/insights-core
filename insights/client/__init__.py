@@ -564,8 +564,14 @@ def run(op, *args, **kwargs):
 
 def update():
     if run("update") is not None:
-        c = InsightsClient(read_config=False)
-        c.update_rules()
+        # Only update rules if InsightsClient.update() was called
+        # handle_startup() could have returned early
+        try:
+            c = InsightsClient(read_config=False)
+            c.update_rules()
+        except:
+            logger.exception("Fatal error")
+            sys.exit(1)
 
 
 def collect():
