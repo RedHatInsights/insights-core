@@ -150,8 +150,8 @@ class InsightsClient(object):
 
     def update(self):
         egg_path = self.fetch()
-        if egg_path and self.verify(egg_path):
-            self.install(egg_path)
+        if egg_path and self.verify(egg_path)['gpg']:
+            return self.install(egg_path)
 
     def verify(self, egg_path, gpg_key=constants.pub_gpg_path):
         """
@@ -448,14 +448,16 @@ def run(op, *args, **kwargs):
 
 
 def update():
-    run("update")
+    if run("update") is not None:
+        c = InsightsClient(read_config=False)
+        c.update_rules()
 
 
 def collect():
     print run("collect", check_timestamp=config["check_timestamp"],
-                        image_id=(config["image_id"] or config["only"]),
-                        tar_file=config["tar_file"],
-                        mountpoint=config["mountpoint"])
+                         image_id=(config["image_id"] or config["only"]),
+                         tar_file=config["tar_file"],
+                         mountpoint=config["mountpoint"])
 
 
 def upload():
