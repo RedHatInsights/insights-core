@@ -326,7 +326,10 @@ class InsightsClient(object):
         """
             returns (dict): new client rules
         """
-        return client.update_rules()
+        if config['update']:
+            return client.update_rules()
+        else:
+            logger.debug("Bypassing rule update due to config")
 
     def fetch_rules(self):
         """
