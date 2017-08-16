@@ -34,7 +34,7 @@ from jinja2 import nodes as jinja2_nodes
 from jinja2.parser import Parser as jinja2_Parser
 
 import ast
-from ast import Expression, Lambda, arguments, Param, Name, Subscript, Index, Load, Call, keyword, Num, List, Str, IfExp, Module, FunctionDef, Return
+from ast import Expression, Lambda, arguments, Param, Name, Subscript, Index, Load, Call, keyword, Num, List, Str, IfExp, Module, FunctionDef, Return, And, BoolOp
 
 
 log = logging.getLogger(__name__)
@@ -208,11 +208,11 @@ def translate_when(condition, ctx):
     elif isinstance(condition, str):
         return translate_when_expression(condition, ctx)
 
-    elif isinstance(condition, dict):
-        return translate_value(condition, ctx)
+    elif isinstance(condition, list):
+        return make_all([translate_when(each, ctx) for each in condition])
 
     else:
-        translation_error("when must be str or dict", condition)
+        return translate_value(condition, ctx)
 
 
 def translate_when_expression(string_value, ctx):
@@ -397,6 +397,23 @@ def make_wrapper(new_variables, value):
             starargs=None,
             kwargs=None),
         [value] + [val for key, val in new_variables.iteritems()])
+
+
+def make_all(ll):
+    # if ll is a list, this function is like 'all(ll)'
+    # otherwise this function is like 'll'
+    if isinstance(ll, list):
+        if len(ll) == 0:
+            return make_num(False)
+
+        else:
+            return FavaCode(
+                BoolOp(op=And(),
+                       values=[each.get_ast() for each in ll]),
+                ll)
+
+    else:
+        return ll
 
 
 def make_num(number_value):
