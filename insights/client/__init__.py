@@ -559,6 +559,7 @@ def run(op, *args, **kwargs):
             return getattr(c, op)(*args, **kwargs)
         except:
             logger.exception("Fatal error")
+            sys.exit(1)
 
 
 def update():
