@@ -15,6 +15,17 @@ class ParseException(Exception):
     pass
 
 
+class SkipException(Exception):
+    """
+    Exception that should be thrown from parsers that are explicitly
+    written to look for errors in input data.  If the expected error
+    is not found then the parser should throw this exception to
+    signal to the infrastructure that the parser's output should not be
+    retained.
+    """
+    pass
+
+
 def get_active_lines(lines, comment_char="#"):
     """
     Returns lines, or parts of lines, from content that are not commented out
