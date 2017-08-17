@@ -2,6 +2,7 @@ import pytest
 from collections import OrderedDict
 from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table
 from insights.parsers import calc_offset, optlist_to_dict, keyword_search
+from insights.parsers import ParseException, SkipException
 
 SPLIT_TEST_1 = """
 # Comment line
@@ -313,3 +314,15 @@ def test_keyword_search():
     assert results[2] == DATA_LIST[3]
     # No data, no results.
     assert len(keyword_search([], role='server')) == 0
+
+
+def test_parse_exception():
+    with pytest.raises(ParseException) as e_info:
+        raise ParseException('This is a parse exception')
+    assert 'This is a parse exception' == str(e_info.value)
+
+
+def test_skip_exception():
+    with pytest.raises(SkipException) as e_info:
+        raise SkipException('This is a skip exception')
+    assert 'This is a skip exception' == str(e_info.value)
