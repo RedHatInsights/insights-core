@@ -1,5 +1,73 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.44.0-105...HEAD)
+
+**Implemented enhancements:**
+
+- Add SkipException for dirty parsers [\#336](https://github.com/RedHatInsights/insights-core/pull/336) ([bfahr](https://github.com/bfahr))
+- SMARTctl documentation and improved functionality for 1.x branch [\#299](https://github.com/RedHatInsights/insights-core/pull/299) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- CertificatesEnddate fails to parse filenames [\#300](https://github.com/RedHatInsights/insights-core/issues/300)
+
+**Merged pull requests:**
+
+- Remove filter in nfs\_exports.py [\#350](https://github.com/RedHatInsights/insights-core/pull/350) ([zhangyi733](https://github.com/zhangyi733))
+- convert unittest to pytest in test\_fava [\#342](https://github.com/RedHatInsights/insights-core/pull/342) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
+- Escape literal dots in pattern specs [\#339](https://github.com/RedHatInsights/insights-core/pull/339) ([kylape](https://github.com/kylape))
+- Fix broken spec cmd of certificates\_enddate.py [\#335](https://github.com/RedHatInsights/insights-core/pull/335) ([JoySnow](https://github.com/JoySnow))
+- bugfix: make jinja2 a runtime dep rather than a develop dep. [\#332](https://github.com/RedHatInsights/insights-core/pull/332) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
+- Fava - add when with a list [\#322](https://github.com/RedHatInsights/insights-core/pull/322) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
+- Move and translate Fava\*.md files to docs/fava.rst [\#321](https://github.com/RedHatInsights/insights-core/pull/321) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
+- All parsers are now automatically available for use in Fava [\#320](https://github.com/RedHatInsights/insights-core/pull/320) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
+- Update specs file to change lvs\_noheadings [\#318](https://github.com/RedHatInsights/insights-core/pull/318) ([shzhou12](https://github.com/shzhou12))
+- Make smb.conf parser evaluate the ini file the same as samba. [\#314](https://github.com/RedHatInsights/insights-core/pull/314) ([jsvob](https://github.com/jsvob))
+- Enhance specs semid 1x [\#309](https://github.com/RedHatInsights/insights-core/pull/309) ([wushiqinlou](https://github.com/wushiqinlou))
+- Add parser for /var/log/rhn/rhn\_server\_satellite.log [\#305](https://github.com/RedHatInsights/insights-core/pull/305) ([sagaraivale](https://github.com/sagaraivale))
+- Fix list index error in ps exception - 1x [\#303](https://github.com/RedHatInsights/insights-core/pull/303) ([xiangce](https://github.com/xiangce))
+- New parser katello\_service\_status for 1.x [\#301](https://github.com/RedHatInsights/insights-core/pull/301) ([xiangce](https://github.com/xiangce))
+- Enhance hammer\_ping for 1.x [\#294](https://github.com/RedHatInsights/insights-core/pull/294) ([xiangce](https://github.com/xiangce))
+- Document the ``nproc`` and ``get\_limits`` as deprecated [\#277](https://github.com/RedHatInsights/insights-core/pull/277) ([xiangce](https://github.com/xiangce))
+- Fava - an alternative, ansible like, way to write rule plugins [\#227](https://github.com/RedHatInsights/insights-core/pull/227) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
+
+## [insights-core-1.44.0-105](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.44.0-105) (2017-08-02)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.44.0-103...insights-core-1.44.0-105)
+
+**Merged pull requests:**
+
+- handle unicode characters in RPM name in InstalledRpm property [\#297](https://github.com/RedHatInsights/insights-core/pull/297) ([bobcallaway](https://github.com/bobcallaway))
+
+## [insights-core-1.44.0-103](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.44.0-103) (2017-07-28)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.43.0-93...insights-core-1.44.0-103)
+
+**Implemented enhancements:**
+
+- NSSwitch\_Conf parser for /etc/nsswitch.conf for 1.x branch [\#281](https://github.com/RedHatInsights/insights-core/pull/281) ([PaulWay](https://github.com/PaulWay))
+- Handle RHEL 7.3 `chkconfig` output [\#275](https://github.com/RedHatInsights/insights-core/pull/275) ([PaulWay](https://github.com/PaulWay))
+- Improvements to VgDisplay for `vgdisplay -vv` command handling for 1.x branch [\#272](https://github.com/RedHatInsights/insights-core/pull/272) ([PaulWay](https://github.com/PaulWay))
+- Add get\_dir\(\) method for the mount point associated with a path for 1.x branch [\#261](https://github.com/RedHatInsights/insights-core/pull/261) ([PaulWay](https://github.com/PaulWay))
+- Improve testing and logic of `parted` parser for 1.x branch [\#217](https://github.com/RedHatInsights/insights-core/pull/217) ([PaulWay](https://github.com/PaulWay))
+- Dmesg\_log parser add get\_after for 1.x branch [\#198](https://github.com/RedHatInsights/insights-core/pull/198) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- Lvs mapper fails on lists with log and image LVs [\#288](https://github.com/RedHatInsights/insights-core/issues/288)
+- Improvements to VgDisplay for `vgdisplay -vv` command handling for 1.x branch [\#272](https://github.com/RedHatInsights/insights-core/pull/272) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- Move AlternativesOutput class and associated parsers into single file. [\#140](https://github.com/RedHatInsights/insights-core/issues/140)
+
+**Merged pull requests:**
+
+- Add crontab files from sosreport [\#278](https://github.com/RedHatInsights/insights-core/pull/278) ([abhaykadam](https://github.com/abhaykadam))
+- Documentation restructure and cleanup for 1.x branch [\#271](https://github.com/RedHatInsights/insights-core/pull/271) ([bfahr](https://github.com/bfahr))
+- remote branch and leaf should be numbers not strings [\#268](https://github.com/RedHatInsights/insights-core/pull/268) ([jhjaggars](https://github.com/jhjaggars))
+- Enhance virt-what [\#262](https://github.com/RedHatInsights/insights-core/pull/262) ([xiangce](https://github.com/xiangce))
+
 ## [insights-core-1.43.0-93](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.43.0-93) (2017-07-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.42.0-63...insights-core-1.43.0-93)
 
