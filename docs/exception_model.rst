@@ -82,7 +82,8 @@ any exceptions in the data (“dirty parser”). This allows rules that don’t 
 exceptions to rely on only the first parser, and those rules will not run if valid data
 is not present.  If the dirty parser identifies errors in the data then it will save
 information regarding the errors for use by rules.  If no errors are found in the data
-then the dirty parser will raise `SkipException` to indicate to the engine that it should
+then the dirty parser will raise :py:class:`insights.parsers.SkipException` to indicate
+to the engine that it should
 be removed from the dependency hierarchy.
 
 Other Exceptions from Parsers
@@ -105,7 +106,8 @@ Exception Recognition by the Insights Engine
 Exceptions that are raised by parsers and combiners will be collected by the engine in
 order to determine whether to remove the parser/combiner from the dependency hierarchy,
 for data metrics, and to help identify issues with the parsing code or with the data.
-Specific use of :py:class:`insights.parsers.ParseException` and `SkipException` will
+Specific use of :py:class:`insights.parsers.ParseException` and
+:py:class:`insights.parsers.SkipException` will
 make it much easier for the engine
 to identify and quickly deal with known conditions versus unanticipated conditions
 (i.e., other exceptions being raised) which could indicate errors in the parsing code,
