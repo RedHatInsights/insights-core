@@ -113,6 +113,14 @@ Line two part 1 ^
          line two part 3
 Line three^
 """.strip()
+SPLIT_LINES_3 = """
+web.default_taskmaster_tasks = RHN::Task::SessionCleanup, RHN::Task::ErrataQueue,
+    RHN::Task::ErrataEngine,
+    RHN::Task::DailySummary, RHN::Task::SummaryPopulation,
+    RHN::Task::RHNProc,
+    RHN::Task::PackageCleanup
+
+db_host ="""
 
 
 def test_unsplit_lines():
@@ -127,6 +135,16 @@ def test_unsplit_lines():
     assert lines[0] == 'Line one'
     assert lines[1] == 'Line two part 1          line two part 2         line two part 3'
     assert lines[2] == 'Line three'  # test continuation on last line
+
+    # Test keeping continuation character on line
+    lines = list(unsplit_lines(
+        SPLIT_LINES_3.splitlines(), cont_char=',', keep_cont_char=True
+    ))
+    assert len(lines) == 4
+    assert lines[0] == ''
+    assert lines[1] == 'web.default_taskmaster_tasks = RHN::Task::SessionCleanup, RHN::Task::ErrataQueue,    RHN::Task::ErrataEngine,    RHN::Task::DailySummary, RHN::Task::SummaryPopulation,    RHN::Task::RHNProc,    RHN::Task::PackageCleanup'
+    assert lines[2] == ''
+    assert lines[3] == 'db_host ='
 
 
 def test_calc_offset():
