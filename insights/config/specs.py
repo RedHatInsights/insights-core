@@ -106,6 +106,8 @@ static_specs = {
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/foreman-proxy/proxy.log", large_content=True)]),
     "fstab"                     : SimpleFileSpec("etc/fstab"),
     "galera.cnf"                : SimpleFileSpec("etc/my.cnf.d/galera.cnf"),
+    'getcert_list'              : First([CommandSpec("/usr/bin/getcert list"),
+                                    SimpleFileSpec("sos_commands/ipa/ipa-getcert_list")]),
     "getenforce"                : CommandSpec("/usr/sbin/getenforce"),
     "getsebool"                 : CommandSpec("/usr/sbin/getsebool -a"),
     "glance-api.conf"           : SimpleFileSpec("etc/glance/glance-api.conf"),
