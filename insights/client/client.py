@@ -91,11 +91,19 @@ def test_connection():
 
 
 def _is_client_registered():
+
+    # If the client is running in container mode, bypass this stuff
+    msg_container_mode = 'Client running in container/image mode. Bypassing registration check'
+    if config['analyze_image'] is True:
+        return msg_container_mode, False
+
+    # All other cases
     msg_notyet = 'This machine has not yet been registered.'
     msg_unreg = 'This machine has been unregistered.'
     msg_doreg = 'Use --register to register this machine.'
     msg_rereg = 'Use --force-register if you would like to re-register this machine.'
     msg_exit = 'Exiting...'
+
     # check reg status w/ API
     reg_check = registration_check()
     if not reg_check['status']:
@@ -122,6 +130,12 @@ def _is_client_registered():
 
 
 def try_register():
+
+    # if we are running an image analysis then dont register
+    if config["analyze_image"] is True:
+        logger.info("Running client in Container mode. Bypassing registration.")
+        return
+
     if os.path.isfile(constants.registered_file):
         logger.info('This host has already been registered.')
         return
@@ -525,6 +539,12 @@ def handle_startup():
     """
     Handle startup options
     """
+    # handle container mode stuff
+    if (config['image_id'] or config['tar_file'] or config['mountpoint']):
+            logger.debug('Not scanning host.')
+            logger.debug('Scanning image ID, tar file, or mountpoint.')
+            config['container_mode'] = True
+
     # ----do X and exit options----
     # show version and exit
     if config['version']:
@@ -577,9 +597,11 @@ def handle_startup():
         try_register()
 
     # check registration before doing any uploads
+    # only do this if we are not running in container mode
     # Ignore if in offline mode
-    if not config['register'] and not config['offline']:
-        msg, is_registered = _is_client_registered()
-        if not is_registered:
-            logger.error(msg)
-            return False
+    if not config["container_mode"] and not config["analyze_image"]:
+        if not config['register'] and not config['offline']:
+            msg, is_registered = _is_client_registered()
+            if not is_registered:
+                logger.error(msg)
+                return False

@@ -315,10 +315,8 @@ class InsightsClient(object):
         # image/container running in docker
         # tar_file
         # OR a mount point (FS that is already mounted somewhere)
-        scanning_host = True
         if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mountpoint')):
             logger.debug('Not scanning host.')
-            scanning_host = False
 
         # setup other scanning cases
         # scanning images/containers running in docker
@@ -339,11 +337,10 @@ class InsightsClient(object):
             config['container_mode'] = True
             config['mountpoint'] = kwargs.get('mountpoint')
 
-        # If check_timestamp is not flagged, then skip this check AND
-        # we are also scanning a host
+        # If check_timestamp is not flagged
         # bypass timestamp checks for other cases
-        if bool(kwargs.get('check_timestamp', True)) and scanning_host:
-            logger.debug('Check timestamp is True and we are scanning a host.')
+        if kwargs.get('check_timestamp', True):
+            logger.debug('Check timestamp is True.')
             cached_results = self._cached_results()
             if cached_results:
                 logger.info("Using cached collection: %s", cached_results)

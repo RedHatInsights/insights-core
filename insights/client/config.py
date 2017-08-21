@@ -13,7 +13,7 @@ CONF_DIR = os.path.join('/etc', APP_NAME)
 CONF_FILE = os.path.join(CONF_DIR, 'insights-client.conf')
 
 BOOLEAN_KEYS = [
-    'analyze_compressed_file', 'auto_config', 'auto_update', 'check_timestamp',
+    'analyze_image', 'analyze_compressed_file', 'auto_config', 'auto_update', 'check_timestamp',
     'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
     'no_schedule', 'no_tar_file', 'no_upload', 'obfuscate',
@@ -24,6 +24,7 @@ BOOLEAN_KEYS = [
 ]
 
 CONFIG = {
+    'analyze_image': False,
     'analyze_compressed_file': None,
     'api_url': None,
     'app_name': 'insights-client',
@@ -190,6 +191,11 @@ OPTS = [{
     'help': optparse.SUPPRESS_HELP,
     'action': 'store_true',
     'dest': 'container_mode'
+}, {
+    'opt': ['--analyze-image'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store_true',
+    'dest': 'analyze_image'
 }, {
     'opt': ['--logging-file'],
     'help': 'path to log file location',
@@ -422,10 +428,6 @@ def compile_config():
     # to_stdout implies no_upload
     if CONFIG['to_stdout']:
         CONFIG['no_upload'] = True
-
-    if (CONFIG['container_mode'] and not CONFIG['only']):
-        raise ValueError("Client running in container mode "
-                         "but no image/container specified via --only.")
 
     if (CONFIG['only'] is not None) and (len(CONFIG['only']) < 12):
         raise ValueError("Image/Container ID must be at least twelve characters long.")

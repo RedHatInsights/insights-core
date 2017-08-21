@@ -14,6 +14,7 @@ from subprocess import Popen, PIPE, STDOUT
 from insights.contrib.ConfigParser import RawConfigParser
 
 from constants import InsightsConstants as constants
+from config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,7 @@ def generate_machine_id(new=False,
     machine_id = None
     machine_id_file = None
     logging_name = 'machine-id'
+
     if docker_group:
         # generate a docker group ("docking station") id
         #   for the API to parse this group of systems
@@ -235,7 +237,10 @@ def magic_plan_b(filename):
 
 def generate_container_id(container_name):
     # container id is a uuid in the namespace of the machine
-    return str(uuid.uuid5(uuid.UUID(generate_machine_id()), container_name.encode('utf8')))
+    if not config["container_mode"]:
+        return str(uuid.uuid5(uuid.UUID(generate_machine_id()), container_name.encode('utf8')))
+    else:
+        return container_name.encode('utf8')
 
 
 def run_command_get_output(cmd):

@@ -72,7 +72,10 @@ class InsightsConnection(object):
         self.base_url = protocol + config["base_url"]
         self.upload_url = config["upload_url"]
         if self.upload_url is None:
-            self.upload_url = self.base_url + "/uploads"
+            if config["analyze_image"] is True:
+                self.upload_url = self.base_url + "/uploads/image"
+            else:
+                self.upload_url = self.base_url + "/uploads"
         self.api_url = config["api_url"]
         if self.api_url is None:
             self.api_url = self.base_url
@@ -715,6 +718,8 @@ class InsightsConnection(object):
 
         if cluster:
             upload_url = self.upload_url + '/' + cluster
+        elif (config["container_mode"] is True or config["analyze_image"] is True):
+            upload_url = self.upload_url
         else:
             upload_url = self.upload_url + '/' + generate_machine_id()
 
