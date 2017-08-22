@@ -1,6 +1,6 @@
 ---
 rule:
-  name: "BASIC_ONE"
+  name: "FAVA_ALWAYS_FIRES"
   pydata:
     kernel: this is junk
   when: true
