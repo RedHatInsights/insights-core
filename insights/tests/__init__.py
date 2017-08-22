@@ -12,9 +12,6 @@ from insights.config.factory import apply_filters, get_config
 from insights.util import make_iter
 from collections import defaultdict
 
-import insights
-import insights.core.fava
-
 # Need to alias the name of TestArchive since pytest looks at it because it
 # starts with "Test".
 from insights.archive.tool import TestArchive as TA, Transform as T
@@ -27,10 +24,6 @@ HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
 
 DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
 DEFAULT_HOSTNAME = "hostname.example.com"
-
-
-# Here we load all Fava rule plugins within insights.plugins
-insights.core.fava.fava_load('insights.plugins')
 
 
 def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
