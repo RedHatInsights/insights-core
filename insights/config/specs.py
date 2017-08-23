@@ -249,6 +249,7 @@ static_specs = {
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
+    'pam.conf'                  : SimpleFileSpec("etc/pam.conf"),
     "parted_-l"                 : CommandSpec("/sbin/parted -l -s"),
     "parted_-s-sos"             : First([PatternSpec(r"sos_commands/block/parted-s_.+"),
                                     PatternSpec(r"sos_commands/filesys/parted_-s_.+")]),
@@ -419,6 +420,7 @@ openshift = {
     "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
     "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
     "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
+    "oc_get_pvc"                : CommandSpec("/usr/bin/oc get pvc -o yaml --all-namespaces"),
     "oc_get_endpoints"          : CommandSpec("/usr/bin/oc get endpoints -o yaml --all-namespaces")
 }
 """dict: Openshift specific data collection specifications."""
