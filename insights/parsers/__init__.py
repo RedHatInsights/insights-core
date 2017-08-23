@@ -350,6 +350,19 @@ def keyword_search(rows, **kwargs):
     Takes a list of dictionaries and finds all the dictionaries where the
     keys and values match those found in the keyword arguments.
 
+    Keys in the row data have ' ' and '-' replaced with '_', so they can
+    match the keyword argument parsing.  For example, the keyword argument
+    'fix_up_path' will match a key named 'fix-up path'.
+
+    In addition, several suffixes can be added to the key name to do partial
+    matching of values:
+
+    * '__contains' will test whether the data value contains the given
+      value.
+    * '__startswith' tests if the data value starts with the given value
+    * '__lower_value' compares the lower-case version of the data and given
+      values.
+
     Arguments:
         rows (list): A list of dictionaries representing the data to be
             searched.
@@ -358,7 +371,7 @@ def keyword_search(rows, **kwargs):
 
     Returns:
         (list): The list of rows that match the search keywords.  If no
-            keyword arguments are given, no rows are returned.
+        keyword arguments are given, no rows are returned.
 
     Examples:
         >>> rows = [
@@ -370,11 +383,42 @@ def keyword_search(rows, **kwargs):
         ...
         >>> keyword_search(rows, domain='root')
         [{'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
+        >>> keyword_search(rows, item__contains='c')
+        [{'domain': 'oracle', 'type': 'soft', 'item': 'stack', 'value': 10240},
+         {'domain': 'oracle', 'type': 'hard', 'item': 'stack', 'value': 3276},
+         {'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
+        >>> keyword_search(rows, domain__startswith='r')
+        [{'domain': 'root', 'type': 'soft', 'item': 'nproc', 'value': -1}]
     """
     results = []
     if not kwargs:
         return results
+
+    # Allows us to transform the key and do lookups like __contains and
+    # __startswith
+    matchers = {
+        'default': lambda s, v: s == v,
+        'contains': lambda s, v: v in s,
+        'startswith': lambda s, v: s.startswith(v),
+        'lower_value': lambda s, v: s.lower() == v.lower(),
+    }
+
+    def key_match(row, key, value):
+        # Translate ' ' and '-' of keys in dict to '_' to match keyword arguments.
+        my_row = {
+            key.replace(' ', '_').replace('-', '_'): val
+            for key, val in row.iteritems()
+        }
+        matcher_fn = matchers['default']
+        if '__' in key:
+            key, matcher = key.split('__', 1)
+            if matcher not in matchers:
+                # put key back the way we found it, matcher fn unchanged
+                key = key + '__' + matcher
+            else:
+                matcher_fn = matchers[matcher]
+        return key in my_row and matcher_fn(my_row[key], value)
     return [
         row for row in rows
-        if all([key in row and row[key] == value for key, value in kwargs.iteritems()])
+        if all(key_match(row, key, value) for key, value in kwargs.iteritems())
     ]
