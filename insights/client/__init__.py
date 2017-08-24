@@ -5,6 +5,7 @@ import logging
 import tempfile
 import time
 import shlex
+import shutil
 from subprocess import Popen, PIPE
 from shutil import copyfile
 
@@ -344,12 +345,29 @@ class InsightsClient(object):
             cached_results = self._cached_results()
             if cached_results:
                 logger.info("Using cached collection: %s", cached_results)
-                return cached_results
+                # if to_stdout is flagged then do sys.stdout
+                if config["to_stdout"]:
+                    logger.info("Flag --to-stdout used, using system out.")
+                    logger.info(sys.stdout)
+                    with open(cached_results, "rb") as f:
+                        shutil.copyfileobj(f, sys.stdout)
+                    return None
+                else:
+                    return cached_results
         else:
             logger.debug("Collection timestamp check bypassed. Now collecting.")
 
         # return collection results
-        return client.collect()
+        tar_file = client.collect()
+        if config["to_stdout"]:
+            logger.info("Flag --to-stdout used, using system out")
+            logger.info(sys.stdout)
+            with open(tar_file, "rb") as f:
+                shutil.copyfileobj(f, sys.stdout)
+            logger.info("Deleting archive %s", tar_file)
+            self.delete_archive(tar_file)
+        else:
+            return tar_file
 
     def register(self, force_register=False):
         """
