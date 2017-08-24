@@ -14,32 +14,8 @@ other       password    required    pam_unix.so shadow nullok use_authtok
 other       session     required    pam_unix.so
 """
 
-PAMD_CONF_DATA = """
-#%PAM-1.0
-auth        required    pam_securetty.so
-auth        requisite   pam_unix.so nullok
-auth        sufficient  pam_nologin.so
-auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
-account     optional    pam_unix.so
-password    include     pam_cracklib.so retry=3 logging=verbose
-password    required    pam_unix.so shadow nullok use_authtok
-auth        required    pam_listfile.so \
-                   onerr=succeed item=user sense=deny file=/etc/ftpusers
-session     required    pam_unix.so
-"""
 
-PAMD_MISC = """
-# Miscellaneous trickier lines
-password  required pam_cracklib.so \
-                       difok=3 minlen=15 dcredit= 2 ocredit=2
-auth    requisite       pam_permit.so
-auth    [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
-password optional pam_exec.so seteuid /usr/bin/make -C /var/yp
--session optional pam_no_module.so ignore if module not found
-"""
-
-
-def test_pamd_conf():
+def test_pam_conf():
 
     pam_conf = PamConf(context_wrap(PAM_CONF_DATA))
     assert len(pam_conf) == 7
@@ -58,6 +34,35 @@ def test_pamd_conf():
     assert pam_conf[5].control_flags[0].value is None
     assert pam_conf[5].module_name == 'pam_unix.so'
     assert pam_conf[5].module_args == "shadow nullok use_authtok"
+
+    # Test of keyword search
+    vsftpd = list(pam_conf.search(service='vsftpd'))
+    assert len(vsftpd) == 4
+    assert vsftpd[0] == pam_conf[0]
+    assert vsftpd[1] == pam_conf[1]
+    assert vsftpd[2] == pam_conf[2]
+    assert vsftpd[3] == pam_conf[3]
+    vsftpd_acct = list(pam_conf.search(service='vsftpd', interface='account'))
+    assert len(vsftpd_acct) == 1
+    assert vsftpd_acct[0] == pam_conf[3]
+
+
+PAMD_CONF_DATA = """
+#%PAM-1.0
+auth        required    pam_securetty.so
+auth        requisite   pam_unix.so nullok
+auth        sufficient  pam_nologin.so
+auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
+account     optional    pam_unix.so
+password    include     pam_cracklib.so retry=3 logging=verbose
+password    required    pam_unix.so shadow nullok use_authtok
+auth        required    pam_listfile.so \
+                   onerr=succeed item=user sense=deny file=/etc/ftpusers
+session     required    pam_unix.so
+"""
+
+
+def test_pamd_conf():
 
     pamd_conf = PamDConf(context_wrap(PAMD_CONF_DATA, path='etc/pamd.d/vsftpd'))
     assert len(pamd_conf) == 9
@@ -84,6 +89,20 @@ def test_pamd_conf():
     assert pamd_conf[7].control_flags[0].value is None
     assert pamd_conf[7].module_name == 'pam_listfile.so'
     assert pamd_conf[7].module_args == 'onerr=succeed item=user sense=deny file=/etc/ftpusers'
+
+
+PAMD_MISC = """
+# Miscellaneous trickier lines
+password  required pam_cracklib.so \
+                       difok=3 minlen=15 dcredit= 2 ocredit=2
+auth    requisite       pam_permit.so
+auth    [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
+password optional pam_exec.so seteuid /usr/bin/make -C /var/yp
+-session optional pam_no_module.so ignore if module not found
+"""
+
+
+def test_pamd_misc_conf():
 
     # Miscellaneous complicated line handling tests
     misc = PamDConf(context_wrap(PAMD_MISC, path='etc/pamd.d/misc'))

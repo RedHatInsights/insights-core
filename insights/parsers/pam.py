@@ -109,7 +109,7 @@ References:
 
 from collections import namedtuple
 from .. import Parser, get_active_lines, parser
-from ..parsers import unsplit_lines
+from ..parsers import unsplit_lines, keyword_search
 
 import re
 
@@ -224,7 +224,6 @@ class PamConfEntry(object):
             # be given as a parameter.
             raise ValueError('Service name must be provided for pam.d conf file')
 
-        # print 'line_re:', self.line_re
         match = self.line_rex.search(line)
         if match:
             # Type can have a '-' in front, if so line is ignored if module
@@ -263,11 +262,36 @@ class PamDConf(Parser):
 
         module_interface    control_flag    module_name module_arguments
 
-    Sample input is provided in the examples above.
+    Sample input::
+
+        auth        required    pam_securetty.so
+        auth        requisite   pam_unix.so nullok
+        auth        sufficient  pam_nologin.so
+        auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
+        account     optional    pam_unix.so
+        password    include     pam_cracklib.so retry=3 logging=verbose
+        password    required    pam_unix.so shadow nullok use_authtok
+
+    The `service` property of each PamConfEntry is set to the complete path
+    name of the PAM config file.
 
     Attributes:
         data (list): List containing a PamConfEntry object for each line of
             the conf file in the same order as lines appear in the file.
+
+    Examples:
+        >>> conf = shared[YourPamDConf]
+        >>> conf[0].module_name  # Can be used like a list of objects
+        'pam_securetty.so'
+        >>> account_rows = list(conf.search(interface='account'))
+        >>> len(account_rows)
+        1
+        >>> account_rows[0].interface
+        'account'
+        >>> account_rows[0].module_name
+        'pam_unix.so'
+        >>> account_rows[0].control_flags
+        [ControlFlag(flag='optional', value=True)]
     """
     def parse_content(self, content):
         self.data = []
@@ -287,6 +311,39 @@ class PamDConf(Parser):
     def __len__(self):
         """(int): Return the number of entries read from the file"""
         return len(self.data)
+
+    def search(self, **kwargs):
+        """
+        Search the pam.d configuration file by keyword.  This is provided by
+        the :func:`insights.parsers.keyword_search` function - see its
+        documentation for more information.
+
+        Searching on the list of PAM configuration entries is exactly like
+        they were dictionaries instead of objects with properties.  In
+        addition, the 'control_flags' property becomes a dictionary of
+        keywords and values, so that 'control_flags__contains' allows
+        searching for a particular control flag.
+
+        Returns:
+            (list): A list of PamConfEntry objects that match the given
+            search criteria.
+        """
+        # Because keyword_search takes dicts, and we have objects with complex
+        # properties, we convert them to a list of dicts.
+        # First, store the things we're going to convert.
+        prop_keys = ('service', 'interface', 'module_name', 'module_args')
+        search = []
+        # Can't find a neat way to do this as a comprehension, so it's back
+        # to loops.
+        for obj in self.data:
+            row = {'entry_obj': obj}
+            for key in prop_keys:
+                row[key] = getattr(obj, key)
+            # Convert control_flags down to key/value dictionary
+            row['control_flags'] = {cf.flag: cf.value for cf in obj.control_flags}
+            search.append(row)
+        # Now get the result, and just return the entry objects
+        return [r['entry_obj'] for r in keyword_search(search, **kwargs)]
 
 
 @parser('pam.conf')
