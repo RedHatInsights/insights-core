@@ -16,6 +16,7 @@ from functools import reduce as _reduce
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.util import enum
+from insights.core import fava
 
 log = logging.getLogger(__name__)
 
@@ -315,6 +316,8 @@ def register_component(component, delegate, component_type,
     MODULE_NAMES[component] = get_module_name(component)
     BASE_MODULE_NAMES[component] = get_base_module_name(component)
     COMPONENT_METADATA[component] = metadata
+
+    fava.add_shared_parser(component.__name__, component)
 
     if alias:
         msg = "Alias %s already registered!"
