@@ -16,7 +16,10 @@ def main():
     else:
         client = InsightsClient()
         client.update_rules()
-        tar = client.collect(check_timestamp=False)
+        tar = client.collect(check_timestamp=False,
+                             image_id=(config["image_id"] or config["only"]),
+                             tar_file=config["tar_file"],
+                             mountpoint=config["mountpoint"])
         if not config['no_upload']:
             client.upload(tar)
         else:
