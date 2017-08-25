@@ -461,11 +461,13 @@ def upload(tar_file, collection_duration=None):
     logger.info('Uploading Insights data.')
     pconn = InsightsConnection()
     upload_status = False
+    api_response = None
     for tries in range(config['retries']):
         upload = pconn.upload_archive(tar_file, collection_duration,
                                       cluster=generate_machine_id(
                                           docker_group=config['container_mode']))
         upload_status = upload.status_code
+        api_response = json.loads(upload.text)
         if upload.status_code == 201:
 
             machine_id = generate_machine_id()
@@ -478,7 +480,7 @@ def upload(tar_file, collection_duration=None):
             # Write to ansible facts directory
             if os.path.isdir(constants.insights_ansible_facts_dir):
                 insights_facts = {}
-                insights_facts['last_upload'] = json.loads(upload.text)
+                insights_facts['last_upload'] = api_response
 
                 sat6 = _try_satellite6_configuration()
                 sat5 = None
@@ -511,7 +513,7 @@ def upload(tar_file, collection_duration=None):
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config['logging_file'])
-    return upload_status
+    return {'status': upload_status, 'response': api_response}
 
 
 def delete_archive(path):

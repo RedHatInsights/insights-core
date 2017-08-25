@@ -20,7 +20,7 @@ BOOLEAN_KEYS = [
     'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
     'register', 'reregister', 'run_here', 'silent', 'status', 'support',
     'test_connection', 'to_stdout', 'unregister', 'update', 'validate',
-    'verbose', 'version'
+    'verbose', 'version', 'to_json'
 ]
 
 CONFIG = {
@@ -91,6 +91,7 @@ CONFIG = {
     'check_timestamp': True,
     'image_id': None,
     'tar_file': None,
+    'to_json': False
 }
 
 OPTS = [{
@@ -346,6 +347,11 @@ OPTS = [{
     'help': optparse.SUPPRESS_HELP,
     'action': 'store_true',
     'dest': 'net_debug'
+}, {
+    'opt': ['--to-json'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': 'store_true',
+    'dest': 'to_json'
 }]
 
 
@@ -425,7 +431,7 @@ def compile_config():
         CONFIG.update(settings.config)
     CONFIG.update(parse_options())
 
-    # to_stdout implies no_upload
+    # flags that imply no_upload
     if CONFIG['to_stdout']:
         CONFIG['no_upload'] = True
 
