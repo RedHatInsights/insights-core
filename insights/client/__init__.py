@@ -347,8 +347,6 @@ class InsightsClient(object):
                 logger.info("Using cached collection: %s", cached_results)
                 # if to_stdout is flagged then do sys.stdout
                 if config["to_stdout"]:
-                    logger.info("Flag --to-stdout used, using system out.")
-                    logger.info(sys.stdout)
                     with open(cached_results, "rb") as f:
                         shutil.copyfileobj(f, sys.stdout)
                     return None
@@ -360,11 +358,9 @@ class InsightsClient(object):
         # return collection results
         tar_file = client.collect()
         if config["to_stdout"]:
-            logger.info("Flag --to-stdout used, using system out")
-            logger.info(sys.stdout)
             with open(tar_file, "rb") as f:
                 shutil.copyfileobj(f, sys.stdout)
-            logger.info("Deleting archive %s", tar_file)
+            logger.debug("Deleting archive %s", tar_file)
             self.delete_archive(tar_file)
         else:
             return tar_file
@@ -408,10 +404,10 @@ class InsightsClient(object):
             returns (int): upload status code
         """
         # do the upload
-        upload_status = client.upload(path)
+        upload_results = client.upload(path)
 
         # if we are rotating the eggs and success on upload do rotation
-        if rotate_eggs and upload_status == 201:
+        if rotate_eggs and upload_results['status'] == 201:
             try:
                 self.rotate_eggs()
             except IOError:
@@ -422,7 +418,7 @@ class InsightsClient(object):
                 raise IOError(message)
 
         # return status code
-        return upload_status
+        return upload_results
 
     def rotate_eggs(self):
         """
@@ -523,4 +519,7 @@ def collect():
 
 def upload():
     egg_path = sys.stdin.read().strip()
-    run("upload", egg_path)
+    if config["to_json"]:
+        print "INIT: %s" % (str(run("upload", egg_path)))
+    else:
+        run("upload", egg_path)
