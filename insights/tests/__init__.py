@@ -12,22 +12,15 @@ from insights.core import parser, reducer, marshalling, plugins
 from insights.core.context import Context, PRODUCT_NAMES
 from insights.util import make_iter
 
-# Need to alias the name of TestArchive since pytest looks at it becuase it
+# Need to alias the name of TestArchive since pytest looks at it because it
 # starts with "Test".
 from insights.archive.tool import TestArchive as TA, Transform as T
-
-import insights
-import insights.core.fava
 
 logger = logging.getLogger("test.util")
 
 ARCHIVE_GENERATORS = []
 HEARTBEAT_ID = "99e26bb4823d770cc3c11437fe075d4d1a4db4c7500dad5707faed3b"
 HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
-
-
-# Here we load all Fava rule plugins within insights.plugins
-insights.core.fava.fava_load('insights.plugins')
 
 
 def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
