@@ -716,11 +716,14 @@ class InsightsConnection(object):
         files = {
             'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
-        if cluster:
-            upload_url = self.upload_url + '/' + cluster
-        elif (config["container_mode"] is True or config["analyze_image"] is True):
+        if config["analyze_image"] is True:
+            logger.debug('Uploading container, image, mountpoint or tarfile.')
             upload_url = self.upload_url
+        elif cluster:
+            logger.debug('Uploading cluster.')
+            upload_url = self.upload_url + '/' + cluster
         else:
+            logger.debug('Uploading a host.')
             upload_url = self.upload_url + '/' + generate_machine_id()
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
