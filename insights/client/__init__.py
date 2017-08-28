@@ -487,7 +487,7 @@ def run(op, *args, **kwargs):
     status = client.handle_startup()
     if status is not None:
         logger.debug("Returning early due to initialization response: %s", status)
-        print "INIT: %s" % (status if type(status) in (str, unicode) else "")
+        print "STDOUTRESPONSE: %s" % (status if type(status) in (str, unicode) else "")
         return
     else:
         try:
@@ -520,6 +520,6 @@ def collect():
 def upload():
     egg_path = sys.stdin.read().strip()
     if config["to_json"]:
-        print "INIT: %s" % (str(run("upload", egg_path)))
+        print "STDOUTRESPONSE: %s" % (str(run("upload", egg_path)))
     else:
         run("upload", egg_path)
