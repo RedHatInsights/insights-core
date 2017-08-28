@@ -1,13 +1,24 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.44.0-105...HEAD)
+## [insights-core-1.46.0-12](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.46.0-12) (2017-08-28)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.44.0-105...insights-core-1.46.0-12)
 
 **Implemented enhancements:**
 
+- Added keyword search to PAM configuration parser [\#358](https://github.com/RedHatInsights/insights-core/pull/358) ([PaulWay](https://github.com/PaulWay))
+- Add specs for pam.conf and oc\_get\_pvc for 1.x branch [\#357](https://github.com/RedHatInsights/insights-core/pull/357) ([PaulWay](https://github.com/PaulWay))
+- Crontab parser improvements for 1.x branch [\#355](https://github.com/RedHatInsights/insights-core/pull/355) ([PaulWay](https://github.com/PaulWay))
+- Simplify rhn.conf parsing using new unsplit\_lines keep\_cont\_char option [\#354](https://github.com/RedHatInsights/insights-core/pull/354) ([PaulWay](https://github.com/PaulWay))
+- Enhance unsplit\_lines to allow keeping continuation character for 1.x branch [\#348](https://github.com/RedHatInsights/insights-core/pull/348) ([PaulWay](https://github.com/PaulWay))
+- RHNConf documentation for 1.x branch [\#347](https://github.com/RedHatInsights/insights-core/pull/347) ([PaulWay](https://github.com/PaulWay))
 - Add SkipException for dirty parsers [\#336](https://github.com/RedHatInsights/insights-core/pull/336) ([bfahr](https://github.com/bfahr))
+- Parser for `getcert list` for 1.x branch [\#328](https://github.com/RedHatInsights/insights-core/pull/328) ([PaulWay](https://github.com/PaulWay))
+- More features added to keyword\_search [\#326](https://github.com/RedHatInsights/insights-core/pull/326) ([PaulWay](https://github.com/PaulWay))
 - SMARTctl documentation and improved functionality for 1.x branch [\#299](https://github.com/RedHatInsights/insights-core/pull/299) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- Enhance specs docker inspect 1x [\#368](https://github.com/RedHatInsights/insights-core/pull/368) ([wushiqinlou](https://github.com/wushiqinlou))
 
 **Closed issues:**
 
@@ -19,6 +30,7 @@
 - convert unittest to pytest in test\_fava [\#342](https://github.com/RedHatInsights/insights-core/pull/342) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
 - Escape literal dots in pattern specs [\#339](https://github.com/RedHatInsights/insights-core/pull/339) ([kylape](https://github.com/kylape))
 - Fix broken spec cmd of certificates\_enddate.py [\#335](https://github.com/RedHatInsights/insights-core/pull/335) ([JoySnow](https://github.com/JoySnow))
+- Enhance config systemd 1x [\#333](https://github.com/RedHatInsights/insights-core/pull/333) ([wushiqinlou](https://github.com/wushiqinlou))
 - bugfix: make jinja2 a runtime dep rather than a develop dep. [\#332](https://github.com/RedHatInsights/insights-core/pull/332) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
 - Fava - add when with a list [\#322](https://github.com/RedHatInsights/insights-core/pull/322) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
 - Move and translate Fava\*.md files to docs/fava.rst [\#321](https://github.com/RedHatInsights/insights-core/pull/321) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
