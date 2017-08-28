@@ -1,6 +1,7 @@
 from insights.parsers.systemd import config
 from insights.tests import context_wrap
 
+
 SYSTEMD_DOCKER = """
 [Unit]
 Description=Docker Application Container Engine
@@ -39,6 +40,7 @@ StandardError=null
 WantedBy=multi-user.target
 """.strip()
 
+
 SYSTEMD_OPENSHIFT_NODE = """
 [Unit]
 Description=Atomic OpenShift Node
@@ -66,6 +68,7 @@ ExecStartPost=/usr/sbin/sysctl --system
 WantedBy=multi-user.target
 
 """.strip()
+
 
 SYSTEMD_SYSTEM_CONF = """
 #  This file is part of systemd.
@@ -135,23 +138,13 @@ def test_docker():
     assert docker_service.data["Service"]["Environment"] == "GOTRACEBACK=crash"
     assert docker_service.data["Install"]["WantedBy"] == "multi-user.target"
     assert docker_service.data["Install"].keys() == ["WantedBy"]
-    assert docker_service.data["Service"]["ExecStart"] == """/bin/sh -c '/usr/bin/docker-current daemon
---authorization-plugin=rhel-push-plugin
---exec-opt native.cgroupdriver=systemd
-$OPTIONS
-$DOCKER_STORAGE_OPTIONS
-$DOCKER_NETWORK_OPTIONS
-$ADD_REGISTRY
-$BLOCK_REGISTRY
-$INSECURE_REGISTRY
-2>&1 | /usr/bin/forward-journald -tag docker'"""
+    assert docker_service.data["Service"]["ExecStart"] == "/bin/sh -c '/usr/bin/docker-current daemon --authorization-plugin=rhel-push-plugin --exec-opt native.cgroupdriver=systemd $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS $ADD_REGISTRY $BLOCK_REGISTRY $INSECURE_REGISTRY 2>&1 | /usr/bin/forward-journald -tag docker'"
 
 
 def test_openshift_node():
     openshift_node_service = config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE))
     assert openshift_node_service.data["Unit"]["Wants"] == "docker.service"
-    assert openshift_node_service.data["Unit"]["After"] == """docker.service
-openvswitch.service"""
+    assert openshift_node_service.data["Unit"]["After"] == ['docker.service', 'openvswitch.service']
 
 
 def test_systemd_common_conf():
