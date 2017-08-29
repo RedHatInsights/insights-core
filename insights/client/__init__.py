@@ -406,16 +406,20 @@ class InsightsClient(object):
         # do the upload
         upload_results = client.upload(path)
 
-        # if we are rotating the eggs and success on upload do rotation
-        if rotate_eggs and upload_results['status'] == 201:
-            try:
-                self.rotate_eggs()
-            except IOError:
-                message = ("Failed to rotate %s to %s" %
-                            (constants.insights_core_newest,
-                            constants.insights_core_last_stable))
-                logger.debug(message)
-                raise IOError(message)
+        if upload_results['status'] == 201:
+            if not config['keep_archive']:
+                client.delete_archive(path)
+
+            # if we are rotating the eggs and success on upload do rotation
+            if rotate_eggs:
+                try:
+                    self.rotate_eggs()
+                except IOError:
+                    message = ("Failed to rotate %s to %s" %
+                                (constants.insights_core_newest,
+                                constants.insights_core_last_stable))
+                    logger.debug(message)
+                    raise IOError(message)
 
         # return status code
         return upload_results
