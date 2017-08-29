@@ -238,6 +238,7 @@ static_specs = {
     "ntpq_leap"                 : CommandSpec("/usr/sbin/ntpq -c 'rv 0 leap'"),
     "ntpq_pn"                   : CommandSpec("/usr/sbin/ntpq -pn"),
     "ntptime"                   : CommandSpec("/usr/sbin/ntptime"),
+    "numeric_user_group_name"   : CommandSpec("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group"),
     "openvswitch_server_log"    : SimpleFileSpec('var/log/openvswitch/ovsdb-server.log'),
     "openvswitch_daemon_log"    : SimpleFileSpec('var/log/openvswitch/ovs-vswitchd.log'),
     "os-release"                : SimpleFileSpec("etc/os-release"),
