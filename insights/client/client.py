@@ -520,19 +520,19 @@ def delete_archive(path):
     removed_archive = False
 
     try:
-        logger.info("Removing archive %s", path)
+        logger.debug("Removing archive %s", path)
         removed_archive = os.remove(path)
 
         dirname = os.path.dirname
         abspath = os.path.abspath
         parent_tmp_dir = dirname(abspath(path))
 
-        logger.info("Detected parent temporary directory %s", parent_tmp_dir)
+        logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
         if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-            logger.info("Removing %s", parent_tmp_dir)
+            logger.debug("Removing %s", parent_tmp_dir)
             shutil.rmtree(parent_tmp_dir)
     except:
-        logger.info("Error removing %s", path)
+        logger.error("Error removing %s", path)
 
     return removed_archive
 
@@ -568,7 +568,7 @@ def handle_startup():
     if config['status']:
         reg_check = registration_check()
         for msg in reg_check['messages']:
-            logger.debug(msg)
+            logger.info(msg)
         # exit with !status, 0 for True, 1 for False
         return reg_check['status']
 

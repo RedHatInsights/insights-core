@@ -31,7 +31,7 @@ def registration_check():
 
     pconn = InsightsConnection()
     api_reg_status = pconn.api_registration_check()
-    logger.debug('Registration status: %s:', api_reg_status)
+    logger.debug('Registration status: %s', api_reg_status)
     if type(api_reg_status) is bool:
         if api_reg_status:
             api_record = 'Insights API confirms registration.'
