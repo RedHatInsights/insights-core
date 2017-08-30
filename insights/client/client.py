@@ -41,13 +41,11 @@ def get_file_handler():
     return logging.handlers.RotatingFileHandler(log_file, backupCount=3)
 
 
-def get_console_handler(silent, verbose, to_stdout):
+def get_console_handler(silent, verbose):
     if silent:
         target_level = logging.NOTSET
     elif verbose:
         target_level = logging.DEBUG
-    elif to_stdout:
-        target_level = logging.ERROR
     else:
         target_level = logging.INFO
 
@@ -81,8 +79,7 @@ def set_up_logging():
         # from_stdin mode implies to_stdout
         config['to_stdout'] = (config['to_stdout'] or config['from_stdin'] or config['from_file'])
 
-        verbose = config['verbose'] or config['verbose']
-        logging.root.addHandler(get_console_handler(config['silent'], verbose, config['to_stdout']))
+        logging.root.addHandler(get_console_handler(config['silent'], config['verbose']))
         logging.root.addHandler(get_file_handler())
         configure_level()
         logger.debug("Logging initialized")
