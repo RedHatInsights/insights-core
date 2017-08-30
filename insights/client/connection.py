@@ -720,7 +720,7 @@ class InsightsConnection(object):
             logger.debug('Uploading container, image, mountpoint or tarfile.')
             upload_url = self.upload_url
         elif cluster:
-            logger.debug('Uploading cluster.')
+            logger.debug('Uploading cluster/host.')
             upload_url = self.upload_url + '/' + cluster
         else:
             logger.debug('Uploading a host.')
