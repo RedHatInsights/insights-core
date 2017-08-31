@@ -394,13 +394,21 @@ class InsightsEvaluator(SingleEvaluator):
 
     def handle_map_error(self, e, context):
         self.stats["parser"]["fail"] += 1
-        log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
-                    e, context, self.url, exc_info=True)
+        log.warning("Parser failed with message %s. Ignoring.",
+                    e, context, exc_info=True, extra={
+                        "context": context,
+                        "url": self.url,
+                        "exception_message": str(e)
+                    })
 
     def handle_reduce_error(self, e, context):
         self.stats["reducer"]["fail"] += 1
-        log.warning("Reducer failed with message %s. Ignoring. context: %s [%s]",
-                    e, context, self.url, exc_info=True)
+        log.warning("Reducer failed with message %s. Ignoring.",
+                    e, exc_info=True, extra={
+                        "context": context,
+                        "url": self.url,
+                        "exception_message": str(e)
+                    })
 
 
 class InsightsMultiEvaluator(MultiEvaluator):
