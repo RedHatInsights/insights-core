@@ -20,7 +20,6 @@ entry_points = {
 
 runtime = {
     'pyyaml>=3.10,<=3.12',
-    'tornado>=4.2.1',
     'futures==3.0.5',
     'requests==2.13.0',
     'Jinja2',
