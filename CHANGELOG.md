@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-1.46.0-15](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.46.0-15) (2017-08-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.46.0-12...insights-core-1.46.0-15)
+
+**Merged pull requests:**
+
+- New parser to get info whether there are numeric user or group names. [\#331](https://github.com/RedHatInsights/insights-core/pull/331) ([jsvob](https://github.com/jsvob))
+
 ## [insights-core-1.46.0-12](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.46.0-12) (2017-08-28)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.44.0-105...insights-core-1.46.0-12)
 
@@ -26,6 +33,7 @@
 
 **Merged pull requests:**
 
+- cleaned up the fava related integration tests [\#372](https://github.com/RedHatInsights/insights-core/pull/372) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
 - Remove filter in nfs\_exports.py [\#350](https://github.com/RedHatInsights/insights-core/pull/350) ([zhangyi733](https://github.com/zhangyi733))
 - convert unittest to pytest in test\_fava [\#342](https://github.com/RedHatInsights/insights-core/pull/342) ([gavin-romig-koch](https://github.com/gavin-romig-koch))
 - Escape literal dots in pattern specs [\#339](https://github.com/RedHatInsights/insights-core/pull/339) ([kylape](https://github.com/kylape))
