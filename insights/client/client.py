@@ -407,11 +407,20 @@ def collect(rc=0):
             archive = InsightsArchive(compressor=config['compressor']
                                       if not config['container_mode'] else "none",
                                       target_name=t['name'])
+
+            # determine the target type and begin collection
+            # we infer "docker_image" SPEC analysis for certain types
+            if t['type'] in ["mountpoint", "compressed_file"]:
+                target_type = "docker_image"
+            else:
+                target_type = t['type']
+            logger.debug("Inferring target_type '%s' for SPEC collection", target_type)
+            logger.debug("Inferred from '%s'", t['type'])
             dc = DataCollector(archive,
                                config,
                                mountpoint=mp,
                                target_name=t['name'],
-                               target_type=t['type'])
+                               target_type=target_type)
 
             logger.info('Starting to collect Insights data for %s', logging_name)
             dc.run_collection(collection_rules, rm_conf, branch_info)
