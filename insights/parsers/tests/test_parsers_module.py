@@ -306,6 +306,49 @@ DATA_LIST = [
     {'name': 'test 5', 'role': 'workstation', 'memory_gb': 16, 'ssd': True},
 ]
 
+CERT_LIST = [
+    {
+        'status': 'MONITORING',
+        'stuck': 'no',
+        'key pair storage': "type=NSSDB,location='/etc/dirsrv/slapd-LDAP-EXAMPLE-COM',nickname='Server-Cert',token='NSS Certificate DB',pinfile='/etc/dirsrv/slapd-LDAP-EXAMPLE-COM/pwdfile.txt'",
+        'certificate': {
+            'type': 'NSSDB',
+            'location': '/etc/dirsrv/slapd-LDAP-EXAMPLE-COM',
+            'nickname': 'Server-Cert',
+            'token': 'NSS Certificate DB',
+        },
+        'CA': 'IPA',
+        'issuer': 'CN=Certificate Authority,O=LDAP.EXAMPLE.COM',
+        'subject': 'CN=master.LDAP.EXAMPLE.COM,O=LDAP.EXAMPLE.COM',
+        'expires': '2017-06-28 12:52:12 UTC',
+        'eku': 'id-kp-serverAuth,id-kp-clientAuth',
+        'pre-save command': '',
+        'post-save command': '/usr/lib64/ipa/certmonger/restart_dirsrv LDAP-EXAMPLE-COM',
+        'track': 'yes',
+        'auto-renew': 'yes',
+    }, {
+        'status': 'MONITORING',
+        'stuck': 'no',
+        'key pair storage': "type=NSSDB,location='/etc/dirsrv/slapd-PKI-IPA',nickname='Server-Cert',token='NSS Certificate DB',pinfile='/etc/dirsrv/slapd-PKI-IPA/pwdfile.txt'",
+        'certificate': {
+            'type': 'NSSDB',
+            'location': '/etc/dirsrv/slapd-PKI-IPA',
+            'nickname': 'Server-Cert',
+            'token': 'NSS Certificate DB',
+        },
+        'CA': 'IPA',
+        'issuer': 'CN=Certificate Authority,O=EXAMPLE.COM',
+        'subject': 'CN=ldap.EXAMPLE.COM,O=EXAMPLE.COM',
+        'expires': '2017-06-28 12:52:13 UTC',
+        'eku': 'id-kp-serverAuth,id-kp-clientAuth',
+        'pre-save command': '',
+        'post-save command': '/usr/lib64/ipa/certmonger/restart_dirsrv PKI-IPA',
+        'track': 'yes',
+        'auto-renew': 'yes',
+        'dash- space': 'tested',
+    }
+]
+
 
 def test_keyword_search():
     # No keywords, no result
@@ -321,17 +364,70 @@ def test_keyword_search():
     # Multiple results, name has underscore - search on integer
     results = keyword_search(DATA_LIST, memory_gb=16)
     assert len(results) == 3
-    assert results[0] == DATA_LIST[0]
-    assert results[1] == DATA_LIST[2]
-    assert results[2] == DATA_LIST[4]
+    assert results == [DATA_LIST[i] for i in (0, 2, 4)]
     # Search on boolean
     results = keyword_search(DATA_LIST, ssd=False)
     assert len(results) == 3
-    assert results[0] == DATA_LIST[1]
-    assert results[1] == DATA_LIST[2]
-    assert results[2] == DATA_LIST[3]
+    assert results == [DATA_LIST[i] for i in (1, 2, 3)]
     # No data, no results.
     assert len(keyword_search([], role='server')) == 0
+
+    # Search with contains
+    results = keyword_search(DATA_LIST, role__contains='e')
+    assert len(results) == 4
+    assert results == [DATA_LIST[i] for i in (0, 1, 2, 3)]
+
+    # Search with startswith
+    results = keyword_search(DATA_LIST, role__startswith='e')
+    assert len(results) == 1
+    assert results[0] == DATA_LIST[3]
+
+    # Search for multiple keys, with spaces and dashes, and search operators
+    results = keyword_search(
+        CERT_LIST,
+        pre_save_command='',
+        key_pair_storage__startswith="type=NSSDB,location='/etc/dirsrv/slapd-PKI-IPA'"
+    )
+    assert len(results) == 1
+    assert results[0] == CERT_LIST[1]
+
+    # Make sure contains can also apply to keys with dashes and spaces
+    results = keyword_search(
+        CERT_LIST,
+        post_save_command__contains='PKI-IPA',
+    )
+    assert len(results) == 1
+    assert results[0] == CERT_LIST[1]
+
+    # Lower case value matching
+    results = keyword_search(
+        CERT_LIST,
+        status__lower_value='Monitoring',
+    )
+    assert len(results) == 2
+    assert results == CERT_LIST
+
+    # Check that searches for keys with two underscores that aren't matcher
+    # suffixes still work
+    results = keyword_search(
+        CERT_LIST,
+        dash__space='tested',
+    )
+    assert len(results) == 1
+    assert results[0] == CERT_LIST[1]
+
+    # Check that we can use contains to check the contents of a dictionary
+    # in a value
+    results = keyword_search(
+        CERT_LIST,
+        certificate__contains='type'
+    )
+    assert len(results) == 2
+    assert results == CERT_LIST
+    assert keyword_search(
+        CERT_LIST,
+        certificate__contains='encryption'
+    ) == []
 
 
 def test_parse_exception():
