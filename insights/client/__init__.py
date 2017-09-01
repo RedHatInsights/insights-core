@@ -410,8 +410,12 @@ class InsightsClient(object):
         """
         # do the upload
         upload_results = client.upload(path)
-
         if upload_results['status'] == 201:
+
+            # if successful upload do log rotation
+            client.do_log_rotation()
+
+            # delete the archive
             if not config['keep_archive']:
                 client.delete_archive(path)
 
