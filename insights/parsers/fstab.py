@@ -8,7 +8,8 @@ of fields, named according to their definitions in ``man fstab``:
 * ``fs_spec`` - the device to mount
 * ``fs_file`` - the mount point
 * ``fs_vfstype`` - the type of file system
-* ``fs_mntops`` - any mount options
+* ``raw_fs_mntops`` - the mount options as a string
+* ``fs_mntops`` - the mount options as a dictionary
 * ``fs_freq`` - the dump frequency
 * ``fs_passno`` - check the filesystem on reboot in this pass number
 * ``raw`` - the RAW line which is useful to front-end
@@ -76,7 +77,7 @@ from collections import namedtuple
 from .. import Parser, parser, get_active_lines, parse_table, AttributeDict
 from ..parsers import optlist_to_dict
 
-FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype fs_mntops    fs_freq fs_passno"
+FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
 
 type_info = namedtuple('type_info', field_names=['type', 'default'])
 
@@ -118,7 +119,7 @@ class FSTab(Parser):
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
-            line['fs_mntops'] = AttributeDict(optlist_to_dict(line['fs_mntops']))
+            line['fs_mntops'] = AttributeDict(optlist_to_dict(line['raw_fs_mntops']))
             # add `raw` here for displaying convenience on front-end
             line['raw'] = [l for l in content if l.startswith(line['fs_spec'])][0]
             self.data.append(AttributeDict(line))
