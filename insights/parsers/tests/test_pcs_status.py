@@ -195,6 +195,17 @@ WARNING: We don't know where, but something awful is going to happen
 WARNING: This is another made-up warning, please supply real ones
 """
 
+CLUSTER_UNCLEANNODE = """
+Node control-2: UNCLEAN (online)
+Online: [ control-0 control-1 ]
+RemoteOnline: [ compute-0 compute-1 compute-2 compute-3 compute-4 compute-5 compute-6 compute-7 ]
+
+PCSD Status:
+  control-0: Online
+  control-1: Online
+  control-2: Online
+"""
+
 
 def test_pcs_status():
     pcs = PCSStatus(context_wrap(CLUSTER_NORMAL))
@@ -233,3 +244,9 @@ def test_cluster_warning():
         "WARNING: We don't know where, but something awful is going to happen",
         "WARNING: This is another made-up warning, please supply real ones"
     ]
+
+
+def test_pcs_uncleannode():
+    pcs = PCSStatus(context_wrap(CLUSTER_UNCLEANNODE))
+    assert pcs.nodes == ['control-0', 'control-1', 'control-2']
+    assert pcs.bad_nodes == [{'status': 'UNCLEAN (online)', 'name': 'control-2'}]
