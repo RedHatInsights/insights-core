@@ -28,6 +28,11 @@ INSIGHTS_CONNECTION = None
 logger = logging.getLogger(__name__)
 
 
+def do_log_rotation():
+    handler = get_file_handler()
+    return handler.doRollover()
+
+
 def get_file_handler():
     log_file = config['logging_file']
     log_dir = os.path.dirname(log_file)
