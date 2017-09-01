@@ -110,9 +110,11 @@ def run_parsers(stream, parsers=plugins.PARSERS):
                 else:
                     response = marshaller.marshal(
                         parser(ctx), use_value_list=specs.is_multi_output(ctx.target))
-                if response:
-                    logger.debug("Response for [%s]", ctx.machine_id)
+                if response is not None:
+                    logger.debug("Response for [%s] = %s", ctx.machine_id, response)
                     yield case, ctx.machine_id, parser, response
+                else:
+                    logger.debug("Response for [%s] = %s - treating this as not a valid response", ctx.machine_id, response)
             except Exception:
                 logger.exception(str(parser))
 
