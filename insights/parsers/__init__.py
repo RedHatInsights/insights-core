@@ -55,7 +55,7 @@ def get_active_lines(lines, comment_char="#"):
     return filter(None, (line.split(comment_char, 1)[0].strip() for line in lines))
 
 
-def optlist_to_dict(optlist, opt_sep=',', kv_sep='='):
+def optlist_to_dict(optlist, opt_sep=',', kv_sep='=', strip_quotes=False):
     """Parse an option list into a dictionary.
 
     Takes a list of options separated by ``opt_sep`` and places them into
@@ -69,6 +69,9 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='='):
         opt_sep (str): Separater used to split options.
         kv_sep (str): If not `None` then `optlist` includes key=value pairs
             to be split, and this str is used to split them.
+        strip_quotes (bool): If set, will remove matching '"' and '"'
+            characters from start and end of line.  No quotes are removed
+            from inside the string and mismatched quotes are not removed.
 
     Returns:
         dict: Returns a dictionary of names present in the list.  If `kv_sep`
@@ -81,12 +84,17 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='='):
         >>> optlist_to_dict(optlist)
         {'rw': True, 'ro': True, 'rsize': '32168', 'xyz': True}
     """
-    if kv_sep is not None:
-        optdict = dict((opt, True) for opt in optlist.split(opt_sep) if kv_sep not in opt)
-        optdict.update(dict((opt.split(kv_sep)[0], opt.split(kv_sep)[1]) for opt in optlist.split(opt_sep) if kv_sep in opt))
-    else:
-        optdict = dict((opt, True) for opt in optlist.split(opt_sep))
-    return optdict
+    def make_kv(opt):
+        if kv_sep is not None and kv_sep in opt:
+            k, v = opt.split(kv_sep, 1)
+            if strip_quotes and v[0] in ('"', "'") and v[-1] == v[0]:
+                return k, v[1:-1]
+            else:
+                return k, v
+        else:
+            return opt, True
+
+    return dict(make_kv(opt) for opt in optlist.split(opt_sep))
 
 
 def split_kv_pairs(lines, comment_char="#", filter_string=None, split_on="=", use_partition=False, ordered=False):
