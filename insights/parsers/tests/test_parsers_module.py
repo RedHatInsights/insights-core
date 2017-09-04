@@ -298,6 +298,18 @@ def test_optlist_no_vals():
     assert d['key3'] is True
 
 
+def test_optlist_strip_quotes():
+    d = optlist_to_dict(
+        '''key1="foo",key2='bar',key3="mismatched quotes',key4="inner'quotes"''',
+        strip_quotes=True
+    )
+    assert sorted(d.keys()) == sorted(['key1', 'key2', 'key3', 'key4'])
+    assert d['key1'] == 'foo'
+    assert d['key2'] == 'bar'
+    assert d['key3'] == '"mismatched quotes\''
+    assert d['key4'] == "inner'quotes"
+
+
 DATA_LIST = [
     {'name': 'test 1', 'role': 'server', 'memory_gb': 16, 'ssd': True},
     {'name': 'test 2', 'role': 'server', 'memory_gb': 256, 'ssd': False},
