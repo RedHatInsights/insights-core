@@ -35,6 +35,7 @@ Examples:
     {'mlx4_port2': 'eth', 'mlx4_port1': 'ib'}
 """
 
+from collections import defaultdict
 from .. import Parser, parser
 
 
@@ -53,12 +54,11 @@ class Mlx4Port(Parser):
         return self._mapping
 
     def parse_content(self, content):
-        self._mapping = {}
+        self._mapping = defaultdict(list)
+        port_name = None
         for line in content:
-            mlx4_port_val = ''
             if line.startswith('/sys/'):
                 port_name = line.split('/')[6]
-            else:
-                mlx4_port_val = line.strip()
-            self._mapping[port_name] = mlx4_port_val
-        return
+            elif port_name:
+                self._mapping[port_name].append(line.strip())
+        self._mapping = dict([(port, "\n".join(values)) for port, values in self._mapping.items()])
