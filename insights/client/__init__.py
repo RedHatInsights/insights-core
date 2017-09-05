@@ -533,6 +533,7 @@ def collect():
 def upload():
     egg_path = sys.stdin.read().strip()
     if config["to_json"]:
-        print "STDOUTRESPONSE: %s" % (str(run("upload", egg_path)))
+        import json
+        print "STDOUTRESPONSE: %s" % json.dumps(run("upload", egg_path))
     else:
         run("upload", egg_path)
