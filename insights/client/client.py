@@ -466,6 +466,9 @@ def get_connection():
 
 
 def upload(tar_file, collection_duration=None):
+    if config['no_upload']:
+        logger.info('Archive saved at %s', tar_file)
+        return {'status': None, 'response': None}
     logger.info('Uploading Insights data.')
     pconn = get_connection()
     upload_status = False

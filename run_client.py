@@ -23,7 +23,7 @@ def main():
         if not config['no_upload']:
             client.upload(tar)
         else:
-            print tar
+            print ('Archive saved to ' + tar)
 
 
 if __name__ == "__main__":
