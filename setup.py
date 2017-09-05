@@ -22,7 +22,8 @@ runtime = set([
     'pyyaml>=3.10,<=3.12',
     'six',
     'requests',
-    'pyOpenSSL'
+    'pyOpenSSL',
+    'Jinja2==2.9.6',
 ])
 
 develop = set([
@@ -32,7 +33,6 @@ develop = set([
     'pytest-cov==2.4.0',
     'Sphinx',
     'sphinx_rtd_theme',
-    'Jinja2==2.9.6',
     'futures==3.0.5',
     'requests==2.13.0',
     'wheel'
