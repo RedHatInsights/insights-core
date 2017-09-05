@@ -24,6 +24,7 @@ from config import CONFIG as config
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 APP_NAME = constants.app_name
+INSIGHTS_CONNECTION = None
 logger = logging.getLogger(__name__)
 
 
@@ -86,7 +87,7 @@ def test_connection():
     """
     Test the connection
     """
-    pconn = InsightsConnection()
+    pconn = get_connection()
     return pconn.test_connection()
 
 
@@ -170,7 +171,7 @@ def register():
     if not username and not password and not auto_config and authmethod == 'BASIC':
         logger.debug('Username and password must be defined in configuration file with BASIC authentication method.')
         return False
-    pconn = InsightsConnection()
+    pconn = get_connection()
     return pconn.register()
 
 
@@ -210,7 +211,7 @@ def handle_unregistration():
     """
         returns (bool): True success, False failure
     """
-    pconn = InsightsConnection()
+    pconn = get_connection()
     return pconn.unregister()
 
 
@@ -219,13 +220,13 @@ def get_machine_id():
 
 
 def fetch_rules():
-    pconn = InsightsConnection()
+    pconn = get_connection()
     pc = InsightsConfig(pconn)
     return pc.get_conf(config['update'], {})
 
 
 def update_rules():
-    pconn = InsightsConnection()
+    pconn = get_connection()
     pc = InsightsConfig(pconn)
     return pc.get_conf(True, {})
 
@@ -237,7 +238,7 @@ def get_branch_info():
     """
     branch_info = constants.default_branch_info
     try:
-        pconn = InsightsConnection()
+        pconn = get_connection()
         branch_info = pconn.branch_info()
     except LookupError:
         logger.debug("There was an error obtaining branch information.")
@@ -466,9 +467,16 @@ def collect(rc=0):
     return tar_file
 
 
+def get_connection():
+    global INSIGHTS_CONNECTION
+    if INSIGHTS_CONNECTION is None:
+        INSIGHTS_CONNECTION = InsightsConnection()
+    return INSIGHTS_CONNECTION
+
+
 def upload(tar_file, collection_duration=None):
     logger.info('Uploading Insights data.')
-    pconn = InsightsConnection()
+    pconn = get_connection()
     upload_status = False
     api_response = None
     for tries in range(config['retries']):
@@ -566,7 +574,7 @@ def handle_startup():
         return validate_remove_file()
 
     if config['test_connection']:
-        pconn = InsightsConnection()
+        pconn = get_connection()
         rc = pconn.test_connection()
         if rc == 0:
             logger.info("Passed connection test")
@@ -590,7 +598,7 @@ def handle_startup():
     # ----register options----
     # put this first to avoid conflicts with register
     if config['unregister']:
-        pconn = InsightsConnection()
+        pconn = get_connection()
         return pconn.unregister()
 
     # force-reregister -- remove machine-id files and registration files

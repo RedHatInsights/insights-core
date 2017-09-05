@@ -1,6 +1,5 @@
 import os
 import sys
-import requests
 import logging
 import tempfile
 import time
@@ -50,6 +49,11 @@ class InsightsClient(object):
                 if item != 'password' and item != 'proxy':
                     config_log.debug("%s:%s", item, value)
 
+        # setup insights connection placeholder
+        # used for requests
+        self.session = None
+        self.connection = None
+
     def version(self):
         """
             returns (dict): {'core': str,
@@ -98,6 +102,8 @@ class InsightsClient(object):
         }
 
         logger.debug("Beginning core fetch.")
+
+        # run fetch for egg
         updated = self._fetch(egg_url,
                               constants.core_etag_file,
                               fetch_results['core'],
@@ -119,6 +125,11 @@ class InsightsClient(object):
         """
             returns (str): path to new egg. None if no update.
         """
+        # setup a request session
+        if not self.session:
+            self.connection = client.get_connection()
+            self.session = self.connection.session
+
         # Searched for cached etag information
         current_etag = None
         if os.path.isfile(etag_file):
@@ -134,10 +145,11 @@ class InsightsClient(object):
         net_logger.info("GET %s", url)
         if current_etag and not force:
             logger.debug('Requesting new file with etag %s', current_etag)
-            response = requests.get(url, headers={'If-None-Match': current_etag})
+            etag_headers = {'If-None-Match': current_etag}
+            response = self.session.get(url, headers=etag_headers)
         else:
             logger.debug('Found no etag or forcing fetch')
-            response = requests.get(url)
+            response = self.session.get(url)
 
         # Debug information
         logger.debug('Status code: %d', response.status_code)
