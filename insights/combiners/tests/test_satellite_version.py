@@ -15,8 +15,18 @@ scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 
 SDL-1.2.14-6.el6.x86_64                                     Wed May 18 14:16:25 2016
 """
 
+installed_rpms_60 = """
+foreman-1.6.0.53-1.el7sat.noarch                            Wed May 18 14:16:25 2016
+candlepin-0.9.23.11-1.el7.noarch                            Wed May 18 14:16:25 2016
+katello-1.5.0.2-1.el7.noarch                                Wed May 18 14:16:25 2016
+scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
+SDL-1.2.14-6.el6.x86_64                                     Wed May 18 14:16:25 2016
+"""
+
 installed_rpms_61 = """
 foreman-1.7.2.53-1.el7sat.noarch                            Wed May 18 14:16:25 2016
+candlepin-0.9.49.11-1.el7.noarch                            Wed May 18 14:16:25 2016
+katello-2.2.0.17-1.el7.noarch                               Wed May 18 14:16:25 2016
 scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
 SDL-1.2.14-6.el6.x86_64                                     Wed May 18 14:16:25 2016
 """
@@ -25,7 +35,7 @@ installed_rpms_62 = """
 foreman-1.11.0.53-1.el7sat.noarch                           Wed May 18 14:16:25 2016
 scl-utils-20120927-27.el7_6.x86_64                          Wed May 18 14:18:16 2016
 SDL-1.2.14-6.el7.x86_64                                     Wed May 18 14:16:25 2016
-satellite-6.2.0.11-1.el7sat.noarch                Wed May 18 14:16:25 2016
+satellite-6.2.0.11-1.el7sat.noarch                          Wed May 18 14:16:25 2016
 """
 
 satellite_version_rb = """
@@ -40,6 +50,27 @@ no_sat = """
 scdb-1.15.8-1.el6sat.noarch                                 Wed May 18 14:48:14 2016
 scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
 SDL-1.2.14-6.el6.x86_64                                     Wed May 18 14:16:25 2016
+"""
+
+installed_rpms_6110 = """
+foreman-1.7.2.61-1.el7sat.noarch                            Wed May 18 14:16:25 2016
+candlepin-0.9.49.16-1.el7.noarch                            Wed May 18 14:16:25 2016
+katello-2.2.0.19-1.el7.noarch                               Wed May 18 14:16:25 2016
+scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
+"""
+
+installed_rpms_6111 = """
+foreman-1.7.2.62-1.el7sat.noarch                            Wed May 18 14:16:25 2016
+candlepin-0.9.49.19-1.el7.noarch                            Wed May 18 14:16:25 2016
+katello-2.2.0.19-1.el7.noarch                               Wed May 18 14:16:25 2016
+scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
+"""
+
+installed_rpms_611x_confilct = """
+foreman-1.7.2.61-1.el7sat.noarch                            Wed May 18 14:16:25 2016
+candlepin-0.9.54.10-1.el7.noarch                            Wed May 18 14:16:25 2016
+katello-2.3.0.19-1.el7.noarch                               Wed May 18 14:16:25 2016
+scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 2016
 """
 
 
@@ -70,6 +101,38 @@ def test_get_sat61_version():
     sat = Satellite6Version(context_wrap(satellite_version_rb))
     shared = {Satellite6Version: sat}
     expected = ('6.1.3', '6.1.3', None, 6, 1)
+    result = satellite_version(shared)
+    assert result.major == expected[-2]
+    assert result.minor == expected[-1]
+    assert result.full == expected[0]
+    assert result.release == expected[2]
+    assert result.version == expected[1]
+
+    rpms = InstalledRpms(context_wrap(installed_rpms_6110))
+    shared = {InstalledRpms: rpms}
+    expected = ('6.1.10', '6.1.10', None, 6, 1)
+    result = satellite_version(shared)
+    assert result.major == expected[-2]
+    assert result.minor == expected[-1]
+    assert result.full == expected[0]
+    assert result.release == expected[2]
+    assert result.version == expected[1]
+
+    rpms = InstalledRpms(context_wrap(installed_rpms_6111))
+    shared = {InstalledRpms: rpms}
+    expected = ('6.1.11', '6.1.11', None, 6, 1)
+    result = satellite_version(shared)
+    assert result.major == expected[-2]
+    assert result.minor == expected[-1]
+    assert result.full == expected[0]
+    assert result.release == expected[2]
+    assert result.version == expected[1]
+
+
+def test_get_sat60():
+    rpms = InstalledRpms(context_wrap(installed_rpms_60))
+    shared = {InstalledRpms: rpms}
+    expected = ('6.0.8', '6.0.8', None, 6, 0)
     result = satellite_version(shared)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
@@ -109,4 +172,14 @@ def test_no_sat_installed():
     sat = Satellite6Version(context_wrap(installed_rpms_61))
     shared = {InstalledRpms: rpms, Satellite6Version: sat}
     result = satellite_version(shared)
+    assert result is None
+
+    rpms = InstalledRpms(context_wrap(installed_rpms_611x_confilct))
+    shared = {InstalledRpms: rpms}
+    result = satellite_version(shared)
+    assert result is None
+
+
+def test_none():
+    result = satellite_version({})
     assert result is None
