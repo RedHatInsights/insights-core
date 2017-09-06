@@ -13,7 +13,7 @@ CONF_DIR = os.path.join('/etc', APP_NAME)
 CONF_FILE = os.path.join(CONF_DIR, 'insights-client.conf')
 
 BOOLEAN_KEYS = [
-    'analyze_image', 'analyze_compressed_file', 'auto_config', 'auto_update', 'check_timestamp',
+    'analyze_image', 'analyze_compressed_file', 'auto_config', 'auto_update',
     'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
     'no_schedule', 'no_tar_file', 'no_upload', 'obfuscate',
@@ -88,7 +88,6 @@ CONFIG = {
     'validate': False,
     'verbose': False,
     'version': False,
-    'check_timestamp': True,
     'image_id': None,
     'tar_file': None,
     'to_json': False
@@ -323,11 +322,6 @@ OPTS = [{
     'action': 'store_true',
     'dest': 'debug',
     'group': 'debug'
-}, {
-    'opt': ['--bypass-timestamp-check'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store_false',
-    'dest': 'check_timestamp'
 }, {
     'opt': ['--image-id'],
     'help': optparse.SUPPRESS_HELP,

@@ -3,8 +3,8 @@ import json
 import logging
 import logging.handlers
 import os
-import shutil
 import time
+import shutil
 
 from auto_config import (_try_satellite6_configuration,
                          _try_satellite5_configuration)
@@ -451,17 +451,6 @@ def collect(rc=0):
             if container_connection:
                 container_connection.close()
 
-    # Write the .lastcollected date
-    if tar_file is not None:
-        with open(constants.archive_last_collected_date_file, 'w') as the_file:
-            last_collected_time = str(time.time())
-            the_file.write(last_collected_time + "\n")
-            the_file.write(tar_file)
-            logger.debug("Wrote %s to %s as timestamp" %
-                (last_collected_time, constants.archive_last_collected_date_file))
-            logger.debug("Wrote %s to %s as last collected archive" %
-                (tar_file, constants.archive_last_collected_date_file))
-
     # cleanup the temporary stuff for analyzing tar files
     if config['analyze_compressed_file'] is not None and compressed_filesystem is not None:
         compressed_filesystem.cleanup_temp_filesystem()
@@ -550,6 +539,7 @@ def delete_archive(path):
         if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
             logger.debug("Removing %s", parent_tmp_dir)
             shutil.rmtree(parent_tmp_dir)
+
     except:
         logger.error("Error removing %s", path)
 
