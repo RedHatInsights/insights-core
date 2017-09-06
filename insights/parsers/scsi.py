@@ -58,6 +58,8 @@ class SCSI(Parser):
     TYPE_KEYS_ALT = ['Type', 'ANSI  SCSI revision']
 
     def parse_content(self, content, header='Attached devices:'):
+        if not content or len(content) < 1:
+            raise ParseException("Empty content of file /proc/scsi/scsi", content)
         devices = []
         if header:
             if content[0] != header:
@@ -89,11 +91,14 @@ class SCSI(Parser):
     @classmethod
     def collect_keys(cls, content, keys, data):
         num_keys = len(keys)
-        for i, key in enumerate(keys):
-            start = content.index(key)
-            end = content.index(keys[i + 1]) if (i + 1) < num_keys else None
-            k, v = [s.strip() for s in content[start:end].split(':')]
-            data[k.lower().replace(' ', '_')] = v
+        try:
+            for i, key in enumerate(keys):
+                start = content.index(key)
+                end = content.index(keys[i + 1]) if (i + 1) < num_keys else None
+                k, v = [s.strip() for s in content[start:end].split(':')]
+                data[k.lower().replace(' ', '_')] = v
+        except:
+            raise ParseException("Parse error for current line:", content)
 
     def __len__(self):
         return len(self.data)
