@@ -56,10 +56,11 @@ class InsightsConnection(object):
         self.password = config["password"]
 
         self.cert_verify = config["cert_verify"]
-        if self.cert_verify.lower() == 'false':
-            self.cert_verify = False
-        elif self.cert_verify.lower() == 'true':
-            self.cert_verify = True
+        if type(self.cert_verify) in (str, unicode):
+            if self.cert_verify.lower() == 'false':
+                self.cert_verify = False
+            elif self.cert_verify.lower() == 'true':
+                self.cert_verify = True
 
         protocol = "https://"
         insecure_connection = config["insecure_connection"]
