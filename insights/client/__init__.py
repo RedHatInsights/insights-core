@@ -204,6 +204,14 @@ class InsightsClient(object):
                              'stdout': stdout,
                              'rc': return code}
         """
+        # if we are running in no_gpg or not gpg mode then return true
+        if not config["gpg"]:
+            return {'gpg': True,
+                    'stderr': None,
+                    'stdout': None,
+                    'rc': 0}
+
+        # if a valid egg path and gpg were received do the verification
         if egg_path and gpg_key:
             cmd_template = '/usr/bin/gpg --verify --keyring %s %s %s'
             cmd = cmd_template % (gpg_key, egg_path + '.asc', egg_path)
