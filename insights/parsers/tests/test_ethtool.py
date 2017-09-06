@@ -548,6 +548,12 @@ Settings for eth1:
 """.strip()
 
 
+ETHTOOL_INFO_BAD_1 = """
+Settings for dummy2:
+No data available
+""".strip()
+
+
 def test_ethtool():
     ethtool_info = ethtool.Ethtool(context_wrap(ETHTOOL_INFO, path="ethtool_eth1"))
     assert ethtool_info.ifname == "eth1"
@@ -569,3 +575,5 @@ def test_ethtool():
 def test_ethtool_fail():
     with pytest.raises(ParseException):
         ethtool.Ethtool(context_wrap(FAIL_ETHTOOL_A_1, path="ethtool_eth1"))
+    with pytest.raises(ParseException):
+        ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_1, path="ethtool_eth1"))
