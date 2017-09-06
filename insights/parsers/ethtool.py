@@ -760,8 +760,16 @@ class Ethtool(Parser):
         self.data = {}
         self.iface = self.file_name.replace("ethtool_", "")
 
+        # One way to get this result is run command '$ ethtool'.
+        if "ethtool: bad command line argument(s)" in content[0]:
+            raise ParseException('ethtool: bad command line argument for ethtool', content)
+
         if "Settings for" in content[0]:
             self.data['ETHNIC'] = content[0].split()[-1].strip(':')
+
+        if "No data available" in content[1]:
+            raise ParseException('Fake ethnic as ethtool command argument', content)
+
         key = value = None
         for line in content[1:]:
             line = line.strip()
