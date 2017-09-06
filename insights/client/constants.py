@@ -43,7 +43,3 @@ class InsightsConstants(object):
     insights_core_last_stable_gpg_sig = os.path.join(insights_core_lib_dir, 'last_stable.egg.asc')
     insights_core_newest = os.path.join(insights_core_lib_dir, 'newest.egg')
     insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
-    insights_archive_generation = os.path.join(insights_core_lib_dir, 'archive')
-    insights_tmp_dir = os.path.join(insights_core_lib_dir, 'tmp_dir')
-    insights_archive_tmp_dir = os.path.join(insights_core_lib_dir, 'archive_tmp_dir')
-    archive_last_collected_date_file = os.path.join(insights_core_lib_dir, '.lastcollected')

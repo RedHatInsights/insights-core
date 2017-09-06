@@ -2,10 +2,9 @@ import os
 import sys
 import logging
 import tempfile
-import time
 import shlex
+import shutil
 from subprocess import Popen, PIPE
-from shutil import copyfile
 
 from .. import get_nvr
 from . import client
@@ -257,8 +256,8 @@ class InsightsClient(object):
         # Copy the NEW (/tmp/insights-core.egg) egg to /var/lib/insights/newest.egg
         try:
             logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_newest))
-            copyfile(new_egg, constants.insights_core_newest)
-            copyfile(new_egg_gpg_sig, constants.insights_core_gpg_sig_newest)
+            shutil.copyfile(new_egg, constants.insights_core_newest)
+            shutil.copyfile(new_egg_gpg_sig, constants.insights_core_gpg_sig_newest)
         except IOError:
             message = "There was an error copying the new Core from %s to %s." %\
                 (new_egg, constants.insights_core_newest)
@@ -282,51 +281,9 @@ class InsightsClient(object):
         """
         return client.fetch_rules()
 
-    def _cached_results(self):
-        # archive_tmp_dir and .lastcollected must both exist
-        file_name = constants.archive_last_collected_date_file
-        if not os.path.isfile(file_name):
-            return
-
-        # get .lastcollected timestamp and archive
-        # .lastcollected contains the timestamp on the first line
-        # .lastcollected contains the archive path and name on the second line
-        with open(file_name) as coll_file:
-            try:
-                lastcollected = int(float(coll_file.readline().strip()))
-                logger.debug("Found last collected timestamp %s." % (lastcollected))
-            except ValueError:
-                logger.debug("Invalid last collected timestamp detected.")
-                lastcollected = 0
-            last_collected_archive = coll_file.readline().strip()
-
-        # make sure the archive actually exists on the filesystem
-        if not os.path.isfile(last_collected_archive):
-            logger.debug("Found last collected archive %s in .lastcollected"
-                         " but file does not exist" % (last_collected_archive))
-            return
-        else:
-            logger.debug("Found last collected archive %s." % (last_collected_archive))
-
-        # get the latest archive if .lastcollected is < 24hrs
-        try:
-            hours_since_last_collection = (time.time() - lastcollected) / 3600
-            logger.debug("Hours since last collection: %s" % (hours_since_last_collection))
-            if (hours_since_last_collection) < 24:
-                logger.debug("Time since last collection is less than 24 hours.")
-                logger.debug("Latest archive %s found." % (last_collected_archive))
-                return last_collected_archive
-            else:
-                logger.debug("Last time collected greater than 24 hours")
-
-        except:
-            logger.debug("There was an error with the last collected timestamp"
-                         " file or archives.")
-
     def collect(self, **kwargs):
         """
-            kwargs: check_timestamp=True,
-                    image_id=UUID,
+            kwargs: image_id=UUID,
                     tar_file=/path/to/tar,
                     mountpoint=/path/to/mountpoint
             returns (str, json): will return a string path to archive, or json facts
@@ -356,20 +313,6 @@ class InsightsClient(object):
             logger.debug('Scanning a mount point.')
             config['container_mode'] = True
             config['mountpoint'] = kwargs.get('mountpoint')
-
-        # If check_timestamp is not flagged
-        # bypass timestamp checks for other cases
-        if kwargs.get('check_timestamp', True):
-            logger.debug('Check timestamp is True.')
-            cached_results = self._cached_results()
-            if cached_results:
-                logger.info("Using cached collection: %s", cached_results)
-
-                # it is important to note that --to-stdout is utilized via the wrapper RPM
-                # this file is received and then we invoke shutil.copyfileobj
-                return cached_results
-        else:
-            logger.debug("Collection timestamp check bypassed. Now collecting.")
 
         # return collection results
         tar_file = client.collect()
@@ -455,10 +398,10 @@ class InsightsClient(object):
                 # try copying newest to latest_stable
                 try:
                     # copy the core
-                    copyfile(constants.insights_core_newest,
+                    shutil.copyfile(constants.insights_core_newest,
                              constants.insights_core_last_stable)
                     # copy the core sig
-                    copyfile(constants.insights_core_gpg_sig_newest,
+                    shutil.copyfile(constants.insights_core_gpg_sig_newest,
                              constants.insights_core_last_stable_gpg_sig)
                 except IOError:
                     message = ("There was a problem copying %s to %s." %
@@ -532,8 +475,7 @@ def update():
 
 
 def collect():
-    print run("collect", check_timestamp=config["check_timestamp"],
-                         image_id=(config["image_id"] or config["only"]),
+    print run("collect", image_id=(config["image_id"] or config["only"]),
                          tar_file=config["tar_file"],
                          mountpoint=config["mountpoint"])
 
