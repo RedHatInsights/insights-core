@@ -11,6 +11,7 @@ env:
 
 build:
     ci:
+    - if [ "`python -V 2>&1`" == "Python 2.6.9" ]; then cp .collections.py /usr/lib/python2.6/collections.py; fi
     - pip install -e .[develop]
     - mkdir -p shippable/testresults shippable/codecoverage
     - if [ $PHASE == "test" ]; then py.test --cov=insights --cov-report=xml --junit-xml=shippable/testresults/results.xml; fi

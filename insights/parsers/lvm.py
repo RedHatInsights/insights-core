@@ -584,7 +584,7 @@ if __name__ == "__main__":
     # Run each lvm command with --separator="|", --nameprefixes and *not* --noheadings
 
     import sys
-    from insights.contrib.collections import OrderedDict
+    from collections import OrderedDict
 
     content = sys.stdin.read().splitlines()
     headers = [h.strip().replace(" ", "_") for h in content[0].split("|")]
