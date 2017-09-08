@@ -13,7 +13,7 @@ def test_already_linked():
 
 
 def test_set_daily():
-    cronfile = '/tmp/crontest.cron'
-    schedule.set_schedule(cronfile)
-    assert os.path.islink(cronfile)
-    os.remove(cronfile)
+    schedule.remove_scheduling()
+    schedule.set_daily()
+    assert schedule.already_linked()
+    schedule.remove_scheduling()
