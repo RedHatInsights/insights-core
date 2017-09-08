@@ -573,21 +573,16 @@ def handle_startup():
 
     if config['enable_schedule']:
         # enable automatic scheduling
-        InsightsSchedule().set_daily()
-        config['no_schedule'] = False
-        logger.info('Automatic scheduling for Insights has been enabled.')
         logger.debug('Updating config...')
-        modify_config_file({'no_schedule': 'False'})
-        return True
+        updated = InsightsSchedule().set_daily()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been enabled.')
 
     if config['disable_schedule']:
         # disable automatic schedling
         InsightsSchedule().remove_scheduling()
-        config['no_schedule'] = True
         logger.info('Automatic scheduling for Insights has been disabled.')
         logger.debug('Updating config...')
-        modify_config_file({'no_schedule': 'True'})
-        return True
 
     # test the insights connection
     if config['test_connection']:
@@ -634,7 +629,7 @@ def handle_startup():
 
     # check registration before doing any uploads
     # only do this if we are not running in container mode
-    # ignore if in offline mode
+    # Ignore if in offline mode
     if not config["container_mode"] and not config["analyze_image"]:
         if not config['register'] and not config['offline']:
             msg, is_registered = _is_client_registered()
