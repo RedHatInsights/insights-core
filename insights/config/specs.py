@@ -267,6 +267,7 @@ static_specs = {
                                     PatternSpec(r"database/postgresql-.+\.log", large_content=True)]),
     "prelink_orig_md5"          : NoneGroup([CommandSpec("/usr/sbin/prelink -y --md5 {md5chk_files}", md5chk_files=r"\S+"),
                                     CommandSpec("/usr/bin/md5sum {md5chk_files}", md5chk_files=r"\S+")]),
+    "proxy_server.conf"         : SimpleFileSpec("etc/swift/proxy-server.conf"),
     "ps_aux"                    : CommandSpec("/bin/ps aux"),
     "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
     "ps_auxwww"                 : SimpleFileSpec("sos_commands/process/ps_auxwww"),
