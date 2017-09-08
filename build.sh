@@ -2,6 +2,10 @@
 
 set -ev
 
+if [ "`python -V 2>&1`" == "Python 2.6.9" ]; then 
+    cp .collections.py /home/travis/virtualenv/python2.6.9/lib/python2.6/collections.py
+fi
+
 py.test
 
 if [ "`python -V 2>&1`" != "Python 2.6.9" ]; then 

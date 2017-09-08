@@ -1,5 +1,5 @@
 import pkgutil
-from insights.contrib.collections import OrderedDict
+from collections import OrderedDict
 
 
 __all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]

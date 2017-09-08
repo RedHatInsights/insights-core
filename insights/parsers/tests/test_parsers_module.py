@@ -1,5 +1,5 @@
 import pytest
-from insights.contrib.collections import OrderedDict
+from collections import OrderedDict
 from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table
 from insights.parsers import calc_offset, optlist_to_dict, keyword_search
 from insights.parsers import ParseException, SkipException
