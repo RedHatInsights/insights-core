@@ -475,9 +475,11 @@ def update():
 
 
 def collect():
-    print run("collect", image_id=(config["image_id"] or config["only"]),
-                         tar_file=config["tar_file"],
-                         mountpoint=config["mountpoint"])
+    tar_file = run("collect", image_id=(config["image_id"] or config["only"]),
+                              tar_file=config["tar_file"],
+                              mountpoint=config["mountpoint"])
+    if tar_file is not None:
+        print tar_file
 
 
 def upload():
