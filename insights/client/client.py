@@ -107,7 +107,6 @@ def _is_client_registered():
     msg_unreg = 'This machine has been unregistered.'
     msg_doreg = 'Use --register to register this machine.'
     msg_rereg = 'Use --force-register if you would like to re-register this machine.'
-    msg_exit = 'Exiting...'
 
     # check reg status w/ API
     reg_check = registration_check()
@@ -115,12 +114,12 @@ def _is_client_registered():
         # not registered
         if reg_check['unreg_date']:
             # system has been unregistered from the UI
-            msg = '\n'.join([msg_unreg, msg_rereg, msg_exit])
+            msg = '\n'.join([msg_unreg, msg_rereg])
             write_unregistered_file(reg_check['unreg_date'])
             return msg, False
         else:
             # no record of system in remote
-            msg = '\n'.join([msg_notyet, msg_doreg, msg_exit])
+            msg = '\n'.join([msg_notyet, msg_doreg])
             # clear any local records
             write_to_disk(constants.registered_file, delete=True)
             write_to_disk(constants.unregistered_file, delete=True)
@@ -635,10 +634,9 @@ def handle_startup():
 
     # check registration before doing any uploads
     # only do this if we are not running in container mode
-    # Ignore if in offline mode
+    # ignore if in offline mode
     if not config["container_mode"] and not config["analyze_image"]:
         if not config['register'] and not config['offline']:
             msg, is_registered = _is_client_registered()
             if not is_registered:
-                logger.error(msg)
-                return False
+                return msg
