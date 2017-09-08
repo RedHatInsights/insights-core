@@ -16,7 +16,7 @@ BOOLEAN_KEYS = [
     'analyze_image', 'analyze_compressed_file', 'auto_config', 'auto_update',
     'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
-    'no_schedule', 'no_tar_file', 'no_upload', 'obfuscate',
+    'no_tar_file', 'no_upload', 'obfuscate',
     'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
     'register', 'reregister', 'run_here', 'silent', 'status', 'support',
     'test_connection', 'to_stdout', 'unregister', 'update', 'validate',
@@ -57,7 +57,6 @@ CONFIG = {
     'mountpoint': None,
     'net_debug': False,
     'no_gpg': False,  # legacy
-    'no_schedule': False,
     'no_tar_file': False,
     'no_upload': False,
     'obfuscate': False,
