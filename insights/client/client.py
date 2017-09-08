@@ -13,7 +13,8 @@ from utilities import (validate_remove_file,
                        generate_analysis_target_id,
                        write_to_disk,
                        write_unregistered_file,
-                       determine_hostname)
+                       determine_hostname,
+                       modify_config_file)
 from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
@@ -21,6 +22,7 @@ from archive import InsightsArchive
 from support import InsightsSupport, registration_check
 from constants import InsightsConstants as constants
 from config import CONFIG as config
+from schedule import InsightsSchedule
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 APP_NAME = constants.app_name
@@ -565,6 +567,30 @@ def handle_startup():
     if config['validate']:
         return validate_remove_file()
 
+    # handle cron stuff
+    if config['enable_schedule'] is True and config['disable_schedule'] is True:
+        logger.error('Conflicting options: --enable-schedule and --disable-schedule')
+        return False
+
+    if config['enable_schedule']:
+        # enable automatic scheduling
+        InsightsSchedule().set_daily()
+        config['no_schedule'] = False
+        logger.info('Automatic scheduling for Insights has been enabled.')
+        logger.debug('Updating config...')
+        modify_config_file({'no_schedule': 'False'})
+        return True
+
+    if config['disable_schedule']:
+        # disable automatic schedling
+        InsightsSchedule().remove_scheduling()
+        config['no_schedule'] = True
+        logger.info('Automatic scheduling for Insights has been disabled.')
+        logger.debug('Updating config...')
+        modify_config_file({'no_schedule': 'True'})
+        return True
+
+    # test the insights connection
     if config['test_connection']:
         pconn = get_connection()
         rc = pconn.test_connection()
