@@ -185,7 +185,10 @@ class InsightsClient(object):
             logger.debug('Please check config, error reaching %s', url)
 
     def update(self):
+        # fetch the new eggs and gpg
         egg_paths = self.fetch()
+
+        # if the gpg checks out install it
         if (egg_paths and self.verify(egg_paths['core'])['gpg']):
             return self.install(egg_paths['core'], egg_paths['gpg_sig'])
         else:
@@ -202,6 +205,25 @@ class InsightsClient(object):
                              'stdout': stdout,
                              'rc': return code}
         """
+        # check if the provided files (egg and gpg) actually exist
+        if egg_path and not os.path.isfile(egg_path):
+            the_message = "Provided egg path %s does not exist, cannot verify." % (egg_path)
+            logger.debug(the_message)
+            return {'gpg': False,
+                    'stderr': the_message,
+                    'stdout': the_message,
+                    'rc': 1,
+                    'message': the_message}
+        if config["gpg"] and gpg_key and not os.path.isfile(gpg_key):
+            the_message = ("Running in GPG mode but cannot find "
+                            "file %s to verify against." % (gpg_key))
+            logger.debug(the_message)
+            return {'gpg': False,
+                    'stderr': the_message,
+                    'stdout': the_message,
+                    'rc': 1,
+                    'message': the_message}
+
         # if we are running in no_gpg or not gpg mode then return true
         if not config["gpg"]:
             return {'gpg': True,
@@ -234,12 +256,23 @@ class InsightsClient(object):
         raises OSError if cannot create /var/lib/insights
         raises IOError if cannot copy /tmp/insights-core.egg to /var/lib/insights/newest.egg
         """
+
+        # make sure a valid egg was provided
         if not new_egg:
             the_message = 'Must provide a valid Core installation path.'
             logger.debug(the_message)
             return {'success': False, 'message': the_message}
 
+        # if running in gpg mode, check for valid sig
+        if config["gpg"] and new_egg_gpg_sig is None:
+            the_message = "Must provide a valid Core GPG installation path."
+            logger.debug(the_message)
+            return {'success': False, 'message': the_message}
+
+        # debug
         logger.debug("Installing the new Core %s", new_egg)
+        if config["gpg"]:
+            logger.debug("Installing the new Core GPG Sig %s", new_egg_gpg_sig)
 
         # Make sure /var/lib/insights exists
         try:
@@ -253,6 +286,7 @@ class InsightsClient(object):
             raise
 
         # Copy the NEW (/tmp/insights-core.egg) egg to /var/lib/insights/newest.egg
+        # Additionally, copy NEW (/tmp/insights-core.egg.asc) to /var/lib/insights/newest.egg.asc
         try:
             logger.debug("Copying %s to %s." % (new_egg, constants.insights_core_newest))
             shutil.copyfile(new_egg, constants.insights_core_newest)
