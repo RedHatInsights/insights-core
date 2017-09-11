@@ -13,8 +13,7 @@ from utilities import (validate_remove_file,
                        generate_analysis_target_id,
                        write_to_disk,
                        write_unregistered_file,
-                       determine_hostname,
-                       modify_config_file)
+                       determine_hostname)
 from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
