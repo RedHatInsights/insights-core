@@ -117,8 +117,7 @@ class InsightsClient(object):
                         fetch_results['gpg_sig'],
                         force)
 
-        # return new core path and gpg sig or None
-        return fetch_results
+            return fetch_results
 
     def _fetch(self, url, etag_file, target_path, force):
         """
@@ -186,9 +185,9 @@ class InsightsClient(object):
             logger.debug('Please check config, error reaching %s', url)
 
     def update(self):
-        egg_path = self.fetch()
-        if (egg_path.get('core') is not None and self.verify(egg_path['core'])['gpg']):
-            return self.install(egg_path['core'], egg_path['gpg_sig'])
+        egg_paths = self.fetch()
+        if (egg_paths and self.verify(egg_paths['core'])['gpg']):
+            return self.install(egg_paths['core'], egg_paths['gpg_sig'])
         else:
             return False
 
