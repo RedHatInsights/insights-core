@@ -2,6 +2,7 @@ import os
 import tempfile
 import uuid
 import insights.client.utilities as util
+from insights.client.constants import InsightsConstants
 import re
 
 machine_id = str(uuid.uuid4())
@@ -42,6 +43,10 @@ def test_write_to_disk():
 
 
 def test_generate_machine_id():
+    orig_dir = InsightsConstants.insights_ansible_facts_dir
+    InsightsConstants.insights_ansible_facts_dir = tempfile.mkdtemp()
+    InsightsConstants.insights_ansible_machine_id_file = os.path.join(
+        InsightsConstants.insights_ansible_facts_dir, "ansible_machine_id.fact")
     machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
                                 util.generate_machine_id(destination_file='/tmp/testmachineid'))
     assert machine_id_regex.group(0) is not None
@@ -49,6 +54,11 @@ def test_generate_machine_id():
         machine_id = _file.read()
     assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
+    os.remove(InsightsConstants.insights_ansible_machine_id_file)
+    os.rmdir(InsightsConstants.insights_ansible_facts_dir)
+    InsightsConstants.insights_ansible_facts_dir = orig_dir
+    InsightsConstants.insights_ansible_machine_id_file = os.path.join(
+        InsightsConstants.insights_ansible_facts_dir, "ansible_machine_id.fact")
 
 
 def test_expand_paths():
