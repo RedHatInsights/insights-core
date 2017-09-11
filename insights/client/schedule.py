@@ -13,20 +13,23 @@ logger = logging.getLogger(__name__)
 
 class InsightsSchedule(object):
 
-    def __init__(self, filename='/etc/cron.daily/' + APP_NAME):
-        self.cron_daily = filename
+    def __init__(self, source=None, target='/etc/cron.daily/' + APP_NAME):
+        self.target = target
+        if source:
+            self.source = source
+        else:
+            extension = '-container' if config['container_mode'] else ''
+            self.source = '/etc/%s/%s%s.cron' % (APP_NAME, APP_NAME, extension)
 
     @property
     def active(self):
-        return os.path.isfile(self.cron_daily)
+        return os.path.isfile(self.target)
 
     def set_daily(self):
         logger.debug('Setting schedule to daily')
         try:
-            extension = '-container' if config['container_mode'] else ''
-            filename = '/etc/%s/%s%s.cron' % (APP_NAME, APP_NAME, extension)
-            if not os.path.exists(self.cron_daily):
-                os.symlink(filename, self.cron_daily)
+            if not os.path.exists(self.target):
+                os.symlink(self.source, self.target)
                 return True
         except OSError:
             logger.exception('Could not link cron.daily')
@@ -34,6 +37,6 @@ class InsightsSchedule(object):
     def remove_scheduling(self):
         logger.debug('Removing all cron tasks')
         try:
-            os.remove(self.cron_daily)
+            os.remove(self.target)
         except OSError:
             logger.exception('Could not remove cron.daily')
