@@ -248,9 +248,9 @@ class InsightsClient(object):
                              (constants.insights_core_lib_dir))
                 os.mkdir(constants.insights_core_lib_dir)
         except OSError:
-            message = "There was an error creating %s for Core installation." %\
-                (constants.insights_core_lib_dir)
-            raise OSError(message)
+            logger.info("There was an error creating %s for core installation." % (
+                constants.insights_core_lib_dir))
+            raise
 
         # Copy the NEW (/tmp/insights-core.egg) egg to /var/lib/insights/newest.egg
         try:
@@ -258,9 +258,9 @@ class InsightsClient(object):
             shutil.copyfile(new_egg, constants.insights_core_newest)
             shutil.copyfile(new_egg_gpg_sig, constants.insights_core_gpg_sig_newest)
         except IOError:
-            message = "There was an error copying the new Core from %s to %s." %\
-                (new_egg, constants.insights_core_newest)
-            raise IOError(message)
+            logger.info("There was an error copying the new core from %s to %s." % (
+                new_egg, constants.insights_core_newest))
+            raise
 
         logger.debug("The new Insights Core was installed successfully.")
         return {'success': True}
