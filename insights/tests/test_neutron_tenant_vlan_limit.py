@@ -188,4 +188,4 @@ def integration_tests():
                            machine_id="b3a4e6b2-c357-5ac5-a35f-daea39ee0409")
     update_metadata = copy.deepcopy(osp_metadata)
     update_metadata["total_overcloud_networks"] = 2000
-    yield [update_metadata, input_data], [None]
+    yield [update_metadata, input_data], []

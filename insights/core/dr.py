@@ -24,7 +24,7 @@ except:
 
 log = logging.getLogger(__name__)
 
-GROUPS = enum("cluster", "single")
+GROUPS = enum("single", "cluster")
 
 MODULE_NAMES = {}
 BASE_MODULE_NAMES = {}
@@ -68,7 +68,7 @@ def resolve_aliases(graph):
     return resolve_alias(graph)
 
 
-def get_alias_for(component):
+def get_alias(component):
     return ALIASES_BY_COMPONENT.get(component)
 
 
@@ -92,6 +92,11 @@ def get_component_type(component):
     return TYPE_OF_COMPONENT.get(component)
 
 
+def get_group(component):
+    component = resolve_alias(component)
+    return GROUP_OF_COMPONENT.get(component)
+
+
 def get_dependencies(component):
     component = resolve_alias(component)
     return set(resolve_alias(d) for d in DEPENDENCIES.get(component, set()))
@@ -104,13 +109,13 @@ def get_dependents(component):
     return deps
 
 
-def add_observer(o, _type=ANY_TYPE):
-    TYPE_OBSERVERS[_type].add(o)
+def add_observer(o, component_type=ANY_TYPE):
+    TYPE_OBSERVERS[component_type].add(o)
 
 
-def observer(_type=ANY_TYPE):
+def observer(component_type=ANY_TYPE):
     def inner(func):
-        add_observer(func, _type)
+        add_observer(func, component_type)
         return func
     return inner
 
@@ -183,16 +188,25 @@ def replace(old, new):
             v.add(new)
 
     for d in DEPENDENTS[old]:
-        DEPENDENCIES[_group][d].discard(old)
-        DEPENDENCIES[_group][d].add(new)
+        DEPENDENCIES[d].discard(old)
+        DEPENDENCIES[d].add(new)
 
     COMPONENTS_BY_TYPE[_type].discard(old)
 
-    del ALIASES[old]
+    if old in ALIASES_BY_COMPONENT:
+        a = ALIASES_BY_COMPONENT[old]
+        del ALIASES_BY_COMPONENT[old]
+        del ALIASES[a]
+
+    if old in DEPENDENTS:
+        del DEPENDENTS[old]
+
+    HIDDEN.discard(old)
+
     del COMPONENT_METADATA[old]
-    del DEPENDENTS[old]
     del GROUP_OF_COMPONENT[old]
-    del DEPENDENCIES[_group][old]
+    del DEPENDENCIES[old]
+    del COMPONENTS[_group][old]
     del TYPE_OF_COMPONENT[old]
     del DELEGATES[old]
 
@@ -287,7 +301,10 @@ def split_requirements(requires):
 
 
 def stringify_requirements(requires):
-    req_all, req_any = split_requirements(requires)
+    if isinstance(requires, tuple):
+        req_all, req_any = requires
+    else:
+        req_all, req_any = split_requirements(requires)
     pretty_all = [get_name(r) for r in req_all]
     pretty_any = [str([get_name(r) for r in any_list]) for any_list in req_any]
     result = "All: %s" % pretty_all + " Any: " + " Any: ".join(pretty_any)
@@ -295,7 +312,11 @@ def stringify_requirements(requires):
 
 
 def register_component(component, delegate, component_type,
-        requires=None, optional=None, group=GROUPS.single, alias=None, metadata={}):
+                       requires=None,
+                       optional=None,
+                       group=GROUPS.single,
+                       alias=None,
+                       metadata={}):
 
     if requires:
         _all, _any = split_requirements(requires)
@@ -348,14 +369,14 @@ class Broker(object):
         for k, v in TYPE_OBSERVERS.items():
             self.observers[k] = set(v)
 
-    def observer(self, _type=ANY_TYPE):
+    def observer(self, component_type=ANY_TYPE):
         def inner(func):
-            self.add_observer(func, _type)
+            self.add_observer(func, component_type)
             return func
         return inner
 
-    def add_observer(self, o, _type=ANY_TYPE):
-        self.observers[_type].add(o)
+    def add_observer(self, o, component_type=ANY_TYPE):
+        self.observers[component_type].add(o)
 
     def fire_observers(self, component):
         _type = TYPE_OF_COMPONENT.get(component, None)
@@ -514,7 +535,6 @@ def new_component_type(name=None,
     def decorator(requires=None,
                   optional=None,
                   group=group,
-                  executor=executor,
                   alias=None,
                   component_type=None,
                   metadata={}):
@@ -544,6 +564,13 @@ def new_component_type(name=None,
 
     if name:
         decorator.__name__ = name
+        s = inspect.stack()
+        frame = s[1][0]
+        mod = inspect.getmodule(frame) or sys.modules.get("__main__")
+        if mod:
+            decorator.__module__ = mod.__name__
+            setattr(mod, name, decorator)
+
     return decorator
 
 
@@ -561,12 +588,11 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
     broker = broker or Broker()
 
     for component in run_order(components, broker):
+        start = time.time()
         try:
             if component not in broker and component in DELEGATES:
                 log.info("Calling %s" % get_name(component))
-                start = time.time()
                 result = DELEGATES[component](broker)
-                broker.exec_times[component] = time.time() - start
                 broker[component] = result
         except MissingRequirements as mr:
             broker.add_exception(component, mr)
@@ -576,6 +602,7 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
             log.debug(ex)
             broker.add_exception(component, ex, traceback.format_exc())
         finally:
+            broker.exec_times[component] = time.time() - start
             broker.fire_observers(component)
 
     return broker

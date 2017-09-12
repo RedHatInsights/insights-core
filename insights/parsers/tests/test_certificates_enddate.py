@@ -92,9 +92,9 @@ def test_certificates_enddate():
 
 def test_certificates_enddate_unparsable_datatime():
     Cert6 = CertificatesEnddate(context_wrap(CRT6))
-    assert (Cert6.certificates_path == [
+    assert (set(Cert6.certificates_path) == set([
             '/etc/pki/consumer/cert.pem',
-            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
+            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
     assert Cert6.expiration_date('/etc/pki/consumer/cert.pem').datetime is None
     assert (Cert6.expiration_date(
                 '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').str ==

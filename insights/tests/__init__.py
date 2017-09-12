@@ -12,6 +12,10 @@ from insights.config.factory import apply_filters, get_config
 from insights.util import make_iter
 from collections import defaultdict
 
+import insights
+import insights.core.fava  # noqa: F401
+from insights.core.evaluators import broker_from_spec_mapper
+
 # Need to alias the name of TestArchive since pytest looks at it because it
 # starts with "Test".
 from insights.archive.tool import TestArchive as TA, Transform as T
@@ -160,9 +164,11 @@ def integrate(input_data, component):
     :param callable component: component to test
     """
     if isinstance(input_data, InputData):
-        evaluator = SingleEvaluator(input_data)
+        b = broker_from_spec_mapper(input_data)
+        evaluator = SingleEvaluator(input_data, broker=b)
         evaluator.process()
-        return [evaluator.broker.instances.get(component)]
+        result = evaluator.broker.instances.get(component)
+        return [result] if result else []
     if isinstance(input_data, list):
         if isinstance(input_data[0], dict):
             # Assume it's metadata.json
@@ -176,7 +182,8 @@ def integrate(input_data, component):
         else:
             evaluator = MultiEvaluator(MultinodeShim(input_data))
         evaluator.process()
-        return [evaluator.broker.instances.get(component)]
+        result = evaluator.broker.instances.get(component)
+        return [result] if result else []
     else:
         raise TypeError("Unrecognized test data: %s" % type(input_data))
 
@@ -223,7 +230,7 @@ class InputData(object):
         cnt = input_data_cache.get(name, 0)
         self.name = "{0}-{1:0>5}".format(name, cnt)
         input_data_cache[name] = cnt + 1
-        self.root = "/"
+        self.root = None
         self.records = []
         self.symbolic_files = defaultdict(list)
         self.data_spec_config = get_config()
@@ -271,7 +278,8 @@ class InputData(object):
             content_iter = apply_filters(target, make_iter(content))
         else:
             content_iter = make_iter(content)
-        ctx = Context(content="\n".join(content_iter),
+        ctx = Context(target=target,
+                      content="\n".join(content_iter),
                       release=self.release,
                       version=self.version,
                       path=path,

@@ -23,6 +23,7 @@ runtime = set([
     'six',
     'requests',
     'pyOpenSSL',
+    'importlib',
     'Jinja2==2.9.6',
 ])
 

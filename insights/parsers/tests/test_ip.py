@@ -238,14 +238,6 @@ def test_ip_route_2():
     assert r1a.proto == 'static'
     assert hasattr(r1a, 'metric')
     assert r1a.metric == '50'
-    # a bit of a hack to make sure we test the __repr__ function of
-    # the Route object:
-    assert (
-        r1a.__repr__() ==
-        "{'via': '10.64.54.1', 'proto': 'static', 'metric': '50', " +
-        "'prefix': '10.0.0.0/8', 'dev': 'tun0', 'netmask': 8, " +
-        "'table': None, 'type': None}"
-    )
 
     # 10.64.54.0/23 dev tun0  proto kernel  scope link  src 10.64.54.44  metric 50
     assert '10.64.54.0/23' in tbl

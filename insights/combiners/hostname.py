@@ -36,8 +36,8 @@ def serialize(obj):
 
 
 @deserializer(Hostname)
-def deserialize(_type, obj):
-    return Hostname(**obj)
+def deserialize(_type, data):
+    return _type(**data)
 
 
 @combiner(requires=[[hname, facter, systemid]])

@@ -2,7 +2,7 @@ import json as ser
 import logging
 import os
 
-from insights.core import dr
+from insights.core import dr, plugins
 from insights.util import fs
 
 log = logging.getLogger(__name__)
@@ -77,26 +77,39 @@ def deserialize(data):
     return to_obj(_type, data["object"])
 
 
+def marshal(v):
+    if v is None:
+        return None
+    if isinstance(v, list):
+        return [serialize(t) for t in v]
+    return serialize(v)
+
+
+def unmarshal(data):
+    if data is None:
+        return None
+    if isinstance(data, list):
+        return [deserialize(d) for d in data]
+    return deserialize(data)
+
+
 def persister(output_dir, ignore_hidden=True):
     def observer(c, broker):
-        if c not in broker:
-            return
-
         if ignore_hidden and dr.is_hidden(c):
             return
 
-        value = broker[c]
-        if isinstance(value, list):
-            content = [serialize(t) for t in value]
-        else:
-            content = serialize(value)
+        if c not in broker and c not in broker.exceptions:
+            return
+
         name = dr.get_name(c)
         c_type = dr.get_component_type(c)
         doc = {}
         doc["name"] = name
         doc["dr_type"] = dr.get_name(c_type) if c_type else None
-        doc["time"] = broker.exec_times[c]
-        doc["results"] = content
+        doc["is_rule"] = plugins.is_rule(c)
+        doc["time"] = broker.exec_times.get(c)
+        doc["results"] = marshal(broker.get(c))
+        doc["errors"] = marshal(broker.exceptions.get(c))
         path = os.path.join(output_dir, name + "." + dr.get_base_module_name(ser))
         try:
             with open(path, "wb") as f:
@@ -108,12 +121,27 @@ def persister(output_dir, ignore_hidden=True):
     return observer
 
 
-def hydrate(payload):
-    key = dr.get_component(payload["name"]) or payload["name"]
-    data = payload["results"]
-    try:
-        value = [deserialize(d) for d in data]
-    except:
-        value = deserialize(data)
+def hydrate(payload, broker=None):
+    broker = broker or dr.Broker()
+    name = payload["name"]
+    key = dr.get_component(name) or name
 
-    return (key, value)
+    results = unmarshal(payload["results"])
+    if results:
+        broker[key] = results
+
+    errors = unmarshal(payload["errors"])
+    if errors:
+        broker.exceptions[key] = errors
+
+    return broker
+
+
+@serializer(BaseException)
+def serialize_exception(ex):
+    return ex.args
+
+
+@deserializer(BaseException)
+def deserialize_exception(_type, data):
+    return _type(*data)

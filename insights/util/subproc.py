@@ -10,7 +10,7 @@ STDOUT = subprocess.PIPE
 STDERR = subprocess.STDOUT
 
 
-class CalledProcessError(IOError):
+class CalledProcessError(Exception):
     """Raised if call fails.
 
     Parameters
@@ -32,7 +32,7 @@ class CalledProcessError(IOError):
         Any output the command produced.
      """
 
-    def __init__(self, returncode, cmd, output):
+    def __init__(self, returncode, cmd, output=None):
         self.returncode = returncode
         self.cmd = cmd
         self.output = output

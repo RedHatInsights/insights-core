@@ -54,7 +54,7 @@ class VirtWhat(object):
         specifics (list): List of the specific information.
     """
 
-    def __init__(self, local, shared):
+    def __init__(self, shared):
         self.is_virtual = self.is_physical = None
         self.generic = ''
         self.specifics = []

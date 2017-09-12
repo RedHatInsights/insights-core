@@ -280,7 +280,7 @@ def test_vw_virt_what_1():
     vw = VWP(context_wrap(T1))
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "kvm"
@@ -290,7 +290,7 @@ def test_vw_virt_what_2():
     vw = VWP(context_wrap(T2))
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is False
     assert ret.is_physical is True
     assert ret.generic == "baremetal"
@@ -300,7 +300,7 @@ def test_vw_virt_what_specific():
     vw = VWP(context_wrap(T3))
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "xen"
@@ -312,7 +312,7 @@ def test_vw_dmidecode_1():
     vw = VWP(context_wrap(T4))
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "xen"
@@ -323,7 +323,7 @@ def test_vw_dmidecode_2():
     vw = VWP(context_wrap(T4))
     dmi = DMIDecode(context_wrap(DMIDECODE))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is False
     assert ret.is_physical is True
     assert ret.generic == "baremetal"
@@ -333,7 +333,7 @@ def test_vw_dmidecode_3():
     vw = VWP(context_wrap(T4))
     dmi = DMIDecode(context_wrap(DMIDECODE_V))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "vmware"
@@ -343,7 +343,7 @@ def test_vw_dmidecode_4():
     vw = VWP(context_wrap(T4))
     dmi = DMIDecode(context_wrap(DMIDECODE_KVM))
     shared = {VWP: vw, DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "kvm"
@@ -352,7 +352,7 @@ def test_vw_dmidecode_4():
 def test_vw_dmidecode_5():
     dmi = DMIDecode(context_wrap(DMIDECODE_KVM))
     shared = {DMIDecode: dmi}
-    ret = VirtWhat(None, shared)
+    ret = VirtWhat(shared)
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "kvm"
