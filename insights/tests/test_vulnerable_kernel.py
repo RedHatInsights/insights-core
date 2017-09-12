@@ -59,4 +59,4 @@ def integration_tests():
         uname_line = UNAME_TEMPLATE % kernel
         i = InputData()
         i.add('uname', uname_line)
-        yield i, [None]
+        yield i, []

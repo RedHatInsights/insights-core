@@ -49,13 +49,6 @@ class Parser(object):
     """
 
     def __init__(self, context):
-        if context is None:
-            self.file_path = None
-            self.file_name = None
-            self.last_client_run = None
-            self.args = None
-            return
-
         self.file_path = context.path
         """str: Full context path of the input file."""
         self.file_name = os.path.basename(context.path) \
@@ -81,7 +74,11 @@ def default_parser_serializer(obj):
 
 @deserializer(Parser)
 def default_parser_deserializer(_type, data):
-    obj = _type(None)
+    obj = _type.__new__(_type)
+    obj.file_path = None
+    obj.file_name = None
+    obj.last_client_run = None
+    obj.args = None
     for k, v in data.items():
         setattr(obj, k, v)
     return obj

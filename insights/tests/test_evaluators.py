@@ -9,6 +9,7 @@ from contextlib import closing
 from insights.core.specs import SpecMapper
 from insights.core.evaluators import InsightsEvaluator, InsightsMultiEvaluator, SingleEvaluator
 from insights.core import dr
+from insights.core.hydration import broker_from_spec_mapper
 from insights.core.archives import TarExtractor, DirectoryAdapter
 from insights.plugins.insights_heartbeat import is_insights_heartbeat
 from insights.parsers.multinode import osp, OSPChild
@@ -293,11 +294,12 @@ def make_cluster_archive(fd, content_type):
         return cluster_tar_fp.read()
 
 
-def _unpack_archive(ex, cls):
+def _unpack_archive(ex, cls, meta=None):
     dr.load_components("insights.plugins")
     spec_mapper = SpecMapper(ex)
     assert spec_mapper.get_content("machine-id", split=False) == HEARTBEAT_ID
-    p = cls(spec_mapper)
+    b = broker_from_spec_mapper(spec_mapper)
+    p = cls(spec_mapper, broker=b, metadata=meta)
     p.process()
     assert p.broker.get(is_insights_heartbeat) == {
         "type": "rule", "error_key": "INSIGHTS_HEARTBEAT"}
@@ -314,17 +316,19 @@ def _common_tests(p):
 
 
 def test_single_evaluator():
-    arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
+    meta = {"product_code": "ocp", "role": "node"}
+    arc_path = insights_heartbeat(metadata=meta)
     with TarExtractor().from_path(arc_path) as ex:
-        p = _unpack_archive(ex, SingleEvaluator)
+        p = _unpack_archive(ex, SingleEvaluator, meta)
         _common_tests(p)
     subprocess.call("rm -rf %s" % arc_path, shell=True)
 
 
 def test_insights_evaluator():
-    arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
+    meta = {"product_code": "ocp", "role": "node"}
+    arc_path = insights_heartbeat(metadata=meta)
     with TarExtractor().from_path(arc_path) as ex:
-        p = _unpack_archive(ex, InsightsEvaluator)
+        p = _unpack_archive(ex, InsightsEvaluator, meta)
         r = _common_tests(p)
         system = r["system"]
         assert system["product"] == "ocp"

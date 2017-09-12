@@ -4,9 +4,8 @@ from collections import defaultdict
 
 from insights.core import dr
 from insights.core import marshalling, plugins
-from insights.core.dr import stringify_requirements
-from insights.core.context import Context
 from insights.core.archives import InvalidArchive
+from insights.core.context import Context
 
 log = logging.getLogger(__name__)
 
@@ -15,19 +14,47 @@ def get_simple_module_name(obj):
     return dr.BASE_MODULE_NAMES.get(obj, None)
 
 
-def serialize_skips(skips):
-    for skip in skips:
-        skip["details"] = stringify_requirements(skip["details"])
+def broker_from_spec_mapper(spec_mapper, broker=None, on_content_error=log.exception):
+    broker = broker or dr.Broker()
+    for symbolic_name, files in spec_mapper.symbolic_files.items():
+        if symbolic_name == "metadata.json" or symbolic_name in broker:
+            continue
+
+        is_pattern = spec_mapper.data_spec_config.is_multi_output(symbolic_name)
+        if not is_pattern and len(files) > 1:
+            raise Exception("Multiple files for simple file spec: %s" % symbolic_name)
+
+        if is_pattern:
+            broker[symbolic_name] = []
+
+        for f in files:
+            content = []
+            try:
+                content = spec_mapper.get_content(f, symbolic=False)
+            except Exception as e:
+                on_content_error(e)
+                continue
+
+            cmd_not_found_list = ["Command not found", "timeout: failed to run command"]
+            if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
+                continue
+
+            urp = f if spec_mapper.root is None else f.split(spec_mapper.root)[1]
+            unrooted_path = urp.lstrip("/")
+            context = Context(target=symbolic_name, content=content, path=unrooted_path)
+
+            if is_pattern:
+                broker[symbolic_name].append(context)
+            else:
+                broker[symbolic_name] = context
+    return broker
 
 
 class Evaluator(object):
 
-    def is_pattern_file(self, symbolic_name):
-        return self.spec_mapper.data_spec_config.is_multi_output(symbolic_name)
-
-    def __init__(self, spec_mapper, broker=None, metadata=None):
+    def __init__(self, spec_mapper=None, broker=None, metadata=None):
         self.spec_mapper = spec_mapper
-        self.broker = broker or dr.Broker()
+        self.broker = broker
         self.metadata = defaultdict(dict)
         self.rule_skips = []
         self.rule_results = []
@@ -95,27 +122,28 @@ class Evaluator(object):
 
 class SingleEvaluator(Evaluator):
 
-    def __init__(self, spec_mapper, broker=None, metadata=None):
-        super(SingleEvaluator, self).__init__(spec_mapper, broker, metadata)
+    def __init__(self, spec_mapper=None, broker=None, metadata=None):
+        super(SingleEvaluator, self).__init__(spec_mapper=spec_mapper, broker=broker, metadata=metadata)
 
     def append_metadata(self, r, plugin):
         for k, v in r.items():
             self.metadata[k] = v
 
     def format_response(self, response):
-        serialize_skips(response["skips"])
         response["stats"]["skips"]["count"] = len(self.rule_skips)
         return response
 
     def _protected_parse(self, sym_name, parser, default=""):
         try:
-            data = self.spec_mapper.get_content(sym_name)
-            result = parser(data)
+            data = self.broker.get(sym_name)
+            result = parser(data.content)
             return result
         except:
             return default
 
     def _pull_md_fragment(self):
+        if "systems" not in self.archive_metadata:
+            return self.archive_metadata
         hn = self.machine_id
         sub_systems = [s for s in self.archive_metadata["systems"] if s["system_id"] == hn]
         assert len(sub_systems) == 1
@@ -130,37 +158,6 @@ class SingleEvaluator(Evaluator):
 
         if self.archive_metadata:
             self.broker["metadata.json"] = self._pull_md_fragment()
-
-        for symbolic_name, files in self.spec_mapper.symbolic_files.items():
-            if symbolic_name == "metadata.json":
-                continue
-
-            is_pattern = self.is_pattern_file(symbolic_name)
-            if not is_pattern and len(files) > 1:
-                raise Exception("Multiple files for simple file spec: %s" % symbolic_name)
-
-            if is_pattern:
-                self.broker[symbolic_name] = []
-
-            for f in files:
-                content = []
-                try:
-                    content = self.spec_mapper.get_content(f, symbolic=False)
-                except Exception as e:
-                    self.handle_content_error(e, f)
-                    continue
-
-                cmd_not_found_list = ["Command not found", "timeout: failed to run command"]
-                if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
-                    continue
-
-                unrooted_path = f.split(self.spec_mapper.root)[1].lstrip("/")
-                hn = self.get_contextual_hostname()
-                context = Context(content=content, path=unrooted_path, target=symbolic_name, hostname=hn)
-                if is_pattern:
-                    self.broker[symbolic_name].append(context)
-                else:
-                    self.broker[symbolic_name] = context
 
     def get_response(self):
         return self.format_response({
@@ -189,7 +186,7 @@ class SingleEvaluator(Evaluator):
 class MultiEvaluator(Evaluator):
 
     def __init__(self, spec_mapper, broker=None, metadata=None):
-        super(MultiEvaluator, self).__init__(spec_mapper)
+        super(MultiEvaluator, self).__init__(spec_mapper, broker=broker or dr.Broker())
         self.SubEvaluator = self.sub_evaluator_class()
         self.archive_results = defaultdict(lambda: {
             "system": {
@@ -215,7 +212,8 @@ class MultiEvaluator(Evaluator):
     def pre_process(self):
         sub_brokers = {}
         for i, sub_spec_mapper in enumerate(self.spec_mapper.sub_spec_mappers()):
-            sub_evaluator = self.SubEvaluator(sub_spec_mapper, metadata=self.archive_metadata)
+            b = broker_from_spec_mapper(sub_spec_mapper, on_content_error=self.handle_content_error)
+            sub_evaluator = self.SubEvaluator(sub_spec_mapper, broker=b, metadata=self.archive_metadata)
             host_result = sub_evaluator.process()
             hn = sub_evaluator.get_contextual_hostname(default=i)
             self.archive_results[hn] = host_result
@@ -260,8 +258,8 @@ class MultiEvaluator(Evaluator):
 
 class InsightsEvaluator(SingleEvaluator):
 
-    def __init__(self, spec_mapper, broker=None, url="not set", system_id=None, metadata=None):
-        super(InsightsEvaluator, self).__init__(spec_mapper, broker, metadata=metadata)
+    def __init__(self, spec_mapper=None, broker=None, url="not set", system_id=None, metadata=None):
+        super(InsightsEvaluator, self).__init__(spec_mapper, broker=broker, metadata=metadata)
         self.system_id = system_id
         self.url = url
 
@@ -274,8 +272,7 @@ class InsightsEvaluator(SingleEvaluator):
 
     def get_branch_info(self):
         version = hostname = None
-        branch_info = json.loads(self.spec_mapper.get_content("branch_info",
-                                 split=False, default="{}"))
+        branch_info = self._protected_parse("branch_info", lambda c: json.loads('\n'.join(c)), default={})
         product = branch_info.get("product")
         remote_branch = branch_info.get("remote_branch")
         if remote_branch == -1:
@@ -299,19 +296,17 @@ class InsightsEvaluator(SingleEvaluator):
         }
 
     def get_product_info(self):
-        md = json.loads(self.spec_mapper.get_content("metadata.json",
-                        split=False, default="{}"))
+        md = self.broker.get("metadata.json", {})
         return md.get("product_code", "rhel"), md.get("role", "host")
 
     def pre_process(self):
-        int_system_id = self.spec_mapper.get_content("machine-id")[0]
+        int_system_id = self._protected_parse("machine-id", lambda c: c[0], default=None)
         if self.system_id and self.system_id != int_system_id:
             raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
         self.system_id = int_system_id
         super(InsightsEvaluator, self).pre_process()
 
     def format_response(self, response):
-        serialize_skips(response["skips"])
         system = response["system"]
         branch_info = self.get_branch_info()
         system['metadata'].update(branch_info['metadata'])
@@ -357,7 +352,6 @@ class InsightsMultiEvaluator(MultiEvaluator):
         return result
 
     def format_response(self, response):
-        serialize_skips(response["skips"])
         response["system"]["system_id"] = self.system_id
         product = self.archive_metadata.get("product", "machine")
         response["system"]["product"] = product

@@ -3,14 +3,20 @@ The plugins module defines the components used by the rest of Insights and
 specializes their interfaces and execution model where required.
 """
 
+import inspect
 import logging
+import sys
 import traceback
 import types
+
+from functools import partial
 
 from insights.core import dr
 from insights import settings
 
 log = logging.getLogger(__name__)
+
+RULE_TYPES = set()
 
 
 def parser_executor(component, broker, requires, optional):
@@ -35,29 +41,36 @@ def parser_executor(component, broker, requires, optional):
             broker.add_exception(component, ex)
 
     if not results:
-        raise Exception("All failed: %s" % dr.get_name(component))
+        raise dr.SkipComponent("All failed: %s" % dr.get_name(component))
 
     return results
 
 
-def rule_executor(func, broker, requires, optional):
+def rule_executor(component, broker, requires, optional, executor=dr.default_executor):
     try:
-        r = dr.default_executor(func, broker, requires, optional)
+        r = executor(component, broker, requires, optional)
         if r is None:
-            raise dr.SkipComponent(dr.get_name(func))
+            raise dr.SkipComponent(dr.get_name(component))
     except dr.MissingRequirements as mr:
-        r = make_skip(dr.get_name(func),
-                reason="MISSING_REQUIREMENTS", details=mr.requirements)
+        details = dr.stringify_requirements(mr.requirements)
+        r = make_skip(dr.get_name(component),
+                reason="MISSING_REQUIREMENTS", details=details)
     validate_response(r)
     return r
 
 
-datasource = dr.new_component_type("datasource")
-""" Defines a component that one or more Parser`s will consume."""
+splat_rule_executor = partial(rule_executor, executor=dr.splat_executor)
 
 
 class ContentException(Exception):
+    """
+    Raised whenever a datasource fails to get data.
+    """
     pass
+
+
+datasource = dr.new_component_type("datasource")
+""" Defines a component that one or more Parsers will consume."""
 
 
 _metadata = dr.new_component_type("_metadata",
@@ -74,13 +87,41 @@ _parser = dr.new_component_type("_parser", executor=parser_executor)
 
 
 def parser(dependency, group=dr.GROUPS.single, alias=None):
-    """ Parses the raw content of a datasource into a strongly-typed
-        object usable by combiners and rules. `parser` is a specialization
-        of the general component interface.
+    """
+    Parses the raw content of a datasource into a strongly-typed
+    object usable by combiners and rules. `parser` is a specialization
+    of the general component interface.
     """
     def _f(component):
         return _parser(requires=[dependency], group=group, alias=alias, component_type=parser)(component)
     return _f
+
+
+def make_rule_type(name=None,
+                   auto_requires=[],
+                   auto_optional=[],
+                   group=dr.GROUPS.single,
+                   use_splat_executor=False,
+                   type_metadata={}):
+
+    executor = splat_rule_executor if use_splat_executor else rule_executor
+    _type = dr.new_component_type(name=None,
+                                  auto_requires=auto_requires,
+                                  auto_optional=auto_optional,
+                                  group=group,
+                                  executor=executor,
+                                  type_metadata=type_metadata)
+    if name:
+        _type.__name__ = name
+        s = inspect.stack()
+        frame = s[1][0]
+        mod = inspect.getmodule(frame) or sys.modules.get("__main__")
+        if mod:
+            _type.__module__ = mod.__name__
+            setattr(mod, name, _type)
+
+    RULE_TYPES.add(_type)
+    return _type
 
 
 combiner = dr.new_component_type("combiner")
@@ -88,7 +129,7 @@ combiner = dr.new_component_type("combiner")
 
 stage = combiner
 
-rule = dr.new_component_type("rule", executor=rule_executor)
+rule = make_rule_type(name="rule")
 """ A component that can see all parsers and combiners for a single host."""
 
 condition = dr.new_component_type("condition")
@@ -111,7 +152,7 @@ def is_parser(component):
 
 
 def is_rule(component):
-    return is_type(component, rule)
+    return dr.get_component_type(component) in RULE_TYPES
 
 
 def is_component(obj):

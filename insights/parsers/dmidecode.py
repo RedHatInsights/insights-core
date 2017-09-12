@@ -97,7 +97,6 @@ Examples:
 import re
 from datetime import date
 from .. import LegacyItemAccess, Parser, parser, defaults
-from insights.core.serde import deserializer, serializer
 
 
 @parser('dmidecode')
@@ -212,17 +211,4 @@ def parse_dmidecode(dmidecode_content, pythonic_keys=False):
     else:
         obj[section] = [current]
 
-    return obj
-
-
-@serializer(DMIDecode)
-def serialize(obj):
-    return vars(obj)
-
-
-@deserializer(DMIDecode)
-def deserialize(_type, data):
-    obj = _type(None)
-    for k, v in data.items():
-        setattr(obj, k, v)
     return obj

@@ -1,3 +1,5 @@
+import importlib
+import inspect
 import logging
 import os
 import re
@@ -35,7 +37,7 @@ def get_filters(component):
     if component in FILTERS:
         filters |= FILTERS[component]
 
-    alias = dr.get_alias_for(component)
+    alias = dr.get_alias(component)
     if alias and alias in FILTERS:
         filters |= FILTERS[alias]
     return filters
@@ -101,7 +103,7 @@ class FileProvider(ContentProvider):
             raise ContentException("Cannot access %s" % self.path)
 
     def __repr__(self):
-        return '%s("%s") - %s' % (self.__class__.__name__, self.path, self.root)
+        return '%s("%s")' % (self.__class__.__name__, self.path)
 
 
 class RawFileProvider(FileProvider):
@@ -145,19 +147,27 @@ class CommandOutputProvider(ContentProvider):
 
 
 class SpecFactory(object):
-    def __init__(self, module_name="insights.specs"):
+    def __init__(self, module_name=None):
         self.module_name = module_name
 
-    def attach(self, component, name):
+    def _attach(self, component, name):
         """ Attach component to a module by name. """
 
-        module = sys.modules[self.module_name]
-        old = getattr(module, name, None)
-        component.__module__ = self.module_name
-        component.__name__ = name
-        setattr(module, name, component)
-        if old:
-            dr.replace(old, component)
+        if self.module_name:
+            if self.module_name not in sys.modules:
+                importlib.import_module(self.module_name)
+            module = sys.modules[self.module_name]
+        else:
+            frame = inspect.stack()[2][0]
+            module = inspect.getmodule(frame) or sys.modules.get("__main__")
+
+        if module:
+            old = getattr(module, name, None)
+            component.__module__ = module.__name__
+            component.__name__ = name
+            setattr(module, name, component)
+            if old:
+                dr.replace(old, component)
 
     def simple_file(self, path, name=None, context=None, Kind=TextFileProvider, alias=None):
         @datasource(requires=[context or FSRoots], alias=alias)
@@ -165,7 +175,7 @@ class SpecFactory(object):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             return Kind(root, os.path.expandvars(path), filters=get_filters(inner))
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
     def glob_file(self, patterns, name=None, ignore=None, context=None, Kind=TextFileProvider, alias=None):
@@ -187,9 +197,9 @@ class SpecFactory(object):
                         log.debug(traceback.format_exc())
             if results:
                 return results
-            raise ContentException("[%s] didn't match" % ','.join(patterns))
+            raise ContentException("[%s] didn't match." % ', '.join(patterns))
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
     def first_file(self, files, name=None, context=None, Kind=TextFileProvider, alias=None):
@@ -201,9 +211,9 @@ class SpecFactory(object):
                     return Kind(root, f, filters=get_filters(inner))
                 except:
                     pass
-            raise ContentException("None of [%s] found." % ','.join(files))
+            raise ContentException("None of [%s] found." % ', '.join(files))
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
     def listdir(self, path, name=None, context=None, alias=None):
@@ -219,25 +229,25 @@ class SpecFactory(object):
                 return [os.path.basename(r) for r in result]
             raise ContentException("Can't list %s or nothing there." % p)
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
-    def simple_command(self, cmd, name=None, context=HostContext, split=True, keep_rc=False, alias=None):
+    def simple_command(self, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
         @datasource(requires=[context], alias=alias)
         def inner(broker):
             ctx = broker[context]
             rc = None
-            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc)
+            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
             if keep_rc:
                 rc, result = raw
             else:
                 result = raw
             return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
-    def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, alias=None):
+    def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
         @datasource(requires=[provider, context], alias=alias)
         def inner(broker):
             result = []
@@ -251,7 +261,7 @@ class SpecFactory(object):
                 try:
                     the_cmd = cmd % e
                     rc = None
-                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc)
+                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
                     if keep_rc:
                         rc, output = raw
                     else:
@@ -263,7 +273,7 @@ class SpecFactory(object):
                 return result
             raise ContentException("No results found for [%s]" % cmd)
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
     def stored_command(self,
@@ -294,7 +304,7 @@ class SpecFactory(object):
             return results
 
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
     def first_of(self, deps, name=None, alias=None):
@@ -311,7 +321,7 @@ class SpecFactory(object):
                     return broker[c]
 
         if name:
-            self.attach(inner, name)
+            self._attach(inner, name)
         return inner
 
 

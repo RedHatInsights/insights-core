@@ -23,4 +23,4 @@ def integration_tests():
     yield input_data, [expected]
 
     input_data = InputData(name="No Match: bad hostname", hostname=NON_MATCHING_HOSTNAME)
-    yield input_data, [None]
+    yield input_data, []

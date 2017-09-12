@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+This is a rough collector script for running components on a host and storing
+their output if possible.
+"""
+
 import logging
 import multiprocessing as mp
 import os

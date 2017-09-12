@@ -20,7 +20,6 @@ Examples:
 """
 
 from .. import Parser, parser
-from insights.core.serde import deserializer, serializer
 
 
 @parser("hostname")
@@ -40,16 +39,3 @@ class Hostname(Parser):
         self.fqdn = raw
         self.hostname = raw.split(".")[0] if raw else None
         self.domain = ".".join(raw.split(".")[1:]) if raw else None
-
-
-@serializer(Hostname)
-def serialize(obj):
-    return vars(obj)
-
-
-@deserializer(Hostname)
-def deserialize(_type, obj):
-    hostname = Hostname(None)
-    for k, v in obj.items():
-        setattr(hostname, k, v)
-    return hostname
