@@ -147,10 +147,8 @@ class CrontabL(Parser):
             cron_match = cron_re.match(line)
             env_match = env_re.match(line)
             if cron_match:
-                print "cron match:", line
                 self.data.append(cron_match.groupdict())
             elif env_match:
-                print "env match:", line
                 # Environment variable - capture in dictionary
                 self.environment[env_match.group('key')] = env_match.group('value')
             else:
