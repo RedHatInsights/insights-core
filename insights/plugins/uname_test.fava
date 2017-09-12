@@ -1,0 +1,6 @@
+---
+rule:
+  name: "UNAME_TEST"
+  pydata:
+    kernel: "{{ Uname.kernel }}"
+  when: Uname.fixed_by('2.6.32-431.11.2.el6', introduced_in='2.6.32-431.el6')

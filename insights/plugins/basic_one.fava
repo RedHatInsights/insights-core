@@ -1,0 +1,6 @@
+---
+rule:
+  name: "BASIC_ONE"
+  pydata:
+    kernel: this is junk
+  when: true

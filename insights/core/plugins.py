@@ -4,7 +4,7 @@ from collections import defaultdict
 from functools import reduce as _reduce, wraps
 from insights.config.factory import get_config
 from insights.core import load_package
-import insights.core.fava
+from insights.core import fava
 from insights import settings
 
 data_spec_config = get_config()
@@ -138,7 +138,6 @@ def register_parser(name, func, filters=None, shared=False, cluster=False):
     try:
         log.debug("registering [%s] to [%s]", ".".join([func.__module__, func.__name__]), name)
         add_to_map(name, func, filters, shared=shared)
-        insights.core.fava.add_shared_parser(func.__name__, func)
         func.serializable_id = "#".join([func.__module__, func.__name__])
         func.consumers = set()
         add_symbolic_name(func, name)
@@ -154,6 +153,10 @@ def register_parser(name, func, filters=None, shared=False, cluster=False):
             func.consumers.add(r)
         shared = shared or ('parsers' in func.__module__)
         component_type = cluster_parser if cluster else parser
+
+        if shared:
+            fava.add_shared_parser(func.__name__, func)
+
         register_component(func, func, component_type,
                            requires=None,
                            optional=None,
