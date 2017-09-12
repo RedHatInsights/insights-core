@@ -83,6 +83,23 @@ def crontab_tests(crontab_class):
         crontab = crontab_class(context_wrap(CRONTAB_EXTENSIONS + CRONTAB_BAD_NICKNAME))
     assert "@huorly not recognised as a time specification 'nickname'" in str(exc)
 
+    # Test that crontab 'special time nicknames' are parsed correctly
+    crontab = crontab_class(context_wrap(CRONTAB_EXTENSIONS))
+    assert crontab is not None
+    assert crontab.invalid_lines == []
+    assert crontab[0] == {
+        'time': '@reboot',
+        'command': '/usr/local/bin/unmangle_database',
+    }
+    assert crontab[1] == {
+        'minute': '0',
+        'hour': '0',
+        'day_of_month': '*',
+        'month': '*',
+        'day_of_week': '*',
+        'command': '/usr/sbin/logrotate',
+    }
+
 
 def test_crontab():
     crontab_tests(CrontabL)
