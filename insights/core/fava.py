@@ -23,8 +23,10 @@
 #
 
 import os
+import imp
 import insights
 import logging
+import pkgutil
 import types
 import sys
 
@@ -536,7 +538,8 @@ class FavaCode:
             'rule': insights.rule,
         }
         for each_key, each_value in self.get_known_parsers().iteritems():
-            the_globals[each_key] = each_value
+            if each_key in self.get_parsers():
+                the_globals[each_key] = each_value
         return the_globals
 
     @classmethod
@@ -631,3 +634,152 @@ def create_module(full_module_name, the_ast, the_globals):
         package.__dict__[module_element_name] = mod
 
     return mod
+
+
+class FavaImporter(object):
+    """ Hook into python's import machinery so standard import statements
+        can be used for .fava files.
+    """
+    ext = ".fava"
+
+    def __init__(self, path):
+        path = os.path.realpath(path)
+        if os.path.exists(path):
+            # punt if we don't see any fava files in the path
+            if not any(n.endswith(self.ext) for n in os.listdir(path)):
+                raise ImportError()
+            self.path = path
+        else:
+            raise ImportError()
+
+    def find_module(self, fullname, paths=None):
+        """ Returns a FavaLoader for fava files and a pkgutil.ImpLoader
+            for standard python files. The ImpLoader is a PEP-302 wrapper
+            for python's regular import machinery.
+        """
+        name = fullname.split(".")[-1]
+        filename = os.path.join(self.path, name + self.ext)
+        if os.path.exists(filename):
+            return FavaLoader(filename)
+        return pkgutil.ImpLoader(fullname, *imp.find_module(name, [self.path]))
+
+    def iter_modules(self, prefix=''):
+        """ Allows this importer to work with other pkgutil functions like
+            walk_packages.
+        """
+        if self.path is None or not os.path.isdir(self.path):
+            return
+
+        yielded = {}
+        import inspect
+        try:
+            filenames = os.listdir(self.path)
+        except OSError:
+            # ignore unreadable directories like import does
+            filenames = []
+        filenames.sort()  # handle packages before same-named modules
+
+        for fn in filenames:
+            modname = inspect.getmodulename(fn)
+            if not modname and fn.endswith(self.ext):
+                modname = fn.rpartition(".")[0]
+
+            if modname == '__init__' or modname in yielded:
+                continue
+
+            path = os.path.join(self.path, fn)
+            ispkg = False
+
+            if not modname and os.path.isdir(path) and '.' not in fn:
+                modname = fn
+                try:
+                    dircontents = os.listdir(path)
+                except OSError:
+                    # ignore unreadable directories like import does
+                    dircontents = []
+                for fn in dircontents:
+                    subname = inspect.getmodulename(fn)
+                    if not subname and fn.endswith(self.ext):
+                        subname = fn.partition(".")[0]
+                    if subname == '__init__':
+                        ispkg = True
+                        break
+                else:
+                    continue    # not a package
+
+            if modname and '.' not in modname:
+                yielded[modname] = 1
+                yield prefix + modname, ispkg
+
+
+class FavaLoader(object):
+    def __init__(self, filename):
+        self.filename = filename
+        self.source = None
+        self.favacode = None
+        self.code = None
+
+    def _refresh(self):
+        self.source = self._get_source()
+        self.favacode = self._compile_favacode(self.source)
+        self.code = self._get_code(self.favacode)
+
+    def _compile_favacode(self, source):
+        return translate(FavaRule.yaml_deserialize(source))
+
+    def is_package(fullname):
+        return False
+
+    def get_source(self, fullname=None):
+        if self.source is None:
+            return self._get_source()
+        return self.source
+
+    def _get_source(self):
+        try:
+            with open(self.filename, "rU") as f:
+                return f.read()
+        except Exception as ex:
+            raise ImportError(str(ex))
+
+    def get_code(self, fullname=None):
+        if self.code is None:
+            return self._get_code(self._get_source())
+        return self.code
+
+    def _get_code(self, favacode):
+        try:
+            the_ast = favacode.get_ast()
+            return compile(the_ast, self.filename, "exec")
+        except Exception as ex:
+            raise ImportError(str(ex))
+
+    def get_filename(self, path=None):
+        return self.filename
+
+    def load_module(self, fullname):
+        already_exists = fullname in sys.modules
+        if already_exists:
+            mod = sys.modules[fullname]
+        else:
+            mod = imp.new_module(fullname)
+            mod.__file__ = self.filename
+            mod.__loader__ = self
+            mod.__package__ = None
+            sys.modules[fullname] = mod
+
+        try:
+            self._refresh()
+            for k, v in self.favacode.get_globals().items():
+                mod.__dict__[k] = v
+
+            exec(self.code, mod.__dict__, mod.__dict__)
+            return mod
+        except Exception as ex:
+            log.exception(ex)
+            if already_exists:
+                sys.modules[fullname] = mod
+            raise ImportError(str(ex))
+
+
+sys.path_hooks.append(FavaImporter)
