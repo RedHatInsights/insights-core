@@ -43,7 +43,7 @@ CONFIG = {
     'disable_schedule': False,
     'display_name': None,
     'docker_image_name': None,
-    'enable_schedule': True,
+    'enable_schedule': False,
     'from_file': False,
     'from_stdin': False,
     'gpg': True,
