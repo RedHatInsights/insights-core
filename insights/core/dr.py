@@ -274,13 +274,16 @@ def get_subgraphs(graph=DEPENDENCIES):
 
 
 def load_components(path, include=".*", exclude="test"):
-    include = re.compile(include).search if include else lambda x: True
-    exclude = re.compile(exclude).search if exclude else lambda x: False
+    do_include = re.compile(include).search if include else lambda x: True
+    do_exclude = re.compile(exclude).search if exclude else lambda x: False
     prefix = path.replace('/', '.') + '.'
-    for _, name, _ in pkgutil.walk_packages(path=[path], prefix=prefix):
-        if include(name) and not exclude(name):
+    package = importlib.import_module(path.replace("/", "."))
+    for _, name, is_pkg in pkgutil.walk_packages(path=package.__path__, prefix=prefix):
+        if do_include(name) and not do_exclude(name):
             log.debug("Importing %s" % name)
             importlib.import_module(name)
+            if is_pkg:
+                load_components(name.replace(".", "/"), include, exclude)
 
 
 def first_of(dependencies, broker):
