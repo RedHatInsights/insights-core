@@ -86,7 +86,6 @@ class InsightsConnection(object):
         self.authmethod = config['authmethod']
         self.systemid = config['systemid']
         self.get_proxies()
-        self._validate_hostnames()
         self.session = self._init_session()
         # need this global -- [barfing intensifies]
         # tuple of self-signed cert flag & cert chain list
@@ -209,48 +208,6 @@ class InsightsConnection(object):
 
         self.proxies = proxies
         self.proxy_auth = proxy_auth
-
-    def _validate_hostnames(self):
-        """
-        Validate that the hostnames we got from config are sane
-        """
-        endpoint_url = urlparse(self.upload_url)
-        try:
-            # Ensure we have something in the scheme and netloc
-            if endpoint_url.scheme == "" or endpoint_url.netloc == "":
-                logger.error("Invalid upload_url: " + self.upload_url + "\n"
-                             "Be sure to include a protocol "
-                             "(e.g. https://) and a "
-                             "fully qualified domain name in " +
-                             constants.default_conf_file)
-                return False
-            endpoint_addr = socket.gethostbyname(
-                endpoint_url.netloc.split(':')[0])
-            logger.debug(
-                "hostname: %s ip: %s", endpoint_url.netloc, endpoint_addr)
-        except socket.gaierror as e:
-            logger.debug(e)
-            logger.error(
-                "Could not resolve hostname: %s", endpoint_url.geturl())
-            return False
-        if self.proxies is not None:
-            proxy_url = urlparse(self.proxies['https'])
-            try:
-                # Ensure we have something in the scheme and netloc
-                if proxy_url.scheme == "" or proxy_url.netloc == "":
-                    logger.error("Proxies: %s", self.proxies)
-                    logger.error("Invalid proxy!"
-                                 "Please verify the proxy setting"
-                                 " in " + constants.default_conf_file)
-                    return False
-                proxy_addr = socket.gethostbyname(
-                    proxy_url.netloc.split(':')[0])
-                logger.debug(
-                    "Proxy hostname: %s ip: %s", proxy_url.netloc, proxy_addr)
-            except socket.gaierror as e:
-                logger.debug(e)
-                logger.error("Could not resolve proxy %s", proxy_url.geturl())
-                return False
 
     def _test_urls(self, url, method):
         """
