@@ -22,9 +22,9 @@ class SpecMapper(object):
         logger.debug("SpecMapper.root: %s", self.root)
         self.data_spec_config = data_spec_config if data_spec_config else get_config()
         self.symbolic_files = defaultdict(list)
+        self.content_cache = dict()
         self.analysis_target = self._determine_analysis_target()
         self.create_symbolic_file_list()
-        self.content_cache = dict()
 
     def _name_filter(self, name):
         return not (self.tf.isdir(name) or name.endswith(".tar.gz"))
