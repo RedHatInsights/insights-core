@@ -280,6 +280,9 @@ def load_components(path, include=".*", exclude="test"):
     do_include = re.compile(include).search if include else lambda x: True
     do_exclude = re.compile(exclude).search if exclude else lambda x: False
 
+    if not hasattr(package, "__path__"):
+        return
+
     for _, name, is_pkg in pkgutil.walk_packages(path=package.__path__):
         full_name = ".".join([package.__name__, name])
 
