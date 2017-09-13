@@ -101,6 +101,7 @@ def persister(output_dir, ignore_hidden=True):
         if c not in broker and c not in broker.exceptions:
             return
 
+        ser_name = dr.get_base_module_name(ser)
         name = dr.get_name(c)
         c_type = dr.get_component_type(c)
         doc = {}
@@ -110,12 +111,12 @@ def persister(output_dir, ignore_hidden=True):
         doc["time"] = broker.exec_times.get(c)
         doc["results"] = marshal(broker.get(c))
         doc["errors"] = marshal(broker.exceptions.get(c))
-        path = os.path.join(output_dir, name + "." + dr.get_base_module_name(ser))
+        path = os.path.join(output_dir, name + "." + ser_name)
         try:
             with open(path, "wb") as f:
                 ser.dump(doc, f)
         except Exception as boom:
-            log.exception(boom)
+            log.error("Could not serialize %s to %s: %s" % (name, ser_name, boom))
             fs.remove(path)
 
     return observer
