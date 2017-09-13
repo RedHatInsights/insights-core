@@ -1,23 +1,49 @@
 #!/usr/bin/env python
 
 """
-This is a rough collector script for running components on a host and storing
+This is a collector script for running components on a host and storing
 their output if possible.
 """
 
+import argparse
 import logging
 import multiprocessing as mp
 import os
 import platform
 from contextlib import closing
 
-from insights import specs  # noqa: F401
 from insights.core import dr, plugins
 from insights.core.context import HostContext
 from insights.core.serde import persister
 from insights.util import fs
 
 log = logging.getLogger(__name__)
+
+
+def parse_args():
+    p = argparse.ArgumentParser()
+    p.add_argument("--parallel",
+                   help="Run in parallel.",
+                   action="store_true")
+
+    p.add_argument("-p",
+                   "--plugins",
+                   default=[],
+                   help="Path to plugins. Must be in the python path.",
+                   action="append")
+
+    p.add_argument("-o",
+                   "--output",
+                   default="output",
+                   help="Directory for results",
+                   action="store_true")
+
+    p.add_argument("-v",
+                   "--verbose",
+                   help="Enable debug output",
+                   action="store_true")
+
+    return p.parse_args()
 
 
 def worker(args):
@@ -51,21 +77,31 @@ def run_serial(args):
 
 
 def main():
+    args = parse_args()
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.WARN)
+
     hostname = platform.node()
     ctx = HostContext(hostname)
 
     broker = dr.Broker()
     broker[HostContext] = ctx
 
-    out_path = "output"
-    dr.load_components("insights/parsers")
-    dr.load_components("insights/combiners")
+    out_path = args.output
+
+    dr.load_components("insights.specs")
+    dr.load_components("insights.parsers")
+    dr.load_components("insights.combiners")
+    for path in args.plugins:
+        dr.load_components(path)
 
     graphs = dr.get_subgraphs(dr.COMPONENTS[dr.GROUPS.single])
-    args = [(broker, g, out_path) for g in graphs]
-    run_serial(args)
+    worker_args = [(broker, g, out_path) for g in graphs]
+
+    if args.parallel:
+        run_parallel(worker_args)
+    else:
+        run_serial(worker_args)
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
     main()

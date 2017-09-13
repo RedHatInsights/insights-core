@@ -85,10 +85,11 @@ def docker_image_ids(broker):
     except:
         raise ContentException("No docker images.")
     if result:
-        return result
+        return list(result)
     raise ContentException("No docker images.")
 
 
+# TODO: This parsing is broken.
 @datasource(requires=[docker_list_containers])
 def docker_container_ids(broker):
     try:
@@ -98,7 +99,7 @@ def docker_container_ids(broker):
     except:
         raise ContentException("No docker containers.")
     if result:
-        return result
+        return list(result)
     raise ContentException("No docker containers.")
 
 
