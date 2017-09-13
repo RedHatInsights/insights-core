@@ -39,7 +39,9 @@ def get_file_handler():
     log_dir = os.path.dirname(log_file)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, 0700)
-    return logging.handlers.RotatingFileHandler(log_file, backupCount=3)
+    file_handler = logging.handlers.RotatingFileHandler(log_file, backupCount=3)
+    file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    return file_handler
 
 
 def get_console_handler(silent, verbose):
