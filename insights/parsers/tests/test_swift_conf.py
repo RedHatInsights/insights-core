@@ -79,13 +79,14 @@ allow_versioned_writes = true
 paste.filter_factory = ceilometermiddleware.swift:filter_factory
 
 url = rabbit://guest:J8F22AqWpXqCJyv3mQKeRQszG@172.20.3.20:5672,guest:J8F22AqWpXqCJyv3mQKeRQszG@172.20.3.31:5672,guest:J8F22AqWpXqCJyv3mQKeRQszG@172.20.3.22:5672//
+url_test =
 
 """
 
 
 def test_proxy_server_conf():
     result = SwiftProxyServerConf(context_wrap(proxy_server_conf))
-    print result.data.sections()
     assert 'filter:ceilometer' in result
     assert 'filter:staticweb' in result
+    assert result.items('filter:ceilometer').get('url_test') == ''
     assert result.getint('DEFAULT', 'bind_port') == 8080
