@@ -579,12 +579,14 @@ def handle_startup():
         updated = InsightsSchedule().set_daily()
         if updated:
             logger.info('Automatic scheduling for Insights has been enabled.')
+        return True
 
     if config['disable_schedule']:
         # disable automatic schedling
         InsightsSchedule().remove_scheduling()
         logger.info('Automatic scheduling for Insights has been disabled.')
         logger.debug('Updating config...')
+        return True
 
     # test the insights connection
     if config['test_connection']:
