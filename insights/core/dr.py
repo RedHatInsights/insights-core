@@ -275,6 +275,8 @@ def get_subgraphs(graph=DEPENDENCIES):
 
 def load_components(path, include=".*", exclude="test"):
     path = path.replace("/", ".")
+
+    log.debug("Importing %s" % path)
     package = importlib.import_module(path)
 
     do_include = re.compile(include).search if include else lambda x: True
@@ -283,14 +285,14 @@ def load_components(path, include=".*", exclude="test"):
     if not hasattr(package, "__path__"):
         return
 
-    for _, name, is_pkg in pkgutil.walk_packages(path=package.__path__):
-        full_name = ".".join([package.__name__, name])
-
-        if do_include(full_name) and not do_exclude(full_name):
-            log.debug("Importing %s" % full_name)
-            importlib.import_module(full_name)
+    prefix = package.__name__ + "."
+    for _, name, is_pkg in pkgutil.iter_modules(path=package.__path__, prefix=prefix):
+        if do_include(name) and not do_exclude(name):
             if is_pkg:
-                load_components(full_name, include, exclude)
+                load_components(name, include, exclude)
+            else:
+                log.debug("Importing %s" % name)
+                importlib.import_module(name)
 
 
 def first_of(dependencies, broker):
@@ -601,15 +603,21 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
         start = time.time()
         try:
             if component not in broker and component in DELEGATES:
-                log.info("Calling %s" % get_name(component))
+                log.info("Trying %s" % get_name(component))
                 result = DELEGATES[component](broker)
                 broker[component] = result
         except MissingRequirements as mr:
+            if log.isEnabledFor(logging.DEBUG):
+                name = get_name(component)
+                reqs = stringify_requirements(mr.requirements)
+                log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
         except SkipComponent:
-            log.debug(traceback.format_exc())
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug("%s raised SkipComponent" % get_name(component))
         except Exception as ex:
-            log.debug(ex)
+            if log.isEnabledFor(logging.DEBUG):
+                log.debug(ex)
             broker.add_exception(component, ex, traceback.format_exc())
         finally:
             broker.exec_times[component] = time.time() - start
