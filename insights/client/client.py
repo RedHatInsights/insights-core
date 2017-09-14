@@ -44,17 +44,19 @@ def get_file_handler():
     return file_handler
 
 
-def get_console_handler(silent, verbose):
-    if silent:
-        target_level = logging.NOTSET
-    elif verbose:
+def get_console_handler():
+    if config['silent']:
+        target_level = logging.FATAL
+    elif config['verbose']:
         target_level = logging.DEBUG
+    elif config['quiet']:
+        target_level = logging.ERROR
     else:
         target_level = logging.INFO
 
     stdout_handler = logging.StreamHandler(sys.stderr)
 
-    log_format = LOG_FORMAT if verbose else "%(message)s"
+    log_format = LOG_FORMAT if config['verbose'] else "%(message)s"
     stdout_handler.setFormatter(logging.Formatter(log_format))
 
     stdout_handler.setLevel(target_level)
@@ -82,7 +84,7 @@ def set_up_logging():
         # from_stdin mode implies to_stdout
         config['to_stdout'] = (config['to_stdout'] or config['from_stdin'] or config['from_file'])
 
-        logging.root.addHandler(get_console_handler(config['silent'], config['verbose']))
+        logging.root.addHandler(get_console_handler())
         logging.root.addHandler(get_file_handler())
         configure_level()
         logger.debug("Logging initialized")
