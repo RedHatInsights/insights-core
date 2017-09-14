@@ -37,6 +37,8 @@ class InsightsSchedule(object):
     def remove_scheduling(self):
         logger.debug('Removing all cron tasks')
         try:
-            os.remove(self.target)
+            if os.path.exists(self.target):
+                os.remove(self.target)
+                return True
         except OSError:
             logger.exception('Could not remove cron.daily')

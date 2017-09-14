@@ -581,12 +581,18 @@ def handle_startup():
         updated = InsightsSchedule().set_daily()
         if updated:
             logger.info('Automatic scheduling for Insights has been enabled.')
+        elif os.path.exists('/etc/cron.daily/' + constants.app_name):
+            logger.info('Automatic scheduling for Insights already enabled.')
+        logger.debug('Updating config...')
         return True
 
     if config['disable_schedule']:
         # disable automatic schedling
-        InsightsSchedule().remove_scheduling()
-        logger.info('Automatic scheduling for Insights has been disabled.')
+        updated = InsightsSchedule().remove_scheduling()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been disabled.')
+        elif not os.path.exists('/etc/cron.daily/' + constants.app_name):
+            logger.info('Automatic scheduling for Insights already disabled.')
         logger.debug('Updating config...')
         return True
 
