@@ -578,7 +578,10 @@ def post_update():
     # put this first to avoid conflicts with register
     if config['unregister']:
         pconn = client.get_connection()
-        die(pconn.unregister())
+        if pconn.unregister():
+            die()
+        else:
+            die(return_code=1)
 
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
