@@ -437,3 +437,6 @@ def compile_config():
     if CONFIG['update'] and CONFIG['offline']:
         # raise ValueError("Cannot update rules in offline mode")
         CONFIG['update'] = False
+
+    if CONFIG['no_tar_file']:
+        CONFIG['no_upload'] = True
