@@ -204,7 +204,7 @@ static_specs = {
     "lvdisplay"                 : CommandSpec("/sbin/lvdisplay"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
     "lvs"                       : NoneGroup([CommandSpec('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')]),
-    "lvs_noheadings"            : CommandSpec("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all --config=\"global{locking_type=0}\""),
+    "lvs_noheadings"            : CommandSpec("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config=\"global{locking_type=0}\""),
     "mariadb.log"               : SimpleFileSpec("var/log/mariadb/mariadb.log", large_content=True),
     "mdstat"                    : SimpleFileSpec("proc/mdstat"),
     "meminfo"                   : First([SimpleFileSpec("proc/meminfo"),
