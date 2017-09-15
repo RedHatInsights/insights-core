@@ -1,9 +1,11 @@
+import json
 import os
 import sys
 import logging
 import tempfile
 import shlex
 import shutil
+import functools
 from subprocess import Popen, PIPE
 
 from .. import get_nvr
@@ -11,6 +13,9 @@ from . import client
 from .constants import InsightsConstants as constants
 from .auto_config import try_auto_configuration
 from .config import CONFIG as config, compile_config
+from .support import registration_check, InsightsSupport
+from .utilities import write_to_disk, generate_machine_id, validate_remove_file
+from .schedule import InsightsSchedule
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
 APP_NAME = constants.app_name
@@ -39,14 +44,6 @@ class InsightsClient(object):
 
         # set up logging
         client.set_up_logging()
-
-        # Log config except the password
-        # and proxy as it might have a pw as well
-        if logging.root.level == logging.DEBUG:
-            config_log = logging.getLogger("Insights Config")
-            for item, value in config.items():
-                if item != 'password' and item != 'proxy':
-                    config_log.debug("%s:%s", item, value)
 
         # setup insights connection placeholder
         # used for requests
@@ -477,48 +474,150 @@ class InsightsClient(object):
         return client.delete_archive(path)
 
 
-def run(op, *args, **kwargs):
-    compile_config()
-    client.set_up_logging()
-    try_auto_configuration()
-    status = client.handle_startup()
-    if status is not None:
-        logger.debug("Returning early due to initialization response: %s", status)
-        print "STDOUTRESPONSE: %s" % (status if type(status) in (str, unicode) else "")
-        return
-    else:
+def format_config():
+    # Log config except the password
+    # and proxy as it might have a pw as well
+    config_copy = config.copy()
+    try:
+        del config_copy["password"]
+        del config_copy["proxy"]
+    finally:
+        return json.dumps(config_copy, indent=4)
+
+
+def phase(func):
+    @functools.wraps(func)
+    def _f():
+        compile_config()
+        client.set_up_logging()
+        try_auto_configuration()
         try:
-            c = InsightsClient()
-            return getattr(c, op)(*args, **kwargs)
-        except:
+            func()
+        except Exception:
             logger.exception("Fatal error")
             sys.exit(1)
+    return _f
 
 
+def die(msg="", return_code=0):
+    print "STDOUTRESPONSE: %s" % msg
+    sys.exit(return_code)
+
+
+@phase
+def pre_update():
+    if config['version']:
+        die(constants.version)
+
+    # validate the remove file
+    if config['validate']:
+        die(validate_remove_file())
+
+    # handle cron stuff
+    if config['enable_schedule'] and config['disable_schedule']:
+        logger.error('Conflicting options: --enable-schedule and --disable-schedule')
+        die()
+
+    if config['enable_schedule']:
+        # enable automatic scheduling
+        logger.debug('Updating config...')
+        updated = InsightsSchedule().set_daily()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been enabled.')
+        elif os.path.exists('/etc/cron.daily/' + constants.app_name):
+            logger.info('Automatic scheduling for Insights already enabled.')
+        die()
+
+    if config['disable_schedule']:
+        # disable automatic schedling
+        updated = InsightsSchedule().remove_scheduling()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been disabled.')
+        elif not os.path.exists('/etc/cron.daily/' + constants.app_name):
+            logger.info('Automatic scheduling for Insights already disabled.')
+        die()
+
+    if config['container_mode']:
+        logger.debug('Not scanning host.')
+        logger.debug('Scanning image ID, tar file, or mountpoint.')
+
+    # test the insights connection
+    if config['test_connection']:
+        pconn = client.get_connection()
+        rc = pconn.test_connection()
+        if rc == 0:
+            logger.info("Passed connection test")
+        else:
+            logger.info("Failed connection test.  See %s for details." % config['logging_file'])
+        die("", rc)
+
+    if config['support']:
+        support = InsightsSupport()
+        support.collect_support_info()
+        logger.info("Support information collected in %s" % config['logging_file'])
+        die()
+
+
+@phase
 def update():
-    if run("update") is not None:
-        # Only update rules if InsightsClient.update() was called
-        # handle_startup() could have returned early
-        try:
-            c = InsightsClient(read_config=False)
-            c.update_rules()
-        except:
-            logger.exception("Fatal error")
-            sys.exit(1)
+    c = InsightsClient()
+    c.update()
+    c.update_rules()
 
 
+@phase
+def post_update():
+    logger.debug("CONFIG: %s", format_config())
+    if config['status']:
+        reg_check = registration_check()
+        for msg in reg_check['messages']:
+            logger.info(msg)
+        # exit with !status, 0 for True, 1 for False
+        die(reg_check['status'], reg_check['status'])
+
+    # put this first to avoid conflicts with register
+    if config['unregister']:
+        pconn = client.get_connection()
+        die(pconn.unregister())
+
+    # force-reregister -- remove machine-id files and registration files
+    # before trying to register again
+    new = False
+    if config['reregister']:
+        new = True
+        config['register'] = True
+        write_to_disk(constants.registered_file, delete=True)
+        write_to_disk(constants.registered_file, delete=True)
+        write_to_disk(constants.machine_id_file, delete=True)
+    logger.debug('Machine-id: %s', generate_machine_id(new))
+
+    if config['register']:
+        client.try_register()
+
+    # check registration before doing any uploads
+    # only do this if we are not running in container mode
+    # Ignore if in offline mode
+    if not config["container_mode"] and not config["analyze_image"]:
+        if not config['register'] and not config['offline']:
+            msg, is_registered = client._is_client_registered()
+            if not is_registered:
+                die(msg, 1)
+
+
+@phase
 def collect():
-    tar_file = run("collect", image_id=(config["image_id"] or config["only"]),
-                              tar_file=config["tar_file"],
-                              mountpoint=config["mountpoint"])
+    c = InsightsClient()
+    tar_file = c.collect(image_id=(config["image_id"] or config["only"]),
+                         tar_file=config["tar_file"],
+                         mountpoint=config["mountpoint"])
     if tar_file is not None:
         print tar_file
 
 
+@phase
 def upload():
     egg_path = sys.stdin.read().strip()
+    c = InsightsClient()
+    resp = c.upload(egg_path)
     if config["to_json"]:
-        import json
-        print "STDOUTRESPONSE: %s" % json.dumps(run("upload", egg_path))
-    else:
-        run("upload", egg_path)
+        die(json.dumps(resp))

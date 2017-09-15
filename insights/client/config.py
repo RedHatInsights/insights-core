@@ -438,5 +438,9 @@ def compile_config():
         # raise ValueError("Cannot update rules in offline mode")
         CONFIG['update'] = False
 
+    # handle container mode stuff
+    if (CONFIG['image_id'] or CONFIG['tar_file'] or CONFIG['mountpoint']):
+        CONFIG['container_mode'] = True
+
     if CONFIG['no_tar_file']:
         CONFIG['no_upload'] = True

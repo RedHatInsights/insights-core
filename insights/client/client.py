@@ -8,8 +8,7 @@ import shutil
 
 from auto_config import (_try_satellite6_configuration,
                          _try_satellite5_configuration)
-from utilities import (validate_remove_file,
-                       generate_machine_id,
+from utilities import (generate_machine_id,
                        generate_analysis_target_id,
                        write_to_disk,
                        write_unregistered_file,
@@ -18,10 +17,9 @@ from collection_rules import InsightsConfig
 from data_collector import DataCollector
 from connection import InsightsConnection
 from archive import InsightsArchive
-from support import InsightsSupport, registration_check
+from support import registration_check
 from constants import InsightsConstants as constants
 from config import CONFIG as config
-from schedule import InsightsSchedule
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 APP_NAME = constants.app_name
@@ -551,101 +549,3 @@ def delete_archive(path):
         logger.error("Error removing %s", path)
 
     return removed_archive
-
-
-def handle_startup():
-    """
-    Handle startup options
-    """
-    # handle container mode stuff
-    if (config['image_id'] or config['tar_file'] or config['mountpoint']):
-            logger.debug('Not scanning host.')
-            logger.debug('Scanning image ID, tar file, or mountpoint.')
-            config['container_mode'] = True
-
-    # ----do X and exit options----
-    # show version and exit
-    if config['version']:
-        return constants.version
-
-    # validate the remove file
-    if config['validate']:
-        return validate_remove_file()
-
-    # handle cron stuff
-    if config['enable_schedule'] is True and config['disable_schedule'] is True:
-        logger.error('Conflicting options: --enable-schedule and --disable-schedule')
-        return False
-
-    if config['enable_schedule']:
-        # enable automatic scheduling
-        logger.debug('Updating config...')
-        updated = InsightsSchedule().set_daily()
-        if updated:
-            logger.info('Automatic scheduling for Insights has been enabled.')
-        elif os.path.exists('/etc/cron.daily/' + constants.app_name):
-            logger.info('Automatic scheduling for Insights already enabled.')
-        logger.debug('Updating config...')
-        return True
-
-    if config['disable_schedule']:
-        # disable automatic schedling
-        updated = InsightsSchedule().remove_scheduling()
-        if updated:
-            logger.info('Automatic scheduling for Insights has been disabled.')
-        elif not os.path.exists('/etc/cron.daily/' + constants.app_name):
-            logger.info('Automatic scheduling for Insights already disabled.')
-        logger.debug('Updating config...')
-        return True
-
-    # test the insights connection
-    if config['test_connection']:
-        pconn = get_connection()
-        rc = pconn.test_connection()
-        if rc == 0:
-            logger.info("Passed connection test")
-        else:
-            logger.info("Failed connection test.  See %s for details." % config['logging_file'])
-        return rc
-
-    if config['status']:
-        reg_check = registration_check()
-        for msg in reg_check['messages']:
-            logger.info(msg)
-        # exit with !status, 0 for True, 1 for False
-        return reg_check['status']
-
-    if config['support']:
-        support = InsightsSupport()
-        support.collect_support_info()
-        logger.info("Support information collected in %s" % config['logging_file'])
-        return True
-
-    # ----register options----
-    # put this first to avoid conflicts with register
-    if config['unregister']:
-        pconn = get_connection()
-        return pconn.unregister()
-
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    new = False
-    if config['reregister']:
-        new = True
-        config['register'] = True
-        write_to_disk(constants.registered_file, delete=True)
-        write_to_disk(constants.registered_file, delete=True)
-        write_to_disk(constants.machine_id_file, delete=True)
-    logger.debug('Machine-id: %s', generate_machine_id(new))
-
-    if config['register']:
-        try_register()
-
-    # check registration before doing any uploads
-    # only do this if we are not running in container mode
-    # Ignore if in offline mode
-    if not config["container_mode"] and not config["analyze_image"]:
-        if not config['register'] and not config['offline']:
-            msg, is_registered = _is_client_registered()
-            if not is_registered:
-                return msg
