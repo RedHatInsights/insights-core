@@ -600,6 +600,8 @@ def post_update():
 
     if config['register']:
         client.try_register()
+        if os.path.exists('/etc/cron.daily') and InsightsSchedule().set_daily():
+            logger.info('Automatic scheduling for Insights has been enabled.')
 
     # check registration before doing any uploads
     # only do this if we are not running in container mode
