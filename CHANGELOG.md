@@ -1,5 +1,58 @@
 # Change Log
 
+## [insights-core-1.49.0-38](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.49.0-38) (2017-09-15)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.49.0-37...insights-core-1.49.0-38)
+
+**Fixed bugs:**
+
+- chkconfig.py can not parsed RHEL 7.3 'chkconfig --list' [\#112](https://github.com/RedHatInsights/insights-core/issues/112)
+- Vgdisplay spec does not match sos report or rule [\#13](https://github.com/RedHatInsights/insights-core/issues/13)
+
+**Closed issues:**
+
+- Get 100% test coverage of insights/core/\_\_init\_\_.py [\#139](https://github.com/RedHatInsights/insights-core/issues/139)
+
+**Merged pull requests:**
+
+- Fix `lvs\_noheadings` missed the "vg\_name" error [\#435](https://github.com/RedHatInsights/insights-core/pull/435) ([xiangce](https://github.com/xiangce))
+
+## [insights-core-1.49.0-37](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.49.0-37) (2017-09-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.48.0-34...insights-core-1.49.0-37)
+
+**Merged pull requests:**
+
+- Remove the debug `print` and one more test for empty assignment - 1.x [\#426](https://github.com/RedHatInsights/insights-core/pull/426) ([xiangce](https://github.com/xiangce))
+
+## [insights-core-1.48.0-34](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.48.0-34) (2017-09-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.47.0-17...insights-core-1.48.0-34)
+
+**Implemented enhancements:**
+
+- Crontab minor improvements back to 1.x branch [\#421](https://github.com/RedHatInsights/insights-core/pull/421) ([PaulWay](https://github.com/PaulWay))
+- Fix path of Directory Server access and error logs for 1.x branch [\#408](https://github.com/RedHatInsights/insights-core/pull/408) ([PaulWay](https://github.com/PaulWay))
+- Make raw options string available for 1.x branch [\#390](https://github.com/RedHatInsights/insights-core/pull/390) ([PaulWay](https://github.com/PaulWay))
+- More debugging on run\_parsers for 1.x branch [\#375](https://github.com/RedHatInsights/insights-core/pull/375) ([PaulWay](https://github.com/PaulWay))
+- Added `strip\_quotes` option to optlist\_to\_dict for 1.x branch [\#374](https://github.com/RedHatInsights/insights-core/pull/374) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- Sync the master branch with 1.x branch [\#121](https://github.com/RedHatInsights/insights-core/issues/121)
+
+**Merged pull requests:**
+
+- add swift\_conf parser module [\#416](https://github.com/RedHatInsights/insights-core/pull/416) ([chenlizhong](https://github.com/chenlizhong))
+- Enhance parser scsi [\#405](https://github.com/RedHatInsights/insights-core/pull/405) ([JoySnow](https://github.com/JoySnow))
+- Enhance class Ethtool with two more ParseExceptions cases [\#403](https://github.com/RedHatInsights/insights-core/pull/403) ([JoySnow](https://github.com/JoySnow))
+- RHEL 7.4 is released, update Uname correspondingly [\#400](https://github.com/RedHatInsights/insights-core/pull/400) ([xiangce](https://github.com/xiangce))
+- handle multiple lines of output with the mlx4 parser [\#396](https://github.com/RedHatInsights/insights-core/pull/396) ([jhjaggars](https://github.com/jhjaggars))
+- Refine the satellite\_version as per the latest version map - 1.x [\#395](https://github.com/RedHatInsights/insights-core/pull/395) ([xiangce](https://github.com/xiangce))
+- Updating pcs\_status class to show bad nodes, aka nodes that for 1.x [\#394](https://github.com/RedHatInsights/insights-core/pull/394) ([xiangce](https://github.com/xiangce))
+- Add parser krb5 1.x [\#388](https://github.com/RedHatInsights/insights-core/pull/388) ([wushiqinlou](https://github.com/wushiqinlou))
+- Standard Import Hooks for Fava [\#323](https://github.com/RedHatInsights/insights-core/pull/323) ([csams](https://github.com/csams))
+
+## [insights-core-1.47.0-17](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.47.0-17) (2017-08-31)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.46.0-15...insights-core-1.47.0-17)
+
 ## [insights-core-1.46.0-15](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.46.0-15) (2017-08-30)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.46.0-12...insights-core-1.46.0-15)
 
