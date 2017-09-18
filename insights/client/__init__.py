@@ -397,7 +397,9 @@ class InsightsClient(object):
             client.do_log_rotation()
 
             # delete the archive
-            if not config['keep_archive']:
+            if config['keep_archive']:
+                logger.info('Insights archive retained in ' + path)
+            else:
                 client.delete_archive(path)
 
             # if we are rotating the eggs and success on upload do rotation
