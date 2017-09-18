@@ -250,6 +250,8 @@ tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      
 tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
 tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
 tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+tcp        0      0 ::1:5432                :::*                    LISTEN      26         14071      1474/postmaster      off (0.00/0/0)
+tcp        0      0 :::8443                 :::*                    LISTEN      91         14065      1641/java            off (0.00/0/0)
 Active UNIX domain sockets (servers and established)
 Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
 unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
@@ -312,6 +314,8 @@ def test_listening_pid():
     assert len(ns.data) == 2
     assert ns.listening_pid['12387'] == {'addr': '127.0.0.1', 'name': 'Passenger Rac', 'port': '53644'}
     assert ns.listening_pid['1272'] == {'addr': '0.0.0.0', 'name': 'qdrouterd', 'port': '5646'}
+    assert ns.listening_pid['1474'] == {'addr': '::1', 'name': 'postmaster', 'port': '5432'}
+    assert ns.listening_pid['1641'] == {'addr': '::', 'name': 'java', 'port': '8443'}
 
 
 def test_get_original_line():
@@ -320,7 +324,7 @@ def test_get_original_line():
     assert NETSTAT.splitlines()[4].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 1)
     assert NETSTAT.splitlines()[5].strip() == ns.get_original_line(netstat.ACTIVE_INTERNET_CONNECTIONS, 2)
     assert ns.get_original_line("Fabulous Green", 1) is None
-    assert NETSTAT.splitlines()[10].strip() == ns.get_original_line(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, 0)
+    assert NETSTAT.splitlines()[12].strip() == ns.get_original_line(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, 0)
 
 
 def test_is_httpd_running():
