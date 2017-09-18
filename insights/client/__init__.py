@@ -572,8 +572,10 @@ def post_update():
         reg_check = registration_check()
         for msg in reg_check['messages']:
             logger.info(msg)
-        # exit with !status, 0 for True, 1 for False
-        die(reg_check['status'], reg_check['status'])
+        if reg_check['status']:
+            die()
+        else:
+            die(return_code=1)
 
     # put this first to avoid conflicts with register
     if config['unregister']:
