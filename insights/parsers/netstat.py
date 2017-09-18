@@ -425,7 +425,7 @@ class Netstat(Parser):
                 continue
             if not (':' in line['Local Address'] and '/' in line['PID/Program name']):
                 continue
-            addr, port = line['Local Address'].strip().split(":", 1)
+            addr, port = line['Local Address'].strip().rsplit(":", 1)
             pid, name = line['PID/Program name'].strip().split('/', 1)
             pids[pid] = {'addr': addr, 'port': port, 'name': name}
         return pids
