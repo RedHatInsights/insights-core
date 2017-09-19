@@ -498,27 +498,50 @@ def phase(func):
         except Exception:
             logger.exception("Fatal error")
             sys.exit(1)
+        else:
+            die()  # Exit gracefully
     return _f
 
 
-def die(msg="", return_code=0):
-    print "STDOUTRESPONSE: %s" % msg
-    sys.exit(return_code)
+def die(msg=None, rc=None, retry=False, response=None):
+    """
+        Format and send the expected response to the parent/controlling client
+        process.
+
+        params:
+            msg (str): Content to be printed to stdout console
+            rc (int): return code to be used when exiting.
+                Unused if retry=True.  If the return code is not None, it
+                indicates that the parent process should stop executing phases
+                and exit.
+            retry (bool): True if the phase is considered to have failed and
+                the parent process should fall back to another egg.
+            response (str): Content to be passed back to the parent process,
+                potentially to be used as input other phases.
+    """
+    print json.dumps({
+        "message": msg,
+        "rc": rc,
+        "retry": retry,
+        "response": response
+    })
+    sys.exit(0)
 
 
 @phase
 def pre_update():
     if config['version']:
-        die(constants.version)
+        logger.info(constants.version)
+        die(rc=0)
 
     # validate the remove file
     if config['validate']:
-        die(validate_remove_file())
+        die(rc=0 if validate_remove_file() else 1)
 
     # handle cron stuff
     if config['enable_schedule'] and config['disable_schedule']:
         logger.error('Conflicting options: --enable-schedule and --disable-schedule')
-        die()
+        die(rc=1)
 
     if config['enable_schedule']:
         # enable automatic scheduling
@@ -528,7 +551,7 @@ def pre_update():
             logger.info('Automatic scheduling for Insights has been enabled.')
         elif os.path.exists('/etc/cron.daily/' + constants.app_name):
             logger.info('Automatic scheduling for Insights already enabled.')
-        die()
+        die(rc=0)
 
     if config['disable_schedule']:
         # disable automatic schedling
@@ -538,7 +561,7 @@ def pre_update():
         elif not os.path.exists('/etc/cron.daily/' + constants.app_name) and not config['register']:
             logger.info('Automatic scheduling for Insights already disabled.')
         if not config['register']:
-            die()
+            die(rc=0)
 
     if config['container_mode']:
         logger.debug('Not scanning host.')
@@ -552,13 +575,13 @@ def pre_update():
             logger.info("Passed connection test")
         else:
             logger.info("Failed connection test.  See %s for details." % config['logging_file'])
-        die("", rc)
+        die(rc=rc)
 
     if config['support']:
         support = InsightsSupport()
         support.collect_support_info()
         logger.info("Support information collected in %s" % config['logging_file'])
-        die()
+        die(rc=0)
 
 
 @phase
@@ -575,18 +598,12 @@ def post_update():
         reg_check = registration_check()
         for msg in reg_check['messages']:
             logger.info(msg)
-        if reg_check['status']:
-            die()
-        else:
-            die(return_code=1)
+        die(rc=0 if reg_check['status'] else 1)
 
     # put this first to avoid conflicts with register
     if config['unregister']:
         pconn = client.get_connection()
-        if pconn.unregister():
-            die()
-        else:
-            die(return_code=1)
+        die(rc=0 if pconn.unregister() else 1)
 
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
@@ -611,7 +628,8 @@ def post_update():
         if not config['register'] and not config['offline']:
             msg, is_registered = client._is_client_registered()
             if not is_registered:
-                die(msg, 1)
+                logger.error(msg)
+                die(rc=1)
 
 
 @phase
@@ -620,8 +638,7 @@ def collect():
     tar_file = c.collect(image_id=(config["image_id"] or config["only"]),
                          tar_file=config["tar_file"],
                          mountpoint=config["mountpoint"])
-    if tar_file is not None:
-        print tar_file
+    die(response=tar_file)
 
 
 @phase
