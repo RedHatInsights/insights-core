@@ -535,9 +535,10 @@ def pre_update():
         updated = InsightsSchedule().remove_scheduling()
         if updated:
             logger.info('Automatic scheduling for Insights has been disabled.')
-        elif not os.path.exists('/etc/cron.daily/' + constants.app_name):
+        elif not os.path.exists('/etc/cron.daily/' + constants.app_name) and not config['register']:
             logger.info('Automatic scheduling for Insights already disabled.')
-        die()
+        if not config['register']:
+            die()
 
     if config['container_mode']:
         logger.debug('Not scanning host.')
@@ -600,7 +601,7 @@ def post_update():
 
     if config['register']:
         client.try_register()
-        if os.path.exists('/etc/cron.daily') and InsightsSchedule().set_daily():
+        if not config['disable_schedule'] and os.path.exists('/etc/cron.daily') and InsightsSchedule().set_daily():
             logger.info('Automatic scheduling for Insights has been enabled.')
 
     # check registration before doing any uploads
