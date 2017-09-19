@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Create a mapping of specs and rules for each parser
+Create a mapping of specs, rules and filters for each parser
 
 To run this script execute the following commands:
 $ cd insights-core
@@ -27,18 +27,33 @@ REPORT = """
 
 <table class="table table-striped table-bordered">
 <thead>
-<tr><th>Spec Name</th><th>Spec</th><th>Rules</th></tr>
+<tr><th>Spec Name</th><th>Spec</th><th>Rules</th><th>Filters</th></tr>
 </thead>
 <tbody>
 {% for name in specs.keys()|sort %}
     {% for spec in specs[name].keys() %}
-<tr><td>{{ name }}</td><td><code>{{ spec.strip('<>') }}</code></td><td>{{ specs[name][spec] }}</td></tr>
+        {% if "_filters" not in spec %}
+            <tr>
+                <td>{{ name }}</td>
+                <td><code>{{ spec.strip('<>') }}</code></td>
+                <td>{{ specs[name][spec] }}</td>
+                <td>
+                    {% for f in specs[name][name + "_filters"] %}
+                       <li>{{ f|e }}</li>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endif %}
     {% endfor %}
 {% endfor %}
 </tbody>
 </table>
 </body></html>
 """.strip()
+
+
+def get_filters_for(name):
+    return list(plugins.NAME_TO_FILTER_MAP.get(name, ()))
 
 
 def main():
@@ -55,8 +70,10 @@ def main():
         for name in p.symbolic_names:
             spec = config.get_specs(name)
             rules = sorted(plugins.get_name(c) for c in p.consumers)
+
             for s in spec:
                 deps[name][str(s)] = ", ".join(rules)
+                deps[name][name + "_filters"] = sorted(get_filters_for(name))
 
     # print json.dumps(dict(deps))
 
