@@ -1,4 +1,4 @@
-from insights.parsers.crontab import CrontabL, HeatCrontab, KeystoneCrontab, RootCrontab
+from insights.parsers.crontab import CrontabL, HeatCrontab, KeystoneCrontab, NovaCrontab, RootCrontab
 from insights.tests import context_wrap
 from insights.parsers import ParseException
 
@@ -111,6 +111,10 @@ def test_heat_crontab():
 
 def test_keystone_crontab():
     crontab_tests(KeystoneCrontab)
+
+
+def test_nova_crontab():
+    crontab_tests(NovaCrontab)
 
 
 def test_root_crontab():

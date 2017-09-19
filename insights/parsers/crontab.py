@@ -194,6 +194,12 @@ class KeystoneCrontab(CrontabL):
     pass
 
 
+@parser('nova_crontab')
+class NovaCrontab(CrontabL):
+    """Parses output of the ``crontab -l -u nova`` command."""
+    pass
+
+
 @parser('root_crontab')
 class RootCrontab(CrontabL):
     """Parses output of the ``crontab -l -u root`` command."""
