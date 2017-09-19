@@ -281,7 +281,7 @@ postgresql_conf = sf.first_file(["/var/lib/pgsql/data/postgresql.conf",
 postgresql_log = sf.first_of([sf.glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log", name="postgresql_var"),
                               sf.glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log", name="postgresql_opt"),
                               sf.glob_file("/database/postgresql-*.log", name="postgresql_database")], name="postgresql_log")
-md5chk_files = sf.simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null", name="md5chk_files")
+md5chk_files = sf.simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null", name="md5chk_files")
 prelink_orig_md5 = None
 prev_uploader_log = sf.simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1", "prev_uploader_log")
 ps_aux = sf.simple_command("/bin/ps aux", name="ps_aux")
