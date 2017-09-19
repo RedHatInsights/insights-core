@@ -399,7 +399,7 @@ pre_commands = {
     "dumpdev"                   : "/bin/awk '/ext[234]/ { print $1; }' /proc/mounts",
     "getblockschedulers"        : "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
     "iface"                     : "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
-    "md5chk_files"              : "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /dev/null 2>/dev/null",
+    "md5chk_files"              : "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null",
     "module"                    : "/bin/ls /sys/module",
     "uname_r"                   : "/bin/uname -r",
     "semid"                     : "/usr/bin/ipcs -s | awk '{if (NF == 5 && $2 ~ /^[0-9]+$/) print $2}'"
