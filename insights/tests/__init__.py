@@ -178,7 +178,7 @@ def integrate(input_data, module):
     This method drives the mapreduce framework with test `input_data`.
 
     :param InputData input_data: InputData object filled with test data
-    :param module module: module containing parsers and reducers to test with
+    :param component module: componment containing parsers and reducers to test with
 
     parsers and reducers registered by `module` are isolated and passed data
     from the `input_data` parameter. The function returns a list of reducer
