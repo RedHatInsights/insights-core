@@ -82,6 +82,14 @@ class Krb5Configuration(Parser, LegacyItemAccess):
     '{' and end with a '}' on a trailing line.  So we track whether we're in
     curly braces by setting `is_squ` when we enter a relation, and clearing
     it when we leave.  Please fill in the remainder of the logic here.
+
+    Attributes:
+        includedir (list): The directory list that `krb5.conf` includes via
+            `includedir` directive
+        include (list): The configuration file list that `krb5.conf` includes
+            via `include` directive
+        module (list): The module list that `krb5.conf` specifed via `module`
+            directive
     """
 
     def parse_content(self, content):
