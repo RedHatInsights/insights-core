@@ -25,7 +25,7 @@ net_logger = logging.getLogger("network")
 
 class InsightsClient(object):
 
-    def __init__(self, read_config=True, **kwargs):
+    def __init__(self, read_config=True, setup_logging=True, **kwargs):
         """
             Arguments:
                 read_config: Whether or not to read config files to
@@ -43,12 +43,16 @@ class InsightsClient(object):
             config[key] = value
 
         # set up logging
-        client.set_up_logging()
+        if setup_logging:
+            self.set_up_logging()
 
         # setup insights connection placeholder
         # used for requests
         self.session = None
         self.connection = None
+
+    def set_up_logging(self):
+        return client.set_up_logging()
 
     def version(self):
         """
@@ -392,9 +396,6 @@ class InsightsClient(object):
         # do the upload
         upload_results = client.upload(path)
         if upload_results['status'] == 201:
-
-            # if successful upload do log rotation
-            client.do_log_rotation()
 
             # delete the archive
             if config['keep_archive']:
