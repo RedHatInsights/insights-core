@@ -435,5 +435,5 @@ def compile_config():
     if (CONFIG['image_id'] or CONFIG['tar_file'] or CONFIG['mountpoint']):
         CONFIG['container_mode'] = True
 
-    if CONFIG['no_tar_file']:
+    if CONFIG['no_tar_file'] or CONFIG['offline']:
         CONFIG['no_upload'] = True
