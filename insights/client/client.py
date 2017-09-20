@@ -474,9 +474,9 @@ def upload(tar_file, collection_duration=None):
                                       cluster=generate_machine_id(
                                           docker_group=config['container_mode']))
         upload_status = upload.status_code
-        api_response = json.loads(upload.text)
-        if upload.status_code in (200, 201):
 
+        if upload.status_code in (200, 201):
+            api_response = json.loads(upload.text)
             machine_id = generate_machine_id()
 
             # Write to last upload file
