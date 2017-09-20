@@ -335,6 +335,7 @@ static_specs = {
     "smartctl"                  : First([CommandSpec("/sbin/smartctl -a {block}", block=r"\S+"),
                                     PatternSpec(r"sos_commands/ata/smartctl_-a_\.dev\..*")]),
     "spfile.ora"                : PatternSpec(r"{ORACLE_HOME}/dbs/spfile.*\.ora"),
+    "softnet_stat"              : SimpleFileSpec("proc/net/softnet_stat"),
     "ss"                        : First([CommandSpec("/usr/sbin/ss -tulpn"),
                                     SimpleFileSpec("ss"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/ss")]),
