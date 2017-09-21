@@ -481,7 +481,7 @@ def upload(tar_file, collection_duration=None):
                                           docker_group=config['container_mode']))
         upload_status = upload.status_code
         api_response = json.loads(upload.text)
-        if upload.status_code == 201:
+        if upload.status_code in (200, 201):
 
             machine_id = generate_machine_id()
 
