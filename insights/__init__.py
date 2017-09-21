@@ -3,6 +3,7 @@ from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser                                       # noqa: F401
 from .core import AttributeDict  # noqa: F401
+from .core import Syslog  # noqa: F401
 from .core.plugins import metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata  # noqa: F401
