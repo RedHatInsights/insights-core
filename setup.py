@@ -19,6 +19,7 @@ entry_points = {
 }
 
 runtime = set([
+    'argparse',
     'pyyaml>=3.10,<=3.12',
     'six',
     'requests',
