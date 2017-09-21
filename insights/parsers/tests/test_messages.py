@@ -1,4 +1,4 @@
-from insights.config.factory import add_filter
+from insights import add_filter
 from insights.parsers.messages import Messages
 from insights.tests import context_wrap
 

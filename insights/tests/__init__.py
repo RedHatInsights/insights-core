@@ -4,21 +4,22 @@ import logging
 import pprint
 import json
 import tempfile
+from collections import defaultdict
 from functools import wraps
 from itertools import islice
-from insights.core.evaluators import MultiEvaluator, SingleEvaluator
-from insights.core.context import Context
-from insights.config.factory import apply_filters, get_config
-from insights.util import make_iter
-from collections import defaultdict
 
 import insights
 import insights.core.fava  # noqa: F401
-from insights.core.evaluators import broker_from_spec_mapper
+from insights import apply_filters, get_config
 
 # Need to alias the name of TestArchive since pytest looks at it because it
 # starts with "Test".
 from insights.archive.tool import TestArchive as TA, Transform as T
+from insights.core.context import Context
+from insights.core.evaluators import MultiEvaluator, SingleEvaluator
+from insights.core.evaluators import broker_from_spec_mapper
+from insights.util import make_iter
+
 
 logger = logging.getLogger(__name__)
 

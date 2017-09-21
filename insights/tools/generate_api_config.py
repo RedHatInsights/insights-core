@@ -15,7 +15,7 @@ import json
 import logging
 import os
 import sys
-from optparse import OptionParser
+import argparse
 
 # This is pretty hacky but lets us run this w/o a virtualenv
 try:
@@ -27,7 +27,7 @@ except ImportError:
 from insights.config import CommandSpec, SimpleFileSpec
 from insights.config import get_meta_specs
 from insights.config import InsightsDataSpecConfig, specs as config_specs, group_wrap
-from insights.config.factory import FILTERS
+from insights.core.filters import FILTERS
 from insights.core import dr
 
 log = logging.getLogger()
@@ -38,9 +38,6 @@ class APIConfigGenerator(object):
     def __init__(self,
                  data_spec_config=None,
                  uploader_config_filename="uploader.json",
-                 file_plugin_map_filename="file_plugin_mapping.json",
-                 rule_spec_mapping_filename="rule_spec_mapping.json",
-                 plugin_package=None,
                  version_number=None):
 
         if data_spec_config is None:
@@ -52,8 +49,6 @@ class APIConfigGenerator(object):
         self.openshift_config = InsightsDataSpecConfig(config_specs.openshift,
                                                        {}, prefix="openshift")
         self.uploader_config_filename = uploader_config_filename
-        self.file_plugin_map_filename = file_plugin_map_filename
-        self.rule_spec_mapping_filename = rule_spec_mapping_filename
         self.rule_spec_mapping = defaultdict(lambda: defaultdict(list))
 
         if version_number:
@@ -61,8 +56,6 @@ class APIConfigGenerator(object):
         else:
             self.version_number = os.environ.get("BUILD_NUMBER",
                                                  datetime.now().isoformat())
-
-        dr.load_components(plugin_package or "insights.plugins")
 
     @staticmethod
     def writefile(filename, o):
@@ -72,7 +65,6 @@ class APIConfigGenerator(object):
     @staticmethod
     def get_filters_for(name):
         return FILTERS.get(name, ())
-#        return list(plugins.NAME_TO_FILTER_MAP.get(name, ()))
 
     @staticmethod
     def get_rule_ids_for(plugin):
@@ -120,7 +112,6 @@ class APIConfigGenerator(object):
         specs_list.add("machine-id1", SimpleFileSpec("etc/redhat-access-insights/machine-id"), [])
         specs_list.add("machine-id2", SimpleFileSpec("etc/redhat_access_proactive/machine-id"), [])
         added_paths = defaultdict(set)
-        utilized_specs = set()
 
         def add_name(name, specs_):
             conf = upload_conf[sc.prefix] if sc.prefix else upload_conf
@@ -158,10 +149,6 @@ class APIConfigGenerator(object):
             for s in sc.get_specs():
                 reverse_map[s] = symbolic_name
                 all_specs.add(s)
-        missing_specs = " ".join(sorted(set(reverse_map[i] for i in (all_specs - utilized_specs))))
-        print "%d specs not included in uploader.json: %s" % (
-            len(all_specs - utilized_specs),
-            missing_specs)
         # placing the log at the end of the list ensures that we log as much
         # as possible before copying the logfile
         upload_conf["files"].append({
@@ -187,21 +174,27 @@ class APIConfigGenerator(object):
 
 
 def main():
-    p = OptionParser()
-    p.add_option("-v", "--verbose", dest="verbose",
+    p = argparse.ArgumentParser()
+    p.add_argument("-v", "--verbose", dest="verbose",
                  help="log more things",
                  action="store_true", default=False)
-    opts, args = p.parse_args()
 
-    if len(args) == 0:
-        print "Plugin package name required"
-        sys.exit(1)
+    p.add_argument("-p",
+                   "--plugins",
+                   default=[],
+                   help="Path to plugins. Must be in the python path.",
+                   action="append")
 
-    level = logging.DEBUG if opts.verbose else logging.INFO
+    args = p.parse_args()
+
+    for path in args.plugins:
+        dr.load_components(path)
+
+    level = logging.DEBUG if args.verbose else logging.INFO
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s",
                         level=level)
     log.info("Generating config files from %s.", insights.get_nvr())
-    config_generator = APIConfigGenerator(plugin_package=args[0])
+    config_generator = APIConfigGenerator()
     config_generator.create_file_content()
 
 

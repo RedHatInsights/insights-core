@@ -6,7 +6,7 @@ from insights.parsers import *  # noqa
 
 @pytest.fixture
 def latest():
-    return generate_api_config.APIConfigGenerator(plugin_package="insights.tests.test_plugins").serialize_data_spec()
+    return generate_api_config.APIConfigGenerator().serialize_data_spec()
 
 
 def test_top_level(latest):
@@ -18,7 +18,7 @@ def test_top_level(latest):
 
 def test_meta_specs(latest):
     # these sections must exist in the meta_specs, have a 'archive_file_name' field,
-    #   and it must not be empty
+    # and it must not be empty
     for each in ['analysis_target', 'branch_info', 'machine-id', 'uploader_log']:
         assert each in latest['meta_specs']
         assert 'archive_file_name' in latest['meta_specs'][each]

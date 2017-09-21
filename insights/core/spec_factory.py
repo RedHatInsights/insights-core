@@ -3,44 +3,18 @@ import inspect
 import logging
 import os
 import re
-import six
 import sys
 import traceback
 
-from collections import defaultdict
 from glob import glob
 
 from insights.core import dr
-from insights.core.context import FileArchiveContext, FSRoots, HostContext
+from insights.core.filters import get_filters
+from insights.core.context import FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException
 from insights.core.serde import deserializer, serializer
 
 log = logging.getLogger(__name__)
-
-# TODO: consider case insensitive and regex
-FILTERS = defaultdict(set)
-
-
-def add_filter(name, patterns):
-    if isinstance(patterns, six.string_types):
-        FILTERS[name].add(patterns)
-    elif isinstance(patterns, list):
-        FILTERS[name] |= set(patterns)
-    elif isinstance(patterns, set):
-        FILTERS[name] |= patterns
-    else:
-        raise TypeError("patterns must be string, list, or set.")
-
-
-def get_filters(component):
-    filters = set()
-    if component in FILTERS:
-        filters |= FILTERS[component]
-
-    alias = dr.get_alias(component)
-    if alias and alias in FILTERS:
-        filters |= FILTERS[alias]
-    return filters
 
 
 def mangle_command(command, name_max=255):
@@ -76,8 +50,9 @@ class ContentProvider(object):
 
         return self._content
 
-    def __unicode__(self):
-        return self.content
+    def __repr__(self):
+        msg = "<%s(path=%s, cmd=%s)>"
+        return msg % (self.__class__.__name__, self.path or "", self.cmd or "")
 
     def __str__(self):
         return self.__unicode__()
@@ -247,8 +222,8 @@ class SpecFactory(object):
             self._attach(inner, name)
         return inner
 
-    def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
-        @datasource(provider, context, alias=alias)
+    def foreach(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+        @datasource(requires=[provider, context], alias=alias)
         def inner(broker):
             result = []
             source = broker[provider]
@@ -272,37 +247,6 @@ class SpecFactory(object):
             if result:
                 return result
             raise ContentException("No results found for [%s]" % cmd)
-        if name:
-            self._attach(inner, name)
-        return inner
-
-    def stored_command(self,
-                       pattern,
-                       name=None,
-                       context=FileArchiveContext,
-                       Kind=TextFileProvider,
-                       replace_regex="([a-zA-Z0-9]+)",
-                       alias=None):
-        has_group = "?" in pattern
-        pattern = mangle_command(pattern).replace("?", replace_regex) + "$"
-
-        @datasource(context, alias=alias)
-        def inner(broker):
-            ctx = broker[context]
-            root = ctx.root
-            results = []
-            pat = os.path.join(ctx.stored_command_prefix, pattern)
-            for path in broker[context].file_paths:
-                m = re.match(pat, path)
-                if m:
-                    results.append(Kind(root, path, filters=get_filters(inner)))
-            if not results:
-                raise ContentException("[%s] didn't match." % pat)
-
-            if not has_group and len(results) == 1:
-                return results[0]
-            return results
-
         if name:
             self._attach(inner, name)
         return inner

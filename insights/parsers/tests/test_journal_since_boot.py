@@ -1,4 +1,4 @@
-from insights.config.factory import add_filter
+from insights.core.filters import add_filter
 from insights.parsers.journal_since_boot import JournalSinceBoot
 from insights.tests import context_wrap
 
