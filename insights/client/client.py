@@ -107,7 +107,7 @@ def _is_client_registered():
     msg_notyet = 'This machine has not yet been registered.'
     msg_unreg = 'This machine has been unregistered.'
     msg_doreg = 'Use --register to register this machine.'
-    msg_rereg = 'Use --force-register if you would like to re-register this machine.'
+    msg_rereg = 'Use --force-reregister if you would like to re-register this machine.'
 
     # check reg status w/ API
     reg_check = registration_check()
