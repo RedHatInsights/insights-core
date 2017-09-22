@@ -19,7 +19,7 @@ BOOLEAN_KEYS = [
     'no_tar_file', 'no_upload', 'obfuscate',
     'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
     'register', 'reregister', 'run_here', 'silent', 'status', 'support',
-    'test_connection', 'to_stdout', 'unregister', 'update', 'validate',
+    'test_connection', 'to_stdout', 'unregister', 'validate',
     'verbose', 'version', 'to_json'
 ]
 
@@ -30,7 +30,7 @@ CONFIG = {
     'app_name': 'insights-client',
     'authmethod': 'BASIC',
     'auto_config': True,
-    'auto_update': True,  # legacy
+    'auto_update': True,
     'base_url': 'cert-api.access.redhat.com/r/insights',
     'branch_info_url': None,
     'cert_verify': os.path.join(CONF_DIR, 'cert-api.access.redhat.com.pem'),
@@ -79,7 +79,6 @@ CONFIG = {
     'test_connection': False,
     'to_stdout': False,
     'unregister': False,
-    'update': False,
     'upload_url': None,
     'use_atomic': None,
     'use_docker': None,
@@ -107,11 +106,6 @@ OPTS = [{
     'help': 'Unregister system from the Red Hat Insights Service',
     'action': "store_true",
     'dest': "unregister",
-}, {
-    'opt': ['--update-collection-rules'],
-    'help': 'Refresh collection rules from Red Hat',
-    'action': "store_true",
-    'dest': "update",
 }, {
     'opt': ['--display-name'],
     'action': "store",
@@ -386,7 +380,6 @@ def apply_legacy_config():
     """
     Map legacy options to the key that's used.
     """
-    CONFIG['update'] = CONFIG['auto_update']
     if CONFIG['no_gpg']:
         CONFIG['gpg'] = False
 
@@ -434,9 +427,9 @@ def compile_config():
     if CONFIG['from_stdin'] and CONFIG['from_file']:
         raise ValueError("Can't use both --from-stdin and --from-file.")
 
-    if CONFIG['update'] and CONFIG['offline']:
-        # raise ValueError("Cannot update rules in offline mode")
-        CONFIG['update'] = False
+    # offline implied auto_update=False
+    if CONFIG['offline']:
+        CONFIG['auto_update'] = False
 
     # handle container mode stuff
     if (CONFIG['image_id'] or CONFIG['tar_file'] or CONFIG['mountpoint']):

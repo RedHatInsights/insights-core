@@ -189,8 +189,7 @@ class InsightsConfig(object):
         elif update:
             if not self.conn:
                 raise ValueError('ERROR: Cannot update rules in --offline mode. '
-                                 'Either run without the --update-collection-rules '
-                                 'option or disable auto_update in config file.')
+                                 'Disable auto_update in config file.')
             dyn_conf = self.get_collection_rules()
             version = dyn_conf.get('version', None)
             if version is None:

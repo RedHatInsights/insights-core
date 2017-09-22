@@ -304,16 +304,11 @@ class InsightsClient(object):
         """
             returns (dict): new client rules
         """
-        if config['update']:
-            return client.update_rules()
+        if config['offline'] or not config['auto_update']:
+            logger.debug("Bypassing rule update due to config "
+                "running in offline mode or auto updating turned off.")
         else:
-            logger.debug("Bypassing rule update due to config")
-
-    def fetch_rules(self):
-        """
-            returns (dict): existing client rules
-        """
-        return client.fetch_rules()
+            return client.update_rules()
 
     def collect(self, **kwargs):
         """
