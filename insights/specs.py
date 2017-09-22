@@ -122,6 +122,7 @@ ethtool_g = sf.with_args_from(ethernet_interfaces, "/sbin/ethtool -g %s", name="
 ethtool_i = sf.with_args_from(ethernet_interfaces, "/sbin/ethtool -i %s", name="ethtool_i")
 ethtool_k = sf.with_args_from(ethernet_interfaces, "/sbin/ethtool -k %s", name="ethtool_k")
 facter = sf.simple_command("/usr/bin/facter", name="facter")
+fc_match = sf.simple_command("/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat", name="fc_match")
 fdisk_l = sf.simple_command("/sbin/fdisk -l", name="fdisk_l")
 foreman_satellite_log = sf.simple_file("/var/log/foreman-installer/satellite.log", name="foreman_satellite_log")
 foreman_production_log = sf.simple_file("/var/log/foreman/production.log", name="foreman_production_log")
