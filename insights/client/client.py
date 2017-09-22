@@ -223,12 +223,6 @@ def get_machine_id():
     return generate_machine_id()
 
 
-def fetch_rules():
-    pconn = get_connection()
-    pc = InsightsConfig(pconn)
-    return pc.get_conf(config['update'], {})
-
-
 def update_rules():
     pconn = get_connection()
     pc = InsightsConfig(pconn)
