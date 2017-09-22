@@ -1,10 +1,30 @@
+"""
+rhn_schema_version - Command ``/usr/bin/rhn-schema-version``
+============================================================
+Parse the output of command ``/usr/bin/rhn-schema-version``.
+
+"""
 from .. import parser
 
 
 @parser('rhn-schema-version')
 def rhn_schema_version(context):
     """
-    Returns the database schema version:
-    - E.g.: "5.6.0.10-2.el6sat"
+    Function to parse the output of command ``/usr/bin/rhn-schema-version``.
+
+    Sample input::
+
+        5.6.0.10-2.el6sat
+
+    Examples:
+        >>> db_ver = shared[rhn_schema_version]
+        >>> db_ver
+        '5.6.0.10-2.el6sat'
+
     """
-    return context.content[0].strip() if context.content else ""
+    if context.content:
+        content = context.content
+        if len(content) == 1 and 'No such' not in content[0]:
+            ver = content[0].strip()
+            if ver:
+                return ver
