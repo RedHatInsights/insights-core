@@ -459,7 +459,8 @@ class InsightsConnection(object):
         response = self.session.get(self.branch_info_url)
         logger.debug("GET branch_info status: %s", response.status_code)
         if response.status_code != 200:
-            raise LookupError("Bad status from server: %s" % response.status_code)
+            logger.error("Bad status from server: %s", response.status_code)
+            return False
 
         branch_info = response.json()
         logger.debug("Branch information: %s", json.dumps(branch_info))
