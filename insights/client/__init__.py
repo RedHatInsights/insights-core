@@ -609,7 +609,11 @@ def post_update():
     logger.debug('Machine-id: %s', generate_machine_id(new))
 
     if config['register']:
-        client.try_register()
+        registration = client.try_register()
+        if registration is None:
+            logger.info('Running connection test...')
+            client.test_connection()
+            sys.exit(constants.sig_kill_bad)
         if (not config['disable_schedule'] and
            os.path.exists('/etc/cron.daily') and
            InsightsSchedule().set_daily()):
