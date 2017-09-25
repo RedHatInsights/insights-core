@@ -44,6 +44,10 @@ from .. import parser, SysconfigOptions
 @parser("docker_sysconfig")
 class DockerSysconfig(SysconfigOptions):
     """
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.DockerSysconfig` instead.
+
     Parse the ``/etc/sysconfig/docker`` file.
     """
     pass
@@ -57,6 +61,9 @@ class DockerSysconfig(SysconfigOptions):
 @parser("docker_sysconfig")
 def docker_sysconfig_parser(context):
     """
-    Deprecated - please use the ``DockerSysconfig`` parser class.
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.DockerSysconfig` instead.
+
     """
     return DockerSysconfig(context).data

@@ -15,6 +15,10 @@ class SysconfigIrqbalance(LegacyItemAccess, Parser):
     A parser for analyzing the ``irqbalance`` service config file in the
     ``/etc/sysconfig`` directory.
 
+    .. warning::
+        Deprecated class, please use
+        :class:`insights.parsers.sysconfig.IrqbalanceSysconfig` instead.
+
     Sample Input::
 
         #IRQBALANCE_ONESHOT=yes
