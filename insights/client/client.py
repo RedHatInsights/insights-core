@@ -464,16 +464,14 @@ def get_connection():
 def upload(tar_file, collection_duration=None):
     if config['no_upload']:
         logger.info('Archive saved at %s', tar_file)
-        return {'status': None, 'response': None}
+        return None
     logger.info('Uploading Insights data.')
     pconn = get_connection()
-    upload_status = False
     api_response = None
     for tries in range(config['retries']):
         upload = pconn.upload_archive(tar_file, collection_duration,
                                       cluster=generate_machine_id(
                                           docker_group=config['container_mode']))
-        upload_status = upload.status_code
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
@@ -520,7 +518,7 @@ def upload(tar_file, collection_duration=None):
             else:
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config['logging_file'])
-    return {'status': upload_status, 'response': api_response}
+    return api_response
 
 
 def delete_archive(path):

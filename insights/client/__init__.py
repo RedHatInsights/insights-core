@@ -390,7 +390,7 @@ class InsightsClient(object):
         """
         # do the upload
         upload_results = client.upload(path)
-        if upload_results['status'] == 201:
+        if upload_results:
 
             # delete the archive
             if config['keep_archive']:
@@ -409,7 +409,7 @@ class InsightsClient(object):
                     logger.debug(message)
                     raise IOError(message)
 
-        # return status code
+        # return api response
         return upload_results
 
     def rotate_eggs(self):
