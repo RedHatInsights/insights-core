@@ -132,8 +132,8 @@ static_specs = {
     "httpd_access_log"          : SimpleFileSpec("var/log/httpd/access_log", large_content=True),
     "httpd.conf"                : First([PatternSpec(r"etc/httpd/conf/httpd\.conf"),
                                     PatternSpec(r"conf/httpd/conf/httpd\.conf")]),
-    "httpd.conf.d"              : First([PatternSpec(r"etc/httpd/conf\.d/.+\.conf"),
-                                    PatternSpec(r"conf/httpd/conf\.d/.+\.conf")]),
+    "httpd.conf.d"              : First([PatternSpec(r"etc/httpd/conf.d/.+\.conf"),
+                                    PatternSpec(r"conf/httpd/conf.d/.+\.conf")]),
     "httpd_error_log"           : SimpleFileSpec("var/log/httpd/error_log", large_content=True),
     "httpd_ssl_access_log"      : SimpleFileSpec("var/log/httpd/ssl_access_log", large_content=True),
     "httpd_ssl_error_log"       : SimpleFileSpec("var/log/httpd/ssl_error_log", large_content=True),
@@ -143,8 +143,8 @@ static_specs = {
                                     SimpleFileSpec("ifconfig"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/ifconfig")]),
     "imagemagick_policy"        : All([PatternSpec(r"etc/ImageMagick/policy\.xml"),  # RHEL6, RHEL7
-                                    PatternSpec(r"usr/lib64/ImageMagick-6\.5\.4/config/policy\.xml"),  # ImageMagick 6.5 on rhel-6 64bit.
-                                    PatternSpec(r"usr/lib/ImageMagick-6\.5\.4/config/policy\.xml")]),  # ImageMagick 6.5 on rhel-6 32bit.
+                                    PatternSpec(r"usr/lib64/ImageMagick-6.5.4/config/policy\.xml"),  # ImageMagick 6.5 on rhel-6 64bit.
+                                    PatternSpec(r"usr/lib/ImageMagick-6.5.4/config/policy\.xml")]),  # ImageMagick 6.5 on rhel-6 32bit.
     "init.ora"                  : SimpleFileSpec("{ORACLE_HOME}/dbs/init.ora"),
     "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
@@ -215,7 +215,7 @@ static_specs = {
     "mlx4_port"                 : CommandSpec("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;"),
     "modinfo"                   : CommandSpec("/usr/sbin/modinfo {module}", module=r"\S+"),
     "modprobe.conf"             : PatternSpec(r"etc/modprobe\.conf"),
-    "modprobe.d"                : PatternSpec(r"etc/modprobe\.d/.*\.conf"),
+    "modprobe.d"                : PatternSpec(r"etc/modprobe.d/.*\.conf"),
     "mount"                     : CommandSpec("/bin/mount"),
     "multicast_querier"         : CommandSpec("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;"),
     "multipath.conf"            : SimpleFileSpec("etc/multipath.conf"),
@@ -232,7 +232,7 @@ static_specs = {
     "neutron_server_log"        : SimpleFileSpec("var/log/neutron/server.log", large_content=True),
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
     "nfs_exports"               : SimpleFileSpec("etc/exports"),
-    "nfs_exports.d"             : PatternSpec(r"etc/exports\.d/.*\.exports"),
+    "nfs_exports.d"             : PatternSpec(r"etc/exports.d/.*\.exports"),
     "nova-api_log"              : SimpleFileSpec("var/log/nova/nova-api.log", large_content=True),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
     "nova_crontab"              : CommandSpec("/usr/bin/crontab -l -u nova"),
@@ -250,7 +250,7 @@ static_specs = {
                                     SimpleFileSpec("rhn-logs/rhn/osa-dispatcher.log", large_content=True)]),
     "ose_master_config"         : SimpleFileSpec("etc/origin/master/master-config.yaml"),
     "ose_node_config"           : SimpleFileSpec("etc/origin/node/node-config.yaml"),
-    "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine\.conf\.d/.*"),
+    "ovirt_engine_confd"        : PatternSpec(r"etc/ovirt-engine/engine.conf.d/.*"),
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
@@ -260,7 +260,7 @@ static_specs = {
                                     PatternSpec(r"sos_commands/filesys/parted_-s_.+")]),
     "password-auth"             : SimpleFileSpec("etc/pam.d/password-auth"),
     'pcs_status'                : CommandSpec("/usr/sbin/pcs status"),
-    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf\.d/\w+\.conf"),
+    "pluginconf.d"              : PatternSpec(r"etc/yum/pluginconf.d/\w+\.conf"),
     "postgresql.conf"           : First([SimpleFileSpec("var/lib/pgsql/data/postgresql.conf"),
                                     SimpleFileSpec("opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf"),
                                     SimpleFileSpec("database/postgresql.conf")]),
@@ -390,11 +390,11 @@ static_specs = {
     "xfs_info"                  : First([CommandSpec("/usr/sbin/xfs_info {mount}", mount=r'(?:/[\w-]*)+'),
                                     PatternSpec(r"sos_commands/xfs/xfs_info(_(?:\.[\w-]*)+)?")]),
     "xinetd.conf"               : SimpleFileSpec("etc/xinetd.conf"),
-    "xinetd.d"                  : PatternSpec(r"etc/xinetd\.d/.*"),
+    "xinetd.d"                  : PatternSpec(r"etc/xinetd.d/.*"),
     "yum.conf"                  : SimpleFileSpec("etc/yum.conf"),
     "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
-    "yum.repos.d"               : PatternSpec(r"etc/yum\.repos\.d/.*\.repo")
+    "yum.repos.d"               : PatternSpec(r"etc/yum.repos.d/.*\.repo")
 }
 """dict: Specifications for Insights data collection and parsers."""
 
