@@ -1,5 +1,5 @@
 from insights.tests import context_wrap
-from insights.parsers.sysconfig.virt_who import SysconfigVirtWho
+from insights.parsers.sysconfig import VirtWhoSysconfig
 
 VIRTWHO = """
 # Register ESX machines using vCenter
@@ -15,7 +15,7 @@ TEST_OPT="A TEST"
 
 
 def test_sysconfig_virt_who():
-    result = SysconfigVirtWho(context_wrap(VIRTWHO))
+    result = VirtWhoSysconfig(context_wrap(VIRTWHO))
     assert result["VIRTWHO_RHEVM"] == '1'
     assert result["VIRTWHO_RHEVM_OWNER"] == ''
     assert result.get("NO_SUCH_OPTIONS") is None

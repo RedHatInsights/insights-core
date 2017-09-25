@@ -7,12 +7,6 @@ file ``/etc/chrony.conf``
    :members:
    :show-inheritance:
 
-file ``/etc/sysconfig/chronyd``
--------------------------------
-.. autoclass:: insights.parsers.system_time.ChronydService
-   :members:
-   :show-inheritance:
-
 command ``file -L /etc/localtime``
 ----------------------------------
 .. autoclass:: insights.parsers.system_time.LocalTime
@@ -34,11 +28,5 @@ file ``/etc/ntp.conf``
 command ``ntptime``
 -------------------
 .. autoclass:: insights.parsers.system_time.NtpTime
-   :members:
-   :show-inheritance:
-
-file ``/etc/sysconfig/ntpd``
-----------------------------
-.. autoclass:: insights.parsers.system_time.NTPDService
    :members:
    :show-inheritance:

@@ -8,23 +8,77 @@ Configuration sources of virt-who::
 
     1. command line             # Ignored
     2. environment variables    # Ignored
-    3. /etc/sysconfig/virt-who  # SysconfigVirtWho
-    4. /etc/virt-who.d/*.conf  # VirtWhoConf
+    3. /etc/sysconfig/virt-who  # VirtWhoSysconfig
+    4. /etc/virt-who.d/*.conf   # VirtWhoConf
     5. /etc/virt-who.conf       # VirtWhoConf
 
 """
 
 from insights.core.plugins import combiner
-from insights.parsers.sysconfig.virt_who import SysconfigVirtWho
+from insights.parsers.sysconfig import VirtWhoSysconfig
 from insights.parsers.virt_who_conf import VirtWhoConf
 
 
-@combiner(requires=[SysconfigVirtWho, VirtWhoConf])
+@combiner(requires=[VirtWhoSysconfig, VirtWhoConf])
 class AllVirtWhoConf(object):
     """
     Combiner for accessing part of valid ``virt-who`` configurations
 
+    Sample content of ``/etc/sysconfig/virt-who``::
+
+        # Start virt-who on background, perform doublefork and monitor for virtual guest
+        # events (if possible). It is NOT recommended to turn off this option for
+        # starting virt-who as service.
+        VIRTWHO_BACKGROUND=1
+        # Enable debugging output.
+        VIRTWHO_DEBUG=1
+        # Send the list of guest IDs and exit immediately.
+        VIRTWHO_ONE_SHOT=0
+        # Acquire and send list of virtual guest each N seconds, 0 means default
+        # configuration.
+        VIRTWHO_INTERVAL=3600
+        # Virt-who subscription manager backend. Enable only one option from the following:
+        # Report to Subscription Asset Manager (SAM) or the Red Hat Customer Portal
+        # Report to Sattellite version 6
+        VIRTWHO_SATELLITE6=1
+
+
+    Sample content of ``/etc/virt-who.conf``::
+
+        [global]
+        debug=False
+        oneshot=True
+        [defaults]
+        owner=test
+
+    Sample content of ``/etc/virt-who.d/satellite_esx.conf``::
+
+        [esx_satellite]
+        type=esx
+        server=10.72.32.209
+        owner=Satellite
+        env=Satellite
+
+    Examples:
+        >>> shared = {VirtWhoSysconfig: vw_sys, VirtWhoConf: [vw_conf, vwd_conf]}
+        >>> all_vw_conf = AllVirtWhoConf(None, shared)
+        >>> all_vw_conf.background
+        True
+        >>> all_vw_conf.oneshot
+        False  # `/etc/sysconfig/virt-who` has high priority
+        >>> all_vw_conf.interval
+        3600
+        >>> all_vw_conf.sm_type
+        'sat6'
+        >>> all_vw_conf.hypervisors
+        [{'name': 'esx_satellite', 'server': '10.72.32.209',
+          'owner': 'Satellite', 'env': 'Satellite', type: 'esx'}]
+        >>> all_vw_conf.hypervisor_types
+        ['esx']
+
+
     Attributes:
+        background(boolean): is ``virt-who`` running as a service
         oneshot(boolean): is ``virt-who`` running in ``one-shot`` mode or not
         interval(int): how often to check connected hypervisors for changes (seconds)
         sm_type(str): what subscription manager will ``virt-who`` report to
@@ -33,6 +87,7 @@ class AllVirtWhoConf(object):
     """
 
     def __init__(self, shared):
+        self.background = False
         self.oneshot = True
         self.interval = 3600
         self.sm_type = 'cp'  # report to Red Hat Customer Portal by default
@@ -40,7 +95,7 @@ class AllVirtWhoConf(object):
         self.hypervisor_types = []
 
         vwc = shared[VirtWhoConf]
-        svw = shared[SysconfigVirtWho]
+        svw = shared[VirtWhoSysconfig]
 
         # Check VirtWhoConf at first
         types = set()
@@ -58,6 +113,7 @@ class AllVirtWhoConf(object):
                     self.hypervisors.append(hyper)
         self.hypervisor_types = list(types)
 
+        self.background = ('1' == svw.get('VIRTWHO_BACKGROUND'))
         ost = svw.get('VIRTWHO_ONE_SHOT')
         self.oneshot = (ost == '1') if ost else self.oneshot
         itv = svw.get('VIRTWHO_INTERVAL')

@@ -1,5 +1,5 @@
 from insights.tests import context_wrap
-from insights.parsers.sysconfig_httpd import HTTPDService
+from insights.parsers.sysconfig import HttpdSysconfig
 
 HTTPD = """
 # Configuration file for the httpd service.
@@ -17,7 +17,7 @@ HTTPD=/usr/sbin/httpd.worker
 # httpd binary at startup, set OPTIONS here.
 #
 #OPTIONS=
-
+OPTIONS1=
 #
 # By default, the httpd process is started in the C locale; to
 # change the locale in which the server runs, the HTTPD_LANG
@@ -28,7 +28,8 @@ HTTPD_LANG=C
 
 
 def test_httpd_service_conf():
-    result = HTTPDService(context_wrap(HTTPD)).data
+    result = HttpdSysconfig(context_wrap(HTTPD))
     assert result["HTTPD"] == '/usr/sbin/httpd.worker'
     assert result.get("OPTIONS") is None
+    assert result.get("OPTIONS1") == ''
     assert result['HTTPD_LANG'] == "C"

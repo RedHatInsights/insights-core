@@ -55,16 +55,6 @@ maxslewrate 1000
 smoothtime 400 0.001 leaponly
 """
 
-CHRONYD = """
-OPTIONS="-d"
-#HIDE="me"
-""".strip()
-
-NTPD = """
-OPTIONS="-x -g"
-#HIDE="me"
-""".strip()
-
 STANDARD_NTP_CONF = """
 # For more information about this file, see the man pages
 # ntp.conf(5), ntp_acc(5), ntp_auth(5), ntp_clock(5), ntp_misc(5), ntp_mon(5).
@@ -213,18 +203,6 @@ def test_ntptime():
     assert result['time constant'] == 2
     assert result['precision'] == 0.001
     assert result['tolerance'] == 500
-
-
-def test_sysconfig_chronyd():
-    result = system_time.ChronydService(context_wrap(CHRONYD)).data
-    assert result['OPTIONS'] == '-d'
-    assert result.get('HIDE') is None
-
-
-def test_sysconfig_ntpd():
-    result = system_time.NTPDService(context_wrap(NTPD)).data
-    assert result['OPTIONS'] == '-x -g'
-    assert result.get('HIDE') is None
 
 
 def test_standard_ntp_conf():
