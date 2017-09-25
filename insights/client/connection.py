@@ -73,7 +73,7 @@ class InsightsConnection(object):
         self.base_url = protocol + config["base_url"]
         self.upload_url = config["upload_url"]
         if self.upload_url is None:
-            if config["analyze_image"] is True:
+            if config["analyze_container"] is True:
                 self.upload_url = self.base_url + "/uploads/image"
             else:
                 self.upload_url = self.base_url + "/uploads"
@@ -675,7 +675,7 @@ class InsightsConnection(object):
         files = {
             'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
-        if config["analyze_image"] is True:
+        if config["analyze_container"] is True:
             logger.debug('Uploading container, image, mountpoint or tarfile.')
             upload_url = self.upload_url
         elif cluster:

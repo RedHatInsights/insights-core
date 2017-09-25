@@ -311,36 +311,39 @@ class InsightsClient(object):
 
     def collect(self, **kwargs):
         """
-            kwargs: image_id=UUID,
-                    tar_file=/path/to/tar,
-                    mountpoint=/path/to/mountpoint
+            kwargs: analyze_image_id=UUID,
+                    analyze_file=/path/to/tar,
+                    analyze_mountpoint=/path/to/mountpoint
             returns (str, json): will return a string path to archive, or json facts
         """
         # check if we are scanning a host or scanning one of the following:
         # image/container running in docker
         # tar_file
         # OR a mount point (FS that is already mounted somewhere)
-        if (kwargs.get('image_id') or kwargs.get('tar_file') or kwargs.get('mountpoint')):
+        if (kwargs.get('analyze_image_id') or
+                kwargs.get('analyze_file') or
+                kwargs.get('analyze_mountpoint')):
+            config['analyze_container'] = True
             logger.debug('Not scanning host.')
 
         # setup other scanning cases
         # scanning images/containers running in docker
-        if kwargs.get('image_id'):
+        if kwargs.get('analyze_image_id'):
             logger.debug('Scanning an image id.')
             config['container_mode'] = True
-            config['only'] = kwargs.get('image_id')
+            config['analyze_image_id'] = kwargs.get('analyze_image_id')
 
         # compressed filesystems (tar files)
-        if kwargs.get('tar_file'):
+        if kwargs.get('analyze_file'):
             logger.debug('Scanning a tar file.')
             config['container_mode'] = True
-            config['analyze_compressed_file'] = kwargs.get('tar_file')
+            config['analyze_file'] = kwargs.get('analyze_file')
 
         # FSs already mounted somewhere
-        if kwargs.get('mountpoint'):
+        if kwargs.get('analyze_mountpoint'):
             logger.debug('Scanning a mount point.')
             config['container_mode'] = True
-            config['mountpoint'] = kwargs.get('mountpoint')
+            config['analyze_mountpoint'] = kwargs.get('analyze_mountpoint')
 
         # return collection results
         tar_file = client.collect()
@@ -615,7 +618,7 @@ def post_update():
     # check registration before doing any uploads
     # only do this if we are not running in container mode
     # Ignore if in offline mode
-    if not config["container_mode"] and not config["analyze_image"]:
+    if not config["container_mode"] and not config["analyze_container"]:
         if not config['register'] and not config['offline']:
             msg, is_registered = client._is_client_registered()
             if not is_registered:
@@ -626,9 +629,9 @@ def post_update():
 @phase
 def collect_and_output():
     c = InsightsClient()
-    tar_file = c.collect(image_id=(config["image_id"] or config["only"]),
-                         tar_file=config["tar_file"],
-                         mountpoint=config["mountpoint"])
+    tar_file = c.collect(analyze_image_id=config["analyze_image_id"],
+                         analyze_file=config["analyze_file"],
+                         analyze_mountpoint=config["analyze_mountpoint"])
     if config['to_stdout']:
         with open(tar_file, 'rb') as tar_content:
             shutil.copyfileobj(tar_content, sys.stdout)

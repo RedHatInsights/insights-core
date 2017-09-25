@@ -13,7 +13,7 @@ CONF_DIR = os.path.join('/etc', APP_NAME)
 CONF_FILE = os.path.join(CONF_DIR, 'insights-client.conf')
 
 BOOLEAN_KEYS = [
-    'analyze_image', 'analyze_compressed_file', 'auto_config', 'auto_update',
+    'analyze_container', 'auto_config', 'auto_update',
     'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
     'no_tar_file', 'no_upload', 'obfuscate',
@@ -24,8 +24,10 @@ BOOLEAN_KEYS = [
 ]
 
 CONFIG = {
-    'analyze_image': False,
-    'analyze_compressed_file': None,
+    'analyze_container': False,
+    'analyze_image_id': None,
+    'analyze_file': None,
+    'analyze_mountpoint': None,
     'api_url': None,
     'app_name': 'insights-client',
     'authmethod': 'BASIC',
@@ -62,7 +64,6 @@ CONFIG = {
     'obfuscate': False,
     'obfuscate_hostname': False,
     'offline': False,
-    'only': None,
     'original_style_specs': False,
     'password': '',
     'proxy': None,
@@ -86,8 +87,6 @@ CONFIG = {
     'validate': False,
     'verbose': False,
     'version': False,
-    'image_id': None,
-    'tar_file': None,
     'to_json': False
 }
 
@@ -180,15 +179,10 @@ OPTS = [{
     'dest': 'offline',
     'action': 'store_true',
 }, {
-    'opt': ['--container'],
+    'opt': ['--analyze-container'],
     'help': optparse.SUPPRESS_HELP,
     'action': 'store_true',
-    'dest': 'container_mode'
-}, {
-    'opt': ['--analyze-image'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store_true',
-    'dest': 'analyze_image'
+    'dest': 'analyze_container'
 }, {
     'opt': ['--logging-file'],
     'help': 'path to log file location',
@@ -198,15 +192,15 @@ OPTS = [{
     'help': 'url to core location',
     'dest': 'core_url'
 }, {
-    'opt': ['--analyze-compressed-file'],
+    'opt': ['--analyze-file'],
     'help': optparse.SUPPRESS_HELP,
     'action': "store",
-    'dest': "analyze_compressed_file",
+    'dest': "analyze_file",
 }, {
-    'opt': ['--mountpoint'],
+    'opt': ['--analyze-mountpoint'],
     'help': optparse.SUPPRESS_HELP,
     'action': "store",
-    'dest': "mountpoint",
+    'dest': "analyze_mountpoint",
 }, {
     'opt': ['--test-connection'],
     'help': 'Test connectivity to Red Hat',
@@ -274,12 +268,6 @@ OPTS = [{
     'dest': "docker_image_name",
     'group': 'debug'
 }, {
-    'opt': ['--only'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store",
-    'dest': "only",
-    'group': 'debug'
-}, {
     'opt': ['--use-docker'],
     'help': optparse.SUPPRESS_HELP,
     'action': "store_true",
@@ -315,16 +303,6 @@ OPTS = [{
     'action': 'store_true',
     'dest': 'debug',
     'group': 'debug'
-}, {
-    'opt': ['--image-id'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store',
-    'dest': 'image_id'
-}, {
-    'opt': ['--tar-file'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store',
-    'dest': 'tar_file'
 }, {
     'opt': ['--gpg-sig-url'],
     'help': 'url to gpg sig location for core',
@@ -421,7 +399,7 @@ def compile_config():
     if CONFIG['to_stdout']:
         CONFIG['no_upload'] = True
 
-    if (CONFIG['only'] is not None) and (len(CONFIG['only']) < 12):
+    if (CONFIG['analyze_image_id'] is not None) and (len(CONFIG['analyze_image_id']) < 12):
         raise ValueError("Image/Container ID must be at least twelve characters long.")
 
     if CONFIG['from_stdin'] and CONFIG['from_file']:
@@ -432,7 +410,8 @@ def compile_config():
         CONFIG['auto_update'] = False
 
     # handle container mode stuff
-    if (CONFIG['image_id'] or CONFIG['tar_file'] or CONFIG['mountpoint']):
+    if (CONFIG['analyze_image_id'] or CONFIG['analyze_file'] or CONFIG['analyze_mountpoint']):
+        CONFIG['analyze_container'] = True
         CONFIG['container_mode'] = True
 
     if CONFIG['no_tar_file'] or CONFIG['offline']:

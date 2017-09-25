@@ -148,17 +148,15 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         targets = []
         logger.debug('Getting targets to scan...')
         for d in _docker_all_image_ids():
-            logger.debug('Checking if %s equals %s.' % (d, config['only']))
-            # if config['only'] is None or config['only'] == d:
-            if config['only'] == d or d.startswith(config['only']):
-                logger.debug('%s equals %s' % (d, config['only']))
+            logger.debug('Checking if %s equals %s.' % (d, config['analyze_image_id']))
+            if config['analyze_image_id'] == d or d.startswith(config['analyze_image_id']):
+                logger.debug('%s equals %s' % (d, config['analyze_image_id']))
                 targets.append({'type': 'docker_image', 'name': d})
                 return targets  # return the first one that matches
         for d in _docker_all_container_ids():
-            logger.debug('Checking if %s equals %s.' % (d, config['only']))
-            # if config['only'] is None or config['only'] == d:
-            if config['only'] == d or d.startswith(config['only']):
-                logger.debug('%s equals %s' % (d, config['only']))
+            logger.debug('Checking if %s equals %s.' % (d, config['analyze_image_id']))
+            if config['analyze_image_id'] == d or d.startswith(config['analyze_image_id']):
+                logger.debug('%s equals %s' % (d, config['analyze_image_id']))
                 targets.append({'type': 'docker_container', 'name': d})
                 return targets  # return the first one that matches
         logger.debug('Done collecting targets')
