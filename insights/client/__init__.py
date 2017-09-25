@@ -18,7 +18,6 @@ from .utilities import write_to_disk, generate_machine_id, validate_remove_file
 from .schedule import InsightsSchedule
 
 LOG_FORMAT = ("%(asctime)s %(levelname)s %(message)s")
-APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
 
@@ -495,49 +494,35 @@ def phase(func):
             logger.exception("Fatal error")
             sys.exit(1)
         else:
-            die()  # Exit gracefully
+            sys.exit()  # Exit gracefully
     return _f
 
 
-def die(msg=None, rc=None, retry=False, response=None):
-    """
-        Format and send the expected response to the parent/controlling client
-        process.
-
-        params:
-            msg (str): Content to be printed to stdout console
-            rc (int): return code to be used when exiting.
-                Unused if retry=True.  If the return code is not None, it
-                indicates that the parent process should stop executing phases
-                and exit.
-            retry (bool): True if the phase is considered to have failed and
-                the parent process should fall back to another egg.
-            response (str): Content to be passed back to the parent process,
-                potentially to be used as input other phases.
-    """
-    print json.dumps({
-        "message": msg,
-        "rc": rc,
-        "retry": retry,
-        "response": response
-    })
-    sys.exit(0)
+def get_phases():
+    return ['pre_update',
+            'update',
+            'post_update',
+            'collect_and_output']
 
 
 @phase
 def pre_update():
     if config['version']:
         logger.info(constants.version)
-        die(rc=0)
+        sys.exit(constants.sig_kill_ok)
 
     # validate the remove file
     if config['validate']:
-        die(rc=0 if validate_remove_file() else 1)
+        if validate_remove_file():
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
     if config['enable_schedule'] and config['disable_schedule']:
-        logger.error('Conflicting options: --enable-schedule and --disable-schedule')
-        die(rc=1)
+        logger.error(
+            'Conflicting options: --enable-schedule and --disable-schedule')
+        sys.exit(constants.sig_kill_bad)
 
     if config['enable_schedule']:
         # enable automatic scheduling
@@ -547,17 +532,18 @@ def pre_update():
             logger.info('Automatic scheduling for Insights has been enabled.')
         elif os.path.exists('/etc/cron.daily/' + constants.app_name):
             logger.info('Automatic scheduling for Insights already enabled.')
-        die(rc=0)
+        sys.exit(constants.sig_kill_ok)
 
     if config['disable_schedule']:
         # disable automatic schedling
         updated = InsightsSchedule().remove_scheduling()
         if updated:
             logger.info('Automatic scheduling for Insights has been disabled.')
-        elif not os.path.exists('/etc/cron.daily/' + constants.app_name) and not config['register']:
+        elif (not os.path.exists('/etc/cron.daily/' + constants.app_name) and
+              not config['register']):
             logger.info('Automatic scheduling for Insights already disabled.')
         if not config['register']:
-            die(rc=0)
+            sys.exit(constants.sig_kill_ok)
 
     if config['container_mode']:
         logger.debug('Not scanning host.')
@@ -569,15 +555,19 @@ def pre_update():
         rc = pconn.test_connection()
         if rc == 0:
             logger.info("Passed connection test")
+            sys.exit(constants.sig_kill_ok)
         else:
-            logger.info("Failed connection test.  See %s for details." % config['logging_file'])
-        die(rc=rc)
+            logger.info(
+                "Failed connection test.  See %s for details.",
+                config['logging_file'])
+            sys.exit(constants.sig_kill_bad)
 
     if config['support']:
         support = InsightsSupport()
         support.collect_support_info()
-        logger.info("Support information collected in %s" % config['logging_file'])
-        die(rc=0)
+        logger.info(
+            "Support information collected in %s", config['logging_file'])
+        sys.exit(constants.sig_kill_ok)
 
 
 @phase
@@ -594,12 +584,15 @@ def post_update():
         reg_check = registration_check()
         for msg in reg_check['messages']:
             logger.info(msg)
-        die(rc=0 if reg_check['status'] else 1)
+        sys.exit(constants.sig_kill_ok)
 
     # put this first to avoid conflicts with register
     if config['unregister']:
         pconn = client.get_connection()
-        die(rc=0 if pconn.unregister() else 1)
+        if pconn.unregister():
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
 
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
@@ -614,7 +607,9 @@ def post_update():
 
     if config['register']:
         client.try_register()
-        if not config['disable_schedule'] and os.path.exists('/etc/cron.daily') and InsightsSchedule().set_daily():
+        if (not config['disable_schedule'] and
+           os.path.exists('/etc/cron.daily') and
+           InsightsSchedule().set_daily()):
             logger.info('Automatic scheduling for Insights has been enabled.')
 
     # check registration before doing any uploads
@@ -625,22 +620,23 @@ def post_update():
             msg, is_registered = client._is_client_registered()
             if not is_registered:
                 logger.error(msg)
-                die(rc=1)
+                sys.exit(constants.sig_kill_bad)
 
 
 @phase
-def collect():
+def collect_and_output():
     c = InsightsClient()
     tar_file = c.collect(image_id=(config["image_id"] or config["only"]),
                          tar_file=config["tar_file"],
                          mountpoint=config["mountpoint"])
-    die(response=tar_file)
-
-
-@phase
-def upload():
-    egg_path = sys.stdin.read().strip()
-    c = InsightsClient()
-    resp = c.upload(egg_path)
-    if config["to_json"]:
-        die(json.dumps(resp))
+    if config['to_stdout']:
+        with open(tar_file, 'rb') as tar_content:
+            shutil.copyfileobj(tar_content, sys.stdout)
+    else:
+        if not config['no_upload']:
+            resp = c.upload(tar_file)
+        else:
+            logger.info('Archive saved at %s', tar_file)
+        if config["to_json"]:
+            print(json.dumps(resp))
+    sys.exit()

@@ -43,3 +43,5 @@ class InsightsConstants(object):
     insights_core_last_stable_gpg_sig = os.path.join(insights_core_lib_dir, 'last_stable.egg.asc')
     insights_core_newest = os.path.join(insights_core_lib_dir, 'newest.egg')
     insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
+    sig_kill_ok = 100
+    sig_kill_bad = 101
