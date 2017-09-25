@@ -103,7 +103,7 @@ def _is_client_registered():
 
     # If the client is running in container mode, bypass this stuff
     msg_container_mode = 'Client running in container/image mode. Bypassing registration check'
-    if config['analyze_image'] is True:
+    if config['analyze_container'] is True:
         return msg_container_mode, False
 
     # All other cases
@@ -140,7 +140,7 @@ def _is_client_registered():
 def try_register():
 
     # if we are running an image analysis then dont register
-    if config["analyze_image"] is True:
+    if config["analyze_container"] is True:
         logger.info("Running client in Container mode. Bypassing registration.")
         return
 
@@ -255,12 +255,12 @@ def collect(rc=0):
     """
     # initialize collection targets
     # tar files
-    if config['analyze_compressed_file'] is not None:
+    if config['analyze_file'] is not None:
         logger.debug("Client analyzing a compress filesystem.")
         targets = [{'type': 'compressed_file',
                     'name': os.path.splitext(
-                        os.path.basename(config['analyze_compressed_file']))[0],
-                    'location': config['analyze_compressed_file']}]
+                        os.path.basename(config['analyze_file']))[0],
+                    'location': config['analyze_file']}]
 
     # mountpoints
     elif config['mountpoint'] is not None:
@@ -451,7 +451,7 @@ def collect(rc=0):
                 container_connection.close()
 
     # cleanup the temporary stuff for analyzing tar files
-    if config['analyze_compressed_file'] is not None and compressed_filesystem is not None:
+    if config['analyze_file'] is not None and compressed_filesystem is not None:
         compressed_filesystem.cleanup_temp_filesystem()
 
     return tar_file
