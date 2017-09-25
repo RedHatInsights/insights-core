@@ -22,7 +22,6 @@ from constants import InsightsConstants as constants
 from config import CONFIG as config
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
-APP_NAME = constants.app_name
 INSIGHTS_CONNECTION = None
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,8 @@ def get_file_handler():
     log_dir = os.path.dirname(log_file)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, 0700)
-    file_handler = logging.handlers.RotatingFileHandler(log_file, backupCount=3)
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file, backupCount=3)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     return file_handler
 
@@ -52,14 +52,13 @@ def get_console_handler():
     else:
         target_level = logging.INFO
 
-    stdout_handler = logging.StreamHandler(sys.stderr)
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setLevel(target_level)
 
     log_format = LOG_FORMAT if config['verbose'] else "%(message)s"
-    stdout_handler.setFormatter(logging.Formatter(log_format))
+    handler.setFormatter(logging.Formatter(log_format))
 
-    stdout_handler.setLevel(target_level)
-
-    return stdout_handler
+    return handler
 
 
 def configure_level():
@@ -80,7 +79,11 @@ def configure_level():
 def set_up_logging():
     if len(logging.root.handlers) == 0:
         # from_stdin mode implies to_stdout
-        config['to_stdout'] = (config['to_stdout'] or config['from_stdin'] or config['from_file'])
+        config['to_stdout'] = (config['to_stdout'] or
+                               config['from_stdin'] or
+                               config['from_file'])
+
+        config['quiet'] = config['to_stdout'] and not config['verbose']
 
         logging.root.addHandler(get_console_handler())
         logging.root.addHandler(get_file_handler())
@@ -462,9 +465,6 @@ def get_connection():
 
 
 def upload(tar_file, collection_duration=None):
-    if config['no_upload']:
-        logger.info('Archive saved at %s', tar_file)
-        return None
     logger.info('Uploading Insights data.')
     pconn = get_connection()
     api_response = None
