@@ -19,16 +19,11 @@ Reads the ``/sys/kernel/kexec_crash_loaded`` file.
 
 Reads the ``/sys/kernel/kexec_crash_size`` file.
 
-``SysconfigKdump``
-------------------
-
-Reads the ``/etc/sysconfig/kdump`` file.
-
 """
 
 import re
 from urlparse import urlparse
-from .. import Parser, parser, SysconfigOptions
+from .. import Parser, parser
 
 
 @parser("kdump.conf")
@@ -269,41 +264,6 @@ class KexecCrashLoaded(Parser):
             return
         line = list(content)[0].strip()
         self.is_loaded = line == '1'
-
-
-@parser('kdump')
-class SysconfigKdump(SysconfigOptions):
-    """
-    Read data from the ``/etc/sysconfig/kdump`` file.
-
-    This sets the following properties for ease of access:
-
-    * KDUMP_COMMANDLINE
-    * KDUMP_COMMANDLINE_REMOVE
-    * KDUMP_COMMANDLINE_APPEND
-    * KDUMP_KERNELVER
-    * KDUMP_IMG
-    * KDUMP_IMG_EXT
-    * KEXEC_ARGS
-
-    These are set to the value of the named variable in the kdump sysconfig
-    file, or '' if not found.
-    """
-
-    KDUMP_KEYS = [
-        'KDUMP_COMMANDLINE',
-        'KDUMP_COMMANDLINE_REMOVE',
-        'KDUMP_COMMANDLINE_APPEND',
-        'KDUMP_KERNELVER',
-        'KDUMP_IMG',
-        'KDUMP_IMG_EXT',
-        'KEXEC_ARGS',
-    ]
-
-    def parse_content(self, content):
-        super(SysconfigKdump, self).parse_content(content)
-        for key in self.KDUMP_KEYS:
-            setattr(self, key, self.data.get(key, ''))
 
 
 @parser('kexec_crash_size')

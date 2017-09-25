@@ -1,4 +1,4 @@
-from insights.parsers import irqbalance_conf
+from insights.parsers.sysconfig import IrqbalanceSysconfig
 from insights.tests import context_wrap
 
 IRQBALANCE_SYSCONF_TEST = """
@@ -32,8 +32,8 @@ IRQBALANCE_ARGS="-d"
 
 
 def test_irqbalance_conf():
-    ret = irqbalance_conf.SysconfigIrqbalance(context_wrap(IRQBALANCE_SYSCONF_TEST))
+    ret = IrqbalanceSysconfig(context_wrap(IRQBALANCE_SYSCONF_TEST))
     assert ret['IRQBALANCE_BANNED_CPUS'] == 'f8'
     assert 'IRQBALANCE_ARGS' in ret
-    assert ret.get('IRQBALANCE_ARGS') == '"-d"'
+    assert ret.get('IRQBALANCE_ARGS') == '-d'
     assert 'IRQBALANCE_ONESHOT' not in ret

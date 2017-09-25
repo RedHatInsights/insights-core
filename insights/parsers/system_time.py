@@ -7,7 +7,7 @@ of its time setting resources
 """
 
 import re
-from .. import Parser, parser, get_active_lines, SysconfigOptions
+from .. import Parser, parser, get_active_lines
 
 
 class NTPConfParser(Parser):
@@ -222,52 +222,3 @@ class NtpTime(Parser):
                 result[match.group('keyword')] = vnum
 
         self.data = result
-
-
-@parser("sysconfig_chronyd")
-class ChronydService(SysconfigOptions):
-    """
-    A parser for analyzing the ``chronyd`` service config file in the
-    ``/etc/sysconfig`` directory.
-
-    Sample Input::
-
-      OPTIONS="-d"
-      #HIDE="me"
-
-    Examples:
-
-        >>> service_opts = shared[ChronydService]
-        >>> 'OPTIONS' in service_opts.data
-        True
-        >>> 'HIDE' in service_opts.data
-        False
-        >>> service_opts.data['OPTIONS']
-        '"-d"'
-
-    """
-    pass
-
-
-@parser("sysconfig_ntpd")
-class NTPDService(SysconfigOptions):
-    """
-    A parser for analyzing the ``ntpd`` service config file in the
-    ``/etc/sysconfig`` directory
-
-    Sample Input::
-
-      OPTIONS="-x -g"
-      #HIDE="me"
-
-    Examples:
-
-        >>> service_opts = shared[NTPDService]
-        >>> 'OPTIONS' in service_opts.data
-        True
-        >>> 'HIDE' in service_opts.data
-        False
-        >>> service_opts.data['OPTIONS']
-        '"-x -g"'
-    """
-    pass

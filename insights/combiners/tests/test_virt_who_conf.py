@@ -1,6 +1,6 @@
 from insights.combiners.virt_who_conf import AllVirtWhoConf
 from insights.parsers.virt_who_conf import VirtWhoConf
-from insights.parsers.sysconfig.virt_who import SysconfigVirtWho
+from insights.parsers.sysconfig import VirtWhoSysconfig
 from insights.tests import context_wrap
 
 VWHO_D_CONF_ESX = """
@@ -73,12 +73,14 @@ env=Satellite
 """
 
 SYS_VIRTWHO = """
+VIRTWHO_BACKGROUND=0
 VIRTWHO_ONE_SHOT=1
 VIRTWHO_INTERVAL=1000
 VIRTWHO_SATELLITE6=1
 """.strip()
 
 SYS_VIRTWHO_SAT_LEGACY = """
+VIRTWHO_BACKGROUND=1
 VIRTWHO_SATELLITE=1
 """.strip()
 
@@ -92,12 +94,13 @@ VIRTWHO_SAM=0
 
 
 def test_virt_who_conf_1():
-    vw_sysconf = SysconfigVirtWho(context_wrap(SYS_VIRTWHO))
+    vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
     vwhod_conf1 = VirtWhoConf(context_wrap(VWHO_D_CONF_HYPER))
     vwhod_conf2 = VirtWhoConf(context_wrap(VWHO_D_CONF_ESX))
-    shared = {SysconfigVirtWho: vw_sysconf, VirtWhoConf: [vwho_conf, vwhod_conf1, vwhod_conf2]}
+    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf, vwhod_conf1, vwhod_conf2]}
     result = AllVirtWhoConf(shared)
+    assert result.background is False
     assert result.oneshot is True
     assert result.interval == 1000
     assert result.sm_type == 'sat6'
@@ -110,26 +113,27 @@ def test_virt_who_conf_1():
 
 
 def test_virt_who_conf_2():
-    vw_sysconf = SysconfigVirtWho(context_wrap(SYS_VIRTWHO_SAT_LEGACY))
+    vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO_SAT_LEGACY))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
-    shared = {SysconfigVirtWho: vw_sysconf, VirtWhoConf: [vwho_conf]}
+    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf]}
     result = AllVirtWhoConf(shared)
+    assert result.background is True
     assert result.oneshot is False
     assert result.interval == 3600
     assert result.sm_type == 'sat5'
 
 
 def test_virt_who_conf_3():
-    vw_sysconf = SysconfigVirtWho(context_wrap(SYS_VIRTWHO_SAM))
+    vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO_SAM))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
-    shared = {SysconfigVirtWho: vw_sysconf, VirtWhoConf: [vwho_conf]}
+    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf]}
     result = AllVirtWhoConf(shared)
     assert result.sm_type == 'sam'
 
 
 def test_virt_who_conf_4():
-    vw_sysconf = SysconfigVirtWho(context_wrap(SYS_VIRTWHO_CP))
+    vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO_CP))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
-    shared = {SysconfigVirtWho: vw_sysconf, VirtWhoConf: [vwho_conf]}
+    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf]}
     result = AllVirtWhoConf(shared)
     assert result.sm_type == 'cp'
