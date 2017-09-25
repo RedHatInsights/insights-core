@@ -352,6 +352,7 @@ static_specs = {
     "sysconfig_chronyd"         : SimpleFileSpec("etc/sysconfig/chronyd"),
     "sysconfig_httpd"           : SimpleFileSpec("etc/sysconfig/httpd"),
     "sysconfig_irqbalance"      : SimpleFileSpec("etc/sysconfig/irqbalance"),
+    "sysconfig_kdump"           : SimpleFileSpec("etc/sysconfig/kdump"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
     "sysconfig_virt_who"        : SimpleFileSpec("etc/sysconfig/virt-who"),
     "sysctl"                    : CommandSpec("/sbin/sysctl -a"),

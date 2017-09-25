@@ -227,6 +227,10 @@ class NtpTime(Parser):
 @parser("sysconfig_chronyd")
 class ChronydService(SysconfigOptions):
     """
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.ChronydSysconfig` instead.
+
     A parser for analyzing the ``chronyd`` service config file in the
     ``/etc/sysconfig`` directory.
 
@@ -252,6 +256,10 @@ class ChronydService(SysconfigOptions):
 @parser("sysconfig_ntpd")
 class NTPDService(SysconfigOptions):
     """
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.NtpdSysconfig` instead.
+
     A parser for analyzing the ``ntpd`` service config file in the
     ``/etc/sysconfig`` directory
 

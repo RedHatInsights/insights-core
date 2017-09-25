@@ -274,6 +274,10 @@ class KexecCrashLoaded(Parser):
 @parser('kdump')
 class SysconfigKdump(SysconfigOptions):
     """
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.KdumpSysconfig` instead.
+
     Read data from the ``/etc/sysconfig/kdump`` file.
 
     This sets the following properties for ease of access:
