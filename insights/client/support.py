@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 def registration_check():
     # check local registration record
     unreg_date = None
+    unreachable = False
     if os.path.isfile(constants.registered_file):
         local_record = 'System is registered locally via .registered file.'
         with open(constants.registered_file) as reg_file:
@@ -37,6 +38,7 @@ def registration_check():
             api_record = 'Insights API confirms registration.'
         else:
             api_record = 'Insights API could not be reached to confirm registration status.'
+            unreachable = True
     elif api_reg_status is None:
         api_record = 'Insights API says this machine is NOT registered.'
         api_reg_status = False
@@ -47,7 +49,8 @@ def registration_check():
 
     return {'messages': [local_record, api_record],
             'status': api_reg_status,
-            'unreg_date': unreg_date}
+            'unreg_date': unreg_date,
+            'unreachable': unreachable}
 
 
 class InsightsSupport(object):

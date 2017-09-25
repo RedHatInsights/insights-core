@@ -480,6 +480,9 @@ class InsightsConnection(object):
         machine_id = generate_machine_id(new_machine_id)
 
         branch_info = self.branch_info()
+        if not branch_info:
+            return False
+
         remote_branch = branch_info['remote_branch']
         remote_leaf = branch_info['remote_leaf']
 
@@ -620,6 +623,8 @@ class InsightsConnection(object):
         # This will undo a blacklist
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
+        if not system:
+            return ('Could not reach the Insights service to register.', '', '', '')
 
         # If we get a 409, we know we need to generate a new machine-id
         if system.status_code == 409:

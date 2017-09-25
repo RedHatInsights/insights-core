@@ -154,6 +154,9 @@ def try_register():
         # regenerate the .registered file
         write_to_disk(constants.registered_file)
         return
+    if reg_check['unreachable']:
+        logger.error(reg_check['messages'][1])
+        return None
     message, hostname, group, display_name = register()
     if config['display_name'] is None and config['group'] is None:
         logger.info('Successfully registered host %s', hostname)
@@ -203,6 +206,8 @@ def handle_registration():
 
     logger.debug('Trying registration.')
     registration = try_register()
+    if registration is None:
+        return None
     msg, is_registered = _is_client_registered()
 
     return {'success': is_registered,
