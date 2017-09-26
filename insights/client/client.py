@@ -103,7 +103,7 @@ def _is_client_registered():
 
     # If the client is running in container mode, bypass this stuff
     msg_container_mode = 'Client running in container/image mode. Bypassing registration check'
-    if config['analyze_container'] is True:
+    if config['analyze_container']:
         return msg_container_mode, False
 
     # All other cases
@@ -140,7 +140,7 @@ def _is_client_registered():
 def try_register():
 
     # if we are running an image analysis then dont register
-    if config["analyze_container"] is True:
+    if config["analyze_container"]:
         logger.info("Running client in Container mode. Bypassing registration.")
         return
 
