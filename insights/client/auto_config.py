@@ -20,9 +20,6 @@ def verify_connectivity():
     Verify connectivity to satellite server
     """
     logger.debug("Verifying Connectivity")
-    for item, value in config.iteritems():
-        if item != 'password' and item != 'proxy' and item != 'systemid':
-            logger.debug("%s:%s", item, value)
     ic = InsightsConnection()
     try:
         branch_info = ic.branch_info()
