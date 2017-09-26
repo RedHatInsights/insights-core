@@ -2,8 +2,7 @@ from insights.parsers.uname import Uname
 from insights.core.plugins import make_response
 from insights.tests import archive_provider, context_wrap, InputData
 
-from insights.core.fava import load_fava_plugin
-fava_vulnerable_kernel = load_fava_plugin('insights.plugins.fava_vulnerable_kernel')
+from insights.plugins import fava_vulnerable_kernel
 
 ERROR_KEY = 'FAVA_VULNERABLE_KERNEL'
 
