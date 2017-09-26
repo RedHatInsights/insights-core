@@ -428,10 +428,10 @@ class InsightsClient(object):
                 # try copying newest to latest_stable
                 try:
                     # copy the core
-                    shutil.copyfile(constants.insights_core_newest,
+                    shutil.move(constants.insights_core_newest,
                              constants.insights_core_last_stable)
                     # copy the core sig
-                    shutil.copyfile(constants.insights_core_gpg_sig_newest,
+                    shutil.move(constants.insights_core_gpg_sig_newest,
                              constants.insights_core_last_stable_gpg_sig)
                 except IOError:
                     message = ("There was a problem copying %s to %s." %
