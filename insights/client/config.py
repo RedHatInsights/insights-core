@@ -165,12 +165,12 @@ OPTS = [{
     'dest': 'compressor',
 }, {
     'opt': ['--from-stdin'],
-    'help': 'take configuration from stdin',
+    'help': optparse.SUPPRESS_HELP,
     'dest': 'from_stdin',
     'action': 'store_true',
 }, {
     'opt': ['--from-file'],
-    'help': 'take configuration from file',
+    'help': optparse.SUPPRESS_HELP,
     'dest': 'from_file',
     'action': 'store',
 }, {
