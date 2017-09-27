@@ -42,7 +42,7 @@ def get_phases():
         'run_as_root': False
     }, {
         'name': 'post_update',
-        'run_as_root': False
+        'run_as_root': True
     }, {
         'name': 'collect_and_output',
         'run_as_root': True
