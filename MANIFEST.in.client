@@ -3,7 +3,11 @@ include insights/NAME
 include insights/VERSION
 include insights/COMMIT
 include insights/RELEASE
-prune insights/tests
-prune insights/parsers/tests
-prune insights/combiners/tests
+exclude insights/contrib/pyparsing.py
 prune insights/archive
+prune insights/combiners/tests
+prune insights/parsers
+prune insights/plugins
+prune insights/tests
+prune insights/tool
+include insights/parsers/__init__.py
