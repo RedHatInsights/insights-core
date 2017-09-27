@@ -78,22 +78,11 @@ class InsightsClient(object):
     def handle_startup(self):
         return client.handle_startup()
 
-    def fetch(self,
-              egg_url=constants.egg_path,
-              gpg_sig_url=constants.gpg_sig_path,
-              force=False):
+    def fetch(self, force=False):
         """
             returns (dict): {'core': path to new egg, None if no update,
                              'gpg_sig': path to new sig, None if no update}
         """
-        # was a custom egg url passed in?
-        if config['core_url']:
-            egg_url = config['core_url']
-
-        # was a custom gpg_sig_url passed?
-        if config['gpg_sig_url']:
-            gpg_sig_url = config['gpg_sig_url']
-
         tmpdir = tempfile.mkdtemp()
         fetch_results = {
             'core': os.path.join(tmpdir, 'insights-core.egg'),
@@ -103,7 +92,7 @@ class InsightsClient(object):
         logger.debug("Beginning core fetch.")
 
         # run fetch for egg
-        updated = self._fetch(egg_url,
+        updated = self._fetch(config['egg_path'],
                               constants.core_etag_file,
                               fetch_results['core'],
                               force)
@@ -112,14 +101,14 @@ class InsightsClient(object):
         if updated:
             logger.debug("New core was fetched.")
             logger.debug("Beginning fetch for core gpg signature.")
-            self._fetch(gpg_sig_url,
+            self._fetch(config['egg_gpg_path'],
                         constants.core_gpg_sig_etag_file,
                         fetch_results['gpg_sig'],
                         force)
 
             return fetch_results
 
-    def _fetch(self, url, etag_file, target_path, force):
+    def _fetch(self, path, etag_file, target_path, force):
         """
             returns (str): path to new egg. None if no update.
         """
@@ -128,6 +117,7 @@ class InsightsClient(object):
             self.connection = client.get_connection()
             self.session = self.connection.session
 
+        url = self.connection.base_url + path
         # Searched for cached etag information
         current_etag = None
         if os.path.isfile(etag_file):

@@ -40,7 +40,7 @@ CONFIG = {
     'compressor': 'gz',
     'conf': os.path.join(CONF_DIR, 'insights-client.conf'),
     'container_mode': None,
-    'core_url': constants.egg_path,
+    'egg_path': '/v1/static/core/insights-core.egg',
     'debug': False,  # Used by client wrapper script
     'disable_schedule': False,
     'display_name': None,
@@ -49,7 +49,7 @@ CONFIG = {
     'from_file': False,
     'from_stdin': False,
     'gpg': True,
-    'gpg_sig_url': None,
+    'egg_gpg_path': '/v1/static/core/insights-core.egg.asc',
     'group': None,
     'insecure_connection': False,
     'just_upload': None,
@@ -188,10 +188,6 @@ OPTS = [{
     'help': 'path to log file location',
     'dest': 'logging_file'
 }, {
-    'opt': ['--core-url'],
-    'help': 'url to core location',
-    'dest': 'core_url'
-}, {
     'opt': ['--analyze-file'],
     'help': optparse.SUPPRESS_HELP,
     'action': "store",
@@ -303,10 +299,6 @@ OPTS = [{
     'action': 'store_true',
     'dest': 'debug',
     'group': 'debug'
-}, {
-    'opt': ['--gpg-sig-url'],
-    'help': 'url to gpg sig location for core',
-    'dest': 'gpg_sig_url'
 }, {
     'opt': ['--net-debug'],
     'help': optparse.SUPPRESS_HELP,
