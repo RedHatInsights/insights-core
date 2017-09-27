@@ -280,7 +280,7 @@ OPTS = [{
     'dest': "run_specific_specs",
     'group': 'debug'
 }, {
-    'opt': ['--debug'],
+    'opt': ['--debug-phases'],
     'help': optparse.SUPPRESS_HELP,
     'action': 'store_true',
     'dest': 'debug',
