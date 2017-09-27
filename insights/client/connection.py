@@ -562,7 +562,9 @@ class InsightsConnection(object):
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
         try:
-            res = self.session.get(self.api_url + '/v1/systems/' + machine_id, timeout=10)
+            url = self.api_url + '/v1/systems/' + machine_id
+            net_logger.info("GET %s", url)
+            res = self.session.get(url, timeout=10)
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
