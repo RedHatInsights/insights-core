@@ -118,3 +118,20 @@ class Mount(Parser):
             self.rows.append(entry)
             if match:
                 self.mounts[mount['mount_point']] = entry
+
+    def get_dir(self, path):
+        """
+        AttributeDict: returns the mount point that contains the given path.
+
+        This finds the most specific mount path that contains the given path,
+        by successively removing the directory or file name on the end of
+        the path and seeing if that is a mount point.  This will always
+        terminate since / is always a mount point.  Strings that are not
+        absolute paths will return None.
+        """
+        import os
+        while path != '':
+            if path in self.mounts:
+                return self.mounts[path]
+            path = os.path.split(path)[0]
+        return None
