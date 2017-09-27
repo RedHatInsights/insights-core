@@ -126,7 +126,7 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         return UseAtomic and HaveAtomic
 
     def use_atomic_mount():
-        return (UseAtomic and HaveAtomicMount) and not config['run_here']
+        return UseAtomic and HaveAtomicMount
 
     def pull_image(image):
         return runcommand(shlex.split("docker pull") + [image])
