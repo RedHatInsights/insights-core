@@ -3,7 +3,6 @@ from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser                                       # noqa: F401
 from .core import AttributeDict  # noqa: F401
-from .core import fava  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.plugins import metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
@@ -11,6 +10,11 @@ from .core.plugins import make_response, make_metadata  # noqa: F401
 from .config.factory import add_filter  # noqa: F401
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults, parse_table  # noqa: F401
+
+try:
+    from .core import fava  # noqa: F401
+except ImportError:
+    pass
 
 
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
