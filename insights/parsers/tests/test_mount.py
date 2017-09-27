@@ -11,6 +11,7 @@ hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 nfsd on /proc/fs/nfsd type nfsd (rw,relatime)
 /dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
 /dev/mapper/fedora-home on /home type ext4 (rw,relatime,seclabel,data=ordered)
+/dev/mapper/fedora-root on / type ext4 (rw,relatime,seclabel,data=ordered)
 sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)
 tmpfs on /run/user/42 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=1605428k,mode=700,uid=42,gid=42)
 tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,seclabel,size=1605428k,mode=700,uid=1000,gid=1000)
@@ -30,7 +31,7 @@ hugetlbfs /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 def test_mount():
     results = Mount(context_wrap(MOUNT_DATA))
     assert results is not None
-    assert len(results) == 12
+    assert len(results) == 13
     sr0 = None
     sda1 = None
     for result in results:
@@ -38,6 +39,7 @@ def test_mount():
             sr0 = result
         elif result['filesystem'] == '/dev/sda1':
             sda1 = result
+
     assert sr0 is not None
     assert sr0['mount_point'] == '/run/media/root/VMware Tools'
     # test get method
@@ -59,11 +61,17 @@ def test_mount():
     assert 'mount_label' not in sda1
 
     # Test getitem
-    assert results[11] == sr0
-    assert results['/etc/shadow'] == results[10]
+    assert results[12] == sr0
+    assert results['/etc/shadow'] == results[11]
 
     # Test mounts dictionary
     assert results.mounts['/run/media/root/VMware Tools'] == sr0
+
+    # Test get_dir
+    assert results.get_dir('/run/media/root/VMware Tools') == sr0
+    assert results.get_dir('/boot/grub2/grub.cfg') == sda1
+    assert results.get_dir('/etc') == results['/']
+    assert results.get_dir('relative/paths/fail') is None
 
     # Test parse failure
     errors = Mount(context_wrap(MOUNT_ERR_DATA))
