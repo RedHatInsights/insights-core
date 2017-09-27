@@ -1,6 +1,6 @@
 """
-mount - Command
-===============
+Mount - command ``/bin/mount``
+==============================
 
 This module provides parsing for the ``mount`` command. The ``Mount`` class
 implements parsing for the ``mount`` command output which looks like::
@@ -59,7 +59,7 @@ Examples:
     'dev/sr0'
 """
 
-from ..parsers import optlist_to_dict
+from ..parsers import optlist_to_dict, keyword_search
 from .. import Parser, parser, get_active_lines, AttributeDict
 
 import re
@@ -89,6 +89,8 @@ class Mount(Parser):
             return self.rows[idx]
         elif isinstance(idx, str):
             return self.mounts[idx]
+        else:
+            raise TypeError("Mounts can only be indexed by mount string or line number")
 
     # /dev/mapper/fedora-home on /home type ext4 (rw,relatime,seclabel,data=ordered) [HOME]
     mount_line_re = r'^(?P<filesystem>\S+) on (?P<mount_point>.+?) type ' + \
@@ -135,3 +137,25 @@ class Mount(Parser):
                 return self.mounts[path]
             path = os.path.split(path)[0]
         return None
+
+    def search(self, **kwargs):
+        """
+        Returns a list of the mounts (in order) matching the given criteria.
+        Keys are searched for directly - see the
+        :py:func:`insights.parsers.keyword_search` utility function for more
+        details.  If no search parameters are given, no rows are returned.
+
+        Examples:
+
+            >>> mounts.search(filesystem='/dev/sda1')
+            [{'filesystem': '/dev/sda1', 'mount_point': '/boot', ...}]
+            >>> mounts.search(mount_options__contains='ro')
+            [{'filesystem': '/dev/sr0', 'mount_point', '/mnt/CDROM', ...}, ...]
+
+        Arguments:
+            **kwargs (dict): Dictionary of key-value pairs to search for.
+
+        Returns:
+            (list): The list of mount points matching the given criteria.
+        """
+        return keyword_search(self.rows, **kwargs)
