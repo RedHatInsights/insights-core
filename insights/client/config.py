@@ -158,8 +158,7 @@ OPTS = [{
     'action': 'store_true'
 }, {
     'opt': ['--compressor'],
-    'help': 'specify alternate compression '
-    'algorithm (gz, bzip2, xz, none; defaults to gz)',
+    'help': optparse.SUPPRESS_HELP,
     'dest': 'compressor',
 }, {
     'opt': ['--from-stdin'],
