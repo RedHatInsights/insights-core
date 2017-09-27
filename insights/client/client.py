@@ -83,8 +83,6 @@ def set_up_logging():
                                config['from_stdin'] or
                                config['from_file'])
 
-        config['quiet'] = config['to_stdout'] and not config['verbose']
-
         logging.root.addHandler(get_console_handler())
         logging.root.addHandler(get_file_handler())
         configure_level()
