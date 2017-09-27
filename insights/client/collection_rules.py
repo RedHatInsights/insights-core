@@ -1,6 +1,7 @@
 """
 Rules for data collection
 """
+import hashlib
 import json
 import logging
 import six
@@ -196,7 +197,8 @@ class InsightsConfig(object):
                 raise ValueError("ERROR: Could not find version in json")
             dyn_conf['file'] = self.collection_rules_file
             logger.debug("Success reading config")
-            logger.debug(json.dumps(dyn_conf))
+            config_hash = hashlib.sha1(json.dumps(dyn_conf)).hexdigest()
+            logger.debug('sha1 of config: %s', config_hash)
             return dyn_conf, rm_conf
         else:
             for conf_file in [self.collection_rules_file, self.fallback_file]:
