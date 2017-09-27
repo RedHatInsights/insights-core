@@ -168,37 +168,6 @@ class DataCollector(object):
         else:
             return [spec]
 
-    def _run_old_collection(self, conf, rm_conf, exclude, branch_info):
-        # wrap old collection into specs for backward compatibility
-        for f in conf['files']:
-            if rm_conf and 'files' in rm_conf and f['file'] in rm_conf['files']:
-                logger.warn("WARNING: Skipping file %s", f['file'])
-                continue
-            else:
-                file_specs = self._parse_file_spec(f)
-                for s in file_specs:
-                    # spoof archive_file_name
-                    # use _, archive path will be re-mangled anyway
-                    s['archive_file_name'] = s['file']
-                    file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
-                    self.archive.add_to_archive(file_spec)
-        for c in conf['commands']:
-            if rm_conf and 'commands' in rm_conf and c['command'] in rm_conf['commands']:
-                logger.warn("WARNING: Skipping command %s", c['command'])
-                continue
-            else:
-                cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
-                for s in cmd_specs:
-                    # spoof archive_file_name, will be reassembled in InsightsCommand()
-                    s['archive_file_name'] = os.path.join('insights_commands', '_')
-                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name, self.config)
-                    self.archive.add_to_archive(cmd_spec)
-        logger.debug('Spec collection finished.')
-        # collect metadata
-        logger.debug('Collecting metadata...')
-        self._write_branch_info(conf, branch_info)
-        logger.debug('Metadata collection finished.')
-
     def run_specific_specs(self, metadata_spec, conf, rm_conf, exclude, branch_info):
         '''
         Running metadata collection for specific environment
@@ -256,11 +225,6 @@ class DataCollector(object):
                 logger.debug('Running specific spec %s', specific_spec)
                 self.run_specific_specs(specific_spec, conf, rm_conf, exclude, branch_info)
                 logger.debug('Finished running specific spec %s', specific_spec)
-            return
-
-        if 'specs' not in conf or config['original_style_specs']:
-            # old style collection
-            self._run_old_collection(conf, rm_conf, exclude, branch_info)
             return
 
         for specname in conf['specs']:

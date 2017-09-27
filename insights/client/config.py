@@ -16,7 +16,7 @@ BOOLEAN_KEYS = [
     'analyze_container', 'auto_config', 'auto_update',
     'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
-    'no_upload', 'obfuscate', 'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
+    'no_upload', 'obfuscate', 'obfuscate_hostname', 'offline', 'quiet',
     'register', 'reregister', 'silent', 'status', 'support',
     'test_connection', 'to_stdout', 'unregister', 'validate',
     'verbose', 'version', 'to_json'
@@ -61,7 +61,6 @@ CONFIG = {
     'obfuscate': False,
     'obfuscate_hostname': False,
     'offline': False,
-    'original_style_specs': False,
     'password': '',
     'proxy': None,
     'quiet': False,
@@ -239,12 +238,6 @@ OPTS = [{
     'help': "Do not delete archive after upload",
     'action': "store_true",
     'dest': "keep_archive",
-    'group': 'debug'
-}, {
-    'opt': ['--original-style-specs'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store_true",
-    'dest': "original_style_specs",
     'group': 'debug'
 }, {
     'opt': ['--docker-image-name'],
