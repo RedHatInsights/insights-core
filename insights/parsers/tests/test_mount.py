@@ -5,6 +5,8 @@ test mount
 from insights.parsers.mount import Mount
 from insights.tests import context_wrap
 
+import pytest
+
 MOUNT_DATA = """
 tmpfs on /tmp type tmpfs (rw,seclabel)
 hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
@@ -32,14 +34,8 @@ def test_mount():
     results = Mount(context_wrap(MOUNT_DATA))
     assert results is not None
     assert len(results) == 13
-    sr0 = None
-    sda1 = None
-    for result in results:
-        if result['filesystem'] == '/dev/sr0':
-            sr0 = result
-        elif result['filesystem'] == '/dev/sda1':
-            sda1 = result
-
+    sr0 = results.search(filesystem='/dev/sr0')[0]
+    sda1 = results.search(filesystem='/dev/sda1')[0]
     assert sr0 is not None
     assert sr0['mount_point'] == '/run/media/root/VMware Tools'
     # test get method
@@ -60,9 +56,20 @@ def test_mount():
     assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
 
+    # Test iteration
+    for mount in results:
+        assert hasattr(mount, 'filesystem')
+        assert hasattr(mount, 'mount_point')
+        assert hasattr(mount, 'mount_type')
+        assert hasattr(mount, 'mount_options')
+
     # Test getitem
     assert results[12] == sr0
     assert results['/etc/shadow'] == results[11]
+    # Index only by string or number
+    with pytest.raises(TypeError) as exc:
+        assert results[set([1, 2, 3])] is None
+    assert "Mounts can only be indexed by mount string or line number" in str(exc)
 
     # Test mounts dictionary
     assert results.mounts['/run/media/root/VMware Tools'] == sr0
@@ -81,3 +88,12 @@ def test_mount():
     assert errors[0].filesystem == 'tmpfs'
     assert hasattr(errors[1], 'parse_error')
     assert errors[1].parse_error == 'Unable to parse line'
+
+    # Test search
+    assert results.search(filesystem='/dev/sr0') == [sr0]
+    assert results.search(mount_type='tmpfs') == [
+        results.rows[n] for n in (0, 7, 8)
+    ]
+    assert results.search(mount_options__contains='seclabel') == [
+        results.rows[n] for n in (0, 1, 3, 4, 5, 7, 8, 11)
+    ]
