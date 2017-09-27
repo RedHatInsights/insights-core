@@ -16,8 +16,7 @@ BOOLEAN_KEYS = [
     'analyze_container', 'auto_config', 'auto_update',
     'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
-    'no_tar_file', 'no_upload', 'obfuscate',
-    'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
+    'no_upload', 'obfuscate', 'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
     'register', 'reregister', 'silent', 'status', 'support',
     'test_connection', 'to_stdout', 'unregister', 'validate',
     'verbose', 'version', 'to_json'
@@ -58,7 +57,6 @@ CONFIG = {
     'mountpoint': None,
     'net_debug': False,
     'no_gpg': False,  # legacy
-    'no_tar_file': False,
     'no_upload': False,
     'obfuscate': False,
     'obfuscate_hostname': False,
@@ -237,12 +235,6 @@ OPTS = [{
     'dest': "no_upload",
     'group': 'debug'
 }, {
-    'opt': ['--no-tar-file'],
-    'help': "Build the directory, but do not tar",
-    'action': "store_true",
-    'dest': "no_tar_file",
-    'group': 'debug'
-}, {
     'opt': ['--keep-archive'],
     'help': "Do not delete archive after upload",
     'action': "store_true",
@@ -391,5 +383,5 @@ def compile_config():
         CONFIG['analyze_container'] = True
         CONFIG['container_mode'] = True
 
-    if CONFIG['no_tar_file'] or CONFIG['offline']:
+    if CONFIG['offline']:
         CONFIG['no_upload'] = True

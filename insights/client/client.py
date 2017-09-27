@@ -440,10 +440,6 @@ def collect(rc=0):
                     if 'metadata' in stdin_config:
                         archive.add_metadata_to_archive(json.dumps(stdin_config['metadata']), 'metadata.json')
 
-            if config['no_tar_file']:
-                logger.info('See Insights data in %s', dc.archive.archive_dir)
-                return dc.archive.archive_dir
-
             tar_file = dc.done(collection_rules, rm_conf)
 
             # add archives to list of individual uploads
