@@ -3,7 +3,7 @@ import os
 
 class InsightsConstants(object):
     app_name = 'insights-client'
-    version = '3.0.0-0'
+    version = '3.0.0-2'
     auth_method = 'BASIC'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
