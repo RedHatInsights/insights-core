@@ -287,7 +287,7 @@ OPTS = [{
     'group': 'debug'
 }, {
     'opt': ['--net-debug'],
-    'help': optparse.SUPPRESS_HELP,
+    'help': "Log the HTTP method and URL every time a network call is made.",
     'action': 'store_true',
     'dest': 'net_debug'
 }, {
