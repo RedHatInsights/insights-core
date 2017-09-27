@@ -229,7 +229,7 @@ OPTS = [{
     'group': 'debug'
 }, {
     'opt': ['--no-gpg'],
-    'help': "Do not verify GPG signature",
+    'help': optparse.SUPPRESS_HELP,
     'action': "store_false",
     'dest': "gpg",
     'group': 'debug'
