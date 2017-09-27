@@ -52,7 +52,6 @@ CONFIG = {
     'egg_gpg_path': '/v1/static/core/insights-core.egg.asc',
     'group': None,
     'insecure_connection': False,
-    'just_upload': None,
     'keep_archive': False,
     'logging_file': os.path.join(constants.log_dir, APP_NAME) + '.log',
     'loglevel': 'DEBUG',
@@ -279,12 +278,6 @@ OPTS = [{
     'help': optparse.SUPPRESS_HELP,
     'action': "store",
     'dest': "run_specific_specs",
-    'group': 'debug'
-}, {
-    'opt': ['--just-upload'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store',
-    'dest': 'just_upload',
     'group': 'debug'
 }, {
     'opt': ['--debug'],
