@@ -18,7 +18,7 @@ BOOLEAN_KEYS = [
     'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
     'no_tar_file', 'no_upload', 'obfuscate',
     'obfuscate_hostname', 'offline', 'original_style_specs', 'quiet',
-    'register', 'reregister', 'run_here', 'silent', 'status', 'support',
+    'register', 'reregister', 'silent', 'status', 'support',
     'test_connection', 'to_stdout', 'unregister', 'validate',
     'verbose', 'version', 'to_json'
 ]
@@ -71,7 +71,6 @@ CONFIG = {
     'register': False,
     'reregister': False,
     'retries': 1,
-    'run_here': False,
     'run_specific_specs': None,
     'silent': False,
     'status': False,
@@ -280,12 +279,6 @@ OPTS = [{
     'help': optparse.SUPPRESS_HELP,
     'action': "store",
     'dest': "run_specific_specs",
-    'group': 'debug'
-}, {
-    'opt': ['--run-here'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store_true",
-    'dest': "run_here",
     'group': 'debug'
 }, {
     'opt': ['--just-upload'],
