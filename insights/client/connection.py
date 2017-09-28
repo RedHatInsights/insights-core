@@ -703,7 +703,7 @@ class InsightsConnection(object):
         if upload.status_code == 201:
             the_json = json.loads(upload.text)
         else:
-            logger.error("Upload archive failed with status code  %s", upload.status)
+            logger.error("Upload archive failed with status code  %s", upload.status_code)
             return False
         try:
             config['account_number'] = the_json["upload"]["account_number"]
