@@ -293,6 +293,7 @@ ps_axcwwo = sf.simple_command("/bin/ps axcwwo ucomm,%cpu,lstart", name="ps_axcww
 puppet_ssl_cert_ca_pem = None
 pvs = sf.simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"', name="pvs")
 pvs_noheadings = sf.simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"", name="pvs_noheadings")
+qemu_conf = sf.simple_file("/etc/libvirt/qemu.conf", name="qemu_conf")
 qpid_stat_q = sf.simple_command("/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671", name="qpid_stat_q")
 qpid_stat_u = sf.simple_command("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671", name="qpid_stat_u")
 rabbitmq_logs = sf.glob_file("/var/log/rabbitmq/rabbit@*.log", ignore=".*rabbit@.*(?<!-sasl).log$", name="rabbitmq_logs")

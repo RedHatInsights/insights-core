@@ -284,6 +284,7 @@ static_specs = {
                                     SimpleFileSpec("qpid-stat-q"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/qpid_stat_queues"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/qpid-stat-q")]),
+    "qemu.conf"                  : SimpleFileSpec("etc/libvirt/qemu.conf"),
     "qpid_stat_u"               : First([CommandSpec("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671"),
                                     SimpleFileSpec("qpid_stat_subscriptions"),
                                     SimpleFileSpec("qpid-stat-u"),
