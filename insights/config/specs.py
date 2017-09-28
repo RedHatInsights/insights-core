@@ -342,6 +342,8 @@ static_specs = {
     "sestatus"                  : CommandSpec("/usr/sbin/sestatus -b"),
     "smartctl"                  : First([CommandSpec("/sbin/smartctl -a {block}", block=r"\S+"),
                                     PatternSpec(r"sos_commands/ata/smartctl_-a_\.dev\..*")]),
+    "smbstatus_p"               : CommandSpec("/usr/bin/smbstatus -p"),
+    "smbstatus_S"               : CommandSpec("/usr/bin/smbstatus -S"),
     "spfile.ora"                : PatternSpec(r"{ORACLE_HOME}/dbs/spfile.*\.ora"),
     "softnet_stat"              : SimpleFileSpec("proc/net/softnet_stat"),
     "ss"                        : First([CommandSpec("/usr/sbin/ss -tulpn"),
