@@ -28,7 +28,7 @@ VULNERABLE = [
 def test_vulnerable_kernel():
     for kernel in NOT_VULNERABLE:
         uname_line = UNAME_TEMPLATE % kernel
-        result = vulnerable_kernel.report({Uname: Uname(context_wrap(uname_line))})
+        result = vulnerable_kernel.report(Uname(context_wrap(uname_line)))
         expected = None
         if not (result == expected):
             print result
@@ -37,7 +37,7 @@ def test_vulnerable_kernel():
             assert False
     for kernel in VULNERABLE:
         uname_line = UNAME_TEMPLATE % kernel
-        result = vulnerable_kernel.report({Uname: Uname(context_wrap(uname_line))})
+        result = vulnerable_kernel.report(Uname(context_wrap(uname_line)))
         expected = make_response(ERROR_KEY, kernel=kernel)
         if not (result == expected):
             print result

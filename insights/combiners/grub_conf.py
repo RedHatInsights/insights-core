@@ -95,17 +95,12 @@ class GrubConf(object):
 
     """
 
-    def __init__(self, shared):
+    def __init__(self, grub1, grub2, grub2_efi):
 
         self.version = self.is_efi = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
         # get grub configuration
-        if Grub1Config in shared:
-            self.grub = shared.get(Grub1Config)
-        elif Grub2Config in shared:
-            self.grub = shared.get(Grub2Config)
-        elif Grub2EFIConfig in shared:
-            self.grub = shared.get(Grub2EFIConfig)
+        self.grub = grub1 or grub2 or grub2_efi
 
         if self.grub:
             self.version = self.grub._version

@@ -80,38 +80,38 @@ from ..parsers.uname import Uname
 RHEL_UNSUPPORTED_VERSION = 9999
 
 
-@combiner(requires=[Uname], optional=[ModProbe, LsMod, CmdLine, Sysctl])
+@combiner(Uname, optional=[ModProbe, LsMod, CmdLine, Sysctl])
 class IPv6(object):
     """A combiner which detects disabled IPv6 networking."""
 
-    def __init__(self, shared):
+    def __init__(self, uname, mod_probe, lsmod, cmdline, sysctl):
         self.disablers = set()
 
-        if shared[Uname].rhel_release[0] == '7':
+        if uname.rhel_release[0] == '7':
             self.rhelver = 7
-        elif shared[Uname].rhel_release[0] == '6':
+        elif uname.rhel_release[0] == '6':
             self.rhelver = 6
-        elif shared[Uname].rhel_release[0] == '5':
+        elif uname.rhel_release[0] == '5':
             self.rhelver = 5
         else:
             self.rhelver = RHEL_UNSUPPORTED_VERSION
 
         # ModProbe may be either a list or a ModProbe object, or
         # None if it wasn't provided. Make it safe to iterate over.
-        self.modprobe = shared.get(ModProbe, [])
+        self.modprobe = mod_probe or []
         if isinstance(self.modprobe, ModProbe):
             self.modprobe = [self.modprobe]
 
         # A dict of loaded modules if lsmod data was provided, or None,
         # because it's worth distinguishing whether the data was provided.
-        self.lsmod = getattr(shared.get(LsMod), 'data', None)
+        self.lsmod = getattr(lsmod, 'data', None)
 
         # Nothing depends on command line data being provided, so default
         # to an empty dict
-        self.cmdline = getattr(shared.get(CmdLine), 'data', {})
+        self.cmdline = getattr(cmdline, 'data', {})
 
         # Likewise for sysctl data
-        self.sysctl = getattr(shared.get(Sysctl), 'data', {})
+        self.sysctl = getattr(sysctl, 'data', {})
 
         self._check_ipv6()
 

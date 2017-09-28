@@ -1,4 +1,3 @@
-import platform
 import os
 
 from insights.core import dr
@@ -17,10 +16,10 @@ smpl_file = sf.simple_file(this_file)
 many = sf.glob_file(here + "/*.py")
 smpl_cmd = sf.simple_command("/usr/bin/uptime")
 
-stage = dr.new_component_type()
+stage = dr.new_component_type(executor=dr.broker_executor)
 
 
-@stage(requires=[smpl_file, many, smpl_cmd])
+@stage(smpl_file, many, smpl_cmd)
 def dostuff(broker):
     assert smpl_file in broker
     assert many in broker
@@ -28,9 +27,9 @@ def dostuff(broker):
 
 
 def test_spec_factory():
-    hn = HostContext(platform.node())
+    hn = HostContext(None)
     broker = dr.Broker()
     broker[HostContext] = hn
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
-    assert dostuff in broker
+    assert dostuff in broker, broker.exceptions
     assert broker[smpl_file].content == file_content

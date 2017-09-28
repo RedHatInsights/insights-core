@@ -256,10 +256,9 @@ class ContentClass:
 
 
 def test_get_shared_data():
-    shared = {DataClass: DataClass(), ContentClass: ContentClass()}
-    data = lvm.get_shared_data(DataClass, shared)
+    data = lvm.get_shared_data(DataClass())
     assert data == [PRIMARY_DATA, SECONDARY_DATA]
-    data = lvm.get_shared_data(ContentClass, shared)
+    data = lvm.get_shared_data(ContentClass())
     assert data == [PRIMARY_DATA, SECONDARY_DATA]
 
 
@@ -305,7 +304,14 @@ def lvm_data():
         {LvsHeadings: lvs_headings}
     ]
     LvmData = namedtuple('LvmData', ['lvm_info', 'shared'])
-    yield [LvmData(Lvm(shared), shared) for shared in shared_list]
+    yield [LvmData(Lvm(shared.get(Lvs),
+                       shared.get(LvsHeadings),
+                       shared.get(Pvs),
+                       shared.get(PvsHeadings),
+                       shared.get(Vgs),
+                       shared.get(VgsHeadings)),
+                   shared)
+           for shared in shared_list]
 
 
 def test_combiner_vgs(lvm_data):

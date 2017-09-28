@@ -32,7 +32,7 @@ class IpcsSemaphore(object):
             setattr(self, k, v)
 
 
-@combiner(requires=[IpcsS, IpcsSI, PsAuxcww])
+@combiner(IpcsS, IpcsSI, PsAuxcww)
 class IpcsSemaphores(object):
     """
     Class for parsing all semaphores. Will generate IpcsSemaphore objects for
@@ -57,11 +57,7 @@ class IpcsSemaphores(object):
         <IpcsSemaphore object at 0x7ffa907bda10>
 
     """
-    def __init__(self, local, shared):
-        ps = shared[PsAuxcww]
-        sem_s = shared[IpcsS]
-        sem_si = shared[IpcsSI]
-
+    def __init__(self, sem_s, sem_si, ps):
         pids = ps.running_pids()
         self._all_sems = {}
         self._orphan_sems = []

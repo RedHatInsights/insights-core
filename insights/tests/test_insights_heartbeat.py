@@ -12,8 +12,8 @@ bad = Hostname(context_wrap(NON_MATCHING_HOSTNAME))
 
 def test_heartbeat():
     expected_result = make_response(insights_heartbeat.ERROR_KEY)
-    assert expected_result == insights_heartbeat.is_insights_heartbeat({Hostname: good})
-    assert insights_heartbeat.is_insights_heartbeat({Hostname: bad}) is None
+    assert expected_result == insights_heartbeat.is_insights_heartbeat(good)
+    assert insights_heartbeat.is_insights_heartbeat(bad) is None
 
 
 @archive_provider(insights_heartbeat.is_insights_heartbeat)

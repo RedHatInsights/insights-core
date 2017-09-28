@@ -78,7 +78,7 @@ from insights.core.plugins import combiner
 from insights.parsers.lvm import Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs, VgsHeadings
 
 
-def get_shared_data(component, shared):
+def get_shared_data(component):
     """
     Returns the actual list of component data based on how data is
     stored in component, either from the `data` attribute or from the
@@ -87,10 +87,10 @@ def get_shared_data(component, shared):
     Returns:
         list: List of component data.
     """
-    if component in shared:
-        return (copy.deepcopy(shared[component].data)
-                if 'content' not in shared[component].data
-                else copy.deepcopy(shared[component].data['content']))
+    if component:
+        return (copy.deepcopy(component.data)
+                if 'content' not in component.data
+                else copy.deepcopy(component.data['content']))
     else:
         return []
 
@@ -173,17 +173,17 @@ class Lvm(object):
     LvVgName = namedtuple('LvVgName', ['LV', 'VG'])
     """Named tuple used as key for logical volumes."""
 
-    def __init__(self, shared):
+    def __init__(self, lvs, lvs_headings, pvs, pvs_headings, vgs, vgs_headings):
         # Volume Groups information
-        self.volume_groups = merge_lvm_data(get_shared_data(Vgs, shared),
-                                            get_shared_data(VgsHeadings, shared),
+        self.volume_groups = merge_lvm_data(get_shared_data(vgs),
+                                            get_shared_data(vgs_headings),
                                             'VG')
         """dict: Contains a dictionary of volume group data with keys
             from the original output."""
 
         # Physical Volumes information
-        self.physical_volumes = merge_lvm_data(get_shared_data(Pvs, shared),
-                                               get_shared_data(PvsHeadings, shared),
+        self.physical_volumes = merge_lvm_data(get_shared_data(pvs),
+                                               get_shared_data(pvs_headings),
                                                'PV')
         """dict: Contains a dictionary of physical volume data with keys
             from the original output."""
@@ -192,10 +192,10 @@ class Lvm(object):
         # Since logical volume names can be duplicated across volume
         # groups we use a new key that combines the logical volume
         # name with the volume group name to ensure it is unique
-        pri_lvs_data = get_shared_data(Lvs, shared)
+        pri_lvs_data = get_shared_data(lvs)
         for l in pri_lvs_data:
             l['LVVG'] = Lvm.LvVgName(LV=l['LV'], VG=l['VG'])
-        sec_lvs_data = get_shared_data(LvsHeadings, shared)
+        sec_lvs_data = get_shared_data(lvs_headings)
         for l in sec_lvs_data:
             l['LVVG'] = Lvm.LvVgName(LV=l['LV'], VG=l['VG'])
         self.logical_volumes = merge_lvm_data(pri_lvs_data,

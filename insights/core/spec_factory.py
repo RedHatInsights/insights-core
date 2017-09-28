@@ -170,7 +170,7 @@ class SpecFactory(object):
                 dr.replace(old, component)
 
     def simple_file(self, path, name=None, context=None, Kind=TextFileProvider, alias=None):
-        @datasource(requires=[context or FSRoots], alias=alias)
+        @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             return Kind(root, os.path.expandvars(path), filters=get_filters(inner))
@@ -182,7 +182,7 @@ class SpecFactory(object):
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
 
-        @datasource(requires=[context or FSRoots], alias=alias)
+        @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             results = []
@@ -203,7 +203,7 @@ class SpecFactory(object):
         return inner
 
     def first_file(self, files, name=None, context=None, Kind=TextFileProvider, alias=None):
-        @datasource(requires=[context or FSRoots], alias=alias)
+        @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             for f in files:
@@ -217,7 +217,7 @@ class SpecFactory(object):
         return inner
 
     def listdir(self, path, name=None, context=None, alias=None):
-        @datasource(requires=[context or FSRoots], alias=alias)
+        @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             p = os.path.join(root, path.lstrip('/'))
@@ -233,7 +233,7 @@ class SpecFactory(object):
         return inner
 
     def simple_command(self, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
-        @datasource(requires=[context], alias=alias)
+        @datasource(context, alias=alias)
         def inner(broker):
             ctx = broker[context]
             rc = None
@@ -248,7 +248,7 @@ class SpecFactory(object):
         return inner
 
     def with_args_from(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
-        @datasource(requires=[provider, context], alias=alias)
+        @datasource(provider, context, alias=alias)
         def inner(broker):
             result = []
             source = broker[provider]
@@ -286,7 +286,7 @@ class SpecFactory(object):
         has_group = "?" in pattern
         pattern = mangle_command(pattern).replace("?", replace_regex) + "$"
 
-        @datasource(requires=[context], alias=alias)
+        @datasource(context, alias=alias)
         def inner(broker):
             ctx = broker[context]
             root = ctx.root
@@ -314,7 +314,7 @@ class SpecFactory(object):
         """
         dr.mark_hidden(deps)
 
-        @datasource(requires=[deps], alias=alias)
+        @datasource(deps, alias=alias)
         def inner(broker):
             for c in deps:
                 if c in broker:

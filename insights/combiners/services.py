@@ -28,7 +28,7 @@ from ..parsers import chkconfig
 from ..parsers.systemd import unitfiles
 
 
-@combiner(requires=[[chkconfig.ChkConfig, unitfiles.UnitFiles]])
+@combiner([chkconfig.ChkConfig, unitfiles.UnitFiles])
 class Services(object):
     """
     A combiner for working with enabled services, independent of which
@@ -41,20 +41,18 @@ class Services(object):
     * ``service_line(service_name)`` returns the actual line that contained
       the service name.
     """
-    def __init__(self, shared):
+    def __init__(self, chk_config, unit_files):
         self.services = {}
         self.parsed_lines = {}
-        chk = shared.get(chkconfig.ChkConfig)
-        svc = shared.get(unitfiles.UnitFiles)
         # PJW 2017-02-28 - It seems completely bizarre that a system would
         # have systemd installed and also have chkconfig output.  But I'm
         # leaving these as updates instead of equals just in case...
-        if chk:
-            self.services.update(chk.services)
-            self.parsed_lines.update(chk.parsed_lines)
-        if svc:
-            self.services.update(svc.services)
-            self.parsed_lines.update(svc.parsed_lines)
+        if chk_config:
+            self.services.update(chk_config.services)
+            self.parsed_lines.update(chk_config.parsed_lines)
+        if unit_files:
+            self.services.update(unit_files.services)
+            self.parsed_lines.update(unit_files.parsed_lines)
 
     def is_on(self, service_name):
         """

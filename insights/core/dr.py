@@ -483,14 +483,14 @@ def get_missing_requirements(requires, d):
         return None
 
 
-def default_executor(func, broker, requires=[], optional=[]):
+def broker_executor(func, broker, requires=[], optional=[]):
     missing_requirements = get_missing_requirements(requires, broker)
     if missing_requirements:
         raise MissingRequirements(missing_requirements)
     return func(broker)
 
 
-def splat_executor(func, broker, requires=[], optional=[]):
+def default_executor(func, broker, requires=[], optional=[]):
     """ Use this executor if your component signature matches your
         dependency list. Can be used on individual components or
         in component type definitions.
@@ -544,13 +544,14 @@ def new_component_type(name=None,
             A decorator function used to define components of the new type.
     """
 
-    def decorator(requires=None,
-                  optional=None,
-                  group=group,
-                  alias=None,
-                  component_type=None,
-                  metadata={}):
-        requires = requires or []
+    def decorator(*requires, **kwargs):
+        optional = kwargs.get("optional", None)
+        the_group = kwargs.get("group", group)
+        alias = kwargs.get("alias", None)
+        component_type = kwargs.get("component_type", None)
+        metadata = kwargs.get("metadata", {})
+
+        requires = list(requires) or []
         optional = optional or []
 
         requires.extend(auto_requires)
@@ -568,7 +569,7 @@ def new_component_type(name=None,
             register_component(func, __f, component_type or decorator,
                                requires=requires,
                                optional=optional,
-                               group=group,
+                               group=the_group,
                                alias=alias,
                                metadata=component_metadata)
             return func

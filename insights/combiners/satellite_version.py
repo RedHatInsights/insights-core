@@ -100,20 +100,18 @@ def _parse_sat_versoin(version):
     return [major, minor]
 
 
-@combiner(requires=[[Sat6Ver, InstalledRpms]])
-def satellite_version(shared):
+@combiner([Sat6Ver, InstalledRpms])
+def satellite_version(sat6_ver, rpms):
     """
     Check satellite_version and installed_rpms for satellite version
     information.
 
     """
     # For Satellite 6.1.x, if satellite_version/version.rb is available:
-    sat6_ver = shared.get(Sat6Ver)
     if sat6_ver and sat6_ver.version:
         return SatelliteVersion(sat6_ver.full, sat6_ver.version, None,
                                 sat6_ver.major, sat6_ver.minor)
 
-    rpms = shared.get(InstalledRpms)
     if rpms:
         # For Satellite 6.2.x, check the ``satellite`` package directly
         sat62_pkg = rpms.get_max('satellite')

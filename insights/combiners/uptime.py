@@ -26,8 +26,8 @@ Uptime = namedtuple("Uptime",
 """namedtuple: Type for storing the uptime information."""
 
 
-@combiner(requires=[[upt, Facter]])
-def uptime(shared):
+@combiner([upt, Facter])
+def uptime(ut, facter):
     """Check uptime and facts to get the uptime information.
 
     Prefer uptime to facts.
@@ -40,11 +40,11 @@ def uptime(shared):
         Exception: If no data is available from both of the parsers.
     """
 
-    ut = shared.get(upt)
+    ut = ut
     if ut and ut.loadavg:
         return Uptime(ut.currtime, ut.updays, ut.uphhmm,
                       ut.users, ut.loadavg, ut.uptime)
-    ft = shared.get(Facter)
+    ft = facter
     if ft and hasattr(ft, 'uptime_seconds'):
         import datetime
         secs = int(ft.uptime_seconds)

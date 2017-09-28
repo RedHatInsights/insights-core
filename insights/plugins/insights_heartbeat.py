@@ -6,8 +6,8 @@ HEARTBEAT_UUID = "9cd6f607-6b28-44ef-8481-62b0e7773614"
 HOST = "insights-heartbeat-" + HEARTBEAT_UUID
 
 
-@rule(requires=[Hostname])
-def is_insights_heartbeat(broker):
-    hostname = broker[Hostname].hostname
+@rule(Hostname)
+def is_insights_heartbeat(hostname):
+    hostname = hostname.hostname
     if hostname == HOST:
         return make_response(ERROR_KEY)

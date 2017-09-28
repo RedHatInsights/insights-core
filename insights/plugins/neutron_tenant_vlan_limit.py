@@ -16,9 +16,8 @@ ERROR_KEY = 'NEUTRON_VLAN_4094_LIMIT'
 VLAN_LIMIT = int(4094 * 0.7)
 
 
-@rule(requires=[OSP], group=dr.GROUPS.cluster)
-def report(broker):
-    osp = broker[OSP]
+@rule(OSP, group=dr.GROUPS.cluster)
+def report(osp):
     networks = osp.overcloud_networks or []
     if any(n.get("provider:network_type") == "vlan" for n in networks):
         ton = osp.total_overcloud_networks
