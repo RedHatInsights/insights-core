@@ -350,6 +350,8 @@ def block(broker):
 
 
 smartctl = sf.with_args_from(block, "/sbin/smartctl -a %s", name="smartctl", keep_rc=True)
+smbstatus_p = sf.simple_command("/usr/bin/smbstatus -p", name="smbstatus_p")
+smbstatus_S = sf.simple_command("/usr/bin/smbstatus -S", name="smbstatus_S")
 spfile_ora = sf.glob_file("${ORACLE_HOME}/dbs/spfile*.ora", name="spfile_ora")
 ss = sf.simple_command("/usr/sbin/ss -tulpn", name="ss")
 ssh_config = sf.simple_file("/etc/ssh/ssh_config", name="ssh_config")
