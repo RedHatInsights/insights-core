@@ -36,10 +36,10 @@ def phase(func):
 def get_phases():
     return [{
         'name': 'pre_update',
-        'run_as_root': False
+        'run_as_root': True
     }, {
         'name': 'update',
-        'run_as_root': False
+        'run_as_root': True
     }, {
         'name': 'post_update',
         'run_as_root': True
