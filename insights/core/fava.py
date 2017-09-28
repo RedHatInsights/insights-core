@@ -335,13 +335,9 @@ def make_plugin_module(rule_body):
                             value=rule_body.get_ast())],
                     decorator_list=[
                         Call(
-                            func=Name(id='rule', ctx=Load()),
-                            args=[],
-                            keywords=[
-                                keyword(arg='requires',
-                                        value=List(
-                                            elts=[Name(id=each, ctx=Load())
-                                                  for each in rule_body.get_parsers()], ctx=Load()))],
+                            func=Name(id='fava_rule', ctx=Load()),
+                            args=[Name(id=each, ctx=Load()) for each in rule_body.get_parsers()],
+                            keywords=[],
                             starargs=None, kwargs=None),
                     ])
             ]),
@@ -534,10 +530,11 @@ class FavaCode:
             '__builtins__': {},
             'make_response': insights.make_response,
             'fava_render_jinja_expression': fava_render_jinja_expression,
-            'rule': insights.rule,
+            'fava_rule': insights.core.plugins.fava_rule,
         }
-        for each_key, each_value in self.get_known_parsers().iteritems():
-            if each_key in self.get_parsers():
+        parsers = self.get_parsers()
+        for each_key, each_value in self.get_known_parsers().items():
+            if each_key in parsers:
                 the_globals[each_key] = each_value
         return the_globals
 

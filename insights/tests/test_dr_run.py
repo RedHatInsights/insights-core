@@ -3,24 +3,24 @@ from insights.core import dr
 stage = dr.new_component_type()
 
 
-@stage(["dep1"])
-def stage1(broker):
+@stage("dep1")
+def stage1(dep1):
     return "stage1"
 
 
-@stage(["dep2"])
-def stage2(broker):
+@stage("dep2")
+def stage2(dep2):
     return "stage2"
 
 
-@stage(["common"])
-def stage3(broker):
-    return broker["common"]
+@stage("common")
+def stage3(common):
+    return common
 
 
-@stage(["common"])
-def stage4(broker):
-    return broker["common"]
+@stage("common")
+def stage4(common):
+    return common
 
 
 def test_run():

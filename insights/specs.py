@@ -76,11 +76,12 @@ docker_list_containers = sf.simple_command("/usr/bin/docker ps --all --no-trunc"
 docker_list_images = sf.simple_command("/usr/bin/docker images --all --no-trunc --digests", name="docker_list_images")
 
 
-@datasource(requires=[docker_list_images])
+@datasource(docker_list_images)
 def docker_image_ids(broker):
+    images = broker[docker_list_images]
     try:
         result = set()
-        for l in broker[docker_list_images].content[1:]:
+        for l in images.content[1:]:
             result.add(l.split(None)[3].strip())
     except:
         raise ContentException("No docker images.")
@@ -90,11 +91,12 @@ def docker_image_ids(broker):
 
 
 # TODO: This parsing is broken.
-@datasource(requires=[docker_list_containers])
+@datasource(docker_list_containers)
 def docker_container_ids(broker):
+    containers = broker[docker_list_containers]
     try:
         result = set()
-        for l in broker[docker_list_containers].content[1:]:
+        for l in containers.content[1:]:
             result.add(l.split(None)[3].strip())
     except:
         raise ContentException("No docker containers.")
@@ -290,7 +292,7 @@ md5chk_files = sf.simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsof
 prelink_orig_md5 = None
 prev_uploader_log = sf.simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1", "prev_uploader_log")
 ps_aux = sf.simple_command("/bin/ps aux", name="ps_aux")
-ps_auxcww = sf.simple_command("/bin/ps auxcww", name="ps_auxcww")
+ps_auxcww = sf.simple_command("/bin/ps auxcww", name="ps_auxcww", alias="ps_auxcww")
 ps_auxwww = sf.simple_file("/sos_commands/process/ps_auxwww", name="ps_auxwww")
 ps_axcwwo = sf.simple_command("/bin/ps axcwwo ucomm,%cpu,lstart", name="ps_axcwwo")
 puppet_ssl_cert_ca_pem = None
@@ -343,7 +345,7 @@ sestatus = sf.simple_command("/usr/sbin/sestatus -b", name="sestatus")
 # block = sf.simple_command("/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'", name="block")
 
 
-@datasource(requires=[HostContext])
+@datasource(HostContext)
 def block(broker):
     remove = (".", "ram", "dm-", "loop")
     tmp = "/dev/%s"
@@ -408,7 +410,7 @@ rpm_format = format_rpm()
 host_installed_rpms = sf.simple_command("/usr/bin/rpm -qa --qf '%s'" % rpm_format, name="host_installed_rpms", context=HostContext)
 
 
-@datasource(requires=[DockerImageContext])
+@datasource(DockerImageContext)
 def docker_installed_rpms(broker):
     ctx = broker[DockerImageContext]
     root = ctx.root
@@ -419,4 +421,4 @@ def docker_installed_rpms(broker):
 
 
 # unify the different installed rpm provider types
-installed_rpms = sf.first_of([host_installed_rpms, docker_installed_rpms], name="installed_rpms")
+installed_rpms = sf.first_of([host_installed_rpms, docker_installed_rpms], name="installed_rpms", alias="installed-rpms")

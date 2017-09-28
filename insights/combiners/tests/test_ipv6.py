@@ -163,19 +163,24 @@ def test_integration():
         context[Uname] = Uname(context_wrap(
                                UNAME_RHEL7 if rhel == 7 else UNAME_RHEL6))
 
-        if case.cmdline is not None:
-            context[CmdLine] = CmdLine(context_wrap(case.cmdline))
-
-        if case.lsmod is not None:
-            context[LsMod] = LsMod(context_wrap(case.lsmod))
-
         if case.modprobe is not None:
             context[ModProbe] = ModProbe(context_wrap(case.modprobe,
                                          path='/etc/modprobe.d/ipv6.conf'))
+        if case.lsmod is not None:
+            context[LsMod] = LsMod(context_wrap(case.lsmod))
+
+        if case.cmdline is not None:
+            context[CmdLine] = CmdLine(context_wrap(case.cmdline))
 
         if case.sysctl is not None:
             context[Sysctl] = Sysctl(context_wrap(case.sysctl))
 
-        ipv6 = IPv6(context)
+        un = context.get(Uname)
+        mp = context.get(ModProbe)
+        lsm = context.get(LsMod)
+        cl = context.get(CmdLine)
+        sct = context.get(Sysctl)
+
+        ipv6 = IPv6(un, mp, lsm, cl, sct)
         assert ipv6.disabled() == result[0]
         assert ipv6.disabled_by() == result[1]

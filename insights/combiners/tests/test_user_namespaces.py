@@ -89,6 +89,6 @@ def test_integration():
         if case[0][1] is not None:
             context[Grub2Config] = Grub2Config(context_wrap(case[0][1]))
 
-        un = UserNamespaces(context)
+        un = UserNamespaces(context.get(CmdLine), context.get(Grub2Config))
         assert un.enabled() == case[1][0]
         assert un.enabled_configs() == case[1][1]

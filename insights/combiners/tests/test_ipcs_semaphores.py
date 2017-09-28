@@ -111,10 +111,7 @@ def test_ipcs_semaphores():
     sem6 = IpcsSI(context_wrap(IPCS_S_I_6))
     sems = IpcsS(context_wrap(IPCS_S))
     ps = PsAuxcww(context_wrap(PsAuxcww_OUT))
-    shared = {IpcsS: sems,
-              IpcsSI: [sem1, sem2, sem3, sem4, sem5, sem6],
-              PsAuxcww: ps}
-    rst = IpcsSemaphores(None, shared)
+    rst = IpcsSemaphores(sems, [sem1, sem2, sem3, sem4, sem5, sem6], ps)
     rst.get_sem('65536').pid_list == ['0', '2265', '4390', '6151', '6152']
     rst.count_of_all_sems() == 6
     rst.count_of_all_sems(owner='apache') == 5

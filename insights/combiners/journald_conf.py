@@ -70,7 +70,7 @@ from insights.parsers.journald_conf import EtcJournaldConf, EtcJournaldConfD, Us
 # TODO - further insights work - convert this to a generic option & file priority evaluator for
 #        other combiners.
 
-@combiner(requires=[EtcJournaldConf], optional=[EtcJournaldConfD, UsrJournaldConfD])
+@combiner(EtcJournaldConf, optional=[EtcJournaldConfD, UsrJournaldConfD])
 class JournaldConfAll(object):
     """
     Combiner for accessing files from the parsers EtcJournaldConf, EtcJournaldConfD, UsrJournaldConfD
@@ -133,7 +133,7 @@ class JournaldConfAll(object):
             # key6 doesn't exist because b.conf from /usr is shadowed by b.conf from /etc
             key7=value11
     """
-    def __init__(self, shared):
+    def __init__(self, journal_conf, journal_conf_d, usr_journal_conf_d):
 
         # preparation for future possible refactoring into a more general combiner
         central_file_lowest_prio = True
@@ -141,11 +141,11 @@ class JournaldConfAll(object):
         # comments in this method describe journald configuration; it should work for similar ones
         etc_confd = {}  # parser instances indexed by file name
         usr_confd = {}  # parser instances indexed by file name
-        if EtcJournaldConfD in shared:
-            for parser_instance in shared[EtcJournaldConfD]:
+        if journal_conf_d:
+            for parser_instance in journal_conf_d:
                 etc_confd[parser_instance.file_name] = parser_instance
-        if UsrJournaldConfD in shared:
-            for parser_instance in shared[UsrJournaldConfD]:
+        if usr_journal_conf_d:
+            for parser_instance in usr_journal_conf_d:
                 usr_confd[parser_instance.file_name] = parser_instance
 
         files_shadowed_not_used = set()  # full file paths of files that are shadowed by others
@@ -166,7 +166,7 @@ class JournaldConfAll(object):
         files_shadowed_not_used = sorted(files_shadowed_not_used)  # deterministic behavior, sorted paths
         sorted_file_names = sorted(effective_confd.keys())
 
-        central_parser = shared[EtcJournaldConf][0]
+        central_parser = journal_conf[0]
         parsers_list = [effective_confd[file_name] for file_name in sorted_file_names]
         if central_file_lowest_prio:
             parsers_list = [central_parser] + parsers_list

@@ -40,8 +40,8 @@ def deserialize(_type, data):
     return _type(**data)
 
 
-@combiner(requires=[[hname, facter, systemid]])
-def hostname(shared):
+@combiner([hname, facter, systemid])
+def hostname(hn, ft, si):
     """Check hostname, facter and systemid to get the fqdn, hostname and domain.
 
     Prefer hostname to facter and systemid.
@@ -54,10 +54,8 @@ def hostname(shared):
         Exception: If no hostname can be found in any of the three parsers.
     """
 
-    hn = shared.get(hname)
-
     if not hn or not hn.fqdn:
-        hn = shared.get(facter)
+        hn = ft
 
     if hn and hn.fqdn:
         fqdn = hn.fqdn
@@ -65,7 +63,6 @@ def hostname(shared):
         domain = hn.domain if hn.domain else ".".join(fqdn.split(".")[1:])
         return Hostname(fqdn, hostname, domain)
     else:
-        si = shared.get(systemid)
         fqdn = si.get("profile_name") if si else None
         if fqdn:
             hostname = fqdn.split(".")[0]

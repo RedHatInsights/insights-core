@@ -72,8 +72,7 @@ KRB5CONFIG2 = """
 def test_active_krb5_nest():
     krb51 = Krb5Configuration(context_wrap(KRB5CONFIG, path='/etc/krb5.conf'))
     krb52 = Krb5Configuration(context_wrap(KRB5CONFIG2, path='/etc/krb5.conf.d/test.conf'))
-    shared = {Krb5Configuration: [krb51, krb52]}
-    result = AllKrb5Conf(shared)
+    result = AllKrb5Conf([krb51, krb52])
     assert result["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"
     assert not result.has_option("logging", "admin_server")
     assert result["libdefaults"]["EXAMPLE2.COM"]["kdc"] == "kerberos.example2.com"

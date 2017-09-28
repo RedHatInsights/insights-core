@@ -76,10 +76,9 @@ scl-utils-20120927-27.el6_6.x86_64                          Wed May 18 14:18:16 
 
 def test_get_sat5_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_5))
-    shared = {InstalledRpms: rpms}
     expected = ('satellite-schema-5.6.0.10-1.el6sat',
                 '5.6.0.10', '1.el6sat', 5, 6)
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -89,9 +88,8 @@ def test_get_sat5_version():
 
 def test_get_sat61_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_61))
-    shared = {InstalledRpms: rpms}
     expected = ('6.1.7', '6.1.7', None, 6, 1)
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -99,9 +97,8 @@ def test_get_sat61_version():
     assert result.version == expected[1]
 
     sat = Satellite6Version(context_wrap(satellite_version_rb))
-    shared = {Satellite6Version: sat}
     expected = ('6.1.3', '6.1.3', None, 6, 1)
-    result = satellite_version(shared)
+    result = satellite_version(sat, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -109,9 +106,8 @@ def test_get_sat61_version():
     assert result.version == expected[1]
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6110))
-    shared = {InstalledRpms: rpms}
     expected = ('6.1.10', '6.1.10', None, 6, 1)
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -119,9 +115,8 @@ def test_get_sat61_version():
     assert result.version == expected[1]
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6111))
-    shared = {InstalledRpms: rpms}
     expected = ('6.1.11', '6.1.11', None, 6, 1)
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -131,9 +126,8 @@ def test_get_sat61_version():
 
 def test_get_sat60():
     rpms = InstalledRpms(context_wrap(installed_rpms_60))
-    shared = {InstalledRpms: rpms}
     expected = ('6.0.8', '6.0.8', None, 6, 0)
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -144,9 +138,8 @@ def test_get_sat60():
 def test_get_sat61_version_both():
     rpms = InstalledRpms(context_wrap(installed_rpms_61))
     sat = Satellite6Version(context_wrap(satellite_version_rb))
-    shared = {InstalledRpms: rpms, Satellite6Version: sat}
     expected = ('6.1.3', '6.1.3', None, 6, 1)
-    result = satellite_version(shared)
+    result = satellite_version(sat, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -156,10 +149,9 @@ def test_get_sat61_version_both():
 
 def test_get_sat62_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_62))
-    shared = {InstalledRpms: rpms}
     expected = ('satellite-6.2.0.11-1.el7sat',
                 '6.2.0.11', '1.el7sat', 6, 2)
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -170,16 +162,14 @@ def test_get_sat62_version():
 def test_no_sat_installed():
     rpms = InstalledRpms(context_wrap(no_sat))
     sat = Satellite6Version(context_wrap(installed_rpms_61))
-    shared = {InstalledRpms: rpms, Satellite6Version: sat}
-    result = satellite_version(shared)
+    result = satellite_version(sat, rpms)
     assert result is None
 
     rpms = InstalledRpms(context_wrap(installed_rpms_611x_confilct))
-    shared = {InstalledRpms: rpms}
-    result = satellite_version(shared)
+    result = satellite_version(None, rpms)
     assert result is None
 
 
 def test_none():
-    result = satellite_version({})
+    result = satellite_version(None, None)
     assert result is None

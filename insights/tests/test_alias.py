@@ -6,7 +6,7 @@ VALUE = "test"
 
 
 @combiner(alias="my_rule")
-def my_rule(broker):
+def my_rule():
     return VALUE
 
 

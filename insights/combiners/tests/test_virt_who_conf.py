@@ -98,8 +98,7 @@ def test_virt_who_conf_1():
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
     vwhod_conf1 = VirtWhoConf(context_wrap(VWHO_D_CONF_HYPER))
     vwhod_conf2 = VirtWhoConf(context_wrap(VWHO_D_CONF_ESX))
-    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf, vwhod_conf1, vwhod_conf2]}
-    result = AllVirtWhoConf(shared)
+    result = AllVirtWhoConf(vw_sysconf, [vwho_conf, vwhod_conf1, vwhod_conf2])
     assert result.background is False
     assert result.oneshot is True
     assert result.interval == 1000
@@ -115,8 +114,7 @@ def test_virt_who_conf_1():
 def test_virt_who_conf_2():
     vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO_SAT_LEGACY))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
-    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf]}
-    result = AllVirtWhoConf(shared)
+    result = AllVirtWhoConf(vw_sysconf, [vwho_conf])
     assert result.background is True
     assert result.oneshot is False
     assert result.interval == 3600
@@ -126,14 +124,12 @@ def test_virt_who_conf_2():
 def test_virt_who_conf_3():
     vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO_SAM))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
-    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf]}
-    result = AllVirtWhoConf(shared)
+    result = AllVirtWhoConf(vw_sysconf, [vwho_conf])
     assert result.sm_type == 'sam'
 
 
 def test_virt_who_conf_4():
     vw_sysconf = VirtWhoSysconfig(context_wrap(SYS_VIRTWHO_CP))
     vwho_conf = VirtWhoConf(context_wrap(VWHO_CONF))
-    shared = {VirtWhoSysconfig: vw_sysconf, VirtWhoConf: [vwho_conf]}
-    result = AllVirtWhoConf(shared)
+    result = AllVirtWhoConf(vw_sysconf, [vwho_conf])
     assert result.sm_type == 'cp'

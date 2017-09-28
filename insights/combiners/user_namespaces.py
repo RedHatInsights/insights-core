@@ -23,18 +23,18 @@ from ..parsers.cmdline import CmdLine
 from ..parsers.grub_conf import Grub2Config
 
 
-@combiner(requires=[CmdLine], optional=[Grub2Config])
+@combiner(CmdLine, optional=[Grub2Config])
 class UserNamespaces(object):
     """A combiner which determines if user namespaces are enabled."""
 
-    def __init__(self, shared):
+    def __init__(self, cmdline, grub2):
         self.grub_cmdline = {}
         # Even if technically possible, it is extremely unlikely that Red Hat will ever
         # ship or support grub1 on a system with kernel > 3.8, so only grub2 config
         # is analyzed here.
-        if Grub2Config in shared:
-            self.grub_cmdline = shared.get(Grub2Config).boot_entries
-        self.cmdline = getattr(shared.get(CmdLine), "data", {})
+        if grub2:
+            self.grub_cmdline = grub2.boot_entries
+        self.cmdline = getattr(cmdline, "data", {})
 
     def enabled(self):
         """Determine whether user namespaces are enabled or not.

@@ -19,7 +19,7 @@ from insights.parsers.sysconfig import VirtWhoSysconfig
 from insights.parsers.virt_who_conf import VirtWhoConf
 
 
-@combiner(requires=[VirtWhoSysconfig, VirtWhoConf])
+@combiner(VirtWhoSysconfig, VirtWhoConf)
 class AllVirtWhoConf(object):
     """
     Combiner for accessing part of valid ``virt-who`` configurations
@@ -86,16 +86,13 @@ class AllVirtWhoConf(object):
         hypervisor_types(list): list of the connected hypervisors' type
     """
 
-    def __init__(self, shared):
+    def __init__(self, svw, vwc):
         self.background = False
         self.oneshot = True
         self.interval = 3600
         self.sm_type = 'cp'  # report to Red Hat Customer Portal by default
         self.hypervisors = []
         self.hypervisor_types = []
-
-        vwc = shared[VirtWhoConf]
-        svw = shared[VirtWhoSysconfig]
 
         # Check VirtWhoConf at first
         types = set()

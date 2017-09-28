@@ -11,7 +11,7 @@ from insights.core.plugins import combiner
 from insights.parsers.limits_conf import LimitsConf
 
 
-@combiner(requires=[LimitsConf])
+@combiner(LimitsConf)
 class AllLimitsConf(object):
     """
     Combiner for accessing all the limits configuration files.
@@ -21,15 +21,15 @@ class AllLimitsConf(object):
         limits(list): a list of the original LimitsConf parser results.
         rules(list): the entire list of rules.
     """
-    def __init__(self, shared):
+    def __init__(self, limits):
         rules = []
         domains = set([])
-        self.limits = shared[LimitsConf]
+        self.limits = limits
         # Store the tuple of domain, type and item against the row of that
         # limit in our full list of rules.
         rule_tuples_found = {}
         rule_number = 0
-        for limits in sorted(shared[LimitsConf], key=lambda f: f.file_path):
+        for limits in sorted(limits, key=lambda f: f.file_path):
             # The rule dictionary contains the file_path as a key for later.
             # Make sure that we keep only the last rule for this combination
             # of domain, type and item, according to https://access.redhat.com/solutions/199993
@@ -57,7 +57,7 @@ class AllLimitsConf(object):
         method from the LimitsConf class.
 
         Examples:
-            >>> data = shared[AllLimitsConf]
+            >>> data = limits
             >>> results = data.find_all(domain='nproc')
             >>> len(results)
             1

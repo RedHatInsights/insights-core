@@ -40,8 +40,8 @@ def deserialize(_type, obj):
     return Release(**obj)
 
 
-@combiner(requires=[[rht_release, Uname]])
-def redhat_release(shared):
+@combiner([rht_release, Uname])
+def redhat_release(rh_release, un):
     """Check uname and redhat-release for rhel major/minor version.
 
     Prefer uname to redhat-release.
@@ -55,11 +55,9 @@ def redhat_release(shared):
             or RedhatRelease was provided.
     """
 
-    un = shared.get(Uname)
     if un and un.release_tuple[0] != -1:
         return Release(*un.release_tuple)
 
-    rh_release = shared.get(rht_release)
     if rh_release:
         return Release(rh_release.major, rh_release.minor)
 

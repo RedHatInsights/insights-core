@@ -10,7 +10,7 @@ from insights.core.plugins import combiner
 from insights.parsers.krb5 import Krb5Configuration
 
 
-@combiner(requires=[Krb5Configuration])
+@combiner(Krb5Configuration)
 class AllKrb5Conf(LegacyItemAccess):
     """
     Combiner for accessing all the krb5 configuration files, the format is dict.
@@ -67,14 +67,14 @@ class AllKrb5Conf(LegacyItemAccess):
             directive
 
     """
-    def __init__(self, shared):
+    def __init__(self, krb5configs):
         self.data = {}
         main_data = {}
         self.includedir = []
         self.include = []
         self.module = []
 
-        for krb5_parser in shared[Krb5Configuration]:
+        for krb5_parser in krb5configs:
             if krb5_parser.file_path == "/etc/krb5.conf":
                 main_data = krb5_parser.data
                 self.includedir = krb5_parser.includedir

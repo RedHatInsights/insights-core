@@ -39,7 +39,7 @@ SPECIFIC_MAP = {
 }
 
 
-@combiner(requires=[[DMIDecode, VW]])
+@combiner([DMIDecode, VW])
 class VirtWhat(object):
     """
     A combiner for checking if this machine is virtual or physical by checking
@@ -54,19 +54,17 @@ class VirtWhat(object):
         specifics (list): List of the specific information.
     """
 
-    def __init__(self, shared):
+    def __init__(self, dmi, vw):
         self.is_virtual = self.is_physical = None
         self.generic = ''
         self.specifics = []
 
-        vw = shared.get(VW)
         if vw and not vw.errors:
             self.is_physical = vw.is_physical
             self.is_virtual = vw.is_virtual
             self.generic = vw.generic
             self.specifics = vw.specifics
 
-        dmi = shared.get(DMIDecode)
         # Error occurred in ``virt-what``, try ``dmidecode``
         if (vw is None or vw.errors) and dmi:
             sys_info = dmi.get("system_information", [{}])[0]

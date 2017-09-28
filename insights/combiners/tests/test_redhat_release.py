@@ -18,18 +18,16 @@ Fedora release 23 (Twenty Three)
 
 def test_uname():
     un = Uname(context_wrap(UNAME))
-    shared = {Uname: un}
     expected = (7, 2)
-    result = redhat_release(shared)
+    result = redhat_release(None, un)
     assert result.major == expected[0]
     assert result.minor == expected[1]
 
 
 def test_redhat_release():
     rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
-    shared = {RedhatRelease: rel}
     expected = (7, 2)
-    result = redhat_release(shared)
+    result = redhat_release(rel, None)
     assert result.major == expected[0]
     assert result.minor == expected[1]
 
@@ -37,15 +35,13 @@ def test_redhat_release():
 def test_both():
     un = Uname(context_wrap(UNAME))
     rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
-    shared = {Uname: un, RedhatRelease: rel}
     expected = (7, 2)
-    result = redhat_release(shared)
+    result = redhat_release(rel, un)
     assert result.major == expected[0]
     assert result.minor == expected[1]
 
 
 def test_raise():
     un = Uname(context_wrap(BAD_UNAME))
-    shared = {Uname: un}
     with pytest.raises(Exception):
-        redhat_release(shared)
+        redhat_release(None, un)

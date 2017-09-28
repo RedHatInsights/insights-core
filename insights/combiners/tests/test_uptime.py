@@ -1,4 +1,3 @@
-import pytest
 import datetime
 from insights.parsers.uptime import Uptime
 from insights.parsers.facter import Facter
@@ -22,8 +21,7 @@ def total_seconds(time_delta):
 
 def test_get_uptime_uptime1():
     ut = Uptime(context_wrap(UPTIME1))
-    shared = {Uptime: ut}
-    upt = uptime(shared)
+    upt = uptime(ut, None)
     assert upt.currtime == '14:28:24'
     assert upt.updays == ""
     assert upt.uphhmm == '5:55'
@@ -35,8 +33,7 @@ def test_get_uptime_uptime1():
 
 def test_get_uptime_uptime2():
     ut = Uptime(context_wrap(UPTIME2))
-    shared = {Uptime: ut}
-    upt = uptime(shared)
+    upt = uptime(ut, None)
     assert upt.currtime == '10:55:22'
     assert upt.updays == '40'
     assert upt.uphhmm == '00:03'
@@ -48,8 +45,7 @@ def test_get_uptime_uptime2():
 
 def test_get_facter_uptime():
     ft = Facter(context_wrap(UPTIME3))
-    shared = {Facter: ft}
-    upt = uptime(shared)
+    upt = uptime(None, ft)
     assert upt.updays == "21"
     assert upt.uphhmm == '21:59'
     assert upt.loadavg is None
@@ -60,8 +56,7 @@ def test_get_facter_uptime():
 def test_get_both_uptime():
     ut = Uptime(context_wrap(UPTIME2))
     ft = Facter(context_wrap(UPTIME3))
-    shared = {Uptime: ut, Facter: ft}
-    upt = uptime(shared)
+    upt = uptime(ut, ft)
     assert upt.currtime == '10:55:22'
     assert upt.updays == '40'
     assert upt.uphhmm == '00:03'
@@ -69,11 +64,3 @@ def test_get_both_uptime():
     assert upt.loadavg == ['0.49', '0.12', '0.04']
     c = datetime.timedelta(days=40, hours=0, minutes=3)
     assert total_seconds(upt.uptime) == total_seconds(c)
-
-
-# Don't need to test the Uptime's handling of invalid data here.
-def test_uptime_raise_no_data():
-    with pytest.raises(Exception) as exc:
-        shared = {}
-        uptime(shared)
-    assert 'Unable to get uptime information' in str(exc)
