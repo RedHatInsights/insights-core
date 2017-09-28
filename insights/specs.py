@@ -155,6 +155,8 @@ httpd_conf_d = sf.first_of([sf.glob_file("/etc/httpd/conf.d/*.conf", name="httpd
                             sf.glob_file("/conf/httpd/conf.d/*.conf", name="httpd_conf_d_conf")],
                             name="httpd_conf_d")
 httpd_error_log = sf.simple_file("var/log/httpd/error_log", name="httpd_error_log")
+httpd_pid = sf.simple_command("ps aux | grep asf | grep -v grep | head -1 | awk '{print $2}'", name="httpd_pid")
+httpd_limits = sf.with_args_from(httpd_pid, "/bin/cat /proc/%s/limits", name="httpd_limits")
 httpd_ssl_access_log = sf.simple_file("/var/log/httpd/ssl_access_log", name="httpd_ssl_access_log")
 httpd_ssl_error_log = sf.simple_file("/var/log/httpd/ssl_error_log", name="httpd_ssl_error_log")
 httpd_V = sf.simple_command("/usr/sbin/httpd -V", name="http_V")
