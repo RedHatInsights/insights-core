@@ -242,6 +242,7 @@ nfnetlink_queue = sf.simple_file("/proc/net/netfilter/nfnetlink_queue", name="nf
 nfs_exports = sf.simple_file("/etc/exports", name="nfs_exports")
 nfs_exports_d = sf.glob_file("/etc/exports.d/*.exports", name="nfs_exports_d")
 nova_api_log = sf.simple_file("/var/log/nova/nova-api.log", name="nova_api_log")
+nova_compute_log = sf.simple_file("/var/log/nova/nova-compute.log", name="nova_compute_log")
 nova_conf = sf.simple_file("/etc/nova/nova.conf", name="nova_conf")
 nproc_conf = sf.glob_file("/etc/security/limits.d/*-nproc.conf", name="nproc_conf")
 nova_crontab = sf.simple_command("/usr/bin/crontab -l -u nova", name="nova_crontab")
