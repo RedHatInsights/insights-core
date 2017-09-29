@@ -412,7 +412,7 @@ pre_commands = {
     "docker_images"             : "/usr/bin/docker images -q",
     "dumpdev"                   : "/bin/awk '/ext[234]/ { print $1; }' /proc/mounts",
     "getblockschedulers"        : "for device in $(ls /sys/block); do echo /sys/block/$device/queue/scheduler; done",
-    "httpd_pid"                 : "ps aux | grep httpd | grep -v grep | head -1 | awk '{print $2}'",
+    "httpd_pid"                 : "/bin/ps aux | grep /usr/sbin/httpd | grep -v grep | head -1 | awk '{print $2}'",
     "iface"                     : "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "md5chk_files"              : "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null",
     "module"                    : "/bin/ls /sys/module",
