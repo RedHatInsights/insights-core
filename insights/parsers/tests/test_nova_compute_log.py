@@ -1,4 +1,4 @@
-from insights.parsers.nova_compute_log import NovaComputeLog
+from insights.parsers.nova_log import NovaComputeLog
 from insights.tests import context_wrap
 
 from datetime import datetime

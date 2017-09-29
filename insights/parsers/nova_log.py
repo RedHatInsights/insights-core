@@ -1,6 +1,6 @@
 """
-NovaComputeLog - file ``/var/log/nova/nova-compute.log``
-========================================================
+nova_log - files ``/var/log/nova/*.log``
+========================================
 """
 from .. import LogFileOutput, parser
 
