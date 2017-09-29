@@ -1,4 +1,4 @@
-from insights.parsers.nova_api_log import NovaApiLog
+from insights.parsers.nova_log import NovaApiLog, NovaComputeLog
 from insights.tests import context_wrap
 
 from datetime import datetime
@@ -13,6 +13,15 @@ api_log = """
 
 def test_nova_api_log():
     log = NovaApiLog(context_wrap(api_log))
+    assert len(log.get(["WARNING", "Authorization failed"])) == 2
+    assert len(log.get("786c3cee52d14baeae98262c6a2f3a4e")) == 1
+    assert len(log.get("Authorization failed")) == 2
+    assert len(list(log.get_after(datetime(2016, 8, 12, 14, 20, 0)))) == 3
+
+
+def test_nova_compute_log():
+    # use the same log file to do test. That is ok.
+    log = NovaComputeLog(context_wrap(api_log))
     assert len(log.get(["WARNING", "Authorization failed"])) == 2
     assert len(log.get("786c3cee52d14baeae98262c6a2f3a4e")) == 1
     assert len(log.get("Authorization failed")) == 2
