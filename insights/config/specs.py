@@ -236,6 +236,7 @@ static_specs = {
     "nfs_exports"               : SimpleFileSpec("etc/exports"),
     "nfs_exports.d"             : PatternSpec(r"etc/exports.d/.*\.exports"),
     "nova-api_log"              : SimpleFileSpec("var/log/nova/nova-api.log", large_content=True),
+    "nova-compute.log"          : SimpleFileSpec("var/log/nova/nova-compute.log", large_content=True),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
     "nproc.conf"                : PatternSpec(r"etc/security/limits.d/.*-nproc\.conf"),
     "nova_crontab"              : CommandSpec("/usr/bin/crontab -l -u nova"),
