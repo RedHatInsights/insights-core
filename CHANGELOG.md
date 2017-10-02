@@ -1,5 +1,54 @@
 # Change Log
 
+## [insights-core-1.51.0-65](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.51.0-65) (2017-09-29)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.50.0-56...insights-core-1.51.0-65)
+
+**Implemented enhancements:**
+
+- Mount keyword search for 1.x branch [\#493](https://github.com/RedHatInsights/insights-core/pull/493) ([PaulWay](https://github.com/PaulWay))
+- Add `get\_dir` method to find mount point for given directory [\#492](https://github.com/RedHatInsights/insights-core/pull/492) ([PaulWay](https://github.com/PaulWay))
+
+**Merged pull requests:**
+
+- Put the new NovaComputeLog to nova\_log.py [\#532](https://github.com/RedHatInsights/insights-core/pull/532) ([xiangce](https://github.com/xiangce))
+- Add nova\_compute\_log parser [\#531](https://github.com/RedHatInsights/insights-core/pull/531) ([chenlizhong](https://github.com/chenlizhong))
+- Enhance the `limits` parser for `httpd` [\#526](https://github.com/RedHatInsights/insights-core/pull/526) ([xiangce](https://github.com/xiangce))
+- New parser httpd\_limits [\#520](https://github.com/RedHatInsights/insights-core/pull/520) ([xiangce](https://github.com/xiangce))
+- Add QemuConf class to parse /etc/libvirt/qemu.conf [\#519](https://github.com/RedHatInsights/insights-core/pull/519) ([chenlizhong](https://github.com/chenlizhong))
+- Add parser smbstatus 1x [\#501](https://github.com/RedHatInsights/insights-core/pull/501) ([wushiqinlou](https://github.com/wushiqinlou))
+
+## [insights-core-1.50.0-56](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.50.0-56) (2017-09-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.49.0-38...insights-core-1.50.0-56)
+
+**Implemented enhancements:**
+
+- Rework core runtime to be like vulcan [\#11](https://github.com/RedHatInsights/insights-core/issues/11)
+- Support Python Version 2.6.x [\#10](https://github.com/RedHatInsights/insights-core/issues/10)
+
+**Closed issues:**
+
+- Should probably rename hand\_map\_error and handle\_reduce\_error in evaluators.py [\#66](https://github.com/RedHatInsights/insights-core/issues/66)
+- Drop support for local mappers [\#7](https://github.com/RedHatInsights/insights-core/issues/7)
+
+**Merged pull requests:**
+
+- Unescape dots in PatternSpec files [\#488](https://github.com/RedHatInsights/insights-core/pull/488) ([kylape](https://github.com/kylape))
+- Re-structure the parsers for file under `/etc/sysconfig/` [\#486](https://github.com/RedHatInsights/insights-core/pull/486) ([xiangce](https://github.com/xiangce))
+- Document rhn schema version - 1.x [\#484](https://github.com/RedHatInsights/insights-core/pull/484) ([xiangce](https://github.com/xiangce))
+- Add parser fc match 1 x [\#483](https://github.com/RedHatInsights/insights-core/pull/483) ([zhangyi733](https://github.com/zhangyi733))
+- Add parser for 'candlepin/error.log' [\#476](https://github.com/RedHatInsights/insights-core/pull/476) ([sagaraivale](https://github.com/sagaraivale))
+- New parser and combiner for virt-who configuration [\#474](https://github.com/RedHatInsights/insights-core/pull/474) ([xiangce](https://github.com/xiangce))
+- Added Filters column to Report to list filters [\#464](https://github.com/RedHatInsights/insights-core/pull/464) ([lhuett](https://github.com/lhuett))
+- Add nova crontab parser [\#458](https://github.com/RedHatInsights/insights-core/pull/458) ([chenlizhong](https://github.com/chenlizhong))
+- Add md5 check for configuration file /etc/fonts/fonts.conf [\#455](https://github.com/RedHatInsights/insights-core/pull/455) ([zhangyi733](https://github.com/zhangyi733))
+- Add attributes' docstring for krb5 parser [\#453](https://github.com/RedHatInsights/insights-core/pull/453) ([xiangce](https://github.com/xiangce))
+- Refine the docstring in test/\_init\_.py [\#452](https://github.com/RedHatInsights/insights-core/pull/452) ([xiangce](https://github.com/xiangce))
+- New parser for 'journal\_since\_boot' \('sos\_commands/logs/journalctl\_…'\) [\#446](https://github.com/RedHatInsights/insights-core/pull/446) ([rmetrich](https://github.com/rmetrich))
+- changed local addr parsing to account for ipv6 addrs [\#443](https://github.com/RedHatInsights/insights-core/pull/443) ([jeudy100](https://github.com/jeudy100))
+- Net stat parser [\#437](https://github.com/RedHatInsights/insights-core/pull/437) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Fix bug when parsing parameters which presented in both solo format and key-value format. [\#422](https://github.com/RedHatInsights/insights-core/pull/422) ([lonicerae](https://github.com/lonicerae))
+- Add combiner krb5 1x [\#417](https://github.com/RedHatInsights/insights-core/pull/417) ([wushiqinlou](https://github.com/wushiqinlou))
+
 ## [insights-core-1.49.0-38](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.49.0-38) (2017-09-15)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.49.0-37...insights-core-1.49.0-38)
 
