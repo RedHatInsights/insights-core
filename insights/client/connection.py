@@ -230,7 +230,7 @@ class InsightsConnection(object):
                 logger.info("HTTP Status Text: %s", test_req.reason)
                 logger.debug("HTTP Response Text: %s", test_req.text)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code == 200 or test_req.status_code == 201:
+                if test_req.status_code in (200, 201):
                     logger.info(
                         "Successfully connected to: %s", test_url + ext)
                     return True
@@ -700,7 +700,7 @@ class InsightsConnection(object):
 
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
-        if upload.status_code == 201:
+        if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
         else:
             logger.error("Upload archive failed with status code  %s", upload.status_code)
