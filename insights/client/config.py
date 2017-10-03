@@ -192,6 +192,11 @@ OPTS = [{
     'action': "store",
     'dest': "analyze_mountpoint",
 }, {
+    'opt': ['--analyze-image-id'],
+    'help': optparse.SUPPRESS_HELP,
+    'action': "store",
+    'dest': "analyze_image_id",
+}, {
     'opt': ['--test-connection'],
     'help': 'Test connectivity to Red Hat',
     'action': "store_true",
