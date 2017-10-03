@@ -380,6 +380,9 @@ def compile_config():
     if (CONFIG['analyze_image_id'] or CONFIG['analyze_file'] or CONFIG['analyze_mountpoint']):
         CONFIG['analyze_container'] = True
         CONFIG['container_mode'] = True
+        # ASSUME --to-json unless otherwise specified
+        if not CONFIG['to_stdout']:
+            CONFIG['to_json'] = True
 
     if CONFIG['offline']:
         CONFIG['no_upload'] = True
