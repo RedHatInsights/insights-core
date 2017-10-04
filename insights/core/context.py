@@ -140,10 +140,13 @@ class ExecutionContext(object):
 
 @fs_root
 class HostContext(ExecutionContext):
-    def __init__(self, hostname, root="/", timeout=None):
+    def __init__(self, root="/", timeout=None):
         super(HostContext, self).__init__(timeout)
-        self.hostname = hostname
         self.root = root
+
+    def __repr__(self):
+        msg = "<HostContext('%s', '%s')>"
+        return msg % (self.root, self.timeout)
 
 
 # No fs_root here. Dependence on this context should be explicit.
@@ -152,12 +155,11 @@ class DockerHostContext(HostContext):
 
 
 @fs_root
-class FileArchiveContext(ExecutionContext):
-    def __init__(self, root, paths, stored_command_prefix="insights_commands"):
+class HostArchiveContext(ExecutionContext):
+    def __init__(self, root, stored_command_prefix="insights_commands"):
         self.root = root
-        self.paths = paths
         self.stored_command_prefix = stored_command_prefix
-        super(FileArchiveContext, self).__init__()
+        super(HostArchiveContext, self).__init__()
 
 
 @fs_root
@@ -166,7 +168,7 @@ class ClusterArchiveContext(ExecutionContext):
         self.root = root
         self.paths = paths
         self.stored_command_prefix = stored_command_prefix
-        super(FileArchiveContext, self).__init__()
+        super(ClusterArchiveContext, self).__init__()
 
 
 @fs_root

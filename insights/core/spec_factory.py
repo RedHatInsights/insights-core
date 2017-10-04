@@ -126,7 +126,11 @@ class SpecFactory(object):
         self.module_name = module_name
 
     def _attach(self, component, name):
-        """ Attach component to a module by name. """
+        """
+        This step binds the component to the module in which it was defined, or
+        the specified module.  This is important because otherwise all
+        components would be attached to *this* module.
+        """
 
         if self.module_name:
             if self.module_name not in sys.modules:
