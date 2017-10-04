@@ -2,49 +2,55 @@
 ``test lsblk``
 ================
 """
-from insights.parsers import lsblk
+from insights.parsers import lsblk, ParseException
 from insights.tests import context_wrap
 
-LSBLK_DATA = ['NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT',
-              'vda           252:0    0    9G  0 disk ',
-              '|-vda1        252:1    0  500M  0 part /boot',
-              '`-vda2        252:2    0  8.5G  0 part',
-              '  |-rhel-root 253:0    0  7.6G  0 lvm  /',
-              '  |-rhel-swap 253:1    0  924M  0 lvm  [SWAP]',
-              'sda             8:0    0  500G  0 disk',
-              '`-sda1          8:1    0  500G  0 part /data']
+import pytest
 
-LSBLK_DATA2 = ['NAME                       MAJ:MIN RM    SIZE RO TYPE  MOUNTPOINT',
-               'sr0                         11:0    1   64.3M  0 rom',
-               'sda                          8:0    0     25G  0 disk ',
-               '|-sda1                       8:1    0    256M  0 part  /boot',
-               '|-sda2                       8:2    0   18.6G  0 part  ',
-               '| `-vg_root-lv_root (dm-0) 253:0    0   18.5G  0 lvm   /',
-               '`-sda3                       8:3    0    6.2G  0 part  [SWAP]',
-               'sdb                          8:16   0 1000.1G  0 disk  ',
-               '`-mpathb (dm-2)            253:2    0 1000.1G  0 mpath ',
-               '  `-mpathbp1 (dm-4)        253:4    0 1000.1G  0 part  ',
-               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
-               'sdc                          8:32   0  850.1G  0 disk  ',
-               '`-mpatha (dm-1)            253:1    0  850.1G  0 mpath ',
-               '  `-mpathap1 (dm-5)        253:5    0  850.1G  0 part  ',
-               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
-               'sdd                          8:48   0 1000.1G  0 disk  ',
-               '`-mpathc (dm-3)            253:3    0 1000.1G  0 mpath ',
-               '  `-mpathcp1 (dm-6)        253:6    0 1000.1G  0 part  ',
-               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
-               'sde                          8:64   0 1000.1G  0 disk  ',
-               '`-mpathb (dm-2)            253:2    0 1000.1G  0 mpath ',
-               '  `-mpathbp1 (dm-4)        253:4    0 1000.1G  0 part  ',
-               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
-               'sdf                          8:80   0  850.1G  0 disk  ',
-               '`-mpatha (dm-1)            253:1    0  850.1G  0 mpath ',
-               '  `-mpathap1 (dm-5)        253:5    0  850.1G  0 part  ',
-               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk',
-               'sdg                          8:96   0 1000.1G  0 disk  ',
-               '`-mpathc (dm-3)            253:3    0 1000.1G  0 mpath ',
-               '  `-mpathcp1 (dm-6)        253:6    0 1000.1G  0 part  ',
-               '    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk']
+LSBLK_DATA = """
+NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+vda           252:0    0    9G  0 disk
+|-vda1        252:1    0  500M  0 part /boot
+`-vda2        252:2    0  8.5G  0 part
+  |-rhel-root 253:0    0  7.6G  0 lvm  /
+  |-rhel-swap 253:1    0  924M  0 lvm  [SWAP]
+sda             8:0    0  500G  0 disk
+`-sda1          8:1    0  500G  0 part /data
+"""
+
+LSBLK_DATA2 = """
+NAME                       MAJ:MIN RM    SIZE RO TYPE  MOUNTPOINT
+sr0                         11:0    1   64.3M  0 rom
+sda                          8:0    0     25G  0 disk
+|-sda1                       8:1    0    256M  0 part  /boot
+|-sda2                       8:2    0   18.6G  0 part
+| `-vg_root-lv_root (dm-0) 253:0    0   18.5G  0 lvm   /
+`-sda3                       8:3    0    6.2G  0 part  [SWAP]
+sdb                          8:16   0 1000.1G  0 disk
+`-mpathb (dm-2)            253:2    0 1000.1G  0 mpath
+  `-mpathbp1 (dm-4)        253:4    0 1000.1G  0 part
+    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
+sdc                          8:32   0  850.1G  0 disk
+`-mpatha (dm-1)            253:1    0  850.1G  0 mpath
+  `-mpathap1 (dm-5)        253:5    0  850.1G  0 part
+    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
+sdd                          8:48   0 1000.1G  0 disk
+`-mpathc (dm-3)            253:3    0 1000.1G  0 mpath
+  `-mpathcp1 (dm-6)        253:6    0 1000.1G  0 part
+    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
+sde                          8:64   0 1000.1G  0 disk
+`-mpathb (dm-2)            253:2    0 1000.1G  0 mpath
+  `-mpathbp1 (dm-4)        253:4    0 1000.1G  0 part
+    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
+sdf                          8:80   0  850.1G  0 disk
+`-mpatha (dm-1)            253:1    0  850.1G  0 mpath
+  `-mpathap1 (dm-5)        253:5    0  850.1G  0 part
+    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
+sdg                          8:96   0 1000.1G  0 disk
+`-mpathc (dm-3)            253:3    0 1000.1G  0 mpath
+  `-mpathcp1 (dm-6)        253:6    0 1000.1G  0 part
+    `-appdg-app (dm-7)     253:7    0    2.8T  0 lvm   /splunk
+"""
 
 # lsblk -P -o
 LSBLK_EXT_DATA = """
@@ -59,6 +65,7 @@ ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ex
 
 
 def test_lsblk():
+    # Test Block methods
     results = lsblk.LSBlock(context_wrap(LSBLK_DATA))
     assert results is not None
     assert len(results) == 7
@@ -85,12 +92,20 @@ def test_lsblk():
     assert sda.type == "disk"
     assert 'mountpoint' not in sda
     assert 'parent_names' not in sda
-
-    # Test BlockDevice methods
+    assert hasattr(results, 'device_data')
+    assert isinstance(results.device_data, dict)
+    assert sorted(results.device_data.keys()) == sorted([
+        'vda', 'vda1', 'vda2', 'rhel-root', 'rhel-swap', 'sda', 'sda1'
+    ])
     assert results.device_data['sda'] == sda
-    assert sda.get('maj_min') == sda.maj_min
+    assert sda.get('MAJ_MIN') == sda.maj_min
     assert repr(rhel_root) == 'lvm:rhel-root(/)'
     assert repr(sda) == 'disk:sda'
+
+    # Keyword search tests
+    assert results.search(TYPE='disk') == [
+        results.rows[0], results.rows[5]
+    ]
 
     results = lsblk.LSBlock(context_wrap(LSBLK_DATA2))
     assert results is not None
@@ -118,6 +133,19 @@ def test_lsblk():
     assert sdf_appdg.type == "lvm"
     assert sdf_appdg.mountpoint == "/splunk"
     assert sdf_appdg.parent_names == ["sdf", "mpatha (dm-1)", "mpathap1 (dm-5)"]
+
+
+LSBLK_DATA_BAD = """
+NAME          MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+vda           252:0    0    9G  0
+|-vda1        252:1    0  500M  0 part /boot
+"""
+
+
+def test_lsblock_bad_data():
+    blocks = lsblk.LSBlock(context_wrap(LSBLK_DATA_BAD))
+    assert len(blocks.rows) == 1
+    assert blocks.rows[0].name == 'vda1'
 
 
 def test_lsblk_po():
@@ -158,3 +186,33 @@ def test_lsblk_po():
     assert 'STATE' not in sda1
     assert sda1.type == "part"
     assert sda1.uuid == "c7c4c016-8b00-4ded-bffb-5cc4719b7d45"
+
+
+LSBLOCKPAIRS_NO_TYPE_DATA = """
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="1" RO="0" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" UUID=""
+"""
+
+
+def test_lsblockpairs_no_type():
+    # LSBlock will always have a type column because of the regular expression
+    # match; LSBlockPairs is looser about the data available.
+    with pytest.raises(ParseException) as exc:
+        blocks = lsblk.LSBlockPairs(context_wrap(LSBLOCKPAIRS_NO_TYPE_DATA))
+        assert repr(blocks.rows[0]) is None
+    assert 'TYPE not found in LsBlockPairs line' in str(exc)
+
+
+LSBLOCKPAIRS_NO_TRANSLATE_DATA = """
+ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="" GROUP="cdrom" KNAME="sr0" LABEL="" LOG-SEC="512" MAJ:MIN="11:0" MIN-IO="512" MODE="brw-rw----" MODEL="DVD+-RW DVD8801 " MOUNTPOINT="" NAME="sr0" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" ROTA="1" RQ-SIZE="128" SCHED="cfq" SIZE="1024M" STATE="running" TYPE="rom" UUID=""
+"""
+
+
+def test_lsblockpairs_no_translate():
+    # LSBlockPairs translates 'RM' to 'REMOVABLE' and 'RO' to 'READ_ONLY';
+    # normally every block device will have these two attributes.  But if for
+    # some reason it doesn't, we want to make sure that the code still works
+    # correctly.  This is mainly for code coverage testing.
+    blocks = lsblk.LSBlockPairs(context_wrap(LSBLOCKPAIRS_NO_TRANSLATE_DATA))
+    assert 'sr0' in blocks.device_data
+    assert not hasattr(blocks.device_data['sr0'], 'removable')
+    assert not hasattr(blocks.device_data['sr0'], 'read_only')
