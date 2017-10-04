@@ -22,6 +22,8 @@ def phase(func):
     def _f():
         compile_config()
         client.set_up_logging()
+        if config['debug']:
+            logger.info("Core path: %s", os.path.dirname(__file__))
         try_auto_configuration()
         try:
             func()
