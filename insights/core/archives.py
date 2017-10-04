@@ -138,6 +138,16 @@ class TarExtractor(Extractor):
         return self
 
 
+def get_all_files(path):
+    names = []
+    for root, dirs, files in os.walk(path):
+        for dirname in dirs:
+            names.append(os.path.join(root, dirname) + "/")
+        for filename in files:
+            names.append(os.path.join(root, filename))
+    return names
+
+
 class DirectoryAdapter(object):
     """
     This class takes a path to a directory and provides a subset of
@@ -146,12 +156,7 @@ class DirectoryAdapter(object):
 
     def __init__(self, path):
         self.path = path
-        self.names = []
-        for root, dirs, files in os.walk(self.path):
-            for dirname in dirs:
-                self.names.append(os.path.join(root, dirname) + "/")
-            for filename in files:
-                self.names.append(os.path.join(root, filename))
+        self.names = get_all_files(path)
 
     def getnames(self):
         return self.names

@@ -371,7 +371,7 @@ def register_component(component, delegate, component_type,
 class Broker(object):
     def __init__(self, seed_broker=None):
         self.instances = dict(seed_broker.instances) if seed_broker else {}
-        self.missing_dependencies = {}
+        self.missing_requirements = {}
         self.exceptions = defaultdict(list)
         self.tracebacks = {}
         self.exec_times = {}
@@ -403,7 +403,7 @@ class Broker(object):
 
     def add_exception(self, component, ex, tb=None):
         if isinstance(ex, MissingRequirements):
-            self.missing_dependencies[component] = ex.requirements
+            self.missing_requirements[component] = ex.requirements
         else:
             self.exceptions[component].append(ex)
             self.tracebacks[ex] = tb

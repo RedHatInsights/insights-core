@@ -21,7 +21,7 @@ from insights.core.context import OpenShiftContext
 from insights.core.plugins import datasource
 from insights.core.spec_factory import CommandOutputProvider, ContentException, SpecFactory
 
-sf = SpecFactory(__name__)
+sf = SpecFactory()
 
 autofs_conf = sf.simple_file("/etc/autofs.conf", name="autofs_conf")
 auditd_conf = sf.simple_file("/etc/audit/auditd.conf", name="auditd_conf")

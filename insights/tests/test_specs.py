@@ -27,7 +27,7 @@ def dostuff(broker):
 
 
 def test_spec_factory():
-    hn = HostContext(None)
+    hn = HostContext()
     broker = dr.Broker()
     broker[HostContext] = hn
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
