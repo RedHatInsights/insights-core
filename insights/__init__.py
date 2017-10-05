@@ -70,7 +70,11 @@ def run(root=None, component=None):
     Returns:
         broker: object containing the result of the evaluation.
     """
-    graph = dr.get_dependency_graph(component) if component else None
+    if component:
+        graph = dr.get_dependency_graph(component)
+    else:
+        graph = dr.COMPONENTS[dr.GROUPS.single]
+
     broker = dr.Broker()
 
     if not root:

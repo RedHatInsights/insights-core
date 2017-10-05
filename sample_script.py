@@ -19,22 +19,22 @@ release = sf.simple_file("/etc/redhat-release", name="release", alias="redhat-re
 # You could have the rule depend directly on release if you wanted to, but this
 # takes advantage of our RedhatRelease parser since we defined an alias
 # on release above to be the same as what the parser depends on.
-@rule([RedhatRelease])
-def report(broker):
+@rule(RedhatRelease)
+def report(rel):
     """Fires if the machine is running Fedora."""
 
-    if "Fedora" in broker[RedhatRelease].product:
+    if "Fedora" in rel.product:
         return make_response("IS_FEDORA")
 
 
 # This sets stuff up and runs on the host system
-ctx = HostContext(None)
+ctx = HostContext()
 broker = dr.Broker()
 broker[HostContext] = ctx
 broker = dr.run(broker=broker)
 
 print "Missing Dependencies:"
-pprint(dict(broker.missing_dependencies))
+pprint(dict(broker.missing_requirements))
 
 print
 print "Exceptions:"
@@ -50,4 +50,4 @@ pprint(broker[release].content)
 
 print
 print "Value of the rule:"
-pprint(broker[report])
+pprint(broker.get(report))
