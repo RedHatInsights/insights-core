@@ -1,20 +1,20 @@
 """
-Block device listing - Command ``lsblk``
-========================================
+Block device listing
+====================
 
 Module for processing output of the ``lsblk`` command.  Different information
 is provided by the ``lsblk`` command depending upon the options.  Parsers
 included here are:
 
-LSBlock
--------
+LSBlock - Command ``lsblk``
+---------------------------
 
 The ``LSBlock`` class parses output of the ``lsblk`` command with no options.
 
-LSBlockPairs
-------------
+LSBlockPairs - Command ``lsblk -P -o [columns...]``
+---------------------------------------------------
 
-The ``LSBlockPairs`` class parses output of the ``lsblk -P -o column_names``
+The ``LSBlockPairs`` class parses output of the ``lsblk -P -o [columns...]``
 command.
 
 These classes based on ``BlockDevices`` which implements all of the
@@ -24,7 +24,7 @@ Information is stored in the attribute ``self.rows`` which is a ``list`` of
 
 Each ``BlockDevice`` object provides the functionality for one row of data from the
 command output.  Data in a ``BlockDevice`` object is accessible by multiple methods.
-For example the NAME field can be accessed in the follow three ways::
+For example the NAME field can be accessed in the following four ways::
 
     lsblk_info.rows[0].data['NAME']
     lsblk_info.rows[0].NAME
@@ -95,10 +95,14 @@ Examples:
     ['vda', 'vda2']
     >>> lsblk_info.device_data['vda'] # Access devices by name
     'disk:vda'
+    >>> lsblk_info.search(NAME='vda2')
+    [{'READ_ONLY': False, 'PARENT_NAMES': ['vda'], 'NAME': 'vda2',
+     'REMOVABLE': False, 'MAJ_MIN': '252:2', 'TYPE': 'part', 'SIZE': '8.5G'}]
 """
 
 import re
 from .. import Parser, parser
+from . import ParseException, keyword_search
 
 MAX_GENERATIONS = 20
 
@@ -126,9 +130,12 @@ class BlockDevice(object):
     def __eq__(self, other):
         return self.data == other
 
+    def iteritems(self):
+        return self.data.iteritems()
+
     def get(self, k, default=None):
         """Get any value by keyword (column) name."""
-        return self.__dict__.get(k, default)
+        return self.data.get(k, default)
 
     def __repr__(self):
         if 'TYPE' in self.data and 'MOUNTPOINT' in self.data:
@@ -138,8 +145,8 @@ class BlockDevice(object):
             )
         else:
             # As long as the regular expression in LsBlock works, we must end
-            # up with NAME and TYPE records here.
-            assert 'TYPE' in self.data
+            # up with NAME and TYPE records here.  However, the LSBlockPairs
+            # parsing isn't able to be that strict.
             return '{type}:{name}'.format(type=self.data['TYPE'], name=self.data['NAME'])
 
 
@@ -149,6 +156,18 @@ class BlockDevices(Parser):
     Output of the ``lsblk`` command is contained in this base
     class. Data may be accessed via the iterator and each item
     represents a row of output from the command in `dict` format.
+
+    Attributes:
+        rows (list of BlockDevice): List of ``BlockDevice`` objects for each
+            row of the input. Input column name matches key name except any
+            '-' is replaced with '_' and the following names are changed::
+
+                Column Name     Key Name
+                MAJ:MIN         MAJ_MIN
+                RM              REMOVABLE
+                RO              READD_ONLY
+        device_data (dict of BlockDevice): A dictionary of ``BlockDevice``
+            objects keyed on the 'NAME' column (e.g. ``sda`` or ``rhel-swap``)
     """
 
     def __len__(self):
@@ -157,6 +176,29 @@ class BlockDevices(Parser):
     def __iter__(self):
         for row in self.rows:
             yield row
+
+    def search(self, **kwargs):
+        """
+        Returns a list of the block devices (in order) matching the given
+        criteria. Keys are searched for directly - see the
+        :py:func:`insights.parsers.keyword_search` utility function for more
+        details.  If no search parameters are given, no rows are returned.
+        Keys need to be in all upper case, as they appear in the source data.
+
+        Examples:
+
+            >>> blockdevs.search(NAME='sda1')
+            [{'NAME': '/dev/sda1', 'TYPE': 'disk', 'SIZE', '80G', ...}]
+            >>> blockdevs.search(TYPE='lvm')
+            [{'NAME': 'volgrp01-root', 'TYPE': 'lvm', 'SIZE', '15G', ...}...]
+
+        Arguments:
+            **kwargs (dict): Dictionary of key-value pairs to search for.
+
+        Returns:
+            (list): The list of mount points matching the given criteria.
+        """
+        return keyword_search(self.rows, **kwargs)
 
 
 @parser('lsblk')
@@ -172,16 +214,6 @@ class LSBlock(BlockDevices):
         `-sda2                            8:2    0 79.8G  0 part
           |-volgrp01-root (dm-0)        253:0    0   15G  0 lvm   /
           `-volgrp01-swap (dm-1)        253:1    0    8G  0 lvm   [SWAP]
-
-    Attributes:
-        rows (list of BlockDevice): List of ``BlockDevice`` objects for each row of
-            the input. Input column name matches key name except any '-' is replaced with
-            '_' and the following names are changed::
-
-                Column Name     Key Name
-                MAJ:MIN         MAJ_MIN
-                RM              REMOVABLE
-                RO              READD_ONLY
 
     Note:
         See the discussion of the key ``PARENT_NAMES`` above.
@@ -203,6 +235,7 @@ class LSBlock(BlockDevices):
                 device['REMOVABLE'] = bool(int(name_match.group(4)))
                 device['SIZE'] = name_match.group(5)
                 device['READ_ONLY'] = bool(int(name_match.group(7)))
+                # TYPE is enforced by the regex, no need to check here
                 device['TYPE'] = name_match.group(8)
                 mountpoint = name_match.group(9).strip()
                 if len(mountpoint) > 0:
@@ -254,7 +287,9 @@ class LSBlockPairs(BlockDevices):
                 RO              read_only
 
     Note:
-        See the discussion of the key ``PARENT_NAMES`` above.
+        ``PARENT_NAMES`` is not available as a key because it is not listed
+        in the ``LsBlockPairs`` output and cannot always be correctly
+        inferred from the other data present.
     """
     def parse_content(self, content):
         self.rows = []
@@ -264,9 +299,15 @@ class LSBlockPairs(BlockDevices):
             def str2bool(s):
                 return bool(int(s))
 
+            if 'TYPE' not in d:
+                raise ParseException(
+                    "TYPE not found in LsBlockPairs line '{l}'".format(l=line)
+                )
+
             for original, replace, transform in [("RM", "REMOVABLE", str2bool),
                                                  ("RO", "READ_ONLY", str2bool)]:
                 if original in d:
                     d[replace] = transform(d[original]) if transform else d[original]
                     del d[original]
             self.rows.append(BlockDevice(d))
+        self.device_data = dict((dev.name, dev) for dev in self.rows)
