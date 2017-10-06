@@ -92,6 +92,8 @@ def parser(dependency, group=dr.GROUPS.single, alias=None):
     object usable by combiners and rules. `parser` is a specialization
     of the general component interface.
     """
+    dependency = dr.get_alias(dependency) or dependency
+
     def _f(component):
         return _parser(dependency, group=group, alias=alias, component_type=parser)(component)
     return _f

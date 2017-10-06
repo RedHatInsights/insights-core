@@ -309,7 +309,7 @@ rabbitmq_startup_err = sf.simple_file("/var/log/rabbitmq/startup_err", name="rab
 rabbitmq_startup_log = sf.simple_file("/var/log/rabbitmq/startup_log", name="rabbitmq_startup_log")
 rabbitmq_users = sf.simple_command("/usr/sbin/rabbitmqctl list_users", name="rabbitmq_users")
 rc_local = sf.simple_file("/etc/rc.d/rc.local", name="rc_local")
-redhat_release = sf.simple_file("/etc/redhat-release", name="redhat_release")
+redhat_release = sf.simple_file("/etc/redhat-release", name="redhat_release", alias="redhat-release")
 resolv_conf = sf.simple_file("/etc/resolv.conf", name="resolve_conf")
 rhn_charsets = sf.simple_command("/usr/bin/rhn-charsets", name="rhn_charsets")
 rhn_conf = sf.first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"], name="rhn_conf")
