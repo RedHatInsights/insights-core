@@ -4,6 +4,7 @@ This module implements dependency resolution and execution within Red Hat Insigh
 
 import inspect
 import logging
+import os
 import pkgutil
 import re
 import six
@@ -177,7 +178,6 @@ def is_hidden(component):
     return component in HIDDEN
 
 
-# TODO: review global vars
 def replace(old, new):
     _type = TYPE_OF_COMPONENT[old]
     _group = GROUP_OF_COMPONENT[old]
@@ -273,11 +273,23 @@ def get_subgraphs(graph=DEPENDENCIES):
         seen.clear()
 
 
+def try_import(path):
+    try:
+        return importlib.import_module(path)
+    except Exception as ex:
+        log.exception(ex)
+
+
 def load_components(path, include=".*", exclude="test"):
-    path = path.replace("/", ".")
+    if "/" in path and path.endswith((".py", ".fava")):
+        path, _ = os.path.splitext(path)
+
+    path = path.rstrip("/").replace("/", ".")
 
     log.debug("Importing %s" % path)
-    package = importlib.import_module(path)
+    package = try_import(path)
+    if not package:
+        return
 
     do_include = re.compile(include).search if include else lambda x: True
     do_exclude = re.compile(exclude).search if exclude else lambda x: False
@@ -292,7 +304,7 @@ def load_components(path, include=".*", exclude="test"):
                 load_components(name, include, exclude)
             else:
                 log.debug("Importing %s" % name)
-                importlib.import_module(name)
+                try_import(name)
 
 
 def first_of(dependencies, broker):
