@@ -111,17 +111,26 @@ def make_rule_type(name=None,
                                   group=group,
                                   executor=executor,
                                   type_metadata=type_metadata)
+
+    def decorator(*requires, **kwargs):
+        if kwargs.get("cluster"):
+            kwargs["group"] = dr.GROUPS.cluster
+
+        kwargs["component_type"] = decorator
+
+        return _type(*requires, **kwargs)
+
     if name:
-        _type.__name__ = name
+        decorator.__name__ = name
         s = inspect.stack()
         frame = s[1][0]
         mod = inspect.getmodule(frame) or sys.modules.get("__main__")
         if mod:
-            _type.__module__ = mod.__name__
-            setattr(mod, name, _type)
+            decorator.__module__ = mod.__name__
+            setattr(mod, name, decorator)
 
-    RULE_TYPES.add(_type)
-    return _type
+    RULE_TYPES.add(decorator)
+    return decorator
 
 
 combiner = dr.new_component_type("combiner")
