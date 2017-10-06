@@ -227,7 +227,7 @@ class SpecFactory(object):
         return inner
 
     def foreach(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
-        @datasource(requires=[provider, context], alias=alias)
+        @datasource(provider, context, alias=alias)
         def inner(broker):
             result = []
             source = broker[provider]
