@@ -1,5 +1,20 @@
 # Change Log
 
+## [insights-core-1.52.0-71](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.52.0-71) (2017-10-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.1-1...insights-core-1.52.0-71)
+
+**Implemented enhancements:**
+
+- Improvements to the LSBlock and LSBlockPairs parsers for 1.x branch [\#498](https://github.com/RedHatInsights/insights-core/pull/498) ([PaulWay](https://github.com/PaulWay))
+
+**Merged pull requests:**
+
+- Handle missing option in /etc/sysconfig/selinux [\#547](https://github.com/RedHatInsights/insights-core/pull/547) ([skontar](https://github.com/skontar))
+- add parse\_table functionality to 1.x [\#539](https://github.com/RedHatInsights/insights-core/pull/539) ([SteveHNH](https://github.com/SteveHNH))
+
+## [insights-core-3.0.1-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.1-1) (2017-10-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.51.0-65...insights-core-3.0.1-1)
+
 ## [insights-core-1.51.0-65](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.51.0-65) (2017-09-29)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.50.0-56...insights-core-1.51.0-65)
 
