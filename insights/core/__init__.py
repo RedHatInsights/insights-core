@@ -30,7 +30,7 @@ def load_package(package_name, pattern=None, loaded_map=set()):
         log.debug("loaded %s", module_name)
 
     loaded_map.add(package_name)
-    log.info("Loaded %d modules", len(loaded))
+    log.info("Loaded %d modules from package %s", len(loaded), package_name)
     return loaded
 
 
