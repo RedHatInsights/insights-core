@@ -59,10 +59,10 @@ class ContentProvider(object):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, root, relative_path, filters=None):
+    def __init__(self, relative_path, root="/", filters=None):
         super(FileProvider, self).__init__()
-        self.relative_path = relative_path.lstrip("/")
         self.root = root
+        self.relative_path = relative_path.lstrip("/")
 
         self.path = os.path.join(root, self.relative_path)
         self.file_name = os.path.basename(self.path)
@@ -152,7 +152,7 @@ class SpecFactory(object):
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
-            return Kind(root, os.path.expandvars(path), filters=get_filters(inner))
+            return Kind(os.path.expandvars(path), root=root, filters=get_filters(inner))
         if name:
             self._attach(inner, name)
         return inner
@@ -171,7 +171,7 @@ class SpecFactory(object):
                     if ignore and re.search(ignore, path):
                         continue
                     try:
-                        results.append(Kind(root, path[len(root):], filters=get_filters(inner)))
+                        results.append(Kind(path[len(root):], root=root, filters=get_filters(inner)))
                     except:
                         log.debug(traceback.format_exc())
             if results:
@@ -187,7 +187,7 @@ class SpecFactory(object):
             root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
             for f in files:
                 try:
-                    return Kind(root, f, filters=get_filters(inner))
+                    return Kind(f, root=root, filters=get_filters(inner))
                 except:
                     pass
             raise ContentException("None of [%s] found." % ', '.join(files))
