@@ -56,7 +56,7 @@ cinder_volume_log = sf.simple_file("/var/log/cinder/volume.log", name="cinder_vo
 cluster_conf = sf.simple_file("/etc/cluster/cluster.conf", name="cluster_conf")
 cmdline = sf.simple_file("/proc/cmdline", name="cmdline")
 cobbler_settings = sf.first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"], name="cobbler_settings")
-cobbler_modules_conf = sf.first_file(["/conf/cobbler/modules.conf", "/conf/cobbler/modules.conf"], name="cobbler_modules_conf")
+cobbler_modules_conf = sf.first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"], name="cobbler_modules.conf")
 corosync = sf.simple_file("/etc/sysconfig/corosync", name="corosync")
 cpuinfo = sf.first_file(["/proc/cpuinfo", "/cpuinfo"], name="cpuinfo")
 cpuinfo_max_freq = sf.simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", name="cpuinfo_max_freq")
