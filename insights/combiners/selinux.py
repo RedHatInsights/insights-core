@@ -85,8 +85,10 @@ class SELinux(object):
 
         This file determines the boot configuration for SELinux.
         """
-        opt_value = self.selinux_config.data['SELINUX']
-        if opt_value == 'disabled':
+        opt_value = self.selinux_config.data.get('SELINUX')
+        if opt_value is None:
+            self.problems[BOOT_NOT_ENFORCING] = 'Missing in config (Permissive by default)'
+        elif opt_value == 'disabled':
             self.problems[BOOT_DISABLED] = opt_value
         elif opt_value != 'enforcing':
             self.problems[BOOT_NOT_ENFORCING] = opt_value
