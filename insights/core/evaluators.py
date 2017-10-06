@@ -395,7 +395,7 @@ class InsightsEvaluator(SingleEvaluator):
     def handle_map_error(self, e, context):
         self.stats["parser"]["fail"] += 1
         log.warning("Parser failed with message %s. Ignoring.",
-                    e, context, exc_info=True, extra={
+                    e, exc_info=True, extra={
                         "context": context,
                         "url": self.url,
                         "exception_message": str(e)
