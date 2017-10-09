@@ -168,3 +168,41 @@ def word_wrap(line, wrap_len=72):
                 break
     else:
         yield line.strip()
+
+
+def case_variants(*elements):
+    """
+    For configs which take case-insensitive options, it is necessary to extend the list with
+    various common case variants (all combinations are not practical). In the future, this should
+    be removed, when parser filters are made case-insensitive.
+
+    Args:
+        *elements (str): list of elements which need case-sensitive expansion, you should use
+                         default case such as `Ciphers`, `MACs`, `UsePAM`, `MaxAuthTries`
+
+    Returns:
+        list: list of all expanded elements
+    """
+    expanded_list = []
+    for element in elements:
+        low = element.lower()
+        up = element.upper()
+        title = element.title()
+
+        # Inner case conversion, such as `MACs` or `UsePAM` to `Macs` and `UsePam`
+        converted = []
+        for i, letter in enumerate(element):
+            if i == 0:
+                converted.append(letter)
+            else:
+                if element[i - 1].isupper():
+                    converted.append(letter.lower())
+                else:
+                    converted.append(letter)
+        converted = "".join(converted)
+
+        for new_element in (element, converted, low, up, title):
+            if new_element not in expanded_list:
+                expanded_list.append(new_element)
+
+    return expanded_list
