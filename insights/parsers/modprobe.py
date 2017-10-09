@@ -30,7 +30,7 @@ Examples:
     >>> mconf_list = shared[ModProbe] # A list: multiple files may be found
     >>> for mconf in mconf_list:
     ...     print "File:", mconf.file_name
-    ...     print "Modules with aliases:", sorted(mconf.data['aliases'].keys())
+    ...     print "Modules with aliases:", sorted(mconf.data['alias'].keys())
     File: /etc/modprobe.conf
     Modules with aliases: ['bonding', 'off', 'qla2xxx', 'usb-storage']
 """
@@ -60,8 +60,12 @@ class ModProbe(LegacyItemAccess, Parser):
                 if command == 'blacklist':
                     self.data[command][parts[1]] = True
                 elif parts[0] == 'alias':
-                    assert len(parts) == 3
+                    # module name comes second for aliases
+                    if len(parts) != 3:
+                        self.bad_lines.append(line)
+                        continue
                     modname = parts[2]
+                    # one module can have multiple aliases
                     if modname not in self.data[command]:
                         self.data[command][modname] = []
                     self.data[command][modname].append(parts[1])
