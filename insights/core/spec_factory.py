@@ -54,6 +54,9 @@ class ContentProvider(object):
         msg = "<%s(path=%s, cmd=%s)>"
         return msg % (self.__class__.__name__, self.path or "", self.cmd or "")
 
+    def __unicode__(self):
+        return self.__repr__()
+
     def __str__(self):
         return self.__unicode__()
 
