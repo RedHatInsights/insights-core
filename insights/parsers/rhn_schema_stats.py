@@ -127,7 +127,7 @@ class DBStatsLog(Parser):
             # for PostgreSQL db stats log
             for line in get_active_lines(content, comment_char="--"):
                 if line.startswith("(") and "rows" in line:
-                    tables.append(parse_table(table, delim="|"))
+                    tables.append(parse_table(table, delim="|", header_delim='|'))
                     table = []
                 else:
                     table.append(line)
