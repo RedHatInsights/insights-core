@@ -46,6 +46,7 @@ options bnx2 disable_msi=1
 
 # Test bad data - save in bad_lines
 alias
+alias scsi_hostadapter2 ata_piix failed comment
 balclkist ieee80211
 """.strip()
 
@@ -83,6 +84,7 @@ def test_modprobe_complete():
     assert minfo['options']['bnx2'] == ['disable_msi=1']
 
     # Test that we get bad lines
-    assert len(minfo.bad_lines) == 2
+    assert len(minfo.bad_lines) == 3
     assert minfo.bad_lines[0] == 'alias'
-    assert minfo.bad_lines[1] == 'balclkist ieee80211'
+    assert minfo.bad_lines[1] == 'alias scsi_hostadapter2 ata_piix failed comment'
+    assert minfo.bad_lines[2] == 'balclkist ieee80211'
