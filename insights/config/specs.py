@@ -377,6 +377,7 @@ static_specs = {
     "teamdctl_state_dump"       : CommandSpec("/usr/bin/teamdctl {iface} state dump", iface=r"team\S+"),
     "tomcat_web.xml"            : First([PatternSpec(r"etc/tomcat.*/web\.xml"),
                                     PatternSpec(r"conf/tomcat/tomcat.*/web\.xml")]),
+    "tomcat_virtual_dir_context": CommandSpec("/bin/grep -R --include '*.xml' 'VirtualDirContext' /usr/share/tomcat*"),
     "tuned-adm"                 : CommandSpec("/sbin/tuned-adm list"),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
     "uname"                     : First([CommandSpec("/bin/uname -a"),
