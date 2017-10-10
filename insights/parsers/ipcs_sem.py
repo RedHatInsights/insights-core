@@ -6,7 +6,8 @@ Shared parsers for parsing output of the ``ipcs -s`` and ``ipcs -s -i ##``
 commands. "##" will be replaced with specific semaphore id.
 
 """
-from .. import Parser, parser, get_active_lines, parse_table
+from .. import Parser, parser, get_active_lines
+from . import parse_delimited_table
 
 
 @parser('ipcs_s')
@@ -43,8 +44,8 @@ class IpcsS(Parser):
     """
 
     def parse_content(self, content):
-        content = get_active_lines(content, "-")
-        table = parse_table(content)
+        # heading_ignore is first line we _don't_ want to ignore...
+        table = parse_delimited_table(content, heading_ignore=['key'])
         data = map(lambda item: dict((k, v) for (k, v) in item.iteritems()), table)
         self.data = {}
         for item in data:

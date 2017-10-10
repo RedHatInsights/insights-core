@@ -277,9 +277,9 @@ def calc_offset(lines, target, invert_search=False):
 
 
 def parse_fixed_table(table_lines,
-                      heading_ignore=None,
-                      header_substitute=None,
-                      trailing_ignore=None):
+                      heading_ignore=[],
+                      header_substitute=[],
+                      trailing_ignore=[]):
     """
     Function to parse table data containing column headings in the first row and
     data in fixed positions in each remaining row of table data.
@@ -323,9 +323,6 @@ def parse_fixed_table(table_lines,
         [{'Column1': 'data1', 'Column2': 'data 2', 'Column3': 'data   3'},
          {'Column1': 'data4', 'Column2': 'data5', 'Column3': 'data6'}]
     """
-    heading_ignore = heading_ignore if heading_ignore is not None else []
-    trailing_ignore = trailing_ignore if trailing_ignore is not None else []
-
     first_line = calc_offset(table_lines, heading_ignore)
     try:
         last_line = len(table_lines) - calc_offset(reversed(table_lines),
@@ -351,6 +348,90 @@ def parse_fixed_table(table_lines,
         table_data.append(col_data)
 
     return table_data
+
+
+def parse_delimited_table(table_lines,
+                          delim=None,
+                          max_splits=-1,
+                          strip=True,
+                          header_delim='same as delimiter',
+                          heading_ignore=None,
+                          header_substitute=None,
+                          trailing_ignore=None):
+    """
+    Parses table-like text.  Uses the first (non-ignored) row as the list of
+    column names, which cannot contain the delimiter.  Fields cannot contain
+    the delimiter but can be blank if a printable delimiter is used.
+
+    Arguments:
+        table_lines (list): List of strings with the first line containing
+            column headings separated by spaces, and the remaining lines
+            containing table data.
+        delim (str): String used in the content to separate fields.  If left
+            as None (the default), white space is used as the field separator.
+        max_splits (int): Maximum number of fields to create by splitting the
+            line.  After this number of fields has been found, the rest of the
+            line is left un-split and may contain the delimiter.  Lines may
+            contain less than this number of fields.
+        strip (bool): If set to `True`, fields and headings will be stripped
+            of leading and trailing space.  If set to `False`, fields and
+            headings will be left as is.  The delimiter is always removed, so
+            strip need not be set if `delim` is set to None (but will not
+            change output in that case).
+        header_delim (str): When set, uses a different delimiter to the
+            content for splitting the header into keywords.  Set to `None`,
+            this will split on white space.  When left at the special value
+            of `'same as delimiter'`, the content delimiter will be used to
+            split the header line as well.
+        heading_ignore (list): Optional list of strings to search for at
+            beginning of line.  All lines before this line will be ignored.
+            If specified then it must be present in the file or `ValueError`
+            will be raised.
+        header_substitute (list): Optional list of tuples containing
+            `(old_string_value, new_string_value)` to be used to modify
+            header values.  If whitespace is present in a column it must be
+            replaced with non-whitespace characters in order for the table to
+            be parsed correctly.
+        trailing_ignore (list): Optional list of strings to look for at the
+            end rows of the content.  Lines starting with these strings will
+            be ignored, thereby truncating the rows of data.
+
+    Returns:
+        list: Returns a list of dictionaries for each row of column data,
+        keyed on the column headings in the same case as input.
+
+    """
+    if not table_lines:
+        return []
+    first_line = calc_offset(table_lines, heading_ignore)
+    try:
+        # Ignore everything before the heading in this search
+        last_line = len(table_lines) - calc_offset(
+            reversed(table_lines[first_line + 1:]), trailing_ignore, invert_search=True
+        )
+    except ValueError:
+        # We seem to have run out of content before we found something we
+        # wanted - return an empty list.
+        return []
+
+    if header_delim == 'same as delimiter':
+        header_delim = delim
+    header = table_lines[first_line]
+    if header_substitute:
+        for old_val, new_val in header_substitute:
+            header = header.replace(old_val, new_val)
+
+    content = table_lines[first_line + 1:last_line]
+    headings = [c.strip() if strip else c for c in header.split(header_delim)]
+    r = []
+    for row in content:
+        row = row.strip()
+        if row:
+            rowsplit = row.split(delim, max_splits)
+            if strip:
+                rowsplit = [i.strip() for i in rowsplit]
+            r.append(dict(zip(headings, rowsplit)))
+    return r
 
 
 def keyword_search(rows, **kwargs):

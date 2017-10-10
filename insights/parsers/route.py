@@ -1,4 +1,5 @@
-from .. import Parser, parser, parse_table, get_active_lines
+from .. import Parser, parser
+from . import parse_delimited_table
 
 
 @parser('route')
@@ -34,9 +35,8 @@ class Route(Parser):
     """
 
     def parse_content(self, content):
-        content = get_active_lines(content, "COMMAND>")
-        # Ignore first line to use "parse_table"
-        self.data = parse_table(content[1:])
+        # heading_ignore is first line we _don't_ want to ignore...
+        self.data = parse_delimited_table(content, heading_ignore=['Destination'])
 
     def __contains__(self, dest):
         return any(dest == line['Destination'] for line in self.data)

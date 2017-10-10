@@ -2,7 +2,7 @@ import pytest
 from collections import OrderedDict
 from insights.parsers import split_kv_pairs, unsplit_lines, parse_fixed_table
 from insights.parsers import calc_offset, optlist_to_dict, keyword_search
-from insights.parsers import ParseException, SkipException
+from insights.parsers import parse_delimited_table, ParseException, SkipException
 
 SPLIT_TEST_1 = """
 # Comment line
@@ -308,6 +308,135 @@ def test_optlist_strip_quotes():
     assert d['key2'] == 'bar'
     assert d['key3'] == '"mismatched quotes\''
     assert d['key4'] == "inner'quotes"
+
+
+PS_AUX_TEST = """
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /sbin/init
+root      1821  0.0  0.0      0     0 ?        S    May31   0:25 [kondemand/0]
+root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 irqbalance --pid=/var/run/irqbalance.pid
+user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash
+root     20357  0.0  0.0   9120   760 ?        Ss   10:09   0:00 /sbin/dhclient -1 -q -lf /var/lib/dhclient/dhclient-extbr0.leases -pf /var/run/dhclient-extbr0.pid extbr0
+qemu     22673  0.8 10.2 1618556 805636 ?      Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
+"""
+
+MISSING_DATA_TEST = """
+  WARNING: Locking disabled. Be careful! This could corrupt your metadata.
+LVM2_PV_FMT|LVM2_PV_UUID|LVM2_DEV_SIZE|LVM2_PV_NAME|LVM2_PV_MAJOR|LVM2_PV_MINOR|LVM2_PV_MDA_FREE|LVM2_PV_MDA_SIZE|LVM2_PV_EXT_VSN|LVM2_PE_START|LVM2_PV_SIZE|LVM2_PV_FREE|LVM2_PV_USED|LVM2_PV_ATTR|LVM2_PV_ALLOCATABLE|LVM2_PV_EXPORTED|LVM2_PV_MISSING|LVM2_PV_PE_COUNT|LVM2_PV_PE_ALLOC_COUNT|LVM2_PV_TAGS|LVM2_PV_MDA_COUNT|LVM2_PV_MDA_USED_COUNT|LVM2_PV_BA_START|LVM2_PV_BA_SIZE|LVM2_PV_IN_USE|LVM2_PV_DUPLICATE|LVM2_VG_NAME
+  WARNING: Locking disabled. Be careful! This could corrupt your metadata.
+"""
+
+SUBSTITUTE_HEADERS_TEST = """
+address,port,state,read-only
+0.0.0.0,3000,LISTEN,N
+10.76.19.184,37500,ESTAB,Y
+""".strip()
+
+POSTGRESQL_LOG = """
+ schema |             table              |   rows
+ public | rhnsnapshotpackage             | 47428950
+ public | rhnpackagefile                 | 32174333
+ public | rhnpackagecapability           | 12934215
+ public | rhnpackagechangelogrec         | 11269933
+ public | rhnchecksum                    | 10129746
+ public | rhnactionconfigrevision        |  2894957
+ public | rhnpackageprovides             |  2712442
+ public | rhnpackagerequires             |  2532861
+ public | rhn_command_target             |  1009152
+ public | rhnconfigfilename              |        0
+ public | rhnxccdfidentsystem            |        0
+ public | rhndistchannelmap              |        0
+ public | rhnactionvirtshutdown          |        0
+ public | rhnpublicchannelfamily         |        0
+ (402 rows)
+""".strip()  # Normally has a --- separator line, which is ignored using get_active_lines
+
+TABLE2 = [
+    "SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE",
+    "HA2|  16|       D16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe",
+    "HA2|  22|       D22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe"
+]
+
+TABLE3 = """
+THIS | IS | A | HEADER
+this ^ is ^ some ^ content
+This ^ is ^ more ^ content
+""".strip()
+
+
+def test_parse_delimited_table():
+    # No content?  No table.
+    assert parse_delimited_table([]) == []
+
+    # Test maximum splits and header 'ignore', which should actually be
+    # called 'header_startswith'
+    tbl = parse_delimited_table(
+        PS_AUX_TEST.splitlines(), max_splits=10, heading_ignore=['USER']
+    )
+    assert tbl
+    assert isinstance(tbl, list)
+    assert len(tbl) == 6
+    assert isinstance(tbl[0], dict)
+    assert tbl[0] == {
+        '%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0',
+        'START': 'May31', 'COMMAND': '/sbin/init', 'USER': 'root',
+        'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'
+    }
+    assert tbl[5]['COMMAND'] == \
+        '/usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad'
+
+    # Test trailing ignore not found
+    tbl = parse_delimited_table(
+        MISSING_DATA_TEST.splitlines(), delim='|',
+        heading_ignore=['LVM2_PV_FMT'],
+        trailing_ignore=['WARNING', 'ERROR', 'Cannot get lock']
+    )
+    assert isinstance(tbl, list)
+    assert len(tbl) == 0
+
+    # Header substitution
+    tbl = parse_delimited_table(
+        SUBSTITUTE_HEADERS_TEST.splitlines(), delim=',', strip=False,
+        header_substitute=[('read-only', 'read_only')]
+    )
+    assert tbl
+    assert isinstance(tbl, list)
+    assert len(tbl) == 2
+    assert isinstance(tbl[1], dict)
+    assert tbl[1] == {
+        'address': '10.76.19.184', 'port': '37500', 'state': 'ESTAB', 'read_only': 'Y'
+    }
+
+    # Test change of delimiter and trailing_ignore
+    tbl = parse_delimited_table(POSTGRESQL_LOG.splitlines(), delim='|', trailing_ignore=['('])
+    assert isinstance(tbl, list)
+    assert len(tbl) == 14
+    assert isinstance(tbl[0], dict)
+    assert tbl[0] == {
+        'schema': 'public', 'table': 'rhnsnapshotpackage', 'rows': '47428950'
+    }
+
+    # Test using different header delimiter
+    result = parse_delimited_table(TABLE3.splitlines(), delim="^", header_delim="|")
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], dict)
+    expected = [{"THIS": "this", "IS": "is", "A": "some", "HEADER": "content"},
+                {"THIS": "This", "IS": "is", "A": "more", "HEADER": "content"}]
+    assert expected == result
+
+    # Test explicit None as header delimiter, different from content delimiter
+    result = parse_delimited_table(TABLE2, delim='|', header_delim=None)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], dict)
+    expected = [{"SID": "HA2", "Nr": "16", "Instance": "D16", "SAPLOCALHOST": "lu0417",
+                 "Version": "749, patch 10, changelist 1698137",
+                 "DIR_EXECUTABLE": "/usr/sap/HA2/D16/exe"},
+                {"SID": "HA2", "Nr": "22", "Instance": "D22", "SAPLOCALHOST": "lu0417",
+                 "Version": "749, patch 10, changelist 1698137",
+                 "DIR_EXECUTABLE": "/usr/sap/HA2/D22/exe"}]
+    assert expected == result
 
 
 DATA_LIST = [
