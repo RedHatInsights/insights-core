@@ -8,7 +8,7 @@ from insights.core.plugins import validate_response, stringify_requirements
 from insights.core.context import Context
 from insights.core.archives import InvalidArchive
 from insights.parsers.uname import Uname
-from insights.core import reducer
+from insights.core import reducer, get_name
 from datetime import datetime
 
 import logging
@@ -66,7 +66,10 @@ class Evaluator(object):
         self.stats["reducer"]["fail"] += 1
 
         def default_error_handler(func, e, local, shared):
-            log.exception("Reducer [%s] failed", ".".join([func.__module__, func.__name__]))
+            log.exception("Reducer %s failed", get_name(func), extra={
+                "reducer": get_name(func),
+                "exception_message": str(e)
+            })
         return default_error_handler
 
     def get_contextual_hostname(self, default=""):
@@ -101,7 +104,7 @@ class Evaluator(object):
                 if result:
                     result_map[plugin] = [result]
             except Exception as e:
-                self.handle_map_error(e, context)
+                self.handle_map_error(plugin, e, context)
         return result_map
 
     def build_context(self, content, path, **kwargs):
@@ -128,9 +131,12 @@ class Evaluator(object):
     def post_process(self):
         pass
 
-    def handle_map_error(self, e, context):
+    def handle_map_error(self, func, e, context):
         self.stats["parser"]["fail"] += 1
-        log.exception("Parser failed")
+        log.exception("Parser %s failed", get_name(func), extra={
+            "parser": get_name(func),
+            "exception_message": str(e)
+        })
 
     def handle_content_error(self, e, filename):
         log.exception("Unable to extract content from %s.", filename)
@@ -206,7 +212,7 @@ class SingleEvaluator(Evaluator):
                         self.add_result(self._execute_parser(plugin, context),
                                         symbolic_name, plugin)
                     except Exception as e:
-                        self.handle_map_error(e, context)
+                        self.handle_map_error(plugin, e, context)
 
     def get_response(self):
         return self.format_response({
@@ -401,22 +407,15 @@ class InsightsEvaluator(SingleEvaluator):
         log.warning("Unable to extract content from %s [%s]. Failed with message %s. Ignoring.",
                     filename, self.url, e, exc_info=True)
 
-    def handle_map_error(self, e, context):
+    def handle_map_error(self, func, e, context):
         self.stats["parser"]["fail"] += 1
+
         log.warning("Parser failed with message %s. Ignoring.",
                     e, exc_info=True, extra={
                         "context": context,
                         "url": self.url,
-                        "exception_message": str(e)
-                    })
-
-    def handle_reduce_error(self, e, context):
-        self.stats["reducer"]["fail"] += 1
-        log.warning("Reducer failed with message %s. Ignoring.",
-                    e, exc_info=True, extra={
-                        "context": context,
-                        "url": self.url,
-                        "exception_message": str(e)
+                        "exception_message": str(e),
+                        "parser": get_name(func)
                     })
 
 
