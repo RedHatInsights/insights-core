@@ -159,7 +159,7 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
         r = plugins.DELEGATES[func](local, shared)
         elapsed = time.time() - start
         if elapsed > 1:
-            logger.info("Reducer %s took %.2f seconds to execute.", get_name(func), elapsed, extra={
+            logger.warning("Reducer %s took %.2f seconds to execute.", get_name(func), elapsed, extra={
                 "reducer": get_name(func),
                 "elapsed": elapsed
             })
