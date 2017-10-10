@@ -276,6 +276,8 @@ ovirt_engine_confd = sf.glob_file("/etc/ovirt-engine/engine.conf.d/*", name="ovi
 ovirt_engine_server_log = sf.simple_file("/var/log/ovirt-engine/server.log", name="ovirt_engine_server_log")
 ovs_vsctl_show = sf.simple_command("/usr/bin/ovs-vsctl show", name="ovs_vsctl_show")
 pacemaker_log = sf.simple_file("/var/log/pacemaker.log", name="pacemaker_log")
+running_java = sf.simple_command("/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u", name="running_java")
+package_provides_java = sf.foreach(running_java, "echo %s `readlink -e %s | xargs rpm -qf`", name="package_provides_java")
 pam_conf = sf.simple_file("/etc/pam.conf", name="pam_conf")
 parted_l = sf.simple_command("/sbin/parted -l -s", name="parted_l")
 password_auth = sf.simple_file("/etc/pam.d/password-auth", name="password_auth")
