@@ -74,7 +74,7 @@ def test_active_krb5_nest():
     krb52 = Krb5Configuration(context_wrap(KRB5CONFIG2, path='/etc/krb5.conf.d/test.conf'))
     result = AllKrb5Conf([krb51, krb52])
     assert result["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"
-    assert not result.has_option("logging", "admin_server")
+    assert result.has_option("logging", "admin_server")
     assert result["libdefaults"]["EXAMPLE2.COM"]["kdc"] == "kerberos.example2.com"
     assert result["libdefaults"]["default_ccache_name"] == "KEYRING:%{uid}:persistent"
     assert "realms" in result.sections()
@@ -83,7 +83,7 @@ def test_active_krb5_nest():
     assert not result.has_option("realms", "nosuchoption")
     assert not result.has_option("nosucsection", "nosuchoption")
     assert not result.options("realmsno")
-    assert result.options("logging") == ['default', 'kdc']
+    assert result.options("logging") == ['default', 'admin_server', 'kdc']
     assert result.include == ["/etc/krb5test.conf"]
     assert result.includedir == ["/etc/krb5.conf.d/"]
     assert result.module == ["/etc/krb5test.conf:residual"]
