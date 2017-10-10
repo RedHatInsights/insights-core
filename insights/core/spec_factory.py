@@ -95,9 +95,9 @@ class TextFileProvider(FileProvider):
         with open(self.path, 'r') as f:
             if self.filters:
                 # This should shell out to a grep pipeline
-                return [l.rstrip() for l in f.readlines() if any(s in l for s in self.filters)]
+                return [l.rstrip() for l in f if any(s in l for s in self.filters)]
             else:
-                return [l.rstrip() for l in f.readlines()]
+                return [l.rstrip() for l in f]
 
 
 class CommandOutputProvider(ContentProvider):
