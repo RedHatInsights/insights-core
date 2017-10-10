@@ -1,5 +1,22 @@
 # Change Log
 
+## [insights-core-1.53.0-81](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.53.0-81) (2017-10-10)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.52.0-71...insights-core-1.53.0-81)
+
+**Implemented enhancements:**
+
+- Rename parse\_table to parse\_delimited\_table and move to parsers for 1.x branch [\#445](https://github.com/RedHatInsights/insights-core/pull/445) ([PaulWay](https://github.com/PaulWay))
+- Modprobe combiner for 1.x branch [\#430](https://github.com/RedHatInsights/insights-core/pull/430) ([PaulWay](https://github.com/PaulWay))
+
+**Merged pull requests:**
+
+- adding time measurements for parsers and reducers [\#563](https://github.com/RedHatInsights/insights-core/pull/563) ([jhjaggars](https://github.com/jhjaggars))
+- Add TomcatVirtualDirContext [\#562](https://github.com/RedHatInsights/insights-core/pull/562) ([skontar](https://github.com/skontar))
+- Add parser package\_provides\_java.py in 1.x branch [\#558](https://github.com/RedHatInsights/insights-core/pull/558) ([zhangyi733](https://github.com/zhangyi733))
+- Add tomcat to `ps\_aux` filter [\#554](https://github.com/RedHatInsights/insights-core/pull/554) ([skontar](https://github.com/skontar))
+- Enhance combiner krb5 1x [\#553](https://github.com/RedHatInsights/insights-core/pull/553) ([wushiqinlou](https://github.com/wushiqinlou))
+- Add case\_variant utility function [\#550](https://github.com/RedHatInsights/insights-core/pull/550) ([kylape](https://github.com/kylape))
+
 ## [insights-core-1.52.0-71](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.52.0-71) (2017-10-06)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.1-1...insights-core-1.52.0-71)
 
