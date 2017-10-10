@@ -258,6 +258,7 @@ static_specs = {
     "ovirt_engine_server.log"   : SimpleFileSpec("var/log/ovirt-engine/server.log"),
     "ovs-vsctl_show"            : CommandSpec("/usr/bin/ovs-vsctl show"),
     "pacemaker.log"             : SimpleFileSpec("var/log/pacemaker.log"),
+    "package_provides_java"     : CommandSpec("/bin/echo {java_command_package}", java_command_package=r"\S+"),
     'pam.conf'                  : SimpleFileSpec("etc/pam.conf"),
     "parted_-l"                 : CommandSpec("/sbin/parted -l -s"),
     "parted_-s-sos"             : First([PatternSpec(r"sos_commands/block/parted-s_.+"),
@@ -419,6 +420,7 @@ pre_commands = {
     "iface"                     : "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'",
     "md5chk_files"              : "/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null",
     "module"                    : "/bin/ls /sys/module",
+    "java_command_package"      : "for jp in `/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u`; do echo $jp `readlink -e $jp | xargs rpm -qf`; done",
     "uname_r"                   : "/bin/uname -r",
     "semid"                     : "/usr/bin/ipcs -s | awk '{if (NF == 5 && $2 ~ /^[0-9]+$/) print $2}'"
 }
