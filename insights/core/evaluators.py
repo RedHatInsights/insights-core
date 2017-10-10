@@ -80,7 +80,7 @@ class Evaluator(object):
         r = parser(context)
         elapsed = time.time() - start
         if elapsed > 1:
-            log.info("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
+            log.warning("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
                 "parser": parser.__name__,
                 "elapsed": elapsed
             })
