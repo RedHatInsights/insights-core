@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from insights.config.static import get_config
 from insights.contrib import toposort
-from insights.core import marshalling, plugins
+from insights.core import marshalling, plugins, get_name
 from insights.util import logging_level
 
 specs = get_config()
@@ -159,8 +159,8 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
         r = plugins.DELEGATES[func](local, shared)
         elapsed = time.time() - start
         if elapsed > 1:
-            logger.info("Reducer %s took %.2f seconds to execute.", func.__name__, elapsed, extra={
-                "reducer": func.__name__,
+            logger.info("Reducer %s took %.2f seconds to execute.", get_name(func), elapsed, extra={
+                "reducer": get_name(func),
                 "elapsed": elapsed
             })
         return r

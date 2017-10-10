@@ -16,6 +16,10 @@ DEFAULT_PLUGIN_MODULE = "insights.plugins"
 log = logging.getLogger(__name__)
 
 
+def get_name(_callable):
+    return ".".join([_callable.__module__, _callable.__name__])
+
+
 def load_package(package_name, pattern=None, loaded_map=set()):
     loaded = []
 
