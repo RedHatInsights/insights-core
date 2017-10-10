@@ -50,11 +50,11 @@ class AllKrb5Conf(LegacyItemAccess):
         >>> all_krb5.sections()
         ['logging', 'realms']
         >>> all_krb5.options('logging')
-        ['default', 'kdc']
+        ['default', 'kdc', 'admin_server']
         >>> all_krb5['logging']['kdc']
         'FILE:/var/log/krb5kdc.log'
         >>> all_krb5.has_option('logging', 'admin_server')
-        False
+        True
         >>> all_krb5['realms']['dns_lookup_realm']
         'false'
 
@@ -82,7 +82,13 @@ class AllKrb5Conf(LegacyItemAccess):
                 self.module = krb5_parser.module
             else:
                 self.data.update(krb5_parser.data)
-        self.data.update(main_data)
+        # Same options in same section from other configuration files will be covered by the option
+        # from main configuration, but different options in same section will be kept.
+        for key, value in main_data.items():
+            if key in self.data.keys():
+                self.data[key].update(value)
+            else:
+                self.data[key] = value
 
         super(AllKrb5Conf, self).__init__()
 
