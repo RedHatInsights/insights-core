@@ -1,5 +1,6 @@
 import json
 import time
+import os
 from collections import defaultdict
 
 from insights.core import archives, specs, marshalling, plugins
@@ -79,7 +80,7 @@ class Evaluator(object):
         start = time.time()
         r = parser(context)
         elapsed = time.time() - start
-        if elapsed > 1:
+        if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
             log.warning("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
                 "parser": parser.__name__,
                 "elapsed": elapsed

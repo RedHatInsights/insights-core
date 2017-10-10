@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 from collections import defaultdict
@@ -158,7 +159,7 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
         start = time.time()
         r = plugins.DELEGATES[func](local, shared)
         elapsed = time.time() - start
-        if elapsed > 1:
+        if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
             logger.warning("Reducer %s took %.2f seconds to execute.", get_name(func), elapsed, extra={
                 "reducer": get_name(func),
                 "elapsed": elapsed
