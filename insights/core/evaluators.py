@@ -1,4 +1,5 @@
 import json
+import time
 from collections import defaultdict
 
 from insights.core import archives, specs, marshalling, plugins
@@ -72,8 +73,16 @@ class Evaluator(object):
         return self.hostname if hasattr(self, "hostname") and self.hostname else default
 
     def _execute_parser(self, parser, context):
+        start = time.time()
+        r = parser(context)
+        elapsed = time.time() - start
+        if elapsed > 1:
+            log.info("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
+                "parser": parser.__name__,
+                "elapsed": elapsed
+            })
         self.stats["parser"]["count"] += 1
-        return parser(context)
+        return r
 
     def run_metadata_parsers(self, the_meta_data):
         """

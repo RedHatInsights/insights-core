@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 from collections import defaultdict
 
 from insights.config.static import get_config
@@ -154,7 +155,15 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
     try:
         if reducer_stats:
             reducer_stats['count'] += 1
-        return plugins.DELEGATES[func](local, shared)
+        start = time.time()
+        r = plugins.DELEGATES[func](local, shared)
+        elapsed = time.time() - start
+        if elapsed > 1:
+            logger.info("Reducer %s took %.2f seconds to execute.", func.__name__, elapsed, extra={
+                "reducer": func.__name__,
+                "elapsed": elapsed
+            })
+        return r
     except Exception as e:
         if reducer_stats:
             reducer_stats['fail'] += 1
