@@ -7,7 +7,8 @@ from .core import fava  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.plugins import parser, rule, make_response, make_metadata  # noqa: F401
 from .parsers import get_active_lines  # noqa: F401
-from .util import defaults, parse_table  # noqa: F401
+from .util import defaults  # noqa: F401
+from .parsers import parse_delimited_table as parse_table  # noqa: F401
 
 
 package_info = {k: None for k in ["RELEASE", "COMMIT", "VERSION", "NAME"]}

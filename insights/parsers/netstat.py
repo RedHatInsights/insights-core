@@ -7,8 +7,8 @@ Shared parsers for parsing and extracting data from variations of the
 """
 
 from collections import defaultdict
-from ..parsers import ParseException
-from .. import Parser, parser, parse_table, LegacyItemAccess
+from . import ParseException, parse_delimited_table
+from .. import Parser, parser, LegacyItemAccess
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
@@ -22,8 +22,6 @@ NETSTAT_TEXT_RIGHT_ALIGNMENT = {
     ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
 }
 COMPONENT_LEN = "__component_len__"
-
-SSTULPN_TABLE_HEARDER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
 
 
 @parser('netstat-s')
@@ -246,8 +244,9 @@ class NetstatAGN(Parser):
         return dict(result)
 
     def parse_content(self, content):
+        # Skip 'IPv6/IPv6 Group Memberships' and '-----' lines.
         content = content[1:2] + content[3:]
-        table = parse_table(content)
+        table = parse_delimited_table(content)
         self.data = map(lambda item: {k.lower(): v for (k, v) in item.iteritems()}, table)
 
 
@@ -480,7 +479,8 @@ class Netstat_I(Parser):
 
     def parse_content(self, content):
         self._group_by_iface = {}
-        table = parse_table(content[1:])
+        # heading_ignore is first line we _don't_ want to ignore...
+        table = parse_delimited_table(content, heading_ignore=['Iface'])
         self.data = map(lambda item:
                         {k: v for (k, v) in item.iteritems()}, table)
         for entry in self.data:
@@ -534,7 +534,8 @@ class SsTULPN(Parser):
     """
 
     def parse_content(self, content):
-        self.data = parse_table(SSTULPN_TABLE_HEARDER + content[1:])
+        SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
+        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
 
     def get_service(self, service):
         return [l for l in self.data if l.get("Process", None) and service in l["Process"]]
