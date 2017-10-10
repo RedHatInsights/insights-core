@@ -157,7 +157,7 @@ class PsAuxcww(ProcessList):
                 self.services.append((service, user, line))
 
 
-add_filter('ps_aux', ['STAP', 'keystone-all', 'COMMAND'])
+add_filter('ps_aux', ['STAP', 'keystone-all', 'COMMAND', 'tomcat'])
 
 
 @parser('ps_aux')
@@ -165,7 +165,7 @@ class PsAux(ProcessList):
     """Class to parse ``ps aux`` command output.
 
     Output is filtered to only contain the header line and lines containing
-    the string 'keystone-all'.
+    the strings 'keystone-all' and 'tomcat'.
 
     Attributes:
         data (list): List of dicts, where the keys in each dict are the column

@@ -37,6 +37,7 @@ root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 irqbalance --pi
 user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash
 root     20357  0.0  0.0   9120   760 ?        Ss   10:09   0:00 /sbin/dhclient -1 -q -lf /var/lib/dhclient/dhclient-extbr0.leases -pf /var/run/dhclient-extbr0.pid extbr0
 qemu     22673  0.8 10.2 1618556 805636 ?      Sl   11:38   1:07 /usr/libexec/qemu-kvm -name rhel7 -S -M rhel6.5.0 -enable-kvm -m 1024 -smp 2,sockets=2,cores=1,threads=1 -uuid 13798ffc-bc1e-d437-4f3f-2e0fa6c923ad
+tomcat    3662  1.0  5.7 2311488 58236 ?       Ssl  07:28   0:01 /usr/lib/jvm/jre/bin/java -classpath /usr/share/tomcat/bin/bootstrap.jar:/usr/share/tomcat/bin/tomcat-juli.jar:/usr/share/java/commons-daemon.jar -Dcatalina.base=/usr/share/tomcat -Dcatalina.home=/usr/share/tomcat -Djava.endorsed.dirs= -Djava.io.tmpdir=/var/cache/tomcat/temp -Djava.util.logging.config.file=/usr/share/tomcat/conf/logging.properties -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager org.apache.catalina.startup.Bootstrap start
 """.strip()
 
 PsAxcwwo_TEST = """
@@ -78,8 +79,10 @@ def test_ps_aux():
     assert keys_in(["USER", "PID", "%CPU", "%MEM", "VSZ", "RSS", "TTY", "STAT", "START", "TIME", "COMMAND"], d[0])
     assert d[0] == {'%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '/sbin/init', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'}
     assert d[2]["COMMAND"] == 'irqbalance --pid=/var/run/irqbalance.pid'
-    assert d[-1]["COMMAND"].split()[0] == "/usr/libexec/qemu-kvm"
-    assert d[-1]["COMMAND"].split()[-2:] == ["-uuid", "13798ffc-bc1e-d437-4f3f-2e0fa6c923ad"]
+    assert d[5]["COMMAND"].split()[0] == "/usr/libexec/qemu-kvm"
+    assert d[5]["COMMAND"].split()[-2:] == ["-uuid", "13798ffc-bc1e-d437-4f3f-2e0fa6c923ad"]
+    assert d[6]["COMMAND"].split()[0] == "/usr/lib/jvm/jre/bin/java"
+    assert 'tomcat' in d[6]["COMMAND"]
     d1 = ps.PsAux(context_wrap(""))
     assert d1.data == []
 
