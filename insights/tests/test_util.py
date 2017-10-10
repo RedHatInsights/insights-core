@@ -2,7 +2,6 @@ import pytest
 from insights.tests import unordered_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
-from insights.util import parse_table
 
 
 class t(object):
@@ -121,43 +120,3 @@ def test_deep_nest():
     with pytest.raises(AssertionError):
         b["stuff"]["abba"][0]["foo"] = "cake"
         unordered_compare(a, b)
-
-
-TABLE1 = ["USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND",
-          "root         1  0.0  0.0 223952  4976 ?        Ss   Sep28   0:04 /usr/lib/systemd/systemd --switched-root --system --deserialize 25",
-          "root         2  0.0  0.0      0     0 ?        S    Sep28   0:00 [kthreadd]"]
-
-TABLE2 = ["SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE",
-          "HA2|  16|       D16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe",
-          "HA2|  22|       D22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe"]
-
-TABLE3 = ["THIS | IS | A | HEADER",
-          "this ^ is ^ some ^ content",
-          "This ^ is ^ more ^ content"]
-
-
-def test_parse_table():
-    result = parse_table(TABLE1)
-    expected = [{"USER": "root", "PID": "1", "%CPU": "0.0", "%MEM": "0.0",
-                 "VSZ": "223952", "RSS": "4976", "TTY": "?", "STAT": "Ss",
-                 "START": "Sep28", "TIME": "0:04",
-                 "COMMAND": "/usr/lib/systemd/systemd"},
-                {"USER": "root", "PID": "2", "%CPU": "0.0", "%MEM": "0.0",
-                 "VSZ": "0", "RSS": "0", "TTY": "?", "STAT": "S",
-                 "START": "Sep28", "TIME": "0:00",
-                 "COMMAND": "[kthreadd]"}]
-    assert expected == result
-
-    result = parse_table(TABLE2, delim='|', header_delim=None)
-    expected = [{"SID": "HA2", "Nr": "16", "Instance": "D16", "SAPLOCALHOST": "lu0417",
-                 "Version": "749, patch 10, changelist 1698137",
-                 "DIR_EXECUTABLE": "/usr/sap/HA2/D16/exe"},
-                {"SID": "HA2", "Nr": "22", "Instance": "D22", "SAPLOCALHOST": "lu0417",
-                 "Version": "749, patch 10, changelist 1698137",
-                 "DIR_EXECUTABLE": "/usr/sap/HA2/D22/exe"}]
-    assert expected == result
-
-    result = parse_table(TABLE3, delim="^", header_delim="|")
-    expected = [{"THIS": "this", "IS": "is", "A": "some", "HEADER": "content"},
-                {"THIS": "This", "IS": "is", "A": "more", "HEADER": "content"}]
-    assert expected == result
