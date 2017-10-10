@@ -1,4 +1,5 @@
-from .. import Parser, parser, parse_table, get_active_lines
+from .. import Parser, parser, get_active_lines
+from . import parse_delimited_table
 
 
 def _replace_tabs(s, ts=8):
@@ -127,7 +128,7 @@ class DBStatsLog(Parser):
             # for PostgreSQL db stats log
             for line in get_active_lines(content, comment_char="--"):
                 if line.startswith("(") and "rows" in line:
-                    tables.append(parse_table(table, delim="|", header_delim="|"))
+                    tables.append(parse_delimited_table(table, delim="|"))
                     table = []
                 else:
                     table.append(line)

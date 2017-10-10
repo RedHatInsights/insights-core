@@ -65,8 +65,8 @@ Examples:
     >>> [p['COMMAND'] for p in ps_info]
     ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
 """
-from .. import Parser, parser, parse_table
-from insights.parsers import ParseException
+from .. import Parser, parser
+from . import ParseException, parse_delimited_table
 
 
 class ProcessList(Parser):
@@ -134,7 +134,7 @@ class PsAuxcww(ProcessList):
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
-            self.data = parse_table(content)
+            self.data = parse_delimited_table(content)
             self.parse_services(content)
         else:
             raise ParseException(
@@ -173,7 +173,7 @@ class PsAux(ProcessList):
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
-            self.data = parse_table(content, max_splits=10)
+            self.data = parse_delimited_table(content, max_splits=10)
         else:
             self.data = []
 
@@ -205,7 +205,7 @@ class PsAxcwwo(ProcessList):
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
-            self.data = parse_table(content, max_splits=2)
+            self.data = parse_delimited_table(content, max_splits=2)
         else:
             raise ParseException(
                     "PsAxcwwo: Unable to parse {} line(s) of content:({})".format(

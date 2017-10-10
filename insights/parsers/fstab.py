@@ -74,8 +74,8 @@ Examples:
 
 from collections import namedtuple
 
-from .. import Parser, parser, get_active_lines, parse_table, AttributeDict
-from ..parsers import optlist_to_dict
+from .. import Parser, parser, get_active_lines, AttributeDict
+from ..parsers import optlist_to_dict, parse_delimited_table
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
 
@@ -112,7 +112,7 @@ class FSTab(Parser):
         """
         Parse each line in the file ``/etc/fstab``.
         """
-        fstab_output = parse_table([FS_HEADINGS] + get_active_lines(content))
+        fstab_output = parse_delimited_table([FS_HEADINGS] + get_active_lines(content))
         self.data = []
         for line in fstab_output:
             line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0

@@ -8,8 +8,8 @@ This module contains the classes that parse the output of the commands `lvs`,
 """
 import json
 from ..util import parse_keypair_lines
-from .. import Parser, parser, parse_table, get_active_lines, LegacyItemAccess
-from . import parse_fixed_table
+from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from . import parse_fixed_table, parse_delimited_table
 
 
 def map_keys(pvs, keys):
@@ -85,7 +85,7 @@ class Lvm(Parser):
             d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         except:
             content[0] = replace_spaces_in_keys(content[0])
-            d["content"] = parse_table(content)
+            d["content"] = parse_delimited_table(content)
         self.data = d if d else None
 
     def __iter__(self):

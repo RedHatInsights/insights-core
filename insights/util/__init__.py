@@ -93,27 +93,6 @@ class objectview(object):
         self.__dict__ = dict_
 
 
-def parse_table(content, delim=None, max_splits=-1, strip=True, header_delim=None):
-    """
-    Parses table-like text. Assumes the first row contains column names.
-    Column names cannot contain spaces.  Fields cannot be blank.
-    """
-    if not content:
-        return []
-    cols = [c.strip() if strip else c for c in content[0].split(header_delim)]
-
-    r = []
-    for row in content[1:]:
-        row = row.strip()
-        if row:
-            if strip:
-                parsed = dict(zip(cols, [i.strip() for i in row.split(delim, max_splits)]))
-            else:
-                parsed = dict(zip(cols, row.split(delim, max_splits)))
-            r.append(parsed)
-    return r
-
-
 def parse_keypair_lines(content, delim='|', kv_sep='='):
     """
     Parses a set of entities, where each entity is a set of key-value pairs
