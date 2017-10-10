@@ -383,6 +383,7 @@ systemid = sf.first_of([sf.simple_file("/etc/sysconfig/rhn/systemid", name="syst
 tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml", name="tomcat_web_xml_etc"),
                               sf.glob_file("/conf/tomcat/tomcat*/web.xml", name="tomcat_web_xml_conf")],
                               name="tomcat_web_xml")
+tomcat_virtual_dir_context = sf.simple_command("/bin/grep -R --include '*.xml' 'VirtualDirContext' /usr/share/tomcat*", name="tomcat_virtual_dir_context")
 tuned_adm = sf.simple_command("/sbin/tuned-adm list", name="tuned_adm")
 udev_persistent_net_rules = sf.simple_file("/etc/udev/rules.d/70-persistent-net.rules", name="udev_persistent_net_rules")
 uname = sf.simple_command("/usr/bin/uname -a", name="uname", alias="uname")
