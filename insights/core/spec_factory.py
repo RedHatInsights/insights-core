@@ -8,7 +8,7 @@ import traceback
 
 from glob import glob
 
-from insights.core import dr
+from insights.core import blacklist, dr
 from insights.core.filters import get_filters
 from insights.core.context import FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException
@@ -74,6 +74,9 @@ class FileProvider(ContentProvider):
         self.validate()
 
     def validate(self):
+        if not blacklist.allow_file("/" + self.relative_path):
+            raise dr.SkipComponent()
+
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
 
@@ -112,6 +115,11 @@ class CommandOutputProvider(ContentProvider):
         self.rc = rc
         self.split = split
         self.keep_rc = keep_rc
+        self.validate()
+
+    def validate(self):
+        if not blacklist.allow_command(self.path):
+            raise dr.SkipComponent()
 
     def load(self):
         if self.keep_rc:
