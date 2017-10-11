@@ -7,11 +7,14 @@
 import os
 import sys
 import json
+
+from constants import InsightsConstants as constants
+
 try:
     import docker
 except ImportError:
     print "The docker-py Python libraries do not appear to be installed. Please install the python-docker-py RPM package."
-    sys.exit(1)
+    sys.exit(constants.sig_kill_bad)
 from fnmatch import fnmatch as matches
 
 import util
