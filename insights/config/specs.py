@@ -160,6 +160,7 @@ static_specs = {
                                     SimpleFileSpec("sos_commands/networking/ip_address"),
                                     SimpleFileSpec("ip_a")]),
     "ip_route_show_table_all"   : CommandSpec("/sbin/ip route show table all"),
+    "ipaupgrade_log"            : SimpleFileSpec("var/log/ipaupgrade.log"),
     "ipcs_s"                    : CommandSpec("/usr/bin/ipcs -s"),
     "ipcs_s_i"                  : CommandSpec("/usr/bin/ipcs -s -i {semid}", semid=r"\S+"),
     "iptables"                  : CommandSpec("/sbin/iptables-save"),
