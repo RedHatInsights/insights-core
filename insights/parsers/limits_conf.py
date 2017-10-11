@@ -84,17 +84,20 @@ class LimitsConf(Parser):
     'items' property. Each item also contains the 'file' key, which denotes
     the file that this rule was read from.
 
-    There are several convenience methods available to make it easier to find
-    specific rules:
+    Lines with too few or too many parts, or with misspellings in the value
+    such as 'unlimitied', are stored in a `bad_lines` list property.
 
-    * ``find_all`` finds all the rules that match a given set of conditions
-      that are given as parameters.  For example, ``find_all(domain='root')``
-      will find all rules that apply to root (including wildcard rules).
-      These rules are sorted by domain, type and item, and the most specific
-      rule is used.
-    * ``domains`` lists all the domains found, in alphabetical order.
-    * ``rules`` list of dictionares with the domain, type, item, value and file
-      of each rule.
+    Use the ``find_all`` method to find all the the limits that apply in a
+    particular situation.  Parameters are supplied as arguments - for
+    example, ``find_all(domain='root')`` will find all rules that apply to
+    root (including wildcard rules). These rules are sorted by domain, type
+    and item, and the most specific rule is used.
+
+    Attributes:
+        bad_lines (list): all unparseable, non-comment lines found in order.
+        domains (list): all the domains found, in alphabetical order.
+        rules (list): a list of dictionares with the domain, type, item,
+            value and file of each rule.
 
     Sample input::
 
@@ -122,29 +125,37 @@ class LimitsConf(Parser):
     """
 
     def parse_content(self, content):
-        domains = []
-        rules = []
+        self.domains = []
+        self.rules = []
+        self.bad_lines = []
         for line in get_active_lines(content):
             linelist = line.split(None)
             if len(linelist) != 4:
+                # Wrong number of parts = bad line, store and continue
+                self.bad_lines.append(line)
                 continue
             domain, typ, item, value = (linelist)
             if value == 'unlimited' or value == 'infinity':
                 value = -1
-            else:
+            elif value.isdigit():
                 value = int(value)
-            rules.append({
+            else:
+                # Unparseable value = bad line, store and continue
+                self.bad_lines.append(line)
+                continue
+
+            # All valid values, add to data
+            self.rules.append({
                 'domain': domain,
                 'type': typ,
                 'item': item,
                 'value': value,
                 'file': self.file_path,
             })
-            if domain not in domains:
-                domains.append(domain)
+            if domain not in self.domains:
+                self.domains.append(domain)
 
-        self.rules = rules
-        self.domains = sorted(domains)
+        self.domains.sort()
 
     def _matches(self, param, ruleval, argval):
         """

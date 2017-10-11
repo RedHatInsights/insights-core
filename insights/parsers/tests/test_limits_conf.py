@@ -18,6 +18,7 @@ BAD_LIMITS_CONF = """
 oracle
 oracle soft
 oracle soft nofile
+root       soft    nproc     unlimitied
 """
 
 FULL_OPTS_LIMITS_CONF = """
@@ -64,6 +65,8 @@ def test_class_bad():
     data = LimitsConf(ctx)
 
     assert data.domains == []
+    bad_lines = BAD_LIMITS_CONF.strip().splitlines()
+    assert data.bad_lines == bad_lines
 
 
 def test_class_complete():
