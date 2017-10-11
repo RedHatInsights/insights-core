@@ -32,10 +32,13 @@ PackageProvidesJava - Command
 
     Raises:
         insights.parsers.ParseException: if there is no java application running
+
+    Raises:
+        insights.parsers.SkipException: if running java command is not provided by package installed through yum or rpm
 """
 
 from insights import parser, Parser
-from ..parsers import ParseException
+from ..parsers import ParseException, SkipException
 
 
 @parser('package_provides_java')
@@ -54,5 +57,8 @@ class PackageProvidesJava(Parser):
         if len(content) == 0:
             raise ParseException("Error: ", 'there is not java application running')
         l = content[0].split()
+        if len(l) != 2:
+            raise SkipException("Error: ",
+                                'current running java command is not provided by package installed through yum or rpm')
         self.command = l[0]
         self.package = l[1]
