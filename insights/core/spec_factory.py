@@ -118,7 +118,7 @@ class CommandOutputProvider(ContentProvider):
         self.validate()
 
     def validate(self):
-        if not blacklist.allow_command(self.path):
+        if not blacklist.allow_command(self.cmd):
             raise dr.SkipComponent()
 
     def load(self):
