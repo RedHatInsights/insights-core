@@ -206,6 +206,7 @@ lsinitrd_lvm_conf = sf.first_of([sf.simple_command("/sbin/lsinitrd -f /etc/lvm/l
 lsmod = sf.simple_command("/sbin/lsmod", name="lsmod")
 lspci = sf.simple_command("/sbin/lspci", name="lspci")
 lsof = sf.simple_command("/usr/sbin/lsof", name="lsof")
+lssap = sf.simple_command("/usr/sap/hostctrl/exe/lssap", name="lssap")
 ls_boot = sf.simple_command("/bin/ls -lanR /boot", name="ls_boot")
 ls_docker_volumes = sf.simple_command("/bin/ls -lanR /var/lib/docker/volumes", name="ls_docker_volumes")
 ls_dev = sf.simple_command("/bin/ls -lanR /dev", name="ls_dev")

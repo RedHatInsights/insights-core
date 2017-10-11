@@ -199,6 +199,7 @@ static_specs = {
     "lsmod"                     : CommandSpec("/sbin/lsmod"),
     "lspci"                     : CommandSpec("/sbin/lspci"),
     "lsof"                      : CommandSpec("/usr/sbin/lsof", large_content=True),
+    "lssap"                     : CommandSpec("/usr/sap/hostctrl/exe/lssap"),
     "ls_boot"                   : CommandSpec("/bin/ls -lanR /boot"),
     "ls_docker_volumes"         : CommandSpec("/bin/ls -lanR /var/lib/docker/volumes"),
     "ls_dev"                    : CommandSpec("/bin/ls -lanR /dev"),
