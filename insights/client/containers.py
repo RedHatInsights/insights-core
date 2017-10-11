@@ -149,7 +149,9 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         logger.debug('Getting targets to scan...')
         for d in _docker_all_image_ids():
             logger.debug('Checking if %s equals %s.' % (d, config['analyze_image_id']))
-            if config['analyze_image_id'] == d or d.startswith(config['analyze_image_id']):
+            # pull the sha256: off the id to compare short IDs
+            if (config['analyze_image_id'] == d or
+               d.split('sha256:')[-1].startswith(config['analyze_image_id'])):
                 logger.debug('%s equals %s' % (d, config['analyze_image_id']))
                 targets.append({'type': 'docker_image', 'name': d})
                 return targets  # return the first one that matches
