@@ -165,6 +165,7 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
         logger.debug(targets)
         if len(targets) == 0:
             logger.error("There was an error collecting targets. No image or container was found matching this ID.")
+            sys.exit(constants.sig_kill_bad)
         return targets
 
     def docker_display_name(docker_name, docker_type):
