@@ -153,19 +153,20 @@ def default_reducer_results(local_output):
 
 
 def run_reducer(func, local, shared, error_handler, reducer_stats=None):
+    start = time.time()
     try:
+        r = plugins.DELEGATES[func](local, shared)
         if reducer_stats:
             reducer_stats['count'] += 1
-        start = time.time()
-        r = plugins.DELEGATES[func](local, shared)
+        return r
+    except Exception as e:
+        if reducer_stats:
+            reducer_stats['fail'] += 1
+        error_handler(func, e, local, shared)
+    finally:
         elapsed = time.time() - start
         if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
             logger.warning("Reducer %s took %.2f seconds to execute.", get_name(func), elapsed, extra={
                 "reducer": get_name(func),
                 "elapsed": elapsed
             })
-        return r
-    except Exception as e:
-        if reducer_stats:
-            reducer_stats['fail'] += 1
-        error_handler(func, e, local, shared)

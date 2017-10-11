@@ -78,15 +78,17 @@ class Evaluator(object):
 
     def _execute_parser(self, parser, context):
         start = time.time()
-        r = parser(context)
-        elapsed = time.time() - start
-        if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
-            log.warning("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
-                "parser": parser.__name__,
-                "elapsed": elapsed
-            })
-        self.stats["parser"]["count"] += 1
-        return r
+        try:
+            r = parser(context)
+            self.stats["parser"]["count"] += 1
+            return r
+        finally:
+            elapsed = time.time() - start
+            if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
+                log.warning("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
+                    "parser": parser.__name__,
+                    "elapsed": elapsed
+                })
 
     def run_metadata_parsers(self, the_meta_data):
         """
@@ -123,11 +125,19 @@ class Evaluator(object):
         return Context(**kwargs)
 
     def process(self):
-        self.pre_mapping()
-        self.run_parsers()
-        self.run_reducers()
-        self.post_process()
-        return self.get_response()
+        start = time.time()
+        try:
+            self.pre_mapping()
+            self.run_parsers()
+            self.run_reducers()
+            self.post_process()
+            return self.get_response()
+        finally:
+            elapsed = time.time() - start
+            if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
+                log.warning("Archive took %.2f seconds to evaluate.", elapsed, extra={
+                    "elapsed": elapsed
+                })
 
     def post_process(self):
         pass
