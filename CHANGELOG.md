@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-1.54.0-87](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.54.0-87) (2017-10-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.53.0-81...insights-core-1.54.0-87)
+
+**Merged pull requests:**
+
+- Add parser ipaupgrade 1x [\#576](https://github.com/RedHatInsights/insights-core/pull/576) ([wushiqinlou](https://github.com/wushiqinlou))
+- Add the missed `rqm -qf` to pre\_command `java\_command\_package` [\#574](https://github.com/RedHatInsights/insights-core/pull/574) ([xiangce](https://github.com/xiangce))
+- Enhance parser and package\_provides\_java.py [\#572](https://github.com/RedHatInsights/insights-core/pull/572) ([zhangyi733](https://github.com/zhangyi733))
+- making the slow threshold configurable [\#567](https://github.com/RedHatInsights/insights-core/pull/567) ([jhjaggars](https://github.com/jhjaggars))
+- add more detail to error messages [\#566](https://github.com/RedHatInsights/insights-core/pull/566) ([jhjaggars](https://github.com/jhjaggars))
+
 ## [insights-core-1.53.0-81](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.53.0-81) (2017-10-10)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.52.0-71...insights-core-1.53.0-81)
 
