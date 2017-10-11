@@ -2,6 +2,7 @@ import pytest
 from insights.tests import unordered_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
+from insights.util import case_variants
 
 
 class t(object):
@@ -120,3 +121,34 @@ def test_deep_nest():
     with pytest.raises(AssertionError):
         b["stuff"]["abba"][0]["foo"] = "cake"
         unordered_compare(a, b)
+
+
+def test_case_variants():
+    filter_list = ['Ciphers', 'MACs', 'UsePAM', 'MaxAuthTries', 'nt pipe support',
+                   'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle']
+    expanded_list = ['Ciphers', 'ciphers', 'CIPHERS',
+                     'MACs', 'Macs', 'macs', 'MACS',
+                     'UsePAM', 'UsePam', 'usepam', 'USEPAM', 'Usepam',
+                     'MaxAuthTries', 'maxauthtries', 'MAXAUTHTRIES', 'Maxauthtries',
+                     'nt pipe support', 'NT PIPE SUPPORT', 'Nt Pipe Support',
+                     'A-Dash-SEPARATED-tESt-tEST-tesT-test-ExAMPle',
+                     'A-Dash-Separated-tEst-tEst-tesT-test-ExAmple',
+                     'a-dash-separated-test-test-test-test-example',
+                     'A-DASH-SEPARATED-TEST-TEST-TEST-TEST-EXAMPLE',
+                     'A-Dash-Separated-Test-Test-Test-Test-Example']
+    assert case_variants(*filter_list) == expanded_list
+
+    assert case_variants('hosts:') == ['hosts:', 'HOSTS:', 'Hosts:']
+
+
+TABLE1 = ["USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND",
+          "root         1  0.0  0.0 223952  4976 ?        Ss   Sep28   0:04 /usr/lib/systemd/systemd --switched-root --system --deserialize 25",
+          "root         2  0.0  0.0      0     0 ?        S    Sep28   0:00 [kthreadd]"]
+
+TABLE2 = ["SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE",
+          "HA2|  16|       D16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe",
+          "HA2|  22|       D22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe"]
+
+TABLE3 = ["THIS | IS | A | HEADER",
+          "this ^ is ^ some ^ content",
+          "This ^ is ^ more ^ content"]
