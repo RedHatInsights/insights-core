@@ -281,6 +281,7 @@ def try_import(path):
 
 
 def load_components(path, include=".*", exclude="test"):
+    num_loaded = 0
     if "/" in path and path.endswith((".py", ".fava")):
         path, _ = os.path.splitext(path)
 
@@ -291,20 +292,25 @@ def load_components(path, include=".*", exclude="test"):
     if not package:
         return
 
+    num_loaded += 1
+
     do_include = re.compile(include).search if include else lambda x: True
     do_exclude = re.compile(exclude).search if exclude else lambda x: False
 
     if not hasattr(package, "__path__"):
-        return
+        return num_loaded
 
     prefix = package.__name__ + "."
     for _, name, is_pkg in pkgutil.iter_modules(path=package.__path__, prefix=prefix):
         if do_include(name) and not do_exclude(name):
             if is_pkg:
-                load_components(name, include, exclude)
+                num_loaded += load_components(name, include, exclude)
             else:
                 log.debug("Importing %s" % name)
                 try_import(name)
+                num_loaded += 1
+
+    return num_loaded
 
 
 def first_of(dependencies, broker):
