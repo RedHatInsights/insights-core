@@ -179,6 +179,8 @@ def collect_and_output():
     tar_file = c.collect(analyze_image_id=config["analyze_image_id"],
                          analyze_file=config["analyze_file"],
                          analyze_mountpoint=config["analyze_mountpoint"])
+    if not tar_file:
+        sys.exit(constants.sig_kill_bad)
     if config['to_stdout']:
         with open(tar_file, 'rb') as tar_content:
             shutil.copyfileobj(tar_content, sys.stdout)
