@@ -85,8 +85,8 @@ class Evaluator(object):
         finally:
             elapsed = time.time() - start
             if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
-                log.warning("Parser %s took %.2f seconds to execute.", parser.__name__, elapsed, extra={
-                    "parser": parser.__name__,
+                log.warning("Parser %s took %.2f seconds to execute.", get_name(parser), elapsed, extra={
+                    "parser": get_name(parser),
                     "elapsed": elapsed
                 })
 
