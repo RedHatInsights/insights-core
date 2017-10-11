@@ -1,5 +1,13 @@
 # Change Log
 
+## [insights-core-1.55.0-90](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.55.0-90) (2017-10-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.54.0-87...insights-core-1.55.0-90)
+
+**Merged pull requests:**
+
+- add total archive timing checks and handle error cases [\#584](https://github.com/RedHatInsights/insights-core/pull/584) ([jhjaggars](https://github.com/jhjaggars))
+- add lssap spec and parser for 1x [\#583](https://github.com/RedHatInsights/insights-core/pull/583) ([SteveHNH](https://github.com/SteveHNH))
+
 ## [insights-core-1.54.0-87](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.54.0-87) (2017-10-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.53.0-81...insights-core-1.54.0-87)
 
