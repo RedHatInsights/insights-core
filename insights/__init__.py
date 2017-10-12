@@ -104,6 +104,7 @@ def run(component=None, root=None, print_summary=False):
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
+    dr.load_components("insights.specs")
     if component:
         graph = dr.get_dependency_graph(component)
     else:
