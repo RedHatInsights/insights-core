@@ -46,8 +46,7 @@ MOD_COMPLETE_PATH = "etc/modprobe.conf"
 def test_all_modprobe():
     main_conf = ModProbe(context_wrap(MOD_COMPLETE, path=MOD_COMPLETE_PATH))
     subdir_cf = ModProbe(context_wrap(MOD_OPTION_INFO, path=MOD_OPTION_INFO_PATH))
-    context = {ModProbe: [main_conf, subdir_cf]}
-    all_data = AllModProbe({}, context)
+    all_data = AllModProbe([main_conf, subdir_cf])
 
     # Test that all recognised options present, and knows where it came from.
     assert 'alias' in all_data
