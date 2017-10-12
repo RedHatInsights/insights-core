@@ -26,7 +26,6 @@ class InsightsConstants(object):
     docker_group_id_file = os.path.join(default_conf_dir, 'docker-group-id')
     default_target = [{'type': 'host', 'name': ''}]
     default_branch_info = {'remote_branch': -1, 'remote_leaf': -1}
-    docker_image_name = None
     default_cmd_timeout = 600  # default command execution to ten minutes, prevents long running commands that will hang
     default_egg_gpg_key = os.path.join(default_conf_dir, 'insights-core.gpg')
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
