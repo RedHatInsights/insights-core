@@ -3,4 +3,5 @@ include insights/NAME
 include insights/VERSION
 include insights/COMMIT
 include insights/RELEASE
+include insights/filters.yaml
 graft insights/archive/repository/base_archives
