@@ -43,7 +43,6 @@ CONFIG = {
     'debug': False,  # Used by client wrapper script
     'disable_schedule': False,
     'display_name': None,
-    'docker_image_name': None,
     'enable_schedule': False,
     'from_file': False,
     'from_stdin': False,
@@ -243,12 +242,6 @@ OPTS = [{
     'help': "Do not delete archive after upload",
     'action': "store_true",
     'dest': "keep_archive",
-    'group': 'debug'
-}, {
-    'opt': ['--docker-image-name'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store",
-    'dest': "docker_image_name",
     'group': 'debug'
 }, {
     'opt': ['--use-docker'],
