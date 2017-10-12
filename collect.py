@@ -34,8 +34,7 @@ def parse_args():
     p.add_argument("-o",
                    "--output",
                    default="output",
-                   help="Directory for results",
-                   action="store_true")
+                   help="Directory for results")
 
     p.add_argument("-v",
                    "--verbose",

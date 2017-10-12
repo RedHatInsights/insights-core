@@ -1,5 +1,7 @@
+from __future__ import print_function
 import os
 import pkgutil
+from pprint import pprint
 from .config.factory import get_config  # noqa: F401
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
@@ -52,7 +54,7 @@ def add_status(name, nvr, commit):
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
 
 
-def run(root=None, component=None):
+def _run(graph=None, root=None):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -70,11 +72,6 @@ def run(root=None, component=None):
     Returns:
         broker: object containing the result of the evaluation.
     """
-    if component:
-        graph = dr.get_dependency_graph(component)
-    else:
-        graph = dr.COMPONENTS[dr.GROUPS.single]
-
     broker = dr.Broker()
 
     if not root:
@@ -92,3 +89,45 @@ def run(root=None, component=None):
         real_root = os.path.join(ex.tmp_dir, common_path)
         broker[HostArchiveContext] = HostArchiveContext(root=real_root)
         return dr.run(graph, broker=broker)
+
+
+def run(component=None, root=None, print_summary=False):
+    import argparse
+    import logging
+    from .core import dr
+
+    p = argparse.ArgumentParser()
+    p.add_argument("-p", "--path", help="Archive or directory to analyze")
+    p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
+    args = p.parse_args()
+    root = args.path or root
+
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+
+    if component:
+        graph = dr.get_dependency_graph(component)
+    else:
+        graph = dr.COMPONENTS[dr.GROUPS.single]
+
+    broker = _run(graph, root)
+    if print_summary:
+
+        print()
+        print("Missing Requirements:")
+        if broker.missing_requirements:
+            pprint(broker.missing_requirements)
+
+        print()
+        print("Tracebacks:")
+        for t in broker.tracebacks.values():
+            print(t)
+
+        print()
+        for _type in sorted(dr.COMPONENTS_BY_TYPE, key=dr.get_simple_name):
+            print()
+            print("{} instances:".format(dr.get_simple_name(_type)))
+            for c, v in broker.get_by_type(_type).items():
+                pprint("{}:".format(dr.get_name(c)))
+                pprint(v)
+                print()
+    return broker
