@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-1.56.0-95](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.56.0-95) (2017-10-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.55.0-90...insights-core-1.56.0-95)
+
+**Implemented enhancements:**
+
+- Catch unparseable lines in `bad\_lines` property for 1.x branch [\#589](https://github.com/RedHatInsights/insights-core/pull/589) ([PaulWay](https://github.com/PaulWay))
+- Xfs\_info parser doc and code enhancements for 1.x branch [\#575](https://github.com/RedHatInsights/insights-core/pull/575) ([PaulWay](https://github.com/PaulWay))
+- Fstab keyword search for 1.x branch [\#568](https://github.com/RedHatInsights/insights-core/pull/568) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- limits\_conf "unlimitied" error [\#447](https://github.com/RedHatInsights/insights-core/issues/447)
+
 ## [insights-core-1.55.0-90](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.55.0-90) (2017-10-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.54.0-87...insights-core-1.55.0-90)
 
