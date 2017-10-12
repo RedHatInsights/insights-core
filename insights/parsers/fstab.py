@@ -75,7 +75,7 @@ Examples:
 from collections import namedtuple
 
 from .. import Parser, parser, get_active_lines, AttributeDict
-from ..parsers import optlist_to_dict, parse_delimited_table
+from ..parsers import optlist_to_dict, parse_delimited_table, keyword_search
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
 
@@ -125,3 +125,32 @@ class FSTab(Parser):
             self.data.append(AttributeDict(line))
         # assert: all mount points of valid entries are unique by definition
         self.mounted_on = dict((row.fs_file, row) for row in self.data)
+
+    def search(self, **kwargs):
+        """
+        Search for the given key/value pairs in the data.  Please refer to the
+        :py:meth:`insights.parsers.keyword_search` function documentation for
+        a more complete description of how to use this.
+
+        Fields that can be searched (as per ``man fstab``):
+
+        * ``fs_spec``: the block special or remote filesystem path or label.
+        * ``fs_file``: The mount point for the filesystem.
+        * ``fs_vfstype``: The file system type.
+        * ``fs_mntops``: The mount options.  Since this is also a dictionary,
+          this can be searched using __contains - see the examples below.
+        * ``fs_freq``: The dump frequency - rarely used.
+        * ``fs_passno``: The pass for file system checks - rarely used.
+
+        Examples:
+
+            Search for the root file system:
+                ``fstab.search(fs_file='/')``
+            Search for file systems mounted from a LABEL declaration
+                ``fstab.search(fs_spec__startswith='LABEL=')``
+            Search for file systems that use the 'uid' mount option:
+                ``fstab.search(fs_mntops__contains='uid')``
+            Search for XFS file systems using the 'relatime' option:
+                ``fstab.search(fs_vfstype='xfs', fs_mntops__contains='relatime')``
+        """
+        return keyword_search(self.data, **kwargs)
