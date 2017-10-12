@@ -1,6 +1,7 @@
 import logging
 import optparse
 import os
+import sys
 from insights.contrib import ConfigParser
 
 from insights import settings
@@ -37,7 +38,7 @@ CONFIG = {
     'cert_verify': os.path.join(CONF_DIR, 'cert-api.access.redhat.com.pem'),
     'collection_rules_url': None,
     'compressor': 'gz',
-    'conf': os.path.join(CONF_DIR, 'insights-client.conf'),
+    'conf': CONF_FILE,
     'container_mode': None,
     'egg_path': '/v1/static/core/insights-core.egg',
     'debug': False,  # Used by client wrapper script
@@ -341,19 +342,29 @@ def compile_config():
                              if k.upper().startswith("INSIGHTS_"))
     CONFIG.update(insights_env_opts)
 
-    # TODO: If the defaults.yaml file ever fills in all the client config, then
-    # they will clobber the legacy file, even if the user has no insights.yaml
-    # defined!!
-    CONFIG.update(parse_config_file())
-
     # This is done here specifically because it's after the legacy config file
     # has been read yet before the new config file and command line arguments
     # have been parsed.
     apply_legacy_config()
 
+    # read a custom yaml file
     if "client" in settings.config:
         CONFIG.update(settings.config)
-    CONFIG.update(parse_options())
+
+    # parse the options first so we can see if a custom conf was passed in
+    parsed_options = parse_options()
+
+    # parse the config file
+    # parsed_options["conf"] will default to /etc/insights-client/insights-client.conf
+    # otherwise will read a custom conf passed in
+    if not os.path.isfile(parsed_options["conf"]):
+        print("Config file passed in does not exist.")
+        print("Cannot find file %s" % (parsed_options["conf"]))
+        sys.exit(constants.sig_kill_bad)
+    CONFIG.update(parse_config_file(parsed_options["conf"]))
+
+    # after the config is read, then update the config with the options
+    CONFIG.update(parsed_options)
 
     # flags that imply no_upload
     if CONFIG['to_stdout']:
