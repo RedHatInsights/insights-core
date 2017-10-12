@@ -11,6 +11,7 @@ import os
 import logging
 import shlex
 import subprocess
+import sys
 
 from constants import InsightsConstants as constants
 from config import CONFIG as config
