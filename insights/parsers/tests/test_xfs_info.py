@@ -149,3 +149,12 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         # Calculated information checks
         assert xfs_obj.data_size == 262144 * 4096
         assert xfs_obj.log_size == 25600 * 4096
+
+    def test_bad_xfs_info(self):
+        xfs_obj = xfs_info.XFSInfo(context_wrap("xfs_info: bad command or file name"))
+        assert hasattr(xfs_obj, 'xfs_info')
+        assert xfs_obj.xfs_info == {}
+        assert hasattr(xfs_obj, 'data_size')
+        assert xfs_obj.data_size == 0
+        assert hasattr(xfs_obj, 'log_size')
+        assert xfs_obj.log_size == 0
