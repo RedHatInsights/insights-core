@@ -21,7 +21,7 @@ A value from a ModProbe source
 """
 
 
-@combiner(requires=[ModProbe])
+@combiner(ModProbe)
 class AllModProbe(LegacyItemAccess):
     """
     Combiner for accessing all the modprobe configuration files in one
@@ -72,10 +72,10 @@ class AllModProbe(LegacyItemAccess):
         {'eth1394': ModProbeValue(['/bin/true'], '/etc/modprobe.conf'),
          'ipv6': ModProbeValue(['/bin/true'], '/etc/modprobe.conf.d/no_ipv6.conf')}
     """
-    def __init__(self, local, shared):
+    def __init__(self, modprobe):
         self.data = {}
         self.bad_lines = []
-        for mod in shared[ModProbe]:
+        for mod in modprobe:
             filename = mod.file_path  # relative path inside archive
             # Copy data section
             for section, sectdict in mod.data.iteritems():
