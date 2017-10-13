@@ -25,7 +25,7 @@ config = {}
 
 for c in CONFIGS:
         try:
-            y = yaml.load(c)
+            y = yaml.safe_load(c)
             for name, section in y.iteritems():
                 if name in config:
                     config[name].update(section)

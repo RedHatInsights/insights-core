@@ -233,7 +233,7 @@ class YAMLParser(Parser, LegacyItemAccess):
     A parser class that reads YAML files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        self.data = yaml.load('\n'.join(content))
+        self.data = yaml.safe_load('\n'.join(content))
 
 
 class ScanMeta(type):
