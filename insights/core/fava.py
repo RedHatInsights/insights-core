@@ -598,8 +598,7 @@ class FavaRule:
     @classmethod
     def yaml_deserialize(cls, yaml_string):
         import yaml
-        # 'Loader=yaml.Loader' is just to turn off the annoying warning about safe load
-        return yaml.load(yaml_string, Loader=yaml.Loader)
+        return yaml.safe_load(yaml_string)
 
 
 def create_fake_package(full_package_name):
