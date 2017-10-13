@@ -1,7 +1,6 @@
 import logging
 import optparse
 import os
-import sys
 from insights.contrib import ConfigParser
 
 from insights import settings
@@ -357,10 +356,6 @@ def compile_config():
     # parse the config file
     # parsed_options["conf"] will default to /etc/insights-client/insights-client.conf
     # otherwise will read a custom conf passed in
-    if not os.path.isfile(parsed_options["conf"]):
-        print("Config file passed in does not exist.")
-        print("Cannot find file %s" % (parsed_options["conf"]))
-        sys.exit(constants.sig_kill_bad)
     CONFIG.update(parse_config_file(parsed_options["conf"]))
 
     # after the config is read, then update the config with the options
