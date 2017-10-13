@@ -39,7 +39,7 @@ class APIConfigGenerator(object):
                  uploader_config_filename="uploader.json",
                  file_plugin_map_filename="file_plugin_mapping.json",
                  rule_spec_mapping_filename="rule_spec_mapping.json",
-                 plugin_package=None,
+                 plugin_packages=(DEFAULT_PLUGIN_MODULE,),
                  version_number=None):
 
         if data_spec_config is None:
@@ -61,7 +61,8 @@ class APIConfigGenerator(object):
             self.version_number = os.environ.get("BUILD_NUMBER",
                                                  datetime.now().isoformat())
 
-        plugins.load(plugin_package if plugin_package else DEFAULT_PLUGIN_MODULE)
+        for package in plugin_packages:
+            plugins.load(package)
 
     @staticmethod
     def writefile(filename, o):
@@ -221,14 +222,14 @@ def main():
     opts, args = p.parse_args()
 
     if len(args) == 0:
-        print "Plugin package name required"
+        print "Plugin package(s) required"
         sys.exit(1)
 
     level = logging.DEBUG if opts.verbose else logging.INFO
     logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s",
                         level=level)
     log.info("Generating config files from %s.", insights.get_nvr())
-    config_generator = APIConfigGenerator(plugin_package=args[0])
+    config_generator = APIConfigGenerator(plugin_packages=args)
     config_generator.create_file_content()
 
 
