@@ -159,11 +159,18 @@ class SpecFactory(object):
             if old:
                 dr.replace(old, component)
 
+    def _get_context(self, context, alternatives, broker):
+        if context:
+            if isinstance(context, list):
+                return dr.first_of(context, broker)
+            return broker.get(context)
+        return dr.first_of(alternatives, broker)
+
     def simple_file(self, path, name=None, context=None, Kind=TextFileProvider, alias=None):
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
-            root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
-            return Kind(os.path.expandvars(path), root=root, filters=get_filters(inner))
+            ctx = self._get_context(context, FSRoots, broker)
+            return Kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
         if name:
             self._attach(inner, name)
         return inner
@@ -174,10 +181,11 @@ class SpecFactory(object):
 
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
-            root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
+            ctx = self._get_context(context, FSRoots, broker)
+            root = ctx.root
             results = []
             for pattern in patterns:
-                pattern = os.path.expandvars(pattern)
+                pattern = ctx.locate_path(pattern)
                 for path in glob(os.path.join(root, pattern.lstrip('/'))):
                     if ignore and re.search(ignore, path):
                         continue
@@ -195,10 +203,11 @@ class SpecFactory(object):
     def first_file(self, files, name=None, context=None, Kind=TextFileProvider, alias=None):
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
-            root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
+            ctx = self._get_context(context, FSRoots, broker)
+            root = ctx.root
             for f in files:
                 try:
-                    return Kind(f, root=root, filters=get_filters(inner))
+                    return Kind(ctx.locate_path(f), root=root, filters=get_filters(inner))
                 except:
                     pass
             raise ContentException("None of [%s] found." % ', '.join(files))
@@ -209,8 +218,9 @@ class SpecFactory(object):
     def listdir(self, path, name=None, context=None, alias=None):
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
-            root = (broker.get(context) or dr.first_of(FSRoots, broker)).root
-            p = os.path.join(root, path.lstrip('/'))
+            ctx = self._get_context(context, FSRoots, broker)
+            p = os.path.join(ctx.root, path.lstrip('/'))
+            p = ctx.locate_path(p)
             if os.path.isdir(p):
                 return os.listdir(p)
 
@@ -256,6 +266,7 @@ class SpecFactory(object):
                         rc, output = raw
                     else:
                         output = raw
+
                     result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split, keep_rc=keep_rc))
                 except:
                     log.debug(traceback.format_exc())

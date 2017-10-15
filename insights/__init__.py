@@ -54,7 +54,8 @@ def add_status(name, nvr, commit):
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
 
 
-def _run(graph=None, root=None):
+def _run(graph=None, root=None, run_context=HostContext,
+         archive_context=HostArchiveContext):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -75,23 +76,28 @@ def _run(graph=None, root=None):
     broker = dr.Broker()
 
     if not root:
-        broker[HostContext] = HostContext()
+        broker[run_context] = run_context()
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        broker[HostArchiveContext] = HostArchiveContext(root=root)
+        broker[archive_context] = archive_context(root=root)
         return dr.run(graph, broker=broker)
 
-    extractor = archives.TarExtractor()
+    if archives._magic.file(root) == "application/zip":
+        extractor = archives.ZipExtractor()
+    else:
+        extractor = archives.TarExtractor()
+
     with extractor.from_path(root) as ex:
         all_files = archives.get_all_files(ex.tmp_dir)
         common_path = os.path.commonprefix(all_files)
         real_root = os.path.join(ex.tmp_dir, common_path)
-        broker[HostArchiveContext] = HostArchiveContext(root=real_root)
+        broker[archive_context] = archive_context(root=real_root)
         return dr.run(graph, broker=broker)
 
 
-def run(component=None, root=None, print_summary=False):
+def run(component=None, root=None, print_summary=False,
+        run_context=HostContext, archive_context=HostArchiveContext):
     import argparse
     import logging
     from .core import dr
@@ -99,35 +105,39 @@ def run(component=None, root=None, print_summary=False):
     p = argparse.ArgumentParser()
     p.add_argument("-p", "--path", help="Archive or directory to analyze")
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
+    p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
+    p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
     args = p.parse_args()
     root = args.path or root
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
 
-    dr.load_components("insights.specs")
     if component:
         graph = dr.get_dependency_graph(component)
     else:
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
-    broker = _run(graph, root)
+    broker = _run(graph, root, run_context=run_context, archive_context=archive_context)
     if print_summary:
 
-        print()
-        print("Missing Requirements:")
-        if broker.missing_requirements:
-            pprint(broker.missing_requirements)
+        if args.missing:
+            print()
+            print("Missing Requirements:")
+            if broker.missing_requirements:
+                pprint(broker.missing_requirements)
 
-        print()
-        print("Tracebacks:")
-        for t in broker.tracebacks.values():
-            print(t)
+        if args.tracebacks:
+            print()
+            print("Tracebacks:")
+            for t in broker.tracebacks.values():
+                print(t)
 
         print()
         for _type in sorted(dr.COMPONENTS_BY_TYPE, key=dr.get_simple_name):
             print()
             print("{} instances:".format(dr.get_simple_name(_type)))
-            for c, v in broker.get_by_type(_type).items():
+            for c in sorted(broker.get_by_type(_type), key=dr.get_name):
+                v = broker[c]
                 pprint("{}:".format(dr.get_name(c)))
                 pprint(v)
                 print()

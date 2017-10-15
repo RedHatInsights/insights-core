@@ -85,7 +85,7 @@ class ZipExtractor(Extractor):
 
     def from_path(self, path):
         self.tmp_dir = tempfile.mkdtemp()
-        command = "unzip %s -d %s" % (path, self.tmp_dir)
+        command = "unzip -q -d %s %s" % (self.tmp_dir, path)
         subprocess.call(shlex.split(command))
         self.tar_file = DirectoryAdapter(self.tmp_dir)
         return self
