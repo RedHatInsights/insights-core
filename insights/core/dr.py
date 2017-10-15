@@ -282,7 +282,7 @@ def try_import(path):
 
 def load_components(path, include=".*", exclude="test"):
     num_loaded = 0
-    if "/" in path and path.endswith((".py", ".fava")):
+    if path.endswith((".py", ".fava")):
         path, _ = os.path.splitext(path)
 
     path = path.rstrip("/").replace("/", ".")

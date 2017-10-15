@@ -96,6 +96,15 @@ def _run(graph=None, root=None, run_context=HostContext,
         return dr.run(graph, broker=broker)
 
 
+def _load_context(path):
+    if path is None:
+        return
+
+    if "." not in path:
+        path = ".".join(["insights.core.context", path])
+    return dr.get_component(path)
+
+
 def run(component=None, root=None, print_summary=False,
         run_context=HostContext, archive_context=HostArchiveContext):
     import argparse
@@ -103,14 +112,24 @@ def run(component=None, root=None, print_summary=False,
     from .core import dr
 
     p = argparse.ArgumentParser()
-    p.add_argument("-p", "--path", help="Archive or directory to analyze")
+    p.add_argument("archive", nargs="?", help="Archive or directory to analyze")
+    p.add_argument("-p", "--plugins", default=[], nargs="*",
+                   help="package(s) or module(s) containing plugins to run.")
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
     p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
+    p.add_argument("--rc", help="Run Context")
+    p.add_argument("--ac", help="Archive Context")
     args = p.parse_args()
-    root = args.path or root
 
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+    run_context = _load_context(args.rc) or run_context
+    archive_context = _load_context(args.ac) or archive_context
+
+    root = args.archive or root
+
+    for path in args.plugins:
+        dr.load_components(path)
 
     if component:
         graph = dr.get_dependency_graph(component)
@@ -142,3 +161,7 @@ def run(component=None, root=None, print_summary=False,
                 pprint(v)
                 print()
     return broker
+
+
+if __name__ == "__main__":
+    run(print_summary=True)
