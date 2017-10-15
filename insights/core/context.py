@@ -1,4 +1,5 @@
 import logging
+import os
 from insights.util.subproc import call
 from subprocess import STDOUT
 
@@ -137,6 +138,9 @@ class ExecutionContext(object):
 
         return (rc, output) if keep_rc else output
 
+    def locate_path(self, path):
+        return os.path.expandvars(path)
+
 
 @fs_root
 class HostContext(ExecutionContext):
@@ -145,13 +149,29 @@ class HostContext(ExecutionContext):
         self.root = root
 
     def __repr__(self):
-        msg = "<HostContext('%s', '%s')>"
-        return msg % (self.root, self.timeout)
+        msg = "<%s('%s', %s)>"
+        return msg % (self.__class__.__name__, self.root, self.timeout)
 
 
 # No fs_root here. Dependence on this context should be explicit.
 class DockerHostContext(HostContext):
     pass
+
+
+@fs_root
+class JBossContext(HostContext):
+    pass
+
+
+@fs_root
+class JDRContext(ExecutionContext):
+    def __init__(self, root, timeout=None):
+        super(JDRContext, self).__init__(timeout)
+        self.root = root
+
+    def locate_path(self, path):
+        p = path.replace("$JBOSS_HOME", "JBOSS_HOME")
+        return super(JDRContext, self).locate_path(p)
 
 
 @fs_root
