@@ -107,29 +107,31 @@ def _load_context(path):
 
 def run(component=None, root=None, print_summary=False,
         run_context=HostContext, archive_context=HostArchiveContext):
-    import argparse
-    import logging
+
     from .core import dr
 
-    p = argparse.ArgumentParser()
-    p.add_argument("archive", nargs="?", help="Archive or directory to analyze")
-    p.add_argument("-p", "--plugins", default=[], nargs="*",
-                   help="package(s) or module(s) containing plugins to run.")
-    p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
-    p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-    p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
-    p.add_argument("--rc", help="Run Context")
-    p.add_argument("--ac", help="Archive Context")
-    args = p.parse_args()
+    if print_summary:
+        import argparse
+        import logging
+        p = argparse.ArgumentParser()
+        p.add_argument("archive", nargs="?", help="Archive or directory to analyze")
+        p.add_argument("-p", "--plugins", default=[], nargs="*",
+                       help="package(s) or module(s) containing plugins to run.")
+        p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
+        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
+        p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
+        p.add_argument("--rc", help="Run Context")
+        p.add_argument("--ac", help="Archive Context")
+        args = p.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
-    run_context = _load_context(args.rc) or run_context
-    archive_context = _load_context(args.ac) or archive_context
+        logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+        run_context = _load_context(args.rc) or run_context
+        archive_context = _load_context(args.ac) or archive_context
 
-    root = args.archive or root
+        root = args.archive or root
 
-    for path in args.plugins:
-        dr.load_components(path)
+        for path in args.plugins:
+            dr.load_components(path)
 
     if component:
         graph = dr.get_dependency_graph(component)
