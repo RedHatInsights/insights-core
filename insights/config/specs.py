@@ -148,6 +148,7 @@ static_specs = {
                                     PatternSpec(r"usr/lib64/ImageMagick-6.5.4/config/policy\.xml"),  # ImageMagick 6.5 on rhel-6 64bit.
                                     PatternSpec(r"usr/lib/ImageMagick-6.5.4/config/policy\.xml")]),  # ImageMagick 6.5 on rhel-6 32bit.
     "init.ora"                  : SimpleFileSpec("{ORACLE_HOME}/dbs/init.ora"),
+    "initscript"                : NoneGroup([PatternSpec(r"etc/rc\.d/init\.d/.*")]),
     "installed-rpms"            : First([CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(1), multi_output=False),
                                     CommandSpec("/bin/rpm -qa --qf='%s'" % format_rpm(3), multi_output=False),
