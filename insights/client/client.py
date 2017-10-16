@@ -142,16 +142,13 @@ def try_register():
         logger.info("Running client in Container mode. Bypassing registration.")
         return
 
-    if os.path.isfile(constants.registered_file):
-        logger.info('This host has already been registered.')
-        return
     # check reg status with API
     reg_check = registration_check()
     if reg_check['status']:
         logger.info('This host has already been registered.')
         # regenerate the .registered file
         write_to_disk(constants.registered_file)
-        return
+        return True
     if reg_check['unreachable']:
         logger.error(reg_check['messages'][1])
         return None
