@@ -1,15 +1,16 @@
 import os
 
+from insights import package_info
+
 
 class InsightsConstants(object):
     app_name = 'insights-client'
-    version = '3.0.2-6'
     auth_method = 'BASIC'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 300
     default_conf_file = '/etc/insights-client/insights-client.conf'
-    user_agent = os.path.join(app_name, version)
+    user_agent = os.path.join(app_name, package_info["VERSION"])
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
     default_conf_dir = '/etc/insights-client'
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
