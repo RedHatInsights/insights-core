@@ -161,6 +161,11 @@ class InsightsClient(object):
             logger.debug('Please check config, error reaching %s', url)
 
     def update(self):
+        # dont update if running in offline mode
+        if config['offline']:
+            logger.debug("Not updating Core. Running in offline mode.")
+            return True
+
         # fetch the new eggs and gpg
         egg_paths = self.fetch()
 
