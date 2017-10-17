@@ -377,11 +377,9 @@ def register_component(component, delegate, component_type,
         fava.add_shared_parser(component.__name__, component)
 
     if alias:
-        msg = "Alias %s already registered!"
+        msg = "%s replacing alias '%s' registered to %s."
         if alias in ALIASES:
-            raise Exception(msg % alias)
-        if component in ALIASES:
-            raise Exception(msg % get_name(component))
+            log.info(msg % (get_name(component), alias, get_name(ALIASES[alias])))
 
         ALIASES[alias] = component
         ALIASES_BY_COMPONENT[component] = alias
