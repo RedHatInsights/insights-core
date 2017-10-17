@@ -56,7 +56,7 @@ cinder_volume_log = sf.simple_file("/var/log/cinder/volume.log", name="cinder_vo
 cluster_conf = sf.simple_file("/etc/cluster/cluster.conf", name="cluster_conf")
 cmdline = sf.simple_file("/proc/cmdline", name="cmdline")
 cobbler_settings = sf.first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"], name="cobbler_settings")
-cobbler_modules_conf = sf.first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"], name="cobbler_modules.conf")
+cobbler_modules_conf = sf.first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"], name="cobbler_modules_conf")
 corosync = sf.simple_file("/etc/sysconfig/corosync", name="corosync")
 cpuinfo = sf.first_file(["/proc/cpuinfo", "/cpuinfo"], name="cpuinfo")
 cpuinfo_max_freq = sf.simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", name="cpuinfo_max_freq")
@@ -346,7 +346,6 @@ scsi = sf.simple_file("/proc/scsi/scsi", name="scsi")
 secure = sf.simple_file("/var/log/secure", name="secure")
 selinux_config = sf.simple_file("/etc/selinux/config", name="selinux_config")
 sestatus = sf.simple_command("/usr/sbin/sestatus -b", name="sestatus")
-# block = sf.simple_command("/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'", name="block")
 
 
 @datasource(HostContext)
@@ -356,7 +355,6 @@ def block(broker):
     return[(tmp % f) for f in os.listdir("/sys/block") if not f.startswith(remove)]
 
 
-smartctl = sf.foreach(block, "/sbin/smartctl -a %s", name="smartctl", keep_rc=True)
 smbstatus_p = sf.simple_command("/usr/bin/smbstatus -p", name="smbstatus_p")
 smbstatus_S = sf.simple_command("/usr/bin/smbstatus -S", name="smbstatus_S")
 smartctl = sf.foreach(block, "/sbin/smartctl -a %s", name="smartctl", keep_rc=True)
