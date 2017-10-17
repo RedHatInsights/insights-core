@@ -84,7 +84,7 @@ def get_component(name):
 
         return COMPONENT_NAME_CACHE[name]
     except:
-        log.debug("Couldn't load module for %s" % name)
+        log.debug("Couldn't load module for %s.%s" % (mod, name))
         COMPONENT_NAME_CACHE[name] = None
 
 
@@ -192,6 +192,7 @@ def replace(old, new):
         DEPENDENCIES[d].add(new)
 
     COMPONENTS_BY_TYPE[_type].discard(old)
+    COMPONENT_NAME_CACHE[get_name(new)] = new
 
     if old in ALIASES_BY_COMPONENT:
         a = ALIASES_BY_COMPONENT[old]
@@ -385,6 +386,14 @@ def register_component(component, delegate, component_type,
         ALIASES[alias] = component
         ALIASES_BY_COMPONENT[component] = alias
 
+    name = get_name(component)
+    if name.startswith("__main__."):
+        old = COMPONENT_NAME_CACHE.get(name)
+        if old:
+            replace(old, component)
+        else:
+            COMPONENT_NAME_CACHE[name] = component
+
 
 class Broker(object):
     def __init__(self, seed_broker=None):
@@ -569,7 +578,7 @@ def new_component_type(name=None,
         component_type = kwargs.get("component_type", None)
         metadata = kwargs.get("metadata", {})
 
-        requires = list(requires) or []
+        requires = list(requires) or kwargs.get("requires", [])
         optional = optional or []
 
         requires.extend(auto_requires)
