@@ -99,8 +99,8 @@ def test_lsblk():
     ])
     assert results.device_data['sda'] == sda
     assert sda.get('MAJ_MIN') == sda.maj_min
-    assert repr(rhel_root) == 'lvm:rhel-root(/)'
-    assert repr(sda) == 'disk:sda'
+    assert str(rhel_root) == 'lvm:rhel-root(/)'
+    assert str(sda) == 'disk:sda'
 
     # Keyword search tests
     assert results.search(TYPE='disk') == [
