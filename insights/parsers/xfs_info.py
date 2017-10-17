@@ -123,6 +123,6 @@ class XFSInfo(Parser):
         if 'log' in self.xfs_info:
             self.log_size = self.xfs_info['log']['blocks'] * self.xfs_info['log']['bsize']
 
-    def __repr__(self):
+    def __str__(self):
         return 'xfs_info of ' + self.xfs_info['meta-data']['specifier']\
             + ' with sections [' + ', '.join(sorted(self.xfs_info.keys())) + ']'

@@ -137,7 +137,7 @@ class BlockDevice(object):
         """Get any value by keyword (column) name."""
         return self.data.get(k, default)
 
-    def __repr__(self):
+    def __str__(self):
         if 'TYPE' in self.data and 'MOUNTPOINT' in self.data:
             return '{type}:{name}({mnt})'.format(
                 type=self.data['TYPE'], name=self.data['NAME'],
@@ -145,8 +145,8 @@ class BlockDevice(object):
             )
         else:
             # As long as the regular expression in LsBlock works, we must end
-            # up with NAME and TYPE records here.  However, the LSBlockPairs
-            # parsing isn't able to be that strict.
+            # up with NAME and TYPE records here.  In LSBlockPairs this is
+            # enforced with an explicit check.
             return '{type}:{name}'.format(type=self.data['TYPE'], name=self.data['NAME'])
 
 

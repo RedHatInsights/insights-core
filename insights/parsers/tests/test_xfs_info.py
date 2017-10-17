@@ -125,7 +125,7 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
         assert xfs_obj.data_size == 1280000 * 4096
         assert xfs_obj.log_size == 2560 * 4096
 
-        self.assertEqual(repr(xfs_obj), 'xfs_info of /dev/mapper/vgSys-lvRoot' +
+        self.assertEqual(str(xfs_obj), 'xfs_info of /dev/mapper/vgSys-lvRoot' +
             ' with sections [data, log, meta-data, naming, realtime]')
 
     def test_ext_log_xfs_info(self):
