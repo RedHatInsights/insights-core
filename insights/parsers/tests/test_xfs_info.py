@@ -128,7 +128,7 @@ realtime =none                   extsz=4096   blocks=0, rtextents=0
     assert xfs_obj.log_size == 2560 * 4096
     assert xfs_obj.mount == '/'
 
-    assert repr(xfs_obj) == 'xfs_info of /dev/mapper/vgSys-lvRoot'
+    assert str(xfs_obj) == 'xfs_info of /dev/mapper/vgSys-lvRoot'
 
 
 def test_ext_log_xfs_info():
