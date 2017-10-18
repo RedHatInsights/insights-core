@@ -377,5 +377,10 @@ def compile_config():
         if not CONFIG['to_stdout']:
             CONFIG['to_json'] = True
 
+    if (CONFIG['analyze_container']):
+        # ASSUME --to-json unless otherwise specified
+        if not CONFIG['to_stdout']:
+            CONFIG['to_json'] = True
+
     if CONFIG['offline']:
         CONFIG['no_upload'] = True
