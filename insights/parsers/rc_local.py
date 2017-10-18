@@ -1,9 +1,15 @@
+"""
+RcLocal - file ``/etc/rc.d/rc.local``
+=====================================
+"""
+
 from .. import Parser, parser, get_active_lines
 
 
 @parser('rc.local')
 class RcLocal(Parser):
-    """Parse the `/etc/rc.d/rc.local` file.
+    """
+    Parse the `/etc/rc.d/rc.local` file.
 
     Sample input::
 
