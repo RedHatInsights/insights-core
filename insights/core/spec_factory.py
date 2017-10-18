@@ -167,6 +167,8 @@ class SpecFactory(object):
         return dr.first_of(alternatives, broker)
 
     def simple_file(self, path, name=None, context=None, Kind=TextFileProvider, alias=None):
+        alias = alias or name
+
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             ctx = self._get_context(context, FSRoots, broker)
@@ -176,6 +178,7 @@ class SpecFactory(object):
         return inner
 
     def glob_file(self, patterns, name=None, ignore=None, context=None, Kind=TextFileProvider, alias=None):
+        alias = alias or name
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
 
@@ -201,6 +204,8 @@ class SpecFactory(object):
         return inner
 
     def first_file(self, files, name=None, context=None, Kind=TextFileProvider, alias=None):
+        alias = alias or name
+
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             ctx = self._get_context(context, FSRoots, broker)
@@ -216,6 +221,8 @@ class SpecFactory(object):
         return inner
 
     def listdir(self, path, name=None, context=None, alias=None):
+        alias = alias or name
+
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             ctx = self._get_context(context, FSRoots, broker)
@@ -233,6 +240,8 @@ class SpecFactory(object):
         return inner
 
     def simple_command(self, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+        alias = alias or name
+
         @datasource(context, alias=alias)
         def inner(broker):
             ctx = broker[context]
@@ -248,6 +257,8 @@ class SpecFactory(object):
         return inner
 
     def foreach(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+        alias = alias or name
+
         @datasource(provider, context, alias=alias)
         def inner(broker):
             result = []
@@ -282,6 +293,7 @@ class SpecFactory(object):
             that exists in the broker. At least one must be present, or this
             component won't fire.
         """
+        alias = alias or name
         dr.mark_hidden(deps)
 
         @datasource(deps, alias=alias)
