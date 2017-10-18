@@ -19,6 +19,10 @@ domain ttt.com
 nameserver 192.168.30.1
 '''
 
+RESOLV_CONF_NO_ACTIVE = '''
+nameserver 192.168.30.1
+'''
+
 
 def test_resolv_conf():
     resolv_info = ResolvConf(context_wrap(RESOLVCONF))
@@ -29,7 +33,7 @@ def test_resolv_conf():
     assert resolv_info.get('active') == 'search'
 
 
-# Testing when 'search' and 'domain' keywords exit both.
+# Testing when 'search' and 'domain' keywords both exist.
 def test_resolv_conf_m():
     resolv_info = ResolvConf(context_wrap(RESOLVCONF_M))
 
@@ -37,3 +41,11 @@ def test_resolv_conf_m():
     assert resolv_info.get('search') == ['ttt.com']
     assert resolv_info.get('nameserver') == ['192.168.30.1']
     assert resolv_info.get('active') == 'domain'
+
+
+# And testing when neither 'search' nor 'domain' keywords are found.
+def test_resolv_conf_neither():
+    resolv = ResolvConf(context_wrap(RESOLV_CONF_NO_ACTIVE))
+
+    assert resolv['nameserver'] == ['192.168.30.1']
+    assert resolv['active'] == ''
