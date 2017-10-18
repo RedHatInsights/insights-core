@@ -397,6 +397,9 @@ vdsm_log = sf.simple_file("var/log/vdsm/vdsm.log", name="vdsm_log", alias="vdsm.
 vgs = None  # sf.simple_command('/sbin/vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"', name="vgs")
 vgs_noheadings = sf.simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"", name="vgs_noheadings", alias="vgs_noheadings")
 virt_what = sf.simple_command("/usr/sbin/virt-what", "virt_what", alias="virt_what")
+virt_who_conf = sf.glob_file(["etc/virt-who.conf",
+                              "etc/virt-who.d/*.conf"],
+                              name="virt_who_conf")
 vmcore_dmesg = sf.glob_file("/var/crash/*/vmcore-dmesg.txt", name="vmcore_dmesg", alias="vmcore_dmesg")
 vsftpd = sf.simple_file("/etc/pam.d/vsftpd", name="vsftpd", alias="vsftpd")
 vsftpd_conf = sf.simple_file("/etc/vsftpd/vsftpd.conf", name="vsftpd_conf", alias="vsftpd.conf")
