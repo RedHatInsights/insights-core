@@ -1,7 +1,8 @@
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import sestatus
 
 
-@parser('sestatus')
+@parser(sestatus)
 class SEStatus(LegacyItemAccess, Parser):
     """Class to parse the ``sestatus -b`` command
 

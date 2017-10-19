@@ -29,9 +29,10 @@ Example:
 """
 import json
 from .. import parser, Parser, get_active_lines, LegacyItemAccess
+from insights.specs import qemu_conf
 
 
-@parser("qemu.conf")
+@parser(qemu_conf)
 class QemuConf(LegacyItemAccess, Parser):
     """
     A dict of the content of the ``qemu.conf`` configuration file.

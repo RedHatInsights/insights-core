@@ -10,9 +10,12 @@ from insights.core import Parser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.parsers import unsplit_lines
 from insights.contrib.ConfigParser import RawConfigParser as cp
+from insights.specs import systemd_docker
+from insights.specs import systemd_openshift_node
+from insights.specs import systemd_system_conf
 
 
-@parser('systemd_docker')
+@parser(systemd_docker)
 class SystemdDocker(Parser):
     """Class for docker systemd configuration.
 
@@ -73,7 +76,7 @@ class SystemdDocker(Parser):
         self.data = parse_systemd_ini(content)
 
 
-@parser('systemd_system.conf')
+@parser(systemd_system_conf)
 class SystemdSystemConf(LegacyItemAccess, Parser):
     """Class for system systemd configuration.
 
@@ -108,7 +111,7 @@ class SystemdSystemConf(LegacyItemAccess, Parser):
         return conf in self.data
 
 
-@parser('systemd_openshift_node')
+@parser(systemd_openshift_node)
 class SystemdOpenshiftNode(Parser):
     """Class for atomic-openshift-node systemd configuration.
 

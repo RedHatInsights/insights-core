@@ -29,9 +29,10 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import libvirtd_log
 
 
-@parser('libvirtd.log')
+@parser(libvirtd_log)
 class LibVirtdLog(LogFileOutput):
     """
     Read the ``/var/log/libvirt/libvirtd.log`` log file and parse it using

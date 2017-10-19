@@ -36,9 +36,10 @@ Examples:
 """
 from .. import Parser, parser
 from insights.parsers import ParseException, parse_delimited_table
+from insights.specs import lssap
 
 
-@parser('lssap')
+@parser(lssap)
 class Lssap(Parser):
     """Class to parse ``lssap`` command output.
 

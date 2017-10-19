@@ -12,9 +12,10 @@ Examples:
 """
 
 from .. import parser
+from insights.specs import getenforce
 
 
-@parser('getenforce')
+@parser(getenforce)
 def getenforcevalue(context):
     """
     The output of "getenforce" command is in one of "Enforcing", "Permissive",

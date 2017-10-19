@@ -6,9 +6,10 @@ executing command ``ipa-server-upgrade``
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import ipaupgrade_log
 
 
-@parser('ipaupgrade_log')
+@parser(ipaupgrade_log)
 class IpaupgradeLog(LogFileOutput):
     """
     This parser is used to parse the content of file `/var/log/ipaupgrade.log`.

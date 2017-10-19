@@ -28,6 +28,7 @@ Examples:
 """
 from .. import Parser, parser
 from ..specs import redhat_release
+from insights.specs import redhat_release
 
 
 @parser(redhat_release)

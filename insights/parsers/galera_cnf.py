@@ -43,9 +43,10 @@ See the ``IniConfigFile`` base class for examples.
 
 """
 from .. import parser, IniConfigFile
+from insights.specs import galera_cnf
 
 
-@parser("galera.cnf")
+@parser(galera_cnf)
 class GaleraCnf(IniConfigFile):
     """Parses the content of `/etc/my.cnf.d/galera.cnf`."""
 

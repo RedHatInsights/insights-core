@@ -23,9 +23,10 @@ Examples:
 """
 
 from .. import YAMLParser, parser
+from insights.specs import cobbler_settings
 
 
-@parser('cobbler_settings')
+@parser(cobbler_settings)
 class CobblerSettings(YAMLParser):
     """
     Read the ``/etc/cobbler/settings`` YAML file.

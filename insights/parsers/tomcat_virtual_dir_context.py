@@ -19,9 +19,10 @@ Examples::
 
 from .. import Parser, parser
 from . import ParseException, SkipException
+from insights.specs import tomcat_virtual_dir_context
 
 
-@parser('tomcat_virtual_dir_context')
+@parser(tomcat_virtual_dir_context)
 class TomcatVirtualDirContext(Parser):
     """
     Reports whether there is a VirtualDirContext option used in TomCat configuration file.

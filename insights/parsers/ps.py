@@ -67,6 +67,10 @@ Examples:
 """
 from .. import add_filter, Parser, parser
 from . import ParseException, parse_delimited_table
+from insights.specs import ps_aux
+from insights.specs import ps_auxcww
+from insights.specs import ps_auxwww
+from insights.specs import ps_axcwwo
 
 
 class ProcessList(Parser):
@@ -113,7 +117,7 @@ class ProcessList(Parser):
             yield row
 
 
-@parser('ps_auxcww')
+@parser(ps_auxcww)
 class PsAuxcww(ProcessList):
     """Class to parse ``ps auxcww`` command output.
 
@@ -160,7 +164,7 @@ class PsAuxcww(ProcessList):
 add_filter('ps_aux', ['STAP', 'keystone-all', 'COMMAND', 'tomcat'])
 
 
-@parser('ps_aux')
+@parser(ps_aux)
 class PsAux(ProcessList):
     """Class to parse ``ps aux`` command output.
 
@@ -180,7 +184,7 @@ class PsAux(ProcessList):
             self.data = []
 
 
-@parser('ps_auxwww')  # we don't want to filter the ps_auxwww file
+@parser(ps_auxwww)  # we don't want to filter the ps_auxwww file
 class PsAuxwww(PsAux):
     """Class to parse ``ps auxwww`` command output.
 
@@ -191,7 +195,7 @@ class PsAuxwww(PsAux):
     pass
 
 
-@parser('ps_axcwwo')
+@parser(ps_axcwwo)
 class PsAxcwwo(ProcessList):
     """Class to parse ``ps axcwwo ucomm,%cpu,lstart`` command output.
 

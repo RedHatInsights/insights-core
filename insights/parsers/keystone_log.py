@@ -24,9 +24,10 @@ Typical content of ``keystone.log`` file is::
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import keystone_log
 
 
-@parser('keystone.log')
+@parser(keystone_log)
 class KeystoneLog(LogFileOutput):
     """Class for parsing ``/var/log/keystone/keystone.log`` file.
 

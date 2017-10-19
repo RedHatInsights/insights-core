@@ -1,5 +1,6 @@
 from .. import Parser, parser, get_active_lines
 from . import parse_delimited_table
+from insights.specs import rhn_schema_stats
 
 
 def _replace_tabs(s, ts=8):
@@ -53,7 +54,7 @@ class LabelTable(Table):
     pass
 
 
-@parser('rhn-schema-stats')
+@parser(rhn_schema_stats)
 class DBStatsLog(Parser):
     """
     Returns a DBStatsLog object which provides below two methods:

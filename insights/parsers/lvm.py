@@ -11,6 +11,13 @@ from ..util import parse_keypair_lines
 from .. import add_filter
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from . import parse_fixed_table, parse_delimited_table
+from insights.specs import lvm_conf
+from insights.specs import lvs
+from insights.specs import lvs_noheadings
+from insights.specs import pvs
+from insights.specs import pvs_noheadings
+from insights.specs import vgs
+from insights.specs import vgs_noheadings
 
 
 def map_keys(pvs, keys):
@@ -114,7 +121,7 @@ class Lvm(Parser):
         return self.data["warnings"]
 
 
-@parser('pvs_noheadings')
+@parser(pvs_noheadings)
 class Pvs(Lvm):
     """
     The CommandSpec of "pvs" defined as:
@@ -175,7 +182,7 @@ class Pvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
-@parser('pvs')
+@parser(pvs)
 class PvsHeadings(LvmHeadings):
     """
     Parses the output of the command
@@ -237,7 +244,7 @@ class PvsHeadings(LvmHeadings):
         return [i for i in self.data if i["VG"] == name]
 
 
-@parser('vgs_noheadings')
+@parser(vgs_noheadings)
 class Vgs(Lvm):
     """
     The CommandSpec of "vgs" defined as:
@@ -304,7 +311,7 @@ class Vgs(Lvm):
     PRIMARY_KEY = "VG"
 
 
-@parser('vgs')
+@parser(vgs)
 class VgsHeadings(LvmHeadings):
     """
     Parses output of the command
@@ -346,7 +353,7 @@ class VgsHeadings(LvmHeadings):
         self.data = map_keys(self.data, Vgs.KEYS)
 
 
-@parser('lvs_noheadings')
+@parser(lvs_noheadings)
 class Lvs(Lvm):
     """
     The CommandSpec of "lvs" defined as:
@@ -479,7 +486,7 @@ class Lvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
-@parser('lvs')
+@parser(lvs)
 class LvsHeadings(LvmHeadings):
     """
     Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
@@ -533,7 +540,7 @@ LVM_CONF_FILTERS = [
 add_filter('lvm.conf', LVM_CONF_FILTERS)
 
 
-@parser('lvm.conf')
+@parser(lvm_conf)
 class LvmConf(LegacyItemAccess, Parser):
     """
     Parses contents of the `/etc/lvm/lvm.conf` file.

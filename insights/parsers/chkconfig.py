@@ -5,9 +5,10 @@ chkconfig - command
 from collections import namedtuple
 from .. import Parser, parser
 import re
+from insights.specs import chkconfig
 
 
-@parser('chkconfig')
+@parser(chkconfig)
 class ChkConfig(Parser):
     """
     A parser for working with data gathered from `chkconfig` utility.

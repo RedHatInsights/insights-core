@@ -26,6 +26,7 @@ Example:
 
 from .. import Parser, parser
 import re
+from insights.specs import ceph_v
 
 community_to_release_map = {
     "0.94.1": {'release': "1.3.0", 'major': '1.3', 'minor': '0'},
@@ -58,7 +59,7 @@ class CephVersionError(Exception):
         self.message = message
 
 
-@parser('ceph_v')
+@parser(ceph_v)
 class CephVersion(Parser):
     """ Class for parsing the content of ``ceph_version``."""
 

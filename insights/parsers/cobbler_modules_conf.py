@@ -30,9 +30,10 @@ Examples:
 """
 
 from .. import parser, IniConfigFile
+from insights.specs import cobbler_modules_conf
 
 
-@parser("cobbler_modules.conf")
+@parser(cobbler_modules_conf)
 class CobblerModulesConf(IniConfigFile):
     """
     This uses the standard ``IniConfigFile`` parser class.

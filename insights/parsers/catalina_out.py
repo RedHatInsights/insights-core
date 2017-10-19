@@ -5,9 +5,10 @@ CatalinaOut - ``catalina.out`` logs for Tomcat
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import catalina_out
 
 
-@parser('catalina.out')
+@parser(catalina_out)
 class CatalinaOut(LogFileOutput):
     """
     This parser reads all ``catalina.out`` files in the ``/var/log/tomcat*``

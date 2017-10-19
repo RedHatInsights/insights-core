@@ -39,9 +39,10 @@ PackageProvidesJava - Command
 
 from insights import parser, Parser
 from ..parsers import ParseException, SkipException
+from insights.specs import package_provides_java
 
 
-@parser('package_provides_java')
+@parser(package_provides_java)
 class PackageProvidesJava(Parser):
     """
     Parse the output of pre_command::

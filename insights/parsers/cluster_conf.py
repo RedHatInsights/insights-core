@@ -1,15 +1,17 @@
 from .. import LogFileOutput, parser
 import xml.etree.ElementTree as ET
+from insights.specs import cluster_conf
+from insights.specs import cluster_conf
 
 
-@parser("cluster.conf")
+@parser(cluster_conf)
 class ClusterConf(LogFileOutput):
     pass
 
 
 # This file is filtered and therefore this parser won't work
 # But it's going to stay in here for the handling full files
-@parser('cluster.conf')
+@parser(cluster_conf)
 def get_cluster_conf(context):
     """
     Return node, fence, fencedevices and resources infomation.The json structure accord the xml struct.

@@ -7,9 +7,10 @@ CertList - command ``getcert list``
 from insights.core import Parser
 from insights.parsers import ParseException, keyword_search
 from insights.core.plugins import parser
+from insights.specs import getcert_list
 
 
-@parser('getcert_list')
+@parser(getcert_list)
 class CertList(Parser):
     """
     Parse the output of ``getcert list``.

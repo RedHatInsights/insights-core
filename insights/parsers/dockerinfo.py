@@ -54,9 +54,11 @@ daemon isn't running, the ``data`` dictionary is empty.
 """
 
 from .. import parser, Parser
+from insights.specs import docker_info
+from insights.specs import docker_info
 
 
-@parser("docker_info")
+@parser(docker_info)
 class DockerInfo(Parser):
     """
     Represents the output of the ``/usr/bin/docker info`` command.
@@ -77,7 +79,7 @@ class DockerInfo(Parser):
                     self.data[key.strip()] = value
 
 
-@parser("docker_info")
+@parser(docker_info)
 def docker_info_parser(context):
     """Deprecated, use DockerInfo instead."""
     return DockerInfo(context).data

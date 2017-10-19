@@ -7,9 +7,10 @@ See the ``IniConfigFile`` class for more usage information.
 '''
 
 from .. import parser, LegacyItemAccess, IniConfigFile
+from insights.specs import neutron_plugin_ini
 
 
-@parser("neutron_plugin.ini")
+@parser(neutron_plugin_ini)
 class NeutronPlugin(LegacyItemAccess, IniConfigFile):
     """
     Parse the ``/etc/neutron/plugin.ini`` configuration file.

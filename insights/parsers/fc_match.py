@@ -34,9 +34,10 @@ Examples:
 """
 
 from .. import Parser, parser
+from insights.specs import fc_match
 
 
-@parser("fc-match")
+@parser(fc_match)
 class FCMatch(Parser):
     """
     Class to parse command `/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat`.

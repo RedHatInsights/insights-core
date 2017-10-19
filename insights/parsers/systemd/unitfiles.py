@@ -7,9 +7,11 @@ This parser will parse the output of ``systemctl list-unit-files`` utility and
 """
 from .. import get_active_lines
 from ... import Parser, parser
+from insights.specs import systemctl_list_unit_files
+from insights.specs import systemctl_list_units
 
 
-@parser('systemctl_list-unit-files')
+@parser(systemctl_list_unit_files)
 class UnitFiles(Parser):
     """
     The UnitFiles class parses the output of ``/bin/systemctl list-unit-files`` and provides
@@ -114,7 +116,7 @@ class UnitFiles(Parser):
         return service_name in self.service_list
 
 
-@parser('systemctl_list-units')
+@parser(systemctl_list_units)
 class ListUnits(Parser):
 
     """

@@ -1,4 +1,5 @@
 from .. import Parser, parser
+from insights.specs import yum_repolist
 
 eus = [
     '5.0.z',
@@ -47,7 +48,7 @@ def _parse(lines):
             found_start = line.startswith("repo id")
 
 
-@parser("yum-repolist")
+@parser(yum_repolist)
 class YumRepoList(Parser):
 
     def __len__(self):

@@ -3,9 +3,10 @@ NeutronServerLog - file ``/var/log/neutron/server.log``
 =======================================================
 """
 from .. import LogFileOutput, parser
+from insights.specs import neutron_server_log
 
 
-@parser('neutron_server_log')
+@parser(neutron_server_log)
 class NeutronServerLog(LogFileOutput):
     '''
     Read the ``/var/log/neutron/server.log`` file.  For more usage information

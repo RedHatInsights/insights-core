@@ -25,6 +25,11 @@ SsTULPN - command ``ss -tulpn``
 from collections import defaultdict
 from . import ParseException, parse_delimited_table
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import netstat
+from insights.specs import netstat__agn
+from insights.specs import netstat_i
+from insights.specs import netstat_s
+from insights.specs import ss
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
@@ -42,7 +47,7 @@ NETSTAT_TEXT_RIGHT_ALIGNMENT = {
 COMPONENT_LEN = "__component_len__"
 
 
-@parser('netstat-s')
+@parser(netstat_s)
 class NetstatS(LegacyItemAccess, Parser):
     """
     Parses data from the ```netstat -s``` command.
@@ -217,7 +222,7 @@ class NetstatS(LegacyItemAccess, Parser):
         self.data[session] = first_layer
 
 
-@parser("netstat_-agn")
+@parser(netstat__agn)
 class NetstatAGN(Parser):
     """
     Parse netstat -agn to get interface multicast infomation.
@@ -347,7 +352,7 @@ class NetstatSection(object):
         return self.data
 
 
-@parser("netstat")
+@parser(netstat)
 class Netstat(Parser):
     """
     Parsing netstat command content and return
@@ -534,7 +539,7 @@ class Netstat(Parser):
         return results
 
 
-@parser("netstat-i")
+@parser(netstat_i)
 class Netstat_I(Parser):
     """
     Parse netstat -i to get interface traffic info such as "TX-OK" and "RX-OK".
@@ -585,7 +590,7 @@ class Netstat_I(Parser):
         return
 
 
-@parser("ss")
+@parser(ss)
 class SsTULPN(Parser):
     """
     This class parse the input as a table with header:

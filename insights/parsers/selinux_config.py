@@ -1,7 +1,8 @@
 from .. import get_active_lines, Parser, parser
+from insights.specs import selinux_config
 
 
-@parser("selinux-config")
+@parser(selinux_config)
 class SelinuxConfig(Parser):
 
     def parse_content(self, content):

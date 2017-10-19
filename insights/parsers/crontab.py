@@ -2,6 +2,10 @@ from insights import Parser, parser
 from insights.parsers import get_active_lines, ParseException
 
 import re
+from insights.specs import heat_crontab
+from insights.specs import keystone_crontab
+from insights.specs import nova_crontab
+from insights.specs import root_crontab
 
 
 def _make_cron_re():
@@ -182,25 +186,25 @@ class CrontabL(Parser):
         return [r for r in self.data if filter_str in r['command']]
 
 
-@parser('heat_crontab')
+@parser(heat_crontab)
 class HeatCrontab(CrontabL):
     """Parses output of the ``crontab -l -u heat`` command."""
     pass
 
 
-@parser('keystone_crontab')
+@parser(keystone_crontab)
 class KeystoneCrontab(CrontabL):
     """Parses output of the ``crontab -l -u keystone`` command."""
     pass
 
 
-@parser('nova_crontab')
+@parser(nova_crontab)
 class NovaCrontab(CrontabL):
     """Parses output of the ``crontab -l -u nova`` command."""
     pass
 
 
-@parser('root_crontab')
+@parser(root_crontab)
 class RootCrontab(CrontabL):
     """Parses output of the ``crontab -l -u root`` command."""
     pass

@@ -27,6 +27,9 @@ Example:
 
 from .. import Parser, parser, get_active_lines
 from ..parsers import split_kv_pairs
+from insights.specs import etc_journald_conf
+from insights.specs import etc_journald_conf_d
+from insights.specs import usr_journald_conf_d
 
 
 class JournaldConf(Parser):
@@ -63,7 +66,7 @@ class JournaldConf(Parser):
         return self.active_settings[setting_name]
 
 
-@parser("etc_journald.conf")
+@parser(etc_journald_conf)
 class EtcJournaldConf(JournaldConf):
     """
     Parser for accessing etc_journald.conf file.
@@ -71,7 +74,7 @@ class EtcJournaldConf(JournaldConf):
     pass
 
 
-@parser("etc_journald.conf.d")
+@parser(etc_journald_conf_d)
 class EtcJournaldConfD(JournaldConf):
     """
     Parser for accessing etc_journald.conf.d files.
@@ -79,7 +82,7 @@ class EtcJournaldConfD(JournaldConf):
     pass
 
 
-@parser("usr_journald.conf.d")
+@parser(usr_journald_conf_d)
 class UsrJournaldConfD(JournaldConf):
     """
     Parser for accessing usr_journald.conf.d files.

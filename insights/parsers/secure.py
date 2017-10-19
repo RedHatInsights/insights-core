@@ -3,9 +3,10 @@ Secure -  file ``/var/log/secure``
 ==================================
 """
 from .. import LogFileOutput, parser
+from insights.specs import secure
 
 
-@parser('secure')
+@parser(secure)
 class Secure(LogFileOutput):
     """Class for parsing the ``/var/log/secure`` file.
 

@@ -5,9 +5,10 @@ Parse the output of command ``/usr/bin/rhn-schema-version``.
 
 """
 from .. import parser
+from insights.specs import rhn_schema_version
 
 
-@parser('rhn-schema-version')
+@parser(rhn_schema_version)
 def rhn_schema_version(context):
     """
     Function to parse the output of command ``/usr/bin/rhn-schema-version``.

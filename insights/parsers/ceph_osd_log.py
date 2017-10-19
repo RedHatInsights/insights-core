@@ -23,9 +23,10 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import ceph_osd_log
 
 
-@parser('ceph_osd.log')
+@parser(ceph_osd_log)
 class CephOsdLog(LogFileOutput):
     """
     Provide access to Ceph OSD logs using the LogFileOutput parser class.

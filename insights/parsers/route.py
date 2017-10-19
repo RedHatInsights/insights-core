@@ -1,8 +1,9 @@
 from .. import Parser, parser
 from . import parse_delimited_table
+from insights.specs import route
 
 
-@parser('route')
+@parser(route)
 class Route(Parser):
     """Class to parse the ``route -n`` command
 

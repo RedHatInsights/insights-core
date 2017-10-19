@@ -47,9 +47,10 @@ Examples:
 """
 from .. import Parser, parser
 from ..parsers import ParseException
+from insights.specs import interrupts
 
 
-@parser("interrupts")
+@parser(interrupts)
 class Interrupts(Parser):
     """Parse contents of ``/proc/interrupts``.
 

@@ -48,6 +48,9 @@ from .. import Parser, parser
 from collections import namedtuple, defaultdict
 
 from insights.parsers import ParseException
+from insights.specs import df__al
+from insights.specs import df__alP
+from insights.specs import df__li
 
 Record = namedtuple("Record", ['filesystem', 'total', 'used', 'available', 'capacity', 'mounted_on'])
 """namedtuple: Represents the information parsed from ``df`` command output."""
@@ -180,7 +183,7 @@ class DiskFree(Parser):
         return None
 
 
-@parser('df_-li')
+@parser(df__li)
 class DiskFree_LI(DiskFree):
     """Parse lines from the output of the ``df -li`` command.
 
@@ -214,7 +217,7 @@ class DiskFree_LI(DiskFree):
     pass
 
 
-@parser('df_-alP')
+@parser(df__alP)
 class DiskFree_ALP(DiskFree):
     """Parse lines from the output of the ``df -alP`` command.
 
@@ -249,7 +252,7 @@ class DiskFree_ALP(DiskFree):
     pass
 
 
-@parser('df_-al')
+@parser(df__al)
 class DiskFree_AL(DiskFree):
     """Parse lines from the output of the ``df -al`` command.
 

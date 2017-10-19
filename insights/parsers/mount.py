@@ -63,9 +63,10 @@ from ..parsers import optlist_to_dict, keyword_search
 from .. import Parser, parser, get_active_lines, AttributeDict
 
 import re
+from insights.specs import mount
 
 
-@parser('mount')
+@parser(mount)
 class Mount(Parser):
     """Class of information for all output from ``mount`` command.
 

@@ -40,9 +40,10 @@ Examples:
 """
 
 from .. import Parser, parser
+from insights.specs import multicast_querier
 
 
-@parser('multicast_querier')
+@parser(multicast_querier)
 class MulticastQuerier(Parser):
     """
     Parse the output of the command:

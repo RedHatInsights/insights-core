@@ -14,9 +14,10 @@ Examples:
 """
 
 from .. import parser
+from insights.specs import ksmstate
 
 
-@parser('ksmstate')
+@parser(ksmstate)
 def is_running(context):
     """
     Check if Kernel Samepage Merging is turned on. Returns 'True' if KSM is

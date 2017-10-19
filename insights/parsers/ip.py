@@ -6,6 +6,10 @@ Parsers for ``ip`` command outputs
 from collections import defaultdict, deque
 from .. import Parser, parser
 from ..contrib import ipaddress
+from insights.specs import ip_addr
+from insights.specs import ip_route_show_table_all
+from insights.specs import ipv4_neigh
+from insights.specs import ipv6_neigh
 
 
 class NetworkInterface(object):
@@ -87,7 +91,7 @@ def parse_inet(line, d):
     })
 
 
-@parser('ip_addr')
+@parser(ip_addr)
 class IpAddr(Parser):
     """
     This parser reads the output of ``ip addr`` into a dict whose key is
@@ -207,7 +211,7 @@ class Route(object):
         return self.__dict__.__repr__()
 
 
-@parser("ip_route_show_table_all")
+@parser(ip_route_show_table_all)
 class RouteDevices(Parser):
     """
     This parser reads the output of the command ``ip route show table all``
@@ -547,7 +551,7 @@ class IpNeighParser(Parser):
         return self.data[item]
 
 
-@parser("ipv4_neigh")
+@parser(ipv4_neigh)
 class Ipv4Neigh(IpNeighParser):
     """
     Class to parse ``ip -4 neigh show nud all`` command output.
@@ -555,7 +559,7 @@ class Ipv4Neigh(IpNeighParser):
     pass
 
 
-@parser("ipv6_neigh")
+@parser(ipv6_neigh)
 class Ipv6Neigh(IpNeighParser):
     """
     Class to parse ``ip -6 neigh show nud all`` command output.

@@ -40,9 +40,10 @@ Examples:
     >>> assert data.get("VERSION") == "7.2 (Maipo)"
 """
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from insights.specs import os_release
 
 
-@parser("os-release")
+@parser(os_release)
 class OsRelease(LegacyItemAccess, Parser):
     """Parses the content of file ``/etc/os-release``."""
 

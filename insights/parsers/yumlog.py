@@ -59,13 +59,14 @@ from .. import Parser, get_active_lines, parser
 from ..parsers import ParseException
 from .installed_rpms import InstalledRpm
 from collections import defaultdict, namedtuple
+from insights.specs import yum_log
 
 
 Entry = namedtuple('Entry', field_names='idx timestamp state pkg')
 """namedtuple: Represents a line in ``/var/log/yum.log``."""
 
 
-@parser("yum.log")
+@parser(yum_log)
 class YumLog(Parser):
     """Class for parsing /var/log/yum.log"""
 

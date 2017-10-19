@@ -76,13 +76,14 @@ from collections import namedtuple
 
 from .. import Parser, parser, get_active_lines, AttributeDict
 from ..parsers import optlist_to_dict, parse_delimited_table, keyword_search
+from insights.specs import fstab
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
 
 type_info = namedtuple('type_info', field_names=['type', 'default'])
 
 
-@parser("fstab")
+@parser(fstab)
 class FSTab(Parser):
     """
     Parse the content of ``/etc/fstab``.

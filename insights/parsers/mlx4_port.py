@@ -37,9 +37,10 @@ Examples:
 
 from collections import defaultdict
 from .. import Parser, parser
+from insights.specs import mlx4_port
 
 
-@parser('mlx4_port')
+@parser(mlx4_port)
 class Mlx4Port(Parser):
     """
     Parse the output of the command:

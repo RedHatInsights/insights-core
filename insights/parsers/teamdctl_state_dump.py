@@ -47,9 +47,10 @@ Examples:
 
 import json
 from .. import Parser, parser, defaults, LegacyItemAccess
+from insights.specs import teamdctl_state_dump
 
 
-@parser("teamdctl_state_dump")
+@parser(teamdctl_state_dump)
 class TeamdctlStateDump(Parser, LegacyItemAccess):
     """
     Class to parse the output of ``teamdctl {team interface} state dump``.
