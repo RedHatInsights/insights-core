@@ -84,7 +84,7 @@ static_specs = {
     "dumpe2fs-h"                : CommandSpec("/sbin/dumpe2fs -h {dumpdev}", dumpdev=r"\S+"),
     "engine.log"                : SimpleFileSpec("var/log/ovirt-engine/engine.log", large_content=True),
     "etc_journald.conf"         : PatternSpec(r"etc/systemd/journald\.conf"),
-    "etc_journald.conf.d"       : PatternSpec(r"etc/systemd/journald\.conf\.d/.+\.conf"),  # note that usr_journald.conf.d also exists
+    "etc_journald.conf.d"       : PatternSpec(r"etc/systemd/journald.conf.d/.+\.conf"),  # note that usr_journald.conf.d also exists
     "ethtool"                   : CommandSpec("/sbin/ethtool {iface}", iface=r"[^-]\S+"),
     "ethtool-a"                 : CommandSpec("/sbin/ethtool -a {iface}", iface=r"\S+"),
     "ethtool-c"                 : CommandSpec("/sbin/ethtool -c {iface}", iface=r"\S+"),
@@ -384,7 +384,7 @@ static_specs = {
                                     SimpleFileSpec("uname")]),
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
     "uptime"                    : CommandSpec("/usr/bin/uptime"),
-    "usr_journald.conf.d"       : PatternSpec(r"usr/lib/systemd/journald\.conf\.d/.+\.conf"),  # note that etc_journald.conf.d also exists
+    "usr_journald.conf.d"       : PatternSpec(r"usr/lib/systemd/journald.conf.d/.+\.conf"),  # note that etc_journald.conf.d also exists
     "vgdisplay"                 : First([CommandSpec("/sbin/vgdisplay -vv"),
                                     CommandSpec("/sbin/vgdisplay")]),
     "vdsm.conf"                 : SimpleFileSpec("etc/vdsm/vdsm.conf"),
@@ -394,7 +394,7 @@ static_specs = {
     "vgs_noheadings"            : CommandSpec("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\""),
     "virt-what"                 : CommandSpec("/usr/sbin/virt-what"),
     "virt_who_conf"             : All([PatternSpec(r"etc/virt-who\.conf"),
-                                    PatternSpec(r"etc/virt-who\.d/.*\.conf")]),
+                                    PatternSpec(r"etc/virt-who.d/.*\.conf")]),
     "vsftpd"                    : SimpleFileSpec("etc/pam.d/vsftpd"),
     "vsftpd.conf"               : SimpleFileSpec("etc/vsftpd/vsftpd.conf"),
     "woopsie"                   : CommandSpec(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'"),
