@@ -42,9 +42,11 @@ Examples:
 import re
 import shlex
 from insights import parser, Parser
+from insights.specs import multipath__v4__ll
+from insights.specs import multipath__v4__ll
 
 
-@parser('multipath_-v4_-ll')
+@parser(multipath__v4__ll)
 class MultipathDevices(Parser):
     """
     ``multipath_-v4_ll`` command output
@@ -259,6 +261,6 @@ class MultipathDevices(Parser):
         return self.devices[idx]
 
 
-@parser('multipath_-v4_-ll')
+@parser(multipath__v4__ll)
 def get_multipath_v4_ll(context):
     return MultipathDevices(context).devices

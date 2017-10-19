@@ -58,9 +58,10 @@ Examples:
 """
 
 from .. import parser, FileListing
+from insights.specs import ls_disk
 
 
-@parser("ls_disk")
+@parser(ls_disk)
 class LsDisk(FileListing):
     """Parses output of ``ls -lanR /dev/disk/by-*`` command."""
     pass

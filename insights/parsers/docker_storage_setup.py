@@ -30,9 +30,10 @@ Examples:
 """
 
 from .. import SysconfigOptions, parser
+from insights.specs import docker_storage_setup
 
 
-@parser('docker_storage_setup')
+@parser(docker_storage_setup)
 class DockerStorageSetup(SysconfigOptions):
     """
     A parser for accessing /etc/sysconfig/docker-storage-setup.

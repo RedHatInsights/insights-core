@@ -4,9 +4,10 @@ RcLocal - file ``/etc/rc.d/rc.local``
 """
 
 from .. import Parser, parser, get_active_lines
+from insights.specs import rc_local
 
 
-@parser('rc.local')
+@parser(rc_local)
 class RcLocal(Parser):
     """
     Parse the `/etc/rc.d/rc.local` file.

@@ -44,9 +44,10 @@ Examples:
     True
 """
 from .. import LogFileOutput, parser
+from insights.specs import lspci
 
 
-@parser('lspci')
+@parser(lspci)
 class LsPci(LogFileOutput):
     """Parses output of the ``lspci`` command."""
     pass

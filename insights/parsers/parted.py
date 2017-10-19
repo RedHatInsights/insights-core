@@ -76,6 +76,7 @@ Examples:
 """
 from .. import Parser, parser
 from ..parsers import ParseException, parse_fixed_table
+from insights.specs import parted__l
 
 
 class Partition(object):
@@ -133,7 +134,7 @@ class Partition(object):
         return self.data.get(item)
 
 
-@parser("parted_-l")
+@parser(parted__l)
 class PartedL(Parser):
     """Class to represent attributes of the ``parted`` command output.
 

@@ -35,9 +35,10 @@ Examples:
 from .. import LogFileOutput, parser
 
 import re
+from insights.specs import dmesg
 
 
-@parser('dmesg')
+@parser(dmesg)
 class DmesgLineList(LogFileOutput):
     """
     Class for reading output of ``dmesg`` using the LogFileOutput parser class.

@@ -1,6 +1,7 @@
 from collections import deque
 from .. import Parser, parser
 from ..parsers import ParseException
+from insights.specs import scsi
 
 
 class Device(object):
@@ -40,7 +41,7 @@ class Device(object):
         return self.__dict__.get(item, default)
 
 
-@parser('scsi')
+@parser(scsi)
 class SCSI(Parser):
     """
     Parses scsi info from /proc/scsi/scsi.

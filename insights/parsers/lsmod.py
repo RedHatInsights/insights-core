@@ -37,9 +37,10 @@ Examples:
 """
 
 from .. import Parser, parser
+from insights.specs import lsmod
 
 
-@parser("lsmod")
+@parser(lsmod)
 class LsMod(Parser):
     """
     Parse the output of ``/sbin/lsmod``.

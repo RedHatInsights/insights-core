@@ -4,9 +4,10 @@ JournalSinceBoot file ``/sos_commands/logs/journalctl_--no-pager_--boot``
 """
 
 from .. import Syslog, parser
+from insights.specs import journal_since_boot
 
 
-@parser('journal_since_boot')
+@parser(journal_since_boot)
 class JournalSinceBoot(Syslog):
     """
     Read the ``/sos_commands/logs/journalctl_--no-pager_--boot`` file.  Uses

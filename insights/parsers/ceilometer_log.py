@@ -7,9 +7,11 @@ Module for parsing the log files for Ceilometer
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import ceilometer_central_log
+from insights.specs import ceilometer_collector_log
 
 
-@parser("ceilometer_central_log")
+@parser(ceilometer_central_log)
 class CeilometerCentralLog(LogFileOutput):
     """Class for parsing ``/var/log/ceilometer/central.log`` file.
 
@@ -32,7 +34,7 @@ class CeilometerCentralLog(LogFileOutput):
     pass
 
 
-@parser("ceilometer_collector_log")
+@parser(ceilometer_collector_log)
 class CeilometerCollectorLog(LogFileOutput):
     """Class for parsing ``/var/log/ceilometer/collector.log`` file.
 

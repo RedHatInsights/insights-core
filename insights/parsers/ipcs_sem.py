@@ -8,9 +8,11 @@ commands. "##" will be replaced with specific semaphore id.
 """
 from .. import Parser, parser, get_active_lines
 from . import parse_delimited_table
+from insights.specs import ipcs_s
+from insights.specs import ipcs_s_i
 
 
-@parser('ipcs_s')
+@parser(ipcs_s)
 class IpcsS(Parser):
     """
     Class for parsing the output of `ipcs -s` command.
@@ -78,7 +80,7 @@ class IpcsS(Parser):
         return self.data.get(semid, default)
 
 
-@parser('ipcs_s_i')
+@parser(ipcs_s_i)
 class IpcsSI(Parser):
     """
     Class for parsing the output of `ipcs -s -i ##` command. ``##`` will be

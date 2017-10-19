@@ -90,16 +90,17 @@ Examples:
     True
 
 Normal use of the ``PamDConf`` class is to subclass it for a parser.  In
-``insights/config/specs.py``::
+``insights/specs.py``::
 
-    'pam-sshd'                  : SimpleFileSpec("etc/pam.d/sshd"),
+    pam_sshd = sf.simple_file("etc/pam.d/sshd", name="pam_sshd")
 
 In the parser module (e.g. ``insights/parsers/pam_sshd.py``)::
 
     from insights import parser
     from insights.parsers.pam import PamDConf
+    from insights.specs import pam_sshd
 
-    @parser('pam-sshd')
+    @parser(pam_sshd)
     class PamSSHD(PamDConf):
         pass
 
@@ -112,6 +113,7 @@ from .. import Parser, get_active_lines, parser
 from ..parsers import unsplit_lines, keyword_search, optlist_to_dict
 
 import re
+from insights.specs import pam_conf
 
 
 class PamConfEntry(object):
@@ -369,7 +371,7 @@ class PamDConf(Parser):
         return found
 
 
-@parser('pam.conf')
+@parser(pam_conf)
 class PamConf(PamDConf):
     """Base class for parsing pam config file ``/etc/pam.conf``.
 

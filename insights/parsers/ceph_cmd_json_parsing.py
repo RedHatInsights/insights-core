@@ -272,6 +272,14 @@ Part of the sample output of this command looks like::
 
 import json
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import ceph_config_show
+from insights.specs import ceph_df_detail
+from insights.specs import ceph_health_detail
+from insights.specs import ceph_osd_df
+from insights.specs import ceph_osd_dump
+from insights.specs import ceph_osd_ec_profile_get
+from insights.specs import ceph_osd_tree
+from insights.specs import ceph_s
 
 
 class CephJsonParsing(LegacyItemAccess, Parser):
@@ -289,7 +297,7 @@ class CephJsonParsing(LegacyItemAccess, Parser):
         self.data = json.loads(''.join(content))
 
 
-@parser("ceph_osd_dump")
+@parser(ceph_osd_dump)
 class CephOsdDump(CephJsonParsing):
     """
     Class to parse the output of ``ceph osd dump -f json-pretty``.
@@ -333,7 +341,7 @@ class CephOsdDump(CephJsonParsing):
     pass
 
 
-@parser("ceph_osd_df")
+@parser(ceph_osd_df)
 class CephOsdDf(CephJsonParsing):
     """
     Class to parse the output of ``ceph osd df -f json-pretty``.
@@ -351,7 +359,7 @@ class CephOsdDf(CephJsonParsing):
     pass
 
 
-@parser("ceph_s")
+@parser(ceph_s)
 class CephS(CephJsonParsing):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
@@ -366,7 +374,7 @@ class CephS(CephJsonParsing):
     pass
 
 
-@parser("ceph_df_detail")
+@parser(ceph_df_detail)
 class CephDfDetail(CephJsonParsing):
     """
     Class to parse the output of ``ceph df detail -f json-pretty``.
@@ -382,7 +390,7 @@ class CephDfDetail(CephJsonParsing):
     pass
 
 
-@parser("ceph_health_detail")
+@parser(ceph_health_detail)
 class CephHealthDetail(CephJsonParsing):
     """
     Class to parse the output of ``ceph health detail -f json-pretty``.
@@ -398,7 +406,7 @@ class CephHealthDetail(CephJsonParsing):
     pass
 
 
-@parser("ceph_osd_ec_profile_get")
+@parser(ceph_osd_ec_profile_get)
 class CephECProfileGet(CephJsonParsing):
     """
     Class to parse the output of ``ceph osd erasure-code-profile get default -f json-pretty``.
@@ -416,7 +424,7 @@ class CephECProfileGet(CephJsonParsing):
     pass
 
 
-@parser("ceph_config_show")
+@parser(ceph_config_show)
 class CephCfgInfo(CephJsonParsing):
     """
     Class to parse the output of ``ceph daemon .. config show``
@@ -438,7 +446,7 @@ class CephCfgInfo(CephJsonParsing):
         return self.data["max_open_files"]
 
 
-@parser("ceph_osd_tree")
+@parser(ceph_osd_tree)
 class CephOsdTree(CephJsonParsing):
     """
     Class to parse the output of the command "ceph osd tree -f json-pretty

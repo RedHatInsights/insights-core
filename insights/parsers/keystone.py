@@ -47,9 +47,10 @@ Examples:
      'generator': 'keystone.identity.id_generators.sha256.Generator'}
 """
 from .. import IniConfigFile, parser
+from insights.specs import keystone_conf
 
 
-@parser('keystone.conf')
+@parser(keystone_conf)
 class KeystoneConf(IniConfigFile):
     """Parse contents of file ``/etc/keystone/keystone.conf``."""
     pass

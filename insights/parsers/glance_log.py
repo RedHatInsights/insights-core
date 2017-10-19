@@ -7,9 +7,10 @@ Module for parsing the log files for Glance
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import glance_api_log
 
 
-@parser("glance_api_log")
+@parser(glance_api_log)
 class GlanceApiLog(LogFileOutput):
     """Class for parsing ``/var/log/glance/api.log`` file.
 

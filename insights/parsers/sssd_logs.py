@@ -6,6 +6,7 @@ SSSD logs - files matching ``/var/log/sssd/*.log``
 
 from .. import parser, LogFileOutput
 from datetime import datetime
+from insights.specs import sssd_logs
 
 
 def strip_surrounds(s):
@@ -22,7 +23,7 @@ def strip_surrounds(s):
     return s[start:(end + 1)]
 
 
-@parser('sssd_logs')
+@parser(sssd_logs)
 class SSSDLog(LogFileOutput):
     """
     Parser class for reading SSSD log files.  The main work is done by the

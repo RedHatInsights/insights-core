@@ -1,8 +1,9 @@
 import xml.etree.ElementTree as ET
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import rhn_entitlement_cert_xml
 
 
-@parser('rhn-entitlement-cert.xml')
+@parser(rhn_entitlement_cert_xml)
 class RHNCertConf(LegacyItemAccess, Parser):
     """Class to parse the xml files ``rhn-entitlement-cert.xml*``
 

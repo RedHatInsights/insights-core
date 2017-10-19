@@ -27,9 +27,10 @@ Examples:
 '''
 
 from .. import parser, SysconfigOptions, LegacyItemAccess
+from insights.specs import netconsole
 
 
-@parser('netconsole')
+@parser(netconsole)
 class NetConsole(SysconfigOptions, LegacyItemAccess):
     '''
     Contents of the ``/etc/sysconfig/netconsole`` file.  Uses the

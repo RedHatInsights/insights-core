@@ -18,6 +18,13 @@ import re
 from collections import namedtuple
 from ..parsers import ParseException
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import ethtool
+from insights.specs import ethtool_S
+from insights.specs import ethtool_a
+from insights.specs import ethtool_c
+from insights.specs import ethtool_g
+from insights.specs import ethtool_i
+from insights.specs import ethtool_k
 
 
 def extract_iface_name_from_path(path, name):
@@ -56,7 +63,7 @@ def extract_iface_name_from_content(content):
     return content.split(" ", 3)[-1][:-1]
 
 
-@parser("ethtool-i")
+@parser(ethtool_i)
 class Driver(Parser):
     """
     Parse information for the ``ethtool -i`` command.
@@ -146,7 +153,7 @@ class Driver(Parser):
                 setattr(self, key.replace("-", "_"), value)
 
 
-@parser("ethtool-k")
+@parser(ethtool_k)
 class Features(LegacyItemAccess, Parser):
     """
     Parse information for the ``ethtool -k`` command.
@@ -267,7 +274,7 @@ class Features(LegacyItemAccess, Parser):
                 }
 
 
-@parser("ethtool-a")
+@parser(ethtool_a)
 class Pause(Parser):
     """
     Parse information for the ``ethtool -a`` command.
@@ -360,7 +367,7 @@ class Pause(Parser):
                 # setattr(self, key, value == "on")
 
 
-@parser("ethtool-c")
+@parser(ethtool_c)
 class CoalescingInfo(Parser):
     """
     Parse information for the ``ethtool -c`` command.
@@ -470,7 +477,7 @@ class CoalescingInfo(Parser):
                     setattr(self, key.replace("-", "_"), value)
 
 
-@parser("ethtool-g")
+@parser(ethtool_g)
 class Ring(Parser):
     """
     Parse information for the ``ethtool -g`` command.
@@ -565,7 +572,7 @@ class Ring(Parser):
         return Ring.Parameters(r['rx'], r['rx_mini'], r['rx_jumbo'], r['tx'])
 
 
-@parser("ethtool-S")
+@parser(ethtool_S)
 class Statistics(Parser):
     """
     Parse information for the ``ethtool -S`` command.
@@ -663,7 +670,7 @@ class Statistics(Parser):
             self.data[key] = value
 
 
-@parser("ethtool")
+@parser(ethtool)
 class Ethtool(Parser):
     """
     Parses output of ``ethtool`` command.

@@ -4,9 +4,11 @@ nova_log - files ``/var/log/nova/*.log``
 This module contains classes to parse logs under ``/var/log/nova/``
 """
 from .. import LogFileOutput, parser
+from insights.specs import nova_api_log
+from insights.specs import nova_compute_log
 
 
-@parser('nova-api_log')
+@parser(nova_api_log)
 class NovaApiLog(LogFileOutput):
     """Class for parsing the ``/var/log/nova/nova-api.log`` file.
 
@@ -32,7 +34,7 @@ class NovaApiLog(LogFileOutput):
         return r
 
 
-@parser('nova-compute.log')
+@parser(nova_compute_log)
 class NovaComputeLog(LogFileOutput):
     """Class for parsing the ``/var/log/nova/nova-compute.log`` file.
 

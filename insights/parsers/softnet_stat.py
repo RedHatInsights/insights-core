@@ -47,9 +47,10 @@ limit count flow_limit_count (tenth column).
 """
 
 from .. import Parser, parser
+from insights.specs import softnet_stat
 
 
-@parser("softnet_stat")
+@parser(softnet_stat)
 class SoftNetStats(Parser):
     """Parses ``/proc/net/softnet_stat`` file contains"""
 

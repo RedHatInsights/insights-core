@@ -31,9 +31,10 @@ Examples:
 """
 
 from .. import SysconfigOptions, parser
+from insights.specs import corosync
 
 
-@parser("corosync")
+@parser(corosync)
 class CoroSyncConfig(SysconfigOptions):
     """
     Parse the ``/etc/sysconfig/corosync`` file using the SysconfigOptions

@@ -7,9 +7,10 @@ Kerberos KDC Logs - file ``/var/log/krb5kdc.log``
 from .. import LogFileOutput, parser
 
 import re
+from insights.specs import kerberos_kdc_log
 
 
-@parser('kerberos_kdc_log')
+@parser(kerberos_kdc_log)
 class KerberosKDCLog(LogFileOutput):
     '''
     Read the ``/var/log/krb5kdc.log`` file.  For more usage information see

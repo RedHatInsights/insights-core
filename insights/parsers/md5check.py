@@ -14,9 +14,10 @@ This MD5CheckSum class provide the following properties:
 * ``md5sum``: the checksums for the file.
 """
 from .. import Parser, parser
+from insights.specs import prelink_orig_md5
 
 
-@parser("prelink_orig_md5")
+@parser(prelink_orig_md5)
 class MD5CheckSum(Parser):
     """
     Class to parse ``prelink -y --md5`` or ``md5sum`` command information.

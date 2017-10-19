@@ -6,9 +6,10 @@ This module provides parsers for swift config files under /etc/swift directory.
 """
 
 from .. import IniConfigFile, parser
+from insights.specs import proxy_server_conf
 
 
-@parser("proxy_server.conf")
+@parser(proxy_server_conf)
 class SwiftProxyServerConf(IniConfigFile):
     """
     This class is to parse the content of the ``/ etc / swift / proxy - server.conf``.

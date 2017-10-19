@@ -18,9 +18,10 @@ Example:
 """
 
 from .. import Parser, parser
+from insights.specs import cciss
 
 
-@parser('cciss')
+@parser(cciss)
 class Cciss(Parser):
     '''
     Class for parsing the content of ``/etc/device/cciss*``

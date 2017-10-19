@@ -1,10 +1,11 @@
 import xml.etree.ElementTree as ET
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import tomcat_web_xml
 
 TIMEOUT_KEYWORD = 'session-timeout'
 
 
-@parser('tomcat_web.xml')
+@parser(tomcat_web_xml)
 class TomcatWebXml(LegacyItemAccess, Parser):
 
     def parse_content(self, content):

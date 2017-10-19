@@ -52,9 +52,10 @@ Examples:
 """
 from collections import namedtuple
 from .. import Parser, parser, get_active_lines
+from insights.specs import sshd_config
 
 
-@parser('sshd_config')
+@parser(sshd_config)
 class SshDConfig(Parser):
     """Parsing for ``sshd_config`` file.
 

@@ -48,9 +48,10 @@ Example:
 """
 
 from .. import parser, IniConfigFile
+from insights.specs import ceilometer_conf
 
 
-@parser("ceilometer.conf")
+@parser(ceilometer_conf)
 class CeilometerConf(IniConfigFile):
     """
     A dict of the content of the ``ceilometer.conf`` configuration file.

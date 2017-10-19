@@ -63,9 +63,10 @@ Examples:
 from .. import parser, Parser, LegacyItemAccess
 from collections import defaultdict
 import re
+from insights.specs import lvdisplay
 
 
-@parser('lvdisplay')
+@parser(lvdisplay)
 class LvDisplay(Parser, LegacyItemAccess):
     """
     Read the output of ``/sbin/lvdisplay``.

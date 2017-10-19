@@ -50,9 +50,10 @@ Examples:
     True
 """
 from .. import YAMLParser, parser
+from insights.specs import foreman_proxy_conf
 
 
-@parser('foreman_proxy_conf')
+@parser(foreman_proxy_conf)
 class ForemanProxyConf(YAMLParser):
     """ Class for parsing the content of ``foreman_proxy_conf``."""
     pass

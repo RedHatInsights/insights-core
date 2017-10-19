@@ -4,9 +4,10 @@ PacemakerLog - file ``/var/log/pacemaker.log``
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import pacemaker_log
 
 
-@parser('pacemaker.log')
+@parser(pacemaker_log)
 class PacemakerLog(LogFileOutput):
     """
     Read the pacemaker log file.  Uses the ``LogFileOutput`` class parser

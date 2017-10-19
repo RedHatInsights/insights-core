@@ -47,6 +47,8 @@ import sys
 from datetime import datetime
 
 from .. import Parser, parser, get_active_lines
+from insights.specs import date
+from insights.specs import date_utc
 
 
 class DateParseException(Exception):
@@ -87,7 +89,7 @@ class DateParser(Parser):
             raise DateParseException(self.data), None, sys.exc_info()[2]
 
 
-@parser("date")
+@parser(date)
 class Date(DateParser):
     """
     Class to parse ``date`` command output.
@@ -97,7 +99,7 @@ class Date(DateParser):
     pass
 
 
-@parser("date_utc")
+@parser(date_utc)
 class DateUTC(DateParser):
     """
     Class to parse ``date --utc`` command output.

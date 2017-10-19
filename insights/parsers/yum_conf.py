@@ -59,9 +59,10 @@ Examples:
 
 from insights.contrib.ConfigParser import NoOptionError
 from .. import parser, IniConfigFile
+from insights.specs import yum_conf
 
 
-@parser('yum.conf')
+@parser(yum_conf)
 class YumConf(IniConfigFile):
     """Parse contents of file ``/etc/yum.conf``."""
     def parse_content(self, content):

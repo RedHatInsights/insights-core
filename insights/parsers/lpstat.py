@@ -44,6 +44,7 @@ See also source code for lpstat in https://github.com/apple/cups/blob/master/sys
 """
 
 from .. import Parser, parser
+from insights.specs import lpstat_p
 
 # Printer states
 PRINTER_STATUS_IDLE = 'IDLE'
@@ -54,7 +55,7 @@ PRINTER_STATUS_UNKNOWN = 'UNKNOWN'
 START_LINE_MARKER = 'printer '
 
 
-@parser('lpstat_p')
+@parser(lpstat_p)
 class LpstatPrinters(Parser):
     """Class to parse ``lpstat -p`` command output.
 

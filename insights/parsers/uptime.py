@@ -41,9 +41,10 @@ import re
 import datetime
 from .. import Parser, parser
 from insights.parsers import ParseException
+from insights.specs import uptime
 
 
-@parser("uptime")
+@parser(uptime)
 class Uptime(Parser):
     """Parser class to parse the output of ``uptime``."""
 

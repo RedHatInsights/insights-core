@@ -22,9 +22,10 @@ Example:
 """
 
 from .. import parser, IniConfigFile
+from insights.specs import autofs_conf
 
 
-@parser("autofs.conf")
+@parser(autofs_conf)
 class AutoFSConf(IniConfigFile):
     """
         /etc/autofs.conf is a standard INI style config file.

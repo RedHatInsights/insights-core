@@ -29,9 +29,10 @@ Examples:
 """
 
 from .. import parser, SysconfigOptions
+from insights.specs import dirsrv
 
 
-@parser('dirsrv')
+@parser(dirsrv)
 class DirsrvSysconfig(SysconfigOptions):
     """
     Parse the `dirsrv` service's start-up configuration.

@@ -61,11 +61,12 @@ Examples:
 """
 
 from .. import add_filter, Scannable, parser
+from insights.specs import lsof
 
 add_filter('lsof', ['COMMAND'])
 
 
-@parser('lsof')
+@parser(lsof)
 class Lsof(Scannable):
     """
     A parser for the output of ``/usr/sbin/lsof`` - determines the column

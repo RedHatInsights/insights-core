@@ -38,6 +38,10 @@ Examples:
 
 from .. import LegacyItemAccess, Parser, parser
 from ..core.marshalling import unmarshal
+from insights.specs import docker_container_inspect
+from insights.specs import docker_container_inspect
+from insights.specs import docker_image_inspect
+from insights.specs import docker_image_inspect
 
 
 class DockerInspect(LegacyItemAccess, Parser):
@@ -56,7 +60,7 @@ class DockerInspect(LegacyItemAccess, Parser):
             self.data = {}
 
 
-@parser("docker_image_inspect")
+@parser(docker_image_inspect)
 class DockerInspectImage(DockerInspect):
     """
     Parse docker image inspect output using the DockerInspect parser class.
@@ -64,7 +68,7 @@ class DockerInspectImage(DockerInspect):
     pass
 
 
-@parser("docker_container_inspect")
+@parser(docker_container_inspect)
 class DockerInspectContainer(DockerInspect):
     """
     Parse docker container inspect output using the DockerInspect parser class.
@@ -72,13 +76,13 @@ class DockerInspectContainer(DockerInspect):
     pass
 
 
-@parser("docker_image_inspect")
+@parser(docker_image_inspect)
 def image(context):
     """ Deprecated accessor for ``--type=image`` output """
     return DockerInspectImage(context).data
 
 
-@parser("docker_container_inspect")
+@parser(docker_container_inspect)
 def container(context):
     """ Deprecated accessor for ``--type=container`` output """
     return DockerInspectContainer(context).data

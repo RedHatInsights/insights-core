@@ -50,6 +50,9 @@ extracting the kernel and initrd configurations available.
 """
 
 from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict
+from insights.specs import grub2_cfg
+from insights.specs import grub2_efi_cfg
+from insights.specs import grub_conf
 
 IOMMU = "intel_iommu=on"
 GRUB_KERNELS = 'grub_kernels'
@@ -186,7 +189,7 @@ class GrubConfig(LegacyItemAccess, Parser):
         return {GRUB_KERNELS: kernels, GRUB_INITRDS: initrds}
 
 
-@parser("grub.conf")
+@parser(grub_conf)
 class Grub1Config(GrubConfig):
     """
     Parser for configuration for GRUB version 1.
@@ -252,7 +255,7 @@ class Grub1Config(GrubConfig):
         return None
 
 
-@parser('grub2.cfg')
+@parser(grub2_cfg)
 class Grub2Config(GrubConfig):
     """
     Parser for configuration for GRUB version 2.
@@ -312,7 +315,7 @@ class Grub2Config(GrubConfig):
         self._efi = False
 
 
-@parser('grub2-efi.cfg')
+@parser(grub2_efi_cfg)
 class Grub2EFIConfig(GrubConfig):
     """Parses grub2 configuration for EFI-based systems"""
     def __init__(self, *args, **kwargs):

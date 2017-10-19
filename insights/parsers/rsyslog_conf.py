@@ -29,9 +29,10 @@ Example:
 from .. import Parser, parser, get_active_lines
 
 import re
+from insights.specs import rsyslog_conf
 
 
-@parser('rsyslog.conf')
+@parser(rsyslog_conf)
 class RsyslogConf(Parser):
     """
     Parses `/etc/rsyslog.conf` info simple lines.

@@ -42,9 +42,10 @@ Examples:
 """
 
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import httpd_V
 
 
-@parser('httpd-V')
+@parser(httpd_V)
 class HttpdV(LegacyItemAccess, Parser):
     """Class for parsing ``httpd -V`` command output."""
 

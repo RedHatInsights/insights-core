@@ -31,9 +31,10 @@ Examples:
 
 """
 from .. import parser, Parser
+from insights.specs import satellite_version_rb
 
 
-@parser('satellite_version.rb')
+@parser(satellite_version_rb)
 class Satellite6Version(Parser):
     """ Class for parsing the content of ``satellite_version``."""
 

@@ -12,6 +12,7 @@ format.
 """
 
 from .. import parser, LegacyItemAccess, IniConfigFile, add_filter
+from insights.specs import virt_who_conf
 
 filter_list = [
         '[',
@@ -28,7 +29,7 @@ filter_list = [
 add_filter('virt_who_conf', filter_list)
 
 
-@parser('virt_who_conf')
+@parser(virt_who_conf)
 class VirtWhoConf(LegacyItemAccess, IniConfigFile):
     """
     Parse the ``virt-who`` configuration files ``/etc/virt-who.conf`` and

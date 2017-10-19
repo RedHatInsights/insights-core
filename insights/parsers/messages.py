@@ -4,9 +4,10 @@ Messages file ``/var/log/messages``
 """
 
 from .. import Syslog, parser
+from insights.specs import messages
 
 
-@parser('messages')
+@parser(messages)
 class Messages(Syslog):
     """
     Read the ``/var/log/messages`` file.  Uses the ``Syslog`` class parser

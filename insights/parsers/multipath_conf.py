@@ -10,9 +10,11 @@ The ``multipath`` parser function is deprecated and should not be used.
 
 from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
+from insights.specs import multipath_conf
+from insights.specs import multipath_conf
 
 
-@parser("multipath.conf")
+@parser(multipath_conf)
 class MultipathConf(Parser, LegacyItemAccess):
     """
     Return a dict where the keys are the name of sections in multipath
@@ -131,7 +133,7 @@ class MultipathConf(Parser, LegacyItemAccess):
         self.data = MultipathConf._create_parser().parseString("\n".join(content))[0].asDict()
 
 
-@parser("multipath.conf")
+@parser(multipath_conf)
 def multipath(context):
     # This mapper is deprecated and will be removed in the future.  Do not use.
     return MultipathConf(context).data

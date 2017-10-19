@@ -1,7 +1,8 @@
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from insights.specs import up2date
 
 
-@parser('up2date')
+@parser(up2date)
 class Up2Date(LegacyItemAccess, Parser):
     """Class to parse the ``up2date``
 

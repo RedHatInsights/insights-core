@@ -7,9 +7,11 @@ Module for parsing the log files for Heat
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import heat_api_log
+from insights.specs import heat_engine_log
 
 
-@parser("heat-api.log")
+@parser(heat_api_log)
 class HeatApiLog(LogFileOutput):
     """Class for parsing ``/var/log/heat/heat-api.log`` file.
 
@@ -34,7 +36,7 @@ class HeatApiLog(LogFileOutput):
     pass
 
 
-@parser("heat-engine.log")
+@parser(heat_engine_log)
 class HeatEngineLog(LogFileOutput):
     """Class for parsing ``/var/log/heat/heat-engine.log`` file.
 

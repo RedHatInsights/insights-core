@@ -38,9 +38,10 @@ Example:
 """
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 import re
+from insights.specs import postgresql_conf
 
 
-@parser("postgresql.conf")
+@parser(postgresql_conf)
 class PostgreSQLConf(LegacyItemAccess, Parser):
     """
     Parses postgresql.conf and converts it into a dictionary of properties.

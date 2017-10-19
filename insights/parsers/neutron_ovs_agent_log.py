@@ -22,9 +22,10 @@ Typical content of ``openvswitch-agent.log`` file is::
 """
 
 from .. import LogFileOutput, parser
+from insights.specs import neutron_ovs_agent_log
 
 
-@parser('neutron_ovs_agent_log')
+@parser(neutron_ovs_agent_log)
 class NeutronOVSAgentLog(LogFileOutput):
     """Class for parsing ``/var/log/neutron/openvswitch-agent.log`` file.
 

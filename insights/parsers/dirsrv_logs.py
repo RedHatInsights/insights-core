@@ -5,9 +5,11 @@
 '''
 
 from insights import parser, LogFileOutput
+from insights.specs import dirsrv_access
+from insights.specs import dirsrv_errors
 
 
-@parser('dirsrv_access')
+@parser(dirsrv_access)
 class DirSrvAccessLog(LogFileOutput):
     '''
     The ``access`` log file from all directories in ``/var/log/dirsrv/``
@@ -47,7 +49,7 @@ class DirSrvAccessLog(LogFileOutput):
     time_format = '%d/%b/%Y:%H:%M:%S'
 
 
-@parser('dirsrv_errors')
+@parser(dirsrv_errors)
 class DirSrvErrorsLog(LogFileOutput):
     '''
     The ``errors`` log file from all directories in ``/var/log/dirsrv/``

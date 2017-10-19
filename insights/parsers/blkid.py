@@ -34,9 +34,10 @@ Examples:
 """
 import re
 from .. import Parser, parser
+from insights.specs import blkid
 
 
-@parser("blkid")
+@parser(blkid)
 class BlockIDInfo(Parser):
     """Class to process the ``blkid`` command output.
 

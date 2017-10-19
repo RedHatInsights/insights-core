@@ -1,7 +1,8 @@
 from .. import Parser, parser, LegacyItemAccess
+from insights.specs import rhn_charsets
 
 
-@parser('rhn-charsets')
+@parser(rhn_charsets)
 class RHNCharSets(LegacyItemAccess, Parser):
     """
     ==== Sample (1) embedded database ====

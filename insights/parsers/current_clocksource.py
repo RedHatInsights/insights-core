@@ -22,9 +22,10 @@ Examples:
 """
 
 from .. import Parser, parser
+from insights.specs import current_clocksource
 
 
-@parser("current_clocksource")
+@parser(current_clocksource)
 class CurrentClockSource(Parser):
     """
     The CurrentClockSource parser class.

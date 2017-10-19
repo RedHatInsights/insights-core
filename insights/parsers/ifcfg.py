@@ -46,6 +46,7 @@ Examples:
 import json
 from collections import OrderedDict
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from insights.specs import ifcfg
 
 JSON_FIELDS = ["TEAM_CONFIG", "TEAM_PORT_CONFIG"]
 
@@ -62,7 +63,7 @@ bond_mode_map = {
 }
 
 
-@parser("ifcfg")
+@parser(ifcfg)
 class IfCFG(LegacyItemAccess, Parser):
     """
     Parse `ifcfg-` file,return a dict contain ifcfg config file info.

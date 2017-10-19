@@ -21,6 +21,7 @@ Examples:
 from . import ParseException
 from .. import Parser, parser
 import re
+from insights.specs import initscript
 
 CHKCONFIG_REGEX = re.compile(r"^#\s+chkconfig:\s+.*$")
 LSB_REGEX = re.compile(r"^#\s+Provides:\s+.*$")
@@ -38,7 +39,7 @@ class NotInitscriptException(ParseException):
     pass
 
 
-@parser("initscript")
+@parser(initscript)
 class InitScript(Parser):
     """
     Parse initscript files. Each item is a dictionary with following fields:

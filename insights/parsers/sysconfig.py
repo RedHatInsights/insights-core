@@ -7,9 +7,17 @@ files under the ``/etc/sysconfig/`` folder.
 """
 
 from .. import parser, SysconfigOptions
+from insights.specs import docker_sysconfig
+from insights.specs import sysconfig_chronyd
+from insights.specs import sysconfig_httpd
+from insights.specs import sysconfig_irqbalance
+from insights.specs import sysconfig_kdump
+from insights.specs import sysconfig_mongod
+from insights.specs import sysconfig_ntpd
+from insights.specs import sysconfig_virt_who
 
 
-@parser("sysconfig_chronyd")
+@parser(sysconfig_chronyd)
 class ChronydSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``chronyd`` service config file in the
@@ -34,7 +42,7 @@ class ChronydSysconfig(SysconfigOptions):
     pass
 
 
-@parser("sysconfig_ntpd")
+@parser(sysconfig_ntpd)
 class NtpdSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``ntpd`` service config file in the
@@ -58,7 +66,7 @@ class NtpdSysconfig(SysconfigOptions):
     pass
 
 
-@parser("docker_sysconfig")
+@parser(docker_sysconfig)
 class DockerSysconfig(SysconfigOptions):
     """
     Class for parsing the ``/etc/sysconfig/docker`` file using the standard
@@ -84,7 +92,7 @@ class DockerSysconfig(SysconfigOptions):
         return self.data.get('OPTIONS', '')
 
 
-@parser('sysconfig_httpd')
+@parser(sysconfig_httpd)
 class HttpdSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``httpd`` service config file in the
@@ -118,7 +126,7 @@ class HttpdSysconfig(SysconfigOptions):
     pass
 
 
-@parser('sysconfig_irqbalance')
+@parser(sysconfig_irqbalance)
 class IrqbalanceSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``irqbalance`` service config file in the
@@ -154,7 +162,7 @@ class IrqbalanceSysconfig(SysconfigOptions):
     pass
 
 
-@parser('sysconfig_kdump')
+@parser(sysconfig_kdump)
 class KdumpSysconfig(SysconfigOptions):
     """
     Read data from the ``/etc/sysconfig/kdump`` file.
@@ -189,7 +197,7 @@ class KdumpSysconfig(SysconfigOptions):
             setattr(self, key, self.data.get(key, ''))
 
 
-@parser('sysconfig_virt_who')
+@parser(sysconfig_virt_who)
 class VirtWhoSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``virt-who`` service configuration file in the
@@ -223,7 +231,7 @@ class VirtWhoSysconfig(SysconfigOptions):
     pass
 
 
-@parser('sysconfig_mongod')
+@parser(sysconfig_mongod)
 class MongodSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``mongod`` service configuration file in

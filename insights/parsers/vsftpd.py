@@ -15,9 +15,11 @@ VsftpdConf - file ``/etc/vsftpd.conf``
 from .. import Parser, LegacyItemAccess, parser
 from ..parsers.pam import PamDConf
 from ..parsers import split_kv_pairs
+from insights.specs import vsftpd
+from insights.specs import vsftpd_conf
 
 
-@parser('vsftpd')
+@parser(vsftpd)
 class VsftpdPamConf(PamDConf):
     """
     Parsing for the `/etc/pam.d/vsftpd` PAM configuration.
@@ -54,7 +56,7 @@ class VsftpdPamConf(PamDConf):
     pass
 
 
-@parser('vsftpd.conf')
+@parser(vsftpd_conf)
 class VsftpdConf(Parser, LegacyItemAccess):
     """
     Parsing for `/etc/vsftpd.conf`.  Key=value pairs are stored in a

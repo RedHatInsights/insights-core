@@ -18,9 +18,10 @@ Examples:
 """
 from .. import Parser, parser
 from ..parsers import get_active_lines
+from insights.specs import vdsm_id
 
 
-@parser("vdsm_id")
+@parser(vdsm_id)
 class VDSMId(Parser):
     """Class for parsing `vdsm.id` file."""
 

@@ -23,13 +23,22 @@ Examples:
 """
 
 from .. import YAMLParser, parser
+from insights.specs import oc_get_dc
+from insights.specs import oc_get_endpoints
+from insights.specs import oc_get_pod
+from insights.specs import oc_get_project
+from insights.specs import oc_get_pv
+from insights.specs import oc_get_pvc
+from insights.specs import oc_get_role
+from insights.specs import oc_get_rolebinding
+from insights.specs import oc_get_service
 
 
 def metadata_name_items(data):
     return dict((item['metadata']['name'], item) for item in data['items'])
 
 
-@parser('oc_get_pod')
+@parser(oc_get_pod)
 class OcGetPod(YAMLParser):
     """Class to parse ``oc get pod -o yaml --all-namespaces``"""
 
@@ -38,7 +47,7 @@ class OcGetPod(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_dc')
+@parser(oc_get_dc)
 class OcGetDc(YAMLParser):
     """Class to parse ``oc get dc -o yaml --all-namespaces``"""
 
@@ -47,7 +56,7 @@ class OcGetDc(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_service')
+@parser(oc_get_service)
 class OcGetService(YAMLParser):
     """Class to parse ``oc get service -o yaml --all-namespaces``"""
 
@@ -56,7 +65,7 @@ class OcGetService(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_rolebinding')
+@parser(oc_get_rolebinding)
 class OcGetRolebinding(YAMLParser):
     """Class to parse ``oc get rolebinding -o yaml --all-namespaces``"""
 
@@ -65,7 +74,7 @@ class OcGetRolebinding(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_project')
+@parser(oc_get_project)
 class OcGetProject(YAMLParser):
     """Class to parse ``oc get project -o yaml --all-namespaces``"""
 
@@ -74,7 +83,7 @@ class OcGetProject(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_role')
+@parser(oc_get_role)
 class OcGetRole(YAMLParser):
     """Class to parse ``oc get role -o yaml --all-namespaces``"""
 
@@ -83,7 +92,7 @@ class OcGetRole(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_pv')
+@parser(oc_get_pv)
 class OcGetPv(YAMLParser):
     """Class to parse ``oc get pv -o yaml --all-namespaces``"""
 
@@ -92,7 +101,7 @@ class OcGetPv(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_pvc')
+@parser(oc_get_pvc)
 class OcGetPvc(YAMLParser):
     """Class to parse ``oc get pvc -o yaml --all-namespaces``"""
 
@@ -101,7 +110,7 @@ class OcGetPvc(YAMLParser):
         return metadata_name_items(self.data)
 
 
-@parser('oc_get_endpoints')
+@parser(oc_get_endpoints)
 class OcGetEndPonits(YAMLParser):
     """Class to parse ``oc get endpoints -o yaml --all-namespaces``"""
 

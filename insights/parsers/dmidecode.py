@@ -97,9 +97,10 @@ Examples:
 import re
 from datetime import date
 from .. import LegacyItemAccess, Parser, parser, defaults
+from insights.specs import dmidecode
 
 
-@parser('dmidecode')
+@parser(dmidecode)
 class DMIDecode(Parser, LegacyItemAccess):
     """
     Class for DMI information.

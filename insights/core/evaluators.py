@@ -205,7 +205,7 @@ class MultiEvaluator(Evaluator):
         return SingleEvaluator
 
     def clean_broker(self, broker):
-        for c in [d for d in broker.keys() if not plugins.is_component(d)]:
+        for c in [d for d in broker.keys() if not plugins.is_component(d) or plugins.is_datasource(d)]:
             del broker[c]
         return broker
 

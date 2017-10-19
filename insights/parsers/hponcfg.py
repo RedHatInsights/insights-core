@@ -39,13 +39,14 @@ Examples:
 """
 
 from .. import Parser, parser, get_active_lines
+from insights.specs import hponcfg_g
 
 DRIVER_NAME = 'driver_name'
 DEVICE_TYPE = 'device_type'
 FIRMWARE_REVISION = 'firmware_revision'
 
 
-@parser('hponcfg-g')
+@parser(hponcfg_g)
 class HponConf(Parser):
     """
     Read the output of the HP ILO configuration utility.
