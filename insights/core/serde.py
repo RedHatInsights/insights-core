@@ -35,6 +35,19 @@ def deserializer(_type):
     return inner
 
 
+def get_serializer_type(obj):
+    _type = type(obj)
+    for o in _type.mro():
+        if o in SERIALIZERS:
+            return o
+
+
+def get_deserializer_type(obj):
+    for o in obj.mro():
+        if o in DESERIALIZERS:
+            return o
+
+
 def get_serializer(obj):
 
     """ Get a registered serializer for the given object.
@@ -42,23 +55,26 @@ def get_serializer(obj):
         This function walks the mro of obj looking for serializers.
         Returns None if no valid serializer is found.
     """
-    _type = type(obj)
-    for o in _type.mro():
-        if o not in SERIALIZERS:
-            continue
-        return lambda x: {"type": dr.get_name(_type), "object": SERIALIZERS[o](x)}
-    return lambda x: {"type": None, "object": x}
+    _type = get_serializer_type(obj)
+    return SERIALIZERS.get(_type)
 
 
 def get_deserializer(obj):
     """ Returns a deserializer based on the fully qualified name string."""
-    for o in obj.mro():
-        if o in DESERIALIZERS:
-            return DESERIALIZERS[o]
+    _type = get_deserializer_type(obj)
+    return DESERIALIZERS.get(_type)
 
 
 def serialize(obj):
-    to_dict = get_serializer(obj)
+    the_ser = get_serializer(obj)
+
+    if the_ser:
+        def to_dict(x):
+            return {"type": dr.get_name(type(obj)), "object": the_ser(x)}
+    else:
+        def to_dict(x):
+            return {"type": None, "object": x}
+
     return to_dict(obj)
 
 

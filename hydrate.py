@@ -15,8 +15,8 @@ log = logging.getLogger(__name__)
 
 
 def main():
-    dr.load_components("insights/parsers")
-    dr.load_components("insights/combiners")
+    dr.load_components("insights.parsers")
+    dr.load_components("insights.combiners")
 
     broker = dr.Broker()
 
