@@ -168,10 +168,8 @@ hostname = sf.simple_command("/usr/bin/hostname -f", name="hostname")
 hosts = sf.simple_file("/etc/hosts", name="hosts")
 hponcfg_g = sf.simple_command("/sbin/hponcfg -g", name="hponcfg_g", alias="hponcfg-g")
 httpd_access_log = sf.simple_file("/var/log/httpd/access_log", name="httpd_access_log")
-httpd_conf = sf.first_file(["/etc/httpd/conf/httpd.conf", "/conf/httpd/conf/httpd.conf"], name="httpd_conf")
-httpd_conf_d = sf.first_of([sf.glob_file("/etc/httpd/conf.d/*.conf", name="httpd_conf_d_etc"),
-                            sf.glob_file("/conf/httpd/conf.d/*.conf", name="httpd_conf_d_conf")],
-                            name="httpd_conf_d", alias="httpd.conf.d")
+httpd_conf = sf.glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"], name="httpd_conf"),
+httpd_conf_sos = sf.glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"], name="httpd_conf_sos", context=HostArchiveContext)
 httpd_error_log = sf.simple_file("var/log/httpd/error_log", name="httpd_error_log")
 httpd_pid = sf.simple_command("/bin/ps aux | grep /usr/sbin/httpd | grep -v grep | head -1 | awk '{print $2}'", name="httpd_pid")
 httpd_limits = sf.foreach(httpd_pid, "/bin/cat /proc/%s/limits", name="httpd_limits")
