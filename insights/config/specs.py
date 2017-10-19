@@ -362,6 +362,8 @@ static_specs = {
     "sysconfig_chronyd"         : SimpleFileSpec("etc/sysconfig/chronyd"),
     "sysconfig_httpd"           : SimpleFileSpec("etc/sysconfig/httpd"),
     "sysconfig_irqbalance"      : SimpleFileSpec("etc/sysconfig/irqbalance"),
+    "sysconfig_mongod"          : All([SimpleFileSpec("etc/sysconfig/mongod"),
+                                    SimpleFileSpec("etc/opt/rh/rh-mongodb26/sysconfig/mongod")]),
     "sysconfig_kdump"           : SimpleFileSpec("etc/sysconfig/kdump"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
     "sysconfig_virt_who"        : SimpleFileSpec("etc/sysconfig/virt-who"),
