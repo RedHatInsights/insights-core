@@ -1,5 +1,38 @@
 # Change Log
 
+## [insights-core-1.58.0-107](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.58.0-107) (2017-10-19)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.57.0-102...insights-core-1.58.0-107)
+
+**Implemented enhancements:**
+
+- Vsftpd parsers documentation for 1.x branch [\#619](https://github.com/RedHatInsights/insights-core/pull/619) ([PaulWay](https://github.com/PaulWay))
+
+**Merged pull requests:**
+
+- Remove the backslash for dots in the path of PatternSpecs [\#612](https://github.com/RedHatInsights/insights-core/pull/612) ([xiangce](https://github.com/xiangce))
+- Add Parser for sysconfig\_mongod in branch 1.x [\#595](https://github.com/RedHatInsights/insights-core/pull/595) ([JoySnow](https://github.com/JoySnow))
+- Add parser MongodConf at mongod\_conf.py [\#459](https://github.com/RedHatInsights/insights-core/pull/459) ([JoySnow](https://github.com/JoySnow))
+
+## [insights-core-1.57.0-102](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.57.0-102) (2017-10-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.56.0-95...insights-core-1.57.0-102)
+
+**Implemented enhancements:**
+
+- De-duplicate util/parse\_table and parsers/parse\_fixed\_table [\#344](https://github.com/RedHatInsights/insights-core/issues/344)
+- RcLocal parser documentation for 1.x branch [\#605](https://github.com/RedHatInsights/insights-core/pull/605) ([PaulWay](https://github.com/PaulWay))
+- Resolv\_conf class documentation for 1.x branch [\#604](https://github.com/RedHatInsights/insights-core/pull/604) ([PaulWay](https://github.com/PaulWay))
+- Use \_\_str\_\_ instead of \_\_repr\_\_ for informal object depictions for 1.x branch [\#601](https://github.com/RedHatInsights/insights-core/pull/601) ([PaulWay](https://github.com/PaulWay))
+- Adding \_\_str\_\_ method to hostname for debugging purposes for 1.x branch [\#599](https://github.com/RedHatInsights/insights-core/pull/599) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- Update yaml.load to yaml.safe\_load [\#316](https://github.com/RedHatInsights/insights-core/issues/316)
+
+**Merged pull requests:**
+
+- gen\_api supports multiple rule packages [\#597](https://github.com/RedHatInsights/insights-core/pull/597) ([jhjaggars](https://github.com/jhjaggars))
+- InitScript parser and unit tests branch 1.x [\#580](https://github.com/RedHatInsights/insights-core/pull/580) ([rmetrich](https://github.com/rmetrich))
+
 ## [insights-core-1.56.0-95](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.56.0-95) (2017-10-12)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.55.0-90...insights-core-1.56.0-95)
 
@@ -50,7 +83,7 @@
 - Add case\_variant utility function [\#550](https://github.com/RedHatInsights/insights-core/pull/550) ([kylape](https://github.com/kylape))
 
 ## [insights-core-1.52.0-71](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.52.0-71) (2017-10-06)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.1-1...insights-core-1.52.0-71)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.2-6...insights-core-1.52.0-71)
 
 **Implemented enhancements:**
 
@@ -61,8 +94,14 @@
 - Handle missing option in /etc/sysconfig/selinux [\#547](https://github.com/RedHatInsights/insights-core/pull/547) ([skontar](https://github.com/skontar))
 - add parse\_table functionality to 1.x [\#539](https://github.com/RedHatInsights/insights-core/pull/539) ([SteveHNH](https://github.com/SteveHNH))
 
+## [insights-core-3.0.2-6](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.2-6) (2017-10-04)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.1-1...insights-core-3.0.2-6)
+
 ## [insights-core-3.0.1-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.1-1) (2017-10-03)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.51.0-65...insights-core-3.0.1-1)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.0-5...insights-core-3.0.1-1)
+
+## [insights-core-3.0.0-5](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.0-5) (2017-10-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.51.0-65...insights-core-3.0.0-5)
 
 ## [insights-core-1.51.0-65](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.51.0-65) (2017-09-29)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.50.0-56...insights-core-1.51.0-65)
