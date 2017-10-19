@@ -1,6 +1,5 @@
 from .. import Parser, parser, get_active_lines, LegacyItemAccess, IniConfigFile
 from insights.specs import pluginconf_d
-from insights.specs import pluginconf_d
 
 
 @parser(pluginconf_d)

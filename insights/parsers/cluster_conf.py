@@ -1,7 +1,6 @@
 from .. import LogFileOutput, parser
 import xml.etree.ElementTree as ET
 from insights.specs import cluster_conf
-from insights.specs import cluster_conf
 
 
 @parser(cluster_conf)
