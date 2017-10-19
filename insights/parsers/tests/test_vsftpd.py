@@ -20,6 +20,7 @@ local_enable=YES
 
 # Write permissions
 write_enable=YES
+# Commented_option=not_present
 """.strip()
 
 
@@ -45,3 +46,4 @@ def test_vsftpd_conf():
     assert vsftpd_conf.get('anonymous_enable') == 'NO'
     assert vsftpd_conf.get('local_enable') == 'YES'
     assert vsftpd_conf.get('write_enable') == 'YES'
+    assert 'Commented_option' not in vsftpd_conf
