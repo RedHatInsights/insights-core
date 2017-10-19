@@ -134,7 +134,11 @@ def run(component=None, root=None, print_summary=False,
             dr.load_components(path)
 
     if component:
-        graph = dr.get_dependency_graph(component)
+        if not isinstance(component, (list, set)):
+            component = [component]
+        graph = {}
+        for c in component:
+            graph.update(dr.get_dependency_graph(c))
     else:
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
