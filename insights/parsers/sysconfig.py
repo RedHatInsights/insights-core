@@ -221,3 +221,26 @@ class VirtWhoSysconfig(SysconfigOptions):
         'A TEST'
     """
     pass
+
+
+@parser('sysconfig_mongod')
+class MongodSysconfig(SysconfigOptions):
+    """
+    A parser for analyzing the ``mongod`` service configuration file in
+    the ``etc/sysconfig`` directory, contains 'etc/sysconfig/mongod' and
+    '/etc/opt/rh/rh-mongodb26/sysconfig/mongod'.
+
+    Sample Input::
+
+        OPTIONS="--quiet -f /etc/mongod.conf"
+
+    Examples:
+        >>> mongod_syscfg = shared[MongodWhoSysconfig]
+        >>> mongod_syscfg.get('OPTIONS')
+        '--quiet -f /etc/mongod.conf'
+        >>> mongod_syscfg.get('NO_SUCH_OPTION')
+        None
+        >>> 'NOSUCHOPTION' in mongod_syscfg
+        False
+    """
+    pass

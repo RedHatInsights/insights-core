@@ -231,6 +231,9 @@ module = sf.listdir("/sys/module", name="module")
 modinfo = sf.foreach(module, "/usr/sbin/modinfo %s", name="modinfo", alias="modinfo")
 modprobe_conf = sf.simple_file("/etc/modprobe.conf", name="modprobe_conf", alias="modprobe.conf")
 modprobe_d = sf.glob_file("/etc/modprobe.d/*.conf", name="modprobe_d")
+sysconfig_mongod = sf.glob_file(["etc/sysconfig/mongod",
+                                 "etc/opt/rh/rh-mongodb26/sysconfig/mongod"],
+                                 name='sysconfig_mongod')
 mount = sf.simple_command("/bin/mount", name="mount", alias="mount")
 multicast_querier = sf.simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;", name="multicast_querier")
 multipath_conf = sf.simple_file("/etc/multipath.conf", name="multipath_conf")
