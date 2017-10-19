@@ -55,7 +55,6 @@ Examples:
 
 from .. import parser, Parser, LegacyItemAccess
 from insights.specs import dumpe2fs_h
-from insights.specs import dumpe2fs_h
 
 COMPOUND_FIELDS = ['Filesystem features', 'Filesystem flags', 'Default mount options']
 

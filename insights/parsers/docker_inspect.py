@@ -39,8 +39,6 @@ Examples:
 from .. import LegacyItemAccess, Parser, parser
 from ..core.marshalling import unmarshal
 from insights.specs import docker_container_inspect
-from insights.specs import docker_container_inspect
-from insights.specs import docker_image_inspect
 from insights.specs import docker_image_inspect
 
 

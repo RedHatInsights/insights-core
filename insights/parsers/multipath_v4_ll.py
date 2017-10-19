@@ -43,7 +43,6 @@ import re
 import shlex
 from insights import parser, Parser
 from insights.specs import multipath__v4__ll
-from insights.specs import multipath__v4__ll
 
 
 @parser(multipath__v4__ll)

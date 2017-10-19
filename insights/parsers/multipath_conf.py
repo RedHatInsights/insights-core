@@ -11,7 +11,6 @@ The ``multipath`` parser function is deprecated and should not be used.
 from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
 from insights.specs import multipath_conf
-from insights.specs import multipath_conf
 
 
 @parser(multipath_conf)
