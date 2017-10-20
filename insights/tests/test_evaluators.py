@@ -239,7 +239,7 @@ def test_single_node():
 def test_multi_node():
     with MockTarFile(CLUSTER_UPLOAD) as mtf:
         spec = SpecMapper(mtf)
-        assert spec.root.startswith("/tmp")
+        assert spec.root.startswith(tempfile.gettempdir())
 
 
 def test_soscleaned():

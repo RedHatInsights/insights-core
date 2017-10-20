@@ -1,3 +1,4 @@
+import sys
 import pytest
 
 from insights.util import subproc
@@ -9,8 +10,10 @@ def test_call():
 
 
 def test_call_timeout():
-    with pytest.raises(subproc.CalledProcessError):
-        subproc.call('sleep 3', timeout=1)
+    # Timeouts don't work on OS X
+    if sys.platform != "darwin":
+        with pytest.raises(subproc.CalledProcessError):
+            subproc.call('sleep 3', timeout=1)
 
 
 def test_call_invalid_args():

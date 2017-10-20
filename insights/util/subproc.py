@@ -82,7 +82,7 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, s
     rc = 0
     try:
         cmd = cmd.encode('utf-8', 'replace')
-        if timeout is not None:
+        if timeout is not None and sys.platform != "darwin":
             cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
 
         log.debug("Running %s" % cmd)

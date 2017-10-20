@@ -24,17 +24,14 @@ import os
 import re
 import errno
 import sys
-try:
-    import magic
-except ImportError:
-    magic = None
-    from utilities import magic_plan_b
 import uuid
 import shutil
 import struct, socket
 import tempfile
 import logging
 import tarfile
+
+from insights.util import content_type
 
 
 class SOSCleaner:
@@ -77,10 +74,6 @@ class SOSCleaner:
         self.kw_db = dict() #keyword database
         self.kw_count = 0
 
-        if magic:
-            self.magic = magic.open(magic.MAGIC_NONE)
-            self.magic.load()
-
     def _skip_file(self, d, files):
         '''
         The function passed into shutil.copytree to ignore certain patterns and filetypes
@@ -100,10 +93,7 @@ class SOSCleaner:
                     # i thought i'd already removed it. - jduncan
                     #if mode == '200' or mode == '444' or mode == '400':
                     #    skip_list.append(f)
-                    if magic:
-                        mime_type = self.magic.file(f_full)
-                    else:
-                        mime_type = magic_plan_b(f_full)
+                    mime_type = content_type.from_file(f_full)
                     if 'text' not in mime_type:
                         skip_list.append(f)
 
@@ -154,10 +144,7 @@ class SOSCleaner:
     def _extract_sosreport(self, path):
 
         self.logger.con_out("Beginning SOSReport Extraction")
-        if magic:
-            compression_sig = self.magic.file(path).lower()
-        else:
-            compression_sig = magic_plan_b(path).lower()
+        compression_sig = content_type.from_file(path).lower()
         if 'directory' in compression_sig:
             self.logger.info('%s appears to be a %s - continuing', path, compression_sig)
             # Clear out origin_path as we don't have one
