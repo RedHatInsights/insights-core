@@ -15,7 +15,7 @@ from . import insights_heartbeat
 def test_from_buffer_with_directory():
     arc_path = insights_heartbeat()
     tmp_dir = tempfile.mkdtemp()
-    command = "tar -a -x -f %s -C %s" % (arc_path, tmp_dir)
+    command = "tar -x -f %s -C %s" % (arc_path, tmp_dir)
     subprocess.call(shlex.split(command))
 
     with archives.TarExtractor() as tar_ex:
@@ -66,7 +66,7 @@ def test_with_zip():
 
     tmp_dir = tempfile.mkdtemp()
     arc_path = insights_heartbeat()
-    command = "tar -a -x -f %s -C %s" % (arc_path, tmp_dir)
+    command = "tar -x -f %s -C %s" % (arc_path, tmp_dir)
     subprocess.call(shlex.split(command))
 
     try:

@@ -37,7 +37,8 @@ develop = set([
     'sphinx_rtd_theme',
     'futures==3.0.5',
     'requests==2.13.0',
-    'wheel'
+    'wheel',
+    'six'
 ])
 
 if __name__ == "__main__":
