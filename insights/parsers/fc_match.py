@@ -1,6 +1,6 @@
 """
-/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat - Command
-======================================================================
+FCMatch - command ``/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat``
+==================================================================================
 
 This command gets the fonts information in the current system.
 

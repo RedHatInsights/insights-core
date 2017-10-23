@@ -1,6 +1,6 @@
 """
-interrupts - File /proc/interrupts
-==================================
+Interrupts - file ``/proc/interrupts``
+======================================
 
 Provides parsing for contents of ``/proc/interrupts``.
 The contents of a typical ``interrupts`` file looks like::

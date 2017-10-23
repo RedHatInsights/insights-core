@@ -1,6 +1,7 @@
 """
-neutron conf - File /etc/neutron/neutron.conf
-=============================================
+NeutronConf - file ``/etc/neutron/neutron.conf``
+================================================
+
 This class provides parsing for the file ``/etc/neutron/neutron.conf``.
 
 Sample input data is in the format::

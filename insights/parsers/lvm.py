@@ -1,10 +1,33 @@
 """
-lvm parser
-==========
+Logical Volume Management configuration and status
+==================================================
+
 Parsers for lvm data based on output of various commands and file contents.
 
 This module contains the classes that parse the output of the commands `lvs`,
 `pvs`, and `vgs`, and the contents of the file `/etc/lvm/lvm.conf`.
+
+Pvs - command ``/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all``
+------------------------------------------------------------------------------------
+
+PvsHeadings - command ``pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"``
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+Vgs - command ``/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all``
+------------------------------------------------------------------------------------
+
+VgsHeadings - command ``vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"``
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Lvs - command ``/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all``
+------------------------------------------------------------------------------------
+
+LvsHeadings - command ``/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"``
+--------------------------------------------------------------------------------------------
+
+LvmConf - file ``/etc/lvm/lvm.conf``
+------------------------------------
+
 """
 import json
 from ..util import parse_keypair_lines
@@ -116,8 +139,7 @@ class Lvm(Parser):
 @parser('pvs_noheadings')
 class Pvs(Lvm):
     """
-    The CommandSpec of "pvs" defined as:
-    `/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all`
+    Parse the output of the `/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all` command.
 
     Parse each line in the output of pvs based on the CommandSpec of "pvs" in
     `specs.py` Output sample of pvs::
@@ -177,8 +199,8 @@ class Pvs(Lvm):
 @parser('pvs')
 class PvsHeadings(LvmHeadings):
     """
-    Parses the output of the command
-    `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"`.
+    Parses the output of the
+    `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"` command.
 
     Sample input::
 
@@ -239,8 +261,7 @@ class PvsHeadings(LvmHeadings):
 @parser('vgs_noheadings')
 class Vgs(Lvm):
     """
-    The CommandSpec of "vgs" defined as:
-    `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all`
+    Parse the output of the `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all` command.
 
     Parse each line in the output of vgs based on the CommandSpec of "vgs" in
     `specs.py` Output sample of vgs::
@@ -306,8 +327,8 @@ class Vgs(Lvm):
 @parser('vgs')
 class VgsHeadings(LvmHeadings):
     """
-    Parses output of the command
-    `vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"`
+    Parses output of the
+    `vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"` command.
 
     Sample input::
 
@@ -348,8 +369,7 @@ class VgsHeadings(LvmHeadings):
 @parser('lvs_noheadings')
 class Lvs(Lvm):
     """
-    The CommandSpec of "lvs" defined as:
-    `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all`
+    Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all` command.
 
     Parse each line in the output of lvs based on the CommandSpec of "lvs" in
     `specs.py`:

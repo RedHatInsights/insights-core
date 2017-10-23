@@ -1,6 +1,6 @@
 """
-vdsm.id- File /etc/vdsm/vdsm.id
-===============================
+VDSMId - file ``/etc/vdsm/vdsm.id``
+===================================
 
 Module for parsing the content of file ``vdsm.id``, which is a simple file.
 
@@ -30,9 +30,4 @@ class VDSMId(Parser):
         - E.g.: F7D9D983-6233-45C2-A387-9B0C33CB1306
         """
         lines = get_active_lines(content)
-        self.data = lines[0].strip() if len(lines) > 0 else None
-
-    @property
-    def uuid(self):
-        """Return the UUID in `vdsm.id` file."""
-        return self.data
+        self.uuid = lines[0].strip() if len(lines) > 0 else None

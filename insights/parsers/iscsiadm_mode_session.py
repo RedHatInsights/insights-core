@@ -1,6 +1,6 @@
 """
-iscsiadm -m session - Command
-=============================
+IscsiAdmModeSession - command ``iscsiadm - m session``
+======================================================
 
 This module provides the class ``IscsiAdmModeSession`` which processes
 ``iscsiadm -m session`` command output.  Typical output looks like::

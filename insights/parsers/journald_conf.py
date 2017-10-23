@@ -1,6 +1,6 @@
 """
-JournaldConf - File /etc/systemd/journald.conf, journald.conf.d directories
-===========================================================================
+Journald configuration files
+============================
 
 The journald.conf file is a key=value file with hash comments. Everything is in the [Journal]
 section, so sections are ignored.
@@ -15,6 +15,17 @@ default value is assumed by systemd if the particular option is not specified.
 
 Note: Precedence logic is implemented in JournaldConfAll combiner, the parser is called for every
 file separately.
+
+Parsers provided by this module are:
+
+EtcJournaldConf - file ``/etc/systemd/journald.conf``
+-----------------------------------------------------
+
+EtcJournaldConfD - file ``/etc/systemd/journald.conf.d/*.conf``
+---------------------------------------------------------------
+
+UsrJournaldConfD - file ``usr/lib/systemd/journald.conf.d/*.conf``
+------------------------------------------------------------------
 
 Example:
 
@@ -66,7 +77,7 @@ class JournaldConf(Parser):
 @parser("etc_journald.conf")
 class EtcJournaldConf(JournaldConf):
     """
-    Parser for accessing etc_journald.conf file.
+    Parser for accessing the ``/etc/systemd/journald.conf`` file.
     """
     pass
 
@@ -74,7 +85,7 @@ class EtcJournaldConf(JournaldConf):
 @parser("etc_journald.conf.d")
 class EtcJournaldConfD(JournaldConf):
     """
-    Parser for accessing etc_journald.conf.d files.
+    Parser for accessing the ``/etc/systemd/journald.conf.d/*.conf`` files.
     """
     pass
 
@@ -82,6 +93,6 @@ class EtcJournaldConfD(JournaldConf):
 @parser("usr_journald.conf.d")
 class UsrJournaldConfD(JournaldConf):
     """
-    Parser for accessing usr_journald.conf.d files.
+    Parser for accessing the ``usr/lib/systemd/journald.conf.d/*.conf`` files.
     """
     pass

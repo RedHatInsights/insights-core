@@ -1,6 +1,6 @@
 """
-os-release - File ``/etc/os-release``
-=====================================
+OsRelease - file ``/etc/os-release``
+====================================
 
 This module provides plugins access to file ``/etc/os-release``.
 

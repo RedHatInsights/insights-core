@@ -1,9 +1,9 @@
 """
-lssap - Command
-===============
+Lssap - command ``/usr/sap/hostctrl/exe/lssap``
+===============================================
 
-This module provides processing for the output of the ``lssap`` command on SAP systems.
-The spec handled by this command inlude::
+This module provides processing for the output of the ``lssap`` command on
+SAP systems. The spec handled by this command inlude::
 
     "lssap"                     : CommandSpec("/usr/sap/hostctrl/exe/lssap")
 

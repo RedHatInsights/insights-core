@@ -1,5 +1,5 @@
 """
-MultipathDevices - Command ``multipath -v4 -ll``
+MultipathDevices - command ``multipath -v4 -ll``
 ================================================
 
 This function converts the output of the ``multipath -v4 -ll`` command and

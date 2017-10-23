@@ -1,6 +1,7 @@
 """
-nscd_conf : File contents of ``/etc/nscd.conf``
-===============================================
+NscdConf - file ``/etc/nscd.conf``
+==================================
+
 This module parses the contents of the file ``/etc/nscd.conf``.
 
 Each line of the ``nscd.conf`` file specifies either an attribute and a value,

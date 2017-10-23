@@ -1,6 +1,6 @@
 """
-foreman_proxy_conf - Files /etc/foreman-proxy/settings.yml
-==========================================================
+ForemanProxyConf - file ``/etc/foreman-proxy/settings.yml``
+===========================================================
 
 This module provides parsing for FOREMAN-PROXY configuration files.
 ``ForemanProxyConf`` is a parser for ``/etc/foreman-proxy/settings.yml`` files.

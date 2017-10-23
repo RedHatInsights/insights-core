@@ -1,9 +1,35 @@
 """
-Sysconfig - Files ``/etc/sysconfig/*``
-======================================
+Sysconfig - files in ``/etc/sysconfig/``
+========================================
 
 This is a collection of parsers that all deal with the system's configuration
-files under the ``/etc/sysconfig/`` folder.
+files under the ``/etc/sysconfig/`` folder.  Parsers included in this module
+are:
+
+ChronydSysconfig - file ``/etc/sysconfig/chronyd``
+--------------------------------------------------
+
+DockerSysconfig - file ``/etc/sysconfig/docker``
+------------------------------------------------
+
+HttpdSysconfig - file ``/etc/sysconfig/httpd``
+----------------------------------------------
+
+IrqbalanceSysconfig - file ``/etc/sysconfig/irqbalance``
+--------------------------------------------------------
+
+KdumpSysconfig - file ``/etc/sysconfig/kdump``
+----------------------------------------------
+
+MongodSysconfig - file ``/etc/sysconfig/mongod``
+------------------------------------------------
+
+NtpdSysconfig - file ``/etc/sysconfig/ntpd``
+--------------------------------------------
+
+VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
+---------------------------------------------------
+
 """
 
 from .. import parser, SysconfigOptions

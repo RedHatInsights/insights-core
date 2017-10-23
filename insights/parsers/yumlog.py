@@ -1,6 +1,6 @@
 """
-yumlog - File /var/log/yum.log
-==============================
+YumLog - file ``/var/log/yum.log``
+==================================
 
 This module provides parsing for the ``/var/log/yum.log`` file.
 The ``YumLog`` class implements parsing for the file, which looks like::

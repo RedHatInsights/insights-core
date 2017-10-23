@@ -1,6 +1,6 @@
 """
-sssd_conf - File /etc/sssd/sssd.conf
-====================================
+SSSD_Config - file ``/etc/sssd/sssd.config``
+============================================
 
 SSSD's configuration file is in a standard 'ini' format.
 
@@ -26,7 +26,7 @@ from .. import IniConfigFile, parser
 @parser('sssd_config')
 class SSSD_Config(IniConfigFile):
     """
-    Parse the content of the /etc/sssd/sssd.config file.
+    Parse the content of the ``/etc/sssd/sssd.config`` file.
 
     The 'sssd' section must always exist.  Within that, the 'domains'
     parameter is usually defined to give a comma-separated list of the

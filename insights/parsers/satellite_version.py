@@ -1,6 +1,6 @@
 """
-satellite_version - File /usr/share/foreman/lib/satellite/version.rb
-====================================================================
+Satellite6Version - file ``/usr/share/foreman/lib/satellite/version.rb``
+========================================================================
 
 Module for parsing the content of file ``version.rb`` or ``satellite_version``,
 which is a simple file in foreman-debug or sosreport archives of Satellite 6.x.

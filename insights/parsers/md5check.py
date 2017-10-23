@@ -1,7 +1,6 @@
-
 """
-md5check - Return original md5sum of specified binary or library files
-======================================================================
+MD5CheckSum - md5 checksums of specified binary or library files
+================================================================
 
 Module for processing output of the ``prelink -y --md5`` or ``md5sum`` command.
 

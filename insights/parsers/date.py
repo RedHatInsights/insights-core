@@ -1,17 +1,20 @@
 """
-date - Command
-==============
+Date parsers
+============
 
-This module provides processing for the output of the ``date`` command.
-The specs handled by this command inlude::
+This module provides processing for the output of the ``date`` command in
+various formats.
 
-    "date"                      : CommandSpec("/bin/date"),
-    "date_utc"                  : CommandSpec("/bin/date --utc"),
+Date - command ``date``
+-----------------------
 
 Class ``Date`` parses the output of the ``date`` command.  Sample output of
 this command looks like::
 
     Fri Jun 24 09:13:34 CST 2016
+
+DateUTC - command ``dateutc``
+-----------------------------
 
 Class ``DateUTC`` parses the output of the ``date --utc`` command.  Output is
 similar to the ``date`` command except that the `Timezone` column uses UTC.

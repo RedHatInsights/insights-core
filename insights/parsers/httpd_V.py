@@ -1,6 +1,6 @@
 """
-httpd-V - Command httpd -V
-==========================
+HttpdV - command ``httpd -V``
+=============================
 
 Module for parsing the output of command ``httpd -V``.   The bulk of the
 content is split on the colon and keys are kept as is.  Lines beginning with

@@ -2,6 +2,12 @@
 389 Directory Server logs
 =========================
 
+DirSrvAccessLog - files ``var/log/dirsrv/.*/access``
+----------------------------------------------------
+
+DirSrvErrorsLog - files ``var/log/dirsrv/.*/errors``
+----------------------------------------------------
+
 '''
 
 from insights import parser, LogFileOutput

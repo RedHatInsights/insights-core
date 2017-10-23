@@ -1,6 +1,6 @@
 """
-yum_conf - File /etc/yum.conf
-=============================
+YumConf - file ``/etc/yum.conf``
+================================
 
 This module provides parsing for the ``/etc/yum.conf`` file.
 The ``YumConf`` class parses the information in the file
