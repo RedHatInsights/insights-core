@@ -1,13 +1,11 @@
 """
-smbstatus - Command
-===================
+SaMBa status commands
+=====================
 
-This module provides processing for the ``smbstatus`` command. The specs
-handled by this command inlude::
+This module provides processing for the ``smbstatus`` command.Parsers included in this module are:
 
-    "smbstatus_S"                 : CommandSpec("/usr/bin/smbstatus -S"),
-    "smbstatus_p"                 : CommandSpec("/usr/bin/smbstatus -p"),
-
+SmbstatusS - command ``smbstatus -S``
+-------------------------------------
 
 Class ``SmbstatusS`` parses the output of the ``smbstatus -S`` command.
 
@@ -16,6 +14,9 @@ Sample output of this command looks like::
     Service      pid     Machine       Connected at                     Encryption   Signing
     ----------------------------------------------------------------------------------------
     share_test   13668   10.66.208.149 Wed Sep 27 10:33:55 AM 2017 CST  -            -
+
+Smbstatusp - command ``smbstatus -p``
+-------------------------------------
 
 Class ``Smbstatusp`` parses the output of the ``smbstatus -p`` command.
 

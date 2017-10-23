@@ -3,7 +3,22 @@ System time configuration
 =========================
 
 This is a collection of parsers that all deal with the system's configuration
-of its time setting resources
+of its time setting resources.
+
+Parsers included in this module are:
+
+ChronyConf - file ``/etc/chronyd.conf``
+---------------------------------------
+
+LocalTime - command ``file -L /etc/localtime``
+----------------------------------------------
+
+NTP_conf - file ``/etc/ntpd.conf``
+----------------------------------
+
+NtpTime - command ``ntptime``
+-----------------------------
+
 """
 
 import re
@@ -74,7 +89,7 @@ class NTPConfParser(Parser):
 @parser("chrony.conf")
 class ChronyConf(NTPConfParser):
     """
-    A parser for analyzing the chrony service config file /etc/chrony.conf
+    A parser for analyzing the chrony service config file ``/etc/chrony.conf``
 
     Uses the ``NTPConfParser`` class defined in this module.
     """
@@ -84,7 +99,7 @@ class ChronyConf(NTPConfParser):
 @parser("ntp.conf")
 class NTP_conf(NTPConfParser):
     """
-    A parser for analyzing the ntpd service config file /etc/ntp.conf
+    A parser for analyzing the ntpd service config file ``/etc/ntp.conf``
 
     Uses the ``NTPConfParser`` class defined in this module.
     """
@@ -140,7 +155,7 @@ class LocalTime(Parser):
 @parser("ntptime")
 class NtpTime(Parser):
     """
-    A parser for working with the output of the ``ntptime`` command.
+    A parser for working with the output of the ``ntptime``.
 
     This doesn't attempt to get much out of the output; useful things that
     it retrieves are:
@@ -231,8 +246,7 @@ class ChronydService(SysconfigOptions):
         Deprecated parser, please use
         :class:`insights.parsers.sysconfig.ChronydSysconfig` instead.
 
-    A parser for analyzing the ``chronyd`` service config file in the
-    ``/etc/sysconfig`` directory.
+    A parser for analyzing the ``/etc/sysconfig/chronyd`` service config file.
 
     Sample Input::
 
@@ -260,8 +274,7 @@ class NTPDService(SysconfigOptions):
         Deprecated parser, please use
         :class:`insights.parsers.sysconfig.NtpdSysconfig` instead.
 
-    A parser for analyzing the ``ntpd`` service config file in the
-    ``/etc/sysconfig`` directory
+    A parser for analyzing the ``/etc/sysconfig/ntpd`` service config file.
 
     Sample Input::
 

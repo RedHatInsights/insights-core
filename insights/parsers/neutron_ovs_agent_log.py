@@ -1,6 +1,6 @@
 """
-NeutronOVSAgentLog - File /var/log/neutron/openvswitch-agent.log
-===================================================================
+NeutronOVSAgentLog - file ``/var/log/neutron/openvswitch-agent.log``
+====================================================================
 
 Parser plugin for parsing the log file for Neutron OVS Agent
 

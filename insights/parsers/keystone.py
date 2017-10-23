@@ -1,6 +1,6 @@
 """
-keystone - File keystone.conf
-=============================
+KeystoneConf - file ``/etc/keystone/keystone.conf``
+===================================================
 
 The ``KeystoneConf`` class parses the information in the file
 ``/etc/keystone/keystone.conf``.  See the ``IniConfigFile`` class for more

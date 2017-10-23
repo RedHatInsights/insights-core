@@ -1,6 +1,6 @@
 """
-SSSD logs - files matching ``/var/log/sssd/*.log``
-==================================================
+SSSDLog - files matching ``/var/log/sssd/*.log``
+================================================
 
 """
 

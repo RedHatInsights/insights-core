@@ -1,6 +1,6 @@
 """
-ssh - Files for configuration of `ssh`
-======================================
+SshDConfig - file ``/etc/ssh/sshd_config``
+==========================================
 
 The ``ssh`` module provides parsing for the ``sshd_config``
 file.  The ``SshDConfig`` class implements the parsing and
@@ -56,7 +56,7 @@ from .. import Parser, parser, get_active_lines
 
 @parser('sshd_config')
 class SshDConfig(Parser):
-    """Parsing for ``sshd_config`` file.
+    """Parsing for ``/etc/ssh/sshd_config`` file.
 
     Properties:
         lines (list): List of `KeyValue` namedtupules for each line in

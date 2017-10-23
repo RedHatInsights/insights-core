@@ -1,13 +1,13 @@
 """
-pam - Files ``/etc/pam.conf`` and in ``/etc/pam.d/``
-====================================================
+Pluggable Authentication Module configuration
+=============================================
 
 This module provides parsing for PAM configuration files.
 ``PamConf`` is a parser for ``/etc/pam.conf`` files. Sample input is provided
 in the examples.
 
-PamConf
--------
+PamConf - file ``/etc/pam.conf``
+--------------------------------
 
 Examples:
     >>> pam_input_data = '''
@@ -37,8 +37,8 @@ Examples:
     >>> pam_conf.file_path
     '/etc/pam.conf'
 
-PamDConf
---------
+PamDConf - used for specific PAM configuration files
+----------------------------------------------------
 
 ``PamDConf`` is a base class for the creation of parsers for ``/etc/pam.d``
 service specific configuration files. Sample input is provided in the examples.

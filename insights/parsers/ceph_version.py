@@ -1,6 +1,6 @@
 """
-ceph_version - Command
-======================
+CephVersion - command ``/usr/bin/ceph -v``
+==========================================
 
 This module provides plugins access to the Ceph version information gathered from
 the ``ceph -v`` command. This module parses the community version to the Red Hat

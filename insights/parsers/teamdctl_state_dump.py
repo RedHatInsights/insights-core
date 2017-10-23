@@ -1,6 +1,6 @@
 """
-teamdctl {team interface} state dump - Command
-==============================================
+TeamdctlStateDump - command ``teamdctl {team interface} state dump``
+====================================================================
 
 This module provides processing for the output of the command
 ``teamdctl {team interface} state dump`` which is JSON pattern.

@@ -1,6 +1,6 @@
 """
-PostgreSQLConf - file /var/lib/pgsql/data/postgresql.conf
-=========================================================
+PostgreSQLConf - file ``/var/lib/pgsql/data/postgresql.conf``
+=============================================================
 
 The PostgreSQL configuration file is in a fairly standard 'key = value'
 format, with the equals sign being optional.  A hash mark (#) marks the

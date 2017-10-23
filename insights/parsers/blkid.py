@@ -1,6 +1,6 @@
 """
-blkid - Command
-===============
+BlockIDInfo - command ``blkid``
+===============================
 
 This module provides the class ``BlockIDInfo`` which processes ``blkid`` command
 output.  Typical output looks like::

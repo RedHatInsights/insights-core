@@ -1,5 +1,5 @@
 """
-GRUB configuration - files `/boot/grub/grub2.cfg` and `/boot/grub.conf`
+GRUB configuration files
 =======================================================================
 
 This parser reads the configuration of the GRand Unified Bootloader, versions
@@ -47,6 +47,16 @@ Note:
 There are several helper functions for dealing with the Intel IOMMU and for
 extracting the kernel and initrd configurations available.
 
+Parsers provided by this module are:
+
+Grub1Config - file ``/boot/grub.conf``
+--------------------------------------
+
+Grub2Config - file ``/boot/grub/grub2.cfg``
+-------------------------------------------
+
+Grub2EFIConfig - file ``boot/efi/EFI/redhat/grub.cfg``
+------------------------------------------------------
 """
 
 from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict

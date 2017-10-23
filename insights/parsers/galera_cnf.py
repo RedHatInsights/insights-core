@@ -1,6 +1,7 @@
 """
-galera.cnf - File /etc/my.cnf.d/galera.cnf
-==========================================
+GaleraCnf - file ``/etc/my.cnf.d/galera.cnf``
+=============================================
+
 This module provides parsing for the galera configuration of
 MySQL. The input is the contents of the file
 `/etc/my.cnf.d/galera.cnf`.  Typical contents of the `galera.cnf`

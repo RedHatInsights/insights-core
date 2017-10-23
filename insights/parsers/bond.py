@@ -1,6 +1,6 @@
 """
-bonding - File /proc/net/bonding
-================================
+Bond - file ``/proc/net/bonding``
+=================================
 
 Provides plugins access to the network bonding information gathered from
 all the files starteing with "bond." located in the

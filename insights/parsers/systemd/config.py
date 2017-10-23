@@ -1,8 +1,21 @@
 """
-Service systemd file - File
-===========================
-Service systemd files are in ``/usr/lib/systemd/system``, and Their content format is
-``config``.
+SystemD service configuration
+=============================
+
+Service systemd files are in ``/usr/lib/systemd/system``, and their content
+format is similar to a '.ini' file.
+
+Parsers included in this module are:
+
+SystemdDocker - file ``/usr/lib/systemd/system/docker.service``
+---------------------------------------------------------------
+
+SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.service``
+-------------------------------------------------------------------------------------
+
+SystemdSystemConf - file ``/etc/systemd/system.conf``
+-----------------------------------------------------
+
 """
 
 from ConfigParser import RawConfigParser as cp
@@ -17,9 +30,9 @@ class SystemdDocker(Parser):
     """Class for docker systemd configuration.
 
     The content of file ``/usr/lib/systemd/system/docker.service`` is recorded
-    via INI format, ``ConfigParser`` could be used to parse the content.
+    in INI format, ``ConfigParser`` could be used to parse the content.
 
-    Typical output of the ``systemd_docker`` command is::
+    Sample file content is::
 
         [Service]
         Type=notify
@@ -75,7 +88,8 @@ class SystemdDocker(Parser):
 
 @parser('systemd_system.conf')
 class SystemdSystemConf(LegacyItemAccess, Parser):
-    """Class for system systemd configuration.
+    """Class for systemd master configuration in the
+    ``/etc/systemd/system.conf`` file.
 
     Systemd configuration files are recorded via INI format as well, we can
     share the same parser ``ConfigParser`` here.

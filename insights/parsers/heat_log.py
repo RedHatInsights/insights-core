@@ -1,8 +1,14 @@
 """
-heat_log - Files /var/log/heat...
-=================================
+Heat logs
+=========
 
-Module for parsing the log files for Heat
+Module for parsing the log files for Heat.  Parsers included are:
+
+HeatApiLog - file ``/var/log/heat/heat-api.log``
+------------------------------------------------
+
+HeatEngineLog - file ``/var/log/heat/heat-engine.log``
+------------------------------------------------------
 
 """
 
@@ -29,7 +35,7 @@ class HeatApiLog(LogFileOutput):
         2016-11-09 14:39:30.782 4136 INFO eventlet.wsgi.server [-] (4136) wsgi starting up on http://172.16.2.12:8004
 
     Note:
-        Please refer to its super-class ``LogFileOutput``
+        Please refer to its super-class :py:class:`insights.core.LogFileOutput`
     """
     pass
 
@@ -56,6 +62,6 @@ class HeatEngineLog(LogFileOutput):
         2016-11-09 14:32:44.156 4392 WARNING heat.engine.environment [-] OS::Neutron::ExtraRoute is UNSUPPORTED. Use this resource at your own risk.
 
     Note:
-        Please refer to its super-class ``LogFileOutput``
+        Please refer to its super-class :py:class:`insights.core.LogFileOutput`
     """
     pass
