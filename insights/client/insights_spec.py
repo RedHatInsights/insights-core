@@ -69,7 +69,7 @@ class InsightsCommand(InsightsSpec):
         # all commands should timeout after a long interval so the client does not hang
         # get the command timeout interval
         if 'cmd_timeout' in config:
-            timeout_interval = self.config.getint(constants.app_name, 'cmd_timeout')
+            timeout_interval = config['cmd_timeout']
         else:
             timeout_interval = constants.default_cmd_timeout
 
