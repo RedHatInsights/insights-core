@@ -53,7 +53,6 @@ CONFIG = {
     'keep_archive': False,
     'logging_file': os.path.join(constants.log_dir, APP_NAME) + '.log',
     'loglevel': 'DEBUG',
-    'mountpoint': None,
     'net_debug': False,
     'no_gpg': False,  # legacy
     'no_upload': False,
