@@ -122,16 +122,6 @@ class InsightsCommand(InsightsSpec):
             logger.debug('Proc1 stderr: %s', stderr)
             proc0 = proc1
 
-            # if the return code was not zero
-            # indicates timeout or absence
-            if proc1.returncode > 0:
-                logger.debug('Process return code indicates timeout or absence.')
-                # no command indicates timeout
-                if not self.cmd_exists(self.command):
-                    logger.debug('Command %s not found.', self.command)
-                else:
-                    logger.debug('Command %s found. Timeout occurred.', self.command)
-
             dirty = True
 
         if self.pattern is not None and len(self.pattern):
@@ -148,16 +138,7 @@ class InsightsCommand(InsightsSpec):
             # always log return codes for debug
             logger.debug('Proc2 Status: %s', proc2.returncode)
             logger.debug('Proc2 stderr: %s', stderr)
-
-            # if the return code was not zero
-            # indicates timeout or absence
-            if proc2.returncode > 0:
-                logger.debug('Process return code indicates timeout or absence.')
-                # no command indicates timeout
-                if not self.cmd_exists(self.command):
-                    logger.debug('Command %s not found.', self.command)
-                else:
-                    logger.debug('Command %s found. Timeout occurred.', self.command)
+            proc0 = proc2
 
             dirty = True
 
@@ -172,23 +153,6 @@ class InsightsCommand(InsightsSpec):
         logger.debug("Proc0 Status: %s", proc0.returncode)
         logger.debug("Proc0 stderr: %s", stderr)
         return stdout.decode('utf-8', 'ignore')
-
-    def cmd_exists(self, command):
-        """
-        Check if a command exists using native which
-        Returns False if 'which' does not find the command path
-        Otherwise returns True
-        """
-        args = shlex.split("which %s" % (command))
-        logger.debug('Checking %s command exists.', args[1])
-        proc_check = Popen([args[0], args[1]], shell=False, stdout=PIPE, stderr=STDOUT,
-                           bufsize=-1, close_fds=True)
-        stdout, stderr = proc_check.communicate()
-        logger.debug('Which returns %s for %s.', proc_check.returncode, args[1])
-        if proc_check.returncode > 0:
-            return False
-        else:
-            return True
 
 
 class InsightsFile(InsightsSpec):
