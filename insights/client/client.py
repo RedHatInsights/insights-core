@@ -273,12 +273,12 @@ def collect(rc=0):
                     'location': config['analyze_file']}]
 
     # mountpoints
-    elif config['mountpoint'] is not None:
+    elif config['analyze_mountpoint'] is not None:
         logger.debug("Client analyzing a filesystem already mounted.")
         targets = [{'type': 'mountpoint',
                     'name': os.path.splitext(
-                        os.path.basename(config['mountpoint']))[0],
-                    'location': config['mountpoint']}]
+                        os.path.basename(config['analyze_mountpoint']))[0],
+                    'location': config['analyze_mountpoint']}]
 
     # container mode
     elif config['container_mode']:
@@ -397,7 +397,7 @@ def collect(rc=0):
             elif t['type'] == 'mountpoint':
 
                 logging_name = 'Filesystem ' + t['name'] + ' at location ' + t['location']
-                mp = config['mountpoint']
+                mp = config['analyze_mountpoint']
 
             # analyze the host
             elif t['type'] == 'host':
