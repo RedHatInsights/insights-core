@@ -50,58 +50,57 @@ COMPONENT_LEN = "__component_len__"
 @parser(netstat_s)
 class NetstatS(LegacyItemAccess, Parser):
     """
-    Parses data from the ```netstat -s``` command.
+    Parses data from the ``netstat -s`` command.
 
-    The output of the ```netstat -s``` command looks like:
-        >>> content = '''
-        ... Ip:
-        ...     3405107 total packets received
-        ...     0 forwarded
-        ...     0 incoming packets discarded
-        ...     2900146 incoming packets delivered
-        ...     2886201 requests sent out
-        ...     456 outgoing packets dropped
-        ...     4 fragments received ok
-        ...     8 fragments created
-        ... Icmp:
-        ...     114 ICMP messages received
-        ...     0 input ICMP message failed.
-        ...     ICMP input histogram:
-        ...         destination unreachable: 107
-        ...         echo requests: 4
-        ...         echo replies: 3
-        ...     261 ICMP messages sent
-        ...     0 ICMP messages failed
-        ...     ICMP output histogram:
-        ...         destination unreachable: 254
-        ...         echo request: 3
-        ...         echo replies: 4
-        ... IcmpMsg:
-        ...         InType0: 3
-        ...         InType3: 107
-        ...         InType8: 4
-        ...         OutType0: 4
-        ...         OutType3: 254
-        ...         OutType8: 3
-        ... Tcp:
-        ...     1648 active connections openings
-        ...     1525 passive connection openings
-        ...     105 failed connection attempts
-        ...     69 connection resets received
-        ...     139 connections established
-        ...     2886370 segments received
-        ...     2890303 segments send out
-        ...     428 segments retransmited
-        ...     0 bad segments received.
-        ...     212 resets sent
-        ... Udp:
-        ...     4901 packets received
-        ...     107 packets to unknown port received.
-        ...     0 packet receive errors
-        ...     1793 packets sent
-        ...     0 receive buffer errors
-        ...     0 send buffer errors
-        ... '''
+    The output of the ``netstat -s`` command looks like::
+
+        Ip:
+            3405107 total packets received
+            0 forwarded
+            0 incoming packets discarded
+            2900146 incoming packets delivered
+            2886201 requests sent out
+            456 outgoing packets dropped
+            4 fragments received ok
+            8 fragments created
+        Icmp:
+            114 ICMP messages received
+            0 input ICMP message failed.
+            ICMP input histogram:
+                destination unreachable: 107
+                echo requests: 4
+                echo replies: 3
+            261 ICMP messages sent
+            0 ICMP messages failed
+            ICMP output histogram:
+                destination unreachable: 254
+                echo request: 3
+                echo replies: 4
+        IcmpMsg:
+                InType0: 3
+                InType3: 107
+                InType8: 4
+                OutType0: 4
+                OutType3: 254
+                OutType8: 3
+        Tcp:
+            1648 active connections openings
+            1525 passive connection openings
+            105 failed connection attempts
+            69 connection resets received
+            139 connections established
+            2886370 segments received
+            2890303 segments send out
+            428 segments retransmited
+            0 bad segments received.
+            212 resets sent
+        Udp:
+            4901 packets received
+            107 packets to unknown port received.
+            0 packet receive errors
+            1793 packets sent
+            0 receive buffer errors
+            0 send buffer errors
 
     Return a dictionary of nested dictionaries, and each key consist of
     lower case letters and "_". For example:
@@ -225,7 +224,7 @@ class NetstatS(LegacyItemAccess, Parser):
 @parser(netstat__agn)
 class NetstatAGN(Parser):
     """
-    Parse netstat -agn to get interface multicast infomation.
+    Parse the ``netstat -agn`` command to get interface multicast infomation.
 
     INPUT:
         >>> content= '''
@@ -355,7 +354,7 @@ class NetstatSection(object):
 @parser(netstat)
 class Netstat(Parser):
     """
-    Parsing netstat command content and return
+    Parsing the ``/bin/netstat -neopa`` command output.
 
     For the input content:
         >>> content = '''
@@ -542,7 +541,8 @@ class Netstat(Parser):
 @parser(netstat_i)
 class Netstat_I(Parser):
     """
-    Parse netstat -i to get interface traffic info such as "TX-OK" and "RX-OK".
+    Parse the ``netstat -i`` command output  to get interface traffic info
+    such as "TX-OK" and "RX-OK".
 
     INPUT:
         >>> content = '''
@@ -593,6 +593,8 @@ class Netstat_I(Parser):
 @parser(ss)
 class SsTULPN(Parser):
     """
+    Parse the output of the ``/usr/sbin/ss -tulpn`` command.
+
     This class parse the input as a table with header:
         "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
 

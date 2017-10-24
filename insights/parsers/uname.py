@@ -1,6 +1,6 @@
 """
-Uname - ``uname -a`` command output
-===================================
+Uname - command ``uname -a``
+============================
 
 The ``Uname`` class reads the output of the ``uname -a`` command and
 interprets it.  It also does a number of handy extra things, like deriving

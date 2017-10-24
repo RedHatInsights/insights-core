@@ -1,6 +1,6 @@
 """
-heat.conf - File /etc/heat/heat.conf
-====================================
+HeatConf - file ``/etc/heat/heat.conf``
+=======================================
 
 This module provides plugins access to the heat.conf information.
 

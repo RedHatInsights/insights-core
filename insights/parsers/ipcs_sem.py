@@ -1,9 +1,15 @@
 """
-Ipcs - Command
-==============
+IPCS commands
+=============
 
-Shared parsers for parsing output of the ``ipcs -s`` and ``ipcs -s -i ##``
-commands. "##" will be replaced with specific semaphore id.
+Shared parsers for parsing output of the ``ipcs -s`` and ``ipcs -s -i``
+commands.
+
+IpcsS - command ``ipcs -s``
+---------------------------
+
+IpcsSI - command ``ipcs -s -i {semaphore ID}``
+----------------------------------------------
 
 """
 from .. import Parser, parser, get_active_lines

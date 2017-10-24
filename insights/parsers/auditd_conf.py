@@ -1,6 +1,6 @@
 """
-AuditdConf - File /etc/audit/auditd.conf
-========================================
+AuditdConf - file ``/etc/audit/auditd.conf``
+============================================
 
 The auditd.conf file is a standard key = value file with hash comments.
 Active settings are provided using the `get_active_settings_value` method or

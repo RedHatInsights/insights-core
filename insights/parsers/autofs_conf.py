@@ -1,6 +1,6 @@
 """
-AutoFSConf - file /etc/autofs.conf
-==================================
+AutoFSConf - file ``/etc/autofs.conf``
+======================================
 
 The `/etc/autofs.conf` file is in a standard '.ini' format, and this parser
 uses the IniConfigFile base class to read this.

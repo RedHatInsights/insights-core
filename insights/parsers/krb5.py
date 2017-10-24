@@ -1,6 +1,7 @@
 """
-krb5 Configuration file - File
-==============================
+Krb5Configuration - files ``/etc/krb5.conf`` and ``/etc/krb5.conf.d/*``
+=======================================================================
+
 krb5 Configuration are ``/etc/krb5.conf`` and ``/etc/krb5.conf.d/*``,
 and the content format is similar to ``INI config``, but they include
 values that span multiple lines. Multi-line values start with a '{'
@@ -75,7 +76,7 @@ def _handle_key_value(t_dict, key, value):
 @parser(krb5)
 class Krb5Configuration(Parser, LegacyItemAccess):
     """
-    Class for krb5.conf and krb5.conf.d configuration.
+    Class for ``krb5.conf`` and ``krb5.conf.d`` configuration files.
 
     The Kerberos .ini format is like an ordinary .ini file except that values
     can include a multiple line key-value pair 'relation' that starts with a

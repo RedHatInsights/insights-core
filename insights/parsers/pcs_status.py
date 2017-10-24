@@ -1,6 +1,6 @@
 """
-pcs status - Command
-====================
+PCSStatus - command ``pcs status``
+==================================
 
 This module provides the classs ``PCSStatus`` which processes
 ``/usr/sbin/pcs status`` command output. Typical output of the ``pcs status``

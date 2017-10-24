@@ -1,12 +1,9 @@
 """
-multicast querier - Files contents
-==================================
+MulticastQuerier - command ``find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;``
+============================================================================================================
+
 This module provides processing for the output of the
 ``find -name multicast_querier ...`` command.
-
-The specs handled by this CommandSpec::
-
-    "multicast_querier"         : CommandSpec("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;"),
 
 Sample output of this command looks like::
 

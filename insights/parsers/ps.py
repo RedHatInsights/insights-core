@@ -1,14 +1,21 @@
 """
-ps - Command
-============
+Process list commands
+=====================
 
-This module provides processing for the output of the ``ps`` command.  The specs
-handled by this command inlude::
+This module provides processing for the various outputs of the ``ps`` command.
+Parsers included in this module are:
 
-    "ps_aux"                    : CommandSpec("/bin/ps aux"),
-    "ps_auxcww"                 : CommandSpec("/bin/ps auxcww"),
-    "ps_auxwww"                 : SimpleFileSpec("sos_commands/process/ps_auxwww"),
-    "ps_axcwwo"                 : CommandSpec("/bin/ps axcwwo ucomm,%cpu,lstart"),
+PsAux - command ``ps aux``
+--------------------------
+
+PsAuxcww - command ``ps auxcww``
+--------------------------------
+
+PsAuxwww - command ``ps auxwww``
+--------------------------------
+
+PsAxcwwo - command ``ps axcwwo ucomm,%cpu,lstart``
+--------------------------------------------------
 
 Class ``PsAuxcww`` parses the output of the ``ps auxcww`` command.  Sample
 output of this command looks like::

@@ -3,15 +3,18 @@ System time configuration
 =========================
 
 This is a collection of parsers that all deal with the system's configuration
-of its time setting resources
+of its time setting resources.
+
 """
 
 import re
-from .. import Parser, parser, get_active_lines
+from .. import Parser, parser, get_active_lines, SysconfigOptions
 from insights.specs import chrony_conf
 from insights.specs import localtime
 from insights.specs import ntp_conf
 from insights.specs import ntptime
+from insights.specs import sysconfig_chronyd
+from insights.specs import sysconfig_ntpd
 
 
 class NTPConfParser(Parser):
@@ -78,7 +81,7 @@ class NTPConfParser(Parser):
 @parser(chrony_conf)
 class ChronyConf(NTPConfParser):
     """
-    A parser for analyzing the chrony service config file /etc/chrony.conf
+    A parser for analyzing the chrony service config file ``/etc/chrony.conf``
 
     Uses the ``NTPConfParser`` class defined in this module.
     """
@@ -88,7 +91,7 @@ class ChronyConf(NTPConfParser):
 @parser(ntp_conf)
 class NTP_conf(NTPConfParser):
     """
-    A parser for analyzing the ntpd service config file /etc/ntp.conf
+    A parser for analyzing the ntpd service config file ``/etc/ntp.conf``
 
     Uses the ``NTPConfParser`` class defined in this module.
     """
@@ -144,7 +147,7 @@ class LocalTime(Parser):
 @parser(ntptime)
 class NtpTime(Parser):
     """
-    A parser for working with the output of the ``ntptime`` command.
+    A parser for working with the output of the ``ntptime``.
 
     This doesn't attempt to get much out of the output; useful things that
     it retrieves are:
@@ -226,3 +229,58 @@ class NtpTime(Parser):
                 result[match.group('keyword')] = vnum
 
         self.data = result
+
+
+@parser(sysconfig_chronyd)
+class ChronydService(SysconfigOptions):
+    """
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.ChronydSysconfig` instead.
+
+    A parser for analyzing the ``/etc/sysconfig/chronyd`` service config file.
+
+    Sample Input::
+
+      OPTIONS="-d"
+      #HIDE="me"
+
+    Examples:
+
+        >>> service_opts = shared[ChronydService]
+        >>> 'OPTIONS' in service_opts.data
+        True
+        >>> 'HIDE' in service_opts.data
+        False
+        >>> service_opts.data['OPTIONS']
+        '"-d"'
+
+    """
+    pass
+
+
+@parser(sysconfig_ntpd)
+class NTPDService(SysconfigOptions):
+    """
+    .. warning::
+        Deprecated parser, please use
+        :class:`insights.parsers.sysconfig.NtpdSysconfig` instead.
+
+    A parser for analyzing the ``/etc/sysconfig/ntpd`` service config file.
+
+    Sample Input::
+
+      OPTIONS="-x -g"
+      #HIDE="me"
+
+    Examples:
+
+        >>> service_opts = shared[NTPDService]
+        >>> 'OPTIONS' in service_opts.data
+        True
+        >>> 'HIDE' in service_opts.data
+        False
+        >>> service_opts.data['OPTIONS']
+        '"-x -g"'
+    """
+    pass

@@ -1,6 +1,6 @@
 """
-keystone_log - File /var/log/keystone/keystone.log
-==================================================
+KeystoneLog - file ``/var/log/keystone/keystone.log``
+=====================================================
 
 Module for parsing the log file for Keystone
 

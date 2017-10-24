@@ -1,10 +1,17 @@
 """
-
-/bin/systemctl show <Services_Name> - Command
-=============================================
+Systemd command ``show`` outputs
+================================
 
 This command shows all the paramters for this service, these parameters can be set
 through unit files corresponding to that service or from command line.
+
+Parsers included in this module are:
+
+SystemctlShowCinderVolume - command ``systemctl show openstack-cinder-volume``
+------------------------------------------------------------------------------
+
+SystemctlShowMariaDB - command ``systemctl show mariadb``
+---------------------------------------------------------
 
 """
 

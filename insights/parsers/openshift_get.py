@@ -1,12 +1,41 @@
 """
-oc get XX --all-namespaces -o yaml - Command
-============================================
+OpenShift Get commands
+======================
 
-``oc get`` command is from openshift, and used to list the usage info that is
-pods info, dc info, services info, e.g.  This shared parser is used to parse
+``oc get`` command is from openshift used to list the usage info - e.g.
+pods info, dc info, services info, etc.  This shared parser is used to parse
 ``oc get XX --all-namespaces -o yaml`` command information. Parameters
 "--all-namespaces" means collecting information from all projects and "-o yaml"
 means the output is in YAML format.
+
+Parsers included in this module are:
+
+OcGetDc - command ``oc get dc -o yaml --all-namespaces``
+--------------------------------------------------------
+
+OcGetEndPoints - command ``oc get endpoints -o yaml --all-namespaces``
+----------------------------------------------------------------------
+
+OcGetPod - command ``oc get pod -o yaml --all-namespaces``
+----------------------------------------------------------
+
+OcGetProject - command ``oc get project -o yaml --all-namespaces``
+------------------------------------------------------------------
+
+OcGetPv - command ``oc get pv -o yaml --all-namespaces``
+--------------------------------------------------------
+
+OcGetPvc - command ``oc get pvc -o yaml --all-namespaces``
+----------------------------------------------------------
+
+OcGetRole - command ``oc get role -o yaml --all-namespaces``
+------------------------------------------------------------
+
+OcGetRolebinding - command ``oc get rolebinding -o yaml --all-namespaces``
+--------------------------------------------------------------------------
+
+OcGetService - command ``oc get service -o yaml --all-namespaces``
+------------------------------------------------------------------
 
 Examples:
     >>> setting_dic = shared[OcGetService]
@@ -111,7 +140,7 @@ class OcGetPvc(YAMLParser):
 
 
 @parser(oc_get_endpoints)
-class OcGetEndPonits(YAMLParser):
+class OcGetEndPoints(YAMLParser):
     """Class to parse ``oc get endpoints -o yaml --all-namespaces``"""
 
     def get_endpoints(self):

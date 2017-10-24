@@ -1,11 +1,6 @@
 """
-``bonding`` - network bonding information
-=========================================
-
-Parsers defined in this module:
-
 Bond - file ``/proc/net/bonding``
----------------------------------
+=================================
 """
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException
