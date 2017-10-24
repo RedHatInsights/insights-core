@@ -1,6 +1,6 @@
 """
-/usr/bin/openssl x509 -noout -enddate -in path/to/cert/file - Command
-=====================================================================
+CertificatesEnddate - command ``/usr/bin/openssl x509 -noout -enddate -in path/to/cert/file``
+=============================================================================================
 
 This command gets the enddates of certificate files.
 

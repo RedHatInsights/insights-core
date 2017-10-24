@@ -1,9 +1,15 @@
 """
-Units Manged By  Systemctl  (services)
-======================================
+Units Manged By Systemctl (services)
+====================================
 
-This parser will parse the output of ``systemctl list-unit-files`` utility and
-``systemctl list-units``
+Parsers included in this module are:
+
+ListUnits - command ``/bin/systemctl list-units``
+-------------------------------------------------
+
+UnitFiles - command ``/bin/systemctl list-unit-files``
+------------------------------------------------------
+
 """
 from .. import get_active_lines
 from ... import Parser, parser

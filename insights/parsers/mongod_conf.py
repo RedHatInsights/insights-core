@@ -1,6 +1,6 @@
 """
-mongodb-server configuration files
-==================================
+MongodbConf - files ``/etc/mongod.conf``, ``/etc/mongod.conf`` and ``/etc/opt/rh/rh-mongodb26/mongod.conf``
+===========================================================================================================
 
 This module contains the following files:
     ``/etc/mongod.conf``,
@@ -79,7 +79,7 @@ from ..specs import mongod_conf
 @parser(mongod_conf)
 class MongodbConf(Parser, LegacyItemAccess):
     """
-    Parse config file in key-value pair or YAML format.
+    Parse the ``/etc/mongod.conf`` config file in key-value pair or YAML format.
     Make several frequently used config options as properties.
 
     Raises:

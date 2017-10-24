@@ -1,6 +1,6 @@
 """
-df - Command
-============
+Disk free space commands
+========================
 
 Module for the processing of output from the ``df`` command.  The base class
 ``DiskFree`` provides all of the functionality for all classes.
@@ -21,6 +21,17 @@ Sample input data for the ``df -li`` command looks like::
     /dev/sda1         128016    429    127587    1% /boot
     tmpfs            1499684      6   1499678    1% /V M T o o l s
     tmpfs            1499684     15   1499669    1% /VM Tools
+
+This module provides two parsers:
+
+DiskFree_LI - command ``df -li``
+--------------------------------
+
+DiskFree_ALP - command ``df -alP``
+----------------------------------
+
+DiskFree_AL - command ``df -al``
+--------------------------------
 
 This example demonstrates the ``DiskFree_LI`` class but all classes will provide
 the same functionality.

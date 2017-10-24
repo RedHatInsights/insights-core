@@ -1,8 +1,14 @@
 """
-ceilometer_log - Files /var/log/ceilometer...
-=============================================
+Ceilometer logs
+===============
 
 Module for parsing the log files for Ceilometer
+
+CeilometerCentralLog - file ``/var/log/ceilometer/central.log``
+---------------------------------------------------------------
+
+CeilometerCollectorLog - file ``/var/log/ceilometer/collector.log``
+-------------------------------------------------------------------
 
 """
 

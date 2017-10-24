@@ -1,6 +1,6 @@
 """
-chkconfig - command
-===================
+ChkConfig - command ``chkconfig``
+=================================
 """
 from collections import namedtuple
 from .. import Parser, parser

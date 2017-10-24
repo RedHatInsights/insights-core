@@ -1,11 +1,8 @@
 """
-brctl show - Command
-====================
+BrctlShow - command ``brctl show``
+==================================
 
 This module provides processing for the output of the ``brctl show`` command.
-The specs handled by this command inlude::
-
-    "brctl_show"                : CommandSpec("/usr/sbin/brctl show"),
 
 Class ``BrctlShow`` parses the output of the ``brctl show`` command.
 Sample output of this command looks like::

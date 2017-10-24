@@ -1,10 +1,9 @@
 """
-xinetd_conf - File /etc/xinetd.conf and /etc/xinetd.d/*
-=======================================================
+XinetdConf - files ``/etc/xinetd.conf`` and in ``/etc/xinetd.d/``
+=================================================================
 
 This module provides parsing for the ``/etc/xinetd.conf`` and
 ``/etc/xinetd.d/*`` files.
-The ``XinetdConf`` class parses the information in the above files.
 
 Sample input data of file ``/etc/xinetd.conf`` looks like::
 

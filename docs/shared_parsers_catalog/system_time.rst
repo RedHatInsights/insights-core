@@ -1,14 +1,20 @@
 System time configuration
 =========================
 
-file ``/etc/chrony.conf``
--------------------------
+ChronyConf - file ``/etc/chronyd.conf``
+---------------------------------------
 .. autoclass:: insights.parsers.system_time.ChronyConf
    :members:
    :show-inheritance:
 
-command ``file -L /etc/localtime``
-----------------------------------
+ChronydService - file ``/etc/sysconfig/chronyd``
+------------------------------------------------
+.. autoclass:: insights.parsers.system_time.ChronydService
+   :members:
+   :show-inheritance:
+
+LocalTime - command ``file -L /etc/localtime``
+----------------------------------------------
 .. autoclass:: insights.parsers.system_time.LocalTime
    :members:
    :show-inheritance:
@@ -19,14 +25,20 @@ NTPConfParser base class
    :members:
    :show-inheritance:
 
-file ``/etc/ntp.conf``
-----------------------
+NTPDService - file ``/etc/sysconfig/ntpd``
+------------------------------------------
+.. autoclass:: insights.parsers.system_time.NTPDService
+   :members:
+   :show-inheritance:
+
+NTP_conf - file ``/etc/ntpd.conf``
+----------------------------------
 .. autoclass:: insights.parsers.system_time.NTP_conf
    :members:
    :show-inheritance:
 
-command ``ntptime``
--------------------
+NtpTime - command ``ntptime``
+-----------------------------
 .. autoclass:: insights.parsers.system_time.NtpTime
    :members:
    :show-inheritance:

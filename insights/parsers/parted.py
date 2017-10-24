@@ -1,6 +1,6 @@
 """
-parted - Command
-================
+PartedL - command ``parted -l``
+===============================
 
 This module provides processing for the ``parted`` command.  The output is parsed
 by the ``PartedL`` class.  Attributes are provided for each field for the disk,

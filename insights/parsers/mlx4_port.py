@@ -1,12 +1,9 @@
 """
-mlx4_port - Files contents
-==========================
+Mlx4Port - command ``find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;``
+========================================================================================
+
 This module provides processing for the output of the
 ``find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;`` command.
-
-The specs handled by this CommandSpec::
-
-    "mlx4_port"                 : CommandSpec("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;"),
 
 Sample output of this command looks like::
 

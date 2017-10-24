@@ -1,6 +1,6 @@
 """
-swift_conf - files under /etc/swift/
-====================================
+SwiftProxyServerConf - file ``/etc/swift/proxy-server.conf``
+============================================================
 
 This module provides parsers for swift config files under /etc/swift directory.
 """
@@ -12,9 +12,13 @@ from insights.specs import proxy_server_conf
 @parser(proxy_server_conf)
 class SwiftProxyServerConf(IniConfigFile):
     """
-    This class is to parse the content of the ``/ etc / swift / proxy - server.conf``.
-    The swift proxy - server configuration file ``/ etc / swift / proxy - server.conf`` is in the standard 'ini'
-    format and is read by the IniConfigFile parser. Sample configuration file::
+    This class is to parse the content of the ``/etc/swift/proxy-server.conf``.
+
+    The swift proxy - server configuration file
+    ``/etc/swift/proxy-server.conf`` is in the standard 'ini' format and is
+    read by the :py:class:`insights.core.IniConfigFile` parser class.
+
+    Sample configuration file::
 
         [DEFAULT]
         bind_port = 8080

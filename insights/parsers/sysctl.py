@@ -1,9 +1,19 @@
 """
-sysctl - Command and File
-=========================
+Kernel system control information
+=================================
 
-Share parsers for parsing file ``/etc/sysctl.conf`` and command ``sysctl -a``.
+Shared parsers for parsing file ``/etc/sysctl.conf`` and command ``sysctl -a``.
 
+Parsers included in this module are:
+
+Sysctl - command ``sysctl -a``
+------------------------------
+
+SysctlConf - file ``/etc/sysctl.conf``
+--------------------------------------
+
+SysctlConfInitramfs - file ``lsinitrd``
+---------------------------------------
 
 """
 from .. import Parser, LogFileOutput, parser, LegacyItemAccess

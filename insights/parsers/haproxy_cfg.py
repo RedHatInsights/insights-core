@@ -1,6 +1,6 @@
 """
-haproxy_cfg - File haproxy.cfg
-==============================
+HaproxyCfg - file ``/etc/haproxy/haproxy.cfg``
+==============================================
 
 Contents of the `haproxy.cfg` file look like::
 

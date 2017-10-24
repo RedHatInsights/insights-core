@@ -1,9 +1,8 @@
 """
-lpstat - Command
-================
+LpstatPrinters - command ``lpstat -p``
+======================================
 
-Parses `lpstat -p` output, to get locally configured
-printers.
+Parses the output of ``lpstat -p``, to get locally configured printers.
 
 Current available printer states are:
 
@@ -27,20 +26,6 @@ Examples:
     >>> lpstat.printer_names_by_status(PRINTER_STATUS_DISABLED)
     ['disabled_printer']
 
-
-Testing
--------
-
-Adding a test printer::
-
-    # lpadmin -p PRINTER_NAME -m raw
-
-Printer names cannot contain spaces::
-
-    # lpadmin -p "printer with spaces" -m raw
-    lpadmin: Printer name can only contain printable characters.
-
-See also source code for lpstat in https://github.com/apple/cups/blob/master/systemv/lpstat.c.
 """
 
 from .. import Parser, parser

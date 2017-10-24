@@ -4,20 +4,14 @@ Kernel dump configuration files
 
 This module contains the following parsers:
 
-``KDumpConf``
--------------
+KDumpConf - file ``/etc/kdump.conf``
+------------------------------------
 
-Reads the ``/etc/kdump.conf`` file.
+KexecCrashLoaded - file ``/sys/kernel/kexec_crash_loaded``
+----------------------------------------------------------
 
-``KexecCrashLoaded``
---------------------
-
-Reads the ``/sys/kernel/kexec_crash_loaded`` file.
-
-``KexecCrashSize``
-------------------
-
-Reads the ``/sys/kernel/kexec_crash_size`` file.
+SysconfigKdump - file ``/etc/sysconfig/kdump``
+----------------------------------------------
 
 """
 
