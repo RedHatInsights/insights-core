@@ -14,7 +14,7 @@ class TestTarExtractor(unittest.TestCase):
     def test_from_buffer_with_directory(self):
         arc_path = insights_heartbeat()
         tmp_dir = tempfile.mkdtemp()
-        command = "tar -a -x -f %s -C %s" % (arc_path, tmp_dir)
+        command = "tar -x -f %s -C %s" % (arc_path, tmp_dir)
         subprocess.call(shlex.split(command))
 
         with archives.TarExtractor() as tar_ex:
@@ -65,7 +65,7 @@ class TestZipFileExtractor(unittest.TestCase):
 
         tmp_dir = tempfile.mkdtemp()
         arc_path = insights_heartbeat()
-        command = "tar -a -x -f %s -C %s" % (arc_path, tmp_dir)
+        command = "tar -x -f %s -C %s" % (arc_path, tmp_dir)
         subprocess.call(shlex.split(command))
 
         try:
