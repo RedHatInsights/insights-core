@@ -1,4 +1,5 @@
 import unittest
+import sys
 
 from insights.util import subproc
 
@@ -12,10 +13,6 @@ class TestSubproc(unittest.TestCase):
 
     def test_call_timeout(self):
         cmd = 'sleep 3'
-        with self.assertRaises(subproc.CalledProcessError):
-            subproc.call(cmd, timeout=1)
-
-    def test_call_invalid_args(self):
-        cmd = [1, 2, 3]
-        with self.assertRaises(subproc.CalledProcessError):
-            subproc.call(cmd)
+        if sys.platform != "darwin":
+            with self.assertRaises(subproc.CalledProcessError):
+                subproc.call(cmd, timeout=1)
