@@ -83,7 +83,8 @@ def _run(graph=None, root=None, run_context=HostContext,
         broker[archive_context] = archive_context(root=root)
         return dr.run(graph, broker=broker)
 
-    if archives._magic.file(root) == "application/zip":
+    from insights.util.content_type import _magic
+    if _magic.file(root) == "application/zip":
         extractor = archives.ZipExtractor()
     else:
         extractor = archives.TarExtractor()
