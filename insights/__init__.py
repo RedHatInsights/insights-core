@@ -5,7 +5,7 @@ from pprint import pprint
 from .config.factory import get_config  # noqa: F401
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
-from .core import YAMLParser                                       # noqa: F401
+from .core import YAMLParser, JSONParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core import archives  # noqa: F401

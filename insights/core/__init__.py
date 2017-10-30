@@ -1,5 +1,6 @@
 import datetime
 import io
+import json
 import logging
 import os
 import re
@@ -234,6 +235,14 @@ class YAMLParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         self.data = yaml.safe_load('\n'.join(content))
+
+
+class JSONParser(Parser, LegacyItemAccess):
+    """
+    A parser class that reads JSON files.  Base your own parser on this.
+    """
+    def parse_content(self, content):
+        self.data = json.loads(''.join(content))
 
 
 class ScanMeta(type):

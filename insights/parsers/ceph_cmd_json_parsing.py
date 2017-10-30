@@ -33,8 +33,7 @@ All these parsers are based on a shared class which processes the JSON
 information into a dictionary.
 """
 
-import json
-from .. import Parser, parser, LegacyItemAccess
+from .. import JSONParser, parser
 from insights.specs import ceph_config_show
 from insights.specs import ceph_df_detail
 from insights.specs import ceph_health_detail
@@ -45,23 +44,8 @@ from insights.specs import ceph_osd_tree
 from insights.specs import ceph_s
 
 
-class CephJsonParsing(LegacyItemAccess, Parser):
-    """Base class implementing shared code."""
-
-    def parse_content(self, content):
-        """
-        Parse the output of the ceph related commands in Json pattern.
-
-        ceph commands with `-f json-pretty` para will print the result
-        in the format of a dictionary in which the items are key:value
-        pairs.
-
-        """
-        self.data = json.loads(''.join(content))
-
-
 @parser(ceph_osd_dump)
-class CephOsdDump(CephJsonParsing):
+class CephOsdDump(JSONParser):
     """
     Class to parse the output of ``ceph osd dump -f json-pretty``.
 
@@ -102,7 +86,7 @@ class CephOsdDump(CephJsonParsing):
 
 
 @parser(ceph_osd_df)
-class CephOsdDf(CephJsonParsing):
+class CephOsdDf(JSONParser):
     """
     Class to parse the output of ``ceph osd df -f json-pretty``.
 
@@ -147,7 +131,7 @@ class CephOsdDf(CephJsonParsing):
 
 
 @parser(ceph_s)
-class CephS(CephJsonParsing):
+class CephS(JSONParser):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
 
@@ -205,7 +189,7 @@ class CephS(CephJsonParsing):
 
 
 @parser(ceph_df_detail)
-class CephDfDetail(CephJsonParsing):
+class CephDfDetail(JSONParser):
     """
     Class to parse the output of ``ceph df detail -f json-pretty``.
 
@@ -247,7 +231,7 @@ class CephDfDetail(CephJsonParsing):
 
 
 @parser(ceph_health_detail)
-class CephHealthDetail(CephJsonParsing):
+class CephHealthDetail(JSONParser):
     """
     Class to parse the output of ``ceph health detail -f json-pretty``.
 
@@ -275,7 +259,7 @@ class CephHealthDetail(CephJsonParsing):
 
 
 @parser(ceph_osd_ec_profile_get)
-class CephECProfileGet(CephJsonParsing):
+class CephECProfileGet(JSONParser):
     """
     Class to parse the output of ``ceph osd erasure-code-profile get default -f json-pretty``.
 
@@ -297,7 +281,7 @@ class CephECProfileGet(CephJsonParsing):
 
 
 @parser(ceph_config_show)
-class CephCfgInfo(CephJsonParsing):
+class CephCfgInfo(JSONParser):
     """
     Class to parse the output of ``ceph daemon .. config show``
 
@@ -347,7 +331,7 @@ class CephCfgInfo(CephJsonParsing):
 
 
 @parser(ceph_osd_tree)
-class CephOsdTree(CephJsonParsing):
+class CephOsdTree(JSONParser):
     """
     Class to parse the output of the command "ceph osd tree -f json-pretty
 
