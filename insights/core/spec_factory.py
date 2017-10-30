@@ -166,18 +166,18 @@ class SpecFactory(object):
             return broker.get(context)
         return dr.first_of(alternatives, broker)
 
-    def simple_file(self, path, name=None, context=None, Kind=TextFileProvider, alias=None):
+    def simple_file(self, path, name=None, context=None, kind=TextFileProvider, alias=None):
         alias = alias or name
 
         @datasource(context or FSRoots, alias=alias)
         def inner(broker):
             ctx = self._get_context(context, FSRoots, broker)
-            return Kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
+            return kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
         if name:
             self._attach(inner, name)
         return inner
 
-    def glob_file(self, patterns, name=None, ignore=None, context=None, Kind=TextFileProvider, alias=None):
+    def glob_file(self, patterns, name=None, ignore=None, context=None, kind=TextFileProvider, alias=None):
         alias = alias or name
         if not isinstance(patterns, (list, set)):
             patterns = [patterns]
@@ -193,7 +193,7 @@ class SpecFactory(object):
                     if ignore and re.search(ignore, path):
                         continue
                     try:
-                        results.append(Kind(path[len(root):], root=root, filters=get_filters(inner)))
+                        results.append(kind(path[len(root):], root=root, filters=get_filters(inner)))
                     except:
                         log.debug(traceback.format_exc())
             if results:
@@ -203,7 +203,7 @@ class SpecFactory(object):
             self._attach(inner, name)
         return inner
 
-    def first_file(self, files, name=None, context=None, Kind=TextFileProvider, alias=None):
+    def first_file(self, files, name=None, context=None, kind=TextFileProvider, alias=None):
         alias = alias or name
 
         @datasource(context or FSRoots, alias=alias)
@@ -212,7 +212,7 @@ class SpecFactory(object):
             root = ctx.root
             for f in files:
                 try:
-                    return Kind(ctx.locate_path(f), root=root, filters=get_filters(inner))
+                    return kind(ctx.locate_path(f), root=root, filters=get_filters(inner))
                 except:
                     pass
             raise ContentException("None of [%s] found." % ', '.join(files))
