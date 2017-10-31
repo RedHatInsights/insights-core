@@ -15,7 +15,7 @@ from insights.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, Doc
 static_specs = {
     "autofs.conf"               : SimpleFileSpec("etc/autofs.conf"),
     "auditd.conf"               : SimpleFileSpec("etc/audit/auditd.conf"),
-    "blkid"                     : First([CommandSpec("/usr/sbin/blkid -c /dev/null"),
+    "blkid"                     : First([CommandSpec("/sbin/blkid -c /dev/null"),
                                     SimpleFileSpec("run/blkid"),
                                     SimpleFileSpec("sos_commands/filesys/blkid")]),
     "bond"                      : PatternSpec(r"proc/net/bonding/bond.*"),
