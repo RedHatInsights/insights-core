@@ -26,7 +26,7 @@ sf = SpecFactory()
 
 autofs_conf = sf.simple_file("/etc/autofs.conf", name="autofs_conf", alias="autofs.conf")
 auditd_conf = sf.simple_file("/etc/audit/auditd.conf", name="auditd_conf", alias="auditd.conf")
-blkid = sf.simple_command("/usr/sbin/blkid -c /dev/null", name="blkid")
+blkid = sf.simple_command("/sbin/blkid -c /dev/null", name="blkid")
 bond = sf.glob_file("/proc/net/bonding/bond*", name="bond")
 branch_info = sf.simple_file("/branch_info", name="branch_info")
 brctl_show = sf.simple_command("/usr/sbin/brctl show", name="brctl_show")
