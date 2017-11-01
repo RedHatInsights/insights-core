@@ -81,7 +81,7 @@ from insights.core.plugins import combiner
 from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
 
 
-@combiner(optional=[Grub1Config, Grub2Config, Grub2EFIConfig])
+@combiner(requires=[[Grub1Config, Grub2Config, Grub2EFIConfig]])
 class GrubConf(object):
     """Process Grub configuration v1 or v2 based on which type is passed in
 
