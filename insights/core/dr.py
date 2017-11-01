@@ -303,6 +303,8 @@ def load_components(path, include=".*", exclude="test"):
 
     prefix = package.__name__ + "."
     for _, name, is_pkg in pkgutil.iter_modules(path=package.__path__, prefix=prefix):
+        if not name.startswith(prefix):
+            name = prefix + name
         if do_include(name) and not do_exclude(name):
             if is_pkg:
                 num_loaded += load_components(name, include, exclude)
