@@ -75,6 +75,7 @@ class Evaluator(object):
     def post_process(self):
         for c, exes in self.broker.exceptions.items():
             for e in exes:
+                log.warn(self.broker.tracebacks[e])
                 if plugins.is_parser(c):
                     self.handle_parse_error(c, e)
                 elif plugins.is_rule(c):
@@ -111,7 +112,6 @@ class Evaluator(object):
 
     def handle_parse_error(self, parser, exception):
         self.stats["parser"]["fail"] += 1
-        log.exception("Parser failed")
 
     def handle_rule_error(self, rule, exception):
         self.stats["rule"]["fail"] += 1
