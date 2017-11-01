@@ -166,7 +166,7 @@ def set_defaults(lvm_data):
     return lvm_data
 
 
-@combiner(optional=[Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs, VgsHeadings])
+@combiner([Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs, VgsHeadings])
 class Lvm(object):
     """Class implements shared combiner for LVM information."""
 
