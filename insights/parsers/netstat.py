@@ -26,7 +26,7 @@ from collections import defaultdict
 from . import ParseException, parse_delimited_table
 from .. import Parser, parser, LegacyItemAccess
 from insights.specs import netstat
-from insights.specs import netstat__agn
+from insights.specs import netstat_agn
 from insights.specs import netstat_i
 from insights.specs import netstat_s
 from insights.specs import ss
@@ -221,7 +221,7 @@ class NetstatS(LegacyItemAccess, Parser):
         self.data[session] = first_layer
 
 
-@parser(netstat__agn)
+@parser(netstat_agn)
 class NetstatAGN(Parser):
     """
     Parse the ``netstat -agn`` command to get interface multicast infomation.
