@@ -220,7 +220,7 @@ class InsightsConnection(object):
         last_ex = None
         for ext in (url.path + '/', '', '/r', '/r/insights'):
             try:
-                logger.info("Testing: %s", test_url + ext)
+                logger.debug("Testing: %s", test_url + ext)
                 if method is "POST":
                     test_req = self.session.post(
                         test_url + ext, timeout=10, data=test_flag)
@@ -228,7 +228,7 @@ class InsightsConnection(object):
                     test_req = self.session.get(test_url + ext, timeout=10)
                 logger.info("HTTP Status Code: %d", test_req.status_code)
                 logger.info("HTTP Status Text: %s", test_req.reason)
-                logger.debug("HTTP Response Text: %s", test_req.text)
+                logger.info("HTTP Response Text: %s", test_req.text)
                 # Strata returns 405 on a GET sometimes, this isn't a big deal
                 if test_req.status_code in (200, 201):
                     logger.info(
@@ -309,19 +309,19 @@ class InsightsConnection(object):
             certs = self.cert_chain[1]
             # put them in the right order
             certs.reverse()
-            logger.info('---\nCertificate chain')
+            logger.debug('---\nCertificate chain')
             for depth, c in enumerate(certs):
-                logger.info(self._generate_cert_str(c.get_subject(),
+                logger.debug(self._generate_cert_str(c.get_subject(),
                                                     str(depth) + ' s :/'))
-                logger.info(self._generate_cert_str(c.get_issuer(),
+                logger.debug(self._generate_cert_str(c.get_issuer(),
                                                     '  i :/'))
             # print server cert
             server_cert = ssl_conn.get_peer_certificate()
-            logger.info('---\nServer certificate')
-            logger.info(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
-            logger.info(self._generate_cert_str(server_cert.get_subject(), 'subject=/'))
-            logger.info(self._generate_cert_str(server_cert.get_issuer(), 'issuer=/'))
-            logger.info('---')
+            logger.debug('---\nServer certificate')
+            logger.debug(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
+            logger.debug(self._generate_cert_str(server_cert.get_subject(), 'subject=/'))
+            logger.debug(self._generate_cert_str(server_cert.get_issuer(), 'issuer=/'))
+            logger.debug('---')
         except SSL.Error as e:
             logger.debug('SSL error: %s', e)
             success = False
@@ -337,9 +337,9 @@ class InsightsConnection(object):
         """
         Test connection to Red Hat
         """
-        logger.info("Connection test config:")
-        logger.info("Proxy config: %s", self.proxies)
-        logger.info("Certificate Verification: %s", self.cert_verify)
+        logger.error("Connection test config:")
+        logger.debug("Proxy config: %s", self.proxies)
+        logger.debug("Certificate Verification: %s", self.cert_verify)
         try:
             logger.info("=== Begin Certificate Chain Test ===")
             cert_success = self._test_openssl()

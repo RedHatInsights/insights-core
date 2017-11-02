@@ -198,7 +198,6 @@ OPTS = [{
     'help': 'Test connectivity to Red Hat',
     'action': "store_true",
     'dest': "test_connection",
-    'group': 'debug'
 }, {
     'opt': ['--force-reregister'],
     'help': "Forcefully reregister this machine to Red Hat. Use only as directed.",
