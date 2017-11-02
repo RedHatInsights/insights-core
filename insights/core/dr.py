@@ -291,7 +291,7 @@ def load_components(path, include=".*", exclude="test"):
     log.debug("Importing %s" % path)
     package = try_import(path)
     if not package:
-        return
+        return 0
 
     num_loaded += 1
 
