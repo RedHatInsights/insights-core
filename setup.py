@@ -42,13 +42,26 @@ if __name__ == "__main__":
     setup(
         name=name,
         version=package_info["VERSION"],
-        description="Insights Application Programming Interface",
+        description="Insights core execution framework and rule API",
+        long_description=open("README.rst").read(),
+        url="https://github.com/redhatinsights/insights-core",
+        author="Red Hat, Inc.",
         packages=find_packages(),
         install_requires=list(runtime),
+        package_data={'': ['LICENSE']},
+        license='Apache 2.0',
         extras_require={
             'develop': list(runtime | develop),
             'optional': ['python-cjson', 'python-logstash', 'python-statsd', 'watchdog'],
         },
+        classifiers=[
+            'Development Status :: 5 - Production/Stable',
+            'Intended Audience :: Developers',
+            'Natural Language :: English',
+            'License :: OSI Approved :: Apache Software License',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2.7',
+        ],
         entry_points=entry_points,
         include_package_data=True
     )
