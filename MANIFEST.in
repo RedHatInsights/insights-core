@@ -4,4 +4,5 @@ include insights/VERSION
 include insights/COMMIT
 include insights/RELEASE
 include insights/filters.yaml
+include LICENSE
 graft insights/archive/repository/base_archives
