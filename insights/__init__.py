@@ -134,6 +134,13 @@ def run(component=None, root=None, print_summary=False,
         for path in args.plugins:
             dr.load_components(path)
 
+        if component is None:
+            component = []
+            plugins = tuple(args.plugins)
+            for c in dr.DELEGATES:
+                if c.__module__.startswith(plugins):
+                    component.append(c)
+
     if component:
         if not isinstance(component, (list, set)):
             component = [component]
