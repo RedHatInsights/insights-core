@@ -189,6 +189,8 @@ static_specs = {
     "ksmstate"                  : SimpleFileSpec("sys/kernel/mm/ksm/run"),
     "lastupload"                : All([SimpleFileSpec("etc/redhat-access-insights/.lastupload"),
                                     SimpleFileSpec("etc/insights-client/.lastupload")]),
+    "libkeyutils"               : CommandSpec("/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'"),
+    "libkeyutils_objdumps"      : CommandSpec('/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;'),
     "libvirtd.log"              : SimpleFileSpec("var/log/libvirt/libvirtd.log"),
     "limits_conf"               : All([PatternSpec("etc/security/limits\.conf"),
                                     PatternSpec(r"etc/security/limits.d/.*\.conf")]),
