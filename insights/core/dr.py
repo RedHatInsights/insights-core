@@ -128,6 +128,9 @@ class MissingRequirements(Exception):
 
 
 class SkipComponent(Exception):
+    """ This class should be raised by components that want to be taken out of
+        dependency resolution.
+    """
     pass
 
 
