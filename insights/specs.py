@@ -214,6 +214,8 @@ krb5 = sf.glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*.conf"], name="krb5")
 ksmstate = sf.simple_file("/sys/kernel/mm/ksm/run", name="ksmstate")
 last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
 lastupload = sf.glob_file(last_upload_globs, name="lastupload")
+libkeyutils = sf.simple_command("/usr/bin/find -L /lib /lib64 -name 'libkeyutils.so*'", name="libkeyutils")
+libkeyutils_objdumps = sf.simple_command('/usr/bin/find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;', name="libkeyutils_objdumps")
 libvirtd_log = sf.simple_file("/var/log/libvirt/libvirtd.log", name="libvirtd_log", alias="libvirtd.log")
 limits_conf = sf.glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"], name="limits_conf")
 locale = sf.simple_command("/usr/bin/locale", name="locale")
