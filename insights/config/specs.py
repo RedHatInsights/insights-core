@@ -391,7 +391,8 @@ static_specs = {
     "teamdctl_state_dump"       : CommandSpec("/usr/bin/teamdctl {iface} state dump", iface=r"team\S+"),
     "tomcat_web.xml"            : First([PatternSpec(r"etc/tomcat.*/web\.xml"),
                                     PatternSpec(r"conf/tomcat/tomcat.*/web\.xml")]),
-    "tomcat_virtual_dir_context": CommandSpec("/bin/grep -R --include '*.xml' 'VirtualDirContext' /usr/share/tomcat*"),
+    "tomcat_vdc_fallback"       : CommandSpec("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"),
+    "tomcat_vdc_targeted"       : CommandSpec("/bin/grep -R -s 'VirtualDirContext' --include '*.xml' {catalina}", catalina=r"\S+"),
     "tuned-adm"                 : CommandSpec("/sbin/tuned-adm list"),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
     "uname"                     : First([CommandSpec("/bin/uname -a"),
@@ -425,6 +426,7 @@ static_specs = {
 
 pre_commands = {
     "block"                     : "/bin/ls /sys/block | awk '!/^ram|^\\.+$/ {print \"/dev/\" $1 \" unit s print\"}'",
+    "catalina"                  : r"""/bin/ps auxww | awk '/java/ { match($0, "\\-Dcatalina\\.home=([^[:space:]]+)", a); match($0, "\\-Dcatalina\\.base=([^[:space:]]+)", b); if (a[1] != "" || b[1] != "") print a[1] " " b[1] }'""",
     "ceph_osd_ec_profile_ls "   : "/usr/bin/ceph osd erasure-code-profile ls",
     "ceph_socket_files"         : "/bin/ls /var/run/ceph/ceph-*.*.asok",
     "docker_containers"         : "/usr/bin/docker ps -aq",
