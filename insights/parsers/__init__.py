@@ -1,5 +1,6 @@
 import pkgutil
 from collections import OrderedDict
+from insights.core.dr import SkipComponent
 
 
 __all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]
@@ -15,7 +16,7 @@ class ParseException(Exception):
     pass
 
 
-class SkipException(Exception):
+class SkipException(SkipComponent):
     """
     Exception that should be thrown from parsers that are explicitly
     written to look for errors in input data.  If the expected error
