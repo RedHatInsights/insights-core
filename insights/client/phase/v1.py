@@ -185,10 +185,11 @@ def collect_and_output():
         with open(tar_file, 'rb') as tar_content:
             shutil.copyfileobj(tar_content, sys.stdout)
     else:
+        resp = None
         if not config['no_upload']:
             resp = c.upload(tar_file)
         else:
             logger.info('Archive saved at %s', tar_file)
-        if config["to_json"]:
+        if resp and config["to_json"]:
             print(json.dumps(resp))
     sys.exit()
