@@ -97,15 +97,12 @@ def pre_update():
 
     # test the insights connection
     if config['test_connection']:
+        logger.info("Running Connection Tests...")
         pconn = client.get_connection()
         rc = pconn.test_connection()
         if rc == 0:
-            logger.info("Passed connection test")
             sys.exit(constants.sig_kill_ok)
         else:
-            logger.info(
-                "Failed connection test.  See %s for details.",
-                config['logging_file'])
             sys.exit(constants.sig_kill_bad)
 
     if config['support']:
