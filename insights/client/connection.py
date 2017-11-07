@@ -355,8 +355,10 @@ class InsightsConnection(object):
                         "SUCCESS" if api_success else "FAILURE")
             if cert_success and upload_success and api_success:
                 logger.info("\nConnectivity tests completed successfully")
+                logger.info("See %s for more details.", config['logging_file'])
             else:
                 logger.info("\nConnectivity tests completed with some errors")
+                logger.info("See %s for more details.", config['logging_file'])
                 rc = 1
         except requests.ConnectionError, exc:
             print exc
