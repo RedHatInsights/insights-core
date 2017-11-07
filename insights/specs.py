@@ -421,6 +421,7 @@ systemid = sf.first_of([sf.simple_file("/etc/sysconfig/rhn/systemid", name="syst
                         sf.simple_file("/conf/rhn/sysconfig/rhn/systemid", name="system_id_conf")],
                         name="systemid")
 teamdctl_state_dump = sf.foreach(ethernet_interfaces, "/usr/bin/teamdctl %s state dump", name="teamdctl_state_dump")
+tmpfilesd = sf.glob_file(["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"], name="tmpfilesd")
 tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml", name="tomcat_web_xml_etc"),
                               sf.glob_file("/conf/tomcat/tomcat*/web.xml", name="tomcat_web_xml_conf")],
                               name="tomcat_web_xml", alias="tomcat_web.xml")
