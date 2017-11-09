@@ -9,6 +9,7 @@ data sources that standard Insights `Parsers` resolve against.
 """
 
 import os
+import re
 
 from insights.config import format_rpm
 
@@ -426,7 +427,23 @@ tmpfilesd = sf.glob_file(["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf"
 tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml", name="tomcat_web_xml_etc"),
                               sf.glob_file("/conf/tomcat/tomcat*/web.xml", name="tomcat_web_xml_conf")],
                               name="tomcat_web_xml", alias="tomcat_web.xml")
-tomcat_virtual_dir_context = sf.simple_command("/bin/grep -R --include '*.xml' 'VirtualDirContext' /usr/share/tomcat*", name="tomcat_virtual_dir_context")
+
+
+@datasource(HostContext)
+def tomcat_home(broker):
+    ctx = broker[HostContext]
+    ps = ctx.shell_out("ps auxwww")
+    results = []
+    findall = re.compile(r"\-Dcatalina\.(home|base)=(\S+)").findall
+    for p in ps:
+        found = findall(p)
+        if found:
+            results.extend(f[1] for f in found)
+    return list(set(results))
+
+
+tomcat_vdc_targeted = sf.foreach(tomcat_home, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s", name="tomcat_vdc_targeted")
+tomcat_vdc_fallback = sf.simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +", name="tomcat_vdc_fallback")
 tuned_adm = sf.simple_command("/sbin/tuned-adm list", name="tuned_adm", alias="tuned-adm")
 udev_persistent_net_rules = sf.simple_file("/etc/udev/rules.d/70-persistent-net.rules", name="udev_persistent_net_rules", alias="udev-persistent-net.rules")
 uname = sf.simple_command("/usr/bin/uname -a", name="uname")

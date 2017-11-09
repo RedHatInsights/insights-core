@@ -1,9 +1,33 @@
 """
-TomcatVirtualDirContext - command ``/bin/grep -R --include '*.xml' 'VirtualDirContext' /usr/share/tomcat*``
-===========================================================================================================
+Parsers for usage of VirtualDirContext option in Tomcat config files
+====================================================================
 
-This parser reads the output of ``/bin/grep -R --include '*.xml' 'VirtualDirContext' /usr/share/tomcat*``
-and detects whether there are any config files which contain VirtualDirContext.
+This module provides the following parsers:
+
+TomcatVirtualDirContextFallback
+-------------------------------
+
+This is a parser for a command for finding config files in default location:
+
+``/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +``
+
+It is especially useful if the Tomcat server is not running.
+
+
+TomcatVirtualDirContextTargeted
+-------------------------------
+
+This is a parser for a command for finding config files in the custom location defined in a command
+line:
+
+``/bin/grep -R -s 'VirtualDirContext' --include '*.xml' {catalina}``
+
+Where ``catalina`` variable is computed as following:
+
+``/bin/ps auxww | awk '/java/ { match($0, "\\-Dcatalina\\.home=([^[:space:]]+)", a); match($0, "\\-Dcatalina\\.base=([^[:space:]]+)", b); if (a[1] != "" || b[1] != "") print a[1] " " b[1] }'``
+
+
+Both parsers detect whether there are any config files which contain VirtualDirContext.
 
 Sample input::
 
@@ -11,37 +35,54 @@ Sample input::
 
 Examples::
 
-    >>> shared[TomcatVirtualDirContext].data
+    >>> shared[TomcatVirtualDirContextFallback].data
     {'/usr/share/tomcat/conf/server.xml':
      ['    <Resources className="org.apache.naming.resources.VirtualDirContext"'],
      }
 """
 
 from .. import Parser, parser
-from . import ParseException, SkipException
-from insights.specs import tomcat_virtual_dir_context
+from . import SkipException
 
 
-@parser(tomcat_virtual_dir_context)
-class TomcatVirtualDirContext(Parser):
+class TomcatVirtualDirContextBase(Parser):
     """
-    Reports whether there is a VirtualDirContext option used in TomCat configuration file.
+    Generic parser which finds whether there is a VirtualDirContext option used in TomCat
+    configuration file.
     """
     def __init__(self, *args, **kwargs):
         self.data = {}
-        super(TomcatVirtualDirContext, self).__init__(*args, **kwargs)
+        super(TomcatVirtualDirContextBase, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        if not content:
-            raise SkipException('VirtualDirContext not used.')
         for line in content:
-            if '/bin/grep: No such file or directory' in line:
-                raise ParseException('grep command not found.')
             try:
                 file_name, file_line = line.split(':', 1)  # Hoping that : is not part of the path
             except ValueError:
-                raise ParseException('Unexpected grep output.')
-            if file_name in self.data:
-                self.data[file_name].append(file_line)
-            else:
-                self.data[file_name] = [file_line]
+                continue  # skip this line
+            if file_name.endswith('.xml'):  # Make sure that nothing else is stored
+                if file_name in self.data:
+                    self.data[file_name].append(file_line)
+                else:
+                    self.data[file_name] = [file_line]
+
+        if self.data == {}:
+            raise SkipException('VirtualDirContext not used.')
+
+
+@parser('tomcat_vdc_fallback')
+class TomcatVirtualDirContextFallback(TomcatVirtualDirContextBase):
+    """
+    Reports whether there is a VirtualDirContext option used in TomCat configuration file. Looks
+    for the configuration files in default location.
+    """
+    pass
+
+
+@parser('tomcat_vdc_targeted')
+class TomcatVirtualDirContextTargeted(TomcatVirtualDirContextBase):
+    """
+    Reports whether there is a VirtualDirContext option used in TomCat configuration file. Looks
+    for the configuration files in location derived from running Tomcat command.
+    """
+    pass
