@@ -243,6 +243,7 @@ lvm_conf = sf.simple_file("/etc/lvm/lvm.conf", name="lvm_conf", alias="lvm.conf"
 lvs = None  # sf.simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"', name="lvs")
 lvs_noheadings = sf.simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices,region_size --config=\"global{locking_type=0}\"", name="lvs_noheadings")
 machine_id = sf.simple_file("etc/redhat-access-insights/machine-id", name="machine_id", alias="machine-id")
+manila_conf = sf.simple_file("/etc/manila/manila.conf", name="manila_conf")
 mariadb_log = sf.simple_file("/var/log/mariadb/mariadb.log", name="mariadb_log", alias="mariadb.log")
 mdstat = sf.simple_file("/proc/mdstat", name="mdstat")
 meminfo = sf.first_file(["/proc/meminfo", "/meminfo"], name="meminfo")
