@@ -281,7 +281,7 @@ class InstalledRpm(object):
              'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
     SOSREPORT_KEYS = [
-        'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig-short'
+        'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short'
     ]
     """list: List of keys for SOS Report RPM information."""
 
@@ -424,7 +424,7 @@ class InstalledRpm(object):
         Returns:
             dict: dictionary containing 'name', 'version', 'release' and 'arch' keys plus
                   additionally 'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig',
-                  'pgpsig-short' if these are present.
+                  'pgpsig_short' if these are present.
         """
         try:
             pkg, rest = line.split(None, 1)
@@ -466,7 +466,7 @@ class InstalledRpm(object):
     def __getitem__(self, item):
         """
         Allows to use `rpm["element"]` instead of `rpm.element`. Dot notation should be preferred,
-        however it is especially useful for values containing dash, such as "pgpsig-short".
+        however it is especially useful for values containing dash, such as "pgpsig_short".
         """
         return getattr(self, item)
 

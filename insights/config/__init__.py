@@ -747,8 +747,10 @@ def _make_rpm_formatter(fmt=None):
             "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
             "%{INSTALLTIME:date}",
             "%{BUILDTIME}",
-            "%{RSAHEADER:pgpsig}",
-            "%{DSAHEADER:pgpsig}"
+            "%{VENDOR}",
+            "%{BUILDHOST}",
+            "DUMMY",
+            "%{SIGPGP:pgpsig}"
         ]
 
     def inner(idx=None):
@@ -784,3 +786,30 @@ def json_format(fmt=None):
 
 
 format_rpm = _make_rpm_formatter()
+
+# TODO: the below old-format should be removed 24-hours later after the updated
+#       format is released.  That is to say only when we make sure all new
+#       collected `insights-data` contains the updated-format rpm command,
+#       we can remove the old-format
+#
+
+
+def _make_rpm_formatter_old(fmt=None):
+    if fmt is None:
+        fmt = [
+            "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
+            "%{INSTALLTIME:date}",
+            "%{BUILDTIME}",
+            "%{RSAHEADER:pgpsig}",
+            "%{DSAHEADER:pgpsig}"
+        ]
+
+    def inner(idx=None):
+        if idx:
+            return "\t".join(fmt[:idx]) + "\n"
+        else:
+            return "\t".join(fmt) + "\n"
+    return inner
+
+
+format_rpm_old = _make_rpm_formatter_old()
