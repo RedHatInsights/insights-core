@@ -761,8 +761,10 @@ def _make_rpm_formatter(fmt=None):
             "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
             "%{INSTALLTIME:date}",
             "%{BUILDTIME}",
-            "%{RSAHEADER:pgpsig}",
-            "%{DSAHEADER:pgpsig}"
+            "%{VENDOR}",
+            "%{BUILDHOST}",
+            "DUMMY",
+            "%{SIGPGP:pgpsig}"
         ]
 
     def inner(idx=None):
