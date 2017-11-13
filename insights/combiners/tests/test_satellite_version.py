@@ -2,6 +2,7 @@ from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.satellite_version import Satellite6Version
 from insights.combiners.satellite_version import satellite_version
 from insights.tests import context_wrap
+import pytest
 
 
 installed_rpms_5 = """
@@ -171,15 +172,18 @@ def test_no_sat_installed():
     rpms = InstalledRpms(context_wrap(no_sat))
     sat = Satellite6Version(context_wrap(installed_rpms_61))
     shared = {InstalledRpms: rpms, Satellite6Version: sat}
-    result = satellite_version(None, shared)
-    assert result is None
+    with pytest.raises(Exception) as e:
+        satellite_version(None, shared)
+    assert "Not a Satellite Server/Capsule" in str(e)
 
     rpms = InstalledRpms(context_wrap(installed_rpms_611x_confilct))
     shared = {InstalledRpms: rpms}
-    result = satellite_version(None, shared)
-    assert result is None
+    with pytest.raises(Exception) as e:
+        satellite_version(None, shared)
+    assert "Not a Satellite Server/Capsule" in str(e)
 
 
 def test_none():
-    result = satellite_version(None, {})
-    assert result is None
+    with pytest.raises(Exception) as e:
+        satellite_version(None, {})
+    assert "Unable to determine satellite version." in str(e)
