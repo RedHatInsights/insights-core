@@ -1,5 +1,60 @@
 # Change Log
 
+## [insights-core-1.62.0-129](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.62.0-129) (2017-11-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.61.0-127...insights-core-1.62.0-129)
+
+**Fixed bugs:**
+
+- Raise Exception instead of return None for satellite\_version [\#693](https://github.com/RedHatInsights/insights-core/pull/693) ([xiangce](https://github.com/xiangce))
+
+## [insights-core-1.61.0-127](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.61.0-127) (2017-11-10)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.60.0-117...insights-core-1.61.0-127)
+
+**Fixed bugs:**
+
+- Incorrect use of optional dependencies in combiners [\#647](https://github.com/RedHatInsights/insights-core/issues/647)
+
+**Closed issues:**
+
+- Update docs and create PR for master branch for libkeyutils parser [\#643](https://github.com/RedHatInsights/insights-core/issues/643)
+
+**Merged pull requests:**
+
+- Fix manila configuration file path [\#691](https://github.com/RedHatInsights/insights-core/pull/691) ([pratikgadiya12](https://github.com/pratikgadiya12))
+- Add manila config parser [\#687](https://github.com/RedHatInsights/insights-core/pull/687) ([pratikgadiya12](https://github.com/pratikgadiya12))
+- add spec, parser, and combiner for tmpfilesd [\#684](https://github.com/RedHatInsights/insights-core/pull/684) ([SteveHNH](https://github.com/SteveHNH))
+- Changes to support pypi releases [\#668](https://github.com/RedHatInsights/insights-core/pull/668) ([kylape](https://github.com/kylape))
+- Fix the spec of installed\_rpm [\#665](https://github.com/RedHatInsights/insights-core/pull/665) ([shzhou12](https://github.com/shzhou12))
+- Fix documentation and parsing algorithm for libkeyutils parser [\#661](https://github.com/RedHatInsights/insights-core/pull/661) ([skontar](https://github.com/skontar))
+- Fix spec command for tomcat\_virtual\_dir\_context [\#651](https://github.com/RedHatInsights/insights-core/pull/651) ([skontar](https://github.com/skontar))
+- Add parser for file /var/log/audit/audit.log [\#646](https://github.com/RedHatInsights/insights-core/pull/646) ([JoySnow](https://github.com/JoySnow))
+
+## [insights-core-1.60.0-117](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.60.0-117) (2017-11-01)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.59.0-113...insights-core-1.60.0-117)
+
+**Closed issues:**
+
+- Port Scaffold Script to Master Branch [\#254](https://github.com/RedHatInsights/insights-core/issues/254)
+
+**Merged pull requests:**
+
+- Modify blkid item in specs.py to make it work both in rhel 6 and 7 [\#648](https://github.com/RedHatInsights/insights-core/pull/648) ([zhangyi733](https://github.com/zhangyi733))
+- Add new path in candlepin\_error\_log spec file [\#606](https://github.com/RedHatInsights/insights-core/pull/606) ([sagaraivale](https://github.com/sagaraivale))
+
+## [insights-core-1.59.0-113](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.59.0-113) (2017-10-27)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.58.0-107...insights-core-1.59.0-113)
+
+**Implemented enhancements:**
+
+- Make parser catalogue heading lines consistent for 1.x branch [\#627](https://github.com/RedHatInsights/insights-core/pull/627) ([PaulWay](https://github.com/PaulWay))
+- SelinuxConfig parser docs and enhancements for 1.x branch [\#624](https://github.com/RedHatInsights/insights-core/pull/624) ([PaulWay](https://github.com/PaulWay))
+
+**Merged pull requests:**
+
+- New specs and parsers for libkeyutils [\#642](https://github.com/RedHatInsights/insights-core/pull/642) ([skontar](https://github.com/skontar))
+- Support Mac OS X [\#637](https://github.com/RedHatInsights/insights-core/pull/637) ([kylape](https://github.com/kylape))
+- Add more `dig` commands for DNSSEC analysis [\#634](https://github.com/RedHatInsights/insights-core/pull/634) ([skontar](https://github.com/skontar))
+
 ## [insights-core-1.58.0-107](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.58.0-107) (2017-10-19)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.57.0-102...insights-core-1.58.0-107)
 
