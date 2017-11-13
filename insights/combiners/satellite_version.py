@@ -106,6 +106,9 @@ def satellite_version(local, shared):
     Check satellite_version and installed_rpms for satellite version
     information.
 
+    Raises:
+        Exception: If it's not a Satellite Server/Capsule or information is not
+        enough to determine the satellite version.
     """
     # For Satellite 6.1.x, if satellite_version/version.rb is available:
     sat6_ver = shared.get(Sat6Ver)
@@ -143,3 +146,5 @@ def satellite_version(local, shared):
             major, minor = _parse_sat_versoin(version)
             return SatelliteVersion(sat5_pkg.package, version,
                                     sat5_pkg.release, major, minor)
+        raise Exception("Not a Satellite Server/Capsule")
+    raise Exception("Unable to determine satellite version.")
