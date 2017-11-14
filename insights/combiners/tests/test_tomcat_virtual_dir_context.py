@@ -70,7 +70,7 @@ def test_tomcat_virtual_dir_context_found():
     fallback = TomcatVirtualDirContextFallback(context_wrap(FOUND_1_FALLBACK))
     targeted = TomcatVirtualDirContextTargeted(context_wrap(FOUND_1_TARGETED))
     combined = TomcatVirtualDirContextCombined(None, {TomcatVirtualDirContextFallback: fallback,
-                                                      TomcatVirtualDirContextTargeted: targeted})
+                                                      TomcatVirtualDirContextTargeted: [targeted]})
     assert len(combined.data) == 2
     assert combined.data == {'/usr/share/tomcat/conf/server.xml':
                              ['    <Resources className="org.apache.naming.resources.VirtualDirContext"'],
@@ -88,7 +88,7 @@ def test_tomcat_virtual_dir_context_missing_parser():
                              }
 
     targeted = TomcatVirtualDirContextTargeted(context_wrap(FOUND_1_TARGETED))
-    combined = TomcatVirtualDirContextCombined(None, {TomcatVirtualDirContextTargeted: targeted})
+    combined = TomcatVirtualDirContextCombined(None, {TomcatVirtualDirContextTargeted: [targeted]})
     assert len(combined.data) == 1
     assert combined.data == {'/srv/tomcat/uportal/conf/server.xml':
                              ['    <Resources className="org.apache.naming.resources.VirtualDirContext"'],
@@ -99,7 +99,7 @@ def test_tomcat_virtual_dir_context_combinations_found():
     fallback = TomcatVirtualDirContextFallback(context_wrap(FOUND_3_FALLBACK))
     targeted = TomcatVirtualDirContextTargeted(context_wrap(FOUND_3_TARGETED))
     combined = TomcatVirtualDirContextCombined(None, {TomcatVirtualDirContextFallback: fallback,
-                                                      TomcatVirtualDirContextTargeted: targeted})
+                                                      TomcatVirtualDirContextTargeted: [targeted]})
     assert len(combined.data) == 4
     assert combined.data == {'/srv/tomcat/uportal/conf/server.xml':
                              ['    <Resources className="org.apache.naming.resources.VirtualDirContext"',
@@ -121,7 +121,7 @@ def test_tomcat_virtual_dir_context_combinations_found_but_same():
     fallback = TomcatVirtualDirContextFallback(context_wrap(FOUND_3_FALLBACK))
     targeted = TomcatVirtualDirContextTargeted(context_wrap(FOUND_4_TARGETED))
     combined = TomcatVirtualDirContextCombined(None, {TomcatVirtualDirContextFallback: fallback,
-                                                      TomcatVirtualDirContextTargeted: targeted})
+                                                      TomcatVirtualDirContextTargeted: [targeted]})
     assert len(combined.data) == 2
     assert combined.data == {'/usr/share/tomcat/conf/server.xml':
                              ['    <Resources className="org.apache.naming.resources.VirtualDirContext"',
