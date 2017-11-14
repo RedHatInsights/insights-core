@@ -24,9 +24,9 @@ class TomcatVirtualDirContextCombined(object):
     """
     def __init__(self, tomcat_vdc_fallback, tomcat_vdc_targeted):
         self.data = {}
-        fallback = tomcat_vdc_fallback
-        targeted = tomcat_vdc_targeted
-        for parser in (fallback, targeted):
+        fallback = tomcat_vdc_fallback if tomcat_vdc_fallback else None  # Returns one parser
+        targeted = tomcat_vdc_targeted if tomcat_vdc_targeted else []  # Returns list of parsers
+        for parser in [fallback] + targeted:
             if parser:
                 for key in parser.data:
                     if key not in self.data:
