@@ -24,10 +24,10 @@ class TomcatVirtualDirContextCombined(object):
     """
     def __init__(self, local, shared):
         self.data = {}
-        fallback = shared.get(TomcatVirtualDirContextFallback, {})
-        targeted = shared.get(TomcatVirtualDirContextTargeted, {})
+        fallback = shared.get(TomcatVirtualDirContextFallback)  # Returns one parser
+        targeted = shared.get(TomcatVirtualDirContextTargeted, [])  # Returns list of parsers
 
-        for parser in (fallback, targeted):
+        for parser in [fallback] + targeted:
             if parser:
                 for key in parser.data:
                     if key not in self.data:
