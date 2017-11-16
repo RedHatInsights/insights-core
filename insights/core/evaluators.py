@@ -65,7 +65,7 @@ class Evaluator(object):
     def _init_stats(self):
         return {
             "parser": {"count": 0, "fail": 0},
-            "rule": {"count": 0, "fail": 0},
+            "reducer": {"count": 0, "fail": 0},
             "skips": {"count": 0}
         }
 
@@ -78,11 +78,18 @@ class Evaluator(object):
                 log.warn(self.broker.tracebacks[e])
                 if plugins.is_parser(c):
                     self.handle_parse_error(c, e)
+                elif plugins.is_combiner(c):
+                    self.stats["reducer"]["fail"] += 1
                 elif plugins.is_rule(c):
                     self.handle_rule_error(c, e)
 
         for c, v in self.broker.items():
-            if plugins.is_rule(c):
+            if plugins.is_parser(c):
+                self.stats["parser"]["count"] += 1
+            elif plugins.is_combiner(c):
+                self.stats["reducer"]["count"] += 1
+            elif plugins.is_rule(c):
+                self.stats["reducer"]["count"] += 1
                 self.handle_result(c, v)
 
     def run_components(self):
@@ -114,7 +121,7 @@ class Evaluator(object):
         self.stats["parser"]["fail"] += 1
 
     def handle_rule_error(self, rule, exception):
-        self.stats["rule"]["fail"] += 1
+        self.stats["reducer"]["fail"] += 1
 
     def handle_content_error(self, e, filename):
         log.exception("Unable to extract content from %s.", filename)
@@ -325,8 +332,8 @@ class InsightsEvaluator(SingleEvaluator):
                     filename, self.url, e, exc_info=True)
 
     def handle_parse_error(self, component, exception):
+        super(InsightsEvaluator, self).handle_parse_error(component, exception)
         context = self.broker.get(dr.get_dependencies(component).pop(), "Unknown")
-        self.stats["parser"]["fail"] += 1
         log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
                     exception, context, self.url, exc_info=True)
 
