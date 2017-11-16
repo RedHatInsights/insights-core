@@ -165,6 +165,10 @@ def is_parser(component):
     return is_type(component, parser)
 
 
+def is_combiner(component):
+    return is_type(component, combiner)
+
+
 def is_rule(component):
     return dr.get_component_type(component) in RULE_TYPES
 
