@@ -25,13 +25,14 @@ class AllTmpFiles(object):
         active_rules(dict): a dictionary of rules using the config file as the key
         file_paths(list): a list of the file paths for the configurations.
     """
-    def __init__(self, tmpfiles):
+    def __init__(self, local, shared):
         active_rules = {}
         files = set([])
         file_paths = []
+        self.tmpfiles = shared[TmpFilesD]
         # Files must be sorted so that /etc/tmpfiles.d overrides /run/tmpfiles.d
         # which overides /usr/lib/tmpfiles.d.
-        for tmpfile in sorted(tmpfiles, key=lambda f: f.file_path):
+        for tmpfile in sorted(self.tmpfiles, key=lambda f: f.file_path):
             file_paths.append(tmpfile.file_path)
             if not active_rules.get(tmpfile.file_path):
                 active_rules[tmpfile.file_path] = []

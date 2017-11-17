@@ -40,9 +40,10 @@ DUPE_PATH = "/usr/lib/tmpfiles.d/sap.conf"
 
 
 def test_all_tmpfiles_conf():
-    data1 = TmpFilesD(context_wrap(SAP_CONF, SAP_PATH))
-    data2 = TmpFilesD(context_wrap(DNF_CONF, DNF_PATH))
-    all_data = AllTmpFiles([data1, data2])
+    data1 = TmpFilesD(context_wrap(SAP_CONF, path=SAP_PATH))
+    data2 = TmpFilesD(context_wrap(DNF_CONF, path=DNF_PATH))
+    context = {TmpFilesD: [data1, data2]}
+    all_data = AllTmpFiles({}, context)
 
     assert len(all_data.active_rules) == 2
     assert all_data.active_rules['/etc/tmpfiles.d/sap.conf'] == [{'type': 'x', 'path': '/tmp/.sap*', 'age': None,
@@ -67,14 +68,15 @@ def test_all_tmpfiles_conf():
 
     assert all_data.find_file('/tmp/.sap*')[SAP_PATH]['type'] == 'x'
 
-    data3 = TmpFilesD(context_wrap(DUPE_SAP_CONF, DUPE_PATH))
-    all_data = AllTmpFiles([data1, data3])
+    data3 = TmpFilesD(context_wrap(DUPE_SAP_CONF, path=DUPE_PATH))
+    context = {TmpFilesD: [data1, data3]}
+    all_data = AllTmpFiles({}, context)
     # Ensure that only the last discovered of the rules are counted
     assert len(all_data.active_rules) == 2
     assert all_data.active_rules['/etc/tmpfiles.d/sap.conf'][0] == {'type': 'x', 'path': '/tmp/.sap*', 'age': None,
                                                                     'gid': None, 'uid': None, 'argument': None, 'mode': None}
-
-    all_data = AllTmpFiles([data1, data2, data3])
+    context = {TmpFilesD: [data1, data2, data3]}
+    all_data = AllTmpFiles({}, context)
     assert len(all_data.file_paths) == 3
     assert all_data.file_paths == ['/etc/tmpfiles.d/dnf.conf',
                                    '/etc/tmpfiles.d/sap.conf',
