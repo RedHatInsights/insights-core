@@ -96,7 +96,6 @@ from .. import LegacyItemAccess, Parser, parser, get_active_lines
 
 
 @parser("xinetd.conf")
-@parser("xinetd.d")
 class XinetdConf(LegacyItemAccess, Parser):
     """Parse contents of file ``/etc/xinetd.conf`` and ``/etc/xinetd.d/*``."""
     def parse_content(self, content):
