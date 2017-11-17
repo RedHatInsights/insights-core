@@ -27,7 +27,7 @@ def test_rhsm_log():
     rlog = RhsmLog(context_wrap(LOG1))
     ern_list = rlog.get('[Errno -2]')
     assert 1 == len(ern_list)
-    assert ern_list[0] == "2016-07-31 04:07:21,245 [ERROR] rhsmcertd-worker:24440 @entcertlib.py:121 - [Errno -2] Name or service not known"
+    assert ern_list[0]['raw_message'] == "2016-07-31 04:07:21,245 [ERROR] rhsmcertd-worker:24440 @entcertlib.py:121 - [Errno -2] Name or service not known"
 
     rlog = RhsmLog(context_wrap(LOG2))
     ern_list = rlog.get('[Errno -2]')

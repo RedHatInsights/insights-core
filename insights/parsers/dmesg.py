@@ -33,15 +33,18 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
-
+from ..specs import dmesg
 import re
-from insights.specs import dmesg
 
 
 @parser(dmesg)
 class DmesgLineList(LogFileOutput):
     """
     Class for reading output of ``dmesg`` using the LogFileOutput parser class.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
+
     """
     _line_re = re.compile(r'^(?:\[\s+(?P<timestamp>\d+\.\d+)\]\s+)?(?P<message>.*)$')
 
@@ -59,42 +62,61 @@ class DmesgLineList(LogFileOutput):
             for line in self.lines
         )
 
-    def get_after(self, timestamp, lines=None):
+    def get_after(self, timestamp, s=None):
         """
-        Get a list of lines after the given time stamp.
+        Find all the (available) logs that are after the given time stamp.
 
-        Note that the time stamp is the floating point number of seconds
-        after the boot time, and is not related to an actual datetime.  If
-        a time stamp is not found on the line between square brackets, then
-        it is treated as a continuation of the previous line and is only
-        included if the previous line's timestamp is greater than the
-        timestamp given.  Because continuation lines are only included if a
-        previous line has matched, this means that searching in logs that do
-        not have a time stamp produces no lines.
+        If `s` is not supplied, then all lines are used.  Otherwise, only the
+        lines contain the `s` are used.  `s` can be either a single string or a
+        strings list. For list, all keywords in the list must be found in the
+        line.
+
+        .. note::
+            The time stamp is the floating point number of seconds
+            after the boot time, and is not related to an actual datetime.  If
+            a time stamp is not found on the line between square brackets, then
+            it is treated as a continuation of the previous line and is only
+            included if the previous line's timestamp is greater than the
+            timestamp given.  Because continuation lines are only included if a
+            previous line has matched, this means that searching in logs that do
+            not have a time stamp produces no lines.
 
         Parameters:
             timestamp(float): log lines after this time are returned.
-            lines(list): the list of log lines to search (e.g. from ``get``).
+            s(str or list): one or more strings to search for.
                 If not supplied, all available lines are searched.
 
         Yields:
             Log lines with time stamps after the given time.
+
+        Raises:
+            TypeError: The ``timestamp`` should be in `float` type, otherwise a
+                `TypeError` will be raised.
         """
-        if lines is None:
-            lines = self.lines
+        if not isinstance(timestamp, float):
+            raise TypeError(
+                        "get_after needs a float type timestamp, but get '{c}'".format(
+                            c=timestamp)
+                    )
 
         including_lines = False
-        for line in lines:
+        for line in self.lines:
+            # If `s` is not None, keywords must be found in the line
+            if (s and (
+                    (type(s) == str and s not in line) or
+                    (type(s) == list and any(w not in line for w in s)))):
+                continue
+            # Otherwise, search all lines
             match = self._line_re.search(line)
             if match and match.group('timestamp'):
                 # Get logtimestamp and compare to given timestamp
                 logstamp = float(match.group('timestamp'))
                 if logstamp >= timestamp:
                     including_lines = True
-                    yield line
+                    yield self._parse_line(line)
                 else:
                     including_lines = False
             else:
                 # If we're including lines, add this continuation line
                 if including_lines:
-                    yield line
+                    yield self._parse_line(line)

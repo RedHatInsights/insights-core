@@ -4,6 +4,9 @@ RHN Logs -  Files ``/var/log/rhn/*.log``
 
 Modules for parsing the content of log files under ``/rhn-logs/rhn`` directory
 in spacewalk-debug or sosreport archives of Satellite 5.x.
+
+.. note::
+    Please refer to the super-class :class:`insights.core.LogFileOutput`
 """
 from datetime import datetime
 from .. import parser, LogFileOutput
@@ -18,7 +21,7 @@ from insights.specs import rhn_taskomatic_daemon_log
 class TaskomaticDaemonLog(LogFileOutput):
     """Class for parsing the ``rhn_taskomatic_daemon.log`` file.
 
-    Note:
+    .. note::
         Because of the need to get the datetime of the last log, please DO NOT
         filter it.
 
@@ -30,8 +33,8 @@ class TaskomaticDaemonLog(LogFileOutput):
         >>> td_log = shared[TaskomaticDaemonLog]
         >>> td_log.file_path
         'var/log/rhn/rhn_taskomatic_daemon.log'
-        >>> td_log.get('two')
-        ['Log file line two']
+        >>> td_log.get('two')[0]['raw_message']
+        'Log file line two'
         >>> 'three' in td_log
         True
         >>> td_log.last_log_date
@@ -83,7 +86,7 @@ class ServerXMLRPCLog(LogFileOutput):
           'function': 'registration.welcome_message',
           'client_id': None,
           'args': "'lang: None'",
-          'raw_log': "..."}]
+          'raw_message': "...two..."}]
         >>> log.last
         [{'timestamp':'2016/04/11 05:52:01 -04:00',
           'datetime': datetime(2016, 04, 11, 05, 52, 01),
@@ -93,7 +96,7 @@ class ServerXMLRPCLog(LogFileOutput):
           'function': 'registration.welcome_message',
           'client_id': None,
           'args': "'lang: None'",
-          'raw_log': "..."}]
+          'raw_message': "..."}]
     """
     time_format = '%Y/%m/%d %H:%M:%S'
 
@@ -114,20 +117,21 @@ class ServerXMLRPCLog(LogFileOutput):
 
         msg_info = {}
         for l in reversed(self.lines):
-            msg_info = self.parse_line(l)
+            msg_info = self._parse_line(l)
             # assume parse is successful if we got an IP address
             if 'client_ip' in msg_info:
                 break
         # Get the last one even if it didn't parse.
         self.last = msg_info
 
-    def parse_line(self, line):
+    def _parse_line(self, line):
         """
         Parse a log line using the XMLRPC regular expression into a dict.
-        All data will be in fields, and the raw log line is stored in 'raw_log'.
+        All data will be in fields, and the raw log line is stored in
+        'raw_message'.
         """
         msg_info = dict()
-        msg_info['raw_log'] = line
+        msg_info['raw_message'] = line
 
         match = self._LINE_RE.search(line)
         if match:
@@ -142,12 +146,6 @@ class ServerXMLRPCLog(LogFileOutput):
                 pass
 
         return msg_info
-
-    def get(self, s):
-        """
-        Returns all lines that contain 's', parse them and wrap them in a list
-        """
-        return [self.parse_line(l) for l in self.lines if s in l]
 
 
 @parser(rhn_search_daemon_log)
@@ -169,10 +167,10 @@ class SearchDaemonLog(LogFileOutput):
         >>> log = shared[SearchDaemonLog]
         >>> log.file_path
         'var/log/rhn/search/rhn_search_daemon.log'
-        >>> log.get('Launching a JVM')
-        ['STATUS | wrapper  | 2013/01/28 14:41:58 | Launching a JVM...']
-        >>> list(log.get_after(datetime(2013, 1, 29, 0, 0, 0)))
-        ['STATUS | wrapper  | 2013/01/29 17:04:25 | TERM trapped.  Shutting down.']
+        >>> log.get('Launching a JVM')[0]['raw_message']
+        'STATUS | wrapper  | 2013/01/28 14:41:58 | Launching a JVM...'
+        >>> list(log.get_after(datetime(2013, 1, 29, 0, 0, 0)))[0]['raw_message']
+        'STATUS | wrapper  | 2013/01/29 17:04:25 | TERM trapped.  Shutting down.'
     """
     time_format = '%Y/%m/%d %H:%M:%S'
 
@@ -197,10 +195,9 @@ class SatelliteServerLog(LogFileOutput):
 
     Examples:
         >>> log = shared[SatelliteServerLog]
-        >>> log.get('Downloading')
-        ['2016/11/19 01:13:35 -04:00 Downloading errata data complete', '2016/11/19 01:13:35 -04:00 Downloading kickstartable trees metadata']
-
-        >>> log.get_after(datetime(2016, 11, 19, 1, 13, 44))
-        ['2016/11/19 01:13:44 -04:00 channel-families data complete', '2016/11/19 01:13:44 -04:00 ', '2016/11/19 01:13:44 -04:00 RHN Entitlement Certificate sync']
+        >>> log.get('Downloading')[0['raw_message']
+        '2016/11/19 01:13:35 -04:00 Downloading errata data complete', '2016/11/19 01:13:35 -04:00 Downloading kickstartable trees metadata'
+        >>> list(log.set_after(datetime(2016, 11, 19, 1, 13, 44)))[0]['raw_message']
+        '2016/11/19 01:13:44 -04:00 channel-families data complete', '2016/11/19 01:13:44 -04:00 ', '2016/11/19 01:13:44 -04:00 RHN Entitlement Certificate sync'
     """
     time_format = '%Y/%m/%d %H:%M:%S'

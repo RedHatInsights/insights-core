@@ -79,8 +79,8 @@ class RabbitMQStartupErrLog(LogFileOutput):
         Crash dump was written to: erl_crash.dump
         Kernel pid terminated (application_controller) ({application_start_failure,kernel,{shutdown,{kernel,start,[normal,[]]}}})
 
-    Note:
-        Please refer to its super-class ``LogFileOutput``
+    .. note::
+        Please refer to its super-class :py:class:`insights.core.LogFileOutput`
     """
     pass
 
@@ -106,10 +106,11 @@ class RabbitMQLogs(LogFileOutput):
         database dir   : /var/lib/rabbitmq/mnesia/rabbit@overcloud-controller-0
         ...
 
-    Note:
-        Please refer to its super-class ``LogFileOutput`` for full usage.
+    .. note::
+        Please refer to its super-class :py:class:`insights.core.LogFileOutput`
+        for full usage.
 
-    Note:
+    .. note::
         Because this parser is defined using a PatternSpec, which returns
         multiple files, the data in the shared parser state is a list of
         these parser objects.  This means that for the moment you will have

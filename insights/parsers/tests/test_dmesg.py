@@ -60,20 +60,20 @@ TS_MSGINFO = """
 
 def test_dmesg():
     dmesg_info = DmesgLineList(context_wrap(MSGINFO))
-    assert dmesg_info.get("HPSA") == ['HP HPSA Driver (v 3.4.4-1-RH2)', 'HP HPSA Driver (v 3.4.4-1-RH2)', '[    8.687252] HP HPSA Driver (v 3.4.4-1-RH2) 2.5.0']
+    assert sorted([i['raw_message'] for i in dmesg_info.get("HPSA")]) == sorted(
+            ['HP HPSA Driver (v 3.4.4-1-RH2)', 'HP HPSA Driver (v 3.4.4-1-RH2)', '[    8.687252] HP HPSA Driver (v 3.4.4-1-RH2) 2.5.0'])
     assert len(dmesg_info.get("lo:")) == 2
     assert "Dropping" in dmesg_info
     assert dmesg_info.has_startswith("bonding:")
     assert not dmesg_info.has_startswith("xfs:")
-    assert list(dmesg_info.get_after(0.0001)) == [
-        '[    8.687252] HP HPSA Driver (v 3.4.4-1-RH2) 2.5.0',
-        'lo: Dropping TSO features since no CSUM feature duplicated.']
+    assert len(list(dmesg_info.get_after(0.0001))) == 2
+    assert list(dmesg_info.get_after(0.0001))[0]['raw_message'] == '[    8.687252] HP HPSA Driver (v 3.4.4-1-RH2) 2.5.0'
 
     ts_info = DmesgLineList(context_wrap(TS_MSGINFO))
     assert ts_info
-    assert ts_info.get('Processor Core ID') == ['[    0.004983] CPU: Processor Core ID: 0']
+    assert ts_info.get('Processor Core ID')[0]['raw_message'] == '[    0.004983] CPU: Processor Core ID: 0'
     assert ts_info.has_startswith('ENERGY_PERF_BIAS')
     assert not ts_info.has_startswith('Intel(R) Core(TM)')
     assert 'tlb_flushall_shift' in ts_info
     assert len(list(ts_info.get_after(0.024847))) == 7
-    assert len(list(ts_info.get_after(0.024847, lines=ts_info.get('x2apic')))) == 3
+    assert len(list(ts_info.get_after(0.024847, 'x2apic'))) == 3

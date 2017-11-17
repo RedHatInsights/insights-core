@@ -25,9 +25,8 @@ Typical content of ``mariadb.log`` file is::
 Examples:
 
     >>> mdb = shared[MariaDBLog]
-    >>> mdb.get('mysqld_safe')
-    ['161109 14:28:22 mysqld_safe Starting mysqld daemon with databases from /var/lib/mysql',
-     "161109 14:28:22 mysqld_safe WSREP: Running position recovery with --log_error='/var/lib/mysql/wsrep_recovery.OkURTZ' --pid-file='/var/lib/mysql/overcloud-controller-0.localdomain-recover.pid'"]
+    >>> mdb.get('mysqld_safe')[0]['raw_message']
+    '161109 14:28:22 mysqld_safe Starting mysqld daemon with databases from /var/lib/mysql'
     >>> 'SSL_CTX_set_default_verify_paths' in mdb
     True
 """
@@ -40,8 +39,8 @@ from insights.specs import mariadb_log
 class MariaDBLog(LogFileOutput):
     """Class for parsing ``/var/log/mariadb/mariadb.log`` file.
 
-    Note:
-        Please refer to its super-class ``LogFileOutput``
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
     """
     time_format = {
         'pre_10.1.5': '%y%m%d %H:%M:%S',

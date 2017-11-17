@@ -30,34 +30,27 @@ def test_normal_sssd_logs():
     assert len(sssd_logs.get('sssd')) == 16
 
     # Check different module formats:
-    assert SSSDLog.parse_lines(
-        sssd_logs.get('sdap_get_generic_op_finished')
-    )[0]['module'] == 'sssd[be[redhat.com]]'
-    assert SSSDLog.parse_lines(
-        sssd_logs.get('krb5_child started')
-    )[0]['module'] == 'sssd[krb5_child[7231]]'
-    assert SSSDLog.parse_lines(
-        sssd_logs.get('0x7f5aceb6a970')
-    )[0]['module'] == 'sssd'
-    assert len(SSSDLog.parse_lines(sssd_logs.get('Fake line'))) == 1
+    assert sssd_logs.get('sdap_get_generic_op_finished')[0]['module'] == 'sssd[be[redhat.com]]'
+    assert sssd_logs.get('krb5_child started')[0]['module'] == 'sssd[krb5_child[7231]]'
+    assert sssd_logs.get('0x7f5aceb6a970')[0]['module'] == 'sssd'
+    assert len(sssd_logs.get('Fake line')) == 1
 
     # Check keep_scan to find data.
     sighups = sssd_logs.sighups
     assert len(sighups) == 2
-    assert 'monitor_hup' in sighups[0]
-    assert 'te_server_hup' in sighups[1]
+    assert 'monitor_hup' == sighups[0]['function']
+    assert 'te_server_hup' == sighups[1]['function']
 
-    # Check parse_lines
-    info = SSSDLog.parse_lines(sighups)
-    assert info[0] == {
+    assert sighups[0] == {
         'timestamp': 'Tue Feb 14 09:45:02 2017',
         'datetime': datetime(2017, 2, 14, 9, 45, 2),
         'module': 'sssd',
         'function': 'monitor_hup',
         'level': '0x0020',
-        'message': 'Received SIGHUP.'
+        'message': 'Received SIGHUP.',
+        'raw_message': '(Tue Feb 14 09:45:02 2017) [sssd] [monitor_hup] (0x0020): Received SIGHUP.'
     }
 
     # Check get_after - invalid log line treated as continuation
     assert len(list(sssd_logs.get_after(datetime(2017, 2, 14, 8, 0, 0)))) == 11
-    assert len(list(sssd_logs.get_after(datetime(2017, 2, 14, 8, 0, 0), sssd_logs.get('sbus_remove_timeout')))) == 3
+    assert len(list(sssd_logs.get_after(datetime(2017, 2, 14, 8, 0, 0), 'sbus_remove_timeout'))) == 3

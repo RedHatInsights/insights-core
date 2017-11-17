@@ -16,7 +16,7 @@ HttpdSSLAccessLog - file ``ssl_access_log``
 HttpdAccessLog - file ``access_log``
 ------------------------------------
 
-Note:
+.. note::
     Please refer to the super-class :py:class:`insights.core.LogFileOutput`
     for more usage information.
 

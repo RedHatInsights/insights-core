@@ -35,7 +35,9 @@ from insights.specs import libvirtd_log
 @parser(libvirtd_log)
 class LibVirtdLog(LogFileOutput):
     """
-    Read the ``/var/log/libvirt/libvirtd.log`` log file and parse it using
-    the LogFileOutput class parser.
+    Parse the ``/var/log/libvirt/libvirtd.log`` log file.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
     """
     pass

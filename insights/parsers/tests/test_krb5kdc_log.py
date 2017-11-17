@@ -31,10 +31,10 @@ krb5kdc: setsockopt(7,IPV6_V6ONLY,1) worked
 def test_krb5kdc_log():
     log = KerberosKDCLog(context_wrap(KRB5KDC_LOG))
     assert len(log.lines) == 21
-    decrypt_failed_logs = list(log.get('Decrypt integrity check failed'))
+    decrypt_failed_logs = log.get('Decrypt integrity check failed')
     assert len(decrypt_failed_logs) == 5
     assert decrypt_failed_logs[0] == {
-        'line': 'Apr 01 03:36:33 ldap.example.com krb5kdc[24556](info): preauth (encrypted_timestamp) verify failure: Decrypt integrity check failed',
+        'raw_message': 'Apr 01 03:36:33 ldap.example.com krb5kdc[24556](info): preauth (encrypted_timestamp) verify failure: Decrypt integrity check failed',
         'timestamp': 'Apr 01 03:36:33',
         'system': 'ldap.example.com',
         'service': 'krb5kdc',
@@ -44,8 +44,8 @@ def test_krb5kdc_log():
     }
     # Lines that don't parse still get found and just have the 'line' key
     assert len(list(log.get('setsockopt'))) == 1
-    assert list(log.get('setsockopt'))[0] == {
-        'line': 'krb5kdc: setsockopt(7,IPV6_V6ONLY,1) worked'
+    assert log.get('setsockopt')[0] == {
+        'raw_message': 'krb5kdc: setsockopt(7,IPV6_V6ONLY,1) worked'
     }
 
     # test get_after, including continuation line

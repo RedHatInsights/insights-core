@@ -11,7 +11,11 @@ from insights.specs import postgresql_log
 class PostgreSQLLog(LogFileOutput):
     """
     Read the PostgreSQL log files.  Uses the ``LogFileOutput`` class parser
-    functionality - see the base class for more details.
+    functionality.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
+
 
     The PostgreSQL log files contain no dates or times by default::
 

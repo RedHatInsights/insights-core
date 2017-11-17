@@ -9,8 +9,11 @@ from insights.specs import neutron_server_log
 @parser(neutron_server_log)
 class NeutronServerLog(LogFileOutput):
     '''
-    Read the ``/var/log/neutron/server.log`` file.  For more usage information
-    see the ``LogFileOutput`` parser class.
+    Read the ``/var/log/neutron/server.log`` file.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput` for
+        more usage information
 
     Sample log file::
 
@@ -25,27 +28,11 @@ class NeutronServerLog(LogFileOutput):
 
     Examples:
         >>> neutron_log = shared[NeutronServerLog]
-        >>> neutron_log.get('Authorization')[0]
+        >>> neutron_log.get('Authorization')[0]['raw_message']
         '2016-09-13 05:56:45.156 30586 WARNING keystonemiddleware.auth_token [-] Authorization failed for token'
-        >>> neutron_log.get_after(datetime.datetime(2016, 9, 13, 6, 0, 0))[0]
+        >>> len(list(neutron_log.get_after(datetime.datetime(2016, 9, 13, 6, 0, 0))))
+        6
+        >>> neutron_log.get_after(datetime.datetime(2016, 9, 13, 6, 0, 0))[0]['raw_message']
         '2016-09-13 06:06:45.884 30588 WARNING keystonemiddleware.auth_token [-] Authorization failed for token'
     '''
-
-    def get(self, keywords):
-        """
-        Search for lines that contain all keywords, supplied either as a
-        single string or a list of strings.
-
-        Parameters:
-            keywords(str/list): A string, or a list of strings, to search for.
-
-        Returns:
-            (list): A list of the lines that contain the keyword(s).
-        """
-        r = []
-        for l in self.lines:
-            if type(keywords) == list and all([word in l for word in keywords]):
-                r.append(l)
-            elif type(keywords) == str and keywords in l:
-                r.append(l)
-        return r
+    pass

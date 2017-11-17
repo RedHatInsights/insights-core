@@ -36,7 +36,7 @@ class HeatApiLog(LogFileOutput):
         2016-11-09 14:39:30.764 4139 INFO eventlet.wsgi.server [-] (4139) wsgi starting up on http://172.16.2.12:8004
         2016-11-09 14:39:30.782 4136 INFO eventlet.wsgi.server [-] (4136) wsgi starting up on http://172.16.2.12:8004
 
-    Note:
+    .. note::
         Please refer to its super-class :py:class:`insights.core.LogFileOutput`
     """
     pass
@@ -63,7 +63,7 @@ class HeatEngineLog(LogFileOutput):
         2016-11-09 14:32:44.155 4392 WARNING heat.engine.environment [-] OS::Heat::StructuredDeployments is HIDDEN. Please use OS::Heat::StructuredDeploymentGroup instead.
         2016-11-09 14:32:44.156 4392 WARNING heat.engine.environment [-] OS::Neutron::ExtraRoute is UNSUPPORTED. Use this resource at your own risk.
 
-    Note:
+    .. note::
         Please refer to its super-class :py:class:`insights.core.LogFileOutput`
     """
     pass

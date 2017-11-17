@@ -30,5 +30,8 @@ from insights.specs import ceph_osd_log
 class CephOsdLog(LogFileOutput):
     """
     Provide access to Ceph OSD logs using the LogFileOutput parser class.
+
+    .. note::
+        Please refer to the super-class :class:`insights.core.LogFileOutput`
     """
     time_format = '%Y-%m-%d %H:%M:%S.%f'

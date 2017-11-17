@@ -21,7 +21,7 @@ def test_ovsdb_server():
     vlogs = logs.get('vlog')
     assert len(vlogs) == 2
     assert vlogs[0] == {
-        'raw_line': '2017-03-12T11:56:54.989Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovsdb-server.log',
+        'raw_message': '2017-03-12T11:56:54.989Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovsdb-server.log',
         'timestamp': '2017-03-12T11:56:54.989Z',
         'sequence': '00001',
         'module': 'vlog',
@@ -29,7 +29,7 @@ def test_ovsdb_server():
         'message': 'opened log file /var/log/openvswitch/ovsdb-server.log'
     }
     assert vlogs[1] == {
-        'raw_line': '2017-03-13T07:41:01.524Z|00005|vlog|INFO|closing log file',
+        'raw_message': '2017-03-13T07:41:01.524Z|00005|vlog|INFO|closing log file',
         'timestamp': '2017-03-13T07:41:01.524Z',
         'sequence': '00005',
         'module': 'vlog',
@@ -37,11 +37,9 @@ def test_ovsdb_server():
         'message': 'closing log file'
     }
     assert len(list(logs.get_after(datetime(2017, 3, 13, 0, 0, 0)))) == 3
-    # get_after should also handle lines parsed into dictionaries, and
-    # incomplete line is included because of continuation
     test_logs = logs.get('testing')
     assert test_logs[0] == {
-        'raw_line': '2017-03-13T07:41:02.524Z|00005|testing|INFO|testing handing of messages with | in them',
+        'raw_message': '2017-03-13T07:41:02.524Z|00005|testing|INFO|testing handing of messages with | in them',
         'timestamp': '2017-03-13T07:41:02.524Z',
         'sequence': '00005',
         'module': 'testing',
@@ -49,9 +47,9 @@ def test_ovsdb_server():
         'message': 'testing handing of messages with | in them',
     }
     assert test_logs[1] == {
-        'raw_line': '2017-03-13T07:41:03.524Z|testing messages with not enough fields in them.'
+        'raw_message': '2017-03-13T07:41:03.524Z|testing messages with not enough fields in them.'
     }
-    assert len(list(logs.get_after(datetime(2017, 3, 12, 11, 20, 0), test_logs))) == 2
+    assert len(list(logs.get_after(datetime(2017, 3, 12, 11, 20, 0), 'testing'))) == 2
 
 
 # Same tests, same file, just a different parser name.
@@ -61,8 +59,9 @@ def test_ovs_vswitch():
     assert len(logs) == 7
     vlogs = logs.get('vlog')
     assert len(vlogs) == 2
+    print vlogs[0]
     assert vlogs[0] == {
-        'raw_line': '2017-03-12T11:56:54.989Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovsdb-server.log',
+        'raw_message': '2017-03-12T11:56:54.989Z|00001|vlog|INFO|opened log file /var/log/openvswitch/ovsdb-server.log',
         'timestamp': '2017-03-12T11:56:54.989Z',
         'sequence': '00001',
         'module': 'vlog',
@@ -70,7 +69,7 @@ def test_ovs_vswitch():
         'message': 'opened log file /var/log/openvswitch/ovsdb-server.log'
     }
     assert vlogs[1] == {
-        'raw_line': '2017-03-13T07:41:01.524Z|00005|vlog|INFO|closing log file',
+        'raw_message': '2017-03-13T07:41:01.524Z|00005|vlog|INFO|closing log file',
         'timestamp': '2017-03-13T07:41:01.524Z',
         'sequence': '00005',
         'module': 'vlog',
@@ -78,6 +77,4 @@ def test_ovs_vswitch():
         'message': 'closing log file'
     }
     assert len(list(logs.get_after(datetime(2017, 3, 13, 0, 0, 0)))) == 3
-    # get_after should also handle lines parsed into dictionaries, and
-    # incomplete line is included because of continuation
-    assert len(list(logs.get_after(datetime(2017, 3, 12, 11, 20, 0), logs.get('testing')))) == 2
+    assert len(list(logs.get_after(datetime(2017, 3, 12, 11, 20, 0), 'testing'))) == 2

@@ -22,10 +22,8 @@ def test_vdsm_log():
     assert "VM Channels Listener" in vdsm_log
     test_newline_handling = vdsm_log.get('SUCCESS')
     assert len(test_newline_handling) == 3
-    assert test_newline_handling[0] == "Thread-60::DEBUG::2015-05-04 00:01:07,490::blockSD::600::Storage.Misc.excCmd::(getReadDelay) SUCCESS: <err> = '1+0 records in\\n1+0 records out\\n4096 bytes (4.1 kB) copied, 0.000147196 s, 27.8 MB/s\\n'; <rc> = 0"
-    parsed_newlines = list(vdsm_log.parse_lines(test_newline_handling))
-    assert parsed_newlines[0] == {
-        'raw_line': "Thread-60::DEBUG::2015-05-04 00:01:07,490::blockSD::600::Storage.Misc.excCmd::(getReadDelay) SUCCESS: <err> = '1+0 records in\\n1+0 records out\\n4096 bytes (4.1 kB) copied, 0.000147196 s, 27.8 MB/s\\n'; <rc> = 0",
+    assert test_newline_handling[0] == {
+        'raw_message': "Thread-60::DEBUG::2015-05-04 00:01:07,490::blockSD::600::Storage.Misc.excCmd::(getReadDelay) SUCCESS: <err> = '1+0 records in\\n1+0 records out\\n4096 bytes (4.1 kB) copied, 0.000147196 s, 27.8 MB/s\\n'; <rc> = 0",
         'thread': "Thread-60",
         'level': "DEBUG",
         'timestamp': "2015-05-04 00:01:07,490",
@@ -38,12 +36,7 @@ def test_vdsm_log():
     }
     # test get_after()
     assert len(list(vdsm_log.get_after(datetime(2015, 5, 4, 0, 1, 10)))) == 4
-    assert len(list(vdsm_log.get_after(
-        datetime(2015, 5, 4, 0, 1, 10), vdsm_log.get('dispatcher')
-    ))) == 2
-    assert len(list(vdsm_log.get_after(
-        datetime(2015, 5, 4, 0, 1, 10), vdsm_log.parse_lines(vdsm_log.get('dispatcher'))
-    ))) == 2
+    assert len(list(vdsm_log.get_after(datetime(2015, 5, 4, 0, 1, 10), 'dispatcher'))) == 2
 
 
 BAD_VDSM_LOG = r"""
@@ -56,16 +49,15 @@ FATAL ERROR
 
 def test_bad_vdsm_log_parsing():
     vdsm_log = VDSMLog(context_wrap(BAD_VDSM_LOG))
-    parsed = list(vdsm_log.parse_lines(vdsm_log.lines))
-    assert len(parsed) == 4
+    parsed = vdsm_log.get("T")
     assert parsed[0] == {
-        'raw_line': 'Thread-13::INFO::2015-33-45 00:01:15,854',
+        'raw_message': 'Thread-13::INFO::2015-33-45 00:01:15,854',
         'thread': 'Thread-13',
         'level': 'INFO',
         'timestamp': '2015-33-45 00:01:15,854',
     }
     assert parsed[1] == {
-        'raw_line': 'Thread-13::INFO::2015-05-04 00:01:15,854::',
+        'raw_message': 'Thread-13::INFO::2015-05-04 00:01:15,854::',
         'thread': 'Thread-13',
         'level': 'INFO',
         'timestamp': '2015-05-04 00:01:15,854',
@@ -73,7 +65,7 @@ def test_bad_vdsm_log_parsing():
         'module': ''  # vestigial field
     }
     assert parsed[2] == {
-        'raw_line': "Thread-13::INFO::2015-05-04 00:01:15,854::logUtils::47::dispatcher::(wrapper) Run and protect: repoStats, Return response: {u'cf7dab23-6b5b-45f4-9e27-ab06fbc01759': {'code': 0, 'version': 0, 'acquired': True, 'delay': '0.000153278', 'lastCheck': '8.8', 'valid': True}, u'5a30691d-4fae-4023-ae96-50704f6b253c': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000147196', 'lastCheck': '8.4', 'valid': True}, u'b0c17a6d-c5a5-4646-b4b5-edd85bc658db': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000632011', 'lastCheck': '7.8', 'valid': True}, u'fe4d8910-ac67-4307-a3e7-be8a56d1c559': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.00020047', 'lastCheck': '7.9', 'valid': True}, u'e70cce65-0d02-4da4-8781-6aeeef5c86ff': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000208457', 'lastCheck': '9.6', 'valid': True}, u'c3a10b1e-574e-4edd-ad00-a59cacc705b5': {'code': 0, 'version': 0, 'acquired': True, 'delay': '0.000201237', 'lastCheck': '8.8', 'valid': True}}",
+        'raw_message': "Thread-13::INFO::2015-05-04 00:01:15,854::logUtils::47::dispatcher::(wrapper) Run and protect: repoStats, Return response: {u'cf7dab23-6b5b-45f4-9e27-ab06fbc01759': {'code': 0, 'version': 0, 'acquired': True, 'delay': '0.000153278', 'lastCheck': '8.8', 'valid': True}, u'5a30691d-4fae-4023-ae96-50704f6b253c': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000147196', 'lastCheck': '8.4', 'valid': True}, u'b0c17a6d-c5a5-4646-b4b5-edd85bc658db': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000632011', 'lastCheck': '7.8', 'valid': True}, u'fe4d8910-ac67-4307-a3e7-be8a56d1c559': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.00020047', 'lastCheck': '7.9', 'valid': True}, u'e70cce65-0d02-4da4-8781-6aeeef5c86ff': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000208457', 'lastCheck': '9.6', 'valid': True}, u'c3a10b1e-574e-4edd-ad00-a59cacc705b5': {'code': 0, 'version': 0, 'acquired': True, 'delay': '0.000201237', 'lastCheck': '8.8', 'valid': True}}",
         'thread': 'Thread-13',
         'level': 'INFO',
         'timestamp': '2015-05-04 00:01:15,854',
@@ -85,6 +77,6 @@ def test_bad_vdsm_log_parsing():
         'message': "Run and protect: repoStats, Return response: {u'cf7dab23-6b5b-45f4-9e27-ab06fbc01759': {'code': 0, 'version': 0, 'acquired': True, 'delay': '0.000153278', 'lastCheck': '8.8', 'valid': True}, u'5a30691d-4fae-4023-ae96-50704f6b253c': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000147196', 'lastCheck': '8.4', 'valid': True}, u'b0c17a6d-c5a5-4646-b4b5-edd85bc658db': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000632011', 'lastCheck': '7.8', 'valid': True}, u'fe4d8910-ac67-4307-a3e7-be8a56d1c559': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.00020047', 'lastCheck': '7.9', 'valid': True}, u'e70cce65-0d02-4da4-8781-6aeeef5c86ff': {'code': 0, 'version': 3, 'acquired': True, 'delay': '0.000208457', 'lastCheck': '9.6', 'valid': True}, u'c3a10b1e-574e-4edd-ad00-a59cacc705b5': {'code': 0, 'version': 0, 'acquired': True, 'delay': '0.000201237', 'lastCheck': '8.8', 'valid': True}}"
     }
     assert parsed[3] == {
-        'raw_line': 'FATAL ERROR',
+        'raw_message': 'FATAL ERROR',
         'thread': 'FATAL ERROR'
     }

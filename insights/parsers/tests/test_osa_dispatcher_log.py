@@ -24,7 +24,7 @@ def test_get_osa_dispatcher_log():
     ))
 
     # Check the fields in a typical full line
-    line = log.get_parsed_lines('setup_connection')[0]
+    line = log.get('setup_connection')[0]
     assert line['timestamp'] == '2015/12/23 04:40:58 -04:00'
     assert line['pid'] == '28307'
     assert line['client_ip'] == '0.0.0.0'
@@ -33,7 +33,7 @@ def test_get_osa_dispatcher_log():
     assert line['info'] == "'Connected to jabber server', u'example.com'"
 
     # Check lines that don't have an info field
-    line = log.get_parsed_lines('process_forever')[0]
+    line = log.get('process_forever')[0]
     assert line['info'] is None
 
     last = log.last()
@@ -47,17 +47,12 @@ def test_get_osa_dispatcher_log():
 
     # Test get_after functionality with different inputs
     assert len(list(log.get_after(datetime(2015, 12, 27, 22, 48, 40)))) == 2
-    assert len(list(log.get_after(
-        datetime(2015, 12, 23, 4, 40, 0), log.get('connection')
-    ))) == 2
-    assert len(list(log.get_after(
-        datetime(2015, 12, 23, 4, 40, 0), log.get_parsed_lines('connection')
-    ))) == 2
+    assert len(list(log.get_after(datetime(2015, 12, 23, 4, 40, 0), 'connection'))) == 2
 
     trunc = osa_dispatcher_log.OSADispatcherLog(context_wrap(
         OSA_DISPATCHER_TRUNC, path='var/log/rhn/osa-dispatcher.log'
     ))
     last = trunc.last()
-    assert last['raw_log'] == '2015/12/27 22:48:50 -04:00 28307 0.0.0'
+    assert last['raw_message'] == '2015/12/27 22:48:50 -04:00 28307 0.0.0'
     for k in ['timestamp', 'pid', 'client_ip', 'module', 'function', 'info']:
         assert k not in last

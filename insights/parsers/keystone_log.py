@@ -31,7 +31,7 @@ from insights.specs import keystone_log
 class KeystoneLog(LogFileOutput):
     """Class for parsing ``/var/log/keystone/keystone.log`` file.
 
-    Note:
-        Please refer to its super-class ``LogFileOutput``
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
     """
     pass

@@ -383,17 +383,19 @@ class LogFileOutput(Parser):
         >>> contents = '''
         Log file line one
         Log file line two
-        Log file line three
+        Log file line three, and more
         '''.strip()
         >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
         >>> my_logger.file_path
         '/var/log/mylog'
         >>> my_logger.file_name
         'mylog'
-        >>> my_logger.lines.get('two')
-        ['Log file line two']
+        >>> my_logger.get('two')
+        [{'raw_message': 'Log file line two'}]
         >>> 'three' in my_logger
         True
+        >>> my_logger.get(['three', 'more'])
+        [{'raw_message': 'Log file line three, and more'}]
         >>> my_logger.lines[0]
         'Log file line one'
     """
@@ -425,9 +427,32 @@ class LogFileOutput(Parser):
         """
         return any(s in l for l in self.lines)
 
+    def _parse_line(self, line):
+        """
+        Parse the line into a dictionary and return it. Only wrap with
+        `raw_message` by default.
+        """
+        return {'raw_message': line}
+
     def get(self, s):
-        """list: Returns lis of lines containing string ``s``."""
-        return [line for line in self.lines if s in line]
+        """
+        Returns all lines that contain `s` anywhere and wrap them in a list of
+        dictionaries.  `s` can be either a single string or a string list. For
+        list, all keywords in the list must be found in each line.
+
+        Parameters:
+            s(str or list): one or more strings to search for.
+
+        Returns:
+            (list): list of dictionaries corresponding to the parsed lines
+            contain the `s`.
+        """
+        ret = []
+        for l in self.lines:
+            if ((type(s) == list and all(w in l for w in s)) or
+                    (type(s) == str and s in l)):
+                ret.append(self._parse_line(l))
+        return ret
 
     @classmethod
     def scan(cls, result_key, func):
@@ -469,16 +494,17 @@ class LogFileOutput(Parser):
 
         cls.scan(result_key, _scan)
 
-    def get_after(self, timestamp, lines=None):
+    def get_after(self, timestamp, s=None):
         """
         Find all the (available) logs that are after the given time stamp.
 
-        If 'lines' is not supplied, then all lines are used.  Otherwise, the
-        caller can provide a list of lines from a scanner or the ``get()``
-        method.
+        If `s` is not supplied, then all lines are used.  Otherwise, only the
+        lines contain the `s` are used.  `s` can be either a single string or a
+        string list. For list, all keywords in the list must be found in each
+        line.
 
-        This method then finds all lines in that list which have a time stamp
-        after the given timestamp.  Lines that do not contain a time stamp
+        This method then finds all lines which have a time stamp after the
+        given `timestamp`.  Lines that do not contain a time stamp
         are considered to be part of the previous line and are therefore
         included if the last log line was included or excluded otherwise.
 
@@ -492,8 +518,8 @@ class LogFileOutput(Parser):
 
         The time format is given in ``strptime()`` format, in the object's
         ``time_format`` property.  Users of the object should **not** change
-        this property; instead, the parser should subclass LogFileOutput and
-        change the ``time_format`` property.
+        this property; instead, the parser should subclass
+        :class:`LogFileOutput` and change the ``time_format`` property.
 
         Some logs, regrettably, change time stamps formats across different
         lines, or change time stamp formats in different versions of the
@@ -504,39 +530,28 @@ class LogFileOutput(Parser):
 
             {'pre_10.1.5': '%y%m%d %H:%M:%S', 'post_10.1.5': '%Y-%m-%d %H:%M:%S'}
 
-        Lines can be either a single string or a dictionary.  String lines
-        search for a time stamp in the entire line.  Dictionary lines look
-        for a field named 'timestamp', which is (still) searched for a valid
-        time format as above - lines without the 'timestamp' field are
-        treated as continuation lines (see above).
-
-        Note: Some logs - notably /var/log/messages - do not contain a year
-        in the timestamp.  This detected by the absence of a '%y' or '%Y' in
-        the time format.  If that year field is absent, the year is assumed
-        to be the year in the given timestamp being sought.  Some attempt is
-        made to handle logs with a rollover from December to January, by
-        finding when the log's timestamp (with current year assumed) is over
-        eleven months (specifically, 330 days) ahead of or behind the
-        timestamp date and shifting that log date by 365 days so that it is
-        more likely to be in the sought range.  This paragraph is sponsored
-        by syslog.
-
-        No attempt is made to order the lines by date.  This also means that
-        lines can be out of order, as each timestamp is evaluated individually.
+        .. note::
+            Some logs - notably /var/log/messages - do not contain a year
+            in the timestamp.  This detected by the absence of a '%y' or '%Y' in
+            the time format.  If that year field is absent, the year is assumed
+            to be the year in the given timestamp being sought.  Some attempt is
+            made to handle logs with a rollover from December to January, by
+            finding when the log's timestamp (with current year assumed) is over
+            eleven months (specifically, 330 days) ahead of or behind the
+            timestamp date and shifting that log date by 365 days so that it is
+            more likely to be in the sought range.  This paragraph is sponsored
+            by syslog.
 
         Parameters:
-
             timestamp(datetime.datetime): lines before this time are ignored.
-            lines(list): an optional list of lines from this parser to search.
-            time_format(str|list): the ``strptime()`` string of the format of
-                the dates in this log.  This can also be given as a list of
-                ``strptime()`` strings, in which case the regular expression
-                will match any of the formats and all patterns will be tried
-                in order.
+            s(str or list): one or more strings to search for.
+                If not supplied, all available lines are searched.
 
         Yields:
-            (string/dict): the lines with timestamps after this date in the
-            same formet they were supplied.
+            dict:
+                The parsed lines with timestamps after this date in
+                the same format they were supplied.  It at least contains the
+                ``raw_message`` as a key.
 
         Raises:
             ParseException: If the format conversion string contains a
@@ -544,9 +559,6 @@ class LogFileOutput(Parser):
                 made to recognise or parse the time zone or other obscure
                 values like day of year or week of year.
         """
-        if lines is None:
-            lines = self.lines
-
         time_format = self.time_format
 
         # Annoyingly, strptime insists that it get the whole time string and
@@ -637,16 +649,14 @@ class LogFileOutput(Parser):
 
         eleven_months = datetime.timedelta(days=330)
         including_lines = False
-        for line in lines:
-            # Evaluate here because of generators
-            if isinstance(line, str):
-                s = line
-            elif isinstance(line, dict):
-                s = line.get('timestamp', '')
-            else:
-                raise ValueError("Cannot search objects of type {t} for timestamps")
-
-            match = time_re.search(s)
+        for line in self.lines:
+            # If `s` is not None, keywords must be found in the line
+            if (s and (
+                    (type(s) == str and s not in line) or
+                    (type(s) == list and any(w not in line for w in s)))):
+                continue
+            # Otherwise, search all lines
+            match = time_re.search(line)
             if match:
                 logstamp = parse_fn(match.group(0))
                 if not logs_have_year:
@@ -663,27 +673,27 @@ class LogFileOutput(Parser):
                 if logstamp >= timestamp:
                     # Later - include
                     including_lines = True
-                    yield line
+                    yield self._parse_line(line)
                 else:
                     # Earlier - start excluding
                     including_lines = False
             else:
                 # If we're including lines, add this continuation line
                 if including_lines:
-                    yield line
+                    yield self._parse_line(line)
 
 
 class Syslog(LogFileOutput):
     """Class for parsing syslog file content.
 
-    The important function is ``get(s)``, which finds all lines with the string
-    **s** and parses them into dictionaries with the following keys:
+    The important function is :func:`get(s)`, which finds all lines with the
+    string **s** and parses them into dictionaries with the following keys:
 
-    * ``timestamp`` - the time the log line was written
-    * ``procname`` - the process or facility that wrote the line
-    * ``hostname`` - the host that generated the log line
-    * ``message`` - the rest of the message (after the process name)
-    * ``raw_message`` - the raw message before being split.
+    * **timestamp** - the time the log line was written
+    * **procname** - the process or facility that wrote the line
+    * **hostname** - the host that generated the log line
+    * **message** - the rest of the message (after the process name)
+    * **raw_message** - the raw message before being split.
 
     It is best to use filters and/or scanners with the messages log, to speed up
     parsing.  These work on the raw message, before being parsed.
@@ -711,49 +721,35 @@ class Syslog(LogFileOutput):
         May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
         May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
 
-    NOTE:
+    .. note::
         Because syslog timestamps by default have no year,
         the year of the logs will be inferred from the year in your timestamp.
         This will also work around December/January crossovers.
     """
     time_format = '%b %d %H:%M:%S'
 
-    def get(self, s):
+    def _parse_line(self, line):
         """
-        Parameters:
-            s (str): String to search for
+        Parsed result::
 
-        Returns:
-            ([dicts]): all lines that contain 's' as a list of dictionaries
-
-        Examples::
-
-            [
-             {'timestamp':'May 18 14:24:14',
-              'procname': 'kernel',
-              'hostname':'lxc-rhel68-sat56',
-              'message': '...',
-              'raw_message': '...: ...'
-             }, ...
-            ]
+            {'timestamp':'May 18 14:24:14',
+             'procname': 'kernel',
+             'hostname':'lxc-rhel68-sat56',
+             'message': '...',
+             'raw_message': '...: ...'
+            }
         """
-        r = []
-        for l in self.lines:
-            if s in l:
-                info, msg = [i.strip() for i in l.split(': ', 1)]
+        msg_info = {'raw_message': line}
+        if ': ' in line:
+            info, msg = [i.strip() for i in line.split(': ', 1)]
+            msg_info['message'] = msg
 
-                msg_info = {
-                    'message': msg,
-                    'raw_message': l
-                }
-
-                info_splits = info.split()
-                if len(info_splits) == 5:
-                    msg_info['timestamp'] = ' '.join(info_splits[:3])
-                    msg_info['hostname'] = info_splits[3]
-                    msg_info['procname'] = info_splits[4]
-                r.append(msg_info)
-        return r
+            info_splits = info.split()
+            if len(info_splits) == 5:
+                msg_info['timestamp'] = ' '.join(info_splits[:3])
+                msg_info['hostname'] = info_splits[3]
+                msg_info['procname'] = info_splits[4]
+        return msg_info
 
 
 class IniConfigFile(Parser):
