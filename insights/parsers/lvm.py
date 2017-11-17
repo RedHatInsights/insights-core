@@ -32,7 +32,7 @@ LvmConf - file ``/etc/lvm/lvm.conf``
 import json
 from ..util import parse_keypair_lines
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
-from . import parse_fixed_table, parse_delimited_table
+from . import parse_fixed_table
 
 
 def map_keys(pvs, keys):
@@ -48,14 +48,6 @@ def map_keys(pvs, keys):
             r[k] = v
         rs.append(r)
     return rs
-
-
-def replace_spaces_in_keys(header):
-    """Replaces spaces in key values with `_`."""
-    for k in KEYS_WITH_SPACES:
-        if k in header:
-            header = header.replace(k, k.replace(" ", "_"))
-    return header
 
 
 def find_warnings(content):
@@ -84,9 +76,6 @@ def find_warnings(content):
 class LvmHeadings(Parser):
     """Base class for parsing LVM data in table format."""
 
-    def parse_content(self, content):
-        pass
-
     def __iter__(self):
         return iter(self.data)
 
@@ -94,8 +83,7 @@ class LvmHeadings(Parser):
         return len(self.data)
 
     def __getitem__(self, item):
-        if isinstance(item, int):
-            return self.data[item]
+        return self.data[item]
 
 
 class Lvm(Parser):
@@ -104,11 +92,7 @@ class Lvm(Parser):
     def parse_content(self, content):
         d = {"warnings": set(find_warnings(content))}
         content = [l for l in content if l not in d["warnings"]]
-        try:
-            d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
-        except:
-            content[0] = replace_spaces_in_keys(content[0])
-            d["content"] = parse_delimited_table(content)
+        d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
         self.data = d if d else None
 
     def __iter__(self):
@@ -119,14 +103,16 @@ class Lvm(Parser):
 
     def __getitem__(self, key):
         if isinstance(key, int):
-            return self.data["content"][key]
-        i = [i for i in self.data["content"] if i[self.PRIMARY_KEY] == key]
-        return i[0] if len(i) > 0 else self.computed[key]
+            return self.data['content'][key]
+        for i in self.data['content']:
+            if i[self.PRIMARY_KEY] == key:
+                return i
+        return None
 
     @property
     def locking_disabled(self):
         """bool: Returns True if any lines in input data indicate locking is disabled."""
-        return len([l for l in self.data["warnings"] if "Locking disabled" in l]) > 0
+        return any(l for l in self.data["warnings"] if "Locking disabled" in l)
 
     @property
     def warnings(self):
