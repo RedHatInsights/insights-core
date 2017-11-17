@@ -156,11 +156,10 @@ class InsightsConfig(object):
         """
         Write collections rules to disk
         """
-        dyn_conf_file = os.fdopen(os.open(path,
-                                          os.O_WRONLY | os.O_CREAT,
-                                          int("0600", 8)), 'w')
-        dyn_conf_file.write(data)
-        dyn_conf_file.close()
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+        fd = os.open(path, flags, 0o600)
+        with os.fdopen(fd, 'w') as dyn_conf_file:
+            dyn_conf_file.write(data)
 
     def get_conf(self, update, stdin_config=None):
         """
