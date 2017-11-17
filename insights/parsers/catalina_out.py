@@ -14,7 +14,8 @@ class CatalinaOut(LogFileOutput):
     This parser reads all ``catalina.out`` files in the ``/var/log/tomcat*``
     directories.
 
-    It uses the LogFileOutput base class.
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
 
     Note that the standard format of Catalina log lines spreads the information
     over two lines::
@@ -51,8 +52,7 @@ class CatalinaOut(LogFileOutput):
         >>> catalina.bad_signatures
         ['SEVERE: BAD packet signature 18245', 'SEVERE: BAD packet signature 18245']
         >>> from datetime import datetime
-        >>> catalina.get_after(datetime(2015, 11, 10, 12, 00, 00))
-        ['Nov 10, 2015 4:55:48 PM org.apache.coyote.http11.Http11Protocol pause',
-         'INFO: Pausing Coyote HTTP/1.1 on http-8080']
+        >>> catalina.get_after(datetime(2015, 11, 10, 12, 00, 00))[0]['raw_message']
+        'Nov 10, 2015 4:55:48 PM org.apache.coyote.http11.Http11Protocol pause'
     """
     time_format = '%b %d, %Y %I:%M:%S %p'

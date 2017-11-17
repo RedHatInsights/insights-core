@@ -103,7 +103,7 @@ def test_messages_scanners():
     assert hasattr(log, 'lost_messages')
 
     assert len(log.puppet_master_logs) == 6
-    assert log.puppet_master_logs[0] == 'Mar 27 03:18:24 system puppet-master[48226]: Setting manifest is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations'
+    assert log.puppet_master_logs[0]['raw_message'] == 'Mar 27 03:18:24 system puppet-master[48226]: Setting manifest is deprecated in puppet.conf. See http://links.puppetlabs.com/env-settings-deprecations'
     assert log.kernel_logs == []
     assert log.middleware_exception_present
     assert not log.cron_present
@@ -121,27 +121,20 @@ def test_messages_get_after():
     # Get subset of lines after date
     pulp = log.get('pulp')  # includes /pulp/ in traceback
     assert len(pulp) == 8
-    # Includes lines from traceback
-    after = list(log.get_after(datetime(2017, 3, 27, 3, 20, 30), pulp))
+    # Get lines after date, with one keyword
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 20, 30), 'pulp'))
     assert len(after) == 5
-    # Does not include traceback
-    after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), pulp))
+    # Get lines after date, with one keyword
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), 'pulp'))
     assert len(after) == 1
 
-    # Get lines after date from fields
-    pulp = list(log.superget('pulp'))  # includes /pulp/ in traceback
-    assert len(pulp) == 8
-    # Includes lines from traceback
-    after = list(log.get_after(datetime(2017, 3, 27, 3, 20, 30), pulp))
-    assert len(after) == 5
-    # Does not include traceback
-    after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), pulp))
+    # Get lines after date, with one keywords list
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 20, 30), ['pulp', 'ERROR']))
+    assert len(after) == 2
+    after = list(log.get_after(datetime(2017, 3, 27, 3, 40, 30), 'pulp'))
     assert len(after) == 1
-
-    # get_after should only supply strptime that get_after recognises
-    with pytest.raises(ValueError) as exc:
-        assert list(log.get_after(datetime(2017, 3, 27, 3, 39, 46), log.listget('pulp'))) is None
-    assert 'Cannot search objects of type ' in str(exc)
+    # No lines are found
+    assert list(log.get_after(datetime(2017, 3, 27, 3, 49, 46), 'pulp')) == []
 
 
 def test_messages_get_after_bad_time_format():
@@ -245,12 +238,12 @@ def test_logs_with_two_timestamps():
 
     new_ver = list(log.get_after(datetime(2017, 1, 1, 9, 0, 0)))
     assert len(new_ver) == 1
-    assert new_ver[0] == '2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully'
+    assert new_ver[0]['raw_message'] == '2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully'
 
     dict_log = DictMariaDBLog(ctx)
     new_ver_d = list(dict_log.get_after(datetime(2017, 1, 1, 9, 0, 0)))
     assert len(new_ver_d) == 1
-    assert new_ver_d[0] == '2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully'
+    assert new_ver_d[0]['raw_message'] == '2017-01-03 09:36:17 139651251140544 [Note] MariaDB 10.1.5 started successfully'
 
     # get_after should only supply a string or list for time_format
     with pytest.raises(ParseException) as exc:

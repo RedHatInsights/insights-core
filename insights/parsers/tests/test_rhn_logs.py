@@ -36,7 +36,7 @@ def test_rhn_search_daemon_log():
     out_log = SearchDaemonLog(context_wrap(search_daemon_log))
     assert "Wrapper Started as Daemon" in out_log
     assert len(out_log.get("jvm")) == 1
-    assert out_log.get("jvm")[0] == 'INFO   | jvm 1    | 2013/01/28 14:41:59 | Wrapper (Version 3.2.1) http://wrapper.tanukisoftware.org'
+    assert out_log.get("jvm")[0]['raw_message'] == 'INFO   | jvm 1    | 2013/01/28 14:41:59 | Wrapper (Version 3.2.1) http://wrapper.tanukisoftware.org'
     assert len(list(out_log.get_after(datetime(2013, 1, 28, 19, 30, 0)))) == 1
 
 
@@ -44,7 +44,7 @@ def test_rhn_taskomatic_daemon_log():
     out_log = TaskomaticDaemonLog(context_wrap(taskomatic_daemon_log))
     assert "Wrapper Started as Daemon" in out_log
     assert len(out_log.get("jvm")) == 9
-    assert out_log.get("jvm")[2] == 'INFO   | jvm 1    | 2016/05/18 15:13:39 | May 18, 2016 3:13:39 PM com.mchange.v2.log.MLog <clinit>'
+    assert out_log.get("jvm")[2]['raw_message'] == 'INFO   | jvm 1    | 2016/05/18 15:13:39 | May 18, 2016 3:13:39 PM com.mchange.v2.log.MLog <clinit>'
     assert out_log.last_log_date == datetime(2016, 5, 18, 15, 13, 40)
     assert len(list(out_log.get_after(datetime(2016, 5, 18, 15, 13, 38)))) == 7
 
@@ -132,7 +132,7 @@ def test_server_xmlrpc_log_bad_date():
     assert 'datetime' not in line
     log = ServerXMLRPCLog(context_wrap(SERVER_XMLRPC_LOG_NO_DATE))
     assert len(log.get('registration.welcome_message')) == 0
-    assert log.last == {'raw_log': '/usr/bin/httpd: command or file not found'}
+    assert log.last == {'raw_message': '/usr/bin/httpd: command or file not found'}
 
 
 RHN_SERVER_SATELLITE_LOG = """

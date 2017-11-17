@@ -92,7 +92,10 @@ class SysctlConfInitramfs(LogFileOutput):
     multiple files to examine multiple files does not seem to be
     unambiguously parsible.
 
-    Since the only plugins requireing the file to date "grep out"
+    Since the only plugins requiring the file to date "grep out"
     certain strings, this approach will suffice.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
     """
     pass

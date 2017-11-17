@@ -31,7 +31,7 @@ class GlanceApiLog(LogFileOutput):
         2016-11-09 14:50:49.727 15101 INFO eventlet.wsgi.server [-] (15101) wsgi starting up on http://172.18.0.13:9292
         2016-11-09 14:50:49.730 15097 INFO eventlet.wsgi.server [-] (15097) wsgi starting up on http://172.18.0.13:9292
 
-    Note:
-        Please refer to its super-class ``LogFileOutput``
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
     """
     pass

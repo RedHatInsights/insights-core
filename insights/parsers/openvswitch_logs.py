@@ -14,11 +14,11 @@ The logs have a standard format::
 The ``get`` method breaks up log lines on the bar character ('|') into the
 following fields:
 
-* ``timestamp`` - the UTC time stamp
-* ``sequence`` - the sequence number of this message
-* ``module`` - the module in OpenVSwitch that emitted this error
-* ``level`` - the level of error (INFO, WARN, ERROR)
-* ``message`` - the rest of the message.
+* **timestamp** - the UTC time stamp
+* **sequence** - the sequence number of this message
+* **module** - the module in OpenVSwitch that emitted this error
+* **level** - the level of error (INFO, WARN, ERROR)
+* **message** - the rest of the message.
 
 Each line of the resultant list is a dictionary with those fields.
 
@@ -30,7 +30,8 @@ Examples:
     >>> vswlog.get('fatal_signal')
     [{'timestamp': '2016-03-08T11:30:52.206Z', 'sequence': '00013',
       'module': 'fatal_signal', 'level': 'WARN',
-      'message': 'terminating with signal 15 (Terminated)'}]
+      'message': 'terminating with signal 15 (Terminated)',
+      'raw_message': '2016-03-08T11:30:52.206Z|00013|fatal_signal|WARN|terminating with signal 15 (Terminated)']
 """
 
 from .. import LogFileOutput, parser
@@ -41,25 +42,23 @@ from insights.specs import openvswitch_server_log
 class OpenVSwitchLog(LogFileOutput):
     """
     Template class for reading OpenVSwitch logs.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput` for
+        more usage information.
     """
     time_format = '%Y-%m-%dT%H:%M:%S'
+    _fieldnames = ['timestamp', 'sequence', 'module', 'level', 'message']
 
-    def get(self, search):
+    def _parse_line(self, line):
         """
-        Find lines with the search string in them, and return a list of
-        dictionaries with the line split up into fields.
+        Parse line into fields.
         """
-        fieldnames = ['timestamp', 'sequence', 'module', 'level', 'message']
-        lines_info = []
-        for line in self.lines:
-            if search not in line:
-                continue
-            fields = line.split('|', 4)  # stop splitting after fourth | found
-            line_info = {'raw_line': line}
-            if len(fields) == 5:
-                line_info.update(dict(zip(fieldnames, fields)))
-            lines_info.append(line_info)
-        return lines_info
+        fields = line.split('|', 4)  # stop splitting after fourth | found
+        line_info = {'raw_message': line}
+        if len(fields) == 5:
+            line_info.update(dict(zip(self._fieldnames, fields)))
+        return line_info
 
     def __len__(self):
         return len(self.lines)

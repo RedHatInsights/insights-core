@@ -29,7 +29,7 @@ from insights.specs import neutron_ovs_agent_log
 class NeutronOVSAgentLog(LogFileOutput):
     """Class for parsing ``/var/log/neutron/openvswitch-agent.log`` file.
 
-    Note:
-        Please refer to its super-class ``LogFileOutput``
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
     """
     pass

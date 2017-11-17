@@ -10,6 +10,9 @@ CeilometerCentralLog - file ``/var/log/ceilometer/central.log``
 CeilometerCollectorLog - file ``/var/log/ceilometer/collector.log``
 -------------------------------------------------------------------
 
+.. note::
+    Please refer to the super-class :class:`insights.core.LogFileOutput`
+
 """
 
 from .. import LogFileOutput, parser

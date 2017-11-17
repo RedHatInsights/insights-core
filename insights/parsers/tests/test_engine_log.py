@@ -17,5 +17,5 @@ matched_lines = ['2016-05-18 14:00:51,318 ERROR [org.ovirt.engine.core.dal.dbbro
 def test_engine_log():
     engine_log_obj = EngineLog(context_wrap(ENGINE_LOG))
     assert "storage I/O problem." in engine_log_obj
-    assert matched_lines == engine_log_obj.get('has paused due to storage I/O problem')
+    assert matched_lines == [i['raw_message'] for i in engine_log_obj.get('has paused due to storage I/O problem')]
     assert len(list(engine_log_obj.get_after(datetime(2016, 5, 18, 14, 0, 0)))) == 3

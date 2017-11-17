@@ -13,8 +13,24 @@ from insights.specs import kerberos_kdc_log
 @parser(kerberos_kdc_log)
 class KerberosKDCLog(LogFileOutput):
     '''
-    Read the ``/var/log/krb5kdc.log`` file.  For more usage information see
-    the ``LogFileOutput`` parser class.
+    Read the ``/var/log/krb5kdc.log`` file.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput` for
+        more usage information.
+
+    Find logs by keyword and parse them into a dictionary with the keys:
+
+        * `timestamp`
+        * `system`
+        * `service`
+        * `pid`
+        * `level`
+        * `message`
+        * `raw_message` - the full line as originally given.
+
+    If the log line is not in the standard format, only the `raw_message` field
+    will be stored in the dictionary.
 
     Sample log file::
 
@@ -36,46 +52,23 @@ class KerberosKDCLog(LogFileOutput):
         >>> len(log.get_after(datetime(2017, 4, 1, 3, 36, 30)))  # Apr 01 03:36:30
         4
 
-    Note:
+
+    .. note::
         Because the Kerberos KDC log timestamps by default have no year,
         the year of the logs will be inferred from the year in your timestamp.
         This will also work around December/January crossovers.
     '''
     time_format = '%b %d %H:%M:%S'
+    _LINE_RE = re.compile(
+        r'(?P<timestamp>\w{3} \d\d \d\d:\d\d:\d\d) ' +
+        r'(?P<system>\w\S+) ' +
+        r'(?P<service>\w+)\[(?P<pid>\d+)\]\((?P<level>\w+)\): ' +
+        r'(?P<message>.*)'
+    )
 
-    def get(self, keyword):
-        '''
-        Find logs by keyword and parse them into a dictionary with the keys:
-
-        * `timestamp`
-        * `system`
-        * `service`
-        * `pid`
-        * `level`
-        * `message`
-        * `line` - the full line as originally given.
-
-        If the log line is not in the standard format, only the 'line' field
-        will be stored in the dictionary.
-
-        Parameters:
-            keyword(str): a keyword to search for in the line
-
-        Yields:
-            (dict): A dictionary for each parsed line in the input.
-        '''
-        line_re = re.compile(
-            r'(?P<timestamp>\w{3} \d\d \d\d:\d\d:\d\d) ' +
-            r'(?P<system>\w\S+) ' +
-            r'(?P<service>\w+)\[(?P<pid>\d+)\]\((?P<level>\w+)\): ' +
-            r'(?P<message>.*)'
-        )
-        for line in self.lines:
-            if keyword in line:
-                data = {
-                    'line': line
-                }
-                match = line_re.search(line)
-                if match:
-                    data.update(match.groupdict())
-                yield data
+    def _parse_line(self, line):
+        data = {'raw_message': line}
+        match = self._LINE_RE.search(line)
+        if match:
+            data.update(match.groupdict())
+        return data

@@ -14,7 +14,8 @@ class IpaupgradeLog(LogFileOutput):
     """
     This parser is used to parse the content of file `/var/log/ipaupgrade.log`.
 
-    It uses the LogFileOutput base class.
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
 
     Typical content of ``ipaupgrade.log`` file is::
 

@@ -29,6 +29,7 @@ def test_libvirtd_log():
     log = LibVirtdLog(context_wrap(LIBVIRTD_LOG))
     assert "Certificate check failed Certificate" in log
 
-    assert log.get("authentication failed: Failed to verify peer's certificate") == ["2013-10-23 17:32:19.957+0000: 14069: error : virNetTLSContextCheckCertificate:1105 : authentication failed: Failed to verify peer's certificate"]
+    assert log.get("authentication failed: Failed to verify peer's certificate")[0]['raw_message'] == \
+            "2013-10-23 17:32:19.957+0000: 14069: error : virNetTLSContextCheckCertificate:1105 : authentication failed: Failed to verify peer's certificate"
     # Includes continuation of URI component expansion
     assert len(list(log.get_after(datetime(2013, 10, 23, 17, 32, 19)))) == 15

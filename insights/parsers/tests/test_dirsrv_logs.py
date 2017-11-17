@@ -40,11 +40,11 @@ def test_access_log():
     assert len(log.lines) == 12
     connects = log.get('connection from')
     assert len(connects) == 2
-    assert '10.20.10.106' in connects[0]
-    assert '10.20.130.21' in connects[1]
+    assert '10.20.10.106' in connects[0]['raw_message']
+    assert '10.20.130.21' in connects[1]['raw_message']
     tstamp = datetime.datetime(2015, 4, 27, 13, 16, 36)
     assert len(list(log.get_after(tstamp))) == 3
-    assert len(list(log.get_after(tstamp, connects))) == 1
+    assert len(list(log.get_after(tstamp, 'connection from'))) == 1
 
 
 def test_error_log():
@@ -56,6 +56,6 @@ def test_error_log():
     assert len(log.lines) == 9
     connects = log.get('slapi_ldap_bind')
     assert len(connects) == 6
-    assert 'could not send startTLS request' in connects[0]
+    assert 'could not send startTLS request' in connects[0]['raw_message']
     tstamp = datetime.datetime(2015, 4, 23, 23, 22, 31)
     assert len(list(log.get_after(tstamp))) == 4
