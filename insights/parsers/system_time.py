@@ -197,7 +197,7 @@ class NtpTime(Parser):
     def parse_content(self, content):
         result = {}
         return_code_re = re.compile(r'(?P<func>ntp_(?:get|adj)time)\(\) returns code (?P<code>\d+) ')
-        status_code_re = re.compile(r'status (?P<status>0x[0-9a-f]{4}) \((?P<flags>.*)\)')
+        status_code_re = re.compile(r'status (?P<status>0x[0-9a-f]+) \((?P<flags>.*)\)')
         time_data_re = re.compile(r'time (?P<timecode>[0-9a-f]{8}\.[0-9a-f]{8}) +(?P<timestamp>\w{3}, \w{3} \d+ .*),')
         value_re = re.compile(r'(?P<keyword>[A-Za-z][A-Za-z ]+) (?P<value>\d+(?:\.\d+|x[0-9a-f]+)?) ?(?P<units>us|ppm|s|\(.*\))?')
         # Note that maximum and estimated error appear in both sections but
