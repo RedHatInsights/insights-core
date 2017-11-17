@@ -13,6 +13,8 @@ filter = [ "a/sda[0-9]*$/",  "r/sd.*/" ] #Required for EMC PP - Do Not Modify th
 shell {
 history_size = 100
 }
+
+test_bad_json = [ "partial
 """.strip()
 
 
@@ -21,3 +23,4 @@ def test_lvm_conf():
     assert lvm_conf_output["locking_type"] == 1
     assert lvm_conf_output["volume_list"] == ['vg2', 'vg3/lvol3', '@tag2', '@*']
     assert lvm_conf_output["filter"] == ['a/sda[0-9]*$/', 'r/sd.*/']
+    assert lvm_conf_output['test_bad_json'] == '[ "partial'
