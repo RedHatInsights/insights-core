@@ -183,6 +183,18 @@ ntp_adjtime() returns code 0 (OK)
   time constant 2, precision 0.001 us, tolerance 500 ppm,
 """.strip()
 
+NTPTIME_STATUS = """
+ntp_gettime() returns code 5 (ERROR)
+  time ddb6c4ae.e3485000  Wed, Nov 15 2017 13:50:38.887, (.887822),
+  maximum error 16000000 us, estimated error 16000000 us, TAI offset 0
+ntp_adjtime() returns code 5 (ERROR)
+  modes 0x0 (),
+  offset 0.000 us, frequency 0.000 ppm, interval 1 s,
+  maximum error 16000000 us, estimated error 16000000 us,
+  status 0x50 (INS,UNSYNC),
+  time constant 2, precision 1.000 us, tolerance 500 ppm,
+""".strip()
+
 
 def test_ntptime():
     result = system_time.NtpTime(context_wrap(NTPTIME)).data
@@ -203,6 +215,14 @@ def test_ntptime():
     assert result['time constant'] == 2
     assert result['precision'] == 0.001
     assert result['tolerance'] == 500
+
+
+def test_ntptime_status():
+    result = system_time.NtpTime(context_wrap(NTPTIME_STATUS)).data
+    assert result['ntp_gettime'] == '5'
+    assert result['ntp_adjtime'] == '5'
+    assert result['status'] == '0x50'
+    assert result['flags'] == ['INS', 'UNSYNC']
 
 
 def test_standard_ntp_conf():
