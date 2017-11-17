@@ -94,11 +94,9 @@ Examples:
 
 from .. import LegacyItemAccess, Parser, parser, get_active_lines
 from insights.specs import xinetd_conf
-from insights.specs import xinetd_d
 
 
 @parser(xinetd_conf)
-@parser(xinetd_d)
 class XinetdConf(LegacyItemAccess, Parser):
     """Parse contents of file ``/etc/xinetd.conf`` and ``/etc/xinetd.d/*``."""
     def parse_content(self, content):
