@@ -46,6 +46,16 @@ FAIL_ETHTOOL_A_PATH_2 = """
 sos_commands/networking/ethtool_-a_g_bond2
 """.strip()
 
+SUCCESS_ETHTOOL_A_BLANK_LINE = """
+Pause parameters for enp0s25:
+
+Autonegotiate : on
+RX:             off
+TX:             off
+RX negotiated:  off
+TX negotiated:  off
+""".strip()
+
 
 def test_ethtool_a():
     context = context_wrap(SUCCESS_ETHTOOL_A)
@@ -81,6 +91,12 @@ def test_ethtool_a_3():
     assert result.ifname == "g_bond2"
 
 
+def test_ethtool_a_blank_line():
+    context = context_wrap(SUCCESS_ETHTOOL_A_BLANK_LINE, path=SUCCESS_ETHTOOL_A_PATH)
+    result = ethtool.Pause(context)
+    assert result.ifname == "enp0s25"
+
+
 TEST_ETHTOOL_C = """
 Coalesce parameters for eth2:
 Adaptive RX: off  TX: off
@@ -105,6 +121,10 @@ TEST_ETHTOOL_C_BAD_ARGS = """
 ethtool: bad command line argument(s)
 For more information run ethtool -h
 """
+
+TEST_ETHTOOL_C_SHORT = """
+Coalesce parameters for eth2:
+""".strip()
 
 
 def test_get_ethtool_c():
@@ -137,6 +157,13 @@ def test_get_ethtool_c_bad_args():
     assert result.ifname == 'eth0'
 
 
+def test_get_ethtool_c_short():
+    context = context_wrap(TEST_ETHTOOL_C_SHORT, path=TEST_ETHTOOL_C_PATH)
+    with pytest.raises(ParseException) as exc:
+        ethtool.CoalescingInfo(context)
+    assert 'Command output missing value data' in str(exc)
+
+
 TEST_ETHTOOL_G = """
 Ring parameters for eth2:
 Pre-set maximums:
@@ -144,6 +171,7 @@ RX:     2047
 RX Mini:    0
 RX Jumbo:   0
 TX:     511
+
 Current hardware settings:
 RX:     200
 RX Mini:    0
@@ -182,7 +210,12 @@ def test_ethtool_g():
     context.path = TEST_ETHTOOL_G_PATH
     result = ethtool.Ring(context)
     assert keys_in(["max", "current"], result.data)
+
     assert result.ifname == "eth2"
+    assert result.data['max'].rx == 2047
+    assert result.data['max'].rx_mini == 0
+    assert result.data['max'].rx_jumbo == 0
+    assert result.data['max'].tx == 511
     assert result.max.rx == 2047
     assert result.max.rx_mini == 0
     assert result.max.rx_jumbo == 0
@@ -228,6 +261,7 @@ supports-test: no
 supports-eeprom-access: no
 supports-register-dump: no
 supports-priv-flags: no
+something without a colon here is ignored
 """
 
 
@@ -235,6 +269,14 @@ def test_good():
     context = context_wrap(TEST_ETHTOOL_I_GOOD)
     parsed = ethtool.Driver(context)
     assert parsed.version == "1.0.0"
+    assert parsed.driver == 'virtio_net'
+    assert parsed.firmware_version is None
+    assert parsed.bus_info == '0000:00:03.0'
+    assert not parsed.supports_statistics
+    assert not parsed.supports_test
+    assert not parsed.supports_eeprom_access
+    assert not parsed.supports_register_dump
+    assert not parsed.supports_priv_flags
 
 
 def test_missing_version():
@@ -308,6 +350,12 @@ ETHTOOL_K_CANNOT_GET = """
 Cannot get stats strings information: Operation not supported
 """.strip()
 
+ETHTOOL_K_MISSING_COLON = """
+Features for bond0:
+rx-checksumming off [fixed]
+tx-checksumming on
+"""
+
 
 def test_Features_good():
     # Test picking up interface from header line rather than path
@@ -338,6 +386,13 @@ def test_Features_cannot_get():
     assert features.ifname == 'eth1'
     assert features.iface == 'eth1'
 
+    assert features.data == {}
+
+
+def test_Features_missing_colon():
+    features = ethtool.Features(
+        context_wrap(ETHTOOL_K_MISSING_COLON, path="sbin/ethtool_-k_bond0"))
+    assert features.ifname == 'bond0'
     assert features.data == {}
 
 
@@ -547,10 +602,11 @@ Settings for eth1:
     Link detected: yes
 """.strip()
 
+ETHTOOL_INFO_TEST = """
+Settings for eth1:
+    Supported pause frame use: Symmetric
 
-ETHTOOL_INFO_BAD_1 = """
-Settings for dummy2:
-No data available
+    Supports auto-negotiation: Yes
 """.strip()
 
 
@@ -572,8 +628,39 @@ def test_ethtool():
     assert ethtool_info.supported_ports == ['TP', 'MII']
 
 
+def test_ethtool_corner_cases():
+    ethtool_info = ethtool.Ethtool(context_wrap(ETHTOOL_INFO_TEST, path="ethtool_eth1"))
+    assert ethtool_info.ifname == "eth1"
+
+
+ETHTOOL_INFO_BAD_1 = """
+Settings for dummy2:
+No data available
+""".strip()
+
+ETHTOOL_INFO_BAD_2 = """
+No data available
+""".strip()
+
+ETHTOOL_INFO_BAD_3 = """
+Settings for eth1:
+    Supported ports
+    Supported link modes 10baseT/Half 10baseT/Full
+                          100baseT/Half 100baseT/Full
+"""
+
+
 def test_ethtool_fail():
     with pytest.raises(ParseException):
         ethtool.Ethtool(context_wrap(FAIL_ETHTOOL_A_1, path="ethtool_eth1"))
-    with pytest.raises(ParseException):
+    with pytest.raises(ParseException) as e:
         ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_1, path="ethtool_eth1"))
+    assert "Fake ethnic as ethtool command argument" in str(e.value)
+
+    with pytest.raises(ParseException) as e:
+        ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_2, path="ethtool_eth1"))
+    assert "ethtool: unrecognised first line " in str(e.value)
+
+    with pytest.raises(ParseException) as e:
+        ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_3, path="ethtool_eth1"))
+    assert 'Ethtool unable to parse content' in str(e.value)
