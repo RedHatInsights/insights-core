@@ -103,21 +103,21 @@ class Driver(Parser):
     All data is also set as attributes of the object with the attribute name
     being the key name with hyphens replaced with underscores.
 
-    The following attributes will always be present (even if their value is
-    None):
-
-    * driver
-    * version
-    * firmware_version
-    * supports_statistics
-    * supports_test
-    * supports_eeprom_access
-    * supports_register_dump
-    * supports_priv_flags
-
     Attributes:
         data (dict): Dictionary of keys with values in a list.
         iface (str): Interface name.
+        driver (str): The driver providing the interface.
+        version (str): The version of the interface driver.
+        firmware_version (str): The firmware version of the interface.
+        supports_statistics (bool): Does the interface support statistics
+            gathering?
+        supports_test (bool): Does the interface support internal self-tests?
+        supports_eeprom_access (bool): Does the interface support access to
+            the EEPROM?
+        supports_register_dump (bool): Does the interface support dumping the
+            internal registers?
+        supports_priv_flags (bool): Does the interface support use of
+            privileged flags?
 
     Sample input for ``/sbin/ethtool -i bond0``::
 
@@ -150,15 +150,6 @@ class Driver(Parser):
         False
     """
 
-    driver = None
-    version = None
-    firmware_version = None
-    supports_statistics = None
-    supports_test = None
-    supports_eeprom_access = None
-    supports_register_dump = None
-    supports_priv_flags = None
-
     @property
     def ifname(self):
         """(str): the interface name"""
@@ -167,6 +158,15 @@ class Driver(Parser):
     def parse_content(self, content):
         self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-i_")
         self.data = {}
+        self.driver = None
+        self.version = None
+        self.firmware_version = None
+        self.supports_statistics = None
+        self.supports_test = None
+        self.supports_eeprom_access = None
+        self.supports_register_dump = None
+        self.supports_priv_flags = None
+
         for line in content:
             if ":" in line:
                 key, value = [s.strip() for s in line.strip().split(":", 1)]
@@ -406,7 +406,7 @@ class CoalescingInfo(Parser):
 
     Otherwise, all values are made available as keys in the ``data``
     dictionary, and as properties with the hyphen transmuted to an underscore
-    - e.g. data['tx-usecs'] is available as tx_usecs
+    - e.g. ``obj.data['tx-usecs']`` is available as ``obj.tx_usecs``.
 
     Attributes:
         data (dict): Dictionary of keys with values in a list.
@@ -486,19 +486,21 @@ class CoalescingInfo(Parser):
 
         self.iface = extract_iface_name_from_content(content[0])
 
-        if len(content) > 1:
-            second_line_content = content[1].split(" ")
-            self.data["adaptive-rx"] = (second_line_content[2] == "on")
-            self.adaptive_rx = (second_line_content[2] == "on")
-            self.data["adaptive-tx"] = (second_line_content[5] == "on")
-            self.adaptive_tx = (second_line_content[5] == "on")
+        if len(content) <= 1:
+            raise ParseException("Command output missing value data")
 
-            for line in content[2:]:
-                if line.strip():
-                    (key, value) = [s.strip() for s in line.split(":", 1)]
-                    value = int(value)
-                    self.data[key] = value
-                    setattr(self, key.replace("-", "_"), value)
+        second_line_content = content[1].split(" ")
+        self.data["adaptive-rx"] = (second_line_content[2] == "on")
+        self.adaptive_rx = (second_line_content[2] == "on")
+        self.data["adaptive-tx"] = (second_line_content[5] == "on")
+        self.adaptive_tx = (second_line_content[5] == "on")
+
+        for line in content[2:]:
+            if line.strip():
+                (key, value) = [s.strip() for s in line.split(":", 1)]
+                value = int(value)
+                self.data[key] = value
+                setattr(self, key.replace("-", "_"), value)
 
 
 @parser(ethtool_g)
@@ -576,30 +578,38 @@ class Ring(Parser):
 
         self.iface = extract_iface_name_from_content(content[0])
 
-        # parse max value
-        self.max = self.data["max"] = Ring.parse_value(content[2:6])
-        # parse current value
-        self.current = self.data["current"] = Ring.parse_value(content[7:11])
+        def set_section(section, data):
+            if section:
+                ringdata = Ring.Parameters(**section_data)
+                setattr(self, section, ringdata)
+                self.data[section] = ringdata
 
-        return self.data
+        section = None
+        sections = {'Pre-set maximums:': 'max', 'Current hardware settings:': 'current'}
+        section_data = {}
+        # Skip "Ring parameters for interface:"
+        for line in content[1:]:
+            if line in sections:
+                set_section(section, section_data)
+                section = sections[line]
+                section_data = {}
+            elif ':' in line:
+                # key: value, store in section data for now
+                key, value = (s.strip() for s in line.split(":", 1))
+                section_data[key.replace(" ", "_").lower()] = int(value)
 
-    @staticmethod
-    def parse_value(content):
-        # This might be simpler as a list, but we keep this just in case the
-        # order of keys changes.
-        r = {}
-        for line in content:
-            if line.strip():
-                key, value = [s.strip() for s in line.split(":", 1)]
-                r[key.replace(" ", "_").lower()] = int(value)
-        # Doesn't seem to be a good way of using the field order as a list
-        return Ring.Parameters(r['rx'], r['rx_mini'], r['rx_jumbo'], r['tx'])
+        # Handle last found section, if any
+        set_section(section, section_data)
 
 
 @parser(ethtool_S)
 class Statistics(Parser):
     """
     Parse information for the ``ethtool -S`` command.
+
+    All values are made available as keys in the ``data`` dictionary, and as
+    properties - e.g. ``obj.data['rx_jabbers']`` is available as
+    ``obj.rx_jabbers``.
 
     Attributes:
         data (dict): Dictionary of keys with values in a list.
@@ -702,6 +712,16 @@ class Ethtool(Parser):
     Raises:
         ParseException: Raised when any problem parsing the command output.
 
+    Attributes:
+        data (dict): Dictionary of keys with values in a list.
+        iface (str): Interface name.
+        supported_link_modes (list): A list of the 'Supported link modes'
+            values, split into individual words.
+        available_link_modes (list): A list of the 'Available link modes'
+            values, split into individual words.
+        supported_link_modes (list): A list of the 'Supported ports' values,
+            split into individual words.
+
     Sample input::
 
         Settings for eth0:
@@ -729,12 +749,8 @@ class Ethtool(Parser):
                                        drv probe link
         Cannot get link status: Operation not permitted
 
-    After using pandas to do some more research, I found
-    the value of the current multi-line parameters
-    "Supported link modes" could also be a single line and
-    the current single line para "Supported pause frame use"
-    could also be multi-line. Since the multi-line or
-    single-line is not fixable, I just put the value in the list.
+    For historic reasons, values drawn from the data are stored as lists,
+    with each item being the value on one line.
 
     Examples:
         >>> ethinfo = shared[Ethtool]
@@ -795,8 +811,10 @@ class Ethtool(Parser):
         if "ethtool: bad command line argument(s)" in content[0]:
             raise ParseException('ethtool: bad command line argument for ethtool', content)
 
-        if "Settings for" in content[0]:
-            self.data['ETHNIC'] = content[0].split()[-1].strip(':')
+        if "Settings for" not in content[0]:
+            raise ParseException("ethtool: unrecognised first line '{l}'".format(l=content[0]))
+
+        self.data['ETHNIC'] = content[0].split()[-1].strip(':')
 
         if "No data available" in content[1]:
             raise ParseException('Fake ethnic as ethtool command argument', content)
@@ -815,31 +833,16 @@ class Ethtool(Parser):
                 except:
                     raise ParseException('Ethtool unable to parse content', line)
 
-        self._supported_link_modes = []
+        self.supported_link_modes = []
         if 'Supported link modes' in self.data:
             for pair in self.data['Supported link modes']:
-                self._supported_link_modes += pair.split()
+                self.supported_link_modes += pair.split()
 
-        self._advertised_link_modes = []
+        self.advertised_link_modes = []
         if 'Advertised link modes' in self.data:
             for pair in self.data['Advertised link modes']:
-                self._advertised_link_modes += pair.split()
+                self.advertised_link_modes += pair.split()
 
-        self._supported_ports = []
+        self.supported_ports = []
         if 'Supported ports' in self.data:
-            self._supported_ports = self.data['Supported ports'][0].strip('[] ').split()
-
-    @property
-    def supported_link_modes(self):
-        """list (str): Returns list of supported link modes."""
-        return self._supported_link_modes
-
-    @property
-    def supported_ports(self):
-        """list (str): Returns list of supported ports."""
-        return self._supported_ports
-
-    @property
-    def advertised_link_modes(self):
-        """list (str): Returns list of advertised link modes."""
-        return self._advertised_link_modes
+            self.supported_ports = self.data['Supported ports'][0].strip('[] ').split()
