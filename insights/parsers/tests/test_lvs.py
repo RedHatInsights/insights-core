@@ -1,10 +1,11 @@
 from insights.parsers.lvm import Lvs, LvsHeadings, map_keys
 from insights.tests import context_wrap
+from test_lvm import compare_partial_dicts
 
 LVS_INFO = """
   LVM2_LV_UUID='kw1ONN-Su5R-TTxt-G4Vi-ZoRx-KSRd-sG0CJ5'|LVM2_LV_NAME='home'|LVM2_LV_FULL_NAME='fedora_kjl/home'|LVM2_LV_PATH='/dev/fedora_kjl/home'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-home'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='182.23g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:49 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='3'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
-    LVM2_LV_UUID='BqPEaY-2mcf-0GOV-Q31u-vGlJ-rm2Z-wG2ABl'|LVM2_LV_NAME='root'|LVM2_LV_FULL_NAME='fedora_kjl/root'|LVM2_LV_PATH='/dev/fedora_kjl/root'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-root'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='50.00g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:52 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='2'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
-      LVM2_LV_UUID='27XoiT-2R2d-jcgv-pVNw-LqBO-tKIB-6eHpFn'|LVM2_LV_NAME='swap'|LVM2_LV_FULL_NAME='fedora_kjl/swap'|LVM2_LV_PATH='/dev/fedora_kjl/swap'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-swap'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='5.75g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:49 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='1'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
+  LVM2_LV_UUID='BqPEaY-2mcf-0GOV-Q31u-vGlJ-rm2Z-wG2ABl'|LVM2_LV_NAME='root'|LVM2_LV_FULL_NAME='fedora_kjl/root'|LVM2_LV_PATH='/dev/fedora_kjl/root'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-root'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='50.00g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:52 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='2'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
+  LVM2_LV_UUID='27XoiT-2R2d-jcgv-pVNw-LqBO-tKIB-6eHpFn'|LVM2_LV_NAME='swap'|LVM2_LV_FULL_NAME='fedora_kjl/swap'|LVM2_LV_PATH='/dev/fedora_kjl/swap'|LVM2_LV_DM_PATH='/dev/mapper/fedora_kjl-swap'|LVM2_LV_PARENT=''|LVM2_LV_ATTR='-wi-ao----'|LVM2_LV_LAYOUT='linear'|LVM2_LV_ROLE='public'|LVM2_LV_INITIAL_IMAGE_SYNC=''|LVM2_LV_IMAGE_SYNCED=''|LVM2_LV_MERGING=''|LVM2_LV_CONVERTING=''|LVM2_LV_ALLOCATION_POLICY='inherit'|LVM2_LV_ALLOCATION_LOCKED=''|LVM2_LV_FIXED_MINOR=''|LVM2_LV_MERGE_FAILED='unknown'|LVM2_LV_SNAPSHOT_INVALID='unknown'|LVM2_LV_SKIP_ACTIVATION=''|LVM2_LV_WHEN_FULL=''|LVM2_LV_ACTIVE='active'|LVM2_LV_ACTIVE_LOCALLY='active locally'|LVM2_LV_ACTIVE_REMOTELY=''|LVM2_LV_ACTIVE_EXCLUSIVELY='active exclusively'|LVM2_LV_MAJOR='-1'|LVM2_LV_MINOR='-1'|LVM2_LV_READ_AHEAD='auto'|LVM2_LV_SIZE='5.75g'|LVM2_LV_METADATA_SIZE=''|LVM2_SEG_COUNT='1'|LVM2_ORIGIN=''|LVM2_ORIGIN_UUID=''|LVM2_ORIGIN_SIZE=''|LVM2_LV_ANCESTORS=''|LVM2_LV_DESCENDANTS=''|LVM2_DATA_PERCENT=''|LVM2_SNAP_PERCENT=''|LVM2_METADATA_PERCENT=''|LVM2_COPY_PERCENT=''|LVM2_SYNC_PERCENT=''|LVM2_RAID_MISMATCH_COUNT=''|LVM2_RAID_SYNC_ACTION=''|LVM2_RAID_WRITE_BEHIND=''|LVM2_RAID_MIN_RECOVERY_RATE=''|LVM2_RAID_MAX_RECOVERY_RATE=''|LVM2_MOVE_PV=''|LVM2_MOVE_PV_UUID=''|LVM2_CONVERT_LV=''|LVM2_CONVERT_LV_UUID=''|LVM2_MIRROR_LOG=''|LVM2_MIRROR_LOG_UUID=''|LVM2_DATA_LV=''|LVM2_DATA_LV_UUID=''|LVM2_METADATA_LV=''|LVM2_METADATA_LV_UUID=''|LVM2_POOL_LV=''|LVM2_POOL_LV_UUID=''|LVM2_LV_TAGS=''|LVM2_LV_PROFILE=''|LVM2_LV_LOCKARGS=''|LVM2_LV_TIME='2015-09-23 21:42:49 -0500'|LVM2_LV_HOST='kjl.me'|LVM2_LV_MODULES=''|LVM2_LV_KERNEL_MAJOR='253'|LVM2_LV_KERNEL_MINOR='1'|LVM2_LV_KERNEL_READ_AHEAD='128.00k'|LVM2_LV_PERMISSIONS='writeable'|LVM2_LV_SUSPENDED=''|LVM2_LV_LIVE_TABLE='live table present'|LVM2_LV_INACTIVE_TABLE=''|LVM2_LV_DEVICE_OPEN='open'|LVM2_CACHE_TOTAL_BLOCKS=''|LVM2_CACHE_USED_BLOCKS=''|LVM2_CACHE_DIRTY_BLOCKS=''|LVM2_CACHE_READ_HITS=''|LVM2_CACHE_READ_MISSES=''|LVM2_CACHE_WRITE_HITS=''|LVM2_CACHE_WRITE_MISSES=''|LVM2_LV_HEALTH_STATUS=''
 """.strip()
 
 LVS_INFO_1 = """
@@ -204,11 +205,11 @@ LVS_DOCKER_INFO2 = {
 # There is some non-realistic data in the sample below for testing purposes
 LVS_HEADER_1 = """
   WARNING: Locking disabled. Be careful! This could corrupt your metadata.
-  LV          VG      Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert LV Tags Devices        
+  LV          VG      Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert LV Tags Devices
   lv_app      vg_root -wi-ao---- 71.63g                                    C      c                 /dev/sda2(7136)
   lv_home     vg_root -wi-ao----  2.00g                                L g                          /dev/sda2(2272)
   lv_opt      vg_root -wi-ao----  5.00g                           M  e                              /dev/sda2(2784)
-  lv_root     vg_root -wi-ao----  5.00g P  l O    n D   %  M   %                                    /dev/sda2(0)   
+  lv_root     vg_root -wi-ao----  5.00g P  l O    n D   %  M   %                                    /dev/sda2(0)
   lv_tmp      vg_root -wi-ao----  1.00g                                             C     t         /dev/sda2(4064)
   lv_usr      vg_root -wi-ao----  5.00g                                                     L     s /dev/sda2(4320)
   lv_usrlocal vg_root -wi-ao----  1.00g                                                             /dev/sda2(5600)
@@ -360,10 +361,20 @@ class TestLVS(object):
     def test_lvs(self):
         lvs_list = Lvs(context_wrap(LVS_INFO))
         assert len(lvs_list) == 3
-        for k, v in LVS_ROOT_INFO.iteritems():
-            assert lvs_list.data["content"][1][k] == v
+        assert compare_partial_dicts(lvs_list.data['content'][1], LVS_ROOT_INFO)
         assert lvs_list["swap"]["LSize"] == "5.75g"
         assert lvs_list.data['content'][1]['LVM2_LV_DEVICE_OPEN'] == 'open'
+        # Test __getitem__ method with integer lookup:
+        assert compare_partial_dicts(lvs_list[1], LVS_ROOT_INFO)
+        # Test __getitem__ method with string lookup:
+        assert compare_partial_dicts(lvs_list['root'], LVS_ROOT_INFO)
+        # Test __getitem__ method with neither:
+        assert lvs_list[TestLVS] is None
+
+        # Test locking_disabled method
+        assert lvs_list.locking_disabled is False
+        # Test warnings method
+        assert lvs_list.warnings == set([])
 
     def test_lvs1(self):
         lvs_list = Lvs(context_wrap(LVS_INFO_1))
@@ -371,6 +382,15 @@ class TestLVS(object):
         for k, v in LVS_DOCKER_INFO1.iteritems():
             assert lvs_list.data["content"][0][k] == v
         assert lvs_list["swap"]["LSize"] == "1.62g"
+
+        # Test vg method
+        rhel_vg = lvs_list.vg('rhel')
+        assert len(rhel_vg) == 2
+        assert compare_partial_dicts(rhel_vg[0], {
+            'LV': 'root', 'VG': 'rhel', 'LVM2_LV_SIZE': '<13.62g',
+            'LVM2_REGION_SIZE': '0', 'LVM2_MIRROR_LOG': '',
+            'LVM2_LV_ATTR': '-wi-ao----', 'LVM2_DEVICES': '/dev/sda2(416)',
+        })
 
     def test_lvs2(self):
         lvs_list = Lvs(context_wrap(LVS_INFO_2))
@@ -397,6 +417,12 @@ class TestLVS(object):
 def test_lvs_headers():
     lvs_info = LvsHeadings(context_wrap(LVS_HEADER_1))
     assert lvs_info is not None
+    # Test __iter__ method
+    for i, l in enumerate(lvs_info):
+        assert compare_partial_dicts(l, LVS_HEADER_BYKEY[i])
+    # Test __len__ method
+    assert len(lvs_info) == 9
+    #  Test __getitem__ method
     for l in range(len(LVS_HEADER_BYKEY)):
         for k, v in LVS_HEADER_BYKEY[l].iteritems():
             assert lvs_info.data[l][k] == v
