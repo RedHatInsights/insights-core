@@ -25,6 +25,7 @@ SsTULPN - command ``ss -tulpn``
 from collections import defaultdict
 from . import ParseException, parse_delimited_table
 from .. import Parser, parser, LegacyItemAccess
+from insights.parsers import keyword_search
 from insights.specs import netstat
 from insights.specs import netstat_agn
 from insights.specs import netstat_i
@@ -40,11 +41,6 @@ NETSTAT_SECTION_ID = {
     ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
     ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
 }
-
-NETSTAT_TEXT_RIGHT_ALIGNMENT = {
-    ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
-}
-COMPONENT_LEN = "__component_len__"
 
 
 @parser(netstat_s)
@@ -182,28 +178,31 @@ class NetstatS(LegacyItemAccess, Parser):
                             else:
                                 first_layer[key] = val.strip().lower()
                     else:
-                        # To deal with lines look like:
-                        # 0 bad segments received.
+                        # To deal with lines that look like:
+                        # '0 bad segments received.'
+                        # or
+                        # 'destination unreachable: 107'
+                        # or
+                        # 'Quick ack mode was activated 9 times'
                         if has_scd_layer:
                             first_layer[layer_key] = second_layer
                             has_scd_layer = False
                             second_layer = {}
-                        data = line.split()
 
-                        # Some line's end has a '.', it'll be removed
-                        tmp_data = data[-1]
-                        if tmp_data[-1] == ".":
-                            data[-1] = tmp_data[:-1]
-                        for d in data:
-                            if d.isdigit():
-                                val = d
+                        # Some lines end with '.', trim that off
+                        if line.endswith('.'):
+                            line = line[:-1]
+
+                        parts = line.split()
+
+                        found_val = None
+                        for val in parts:
+                            if val.isdigit():
+                                found_val = val
                                 break
-                        else:
-                            # Line contained no number, ignore
-                            continue
-                        data.remove(val)
-                        key = "_".join([k.lower() for k in data])
-                        first_layer[key] = val
+                        if found_val is not None:
+                            key = '_'.join(k.lower() for k in parts if k != found_val)
+                            first_layer[key] = found_val
                 else:
                     if has_scd_layer:
                         first_layer[layer_key] = second_layer
@@ -337,14 +336,11 @@ class NetstatSection(object):
 
     def _merge_data_index(self):
         merged_data = {}
-        component_len = {}
         for i, index in enumerate(self.indexes):
             m = self.meta[index]
             merged_data[m] = self.data[i]
-            component_len[m] = self.indexes[i + 1] - self.indexes[i] if i != len(self.indexes) - 1 else None
 
         self.data = merged_data
-        self.data[COMPONENT_LEN] = component_len
 
         del self.indexes
         del self.meta
@@ -458,7 +454,8 @@ class Netstat(Parser):
     @property
     def running_processes(self):
         """
-        List all the running processes given in the netstat output.
+        List all the running processes given in the Active Internet
+        Connections part of the netstat output.
 
         Returns:
             set: set of process names (with spaces, as given in netstat output)
@@ -507,35 +504,55 @@ class Netstat(Parser):
             return
         return self.lines[section_id][index]
 
-    def rows_by(self, section_id, search_dict):
+    def search(self, **kwargs):
         """
-        Find all the rows in datalist where the data is the same as the search
-        dictionary.  This operates as a kind of free-form search utility
-        function - for example::
+        Search for rows in the data matching keywords in the search.
 
-            ns.rows_by(
-                netstat.ACTIVE_INTERNET_CONNECTIONS,
-                {'State': 'LISTEN', 'Port': '5672'}
-            )
+        This method searches both the active internet connections and
+        active UNIX domain sockets.  If you only want to search one, specify
+        the name via the ``search_list`` keyword, e.g.::
 
-        Would list all rows where the socket state was LISTEN and the local
-        port was '5672'.
+            from insights.parsers import Netstat, ACTIVE_UNIX_DOMAIN_SOCKETS
+            conns.search(search_list=[ACTIVE_UNIX_DOMAIN_SOCKETS], State='LISTEN')
 
-        Returns:
+        The ``search_list`` can be either a list, or a string, containing
+        one of the named constants defined in this module.  If
+        ``search_list`` is not given, both the active internet connections
+        and active UNIX domain sockets are searched, in that order.
 
-            list: A list of rows in the same dictionaries given in the
-            ``datalist`` property, with an extra key '``raw line``' set to
-            the original line of input that produced this row.
+        The results of the search are compiled into one list.  This allows
+        you to search for all listening processes, whether for internet
+        connections or UNIX sockets, by e.g.::
+
+            conns.search(State__contains='LISTEN')
+
+        This method uses the :py:func:`insights.parsers.keyword_search`
+        function - see its documentation for a complete description of its
+        keyword recognition capabilities.
         """
-        results = []
-        if search_dict == {}:
-            return results
-        for line, row in enumerate(self.datalist[section_id]):
-            if all([key in row and row[key] == value for key, value in search_dict.iteritems()]):
-                copy = dict(row)
-                copy['raw line'] = self.lines[section_id][line]
-                results.append(copy)
-        return results
+        if 'search_list' in kwargs:
+            search_list = []
+            if isinstance(kwargs['search_list'], list):
+                # Compile a list from matching strings
+                search_list = [
+                    l
+                    for l in kwargs['search_list']
+                    if l in NETSTAT_SECTION_ID
+                ]
+            elif isinstance(kwargs['search_list'], str) and kwargs['search_list'] in NETSTAT_SECTION_ID:
+                # Just use this string
+                search_list = [kwargs['search_list']]
+            del kwargs['search_list']
+        else:
+            search_list = [ACTIVE_INTERNET_CONNECTIONS, ACTIVE_UNIX_DOMAIN_SOCKETS]
+        if not search_list:
+            # No valid search list?  No items.
+            return []
+
+        found = []
+        for l in search_list:
+            found.extend(keyword_search(self.datalist[l], **kwargs))
+        return found
 
 
 @parser(netstat_i)
@@ -637,6 +654,7 @@ class SsTULPN(Parser):
     """
 
     def parse_content(self, content):
+        # Use headings without spaces and colons
         SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
         self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
 
