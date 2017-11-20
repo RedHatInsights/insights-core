@@ -98,6 +98,12 @@ IpExt:
 
 NETSTAT_S_FAIL = "cannot open /proc/net/snmp: No such file or directory"
 
+NETSTAT_S_NO_VALUE = '''
+Ip:
+    3405107 total packets received
+    with invalid addresses
+'''
+
 NETSTAT_S_W = '''
 error parsing /proc/net/netstat: No such file or directory
 Ip:
@@ -203,6 +209,11 @@ class TestNetstats():
         with pytest.raises(ParseException):
             NetstatS(context_wrap(NETSTAT_S_FAIL))
 
+    def test_netstat_s_no_value(self):
+        with pytest.raises(ParseException) as exc:
+            NetstatS(context_wrap(NETSTAT_S_NO_VALUE))
+        assert 'Cannot find integer value in line' in str(exc)
+
     def test_netstat_s_w(self):
         info = NetstatS(context_wrap(NETSTAT_S_W)).data
 
@@ -283,6 +294,14 @@ tcp        0      0 0.0.0.0:111             0.0.0.0:*               LISTEN      
 tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      0          11821      4009/httpd           off (0.00/0/0)
 """
 
+NETSTAT_NO_ACTIVE_CONNS = """
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+"""
+
 NETSTAT_BLANK = ''
 
 NETSTAT_TRUNCATED = """
@@ -331,6 +350,66 @@ def test_is_httpd_running():
     assert "httpd" in Netstat(context_wrap(NETSTAT_MATCH1)).running_processes
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH1)).running_processes
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes
+
+
+def test_netstat_running_processes_no_active_conns():
+    ns = Netstat(context_wrap(NETSTAT_NO_ACTIVE_CONNS))
+    assert ns
+    assert len(ns.data) == 1
+    assert netstat.ACTIVE_INTERNET_CONNECTIONS not in ns.data
+    assert netstat.ACTIVE_UNIX_DOMAIN_SOCKETS in ns.data
+    assert ns.running_processes == set([])
+
+
+def test_get_netstat_keyword_search():
+    ns = Netstat(context_wrap(NETSTAT))
+    # Search with no search_list searches both lists
+    assert ns.search(State__contains='LISTEN') == [
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][1],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][2],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][3],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][4],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][5],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][6],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
+
+    # Search with one search_list item searches that list
+    assert ns.search(
+        search_list=[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS],
+        State__contains='LISTEN'
+    ) == [
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
+
+    # Search with a string
+    assert ns.search(
+        search_list=netstat.ACTIVE_UNIX_DOMAIN_SOCKETS,
+        State__contains='LISTEN'
+    ) == [
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
+
+    # Search with neither string nor list
+    assert ns.search(
+        search_list={'foo': 1},
+        State__contains='LISTEN'
+    ) == []
+
+    # Search with a non-matching string
+    assert ns.search(
+        search_list='foo',
+        State__contains='LISTEN'
+    ) == []
+
+    # Search with a non-matching list
+    assert ns.search(
+        search_list=['foo'],
+        State__contains='LISTEN'
+    ) == []
 
 
 def test_short_outputs():
