@@ -1,7 +1,9 @@
+import inspect
 import logging
 import functools
 import platform
 import os
+import warnings
 
 TMP_DIR = os.path.join("/tmp", "insights-web")
 logger = logging.getLogger(__name__)
@@ -58,6 +60,41 @@ def logging_level(logger, level):
         return check_log_level
 
     return _f
+
+
+def deprecated(func, solution, pending=True):
+    """
+    Mark a parser or combiner as deprecated, and give a message of how to fix
+    this.  This will emit a warning in the logs when the function is used.
+    When combined with modifications to conftest, this causes deprecations to
+    become fatal errors when testing, so they get fixed.
+
+    Arguments:
+        func (function): the function or method being deprecated.
+        solution (str): a string describing the replacement class, method or
+            function that replaces the thing being deprecated.  For example,
+            "use the `fnord()` function" or "use the `search()` method with
+            the parameter `name='(value)'`".
+        pending (bool): if set to `True` (default), the generated warning is a
+            PendingDeprecationWarning.  This will generate a warning when used
+            but will allow tests to continue.  When explicitly set to `False`,
+            a DeprecationWarning is generated and this is treated as a fatal
+            error that will cause testing to stop.
+    """
+
+    def get_name_line(src):
+        for line in src:
+            if "@" not in line:
+                return line.strip()
+
+    path = inspect.getsourcefile(func)
+    src, line_no = inspect.getsourcelines(func)
+    name = get_name_line(src) or "Unknown"
+    the_msg = "<{c}> at {p}:{l} is deprecated: {s}".format(
+        c=name, p=path, l=line_no, s=solution
+    )
+
+    warnings.warn(the_msg, PendingDeprecationWarning if pending else DeprecationWarning)
 
 
 def make_iter(item):

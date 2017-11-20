@@ -1,5 +1,6 @@
 import json
 import pytest
+
 from insights.core import plugins
 
 

@@ -201,4 +201,4 @@ def test_grub_conf():
 def test_grub_conf_raise():
     with pytest.raises(Exception) as e:
         Grub2Config(context_wrap(GRUB2_CFG_4))
-    assert e.value.message == "Cannot parse menuentry line: menuentry {"
+    assert "Cannot parse menuentry line: menuentry {" in str(e)
