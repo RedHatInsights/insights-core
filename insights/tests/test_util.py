@@ -1,9 +1,10 @@
 import pytest
 import unittest
+import warnings
 from insights.tests import unordered_compare
 from insights.core.plugins import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
-from insights.util import case_variants
+from insights.util import case_variants, deprecated
 
 
 class t(object):
@@ -133,3 +134,32 @@ def test_case_variants():
     assert case_variants(*filter_list) == expanded_list
 
     assert case_variants('hosts:') == ['hosts:', 'HOSTS:', 'Hosts:']
+
+
+def test_deprecated():
+    def normal_fn():
+        return 1
+
+    def pend_deprec_fn():
+        deprecated(pend_deprec_fn, "don't use this")
+        return 2
+
+    def deprecated_fn():
+        deprecated(deprecated_fn, "really don't use this", pending=False)
+        return 3
+
+    assert normal_fn() == 1
+
+    # For all remaining tests, cause the warnings to always be caught
+    warnings.simplefilter('always')
+
+    with warnings.catch_warnings(record=True) as w:
+        assert pend_deprec_fn() == 2
+
+        assert deprecated_fn() == 3
+
+        assert len(w) == 2
+        assert issubclass(w[0].category, PendingDeprecationWarning)
+        assert issubclass(w[1].category, DeprecationWarning)
+        assert "don't use this" in str(w[0].message)
+        assert "really don't use this" in str(w[1].message)

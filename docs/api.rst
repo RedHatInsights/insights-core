@@ -227,3 +227,87 @@ Run a single single unit test one can:
 To get test results with coverage report:
 
     py.test  --cov=plugin_package
+
+Feature Deprecation
+===================
+
+Parsers and other parts of the framework go through periodic revisions and
+updates, and sometimes previously used features will be deprecated.  This is
+a three step process:
+
+1. The outdated function, method or class is marked as pending deprecation.
+   Code using this feature now generates a warning when the tests are run,
+   but otherwise works.  At this stage anyone receiving a warning about
+   pending deprecation SHOULD change over to using the new functionality or
+   at least not using the deprecated version.
+2. Once sufficient time has elapsed, the outdated feature is marked as
+   deprecated.  The py.test tests will fail with a fatal error, and any code
+   checked in that uses deprecated features will not be able to be merged
+   because of the tests failing.  Anyone receiving a warning about pending
+   deprecation MUST fix their code so that it no longer warns of deprecation.
+3. Once sufficient time has elapsed, the outdated feature is removed from the
+   code.  Any code still using this feature will fail its tests because the
+   feature it requires is absent.
+
+The usual time between each step should be two minor versions of the Insights
+core.
+
+To deprecate code, call the :py:func:`insights.util.deprecated` function from
+within the code that will be eventually removed, in the following manner:
+
+Functions
+---------
+
+.. code-block:: python
+
+    from insights.util import deprecated
+
+    def old_feature(arguments):
+        deprecated(old_feature, "Use the new_feature() function instead", pending=True)
+        ...
+
+Class methods
+-------------
+
+.. code-block:: python
+
+    from insights.util import deprecated
+
+    class ThingParser(Parser):
+        ...
+
+        def old_method(self, *args, **kwargs):
+            deprecated(self.old_method, "Use the new_method() method instead", pending=True)
+            self.new_method(*args, **kwargs)
+        ...
+
+Class
+-----
+
+.. code-block:: python
+
+    from insights.util import deprecated
+
+    class ThingParser(Parser):
+        def __init__(self, *args, **kwargs):
+            deprecated(ThingParser, "Use the new_feature() function instead", pending=True)
+            super(ThingParser, self).__init__(*args, **kwargs)
+        ...
+
+The :py:func:`insights.util.deprecated` function takes three arguments:
+
+- The ``function`` or method being deprecated.  This is used to tell the user
+  where the deprecated code is.  Classes cannot be directly deprecated, and
+  should instead emit a deprecation message in their ``__init__`` method.
+- The ``solution`` to using this deprecated.  This is a descriptive string
+  that should tell anyone using the deprecated function what to do in future.
+  Examples might be:
+
+    - For a replaced parser: "Please use the ``NewParser`` parser in the
+      ``new_parser`` module."
+    - For a specific method being replaced by a general mechanism: "Please
+      use the ``search`` method with the arguments ``state="LISTEN"``."
+
+- Whether the deprecation is ``pending`` or actual.  It defaults to an actual
+  full deprecation; setting ``pending=True`` in the arguments to
+  ``deprecated`` will emit a PendingDeprecationWarning instead.
