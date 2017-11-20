@@ -25,7 +25,7 @@ SsTULPN - command ``/usr/sbin/ss -tulpn``
 """
 
 from collections import defaultdict
-from . import ParseException, parse_delimited_table
+from . import ParseException, parse_delimited_table, keyword_search
 from .. import Parser, parser, LegacyItemAccess
 
 
@@ -34,10 +34,6 @@ ACTIVE_UNIX_DOMAIN_SOCKETS = 'Active UNIX domain sockets (servers and establishe
 NETSTAT_SECTION_ID = {
     ACTIVE_INTERNET_CONNECTIONS: ['Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'User', 'Inode', 'PID/Program name', 'Timer'],
     ACTIVE_UNIX_DOMAIN_SOCKETS: ['RefCnt', 'Flags', 'Type', 'State', 'I-Node', 'PID/Program name', 'Path']
-}
-
-NETSTAT_TEXT_RIGHT_ALIGNMENT = {
-    ACTIVE_INTERNET_CONNECTIONS: ['Recv-Q', 'Send-Q']
 }
 COMPONENT_LEN = "__component_len__"
 
@@ -177,26 +173,36 @@ class NetstatS(LegacyItemAccess, Parser):
                             else:
                                 first_layer[key] = val.strip().lower()
                     else:
-                        # To deal with lines look like:
-                        # 0 bad segments received.
+                        # To deal with lines that look like:
+                        # '0 bad segments received.'
+                        # or
+                        # 'destination unreachable: 107'
+                        # or
+                        # 'Quick ack mode was activated 9 times'
                         if has_scd_layer:
                             first_layer[layer_key] = second_layer
                             has_scd_layer = False
                             second_layer = {}
-                        data = line.split()
 
-                        # Some line's end has a '.', it'll be removed
-                        tmp_data = data[-1]
-                        if tmp_data[-1] == ".":
-                            data.remove(tmp_data)
-                            data.append(tmp_data[:-1])
-                        for d in data:
-                            if d.isdigit():
-                                tmp = d
+                        # Some lines end with '.', trim that off
+                        if line.endswith('.'):
+                            line = line[:-1]
+
+                        parts = line.split()
+
+                        found_val = None
+                        for val in parts:
+                            if val.isdigit():
+                                found_val = val
                                 break
-                        data.remove(tmp)
-                        key, val = "_".join([k.lower() for k in data]), tmp
-                        first_layer[key] = val
+                        if found_val is None:
+                            raise ParseException(
+                                "Cannot find integer value in line '{l}'".format(
+                                    l=line
+                                )
+                            )
+                        key = '_'.join(k.lower() for k in parts if k != found_val)
+                        first_layer[key] = found_val
                 else:
                     if has_scd_layer:
                         first_layer[layer_key] = second_layer
@@ -399,7 +405,8 @@ class Netstat(Parser):
     @property
     def running_processes(self):
         """
-        List all the running processes given in the netstat output.
+        List all the running processes given in the Active Internet
+        Connections part of the netstat output.
 
         Returns:
             set: set of process names (with spaces, as given in netstat output)
@@ -453,6 +460,56 @@ class Netstat(Parser):
         if section_id not in self.data:
             return
         return self.lines[section_id][index]
+
+    def search(self, **kwargs):
+        """
+        Search for rows in the data matching keywords in the search.
+
+        This method searches both the active internet connections and
+        active UNIX domain sockets.  If you only want to search one, specify
+        the name via the ``search_list`` keyword, e.g.::
+
+            from insights.parsers import Netstat, ACTIVE_UNIX_DOMAIN_SOCKETS
+            conns.search(search_list=[ACTIVE_UNIX_DOMAIN_SOCKETS], State='LISTEN')
+
+        The ``search_list`` can be either a list, or a string, containing
+        one of the named constants defined in this module.  If
+        ``search_list`` is not given, both the active internet connections
+        and active UNIX domain sockets are searched, in that order.
+
+        The results of the search are compiled into one list.  This allows
+        you to search for all listening processes, whether for internet
+        connections or UNIX sockets, by e.g.::
+
+            conns.search(State__contains='LISTEN')
+
+        This method uses the :py:func:`insights.parsers.keyword_search`
+        function - see its documentation for a complete description of its
+        keyword recognition capabilities.
+        """
+        if 'search_list' in kwargs:
+            search_list = []
+            if isinstance(kwargs['search_list'], list):
+                # Compile a list from matching strings
+                search_list = [
+                    l
+                    for l in kwargs['search_list']
+                    if l in NETSTAT_SECTION_ID
+                ]
+            elif isinstance(kwargs['search_list'], str) and kwargs['search_list'] in NETSTAT_SECTION_ID:
+                # Just use this string
+                search_list = [kwargs['search_list']]
+            del kwargs['search_list']
+        else:
+            search_list = [ACTIVE_INTERNET_CONNECTIONS, ACTIVE_UNIX_DOMAIN_SOCKETS]
+        if not search_list:
+            # No valid search list?  No items.
+            return []
+
+        found = []
+        for l in search_list:
+            found.extend(keyword_search(self.datalist[l], **kwargs))
+        return found
 
 
 @parser("netstat-i")
@@ -554,6 +611,7 @@ class SsTULPN(Parser):
     """
 
     def parse_content(self, content):
+        # Use headings without spaces and colons
         SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
         self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
 
