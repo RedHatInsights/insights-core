@@ -293,24 +293,54 @@ def test_get_netstat():
         'Timer': 'on (0.79/0/0)',
     }
 
-    # Search for rows by:
-    results = ns.rows_by(netstat.ACTIVE_INTERNET_CONNECTIONS, {'State': 'ESTABLISHED'})
-    assert results == [{
-        'Proto': 'tcp', 'Recv-Q': '0', 'Send-Q': '0',
-        'Local Address': '192.168.0.1:53', 'Local IP': '192.168.0.1',
-        'Port': '53', 'Foreign Address': '192.168.0.53:53',
-        'State': 'ESTABLISHED', 'User': '0', 'Inode': '1817',
-        'PID/Program name': '12/dnsd', 'PID': '12', 'Program name': 'dnsd',
-        'Timer': 'off (0.00/0/0)',
-        'raw line': 'tcp        0      0 192.168.0.1:53          192.168.0.53:53         ESTABLISHED 0          1817       12/dnsd              off (0.00/0/0)'
-    }]
-    # Rows_by should only return true if all of its requirements are found
-    results = ns.rows_by(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, {'State': 'LISTENING', 'Program name': 'systemd'})
-    assert len(results) == 1
-    assert results[0]['I-Node'] == '535'
-    # No search criteria, no results
-    results = ns.rows_by(netstat.ACTIVE_UNIX_DOMAIN_SOCKETS, {})
-    assert len(results) == 0
+
+def test_get_netstat_keyword_search():
+    ns = Netstat(context_wrap(NETSTAT))
+    # Search with no search_list searches both lists
+    assert ns.search(State__contains='LISTEN') == [
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][1],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][2],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][3],
+        ns.datalist[netstat.ACTIVE_INTERNET_CONNECTIONS][4],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
+
+    # Search with one search_list item searches that list
+    assert ns.search(
+        search_list=[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS],
+        State__contains='LISTEN'
+    ) == [
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
+
+    # Search with a string
+    assert ns.search(
+        search_list=netstat.ACTIVE_UNIX_DOMAIN_SOCKETS,
+        State__contains='LISTEN'
+    ) == [
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+    ]
+
+    # Search with neither string nor list
+    assert ns.search(
+        search_list={'foo': 1},
+        State__contains='LISTEN'
+    ) == []
+
+    # Search with a non-matching string
+    assert ns.search(
+        search_list='foo',
+        State__contains='LISTEN'
+    ) == []
+
+    # Search with a non-matching list
+    assert ns.search(
+        search_list=['foo'],
+        State__contains='LISTEN'
+    ) == []
 
 
 def test_listening_pid():
@@ -360,6 +390,14 @@ def test_is_httpd_running():
     assert "httpd" not in Netstat(context_wrap(NETSTAT_NOMATCH2)).running_processes
 
 
+NETSTAT_NO_ACTIVE_CONNS = """
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+"""
+
 NETSTAT_BLANK = ''
 
 NETSTAT_TRUNCATED = """
@@ -396,6 +434,15 @@ unix  2      [ ]         DGRAM                    11776    1/systemd            
 unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
 unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
 """
+
+
+def test_netstat_running_processes_no_active_conns():
+    ns = Netstat(context_wrap(NETSTAT_NO_ACTIVE_CONNS))
+    assert ns
+    assert len(ns.data) == 1
+    assert netstat.ACTIVE_INTERNET_CONNECTIONS not in ns.data
+    assert netstat.ACTIVE_UNIX_DOMAIN_SOCKETS in ns.data
+    assert ns.running_processes == set([])
 
 
 def test_short_outputs():
