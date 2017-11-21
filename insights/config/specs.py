@@ -421,7 +421,7 @@ static_specs = {
     "woopsie"                   : CommandSpec(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'"),
     "xfs_info"                  : First([CommandSpec("/usr/sbin/xfs_info {mount}", mount=r'(?:/[\w-]*)+'),
                                     PatternSpec(r"sos_commands/xfs/xfs_info(_(?:\.[\w-]*)+)?")]),
-    "xinetd.conf"               : All([PatternSpec(r"etc/xinetd\.conf"), PatternSpec(r"etc/xinetd\.d/.*")]),
+    "xinetd.conf"               : All([PatternSpec(r"etc/xinetd\.conf"), PatternSpec(r"etc/xinetd.d/.*")]),
     "yum.conf"                  : SimpleFileSpec("etc/yum.conf"),
     "yum.log"                   : SimpleFileSpec("var/log/yum.log"),
     "yum-repolist"              : CommandSpec("/usr/bin/yum -C repolist"),
