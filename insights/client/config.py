@@ -3,7 +3,6 @@ import optparse
 import os
 from insights.contrib import ConfigParser
 
-from insights import settings
 from constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
@@ -344,10 +343,6 @@ def compile_config():
     # has been read yet before the new config file and command line arguments
     # have been parsed.
     apply_legacy_config()
-
-    # read a custom yaml file
-    if "client" in settings.config:
-        CONFIG.update(settings.config)
 
     # parse the options first so we can see if a custom conf was passed in
     parsed_options = parse_options()
