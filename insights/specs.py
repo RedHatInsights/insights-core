@@ -118,8 +118,8 @@ def docker_container_ids(broker):
 
 
 docker_host_machine_id = sf.simple_file("/etc/redhat-access-insights/machine-id", name="docker_host_machine_id", alias="docker_host_machine-id", context=DockerHostContext)
-docker_image_inspect = sf.foreach(docker_image_ids, "/usr/bin/docker inspect --type=image %s", name="docker_image_inspect", context=DockerHostContext)
-docker_container_inspect = sf.foreach(docker_container_ids, "/usr/bin/docker inspect --type=container %s", name="docker_container_inspect", context=DockerHostContext)
+docker_image_inspect = sf.foreach(docker_image_ids, "/usr/bin/docker inspect %s", name="docker_image_inspect", context=DockerHostContext)
+docker_container_inspect = sf.foreach(docker_container_ids, "/usr/bin/docker inspect %s", name="docker_container_inspect", context=DockerHostContext)
 docker_network = sf.simple_file("/etc/sysconfig/docker-network", name="docker_network", context=DockerHostContext)
 docker_storage = sf.simple_file("/etc/sysconfig/docker-storage", name="docker_storage", context=DockerHostContext)
 docker_storage_setup = sf.simple_file("/etc/sysconfig/docker-storage-setup", name="docker_storage_setup", context=DockerHostContext)
