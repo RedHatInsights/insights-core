@@ -11,6 +11,7 @@ from .core import Syslog  # noqa: F401
 from .core import archives  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import HostContext, HostArchiveContext  # noqa: F401
+from .core.dr import SkipComponent  # noqa: F401
 from .core.plugins import combiner, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata  # noqa: F401
