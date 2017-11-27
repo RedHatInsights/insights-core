@@ -277,22 +277,24 @@ def get_subgraphs(graph=DEPENDENCIES):
         seen.clear()
 
 
-def try_import(path):
+def _import(path, continue_on_error):
+    log.debug("Importing %s" % path)
     try:
         return importlib.import_module(path)
     except Exception as ex:
         log.exception(ex)
+        if not continue_on_error:
+            raise
 
 
-def load_components(path, include=".*", exclude="test"):
+def load_components(path, include=".*", exclude="test", continue_on_error=True):
     num_loaded = 0
     if path.endswith((".py", ".fava")):
         path, _ = os.path.splitext(path)
 
     path = path.rstrip("/").replace("/", ".")
 
-    log.debug("Importing %s" % path)
-    package = try_import(path)
+    package = _import(path, continue_on_error)
     if not package:
         return 0
 
@@ -310,10 +312,9 @@ def load_components(path, include=".*", exclude="test"):
             name = prefix + name
         if do_include(name) and not do_exclude(name):
             if is_pkg:
-                num_loaded += load_components(name, include, exclude)
+                num_loaded += load_components(name, include, exclude, continue_on_error)
             else:
-                log.debug("Importing %s" % name)
-                try_import(name)
+                _import(name, continue_on_error)
                 num_loaded += 1
 
     return num_loaded
