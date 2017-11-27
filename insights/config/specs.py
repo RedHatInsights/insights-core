@@ -13,8 +13,9 @@ from insights.config import DockerHostSimpleFileSpec, DockerHostPatternSpec, Doc
 
 
 static_specs = {
-    "autofs.conf"               : SimpleFileSpec("etc/autofs.conf"),
+    "audit_log"                 : SimpleFileSpec("var/log/audit/audit.log", large_content=True),
     "auditd.conf"               : SimpleFileSpec("etc/audit/auditd.conf"),
+    "autofs.conf"               : SimpleFileSpec("etc/autofs.conf"),
     "blkid"                     : First([CommandSpec("/sbin/blkid -c /dev/null"),
                                     SimpleFileSpec("run/blkid"),
                                     SimpleFileSpec("sos_commands/filesys/blkid")]),
