@@ -55,6 +55,7 @@ static_specs = {
     "cobbler_modules.conf"      : First([SimpleFileSpec("etc/cobbler/modules.conf"),
                                     SimpleFileSpec("conf/cobbler/modules.conf")]),
     "corosync"                  : SimpleFileSpec("etc/sysconfig/corosync"),
+    "cpe"                       : SimpleFileSpec("etc/system-release-cpe"),
     "cpuinfo"                   : First([SimpleFileSpec("proc/cpuinfo"),
                                     SimpleFileSpec("cpuinfo")]),
     "current_clocksource"       : SimpleFileSpec("sys/devices/system/clocksource/clocksource0/current_clocksource"),
