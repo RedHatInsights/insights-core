@@ -26,6 +26,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 sf = SpecFactory()
 
 autofs_conf = sf.simple_file("/etc/autofs.conf", name="autofs_conf", alias="autofs.conf")
+audit_log = sf.simple_file("/var/log/audit/audit.log", name="audit_log")
 auditd_conf = sf.simple_file("/etc/audit/auditd.conf", name="auditd_conf", alias="auditd.conf")
 blkid = sf.simple_command("/sbin/blkid -c /dev/null", name="blkid")
 bond = sf.glob_file("/proc/net/bonding/bond*", name="bond")
