@@ -77,6 +77,7 @@ class NtpqLeap(Parser):
     """
 
     def parse_content(self, content):
+        self.data = {}
         line = content[0].strip()
         if "=" in line:
             k, v = line.split("=")
@@ -84,8 +85,7 @@ class NtpqLeap(Parser):
 
     @property
     def leap(self):
-        if self.data:
-            return self.data.get('leap')
+        return self.data.get('leap')
 
 
 @parser(ntpq_pn)
