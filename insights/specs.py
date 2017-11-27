@@ -62,6 +62,7 @@ cinder_conf = sf.simple_file("/etc/cinder/cinder.conf", name="cinder_conf", alia
 cinder_volume_log = sf.simple_file("/var/log/cinder/volume.log", name="cinder_volume_log", alias="cinder_volume.log")
 cluster_conf = sf.simple_file("/etc/cluster/cluster.conf", name="cluster_conf", alias="cluster.conf")
 cmdline = sf.simple_file("/proc/cmdline", name="cmdline")
+cpe = sf.simple_file("/etc/system-release-cpe")
 cobbler_settings = sf.first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"], name="cobbler_settings")
 cobbler_modules_conf = sf.first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"], name="cobbler_modules_conf", alias="cobbler_modules.conf")
 corosync = sf.simple_file("/etc/sysconfig/corosync", name="corosync")
