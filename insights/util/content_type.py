@@ -3,14 +3,17 @@ import subprocess
 from subprocess import PIPE
 
 try:
-    import insights.contrib.magic as magic
+    import magic
 except Exception:
     magic_loaded = False
 else:
-    _magic = magic.open(magic.MIME_TYPE)
+    # RHEL 6 does not have MAGIC_MIME_TYPE defined, but passing in the value
+    # found in RHEL 7 (16, base 10), seems to work.
+    mime_flag = magic.MAGIC_MIME_TYPE if hasattr(magic, "MAGIC_MIME_TYPE") else 16
+    _magic = magic.open(mime_flag)
     _magic.load()
 
-    _magic_inner = magic.open(magic.MIME_TYPE | magic.MAGIC_COMPRESS)
+    _magic_inner = magic.open(mime_flag | magic.MAGIC_COMPRESS)
     _magic_inner.load()
     magic_loaded = True
 
@@ -20,7 +23,9 @@ def from_file(name):
         return _magic.file(name)
     else:
         cmd = "file --mime-type -b %s"
-        return subprocess.check_output(shlex.split(cmd % name)).strip()
+        p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
+        stdout, _ = p.communicate()
+        return stdout.strip()
 
 
 def from_buffer(b):
@@ -38,7 +43,9 @@ def from_file_inner(name):
         return _magic_inner.file(name)
     else:
         cmd = "file --mime-type -bz %s"
-        return subprocess.check_output(shlex.split(cmd % name)).strip()
+        p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
+        stdout, _ = p.communicate()
+        return stdout.strip()
 
 
 def from_buffer_inner(b):
