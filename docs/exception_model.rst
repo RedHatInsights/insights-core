@@ -1,8 +1,8 @@
-######################
-Parsing and Exceptions
-######################
+#########################
+Components and Exceptions
+#########################
 
-When parsers parse input data there are three likely outcomes:
+When parsers parse input data, there are three likely outcomes:
 
 1. All data is parsed as expected
 2. Data is unparsable due to errors in the data and nothing can be retrieved by
@@ -82,9 +82,8 @@ any exceptions in the data (“dirty parser”). This allows rules that don’t 
 exceptions to rely on only the first parser, and those rules will not run if valid data
 is not present.  If the dirty parser identifies errors in the data then it will save
 information regarding the errors for use by rules.  If no errors are found in the data
-then the dirty parser will raise :py:class:`insights.parsers.SkipException` to indicate
-to the engine that it should
-be removed from the dependency hierarchy.
+then the dirty parser will raise :py:class:`insights.parsers.SkipException`
+to indicate to the engine that it should be removed from the dependency hierarchy.
 
 Other Exceptions from Parsers
 =============================
@@ -100,15 +99,25 @@ types aren’t important and such checks may limit expressiveness and flexibilit
 Parsers should not use the assert statement in place of error handling code.
 Asserts are for debugging purposes only.
 
+SkipComponent and SkipException
+===============================
+
+Any component may raise `insights.SkipComponent` to signal to the engine that
+nothing is wrong but that the component should be taken out of dependency
+resolution. This is useful if a component's dependencies are met but it's
+still unable to produce a meaningful result.
+:py:class:`insights.parsers.SkipException` is a specialization of this for the
+dirty parser use case above, but it's treated the same as `SkipComponent`.
+
 Exception Recognition by the Insights Engine
 ============================================
 
 Exceptions that are raised by parsers and combiners will be collected by the engine in
-order to determine whether to remove the parser/combiner from the dependency hierarchy,
+order to determine whether to remove the component from the dependency hierarchy,
 for data metrics, and to help identify issues with the parsing code or with the data.
-Specific use of :py:class:`insights.parsers.ParseException` and
-:py:class:`insights.parsers.SkipException` will
-make it much easier for the engine
-to identify and quickly deal with known conditions versus unanticipated conditions
-(i.e., other exceptions being raised) which could indicate errors in the parsing code,
-errors in data collection, or data errors.
+Specific use of :py:class:`insights.parsers.ParseException`,
+:py:class:`insights.parsers.SkipException`, and `insights.SkipComponent` will
+make it much easier for the engine to identify and quickly deal with known
+conditions versus unanticipated conditions (i.e., other exceptions being raised)
+which could indicate errors in the parsing code, errors in data collection, or
+data errors.
