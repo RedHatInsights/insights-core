@@ -9,11 +9,27 @@ import sys
 import yaml
 from ConfigParser import RawConfigParser
 
-from insights.parsers import ParseException
-
 DEFAULT_PATTERN = r'.*py$'
 DEFAULT_PLUGIN_MODULE = "insights.plugins"
 log = logging.getLogger(__name__)
+
+
+class SkipComponent(Exception):
+    """
+    Exception (or subclass thereof) that should be thrown when a component
+    wishes to tell the framework that it should not resolve as a dependency for
+    other components. Exceptions of this type are ignored.
+    """
+    pass
+
+
+class ParseException(Exception):
+    """
+    Exception that should be thrown from parsers that encounter exceptions they
+    recognize while parsing. When this exception is thrown, the exception
+    message and data are logged and no parser output data is saved.
+    """
+    pass
 
 
 def get_name(_callable):

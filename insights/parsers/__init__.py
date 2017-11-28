@@ -1,21 +1,12 @@
 import pkgutil
 from collections import OrderedDict
+from insights.core import SkipComponent, ParseException  # noqa: F401
 
 
 __all__ = [n for (i, n, p) in pkgutil.iter_modules(__path__) if not p]
 
 
-class ParseException(Exception):
-    """
-    Exception that should be thrown from parsers that encounter
-    exceptions they recognize while parsing. When this exception
-    is thrown, the exception message and data are logged and no
-    parser output data is saved.
-    """
-    pass
-
-
-class SkipException(Exception):
+class SkipException(SkipComponent):
     """
     Exception that should be thrown from parsers that are explicitly
     written to look for errors in input data.  If the expected error

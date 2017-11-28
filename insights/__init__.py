@@ -4,6 +4,7 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import fava  # noqa: F401
+from .core import SkipComponent  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.plugins import parser, rule, make_response, make_metadata  # noqa: F401
 from .parsers import get_active_lines  # noqa: F401

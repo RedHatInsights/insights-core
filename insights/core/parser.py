@@ -1,7 +1,7 @@
 import logging
 import re
 from collections import defaultdict
-from insights.core import marshalling, plugins
+from insights.core import marshalling, plugins, SkipComponent
 from insights.core import context
 from insights.config.static import get_config
 from insights.util import logging_level
@@ -115,6 +115,8 @@ def run_parsers(stream, parsers=plugins.PARSERS):
                     yield case, ctx.machine_id, parser, response
                 else:
                     logger.debug("Response for [%s] = %s - treating this as not a valid response", ctx.machine_id, response)
+            except SkipComponent as sc:
+                logger.debug("Skipping parser %s: %s" % (str(parser), str(sc)))
             except Exception:
                 logger.exception(str(parser))
 

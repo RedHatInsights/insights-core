@@ -324,7 +324,7 @@ class TestSingleEvaluator(unittest.TestCase):
             self._common_tests(p)
         subprocess.call("rm -rf %s" % arc_path, shell=True)
 
-    def test_insights_evalutor(self):
+    def test_insights_evaluator(self):
         arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
         with TarExtractor().from_path(arc_path) as ex:
             p = self._unpack_archive(ex, InsightsEvaluator)
@@ -333,6 +333,17 @@ class TestSingleEvaluator(unittest.TestCase):
             self.assertTrue(system["product"] == "ocp")
             self.assertTrue(system["type"] == "node")
             self.assertTrue(system["system_id"] == HEARTBEAT_ID)
+        subprocess.call("rm -rf %s" % arc_path, shell=True)
+
+    def test_skip_component(self):
+        from insights.plugins import always_fires, always_skips
+        arc_path = insights_heartbeat(metadata={"product_code": "ocp", "role": "node"})
+        with TarExtractor().from_path(arc_path) as ex:
+            p = self._unpack_archive(ex, InsightsEvaluator)
+#            self._common_tests(p)
+            self.assertTrue(always_fires.report in p.all_output)
+            self.assertTrue(always_skips.report not in p.all_output)
+
         subprocess.call("rm -rf %s" % arc_path, shell=True)
 
 
