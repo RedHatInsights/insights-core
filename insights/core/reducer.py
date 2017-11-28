@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from insights.config.static import get_config
 from insights.contrib import toposort
-from insights.core import marshalling, plugins, get_name
+from insights.core import marshalling, plugins, get_name, SkipComponent
 from insights.util import logging_level
 
 specs = get_config()
@@ -159,6 +159,9 @@ def run_reducer(func, local, shared, error_handler, reducer_stats=None):
         if reducer_stats:
             reducer_stats['count'] += 1
         return r
+    except SkipComponent as sc:
+        logger.debug("Skipping reducer %s: %s" % (str(func), str(sc)))
+        return None
     except Exception as e:
         if reducer_stats:
             reducer_stats['fail'] += 1

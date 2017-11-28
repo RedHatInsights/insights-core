@@ -40,3 +40,5 @@ archives/
 .engine_logs/
 *.zip
 *.gz
+*.xz
+.ipynb_checkpoints/

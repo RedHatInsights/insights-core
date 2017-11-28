@@ -3,7 +3,7 @@ import time
 import os
 from collections import defaultdict
 
-from insights.core import archives, specs, marshalling, plugins
+from insights.core import archives, specs, marshalling, plugins, SkipComponent
 from insights.core.marshalling import Marshaller
 from insights.core.plugins import validate_response, stringify_requirements
 from insights.core.context import Context
@@ -82,6 +82,9 @@ class Evaluator(object):
             r = parser(context)
             self.stats["parser"]["count"] += 1
             return r
+        except SkipComponent as sc:
+            log.debug("Skipping parser %s: %s" % (str(parser), str(sc)))
+            return None
         finally:
             elapsed = time.time() - start
             if elapsed > float(os.environ.get("SLOW_COMPONENT_THRESHOLD", 1)):
