@@ -1,6 +1,6 @@
 """
-FCMatch - command ``/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat``
-==================================================================================
+FCMatch - command ``/bin/fc-match -sv 'sans:regular:roman' family fontformat"``
+===============================================================================
 
 This command gets the fonts information in the current system.
 
@@ -26,6 +26,9 @@ Typical output of this command is::
         family: "Standard Symbols L"(s)
         fontformat: "Type 1"(s)
 
+.. note::
+    As there is a bug on RHEL6 that can cause segfault when executing ``fc-match`` command, we only parse the command output on RHEL7.
+
 Examples:
     >>> fc_match = shared[FCMatch]
     >>> fc_match_info = fc_match[0]
@@ -39,9 +42,9 @@ from .. import Parser, parser
 @parser("fc-match")
 class FCMatch(Parser):
     """
-    Class to parse command `/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat`.
+    Class to parse command `/bin/fc-match -sv 'sans:regular:roman' family fontformat`.
     This object provides the ' __getitem__' and '__iter__' methods to allow it to
-    be used as a list to iterate over the ``data`` data, e.g.::
+    be used as a list to iterate over the ``data``, e.g.::
 
         >>> fc_match = shared[FCMatch]
         >>> for item in fc_match:
