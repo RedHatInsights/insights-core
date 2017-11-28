@@ -1,9 +1,10 @@
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.satellite_version import Satellite6Version
 from insights.combiners.satellite_version import satellite_version
+from insights import SkipComponent
 from insights.tests import context_wrap
-import pytest
 
+import pytest
 
 installed_rpms_5 = """
 satellite-branding-5.5.0.22-1.el6sat.noarch                 Wed May 18 14:50:17 2016
@@ -172,18 +173,18 @@ def test_no_sat_installed():
     rpms = InstalledRpms(context_wrap(no_sat))
     sat = Satellite6Version(context_wrap(installed_rpms_61))
     shared = {InstalledRpms: rpms, Satellite6Version: sat}
-    with pytest.raises(Exception) as e:
-        satellite_version(None, shared)
-    assert "Not a Satellite Server/Capsule" in str(e)
+    with pytest.raises(SkipComponent) as exc:
+        assert satellite_version(None, shared) is None
+    assert 'Not a Satellite Server/Capsule' in str(exc)
 
     rpms = InstalledRpms(context_wrap(installed_rpms_611x_confilct))
     shared = {InstalledRpms: rpms}
-    with pytest.raises(Exception) as e:
-        satellite_version(None, shared)
-    assert "Not a Satellite Server/Capsule" in str(e)
+    with pytest.raises(SkipComponent) as exc:
+        assert satellite_version(None, shared) is None
+    assert 'RPMs conflict, unable to determine Satellite version' in str(exc)
 
 
 def test_none():
-    with pytest.raises(Exception) as e:
-        satellite_version(None, {})
-    assert "Unable to determine satellite version." in str(e)
+    with pytest.raises(SkipComponent) as exc:
+        assert satellite_version(None, {}) is None
+    assert 'No RPMs list, unable to determine Satellite version' in str(exc)
