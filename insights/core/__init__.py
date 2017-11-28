@@ -434,6 +434,19 @@ class LogFileOutput(Parser):
         """
         return {'raw_message': line}
 
+    def _valid_search(self, s):
+        """
+        Check this given `s`, it must be a string or a list of strings.
+        Otherwise, a TypeError will be raised.
+        """
+        if isinstance(s, str):
+            return lambda l: s in l
+        elif (isinstance(s, list) and len(s) > 0 and
+                    all(isinstance(w, str) for w in s)):
+            return lambda l: all(w in l for w in s)
+        elif s is not None:
+            raise TypeError('Search items must be given as a string or a list of strings')
+
     def get(self, s):
         """
         Returns all lines that contain `s` anywhere and wrap them in a list of
@@ -448,9 +461,9 @@ class LogFileOutput(Parser):
             contain the `s`.
         """
         ret = []
+        search_by_expression = self._valid_search(s)
         for l in self.lines:
-            if ((type(s) == list and all(w in l for w in s)) or
-                    (type(s) == str and s in l)):
+            if search_by_expression(l):
                 ret.append(self._parse_line(l))
         return ret
 
@@ -649,11 +662,10 @@ class LogFileOutput(Parser):
 
         eleven_months = datetime.timedelta(days=330)
         including_lines = False
+        search_by_expression = self._valid_search(s)
         for line in self.lines:
             # If `s` is not None, keywords must be found in the line
-            if (s and (
-                    (type(s) == str and s not in line) or
-                    (type(s) == list and any(w not in line for w in s)))):
+            if s and not search_by_expression(line):
                 continue
             # Otherwise, search all lines
             match = time_re.search(line)
