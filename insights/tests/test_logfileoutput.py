@@ -136,6 +136,12 @@ def test_messages_get_after():
     # No lines are found
     assert list(log.get_after(datetime(2017, 3, 27, 3, 49, 46), 'pulp')) == []
 
+    tmp_time = datetime(2017, 3, 27, 3, 39, 46)
+    with pytest.raises(TypeError):
+        list(log.get_after(tmp_time, ['type=', False, 'AVC']))
+    with pytest.raises(TypeError):
+        list(log.get_after(tmp_time, set(['type=', 'AVC'])))
+
 
 def test_messages_get_after_bad_time_format():
     ctx = context_wrap(MESSAGES, path='/var/log/messages')

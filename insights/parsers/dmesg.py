@@ -100,11 +100,10 @@ class DmesgLineList(LogFileOutput):
                     )
 
         including_lines = False
+        search_by_expression = self._valid_search(s)
         for line in self.lines:
             # If `s` is not None, keywords must be found in the line
-            if (s and (
-                    (type(s) == str and s not in line) or
-                    (type(s) == list and any(w not in line for w in s)))):
+            if s and not search_by_expression(line):
                 continue
             # Otherwise, search all lines
             match = self._line_re.search(line)
