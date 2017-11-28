@@ -166,14 +166,17 @@ class InsightsClient(object):
             logger.debug("Not updating Core. Running in offline mode.")
             return True
 
-        # fetch the new eggs and gpg
-        egg_paths = self.fetch()
+        if config['auto_update']:
+            # fetch the new eggs and gpg
+            egg_paths = self.fetch()
 
-        # if the gpg checks out install it
-        if (egg_paths and self.verify(egg_paths['core'])['gpg']):
-            return self.install(egg_paths['core'], egg_paths['gpg_sig'])
+            # if the gpg checks out install it
+            if (egg_paths and self.verify(egg_paths['core'])['gpg']):
+                return self.install(egg_paths['core'], egg_paths['gpg_sig'])
+            else:
+                return False
         else:
-            return False
+            logger.debug("Egg update disabled")
 
     def verify(self, egg_path, gpg_key=constants.pub_gpg_path):
         """
