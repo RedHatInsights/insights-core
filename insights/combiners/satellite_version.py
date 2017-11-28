@@ -65,6 +65,7 @@ from collections import namedtuple
 from insights.core.plugins import combiner
 from insights.parsers.satellite_version import Satellite6Version as Sat6Ver
 from insights.parsers.installed_rpms import InstalledRpms
+from insights import SkipComponent
 
 SatelliteVersion = namedtuple(
         "SatelliteVersion",
@@ -93,7 +94,7 @@ sat6_ver_map = {
 }
 
 
-def _parse_sat_versoin(version):
+def _parse_sat_version(version):
     ver_sp = version.split(".") if version else []
     major = int(ver_sp[0]) if ver_sp and ver_sp[0].isdigit() else None
     minor = int(ver_sp[1]) if len(ver_sp) > 1 and ver_sp[1].isdigit() else None
@@ -107,8 +108,9 @@ def satellite_version(local, shared):
     information.
 
     Raises:
-        Exception: If it's not a Satellite Server/Capsule or information is not
-        enough to determine the satellite version.
+        SkipComponent: If it's not a Satellite machine or the information is
+        not enough to determine the satellite version. This type of Exception
+        will be ignored.
     """
     # For Satellite 6.1.x, if satellite_version/version.rb is available:
     sat6_ver = shared.get(Sat6Ver)
@@ -122,7 +124,7 @@ def satellite_version(local, shared):
         sat62_pkg = rpms.get_max('satellite')
         if sat62_pkg:
             version = sat62_pkg.version
-            major, minor = _parse_sat_versoin(version)
+            major, minor = _parse_sat_version(version)
             return SatelliteVersion(sat62_pkg.package, version,
                                     sat62_pkg.release, major, minor)
 
@@ -135,16 +137,18 @@ def satellite_version(local, shared):
             for sat_ver, map_ver in sat6_ver_map.items():
                 if all(pkg.version.startswith(mv)
                         for pkg, mv in zip([fman, cndp, ktlo], map_ver)):
-                    major, minor = _parse_sat_versoin(sat_ver)
+                    major, minor = _parse_sat_version(sat_ver)
                     return SatelliteVersion(sat_ver, sat_ver, None, major, minor)
+            # satellite packages conflict
+            raise SkipComponent("RPMs conflict, unable to determine Satellite version")
 
         # For Satellite 5.x
         sat5_pkg = rpms.get_max('satellite-schema')
         sat5_pkg = sat5_pkg if sat5_pkg else rpms.get_max('rhn-satellite-schema')
         if sat5_pkg:
             version = sat5_pkg.version
-            major, minor = _parse_sat_versoin(version)
+            major, minor = _parse_sat_version(version)
             return SatelliteVersion(sat5_pkg.package, version,
                                     sat5_pkg.release, major, minor)
-        raise Exception("Not a Satellite Server/Capsule")
-    raise Exception("Unable to determine satellite version.")
+        raise SkipComponent("Not a Satellite Server/Capsule")
+    raise SkipComponent("No RPMs list, unable to determine Satellite version")
