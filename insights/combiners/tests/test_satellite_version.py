@@ -1,7 +1,9 @@
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.satellite_version import Satellite6Version
-from insights.combiners.satellite_version import satellite_version
+from insights.combiners.satellite_version import SatelliteVersion
 from insights.tests import context_wrap
+from insights import SkipComponent
+import pytest
 
 
 installed_rpms_5 = """
@@ -78,7 +80,7 @@ def test_get_sat5_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_5))
     expected = ('satellite-schema-5.6.0.10-1.el6sat',
                 '5.6.0.10', '1.el6sat', 5, 6)
-    result = satellite_version(None, rpms)
+    result = SatelliteVersion(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -89,7 +91,7 @@ def test_get_sat5_version():
 def test_get_sat61_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_61))
     expected = ('6.1.7', '6.1.7', None, 6, 1)
-    result = satellite_version(None, rpms)
+    result = SatelliteVersion(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -98,7 +100,7 @@ def test_get_sat61_version():
 
     sat = Satellite6Version(context_wrap(satellite_version_rb))
     expected = ('6.1.3', '6.1.3', None, 6, 1)
-    result = satellite_version(sat, None)
+    result = SatelliteVersion(sat, None)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -107,7 +109,7 @@ def test_get_sat61_version():
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6110))
     expected = ('6.1.10', '6.1.10', None, 6, 1)
-    result = satellite_version(None, rpms)
+    result = SatelliteVersion(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -116,7 +118,7 @@ def test_get_sat61_version():
 
     rpms = InstalledRpms(context_wrap(installed_rpms_6111))
     expected = ('6.1.11', '6.1.11', None, 6, 1)
-    result = satellite_version(None, rpms)
+    result = SatelliteVersion(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -127,7 +129,7 @@ def test_get_sat61_version():
 def test_get_sat60():
     rpms = InstalledRpms(context_wrap(installed_rpms_60))
     expected = ('6.0.8', '6.0.8', None, 6, 0)
-    result = satellite_version(None, rpms)
+    result = SatelliteVersion(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -139,7 +141,7 @@ def test_get_sat61_version_both():
     rpms = InstalledRpms(context_wrap(installed_rpms_61))
     sat = Satellite6Version(context_wrap(satellite_version_rb))
     expected = ('6.1.3', '6.1.3', None, 6, 1)
-    result = satellite_version(sat, rpms)
+    result = SatelliteVersion(sat, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -151,7 +153,7 @@ def test_get_sat62_version():
     rpms = InstalledRpms(context_wrap(installed_rpms_62))
     expected = ('satellite-6.2.0.11-1.el7sat',
                 '6.2.0.11', '1.el7sat', 6, 2)
-    result = satellite_version(None, rpms)
+    result = SatelliteVersion(None, rpms)
     assert result.major == expected[-2]
     assert result.minor == expected[-1]
     assert result.full == expected[0]
@@ -161,15 +163,17 @@ def test_get_sat62_version():
 
 def test_no_sat_installed():
     rpms = InstalledRpms(context_wrap(no_sat))
-    sat = Satellite6Version(context_wrap(installed_rpms_61))
-    result = satellite_version(sat, rpms)
-    assert result is None
+    with pytest.raises(SkipComponent) as sc:
+        SatelliteVersion(None, rpms)
+    assert "Not a Satellite machine" in str(sc)
 
     rpms = InstalledRpms(context_wrap(installed_rpms_611x_confilct))
-    result = satellite_version(None, rpms)
-    assert result is None
+    with pytest.raises(SkipComponent) as sc:
+        SatelliteVersion(None, rpms)
+    assert "RPMs conflict, unable to determine Satellite version" in str(sc)
 
 
 def test_none():
-    result = satellite_version(None, None)
-    assert result is None
+    with pytest.raises(SkipComponent) as sc:
+        SatelliteVersion(None, None)
+    assert "No RPMs list, unable to determine Satellite version" in str(sc)

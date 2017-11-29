@@ -1,5 +1,7 @@
 from insights.tests import context_wrap
 from insights.parsers.satellite_version import Satellite6Version
+from insights.parsers import ParseException
+import pytest
 
 satellite_version = """
 COMMAND> cat /usr/share/foreman/lib/satellite/version.rb
@@ -26,8 +28,6 @@ def test_get_sat6_version():
 
 
 def test_get_no_sat_version():
-    result = Satellite6Version(context_wrap(no_sat, path='satellite_version'))
-    assert result.version is None
-    assert result.full is None
-    assert result.major is None
-    assert result.minor is None
+    with pytest.raises(ParseException) as e:
+        Satellite6Version(context_wrap(no_sat, path='satellite_version'))
+    assert "Cannot parse satellite version" in str(e)
