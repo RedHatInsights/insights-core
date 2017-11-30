@@ -143,7 +143,7 @@ ethtool_i = sf.foreach(ethernet_interfaces, "/sbin/ethtool -i %s", name="ethtool
 ethtool_k = sf.foreach(ethernet_interfaces, "/sbin/ethtool -k %s", name="ethtool_k", alias="ethtool-k")
 exim_conf = sf.simple_file("etc/exim.conf", name="exim_conf", alias="exim.conf")
 facter = sf.simple_command("/usr/bin/facter", name="facter")
-fc_match = sf.simple_command("/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat", name="fc_match", alias="fc-match")
+fc_match = sf.simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat", name="fc_match", alias="fc-match")
 fdisk_l = sf.simple_command("/sbin/fdisk -l", name="fdisk_l", alias="fdisk-l")
 fdisk_l_sos = sf.glob_file(r"sos_commands/filesys/fdisk_-l_*", name="fdisk_l_sos", alias="fdisk-l-sos", context=HostArchiveContext)
 foreman_production_log = sf.simple_file("/var/log/foreman/production.log", name="foreman_production_log", alias="foreman_production.log")
