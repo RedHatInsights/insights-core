@@ -101,7 +101,7 @@ static_specs = {
     "exim.conf"                 : SimpleFileSpec("etc/exim.conf"),
     "facter"                    : First([CommandSpec("/usr/bin/facter"),
                                     SimpleFileSpec("facts")]),
-    "fc-match"                  : CommandSpec("/usr/bin/fc-match -sv 'sans:regular:roman' family fontformat"),
+    "fc-match"                  : CommandSpec("/bin/fc-match -sv 'sans:regular:roman' family fontformat"),
     "fdisk-l"                   : CommandSpec("/sbin/fdisk -l"),
     "fdisk-l-sos"               : PatternSpec(r"sos_commands/filesys/fdisk_-l_.+"),
     "foreman_satellite.log"     : First([SimpleFileSpec("var/log/foreman-installer/satellite.log", large_content=True),
