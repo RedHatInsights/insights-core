@@ -10,6 +10,9 @@ means the output is in YAML format.
 
 Parsers included in this module are:
 
+OcGetBc - command ``oc get bc -o yaml --all-namespaces``
+--------------------------------------------------------
+
 OcGetDc - command ``oc get dc -o yaml --all-namespaces``
 --------------------------------------------------------
 
@@ -52,6 +55,7 @@ Examples:
 """
 
 from .. import YAMLParser, parser
+from insights.specs import oc_get_bc
 from insights.specs import oc_get_dc
 from insights.specs import oc_get_endpoints
 from insights.specs import oc_get_pod
@@ -73,6 +77,15 @@ class OcGetPod(YAMLParser):
 
     def get_pod(self):
         """ dict: Returns a dictionary of openshift pods information."""
+        return metadata_name_items(self.data)
+
+
+@parser(oc_get_bc)
+class OcGetBc(YAMLParser):
+    """Class to parse ``oc get bc -o yaml --all-namespaces``"""
+
+    def get_bc(self):
+        """ dict: Returns a dictionary of openshift build configs information."""
         return metadata_name_items(self.data)
 
 
