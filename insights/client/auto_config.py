@@ -15,6 +15,11 @@ logger = logging.getLogger(__name__)
 APP_NAME = constants.app_name
 
 
+def _is_rhn_or_rhsm(hostname):
+    return (hostname == 'subscription.rhn.redhat.com' or
+            hostname == 'subscription.rhsm.redhat.com')
+
+
 def verify_connectivity():
     """
     Verify connectivity to satellite server
@@ -79,7 +84,7 @@ def _try_satellite6_configuration():
         from rhsm.config import initConfig
         rhsm_config = initConfig()
 
-        logger.debug('Trying to autoconf Satellite 6')
+        logger.debug('Trying to autoconfigure...')
         cert = file(rhsmCertificate.certpath(), 'r').read()
         key = file(rhsmCertificate.keypath(), 'r').read()
         rhsm = rhsmCertificate(key, cert)
@@ -104,7 +109,9 @@ def _try_satellite6_configuration():
                 proxy = proxy + rhsm_proxy_user + ":" + rhsm_proxy_pass + "@"
             proxy = proxy + rhsm_proxy_hostname + ':' + rhsm_proxy_port
             logger.debug("RHSM Proxy: %s", proxy)
-        logger.debug("Found Satellite Server Host: %s, Port: %s",
+        logger.debug("Found %sHost: %s, Port: %s",
+                     ('' if _is_rhn_or_rhsm(rhsm_hostname)
+                         else 'Satellite 6 Server '),
                      rhsm_hostname, rhsm_hostport)
         rhsm_ca = rhsm_config.get('rhsm', 'repo_ca_cert')
         logger.debug("Found CA: %s", rhsm_ca)
@@ -112,8 +119,7 @@ def _try_satellite6_configuration():
         config['authmethod'] = 'CERT'
 
         # Directly connected to Red Hat, use cert auth directly with the api
-        if (rhsm_hostname == 'subscription.rhn.redhat.com' or
-           rhsm_hostname == 'subscription.rhsm.redhat.com'):
+        if _is_rhn_or_rhsm(rhsm_hostname):
             logger.debug("Connected to Red Hat Directly, using cert-api")
             rhsm_hostname = 'cert-api.access.redhat.com'
             rhsm_ca = None
