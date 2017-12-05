@@ -53,6 +53,10 @@ Examples:
 from collections import namedtuple
 from .. import Parser, parser, get_active_lines
 from insights.specs import sshd_config
+import re
+
+# optional whitespace, at least one non-whitespace (the keyword), at least one whitespace (space), a plus literal, anything
+PLUS_PATTERN = re.compile(r'^\s*\S+\s+\+.*$')
 
 
 @parser(sshd_config)
@@ -69,14 +73,13 @@ class SshDConfig(Parser):
     KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower', 'line'])
     """namedtuple: Represent name value pair as a namedtuple with case ."""
 
-    # TODO: add support for "+" options in sshd_config once the support for
-    # such options is added to the openssh versions shipped in RHEL. These
-    # options allow a sshd_config line such as "Ciphers +arcfour", which means
-    # "take the built-in defaults and add arcfour to them". Currently (as of
-    # 2016-11), the "+" options are not supported by any openssh-server
-    # version officially shipped in RHEL and it is unclear whether these
-    # options will be backported. There are hints that they might be
-    # backported in the future, hence this note.
+    # Note about "+" options. In some openssh versions and for some keywords,
+    # a "+" at the beginning of the value list signifies that the values are
+    # added to the default list of values.
+    # IT IS NOT DETECTED AND PARSED HERE.
+    # `parse_content()` doesn't split the individual values because some
+    # keywords don't have a list of values (just one string).
+    # See the docstring in `line_uses_plus()` for more details.
     def parse_content(self, content):
         self.lines = []
         for line in get_active_lines(content):
@@ -175,6 +178,49 @@ class SshDConfig(Parser):
             return "{keyword} {value}  # Implicit default".format(
                 keyword=keyword, value=default
             )
+
+    def line_uses_plus(self, keyword):
+        """
+        (union[bool, None]): Get the line with the last declarations of this
+        keyword in the configuration file and returns whether the "+" option
+        syntax is used.
+
+        A "+" before the list of values denotes that the values are appended to
+        the openssh defaults for the particular keyword.
+
+        Returns True if the "+" is used, False if a line with the keyword was
+        found but it doesn't use the "+" or None if such a line doesn't exist.
+
+        Reasoning for the implementation:
+
+        * The "+" means "added to the defaults".
+        * The defaults depend on the particular openssh-server version and
+          the parser doesn't know the version.
+        * Therefore, it is infeasible to add the evaluation logic for "+"
+          into `get_values()`.
+        * Adding the logic into a combiner would mean a requirement that
+          the combiner has a complete database of all defaults in all
+          openssh-server version - infeasible again.
+        * Not every keyword allows the use of "+" - it wouldn't make sense
+          to parse "+" into `KeyValue` as it would make meaningless parsing
+          for some options and meaningful for others. Building a database
+          which options in which openssh-server versions support it or not
+          would be infeasible.
+        * The way chosen as the most sensible is this - `line_uses_plus()`
+          used selectively by a rule for those options that support it, and
+          it is up to the developer of such a rule to check it for those
+          options manually.
+
+        Parameters:
+            keyword(str): Keyword to find
+        """
+        lines = self.get(keyword)
+        if lines:
+            found_line = lines[-1].line
+            match = PLUS_PATTERN.match(found_line)
+            return bool(match)
+        else:
+            return None
 
     def last(self, keyword, default=None):
         """

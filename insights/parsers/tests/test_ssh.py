@@ -53,6 +53,8 @@ AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
 AcceptEnv LC_IDENTIFICATION LC_ALL LANGUAGE
 AcceptEnv XMODIFIERS
 Subsystem	sftp	/usr/libexec/openssh/sftp-server
+APlusOption only,the,last,shall,be,taken,in,account,by,does_line_user_plus()
+APlusOption +val1,val2,val3
 """
 
 
@@ -99,3 +101,7 @@ def test_sshd_config_complete():
         'LC_TELEPHONE', 'LC_MEASUREMENT', 'LC_IDENTIFICATION', 'LC_ALL',
         'LANGUAGE', 'XMODIFIERS'
     ]
+    assert config.line_uses_plus("APlusOption") is True
+    assert config.line_uses_plus("Subsystem") is False
+    assert config.line_uses_plus("AcceptEnv") is False
+    assert config.line_uses_plus("NonExistingOption") is None
