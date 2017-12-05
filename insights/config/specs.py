@@ -462,6 +462,7 @@ meta_files = {
 
 openshift = {
     "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
+    "oc_get_bc"                 : CommandSpec("/usr/bin/oc get bc -o yaml --all-namespaces"),
     "oc_get_dc"                 : CommandSpec("/usr/bin/oc get dc -o yaml --all-namespaces"),
     "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces"),
     "oc_get_rolebinding"        : CommandSpec("/usr/bin/oc get rolebinding -o yaml --all-namespaces"),
