@@ -11,6 +11,7 @@ parser.
 """
 
 from .. import Parser, parser, get_active_lines
+from insights.util import deprecated
 
 
 @parser("limits.conf")
@@ -60,6 +61,7 @@ def get_limits(context):
             "item": item,
             "value": value
         }
+    deprecated(get_limits, "Use the 'LimitsConf' parser in this module", pending=False)
 
     import os
     result = {}
