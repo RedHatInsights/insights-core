@@ -5,37 +5,51 @@ Process list commands
 This module provides processing for the various outputs of the ``ps`` command.
 Parsers included in this module are:
 
-PsAux - command ``ps aux``
---------------------------
+PsAuxww - command ``ps auxww``
+------------------------------
 
-PsAuxcww - command ``ps auxcww``
---------------------------------
+This is the preferred parser.
 
-PsAuxwww - command ``ps auxwww``
---------------------------------
-
-PsAxcwwo - command ``ps axcwwo ucomm,%cpu,lstart``
---------------------------------------------------
-
-Class ``PsAuxcww`` parses the output of the ``ps auxcww`` command.  Sample
+Class ``PsAuxww`` parses the output of the ``ps auxww`` command.  Sample
 output of this command looks like::
 
     USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-    root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init
-    root      1821  0.0  0.0      0     0 ?        S    May31   0:29 kondemand/0
-    root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 irqbalance
+    root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+    root      1821  0.0  0.0      0     0 ?        S    May31   0:29 [kondemand/0]
+    root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 /usr/sbin/irqbalance --foreground
     user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash
-    root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 dhclient
-    qemu     22673  0.6 10.7 1618556 840452 ?      Sl   11:38   1:31 qemu-kvm
-    vdsm     27323 98.0 11.3  9120    987 ?        Ss   10.01   1:31 vdsm
+    root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 dhclient enp0s25
+    root      1661  0.0  0.0 126252  1392 ?        Ss   Oct23   0:04 /usr/sbin/crond -n
+    root      1691  0.0  0.0  42688   172 ?        Ss   Oct23   0:00 /usr/sbin/rpc.mountd
+
+PsAuxww attempts to read the output of ``ps auxwww``, ``ps aux``, and ``ps
+auxcww`` commands from archives.
+
+PsAux - command ``ps aux``
+--------------------------
+.. warning:: Deprecated - will be removed in the future.
 
 Class ``PsAux`` parses the output of the ``ps aux`` command which is filtered
 to only contain lines with the strings 'STAT', 'keystone-all', and 'COMMAND'.
-Output is similar to the ``ps auxcww`` command except that the `COMMAND`
-column provides additional information about the command.
+Output is the same as the ``ps auxww`` command.
+
+PsAuxcww - command ``ps auxcww``
+--------------------------------
+.. warning:: Deprecated - will be removed in the future.
+
+Class ``PsAuxcww`` parsers the output of the ``ps auxcww`` command.  This
+looks similar to the ``ps auxww`` command but the COMMAND field is truncated.
+
+PsAuxwww - command ``ps auxwww``
+--------------------------------
+.. warning:: Deprecated - will be removed in the future.
 
 Class ``PsAuxwww`` parses the output of the ``ps auxwww`` command. Output of
 this command is similar to the ``ps aux``.
+
+PsAxcwwo - command ``ps axcwwo ucomm,%cpu,lstart``
+--------------------------------------------------
+.. warning:: Deprecated - will be removed in the future.
 
 Class ``PsAxcwwo`` parses the output of the ``ps axcwwo ucomm,%cpu,lstart``
 command to provide full timestamp of service start time. Sample output of this
@@ -73,7 +87,8 @@ Examples:
     ['init', 'kondemand/0', 'irqbalance', 'bash', 'dhclient', 'qemu-kvn', 'vdsm']
 """
 from .. import Parser, parser
-from . import ParseException, parse_delimited_table
+from . import ParseException, parse_delimited_table, keyword_search
+from insights.util import deprecated
 
 
 class ProcessList(Parser):
@@ -104,20 +119,72 @@ class ProcessList(Parser):
         for row in self.data:
             if proc == row["COMMAND"]:
                 if row["USER"] not in ret:
-                    ret.update({row["USER"]: []})
+                    ret[row["USER"]] = []
                 ret[row["USER"]].append(row["PID"])
         return ret
 
     def fuzzy_match(self, proc):
-        """boolean: Returns ``True`` if ``proc`` is in the COMMAND column."""
-        return proc in "".join(self.running)
+        """boolean: Returns ``True`` if the word ``proc`` appears in the COMMAND column."""
+        return any(proc in row['COMMAND'] for row in self.data)
 
     def __contains__(self, proc):
+        # We should be able to take this if out when we only have the PsAuxww
+        # parser:
         return proc in self.running
 
     def __iter__(self):
         for row in self.data:
             yield row
+
+
+@parser('ps_auxww')
+class PsAuxww(ProcessList):
+    """
+    Class to parse ``ps auxww`` command output.
+
+    Attributes:
+        data (list): List of dicts, where the keys in each dict are the
+            column headers and each item in the list represents a process.
+
+    Raises:
+        ParseException: Raised if the heading line (starting with 'USER' and
+        ending with 'COMMAND') is not found in the input.
+    """
+    def __init__(self, *args, **kwargs):
+        self.data = {}
+        super(PsAuxww, self).__init__(*args, **kwargs)
+
+    def parse_content(self, content):
+        if any(line.startswith('USER') and line.endswith('COMMAND') for line in content):
+            # parse_delimited_table allows short lines, but we specifically
+            # want to ignore them.
+            self.data = [
+                row
+                for row in parse_delimited_table(
+                    content, heading_ignore=['USER'], max_splits=10
+                )
+                if 'COMMAND' in row
+            ]
+        else:
+            raise ParseException(
+                "PsAuxww: Cannot find ps header line in output"
+            )
+
+    def search(self, **kwargs):
+        """
+        Search the process list for matching rows based on key-value pairs.
+
+        This uses the py:func:`insights.parsers.keyword_search` function for
+        searching; see its documentation for usage details.  If no search
+        parameters are given, no rows are returned.
+
+        Examples:
+            ps.search(COMMAND__contains='java')
+            ps.search(USER='root', COMMAND__contains='watchdog')
+            ps.search(TTY='pts/0')
+            ps.search(STAT__contains='Z')
+        """
+        return keyword_search(self.data, **kwargs)
 
 
 @parser('ps_auxcww')
@@ -135,6 +202,8 @@ class PsAuxcww(ProcessList):
         ParseException: Raised if any error occurs parsing the content.
     """
     def __init__(self, *args, **kwargs):
+        deprecated(PsAuxcww, "Use the `PsAuxww` parser in this module")
+
         self.data = {}
         self.services = []
         super(PsAuxcww, self).__init__(*args, **kwargs)
@@ -177,6 +246,9 @@ class PsAux(ProcessList):
             headers and each item in the list represents a process. The command
             and its args (if any) are kept together in the COMMAND key.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(PsAux, "Use the `PsAuxww` parser in this module")
+        super(PsAux, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
@@ -193,7 +265,9 @@ class PsAuxwww(PsAux):
         data (list):  List of dicts, where the keys in each dict are the column
             headers and each item in the list represents a process.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(PsAux, "Use the `PsAuxww` parser in this module")
+        super(PsAux, self).__init__(*args, **kwargs)
 
 
 @parser('ps_axcwwo')
@@ -209,6 +283,9 @@ class PsAxcwwo(ProcessList):
     Raises:
         ParseException: Raised if any error occurs parsing the content.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(PsAxcwwo, "Use the `PsAuxww` parser in this module")
+        super(PsAxcwwo, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         if len(content) > 0 and "COMMAND" in content[0]:
