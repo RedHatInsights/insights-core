@@ -151,6 +151,8 @@ static_specs = {
     "httpd_ssl_access_log"      : SimpleFileSpec("var/log/httpd/ssl_access_log", large_content=True),
     "httpd_ssl_error_log"       : SimpleFileSpec("var/log/httpd/ssl_error_log", large_content=True),
     "httpd-V"                   : CommandSpec("/usr/sbin/httpd -V"),
+    "httpd_worker_V"            : CommandSpec("/usr/sbin/httpd.worker -V"),  # RHEL6
+    "httpd_event_V"             : CommandSpec("/usr/sbin/httpd.event -V"),  # RHEL6
     "ifcfg"                     : PatternSpec(r"etc/sysconfig/network-scripts/ifcfg-.*"),
     "ifconfig"                  : First([CommandSpec("/sbin/ifconfig -a"),
                                     SimpleFileSpec("ifconfig"),
