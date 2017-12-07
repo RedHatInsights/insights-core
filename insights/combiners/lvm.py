@@ -184,7 +184,7 @@ class Lvm(object):
         # Physical Volumes information
         self.physical_volumes = merge_lvm_data(get_shared_data(pvs),
                                                get_shared_data(pvs_headings),
-                                               'PV')
+                                               'PV_KEY')
         """dict: Contains a dictionary of physical volume data with keys
             from the original output."""
 
@@ -209,15 +209,13 @@ class Lvm(object):
 
         self.logical_volumes = set_defaults(self.logical_volumes)
 
+        # Since name is not used as the key we need to create the name list
+        self.physical_volume_names = set([p['PV'] for p in self.physical_volumes.values()])
+
     @property
     def volume_group_names(self):
         """set: Returns a set of keys from the volume group information."""
         return set(self.volume_groups.keys())
-
-    @property
-    def physical_volume_names(self):
-        """set: Returns a set of keys from the physical volume information."""
-        return set(self.physical_volumes.keys())
 
     @property
     def logical_volume_names(self):
