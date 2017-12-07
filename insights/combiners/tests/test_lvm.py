@@ -338,7 +338,7 @@ def test_combiner_pvs(lvm_data):
             lvm_info = data.lvm_info
             assert lvm_info.physical_volumes is not None
             assert len(list(lvm_info.physical_volumes)) == 31
-            assert lvm_info.physical_volumes['/dev/sdh1']['VG'] == 'data7'
+            assert lvm_info.physical_volumes['/dev/sdh1+Ys0p6S-WJOW-TAZT-czmX-iOYq-0Tgg-v4cl0H']['VG'] == 'data7'
             assert lvm_info.physical_volume_names == {
                 '/dev/data1/lv_brick1',
                 '/dev/data1/lv_hdfs1',
@@ -372,16 +372,21 @@ def test_combiner_pvs(lvm_data):
                 '/dev/sdg1',
                 '/dev/sdh1'
             }
+            pv_sdg1 = lvm_info.filter_physical_volumes('/dev/sdg1')
+            assert len(pv_sdg1) == 1
+            pv_sdg1_key, pv_sdg1_values = pv_sdg1.popitem()
             assert '/dev/sdg1' in lvm_info.physical_volume_names
             if Pvs in data.shared:
-                assert lvm_info.physical_volumes['/dev/sdg1']['LVM2_PV_MINOR'] == '97'
-                assert lvm_info.physical_volumes['/dev/sdg1']['Missing'] is None
+                assert lvm_info.physical_volumes[pv_sdg1_key]['LVM2_PV_MINOR'] == '97'
+                assert lvm_info.physical_volumes[pv_sdg1_key]['Missing'] is None
             else:
-                assert 'LVM2_PV_MINOR' not in lvm_info.physical_volumes['/dev/sdg1']
-                assert lvm_info.physical_volumes['/dev/sdg1']['Missing'] is None
+                assert 'LVM2_PV_MINOR' not in lvm_info.physical_volumes[pv_sdg1_key]
+                assert lvm_info.physical_volumes[pv_sdg1_key]['Missing'] is None
             filtered_lvm_info = lvm_info.filter_physical_volumes('sda')
-            assert set(filtered_lvm_info.keys()) == {'/dev/sda2', '/dev/sda3'}
-            assert filtered_lvm_info['/dev/sda2']['DevSize'] == '1.00g'
+            assert set([p['PV'] for p in filtered_lvm_info.values()]) == {'/dev/sda2', '/dev/sda3'}
+            for pv in filtered_lvm_info.values():
+                if pv['PV'] == '/dev/sda2':
+                    assert pv['DevSize'] == '1.00g'
 
 
 def test_combiner_lvs(lvm_data):
