@@ -395,6 +395,8 @@ static_specs = {
     "systemid"                  : First([SimpleFileSpec("etc/sysconfig/rhn/systemid"),
                                     SimpleFileSpec("conf/rhn/sysconfig/rhn/systemid")]),
     "teamdctl_state_dump"       : CommandSpec("/usr/bin/teamdctl {iface} state dump", iface=r"team\S+"),
+    "thp_use_zero_page"         : SimpleFileSpec("sys/kernel/mm/transparent_hugepage/use_zero_page"),
+    "thp_enabled"               : SimpleFileSpec("sys/kernel/mm/transparent_hugepage/enabled"),
     "tmpfilesd"                 : All([PatternSpec("etc/tmpfiles.d/.*\.conf"),
                                     PatternSpec(r"usr/lib/tmpfiles.d/.*\.conf"),
                                     PatternSpec(r"run/tmpfiles.d/.*\.conf")]),
