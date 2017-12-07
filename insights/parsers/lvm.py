@@ -157,6 +157,10 @@ class Pvs(Lvm):
                 ...
             }
         ]
+
+    Since it is possible to have two PV's with the same name (for example *unknown device*) a
+    unique key for each PV is created by joining the `PV_NAME and PV_UUID fields with a `+`
+    character.  This key is added to the dictionary as the `PV_KEY` field.
     """
     KEYS = {
         "LVM2_PV_MDA_USED_COUNT": "#PMdaUse",
@@ -185,6 +189,13 @@ class Pvs(Lvm):
 
     PRIMARY_KEY = "PV"
 
+    def parse_content(self, content):
+        super(Pvs, self).parse_content(content)
+        for pv in self.data['content']:
+            pv_name = pv.get('PV') if pv.get('PV') is not None else 'no_name'
+            pv_uuid = pv.get('PV_UUID') if pv.get('PV_UUID') is not None else 'no_uuid'
+            pv.update({'PV_KEY': '+'.join([pv_name, pv_uuid])})
+
     def vg(self, name):
         """Return all physical volumes assigned to the given volume group"""
         return [i for i in self.data["content"] if i["VG"] == name]
@@ -194,7 +205,12 @@ class Pvs(Lvm):
 class PvsHeadings(LvmHeadings):
     """
     Parses the output of the
-    `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"` command.
+    `pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"`
+    command.
+
+    Since it is possible to have two PV's with the same name (for example *unknown device*) a
+    unique key for each PV is created by joining the `PV_NAME and PV_UUID fields with a `+`
+    character.  This key is added to the resulting dictionary as the `PV_KEY` field.
 
     Sample input::
 
@@ -232,7 +248,7 @@ class PvsHeadings(LvmHeadings):
         >>> pvs_data[0]
         {'PV': '/dev/fedora/home', 'VG': '', 'Fmt': '', 'Attr': '---', 'PSize': '0',
          'PFree': '0', 'DevSize': '418.75g', 'PV_UUID': '', 'PMdaFree': '0',
-         'PMdaSize': '0', '#PMda': '0', '#PMdaUse': '0', 'PE': '0'}
+         'PMdaSize': '0', '#PMda': '0', '#PMdaUse': '0', 'PE': '0', 'PV_KEY': '/dev/fedora/home+no_uuid'}
         >>> pvs_data[0]['PV']
         '/dev/fedora/home'
 
@@ -246,6 +262,10 @@ class PvsHeadings(LvmHeadings):
                                                          ('1st PE', '1st_PE')],
                                       trailing_ignore=['Reloading', 'Wiping'])
         self.data = map_keys(self.data, Pvs.KEYS)
+        for pv in self.data:
+            pv_name = pv.get('PV') if pv.get('PV') is not None else 'no_name'
+            pv_uuid = pv.get('PV_UUID') if pv.get('PV_UUID') is not None else 'no_uuid'
+            pv.update({'PV_KEY': '+'.join([pv_name, pv_uuid])})
 
     def vg(self, name):
         """Return all physical volumes assigned to the given volume group"""
