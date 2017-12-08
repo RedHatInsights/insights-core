@@ -61,6 +61,34 @@ Permanent HW addr: 00:16:35:5e:02:7e
 Aggregator ID: 2
 """.strip()
 
+BONDINFO_MODE_2 = """
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: load balancing (xor)
+Transmit Hash Policy: layer2+3 (2)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+
+Slave Interface: eno1
+MII Status: up
+Speed: 1000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 2c:44:fd:80:5c:f8
+Slave queue ID: 0
+
+Slave Interface: eno2
+MII Status: up
+Speed: 1000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 2c:44:fd:80:5c:f9
+Slave queue ID: 0
+""".strip()
+
+
 BONDINFO_CORRUPT = """
 Link Failure Count: 0
 Permanent HW addr: 00:16:35:5e:02:7e
@@ -80,7 +108,12 @@ def test_bond_class():
     assert bond_obj.bond_mode == '4'
     assert bond_obj.partner_mac_address == "00:00:00:00:00:00"
     assert bond_obj.aggregator_id == ['3', '3', '2']
+    assert bond_obj.xmit_hash_policy == "layer2"
 
     bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
     assert not bond_obj.bond_mode
     assert bond_obj.slave_interface == []
+    assert not bond_obj.xmit_hash_policy
+
+    bond_obj = Bond(context_wrap(BONDINFO_MODE_2, CONTEXT_PATH))
+    assert bond_obj.xmit_hash_policy == "layer2+3"
