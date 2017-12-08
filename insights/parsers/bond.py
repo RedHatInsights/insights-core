@@ -25,6 +25,7 @@ Typical content of ``bond.*`` file is::
     Slave queue ID: 0
 
     Slave Interface: eno2
+    Transmit Hash Policy: layer2 (0)
     MII Status: up
     Speed: 1000 Mbps
     Duplex: full
@@ -46,6 +47,8 @@ Examples:
     ['eno1', 'eno2']
     >>> bond_info.aggregator_id
     ['3', '2', '3']
+    >>> bond_info.xmit_hash_policy
+    layer2
 """
 from .. import Parser, parser, get_active_lines
 
@@ -78,11 +81,14 @@ class Bond(Parser):
             if the key/value exists. Default is ``[]``.
         aggregator_id (list): List of the "Aggregator ID" in the bond file
             if the key/value exists. Default is ``[]``.
+        xmit_hash_policy(str): It will return Transmit Hash Policy set for bonding mode
+            if the key/value exists. Default is ``None``
     """
 
     def parse_content(self, content):
         self._bond_mode = None
         self._partner_mac_address = None
+        self.xmit_hash_policy = None
         self._slave_interface = []
         self._aggregator_id = []
 
@@ -100,6 +106,10 @@ class Bond(Parser):
                 self._slave_interface.append(line.split(":", 1)[1].strip())
             elif line.strip().startswith("Aggregator ID: "):
                 self._aggregator_id.append(line.strip().split(':', 1)[1].strip())
+            elif line.strip().startswith("Transmit Hash Policy"):
+                # No need of values in bracket:
+                # Integer notification (0), (1), (2) of layer2, layer3+4, layer2+3 resp
+                self.xmit_hash_policy = line.split(":", 1)[1].split()[0]
 
     @property
     def bond_mode(self):
