@@ -1,5 +1,5 @@
 from insights.tests import context_wrap
-from insights.parsers.grub_conf import Grub1Config, Grub2Config
+from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
 import pytest
 
 # RHEL7
@@ -181,6 +181,22 @@ def test_grub_conf():
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_8))
     assert grub1.is_kdump_iommu_enabled is False
+
+    grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_4))
+    assert grub1efi.get_current_title() is None
+
+    grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_5))
+    assert grub1efi.get_current_title() == [
+        ('title_name', '(2.6.18-194.8.1.el5)'),
+        ('kernel', None), ('module', '/2.6.18-194.8.1.el5.img')]
+
+    grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_6))
+    assert grub1efi.get_current_title() == [
+        ('title_name', 'Red Hat Enterprise Linux Server'),
+        ('kernel', 'test'), ('module', '/2.6.18-194.8.1.el5.img')]
+
+    grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_7))
+    assert grub1efi.get_current_title() is None
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_1))['menuentry']
     assert ('load_video', None) in grub_conf[0]

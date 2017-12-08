@@ -159,6 +159,7 @@ glance_api_log = sf.simple_file("/var/log/glance/api.log", name="glance_api_log"
 glance_cache_conf = sf.simple_file("/etc/glance/glance-cache.conf", name="glance_cache_conf", alias="glance-cache.conf")
 glance_registry_conf = sf.simple_file("/etc/glance/glance-registry.conf", name="glance_registry_conf", alias="glance-registry.conf")
 grub_conf = sf.simple_file("/boot/grub/grub.conf", name="grub_conf", alias="grub.conf")
+grub_efi_conf = sf.simple_file("/boot/efi/EFI/redhat/grub.conf", name="grub_efi_conf", alias="grub-efi.conf")
 grub2_cfg = sf.simple_file("/boot/grub2/grub.cfg", name="grub2_cfg", alias="grub2.cfg")
 grub2_efi_cfg = sf.simple_file("boot/efi/EFI/redhat/grub.cfg", name="grub2_efi_cfg", alias="grub2-efi.cfg")
 grub_config_perms = sf.simple_command("/bin/ls -l /boot/grub2/grub.cfg", name="grub_config_perms")  # only RHEL7 and updwards

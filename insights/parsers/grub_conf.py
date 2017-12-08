@@ -52,17 +52,21 @@ Parsers provided by this module are:
 Grub1Config - file ``/boot/grub.conf``
 --------------------------------------
 
+Grub1EFIConfig - file ``/boot/efi/EFI/redhat/grub.conf``
+--------------------------------------------------------
+
 Grub2Config - file ``/boot/grub/grub2.cfg``
 -------------------------------------------
 
-Grub2EFIConfig - file ``boot/efi/EFI/redhat/grub.cfg``
-------------------------------------------------------
+Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
+-------------------------------------------------------
 """
 
 from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict
 from insights.specs import grub2_cfg
 from insights.specs import grub2_efi_cfg
 from insights.specs import grub_conf
+from insights.specs import grub_efi_conf
 
 IOMMU = "intel_iommu=on"
 GRUB_KERNELS = 'grub_kernels'
@@ -263,6 +267,17 @@ class Grub1Config(GrubConfig):
                 return title[idx]
 
         return None
+
+
+@parser(grub_efi_conf)
+class Grub1EFIConfig(Grub1Config):
+    """
+    Parses grub v1 configuration for EFI-based systems
+    Content of grub-efi.conf is the same as grub.conf
+    """
+    def __init__(self, *args, **kwargs):
+        super(Grub1EFIConfig, self).__init__(*args, **kwargs)
+        self._efi = True
 
 
 @parser(grub2_cfg)
