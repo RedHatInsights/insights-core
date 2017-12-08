@@ -128,6 +128,7 @@ static_specs = {
     "glance-cache.conf"         : SimpleFileSpec("etc/glance/glance-cache.conf"),
     "glance-registry.conf"      : SimpleFileSpec("etc/glance/glance-registry.conf"),
     "grub.conf"                 : SimpleFileSpec("boot/grub/grub.conf"),
+    "grub-efi.conf"             : SimpleFileSpec("boot/efi/EFI/redhat/grub.conf"),
     "grub2.cfg"                 : SimpleFileSpec("boot/grub2/grub.cfg"),
     "grub2-efi.cfg"             : SimpleFileSpec("boot/efi/EFI/redhat/grub.cfg"),
     "grub_config_perms"         : CommandSpec("/bin/ls -l /boot/grub2/grub.cfg"),  # only RHEL7 and updwards

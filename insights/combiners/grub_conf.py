@@ -78,10 +78,10 @@ Examples:
 
 from .. import defaults
 from insights.core.plugins import combiner
-from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
+from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig
 
 
-@combiner(requires=[[Grub1Config, Grub2Config, Grub2EFIConfig]])
+@combiner(requires=[[Grub1Config, Grub2Config, Grub2EFIConfig, Grub1EFIConfig]])
 class GrubConf(object):
     """Process Grub configuration v1 or v2 based on which type is passed in
 
@@ -102,6 +102,8 @@ class GrubConf(object):
         # get grub configuration
         if Grub1Config in shared:
             self.grub = shared.get(Grub1Config)
+        elif Grub1EFIConfig in shared:
+            self.grub = shared.get(Grub1EFIConfig)
         elif Grub2Config in shared:
             self.grub = shared.get(Grub2Config)
         elif Grub2EFIConfig in shared:
