@@ -78,10 +78,10 @@ Examples:
 
 from .. import defaults
 from insights.core.plugins import combiner
-from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
+from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig
 
 
-@combiner([Grub1Config, Grub2Config, Grub2EFIConfig])
+@combiner([Grub1Config, Grub2Config, Grub2EFIConfig, Grub1EFIConfig])
 class GrubConf(object):
     """Process Grub configuration v1 or v2 based on which type is passed in
 
@@ -95,12 +95,12 @@ class GrubConf(object):
 
     """
 
-    def __init__(self, grub1, grub2, grub2_efi):
+    def __init__(self, grub1, grub2, grub2_efi, grub1_efi):
 
         self.version = self.is_efi = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
         # get grub configuration
-        self.grub = grub1 or grub2 or grub2_efi
+        self.grub = grub1 or grub2 or grub2_efi or grub1_efi
 
         if self.grub:
             self.version = self.grub._version
