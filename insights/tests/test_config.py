@@ -2,7 +2,7 @@ import pytest
 import shlex
 
 from insights.config import InsightsDataSpecConfig, SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, All, First, group_wrap
-from insights.config import DockerHostCommandSpec, SpecPathError
+from insights.config import DockerHostCommandSpec, SpecPathError, SpecSyntaxError
 from insights.util.command import retarget_command_for_mountpoint, sh_join
 from insights.config import HostTarget, DockerImageTarget, DockerContainerTarget
 
@@ -145,6 +145,22 @@ def test_command_get_preferred_path(command_spec):
 def test_relative_path_raises_specpatherror():
     with pytest.raises(SpecPathError):
         CommandSpec('ls -la')
+
+
+def test_shellism_raises_specpatherror():
+    with pytest.raises(SpecSyntaxError) as e:
+        assert not CommandSpec('/bin/find /etc -name *.xml | grep Tomcat >/dev/null && echo Foo')
+    assert 'Shell directive && found in command as the start of a word - this is not executed by a shell' in str(e)
+
+
+def test_quoted_shellism_is_ok():
+    spec = CommandSpec("/sbin/lvs -s '|'")
+    assert spec.get_path() == 'lvs_-s'
+
+
+def test_internal_shellism_is_ok():
+    spec = CommandSpec("/sbin/lvs --separator=|")
+    assert spec.get_path() == 'lvs_--separator'
 
 
 @pytest.fixture
