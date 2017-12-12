@@ -3,7 +3,7 @@ import pytest
 import shlex
 
 from insights.config import InsightsDataSpecConfig, SimpleFileSpec, PatternSpec, CommandSpec, format_rpm, All, First, group_wrap
-from insights.config import DockerHostCommandSpec, SpecPathError
+from insights.config import DockerHostCommandSpec, SpecPathError, SpecSyntaxError
 from insights.util.command import retarget_command_for_mountpoint, sh_join
 from insights.config import HostTarget, DockerImageTarget, DockerContainerTarget
 
@@ -51,7 +51,7 @@ class TestSimpleFileSpec(unittest.TestCase):
 class TestAbsolutePathFileSpec(unittest.TestCase):
 
     def test_absolute_path_raises_specpatherror(self):
-        with self.assertRaises(SpecPathError):
+        with self.assertRaisesRegexp(SpecPathError, "SimpleFileSpec path must not start with '/'"):
             self.spec = SimpleFileSpec('/etc/php.ini')
 
 
@@ -133,8 +133,23 @@ class TestCommandSpec(unittest.TestCase):
 class TestRelativePathCommandSpec(unittest.TestCase):
 
     def test_relative_path_raises_specpatherror(self):
-        with self.assertRaises(SpecPathError):
+        with self.assertRaisesRegexp(SpecPathError, "CommandSpec command must start with '/'"):
             self.spec = CommandSpec('ls -la')
+
+
+class TestShellismInCommandSpec(unittest.TestCase):
+
+    def test_shellism_raises_specpatherror(self):
+        with self.assertRaisesRegexp(SpecSyntaxError, r'Shell directive | found in command as the start of a word'):
+            self.spec = CommandSpec('/bin/find /etc -name *.xml | grep Tomcat >/dev/null && echo Foo')
+
+    def test_quoted_shellism_is_ok(self):
+        spec = CommandSpec("/sbin/lvs -s '|'")
+        self.assertTrue(spec.get_path(), 'lvs_-s_...')
+
+    def test_internal_shellism_is_ok(self):
+        spec = CommandSpec("/sbin/lvs --separator=|")
+        self.assertTrue(spec.get_path(), 'lvs_--separator=.')
 
 
 class TestInsightsDataSpecConfig(unittest.TestCase):
