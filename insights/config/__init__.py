@@ -28,6 +28,21 @@ class SpecPathError(Exception):
         self.expression = expression
         self.message = message
 
+    def __str__(self):
+        return u"Error in path '{s.expression}': {s.message}".format(s=self)
+
+
+class SpecSyntaxError(Exception):
+    """
+        Syntactic errors in the spec path, such as use of invalid characters.
+    """
+    def __init__(self, path, message):
+        self.path = path
+        self.message = message
+
+    def __str__(self):
+        return u"Error in path '{s.path}': {s.message}".format(s=self)
+
 
 def get_meta_specs():
     result = {}
@@ -588,6 +603,16 @@ class CommandSpec(InsightsDataSpecBase):
     def __init__(self, command, multi_output=True, large_content=False, **kwargs):
         if command[0] != '/':
             raise SpecPathError(command, "CommandSpec command must start with '/'")
+        for shellism in ('&&', '||', '|', '>', '<'):
+            # The index will always work since we know from the previous test
+            # that index 0 is not one of these shellisms (because it's '/').
+            if shellism in command and command[command.index(shellism) - 1] == ' ':
+                raise SpecSyntaxError(command,
+                    ('Shell directive {s} found in command as the start of a' +
+                    'word - this will not be interpreted correctly').format(
+                        s=shellism
+                    )
+                )
         super(CommandSpec, self).__init__(multi_output=multi_output and len(kwargs) > 0, large_content=large_content)
         self.command = command
         self.path_groups = kwargs
