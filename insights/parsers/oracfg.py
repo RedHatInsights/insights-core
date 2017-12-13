@@ -28,7 +28,6 @@ Examples:
 import re
 from string import whitespace
 from .. import Parser, parser, get_active_lines
-from insights.util import deprecated
 
 # spfiles tend to contain strings of control characters usually bounded by 'C"'
 # and always ending with an ASCII NULL. This regex describes those strings for
@@ -72,9 +71,6 @@ class OracleConfig(Parser):
             string
 
     """
-    def __init__(self, *args, **kwargs):
-        deprecated(OracleConfig, "Use the parsers in the `oracle` module", pending=False)
-        super(OracleConfig, self).__init__(*args, **kwargs)
 
     @property
     def dbname(self):
