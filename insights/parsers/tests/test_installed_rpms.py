@@ -193,28 +193,28 @@ def test_release_compare():
     rpm9 = InstalledRpm.from_package('kernel-3.10.0-327.1.x86_64')
     with pytest.raises(ValueError) as ve:
         rpm4 < rpm6
-    assert "the other does not" in ve.value.message
+    assert "the other does not" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm4 != rpm6
-    assert "the other does not" in ve.value.message
+    assert "the other does not" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm4 == rpm6
-    assert "the other does not" in ve.value.message
+    assert "the other does not" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm4 >= rpm6
-    assert "the other does not" in ve.value.message
+    assert "the other does not" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm4 < rpm8
-    assert "the other does not" in ve.value.message
+    assert "the other does not" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm1 > rpm7
-    assert "differing names" in ve.value.message
+    assert "differing names" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm1 <= rpm7
-    assert "differing names" in ve.value.message
+    assert "differing names" in str(ve)
     with pytest.raises(ValueError) as ve:
         rpm1 != rpm7
-    assert "differing names" in ve.value.message
+    assert "differing names" in str(ve)
 
     assert rpm1 < rpm2
     assert rpm1 != rpm2

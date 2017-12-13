@@ -1,8 +1,9 @@
 import pytest
+import warnings
 from insights.tests import unordered_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
-from insights.util import case_variants
+from insights.util import case_variants, deprecated
 
 
 class t(object):
@@ -141,14 +142,22 @@ def test_case_variants():
     assert case_variants('hosts:') == ['hosts:', 'HOSTS:', 'Hosts:']
 
 
-TABLE1 = ["USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND",
-          "root         1  0.0  0.0 223952  4976 ?        Ss   Sep28   0:04 /usr/lib/systemd/systemd --switched-root --system --deserialize 25",
-          "root         2  0.0  0.0      0     0 ?        S    Sep28   0:00 [kthreadd]"]
+def test_deprecated():
+    def normal_fn():
+        return 1
 
-TABLE2 = ["SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE",
-          "HA2|  16|       D16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe",
-          "HA2|  22|       D22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe"]
+    def deprecated_fn():
+        deprecated(deprecated_fn, "really don't use this")
+        return 3
 
-TABLE3 = ["THIS | IS | A | HEADER",
-          "this ^ is ^ some ^ content",
-          "This ^ is ^ more ^ content"]
+    assert normal_fn() == 1
+
+    # For all remaining tests, cause the warnings to always be caught
+    warnings.simplefilter('always')
+
+    with warnings.catch_warnings(record=True) as w:
+        assert deprecated_fn() == 3
+
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert "really don't use this" in str(w[0].message)
