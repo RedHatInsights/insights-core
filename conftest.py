@@ -1,4 +1,6 @@
 import logging
+import warnings
+warnings.simplefilter('always', DeprecationWarning)
 
 
 def pytest_addoption(parser):
