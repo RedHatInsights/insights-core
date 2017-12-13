@@ -5,9 +5,6 @@ import pytest
 
 import warnings
 
-# TODO: Remove when deprecated parsers are removed.
-warnings.simplefilter('always')
-
 
 SERVICE_RUNNING = 'SERVICE_RUNNING'
 SERVICES_RUNNING = 'SERVICES_RUNNING'
@@ -192,8 +189,8 @@ def test_ps_auxcww():
 
         # Check deprecation
         assert len(w) == 2
-        assert issubclass(w[0].category, PendingDeprecationWarning)
-        assert issubclass(w[1].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert issubclass(w[1].category, DeprecationWarning)
 
 
 def test_ps_aux():
@@ -212,8 +209,8 @@ def test_ps_aux():
 
         # Check deprecation
         assert len(w) == 2
-        assert issubclass(w[0].category, PendingDeprecationWarning)
-        assert issubclass(w[1].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert issubclass(w[1].category, DeprecationWarning)
 
 
 def test_ps_auxwww():
@@ -227,7 +224,7 @@ def test_ps_auxwww():
 
         # Check deprecation
         assert len(w) == 1
-        assert issubclass(w[0].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
 
 
 def test_running_procs():
@@ -240,7 +237,7 @@ def test_running_procs():
 
         # Check deprecation
         assert len(w) == 1
-        assert issubclass(w[0].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
 
 
 def test_cpu_usage():
@@ -249,7 +246,7 @@ def test_cpu_usage():
 
         # Check deprecation
         assert len(w) == 1
-        assert issubclass(w[0].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
 
 
 def test_ps_axcwwo():
@@ -262,7 +259,7 @@ def test_ps_axcwwo():
 
         # Check deprecation
         assert len(w) == 1
-        assert issubclass(w[0].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
 
 
 def test_ps_aux_bad():
@@ -273,7 +270,7 @@ def test_ps_aux_bad():
 
         # Check deprecation
         assert len(w) == 1
-        assert issubclass(w[0].category, PendingDeprecationWarning)
+        assert issubclass(w[0].category, DeprecationWarning)
 
 
 def test_ps_axcwwo_exception():
