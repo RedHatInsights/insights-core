@@ -62,7 +62,7 @@ def logging_level(logger, level):
     return _f
 
 
-def deprecated(func, solution, pending=True):
+def deprecated(func, solution):
     """
     Mark a parser or combiner as deprecated, and give a message of how to fix
     this.  This will emit a warning in the logs when the function is used.
@@ -75,11 +75,6 @@ def deprecated(func, solution, pending=True):
             function that replaces the thing being deprecated.  For example,
             "use the `fnord()` function" or "use the `search()` method with
             the parameter `name='(value)'`".
-        pending (bool): if set to `True` (default), the generated warning is a
-            PendingDeprecationWarning.  This will generate a warning when used
-            but will allow tests to continue.  When explicitly set to `False`,
-            a DeprecationWarning is generated and this is treated as a fatal
-            error that will cause testing to stop.
     """
 
     def get_name_line(src):
@@ -94,7 +89,7 @@ def deprecated(func, solution, pending=True):
         c=name, p=path, l=line_no, s=solution
     )
 
-    warnings.warn(the_msg, PendingDeprecationWarning if pending else DeprecationWarning)
+    warnings.warn(the_msg, DeprecationWarning)
 
 
 def make_iter(item):

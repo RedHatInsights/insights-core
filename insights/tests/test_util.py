@@ -140,12 +140,8 @@ def test_deprecated():
     def normal_fn():
         return 1
 
-    def pend_deprec_fn():
-        deprecated(pend_deprec_fn, "don't use this")
-        return 2
-
     def deprecated_fn():
-        deprecated(deprecated_fn, "really don't use this", pending=False)
+        deprecated(deprecated_fn, "really don't use this")
         return 3
 
     assert normal_fn() == 1
@@ -154,12 +150,8 @@ def test_deprecated():
     warnings.simplefilter('always')
 
     with warnings.catch_warnings(record=True) as w:
-        assert pend_deprec_fn() == 2
-
         assert deprecated_fn() == 3
 
-        assert len(w) == 2
-        assert issubclass(w[0].category, PendingDeprecationWarning)
-        assert issubclass(w[1].category, DeprecationWarning)
-        assert "don't use this" in str(w[0].message)
-        assert "really don't use this" in str(w[1].message)
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert "really don't use this" in str(w[0].message)

@@ -1,6 +1,5 @@
 import warnings
-warnings.simplefilter('error', DeprecationWarning)
-warnings.simplefilter('always', PendingDeprecationWarning)
+warnings.simplefilter('always', DeprecationWarning)
 
 
 def pytest_addoption(parser):
