@@ -12,6 +12,7 @@ Examples:
 """
 
 from .. import parser
+from insights.util import deprecated
 
 
 @parser('cpuinfo_max_freq')
@@ -20,4 +21,5 @@ def cpu_max_freq(context):
     Returns an integer representing the maximum frequency in KHZ
     - e.g.: ``3200000``
     """
+    deprecated(cpu_max_freq, "Use the 'cpu MHz' data from the CpuInfo parser in the cpuinfo parser module")
     return int(context.content[0].strip())
