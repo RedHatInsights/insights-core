@@ -333,10 +333,12 @@ postgresql_log = sf.first_of([sf.glob_file("/var/lib/pgsql/data/pg_log/postgresq
 md5chk_files = sf.simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null", name="md5chk_files")
 prelink_orig_md5 = None
 prev_uploader_log = sf.simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1", name="prev_uploader_log")
-ps_aux = sf.simple_command("/bin/ps aux", name="ps_aux")
-ps_auxcww = sf.simple_command("/bin/ps auxcww", name="ps_auxcww")
-ps_auxwww = sf.simple_file("sos_commands/process/ps_auxwww", name="ps_auxwww", context=HostArchiveContext)
-ps_axcwwo = sf.simple_command("/bin/ps axcwwo ucomm,%cpu,lstart", name="ps_axcwwo")
+ps_auxww = sf.first_of([
+    sf.simple_command("/bin/ps auxww", name="ps_auxww"),
+    sf.simple_file('sos_commands/process/ps_aux', alias='ps_aux', context=HostArchiveContext),
+    sf.simple_file('sos_commands/process/ps_auxwww', alias='ps_auxwww', context=HostArchiveContext),
+    sf.simple_file('sos_commands/process/ps_auxcww', alias='ps_auxcww', context=HostArchiveContext),
+])
 puppet_ssl_cert_ca_pem = None
 pvs = sf.simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"', name="pvs")
 pvs_noheadings = sf.simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"", name="pvs_noheadings")
