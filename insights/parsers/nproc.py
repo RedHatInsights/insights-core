@@ -33,6 +33,7 @@ Examples:
     ]
 """
 from .. import Parser, parser, get_active_lines
+from insights.util import deprecated
 
 
 def _parse_content(content):
@@ -46,6 +47,10 @@ def _parse_content(content):
 @parser("limits.conf")
 class LimitsConf(Parser):
     """Parse ``limits.conf`` file contents."""
+    def __init__(self, *args, **kwargs):
+        deprecated(LimitsConf, "Use the LimitsConf parser in the `limits_conf` module")
+        super(LimitsConf, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.data = _parse_content(content)
 
@@ -53,5 +58,9 @@ class LimitsConf(Parser):
 @parser("nproc.conf")
 class NprocConf(Parser):
     """Parse ``*-nproc.conf`` file contents."""
+    def __init__(self, *args, **kwargs):
+        deprecated(NprocConf, "Use the LimitsConf parser in the `limits_conf` module")
+        super(NprocConf, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.data = _parse_content(content)
