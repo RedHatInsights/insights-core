@@ -3,6 +3,10 @@ import unittest
 from insights.parsers import docker_sysconfig
 from insights.tests import context_wrap
 
+import warnings
+
+warnings.simplefilter('always', DeprecationWarning)
+
 docker_sysconfig1 = """
 OPTIONS= #'--selinux-enabled --log-opt max-size=10m --log-opt max-file=7'
 
@@ -93,43 +97,56 @@ ADD_REGISTRY='--add-registry registry.access.redhat.com'
 
 class Sysconfigdockercheck(unittest.TestCase):
     def test_OPTION(self):
-        result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig1))
-        expected = {"OPTIONS": "",
-                    "ADD_REGISTRY": "--add-registry registry.access.redhat.com",
-                    "DOCKER_CERT_PATH": "/etc/docker"}
-        self.assertEqual(expected, result)
+        with warnings.catch_warnings(record=True) as w:
+            result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig1))
+            expected = {"OPTIONS": "",
+                        "ADD_REGISTRY": "--add-registry registry.access.redhat.com",
+                        "DOCKER_CERT_PATH": "/etc/docker"}
+            self.assertEqual(expected, result)
 
-        result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig2))
-        expected = {"OPTIONS": "--selinux-enabled --log-opt max-size=10m --log-opt max-file=7",
-                    "ADD_REGISTRY": "--add-registry registry.access.redhat.com",
-                    "DOCKER_CERT_PATH": "/etc/docker"}
-        self.assertEqual(expected, result)
+            result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig2))
+            expected = {"OPTIONS": "--selinux-enabled --log-opt max-size=10m --log-opt max-file=7",
+                        "ADD_REGISTRY": "--add-registry registry.access.redhat.com",
+                        "DOCKER_CERT_PATH": "/etc/docker"}
+            self.assertEqual(expected, result)
 
-        result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig3))
-        expected = {"OPTIONS": "--selinux-enabled --log-opt max-size=10m --log-opt max-file=7",
-                    "ADD_REGISTRY": "--add-registry registry.access.redhat.com",
-                    "DOCKER_CERT_PATH": ""}
-        self.assertEqual(expected, result)
+            result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig3))
+            expected = {"OPTIONS": "--selinux-enabled --log-opt max-size=10m --log-opt max-file=7",
+                        "ADD_REGISTRY": "--add-registry registry.access.redhat.com",
+                        "DOCKER_CERT_PATH": ""}
+            self.assertEqual(expected, result)
 
-        result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig4))
-        expected = {"OPTIONS": "--selinux-enabled --log-opt max-size=10m --log-opt max-file=7",
-                    "ADD_REGISTRY": "--add-registry registry.access.redhat.com"}
-        self.assertEqual(expected, result)
+            result = docker_sysconfig.docker_sysconfig_parser(context_wrap(docker_sysconfig4))
+            expected = {"OPTIONS": "--selinux-enabled --log-opt max-size=10m --log-opt max-file=7",
+                        "ADD_REGISTRY": "--add-registry registry.access.redhat.com"}
+            self.assertEqual(expected, result)
+
+            # Check deprecations
+            assert len(w) == 4
+            assert issubclass(w[0].category, DeprecationWarning)
+            assert issubclass(w[1].category, DeprecationWarning)
+            assert issubclass(w[2].category, DeprecationWarning)
+            assert issubclass(w[3].category, DeprecationWarning)
 
     def test_standard_content(self):
-        context = context_wrap(DOCKER_SYSCONFIG_STD, 'etc/sysconfig/docker')
-        sysconf = docker_sysconfig.DockerSysconfig(context)
+        with warnings.catch_warnings(record=True) as w:
+            context = context_wrap(DOCKER_SYSCONFIG_STD, 'etc/sysconfig/docker')
+            sysconf = docker_sysconfig.DockerSysconfig(context)
 
-        self.assertEqual(
-            sorted(sysconf.data.keys()),
-            sorted(['OPTIONS', 'DOCKER_CERT_PATH', 'ADD_REGISTRY'])
-        )
-        self.assertTrue('OPTIONS' in sysconf.data)
-        self.assertEqual(sysconf.data['OPTIONS'], '--selinux-enabled')
-        self.assertEqual(sysconf.options, '--selinux-enabled')
-        self.assertTrue('DOCKER_CERT_PATH' in sysconf.data)
-        self.assertEqual(sysconf.data['DOCKER_CERT_PATH'], '/etc/docker')
-        self.assertTrue('ADD_REGISTRY' in sysconf.data)
-        self.assertEqual(sysconf.data['ADD_REGISTRY'], '--add-registry registry.access.redhat.com')
+            self.assertEqual(
+                sorted(sysconf.data.keys()),
+                sorted(['OPTIONS', 'DOCKER_CERT_PATH', 'ADD_REGISTRY'])
+            )
+            self.assertTrue('OPTIONS' in sysconf.data)
+            self.assertEqual(sysconf.data['OPTIONS'], '--selinux-enabled')
+            self.assertEqual(sysconf.options, '--selinux-enabled')
+            self.assertTrue('DOCKER_CERT_PATH' in sysconf.data)
+            self.assertEqual(sysconf.data['DOCKER_CERT_PATH'], '/etc/docker')
+            self.assertTrue('ADD_REGISTRY' in sysconf.data)
+            self.assertEqual(sysconf.data['ADD_REGISTRY'], '--add-registry registry.access.redhat.com')
 
-        self.assertEqual(sysconf.unparsed_lines, [])
+            self.assertEqual(sysconf.unparsed_lines, [])
+
+            # Check deprecations
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)

@@ -61,7 +61,7 @@ def get_limits(context):
             "item": item,
             "value": value
         }
-    deprecated(get_limits, "Use the 'LimitsConf' parser in this module", pending=False)
+    deprecated(get_limits, "Use the 'LimitsConf' parser in this module")
 
     import os
     result = {}

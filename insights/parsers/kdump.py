@@ -21,6 +21,7 @@ KexecCrashSize - file ``/sys/kernel/kexec_crash_size``
 import re
 from urlparse import urlparse
 from .. import Parser, parser, SysconfigOptions
+from insights.util import deprecated
 
 
 @parser("kdump.conf")
@@ -285,6 +286,9 @@ class SysconfigKdump(SysconfigOptions):
     These are set to the value of the named variable in the kdump sysconfig
     file, or '' if not found.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(SysconfigKdump, "Use the `KdumpSysconfig` parser in the `sysconfig` module")
+        super(SysconfigKdump, self).__init__(*args, **kwargs)
 
     KDUMP_KEYS = [
         'KDUMP_COMMANDLINE',
