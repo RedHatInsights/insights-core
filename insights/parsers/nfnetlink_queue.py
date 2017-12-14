@@ -1,3 +1,52 @@
+"""
+NfnetLinkQueue - file ``/proc/net/netfilter/nfnetlink_queue``
+=============================================================
+
+Reads the ``/proc/net/netfilter/nfnetlink_queue`` file and creates a list of
+dictionaries, one dictionary per row in the file.
+
+The keys of the dictionary are (see
+https://home.regit.org/netfilter-en/using-nfqueue-and-libnetfilter_queue/):
+
+- ``queue_number``
+- ``peer_portid``: good chance it is process ID of software listening to
+  the queue
+- ``queue_total``: current number of packets waiting in the queue
+- ``copy_mode``: 0 and 1 only message only provide meta data. If 2, the
+  message provides a part of packet of size copy range.
+- ``copy_range``: length of packet data to put in message
+- ``queue_dropped``: number of packets dropped because queue was full
+- ``user_dropped``: number of packets dropped because netlink message
+  could not be sent to userspace. If this counter is not zero, try
+  to increase netlink buffer size. On the application side, you will
+  see gap in packet id if netlink message are lost.
+- ``id_sequence``: packet id of last packet
+- The last field is always '1' and is ignored.
+
+Example Input::
+
+    0  -4423     0 2 65535     0     0       22  1
+    1  -4424     0 2 65535     0     0       27  1
+
+Examples:
+
+    >>> # Set up of the environment - ignore this bit:
+    >>> nfnetlink_queue_data = '''
+    ... 0  -4423     0 2 65535     0     0       22  1
+    ... 1  -4424     0 2 65535     0     0       27  1
+    ... '''
+    >>> from insights.tests import context_wrap
+    >>> from insights.parsers.nfnetlink_queue import NfnetLinkQueue
+    >>> shared = {NfnetLinkQueue: NfnetLinkQueue(context_wrap(nfnetlink_queue_data))}
+
+    >>> # Usual usage in a rule:
+    >>> nf = shared[NfnetLinkQueue]
+    >>> 'copy_mode' in nf.data[0]
+    True
+    >>> nf.data[0]['copy_mode']  # Note: values as integers
+    2
+
+"""
 from .. import Parser, parser
 
 
@@ -5,48 +54,6 @@ from .. import Parser, parser
 class NfnetLinkQueue(Parser):
     """Reads the ``/proc/net/netfilter/nfnetlink_queue`` file and
     creates a list of dictionaries, one dictionary per row in the file.
-
-    The keys of the dictionary are (see
-    https://home.regit.org/netfilter-en/using-nfqueue-and-libnetfilter_queue/):
-    - queue_number
-    - peer_portid: good chance it is process ID of software listening to
-      the queue
-    - queue_total: current number of packets waiting in the queue
-    - copy_mode: 0 and 1 only message only provide meta data. If 2
-      message provide a part of packet of size copy range.
-    - copy_range: length of packet data to put in message
-    - queue_dropped: number of packets dropped because queue was full
-    - user_dropped: number of packets dropped because netlink message
-      could not be sent to userspace. If this counter is not zero, try
-      to increase netlink buffer size. On the application side, you will
-      see gap in packet id if netlink message are lost.
-    - id_sequence: packet id of last packet
-
-    Example Input:
-
-        0  -4423     0 2 65535     0     0       22  1
-        1  -4424     0 2 65535     0     0       27  1
-
-    Resulting Data Structure
-
-       [{'queue_number': 0,
-         'peer_portid': '-4423',
-         'queue_total': 0,
-         'copy_mode': 2,
-         'copy_range': 65535,
-         'queue_dropped': 0,
-         'user_dropped': 0,
-         'id_sequence': 22},
-        {'queue_number': 1,
-         'peer_portid': '-4424',
-         'queue_total': 0,
-         'copy_mode': 2,
-         'copy_range': 65535,
-         'queue_dropped': 0,
-         'user_dropped': 0,
-         'id_sequence': 27}
-       ]
-
     """
 
     def parse_content(self, content):
