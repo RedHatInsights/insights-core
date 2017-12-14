@@ -1,7 +1,13 @@
 import pytest
 
-from insights.parsers.nfnetlink_queue import NfnetLinkQueue
+from insights.parsers import nfnetlink_queue
 from insights.tests import context_wrap
+import doctest
+
+
+def test_nfnetlink_doc_examples():
+    failed, total = doctest.testmod(nfnetlink_queue)
+    assert failed == 0
 
 
 NFNETLINK_QUEUE = """
@@ -33,7 +39,7 @@ CORRUPT_NFNETLINK_QUEUE_2 = """
 
 
 def test_parse_content():
-    nfnet_link_queue = NfnetLinkQueue(context_wrap(NFNETLINK_QUEUE))
+    nfnet_link_queue = nfnetlink_queue.NfnetLinkQueue(context_wrap(NFNETLINK_QUEUE))
     row = nfnet_link_queue.data[0]
     assert row["queue_number"] == 0
     assert row["peer_portid"] == -4423
@@ -57,9 +63,9 @@ def test_parse_content():
 
 def test_missing_columns():
     with pytest.raises(AssertionError):
-        NfnetLinkQueue(context_wrap(CORRUPT_NFNETLINK_QUEUE_1))
+        nfnetlink_queue.NfnetLinkQueue(context_wrap(CORRUPT_NFNETLINK_QUEUE_1))
 
 
 def test_wrong_type():
     with pytest.raises(ValueError):
-        NfnetLinkQueue(context_wrap(CORRUPT_NFNETLINK_QUEUE_2))
+        nfnetlink_queue.NfnetLinkQueue(context_wrap(CORRUPT_NFNETLINK_QUEUE_2))
