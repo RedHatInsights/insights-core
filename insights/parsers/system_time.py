@@ -89,7 +89,7 @@ class ChronyConf(NTPConfParser):
 
 
 @parser(ntp_conf)
-class NTP_conf(NTPConfParser):
+class NTPConf(NTPConfParser):
     """
     A parser for analyzing the ntpd service config file ``/etc/ntp.conf``
 

@@ -31,9 +31,9 @@ NTPDService - file ``/etc/sysconfig/ntpd``
    :members:
    :show-inheritance:
 
-NTP_conf - file ``/etc/ntpd.conf``
-----------------------------------
-.. autoclass:: insights.parsers.system_time.NTP_conf
+NTPConf - file ``/etc/ntpd.conf``
+---------------------------------
+.. autoclass:: insights.parsers.system_time.NTPConf
    :members:
    :show-inheritance:
 
