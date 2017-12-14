@@ -226,7 +226,7 @@ def test_ntptime_status():
 
 
 def test_standard_ntp_conf():
-    ntp_obj = system_time.NTP_conf(context_wrap(STANDARD_NTP_CONF))
+    ntp_obj = system_time.NTPConf(context_wrap(STANDARD_NTP_CONF))
     assert ntp_obj
     assert hasattr(ntp_obj, 'data')
 
@@ -266,7 +266,7 @@ def test_standard_ntp_conf():
 
 
 def test_zero_hosts_ntp_conf():
-    ntp_obj = system_time.NTP_conf(context_wrap(ZERO_HOSTS_NTP_CONF))
+    ntp_obj = system_time.NTPConf(context_wrap(ZERO_HOSTS_NTP_CONF))
     assert ntp_obj
     assert hasattr(ntp_obj, 'data')
     assert ntp_obj.data == {
