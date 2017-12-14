@@ -2,6 +2,10 @@ import unittest
 from insights.parsers import kdump
 from insights.tests import context_wrap
 
+import warnings
+
+warnings.simplefilter('always', DeprecationWarning)
+
 KDUMP_WITH_NORMAL_COMMENTS = """
 # this is a comment
 
@@ -153,27 +157,33 @@ KDUMP_IMG="vmlinuz"
 
 
 def test_sysconfig_kdump():
-    sc_kdump = kdump.SysconfigKdump(context_wrap(SYSCONFIG_KDUMP_ALL))
-    assert sc_kdump is not None
-    assert sc_kdump.KDUMP_KERNELVER == ""
-    assert sc_kdump.KDUMP_COMMANDLINE == ""
-    assert sc_kdump.KDUMP_COMMANDLINE_REMOVE == "hugepages hugepagesz slub_debug quiet"
-    assert sc_kdump.KDUMP_COMMANDLINE_APPEND == "irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never"
-    assert sc_kdump.KEXEC_ARGS == "--elf32-core-headers"
-    assert sc_kdump.KDUMP_IMG == "vmlinuz"
-    assert sc_kdump.KDUMP_IMG_EXT == ""
-    assert sc_kdump.data.get("KDUMP_IMG") == "vmlinuz"
+    with warnings.catch_warnings(record=True) as w:
+        sc_kdump = kdump.SysconfigKdump(context_wrap(SYSCONFIG_KDUMP_ALL))
+        assert sc_kdump is not None
+        assert sc_kdump.KDUMP_KERNELVER == ""
+        assert sc_kdump.KDUMP_COMMANDLINE == ""
+        assert sc_kdump.KDUMP_COMMANDLINE_REMOVE == "hugepages hugepagesz slub_debug quiet"
+        assert sc_kdump.KDUMP_COMMANDLINE_APPEND == "irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never"
+        assert sc_kdump.KEXEC_ARGS == "--elf32-core-headers"
+        assert sc_kdump.KDUMP_IMG == "vmlinuz"
+        assert sc_kdump.KDUMP_IMG_EXT == ""
+        assert sc_kdump.data.get("KDUMP_IMG") == "vmlinuz"
 
-    sc_kdump = kdump.SysconfigKdump(context_wrap(SYSCONFIG_KDUMP_SOME))
-    assert sc_kdump is not None
-    assert sc_kdump.KDUMP_KERNELVER == ""
-    assert sc_kdump.KDUMP_COMMANDLINE == ""
-    assert sc_kdump.KDUMP_COMMANDLINE_REMOVE == ""
-    assert sc_kdump.KDUMP_COMMANDLINE_APPEND == "irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never"
-    assert sc_kdump.KEXEC_ARGS == ""
-    assert sc_kdump.KDUMP_IMG == "vmlinuz"
-    assert sc_kdump.KDUMP_IMG_EXT == ""
-    assert sc_kdump.data.get("KDUMP_IMG") == "vmlinuz"
+        sc_kdump = kdump.SysconfigKdump(context_wrap(SYSCONFIG_KDUMP_SOME))
+        assert sc_kdump is not None
+        assert sc_kdump.KDUMP_KERNELVER == ""
+        assert sc_kdump.KDUMP_COMMANDLINE == ""
+        assert sc_kdump.KDUMP_COMMANDLINE_REMOVE == ""
+        assert sc_kdump.KDUMP_COMMANDLINE_APPEND == "irqpoll nr_cpus=1 reset_devices cgroup_disable=memory mce=off numa=off udev.children-max=2 panic=10 rootflags=nofail acpi_no_memhotplug transparent_hugepage=never"
+        assert sc_kdump.KEXEC_ARGS == ""
+        assert sc_kdump.KDUMP_IMG == "vmlinuz"
+        assert sc_kdump.KDUMP_IMG_EXT == ""
+        assert sc_kdump.data.get("KDUMP_IMG") == "vmlinuz"
+
+        # Check deprecations
+        assert len(w) == 2
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert issubclass(w[1].category, DeprecationWarning)
 
 
 KEXEC_CRASH_SIZE_1 = "134217728"

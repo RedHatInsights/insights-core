@@ -7,6 +7,7 @@ Share parser for parsing file ``/etc/sysconfig/irqbalance``.
 
 from .. import Parser, parser, LegacyItemAccess
 from ..parsers import split_kv_pairs
+from insights.util import deprecated
 
 
 @parser('sysconfig_irqbalance')
@@ -46,5 +47,9 @@ class SysconfigIrqbalance(LegacyItemAccess, Parser):
         False
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(SysconfigIrqbalance, "Use the `IrqbalanceSysconfig` parser in the `sysconfig` module")
+        super(SysconfigIrqbalance, self).__init__(*args, **kwargs)
+
     def parse_content(self, content):
         self.data = split_kv_pairs(content)

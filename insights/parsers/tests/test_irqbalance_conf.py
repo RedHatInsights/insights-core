@@ -1,6 +1,10 @@
 from insights.parsers import irqbalance_conf
 from insights.tests import context_wrap
 
+import warnings
+
+warnings.simplefilter('always', DeprecationWarning)
+
 IRQBALANCE_SYSCONF_TEST = """
 # irqbalance is a daemon process that distributes interrupts across
 # CPUS on SMP systems. The default is to rebalance once every 10
@@ -32,8 +36,13 @@ IRQBALANCE_ARGS="-d"
 
 
 def test_irqbalance_conf():
-    ret = irqbalance_conf.SysconfigIrqbalance(context_wrap(IRQBALANCE_SYSCONF_TEST))
-    assert ret['IRQBALANCE_BANNED_CPUS'] == 'f8'
-    assert 'IRQBALANCE_ARGS' in ret
-    assert ret.get('IRQBALANCE_ARGS') == '"-d"'
-    assert 'IRQBALANCE_ONESHOT' not in ret
+    with warnings.catch_warnings(record=True) as w:
+        ret = irqbalance_conf.SysconfigIrqbalance(context_wrap(IRQBALANCE_SYSCONF_TEST))
+        assert ret['IRQBALANCE_BANNED_CPUS'] == 'f8'
+        assert 'IRQBALANCE_ARGS' in ret
+        assert ret.get('IRQBALANCE_ARGS') == '"-d"'
+        assert 'IRQBALANCE_ONESHOT' not in ret
+
+        # Check deprecations
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)

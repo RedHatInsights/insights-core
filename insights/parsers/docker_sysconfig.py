@@ -39,6 +39,7 @@ Examples:
 """
 
 from .. import parser, SysconfigOptions
+from insights.util import deprecated
 
 
 @parser("docker_sysconfig")
@@ -50,7 +51,9 @@ class DockerSysconfig(SysconfigOptions):
 
     Parse the ``/etc/sysconfig/docker`` file.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(DockerSysconfig, "Use the `DockerSysconfig` parser in the `sysconfig` module")
+        super(DockerSysconfig, self).__init__(*args, **kwargs)
 
     @property
     def options(self):
