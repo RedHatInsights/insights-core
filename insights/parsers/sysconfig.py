@@ -30,6 +30,9 @@ NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 ---------------------------------------------------
 
+MongodSysconfig - file ``/etc/sysconfig/mongod`` and ``etc/opt/rh/rh-mongodb26/sysconfig/mongod``
+-------------------------------------------------------------------------------------------------
+
 """
 
 from .. import parser, SysconfigOptions
@@ -250,6 +253,7 @@ class VirtWhoSysconfig(SysconfigOptions):
 
 
 @parser('sysconfig_mongod')
+@parser('sysconfig_rh_mongodb26')
 class MongodSysconfig(SysconfigOptions):
     """
     A parser for analyzing the ``mongod`` service configuration file in
@@ -261,7 +265,7 @@ class MongodSysconfig(SysconfigOptions):
         OPTIONS="--quiet -f /etc/mongod.conf"
 
     Examples:
-        >>> mongod_syscfg = shared[MongodWhoSysconfig]
+        >>> mongod_syscfg = shared[MongodSysconfig]
         >>> mongod_syscfg.get('OPTIONS')
         '--quiet -f /etc/mongod.conf'
         >>> mongod_syscfg.get('NO_SUCH_OPTION')
