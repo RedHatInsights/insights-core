@@ -40,7 +40,7 @@ blacklist {
 
 
 def test_multipath_conf():
-    multipath_conf_info = multipath_conf.multipath(context_wrap(MULTIPATH_CONF_INFO))
+    multipath_conf_info = multipath_conf.MultipathConf(context_wrap(MULTIPATH_CONF_INFO))
     assert multipath_conf_info.get('defaults').get('udev_dir') == '/dev'
     assert multipath_conf_info.get('defaults').get('path_selector') == 'round-robin 0'
     assert multipath_conf_info.get('multipaths')[1].get('alias') == 'red'

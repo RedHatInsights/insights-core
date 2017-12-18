@@ -76,9 +76,3 @@ class DockerInfo(Parser):
                     value = value.strip()
                     value = value if value else None
                     self.data[key.strip()] = value
-
-
-@parser(docker_info)
-def docker_info_parser(context):
-    """Deprecated, use DockerInfo instead."""
-    return DockerInfo(context).data

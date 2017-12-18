@@ -5,7 +5,6 @@ MultipathConf - file ``/etc/multipath.conf``
 The main class is the MultipathConf class, which reads the multipath daemon's
 ``/etc/multipath.conf`` configuration file.  This is in a pseudo-JSON format.
 
-The ``multipath`` parser function is deprecated and should not be used.
 """
 
 from insights.contrib import pyparsing as p
@@ -130,9 +129,3 @@ class MultipathConf(Parser, LegacyItemAccess):
 
     def parse_content(self, content):
         self.data = MultipathConf._create_parser().parseString("\n".join(content))[0].asDict()
-
-
-@parser(multipath_conf)
-def multipath(context):
-    # This mapper is deprecated and will be removed in the future.  Do not use.
-    return MultipathConf(context).data
