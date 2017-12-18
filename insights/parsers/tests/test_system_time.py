@@ -136,17 +136,70 @@ ZERO_HOSTS_NTP_CONF = """
 broadcastclient
 """
 
+NTP_TINKER_CONF = """
+driftfile /var/lib/ntp/ntp.drift
+restrict default kod nomodify notrap nopeer noquery
+restrict 127.0.0.1
+server 192.168.17.62 iburst
+tinker step 0.9
+tinker step step
+tinker step 0.4
+"""
+
 
 def test_chrony_conf():
-    result = system_time.ChronyConf(context_wrap(CHRONY_CONF)).data
+    ntp_obj = system_time.ChronyConf(context_wrap(CHRONY_CONF))
+    result = ntp_obj.data
     assert result['server'] == ["0.rhel.pool.ntp.org iburst",
             "1.rhel.pool.ntp.org iburst",
             "2.rhel.pool.ntp.org iburst",
             "3.rhel.pool.ntp.org iburst"]
-    assert result.get('rtcsync') is None
+    # keywords that are present but single word are present but equal None
     assert 'rtcsync' in result
+    assert result.get('rtcsync') is None
     assert result['leapsecmode'] == ['slew']
     assert result['smoothtime'] == ['400 0.001 leaponly']
+
+    # Test get_param method:
+    # - nonexistent keyword
+    assert ntp_obj.get_param('device') == [None]
+    assert ntp_obj.get_param('device', 'embn0') == [None]
+    assert ntp_obj.get_param('device', default='bad') == ['bad']
+    assert ntp_obj.get_param('device', param='embn0', default='bad') == ['bad']
+    assert ntp_obj.get_param('device', 'embn0', 'bad') == ['bad']
+    # - simple keyword with no value - default and param ignored
+    assert ntp_obj.get_param('noclientlog') == [None]
+    assert ntp_obj.get_param('noclientlog', 'true') == [None]
+    assert ntp_obj.get_param('noclientlog', default='yes') == [None]
+    assert ntp_obj.get_param('noclientlog', param='true', default='yes') == [None]
+    assert ntp_obj.get_param('noclientlog', 'true', 'yes') == [None]
+    # - simple keyword with value - default and param ignored
+    assert ntp_obj.get_param('commandkey') == ['1']
+    assert ntp_obj.get_param('commandkey', '0') == ['1']
+    assert ntp_obj.get_param('commandkey', default='2') == ['1']
+    assert ntp_obj.get_param('commandkey', param='0', default='2') == ['1']
+    assert ntp_obj.get_param('commandkey', '0', '2') == ['1']
+
+    # Test get_last method:
+    # - nonexistent keyword
+    assert ntp_obj.get_last('device') is None
+    assert ntp_obj.get_last('device', 'embn0') is None
+    assert ntp_obj.get_last('device', default='bad') == 'bad'
+    assert ntp_obj.get_last('device', param='embn0', default='bad') == 'bad'
+    assert ntp_obj.get_last('device', 'embn0', 'bad') == 'bad'
+    # - simple keyword with no value - default and param ignored
+    assert ntp_obj.get_last('noclientlog') is None
+    assert ntp_obj.get_last('noclientlog', 'true') is None
+    assert ntp_obj.get_last('noclientlog', default='yes') is None  # present, so no default
+    assert ntp_obj.get_last('noclientlog', param='true', default='yes') is None
+    assert ntp_obj.get_last('noclientlog', 'true', 'yes') is None
+    # - simple keyword with value - default and param ignored
+    assert ntp_obj.get_last('commandkey') == '1'
+    assert ntp_obj.get_last('commandkey', '0') == '1'
+    assert ntp_obj.get_last('commandkey', default='2') == '1'
+    assert ntp_obj.get_last('commandkey', param='0', default='2') == '1'
+    assert ntp_obj.get_last('commandkey', '0', '2') == '1'
+    # More testing in ntp_tinker_conf
 
 
 LOCALTIME = "/etc/localtime: timezone data, version 2, 5 gmt time flags, \
@@ -264,6 +317,9 @@ def test_standard_ntp_conf():
     assert ntp_obj.peers == \
         ['ntp1.example.com', 'ntp2.example.com', 'ntp3.example.com']
 
+    # Test get_last with parameter not found
+    assert ntp_obj.get_last('tinker', 'panic') is None
+
 
 def test_zero_hosts_ntp_conf():
     ntp_obj = system_time.NTPConf(context_wrap(ZERO_HOSTS_NTP_CONF))
@@ -276,3 +332,25 @@ def test_zero_hosts_ntp_conf():
     assert ntp_obj.servers == []
     assert hasattr(ntp_obj, 'peers')
     assert ntp_obj.peers == []
+
+
+def test_ntp_get_tinker():
+    ntp_obj = system_time.NTPConf(context_wrap(NTP_TINKER_CONF))
+    assert ntp_obj
+    assert hasattr(ntp_obj, 'data')
+    assert 'tinker' in ntp_obj.data
+    # tinker defined but panic not one of its parameters
+    assert ntp_obj.get_last('tinker', 'panic') is None
+    # tinker step defined
+    assert ntp_obj.get_last('tinker', 'step') == '0.4'
+
+    # - keyword parameter value - param not found
+    assert ntp_obj.get_last('tinker', 'panic') is None
+    assert ntp_obj.get_last('tinker', default='1') == 'step 0.4'  # No param: just find last line
+    assert ntp_obj.get_last('tinker', param='panic', default='1') == '1'
+    assert ntp_obj.get_last('tinker', 'panic', '1') == '1'
+
+    # - keyword parameter value - param found
+    assert ntp_obj.get_last('tinker', 'step') == '0.4'
+    assert ntp_obj.get_last('tinker', param='step', default='1') == '0.4'  # Value from config
+    assert ntp_obj.get_last('tinker', 'step', '1') == '0.4'
