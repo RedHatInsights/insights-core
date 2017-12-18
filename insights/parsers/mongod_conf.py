@@ -76,6 +76,7 @@ from ..parsers import ParseException, split_kv_pairs
 
 
 @parser('mongod_conf')
+@parser('rh_mongodb26_conf')
 class MongodbConf(Parser, LegacyItemAccess):
     """
     Parse the ``/etc/mongod.conf`` config file in key-value pair or YAML format.
