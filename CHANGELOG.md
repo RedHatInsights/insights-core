@@ -1,5 +1,128 @@
 # Change Log
 
+## [insights-core-1.66.0-177](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.66.0-177) (2017-12-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.65.0-166...insights-core-1.66.0-177)
+
+**Implemented enhancements:**
+
+- De-duplicate `ps` parsers [\#382](https://github.com/RedHatInsights/insights-core/issues/382)
+- DeprecationWarnings are now non-fatal and are the only type of deprecation - for 1.x branch [\#819](https://github.com/RedHatInsights/insights-core/pull/819) ([PaulWay](https://github.com/PaulWay))
+- Adding 'get\_param' and 'get\_last' methods to NTP\_conf for 1.x branch [\#742](https://github.com/RedHatInsights/insights-core/pull/742) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- Parser error in rabbitmq.py [\#786](https://github.com/RedHatInsights/insights-core/issues/786)
+
+**Closed issues:**
+
+- Nova\_log parser has no tests [\#797](https://github.com/RedHatInsights/insights-core/issues/797)
+- ClusterConf should be an XML parser rather than based on LogFileOutput [\#177](https://github.com/RedHatInsights/insights-core/issues/177)
+
+**Merged pull requests:**
+
+- Deprecating OracleConfig parser - redone after \#819 - for 1.x branch [\#823](https://github.com/RedHatInsights/insights-core/pull/823) ([PaulWay](https://github.com/PaulWay))
+- Revert "Marked OracleConfig as deprecated, removed tests" [\#821](https://github.com/RedHatInsights/insights-core/pull/821) ([xiangce](https://github.com/xiangce))
+- Nfnetlink queue documentation for 1.x branch [\#814](https://github.com/RedHatInsights/insights-core/pull/814) ([PaulWay](https://github.com/PaulWay))
+- Change mongod related specs to allow multi files parsing [\#773](https://github.com/RedHatInsights/insights-core/pull/773) ([JoySnow](https://github.com/JoySnow))
+- Deprecating other Sysconfig parsers in favour of those in sysconfig module [\#737](https://github.com/RedHatInsights/insights-core/pull/737) ([PaulWay](https://github.com/PaulWay))
+- Marked LimitsConf and NprocConf as deprecated, use limits\_conf instead [\#734](https://github.com/RedHatInsights/insights-core/pull/734) ([PaulWay](https://github.com/PaulWay))
+- Marked OracleConfig as deprecated, removed tests [\#733](https://github.com/RedHatInsights/insights-core/pull/733) ([PaulWay](https://github.com/PaulWay))
+- Marked cpuinfo\_max\_freq as deprecated, removed tests [\#732](https://github.com/RedHatInsights/insights-core/pull/732) ([PaulWay](https://github.com/PaulWay))
+
+## [insights-core-1.65.0-166](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.65.0-166) (2017-12-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.64.0-154...insights-core-1.65.0-166)
+
+**Implemented enhancements:**
+
+- Make remove.conf smarter [\#801](https://github.com/RedHatInsights/insights-core/issues/801)
+- Ps parsers update for master branch \(\#744\) [\#793](https://github.com/RedHatInsights/insights-core/issues/793)
+- Implement ACLs properly [\#712](https://github.com/RedHatInsights/insights-core/issues/712)
+- Also parse the grub v1 config file for UEFI machine. [\#794](https://github.com/RedHatInsights/insights-core/pull/794) ([lonicerae](https://github.com/lonicerae))
+- No bashisms in command for 1.x branch [\#764](https://github.com/RedHatInsights/insights-core/pull/764) ([PaulWay](https://github.com/PaulWay))
+- Ps parsers update for 1.x branch [\#744](https://github.com/RedHatInsights/insights-core/pull/744) ([PaulWay](https://github.com/PaulWay))
+- Document and tidy the ClusterConf parser for 1.x branch [\#743](https://github.com/RedHatInsights/insights-core/pull/743) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- bug in Pvs parser and Lvm combiner [\#736](https://github.com/RedHatInsights/insights-core/issues/736)
+- Fix bug in Pvs parser for duplicate devices [\#795](https://github.com/RedHatInsights/insights-core/pull/795) ([bfahr](https://github.com/bfahr))
+
+**Closed issues:**
+
+- Also parse the grub v1 config file for UEFI machine. \#794 [\#811](https://github.com/RedHatInsights/insights-core/issues/811)
+- Added new parsers for two options under /sys/kernel/mm/transparent\_hugepage/. \#767 [\#769](https://github.com/RedHatInsights/insights-core/issues/769)
+- Update Insights man pages [\#707](https://github.com/RedHatInsights/insights-core/issues/707)
+
+**Merged pull requests:**
+
+- Parser bond xmit hash policy [\#806](https://github.com/RedHatInsights/insights-core/pull/806) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- WIP: Add combiner HttpdV for RHEL6 for 1.x branch [\#800](https://github.com/RedHatInsights/insights-core/pull/800) ([xiangce](https://github.com/xiangce))
+- Update openshift get to include the command oc get bc [\#776](https://github.com/RedHatInsights/insights-core/pull/776) ([shzhou12](https://github.com/shzhou12))
+- Add parser for swift object-expirer.conf [\#772](https://github.com/RedHatInsights/insights-core/pull/772) ([chenlizhong](https://github.com/chenlizhong))
+- SSH parser has a new method for detecting the "+" syntax [\#753](https://github.com/RedHatInsights/insights-core/pull/753) ([jsvob](https://github.com/jsvob))
+- Deprecated get\_limits function, use LimitsConf class instead [\#735](https://github.com/RedHatInsights/insights-core/pull/735) ([PaulWay](https://github.com/PaulWay))
+
+## [insights-core-1.64.0-154](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.64.0-154) (2017-11-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.3-2...insights-core-1.64.0-154)
+
+**Implemented enhancements:**
+
+- SkipComponent/SkipException Handling and Extension to Combiners [\#720](https://github.com/RedHatInsights/insights-core/issues/720)
+
+**Fixed bugs:**
+
+- Parse Error in `ntp\_sources.py` [\#727](https://github.com/RedHatInsights/insights-core/issues/727)
+- Parser error in `ntp\_sources.py` [\#672](https://github.com/RedHatInsights/insights-core/issues/672)
+- SysconfigKdump parser missing from master branch [\#670](https://github.com/RedHatInsights/insights-core/issues/670)
+- satellite\_version combiner should not return None [\#658](https://github.com/RedHatInsights/insights-core/issues/658)
+- Raise SkipComponent if unable to determine Satellite version [\#751](https://github.com/RedHatInsights/insights-core/pull/751) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- Add parser audit\_log.py to 3.x [\#685](https://github.com/RedHatInsights/insights-core/issues/685)
+
+**Merged pull requests:**
+
+- Modify fc-match to make it only run on RHEL7 [\#768](https://github.com/RedHatInsights/insights-core/pull/768) ([zhangyi733](https://github.com/zhangyi733))
+- Added new parsers for two options under /sys/kernel/mm/transparent\_hugepage/. [\#767](https://github.com/RedHatInsights/insights-core/pull/767) ([jsvob](https://github.com/jsvob))
+- Revert "Modify fc-match command to make it work only on RHEL7" [\#763](https://github.com/RedHatInsights/insights-core/pull/763) ([xiangce](https://github.com/xiangce))
+- Update exception\_model docs to include SkipComponent. [\#762](https://github.com/RedHatInsights/insights-core/pull/762) ([csams](https://github.com/csams))
+- Add parser catalina\_server\_log to parser default catalina log file [\#761](https://github.com/RedHatInsights/insights-core/pull/761) ([zhangyi733](https://github.com/zhangyi733))
+- Ignore new errors in flake8 3.5.0 [\#758](https://github.com/RedHatInsights/insights-core/pull/758) ([bfahr](https://github.com/bfahr))
+- Modify fc-match command to make it work only on RHEL7 [\#757](https://github.com/RedHatInsights/insights-core/pull/757) ([zhangyi733](https://github.com/zhangyi733))
+- Add SkipComponent and correctly ignore it for all component types [\#755](https://github.com/RedHatInsights/insights-core/pull/755) ([csams](https://github.com/csams))
+- Remove --type option from docker inspect specs items [\#749](https://github.com/RedHatInsights/insights-core/pull/749) ([wushiqinlou](https://github.com/wushiqinlou))
+- Fix bug for "NtpqLeap has no attribute 'data'" [\#728](https://github.com/RedHatInsights/insights-core/pull/728) ([xiangce](https://github.com/xiangce))
+
+## [insights-core-3.0.3-2](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.3-2) (2017-11-21)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.63.0-140...insights-core-3.0.3-2)
+
+## [insights-core-1.63.0-140](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.63.0-140) (2017-11-21)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.62.0-129...insights-core-1.63.0-140)
+
+**Implemented enhancements:**
+
+- Completely test ethtool parsers for 1.x branch [\#645](https://github.com/RedHatInsights/insights-core/pull/645) ([PaulWay](https://github.com/PaulWay))
+- LVM: Improved tests and code for near 100% test coverage for 1.x branch [\#639](https://github.com/RedHatInsights/insights-core/pull/639) ([PaulWay](https://github.com/PaulWay))
+- Add 'deprecated' decorator to log use of deprecated parsers [\#361](https://github.com/RedHatInsights/insights-core/pull/361) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- jaylin test [\#719](https://github.com/RedHatInsights/insights-core/issues/719)
+- .cache.json is not updated correctly [\#715](https://github.com/RedHatInsights/insights-core/issues/715)
+- xinetd.conf spec needs to match PatternSpec with xinetd.d for 1.x branch [\#638](https://github.com/RedHatInsights/insights-core/pull/638) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- test [\#718](https://github.com/RedHatInsights/insights-core/issues/718)
+
+**Merged pull requests:**
+
+- Fixed a bug when parsing the status code in ntptime. [\#721](https://github.com/RedHatInsights/insights-core/pull/721) ([lonicerae](https://github.com/lonicerae))
+- changes to tmpfilesd combiner for 1x to work properly [\#716](https://github.com/RedHatInsights/insights-core/pull/716) ([SteveHNH](https://github.com/SteveHNH))
+- Unpack list of parsers in the TomcatVirtualDirContextCombined combiner [\#713](https://github.com/RedHatInsights/insights-core/pull/713) ([skontar](https://github.com/skontar))
+- Keyword search in Netstat parser for 1.x branch [\#625](https://github.com/RedHatInsights/insights-core/pull/625) ([PaulWay](https://github.com/PaulWay))
+
 ## [insights-core-1.62.0-129](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.62.0-129) (2017-11-13)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.61.0-127...insights-core-1.62.0-129)
 
