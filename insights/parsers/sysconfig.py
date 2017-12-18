@@ -81,7 +81,7 @@ class NtpdSysconfig(SysconfigOptions):
 
     Examples:
 
-        >>> service_opts = shared[NTPDService]
+        >>> service_opts = shared[NtpdSysconfig]
         >>> 'OPTIONS' in service_opts
         True
         >>> 'HIDE' in service_opts
@@ -174,7 +174,7 @@ class IrqbalanceSysconfig(SysconfigOptions):
 
     Examples:
 
-        >>> irqb_syscfg = shared[IRQBalanceSysconfig]
+        >>> irqb_syscfg = shared[IrqbalanceSysconfig]
         >>> irqb_syscfg['IRQBALANCE_BANNED_CPUS']
         'f8'
         >>> irqb_syscfg.get('IRQBALANCE_ARGS')  # quotes will be stripped
@@ -269,7 +269,7 @@ class MongodSysconfig(SysconfigOptions):
         OPTIONS="--quiet -f /etc/mongod.conf"
 
     Examples:
-        >>> mongod_syscfg = shared[MongodWhoSysconfig]
+        >>> mongod_syscfg = shared[MongodSysconfig]
         >>> mongod_syscfg.get('OPTIONS')
         '--quiet -f /etc/mongod.conf'
         >>> mongod_syscfg.get('NO_SUCH_OPTION')

@@ -75,14 +75,3 @@ class DumpE2fs(Parser, LegacyItemAccess):
                     dumpe2fs_values_dict[key] = value.strip()
         self.dev_name = self.file_name.split('dumpe2fs_-h_')[-1].replace('.', '/')
         self.data = dumpe2fs_values_dict
-
-
-@parser(dumpe2fs_h)
-def get_dumpe2fs_output(context):
-    """
-    Deprecated, use DumpE2fs instead.
-
-    Also provides the data in the old device: data dictionary format.
-    """
-    obj = DumpE2fs(context)
-    return {obj.dev_name: obj.data}

@@ -72,15 +72,3 @@ class DockerInspectContainer(DockerInspect):
     Parse docker container inspect output using the DockerInspect parser class.
     """
     pass
-
-
-@parser(docker_image_inspect)
-def image(context):
-    """ Deprecated accessor for ``--type=image`` output """
-    return DockerInspectImage(context).data
-
-
-@parser(docker_container_inspect)
-def container(context):
-    """ Deprecated accessor for ``--type=container`` output """
-    return DockerInspectContainer(context).data
