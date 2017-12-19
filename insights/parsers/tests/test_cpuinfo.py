@@ -8,7 +8,6 @@ vendor_id       : GenuineIntel
 cpu family      : 6
 model           : 45
 model name      : Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz
-
 stepping        : 2
 microcode       : 1808
 cpu MHz         : 2900.000
@@ -17,6 +16,7 @@ physical id     : 0
 siblings        : 1
 core id         : 0
 cpu cores       : 1
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp
 address sizes   : 40 bits physical, 48 bits virtual
 
 processor       : 1
@@ -32,6 +32,7 @@ physical id     : 2
 siblings        : 1
 core id         : 0
 cpu cores       : 1
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp
 address sizes   : 40 bits physical, 48 bits virtual
 
 """.strip()
@@ -262,11 +263,14 @@ def test_cpuinfo():
         "model_ids": "45",
         "families": "6",
         "clockspeeds": "2900.000",
-        "cache_sizes": "20480 KB"
+        "cache_sizes": "20480 KB",
+        "flags": "fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch epb intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt xsaveopt xsavec xgetbv1 dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp"
     }
     assert cpu_info.cpu_speed == "2900.000"
     assert cpu_info.cache_size == "20480 KB"
     assert cpu_info.model_number == "45"
+    assert "mmx" in cpu_info.flags
+    assert "avx512f" not in cpu_info.flags
     for i, cpu in enumerate(cpu_info):
         assert cpu['cpus'] == str(i)
 
