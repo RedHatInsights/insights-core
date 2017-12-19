@@ -93,44 +93,32 @@ class NetstatS(LegacyItemAccess, Parser):
             0 receive buffer errors
             0 send buffer errors
 
-    Return a dictionary of nested dictionaries, and each key consist of
-    lower case letters and "_". For example:
+    Examples:
 
-    >>> content =
-    ... {
-    ... "ip": {
-    ...     "forwarded": "0",
-    ...     "fragments_received_ok": "4",
-    ...     "requests_sent_out": "2886201",
-    ...     "total_packets_received": "3405107",
-    ...     "fragments_created": "8",
-    ...     "incoming_packets_delivered": "2900146",
-    ...     "outgoing_packets_dropped": "456",
-    ...     "incoming_packets_discarded": "0"
-    ... }
-    ...  "icmp": {
-    ...     "input_icmp_message_failed.": "0",
-    ...     "icmp_messages_failed": "0",
-    ...     "icmp_output_histogram": {
-    ...         "echo_request": "3",
-    ...         "destination_unreachable": "254",
-    ...         "echo_replies": "4"
-    ...     },
-    ...     "icmp_messages_sent": "261",
-    ...     "icmp_input_histogram": {
-    ...         "echo_requests": "4",
-    ...         "destination_unreachable": "107",
-    ...         "echo_replies": "3"
-    ...     },
-    ...     "icmp_messages_received": "114"
-    ... }
-    ... ......
-    ... }
+        >>> stats = shared[NetstatS]
+        >>> sorted(stats.data.keys())  # Stored by heading, lower case
+        ['icmp', 'icmpmsg', 'ip', 'ipext', 'tcp', 'tcpext', 'udp', 'udplite']
+        >>> 'ip' in stats.data
+        True
+        >>> 'forwarded' in stats.data['ip']   # Then by keyword and value
+        True
+        >>> stats.data['ip']['forwarded']  # Values are strings
+        '0'
+        >>> stats['ip']['forwarded']  # Direct access via LegacyItemAccess
+        '0'
+        >>> stats['ip']['requests_sent_out']  # Spaces converted to underscores
+        '2886201'
+        >>> stats['tcp']['bad_segments_received']  # Dots are removed
+        '0'
+        >>> stats['icmp']['icmp_output_histogram']['destination_unreachable'] # Sub-table
+        '254'
+
     """
     def parse_content(self, content):
         self.data = {}
         session = None
         first_layer = {}
+        layer_key = ''
         second_layer = {}
         has_scd_layer = False
 
@@ -216,7 +204,7 @@ class NetstatS(LegacyItemAccess, Parser):
                 if session.startswith('error'):
                     session = None
 
-        # Assign to the last seesion
+        # Assign to the last session
         self.data[session] = first_layer
 
 
@@ -225,28 +213,31 @@ class NetstatAGN(Parser):
     """
     Parse the ``netstat -agn`` command to get interface multicast infomation.
 
-    INPUT:
-        >>> content= '''
-        ... IPv6/IPv4 Group Memberships
-        ... Interface       RefCnt Group
-        ... --------------- ------ ---------------------
-        ... lo              1      224.0.0.1
-        ... eth0            1      224.0.0.1
-        ... lo              3      ff02::1
-        ... eth0            4      ff02::1
-        ... eth0            1      ff01::1
-        ... '''
+    Sample command output::
 
-    OUTPUT a class named NetstatAGNDevice. The data property like this:
-        >>> content= '''
-        ... [
-        ...    {"interface":"lo", "refcnt":"1", "group":"224.0.0.1"},
-        ...    {"interface":"eth0", "refcnt":"1", "group":"224.0.0.1"},
-        ...    {"interface":"lo", "refcnt":"3", "group":"ff02::1"},
-        ...    {"interface":"eth0", "refcnt":"4", "group":"ff02::1"},
-        ...    {"interface":"eth0", "refcnt":"1", "group":"ff01::1"},
-        ... ]
-        ... '''
+        IPv6/IPv4 Group Memberships
+        Interface       RefCnt Group
+        --------------- ------ ---------------------
+        lo              1      224.0.0.1
+        eth0            1      224.0.0.1
+        lo              3      ff02::1
+        eth0            4      ff02::1
+        eth0            1      ff01::1
+
+    Examples:
+        >>> multicast = shared[NetstatAGN]
+        >>> multicast.data[0]['interface']  # Access by row
+        'lo'
+        >>> multicast.data[0]['refcnt']  # Values are strings
+        '1'
+        >>> multicast.data[0]['group']  # Column names are lower case
+        '224.0.0.1'
+        >>> mc_ifs = multicast.group_by_iface()  # Lists by interface name
+        >>> len(mc_ifs['lo'])
+        2
+        >>> mc_ifs['eth0'][1]['refcnt']  # Listed in order of appearance
+        '4'
+
     """
 
     def group_by_iface(self):
@@ -337,36 +328,65 @@ class Netstat(Parser):
     """
     Parsing the ``/bin/netstat -neopa`` command output.
 
-    For the input content:
-        >>> content = '''
-        ... Active Internet connections (servers and established)
-        ... Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
-        ... tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
-        ... tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
-        ... tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
-        ... tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
-        ... Active UNIX domain sockets (servers and established)
-        ... Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
-        ... unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
-        ... unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
-        ... unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
-        ... '''
+    Example output::
 
-    Output Examples:
-        >>> content = '''
-        ... {
-        ...     'Active Internet connections (servers and established)': {
-        ...         'Proto': ['tcp', 'tcp', 'tcp', 'tcp'],
-        ...         'Recv-Q': ['0', '0', '0', '0'],
-        ...         'PID/Program name': ['1279/qpidd', '2007/mongod', '2387/Passenger Rac', '1272/qdrouterd'],
-        ...     },
-        ...     'Active UNIX domain sockets (servers and established)': {
-        ...         'Proto': ['unix', 'unix', 'unix'],
-        ...         'RefCnt': ['2', '2', '2'],
-        ...         'PID/Program name': ['1/systemd', '1/systemd', '738/NetworkManager'],
-        ...     }
-        ... }
-        ... '''
+        Active Internet connections (servers and established)
+        Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
+        tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
+        tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
+        tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
+        tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+        Active UNIX domain sockets (servers and established)
+        Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+        unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+        unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+        unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+
+    Examples:
+        >>> ns = shared[Netstat]
+        >>> sorted(ns.data.keys())  # Both tables stored in dictionary by name
+        ['Active Internet connections (servers and established)', 'Active UNIX domain sockets (servers and established)']
+        >>> intcons = 'Active Internet connections (servers and established)'
+        >>> sorted(ns.data[intcons].keys())  # Data stored by column:
+        ['Foreign Address', 'Inode', 'Local Address', 'PID/Program name', 'Proto', 'Recv-Q', 'Send-Q', 'State', 'Timer', 'User', '__component_len__']
+        >>> ns.data[intcons]['Local Address'][1]  # ... and then by row
+        '127.0.0.1:27017'
+        >>> ns.datalist[intcons][1]['Local Address']  # Data in a list by row then column
+        '127.0.0.1:27017'
+        >>> ns.lines[intcons][1]  # The raw line
+        'tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)'
+        >>> ns.get_original_line(intcons, 1)  # Alternative way of getting line
+        'tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)'
+        >>> 'qpidd' in ns.running_processes  # All running processes on internet ports
+        True
+        >>> 'systemd' in ns.running_processes  # Does not look at UNIX sockets
+        False
+        >>> pids = ns.listening_pid  # All PIDs listening on internet ports, with info
+        >>> sorted(pids.keys())  # Note: keys are strings
+        ['12387', '1272', '1279', '2007']
+        >>> pids['12387']['addr']
+        '127.0.0.1'
+        >>> pids['12387']['port']
+        '53644'
+        >>> pids['12387']['name']
+        'Passenger Rac'
+        >>> datagrams = ns.search(Type='DGRAM')  # List of data row dictionaries
+        >>> len(datagrams)
+        1
+        >>> datagrams[0]['RefCnt']
+        'unix  2'
+        >>> datagrams[0]['Flags']
+        '[ ]'
+        >>> datagrams[0]['Type']
+        'DGRAM'
+        >>> datagrams[0]['State']
+        ''
+        >>> datagrams[0]['I-Node']
+        '11776'
+        >>> datagrams[0]['PID/Program name']
+        '1/systemd'
+        >>> datagrams[0]['Path']
+        '/run/systemd/shutdownd'
     """
 
     def parse_content(self, content):
@@ -518,34 +538,32 @@ class Netstat_I(Parser):
     Parse the ``netstat -i`` command output  to get interface traffic info
     such as "TX-OK" and "RX-OK".
 
-    INPUT:
-        >>> content = '''
-        ... Kernel Interface table
-        ... Iface       MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
-        ... bond0      1500   0   845265      0      0      0     1753      0      0      0 BMmRU
-        ... bond1      1500   0   842447      0      0      0     4233      0      0      0 BMmRU
-        ... eth0       1500   0   422518      0      0      0     1703      0      0      0 BMsRU
-        ... eth1       1500   0   422747      0      0      0       50      0      0      0 BMsRU
-        ... eth2       1500   0   421192      0      0      0     3674      0      0      0 BMsRU
-        ... eth3       1500   0   421255      0      0      0      559      0      0      0 BMsRU
-        ... lo        65536   0        0      0      0      0        0      0      0      0 LRU
-        ... '''
+    The output of `netstat -i` looks like::
 
-    Group Netstat_I data by Iface name, output like:
-        >>> content = '''
-        ... {
-        ...     "bond0": {
-        ...         "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
-        ...         "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
-        ...         "TX-DPR": "0", "TX-OVR": "0", "Flg": "BMmRU"},
-        ...     },
-        ...     "eth0": {
-        ...         "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
-        ...         "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
-        ...         "TX-DPR": "0", "TX-OVR": "0", "Flg": "BMmRU"}
-        ...     }
-        ... }
-        ... '''
+        Kernel Interface table
+        Iface       MTU Met    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+        bond0      1500   0   845265      0      0      0     1753      0      0      0 BMmRU
+        bond1      1500   0   842447      0      0      0     4233      0      0      0 BMmRU
+        eth0       1500   0   422518      0      0      0     1703      0      0      0 BMsRU
+        eth1       1500   0   422747      0      0      0       50      0      0      0 BMsRU
+        eth2       1500   0   421192      0      0      0     3674      0      0      0 BMsRU
+        eth3       1500   0   421255      0      0      0      559      0      0      0 BMsRU
+        lo        65536   0        0      0      0      0        0      0      0      0 LRU
+
+    Examples:
+        >>> traf = shared[Netstat_I]
+        >>> traf.data[0]['Iface']  # A list of the interfaces and stats.
+        'bond0'
+        >>> 'bond0' in traf.group_by_iface  # A dictionary keyed on interface.
+        True
+        >>> 'enp0s25' in traf.group_by_iface
+        False
+        >>> 'MTU' in traf.group_by_iface['bond0']
+        True
+        >>> traf.group_by_iface['bond0']['MTU']  # as string
+        '1500'
+        >>> traf.group_by_iface['bond0']['RX-OK']
+        '845265'
     """
 
     @property
@@ -572,42 +590,42 @@ class SsTULPN(Parser):
     This class parse the input as a table with header:
         "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
 
-    Sample input data looks like:
-        COMMAND> ss -tulpn
+    Sample input data looks like::
 
         Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
-        udp    UNCONN     0      0         *:55898                 *:*
-        udp    UNCONN     0      0      127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
-        udp    UNCONN     0      0         *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
-        udp    UNCONN     0      0        :::37968                :::12345                    users:(("rpc.statd",pid=29559,fd=10))
-
-    This class parse the input as a table with header:
-        "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
+        udp    UNCONN     0      0                  *:55898                 *:*
+        udp    UNCONN     0      0          127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
+        udp    UNCONN     0      0                  *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
+        udp    UNCONN     0      0                 :::37968                :::12345               users:(("rpc.statd",pid=29559,fd=10))
+        tcp    LISTEN     0      128                *:111                   *:*                   users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))
 
     Examples:
 
         >>> ss = shared[SsTULPN]
-        >>> ss.data[0]
-        {'Netid': 'udp',
-         'Peer-Address-Port': '*:*',
-         'Send-Q': '0',
-         'Local-Address-Port': '*:55898',
-         'State': 'UNCONN',
-         'Recv-Q': '0'}
-        >>> ss.get_service("rpcbind")
-        [{'Netid': 'udp',
-          'Process': 'users:(("rpcbind",pid=953,fd=9))',
-          'Peer-Address-Port': '*:*',
-          'Send-Q': '0', 'Local-Address-Port': '*:111',
-          'State': 'UNCONN',
-          'Recv-Q': '0'}]
-        >>> ss.get_port("55898")
-        [{'Netid': 'udp',
-         'Peer-Address-Port': '*:*',
-         'Send-Q': '0',
-         'Local-Address-Port': '*:55898',
-         'State': 'UNCONN',
-         'Recv-Q': '0'}]
+        >>> sorted(ss.data[1].keys())  # Rows stored by column headings
+        ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
+        >>> ss.data[0]['Local-Address-Port']
+        '*:55898'
+        >>> ss.data[0]['State']
+        'UNCONN'
+        >>> rpcbind = ss.get_service("rpcbind")  # All connections opened by rpcbind
+        >>> len(rpcbind)
+        2
+        >>> rpcbind[0]['State']
+        'UNCONN'
+        >>> rpcbind[1]['State']
+        'LISTEN'
+        >>> rpcbind[0]['Process']
+        'users:(("rpcbind",pid=953,fd=9))'
+        >>> rpcbind[1]['Process']
+        'users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))'
+        >>> using_55898 = ss.get_port("55898")  # Both local and peer port searched
+        >>> len(using_55898)
+        1
+        >>> 'Process' in using_55898  # Not in dictionary if field not found
+        False
+        >>> rpcbind == ss.get_localport('111')  # Only local port or address searched
+        True
     """
 
     def parse_content(self, content):

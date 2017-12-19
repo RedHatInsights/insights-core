@@ -5,6 +5,17 @@ from insights.tests import context_wrap
 from insights.parsers import ethtool, ParseException
 from insights.util import keys_in
 
+import doctest
+
+
+TEST_ETHTOOL_A_DOCS = '''
+Pause parameters for eth0:
+Autonegotiate:  on
+RX:             on
+TX:             on
+RX negotiated:  off
+TX negotiated:  off
+'''
 
 SUCCESS_ETHTOOL_A = """
 Pause parameters for enp0s25:
@@ -97,6 +108,35 @@ def test_ethtool_a_blank_line():
     assert result.ifname == "enp0s25"
 
 
+TEST_ETHTOOL_C_DOCS = '''
+Coalesce parameters for eth0:
+Adaptive RX: off  TX: off
+stats-block-usecs: 0
+sample-interval: 0
+pkt-rate-low: 0
+pkt-rate-high: 0
+
+rx-usecs: 20
+rx-frames: 5
+rx-usecs-irq: 0
+rx-frames-irq: 5
+
+tx-usecs: 72
+tx-frames: 53
+tx-usecs-irq: 0
+tx-frames-irq: 5
+
+rx-usecs-low: 0
+rx-frame-low: 0
+tx-usecs-low: 0
+tx-frame-low: 0
+
+rx-usecs-high: 0
+rx-frame-high: 0
+tx-usecs-high: 0
+tx-frame-high: 0
+'''
+
 TEST_ETHTOOL_C = """
 Coalesce parameters for eth2:
 Adaptive RX: off  TX: off
@@ -163,6 +203,20 @@ def test_get_ethtool_c_short():
         ethtool.CoalescingInfo(context)
     assert 'Command output missing value data' in str(exc)
 
+
+TEST_ETHTOOL_G_DOCS = '''
+Ring parameters for eth0:
+Pre-set maximums:
+RX:             2047
+RX Mini:        0
+RX Jumbo:       0
+TX:             511
+Current hardware settings:
+RX:             200
+RX Mini:        0
+RX Jumbo:       0
+TX:             511
+'''
 
 TEST_ETHTOOL_G = """
 Ring parameters for eth2:
@@ -240,6 +294,18 @@ def test_ethtool_g_2():
     result = ethtool.Ring(context)
     assert result.ifname == "eth2"
 
+
+TEST_ETHTOOL_I_DOCS = '''
+driver: bonding
+version: 3.6.0
+firmware-version: 2
+bus-info:
+supports-statistics: no
+supports-test: no
+supports-eeprom-access: no
+supports-register-dump: no
+supports-priv-flags: no
+'''
 
 TEST_ETHTOOL_I_GOOD = """
 driver: virtio_net
@@ -397,6 +463,23 @@ def test_Features_missing_colon():
     assert features.ifname == 'bond0'
     assert features.data == {}
 
+
+TEST_ETHTOOL_S_DOCS = '''
+NIC statistics:
+     rx_octets: 808488730
+     rx_fragments: 0
+     rx_ucast_packets: 1510830
+     rx_mcast_packets: 678653
+     rx_bcast_packets: 9921
+     rx_fcs_errors: 0
+     rx_align_errors: 0
+     rx_xon_pause_rcvd: 0
+     rx_xoff_pause_rcvd: 0
+     rx_mac_ctrl_rcvd: 0
+     rx_xoff_entered: 0
+     rx_frame_too_long_errors: 0
+     rx_jabbers: 0
+'''
 
 SUCCEED_ETHTOOL_S = '''
 NIC statistics:
@@ -576,6 +659,33 @@ def test_extract_from_path_1():
     assert ifname == "p3p2.2002-fcoe@p3p2"
 
 
+TEST_ETHTOOL_DOCS = '''
+        Settings for eth0:
+                Supported ports: [ TP MII ]
+                Supported link modes:   10baseT/Half 10baseT/Full
+                                       100baseT/Half 100baseT/Full
+                Supported pause frame use: No
+                Supports auto-negotiation: Yes
+                Advertised link modes:  10baseT/Half 10baseT/Full
+                                        100baseT/Half 100baseT/Full
+                Advertised pause frame use: Symmetric
+                Advertised auto-negotiation: Yes
+                Link partner advertised link modes:  10baseT/Half 10baseT/Full
+                                                     100baseT/Half 100baseT/Full
+                Link partner advertised pause frame use: Symmetric
+                Link partner advertised auto-negotiation: No
+                Speed: 100Mb/s
+                Duplex: Full
+                Port: MII
+                PHYAD: 32
+                Transceiver: internal
+                Auto-negotiation: on
+        Cannot get wake-on-lan settings: Operation not permitted
+                Current message level: 0x00000007 (7)
+                                       drv probe link
+        Cannot get link status: Operation not permitted
+'''
+
 ETHTOOL_INFO = """
 Settings for eth1:
     Supported ports: [ TP MII ]
@@ -666,3 +776,29 @@ def test_ethtool_fail():
     with pytest.raises(ParseException) as e:
         ethtool.Ethtool(context_wrap(ETHTOOL_INFO_BAD_3, path="ethtool_eth1"))
     assert 'Ethtool unable to parse content' in str(e.value)
+
+
+# Because tests are done at the module level, we have to put all the shared
+# parser information in the one environment.  Fortunately this is normal.
+def test_ethtool_i_doc_examples():
+    env = {
+        'CoalescingInfo': ethtool.CoalescingInfo,
+        'Driver': ethtool.Driver,
+        'Ethtool': ethtool.Ethtool,
+        'Features': ethtool.Features,
+        'Pause': ethtool.Pause,
+        'Ring': ethtool.Ring,
+        'Statistics': ethtool.Statistics,
+        # Note: All these are in lists because they're present multiple times.
+        'shared': {
+            ethtool.CoalescingInfo: [ethtool.CoalescingInfo(context_wrap(TEST_ETHTOOL_C_DOCS, path='ethtool_-c_eth0'))],
+            ethtool.Driver: [ethtool.Driver(context_wrap(TEST_ETHTOOL_I_DOCS, path='ethtool_-i_bond0'))],
+            ethtool.Ethtool: [ethtool.Ethtool(context_wrap(TEST_ETHTOOL_DOCS, path='ethtool_eth0'))],
+            ethtool.Features: [ethtool.Features(context_wrap(ETHTOOL_K_STANDARD, path='ethtool_-k_bond0'))],
+            ethtool.Pause: [ethtool.Pause(context_wrap(TEST_ETHTOOL_A_DOCS, path='ethtool_-a_eth0'))],
+            ethtool.Ring: [ethtool.Ring(context_wrap(TEST_ETHTOOL_G_DOCS, path='ethtool_-g_eth0'))],
+            ethtool.Statistics: [ethtool.Statistics(context_wrap(TEST_ETHTOOL_S_DOCS, path='ethtool_-S_eth0'))],
+        },
+    }
+    failed, total = doctest.testmod(ethtool, globs=env)
+    assert failed == 0

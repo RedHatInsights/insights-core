@@ -10,9 +10,10 @@ Uname objects can also be compared by their kernel versions.
 
 An example from the following ``uname -a`` output::
 
-    Linux server1.example.com 2.6.32-504.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux"
+    Linux server1.example.com 2.6.32-504.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux
 
 Example:
+
     >>> uname = shared[Uname]
     >>> uname.version
     '2.6.32'
@@ -26,8 +27,8 @@ Example:
 Uname objects can be created from, and compared to, other Uname objects or
 kernel strings::
 
-    >>> early_rhel6 = Uname.from_kernel('2.6.32-71.el6.x86_64')
-    >>> late_rhel6 = Uname.from_release('2.6.32-504')
+    >>> early_rhel6 = Uname.from_kernel('2.6.32-71')
+    >>> late_rhel6 = Uname.from_release('6.7')
     >>> late_rhel6 > early_rhel6
     True
     >>> early_rhel6 > '2.6.32-279.el6.x86_64'
