@@ -241,6 +241,7 @@ ls_disk = sf.simple_command("/bin/ls -lanR /dev/disk/by-*", name="ls_disk")
 ls_etc = sf.simple_command("/bin/ls -lanR /etc", name="ls_etc")
 ls_sys_firmware = sf.simple_command("/bin/ls -lanR /sys/firmware", name="ls_sys_firmware")
 ls_var_log = sf.simple_command("/bin/ls -la /var/log /var/log/audit", name="ls_var_log")
+ls_var_www = sf.simple_command("/bin/ls -la /dev/null /var/www", name="ls_var_www")  # https://github.com/RedHatInsights/insights-core/issues/827
 lvdisplay = sf.simple_command("/sbin/lvdisplay", name="lvdisplay")
 lvm_conf = sf.simple_file("/etc/lvm/lvm.conf", name="lvm_conf", alias="lvm.conf")
 lvs = None  # sf.simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"', name="lvs")
