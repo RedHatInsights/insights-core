@@ -1,7 +1,10 @@
 import pytest
 from insights.parsers.pam import PamConf, PamDConf, PamConfEntry
-from insights.parsers import get_active_lines
+from insights.parsers import get_active_lines, pam
 from insights.tests import context_wrap
+
+import doctest
+
 
 PAM_CONF_DATA = """
 #%PAM-1.0
@@ -46,6 +49,29 @@ def test_pam_conf():
     assert len(vsftpd_acct) == 1
     assert vsftpd_acct[0] == pam_conf[3]
 
+
+PAMD_CONF_SSHD_DOCS = '''
+#%PAM-1.0
+auth       required     pam_sepermit.so
+auth       substack     password-auth
+auth       include      postlogin
+# Used with polkit to reauthorize users in remote sessions
+-auth      optional     pam_reauthorize.so prepare
+account    required     pam_nologin.so
+account    include      password-auth
+password   include      password-auth
+# pam_selinux.so close should be the first session rule
+session    required     pam_selinux.so close
+session    required     pam_loginuid.so
+# pam_selinux.so open should only be followed by sessions to be executed in the user context
+session    required     pam_selinux.so open env_params
+session    required     pam_namespace.so
+session    optional     pam_keyinit.so force revoke
+session    include      password-auth
+session    include      postlogin
+# Used with polkit to reauthorize users in remote sessions
+-session   optional     pam_reauthorize.so prepare
+'''
 
 PAMD_CONF_DATA = """
 #%PAM-1.0
@@ -195,3 +221,19 @@ def test_bad_pamd_subclass():
         pamd_conf = PamDConfNoService(context_wrap(PAMD_CONF_DATA))
         assert pamd_conf is None
     assert 'Service name must be provided for pam.d conf file' in str(exc)
+
+
+# Because tests are done at the module level, we have to put all the shared
+# parser information in the one environment.  Fortunately this is normal.
+def test_pam_doc_examples():
+    env = {
+        'PamConf': PamConf,
+        'PamDConf': PamDConf,
+        'PamConfEntry': PamConfEntry,
+        'shared': {
+            PamConf: PamConf(context_wrap(PAM_CONF_DATA, path='/etc/pam.conf')),
+            PamDConf: PamDConf(context_wrap(PAMD_CONF_SSHD_DOCS, path='/etc/pam.d/sshd')),
+        }
+    }
+    failed, total = doctest.testmod(pam, globs=env)
+    assert failed == 0

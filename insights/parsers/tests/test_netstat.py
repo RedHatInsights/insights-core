@@ -5,6 +5,9 @@ from ...parsers import ParseException
 
 import pytest
 
+import doctest
+
+
 NETSTAT_S = '''
 Ip:
     3405107 total packets received
@@ -253,6 +256,20 @@ def test_get_netstat_agn():
         {"refcnt": "1", "group": "ff01::1"}]
 
 
+NETSTAT_DOCS = '''
+Active Internet connections (servers and established)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
+tcp        0      0 0.0.0.0:5672            0.0.0.0:*               LISTEN      996        19422      1279/qpidd           off (0.00/0/0)
+tcp        0      0 127.0.0.1:27017         0.0.0.0:*               LISTEN      184        20380      2007/mongod          off (0.00/0/0)
+tcp        0      0 127.0.0.1:53644         0.0.0.0:*               LISTEN      995        1154674    12387/Passenger Rac  off (0.00/0/0)
+tcp        0      0 0.0.0.0:5646            0.0.0.0:*               LISTEN      991        20182      1272/qdrouterd       off (0.00/0/0)
+Active UNIX domain sockets (servers and established)
+Proto RefCnt Flags       Type       State         I-Node   PID/Program name     Path
+unix  2      [ ]         DGRAM                    11776    1/systemd            /run/systemd/shutdownd
+unix  2      [ ACC ]     STREAM     LISTENING     535      1/systemd            /run/lvm/lvmetad.socket
+unix  2      [ ACC ]     STREAM     LISTENING     16411    738/NetworkManager   /var/run/NetworkManager/private
+'''
+
 NETSTAT = """
 Active Internet connections (servers and established)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name     Timer
@@ -483,6 +500,15 @@ def test_get_netstat_i():
                 }
 
 
+SS_TULPN_DOCS = '''
+Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
+udp    UNCONN     0      0                  *:55898                 *:*
+udp    UNCONN     0      0          127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
+udp    UNCONN     0      0                  *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
+udp    UNCONN     0      0                 :::37968                :::12345               users:(("rpc.statd",pid=29559,fd=10))
+tcp    LISTEN     0      128                *:111                   *:*                   users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))
+'''
+
 Ss_TULPN = """
 Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
 udp    UNCONN     0      0         *:55898                 *:*
@@ -524,3 +550,24 @@ def test_ss_tulpn_get_port():
     exp02 = [{'Netid': 'udp', 'Process': 'users:(("rpc.statd",pid=29559,fd=10))', 'Peer-Address-Port': ':::12345', 'Send-Q': '0', 'Local-Address-Port': ':::37968', 'State': 'UNCONN', 'Recv-Q': '0'}]
     assert ss.get_peerport("12345") == exp02
     assert ss.get_port("12345") == exp02
+
+
+# Because tests are done at the module level, we have to put all the shared
+# parser information in the one environment.  Fortunately this is normal.
+def test_netstat_doc_examples():
+    env = {
+        'NetstatS': NetstatS,
+        'NetstatAGN': NetstatAGN,
+        'Netstat': Netstat,
+        'Netstat_I': Netstat_I,
+        'SsTULPN': SsTULPN,
+        'shared': {
+            NetstatS: NetstatS(context_wrap(NETSTAT_S)),
+            NetstatAGN: NetstatAGN(context_wrap(TEST_NETSTAT_AGN)),
+            Netstat: Netstat(context_wrap(NETSTAT_DOCS)),
+            Netstat_I: Netstat_I(context_wrap(NETSTAT_I)),
+            SsTULPN: SsTULPN(context_wrap(SS_TULPN_DOCS)),
+        }
+    }
+    failed, total = doctest.testmod(netstat, globs=env)
+    assert failed == 0

@@ -125,7 +125,7 @@ class Driver(Parser):
         supports-priv-flags: no
 
     Examples::
-        >>> interfaces = shared[ethtool.Driver]
+        >>> interfaces = shared[Driver]
         >>> len(interfaces) # All interfaces in a list
         1
         >>> bond0 = interfaces[0] # Would normally iterate through interfaces
@@ -137,8 +137,10 @@ class Driver(Parser):
         'bonding'
         >>> bond0.driver # New-style access
         'bonding'
-        >>> bond0.bus_info
-        None
+        >>> hasattr(bond0, 'bus_info')
+        True
+        >>> bond0.bus_info is None
+        True
         >>> bond0.supports_statistics
         False
     """
@@ -154,6 +156,7 @@ class Driver(Parser):
         self.driver = None
         self.version = None
         self.firmware_version = None
+        self.bus_info = None
         self.supports_statistics = None
         self.supports_test = None
         self.supports_eeprom_access = None
@@ -162,7 +165,7 @@ class Driver(Parser):
 
         for line in content:
             if ":" in line:
-                key, value = [s.strip() for s in line.strip().split(":", 1)]
+                key, value = [s.strip() for s in line.split(":", 1)]
                 value = value if value else None
                 if key.startswith("supports"):
                     value = value == "yes"
@@ -229,7 +232,7 @@ class Features(LegacyItemAccess, Parser):
 
     Examples:
 
-        >>> features = shared[ethtool.Features]
+        >>> features = shared[Features]
         >>> len(features) # All interfaces in a list
         1
         >>> bond0 = features[0] # Would normally iterate through interfaces
@@ -318,7 +321,7 @@ class Pause(Parser):
         TX negotiated:  off
 
     Examples:
-        >>> pause = shared[ethtool.Pause]
+        >>> pause = shared[Pause]
         >>> len(pause) # All interfaces in a list
         1
         >>> eth0 = pause[0] # Would normally iterate through interfaces
@@ -436,7 +439,7 @@ class CoalescingInfo(Parser):
 
     Examples:
 
-        >>> coalesce = shared[ethtool.CoalescingInfo]
+        >>> coalesce = shared[CoalescingInfo]
         >>> len(coalesce) # All interfaces in a list
         1
         >>> eth0 = coalesce[0] # Would normally iterate through interfaces
@@ -527,9 +530,10 @@ class Ring(Parser):
         RX Jumbo:       0
         TX:             511
 
+
     Examples:
 
-        >>> ring = shared[ethtool.Ring]
+        >>> ring = shared[Ring]
         >>> len(ring) # All interfaces in a list
         1
         >>> eth0 = ring[0] # Would normally iterate through interfaces
@@ -624,11 +628,10 @@ class Statistics(Parser):
              rx_xoff_entered: 0
              rx_frame_too_long_errors: 0
              rx_jabbers: 0
-             ...
 
     Examples:
 
-        >>> stats = shared[ethtool.Statistics]
+        >>> stats = shared[Statistics]
         >>> len(stats) # All interfaces in a list
         1
         >>> eth0 = stats[0] # Would normally iterate through interfaces
@@ -636,11 +639,9 @@ class Statistics(Parser):
         'eth0'
         >>> eth0.ifname
         'eth0'
-        >>> eth0.data['rx_octets'] # Old-style access
+        >>> eth0.data['rx_octets']  # Data as integers
         808488730
-        >>> eth0.rx_octets # New-style access
-        808488730
-        >>> eth0.fcs_errors
+        >>> eth0.data['rx_fcs_errors']
         0
     """
 
@@ -720,7 +721,7 @@ class Ethtool(Parser):
         Settings for eth0:
                 Supported ports: [ TP MII ]
                 Supported link modes:   10baseT/Half 10baseT/Full
-                                        100baseT/Half 100baseT/Full
+                                       100baseT/Half 100baseT/Full
                 Supported pause frame use: No
                 Supports auto-negotiation: Yes
                 Advertised link modes:  10baseT/Half 10baseT/Full
@@ -746,39 +747,29 @@ class Ethtool(Parser):
     with each item being the value on one line.
 
     Examples:
-        >>> ethinfo = shared[Ethtool]
+        >>> ethers = shared[Ethtool]
+        >>> len(ethers) # All interfaces in a list
+        1
+        >>> ethinfo = ethers[0] # Would normally iterate through interfaces
         >>> ethinfo.ifname
         'eth0'
         >>> ethinfo.speed
         ['100Mb/s']
         >>> ethinfo.link_detected
         False
-        >>> ethinfo.data
-        {'Cannot get link status': ['Operation not permitted'],
-         'Supported link modes': ['10baseT/Half 10baseT/Full', '100baseT/Half 100baseT/Full'],
-         'Link partner advertised link modes': ['10baseT/Half 10baseT/Full', '100baseT/Half 100baseT/Full'],
-         'Link partner advertised auto-negotiation': ['No'],
-         'Supported pause frame use': ['No'],
-         'Supports auto-negotiation': ['Yes'],
-         'Advertised auto-negotiation': ['Yes'],
-         'Duplex': ['Full'],
-         'PHYAD': ['32'],
-         'Advertised link modes': ['10baseT/Half 10baseT/Full', '100baseT/Half 100baseT/Full'],
-         'Current message level': ['0x00000007 (7)', 'drv probe link'],
-         'Supported ports': ['[ TP MII ]'],
-         'Auto-negotiation': ['on'],
-         'ETHNIC': 'eth0',
-         'Transceiver': ['internal'],
-         'Cannot get wake-on-lan settings': ['Operation not permitted'],
-         'Link partner advertised pause frame use': ['Symmetric'],
-         'Port': ['MII'],
-         'Speed': ['100Mb/s'],
-         'Advertised pause frame use': ['Symmetric']}
-        >>> ethinfo.supported_link_modes
+        >>> 'Cannot get link status' in ethinfo.data
+        True
+        >>> ethinfo.data['Cannot get link status']  # Dictionary for all data
+        ['Operation not permitted']
+        >>> ethinfo.data['Supported pause frame use']
+        ['No']
+        >>> ethinfo.data['PHYAD']  # Values as lists of strings for historic reasons
+        ['32']
+        >>> ethinfo.supported_link_modes  # This is collected across multiple lines and split
         ['10baseT/Half', '10baseT/Full', '100baseT/Half', '100baseT/Full']
         >>> ethinfo.advertised_link_modes
         ['10baseT/Half', '10baseT/Full', '100baseT/Half', '100baseT/Full']
-        >>> ethinfo.supported_ports
+        >>> ethinfo.supported_ports  # This is converted to a list of strings
         ['TP', 'MII']
     """
     @property
