@@ -24,6 +24,7 @@ Sample input::
     siblings        : 1
     core id         : 0
     cpu cores       : 1
+    flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
 
     processor       : 1
@@ -39,6 +40,7 @@ Sample input::
     siblings        : 1
     core id         : 0
     cpu cores       : 1
+    flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
 
 Examples:
@@ -50,6 +52,8 @@ Examples:
     2
     >>> cpu_info.vendor
     "GenuineIntel"
+    >>> "fpu" in cpu_info.flags
+    True
     >>> cpu_info.model_name
     "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
     >>> cpu_info.get_processor_by_index(0)
@@ -60,6 +64,7 @@ Examples:
         "models": "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz",
         "model_ids": "45",
         "families": "6",
+        "flags": "fpu vme de pse tsc msr pae mce",
         "clockspeeds": "2900.000",
         "cache_sizes": "20480 KB"
     }
@@ -119,7 +124,8 @@ class CpuInfo(LegacyItemAccess, Parser):
             "model": "model_ids",
             "cpu family": "families",
             "cpu MHz": "clockspeeds",
-            "cache size": "cache_sizes"
+            "cache size": "cache_sizes",
+            "flags": "flags"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
@@ -185,6 +191,14 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the model ID of the first CPU.
         """
         return self.data["model_ids"][0]
+
+    @property
+    @defaults()
+    def flags(self):
+        """
+        list: Returns a list of feature flags for the first CPU.
+        """
+        return self.data["flags"][0].split()
 
     @property
     @defaults()
