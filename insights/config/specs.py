@@ -225,6 +225,7 @@ static_specs = {
     "ls_etc"                    : CommandSpec("/bin/ls -lanR /etc"),
     "ls_sys_firmware"           : CommandSpec("/bin/ls -lanR /sys/firmware"),
     "ls_var_log"                : CommandSpec("/bin/ls -la /var/log /var/log/audit"),
+    "ls_var_www"                : CommandSpec("/bin/ls -la /dev/null /var/www"),  # https://github.com/RedHatInsights/insights-core/issues/827
     "lvdisplay"                 : CommandSpec("/sbin/lvdisplay"),
     "lvm.conf"                  : SimpleFileSpec("etc/lvm/lvm.conf"),
     "lvs"                       : NoneGroup([CommandSpec('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')]),
