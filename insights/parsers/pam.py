@@ -9,19 +9,21 @@ in the examples.
 PamConf - file ``/etc/pam.conf``
 --------------------------------
 
+Sample file data::
+
+    #%PAM-1.0
+    vsftpd      auth        required    pam_securetty.so
+    vsftpd      auth        requisite   pam_unix.so nullok
+    vsftpd      auth        sufficient  pam_nologin.so
+    vsftpd      account     optional    pam_unix.so
+    other       password    include     pam_cracklib.so retry=3 logging=verbose
+    other       password    required    pam_unix.so shadow nullok use_authtok
+    other       session     required    pam_unix.so
+
+
 Examples:
-    >>> pam_input_data = '''
-    ... # Comment line
-    ... vsftpd      auth        required    pam_securetty.so
-    ... vsftpd      auth        required    pam_unix.so nullok
-    ... vsftpd      auth        required    pam_nologin.so
-    ... vsftpd      account     required    pam_unix.so
-    ... other       password    required    pam_cracklib.so retry=3
-    ... other       password    required    pam_unix.so shadow nullok use_authtok
-    ... servicex    session     required    pam_unix.so
-    ... '''.strip()
-    >>> from insights.tests import context_wrap
-    >>> pam_conf = PamConf(context_wrap(pam_input_data, path='/etc/pam.conf'))
+    >>> type(pam_conf)
+    <class 'insights.parsers.pam.PamConf'>
     >>> len(pam_conf)
     7
     >>> pam_conf[0].service
@@ -31,9 +33,9 @@ Examples:
     >>> pam_conf[0].control_flags
     [ControlFlag(flag='required', value=None)]
     >>> pam_conf[0].module_name
-    'pam_security.so'
-    >>> pam_conf[0].module_args
-    None
+    'pam_securetty.so'
+    >>> pam_conf[0].module_args is None
+    True
     >>> pam_conf.file_path
     '/etc/pam.conf'
 
@@ -41,52 +43,54 @@ PamDConf - used for specific PAM configuration files
 ----------------------------------------------------
 
 ``PamDConf`` is a base class for the creation of parsers for ``/etc/pam.d``
-service specific configuration files. Sample input is provided in the examples.
+service specific configuration files.
+
+Sample file from ``/etc/pam.d/sshd``::
+
+    #%PAM-1.0
+    auth       required     pam_sepermit.so
+    auth       substack     password-auth
+    auth       include      postlogin
+    # Used with polkit to reauthorize users in remote sessions
+    -auth      optional     pam_reauthorize.so prepare
+    account    required     pam_nologin.so
+    account    include      password-auth
+    password   include      password-auth
+    # pam_selinux.so close should be the first session rule
+    session    required     pam_selinux.so close
+    session    required     pam_loginuid.so
+    # pam_selinux.so open should only be followed by sessions to be executed in the user context
+    session    required     pam_selinux.so open env_params
+    session    required     pam_namespace.so
+    session    optional     pam_keyinit.so force revoke
+    session    include      password-auth
+    session    include      postlogin
+    # Used with polkit to reauthorize users in remote sessions
+    -session   optional     pam_reauthorize.so prepare
 
 Examples:
-    >>> pam_sshd = '''
-    ... #%PAM-1.0
-    ... auth       required     pam_sepermit.so
-    ... auth       substack     password-auth
-    ... auth       include      postlogin
-    ... # Used with polkit to reauthorize users in remote sessions
-    ... -auth      optional     pam_reauthorize.so prepare
-    ... account    required     pam_nologin.so
-    ... account    include      password-auth
-    ... password   include      password-auth
-    ... # pam_selinux.so close should be the first session rule
-    ... session    required     pam_selinux.so close
-    ... session    required     pam_loginuid.so
-    ... # pam_selinux.so open should only be followed by sessions to be executed in the user context
-    ... session    required     pam_selinux.so open env_params
-    ... session    required     pam_namespace.so
-    ... session    optional     pam_keyinit.so force revoke
-    ... session    include      password-auth
-    ... session    include      postlogin
-    ... # Used with polkit to reauthorize users in remote sessions
-    ... -session   optional     pam_reauthorize.so prepare
-    ... '''
-    >>> from insights.tests import context_wrap
-    >>> pam_conf = PamDConf(context_wrap(pam_sshd, path='/etc/pam.d/sshd'))
-    >>> len(pam_conf)
+
+    >>> type(pamd_conf)
+    <class 'insights.parsers.pam.PamDConf'>
+    >>> len(pamd_conf)
     15
-    >>> pam_conf[0]._errors == [] # No errors in parsing
+    >>> pamd_conf[0]._errors == [] # No errors in parsing
     True
-    >>> pam_conf[0].service
+    >>> pamd_conf[0].service
     'sshd'
-    >>> pam_conf[0].interface
+    >>> pamd_conf[0].interface
     'auth'
-    >>> pam_conf[0].control_flags
+    >>> pamd_conf[0].control_flags
     [ControlFlag(flag='required', value=None)]
-    >>> pam_conf[0].module_name
+    >>> pamd_conf[0].module_name
     'pam_sepermit.so'
-    >>> pam_conf[0].module_args
-    None
-    >>> pam_conf.file_path
+    >>> pamd_conf[0].module_args is None
+    True
+    >>> pamd_conf.file_path
     '/etc/pam.d/sshd'
-    >>> pam_conf[3].module_name
+    >>> pamd_conf[3].module_name
     'pam_reauthorize.so'
-    >>> pam_conf[3].ignored_if_module_not_found
+    >>> pamd_conf[3].ignored_if_module_not_found
     True
 
 Normal use of the ``PamDConf`` class is to subclass it for a parser.  In
@@ -177,7 +181,7 @@ class PamConfEntry(object):
         >>> entry.service
         'vsftpd'
         >>> entry.control_flags
-        [(flag='success', value='2'), (flag='default', value='ok')]
+        [ControlFlag(flag='success', value='2'), ControlFlag(flag='default', value='ok')]
         >>> entry.module_args
         'auth=perm_denied cred=success'
 
@@ -278,14 +282,19 @@ class PamDConf(Parser):
         module_interface    control_flag    module_name module_arguments
 
     Sample input::
-
-        auth        required    pam_securetty.so
-        auth        requisite   pam_unix.so nullok
-        auth        sufficient  pam_nologin.so
-        auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
-        account     optional    pam_unix.so
-        password    include     pam_cracklib.so retry=3 logging=verbose
-        password    required    pam_unix.so shadow nullok use_authtok
+        >>> pam_sshd = '''
+        ... auth        required    pam_securetty.so
+        ... auth        requisite   pam_unix.so nullok
+        ... auth        sufficient  pam_nologin.so
+        ... auth        [success=2 default=ok]  pam_debug.so auth=perm_denied cred=success
+        ... account     optional    pam_unix.so
+        ... password    include     pam_cracklib.so retry=3 logging=verbose
+        ... password    required    pam_unix.so shadow nullok use_authtok
+        ... '''
+        >>> from insights.tests import context_wrap
+        >>> class YourPamDConf(PamDConf):  # A trivial example
+        ...     pass
+        >>> conf = YourPamDConf(context_wrap(pam_sshd, path='/etc/pam.d/sshd'))
 
     The `service` property of each PamConfEntry is set to the complete path
     name of the PAM config file.
@@ -295,7 +304,6 @@ class PamDConf(Parser):
             the conf file in the same order as lines appear in the file.
 
     Examples:
-        >>> conf = shared[YourPamDConf]
         >>> conf[0].module_name  # Can be used like a list of objects
         'pam_securetty.so'
         >>> account_rows = list(conf.search(interface='account'))
@@ -306,7 +314,7 @@ class PamDConf(Parser):
         >>> account_rows[0].module_name
         'pam_unix.so'
         >>> account_rows[0].control_flags
-        [ControlFlag(flag='optional', value=True)]
+        [ControlFlag(flag='optional', value=None)]
     """
     def parse_content(self, content):
         self.data = []
