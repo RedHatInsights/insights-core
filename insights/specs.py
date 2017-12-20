@@ -453,7 +453,7 @@ def tomcat_home(broker):
 
 tomcat_vdc_targeted = sf.foreach(tomcat_home, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s", name="tomcat_vdc_targeted")
 tomcat_vdc_fallback = sf.simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +", name="tomcat_vdc_fallback")
-tuned_adm = sf.simple_command("/sbin/tuned-adm list", name="tuned_adm", alias="tuned-adm")
+tuned_adm = sf.simple_command("/usr/sbin/tuned-adm list", name="tuned_adm", alias="tuned-adm")
 udev_persistent_net_rules = sf.simple_file("/etc/udev/rules.d/70-persistent-net.rules", name="udev_persistent_net_rules", alias="udev-persistent-net.rules")
 uname = sf.simple_command("/usr/bin/uname -a", name="uname")
 up2date = sf.simple_file("/etc/sysconfig/rhn/up2date", name="up2date")
