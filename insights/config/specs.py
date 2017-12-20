@@ -407,7 +407,7 @@ static_specs = {
                                     PatternSpec(r"conf/tomcat/tomcat.*/web\.xml")]),
     "tomcat_vdc_fallback"       : CommandSpec("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +"),
     "tomcat_vdc_targeted"       : CommandSpec("/bin/grep -R -s 'VirtualDirContext' --include '*.xml' {catalina}", catalina=r"\S+"),
-    "tuned-adm"                 : CommandSpec("/sbin/tuned-adm list"),
+    "tuned-adm"                 : CommandSpec("/usr/sbin/tuned-adm list"),
     "udev-persistent-net.rules" : SimpleFileSpec("etc/udev/rules.d/70-persistent-net.rules"),
     "uname"                     : First([CommandSpec("/bin/uname -a"),
                                     SimpleFileSpec("uname")]),
