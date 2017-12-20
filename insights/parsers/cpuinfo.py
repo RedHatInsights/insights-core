@@ -24,6 +24,7 @@ Sample input::
     siblings        : 1
     core id         : 0
     cpu cores       : 1
+    flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
 
     processor       : 1
@@ -39,6 +40,7 @@ Sample input::
     siblings        : 1
     core id         : 0
     cpu cores       : 1
+    flags           : fpu vme de pse tsc msr pae mce
     address sizes   : 40 bits physical, 48 bits virtual
 
 Examples:
@@ -52,6 +54,10 @@ Examples:
     "GenuineIntel"
     >>> cpu_info.model_name
     "Intel(R) Xeon(R) CPU E5-2690 0 @ 2.90GHz"
+    >>> "fpu" in cpu_info.flags
+    True
+    >>> "avx512" in cpu_info.flags
+    False
     >>> cpu_info.get_processor_by_index(0)
     {
         "cpus": "0",
@@ -61,7 +67,8 @@ Examples:
         "model_ids": "45",
         "families": "6",
         "clockspeeds": "2900.000",
-        "cache_sizes": "20480 KB"
+        "cache_sizes": "20480 KB",
+        "flags": "fpu vme de pse tsc msr pae mce"
     }
 
 
@@ -93,6 +100,7 @@ class CpuInfo(LegacyItemAccess, Parser):
         siblings        : 1
         core id         : 0
         cpu cores       : 1
+        flags           : fpu vme de pse tsc msr pae mce
         address sizes   : 40 bits physical, 48 bits virtual
 
     The following keys would be lists of:
@@ -105,6 +113,7 @@ class CpuInfo(LegacyItemAccess, Parser):
     * **families** - the *cpu family* line (e.g. ``6``)
     * **clockspeeds** - the *cpu MHz* line (e.g. ``2900.000``)
     * **cache_sizes** - the *cache size* line (e.g. ``20480 KB``)
+    * **flags** - The feature flags supported by the CPU (e.g. ``fpu sse avx512``)
     """
 
     def parse_content(self, content):
@@ -118,7 +127,8 @@ class CpuInfo(LegacyItemAccess, Parser):
             "model": "model_ids",
             "cpu family": "families",
             "cpu MHz": "clockspeeds",
-            "cache size": "cache_sizes"
+            "cache size": "cache_sizes",
+            "flags": "flags"
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
@@ -184,6 +194,14 @@ class CpuInfo(LegacyItemAccess, Parser):
         str: Returns the model ID of the first CPU.
         """
         return self.data["model_ids"][0]
+
+    @property
+    @defaults()
+    def flags(self):
+        """
+        list: Returns a list of feature flags for the first CPU.
+        """
+        return self.data["flags"][0].split()
 
     @property
     @defaults()
