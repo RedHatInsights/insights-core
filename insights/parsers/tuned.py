@@ -1,8 +1,8 @@
 """
-Tuned - command ``/sbin/tuned-adm list``
-========================================
+Tuned - command ``/usr/sbin/tuned-adm list``
+============================================
 
-This parser reads the output of the ``/sbin/tuned-adm list`` command and
+This parser reads the output of the ``/usr/sbin/tuned-adm list`` command and
 reads it into a simple dictionary in the ``data`` property with two of three
 keys:
 
@@ -48,7 +48,7 @@ from .. import Parser, parser
 @parser('tuned-adm')
 class Tuned(Parser):
     """
-    Parse data from the ``/sbin/tuned-adm list`` command.
+    Parse data from the ``/usr/sbin/tuned-adm list`` command.
     """
 
     def parse_content(self, content):
