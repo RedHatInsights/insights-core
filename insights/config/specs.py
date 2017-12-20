@@ -260,6 +260,7 @@ static_specs = {
     "nfnetlink_queue"           : SimpleFileSpec("proc/net/netfilter/nfnetlink_queue"),
     "nfs_exports"               : SimpleFileSpec("etc/exports"),
     "nfs_exports.d"             : PatternSpec(r"etc/exports.d/.*\.exports"),
+    "nginx_conf"                : All([PatternSpec("etc/nginx/nginx.conf"), PatternSpec("etc/opt/rh/rh-nginx112/nginx/nginx.conf")]),
     "nova-api_log"              : SimpleFileSpec("var/log/nova/nova-api.log", large_content=True),
     "nova-compute.log"          : SimpleFileSpec("var/log/nova/nova-compute.log", large_content=True),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
