@@ -101,11 +101,11 @@ Examples:
     'root'
     >>> nginxconf['events']['worker_connections'] # Values are all kept as strings.
     '4096'
-    >>> nginxconf['mail']['server']['listen']
+    >>> nginxconf['mail']['server'][0]['listen']
     '143'
     >>> nginxconf['http']['access_log']
     'logs/access.log  main'
-    >>> nginxconf['http']['server'][0]['location']['fastcgi_pass']
+    >>> nginxconf['http']['server'][0]['location'][0]['fastcgi_pass']
     '127.0.0.1:1025'
 """
 import string
@@ -276,7 +276,6 @@ class NginxConf(Parser, LegacyItemAccess):
                 if self._depth(sub_item) == 3:
                     tmp_dict = _listdepth_three(self, sub_item)
                     tmp_key = tmp_dict.keys()[0]
-                    # It is possible that multi sections with same name exist. In this situation, the value of dict becomes list.
                     dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
             return {li[0][0]: dict_result}
 
@@ -314,13 +313,15 @@ class NginxConf(Parser, LegacyItemAccess):
         """
         Function to handle dict key has multi value, and return the values as list.
         """
-        if key in t_dict:
-            val = t_dict[key]
-            if isinstance(val, dict):
-                val = [val]
-            val.append(value)
-            return val
-        return value
+        # As it is possible that key "server" and "location" have multi value, set the value of dict as list.
+        if "server" in key or "location" in key:
+            if key in t_dict:
+                val = t_dict[key]
+                val.append(value)
+                return val
+            return [value]
+        else:
+            return value
 
     def _depth(self, l):
         """
