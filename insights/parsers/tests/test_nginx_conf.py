@@ -23,7 +23,9 @@ mail {
 }
 
 http {
-  include  /etc/nginx/conf.d/*.conf;
+  include    conf/mime.types;
+  include    /etc/nginx/proxy.conf;
+  include    /etc/nginx/fastcgi.conf;
   index    index.html index.htm index.php;
   log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
                       '$status $body_bytes_sent "$http_referer" '
@@ -98,6 +100,9 @@ def test_nginxconfiguration():
     assert nginxconf['http']['access_log'] == 'logs/access.log  main'
     assert nginxconf['http']['server'][0]['location'][0]['fastcgi_pass'] == '127.0.0.1:1025'
     assert nginxconf['http']['server'][1]['location'][1]['name'] == '/'
+    assert nginxconf['http']['upstream'][1]['name'] == 'big_server_com'
+    assert nginxconf["http"]["include"][0] == 'conf/mime.types'
+    assert nginxconf['http']['upstream'][1]['server'][0] == '127.0.0.3:8000 weight=5'
     assert nginxconf['http']['log_format'] == """main  '$remote_addr - $remote_user [$time_local] "$request" '
 '$status $body_bytes_sent "$http_referer" '
 '"$http_user_agent" "$http_x_forwarded_for"'"""

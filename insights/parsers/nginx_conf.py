@@ -260,7 +260,7 @@ class NginxConf(Parser, LegacyItemAccess):
             """
             dict_result = {}
             for sub_item in li[1]:
-                dict_result[sub_item[0]] = sub_item[1]
+                dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
             if len(li[0]) > 1:
                 dict_result["name"] = ' '.join(li[0][1:])
             return {li[0][0]: dict_result}
@@ -272,7 +272,7 @@ class NginxConf(Parser, LegacyItemAccess):
             dict_result = {}
             for sub_item in li[1]:
                 if self._depth(sub_item) == 1:
-                    dict_result[sub_item[0]] = sub_item[1]
+                    dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
                 if self._depth(sub_item) == 3:
                     tmp_dict = _listdepth_three(self, sub_item)
                     tmp_key = tmp_dict.keys()[0]
@@ -286,7 +286,7 @@ class NginxConf(Parser, LegacyItemAccess):
             dict_result = {}
             for sub_item in li[1]:
                 if self._depth(sub_item) == 1:
-                    dict_result[sub_item[0]] = sub_item[1]
+                    dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
                 if self._depth(sub_item) == 3:
                     tmp_dict = _listdepth_three(self, sub_item)
                     tmp_key = tmp_dict.keys()[0]
@@ -300,7 +300,7 @@ class NginxConf(Parser, LegacyItemAccess):
         dict_all = {}
         for item in li:
             if self._depth(item) == 1:
-                dict_all[item[0]] = item[1]
+                dict_all[item[0]] = self._handle_key_value(dict_all, item[0], item[1])
             if self._depth(item) == 3:
                 dict_all.update(_listdepth_three(self, item))
             if self._depth(item) == 5:
@@ -313,8 +313,8 @@ class NginxConf(Parser, LegacyItemAccess):
         """
         Function to handle dict key has multi value, and return the values as list.
         """
-        # As it is possible that key "server" and "location" have multi value, set the value of dict as list.
-        if "server" in key or "location" in key:
+        # As it is possible that key "server", "location", "include" and "upstream" have multi value, set the value of dict as list.
+        if "server" in key or "location" in key or "include" in key or "upstream" in key:
             if key in t_dict:
                 val = t_dict[key]
                 val.append(value)
