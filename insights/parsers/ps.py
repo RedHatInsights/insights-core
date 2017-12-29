@@ -145,6 +145,8 @@ class PsAuxww(ProcessList):
     Attributes:
         data (list): List of dicts, where the keys in each dict are the
             column headers and each item in the list represents a process.
+        cmd_names (list): List of just the command names, minus any path or
+            arguments.
 
     Raises:
         ParseException: Raised if the heading line (starting with 'USER' and
@@ -165,6 +167,8 @@ class PsAuxww(ProcessList):
                 )
                 if 'COMMAND' in row
             ]
+            # Strip paths and arguments for just command name
+            self.cmd_names = [proc.split(' ')[0].split('/')[-1] for proc in self.running]
         else:
             raise ParseException(
                 "PsAuxww: Cannot find ps header line in output"
