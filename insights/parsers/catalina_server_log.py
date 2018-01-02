@@ -1,6 +1,10 @@
 """
 CatalinaServerlog - ``catalina*.log`` files for Tomcat
 ======================================================
+.. warning::
+    Deprecated parser, please use
+    :class:`insights.parsers.catalina_log.CatalinaServerLog` instead.
+
 .. note::
     On RHEL6, the default tomcat server log file is under /var/log/tomcat6/.
     On RHEL7, the default tomcat server log file is under /var/log/tomcat/.
@@ -46,6 +50,7 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
+from insights.util import deprecated
 
 
 @parser("catalina_server_log")
@@ -53,4 +58,8 @@ class CatalinaServerlog(LogFileOutput):
     """
     Read the default tomcat server log file.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(CatalinaServerlog, "Use the `CatalinaServerLog` parser in the `catalina_log` module")
+        super(CatalinaServerlog, self).__init__(*args, **kwargs)
+
     time_format = '%b %d, %Y %I:%M:%S %p'
