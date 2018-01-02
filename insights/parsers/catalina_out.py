@@ -2,9 +2,14 @@
 CatalinaOut - ``catalina.out`` logs for Tomcat
 ==============================================
 
+.. warning::
+    Deprecated parser, please use
+    :class:`insights.parsers.catalina_log.CatalinaOut` instead.
+
 """
 
 from .. import LogFileOutput, parser
+from insights.util import deprecated
 
 
 @parser('catalina.out')
@@ -54,4 +59,8 @@ class CatalinaOut(LogFileOutput):
         ['Nov 10, 2015 4:55:48 PM org.apache.coyote.http11.Http11Protocol pause',
          'INFO: Pausing Coyote HTTP/1.1 on http-8080']
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(CatalinaOut, "Use the `CatalinaOut` parser in the `catalina_log` module")
+        super(CatalinaOut, self).__init__(*args, **kwargs)
+
     time_format = '%b %d, %Y %I:%M:%S %p'
