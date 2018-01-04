@@ -69,10 +69,6 @@ GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
 
 
-# TODO:
-# Below 2 lines should be removed after insights-plugins used the new parsers
-@parser('grub2.cfg')
-@parser("grub.conf")
 class GrubConfig(LegacyItemAccess, Parser):
     """
     Parser for configuration for both GRUB versions 1 and 2.
@@ -201,13 +197,6 @@ class GrubConfig(LegacyItemAccess, Parser):
                 initrds.append(_parse_kernel_initrds_value(value))
 
         return {GRUB_KERNELS: kernels, GRUB_INITRDS: initrds}
-
-    # TODO:
-    # Just for keeping compatible with the old version
-    # Need to remove this interface in the next commit
-    @property
-    def kernels_initrds(self):
-        return self.kernel_initrds
 
 
 @parser("grub.conf")
