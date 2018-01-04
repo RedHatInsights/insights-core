@@ -28,11 +28,8 @@ Examples:
 
 from ..core.plugins import combiner
 from ..parsers.sestatus import SEStatus
-from ..parsers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
+from ..parsers.grub_conf import Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig
 from ..parsers.selinux_config import SelinuxConfig
-# TODO:
-# Below line should be removed after insights-plugins used the new interface
-from ..parsers.grub_conf import GrubConfig
 
 GRUB_DISABLED = 'grub_disabled'
 GRUB_NOT_ENFORCING = 'grub_not_enforcing'
@@ -43,7 +40,7 @@ BOOT_NOT_ENFORCING = 'selinux_conf_not_enforcing'
 
 
 @combiner(requires=[SEStatus, SelinuxConfig],
-          optional=[GrubConfig, Grub1Config, Grub2Config, Grub2EFIConfig])
+          optional=[Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig])
 class SELinux(object):
     """
     A combiner for detecting that SELinux is enabled and running and also enabled at boot time.
@@ -55,14 +52,12 @@ class SELinux(object):
         self.grub_config = None
         if Grub1Config in shared:
             self.grub_config = shared[Grub1Config]
+        elif Grub1EFIConfig in shared:
+            self.grub_config = shared[Grub1EFIConfig]
         elif Grub2Config in shared:
             self.grub_config = shared[Grub2Config]
         elif Grub2EFIConfig in shared:
             self.grub_config = shared[Grub2EFIConfig]
-        # TODO:
-        # Below lines should be removed
-        elif GrubConfig in shared:
-            self.grub_config = shared[GrubConfig]
 
         self._check_sestatus()
         self._check_boot_config()
