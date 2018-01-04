@@ -28,7 +28,7 @@ Examples:
 
 from ..core.plugins import combiner
 from ..parsers.sestatus import SEStatus
-from ..parsers.grub_conf import Grub1Config, Grub2Config, Grub2EFIConfig
+from ..parsers.grub_conf import Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig
 from ..parsers.selinux_config import SelinuxConfig
 
 GRUB_DISABLED = 'grub_disabled'
@@ -39,16 +39,17 @@ BOOT_DISABLED = 'selinux_conf_disabled'
 BOOT_NOT_ENFORCING = 'selinux_conf_not_enforcing'
 
 
-@combiner(SEStatus, SelinuxConfig, optional=[Grub1Config, Grub2Config, Grub2EFIConfig])
+@combiner(SEStatus, SelinuxConfig,
+          optional=[Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig])
 class SELinux(object):
     """
     A combiner for detecting that SELinux is enabled and running and also enabled at boot time.
     """
-    def __init__(self, se_status, selinux_config, grub1, grub2, grub2_efi):
+    def __init__(self, se_status, selinux_config, grub1, grub1_efi, grub2, grub2_efi):
         self.problems = {}
         self.sestatus = se_status
         self.selinux_config = selinux_config
-        self.grub_config = grub1 or grub2 or grub2_efi
+        self.grub_config = grub1 or grub1_efi or grub2 or grub2_efi
 
         self._check_sestatus()
         self._check_boot_config()
