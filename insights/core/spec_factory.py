@@ -256,7 +256,7 @@ class SpecFactory(object):
             self._attach(inner, name)
         return inner
 
-    def foreach(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+    def foreach_execute(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
         alias = alias or name
 
         @datasource(provider, context, alias=alias)
@@ -284,6 +284,35 @@ class SpecFactory(object):
             if result:
                 return result
             raise ContentException("No results found for [%s]" % cmd)
+        if name:
+            self._attach(inner, name)
+        return inner
+
+    def foreach_collect(self, provider, path, name=None, ignore=None, context=HostContext, kind=TextFileProvider, alias=None):
+        alias = alias or name
+
+        @datasource(provider, context, alias=alias)
+        def inner(broker):
+            result = []
+            source = broker[provider]
+            ctx = self._get_context(context, FSRoots, broker)
+            root = ctx.root
+            if isinstance(source, ContentProvider):
+                source = source.content
+            if not isinstance(source, (list, set)):
+                source = [source]
+            for e in source:
+                pattern = ctx.locate_path(path % e)
+                for p in glob(os.path.join(root, pattern.lstrip('/'))):
+                    if ignore and re.search(ignore, p):
+                        continue
+                    try:
+                        result.append(kind(p[len(root):], root=root, filters=get_filters(inner)))
+                    except:
+                        log.debug(traceback.format_exc())
+            if result:
+                return result
+            raise ContentException("No results found for [%s]" % path)
         if name:
             self._attach(inner, name)
         return inner
