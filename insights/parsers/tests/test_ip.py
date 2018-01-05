@@ -94,6 +94,65 @@ class Test_IP_Addr(unittest.TestCase):
             self.assertIsNotNone(iface)
 
 
+IP_S_LINK = """
+1: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 08:00:27:4a:c5:ef brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1113685    2244     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    550754     1407     0       0       0       0
+2: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    RX: bytes  packets  errors  dropped overrun mcast
+    884        98       0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    884        10       0       0       0       0
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 08:00:27:db:86:9e brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          1        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          4        0       0       0       0
+4: enp0s9: <BROADCAST,UP,MULTICAST> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 08:00:27:a6:bd:65 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          8        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          12        0       0       0       0
+""".strip()
+
+
+class TestIpLinkInfo(unittest.TestCase):
+    def test_ip_data_Link(self):
+        link_info = ip.IpLinkInfo(context_wrap(IP_S_LINK))
+        if_list = link_info.active
+        assert len(if_list) == 4
+        assert keys_in(["lo", "enp0s3", "enp0s8", "enp0s9"], if_list)
+
+        self.assertEqual(
+            sorted(link_info.active),
+            sorted(['lo', 'enp0s3', 'enp0s8', 'enp0s9'])
+        )
+
+        lo = link_info["lo"]
+        assert lo["mac"] == "00:00:00:00:00:00"
+        assert lo["flags"] == ["LOOPBACK", "UP", "LOWER_UP"]
+        assert lo["type"] == "loopback"
+        assert lo["mtu"] == 65536
+        assert lo["rx_packets"] == 98
+        assert lo["tx_packets"] == 10
+        assert lo["index"] == 2
+
+        enp0s3 = link_info["enp0s3"]
+        assert enp0s3["mac"] == "08:00:27:4a:c5:ef"
+        assert enp0s3["flags"] == ["BROADCAST", "MULTICAST", "UP", "LOWER_UP"]
+        assert enp0s3["type"] == "ether"
+        assert enp0s3["mtu"] == 1500
+        assert enp0s3["rx_packets"] == 2244
+        assert enp0s3["tx_packets"] == 1407
+        assert enp0s3["index"] == 1
+
+
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """
 throw 30.142.64.0/26  table red_mgmt
 default via 30.142.64.1 dev bond0.400  table red_mgmt
