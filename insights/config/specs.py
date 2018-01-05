@@ -112,6 +112,8 @@ static_specs = {
     "fdisk-l-sos"               : PatternSpec(r"sos_commands/filesys/fdisk_-l_.+"),
     "foreman_satellite.log"     : First([SimpleFileSpec("var/log/foreman-installer/satellite.log", large_content=True),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/foreman-installer/satellite.log", large_content=True)]),
+    "foreman-ssl_access_ssl.log": First([SimpleFileSpec("var/log/httpd/foreman-ssl_access_ssl.log", large_content=True),
+                                    SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log", large_content=True)]),
     "foreman_production.log"    : First([SimpleFileSpec("var/log/foreman/production.log", large_content=True),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/foreman/production.log", large_content=True)]),
     "foreman_proxy_conf"        : First([SimpleFileSpec("etc/foreman-proxy/settings.yml"),

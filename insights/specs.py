@@ -149,6 +149,7 @@ foreman_production_log = sf.simple_file("/var/log/foreman/production.log", name=
 foreman_proxy_conf = sf.simple_file("/etc/foreman-proxy/settings.yml", name="foreman_proxy_conf")
 foreman_proxy_log = sf.simple_file("/var/log/foreman-proxy/proxy.log", name="foreman_proxy_log", alias="foreman_proxy.log")
 foreman_satellite_log = sf.simple_file("/var/log/foreman-installer/satellite.log", name="foreman_satellite_log", alias="foreman_satellite.log")
+foreman_ssl_access_ssl_log = sf.first_of([sf.simple_file("var/log/httpd/foreman-ssl_access_ssl.log"), sf.simple_file(r"sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log", context=HostArchiveContext)], name="foreman_ssl_access_ssl_log", alias="foreman-ssl_access_ssl.log")
 fstab = sf.simple_file("/etc/fstab", name="fstab")
 galera_cnf = sf.simple_file("/etc/my.cnf.d/galera.cnf", name="galera_cnf", alias="galera.cnf")
 getcert_list = sf.first_of([sf.simple_command("/usr/bin/getcert list"), sf.simple_file("sos_commands/ipa/ipa-getcert_list", context=HostArchiveContext)], name="getcert_list")
