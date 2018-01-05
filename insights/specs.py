@@ -34,6 +34,12 @@ branch_info = sf.simple_file("/branch_info", name="branch_info")
 brctl_show = sf.simple_command("/usr/sbin/brctl show", name="brctl_show")
 candlepin_log = sf.simple_file("/var/log/candlepin/candlepin.log", name="candlepin_log", alias="candlepin.log")
 candlepin_error_log = sf.first_of([sf.simple_command("/var/log/candlepin/error.log"), sf.simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log", context=HostArchiveContext)], name="candlepin_error_log")
+ps_auxww = sf.first_of([
+    sf.simple_command("/bin/ps auxww", name="ps_auxww"),
+    sf.simple_file('sos_commands/process/ps_aux', alias='ps_aux', context=HostArchiveContext),
+    sf.simple_file('sos_commands/process/ps_auxwww', alias='ps_auxwww', context=HostArchiveContext),
+    sf.simple_file('sos_commands/process/ps_auxcww', alias='ps_auxcww', context=HostArchiveContext),
+])
 catalina_out = sf.glob_file(["/var/log/tomcat/catalina.out", "/var/log/tomcat6/catalina.out", "/tomcat-logs/tomcat/catalina.out", "/tomcat-logs/tomcat6/catalina.out"], name="catalina_out", alias="catalina.out")
 catalina_server_log = sf.glob_file(["/var/log/tomcat/logs/catalina*.log", "/var/log/tomcat6/logs/catalina*.log", "/tomcat-logs/tomcat/catalina*.log", "/tomcat-logs/tomcat6/catalina*.log"], name="catalina_server_log")
 cciss = sf.glob_file("/proc/driver/cciss/cciss*", name="cciss")
@@ -182,7 +188,23 @@ httpd_pid = sf.simple_command("/bin/ps aux | grep /usr/sbin/httpd | grep -v grep
 httpd_limits = sf.foreach_collect(httpd_pid, "/proc/%s/limits", name="httpd_limits")
 httpd_ssl_access_log = sf.simple_file("/var/log/httpd/ssl_access_log", name="httpd_ssl_access_log")
 httpd_ssl_error_log = sf.simple_file("/var/log/httpd/ssl_error_log", name="httpd_ssl_error_log")
-httpd_V = sf.simple_command("/usr/sbin/httpd -V", name="http_V", alias="httpd-V")
+
+
+@datasource(ps_auxww)
+def httpd_cmd(broker):
+    ps = broker[ps_auxww].content
+    for p in ps:
+        p_splits = p.split(None, 10)
+        if len(p_splits) >= 11:
+            cmd = p_splits[10].split()[0]
+            # Should compatible with RHEL6
+            # e.g. /usr/sbin/httpd, /usr/sbin/httpd.worker and /usr/sbin/httpd.event
+            if 'httpd' in os.path.basename(cmd):
+                return [cmd]
+    return []
+
+
+httpd_V = sf.foreach_execute(httpd_cmd, "%s -V", name="http_V", alias="httpd-V")
 ifcfg = sf.glob_file("/etc/sysconfig/network-scripts/ifcfg-*", name="ifcfg")
 ifconfig = sf.simple_command("/sbin/ifconfig -a", name="ifconfig")
 imagemagick_policy = sf.glob_file(["/etc/ImageMagick/policy.xml",
@@ -335,12 +357,6 @@ postgresql_log = sf.first_of([sf.glob_file("/var/lib/pgsql/data/pg_log/postgresq
 md5chk_files = sf.simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null", name="md5chk_files")
 prelink_orig_md5 = None
 prev_uploader_log = sf.simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1", name="prev_uploader_log")
-ps_auxww = sf.first_of([
-    sf.simple_command("/bin/ps auxww", name="ps_auxww"),
-    sf.simple_file('sos_commands/process/ps_aux', alias='ps_aux', context=HostArchiveContext),
-    sf.simple_file('sos_commands/process/ps_auxwww', alias='ps_auxwww', context=HostArchiveContext),
-    sf.simple_file('sos_commands/process/ps_auxcww', alias='ps_auxcww', context=HostArchiveContext),
-])
 puppet_ssl_cert_ca_pem = None
 pvs = sf.simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"', name="pvs")
 pvs_noheadings = sf.simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"", name="pvs_noheadings")
