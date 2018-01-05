@@ -13,6 +13,8 @@ RouteDevices - command ``ip route show table all``
 IpNeighParser - command ``ip neigh show nud all``
 -------------------------------------------------
 
+IpLinkInfo - command ``ip -s link``
+-----------------------------------
 """
 
 from collections import defaultdict, deque
@@ -44,15 +46,28 @@ class NetworkInterface(object):
 
 def parse_ip_addr(content):
     r = {}
+    current = {}
+    rx_next_line = False
+    tx_next_line = False
     content = [l.strip() for l in content if "Message truncated" not in l]
     for line in filter(None, content):
-        if line[0].isdigit():
+        if rx_next_line and current:
+            parse_rx_stats(line, current)
+            rx_next_line = False
+        if tx_next_line and current:
+            parse_tx_stats(line, current)
+            tx_next_line = False
+        elif line[0].isdigit() and "state" in line:
             current = parse_interface(line)
             r[current["name"]] = current
         elif line.startswith("link"):
             parse_link(line, current)
         elif line.startswith("inet"):
             parse_inet(line, current)
+        elif line.startswith("RX"):
+            rx_next_line = True
+        elif line.startswith("TX"):
+            tx_next_line = True
     return {k: NetworkInterface(v) for k, v in r.iteritems()}
 
 
@@ -97,6 +112,26 @@ def parse_inet(line, d):
         "local_addr": split_content[1] if p2p else None,
         "p2p": p2p
     })
+
+
+def parse_rx_stats(line, d):
+    split_content = line.split()
+    d["rx_bytes"] = int(split_content[0])
+    d["rx_packets"] = int(split_content[1])
+    d["rx_errors"] = int(split_content[2])
+    d["rx_dropped"] = int(split_content[3])
+    d["rx_overrun"] = int(split_content[4])
+    d["rx_mcast"] = int(split_content[5])
+
+
+def parse_tx_stats(line, d):
+    split_content = line.split()
+    d["tx_bytes"] = int(split_content[0])
+    d["tx_packets"] = int(split_content[1])
+    d["tx_errors"] = int(split_content[2])
+    d["tx_dropped"] = int(split_content[3])
+    d["tx_carrier"] = int(split_content[4])
+    d["tx_collsns"] = int(split_content[5])
 
 
 @parser('ip_addr')
@@ -571,5 +606,94 @@ class Ipv4Neigh(IpNeighParser):
 class Ipv6Neigh(IpNeighParser):
     """
     Class to parse ``ip -6 neigh show nud all`` command output.
+    """
+    pass
+
+
+@parser("ip-s_link")
+class IpLinkInfo(IpAddr):
+    """
+    This parser parses the output of ``ip -s link`` command, which shows the
+    data link layer stats of network devices, like packets received, packets
+    dropped, link state, mtu.
+
+    Example output::
+
+        1: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+                    link/ether 08:00:27:4a:c5:ef brd ff:ff:ff:ff:ff:ff
+                    RX: bytes  packets  errors  dropped overrun mcast
+                    1113685    2244     0       0       0       0
+                    TX: bytes  packets  errors  dropped carrier collsns
+                    550754     1407     0       0       0       0
+
+
+    Resultant output::
+
+        {
+            "index": 1,
+            "physical_name": null,
+            "name": "enp0s3",
+            "flags": [
+                "BROADCAST",
+                "MULTICAST",
+                "UP",
+                "LOWER_UP"
+            ],
+            "addr":[]
+            "mtu": 1500,
+            "qdisc": "pfifo_fast",
+            "state": "UP",
+            "mode": "DEFAULT",
+            "qlen": 1000,
+            "mac": "08:00:27:4a:c5:ef",
+            "brd": "ff:ff:ff:ff:ff:ff",
+            "rx_bytes": 1113685,
+            "rx_packets": 2244,
+            "rx_errors": 0,
+            "rx_dropped": 0,
+            "rx_overrun": 0,
+            "rx_mcast": 0,
+            "tx_bytes": 550754,
+            "tx_packets": 1407,
+            "tx_errors": 0,
+            "tx_dropped": 0,
+            "tx_carrier": 0,
+            "tx_collsns": 0
+        }
+
+    Examples:
+
+        >>> for iface in shared[IpLinkInfo]:
+        ...     print 'Interface:', iface['name']
+        ...     print 'State:', iface['state']
+        ...     print 'RX packets:', iface['rx_packets']
+        ...     print 'RX dropped:', iface['rx_dropped']
+        ...     print 'TX packets:', iface['tx_packets']
+        ...     print 'TX dropped:', iface['tx_dropped']
+        ...
+        Interface: lo
+        State: UNKNOWN
+        RX packets: 98
+        RX dropped: 0
+        TX packets: 10
+        TX dropped: 0
+        Interface: enp0s3
+        State: UP
+        RX packets: 2244
+        RX dropped: 0
+        TX packets: 1407
+        TX dropped: 0
+        Interface: enp0s8
+        State: UP
+        RX packets: 1
+        RX dropped: 0
+        TX packets: 4
+        TX dropped: 0
+        Interface: enp0s9
+        State: UP
+        RX packets: 8
+        RX dropped: 0
+        TX packets: 12
+        TX dropped: 0
     """
     pass
