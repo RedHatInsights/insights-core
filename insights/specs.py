@@ -537,3 +537,21 @@ def docker_installed_rpms(broker):
 
 # unify the different installed rpm provider types
 installed_rpms = sf.first_of([host_installed_rpms, docker_installed_rpms], name="installed_rpms", alias="installed-rpms")
+
+
+@datasource(ps_auxww)
+def jboss_domain_server_log_dir(broker):
+    ps = broker[ps_auxww].content
+    results = []
+    findall = re.compile(r"\-Djboss\.server\.log\.dir=(\S+)").findall
+    # JBoss domain server progress command content should contain jboss.server.log.dir
+    for p in ps:
+        if '-D[Server:' in p:
+            found = findall(p)
+            if found:
+                # Only get the path which is absolute
+                results.extend(f for f in found if f[0] == '/')
+    return list(set(results))
+
+
+jboss_domain_server_log = sf.foreach_collect(jboss_domain_server_log_dir, "%s/server.log*", name="jboss_domain_server_log")
