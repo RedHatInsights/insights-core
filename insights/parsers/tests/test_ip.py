@@ -3,6 +3,7 @@ from insights.tests import context_wrap
 from insights.util import keys_in
 from insights.contrib import ipaddress
 
+
 IP_ADDR_TEST = """
 Message truncated
 Message truncated
@@ -86,6 +87,124 @@ def test_ip_addr():
     # Tests of __iter__ and __getitem__
     for iface in d:
         assert iface is not None
+
+
+IP_S_LINK = """
+1: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 08:00:27:4a:c5:ef brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1113685    2244     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    550754     1407     0       0       0       0
+2: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    RX: bytes  packets  errors  dropped overrun mcast
+    884        98       0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    884        10       0       0       0       0
+3: enp0s8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 08:00:27:db:86:9e brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          1        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          4        0       0       0       0
+4: enp0s9: <BROADCAST,UP,MULTICAST> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT qlen 1000
+    link/ether 08:00:27:a6:bd:65 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          8        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          12        0       0       0       0
+""".strip()
+
+IP_S_LINK_ALL = """
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    RX: bytes  packets  errors  dropped overrun mcast
+    100608     1208     0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    100608     1208     0       0       0       0
+2: enp0s25: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 1c:75:08:a5:7e:25 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    1112747593 1492476  0       72813   0       7
+    TX: bytes  packets  errors  dropped carrier collsns
+    216483610  969514   0       0       0       0
+3: wlp3s0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 86:62:bd:26:12:63 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+4: virbr0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:17:84:7d brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    48067      769      0       4       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    120681     1022     0       0       0       0
+5: virbr0-nic: <BROADCAST,MULTICAST> mtu 1500 qdisc fq_codel master virbr0 state DOWN mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:17:84:7d brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    0          0        0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    0          0        0       0       0       0
+6: vnet0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel master virbr0 state UNKNOWN mode DEFAULT group default qlen 1000
+    link/ether fe:54:00:43:7e:91 brd ff:ff:ff:ff:ff:ff
+    RX: bytes  packets  errors  dropped overrun mcast
+    58833      769      0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    605233     10237    0       0       0       0
+7: ppp0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1492 qdisc fq_codel state UNKNOWN mode DEFAULT group default qlen 3
+    link/ppp
+    RX: bytes  packets  errors  dropped overrun mcast
+    1070945361 1417562  0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    191198320  967571   0       0       0       0
+8: tun0: <POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP> mtu 1360 qdisc fq_codel state UNKNOWN mode DEFAULT group default qlen 100
+    link/none
+    RX: bytes  packets  errors  dropped overrun mcast
+    128212905  157277   0       0       0       0
+    TX: bytes  packets  errors  dropped carrier collsns
+    12341814    136884  0       0       0       0
+""".strip()
+
+
+def test_ip_data_Link():
+    link_info = ip.IpLinkInfo(context_wrap(IP_S_LINK))
+    link_info_all = ip.IpLinkInfo(context_wrap(IP_S_LINK_ALL))
+    if_list_all = link_info_all.active
+    if_list = link_info.active
+    assert len(if_list) == 4
+    assert keys_in(["lo", "enp0s3", "enp0s8", "enp0s9"], if_list)
+    assert keys_in(['ppp0', 'lo', 'tun0', 'enp0s25', 'vnet0', 'virbr0'], if_list_all)
+
+    assert sorted(link_info.active) == sorted(['lo', 'enp0s3', 'enp0s8', 'enp0s9'])
+
+    lo = link_info["lo"]
+    assert lo["mac"] == "00:00:00:00:00:00"
+    assert lo["flags"] == ["LOOPBACK", "UP", "LOWER_UP"]
+    assert lo["type"] == "loopback"
+    assert lo["mtu"] == 65536
+    assert lo["rx_packets"] == 98
+    assert lo["tx_packets"] == 10
+    assert lo["index"] == 2
+
+    enp0s3 = link_info["enp0s3"]
+    assert enp0s3["mac"] == "08:00:27:4a:c5:ef"
+    assert enp0s3["flags"] == ["BROADCAST", "MULTICAST", "UP", "LOWER_UP"]
+    assert enp0s3["type"] == "ether"
+    assert enp0s3["mtu"] == 1500
+    assert enp0s3["rx_packets"] == 2244
+    assert enp0s3["tx_packets"] == 1407
+    assert enp0s3["index"] == 1
+
+    enp0s25 = link_info_all["enp0s25"]
+    assert enp0s25["mac"] == "1c:75:08:a5:7e:25"
+    assert enp0s25["flags"] == ["BROADCAST", "MULTICAST", "UP", "LOWER_UP"]
+    assert enp0s25["type"] == "ether"
+    assert enp0s25["mtu"] == 1500
+    assert enp0s25["rx_packets"] == 1492476
+    assert enp0s25["tx_packets"] == 969514
+    assert enp0s25["index"] == 2
 
 
 IP_ROUTE_SHOW_TABLE_ALL_TEST = """
