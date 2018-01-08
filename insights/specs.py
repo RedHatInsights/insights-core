@@ -305,6 +305,10 @@ neutron_server_log = sf.simple_file("/var/log/neutron/server.log", name="neutron
 nfnetlink_queue = sf.simple_file("/proc/net/netfilter/nfnetlink_queue", name="nfnetlink_queue")
 nfs_exports = sf.simple_file("/etc/exports", name="nfs_exports")
 nfs_exports_d = sf.glob_file("/etc/exports.d/*.exports", name="nfs_exports_d", alias="nfs_exports.d")
+nginx_conf = sf.glob_file(["/etc/nginx/nginx.conf",
+                           "/opt/rh/nginx*/root/etc/nginx/nginx.conf",
+                           "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"],
+                           name="nginx_conf")
 nova_api_log = sf.simple_file("/var/log/nova/nova-api.log", name="nova_api_log", alias="nova-api_log")
 nova_compute_log = sf.simple_file("/var/log/nova/nova-compute.log", name="nova_compute_log", alias="nova-compute.log")
 nova_conf = sf.simple_file("/etc/nova/nova.conf", name="nova_conf", alias="nova.conf")
