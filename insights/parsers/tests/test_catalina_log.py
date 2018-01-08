@@ -1,9 +1,36 @@
+from insights.parsers import catalina_log
+from insights.parsers.catalina_log import CatalinaServerLog, CatalinaOut
 from insights.tests import context_wrap
-from insights.parsers.catalina_out import CatalinaOut
-
 from datetime import datetime
+import doctest
 
-OUT1 = """
+SERVER_LOG = """
+INFO: Command line argument: -Djava.io.tmpdir=/var/cache/tomcat/temp
+Nov 28, 2017 2:11:20 PM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Djava.util.logging.config.file=/usr/share/tomcat/conf/logging.properties
+Nov 28, 2017 2:11:20 PM org.apache.catalina.startup.VersionLoggerListener log
+INFO: Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+Nov 28, 2017 2:11:20 PM org.apache.catalina.core.AprLifecycleListener lifecycleEvent
+INFO: The APR based Apache Tomcat Native library which allows optimal performance in production environments was not found on the java.library.path: /usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
+Nov 28, 2017 2:11:22 PM org.apache.coyote.AbstractProtocol init
+INFO: Initializing ProtocolHandler ["http-bio-18080"]
+Nov 28, 2017 2:11:23 PM org.apache.coyote.AbstractProtocol init
+SEVERE: Failed to initialize end point associated with ProtocolHandler ["http-bio-18080"]
+""".strip()
+
+
+def test_catalina_server_log():
+    ser_log = CatalinaServerLog(context_wrap(SERVER_LOG))
+    test_1 = ser_log.get('-Djava')
+    assert 3 == len(test_1)
+    test_2 = ser_log.get('Failed to initialize')
+    assert 1 == len(test_2)
+    assert test_2[0]['raw_message'] == 'SEVERE: Failed to initialize end point associated with ProtocolHandler ["http-bio-18080"]'
+    assert len(list(ser_log.get_after(datetime(2017, 11, 28, 14, 11, 21)))) == 4
+    assert "/var/cache/tomcat/temp" in ser_log
+
+
+CATALINA_OUT1 = """
 Nov 10, 2015 8:52:38 AM org.apache.jk.common.MsgAjp processHeader
 SEVERE: BAD packet signature 18245
 Nov 10, 2015 8:52:38 AM org.apache.jk.common.ChannelSocket processConnection
@@ -109,7 +136,30 @@ INFO: Server startup in 27028 ms
 
 
 def test_catalina_out():
-    out_log = CatalinaOut(context_wrap(OUT1))
+    out_log = CatalinaOut(context_wrap(CATALINA_OUT1))
     assert "IETF RFC 4122 compliant UUID" in out_log
     assert len(out_log.get("SEVERE")) == 4
     assert len(list(out_log.get_after(datetime(2015, 11, 10, 18, 38, 10)))) == 15
+
+
+CATALINA_OUT2 = """
+Nov 10, 2015 8:52:38 AM org.apache.jk.common.MsgAjp processHeader
+SEVERE: BAD packet signature 18245
+Nov 10, 2015 8:52:38 AM org.apache.jk.common.ChannelSocket processConnection
+SEVERE: Error, processing connection
+SEVERE: BAD packet signature 18245
+Nov 10, 2015 8:52:38 AM org.apache.jk.common.ChannelSocket processConnection
+SEVERE: Error, processing connection
+Nov 10, 2015 4:55:48 PM org.apache.coyote.http11.Http11Protocol pause
+INFO: Pausing Coyote HTTP/1.1 on http-8080
+""".strip()
+
+
+def test_catalina_log_doc_examples():
+    env = {
+            'CatalinaOut': CatalinaOut,
+            'out': CatalinaOut(context_wrap(CATALINA_OUT2, path='/var/log/tomcat/catalina.out')),
+            'log': CatalinaServerLog(context_wrap(SERVER_LOG, path='/var/log/tomcat/catalina.2017-11-28.log'))
+          }
+    failed, total = doctest.testmod(catalina_log, globs=env)
+    assert failed == 0
