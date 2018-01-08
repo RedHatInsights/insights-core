@@ -40,8 +40,27 @@ ps_auxww = sf.first_of([
     sf.simple_file('sos_commands/process/ps_auxwww', alias='ps_auxwww', context=HostArchiveContext),
     sf.simple_file('sos_commands/process/ps_auxcww', alias='ps_auxcww', context=HostArchiveContext),
 ])
-catalina_out = sf.glob_file(["/var/log/tomcat/catalina.out", "/var/log/tomcat6/catalina.out", "/tomcat-logs/tomcat/catalina.out", "/tomcat-logs/tomcat6/catalina.out"], name="catalina_out", alias="catalina.out")
-catalina_server_log = sf.glob_file(["/var/log/tomcat/logs/catalina*.log", "/var/log/tomcat6/logs/catalina*.log", "/tomcat-logs/tomcat/catalina*.log", "/tomcat-logs/tomcat6/catalina*.log"], name="catalina_server_log")
+
+
+@datasource(ps_auxww)
+def tomcat_base(broker):
+    ps = broker[ps_auxww].content
+    results = []
+    findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
+    for p in ps:
+        found = findall(p)
+        if found:
+            # Only get the path which is absolute
+            results.extend(f for f in found if f[0] == '/')
+    return list(set(results))
+
+
+catalina_out = sf.first_of([sf.foreach_collect(tomcat_base, "%s/catalina.out"),
+                            sf.glob_file("tomcat-logs/tomcat*/catalina.out", context=HostArchiveContext)],
+                           name="catalina_out", alias="catalina.out")
+catalina_server_log = sf.first_of([sf.foreach_collect(tomcat_base, "%s/catalina*.log"),
+                                   sf.glob_file("tomcat-logs/tomcat*/catalina*.log", context=HostArchiveContext)],
+                                  name="catalina_server_log")
 cciss = sf.glob_file("/proc/driver/cciss/cciss*", name="cciss")
 ceilometer_central_log = sf.simple_file("/var/log/ceilometer/central.log", name="ceilometer_central_log")
 ceilometer_collector_log = sf.simple_file("/var/log/ceilometer/collector.log", name="ceilometer_collector_log")
@@ -460,20 +479,20 @@ tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml", name="tomcat_
                               name="tomcat_web_xml", alias="tomcat_web.xml")
 
 
-@datasource(HostContext)
-def tomcat_home(broker):
-    ctx = broker[HostContext]
-    ps = ctx.shell_out("ps auxwww")
+@datasource(ps_auxww)
+def tomcat_home_base(broker):
+    ps = broker[ps_auxww].content
     results = []
     findall = re.compile(r"\-Dcatalina\.(home|base)=(\S+)").findall
     for p in ps:
         found = findall(p)
         if found:
-            results.extend(f[1] for f in found)
+            # Only get the path which is absolute
+            results.extend(f[1] for f in found if f[1][0] == '/')
     return list(set(results))
 
 
-tomcat_vdc_targeted = sf.foreach_execute(tomcat_home, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s", name="tomcat_vdc_targeted")
+tomcat_vdc_targeted = sf.foreach_execute(tomcat_home_base, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s", name="tomcat_vdc_targeted")
 tomcat_vdc_fallback = sf.simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +", name="tomcat_vdc_fallback")
 tuned_adm = sf.simple_command("/usr/sbin/tuned-adm list", name="tuned_adm", alias="tuned-adm")
 udev_persistent_net_rules = sf.simple_file("/etc/udev/rules.d/70-persistent-net.rules", name="udev_persistent_net_rules", alias="udev-persistent-net.rules")
