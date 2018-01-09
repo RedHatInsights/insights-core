@@ -330,11 +330,11 @@ class XMLParser(LegacyItemAccess, Parser):
         'Switzerland'
 
     Attributes:
-        raw (str): raw XML content
-        dom (Element): Root element of parsed XML file
-        data (dict): All required specific properties can be included in data.
+        raw (str): raw XML content.
+        dom (Element): Root element of parsed XML file.
         xmlns (str): The default XML namespace, an empty string when no
             namespace is declared.
+        data (dict): All required specific properties can be included in data.
 
     """
 
@@ -348,8 +348,9 @@ class XMLParser(LegacyItemAccess, Parser):
     def parse_content(self, content):
         """
         All child classes inherit this function to parse XML file automatically.
-        It will call the private function :attr:`_parse_dom` by default to parser all
-        necessary data to :attr:`data`.
+        It will call the private function :attr:`_parse_dom` by default to
+        parser all necessary data to :attr:`data` and the :attr:`xmlns` (the
+        default namespace) is ready for this function.
         """
         self.dom = self.xmlns = None
         self.data = {}
@@ -357,8 +358,8 @@ class XMLParser(LegacyItemAccess, Parser):
         if len(content) > 3:
             self.raw = '\n'.join(content)
             self.dom = ET.fromstring(self.raw)
-            self.data = self._parse_dom()
             self.xmlns = self.dom.tag.strip("{").split("}")[0] if all(c in self.dom.tag for c in ["{", "}"]) else ""
+            self.data = self._parse_dom()
 
     def get_elements(self, element, xmlns=None):
         """
