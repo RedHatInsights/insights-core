@@ -32,6 +32,7 @@ BASE_MODULE_NAMES = {}
 
 TYPE_OBSERVERS = defaultdict(set)
 
+ADDED_DEPENDENCIES = defaultdict(list)
 ALIASES_BY_COMPONENT = {}
 ALIASES = {}
 COMPONENT_METADATA = {}
@@ -73,19 +74,35 @@ def get_alias(component):
     return ALIASES_BY_COMPONENT.get(component)
 
 
-def get_component(name):
-    """ Returns a class or function specified by the fully qualified name string."""
-    try:
-        if name not in COMPONENT_NAME_CACHE:
-            mod, _, name = name.rpartition(".")
-            if mod not in sys.modules:
-                importlib.import_module(mod)
-            COMPONENT_NAME_CACHE[name] = getattr(sys.modules[mod], name)
+def _get_from_module(name):
+    mod, _, n = name.rpartition(".")
+    if mod not in sys.modules:
+        importlib.import_module(mod)
+    return getattr(sys.modules[mod], n)
 
+
+def _get_from_class(name):
+    mod, _, n = name.rpartition(".")
+    cls = _get_from_module(mod)
+    return getattr(cls, n)
+
+
+def get_component(name):
+    """ Returns a class, function, or class method specified by the fully
+        qualified name string.
+    """
+    if name in COMPONENT_NAME_CACHE:
         return COMPONENT_NAME_CACHE[name]
+
+    try:
+        COMPONENT_NAME_CACHE[name] = _get_from_module(name)
     except:
-        log.debug("Couldn't load module for %s.%s" % (mod, name))
-        COMPONENT_NAME_CACHE[name] = None
+        try:
+            COMPONENT_NAME_CACHE[name] = _get_from_class(name)
+        except:
+            log.debug("Couldn't load %s" % name)
+            COMPONENT_NAME_CACHE[name] = None
+    return COMPONENT_NAME_CACHE[name]
 
 
 def get_component_type(component):
@@ -108,6 +125,16 @@ def get_dependents(component):
     if component in ALIASES:
         deps |= get_dependents(ALIASES[component])
     return deps
+
+
+def add_dependency(component, dep):
+    DEPENDENTS[dep].add(component)
+    DEPENDENCIES[component].add(dep)
+    ADDED_DEPENDENCIES[component].append(dep)
+
+
+def get_added_dependencies(component):
+    return ADDED_DEPENDENCIES.get(component, [])
 
 
 def add_observer(o, component_type=ANY_TYPE):
@@ -137,6 +164,8 @@ class SkipComponent(Exception):
 def get_name(component):
     component = resolve_alias(component)
     if six.callable(component):
+        if hasattr(component, "__qualname__"):
+            return component.__qualname__
         return '.'.join([component.__module__, component.__name__])
     return str(component)
 
@@ -204,6 +233,11 @@ def replace(old, new):
 
     if old in DEPENDENTS:
         del DEPENDENTS[old]
+
+    if old in ADDED_DEPENDENCIES:
+        deps = ADDED_DEPENDENCIES[old]
+        del ADDED_DEPENDENCIES[old]
+        ADDED_DEPENDENCIES[new] = deps
 
     HIDDEN.discard(old)
 
