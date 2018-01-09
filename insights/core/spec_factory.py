@@ -1,9 +1,7 @@
-import importlib
-import inspect
 import logging
 import os
 import re
-import sys
+import six
 import traceback
 
 from glob import glob
@@ -132,208 +130,239 @@ class CommandOutputProvider(ContentProvider):
         return 'CommandOutputProvider("%s")' % self.cmd
 
 
-class SpecFactory(object):
-    def __init__(self, module_name=None):
-        self.module_name = module_name
+class RegistryPoint(object):
+    """ Marker class for declaring that an element of a `SpecSet` subclass
+        is a registry point against which further subclasses can register
+        datasource implementations by simply declaring them with the same name.
+    """
+    def __init__(self, *args, **kwargs):
+        pass
 
-    def _attach(self, component, name):
-        """
-        This step binds the component to the module in which it was defined, or
-        the specified module.  This is important because otherwise all
-        components would be attached to *this* module.
-        """
 
-        if self.module_name:
-            if self.module_name not in sys.modules:
-                importlib.import_module(self.module_name)
-            module = sys.modules[self.module_name]
-        else:
-            frame = inspect.stack()[2][0]
-            module = inspect.getmodule(frame) or sys.modules.get("__main__")
+def _registry_point():
+    """ Provides a datasource implementation that replaces the `RegistryPoint`
+        marker class on `SpecSet` subclasses.
+    """
+    @datasource()
+    def inner(broker):
+        for c in reversed(dr.get_added_dependencies(inner)):
+            if c in broker:
+                return broker[c]
+        raise dr.SkipComponent()
+    return inner
 
-        if module:
-            old = getattr(module, name, None)
-            component.__module__ = module.__name__
-            component.__name__ = name
-            setattr(module, name, component)
-            if old:
-                dr.replace(old, component)
 
-    def _get_context(self, context, alternatives, broker):
-        if context:
-            if isinstance(context, list):
-                return dr.first_of(context, broker)
-            return broker.get(context)
-        return dr.first_of(alternatives, broker)
+class SpecDescriptor(object):
+    """ Descriptor Protocol handler that returns the literal function from a
+        class during dot (.) access.
+    """
+    def __init__(self, func):
+        self.func = func
 
-    def simple_file(self, path, name=None, context=None, kind=TextFileProvider, alias=None):
-        alias = alias or name
+    def __get__(self, obj, obj_type):
+        return self.func
 
-        @datasource(context or FSRoots, alias=alias)
-        def inner(broker):
-            ctx = self._get_context(context, FSRoots, broker)
-            return kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
-        if name:
-            self._attach(inner, name)
-        return inner
+    def __set__(self, obj, val):
+        raise AttributeError()
 
-    def glob_file(self, patterns, name=None, ignore=None, context=None, kind=TextFileProvider, alias=None):
-        alias = alias or name
-        if not isinstance(patterns, (list, set)):
-            patterns = [patterns]
 
-        @datasource(context or FSRoots, alias=alias)
-        def inner(broker):
-            ctx = self._get_context(context, FSRoots, broker)
-            root = ctx.root
-            results = []
-            for pattern in patterns:
-                pattern = ctx.locate_path(pattern)
-                for path in glob(os.path.join(root, pattern.lstrip('/'))):
-                    if ignore and re.search(ignore, path):
-                        continue
-                    try:
-                        results.append(kind(path[len(root):], root=root, filters=get_filters(inner)))
-                    except:
-                        log.debug(traceback.format_exc())
-            if results:
-                return results
-            raise ContentException("[%s] didn't match." % ', '.join(patterns))
-        if name:
-            self._attach(inner, name)
-        return inner
+class SpecSetMeta(type):
+    """ The metaclass that converts RegistryPoint markers to regisry point
+        datasources and hooks implementations for them into the registry.
+    """
+    def __new__(cls, name, bases, dct):
+        dct["registry"] = {}
+        return super(SpecSetMeta, cls).__new__(cls, name, bases, dct)
 
-    def first_file(self, files, name=None, context=None, kind=TextFileProvider, alias=None):
-        alias = alias or name
+    def __init__(cls, name, bases, dct):
+        if name == "SpecSet":
+            return
 
-        @datasource(context or FSRoots, alias=alias)
-        def inner(broker):
-            ctx = self._get_context(context, FSRoots, broker)
-            root = ctx.root
-            for f in files:
+        module = cls.__module__
+        for k, v in dct.items():
+            if v is RegistryPoint or isinstance(v, RegistryPoint):
+                v = _registry_point()
+                cls.registry[k] = v
+
+            if six.callable(v):
+                v.__qualname__ = ".".join([cls.__name__, k])
+                v.__name__ = k
+                v.__module__ = module
+                setattr(cls, k, SpecDescriptor(v))
+                for b in bases:
+                    if k in b.registry:
+                        point = b.registry[k]
+                        dr.add_dependency(point, v)
+                        dr.mark_hidden(v)
+                        break
+
+
+class SpecSet(object):
+    """ The base class for all spec declarations. Extend this class and define
+        your datasources directly or with a `SpecFactory`.
+    """
+    __metaclass__ = SpecSetMeta
+
+
+def _get_context(context, alternatives, broker):
+    if context:
+        if isinstance(context, list):
+            return dr.first_of(context, broker)
+        return broker.get(context)
+    return dr.first_of(alternatives, broker)
+
+
+def simple_file(path, context=None, kind=TextFileProvider, alias=None):
+
+    @datasource(context or FSRoots, alias=alias)
+    def inner(broker):
+        ctx = _get_context(context, FSRoots, broker)
+        return kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
+    return inner
+
+
+def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, alias=None):
+    if not isinstance(patterns, (list, set)):
+        patterns = [patterns]
+
+    @datasource(context or FSRoots, alias=alias)
+    def inner(broker):
+        ctx = _get_context(context, FSRoots, broker)
+        root = ctx.root
+        results = []
+        for pattern in patterns:
+            pattern = ctx.locate_path(pattern)
+            for path in glob(os.path.join(root, pattern.lstrip('/'))):
+                if ignore and re.search(ignore, path):
+                    continue
                 try:
-                    return kind(ctx.locate_path(f), root=root, filters=get_filters(inner))
-                except:
-                    pass
-            raise ContentException("None of [%s] found." % ', '.join(files))
-        if name:
-            self._attach(inner, name)
-        return inner
-
-    def listdir(self, path, name=None, context=None, alias=None):
-        alias = alias or name
-
-        @datasource(context or FSRoots, alias=alias)
-        def inner(broker):
-            ctx = self._get_context(context, FSRoots, broker)
-            p = os.path.join(ctx.root, path.lstrip('/'))
-            p = ctx.locate_path(p)
-            if os.path.isdir(p):
-                return os.listdir(p)
-
-            result = glob(p)
-            if result:
-                return [os.path.basename(r) for r in result]
-            raise ContentException("Can't list %s or nothing there." % p)
-        if name:
-            self._attach(inner, name)
-        return inner
-
-    def simple_command(self, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
-        alias = alias or name
-
-        @datasource(context, alias=alias)
-        def inner(broker):
-            ctx = broker[context]
-            rc = None
-            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
-            if keep_rc:
-                rc, result = raw
-            else:
-                result = raw
-            return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
-        if name:
-            self._attach(inner, name)
-        return inner
-
-    def foreach_execute(self, provider, cmd, name=None, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
-        alias = alias or name
-
-        @datasource(provider, context, alias=alias)
-        def inner(broker):
-            result = []
-            source = broker[provider]
-            ctx = broker[context]
-            if isinstance(source, ContentProvider):
-                source = source.content
-            if not isinstance(source, (list, set)):
-                source = [source]
-            for e in source:
-                try:
-                    the_cmd = cmd % e
-                    rc = None
-                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
-                    if keep_rc:
-                        rc, output = raw
-                    else:
-                        output = raw
-
-                    result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split, keep_rc=keep_rc))
+                    results.append(kind(path[len(root):], root=root, filters=get_filters(inner)))
                 except:
                     log.debug(traceback.format_exc())
-            if result:
-                return result
-            raise ContentException("No results found for [%s]" % cmd)
-        if name:
-            self._attach(inner, name)
-        return inner
+        if results:
+            return results
+        raise ContentException("[%s] didn't match." % ', '.join(patterns))
+    return inner
 
-    def foreach_collect(self, provider, path, name=None, ignore=None, context=HostContext, kind=TextFileProvider, alias=None):
-        alias = alias or name
 
-        @datasource(provider, context, alias=alias)
-        def inner(broker):
-            result = []
-            source = broker[provider]
-            ctx = self._get_context(context, FSRoots, broker)
-            root = ctx.root
-            if isinstance(source, ContentProvider):
-                source = source.content
-            if not isinstance(source, (list, set)):
-                source = [source]
-            for e in source:
-                pattern = ctx.locate_path(path % e)
-                for p in glob(os.path.join(root, pattern.lstrip('/'))):
-                    if ignore and re.search(ignore, p):
-                        continue
-                    try:
-                        result.append(kind(p[len(root):], root=root, filters=get_filters(inner)))
-                    except:
-                        log.debug(traceback.format_exc())
-            if result:
-                return result
-            raise ContentException("No results found for [%s]" % path)
-        if name:
-            self._attach(inner, name)
-        return inner
+def first_file(files, context=None, kind=TextFileProvider, alias=None):
 
-    def first_of(self, deps, name=None, alias=None):
-        """ Given a list of dependencies, returns the first of the list
-            that exists in the broker. At least one must be present, or this
-            component won't fire.
-        """
-        alias = alias or name
-        dr.mark_hidden(deps)
+    @datasource(context or FSRoots, alias=alias)
+    def inner(broker):
+        ctx = _get_context(context, FSRoots, broker)
+        root = ctx.root
+        for f in files:
+            try:
+                return kind(ctx.locate_path(f), root=root, filters=get_filters(inner))
+            except:
+                pass
+        raise ContentException("None of [%s] found." % ', '.join(files))
+    return inner
 
-        @datasource(deps, alias=alias)
-        def inner(broker):
-            for c in deps:
-                if c in broker:
-                    return broker[c]
 
-        if name:
-            self._attach(inner, name)
-        return inner
+def listdir(path, context=None, alias=None):
+
+    @datasource(context or FSRoots, alias=alias)
+    def inner(broker):
+        ctx = _get_context(context, FSRoots, broker)
+        p = os.path.join(ctx.root, path.lstrip('/'))
+        p = ctx.locate_path(p)
+        if os.path.isdir(p):
+            return os.listdir(p)
+
+        result = glob(p)
+        if result:
+            return [os.path.basename(r) for r in result]
+        raise ContentException("Can't list %s or nothing there." % p)
+    return inner
+
+
+def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+
+    @datasource(context, alias=alias)
+    def inner(broker):
+        ctx = broker[context]
+        rc = None
+        raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+        if keep_rc:
+            rc, result = raw
+        else:
+            result = raw
+        return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
+    return inner
+
+
+def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+
+    @datasource(provider, context, alias=alias)
+    def inner(broker):
+        result = []
+        source = broker[provider]
+        ctx = broker[context]
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+        for e in source:
+            try:
+                the_cmd = cmd % e
+                rc = None
+                raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+                if keep_rc:
+                    rc, output = raw
+                else:
+                    output = raw
+
+                result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split, keep_rc=keep_rc))
+            except:
+                log.debug(traceback.format_exc())
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % cmd)
+    return inner
+
+
+def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextFileProvider, alias=None):
+
+    @datasource(provider, context, alias=alias)
+    def inner(broker):
+        result = []
+        source = broker[provider]
+        ctx = _get_context(context, FSRoots, broker)
+        root = ctx.root
+        if isinstance(source, ContentProvider):
+            source = source.content
+        if not isinstance(source, (list, set)):
+            source = [source]
+        for e in source:
+            pattern = ctx.locate_path(path % e)
+            for p in glob(os.path.join(root, pattern.lstrip('/'))):
+                if ignore and re.search(ignore, p):
+                    continue
+                try:
+                    result.append(kind(p[len(root):], root=root, filters=get_filters(inner)))
+                except:
+                    log.debug(traceback.format_exc())
+        if result:
+            return result
+        raise ContentException("No results found for [%s]" % path)
+    return inner
+
+
+def first_of(deps, alias=None):
+    """ Given a list of dependencies, returns the first of the list
+        that exists in the broker. At least one must be present, or this
+        component won't fire.
+    """
+    dr.mark_hidden(deps)
+
+    @datasource(deps, alias=alias)
+    def inner(broker):
+        for c in deps:
+            if c in broker:
+                return broker[c]
+
+    return inner
 
 
 @serializer(TextFileProvider)
