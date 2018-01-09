@@ -2,6 +2,7 @@ import pkgutil
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser  # noqa: F401
+from .core import XMLParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import fava  # noqa: F401
 from .core import SkipComponent  # noqa: F401

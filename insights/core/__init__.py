@@ -7,6 +7,7 @@ import re
 import shlex
 import sys
 import yaml
+import xml.etree.ElementTree as ET
 from ConfigParser import RawConfigParser
 
 DEFAULT_PATTERN = r'.*py$'
@@ -282,6 +283,128 @@ class LegacyItemAccess(object):
             (str): String value of the stored item, or the default if not found.
         """
         return self.data.get(item, default)
+
+
+class XMLParser(LegacyItemAccess, Parser):
+    """
+    A parser class that reads XML files.  Base your own parser on this.
+
+    Examples:
+        >>> content = '''
+        ... <?xml version="1.0"?>
+        ... <data xmlns:fictional="http://characters.example.com"
+        ...       xmlns="http://people.example.com">
+        ...     <country name="Liechtenstein">
+        ...         <rank updated="yes">2</rank>
+        ...         <year>2008</year>
+        ...         <gdppc>141100</gdppc>
+        ...         <neighbor name="Austria" direction="E"/>
+        ...         <neighbor name="Switzerland" direction="W"/>
+        ...     </country>
+        ...     <country name="Singapore">
+        ...         <rank updated="yes">5</rank>
+        ...         <year>2011</year>
+        ...         <gdppc>59900</gdppc>
+        ...         <neighbor name="Malaysia" direction="N"/>
+        ...     </country>
+        ...     <country name="Panama">
+        ...         <rank>68</rank>
+        ...         <year>2011</year>
+        ...         <gdppc>13600</gdppc>
+        ...         <neighbor name="Costa Rica" direction="W"/>
+        ...     </country>
+        ... </data>
+        ... '''.strip()
+        >>> xml_parser = XMLParser(context_wrap(content))
+        >>> xml_parser.xmlns
+        'http://people.example.com'
+        >>> xml_parser.get_elements(".")[0].tag # Top-level elements
+        'data'
+        >>> len(xml_parser.get_elements("./country/neighbor", None)) # All 'neighbor' grand-children of 'country' children of the top-level elements
+        3
+        >>> len(xml_parser.get_elements(".//year/..[@name='Singapore']")[0]) # Nodes with name='Singapore' that have a 'year' child
+        1
+        >>> xml_parser.get_elements(".//*[@name='Singapore']/year")[0].text # 'year' nodes that are children of nodes with name='Singapore'
+        '2011'
+        >>> xml_parser.get_elements(".//neighbor[2]", "http://people.example.com")[0].get('name') # All 'neighbor' nodes that are the second child of their parent
+        'Switzerland'
+
+    Attributes:
+        raw (str): raw XML content
+        dom (Element): Root element of parsed XML file
+        data (dict): All required specific properties can be included in data.
+        xmlns (str): The default XML namespace, an empty string when no
+            namespace is declared.
+
+    """
+
+    def _parse_dom(self):
+        """
+        If ``self.data`` is required, all child classes need to overwrite this
+        function to set it
+        """
+        return {}
+
+    def parse_content(self, content):
+        """
+        All child classes inherit this function to parse XML file automatically.
+        It will call the private function :attr:`_parse_dom` by default to parser all
+        necessary data to :attr:`data`.
+        """
+        self.dom = self.xmlns = None
+        self.data = {}
+        # ignore empty xml file
+        if len(content) > 3:
+            self.raw = '\n'.join(content)
+            self.dom = ET.fromstring(self.raw)
+            self.data = self._parse_dom()
+            self.xmlns = self.dom.tag.strip("{").split("}")[0] if all(c in self.dom.tag for c in ["{", "}"]) else ""
+
+    def get_elements(self, element, xmlns=None):
+        """
+        Return a list of elements those match the searching condition.
+
+        If the XML input has namespaces, elements and attributes with prefixes
+        in the form prefix:sometag get expanded to {namespace}element where the
+        prefix is replaced by the full URI.  Also, if there is a default
+        namespace, that full URI gets prepended to all of the non-prefixed tags.
+        Element names can contain letters, digits, hyphens, underscores, and
+        periods.  But element names must start with a letter or underscore.
+        Here the while-clause is to set searching condition from
+        `/element1/element2` to `/{namespace}element1/{namespace}/element2`
+
+        Parameters:
+            element: Searching condition to search certain elements in an XML
+                     file. For more details about how to set searching
+                     condition, refer to section `19.7.2.1. Example` and
+                     `19.7.2.2. Supported XPath syntax` in
+                     https://docs.python.org/2/library/xml.etree.elementtree.html
+            xmlns:   XML namespace, default value to None.
+                     None means that xmlns equals to the `self.xmlns` (default
+                     namespace) instead of "" all the time.  Only string type
+                     parameter (including "") will be regarded as a valid xml
+                     namespace.
+
+        Returns:
+            (list): List of elements those match the searching condition
+        """
+        real_element = ""
+        real_xmlns = ""
+
+        if xmlns is None:
+            real_xmlns = "{" + self.xmlns + "}" if self.xmlns else ""
+        else:
+            real_xmlns = "{" + xmlns + "}"
+
+        while "/" in element:
+            l = element.split("/", 1)
+            element = l[1]
+            real_element += l[0] + "/"
+            if element[0].isalpha() or element[0] == "_":
+                real_element += real_xmlns
+
+        real_element += element
+        return self.dom.findall(real_element)
 
 
 class YAMLParser(Parser, LegacyItemAccess):
