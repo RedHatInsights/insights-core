@@ -16,7 +16,7 @@ from collections import defaultdict
 from functools import reduce as _reduce
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
-from insights.util import enum
+from insights.util import enum, KeyPassingDefaultDict
 
 try:
     from insights.core import fava
@@ -47,7 +47,6 @@ DELEGATES = {}
 HIDDEN = set()
 
 ANY_TYPE = object()
-COMPONENT_NAME_CACHE = {}
 
 
 def resolve_alias(c):
@@ -87,22 +86,20 @@ def _get_from_class(name):
     return getattr(cls, n)
 
 
-def get_component(name):
+def _get_component(name):
     """ Returns a class, function, or class method specified by the fully
-        qualified name string.
+        qualified name.
     """
-    if name in COMPONENT_NAME_CACHE:
-        return COMPONENT_NAME_CACHE[name]
-
-    try:
-        COMPONENT_NAME_CACHE[name] = _get_from_module(name)
-    except:
+    for f in (_get_from_module, _get_from_class):
         try:
-            COMPONENT_NAME_CACHE[name] = _get_from_class(name)
+            return f(name)
         except:
-            log.debug("Couldn't load %s" % name)
-            COMPONENT_NAME_CACHE[name] = None
-    return COMPONENT_NAME_CACHE[name]
+            pass
+    log.debug("Couldn't load %s" % name)
+
+
+COMPONENT_NAME_CACHE = KeyPassingDefaultDict(_get_component)
+get_component = COMPONENT_NAME_CACHE.__getitem__
 
 
 def get_component_type(component):
