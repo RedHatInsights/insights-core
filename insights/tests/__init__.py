@@ -10,7 +10,6 @@ from itertools import islice
 
 import insights
 import insights.core.fava  # noqa: F401
-import insights.specs_default  # noqa: F401
 from insights import apply_filters, get_config
 
 # Need to alias the name of TestArchive since pytest looks at it because it
