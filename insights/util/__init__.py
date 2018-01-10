@@ -1,3 +1,4 @@
+import collections
 import inspect
 import logging
 import functools
@@ -7,6 +8,20 @@ import warnings
 
 TMP_DIR = os.path.join("/tmp", "insights-web")
 logger = logging.getLogger(__name__)
+
+
+class KeyPassingDefaultDict(collections.defaultdict):
+    """ A default dict that passes the key to its factory function. """
+
+    def __init__(self, *args, **kwargs):
+        super(KeyPassingDefaultDict, self).__init__(*args, **kwargs)
+
+    def __missing__(self, key):
+        if self.default_factory:
+            self[key] = self.default_factory(key)
+            return self[key]
+        else:
+            return super(KeyPassingDefaultDict, self).__missing__(key)
 
 
 def enum(*e):
