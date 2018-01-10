@@ -267,6 +267,7 @@ class Specs(SpecSet):
     md5chk_files = RegistryPoint
     prelink_orig_md5 = RegistryPoint
     prev_uploader_log = RegistryPoint
+    proc_snmp_ipv4 = RegistryPoint
     puppet_ssl_cert_ca_pem = RegistryPoint
     pvs = RegistryPoint
     pvs_noheadings = RegistryPoint

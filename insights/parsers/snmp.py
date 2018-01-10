@@ -12,10 +12,10 @@ file, which contains TCP/IP stats of individual layer.
 """
 
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import proc_snmp_ipv4, proc_snmp_ipv6
+from insights.specs import Specs
 
 
-@parser(proc_snmp_ipv4)
+@parser(Specs.proc_snmp_ipv4)
 class TcpIpStats(Parser, LegacyItemAccess):
     """
     Parser for ``/proc/net/snmp`` file.
@@ -87,7 +87,7 @@ class TcpIpStats(Parser, LegacyItemAccess):
         self.data = snmp_stats
 
 
-@parser(proc_snmp_ipv6)
+@parser(Specs.proc_snmp_ipv6)
 class TcpIpStatsIPV6(Parser, LegacyItemAccess):
     """
     Parser for ``/proc/net/snmp6`` file.
