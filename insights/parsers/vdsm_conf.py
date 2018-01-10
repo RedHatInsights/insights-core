@@ -29,10 +29,10 @@ Examples:
 """
 
 from .. import IniConfigFile, parser
-from insights.specs import vdsm_conf
+from insights.specs import Specs
 
 
-@parser(vdsm_conf)
+@parser(Specs.vdsm_conf)
 class VDSMConfIni(IniConfigFile):
     """Class for VDSM configuration file content."""
     pass

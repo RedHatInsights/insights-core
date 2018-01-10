@@ -8,11 +8,10 @@ catalina_log - Log files for Tomcat
 """
 
 from .. import LogFileOutput, parser
-from insights.specs import catalina_server_log
-from insights.specs import catalina_out
+from insights.specs import Specs
 
 
-@parser(catalina_server_log)
+@parser(Specs.catalina_server_log)
 class CatalinaServerLog(LogFileOutput):
     """
     Read the tomcat server log file.
@@ -58,7 +57,7 @@ class CatalinaServerLog(LogFileOutput):
     time_format = '%b %d, %Y %I:%M:%S %p'
 
 
-@parser(catalina_out)
+@parser(Specs.catalina_out)
 class CatalinaOut(LogFileOutput):
     """
     This parser reads all ``catalina.out`` files in the ``/var/log/tomcat*``

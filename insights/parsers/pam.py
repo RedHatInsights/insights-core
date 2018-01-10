@@ -117,7 +117,7 @@ from .. import Parser, get_active_lines, parser
 from ..parsers import unsplit_lines, keyword_search, optlist_to_dict
 
 import re
-from insights.specs import pam_conf
+from insights.specs import Specs
 
 
 class PamConfEntry(object):
@@ -379,7 +379,7 @@ class PamDConf(Parser):
         return found
 
 
-@parser(pam_conf)
+@parser(Specs.pam_conf)
 class PamConf(PamDConf):
     """Base class for parsing pam config file ``/etc/pam.conf``.
 

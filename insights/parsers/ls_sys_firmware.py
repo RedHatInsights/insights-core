@@ -39,10 +39,10 @@ Examples:
 """
 from .. import parser
 from .. import FileListing
-from insights.specs import ls_sys_firmware
+from insights.specs import Specs
 
 
-@parser(ls_sys_firmware)
+@parser(Specs.ls_sys_firmware)
 class LsSysFirmware(FileListing):
     """Parses output of ``ls -lanR /sys/firmware`` command."""
     pass

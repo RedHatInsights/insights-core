@@ -5,13 +5,13 @@ ResolvConf - file ``/etc/resolv.conf``
 """
 
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
-from insights.specs import resolv_conf
+from insights.specs import Specs
 
 KEYWORD1 = 'search'
 KEYWORD2 = 'domain'
 
 
-@parser(resolv_conf)
+@parser(Specs.resolv_conf)
 class ResolvConf(LegacyItemAccess, Parser):
     '''
     Parse the ``/etc/resolv.conf`` file into a dictionary of keywords and

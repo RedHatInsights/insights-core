@@ -2,19 +2,18 @@ import os
 
 from insights.core import dr
 from insights.core.context import HostContext
-from insights.core.spec_factory import SpecFactory
+from insights.core.spec_factory import simple_file, simple_command, glob_file
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-sf = SpecFactory(__name__)
 this_file = os.path.abspath(__file__)
 with open(this_file) as f:
     file_content = [l.rstrip() for l in f.readlines()]
 
 
-smpl_file = sf.simple_file(this_file)
-many = sf.glob_file(here + "/*.py")
-smpl_cmd = sf.simple_command("/usr/bin/uptime")
+smpl_file = simple_file(this_file)
+many = glob_file(here + "/*.py")
+smpl_cmd = simple_command("/usr/bin/uptime")
 
 stage = dr.new_component_type(executor=dr.broker_executor)
 

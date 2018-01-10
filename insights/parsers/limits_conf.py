@@ -10,10 +10,10 @@ easier to use the contents of the parser.
 """
 
 from .. import Parser, parser, get_active_lines
-from insights.specs import limits_conf
+from insights.specs import Specs
 
 
-@parser(limits_conf)
+@parser(Specs.limits_conf)
 class LimitsConf(Parser):
     """
     Parse the /etc/security/limits.conf and files in /etc/security/limits.d.

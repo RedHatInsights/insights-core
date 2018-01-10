@@ -39,10 +39,10 @@ Examples:
     'http://192.0.2.18:35357'
 """
 from .. import parser, IniConfigFile
-from insights.specs import heat_conf
+from insights.specs import Specs
 
 
-@parser(heat_conf)
+@parser(Specs.heat_conf)
 class HeatConf(IniConfigFile):
     """Parses content of "/etc/heat/heat.conf". """
     pass

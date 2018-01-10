@@ -110,7 +110,7 @@ Examples:
 """
 
 from .. import Parser, parser, get_active_lines
-from insights.specs import meminfo
+from insights.specs import Specs
 
 
 class SubMemInfo(object):
@@ -217,7 +217,7 @@ class DirectMapMemInfo(SubMemInfo):
     ]
 
 
-@parser(meminfo)
+@parser(Specs.meminfo)
 class MemInfo(Parser):
     """
     Meminfo field names are wildly inconsistent (imho).  This class attempts to

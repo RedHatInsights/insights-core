@@ -42,10 +42,10 @@ Raises:
 
 from insights import parser, Parser
 from ..parsers import ParseException, SkipException
-from insights.specs import package_provides_java
+from insights.specs import Specs
 
 
-@parser(package_provides_java)
+@parser(Specs.package_provides_java)
 class PackageProvidesJava(Parser):
     """
     Parse the output of pre_command::

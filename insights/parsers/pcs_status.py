@@ -76,10 +76,10 @@ Examples:
     3
 """
 from .. import Parser, parser
-from insights.specs import pcs_status
+from insights.specs import Specs
 
 
-@parser(pcs_status)
+@parser(Specs.pcs_status)
 class PCSStatus(Parser):
     """Class to process the output of ``pcs status`` command.
 

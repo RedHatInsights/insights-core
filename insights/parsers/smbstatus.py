@@ -37,8 +37,7 @@ Examples:
 
 from .. import parser, Parser, get_active_lines
 from . import parse_fixed_table
-from insights.specs import smbstatus_S
-from insights.specs import smbstatus_p
+from insights.specs import Specs
 
 
 class Statuslist(Parser):
@@ -52,7 +51,7 @@ class Statuslist(Parser):
             yield row
 
 
-@parser(smbstatus_S)
+@parser(Specs.smbstatus_S)
 class SmbstatusS(Statuslist):
     """
         Class for ``smbstatus -S`` command.
@@ -69,7 +68,7 @@ class SmbstatusS(Statuslist):
         self.data = parse_fixed_table(get_active_lines(content, '-----------'), header_substitute=[('Connected at', 'Connected_at')])
 
 
-@parser(smbstatus_p)
+@parser(Specs.smbstatus_p)
 class Smbstatusp(Statuslist):
     """
         Class for ``smbstatus -p`` command.

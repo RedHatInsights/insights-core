@@ -25,17 +25,16 @@ Examples:
 """
 
 from .. import YAMLParser, parser
-from insights.specs import ose_master_config
-from insights.specs import ose_node_config
+from insights.specs import Specs
 
 
-@parser(ose_node_config)
+@parser(Specs.ose_node_config)
 class OseNodeConfig(YAMLParser):
     """Class to parse ``/etc/origin/node/node-config.yaml``"""
     pass
 
 
-@parser(ose_master_config)
+@parser(Specs.ose_master_config)
 class OseMasterConfig(YAMLParser):
     """Class to parse ``/etc/origin/master/master-config.yaml``"""
     pass

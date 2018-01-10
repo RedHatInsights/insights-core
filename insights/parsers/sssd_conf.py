@@ -21,10 +21,10 @@ Example:
 """
 
 from .. import IniConfigFile, parser
-from insights.specs import sssd_config
+from insights.specs import Specs
 
 
-@parser(sssd_config)
+@parser(Specs.sssd_config)
 class SSSD_Config(IniConfigFile):
     """
     Parse the content of the ``/etc/sssd/sssd.config`` file.

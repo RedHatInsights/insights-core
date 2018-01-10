@@ -64,10 +64,10 @@ Examples:
 """
 from .. import parser
 from .. import FileListing
-from insights.specs import ls_etc
+from insights.specs import Specs
 
 
-@parser(ls_etc)
+@parser(Specs.ls_etc)
 class LsEtc(FileListing):
     """Parses output of ``ls -lanR /etc`` command."""
     pass

@@ -41,9 +41,10 @@ Examples:
 """
 
 from .. import Parser, parser
+from insights.specs import Specs
 
 
-@parser("thp_use_zero_page")
+@parser(Specs.thp_use_zero_page)
 class ThpUseZeroPage(Parser):
     """
     Gets the contents of /sys/kernel/mm/transparent_hugepage/use_zero_page, which is either 0 or 1.
@@ -55,7 +56,7 @@ class ThpUseZeroPage(Parser):
         self.use_zero_page = " ".join(content).strip()
 
 
-@parser("thp_enabled")
+@parser(Specs.thp_enabled)
 class ThpEnabled(Parser):
     """
     Gets the contents of  /sys/kernel/mm/transparent_hugepage/enabled, which is something like

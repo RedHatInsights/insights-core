@@ -1,7 +1,7 @@
 from .. import parser, IniConfigFile
-from insights.specs import nova_conf
+from insights.specs import Specs
 
 
-@parser(nova_conf)
+@parser(Specs.nova_conf)
 class NovaConf(IniConfigFile):
     pass

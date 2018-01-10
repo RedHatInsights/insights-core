@@ -11,13 +11,10 @@ in spacewalk-debug or sosreport archives of Satellite 5.x.
 from datetime import datetime
 from .. import parser, LogFileOutput
 import re
-from insights.specs import rhn_search_daemon_log
-from insights.specs import rhn_server_satellite_log
-from insights.specs import rhn_server_xmlrpc_log
-from insights.specs import rhn_taskomatic_daemon_log
+from insights.specs import Specs
 
 
-@parser(rhn_taskomatic_daemon_log)
+@parser(Specs.rhn_taskomatic_daemon_log)
 class TaskomaticDaemonLog(LogFileOutput):
     """Class for parsing the ``rhn_taskomatic_daemon.log`` file.
 
@@ -61,7 +58,7 @@ class TaskomaticDaemonLog(LogFileOutput):
                     continue
 
 
-@parser(rhn_server_xmlrpc_log)
+@parser(Specs.rhn_server_xmlrpc_log)
 class ServerXMLRPCLog(LogFileOutput):
     """Class for parsing the ``rhn_server_xmlrpc.log`` file.
 
@@ -148,7 +145,7 @@ class ServerXMLRPCLog(LogFileOutput):
         return msg_info
 
 
-@parser(rhn_search_daemon_log)
+@parser(Specs.rhn_search_daemon_log)
 class SearchDaemonLog(LogFileOutput):
     """
     Class for parsing the ``/var/log/rhn/search/rhn_search_daemon.log`` file.
@@ -175,7 +172,7 @@ class SearchDaemonLog(LogFileOutput):
     time_format = '%Y/%m/%d %H:%M:%S'
 
 
-@parser(rhn_server_satellite_log)
+@parser(Specs.rhn_server_satellite_log)
 class SatelliteServerLog(LogFileOutput):
     """
     Class for parsing the ``var/log/rhn/rhn_server_satellite.log`` file

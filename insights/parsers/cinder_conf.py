@@ -59,10 +59,10 @@ Examples:
 """
 
 from .. import parser, IniConfigFile
-from insights.specs import cinder_conf
+from insights.specs import Specs
 
 
-@parser(cinder_conf)
+@parser(Specs.cinder_conf)
 class CinderConf(IniConfigFile):
     """
     Cinder configuration parser class, based on the ``IniConfigFile`` class.

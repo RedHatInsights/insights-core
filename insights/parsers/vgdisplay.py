@@ -7,10 +7,10 @@ VgDisplay - command ``vgdisplay``
 from .. import parser, Parser
 
 import re
-from insights.specs import vgdisplay
+from insights.specs import Specs
 
 
-@parser(vgdisplay)
+@parser(Specs.vgdisplay)
 class VgDisplay(Parser):
     """
     Parse the output of the ``vgdisplay -vv`` or ``vgdisplay`` commands.

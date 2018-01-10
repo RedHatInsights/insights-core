@@ -42,6 +42,7 @@ Examples::
 """
 
 from .. import Parser, parser
+from ..specs import Specs
 from . import SkipException
 
 
@@ -70,7 +71,7 @@ class TomcatVirtualDirContextBase(Parser):
             raise SkipException('VirtualDirContext not used.')
 
 
-@parser('tomcat_vdc_fallback')
+@parser(Specs.tomcat_vdc_fallback)
 class TomcatVirtualDirContextFallback(TomcatVirtualDirContextBase):
     """
     Reports whether there is a VirtualDirContext option used in TomCat configuration file. Looks
@@ -79,7 +80,7 @@ class TomcatVirtualDirContextFallback(TomcatVirtualDirContextBase):
     pass
 
 
-@parser('tomcat_vdc_targeted')
+@parser(Specs.tomcat_vdc_targeted)
 class TomcatVirtualDirContextTargeted(TomcatVirtualDirContextBase):
     """
     Reports whether there is a VirtualDirContext option used in TomCat configuration file. Looks

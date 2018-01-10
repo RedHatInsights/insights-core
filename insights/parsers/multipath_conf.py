@@ -9,10 +9,10 @@ The main class is the MultipathConf class, which reads the multipath daemon's
 
 from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
-from insights.specs import multipath_conf
+from insights.specs import Specs
 
 
-@parser(multipath_conf)
+@parser(Specs.multipath_conf)
 class MultipathConf(Parser, LegacyItemAccess):
     """
     Return a dict where the keys are the name of sections in multipath

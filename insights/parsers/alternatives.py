@@ -5,7 +5,7 @@ Alternatives - command ``/usr/bin/alternatives`` output
 
 from insights import parser, Parser
 from insights.core import ParseException
-from insights.specs import display_java
+from insights.specs import Specs
 
 
 class AlternativesOutput(Parser):
@@ -127,7 +127,7 @@ class AlternativesOutput(Parser):
                 self.best = words[4][:-1]  # strip trailing . from path
 
 
-@parser(display_java)
+@parser(Specs.display_java)
 class JavaAlternatives(AlternativesOutput):
     """
     Class to read the ``/usr/sbin/alternatives --display java`` output.

@@ -39,10 +39,10 @@ Examples:
 """
 
 from .. import FileListing, parser
-from insights.specs import ls_boot
+from insights.specs import Specs
 
 
-@parser(ls_boot)
+@parser(Specs.ls_boot)
 class LsBoot(FileListing):
     """
     Parse the /boot directory listing using a standard FileListing parser.

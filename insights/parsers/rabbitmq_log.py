@@ -16,12 +16,10 @@ RabbitMQStartupLog - file ``/var/log/rabbitmq/startup_log``
 """
 
 from .. import LogFileOutput, parser
-from insights.specs import rabbitmq_logs
-from insights.specs import rabbitmq_startup_err
-from insights.specs import rabbitmq_startup_log
+from insights.specs import Specs
 
 
-@parser(rabbitmq_startup_log)
+@parser(Specs.rabbitmq_startup_log)
 class RabbitMQStartupLog(LogFileOutput):
     """Class for parsing ``/var/log/rabbitmq/startup_log`` file.
 
@@ -68,7 +66,7 @@ class RabbitMQStartupLog(LogFileOutput):
     pass
 
 
-@parser(rabbitmq_startup_err)
+@parser(Specs.rabbitmq_startup_err)
 class RabbitMQStartupErrLog(LogFileOutput):
     """Class for parsing ``/var/log/rabbitmq/startup_err`` file.
 
@@ -85,7 +83,7 @@ class RabbitMQStartupErrLog(LogFileOutput):
     pass
 
 
-@parser(rabbitmq_logs)
+@parser(Specs.rabbitmq_logs)
 class RabbitMQLogs(LogFileOutput):
     """Class for parsing ``/var/log/rabbitmq/rabbit@$HOSTNAME.log`` file
 

@@ -53,10 +53,10 @@ Examples:
 """
 
 from .. import parser, IniConfigFile
-from insights.specs import manila_conf
+from insights.specs import Specs
 
 
-@parser(manila_conf)
+@parser(Specs.manila_conf)
 class ManilaConf(IniConfigFile):
     """
     Manila configuration parser class, based on the ``IniConfigFile`` class.

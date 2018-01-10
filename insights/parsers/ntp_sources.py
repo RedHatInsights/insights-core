@@ -12,12 +12,10 @@ command to give leap second status.
 """
 
 from .. import Parser, parser
-from insights.specs import chronyc_sources
-from insights.specs import ntpq_leap
-from insights.specs import ntpq_pn
+from insights.specs import Specs
 
 
-@parser(chronyc_sources)
+@parser(Specs.chronyc_sources)
 class ChronycSources(Parser):
     """
     Chronyc Sources parser
@@ -59,7 +57,7 @@ class ChronycSources(Parser):
                 self.data.append({"source": values[1], "mode": values[0][0], "state": values[0][1]})
 
 
-@parser(ntpq_leap)
+@parser(Specs.ntpq_leap)
 class NtpqLeap(Parser):
     """
     Converts the output of ``ntpq -c 'rv 0 leap'`` into a dictionary in the
@@ -88,7 +86,7 @@ class NtpqLeap(Parser):
         return self.data.get('leap')
 
 
-@parser(ntpq_pn)
+@parser(Specs.ntpq_pn)
 class NtpqPn(Parser):
     """
     Get source and flag for each NTP time source from the output of `ntpq -pn`.

@@ -12,9 +12,10 @@ SwiftProxyServerConf - file ``/etc/swift/proxy-server.conf``
 """
 
 from .. import IniConfigFile, parser
+from ..specs import Specs
 
 
-@parser("swift_proxy_server_conf")
+@parser(Specs.swift_proxy_server_conf)
 class SwiftProxyServerConf(IniConfigFile):
     """
     This class is to parse the content of the ``/etc/swift/proxy-server.conf``.
@@ -52,7 +53,7 @@ class SwiftProxyServerConf(IniConfigFile):
     pass
 
 
-@parser("swift_object_expirer_conf")
+@parser(Specs.swift_object_expirer_conf)
 class SwiftObjectExpirerConf(IniConfigFile):
     """
     This class is to parse the content of the ``/etc/swift/object-expirer.conf``.

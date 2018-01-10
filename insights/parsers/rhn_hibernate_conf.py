@@ -1,8 +1,8 @@
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
-from insights.specs import rhn_hibernate_conf
+from insights.specs import Specs
 
 
-@parser(rhn_hibernate_conf)
+@parser(Specs.rhn_hibernate_conf)
 class RHNHibernateConf(LegacyItemAccess, Parser):
 
     def parse_content(self, content):

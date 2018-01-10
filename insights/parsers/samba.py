@@ -1,10 +1,10 @@
 from .. import add_filter, IniConfigFile, parser
-from insights.specs import samba
+from insights.specs import Specs
 
 add_filter("samba", ["["])
 
 
-@parser(samba)
+@parser(Specs.samba)
 class SambaConfig(IniConfigFile):
     """
         smb.conf file parser.

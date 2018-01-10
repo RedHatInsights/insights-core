@@ -32,10 +32,10 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
-from insights.specs import mariadb_log
+from insights.specs import Specs
 
 
-@parser(mariadb_log)
+@parser(Specs.mariadb_log)
 class MariaDBLog(LogFileOutput):
     """Class for parsing ``/var/log/mariadb/mariadb.log`` file.
 

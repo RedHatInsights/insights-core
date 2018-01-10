@@ -1,8 +1,8 @@
 from .. import Parser, parser
-from insights.specs import ovs_vsctl_show
+from insights.specs import Specs
 
 
-@parser(ovs_vsctl_show)
+@parser(Specs.ovs_vsctl_show)
 class OVSvsctlshow(Parser):
     """
     Input example:

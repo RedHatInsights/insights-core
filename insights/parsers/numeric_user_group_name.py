@@ -36,10 +36,10 @@ Examples:
 
 from .. import Parser, parser
 from . import ParseException
-from insights.specs import numeric_user_group_name
+from insights.specs import Specs
 
 
-@parser(numeric_user_group_name)
+@parser(Specs.numeric_user_group_name)
 class NumericUserGroupName(Parser):
     """
     Reports whether there is a user or group with a name that starts with a digit.

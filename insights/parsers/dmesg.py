@@ -33,11 +33,11 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
-from ..specs import dmesg
+from ..specs import Specs
 import re
 
 
-@parser(dmesg)
+@parser(Specs.dmesg)
 class DmesgLineList(LogFileOutput):
     """
     Class for reading output of ``dmesg`` using the LogFileOutput parser class.

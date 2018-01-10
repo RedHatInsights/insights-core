@@ -19,10 +19,10 @@ Examples:
 """
 
 from .. import parser
-from insights.specs import docker_host_machine_id
+from insights.specs import Specs
 
 
-@parser(docker_host_machine_id)
+@parser(Specs.docker_host_machine_id)
 def docker_host_machineid_parser(context):
     """
     Returns:

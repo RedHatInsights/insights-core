@@ -24,13 +24,13 @@ Examples:
 
 """
 from .. import parser, Parser, add_filter
-from insights.specs import katello_service_status
+from insights.specs import Specs
 
 add_filter('katello-service_status', ['Some services failed to status',
                                       'Success'])
 
 
-@parser(katello_service_status)
+@parser(Specs.katello_service_status)
 class KatelloServiceStatus(Parser):
     """
     Read the ``katello-service status`` and get the list of ``failed_services``.

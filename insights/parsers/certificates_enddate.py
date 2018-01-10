@@ -39,10 +39,10 @@ Examples:
 from datetime import datetime
 from collections import namedtuple
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import certificates_enddate
+from insights.specs import Specs
 
 
-@parser(certificates_enddate)
+@parser(Specs.certificates_enddate)
 class CertificatesEnddate(LegacyItemAccess, Parser):
     """Class to parse the expiration dates."""
 

@@ -73,10 +73,10 @@ Examples:
 import yaml
 from .. import parser, Parser, LegacyItemAccess, get_active_lines
 from ..parsers import ParseException, split_kv_pairs
-from ..specs import mongod_conf
+from ..specs import Specs
 
 
-@parser(mongod_conf)
+@parser(Specs.mongod_conf)
 class MongodbConf(Parser, LegacyItemAccess):
     """
     Parse the ``/etc/mongod.conf`` config file in key-value pair or YAML format.

@@ -110,10 +110,11 @@ Examples:
 """
 
 from .. import parser, LegacyItemAccess, Parser, get_active_lines
+from ..specs import Specs
 from insights.contrib.nginxparser import create_parser, UnspacedList
 
 
-@parser('nginx_conf')
+@parser(Specs.nginx_conf)
 class NginxConf(Parser, LegacyItemAccess):
     """
     Class for ``nginx.conf`` and ``conf.d`` configuration files.

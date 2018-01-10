@@ -43,10 +43,10 @@ Examples:
 """
 
 from .. import Parser, parser
-from insights.specs import tuned_adm
+from insights.specs import Specs
 
 
-@parser(tuned_adm)
+@parser(Specs.tuned_adm)
 class Tuned(Parser):
     """
     Parse data from the ``/usr/sbin/tuned-adm list`` command.

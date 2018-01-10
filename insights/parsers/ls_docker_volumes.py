@@ -38,10 +38,10 @@ Examples:
 """
 
 from .. import FileListing, parser
-from insights.specs import ls_docker_volumes
+from insights.specs import Specs
 
 
-@parser(ls_docker_volumes)
+@parser(Specs.ls_docker_volumes)
 class DockerVolumesDir(FileListing):
     """
     Read the directory for the docker volumes.

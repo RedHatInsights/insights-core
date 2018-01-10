@@ -4,10 +4,10 @@ SelinuxConfig - file ``/etc/selinux/config``
 """
 from .. import get_active_lines, Parser, parser, LegacyItemAccess
 from . import split_kv_pairs
-from insights.specs import selinux_config
+from insights.specs import Specs
 
 
-@parser(selinux_config)
+@parser(Specs.selinux_config)
 class SelinuxConfig(Parser, LegacyItemAccess):
     """
     Parse the SELinux configuration file.

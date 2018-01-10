@@ -3,10 +3,10 @@ Secure -  file ``/var/log/secure``
 ==================================
 """
 from .. import Syslog, parser
-from insights.specs import secure
+from insights.specs import Specs
 
 
-@parser(secure)
+@parser(Specs.secure)
 class Secure(Syslog):
     """Class for parsing the ``/var/log/secure`` file.
 

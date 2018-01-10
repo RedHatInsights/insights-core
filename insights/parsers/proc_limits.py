@@ -9,7 +9,7 @@ directory.
 
 from .. import Parser, parser, AttributeDict
 from ..parsers import parse_fixed_table, ParseException
-from insights.specs import httpd_limits
+from insights.specs import Specs
 
 HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
 
@@ -96,7 +96,7 @@ class ProcLimits(Parser):
                                    'units': row['Units']}))
 
 
-@parser(httpd_limits)
+@parser(Specs.httpd_limits)
 class HttpdLimits(ProcLimits):
     """
     Class for parsing the ``limits`` file of the ``httpd`` process.

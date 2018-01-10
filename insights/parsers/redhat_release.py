@@ -27,10 +27,10 @@ Examples:
     >>> assert release.product == "Red Hat Enterprise Linux Server"
 """
 from .. import Parser, parser
-from ..specs import redhat_release
+from ..specs import Specs
 
 
-@parser(redhat_release)
+@parser(Specs.redhat_release)
 class RedhatRelease(Parser):
     """Parses the content of file ``/etc/redhat-release``."""
 

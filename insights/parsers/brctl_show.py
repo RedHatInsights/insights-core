@@ -57,10 +57,10 @@ Examples:
 """
 
 from .. import Parser, parser
-from insights.specs import brctl_show
+from insights.specs import Specs
 
 
-@parser(brctl_show)
+@parser(Specs.brctl_show)
 class BrctlShow(Parser):
     """
     Parse the output of the command "brctl show" to get bridge

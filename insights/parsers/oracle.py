@@ -7,8 +7,7 @@ Curently only gathers information from a database using generic init.ora file.
 import re
 from string import whitespace
 from .. import Parser, parser, get_active_lines
-from insights.specs import init_ora
-from insights.specs import spfile_ora
+from insights.specs import Specs
 
 # spfiles tend to contain strings of control characters usually bounded by 'C"'
 # and always ending with an ASCII NULL. This regex describes those strings for
@@ -42,7 +41,7 @@ def _parse_oracle(lines):
     return config
 
 
-@parser(init_ora)
+@parser(Specs.init_ora)
 class OraclePfile(Parser):
     """
     Parse Oracle database settings contained in an init.ora file.
@@ -56,7 +55,7 @@ class OraclePfile(Parser):
         self.data = dict(_parse_oracle(content))
 
 
-@parser(spfile_ora)
+@parser(Specs.spfile_ora)
 class OracleSpfile(Parser):
     """
     Parse Oracle database settings contained in an spfile.
