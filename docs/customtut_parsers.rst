@@ -127,7 +127,7 @@ Now edit the file and create the parser skeleton:
     @parser('sshd_config')
     class SshDConfig(Parser):
 
-        def parse_content(content):
+        def parse_content(self, content):
             pass
 
 We start by importing the ``Parser`` class and the ``parser`` decorator.  Our
