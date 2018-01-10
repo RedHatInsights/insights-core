@@ -235,7 +235,7 @@ start by creating a test for the output that we want from our parser:
        assert 'PORT' in sshd_config
        assert sshd_config['port'] == ['22', '22']
        assert 'ListenAddress' in sshd_config
-       assert sshd_config['ListenAddress'] == ['10.110.0.1', '10.110.0.1']
+       assert sshd_config['ListenAddress'] == ['10.110.0.1', '10.110.1.1']
        assert sshd_config['Protocol'] == ['1']
        assert 'AddressFamily' not in sshd_config
        ports = [l for l in sshd_config if l.keyword == 'Port']
