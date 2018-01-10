@@ -135,15 +135,15 @@ class RegistryPoint(object):
         is a registry point against which further subclasses can register
         datasource implementations by simply declaring them with the same name.
     """
-    def __init__(self, *args, **kwargs):
-        pass
+    def __init__(self, alias=None):
+        self.alias = None
 
 
-def _registry_point():
+def _registry_point(alias=None):
     """ Provides a datasource implementation that replaces the `RegistryPoint`
         marker class on `SpecSet` subclasses.
     """
-    @datasource()
+    @datasource(alias=alias)
     def inner(broker):
         for c in reversed(dr.get_added_dependencies(inner)):
             if c in broker:
@@ -180,8 +180,11 @@ class SpecSetMeta(type):
 
         module = cls.__module__
         for k, v in dct.items():
-            if v is RegistryPoint or isinstance(v, RegistryPoint):
-                v = _registry_point()
+            if v is RegistryPoint:
+                v = RegistryPoint()
+
+            if isinstance(v, RegistryPoint):
+                v = _registry_point(alias=v.alias or k)
                 cls.registry[k] = v
 
             if six.callable(v):

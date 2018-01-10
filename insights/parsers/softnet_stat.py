@@ -47,10 +47,10 @@ Examples:
 """
 
 from .. import Parser, parser
-from insights.specs import softnet_stat
+from insights.specs import Specs
 
 
-@parser(softnet_stat)
+@parser(Specs.softnet_stat)
 class SoftNetStats(Parser):
     """Parses ``/proc/net/softnet_stat`` file contains"""
 

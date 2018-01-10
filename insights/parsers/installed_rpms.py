@@ -83,7 +83,7 @@ from distutils.version import LooseVersion as LV
 
 from ..util import rsplit
 from .. import Parser, parser, get_active_lines
-from insights.specs import installed_rpms
+from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
 # https://pdc.fedoraproject.org/rest_api/v1/arches/
@@ -148,7 +148,7 @@ here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 """
 
 
-@parser(installed_rpms)
+@parser(Specs.installed_rpms)
 class InstalledRpms(Parser):
     """
     A parser for working with data containing a list of installed RPM files on the system and

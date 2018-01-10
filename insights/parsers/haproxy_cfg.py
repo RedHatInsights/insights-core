@@ -39,7 +39,7 @@ Examples:
     True
     """
 from .. import Parser, parser
-from insights.specs import haproxy_cfg
+from insights.specs import Specs
 
 
 def _parse_content(content):
@@ -73,7 +73,7 @@ def _parse_content(content):
     return haproxy_dict
 
 
-@parser(haproxy_cfg)
+@parser(Specs.haproxy_cfg)
 class HaproxyCfg(Parser):
     """Class to parse file ``haproxy.cfg``."""
     def parse_content(self, content):

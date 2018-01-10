@@ -9,10 +9,7 @@ of its time setting resources.
 
 import re
 from .. import Parser, parser, get_active_lines
-from insights.specs import chrony_conf
-from insights.specs import localtime
-from insights.specs import ntp_conf
-from insights.specs import ntptime
+from insights.specs import Specs
 
 
 class NTPConfParser(Parser):
@@ -156,7 +153,7 @@ class NTPConfParser(Parser):
         return self.get_param(keyword, param, default)[-1]
 
 
-@parser(chrony_conf)
+@parser(Specs.chrony_conf)
 class ChronyConf(NTPConfParser):
     """
     A parser for analyzing the chrony service config file ``/etc/chrony.conf``
@@ -166,7 +163,7 @@ class ChronyConf(NTPConfParser):
     pass
 
 
-@parser(ntp_conf)
+@parser(Specs.ntp_conf)
 class NTPConf(NTPConfParser):
     """
     A parser for analyzing the ntpd service config file ``/etc/ntp.conf``
@@ -176,7 +173,7 @@ class NTPConf(NTPConfParser):
     pass
 
 
-@parser(localtime)
+@parser(Specs.localtime)
 class LocalTime(Parser):
     """
     A parser for working with the output of command: `file -L /etc/localtime`
@@ -222,7 +219,7 @@ class LocalTime(Parser):
         self.data = result
 
 
-@parser(ntptime)
+@parser(Specs.ntptime)
 class NtpTime(Parser):
     """
     A parser for working with the output of the ``ntptime``.

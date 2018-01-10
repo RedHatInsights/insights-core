@@ -34,10 +34,10 @@ Examples:
 
 from collections import defaultdict
 from .. import Parser, parser
-from insights.specs import hosts
+from insights.specs import Specs
 
 
-@parser(hosts)
+@parser(Specs.hosts)
 class Hosts(Parser):
     """
     Read the ``/etc/hosts`` file and parse it into a dictionary of host name

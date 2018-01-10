@@ -4,10 +4,10 @@ PostgreSQLLog - file ``/var/lib/pgsql/data/pg_log/postgresql-*.log``
 """
 
 from .. import LogFileOutput, parser
-from insights.specs import postgresql_log
+from insights.specs import Specs
 
 
-@parser(postgresql_log)
+@parser(Specs.postgresql_log)
 class PostgreSQLLog(LogFileOutput):
     """
     Read the PostgreSQL log files.  Uses the ``LogFileOutput`` class parser

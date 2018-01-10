@@ -1,9 +1,9 @@
 from .. import parser, get_active_lines, Parser
 import re
-from insights.specs import scheduler
+from insights.specs import Specs
 
 
-@parser(scheduler)
+@parser(Specs.scheduler)
 class Scheduler(Parser):
 
     def parse_content(self, content):

@@ -35,10 +35,10 @@ Typical content of "/etc/rhsm/rhsm.conf" is::
     pluginConfDir = /etc/rhsm/pluginconf.d
 """
 from .. import parser, IniConfigFile
-from insights.specs import rhsm_conf
+from insights.specs import Specs
 
 
-@parser(rhsm_conf)
+@parser(Specs.rhsm_conf)
 class RHSMConf(IniConfigFile):
     """Parses content of "/etc/rhsm/rhsm.conf". """
     pass

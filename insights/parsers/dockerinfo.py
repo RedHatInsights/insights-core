@@ -54,10 +54,10 @@ daemon isn't running, the ``data`` dictionary is empty.
 """
 
 from .. import parser, Parser
-from insights.specs import docker_info
+from insights.specs import Specs
 
 
-@parser(docker_info)
+@parser(Specs.docker_info)
 class DockerInfo(Parser):
     """
     Represents the output of the ``/usr/bin/docker info`` command.

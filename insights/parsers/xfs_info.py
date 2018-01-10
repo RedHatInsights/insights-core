@@ -91,10 +91,10 @@ Examples:
 from .. import Parser, parser
 from insights.parsers import ParseException
 import re
-from insights.specs import xfs_info
+from insights.specs import Specs
 
 
-@parser(xfs_info)
+@parser(Specs.xfs_info)
 class XFSInfo(Parser):
     """
     This mapper reads the output of the ``xfs_info`` command.

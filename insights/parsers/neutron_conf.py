@@ -26,10 +26,10 @@ Sample input data is in the format::
 See the ``IniConfigFile`` class for examples.
 """
 from .. import IniConfigFile, parser
-from insights.specs import neutron_conf
+from insights.specs import Specs
 
 
-@parser(neutron_conf)
+@parser(Specs.neutron_conf)
 class NeutronConf(IniConfigFile):
     """Class to parse file ``neutron.conf``."""
     pass

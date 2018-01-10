@@ -52,14 +52,14 @@ Examples:
 """
 from collections import namedtuple
 from .. import Parser, parser, get_active_lines
-from insights.specs import sshd_config
+from insights.specs import Specs
 import re
 
 # optional whitespace, at least one non-whitespace (the keyword), at least one whitespace (space), a plus literal, anything
 PLUS_PATTERN = re.compile(r'^\s*\S+\s+\+.*$')
 
 
-@parser(sshd_config)
+@parser(Specs.sshd_config)
 class SshDConfig(Parser):
     """Parsing for ``/etc/ssh/sshd_config`` file.
 

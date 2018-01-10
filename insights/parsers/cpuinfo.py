@@ -74,10 +74,10 @@ Examples:
 
 from collections import defaultdict
 from .. import Parser, parser, defaults, get_active_lines, LegacyItemAccess
-from insights.specs import cpuinfo
+from insights.specs import Specs
 
 
-@parser(cpuinfo)
+@parser(Specs.cpuinfo)
 class CpuInfo(LegacyItemAccess, Parser):
     """
     CpuInfo parser - able to be used as a dictionary through the

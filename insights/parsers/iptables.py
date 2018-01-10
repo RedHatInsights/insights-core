@@ -111,10 +111,7 @@ Examples:
 """
 
 from .. import Parser, parser, get_active_lines
-from insights.specs import ip6tables
-from insights.specs import ip6tables_permanent
-from insights.specs import iptables
-from insights.specs import iptables_permanent
+from insights.specs import Specs
 
 
 class IPTablesConfiguration(Parser):
@@ -218,7 +215,7 @@ class IPTablesConfiguration(Parser):
         return any(s in r["rule"] for r in self.rules)
 
 
-@parser(iptables)
+@parser(Specs.iptables)
 class IPTables(IPTablesConfiguration):
     """
     Process output of the ``iptables-save`` command.
@@ -229,7 +226,7 @@ class IPTables(IPTablesConfiguration):
     pass
 
 
-@parser(ip6tables)
+@parser(Specs.ip6tables)
 class IP6Tables(IPTablesConfiguration):
     """
     Process output of the ``ip6tables-save`` command.
@@ -240,7 +237,7 @@ class IP6Tables(IPTablesConfiguration):
     pass
 
 
-@parser(iptables_permanent)
+@parser(Specs.iptables_permanent)
 class IPTabPermanent(IPTablesConfiguration):
     """
     Process ``iptables`` configuration saved in file ``/etc/sysconfig/iptables``.
@@ -255,7 +252,7 @@ class IPTabPermanent(IPTablesConfiguration):
     pass
 
 
-@parser(ip6tables_permanent)
+@parser(Specs.ip6tables_permanent)
 class IP6TabPermanent(IPTablesConfiguration):
     """
     Process ``ip6tables`` configuration saved in file ``/etc/sysconfig/ip6tables``.

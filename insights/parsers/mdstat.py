@@ -53,10 +53,10 @@ Examples:
 """
 import re
 from .. import Parser, parser
-from insights.specs import mdstat
+from insights.specs import Specs
 
 
-@parser(mdstat)
+@parser(Specs.mdstat)
 class Mdstat(Parser):
     """
     Represents the information in the ``/proc/mdstat`` file.

@@ -2,9 +2,7 @@ from collections import namedtuple
 from insights.contrib import pyparsing as p
 from .. import Parser, parser
 from . import ParseException
-from insights.specs import rabbitmq_queues
-from insights.specs import rabbitmq_report
-from insights.specs import rabbitmq_users
+from insights.specs import Specs
 
 
 # For "Status of node" section's erlang block prasing only, could not cover
@@ -69,7 +67,7 @@ def create_parser():
     return nstat + perm
 
 
-@parser(rabbitmq_report)
+@parser(Specs.rabbitmq_report)
 class RabbitMQReport(Parser):
 
     def parse_content(self, content):
@@ -120,7 +118,7 @@ class RabbitMQReport(Parser):
             self.result = None
 
 
-@parser(rabbitmq_users)
+@parser(Specs.rabbitmq_users)
 class RabbitMQUsers(Parser):
 
     def parse_content(self, content):
@@ -136,7 +134,7 @@ TRUE_FALSE = {'true': True, 'false': False}
 """dict: Dictionary for converting true/false strings to bool."""
 
 
-@parser(rabbitmq_queues)
+@parser(Specs.rabbitmq_queues)
 class RabbitMQQueues(Parser):
     """Parse the output of the `rabbitmqctl list_queues` command.
 

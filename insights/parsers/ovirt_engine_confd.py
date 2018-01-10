@@ -1,8 +1,8 @@
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import ovirt_engine_confd
+from insights.specs import Specs
 
 
-@parser(ovirt_engine_confd)
+@parser(Specs.ovirt_engine_confd)
 class OvirtEngineConfd(LegacyItemAccess, Parser):
 
     def parse_content(self, content):

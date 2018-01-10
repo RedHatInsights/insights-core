@@ -85,13 +85,13 @@ Examples:
 """
 from collections import defaultdict, namedtuple
 from .. import Parser, parser, get_active_lines
-from insights.specs import nscd_conf
+from insights.specs import Specs
 
 NscdConfLine = namedtuple('NscdConfLine', ['attribute', 'service', 'value'])
 """namedtuple: Represents one line of information from the conf file."""
 
 
-@parser(nscd_conf)
+@parser(Specs.nscd_conf)
 class NscdConf(Parser):
     """Class for parsing contents of the ``/etc/nscd.conf`` file."""
     def parse_content(self, content):

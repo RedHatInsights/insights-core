@@ -35,10 +35,10 @@ Examples:
     ['elasticsearch', 'foreman_tasks']
 """
 from .. import parser, Parser
-from insights.specs import hammer_ping
+from insights.specs import Specs
 
 
-@parser(hammer_ping)
+@parser(Specs.hammer_ping)
 class HammerPing(Parser):
     """
     Read the ``hammer ping`` status and convert it to dictionaries of

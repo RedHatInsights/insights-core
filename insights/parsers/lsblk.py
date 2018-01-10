@@ -103,8 +103,7 @@ Examples:
 import re
 from .. import Parser, parser
 from . import ParseException, keyword_search
-from insights.specs import lsblk
-from insights.specs import lsblk_pairs
+from insights.specs import Specs
 
 MAX_GENERATIONS = 20
 
@@ -203,7 +202,7 @@ class BlockDevices(Parser):
         return keyword_search(self.rows, **kwargs)
 
 
-@parser(lsblk)
+@parser(Specs.lsblk)
 class LSBlock(BlockDevices):
     """Parse output of the ``lsblk`` command.
 
@@ -250,7 +249,7 @@ class LSBlock(BlockDevices):
         self.device_data = dict((dev.name, dev) for dev in self.rows)
 
 
-@parser(lsblk_pairs)
+@parser(Specs.lsblk_pairs)
 class LSBlockPairs(BlockDevices):
     """Parse output of the ``lsblk -P -o`` command.
 

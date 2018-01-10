@@ -47,10 +47,10 @@ Examples:
 
 """
 from .. import Parser, parser
-from insights.specs import nfnetlink_queue
+from insights.specs import Specs
 
 
-@parser(nfnetlink_queue)
+@parser(Specs.nfnetlink_queue)
 class NfnetLinkQueue(Parser):
     """Reads the ``/proc/net/netfilter/nfnetlink_queue`` file and
     creates a list of dictionaries, one dictionary per row in the file.

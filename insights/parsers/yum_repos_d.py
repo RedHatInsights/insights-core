@@ -1,8 +1,8 @@
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
-from insights.specs import yum_repos_d
+from insights.specs import Specs
 
 
-@parser(yum_repos_d)
+@parser(Specs.yum_repos_d)
 class YumReposD(LegacyItemAccess, Parser):
     """Class to parse the files under ``yum.repos.d`` """
 

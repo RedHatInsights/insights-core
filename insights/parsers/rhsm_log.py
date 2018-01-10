@@ -1,8 +1,8 @@
 from .. import LogFileOutput, parser
-from insights.specs import rhsm_log
+from insights.specs import Specs
 
 
-@parser(rhsm_log)
+@parser(Specs.rhsm_log)
 class RhsmLog(LogFileOutput):
     """
     Class for parsing the log file: ``/var/log/rhsm/rhsm.log``.

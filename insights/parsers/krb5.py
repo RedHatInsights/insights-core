@@ -54,7 +54,7 @@ Example:
 
 
 from .. import parser, Parser, get_active_lines, LegacyItemAccess
-from insights.specs import krb5
+from insights.specs import Specs
 
 
 PREFIX_FOR_LIST = ("includedir", "include", "module")
@@ -73,7 +73,7 @@ def _handle_key_value(t_dict, key, value):
     return value
 
 
-@parser(krb5)
+@parser(Specs.krb5)
 class Krb5Configuration(Parser, LegacyItemAccess):
     """
     Class for ``krb5.conf`` and ``krb5.conf.d`` configuration files.

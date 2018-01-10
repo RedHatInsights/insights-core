@@ -17,10 +17,10 @@ Example:
 
 from .. import Parser, parser, get_active_lines
 from ..parsers import split_kv_pairs
-from insights.specs import auditd_conf
+from insights.specs import Specs
 
 
-@parser(auditd_conf)
+@parser(Specs.auditd_conf)
 class AuditdConf(Parser):
     """
     A parser for accessing /etc/audit/auditd.conf.

@@ -8,10 +8,10 @@ filtering, the content as a whole will not parse as XML.  We use a
 easiest.
 """
 from .. import LogFileOutput, parser
-from insights.specs import cluster_conf
+from insights.specs import Specs
 
 
-@parser(cluster_conf)
+@parser(Specs.cluster_conf)
 class ClusterConf(LogFileOutput):
     """
     Parse the ``/etc/cluster/cluster.conf`` file as a list of lines.  ``get``

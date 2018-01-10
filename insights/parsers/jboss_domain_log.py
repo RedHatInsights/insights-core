@@ -12,7 +12,7 @@ JbossDomainServerLog - JBoss Domain Server Log File ``$JBOSS_SERVER_LOG_DIR/serv
 from .. import LogFileOutput, parser
 import re
 from datetime import time
-from insights.specs import jboss_domain_server_log
+from insights.specs import Specs
 
 
 class JbossDomainLog(LogFileOutput):
@@ -80,7 +80,7 @@ class JbossDomainLog(LogFileOutput):
                     yield self._parse_line(line)
 
 
-@parser(jboss_domain_server_log)
+@parser(Specs.jboss_domain_server_log)
 class JbossDomainServerLog(JbossDomainLog):
     """
     Read JBoss domain server log file.

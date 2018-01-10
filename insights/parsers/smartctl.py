@@ -8,10 +8,10 @@ from insights.core.plugins import parser
 from insights.parsers import ParseException
 
 import re
-from insights.specs import smartctl
+from insights.specs import Specs
 
 
-@parser(smartctl)
+@parser(Specs.smartctl)
 class SMARTctl(Parser):
     """
     Parser for output of ``smartctl -a`` for each drive in system.

@@ -32,10 +32,10 @@ Examples:
 """
 from .. import parser, Parser
 from ..parsers import ParseException
-from insights.specs import satellite_version_rb
+from insights.specs import Specs
 
 
-@parser(satellite_version_rb)
+@parser(Specs.satellite_version_rb)
 class Satellite6Version(Parser):
     """ Class for parsing the content of ``satellite_version``."""
 

@@ -6,10 +6,10 @@ NSSwitchConf - file ``/etc/nsswitch.conf``
 
 from insights import LegacyItemAccess, Parser, parser
 from insights.parsers import get_active_lines
-from insights.specs import nsswitch_conf
+from insights.specs import Specs
 
 
-@parser(nsswitch_conf)
+@parser(Specs.nsswitch_conf)
 class NSSwitchConf(Parser, LegacyItemAccess):
     """
     Read the contents of the ``/etc/nsswitch.conf`` file.

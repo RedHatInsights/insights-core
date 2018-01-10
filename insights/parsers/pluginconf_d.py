@@ -1,8 +1,8 @@
 from .. import Parser, parser, get_active_lines, LegacyItemAccess, IniConfigFile
-from insights.specs import pluginconf_d
+from insights.specs import Specs
 
 
-@parser(pluginconf_d)
+@parser(Specs.pluginconf_d)
 class PluginConfD(LegacyItemAccess, Parser):
     """Class to parse configuration file under ``pluginconf.d``
 
@@ -54,7 +54,7 @@ class PluginConfD(LegacyItemAccess, Parser):
             yield sec
 
 
-@parser(pluginconf_d)
+@parser(Specs.pluginconf_d)
 class PluginConfDIni(IniConfigFile):
     """
     Read yum plugin config files, in INI format, using the standard INI file

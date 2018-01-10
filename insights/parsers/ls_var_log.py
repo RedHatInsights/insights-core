@@ -22,10 +22,10 @@ Examples:
 from .. import FileListing, parser
 
 from insights.util.file_permissions import FilePermissions
-from insights.specs import ls_var_log
+from insights.specs import Specs
 
 
-@parser(ls_var_log)
+@parser(Specs.ls_var_log)
 class LsVarLog(FileListing):
     """
     A parser for accessing "ls -laR /var/log".

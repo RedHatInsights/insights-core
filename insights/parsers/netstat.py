@@ -26,11 +26,7 @@ from collections import defaultdict
 from . import ParseException, parse_delimited_table
 from .. import Parser, parser, LegacyItemAccess
 from insights.parsers import keyword_search
-from insights.specs import netstat
-from insights.specs import netstat_agn
-from insights.specs import netstat_i
-from insights.specs import netstat_s
-from insights.specs import ss
+from insights.specs import Specs
 
 
 ACTIVE_INTERNET_CONNECTIONS = 'Active Internet connections (servers and established)'
@@ -43,7 +39,7 @@ NETSTAT_SECTION_ID = {
 }
 
 
-@parser(netstat_s)
+@parser(Specs.netstat_s)
 class NetstatS(LegacyItemAccess, Parser):
     """
     Parses data from the ``netstat -s`` command.
@@ -209,7 +205,7 @@ class NetstatS(LegacyItemAccess, Parser):
         self.data[session] = first_layer
 
 
-@parser(netstat_agn)
+@parser(Specs.netstat_agn)
 class NetstatAGN(Parser):
     """
     Parse the ``netstat -agn`` command to get interface multicast infomation.
@@ -340,7 +336,7 @@ class NetstatSection(object):
         return self.data
 
 
-@parser(netstat)
+@parser(Specs.netstat)
 class Netstat(Parser):
     """
     Parsing the ``/bin/netstat -neopa`` command output.
@@ -579,7 +575,7 @@ class Netstat(Parser):
         return found
 
 
-@parser(netstat_i)
+@parser(Specs.netstat_i)
 class Netstat_I(Parser):
     """
     Parse the ``netstat -i`` command output  to get interface traffic info
@@ -630,7 +626,7 @@ class Netstat_I(Parser):
         return
 
 
-@parser(ss)
+@parser(Specs.ss)
 class SsTULPN(Parser):
     """
     Parse the output of the ``/usr/sbin/ss -tulpn`` command.

@@ -7,10 +7,10 @@ from insights.core import LogFileOutput
 
 from datetime import datetime
 import re
-from insights.specs import osa_dispatcher_log
+from insights.specs import Specs
 
 
-@parser(osa_dispatcher_log)
+@parser(Specs.osa_dispatcher_log)
 class OSADispatcherLog(LogFileOutput):
     """
     Reads the OSA dispatcher log.  Based on the ``LogFileOutput`` class.

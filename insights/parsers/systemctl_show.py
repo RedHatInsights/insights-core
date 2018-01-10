@@ -19,8 +19,7 @@ from .. import LegacyItemAccess
 from .. import Parser
 from .. import parser
 from ..parsers import split_kv_pairs
-from insights.specs import systemctl_cinder_volume
-from insights.specs import systemctl_mariadb
+from insights.specs import Specs
 
 
 class SystemctlShow(LegacyItemAccess, Parser):
@@ -51,7 +50,7 @@ class SystemctlShow(LegacyItemAccess, Parser):
         self.data = dict((k, v) for k, v in data.iteritems() if not v == '')
 
 
-@parser(systemctl_cinder_volume)
+@parser(Specs.systemctl_cinder_volume)
 class SystemctlShowCinderVolume(SystemctlShow):
 
     """Class for ``systemctl show openstack-cinder-volume``
@@ -80,7 +79,7 @@ class SystemctlShowCinderVolume(SystemctlShow):
     pass
 
 
-@parser(systemctl_mariadb)
+@parser(Specs.systemctl_mariadb)
 class SystemctlShowMariaDB(SystemctlShow):
 
     """Class for ``systemctl show mariadb``

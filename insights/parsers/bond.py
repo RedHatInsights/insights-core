@@ -52,7 +52,7 @@ Examples:
 """
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException
-from insights.specs import bond
+from insights.specs import Specs
 
 BOND_PREFIX_MAP = {
     'load balancing (round-robin)': '0',
@@ -66,7 +66,7 @@ BOND_PREFIX_MAP = {
 """dict: bonding mode parameter string linked to bond type index."""
 
 
-@parser(bond)
+@parser(Specs.bond)
 class Bond(Parser):
     """
     Models the ``/proc/net/bonding`` file.

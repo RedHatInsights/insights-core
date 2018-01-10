@@ -20,10 +20,10 @@ Examples:
 """
 
 from .. import Parser, parser
-from insights.specs import hostname
+from insights.specs import Specs
 
 
-@parser(hostname)
+@parser(Specs.hostname)
 class Hostname(Parser):
     """Class for parsing ``hostname`` command output.
 

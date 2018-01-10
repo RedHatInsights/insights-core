@@ -1,9 +1,9 @@
 from .. import parser
 from ..parsers.pam import PamDConf
-from insights.specs import password_auth
+from insights.specs import Specs
 
 
-@parser(password_auth)
+@parser(Specs.password_auth)
 class PasswordAuthPam(PamDConf):
     """Parsing for `/etc/pam.d/password-auth`. """
     pass

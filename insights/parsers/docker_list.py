@@ -55,8 +55,7 @@ Examples:
 
 from .. import parser, Parser
 import re
-from insights.specs import docker_list_containers
-from insights.specs import docker_list_images
+from insights.specs import Specs
 
 
 class DockerList(Parser):
@@ -120,7 +119,7 @@ class DockerList(Parser):
                     self.data[k] = row
 
 
-@parser(docker_list_images)
+@parser(Specs.docker_list_images)
 class DockerListImages(DockerList):
     """
     Handle the list of docker images using the DockerList parser class.
@@ -128,7 +127,7 @@ class DockerListImages(DockerList):
     key_field = 'REPOSITORY'
 
 
-@parser(docker_list_containers)
+@parser(Specs.docker_list_containers)
 class DockerListContainers(DockerList):
     """
     Handle the list of docker images using the DockerList parser class.

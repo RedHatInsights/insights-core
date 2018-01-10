@@ -18,12 +18,10 @@ SysconfigKdump - file ``/etc/sysconfig/kdump``
 import re
 from urlparse import urlparse
 from .. import Parser, parser
-from insights.specs import kdump_conf
-from insights.specs import kexec_crash_loaded
-from insights.specs import kexec_crash_size
+from insights.specs import Specs
 
 
-@parser(kdump_conf)
+@parser(Specs.kdump_conf)
 class KDumpConf(Parser):
     """
     A dictionary like object for the values of the kdump.conf file.
@@ -244,7 +242,7 @@ class KDumpConf(Parser):
         return key in self.data
 
 
-@parser(kexec_crash_loaded)
+@parser(Specs.kexec_crash_loaded)
 class KexecCrashLoaded(Parser):
     """
     A simple parser to determine if a crash kernel (i.e. a second kernel
@@ -263,7 +261,7 @@ class KexecCrashLoaded(Parser):
         self.is_loaded = line == '1'
 
 
-@parser(kexec_crash_size)
+@parser(Specs.kexec_crash_size)
 class KexecCrashSize(Parser):
     """
     Parses the `/sys/kernel/kexec_crash_size` file which tells the

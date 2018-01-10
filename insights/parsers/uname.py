@@ -41,7 +41,7 @@ from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
 from .. import Parser, parser
 from insights.core.context import Context
-from insights.specs import uname
+from insights.specs import Specs
 
 rhel_release_map = {
     "2.4.21-4": "3.0",
@@ -128,7 +128,7 @@ class UnameError(Exception):
         return "{0}:'{1}'".format(self.msg, self.uname_line)
 
 
-@parser(uname)
+@parser(Specs.uname)
 class Uname(Parser):
     """
     A utility class to parse uname content data and compare version and release

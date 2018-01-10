@@ -34,13 +34,7 @@ from ..util import parse_keypair_lines
 from .. import add_filter
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from . import parse_fixed_table
-from insights.specs import lvm_conf
-from insights.specs import lvs
-from insights.specs import lvs_noheadings
-from insights.specs import pvs
-from insights.specs import pvs_noheadings
-from insights.specs import vgs
-from insights.specs import vgs_noheadings
+from insights.specs import Specs
 
 
 def map_keys(pvs, keys):
@@ -130,7 +124,7 @@ class Lvm(Parser):
         return self.data["warnings"]
 
 
-@parser(pvs_noheadings)
+@parser(Specs.pvs_noheadings)
 class Pvs(Lvm):
     """
     Parse the output of the `/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all` command.
@@ -201,7 +195,7 @@ class Pvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
-@parser(pvs)
+@parser(Specs.pvs)
 class PvsHeadings(LvmHeadings):
     """
     Parses the output of the
@@ -272,7 +266,7 @@ class PvsHeadings(LvmHeadings):
         return [i for i in self.data if i["VG"] == name]
 
 
-@parser(vgs_noheadings)
+@parser(Specs.vgs_noheadings)
 class Vgs(Lvm):
     """
     Parse the output of the `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all` command.
@@ -338,7 +332,7 @@ class Vgs(Lvm):
     PRIMARY_KEY = "VG"
 
 
-@parser(vgs)
+@parser(Specs.vgs)
 class VgsHeadings(LvmHeadings):
     """
     Parses output of the
@@ -380,7 +374,7 @@ class VgsHeadings(LvmHeadings):
         self.data = map_keys(self.data, Vgs.KEYS)
 
 
-@parser(lvs_noheadings)
+@parser(Specs.lvs_noheadings)
 class Lvs(Lvm):
     """
     Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all` command.
@@ -512,7 +506,7 @@ class Lvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
-@parser(lvs)
+@parser(Specs.lvs)
 class LvsHeadings(LvmHeadings):
     """
     Process output of the command `/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"`.
@@ -566,7 +560,7 @@ LVM_CONF_FILTERS = [
 add_filter('lvm.conf', LVM_CONF_FILTERS)
 
 
-@parser(lvm_conf)
+@parser(Specs.lvm_conf)
 class LvmConf(LegacyItemAccess, Parser):
     """
     Parses contents of the `/etc/lvm/lvm.conf` file.

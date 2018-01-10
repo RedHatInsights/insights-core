@@ -26,10 +26,10 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
-from insights.specs import engine_log
+from insights.specs import Specs
 
 
-@parser(engine_log)
+@parser(Specs.engine_log)
 class EngineLog(LogFileOutput):
     """
     Provide access to ovirt engine logs using the LogFileOutput parser class.

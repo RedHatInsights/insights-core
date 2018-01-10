@@ -30,10 +30,10 @@ Examples:
 """
 
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import cmdline
+from insights.specs import Specs
 
 
-@parser(cmdline)
+@parser(Specs.cmdline)
 class CmdLine(LegacyItemAccess, Parser):
     """
     A parser class for parsing the Linux kernel command line as given in

@@ -35,8 +35,7 @@ Examples:
 """
 
 from .. import LogFileOutput, parser
-from insights.specs import openvswitch_daemon_log
-from insights.specs import openvswitch_server_log
+from insights.specs import Specs
 
 
 class OpenVSwitchLog(LogFileOutput):
@@ -64,7 +63,7 @@ class OpenVSwitchLog(LogFileOutput):
         return len(self.lines)
 
 
-@parser(openvswitch_server_log)
+@parser(Specs.openvswitch_server_log)
 class OVSDB_Server_Log(OpenVSwitchLog):
     """
     Parser for the ``ovsdb_server.log`` file, based on the OpenVSwitchLog
@@ -73,7 +72,7 @@ class OVSDB_Server_Log(OpenVSwitchLog):
     pass
 
 
-@parser(openvswitch_daemon_log)
+@parser(Specs.openvswitch_daemon_log)
 class OVS_VSwitchd_Log(OpenVSwitchLog):
     """
     Parser for the ``ovs-vswitchd.log`` file, based on the OpenVSwitchLog

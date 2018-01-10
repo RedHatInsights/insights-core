@@ -50,10 +50,10 @@ Examples:
     '../dm-2'
 """
 from .. import parser, FileListing
-from insights.specs import ls_dev
+from insights.specs import Specs
 
 
-@parser(ls_dev)
+@parser(Specs.ls_dev)
 class LsDev(FileListing):
     """Parses output of ``ls -lanR /dev`` command."""
     pass

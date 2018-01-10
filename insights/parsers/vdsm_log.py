@@ -5,10 +5,10 @@ VDSMLog - file ``/var/log/vdsm/vdsm.log``
 
 from insights import LogFileOutput, parser
 from datetime import datetime
-from insights.specs import vdsm_log
+from insights.specs import Specs
 
 
-@parser(vdsm_log)
+@parser(Specs.vdsm_log)
 class VDSMLog(LogFileOutput):
     """
     Logs from the Virtual Desktop and Server Manager.

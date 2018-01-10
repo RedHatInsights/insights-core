@@ -42,13 +42,7 @@ import re
 from collections import namedtuple
 from ..parsers import ParseException
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import ethtool
-from insights.specs import ethtool_S
-from insights.specs import ethtool_a
-from insights.specs import ethtool_c
-from insights.specs import ethtool_g
-from insights.specs import ethtool_i
-from insights.specs import ethtool_k
+from insights.specs import Specs
 
 
 def extract_iface_name_from_path(path, name):
@@ -87,7 +81,7 @@ def extract_iface_name_from_content(content):
     return content.split(" ", 3)[-1][:-1]
 
 
-@parser(ethtool_i)
+@parser(Specs.ethtool_i)
 class Driver(Parser):
     """
     Parse information for the ``ethtool -i`` command.
@@ -181,7 +175,7 @@ class Driver(Parser):
                 setattr(self, key.replace("-", "_"), value)
 
 
-@parser(ethtool_k)
+@parser(Specs.ethtool_k)
 class Features(LegacyItemAccess, Parser):
     """
     Parse information for the ``ethtool -k`` command.
@@ -303,7 +297,7 @@ class Features(LegacyItemAccess, Parser):
                 }
 
 
-@parser(ethtool_a)
+@parser(Specs.ethtool_a)
 class Pause(Parser):
     """
     Parse information for the ``ethtool -a`` command.
@@ -397,7 +391,7 @@ class Pause(Parser):
                 # setattr(self, key, value == "on")
 
 
-@parser(ethtool_c)
+@parser(Specs.ethtool_c)
 class CoalescingInfo(Parser):
     """
     Parse information for the ``ethtool -c`` command.
@@ -509,7 +503,7 @@ class CoalescingInfo(Parser):
                 setattr(self, key.replace("-", "_"), value)
 
 
-@parser(ethtool_g)
+@parser(Specs.ethtool_g)
 class Ring(Parser):
     """
     Parse information for the ``ethtool -g`` command.
@@ -609,7 +603,7 @@ class Ring(Parser):
         set_section(section, section_data)
 
 
-@parser(ethtool_S)
+@parser(Specs.ethtool_S)
 class Statistics(Parser):
     """
     Parse information for the ``ethtool -S`` command.
@@ -708,7 +702,7 @@ class Statistics(Parser):
             self.data[key] = value
 
 
-@parser(ethtool)
+@parser(Specs.ethtool)
 class Ethtool(Parser):
     """
     Parses output of ``ethtool`` command.

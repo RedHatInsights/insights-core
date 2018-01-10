@@ -30,10 +30,10 @@ Examples:
 """
 
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import iscsiadm_m_session
+from insights.specs import Specs
 
 
-@parser(iscsiadm_m_session)
+@parser(Specs.iscsiadm_m_session)
 class IscsiAdmModeSession(Parser, LegacyItemAccess):
     """Class to process the ``iscsiadm - m session`` command output.
 

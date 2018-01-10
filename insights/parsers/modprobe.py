@@ -37,12 +37,11 @@ Examples:
 
 from collections import defaultdict
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
-from insights.specs import modprobe_conf
-from insights.specs import modprobe_d
+from insights.specs import Specs
 
 
-@parser(modprobe_conf)
-@parser(modprobe_d)
+@parser(Specs.modprobe_conf)
+@parser(Specs.modprobe_d)
 class ModProbe(LegacyItemAccess, Parser):
     """
     Parse Modprobe configuration files - /etc/modprobe.conf and files in the

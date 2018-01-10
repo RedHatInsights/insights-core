@@ -29,7 +29,7 @@ Examples:
 """
 
 from .. import Parser, parser
-from insights.specs import lpstat_p
+from insights.specs import Specs
 
 # Printer states
 PRINTER_STATUS_IDLE = 'IDLE'
@@ -40,7 +40,7 @@ PRINTER_STATUS_UNKNOWN = 'UNKNOWN'
 START_LINE_MARKER = 'printer '
 
 
-@parser(lpstat_p)
+@parser(Specs.lpstat_p)
 class LpstatPrinters(Parser):
     """Class to parse ``lpstat -p`` command output.
 

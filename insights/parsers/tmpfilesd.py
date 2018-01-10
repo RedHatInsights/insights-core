@@ -7,9 +7,10 @@ The ``TmpfilesD`` class parser provides a 'rules' list, as well as a
 """
 
 from .. import Parser, parser, get_active_lines
+from ..specs import Specs
 
 
-@parser("tmpfilesd")
+@parser(Specs.tmpfilesd)
 class TmpFilesD(Parser):
     """
     Parse files in /etc/tmpfiles.d, /usr/lib/tmpfiles.d/, and /run/tmpfiles.d.

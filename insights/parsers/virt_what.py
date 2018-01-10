@@ -28,12 +28,12 @@ Note:
 
 '''
 from .. import Parser, parser
-from insights.specs import virt_what
+from insights.specs import Specs
 
 BAREMETAL = 'baremetal'
 
 
-@parser(virt_what)
+@parser(Specs.virt_what)
 class VirtWhat(Parser):
     """
     Class for parsing ``virt-what`` command.
