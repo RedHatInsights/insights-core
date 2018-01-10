@@ -62,7 +62,7 @@ class RHNCertConf(XMLParser):
         </rhn-cert>
     """
 
-    def _parse_dom(self):
+    def parse_dom(self):
         rhn_cert = {}
         # ignore empty xml file
         channel_familes = {}

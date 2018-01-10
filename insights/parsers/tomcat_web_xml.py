@@ -5,7 +5,7 @@ TIMEOUT_KEYWORD = 'session-timeout'
 
 @parser('tomcat_web.xml')
 class TomcatWebXml(XMLParser):
-    def _parse_dom(self):
+    def parse_dom(self):
         """
         Get the setting of 'session-timeout' and return.
 

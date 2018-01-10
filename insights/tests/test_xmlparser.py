@@ -4,7 +4,7 @@ from insights.tests import context_wrap
 
 
 class FakeXmlParserClass(XMLParser):
-    def _parse_dom(self):
+    def parse_dom(self):
         # default namespace
         xmlns = 'http://people.example.com'
         keyword = '*{%s}%s' % (xmlns, "neighbor[2]")
