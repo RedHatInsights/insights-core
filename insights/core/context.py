@@ -116,7 +116,8 @@ class Context(object):
 
 
 class ExecutionContext(object):
-    def __init__(self, timeout=None):
+    def __init__(self, root="/", timeout=None):
+        self.root = root
         self.timeout = timeout
 
     def check_output(self, cmd, timeout=None, keep_rc=False):
@@ -141,16 +142,14 @@ class ExecutionContext(object):
     def locate_path(self, path):
         return os.path.expandvars(path)
 
-
-@fs_root
-class HostContext(ExecutionContext):
-    def __init__(self, root="/", timeout=None):
-        super(HostContext, self).__init__(timeout)
-        self.root = root
-
     def __repr__(self):
         msg = "<%s('%s', %s)>"
         return msg % (self.__class__.__name__, self.root, self.timeout)
+
+
+@fs_root
+class HostContext(ExecutionContext):
+    pass
 
 
 # No fs_root here. Dependence on this context should be explicit.
