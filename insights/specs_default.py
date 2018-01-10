@@ -28,7 +28,7 @@ from insights.core.spec_factory import first_file, listdir
 from insights.specs import Specs
 
 
-class ProdSpecs(Specs):
+class DefaultSpecs(Specs):
     autofs_conf = simple_file("/etc/autofs.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
@@ -51,7 +51,7 @@ class ProdSpecs(Specs):
 
     @datasource(ps_auxww)
     def tomcat_base(broker):
-        ps = broker[ProdSpecs.ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
         for p in ps:
@@ -123,7 +123,7 @@ class ProdSpecs(Specs):
 
     @datasource(docker_list_images)
     def docker_image_ids(broker):
-        images = broker[ProdSpecs.docker_list_images]
+        images = broker[DefaultSpecs.docker_list_images]
         try:
             result = set()
             for l in images.content[1:]:
@@ -137,7 +137,7 @@ class ProdSpecs(Specs):
     # TODO: This parsing is broken.
     @datasource(docker_list_containers)
     def docker_container_ids(broker):
-        containers = broker[ProdSpecs.docker_list_containers]
+        containers = broker[DefaultSpecs.docker_list_containers]
         try:
             result = set()
             for l in containers.content[1:]:
@@ -215,7 +215,7 @@ class ProdSpecs(Specs):
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):
-        ps = broker[ProdSpecs.ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         for p in ps:
             p_splits = p.split(None, 10)
             if len(p_splits) >= 11:
@@ -484,7 +484,7 @@ class ProdSpecs(Specs):
 
     @datasource(ps_auxww)
     def tomcat_home_base(broker):
-        ps = broker[ProdSpecs.ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Dcatalina\.(home|base)=(\S+)").findall
         for p in ps:
@@ -530,7 +530,7 @@ class ProdSpecs(Specs):
     def docker_installed_rpms(broker):
         ctx = broker[DockerImageContext]
         root = ctx.root
-        fmt = ProdSpecs.rpm_format
+        fmt = DefaultSpecs.rpm_format
         cmd = "/usr/bin/rpm -qa --root %s --qf '%s'" % (root, fmt)
         result = ctx.shell_out(cmd)
         return CommandOutputProvider(cmd, ctx, content=result)
@@ -540,7 +540,7 @@ class ProdSpecs(Specs):
 
     @datasource(ps_auxww)
     def jboss_domain_server_log_dir(broker):
-        ps = broker[ProdSpecs.ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.server\.log\.dir=(\S+)").findall
         # JBoss domain server progress command content should contain jboss.server.log.dir

@@ -139,11 +139,11 @@ class RegistryPoint(object):
         self.alias = None
 
 
-def _registry_point(alias=None):
+def _registry_point(rp):
     """ Provides a datasource implementation that replaces the `RegistryPoint`
         marker class on `SpecSet` subclasses.
     """
-    @datasource(alias=alias)
+    @datasource(alias=rp.alias)
     def inner(broker):
         for c in reversed(dr.get_added_dependencies(inner)):
             if c in broker:
@@ -180,11 +180,9 @@ class SpecSetMeta(type):
 
         module = cls.__module__
         for k, v in dct.items():
-            if v is RegistryPoint:
-                v = RegistryPoint()
-
             if isinstance(v, RegistryPoint):
-                v = _registry_point(alias=v.alias or k)
+                v.alias = v.alias or k
+                v = _registry_point(v)
                 cls.registry[k] = v
 
             if six.callable(v):
