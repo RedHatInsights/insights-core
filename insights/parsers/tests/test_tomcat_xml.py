@@ -1,7 +1,9 @@
 from insights.tests import context_wrap
-from insights.parsers.tomcat_web_xml import TomcatWebXml
+from insights.parsers import tomcat_xml
+from insights.parsers.tomcat_xml import TomcatWebXml
+import doctest
 
-xml_content = """
+web_xml_content = """
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one or more
@@ -1201,6 +1203,44 @@ xml_content = """
 """.strip()
 
 
+web_xml_content_missing_timeout = """
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
+
+    <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+        <init-param>
+            <param-name>debug</param-name>
+            <param-value>0</param-value>
+        </init-param>
+        <init-param>
+            <param-name>listings</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+</web-app>
+"""
+
+
 def test_get_tmo():
-    result = TomcatWebXml(context_wrap(xml_content)).data
+    result = TomcatWebXml(context_wrap(web_xml_content))
     assert result.get("session-timeout") == 30
+
+
+def test_get_tmo_missing_timeout():
+    result = TomcatWebXml(context_wrap(web_xml_content_missing_timeout))
+    assert result.get("session-timeout") is None
+
+
+def test_web_xml_doc_examples():
+    env = {
+            'TomcatWebXml': TomcatWebXml,
+            'web_xml': TomcatWebXml(context_wrap(web_xml_content, path='/usr/share/tomcat/web.xml'))
+          }
+    failed, total = doctest.testmod(tomcat_xml, globs=env)
+    assert failed == 0
