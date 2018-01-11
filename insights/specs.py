@@ -475,9 +475,6 @@ teamdctl_state_dump = sf.foreach_execute(ethernet_interfaces, "/usr/bin/teamdctl
 thp_use_zero_page = sf.simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page", name="thp_use_zero_page")
 thp_enabled = sf.simple_file("/sys/kernel/mm/transparent_hugepage/enabled", name="thp_enabled")
 tmpfilesd = sf.glob_file(["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"], name="tmpfilesd")
-tomcat_web_xml = sf.first_of([sf.glob_file("/etc/tomcat*/web.xml", name="tomcat_web_xml_etc"),
-                              sf.glob_file("/conf/tomcat/tomcat*/web.xml", name="tomcat_web_xml_conf")],
-                              name="tomcat_web_xml", alias="tomcat_web.xml")
 
 
 @datasource(ps_auxww)
@@ -495,6 +492,9 @@ def tomcat_home_base(broker):
 
 tomcat_vdc_targeted = sf.foreach_execute(tomcat_home_base, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s", name="tomcat_vdc_targeted")
 tomcat_vdc_fallback = sf.simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +", name="tomcat_vdc_fallback")
+tomcat_web_xml = sf.first_of([sf.foreach_collect(tomcat_base, "%s/conf/web.xml"),
+                              sf.glob_file("conf/tomcat/tomcat*/web.xml", context=HostArchiveContext)],
+                             name="tomcat_web_xml", alias="tomcat_web.xml")
 tuned_adm = sf.simple_command("/usr/sbin/tuned-adm list", name="tuned_adm", alias="tuned-adm")
 udev_persistent_net_rules = sf.simple_file("/etc/udev/rules.d/70-persistent-net.rules", name="udev_persistent_net_rules", alias="udev-persistent-net.rules")
 uname = sf.simple_command("/usr/bin/uname -a", name="uname")
