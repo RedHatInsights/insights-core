@@ -10,11 +10,10 @@ Classes to parse Tomcat XML configuration files.
 
 """
 from .. import parser, XMLParser
-from insights.specs import tomcat_web_xml
-from insights.specs import tomcat_server_xml
+from insights.specs import Specs
 
 
-@parser(tomcat_web_xml)
+@parser(Specs.tomcat_web_xml)
 class TomcatWebXml(XMLParser):
     """
     Parse the `web.xml` of Tomcat.
@@ -85,7 +84,7 @@ class TomcatWebXml(XMLParser):
         return parsed_data
 
 
-@parser(tomcat_server_xml)
+@parser(Specs.tomcat_server_xml)
 class TomcatServerXml(XMLParser):
     """
     Parse the `server.xml` of Tomcat.

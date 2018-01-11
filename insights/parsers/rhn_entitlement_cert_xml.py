@@ -1,9 +1,9 @@
-from .. import Parser, parser, LegacyItemAccess
+from .. import XMLParser, parser
 from insights.specs import Specs
 
 
 @parser(Specs.rhn_entitlement_cert_xml)
-class RHNCertConf(LegacyItemAccess, Parser):
+class RHNCertConf(XMLParser):
     """Class to parse the xml files ``rhn-entitlement-cert.xml*``
 
     Attributes:

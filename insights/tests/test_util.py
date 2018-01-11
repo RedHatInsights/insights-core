@@ -45,14 +45,14 @@ def test_stringify():
 
 def test_missing():
     missing_none = dummy_dict([t("a"), t("b"), t("c"), t("d"), t("e"), t("f"), t("g")])
-    assert get_missing_requirements(REQUIRES, missing_none) is None
+    assert get_missing_requirements(None, REQUIRES, missing_none) is None
     missing_partial_any = dummy_dict([t("a"), t("b"), t("c"), t("d"), t("g")])
-    assert get_missing_requirements(REQUIRES, missing_partial_any) is None
+    assert get_missing_requirements(None, REQUIRES, missing_partial_any) is None
     missing_any = dummy_dict([t("a"), t("b"), t("c"), t("f"), t("g")])
-    result = get_missing_requirements(REQUIRES, missing_any)
+    result = get_missing_requirements(None, REQUIRES, missing_any)
     assert result == ([], [[t("d"), t("e")]])
     missing_all = dummy_dict([t("a"), t("c"), t("d"), t("e"), t("f"), t("g")])
-    result = get_missing_requirements(REQUIRES, missing_all)
+    result = get_missing_requirements(None, REQUIRES, missing_all)
     assert result == ([t("b")], [])
 
 

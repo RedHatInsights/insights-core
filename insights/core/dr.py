@@ -45,8 +45,13 @@ GROUP_OF_COMPONENT = {}
 
 DELEGATES = {}
 HIDDEN = set()
+IGNORE = defaultdict(set)
 
 ANY_TYPE = object()
+
+
+def add_ignore(c, i):
+    IGNORE[c].add(i)
 
 
 def resolve_alias(c):
@@ -103,8 +108,9 @@ get_component = COMPONENT_NAME_CACHE.__getitem__
 
 
 def get_component_type(component):
-    component = resolve_alias(component)
-    return TYPE_OF_COMPONENT.get(component)
+    if six.callable(component):
+        component = resolve_alias(component)
+        return TYPE_OF_COMPONENT.get(component)
 
 
 def get_group(component):
@@ -161,9 +167,8 @@ class SkipComponent(Exception):
 def get_name(component):
     component = resolve_alias(component)
     if six.callable(component):
-        if hasattr(component, "__qualname__"):
-            return component.__qualname__
-        return '.'.join([component.__module__, component.__name__])
+        name = getattr(component, "__qualname__", component.__name__)
+        return '.'.join([component.__module__, name])
     return str(component)
 
 
@@ -530,9 +535,11 @@ class Broker(object):
             return default
 
 
-def get_missing_requirements(requires, d):
+def get_missing_requirements(func, requires, d):
     if not requires:
         return None
+    if any(i in d for i in IGNORE.get(func, [])):
+        raise SkipComponent()
     req_all, req_any = split_requirements(requires)
     req_all = resolve_aliases(req_all)
     req_any = [resolve_aliases(c) for c in req_any]
@@ -546,7 +553,7 @@ def get_missing_requirements(requires, d):
 
 
 def broker_executor(func, broker, requires=[], optional=[]):
-    missing_requirements = get_missing_requirements(requires, broker)
+    missing_requirements = get_missing_requirements(func, requires, broker)
     if missing_requirements:
         raise MissingRequirements(missing_requirements)
     return func(broker)
@@ -557,7 +564,7 @@ def default_executor(func, broker, requires=[], optional=[]):
         dependency list. Can be used on individual components or
         in component type definitions.
     """
-    missing_requirements = get_missing_requirements(requires, broker)
+    missing_requirements = get_missing_requirements(func, requires, broker)
     if missing_requirements:
         raise MissingRequirements(missing_requirements)
     args = []

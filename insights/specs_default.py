@@ -391,6 +391,7 @@ class DefaultSpecs(Specs):
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
+    proc_snmp_ipv6 = simple_file("proc/net/snmp6")
     puppet_ssl_cert_ca_pem = None
     pvs = simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"')
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
@@ -481,6 +482,8 @@ class DefaultSpecs(Specs):
     tmpfilesd = glob_file(["/etc/tmpfiles.d/*.conf", "/usr/lib/tmpfiles.d/*.conf", "/run/tmpfiles.d/*.conf"])
     tomcat_web_xml = first_of([glob_file("/etc/tomcat*/web.xml"),
                                   glob_file("/conf/tomcat/tomcat*/web.xml")])
+    tomcat_server_xml = first_of([foreach_collect(tomcat_base, "%s/conf/server.xml"),
+                                     glob_file("conf/tomcat/tomcat*/server.xml", context=HostArchiveContext)])
 
     @datasource(ps_auxww)
     def tomcat_home_base(broker):
@@ -538,7 +541,24 @@ class DefaultSpecs(Specs):
     # unify the different installed rpm provider types
     installed_rpms = first_of([host_installed_rpms, docker_installed_rpms])
 
-    @datasource(ps_auxww)
+    @datasource(Specs.ps_auxww)
+    def jboss_home(broker):
+        ps = broker[Specs.ps_auxww].content
+        results = []
+        findall = re.compile(r"\-Djboss\.home\.dir=(\S+)").findall
+        # JBoss progress command content should contain jboss.home.dir
+        # and any of string ['-D[Standalone]', '-D[Host Controller]', '-D[Server:']
+        for p in ps:
+            if any(i in p for i in ['-D[Standalone]', '-D[Host Controller]', '-D[Server:']):
+                found = findall(p)
+                if found:
+                    # Only get the path which is absolute
+                    results.extend(f for f in found if f[0] == '/')
+        return list(set(results))
+
+    jboss_version = foreach_collect(jboss_home, "%s/version.txt")
+
+    @datasource(Specs.ps_auxww)
     def jboss_domain_server_log_dir(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -553,3 +573,25 @@ class DefaultSpecs(Specs):
         return list(set(results))
 
     jboss_domain_server_log = foreach_collect(jboss_domain_server_log_dir, "%s/server.log*")
+
+    @datasource(Specs.ps_auxww)
+    def jboss_standalone_main_config_files(broker):
+        ps = broker[Specs.ps_auxww].content
+        results = []
+        search = re.compile(r"\-Djboss\.server\.base\.dir=(\S+)").search
+        # JBoss progress command content should contain jboss.home.dir
+        for p in ps:
+            if '-D[Standalone]' in p:
+                match = search(p)
+                # Only get the path which is absolute
+                if match and match.group(1)[0] == "/":
+                    main_config_path = match.group(1)
+                    main_config_file = "standalone.xml"
+                    if " -c " in p:
+                        main_config_file = p.split(" -c ")[1].split()[0]
+                    elif "--server-config" in p:
+                        main_config_file = p.split("--server-config=")[1].split()[0]
+                    results.append(main_config_path + "/" + main_config_file)
+        return list(set(results))
+
+    jboss_standalone_main_config = foreach_collect(jboss_standalone_main_config_files, "%s", name="jboss_standalone_main_config")

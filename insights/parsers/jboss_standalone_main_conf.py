@@ -48,10 +48,10 @@ Examples:
 
 from .. import XMLParser, parser
 
-from insights.specs import jboss_standalone_main_config
+from insights.specs import Specs
 
 
-@parser(jboss_standalone_main_config)
+@parser(Specs.jboss_standalone_main_config)
 class JbossStandaloneConf(XMLParser):
     """
     Read the XML in the JBoss standalone mode main configuration file
