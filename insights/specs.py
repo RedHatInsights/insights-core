@@ -518,6 +518,9 @@ vmcore_dmesg = sf.glob_file("/var/crash/*/vmcore-dmesg.txt", name="vmcore_dmesg"
 vsftpd = sf.simple_file("/etc/pam.d/vsftpd", name="vsftpd")
 vsftpd_conf = sf.simple_file("/etc/vsftpd/vsftpd.conf", name="vsftpd_conf", alias="vsftpd.conf")
 woopsie = sf.simple_command(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'", name="woopsie")
+x86_pti_enabled = sf.simple_file("/sys/kernel/debug/x86/pti_enabled", name="x86_pti_enabled")
+x86_ibpb_enabled = sf.simple_file("/sys/kernel/debug/x86/ibpb_enabled", name="x86_ibpb_enabled")
+x86_ibrs_enabled = sf.simple_file("/sys/kernel/debug/x86/ibrs_enabled", name="x86_ibrs_enabled")
 xfs_info = None
 xinetd_conf = sf.glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"], name="xinetd_conf", alias="xinetd.conf")
 yum_conf = sf.simple_file("/etc/yum.conf", name="yum_conf", alias="yum.conf")
