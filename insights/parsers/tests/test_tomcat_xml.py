@@ -1,6 +1,7 @@
 from insights.tests import context_wrap
 from insights.parsers import tomcat_xml
 from insights.parsers.tomcat_xml import TomcatWebXml
+from insights.parsers.tomcat_xml import TomcatServerXml
 import doctest
 
 web_xml_content = """
@@ -1236,10 +1237,84 @@ def test_get_tmo_missing_timeout():
     assert result.get("session-timeout") is None
 
 
+server_xml_content = """
+<?xml version='1.0' encoding='utf-8'?>
+<Server port="8005" shutdown="SHUTDOWN">
+
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <Listener className="org.apache.catalina.core.JasperListener" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+<Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <!-- A "Service" is a collection of one or more "Connectors" that share
+       a single "Container" Note:  A "Service" is not itself a "Container",
+       so you may not define subcomponents such as "Valves" at this level.
+       Documentation at /docs/config/service.html
+   -->
+  <Service name="Catalina">
+    <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+
+    <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+               maxThreads="150" scheme="https" secure="true"
+               clientAuth="want"
+               sslProtocols="TLSv1.2,TLSv1.1,TLSv1"
+               keystoreFile="conf/keystore"
+               truststoreFile="conf/keystore"
+               keystorePass="oXQ8LfAGsf97KQxwwPta2X3vnUv7P5QM"
+               keystoreType="PKCS12"
+               ciphers="SSL_RSA_WITH_3DES_EDE_CBC_SHA,
+                    TLS_RSA_WITH_AES_256_CBC_SHA,
+                    TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
+                    TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
+                    TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,
+                    TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,
+                    TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,
+                    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+               truststorePass="oXQ8LfAGsf97KQxwwPta2X3vnUv7P5QM" />
+
+    <!-- Define an AJP 1.3 Connector on port 8009 -->
+    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+
+
+    <Engine name="Catalina" defaultHost="localhost">
+
+      <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+             resourceName="UserDatabase"/>
+
+      <Host name="localhost"  appBase="webapps"
+            unpackWARs="true" autoDeploy="true"
+            xmlValidation="false" xmlNamespaceAware="false">
+
+      </Host>
+    </Engine>
+  </Service>
+</Server>
+"""
+
+
+def test_tomcat_server_xml():
+    result = TomcatServerXml(context_wrap(server_xml_content))
+    engines = result.get_elements(".//Service/Engine")
+    assert len(engines) == 1
+    assert engines[0].get('name') == "Catalina"
+
+
 def test_web_xml_doc_examples():
     env = {
             'TomcatWebXml': TomcatWebXml,
-            'web_xml': TomcatWebXml(context_wrap(web_xml_content, path='/usr/share/tomcat/web.xml'))
+            'web_xml': TomcatWebXml(context_wrap(web_xml_content, path='/usr/share/tomcat/web.xml')),
+            'TomcatServerXml': TomcatServerXml,
+            'server_xml': TomcatServerXml(context_wrap(server_xml_content, path='/usr/share/tomcat/server.xml'))
           }
     failed, total = doctest.testmod(tomcat_xml, globs=env)
     assert failed == 0
