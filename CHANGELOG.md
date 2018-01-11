@@ -1,5 +1,48 @@
 # Change Log
 
+## [insights-core-1.68.0-203](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.68.0-203) (2018-01-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.67.0-188...insights-core-1.68.0-203)
+
+**Closed issues:**
+
+- Parser for command output ip -s link \#859 [\#864](https://github.com/RedHatInsights/insights-core/issues/864)
+- Add CPU flags to cpuinfo parser \#816 [\#837](https://github.com/RedHatInsights/insights-core/issues/837)
+
+**Merged pull requests:**
+
+- Parser net snmp ipv6 [\#883](https://github.com/RedHatInsights/insights-core/pull/883) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Add debug files to detect Spectre/Meltdown mitigation [\#882](https://github.com/RedHatInsights/insights-core/pull/882) ([kgrant-rh](https://github.com/kgrant-rh))
+- \[docs\_example\_1.x\] Fixed same 'ListenAddress' in assertion [\#877](https://github.com/RedHatInsights/insights-core/pull/877) ([psachin](https://github.com/psachin))
+- Modify \_parse\_dom\(\) method to public [\#873](https://github.com/RedHatInsights/insights-core/pull/873) ([zhangyi733](https://github.com/zhangyi733))
+- \[doc\] Fixed missing 'self' as parameter in parse\_content\(\) [\#871](https://github.com/RedHatInsights/insights-core/pull/871) ([psachin](https://github.com/psachin))
+- Update the init of XMLParser to get xmlns before parseing dom [\#870](https://github.com/RedHatInsights/insights-core/pull/870) ([xiangce](https://github.com/xiangce))
+- Parser net snmp [\#868](https://github.com/RedHatInsights/insights-core/pull/868) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Update nginx\_conf spec for different nginx.conf paths [\#866](https://github.com/RedHatInsights/insights-core/pull/866) ([wushiqinlou](https://github.com/wushiqinlou))
+- Delete the decorator on GrubConf that already fixed in plugins [\#861](https://github.com/RedHatInsights/insights-core/pull/861) ([xiangce](https://github.com/xiangce))
+- Move code from upstream to insights/contrib [\#860](https://github.com/RedHatInsights/insights-core/pull/860) ([wushiqinlou](https://github.com/wushiqinlou))
+- Parser for command output ip -s link [\#859](https://github.com/RedHatInsights/insights-core/pull/859) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Update TomcatWebXml for 1.x [\#856](https://github.com/RedHatInsights/insights-core/pull/856) ([xiangce](https://github.com/xiangce))
+- Add xml file base class [\#855](https://github.com/RedHatInsights/insights-core/pull/855) ([zhangyi733](https://github.com/zhangyi733))
+- Add parser - foreman-ssl\_access\_ssl.log [\#846](https://github.com/RedHatInsights/insights-core/pull/846) ([sagaraivale](https://github.com/sagaraivale))
+
+## [insights-core-1.67.0-188](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.67.0-188) (2018-01-02)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.66.0-177...insights-core-1.67.0-188)
+
+**Implemented enhancements:**
+
+- Backporting cmd\_names property to 1.x for compatiblity with master [\#848](https://github.com/RedHatInsights/insights-core/pull/848) ([PaulWay](https://github.com/PaulWay))
+
+**Merged pull requests:**
+
+- Enhance parser nginx\_conf 1x [\#857](https://github.com/RedHatInsights/insights-core/pull/857) ([wushiqinlou](https://github.com/wushiqinlou))
+- Merge CatalinaOut and CatalinaServerLog to catalina\_log [\#853](https://github.com/RedHatInsights/insights-core/pull/853) ([xiangce](https://github.com/xiangce))
+- Enhance parser nginx\_conf\_1x [\#852](https://github.com/RedHatInsights/insights-core/pull/852) ([wushiqinlou](https://github.com/wushiqinlou))
+- Update tuned-adm path for both RHEL6 and RHEL7 for 1.x [\#844](https://github.com/RedHatInsights/insights-core/pull/844) ([mhuth](https://github.com/mhuth))
+- CPU feature flags for 1.x [\#843](https://github.com/RedHatInsights/insights-core/pull/843) ([kgrant-rh](https://github.com/kgrant-rh))
+- Added non-recursive spec for /var/www. [\#835](https://github.com/RedHatInsights/insights-core/pull/835) ([jsvob](https://github.com/jsvob))
+- Add parser for nginx.conf 1x [\#820](https://github.com/RedHatInsights/insights-core/pull/820) ([wushiqinlou](https://github.com/wushiqinlou))
+- Doctest example code - part A - for 1.x branch [\#817](https://github.com/RedHatInsights/insights-core/pull/817) ([PaulWay](https://github.com/PaulWay))
+
 ## [insights-core-1.66.0-177](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.66.0-177) (2017-12-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.65.0-166...insights-core-1.66.0-177)
 
@@ -56,7 +99,7 @@
 **Merged pull requests:**
 
 - Parser bond xmit hash policy [\#806](https://github.com/RedHatInsights/insights-core/pull/806) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
-- WIP: Add combiner HttpdV for RHEL6 for 1.x branch [\#800](https://github.com/RedHatInsights/insights-core/pull/800) ([xiangce](https://github.com/xiangce))
+- Add combiner HttpdV for RHEL6 for 1.x branch [\#800](https://github.com/RedHatInsights/insights-core/pull/800) ([xiangce](https://github.com/xiangce))
 - Update openshift get to include the command oc get bc [\#776](https://github.com/RedHatInsights/insights-core/pull/776) ([shzhou12](https://github.com/shzhou12))
 - Add parser for swift object-expirer.conf [\#772](https://github.com/RedHatInsights/insights-core/pull/772) ([chenlizhong](https://github.com/chenlizhong))
 - SSH parser has a new method for detecting the "+" syntax [\#753](https://github.com/RedHatInsights/insights-core/pull/753) ([jsvob](https://github.com/jsvob))
