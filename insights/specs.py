@@ -557,3 +557,22 @@ def jboss_domain_server_log_dir(broker):
 
 
 jboss_domain_server_log = sf.foreach_collect(jboss_domain_server_log_dir, "%s/server.log*", name="jboss_domain_server_log")
+
+
+@datasource(ps_auxww)
+def jboss_home(broker):
+    ps = broker[ps_auxww].content
+    results = []
+    findall = re.compile(r"\-Djboss\.home\.dir=(\S+)").findall
+    # JBoss progress command content should contain jboss.home.dir
+    # and any of string ['-D[Standalone]', '-D[Host Controller]', '-D[Server:']
+    for p in ps:
+        if any(i in p for i in ['-D[Standalone]', '-D[Host Controller]', '-D[Server:']):
+            found = findall(p)
+            if found:
+                # Only get the path which is absolute
+                results.extend(f for f in found if f[0] == '/')
+    return list(set(results))
+
+
+jboss_version = sf.foreach_collect(jboss_home, "%s/version.txt", name="jboss_version")
