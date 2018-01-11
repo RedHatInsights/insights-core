@@ -4,10 +4,15 @@ TcpIpStats - file ``/proc/net/snmp``
 The ``TcpIpStats`` class implements the parsing of ``/proc/net/snmp``
 file, which contains TCP/IP stats of individual layer.
 
+TcpIpStatsIPV6 - file ``/proc/net/snmp6``
+-----------------------------------------
+The ``TcpIpStatsIPV6`` class implements the parsing of ``/proc/net/snmp6``
+file, which contains TCP/IP stats of individual layer.
+
 """
 
 from .. import Parser, parser, LegacyItemAccess
-from insights.specs import proc_snmp_ipv4
+from insights.specs import proc_snmp_ipv4, proc_snmp_ipv6
 
 
 @parser(proc_snmp_ipv4)
@@ -80,3 +85,59 @@ class TcpIpStats(Parser, LegacyItemAccess):
             else:
                 data_id = line_split[1:]
         self.data = snmp_stats
+
+
+@parser(proc_snmp_ipv6)
+class TcpIpStatsIPV6(Parser, LegacyItemAccess):
+    """
+    Parser for ``/proc/net/snmp6`` file.
+
+    Sample input is provided in the *Examples*.
+
+    Examples:
+
+        >>> SNMP_CONTENT = '''
+        ... Ip6InReceives                   	757
+        ... Ip6InHdrErrors                  	0
+        ... Ip6InTooBigErrors               	0
+        ... Ip6InNoRoutes                   	0
+        ... Ip6InAddrErrors                 	0
+        ... Ip6InDiscards                       10
+        ... Ip6OutForwDatagrams             	0
+        ... Ip6OutDiscards                  	0
+        ... Ip6OutNoRoutes                  	0
+        ... Ip6InOctets                     	579410
+        ... Icmp6OutErrors                  	0
+        ... Icmp6InCsumErrors               	0
+        ...'''.strip()
+        >>> from insights.tests import context_wrap
+        >>> shared = {TcpIpStatsIPV6: TcpIpStatsIPV6(context_wrap(SNMP_CONTENT))}
+        >>> stats = shared[TcpIpStatsIPV6]
+        >>> IP6_RX_stats = stats.get("Ip6InReceives")
+        >>> print IP6_RX_stats
+        757
+        >>> IP6_In_Disc = stats.get("Ip6InDiscards")
+        >>> print IP6_In_Disc
+        10
+
+
+    Resultant Data::
+
+        {
+            'Ip6InReceives': 757,
+            'Ip6InHdrErrors': 0,
+            'Ip6InTooBigErrors': 0,
+            'Ip6InNoRoutes': 0,
+            'Ip6InAddrErrors': 0,
+            'Ip6InDiscards': 10,
+            ...
+            ...
+        }
+    """
+
+    def parse_content(self, content):
+        snmp6_stats = {}
+        for line in content:
+            line_split = line.split()
+            snmp6_stats[line_split[0]] = int(line_split[1]) if len(line_split) > 1 and line_split[1] else None
+        self.data = snmp6_stats
