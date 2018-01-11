@@ -11,6 +11,7 @@ Classes to parse Tomcat XML configuration files.
 """
 from .. import parser, XMLParser
 from insights.specs import tomcat_web_xml
+from insights.specs import tomcat_server_xml
 
 
 @parser(tomcat_web_xml)
@@ -82,3 +83,74 @@ class TomcatWebXml(XMLParser):
         if field_text and field_text.isdigit():
             parsed_data['session-timeout'] = int(field_text)
         return parsed_data
+
+
+@parser(tomcat_server_xml)
+class TomcatServerXml(XMLParser):
+    """
+    Parse the `server.xml` of Tomcat.
+
+    Sample input::
+
+        <?xml version='1.0' encoding='utf-8'?>
+        <Server port="8005" shutdown="SHUTDOWN">
+
+          <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+          <Listener className="org.apache.catalina.core.JasperListener" />
+          <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+          <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+        <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+          <GlobalNamingResources>
+            <Resource name="UserDatabase" auth="Container"
+                      type="org.apache.catalina.UserDatabase"
+                      description="User database that can be updated and saved"
+                      factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+                      pathname="conf/tomcat-users.xml" />
+          </GlobalNamingResources>
+          <Service name="Catalina">
+            <Connector port="8080" protocol="HTTP/1.1"
+                       connectionTimeout="20000"
+                       redirectPort="8443" />
+            <Connector port="8443" protocol="HTTP/1.1" SSLEnabled="true"
+                       maxThreads="150" scheme="https" secure="true"
+                       clientAuth="want"
+                       sslProtocols="TLSv1.2,TLSv1.1,TLSv1"
+                       keystoreFile="conf/keystore"
+                       truststoreFile="conf/keystore"
+                       keystorePass="oXQ8LfAGsf97KQxwwPta2X3vnUv7P5QM"
+                       keystoreType="PKCS12"
+                       ciphers="SSL_RSA_WITH_3DES_EDE_CBC_SHA,
+                            TLS_RSA_WITH_AES_256_CBC_SHA,
+                            TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA,
+                            TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA,
+                            TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA,
+                            TLS_ECDH_RSA_WITH_AES_128_CBC_SHA,
+                            TLS_ECDH_RSA_WITH_AES_256_CBC_SHA,
+                            TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+                       truststorePass="oXQ8LfAGsf97KQxwwPta2X3vnUv7P5QM" />
+
+            <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
+            <Engine name="Catalina" defaultHost="localhost">
+              <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+                     resourceName="UserDatabase"/>
+              <Host name="localhost"  appBase="webapps"
+                    unpackWARs="true" autoDeploy="true"
+                    xmlValidation="false" xmlNamespaceAware="false">
+              </Host>
+            </Engine>
+          </Service>
+        </Server>
+
+    Examples:
+        >>> type(server_xml)
+        <class 'insights.parsers.tomcat_xml.TomcatServerXml'>
+        >>> server_xml.file_path
+        '/usr/share/tomcat/server.xml'
+        >>> hosts = server_xml.get_elements(".//Service/Engine/Host")
+        >>> len(hosts)
+        1
+        >>> hosts[0].get('name')
+        'localhost'
+
+    """
+    pass

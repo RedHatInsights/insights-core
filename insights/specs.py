@@ -491,6 +491,9 @@ def tomcat_home_base(broker):
     return list(set(results))
 
 
+tomcat_server_xml = sf.first_of([sf.foreach_collect(tomcat_base, "%s/conf/server.xml"),
+                                 sf.glob_file("conf/tomcat/tomcat*/server.xml", context=HostArchiveContext)],
+                                name="tomcat_server_xml")
 tomcat_vdc_targeted = sf.foreach_execute(tomcat_home_base, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s", name="tomcat_vdc_targeted")
 tomcat_vdc_fallback = sf.simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +", name="tomcat_vdc_fallback")
 tomcat_web_xml = sf.first_of([sf.foreach_collect(tomcat_base, "%s/conf/web.xml"),
