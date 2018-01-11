@@ -28,10 +28,10 @@ Examples:
     'GA'
 """
 from .. import Parser, parser
-from ..specs import jboss_version
+from ..specs import Specs
 
 
-@parser(jboss_version)
+@parser(Specs.jboss_version)
 class JbossVersion(Parser):
     """Parses the content of file ``$JBOSS_HOME/version.txt``."""
 

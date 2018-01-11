@@ -1,15 +1,16 @@
+import itertools
 import logging
 import os
 import re
-import six
 import traceback
 
+from collections import defaultdict
 from glob import glob
 
 from insights.core import blacklist, dr
 from insights.core.filters import get_filters
-from insights.core.context import FSRoots, HostContext
-from insights.core.plugins import datasource, ContentException
+from insights.core.context import ExecutionContext, FSRoots, HostContext
+from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.core.serde import deserializer, serializer
 
 log = logging.getLogger(__name__)
@@ -166,36 +167,67 @@ class SpecDescriptor(object):
         raise AttributeError()
 
 
+def _get_ctx_dependencies(func):
+    ctxs = []
+    try:
+        for c in dr.get_dependencies(func):
+            if issubclass(c, ExecutionContext):
+                ctxs.append(c)
+    except:
+        pass
+    return ctxs
+
+
+def _register_context_handler(parents, func):
+    name = func.__name__
+    parents = list(itertools.takewhile(lambda x: name in x.registry, parents))
+    if not parents:
+        return
+
+    ctx_handlers = parents[-1].context_handlers
+    for c in _get_ctx_dependencies(func):
+        for old in ctx_handlers[name][c]:
+            dr.add_ignore(old, c)
+        ctx_handlers[name][c].append(func)
+
+
+def _resolve_registry_points(cls, base, dct):
+    module = cls.__module__
+    parents = [x for x in cls.__mro__ if x not in (cls, SpecSet, object)]
+
+    for k, v in dct.items():
+        if isinstance(v, RegistryPoint):
+            v.alias = v.alias or k
+            v = _registry_point(v)
+            cls.registry[k] = v
+
+        if is_datasource(v):
+            v.__qualname__ = ".".join([cls.__name__, k])
+            v.__name__ = k
+            v.__module__ = module
+            setattr(cls, k, SpecDescriptor(v))
+            if k in base.registry:
+                point = base.registry[k]
+                dr.add_dependency(point, v)
+                dr.mark_hidden(v)
+                _register_context_handler(parents, v)
+
+
 class SpecSetMeta(type):
     """ The metaclass that converts RegistryPoint markers to regisry point
         datasources and hooks implementations for them into the registry.
     """
     def __new__(cls, name, bases, dct):
+        dct["context_handlers"] = defaultdict(lambda: defaultdict(list))
         dct["registry"] = {}
         return super(SpecSetMeta, cls).__new__(cls, name, bases, dct)
 
     def __init__(cls, name, bases, dct):
         if name == "SpecSet":
             return
-
-        module = cls.__module__
-        for k, v in dct.items():
-            if isinstance(v, RegistryPoint):
-                v.alias = v.alias or k
-                v = _registry_point(v)
-                cls.registry[k] = v
-
-            if six.callable(v):
-                v.__qualname__ = ".".join([cls.__name__, k])
-                v.__name__ = k
-                v.__module__ = module
-                setattr(cls, k, SpecDescriptor(v))
-                for b in bases:
-                    if k in b.registry:
-                        point = b.registry[k]
-                        dr.add_dependency(point, v)
-                        dr.mark_hidden(v)
-                        break
+        if len(bases) > 1:
+            raise Exception("SpecSet subclasses must inherit from only one class.")
+        _resolve_registry_points(cls, bases[0], dct)
 
 
 class SpecSet(object):
