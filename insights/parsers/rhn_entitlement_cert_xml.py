@@ -1,10 +1,9 @@
-import xml.etree.ElementTree as ET
-from .. import Parser, parser, LegacyItemAccess
+from .. import XMLParser, parser
 from insights.specs import rhn_entitlement_cert_xml
 
 
 @parser(rhn_entitlement_cert_xml)
-class RHNCertConf(LegacyItemAccess, Parser):
+class RHNCertConf(XMLParser):
     """Class to parse the xml files ``rhn-entitlement-cert.xml*``
 
     Attributes:
@@ -64,23 +63,22 @@ class RHNCertConf(LegacyItemAccess, Parser):
         </rhn-cert>
     """
 
-    def parse_content(self, content):
+    def parse_dom(self):
 
         rhn_cert = {}
         # ignore empty xml file
-        if len(content) > 3:
-            rhntree = ET.fromstring('\n'.join(content))
-            channel_familes = {}
-            for field in rhntree.findall(".//rhn-cert-field"):
-                family = field.get('family')
-                if family:
-                    channel_familes[family] = dict(
-                        (k, v) for k, v in field.items() if k not in ('name', 'family'))
-                elif field.text:
-                    rhn_cert[field.get('name')] = field.text
-            # for all channel families
-            rhn_cert['channel-families'] = channel_familes
-            singature = rhntree.findall(".//rhn-cert-signature")
-            rhn_cert['signature'] = singature[0].text
 
-        self.data = rhn_cert
+        channel_familes = {}
+        for field in self.dom.findall(".//rhn-cert-field"):
+            family = field.get('family')
+            if family:
+                channel_familes[family] = dict(
+                    (k, v) for k, v in field.items() if k not in ('name', 'family'))
+            elif field.text:
+                rhn_cert[field.get('name')] = field.text
+        # for all channel families
+        rhn_cert['channel-families'] = channel_familes
+        singature = self.dom.findall(".//rhn-cert-signature")
+        rhn_cert['signature'] = singature[0].text
+
+        return rhn_cert

@@ -1,14 +1,13 @@
-import xml.etree.ElementTree as ET
-from .. import Parser, parser, LegacyItemAccess
+from .. import XMLParser, parser
 from insights.specs import tomcat_web_xml
 
 TIMEOUT_KEYWORD = 'session-timeout'
 
 
 @parser(tomcat_web_xml)
-class TomcatWebXml(LegacyItemAccess, Parser):
+class TomcatWebXml(XMLParser):
 
-    def parse_content(self, content):
+    def parse_dom(self):
         """
         Get the setting of 'session-timeout' and return.
 
@@ -19,17 +18,17 @@ class TomcatWebXml(LegacyItemAccess, Parser):
         -----------
         """
 
-        xmltree = ET.fromstring('\n'.join(content))
         # default namespace
         xmlns_0 = 'http://java.sun.com/xml/ns/javaee'
         xmlns_1 = 'http://java.sun.com/xml/ns/j2ee'
         keyword_0 = './/{%s}%s' % (xmlns_0, TIMEOUT_KEYWORD)
         keyword_1 = './/{%s}%s' % (xmlns_1, TIMEOUT_KEYWORD)
 
-        key_field = xmltree.findall(keyword_0) or xmltree.findall(keyword_1)
+        key_field = self.dom.findall(keyword_0)
+        key_field = key_field if key_field else self.dom.findall(keyword_1)
         field_text = key_field[0].text if key_field else None
 
         tmo_dict = {}
         if field_text and field_text.isdigit():
             tmo_dict = {TIMEOUT_KEYWORD: int(field_text)}
-        self.data = tmo_dict
+        return tmo_dict
