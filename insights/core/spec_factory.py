@@ -16,6 +16,9 @@ from insights.core.serde import deserializer, serializer
 log = logging.getLogger(__name__)
 
 
+COMMANDS = {}
+
+
 def mangle_command(command, name_max=255):
     pattern = r"[^\w\-\.\/\?]+"
 
@@ -322,6 +325,7 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
         else:
             result = raw
         return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
+    COMMANDS[inner] = cmd
     return inner
 
 
