@@ -582,3 +582,27 @@ def jboss_home(broker):
 
 
 jboss_version = sf.foreach_collect(jboss_home, "%s/version.txt", name="jboss_version")
+
+
+@datasource(ps_auxww)
+def jboss_standalone_main_config_files(broker):
+    ps = broker[ps_auxww].content
+    results = []
+    search = re.compile(r"\-Djboss\.server\.base\.dir=(\S+)").search
+    # JBoss progress command content should contain jboss.home.dir
+    for p in ps:
+        if '-D[Standalone]' in p:
+            match = search(p)
+            # Only get the path which is absolute
+            if match and match.group(1)[0] == "/":
+                main_config_path = match.group(1)
+                main_config_file = "standalone.xml"
+                if " -c " in p:
+                    main_config_file = p.split(" -c ")[1].split()[0]
+                elif "--server-config" in p:
+                    main_config_file = p.split("--server-config=")[1].split()[0]
+                results.append(main_config_path + "/" + main_config_file)
+    return list(set(results))
+
+
+jboss_standalone_main_config = sf.foreach_collect(jboss_standalone_main_config_files, "%s", name="jboss_standalone_main_config")
