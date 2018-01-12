@@ -1,6 +1,8 @@
 from insights.tests import context_wrap
+from insights.parsers import jboss_domain_log
 from insights.parsers.jboss_domain_log import JbossDomainServerLog
 from datetime import time
+import doctest
 
 OUT1 = """
 16:22:57,476 INFO  [org.xnio] (MSC service thread 1-12) XNIO Version 3.0.14.GA-redhat-1
@@ -41,3 +43,21 @@ def test_jboss_domain_server_log():
         "raw_message") == "16:22:57,476 INFO  [org.xnio] (MSC service thread 1-12) XNIO Version 3.0.14.GA-redhat-1"
     assert "Listening on 192.168.199.175:444" in out_log
     assert len(list(out_log.get_after(time(16, 23, 04)))) == 16
+
+
+OUT2 = """
+16:22:57,476 INFO  [org.xnio] (MSC service thread 1-12) XNIO Version 3.0.14.GA-redhat-1
+16:22:57,480 INFO  [org.xnio.nio] (MSC service thread 1-12) XNIO NIO Implementation Version 3.0.14.GA-redhat-1
+16:22:57,495 INFO  [org.jboss.remoting] (MSC service thread 1-12) JBoss Remoting version 3.3.5.Final-redhat-1
+16:23:03,881 INFO  [org.jboss.as.controller.management-deprecated] (ServerService Thread Pool -- 23) JBAS014627: Attribute 'enabled' in the resource at address '/subsystem=datasources/data-source=ExampleDS' is deprecated, and may be removed in future version. See the attribute description in the output of the read-resource-description operation to learn more about the deprecation.
+16:23:03,958 INFO  [org.jboss.as.security] (ServerService Thread Pool -- 37) JBAS013371: Activating Security Subsystem
+""".strip()
+
+
+def test_jboss_domain_server_log_doc_examples():
+    env = {
+            'JbossDomainServerLog': JbossDomainServerLog,
+            'log': JbossDomainServerLog(context_wrap(OUT2, path='/home/test/jboss/machine2/domain/servers/server-one/log/server.log')),
+          }
+    failed, total = doctest.testmod(jboss_domain_log, globs=env)
+    assert failed == 0
