@@ -96,19 +96,19 @@ class JbossDomainServerLog(JbossDomainLog):
 
 
     Examples:
-        >>> JbossDomainServerLog.filters.append('3.0.14.GA-redhat-1')
-        >>> log = shared[JbossDomainServerLog]
+        >>> type(log)
+        <class 'insights.parsers.jboss_domain_log.JbossDomainServerLog'>
         >>> log.file_path
         '/home/test/jboss/machine2/domain/servers/server-one/log/server.log'
         >>> log.file_name
         'server.log'
         >>> error_msgs = log.get('3.0.14.GA-redhat-1')
         >>> error_msgs[0]['raw_message']
-        16:22:57,476 INFO  [org.xnio] (MSC service thread 1-12) XNIO Version 3.0.14.GA-redhat-1
+        '16:22:57,476 INFO  [org.xnio] (MSC service thread 1-12) XNIO Version 3.0.14.GA-redhat-1'
         >>> 'Activating Security Subsystem' in log
         True
         >>> from datetime import time
-        >>> log.get_after(time(16:23:03))[1]['raw_message']
+        >>> list(log.get_after(time(16, 23, 03)))[1]['raw_message']
         '16:23:03,958 INFO  [org.jboss.as.security] (ServerService Thread Pool -- 37) JBAS013371: Activating Security Subsystem'
     """
     pass
