@@ -175,10 +175,7 @@ class JDRContext(ExecutionContext):
 
 @fs_root
 class HostArchiveContext(ExecutionContext):
-    def __init__(self, root, stored_command_prefix="insights_commands"):
-        self.root = root
-        self.stored_command_prefix = stored_command_prefix
-        super(HostArchiveContext, self).__init__()
+    pass
 
 
 @fs_root

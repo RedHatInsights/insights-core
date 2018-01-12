@@ -38,7 +38,7 @@ class DefaultSpecs(Specs):
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     candlepin_error_log = first_of([
-                                   simple_command("/var/log/candlepin/error.log"),
+                                   simple_file("/var/log/candlepin/error.log"),
                                    simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log",
                                    context=HostArchiveContext)
                                    ])
@@ -594,4 +594,4 @@ class DefaultSpecs(Specs):
                     results.append(main_config_path + "/" + main_config_file)
         return list(set(results))
 
-    jboss_standalone_main_config = foreach_collect(jboss_standalone_main_config_files, "%s", name="jboss_standalone_main_config")
+    jboss_standalone_main_config = foreach_collect(jboss_standalone_main_config_files, "%s")
