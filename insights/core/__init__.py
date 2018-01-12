@@ -242,6 +242,7 @@ class LegacyItemAccess(object):
 class XMLParser(LegacyItemAccess, Parser):
     """
     A parser class that reads XML files.  Base your own parser on this.
+
     Examples:
         >>> content = '''
         ... <?xml version="1.0"?>
