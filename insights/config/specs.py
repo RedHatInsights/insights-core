@@ -136,6 +136,7 @@ static_specs = {
     "grub_config_perms"         : CommandSpec("/bin/ls -l /boot/grub2/grub.cfg"),  # only RHEL7 and updwards
     "grub1_config_perms"        : CommandSpec("/bin/ls -l /boot/grub/grub.conf"),  # RHEL6
     "hammer_ping"               : CommandSpec("/usr/bin/hammer ping"),
+    "hammer_task_list"          : CommandSpec("/usr/bin/hammer --csv task list"),
     "haproxy_cfg"               : SimpleFileSpec("etc/haproxy/haproxy.cfg"),
     "heat-api.log"              : SimpleFileSpec("var/log/heat/heat-api.log", large_content=True),
     "heat.conf"                 : SimpleFileSpec("etc/heat/heat.conf"),
