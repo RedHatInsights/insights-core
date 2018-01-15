@@ -7,6 +7,7 @@ import logging
 import six
 import shlex
 import os
+import requests
 from insights.contrib.ConfigParser import RawConfigParser
 
 from subprocess import Popen, PIPE, STDOUT
@@ -99,20 +100,25 @@ class InsightsConfig(object):
                      self.collection_rules_url)
 
         net_logger.info("GET %s", self.collection_rules_url)
-        req = self.conn.session.get(
-            self.collection_rules_url, headers=({'accept': 'text/plain'}))
+        try:
+            req = self.conn.session.get(
+                self.collection_rules_url, headers=({'accept': 'text/plain'}))
 
-        if req.status_code == 200:
-            logger.debug("Successfully downloaded collection rules")
+            if req.status_code == 200:
+                logger.debug("Successfully downloaded collection rules")
 
-            json_response = NamedTemporaryFile()
-            json_response.write(req.text)
-            json_response.file.flush()
-        else:
-            logger.error("ERROR: Could not download dynamic configuration")
-            logger.error("Debug Info: \nConf status: %s", req.status_code)
-            logger.error("Debug Info: \nConf message: %s", req.text)
-            return False
+                json_response = NamedTemporaryFile()
+                json_response.write(req.text)
+                json_response.file.flush()
+            else:
+                logger.error("ERROR: Could not download dynamic configuration")
+                logger.error("Debug Info: \nConf status: %s", req.status_code)
+                logger.error("Debug Info: \nConf message: %s", req.text)
+                return None
+        except requests.ConnectionError as e:
+            logger.error(
+                "ERROR: Could not download dynamic configuration: %s", e)
+            return None
 
         if self.gpg:
             self.get_collection_rules_gpg(json_response)
@@ -191,25 +197,25 @@ class InsightsConfig(object):
                 raise ValueError('ERROR: Cannot update rules in --offline mode. '
                                  'Disable auto_update in config file.')
             dyn_conf = self.get_collection_rules()
-            version = dyn_conf.get('version', None)
-            if version is None:
-                raise ValueError("ERROR: Could not find version in json")
-            dyn_conf['file'] = self.collection_rules_file
-            logger.debug("Success reading config")
-            config_hash = hashlib.sha1(json.dumps(dyn_conf)).hexdigest()
-            logger.debug('sha1 of config: %s', config_hash)
-            return dyn_conf, rm_conf
-        else:
-            for conf_file in [self.collection_rules_file, self.fallback_file]:
-                logger.debug("trying to read conf from: " + conf_file)
-                conf = self.try_disk(conf_file, self.gpg)
-                if conf:
-                    version = conf.get('version', None)
-                    if version is None:
-                        raise ValueError("ERROR: Could not find version in json")
+            if dyn_conf:
+                version = dyn_conf.get('version', None)
+                if version is None:
+                    raise ValueError("ERROR: Could not find version in json")
+                dyn_conf['file'] = self.collection_rules_file
+                logger.debug("Success reading config")
+                config_hash = hashlib.sha1(json.dumps(dyn_conf)).hexdigest()
+                logger.debug('sha1 of config: %s', config_hash)
+                return dyn_conf, rm_conf
+        for conf_file in [self.collection_rules_file, self.fallback_file]:
+            logger.debug("trying to read conf from: " + conf_file)
+            conf = self.try_disk(conf_file, self.gpg)
+            if conf:
+                version = conf.get('version', None)
+                if version is None:
+                    raise ValueError("ERROR: Could not find version in json")
 
-                    conf['file'] = conf_file
-                    logger.debug("Success reading config")
-                    logger.debug(json.dumps(conf))
-                    return conf, rm_conf
+                conf['file'] = conf_file
+                logger.debug("Success reading config")
+                logger.debug(json.dumps(conf))
+                return conf, rm_conf
         raise ValueError("ERROR: Unable to download conf or read it from disk!")
