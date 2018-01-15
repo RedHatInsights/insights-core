@@ -122,12 +122,11 @@ class RabbitMQReport(Parser):
 class RabbitMQUsers(Parser):
 
     def parse_content(self, content):
-        users_dict = {}
+        self.data = {}
         for line in content[1:-1]:
-            line_splits = line.split()
+            line_splits = line.split(None, 1)
             if len(line_splits) > 1:
-                users_dict[line_splits[0]] = line_splits[1][1:-1]
-        self.data = users_dict
+                self.data[line_splits[0]] = line_splits[1][1:-1]
 
 
 TRUE_FALSE = {'true': True, 'false': False}
@@ -179,13 +178,15 @@ class RabbitMQQueues(Parser):
         for line in content:
             if "Listing queues ..." in line:
                 continue
+            if "...done." in line:
+                continue
             parts = line.split()
             if len(parts) == 4 and not line.startswith('Error:'):
                 if parts[3].lower() in TRUE_FALSE:
-                    self.data.append(RabbitMQQueues.QueueInfo(parts[0],
-                                                              int(parts[1]),
-                                                              int(parts[2]),
-                                                              TRUE_FALSE[parts[3].lower()]))
+                    self.data.append(RabbitMQQueues.QueueInfo(
+                        parts[0], int(parts[1]), int(parts[2]),
+                        TRUE_FALSE[parts[3].lower()])
+                    )
                 else:
                     raise ParseException(
                         "auto_delete should be true or false: {0}".format(line))
