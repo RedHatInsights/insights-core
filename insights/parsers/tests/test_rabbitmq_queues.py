@@ -34,6 +34,7 @@ mistral_engine.0.0.0.0	0	1	false
 reply_c97293591c5c46be9331f0a5662f8961	0	1	false
 mistral_engine_fanout_a660b93980ca41ac84b6f1b56cf8a25c	0	1	false
 event.sample	0	1	false
+...done.
 """
 
 QUEUES_BAD_1 = """
