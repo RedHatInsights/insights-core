@@ -2,6 +2,8 @@ from insights.core.context import OSP
 from insights.parsers import rabbitmq
 from insights.tests import context_wrap
 
+import warnings
+
 osp_controller = OSP()
 osp_controller.role = "Controller"
 
@@ -22,12 +24,22 @@ rabbitmq_report = """
 
 
 def test_detect_fd_limit():
-    context = context_wrap(rabbitmq_report, hostname="controller_1", osp=osp_controller)
-    map_result = rabbitmq.fd_total_limit(context)
-    assert 3996 == map_result
+    with warnings.catch_warnings(record=True) as w:
+        context = context_wrap(rabbitmq_report, hostname="controller_1", osp=osp_controller)
+        map_result = rabbitmq.fd_total_limit(context)
+        assert 3996 == map_result
+
+        # Check deprecation
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)
 
 
 def test_fd_limit_class():
-    context = context_wrap(rabbitmq_report, hostname="controller_1", osp=osp_controller)
-    map_result = rabbitmq.RabbitMQFileDescriptors(context)
-    assert 3996 == map_result.fd_total_limit
+    with warnings.catch_warnings(record=True) as w:
+        context = context_wrap(rabbitmq_report, hostname="controller_1", osp=osp_controller)
+        map_result = rabbitmq.RabbitMQFileDescriptors(context)
+        assert 3996 == map_result.fd_total_limit
+
+        # Check deprecation
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)

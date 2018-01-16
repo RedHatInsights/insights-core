@@ -3,6 +3,8 @@ from insights.contrib import pyparsing as p
 from .. import Parser, LogFileOutput, parser
 from . import ParseException
 
+from insights.util import deprecated
+
 
 # For "Status of node" section's erlang block prasing only, could not cover
 # sections "Cluster status of node" & "Application environment of node".
@@ -120,6 +122,7 @@ class RabbitMQReport(Parser):
 @parser("rabbitmq_report")
 def fd_total_limit(context):
     """Deprecated, do not use."""
+    deprecated(fd_total_limit, "Use the RabbitMQReport object in this module with ['file_descriptors']['total_limit']")
     for line in context.content:
         if "file_descriptors" in line and "total_limit" in line:
             line_splits = line.replace("}", "").split(",")
@@ -133,6 +136,7 @@ class RabbitMQFileDescriptors(Parser):
     NO_VALUE = -1
 
     def parse_content(self, content):
+        deprecated(fd_total_limit, "Use the RabbitMQReport object in this module with ['file_descriptors']['total_limit']")
         self.fd_total_limit = self.NO_VALUE
         for line in content:
             if "file_descriptors" in line and "total_limit" in line:
@@ -146,18 +150,19 @@ class RabbitMQFileDescriptors(Parser):
 class RabbitMQUsers(Parser):
 
     def parse_content(self, content):
-        users_dict = {}
+        self.data = {}
         for line in content[1:-1]:
-            line_splits = line.split()
+            line_splits = line.split(None, 1)
             if len(line_splits) > 1:
-                users_dict[line_splits[0]] = line_splits[1][1:-1]
-        self.data = users_dict
+                self.data[line_splits[0]] = line_splits[1][1:-1]
 
 
 @parser("rabbitmq_startup_log")
 class RabbitMQStartupLog(LogFileOutput):
     """Deprecated, use ``rabbitmq_log.RabbitMQStartupLog`` class instead."""
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(RabbitMQStartupLog, 'Use the RabbitMQStartupLog class in the rabbitmq_log module')
+        super(RabbitMQStartupLog, self).__init__(*args, **kwargs)
 
 
 TRUE_FALSE = {'true': True, 'false': False}
@@ -209,13 +214,15 @@ class RabbitMQQueues(Parser):
         for line in content:
             if "Listing queues ..." in line:
                 continue
+            if "...done." in line:
+                continue
             parts = line.split()
             if len(parts) == 4 and not line.startswith('Error:'):
                 if parts[3].lower() in TRUE_FALSE:
-                    self.data.append(RabbitMQQueues.QueueInfo(parts[0],
-                                                              int(parts[1]),
-                                                              int(parts[2]),
-                                                              TRUE_FALSE[parts[3].lower()]))
+                    self.data.append(RabbitMQQueues.QueueInfo(
+                        parts[0], int(parts[1]), int(parts[2]),
+                        TRUE_FALSE[parts[3].lower()])
+                    )
                 else:
                     raise ParseException(
                         "auto_delete should be true or false: {}".format(line))
