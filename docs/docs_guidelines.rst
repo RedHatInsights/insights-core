@@ -34,7 +34,7 @@ only moving the documentation down into each parser when it is specific to the p
 For instance if there is only one parser in a module then almost all of the documentation
 will be in the module section.  If there are multiple parsers that are very similar then
 most of the documentation will be in the module section and only the unique details will
-be in each parser's class.  
+be in each parser's class.
 
 Look at the example code in this article and also review the source files for
 these parsers and see how the documentation has been organized.
@@ -47,64 +47,52 @@ The following code provides an example of how docstring comments should be used
 in code contributed to the insights-core project:
 
 .. code-block:: python
-   :linenos:
+    :linenos:
 
-   """
-   lspci - Command
-   ===============
+    """
+    lspci - Command
+    ===============
 
-   This module provides plugins access to the PCI device information gathered from
-   the ``/usr/sbin/lspci`` command.
+    This module provides plugins access to the PCI device information gathered from
+    the ``/usr/sbin/lspci`` command.
 
-   Typical output of the ``lspci`` command is::
+    Typical output of the ``lspci`` command is::
 
-       00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
-       00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
-       03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
-       0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
+        00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
+        00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
+        03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
+        0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
 
-   The data is exposed via the ``obj.lines`` attribute which is a list containing
-   each line in the output.  The data may also be filtered using the
-   ``obj.get("filter string")`` method.  This method will return a list of lines
-   containing only "filter string".  The ``in`` operator may also be used to test
-   whether a particular string is in the ``lspci`` output.  Other methods/operators
-   are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
+    The data is exposed via the ``obj.lines`` attribute which is a list containing
+    each line in the output.  The data may also be filtered using the
+    ``obj.get("filter string")`` method.  This method will return a list of lines
+    containing only "filter string".  The ``in`` operator may also be used to test
+    whether a particular string is in the ``lspci`` output.  Other methods/operators
+    are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
 
-   Note:
-       The examples in this module may be executed with the following command:
-
-       ``python -m insights.parsers.lspci``
-
-   Examples:
-       >>> lspci_content = '''
-       ... 00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
-       ... 00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
-       ... 03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
-       ... 0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
-       ... '''.strip()
-       >>> from insights.tests import context_wrap
-       >>> shared = {LsPci: LsPci(context_wrap(lspci_content))}
-       >>> pci_info = shared[LsPci]
-       >>> pci_info.get("Intel Corporation")
-       ['00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)', '00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)', '03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)']
-       >>> len(pci_info.get("Network controller"))
-       1
-       >>> "Centrino Advanced-N 6205" in pci_info
-       True
-       >>> "0d:00.0" in pci_info
-       True
-   """
-   from .. import LogFileOutput, parser 
+    Examples:
+        >>> pci_info = shared[LsPci]
+        >>> pci_info.get("Intel Corporation")
+        ['00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)', '00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)', '03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)']
+        >>> len(pci_info.get("Network controller"))
+        1
+        >>> "Centrino Advanced-N 6205" in pci_info
+        True
+        >>> "0d:00.0" in pci_info
+        True
+    """
+    from .. import LogFileOutput, parser
 
 
-   @parser('lspci')
-   class LsPci(LogFileOutput):
-       """Parses output of the ``lspci`` command."""
-       pass
+    @parser('lspci')
+    class LsPci(LogFileOutput):
+        """Parses output of the ``lspci`` command."""
+        pass
 
-   if __name__ == "__main__":
-       import doctest
-       doctest.testmod()
+One thing to note here is that the output of each example code line is
+tested literally against the output given in the documentation.  This means
+you cannot split lines, and a dictionary will almost certainly not be listed
+in the order you give it.
 
 
 Docstring Details
@@ -117,18 +105,18 @@ Title
 -----
 
 .. code-block:: python
-   :linenos:
+    :linenos:
 
-   """
-   lspci - Command
-   ===============
+    """
+    lspci - Command
+    ===============
 
 The docstring module begins at the first line of the file using three double quotes.
 The second line is the name of the module and a descriptive phrase.  In this case
 the file is **lspci.py**, the module is **lspci** and it is a command.  An example
 of a file parser would be file **fstab.py**, module name **fstab** and descriptive
 phrase'File /etc/fstab'.  The module
-name line is followed by a line of ``=`` characters that is the same length as the 
+name line is followed by a line of ``=`` characters that is the same length as the
 entire module line.  A blank line follows the module information.
 
 Description
@@ -155,7 +143,7 @@ Description
    whether a particular string is in the ``lspci`` output.  Other methods/operators
    are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
 
-Next comes the description of the module. 
+Next comes the description of the module.
 Since this description is the first thing a developer will see when viewing
 the documentation it is important that the description is clear, concise and useful.
 Include elements of the module that would not be obvious from looking at the code.
@@ -194,14 +182,6 @@ Examples
    :lineno-start: 27
 
    Examples:
-       >>> lspci_content = '''
-       ... 00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
-       ... 00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
-       ... 03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
-       ... 0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
-       ... '''.strip()
-       >>> from insights.tests import context_wrap
-       >>> shared = {LsPci: LsPci(context_wrap(lspci_content))}
        >>> pci_info = shared[LsPci]
        >>> pci_info.get("Intel Corporation")
        ['00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)', '00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)', '03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)']
@@ -213,50 +193,86 @@ Examples
        True
    """
 
-This section of the documentation is the most important section because of the
-information it conveys to the reader.  Make sure to include examples that
+This section of the documentation is the most important section because of
+the information it conveys to the reader.  Make sure to include examples that
 show use of the parser to access the facts provided by the parser.  You can
-ensure that the examples are accurate by executing them in the Python interactive
-shell.  If you implement an *Examples* section including input data as shown in
-the above code, you
-can use the ``doctest`` utility to execute/test your example documentation.  It is
-not necessary to include the input in both the comments and the examples.  Simply
-refer to the input samples provide in the *Examples* section from the comments.
+ensure that the examples are accurate by executing them in the Python
+interactive shell.  If you implement an *Examples* section including input
+data as shown in the above code, you can use the ``doctest`` utility to
+execute/test your example documentation.  It is not necessary to include the
+input in both the comments and the examples.  Simply refer to the input
+samples provide in the *Examples* section from the comments.
+
+Testing your examples
+---------------------
+
+To test this documentation automatically, this code should go in the
+associated ``tests/test_lspci.py`` file:
+
+.. code-block:: python
+    :linenos:
+
+    from insights.parsers import lspci
+    from insights.tests import context_wrap
+    import doctest
+
+    LSPCI_DOCS_EXAMPLE = '''
+    00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
+    00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
+    03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
+    0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
+    '''
+
+    def test_lspci_documentation():
+        env = {
+            'LsPci': lspci.LsPci,
+            'shared': {
+                lspci.LsPci: lspci.LsPci(context_wrap(LSPCI_DOCS_EXAMPLE)),
+            }
+        }
+        failed, total = doctest.testmod(lspci, globs=env)
+        assert failed == 0
+
+This causes the tests to fail if the documentation examples fail for any
+reason.  If that occurs the tests will output detailed information about
+problems in execution or the differences between expected and actual output.
+
 
 Testing Your Docstring
 ======================
 
-Once you have implemented a parser with the recommended documentation style you will
-need to include it in the insights-core documentation.  You can do this by creating a file
-in the directory ``insights-core/docs/shared_parsers_catalog/`` that has the same name
-as your parser
-module name, except with a ``.rst`` extension instead of a ``.py`` extension.  For
-example if your parser module is named ``your_parser.py`` then create a file
-``insights-core/docs/shared_parsers_catalog/your_parser.rst`` and include the following
-three lines in the file::
+Once you have implemented a parser with the recommended documentation style
+you will need to include it in the insights-core documentation.  You can do
+this by creating a file in the directory
+``insights-core/docs/shared_parsers_catalog/`` that has the same name as your
+parser module name, except with a ``.rst`` extension instead of a ``.py``
+extension.  For example if your parser module is named ``your_parser.py``
+then create a file
+``insights-core/docs/shared_parsers_catalog/your_parser.rst`` and include the
+following three lines in the file::
 
    .. automodule:: insights.parsers.your_parser
       :members:
       :show-inheritance:
 
-Once you have created this file, switch to the directory ``insights-core/docs`` and type
-the following commands to create the HTML documentation::
+Once you have created this file, switch to the directory
+``insights-core/docs`` and type the following commands to create the HTML
+documentation::
 
     $ make clean
     $ make html_debug
 
-If you have errors in your comments you may see them in the output of the make command.
-Sphinx will only report errors if it cannot parse the comments. If you notice a
-message similar to the following you may safely ignore it::
+If you have errors in your comments you may see them in the output of the
+make command. Sphinx will only report errors if it cannot parse the comments.
+If you notice a message similar to the following you may safely ignore it::
 
   "Didn't find BlockIDInfo.data in insights-core.parser.blkid"
 
-Once the ``make`` command
-executes without any error messages the next step is to review the generated HTML and
-ensure that it looks correct.  The generated HTML is located in
-``insights-core/docs/_build/html/``.  You may view the files
-in a browser such as Firefox by executing the following command from the ``html``
-directory::
+Once the ``make`` command executes without any error messages the next step
+is to review the generated HTML and ensure that it looks correct.  The
+generated HTML is located in ``insights-core/docs/_build/html/``.  You may
+view the files in a browser such as Firefox by executing the following
+command from the ``html`` directory::
 
     $ firefox index.html
 
@@ -280,7 +296,7 @@ The following show how the ``lspci`` module documentation is rendered as HTML.
 References
 ==========
 * `Sphinx Docs`_
-* List of Docstring headings supported by Sphinx Napoleon `Sphinx Section Names`_ 
+* List of Docstring headings supported by Sphinx Napoleon `Sphinx Section Names`_
 * `reStructuredText Docs`_
 * `Google Docstring Style`_
 * `Python Doctest Docs`_
