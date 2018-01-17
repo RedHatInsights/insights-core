@@ -131,6 +131,8 @@ def get_dependents(component):
 
 
 def add_dependency(component, dep):
+    group = get_group(component)
+    COMPONENTS[group][component].add(dep)
     DEPENDENTS[dep].add(component)
     DEPENDENCIES[component].add(dep)
     ADDED_DEPENDENCIES[component].append(dep)
