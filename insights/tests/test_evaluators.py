@@ -10,7 +10,7 @@ from contextlib import closing
 from insights.core.evaluators import InsightsEvaluator, SingleEvaluator
 from insights.core import dr
 from insights.core.hydration import create_context
-from insights.core.archives import TarExtractor, DirectoryAdapter
+from insights.core.archives import TarExtractor
 from insights.plugins.insights_heartbeat import is_insights_heartbeat
 from . import HEARTBEAT_ID, HEARTBEAT_NAME
 
