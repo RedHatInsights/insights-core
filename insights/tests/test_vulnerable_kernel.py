@@ -1,6 +1,7 @@
 from insights.parsers.uname import Uname
 from insights.core.plugins import make_response
-from insights.tests import archive_provider, context_wrap, InputData
+from insights.tests import context_wrap, InputData, run_test
+from insights.specs import Specs
 
 from insights.plugins import vulnerable_kernel
 
@@ -46,17 +47,19 @@ def test_vulnerable_kernel():
             assert False
 
 
-@archive_provider(vulnerable_kernel.report)
-def integration_tests():
-    for kernel in VULNERABLE:
+def generate_inputs(things):
+    for kernel in things:
         uname_line = UNAME_TEMPLATE % kernel
         i = InputData()
-        i.add('uname', uname_line)
-        expected = make_response(ERROR_KEY, kernel=kernel)
-        yield i, [expected]
+        i.add(Specs.uname, uname_line)
+        yield (kernel, i)
 
-    for kernel in NOT_VULNERABLE:
-        uname_line = UNAME_TEMPLATE % kernel
-        i = InputData()
-        i.add('uname', uname_line)
-        yield i, []
+
+def test_vulnerable_kernel_integration():
+    comp = vulnerable_kernel.report
+    for kernel, i in generate_inputs(VULNERABLE):
+        expected = make_response(ERROR_KEY, kernel=kernel)
+        run_test(comp, i, expected)
+
+    for _, i in generate_inputs(NOT_VULNERABLE):
+        run_test(comp, i, None)

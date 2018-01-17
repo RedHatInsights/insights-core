@@ -1,33 +1,32 @@
-import json
 import logging
 import os
 
 from insights.core import archives
 from insights.core import dr
-from insights.core.serde import hydrate, ser
-from insights.core.specs import SpecMapper
-from insights.core.evaluators import (broker_from_spec_mapper,
-                                      SingleEvaluator,
-                                      MultiEvaluator)
+from insights.core import serde
+from insights.core.context import JDRContext, HostArchiveContext, SosArchiveContext
+from insights.core.evaluators import SingleEvaluator
 
 log = logging.getLogger(__name__)
 
 
-def hydrate_old_archive(path=None, tmp_dir=None, buf=None, broker=None):
-    def create_evaluator(extractor):
-        spec_mapper = SpecMapper(extractor)
-        md_content = spec_mapper.get_content("metadata.json", split=False, default="{}")
-        md = json.loads(md_content)
-        if md and "systems" in md:
-            return MultiEvaluator(spec_mapper, metadata=md)
+def create_context(path, context=None):
+    all_files = []
+    for f in archives.get_all_files(path):
+        if os.path.isfile(f) and not os.path.islink(f):
+            all_files.append(f)
+            if context is None:
+                if "insights_commands" in f:
+                    context = HostArchiveContext
+                elif "sos_commands" in f:
+                    context = SosArchiveContext
+                elif "JBOSS_HOME" in f:
+                    context = JDRContext
 
-        b = broker_from_spec_mapper(spec_mapper, broker=broker)
-        return SingleEvaluator(None, broker=b, metadata=md or None)
-
-    with archives.TarExtractor() as extractor:
-        if path:
-            return create_evaluator(extractor.from_path(path, tmp_dir))
-        return create_evaluator(extractor.from_buffer(buf))
+    context = context or HostArchiveContext
+    common_path = os.path.commonprefix(all_files)
+    real_root = os.path.join(path, common_path)
+    return context(real_root, all_files=all_files)
 
 
 def hydrate_new_dir(path, broker=None):
@@ -36,5 +35,5 @@ def hydrate_new_dir(path, broker=None):
         for name in names:
             p = os.path.join(root, name)
             with open(p) as f:
-                hydrate(ser.load(f), broker)
-    return SingleEvaluator(None, broker=broker)
+                serde.hydrate(serde.ser.load(f), broker)
+    return SingleEvaluator(broker=broker)

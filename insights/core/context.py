@@ -116,9 +116,10 @@ class Context(object):
 
 
 class ExecutionContext(object):
-    def __init__(self, root="/", timeout=None):
+    def __init__(self, root="/", timeout=None, all_files=None):
         self.root = root
         self.timeout = timeout
+        self.all_files = all_files or []
 
     def check_output(self, cmd, timeout=None, keep_rc=False):
         """ Subclasses can override to provide special
@@ -152,29 +153,13 @@ class HostContext(ExecutionContext):
     pass
 
 
-# No fs_root here. Dependence on this context should be explicit.
-class DockerHostContext(HostContext):
-    pass
-
-
-@fs_root
-class JBossContext(HostContext):
-    pass
-
-
-@fs_root
-class JDRContext(ExecutionContext):
-    def __init__(self, root, timeout=None):
-        super(JDRContext, self).__init__(timeout)
-        self.root = root
-
-    def locate_path(self, path):
-        p = path.replace("$JBOSS_HOME", "JBOSS_HOME")
-        return super(JDRContext, self).locate_path(p)
-
-
 @fs_root
 class HostArchiveContext(ExecutionContext):
+    pass
+
+
+@fs_root
+class SosArchiveContext(ExecutionContext):
     pass
 
 
@@ -187,11 +172,26 @@ class ClusterArchiveContext(ExecutionContext):
         super(ClusterArchiveContext, self).__init__()
 
 
+# No fs_root here. Dependence on this context should be explicit.
+class DockerHostContext(HostContext):
+    pass
+
+
 @fs_root
 class DockerImageContext(ExecutionContext):
-    def __init__(self, root):
-        super(DockerImageContext, self).__init__()
-        self.root = root
+    pass
+
+
+@fs_root
+class JBossContext(HostContext):
+    pass
+
+
+@fs_root
+class JDRContext(ExecutionContext):
+    def locate_path(self, path):
+        p = path.replace("$JBOSS_HOME", "JBOSS_HOME")
+        return super(JDRContext, self).locate_path(p)
 
 
 class OpenStackContext(ExecutionContext):

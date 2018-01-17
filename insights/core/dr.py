@@ -18,11 +18,6 @@ from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.util import enum, KeyPassingDefaultDict
 
-try:
-    from insights.core import fava
-except:
-    fava = None
-
 log = logging.getLogger(__name__)
 
 GROUPS = enum("single", "cluster")
@@ -132,9 +127,9 @@ def get_dependents(component):
 
 def add_dependency(component, dep):
     group = get_group(component)
-    COMPONENTS[group][component].add(dep)
     DEPENDENTS[dep].add(component)
     DEPENDENCIES[component].add(dep)
+    COMPONENTS[group][component].add(dep)
     ADDED_DEPENDENCIES[component].append(dep)
 
 
@@ -327,7 +322,7 @@ def _import(path, continue_on_error):
 
 def load_components(path, include=".*", exclude="test", continue_on_error=True):
     num_loaded = 0
-    if path.endswith((".py", ".fava")):
+    if path.endswith(".py"):
         path, _ = os.path.splitext(path)
 
     path = path.rstrip("/").replace("/", ".")
@@ -416,9 +411,6 @@ def register_component(component, delegate, component_type,
     MODULE_NAMES[component] = get_module_name(component)
     BASE_MODULE_NAMES[component] = get_base_module_name(component)
     COMPONENT_METADATA[component] = metadata
-
-    if fava:
-        fava.add_shared_parser(component.__name__, component)
 
     if alias:
         msg = "%s replacing alias '%s' registered to %s."

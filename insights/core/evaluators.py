@@ -1,11 +1,7 @@
-import json
 import logging
-from collections import defaultdict
 
-from insights.core import dr
-from insights.core import marshalling, plugins
-from insights.core.archives import InvalidArchive
-from insights.core.context import Context
+from insights import combiners, parsers, specs
+from insights.core import archives, dr, plugins
 
 log = logging.getLogger(__name__)
 
@@ -14,83 +10,27 @@ def get_simple_module_name(obj):
     return dr.BASE_MODULE_NAMES.get(obj, None)
 
 
-def broker_from_spec_mapper(spec_mapper, broker=None, on_content_error=log.exception):
-    broker = broker or dr.Broker()
-    for symbolic_name, files in spec_mapper.symbolic_files.items():
-        if symbolic_name == "metadata.json" or symbolic_name in broker:
-            continue
-
-        is_pattern = spec_mapper.data_spec_config.is_multi_output(symbolic_name)
-        if not is_pattern and len(files) > 1:
-            raise Exception("Multiple files for simple file spec: %s" % symbolic_name)
-
-        if is_pattern:
-            broker[symbolic_name] = []
-
-        for f in files:
-            content = []
-            try:
-                content = spec_mapper.get_content(f, symbolic=False)
-            except Exception as e:
-                on_content_error(e)
-                continue
-
-            cmd_not_found_list = ["Command not found", "timeout: failed to run command"]
-            if len(content) == 1 and any([cmd_without in content[0] for cmd_without in cmd_not_found_list]):
-                continue
-
-            urp = f if spec_mapper.root is None else f.split(spec_mapper.root)[1]
-            unrooted_path = urp.lstrip("/")
-            context = Context(target=symbolic_name, content=content, path=unrooted_path)
-
-            if is_pattern:
-                broker[symbolic_name].append(context)
-            else:
-                broker[symbolic_name] = context
-    return broker
-
-
 class Evaluator(object):
 
-    def __init__(self, spec_mapper=None, broker=None, metadata=None):
-        self.spec_mapper = spec_mapper
+    def __init__(self, broker=None):
         self.broker = broker
-        self.metadata = defaultdict(dict)
         self.rule_skips = []
         self.rule_results = []
-        self.archive_metadata = metadata
-        self.stats = self._init_stats()
         self.hostname = None
-
-    def _init_stats(self):
-        return {
-            "parser": {"count": 0, "fail": 0},
-            "reducer": {"count": 0, "fail": 0},
-            "skips": {"count": 0}
-        }
+        self.metadata = {}
 
     def pre_process(self):
         pass
 
     def post_process(self):
+        self.hostname = self.broker[combiners.hostname.hostname].fqdn
         for c, exes in self.broker.exceptions.items():
             for e in exes:
                 log.warn(self.broker.tracebacks[e])
-                if plugins.is_parser(c):
-                    self.handle_parse_error(c, e)
-                elif plugins.is_combiner(c):
-                    self.stats["reducer"]["fail"] += 1
-                elif plugins.is_rule(c):
-                    self.handle_rule_error(c, e)
 
-        for c, v in self.broker.items():
-            if plugins.is_parser(c):
-                self.stats["parser"]["count"] += 1
-            elif plugins.is_combiner(c):
-                self.stats["reducer"]["count"] += 1
-            elif plugins.is_rule(c):
-                self.stats["reducer"]["count"] += 1
-                self.handle_result(c, v)
+        for p, r in self.broker.items():
+            if plugins.is_rule(p):
+                self.handle_result(p, r)
 
     def run_components(self):
         dr.run(dr.COMPONENTS[dr.GROUPS.single], broker=self.broker)
@@ -108,63 +48,21 @@ class Evaluator(object):
         """
         return result
 
-    def get_contextual_hostname(self, default=""):
-        return self.hostname or default
-
     def process(self):
         self.pre_process()
         self.run_components()
         self.post_process()
         return self.get_response()
 
-    def handle_parse_error(self, parser, exception):
-        self.stats["parser"]["fail"] += 1
-
-    def handle_rule_error(self, rule, exception):
-        self.stats["reducer"]["fail"] += 1
-
-    def handle_content_error(self, e, filename):
-        log.exception("Unable to extract content from %s.", filename)
-
 
 class SingleEvaluator(Evaluator):
 
-    def __init__(self, spec_mapper=None, broker=None, metadata=None):
-        super(SingleEvaluator, self).__init__(spec_mapper=spec_mapper, broker=broker, metadata=metadata)
-
-    def append_metadata(self, r, plugin):
+    def append_metadata(self, r):
         for k, v in r.items():
             self.metadata[k] = v
 
     def format_response(self, response):
-        response["stats"]["skips"]["count"] = len(self.rule_skips)
         return response
-
-    def _protected_parse(self, sym_name, parser, default=""):
-        try:
-            data = self.broker.get(sym_name)
-            result = parser(data.content)
-            return result
-        except:
-            return default
-
-    def _pull_md_fragment(self):
-        if "systems" not in self.archive_metadata:
-            return self.archive_metadata
-        hn = self.machine_id
-        sub_systems = [s for s in self.archive_metadata["systems"] if s["system_id"] == hn]
-        assert len(sub_systems) == 1
-        return sub_systems[0]
-
-    def pre_process(self):
-        self.release = self._protected_parse("redhat-release", lambda c: c[0], default=None)
-        self.machine_id = self._protected_parse("machine-id", lambda c: c[0], default=None)
-        self.hostname = self._protected_parse("hostname", lambda c: c[0], default=None)
-        if self.hostname is None:
-            self.hostname = self._protected_parse("facts", lambda c: [x.split()[-1] for x in c if x.startswith('fqdn')][0])
-
-        if self.archive_metadata:
-            self.broker["metadata.json"] = self._pull_md_fragment()
 
     def get_response(self):
         return self.format_response({
@@ -174,13 +72,12 @@ class SingleEvaluator(Evaluator):
             },
             "reports": self.rule_results,
             "skips": self.rule_skips,
-            "stats": self.stats
         })
 
     def handle_result(self, plugin, r):
         type_ = r["type"]
         if type_ == "metadata":
-            self.append_metadata(r, plugin)
+            self.append_metadata(r)
         elif type_ == "rule":
             self.rule_results.append(self.format_result({
                 "rule_id": "{0}|{1}".format(get_simple_module_name(plugin), r["error_key"]),
@@ -190,206 +87,47 @@ class SingleEvaluator(Evaluator):
             self.rule_skips.append(r)
 
 
-class MultiEvaluator(Evaluator):
-
-    def __init__(self, spec_mapper, broker=None, metadata=None):
-        super(MultiEvaluator, self).__init__(spec_mapper, broker=broker or dr.Broker())
-        self.SubEvaluator = self.sub_evaluator_class()
-        self.archive_results = defaultdict(lambda: {
-            "system": {
-                "metadata": {}
-            },
-            "reports": []
-        })
-        self.archive_results[None]["system"]["type"] = "cluster"
-        if metadata:
-            self.archive_metadata = metadata
-        else:
-            md_str = spec_mapper.get_content("metadata.json", split=False, default="{}")
-            self.archive_metadata = marshalling.unmarshal(md_str)
-
-    def sub_evaluator_class(self):
-        return SingleEvaluator
-
-    def clean_broker(self, broker):
-        for c in [d for d in broker.keys() if not plugins.is_component(d) or plugins.is_datasource(d)]:
-            del broker[c]
-        return broker
-
-    def pre_process(self):
-        sub_brokers = {}
-        for i, sub_spec_mapper in enumerate(self.spec_mapper.sub_spec_mappers()):
-            b = broker_from_spec_mapper(sub_spec_mapper, on_content_error=self.handle_content_error)
-            sub_evaluator = self.SubEvaluator(sub_spec_mapper, broker=b, metadata=self.archive_metadata)
-            host_result = sub_evaluator.process()
-            hn = sub_evaluator.get_contextual_hostname(default=i)
-            self.archive_results[hn] = host_result
-            sub_brokers[hn] = self.clean_broker(sub_evaluator.broker)
-        for host, sub in sub_brokers.items():
-            for c, v in sub.items():
-                if plugins.is_rule(c):
-                    continue
-                if c not in self.broker:
-                    self.broker[c] = {}
-                self.broker[c][host] = v
-        self.broker["metadata.json"] = self.archive_metadata
-
-    def run_components(self):
-        dr.run(dr.COMPONENTS[dr.GROUPS.cluster], broker=self.broker)
-
-    def handle_result(self, plugin, r):
-        type_ = r["type"]
-        if type_ == "metadata":
-            self.append_metadata(r, plugin)
-        elif type_ == "rule":
-            self.archive_results[None]["reports"].append(self.format_result({
-                "rule_id": "{0}|{1}".format(get_simple_module_name(plugin), r["error_key"]),
-                "details": r
-            }))
-        elif type_ == "skip":
-            self.rule_skips.append(r)
-
-    def append_metadata(self, r, plugin):
-        for k, v in r.items():
-            self.archive_results[None]["system"]["metadata"][k] = v
-
-    def get_response(self):
-        return self.format_response({
-            "system": self.archive_results[None]["system"],
-            "reports": self.archive_results[None]["reports"],
-            "archives": [v for k, v in self.archive_results.items() if k is not None],
-            "skips": self.rule_skips,
-            "stats": self.stats
-        })
-
-
 class InsightsEvaluator(SingleEvaluator):
 
-    def __init__(self, spec_mapper=None, broker=None, url="not set", system_id=None, metadata=None):
-        super(InsightsEvaluator, self).__init__(spec_mapper, broker=broker, metadata=metadata)
+    def __init__(self, broker=None, system_id=None):
+        super(InsightsEvaluator, self).__init__(broker)
         self.system_id = system_id
-        self.url = url
+        self.branch_info = None
+        self.product = "rhel"
+        self.type = "host"
+
+    def post_process(self):
+        super(InsightsEvaluator, self).post_process()
+
+        _system_id = self.broker[specs.Specs.machine_id].content[0].strip()
+        if _system_id != self.system_id:
+            msg = "Id %s doesn't match %s from archive" % (_system_id, self.system_id)
+            raise archives.InvalidArchive(msg)
+
+        release = self.broker.get(specs.Specs.redhat_release)
+        if release:
+            self.release = release.content[0].strip()
+
+        branch_info = self.broker.get(parsers.branch_info.BranchInfo)
+        self.branch_info = branch_info.data if branch_info else {}
+
+        md = self.broker.get("metadata.json")
+        if md:
+            self.product = md.get("product_code")
+            self.type = md.get("role")
 
     def format_result(self, result):
         result["system_id"] = self.system_id
         return result
-
-    def get_contextual_hostname(self, default=""):
-        return self.system_id or default
-
-    def get_branch_info(self):
-        version = hostname = None
-        branch_info = self._protected_parse("branch_info", lambda c: json.loads('\n'.join(c)), default={})
-        product = branch_info.get("product")
-        remote_branch = branch_info.get("remote_branch")
-        if remote_branch == -1:
-            remote_branch = None
-        remote_leaf = branch_info.get("remote_leaf")
-        if remote_leaf == -1:
-            remote_leaf = None
-        if hasattr(product, "type") and product["type"] == "Satellite":
-            version = "{}.{}".format(product["major_version"], product["minor_version"])
-            hostname = branch_info.get("hostname")
-
-        return {
-            'remote_branch': remote_branch,
-            'remote_leaf': remote_leaf,
-            'metadata': {
-                'satellite_information': {
-                    'version': version,
-                    'hostname': hostname
-                }
-            }
-        }
-
-    def get_product_info(self):
-        md = self.broker.get("metadata.json", {})
-        return md.get("product_code", "rhel"), md.get("role", "host")
-
-    def pre_process(self):
-        int_system_id = self._protected_parse("machine-id", lambda c: c[0], default=None)
-        if self.system_id and self.system_id != int_system_id:
-            raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
-        self.system_id = int_system_id
-        super(InsightsEvaluator, self).pre_process()
 
     def format_response(self, response):
         system = response["system"]
-        branch_info = self.get_branch_info()
-        system['metadata'].update(branch_info['metadata'])
-        system['remote_branch'] = branch_info['remote_branch']
-        system['remote_leaf'] = branch_info['remote_leaf']
+        system["remote_branch"] = self.branch_info.get("remote_branch")
+        system["remote_leaf"] = self.branch_info.get("remote_leaf")
         system["system_id"] = self.system_id
+        system["product"] = self.product
+        system["type"] = self.type
         if self.release:
             system["metadata"]["release"] = self.release
-        system["product"], system["type"] = self.get_product_info()
-        response["stats"]["skips"]["count"] = len(self.rule_skips)
 
         return response
-
-    def handle_content_error(self, e, filename):
-        log.warning("Unable to extract content from %s [%s]. Failed with message %s. Ignoring.",
-                    filename, self.url, e, exc_info=True)
-
-    def handle_parse_error(self, component, exception):
-        super(InsightsEvaluator, self).handle_parse_error(component, exception)
-        context = self.broker.get(dr.get_dependencies(component).pop(), "Unknown")
-        log.warning("Parser failed with message %s. Ignoring. context: %s [%s]",
-                    exception, context, self.url, exc_info=True)
-
-
-class InsightsMultiEvaluator(MultiEvaluator):
-
-    def __init__(self, spec_mapper, broker=None, system_id=None, metadata=None):
-        super(InsightsMultiEvaluator, self).__init__(spec_mapper, broker=broker, metadata=metadata)
-        self.system_id = system_id
-
-    def pre_process(self):
-        super(InsightsMultiEvaluator, self).pre_process()
-        int_system_id = self.archive_metadata.get("system_id", "")
-        if self.system_id and self.system_id != int_system_id:
-            raise InvalidArchive("Given system_id does not match archive: %s" % int_system_id)
-        self.system_id = int_system_id
-
-    def sub_evaluator_class(self):
-        return InsightsEvaluator
-
-    def format_result(self, result):
-        result["system_id"] = self.system_id
-        return result
-
-    def format_response(self, response):
-        response["system"]["system_id"] = self.system_id
-        product = self.archive_metadata.get("product", "machine")
-        response["system"]["product"] = product
-        response["system"]["display_name"] = self.archive_metadata.get("display_name", "")
-        self.apply_system_metadata(self.archive_metadata["systems"], response)
-
-        # hackhackhackhack
-        system_id_hostname_map = {}
-
-        for archive in response["archives"]:
-            archive["system"]["product"] = product
-            system_id_hostname_map[archive["system"]["system_id"]] = archive["system"]["hostname"]
-
-        self.hack_affected_hosts(system_id_hostname_map, response)
-        for key in ["systems", "system_id", "product", "display_name"]:
-            del self.archive_metadata[key]
-        response["system"]["metadata"] = self.archive_metadata
-        response["stats"]["skips"]["count"] = len(self.rule_skips)
-        return response
-
-    def hack_affected_hosts(self, mapping, response):
-        for report in response["reports"]:
-            if "affected_hosts" in report["details"]:
-                new_hosts = [mapping[h] for h in report["details"]["affected_hosts"]]
-                report["details"]["affected_hosts"] = new_hosts
-                report["details"]["hostname_mapping"] = mapping
-
-    def apply_system_metadata(self, system_metadata, response):
-        for system_md in system_metadata:
-            system_id = system_md.pop("system_id")
-            for system in response["archives"]:
-                if system["system"]["system_id"] == system_id:
-                    system["system"].update(system_md)
-                    break

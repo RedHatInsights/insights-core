@@ -11,8 +11,6 @@ data sources that standard Insights `Parsers` resolve against.
 import os
 import re
 
-from insights.config import format_rpm
-
 from insights.core.context import ClusterArchiveContext
 from insights.core.context import DockerHostContext
 from insights.core.context import DockerImageContext
@@ -21,11 +19,34 @@ from insights.core.context import HostArchiveContext
 from insights.core.context import OpenShiftContext
 
 from insights.core.plugins import datasource
-from insights.core.spec_factory import CommandOutputProvider, ContentException
+from insights.core.spec_factory import CommandOutputProvider, ContentException, RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.specs import Specs
+
+
+def _make_rpm_formatter(fmt=None):
+    if fmt is None:
+        fmt = [
+            "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
+            "%{INSTALLTIME:date}",
+            "%{BUILDTIME}",
+            "%{VENDOR}",
+            "%{BUILDHOST}",
+            "DUMMY",
+            "%{SIGPGP:pgpsig}"
+        ]
+
+    def inner(idx=None):
+        if idx:
+            return "\t".join(fmt[:idx]) + "\n"
+        else:
+            return "\t".join(fmt) + "\n"
+    return inner
+
+
+format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
@@ -34,7 +55,7 @@ class DefaultSpecs(Specs):
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
-    branch_info = simple_file("/branch_info")
+    branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     candlepin_error_log = first_of([

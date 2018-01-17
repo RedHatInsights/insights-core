@@ -38,12 +38,15 @@ class ContentProvider(object):
         self._content = None
         self._exception = None
 
+    def load(self):
+        raise NotImplemented()
+
     @property
     def content(self):
         if self._exception:
             raise self._exception
 
-        if not self._content:
+        if self._content is None:
             try:
                 self._content = self.load()
             except Exception as ex:

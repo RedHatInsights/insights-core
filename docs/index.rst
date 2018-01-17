@@ -17,7 +17,6 @@ Contents:
     rule_tutorial_index
     custom_tutorial_index
     combiner_tutorial
-    fava
 
 Indices and tables
 ==================

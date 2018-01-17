@@ -1,7 +1,7 @@
 import copy
 
 from insights.core.plugins import make_response
-from insights.tests import archive_provider, InputData
+from insights.tests import InputData
 from insights.plugins import neutron_tenant_vlan_limit
 
 osp_metadata = {
@@ -177,7 +177,6 @@ osp_metadata = {
 }
 
 
-@archive_provider(neutron_tenant_vlan_limit.report)
 def integration_tests():
     input_data = InputData("test1", hostname="overcloud-controller-1",
                            machine_id="b3a4e6b2-c357-5ac5-a35f-daea39ee0409")

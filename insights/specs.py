@@ -353,7 +353,7 @@ class Specs(SpecSet):
     tomcat_vdc_fallback = RegistryPoint()
     tuned_adm = RegistryPoint(alias="tuned-adm")
     udev_persistent_net_rules = RegistryPoint(alias="udev-persistent-net.rules")
-    uname = RegistryPoint()
+    uname = RegistryPoint(alias="uname")
     up2date = RegistryPoint()
     uploader_log = RegistryPoint()
     uptime = RegistryPoint()
