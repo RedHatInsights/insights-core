@@ -13,6 +13,15 @@ SystemctlShowCinderVolume - command ``systemctl show openstack-cinder-volume``
 SystemctlShowMariaDB - command ``systemctl show mariadb``
 ---------------------------------------------------------
 
+SystemctlShowPulpWorkers - command ``systemctl show pulp_workers``
+------------------------------------------------------------------
+
+SystemctlShowPulpResourceManager - command ``systemctl show pulp_resource_manager``
+-----------------------------------------------------------------------------------
+
+SystemctlShowPulpCelerybeat - command ``systemctl show pulp_celerybeat``
+------------------------------------------------------------------------
+
 """
 
 from .. import LegacyItemAccess
@@ -103,5 +112,102 @@ class SystemctlShowMariaDB(SystemctlShow):
         >>> SrvMariaDB = shared[SystemctlShowMariaDB]
         >>> SrvMariaDB["After"]
         network.target -.mount systemd-journald.socket tmp.mount basic.target syslog.target system.slice
+    """
+    pass
+
+
+@parser('systemctl_pulp_workers')
+class SystemctlShowPulpWorkers(SystemctlShow):
+
+    """Class for ``systemctl show pulp_workers``
+
+       Typical output of ``/bin/systemctl show pulp_workers`` command is::
+
+        Type=oneshot
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=0
+        TimeoutStopUSec=1min 30s
+        WatchdogUSec=0
+        WatchdogTimestampMonotonic=0
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:33 CST
+        ExecMainStartTimestampMonotonic=105521850
+        ExecMainExitTimestamp=Thu 2018-01-11 14:22:33 CST
+        ExecMainExitTimestampMonotonic=105593405
+        ExecStart={ path=/usr/libexec/pulp-manage-workers ; argv[]=/usr/libexec/pulp-manage-workers start ; ignore_err
+        ExecStop={ path=/usr/libexec/pulp-manage-workers ; argv[]=/usr/libexec/pulp-manage-workers stop ; ignore_error
+        Slice=system.slice
+        After=systemd-journald.socket system.slice network.target basic.target
+        ...
+
+    Examples:
+        >>> srv_pulp_workers = shared[SystemctlPulpWorkers]
+        >>> srv_pulp_workers["After"]
+        "systemd-journald.socket system.slice network.target basic.target"
+    """
+    pass
+
+
+@parser('systemctl_pulp_resmg')
+class SystemctlShowPulpResourceManager(SystemctlShow):
+
+    """Class for ``systemctl show pulp_resource_manager``
+
+       Typical output of ``/bin/systemctl show pulp_resource_manager`` command is::
+
+        Type=simple
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:33 CST
+        ExecMainStartTimestampMonotonic=105028117
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=2810
+        ExecMainCode=0
+        ExecMainStatus=0
+        ExecStart={ path=/usr/bin/celery ; argv[]=/usr/bin/celery worker -A pulp.server.async.app -n resource_manager@
+        Slice=system.slice
+        After=basic.target network.target system.slice -.mount systemd-journald.socket
+        ...
+
+    Examples:
+        >>> srv_pulp_resource_manager = shared[SystemctlPulpResourceManager]
+        >>> srv_pulp_resource_manager["After"]
+        "basic.target network.target system.slice -.mount systemd-journald.socket"
+    """
+    pass
+
+
+@parser('systemctl_pulp_celerybeat')
+class SystemctlShowPulpCelerybeat(SystemctlShow):
+
+    """Class for ``systemctl show pulp_celerybeat``
+
+       Typical output of ``/bin/systemctl show pulp_celerybeat`` command is::
+
+        Type=simple
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:32 CST
+        ExecMainStartTimestampMonotonic=104261679
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=2747
+        ExecMainCode=0
+        ExecMainStatus=0
+        ExecStart={ path=/usr/bin/celery ; argv[]=/usr/bin/celery beat --scheduler=pulp.server.async.scheduler.Schedul
+        Slice=system.slice
+        After=basic.target network.target system.slice -.mount systemd-journald.socket
+        ...
+
+    Examples:
+        >>> Srv_pulp_celerybeat = shared[SystemctlPulpCelerybeat]
+        >>> Srv_pulp_celerybeat["After"]
+        "basic.target network.target system.slice -.mount systemd-journald.socket"
     """
     pass
