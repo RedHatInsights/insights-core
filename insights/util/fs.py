@@ -31,7 +31,7 @@ def remove(path, chmod=False):
         cmd = "chmod -R 755 %s" % path
         subproc.call(cmd)
 
-    cmd = 'rm -rf {p}'.format(p=path)
+    cmd = 'rm -rf "{p}"'.format(p=path)
     subproc.call(cmd)
 
 

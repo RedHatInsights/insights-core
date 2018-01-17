@@ -2,14 +2,12 @@
 
 import logging
 import os
-import shlex
-import subprocess
 import tempfile
-from insights.core.marshalling import Marshaller
-from insights.util import subproc, fs, content_type
+from contextlib import contextmanager
+from insights.util import content_type, fs, subproc
 
+from insights.util.content_type import _magic
 logger = logging.getLogger(__name__)
-marshaller = Marshaller()
 
 
 class InvalidArchive(Exception):
@@ -25,62 +23,23 @@ class InvalidContentType(InvalidArchive):
         self.content_type = content_type
 
 
-class Extractor(object):
-    """
-    Abstract base class for extraction of archives
-    into usable objects.
-    """
+class ZipExtractor(object):
 
-    def __init__(self, timeout=150):
-        self.tmp_dir = None
+    def __init__(self, timeout=None):
+        self.content_type = "application/zip"
         self.timeout = timeout
-
-    def from_buffer(self, buf):
-        pass
-
-    def from_path(self, path):
-        pass
-
-    def getnames(self):
-        return self.tar_file.getnames()
-
-    def extractfile(self, name):
-        return self.tar_file.extractfile(name)
-
-    def cleanup(self):
-        if self.tmp_dir:
-            fs.remove(self.tmp_dir, chmod=True)
-
-    def issym(self, name):
-        return self.tar_file.issym(name)
-
-    def isdir(self, name):
-        return self.tar_file.isdir(name)
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, a, b, c):
-        self.cleanup()
-
-
-class ZipExtractor(Extractor):
-
-    def from_buffer(self, buf):
-        with tempfile.NamedTemporaryFile() as tf:
-            tf.write(buf)
-            tf.flush()
-            return self.from_path(tf.name)
 
     def from_path(self, path):
         self.tmp_dir = tempfile.mkdtemp()
         command = "unzip -q -d %s %s" % (self.tmp_dir, path)
-        subprocess.call(shlex.split(command))
-        self.tar_file = DirectoryAdapter(self.tmp_dir)
+        subproc.call(command, timeout=self.timeout)
         return self
 
 
-class TarExtractor(Extractor):
+class TarExtractor(object):
+
+    def __init__(self, timeout=None):
+        self.timeout = timeout
 
     TAR_FLAGS = {
         "application/x-xz": "-J",
@@ -91,44 +50,26 @@ class TarExtractor(Extractor):
     }
 
     def _assert_type(self, _input, is_buffer=False):
-        if is_buffer:
-            self.content_type = content_type.from_buffer(_input)
-        else:
-            self.content_type = content_type.from_file(_input)
+        self.content_type = content_type.from_file(_input)
+
         if self.content_type not in self.TAR_FLAGS:
             raise InvalidContentType(self.content_type)
 
-        if is_buffer:
-            inner_type = content_type.from_buffer_inner(_input)
-        else:
-            inner_type = content_type.from_file_inner(_input)
+        inner_type = content_type.from_file_inner(_input)
+
         if inner_type != 'application/x-tar':
             raise InvalidArchive('No compressed tar archive')
 
-    def from_buffer(self, buf):
-        self._assert_type(buf, True)
-        tar_flag = self.TAR_FLAGS.get(self.content_type)
-        self.tmp_dir = tempfile.mkdtemp()
-        command = "tar %s -x -f - -C %s" % (tar_flag, self.tmp_dir)
-        p = subprocess.Popen(shlex.split(command), stdin=subprocess.PIPE)
-        p.stdin.write(buf)
-        p.stdin.close()
-        p.communicate()
-        self.tar_file = DirectoryAdapter(self.tmp_dir)
-        return self
-
     def from_path(self, path, extract_dir=None):
         if os.path.isdir(path):
-            self.tar_file = DirectoryAdapter(path)
+            self.tmp_dir = path
         else:
             self._assert_type(path, False)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
             command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
-
             logging.info("Extracting files in '%s'", self.tmp_dir)
             subproc.call(command, timeout=self.timeout)
-            self.tar_file = DirectoryAdapter(self.tmp_dir)
         return self
 
 
@@ -142,28 +83,25 @@ def get_all_files(path):
     return names
 
 
-class DirectoryAdapter(object):
-    """
-    This class takes a path to a directory and provides a subset of
-    the methods that a tarfile object provides.
-    """
+class Extraction(object):
+    def __init__(self, tmp_dir, content_type):
+        self.tmp_dir = tmp_dir
+        self.content_type = content_type
 
-    def __init__(self, path):
-        self.path = path
-        self.names = get_all_files(path)
 
-    def getnames(self):
-        return self.names
+@contextmanager
+def extract(path, timeout=None):
+    content_type = _magic.file(path)
+    if content_type == "application/zip":
+        extractor = ZipExtractor(timeout=timeout)
+    else:
+        extractor = TarExtractor(timeout=timeout)
 
-    def extractfile(self, name):
-        with open(name, "rb") as fp:
-            return fp.read()
-
-    def issym(self, name):
-        return os.path.islink(name)
-
-    def isdir(self, name):
-        return os.path.isdir(name)
-
-    def close(self):
-        pass
+    tmp_dir = None
+    try:
+        tmp_dir = extractor.from_path(path).tmp_dir
+        content_type = extractor.content_type
+        yield Extraction(tmp_dir, content_type)
+    finally:
+        if tmp_dir:
+            fs.remove(tmp_dir, chmod=True)

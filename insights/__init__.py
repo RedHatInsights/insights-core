@@ -7,7 +7,7 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
-from .core import archives  # noqa: F401
+from .core.archives import extract  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
@@ -79,13 +79,7 @@ def _run(graph=None, root=None, run_context=HostContext,
         broker[archive_context] = archive_context(root=root)
         return dr.run(graph, broker=broker)
 
-    from insights.util.content_type import _magic
-    if _magic.file(root) == "application/zip":
-        extractor = archives.ZipExtractor()
-    else:
-        extractor = archives.TarExtractor()
-
-    with extractor.from_path(root) as ex:
+    with extract(root) as ex:
         ctx = create_context(ex.tmp_dir, archive_context)
         archive_context = ctx.__class__
         broker = dr.Broker()
