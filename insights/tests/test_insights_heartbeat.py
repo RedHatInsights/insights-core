@@ -1,7 +1,8 @@
+from insights.core.plugins import make_response
 from insights.plugins import insights_heartbeat
 from insights.parsers.hostname import Hostname
-from insights.core.plugins import make_response
-from insights.tests import archive_provider, context_wrap, InputData
+from insights.specs import Specs
+from insights.tests import context_wrap, InputData, run_test
 
 
 NON_MATCHING_HOSTNAME = "some-other-hostname-that-doesnt-match"
@@ -16,11 +17,14 @@ def test_heartbeat():
     assert insights_heartbeat.is_insights_heartbeat(bad) is None
 
 
-@archive_provider(insights_heartbeat.is_insights_heartbeat)
-def integration_tests():
-    input_data = InputData(name="Match: no kernel", hostname=insights_heartbeat.HOST)
-    expected = make_response(insights_heartbeat.ERROR_KEY)
-    yield input_data, [expected]
+def test_integration_tests():
+    comp = insights_heartbeat.is_insights_heartbeat
 
-    input_data = InputData(name="No Match: bad hostname", hostname=NON_MATCHING_HOSTNAME)
-    yield input_data, []
+    input_data = InputData(name="Match: no kernel")
+    input_data.add(Specs.hostname, insights_heartbeat.HOST)
+    expected = make_response(insights_heartbeat.ERROR_KEY)
+    run_test(comp, input_data, expected)
+
+    input_data = InputData(name="No Match: bad hostname")
+    input_data.add(Specs.hostname, NON_MATCHING_HOSTNAME)
+    run_test(comp, input_data, None)

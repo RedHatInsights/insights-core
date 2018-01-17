@@ -1,11 +1,10 @@
 from insights.core.plugins import make_response
-from insights.tests import InputData, archive_provider
+from insights.tests import InputData, run_test
 
 from insights.plugins import always_fires
 
 
-@archive_provider(always_fires.report)
-def integration_tests():
-        i = InputData()
-        expected = make_response("ALWAYS_FIRES", kernel="this is junk")
-        yield i, [expected]
+def test_always_fires():
+    i = InputData()
+    expected = make_response("ALWAYS_FIRES", kernel="this is junk")
+    run_test(always_fires.report, i, expected)

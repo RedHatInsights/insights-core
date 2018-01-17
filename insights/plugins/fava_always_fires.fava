@@ -1,6 +1,0 @@
----
-rule:
-  name: "FAVA_ALWAYS_FIRES"
-  pydata:
-    kernel: this is junk
-  when: true

@@ -36,6 +36,9 @@ def get_filters(component):
 
 
 def apply_filters(target, lines):
+    if target not in FILTERS:
+        return lines
+
     results = []
     for l in lines:
         for f in FILTERS[target]:

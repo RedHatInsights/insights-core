@@ -1,23 +1,12 @@
 import copy
 import itertools
 import logging
-import pprint
-import json
-import tempfile
-from collections import defaultdict
-from functools import wraps
-from itertools import islice
 
-import insights
-import insights.core.fava  # noqa: F401
-from insights import apply_filters, get_config
+from insights import apply_filters
 
-# Need to alias the name of TestArchive since pytest looks at it because it
-# starts with "Test".
-from insights.archive.tool import TestArchive as TA, Transform as T
+from insights.core import dr
 from insights.core.context import Context
-from insights.core.evaluators import MultiEvaluator, SingleEvaluator
-from insights.core.evaluators import broker_from_spec_mapper
+from insights.core.spec_factory import ContentProvider
 from insights.util import make_iter
 
 
@@ -29,15 +18,6 @@ HEARTBEAT_NAME = "insights-heartbeat-9cd6f607-6b28-44ef-8481-62b0e7773614"
 
 DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
 DEFAULT_HOSTNAME = "hostname.example.com"
-
-
-def insights_heartbeat(metadata={"product_code": "rhel", "role": "host"}):
-    tmp_dir = tempfile.mkdtemp()
-    hostname = HEARTBEAT_NAME
-    return TA(hostname, base_archive="rhel7", transforms=[
-        T("hostname").replace(hostname),
-        T("metadata.json").replace(json.dumps(metadata))
-    ], machine_id=HEARTBEAT_ID, hostname=hostname).build(tmp_dir)
 
 
 def unordered_compare(result, expected):
@@ -62,55 +42,20 @@ def unordered_compare(result, expected):
         assert result == expected
 
 
-def archive_provider(component, test_func=unordered_compare, stride=1):
-    """
-    Decorator used to register generator functions that yield InputData and
-    expected response tuples.  These generators will be consumed by py.test
-    such that:
+def run_input_data(component, input_data):
+    broker = dr.Broker()
+    for k, v in input_data.data.items():
+        broker[k] = v
 
-    - Each InputData will be passed into an integrate() function
-    - The result will be compared [1] against the expected value from the
-      tuple.
-
-    Parameters
-    ----------
-    component: (str)
-        The component to be tested.
-    test_func: function
-        A custom comparison function with the parameters (result, expected).
-        This will override the use of the compare() [1] function.
-    stride: int
-        yield every `stride` InputData object rather than the full set. This
-        is used to provide a faster execution path in some test setups.
-
-    [1] insights.tests.unordered_compare()
-    """
-    def _wrap(func):
-        @wraps(func)
-        def __wrap(stride=stride):
-            for input_data, expected in islice(func(), None, None, stride):
-                yield component, test_func, input_data, expected
-
-        __wrap.stride = stride
-        ARCHIVE_GENERATORS.append(__wrap)
-        return __wrap
-    return _wrap
+    graph = dr.get_dependency_graph(component)
+    return dr.run(graph, broker=broker)
 
 
-CACHED_BY_MODULE = defaultdict(list)
-
-
-def ensure_cache_populated():
-    if not CACHED_BY_MODULE:
-        for gen in ARCHIVE_GENERATORS:
-            for component, test_func, input_data, expected in gen():
-                CACHED_BY_MODULE[component].append((test_func, input_data, expected))
-
-
-def plugin_tests(component):
-    ensure_cache_populated()
-    for test_func, input_data, expected in CACHED_BY_MODULE[component]:
-        yield test_func, input_data, expected
+def run_test(component, input_data, expected=None):
+    broker = run_input_data(component, input_data)
+    if expected:
+        unordered_compare(broker.get(component), expected)
+    return broker.get(component)
 
 
 def context_wrap(lines,
@@ -126,67 +71,6 @@ def context_wrap(lines,
                    path=path, hostname=hostname,
                    release=release, version=version.split("."),
                    machine_id=machine_id, **kwargs)
-
-
-def integrator(component):
-    """
-    Curries the integrate method with the given component. Useful for when you
-    will be making multiple calls to integrate and want to dry those calls up.
-    """
-    return lambda input_data: integrate(input_data, component)
-
-
-def integrator_assert(component):
-    def _test(input_data, expected):
-        result = integrate(input_data, component)
-        print "Actual:"
-        pprint.pprint(result)
-        print "\nExpected:"
-        pprint.pprint(expected)
-        assert result == expected
-    _test.component = component
-    return _test
-
-
-class MultinodeShim(object):
-    def __init__(self, input_datas):
-        self.input_datas = input_datas
-
-    def sub_spec_mappers(self):
-        return self.input_datas
-
-    def get_content(self, path, default=None, **kwargs):
-        raise NotImplementedError()
-
-
-def integrate(input_data, component):
-    """
-    :param InputData input_data: InputData object filled with test data
-    :param callable component: component to test
-    """
-    if isinstance(input_data, InputData):
-        b = broker_from_spec_mapper(input_data)
-        evaluator = SingleEvaluator(input_data, broker=b)
-        evaluator.process()
-        result = evaluator.broker.instances.get(component)
-        return [result] if result else []
-    if isinstance(input_data, list):
-        if isinstance(input_data[0], dict):
-            # Assume it's metadata.json
-            if "systems" not in input_data[0]:
-                # The multinode parsers use the presence of the "system" key to
-                # validate this really is a multinode metadata.json
-                input_data[0]["systems"] = []
-            meta = input_data[0]
-            input_data = input_data[1:]
-            evaluator = MultiEvaluator(MultinodeShim(input_data), metadata=meta)
-        else:
-            evaluator = MultiEvaluator(MultinodeShim(input_data))
-        evaluator.process()
-        result = evaluator.broker.instances.get(component)
-        return [result] if result else []
-    else:
-        raise TypeError("Unrecognized test data: %s" % type(input_data))
 
 
 input_data_cache = {}
@@ -222,88 +106,54 @@ class InputData(object):
     contain the specified value in the context.path field.  This is useful for
     testing pattern-like file parsers.
     """
-    def __init__(self, name=None,
-                 release=DEFAULT_RELEASE,
-                 version=["-1", "-1"],
-                 hostname=DEFAULT_HOSTNAME,
-                 machine_id=None,
-                 **kwargs):
+    def __init__(self, name=None):
         cnt = input_data_cache.get(name, 0)
         self.name = "{0}-{1:0>5}".format(name, cnt)
+        self.data = {}
         input_data_cache[name] = cnt + 1
-        self.root = None
-        self.records = []
-        self.symbolic_files = defaultdict(list)
-        self.data_spec_config = get_config()
-        self.by_path = dict()
-        self.to_remove = []
-        self.release = release
-        self.version = version.split(".") if "." in version else version
-        if len(self.version) == 1:
-            self.version = [self.version[0], "0"]
-        self.machine_id = machine_id or "input-data-" + str(next_gn())
-        self.extra_context = kwargs
 
-        # InputData.hostname (as well as Context.hostname) is now used for
-        # unique identification of hosts in multi-host mode.
-        # TODO: Rename field to better represent its real function
-        self.hostname = self.machine_id
-        self.add("hostname", hostname)
-        self.add("machine-id", machine_id)
-        self.add("redhat-release", self.release)
+    def __setitem__(self, key, value):
+        self.add(key, value)
 
-    def get_context(self):
-        return self.records[0]["context"] if len(self.records) > 0 else None
+    def __getitem__(self, key):
+        return self.data[key]
 
-    def get_content(self, target, split=True, symbolic=True, default=""):
-        try:
-            if symbolic:
-                content = self.by_path[self.symbolic_files[target][0]]
-            else:
-                content = self.by_path[target]
-            return content.splitlines() if split else content
-        except:
-            return default
+    def get(self, key, default):
+        return self.data.get(key, default)
+
+    def items(self):
+        return self.data.items()
 
     def clone(self, name):
         the_clone = copy.deepcopy(self)
         the_clone.name = name
         return the_clone
 
-    def add(self, target, content, path=None, do_filter=True):
+    def add(self, spec, content, path=None, do_filter=True):
         if not path:  # path must change to allow parsers to fire
             path = str(next_gn()) + "BOGUS"
         if not path.startswith("/"):
             path = "/" + path
         if do_filter:
-            content_iter = apply_filters(target, make_iter(content))
+            content_iter = apply_filters(spec, make_iter(content))
         else:
             content_iter = make_iter(content)
-        ctx = Context(target=target,
-                      content="\n".join(content_iter),
-                      release=self.release,
-                      version=self.version,
-                      path=path,
-                      hostname=self.hostname,
-                      machine_id=self.machine_id,
-                      **self.extra_context)
 
-        self.by_path[path] = content
-        self.symbolic_files[target].append(path)
+        content_provider = ContentProvider()
+        content_provider.path = path
+        content_provider._content = content_iter
+        if spec in self.data:
+            if not isinstance(self.data[spec], list):
+                self.data[spec] = [self.data[spec]]
+            self.data[spec].append(content_provider)
+        else:
+            self.data[spec] = content_provider
 
-        self.records.append({
-            "target": target,
-            "context": ctx
-        })
-        return self
-
-    def remove(self, target):
-        self.to_remove.append(target)
         return self
 
     def __repr__(self):
         if self.name:
-            return "<InputData {name:%s hostname:%s}>" % (self.name, self.hostname)
+            return "<InputData {name:%s}>" % (self.name)
         else:
             return super(InputData, self).__repr__()
 

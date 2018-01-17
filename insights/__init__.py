@@ -2,7 +2,6 @@ from __future__ import print_function
 import os
 import pkgutil
 from pprint import pprint
-from .config.factory import get_config  # noqa: F401
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser  # noqa: F401
@@ -12,17 +11,13 @@ from .core import archives  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
+from .core.hydration import create_context
 from .core.plugins import combiner, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
-
-try:
-    from .core import fava  # noqa: F401
-except ImportError:
-    pass
 
 
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
@@ -56,7 +51,7 @@ def add_status(name, nvr, commit):
 
 
 def _run(graph=None, root=None, run_context=HostContext,
-         archive_context=HostArchiveContext):
+         archive_context=HostArchiveContext, show_dropped=False):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -91,11 +86,25 @@ def _run(graph=None, root=None, run_context=HostContext,
         extractor = archives.TarExtractor()
 
     with extractor.from_path(root) as ex:
-        all_files = archives.get_all_files(ex.tmp_dir)
-        common_path = os.path.commonprefix(all_files)
-        real_root = os.path.join(ex.tmp_dir, common_path)
-        broker[archive_context] = archive_context(root=real_root)
-        return dr.run(graph, broker=broker)
+        ctx = create_context(ex.tmp_dir, archive_context)
+        archive_context = ctx.__class__
+        broker = dr.Broker()
+        broker[archive_context] = ctx
+        result = dr.run(graph, broker=broker)
+        if not show_dropped:
+            return result
+
+        ds = broker.get_by_type(datasource)
+        vals = []
+        for v in ds.values():
+            if isinstance(v, list):
+                vals.extend(d.path for d in v)
+            else:
+                vals.append(v.path)
+        dropped = set(ctx.all_files) - set(vals)
+        pprint("Dropped Files:")
+        pprint(dropped, indent=4)
+        return result
 
 
 def _load_context(path):
@@ -108,12 +117,13 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        run_context=HostContext, archive_context=HostArchiveContext):
+        run_context=HostContext, archive_context=None):
 
     from .core import dr
     dr.load_components("insights.specs_default")
     dr.load_components("insights.specs_insights_archive")
 
+    args = None
     if print_summary:
         import argparse
         import logging
@@ -124,6 +134,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
+        p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
         p.add_argument("--rc", help="Run Context")
         p.add_argument("--ac", help="Archive Context")
         args = p.parse_args()
@@ -144,6 +155,7 @@ def run(component=None, root=None, print_summary=False,
                 if c.__module__.startswith(plugins):
                     component.append(c)
 
+    show_dropped = args.dropped if args else False
     if component:
         if not isinstance(component, (list, set)):
             component = [component]
@@ -153,7 +165,7 @@ def run(component=None, root=None, print_summary=False,
     else:
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
-    broker = _run(graph, root, run_context=run_context, archive_context=archive_context)
+    broker = _run(graph, root, run_context=run_context, archive_context=archive_context, show_dropped=show_dropped)
     if print_summary:
 
         if args.missing:

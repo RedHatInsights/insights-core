@@ -143,9 +143,6 @@ stage = combiner
 rule = make_rule_type(name="rule")
 """ A component that can see all parsers and combiners for a single host."""
 
-fava_rule = make_rule_type(name="fava_rule", use_broker_executor=True)
-""" A component that can see all parsers and combiners for a single host."""
-
 condition = dr.new_component_type("condition")
 """ A component used by rules that allows automated statistical analysis."""
 

@@ -1,4 +1,4 @@
-from insights.core.spec_factory import simple_file, glob_file
+from insights.core.spec_factory import first_of, glob_file, simple_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -56,8 +56,9 @@ class InsightsArchiveSpecs(Specs):
     grub_config_perms = simple_file("insights_commands/ls_-l_.boot.grub2.grub.cfg")
     hammer_ping = simple_file("insights_commands/hammer_ping")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
+    # simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig")])
     host_installed_rpms = simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig")
-    hostname = simple_file("insights_commands/hostname_-f")
+    hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_pid = simple_file("insights_commands/pgrep_-o_httpd")
     ifconfig = simple_file("insights_commands/ifconfig_-a")
