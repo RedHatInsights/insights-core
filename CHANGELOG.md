@@ -1,5 +1,26 @@
 # Change Log
 
+## [insights-core-1.69.0-211](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.69.0-211) (2018-01-19)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.68.0-203...insights-core-1.69.0-211)
+
+**Implemented enhancements:**
+
+- Rabbitmq improvements 1.x [\#829](https://github.com/RedHatInsights/insights-core/pull/829) ([PaulWay](https://github.com/PaulWay))
+- Hammer task list parser for 1.x branch [\#826](https://github.com/RedHatInsights/insights-core/pull/826) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- Client log file rotation issues [\#710](https://github.com/RedHatInsights/insights-core/issues/710)
+- Client Crashes on Fedora 26 [\#706](https://github.com/RedHatInsights/insights-core/issues/706)
+- Fix fallback in 1.x and 3.x version of the client [\#695](https://github.com/RedHatInsights/insights-core/issues/695)
+
+**Merged pull requests:**
+
+- take into account rotated logs of directory server [\#901](https://github.com/RedHatInsights/insights-core/pull/901) ([germanparente](https://github.com/germanparente))
+- Add ovs other config parser 1.x [\#899](https://github.com/RedHatInsights/insights-core/pull/899) ([chenlizhong](https://github.com/chenlizhong))
+- Add 3 new parsers SystemctlShowPulp\* [\#887](https://github.com/RedHatInsights/insights-core/pull/887) ([TripleJQK](https://github.com/TripleJQK))
+- Updating documentation with current doctest usage code and discussion [\#845](https://github.com/RedHatInsights/insights-core/pull/845) ([PaulWay](https://github.com/PaulWay))
+
 ## [insights-core-1.68.0-203](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.68.0-203) (2018-01-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.67.0-188...insights-core-1.68.0-203)
 
