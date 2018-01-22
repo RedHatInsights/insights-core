@@ -1,9 +1,9 @@
 import copy
 import itertools
 import logging
+from six import wraps
 
 from insights import apply_filters
-
 from insights.core import dr
 from insights.core.context import Context
 from insights.core.spec_factory import ContentProvider
@@ -56,6 +56,10 @@ def run_test(component, input_data, expected=None):
     if expected:
         unordered_compare(broker.get(component), expected)
     return broker.get(component)
+
+
+def integrate(input_data, component):
+    return run_test(component, input_data)
 
 
 def context_wrap(lines,
@@ -211,3 +215,38 @@ def redhat_release(major, minor=""):
         return template % (major, "." + minor, name)
     else:
         raise Exception("invalid major version: %s" % major)
+
+
+def archive_provider(component, test_func=unordered_compare, stride=1):
+    """
+    Decorator used to register generator functions that yield InputData and
+    expected response tuples.  These generators will be consumed by py.test
+    such that:
+
+    - Each InputData will be passed into an integrate() function
+    - The result will be compared [1] against the expected value from the
+      tuple.
+
+    Parameters
+    ----------
+    component: (str)
+        The component to be tested.
+    test_func: function
+        A custom comparison function with the parameters (result, expected).
+        This will override the use of the compare() [1] function.
+    stride: int
+        yield every `stride` InputData object rather than the full set. This
+        is used to provide a faster execution path in some test setups.
+
+    [1] insights.tests.unordered_compare()
+    """
+    def _wrap(func):
+        @wraps(func)
+        def __wrap(stride=stride):
+            for input_data, expected in itertools.islice(func(), None, None, stride):
+                yield component, test_func, input_data, expected
+
+        __wrap.stride = stride
+        ARCHIVE_GENERATORS.append(__wrap)
+        return __wrap
+    return _wrap
