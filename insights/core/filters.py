@@ -24,14 +24,16 @@ def add_filter(name, patterns):
         raise TypeError("patterns must be string, list, or set.")
 
 
-def get_filters(component):
-    filters = set()
+def get_filters(component, filters=None):
+    filters = filters or set()
     if component in FILTERS:
         filters |= FILTERS[component]
 
     alias = dr.get_alias(component)
     if alias and alias in FILTERS:
         filters |= FILTERS[alias]
+    for d in dr.get_dependencies(component):
+        filters |= get_filters(d, filters)
     return filters
 
 

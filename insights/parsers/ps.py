@@ -193,3 +193,13 @@ class PsAuxww(Parser):
             >>> ps.search(STAT__contains='Z')
         """
         return keyword_search(self.data, **kwargs)
+
+
+@parser(Specs.ps_auxcww)
+class PsAuxcww(PsAuxww):
+    pass
+
+
+@parser(Specs.ps_aux)
+class PsAux(PsAuxww):
+    pass

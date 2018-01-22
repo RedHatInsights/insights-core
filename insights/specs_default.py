@@ -63,6 +63,8 @@ class DefaultSpecs(Specs):
                                    simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log",
                                    context=HostArchiveContext)
                                    ])
+    ps_aux = simple_command("/bin/ps aux")
+    ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = first_of([
                         simple_command("/bin/ps auxww"),
                         simple_file('sos_commands/process/ps_aux', context=HostArchiveContext),
