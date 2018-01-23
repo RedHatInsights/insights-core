@@ -1,5 +1,6 @@
 from insights import add_filter
 from insights.parsers.messages import Messages
+from insights.specs import Specs
 from insights.tests import context_wrap
 
 MSGINFO = """
@@ -14,7 +15,7 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
 
-add_filter("messages", [
+add_filter(Specs.messages, [
     "LIST",
     "CROND",
     "jabberd",

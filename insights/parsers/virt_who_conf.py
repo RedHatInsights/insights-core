@@ -26,7 +26,7 @@ filter_list = [
         'owner',
         'env',
 ]
-add_filter('virt_who_conf', filter_list)
+add_filter(Specs.virt_who_conf, filter_list)
 
 
 @parser(Specs.virt_who_conf)

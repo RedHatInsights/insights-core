@@ -1,5 +1,6 @@
 from insights import add_filter
 from insights.parsers.rhsm_log import RhsmLog
+from insights.specs import Specs
 from insights.tests import context_wrap
 
 LOG1 = """
@@ -17,7 +18,7 @@ LOG2 = """
     File "/usr/share/rhsm/subscription_manager/managercli.py", line 600, in _do_command
 """.strip()
 
-add_filter("rhsm.log", [
+add_filter(Specs.rhsm_log, [
     "[ERROR]",
     "[Errno"
 ])

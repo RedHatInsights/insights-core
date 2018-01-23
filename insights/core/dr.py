@@ -612,7 +612,7 @@ def new_component_type(name=None,
         the_group = kwargs.get("group", group)
         alias = kwargs.get("alias", None)
         component_type = kwargs.get("component_type", None)
-        metadata = kwargs.get("metadata", {})
+        metadata = kwargs.get("metadata", {}) or {}
 
         requires = list(requires) or kwargs.get("requires", [])
         optional = optional or []

@@ -443,7 +443,7 @@ class Netstat(Parser):
             raise ParseException("Input content is empty")
 
         if len(content) < 3:
-            raise ParseException("Input content is not empty but there is no useful parsed data")
+            raise ParseException("Input content is not empty but there is no useful parsed data.")
 
         sections = []
         cur_section = None
