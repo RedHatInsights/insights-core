@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-1.70.0-214](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.70.0-214) (2018-01-23)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.69.0-211...insights-core-1.70.0-214)
+
+**Merged pull requests:**
+
+- Added combiner NetworkStats [\#903](https://github.com/RedHatInsights/insights-core/pull/903) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+
 ## [insights-core-1.69.0-211](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.69.0-211) (2018-01-19)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.68.0-203...insights-core-1.69.0-211)
 
