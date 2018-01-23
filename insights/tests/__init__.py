@@ -2,12 +2,12 @@ import copy
 import itertools
 import logging
 from six import wraps
+from StringIO import StringIO
 
 from insights import apply_filters
 from insights.core import dr
 from insights.core.context import Context
 from insights.core.spec_factory import ContentProvider
-from insights.util import make_iter
 
 
 logger = logging.getLogger(__name__)
@@ -138,19 +138,24 @@ class InputData(object):
             path = str(next_gn()) + "BOGUS"
         if not path.startswith("/"):
             path = "/" + path
-        if do_filter:
-            content_iter = apply_filters(spec, make_iter(content))
+
+        if not isinstance(content, list):
+            content_iter = [l.rstrip() for l in StringIO(content).readlines()]
         else:
-            content_iter = make_iter(content)
+            content_iter = content
+
+        if do_filter:
+            content_iter = apply_filters(spec, content_iter)
 
         content_provider = ContentProvider()
         content_provider.path = path
         content_provider._content = content_iter
-        if spec in self.data:
-            if not isinstance(self.data[spec], list):
-                self.data[spec] = [self.data[spec]]
+        if getattr(spec, "multi_output", True):
+            if spec not in self.data:
+                self.data[spec] = []
             self.data[spec].append(content_provider)
         else:
+            logger.warn("Overriding %s", str(spec))
             self.data[spec] = content_provider
 
         return self
