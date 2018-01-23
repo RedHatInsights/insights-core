@@ -49,7 +49,7 @@ class DefaultSpecs(Specs):
                         simple_file('sos_commands/process/ps_auxcww', context=HostArchiveContext),
                         ])
 
-    @datasource(ps_auxww)
+    @datasource(Specs.ps_auxww)
     def tomcat_base(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -208,12 +208,12 @@ class DefaultSpecs(Specs):
     httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"]),
     httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"], context=HostArchiveContext)
     httpd_error_log = simple_file("var/log/httpd/error_log")
-    httpd_pid = simple_command("/bin/ps aux | grep /usr/sbin/httpd | grep -v grep | head -1 | awk '{print $2}'")
+    httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
 
-    @datasource(ps_auxww)
+    @datasource(Specs.ps_auxww)
     def httpd_cmd(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         for p in ps:
@@ -238,7 +238,19 @@ class DefaultSpecs(Specs):
     ip_s_link = simple_command("/sbin/ip -s link")
     ipaupgrade_log = simple_file("/var/log/ipaupgrade.log")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
-    semid = simple_command("/usr/bin/ipcs -s | awk '{if (NF == 5 && $NF ~ /^[0-9]+$/) print $NF}'")
+
+    @datasource(Specs.ipcs_s)
+    def semid(broker):
+        source = broker[DefaultSpecs.ipcs_s].content
+        results = set()
+        for s in source:
+            s_splits = s.split()
+            # key        semid      owner      perms      nsems
+            # 0x00000000 65536      apache     600        1
+            if len(s_splits) == 5 and s_splits[1].isdigit():
+                results.add(s_splits[1])
+        return results
+
     ipcs_s_i = foreach_execute(semid, "/usr/bin/ipcs -s -i %s")
     iptables = simple_command("/sbin/iptables-save")
     iptables_permanent = simple_file("etc/sysconfig/iptables")
@@ -370,8 +382,23 @@ class DefaultSpecs(Specs):
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
-    running_java = simple_command("/bin/ps auxwww | grep java | grep -v grep| awk '{print $11}' | sort -u")
-    package_provides_java = foreach_execute(running_java, "echo %s $(readlink -e `which %s` | xargs rpm -qf)")
+
+    @datasource(Specs.ps_auxww, HostContext)
+    def package_and_java(broker):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        ctx = broker[HostContext]
+        results = set()
+        for p in ps:
+            p_splits = p.split(None, 10)
+            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
+            which = ctx.shell_out("which {0}".format(cmd)) if 'java' in os.path.basename(cmd) else None
+            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
+            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
+            if cmd and pkg:
+                results.add("{0} {1}".format(cmd, pkg[0]))
+        return results
+
+    package_provides_java = foreach_execute(package_and_java, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
     password_auth = simple_file("/etc/pam.d/password-auth")
@@ -485,7 +512,7 @@ class DefaultSpecs(Specs):
     tomcat_server_xml = first_of([foreach_collect(tomcat_base, "%s/conf/server.xml"),
                                      glob_file("conf/tomcat/tomcat*/server.xml", context=HostArchiveContext)])
 
-    @datasource(ps_auxww)
+    @datasource(Specs.ps_auxww)
     def tomcat_home_base(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -543,7 +570,7 @@ class DefaultSpecs(Specs):
 
     @datasource(Specs.ps_auxww)
     def jboss_home(broker):
-        ps = broker[Specs.ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.home\.dir=(\S+)").findall
         # JBoss progress command content should contain jboss.home.dir
@@ -576,7 +603,7 @@ class DefaultSpecs(Specs):
 
     @datasource(Specs.ps_auxww)
     def jboss_standalone_main_config_files(broker):
-        ps = broker[Specs.ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.server\.base\.dir=(\S+)").search
         # JBoss progress command content should contain jboss.home.dir
