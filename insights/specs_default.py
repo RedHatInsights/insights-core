@@ -336,7 +336,7 @@ class DefaultSpecs(Specs):
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
     module = listdir("/sys/module")
     modinfo = foreach_execute(module, "/usr/sbin/modinfo %s")
-    modprobe_conf = simple_file("/etc/modprobe.conf")
+    modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
                                  "etc/opt/rh/rh-mongodb26/sysconfig/mongod"
@@ -346,7 +346,6 @@ class DefaultSpecs(Specs):
                             "/etc/mongodb.conf",
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
-    modprobe_d = glob_file("/etc/modprobe.d/*.conf")
     mount = simple_command("/bin/mount")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
