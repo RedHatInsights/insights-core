@@ -150,7 +150,7 @@ class InputData(object):
         content_provider = ContentProvider()
         content_provider.path = path
         content_provider._content = content_iter
-        if getattr(spec, "multi_output", True):
+        if dr.get_delegate(spec).multi_output:
             if spec not in self.data:
                 self.data[spec] = []
             self.data[spec].append(content_provider)
