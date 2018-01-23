@@ -26,7 +26,7 @@ Examples:
 from .. import parser, Parser, add_filter
 from insights.specs import Specs
 
-add_filter('katello-service_status', ['Some services failed to status',
+add_filter(Specs.katello_service_status, ['Some services failed to status',
                                       'Success'])
 
 

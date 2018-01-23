@@ -63,7 +63,7 @@ Examples:
 from .. import add_filter, Scannable, parser
 from insights.specs import Specs
 
-add_filter('lsof', ['COMMAND'])
+add_filter(Specs.lsof, ['COMMAND'])
 
 
 @parser(Specs.lsof)

@@ -1,7 +1,7 @@
 from .. import add_filter, IniConfigFile, parser
 from insights.specs import Specs
 
-add_filter("samba", ["["])
+add_filter(Specs.samba, ["["])
 
 
 @parser(Specs.samba)

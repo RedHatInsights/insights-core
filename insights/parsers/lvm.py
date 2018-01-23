@@ -557,7 +557,7 @@ LVM_CONF_FILTERS = [
     "filter",  # LVM_CONF_REMOVE_BOOTDEV HA_LVM_RELOCATE_ISSUE LVM_FILTER_ISSUE
     "volume_list"  # HA_LVM_RELOCATE_ISSUE
 ]
-add_filter('lvm.conf', LVM_CONF_FILTERS)
+add_filter(Specs.lvm_conf, LVM_CONF_FILTERS)
 
 
 @parser(Specs.lvm_conf)

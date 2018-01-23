@@ -40,8 +40,7 @@ from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
 
-@parser(Specs.modprobe_conf)
-@parser(Specs.modprobe_d)
+@parser(Specs.modprobe)
 class ModProbe(LegacyItemAccess, Parser):
     """
     Parse Modprobe configuration files - /etc/modprobe.conf and files in the
