@@ -181,7 +181,6 @@ class DefaultSpecs(Specs):
     dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
-
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
@@ -611,7 +610,7 @@ class DefaultSpecs(Specs):
 
     jboss_version = foreach_collect(jboss_home, "%s/version.txt")
 
-    @datasource(Specs.ps_auxww)
+    @datasource(Specs.ps_auxww, multi_output=True)
     def jboss_domain_server_log_dir(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -627,7 +626,7 @@ class DefaultSpecs(Specs):
 
     jboss_domain_server_log = foreach_collect(jboss_domain_server_log_dir, "%s/server.log*")
 
-    @datasource(Specs.ps_auxww)
+    @datasource(Specs.ps_auxww, multi_output=True)
     def jboss_standalone_main_config_files(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []

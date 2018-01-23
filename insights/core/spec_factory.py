@@ -165,22 +165,20 @@ class RegistryPoint(object):
         is a registry point against which further subclasses can register
         datasource implementations by simply declaring them with the same name.
     """
-    def __init__(self, alias=None, metadata=None, multi_output=False):
-        self.alias = alias
+    def __init__(self, metadata=None, multi_output=False):
         self.metadata = metadata
         self.multi_output = multi_output
 
-    def __call__(self, broker):
-        for c in reversed(dr.get_added_dependencies(self)):
+
+def _registry_point(rp):
+
+    @datasource(metadata=rp.metadata, multi_output=rp.multi_output)
+    def inner(broker):
+        for c in reversed(dr.get_added_dependencies(inner)):
             if c in broker:
                 return broker[c]
         raise dr.SkipComponent()
-
-    def __str__(self):
-        return dr.get_name(self)
-
-    def __repr__(self):
-        return "<class %s>" % dr.get_name(self)
+    return inner
 
 
 class SpecDescriptor(object):
@@ -227,9 +225,8 @@ def _resolve_registry_points(cls, base, dct):
 
     for k, v in dct.items():
         if isinstance(v, RegistryPoint):
-            v.alias = v.alias or k
             v.__name__ = k
-            v = datasource(alias=v.alias, metadata=v.metadata)(v)
+            v = _registry_point(v)
             cls.registry[k] = v
 
         if is_datasource(v):
@@ -276,20 +273,20 @@ def _get_context(context, alternatives, broker):
     return dr.first_of(alternatives, broker)
 
 
-def simple_file(path, context=None, kind=TextFileProvider, alias=None):
+def simple_file(path, context=None, kind=TextFileProvider):
 
-    @datasource(context or FSRoots, alias=alias)
+    @datasource(context or FSRoots)
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         return kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
     return inner
 
 
-def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, alias=None):
+def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
-    @datasource(context or FSRoots, alias=alias)
+    @datasource(context or FSRoots, multi_output=True)
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         root = ctx.root
@@ -309,9 +306,9 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, alias=
     return inner
 
 
-def first_file(files, context=None, kind=TextFileProvider, alias=None):
+def first_file(files, context=None, kind=TextFileProvider):
 
-    @datasource(context or FSRoots, alias=alias)
+    @datasource(context or FSRoots)
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         root = ctx.root
@@ -324,9 +321,9 @@ def first_file(files, context=None, kind=TextFileProvider, alias=None):
     return inner
 
 
-def listdir(path, context=None, alias=None):
+def listdir(path, context=None):
 
-    @datasource(context or FSRoots, alias=alias)
+    @datasource(context or FSRoots)
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         p = os.path.join(ctx.root, path.lstrip('/'))
@@ -341,9 +338,9 @@ def listdir(path, context=None, alias=None):
     return inner
 
 
-def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
 
-    @datasource(context, alias=alias)
+    @datasource(context)
     def inner(broker):
         ctx = broker[context]
         rc = None
@@ -357,9 +354,9 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
     return inner
 
 
-def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=False, timeout=None, alias=None):
+def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
 
-    @datasource(provider, context, alias=alias)
+    @datasource(provider, context, multi_output=True)
     def inner(broker):
         result = []
         source = broker[provider]
@@ -387,9 +384,9 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
     return inner
 
 
-def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextFileProvider, alias=None):
+def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextFileProvider):
 
-    @datasource(provider, context, alias=alias)
+    @datasource(provider, context, multi_output=True)
     def inner(broker):
         result = []
         source = broker[provider]
@@ -414,14 +411,14 @@ def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextF
     return inner
 
 
-def first_of(deps, alias=None):
+def first_of(deps):
     """ Given a list of dependencies, returns the first of the list
         that exists in the broker. At least one must be present, or this
         component won't fire.
     """
     dr.mark_hidden(deps)
 
-    @datasource(deps, alias=alias)
+    @datasource(deps)
     def inner(broker):
         for c in deps:
             if c in broker:

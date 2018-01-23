@@ -69,8 +69,23 @@ class ContentException(Exception):
     pass
 
 
-datasource = dr.new_component_type("datasource", executor=dr.broker_executor)
+class DatasourceDelegate(dr.Delegate):
+    def __init__(self, component, requires, optional):
+        super(DatasourceDelegate, self).__init__(component, requires, optional)
+        self.multi_output = False
+
+
+_datasource = dr.new_component_type("datasource", executor=dr.broker_executor, delegate_class=DatasourceDelegate)
 """ Defines a component that one or more Parsers will consume."""
+
+
+def datasource(*args, **kwargs):
+    def _f(func):
+        metadata = kwargs.get("metadata", {})
+        c = _datasource(*args, metadata=metadata, component_type=datasource)(func)
+        dr.get_delegate(c).multi_output = kwargs.get("multi_output", False)
+        return c
+    return _f
 
 
 _metadata = dr.new_component_type("_metadata",
@@ -86,16 +101,15 @@ def metadata(group=dr.GROUPS.single):
 _parser = dr.new_component_type("_parser", executor=parser_executor)
 
 
-def parser(dependency, group=dr.GROUPS.single, alias=None):
+def parser(dependency, group=dr.GROUPS.single):
     """
     Parses the raw content of a datasource into a strongly-typed
     object usable by combiners and rules. `parser` is a specialization
     of the general component interface.
     """
-    dependency = dr.get_alias(dependency) or dependency
 
     def _f(component):
-        return _parser(dependency, group=group, alias=alias, component_type=parser)(component)
+        return _parser(dependency, group=group, component_type=parser)(component)
     return _f
 
 

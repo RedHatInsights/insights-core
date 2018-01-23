@@ -16,7 +16,7 @@ from collections import defaultdict
 from functools import reduce as _reduce
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
-from insights.util import enum, KeyPassingDefaultDict
+from insights.util import defaults, enum, KeyPassingDefaultDict
 
 log = logging.getLogger(__name__)
 
@@ -27,16 +27,12 @@ BASE_MODULE_NAMES = {}
 
 TYPE_OBSERVERS = defaultdict(set)
 
-ADDED_DEPENDENCIES = defaultdict(list)
 ALIASES_BY_COMPONENT = {}
 ALIASES = {}
-COMPONENT_METADATA = {}
-TYPE_OF_COMPONENT = {}
 COMPONENTS_BY_TYPE = defaultdict(set)
 DEPENDENCIES = defaultdict(set)
 DEPENDENTS = defaultdict(set)
 COMPONENTS = defaultdict(lambda: defaultdict(set))
-GROUP_OF_COMPONENT = {}
 
 DELEGATES = {}
 HIDDEN = set()
@@ -45,32 +41,12 @@ IGNORE = defaultdict(set)
 ANY_TYPE = object()
 
 
+def get_delegate(component):
+    return DELEGATES.get(component)
+
+
 def add_ignore(c, i):
     IGNORE[c].add(i)
-
-
-def resolve_alias(c):
-    return ALIASES.get(c, c)
-
-
-def resolve_aliases(graph):
-    if isinstance(graph, dict):
-        g = {}
-        for k, v in graph.items():
-            g[k] = set(resolve_alias(d) for d in v)
-        return g
-
-    if isinstance(graph, list):
-        return [resolve_alias(c) for c in graph]
-
-    if isinstance(graph, set):
-        return set(resolve_alias(c) for c in graph)
-
-    return resolve_alias(graph)
-
-
-def get_alias(component):
-    return ALIASES_BY_COMPONENT.get(component)
 
 
 def _get_from_module(name):
@@ -102,39 +78,36 @@ COMPONENT_NAME_CACHE = KeyPassingDefaultDict(_get_component)
 get_component = COMPONENT_NAME_CACHE.__getitem__
 
 
+@defaults(None)
 def get_component_type(component):
-    if six.callable(component):
-        component = resolve_alias(component)
-        return TYPE_OF_COMPONENT.get(component)
+    return get_delegate(component).type
 
 
+@defaults(None)
 def get_group(component):
-    component = resolve_alias(component)
-    return GROUP_OF_COMPONENT.get(component)
+    return get_delegate(component).group
 
 
-def get_dependencies(component):
-    component = resolve_alias(component)
-    return set(resolve_alias(d) for d in DEPENDENCIES.get(component, set()))
+def add_dependent(component, dep):
+    DEPENDENTS[component].add(dep)
 
 
 def get_dependents(component):
-    deps = set(resolve_alias(d) for d in DEPENDENTS.get(component, set()))
-    if component in ALIASES:
-        deps |= get_dependents(ALIASES[component])
-    return deps
+    return DEPENDENTS.get(component, set())
+
+
+@defaults(set())
+def get_dependencies(component):
+    return get_delegate(component).get_dependencies()
 
 
 def add_dependency(component, dep):
-    group = get_group(component)
-    DEPENDENTS[dep].add(component)
-    DEPENDENCIES[component].add(dep)
-    COMPONENTS[group][component].add(dep)
-    ADDED_DEPENDENCIES[component].append(dep)
+    get_delegate(component).add_dependency(dep)
 
 
+@defaults([])
 def get_added_dependencies(component):
-    return ADDED_DEPENDENCIES.get(component, [])
+    return get_delegate(component).added_dependencies
 
 
 def add_observer(o, component_type=ANY_TYPE):
@@ -162,7 +135,6 @@ class SkipComponent(Exception):
 
 
 def get_name(component):
-    component = resolve_alias(component)
     if six.callable(component):
         name = getattr(component, "__qualname__", component.__name__)
         return '.'.join([component.__module__, name])
@@ -170,15 +142,13 @@ def get_name(component):
 
 
 def get_simple_name(component):
-    component = resolve_alias(component)
     if six.callable(component):
         return component.__name__
     return str(component)
 
 
 def get_metadata(component):
-    component = resolve_alias(component)
-    return COMPONENT_METADATA.get(component, {})
+    return get_delegate(component).metadata if component in DELEGATES else {}
 
 
 def get_module_name(obj):
@@ -198,54 +168,13 @@ def get_base_module_name(obj):
 def mark_hidden(component):
     global HIDDEN
     if isinstance(component, (list, set)):
-        HIDDEN |= set(resolve_alias(c) for c in component)
+        HIDDEN |= set(component)
     else:
-        component = resolve_alias(component)
         HIDDEN.add(component)
 
 
 def is_hidden(component):
-    component = resolve_alias(component)
     return component in HIDDEN
-
-
-def replace(old, new):
-    _type = TYPE_OF_COMPONENT[old]
-    _group = GROUP_OF_COMPONENT[old]
-
-    for k, v in DEPENDENTS.items():
-        if old in v:
-            v.discard(old)
-            v.add(new)
-
-    for d in DEPENDENTS[old]:
-        DEPENDENCIES[d].discard(old)
-        DEPENDENCIES[d].add(new)
-
-    COMPONENTS_BY_TYPE[_type].discard(old)
-    COMPONENT_NAME_CACHE[get_name(new)] = new
-
-    if old in ALIASES_BY_COMPONENT:
-        a = ALIASES_BY_COMPONENT[old]
-        del ALIASES_BY_COMPONENT[old]
-        del ALIASES[a]
-
-    if old in DEPENDENTS:
-        del DEPENDENTS[old]
-
-    if old in ADDED_DEPENDENCIES:
-        deps = ADDED_DEPENDENCIES[old]
-        del ADDED_DEPENDENCIES[old]
-        ADDED_DEPENDENCIES[new] = deps
-
-    HIDDEN.discard(old)
-
-    del COMPONENT_METADATA[old]
-    del GROUP_OF_COMPONENT[old]
-    del DEPENDENCIES[old]
-    del COMPONENTS[_group][old]
-    del TYPE_OF_COMPONENT[old]
-    del DELEGATES[old]
 
 
 def walk_dependencies(root, visitor):
@@ -266,7 +195,6 @@ def walk_dependencies(root, visitor):
 
 
 def get_dependency_graph(component):
-    component = resolve_alias(component)
     if component not in DEPENDENCIES:
         raise Exception("%s is not a registered component." % get_name(component))
 
@@ -293,7 +221,6 @@ def get_dependency_graph(component):
 
 
 def get_subgraphs(graph=DEPENDENCIES):
-    graph = resolve_aliases(graph)
     keys = set(graph)
     frontier = set()
     seen = set()
@@ -381,52 +308,21 @@ def stringify_requirements(requires):
     return result
 
 
-def register_component(component, delegate, component_type,
-                       requires=None,
-                       optional=None,
-                       group=GROUPS.single,
-                       alias=None,
-                       metadata={}):
+def register_component(delegate):
+    component = delegate.component
 
-    if requires:
-        _all, _any = split_requirements(requires)
-        _all = set(_all)
-        _any = set(i for o in _any for i in o)
-    else:
-        _all, _any = set(), set()
-    _optional = set(optional) if optional else set()
+    dependencies = delegate.get_dependencies()
+    DEPENDENCIES[component] = dependencies
+    COMPONENTS[delegate.group][component] |= dependencies
 
-    dependencies = _all | _any | _optional
-    dependencies = set(resolve_alias(d) for d in dependencies)
-    for d in dependencies:
-        DEPENDENTS[d].add(component)
-
-    DEPENDENCIES[component] |= dependencies
-    COMPONENTS[group][component] |= dependencies
-
-    TYPE_OF_COMPONENT[component] = component_type
-    GROUP_OF_COMPONENT[component] = group
-    COMPONENTS_BY_TYPE[component_type].add(component)
+    COMPONENTS_BY_TYPE[delegate.type].add(component)
     DELEGATES[component] = delegate
+
     MODULE_NAMES[component] = get_module_name(component)
     BASE_MODULE_NAMES[component] = get_base_module_name(component)
-    COMPONENT_METADATA[component] = metadata
-
-    if alias:
-        msg = "%s replacing alias '%s' registered to %s."
-        if alias in ALIASES:
-            log.info(msg % (get_name(component), alias, get_name(ALIASES[alias])))
-
-        ALIASES[alias] = component
-        ALIASES_BY_COMPONENT[component] = alias
 
     name = get_name(component)
-    if name.startswith("__main__."):
-        old = COMPONENT_NAME_CACHE.get(name)
-        if old:
-            replace(old, component)
-        else:
-            COMPONENT_NAME_CACHE[name] = component
+    COMPONENT_NAME_CACHE[name] = component
 
 
 class Broker(object):
@@ -452,7 +348,7 @@ class Broker(object):
         self.observers[component_type].add(o)
 
     def fire_observers(self, component):
-        _type = TYPE_OF_COMPONENT.get(component, None)
+        _type = get_component_type(component)
         if not _type:
             return
 
@@ -483,23 +379,12 @@ class Broker(object):
         return r
 
     def __contains__(self, component):
-        if component in self.instances:
-            return True
-
-        alias = ALIASES.get(component)
-
-        if alias and alias in self.instances:
-            return True
-        return False
+        return component in self.instances
 
     def __setitem__(self, component, instance):
         msg = "Already exists in broker with key: %s"
         if component in self.instances:
             raise KeyError(msg % get_name(component))
-
-        alias = ALIASES.get(component)
-        if alias and alias in self.instances:
-            raise KeyError(msg % get_name(alias))
 
         self.instances[component] = instance
 
@@ -508,17 +393,9 @@ class Broker(object):
             del self.instances[component]
             return
 
-        alias = ALIASES.get(component)
-        if alias and alias in self.instances:
-            del self.instances[alias]
-
     def __getitem__(self, component):
         if component in self.instances:
             return self.instances[component]
-
-        alias = ALIASES.get(component)
-        if alias and alias in self.instances:
-            return self.instances[alias]
 
         raise KeyError("Unknown component: %s" % get_name(component))
 
@@ -535,8 +412,6 @@ def get_missing_requirements(func, requires, d):
     if any(i in d for i in IGNORE.get(func, [])):
         raise SkipComponent()
     req_all, req_any = split_requirements(requires)
-    req_all = resolve_aliases(req_all)
-    req_any = [resolve_aliases(c) for c in req_any]
     d = set(d.keys())
     req_all = [r for r in req_all if r not in d]
     req_any = [r for r in req_any if set(r).isdisjoint(d)]
@@ -572,12 +447,57 @@ def default_executor(func, broker, requires=[], optional=[]):
     return func(*args)
 
 
+class Delegate(object):
+    def __init__(self, component, requires, optional):
+        self.__name__ = component.__name__
+        self.__module__ = component.__module__
+        self.__doc__ = component.__doc__
+        self.__qualname__ = getattr(component, "__qualname__", None)
+
+        self.component = component
+        self.executor = default_executor
+        self.group = None
+        self.metadata = {}
+        self.requires = requires
+        self.optional = optional
+        self.added_dependencies = []
+        self.type = None
+
+        if requires:
+            _all, _any = split_requirements(requires)
+            _all = set(_all)
+            _any = set(i for o in _any for i in o)
+        else:
+            _all, _any = set(), set()
+        _optional = set(optional) if optional else set()
+
+        self.dependencies = _all | _any | _optional
+        for d in self.dependencies:
+            add_dependent(d, component)
+
+    def get_dependencies(self):
+        return self.dependencies
+
+    def add_dependency(self, dep):
+        group = self.group
+        self.added_dependencies.append(dep)
+        self.dependencies.add(dep)
+        add_dependent(dep, self.component)
+
+        DEPENDENCIES[self.component].add(dep)
+        COMPONENTS[group][self.component].add(dep)
+
+    def __call__(self, broker):
+        return self.executor(self.component, broker, self.requires, self.optional)
+
+
 def new_component_type(name=None,
                        auto_requires=[],
                        auto_optional=[],
                        group=GROUPS.single,
                        executor=default_executor,
-                       type_metadata={}):
+                       type_metadata={},
+                       delegate_class=Delegate):
     """ Factory that creates component decorators.
 
         The functions this factory produces are decorators for parsers, combiners,
@@ -610,7 +530,6 @@ def new_component_type(name=None,
     def decorator(*requires, **kwargs):
         optional = kwargs.get("optional", None)
         the_group = kwargs.get("group", group)
-        alias = kwargs.get("alias", None)
         component_type = kwargs.get("component_type", None)
         metadata = kwargs.get("metadata", {}) or {}
 
@@ -625,16 +544,13 @@ def new_component_type(name=None,
         component_metadata.update(metadata)
 
         def _f(func):
-            @six.wraps(func)
-            def __f(broker):
-                return executor(func, broker, requires, optional)
-
-            register_component(func, __f, component_type or decorator,
-                               requires=requires,
-                               optional=optional,
-                               group=the_group,
-                               alias=alias,
-                               metadata=component_metadata)
+            delegate = delegate_class(func, requires, optional)
+            delegate.group = the_group
+            delegate.metadata = component_metadata
+            if executor:
+                delegate.executor = executor
+            delegate.type = component_type or decorator
+            register_component(delegate)
             return func
         return _f
 
@@ -654,7 +570,7 @@ def run_order(components, broker):
     """ Returns components in an order that satisfies their dependency
         relationships.
     """
-    return toposort_flatten(resolve_aliases(components))
+    return toposort_flatten(components)
 
 
 def run(components=COMPONENTS[GROUPS.single], broker=None):
