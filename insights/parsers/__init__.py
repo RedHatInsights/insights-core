@@ -358,7 +358,8 @@ def parse_delimited_table(table_lines,
                           header_delim='same as delimiter',
                           heading_ignore=None,
                           header_substitute=None,
-                          trailing_ignore=None):
+                          trailing_ignore=None,
+                          raw_line_key=None):
     """
     Parses table-like text.  Uses the first (non-ignored) row as the list of
     column names, which cannot contain the delimiter.  Fields cannot contain
@@ -396,7 +397,8 @@ def parse_delimited_table(table_lines,
         trailing_ignore (list): Optional list of strings to look for at the
             end rows of the content.  Lines starting with these strings will
             be ignored, thereby truncating the rows of data.
-
+        raw_line_key (str): Key under which to save the raw line. If None, line
+            is not saved.
     Returns:
         list: Returns a list of dictionaries for each row of column data,
         keyed on the column headings in the same case as input.
@@ -431,7 +433,10 @@ def parse_delimited_table(table_lines,
             rowsplit = row.split(delim, max_splits)
             if strip:
                 rowsplit = [i.strip() for i in rowsplit]
-            r.append(dict(zip(headings, rowsplit)))
+            o = dict(zip(headings, rowsplit))
+            if raw_line_key:
+                o[raw_line_key] = row
+            r.append(o)
     return r
 
 

@@ -34,12 +34,14 @@ def test_ps_auxww_from_auxww():
         '%MEM': '0.0', 'TTY': '?', 'VSZ': '193892', 'PID': '1', '%CPU': '0.0',
         'START': 'Oct23', 'USER': 'root', 'STAT': 'Ss', 'TIME': '1:40', 'RSS': '5000',
         'COMMAND': '/usr/lib/systemd/systemd --switched-root --system --deserialize 22',
+        'COMMAND_NAME': 'systemd', 'ARGS': '--switched-root --system --deserialize 22',
     }
     assert d[2]["COMMAND"] == '/usr/lib/systemd/systemd-journald'
     assert d[-2] == {
         'USER': 'user_01', 'PID': '2713', '%CPU': '2.4', '%MEM': '19.2',
         'VSZ': '12508144', 'RSS': '3077224', 'TTY': '?', 'STAT': 'Sl',
-        'START': 'Nov21', 'TIME': '533:33', 'COMMAND': '/usr/lib64/firefox/firefox'
+        'START': 'Nov21', 'TIME': '533:33', 'COMMAND': '/usr/lib64/firefox/firefox',
+        'COMMAND_NAME': 'firefox', 'ARGS': '',
     }
     assert p.fuzzy_match('kthreadd')
     assert '[kthreadd]' in p
@@ -91,8 +93,8 @@ def test_ps_auxww_from_auxcww():
     ], d[0])
     assert d[0] == {
         '%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0',
-        'START': 'May31', 'COMMAND': 'init', 'USER': 'root', 'STAT': 'Ss',
-        'TIME': '0:01', 'RSS': '1544'
+        'START': 'May31', 'COMMAND': 'init', 'COMMAND_NAME': 'init', 'USER': 'root', 'STAT': 'Ss',
+        'TIME': '0:01', 'RSS': '1544', 'ARGS': '',
     }
     assert d[2]["COMMAND"] == 'irqbalance'
     assert d[-2]["COMMAND"] == 'qemu-kvm'
@@ -132,7 +134,8 @@ def test_ps_auxww_from_auxwww():
     assert d[0] == {
         'USER': 'root', 'PID': '1', '%CPU': '0.0', '%MEM': '0.0',
         'VSZ': '21452', 'RSS': '1536', 'TTY': '?', 'STAT': 'Ss',
-        'START': 'Mar09', 'TIME': '0:01', 'COMMAND': '/sbin/init'
+        'START': 'Mar09', 'TIME': '0:01', 'COMMAND': '/sbin/init',
+        'COMMAND_NAME': 'init', 'ARGS': '',
     }
     assert p.fuzzy_match('kthread')
     assert '-bash' in p
@@ -172,8 +175,8 @@ def test_ps_auxww_from_aux():
     ], d[0])
     assert d[0] == {
         '%MEM': '0.0', 'TTY': '?', 'VSZ': '19356', 'PID': '1', '%CPU': '0.0',
-        'START': 'May31', 'COMMAND': '/sbin/init', 'USER': 'root',
-        'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544'
+        'START': 'May31', 'COMMAND': '/sbin/init', 'COMMAND_NAME': 'init', 'USER': 'root',
+        'STAT': 'Ss', 'TIME': '0:01', 'RSS': '1544', 'ARGS': ''
     }
     assert p.fuzzy_match('irqbal')
     assert 'bash' in p

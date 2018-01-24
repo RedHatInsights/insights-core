@@ -8,7 +8,7 @@ from collections import defaultdict
 from glob import glob
 
 from insights.core import blacklist, dr
-from insights.core.filters import get_filters
+from insights.core.filters import apply_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.core.serde import deserializer, serializer
@@ -90,7 +90,7 @@ class ContentProvider(object):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", filters=None):
+    def __init__(self, relative_path, root="/", ds=None):
         super(FileProvider, self).__init__()
         self.root = root
         self.relative_path = relative_path.lstrip("/")
@@ -98,7 +98,7 @@ class FileProvider(ContentProvider):
         self.path = os.path.join(root, self.relative_path)
         self.file_name = os.path.basename(self.path)
 
-        self.filters = filters or set()
+        self.ds = ds
         self.validate()
 
     def validate(self):
@@ -124,9 +124,9 @@ class RawFileProvider(FileProvider):
 class TextFileProvider(FileProvider):
     def load(self):
         with open(self.path, 'r') as f:
-            if self.filters:
+            if self.ds:
                 # This should shell out to a grep pipeline
-                return [l.rstrip() for l in f if any(s in l for s in self.filters)]
+                return list(apply_filters(self.ds, (l.rstrip() for l in f)))
             else:
                 return [l.rstrip() for l in f]
 
@@ -278,7 +278,7 @@ def simple_file(path, context=None, kind=TextFileProvider):
     @datasource(context or FSRoots)
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
-        return kind(ctx.locate_path(path), root=ctx.root, filters=get_filters(inner))
+        return kind(ctx.locate_path(path), root=ctx.root, ds=inner)
     return inner
 
 
@@ -297,7 +297,7 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
                 if ignore and re.search(ignore, path):
                     continue
                 try:
-                    results.append(kind(path[len(root):], root=root, filters=get_filters(inner)))
+                    results.append(kind(path[len(root):], root=root, ds=inner))
                 except:
                     log.debug(traceback.format_exc())
         if results:
@@ -314,7 +314,7 @@ def first_file(files, context=None, kind=TextFileProvider):
         root = ctx.root
         for f in files:
             try:
-                return kind(ctx.locate_path(f), root=root, filters=get_filters(inner))
+                return kind(ctx.locate_path(f), root=root, ds=inner)
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(files))
@@ -402,7 +402,7 @@ def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextF
                 if ignore and re.search(ignore, p):
                     continue
                 try:
-                    result.append(kind(p[len(root):], root=root, filters=get_filters(inner)))
+                    result.append(kind(p[len(root):], root=root, ds=inner))
                 except:
                     log.debug(traceback.format_exc())
         if result:

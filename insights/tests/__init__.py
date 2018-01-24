@@ -48,7 +48,10 @@ def run_input_data(component, input_data):
         broker[k] = v
 
     graph = dr.get_dependency_graph(component)
-    return dr.run(graph, broker=broker)
+    broker = dr.run(graph, broker=broker)
+    for v in broker.tracebacks.values():
+        print v
+    return broker
 
 
 def run_test(component, input_data, expected=None):
@@ -145,7 +148,7 @@ class InputData(object):
             content_iter = content
 
         if do_filter:
-            content_iter = apply_filters(spec, content_iter)
+            content_iter = list(apply_filters(spec, content_iter))
 
         content_provider = ContentProvider()
         content_provider.path = path
@@ -155,7 +158,6 @@ class InputData(object):
                 self.data[spec] = []
             self.data[spec].append(content_provider)
         else:
-            logger.warn("Overriding %s", str(spec))
             self.data[spec] = content_provider
 
         return self
