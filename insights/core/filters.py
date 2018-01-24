@@ -1,6 +1,5 @@
 import os
 import pkgutil
-import re
 import six
 import yaml as ser
 from collections import defaultdict
@@ -36,14 +35,13 @@ def get_filters(component, filters=None):
 
 def apply_filters(target, lines):
     if target not in FILTERS:
-        return lines
+        for l in lines:
+            yield l
 
-    results = []
     for l in lines:
-        for f in FILTERS[target]:
-            if re.search(f, l):
-                results.append(l)
-    return results
+        for f in get_filters(target):
+            if f in l:
+                yield l
 
 
 _filename = ".".join(["filters", ser.__name__])

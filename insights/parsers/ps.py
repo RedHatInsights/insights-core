@@ -90,24 +90,31 @@ class PsAuxww(Parser):
     """
     def __init__(self, *args, **kwargs):
         self.data = []
-        self.running = []
+        self.running = set()
+        self.cmd_names = set()
+        self.services = []
         super(PsAuxww, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        if any(line.startswith('USER') and line.endswith('COMMAND') for line in content):
+        raw_line_key = "_line"
+        if any(line.startswith("USER") and line.endswith("COMMAND") for line in content):
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
                 row
-                for row in parse_delimited_table(
-                    content, heading_ignore=['USER'], max_splits=10
-                )
-                if 'COMMAND' in row
+                for row in parse_delimited_table(content, max_splits=10, raw_line_key=raw_line_key)
+                if "COMMAND" in row
             ]
             # The above list comprehension assures all rows have a command.
-            self.running = [proc["COMMAND"] for proc in self.data]
-            # Strip paths and arguments for just command name
-            self.cmd_names = [proc.split(' ')[0].split('/')[-1] for proc in self.running]
+            for proc in self.data:
+                cmd = proc["COMMAND"]
+                self.running.add(cmd)
+                cmd_name = cmd.split(" ")[0].split("/")[-1]
+                proc["COMMAND_NAME"] = cmd_name
+                self.cmd_names.add(cmd_name)
+                proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
+                self.services.append((cmd_name, proc["USER"], proc[raw_line_key]))
+                del proc[raw_line_key]
         else:
             raise ParseException(
                 "PsAuxww: Cannot find ps header line in output"

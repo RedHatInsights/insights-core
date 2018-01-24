@@ -187,7 +187,7 @@ class Uname(Parser):
         '_lv_version'
     ]
 
-    defaults = dict((k, None) for k in keys)
+    defaults = dict.fromkeys(keys)
 
     def __init__(self, context):
         super(Uname, self).__init__(context)
