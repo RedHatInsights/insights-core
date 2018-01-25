@@ -18,7 +18,7 @@ from utilities import (determine_hostname,
 from cert_auth import rhsmCertificate
 from constants import InsightsConstants as constants
 from config import CONFIG as config
-from schedule import InsightsSchedule
+from schedule import get_scheduler
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -609,7 +609,7 @@ class InsightsConnection(object):
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
             write_unregistered_file()
-            InsightsSchedule().remove_scheduling()
+            get_scheduler().remove_scheduling()
             return True
         except requests.ConnectionError as e:
             logger.debug(e)

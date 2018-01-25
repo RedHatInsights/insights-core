@@ -12,7 +12,7 @@ from insights.client.constants import InsightsConstants as constants
 from insights.client.auto_config import try_auto_configuration
 from insights.client.support import registration_check, InsightsSupport
 from insights.client.utilities import write_to_disk, generate_machine_id, validate_remove_file
-from insights.client.schedule import InsightsSchedule
+from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -73,21 +73,16 @@ def pre_update():
     if config['enable_schedule']:
         # enable automatic scheduling
         logger.debug('Updating config...')
-        updated = InsightsSchedule().set_daily()
+        updated = get_scheduler().set_daily()
         if updated:
             logger.info('Automatic scheduling for Insights has been enabled.')
-        elif os.path.exists('/etc/cron.daily/' + constants.app_name):
-            logger.info('Automatic scheduling for Insights already enabled.')
         sys.exit(constants.sig_kill_ok)
 
     if config['disable_schedule']:
         # disable automatic schedling
-        updated = InsightsSchedule().remove_scheduling()
+        updated = get_scheduler().remove_scheduling()
         if updated:
             logger.info('Automatic scheduling for Insights has been disabled.')
-        elif (not os.path.exists('/etc/cron.daily/' + constants.app_name) and
-              not config['register']):
-            logger.info('Automatic scheduling for Insights already disabled.')
         if not config['register']:
             sys.exit(constants.sig_kill_ok)
 
@@ -155,8 +150,7 @@ def post_update():
             client.test_connection()
             sys.exit(constants.sig_kill_bad)
         if (not config['disable_schedule'] and
-           os.path.exists('/etc/cron.daily') and
-           InsightsSchedule().set_daily()):
+           get_scheduler().set_daily()):
             logger.info('Automatic scheduling for Insights has been enabled.')
 
     # check registration before doing any uploads
