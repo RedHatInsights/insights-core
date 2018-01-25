@@ -76,6 +76,7 @@ import copy
 from collections import namedtuple
 from insights.core.plugins import combiner
 from insights.parsers.lvm import Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs, VgsHeadings
+from insights.parsers.lvm import LvsAll, PvsAll, VgsAll
 
 
 def get_shared_data(component, shared):
@@ -242,3 +243,38 @@ class Lvm(object):
         else:
             return {k: v for k, v in self.logical_volumes.iteritems()
                     if lv_filter in k.LV and vg_filter in k.VG}
+
+
+@combiner(requires=[[LvsAll, PvsAll, VgsAll]])
+class LvmAll(Lvm):
+    """A Lvm like shared combiner for processing LVM information including all rejected
+        and accepted devices"""
+
+    LvVgName = namedtuple('LvVgName', ['LV', 'VG'])
+    """Named tuple used as key for logical volumes."""
+
+    def __init__(self, local, shared):
+        # Volume Groups information
+        self.volume_groups = merge_lvm_data(get_shared_data(VgsAll, shared), [], 'VG')
+        """dict: Contains a dictionary of volume group data with keys
+            from the original output."""
+
+        # Physical Volumes information
+        self.physical_volumes = merge_lvm_data(get_shared_data(PvsAll, shared), [], 'PV_KEY')
+        """dict: Contains a dictionary of physical volume data with keys
+            from the original output."""
+
+        pri_lvs_data = get_shared_data(LvsAll, shared)
+        for l in pri_lvs_data:
+            l['LVVG'] = Lvm.LvVgName(LV=l['LV'], VG=l['VG'])
+        self.logical_volumes = merge_lvm_data(pri_lvs_data, [], 'LVVG')
+        """dict: Contains a dictionary of logical volume data with keys
+            from the original output. The key is a tuple of the
+            logical volume name and the volume group name. This tuple
+            avoids the case where logical volume names are the same
+            across volume groups."""
+
+        self.logical_volumes = set_defaults(self.logical_volumes)
+
+        # Since name is not used as the key we need to create the name list
+        self.physical_volume_names = set([p['PV'] for p in self.physical_volumes.values()])
