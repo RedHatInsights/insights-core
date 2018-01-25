@@ -111,6 +111,8 @@ def run(component=None, root=None, print_summary=False,
         run_context=HostContext, archive_context=HostArchiveContext):
 
     from .core import dr
+    dr.load_components("insights.specs_default")
+    dr.load_components("insights.specs_insights_archive")
 
     if print_summary:
         import argparse
