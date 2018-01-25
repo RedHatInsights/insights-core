@@ -245,6 +245,7 @@ class Specs(SpecSet):
     oc_get_pvc = RegistryPoint()
     crt = RegistryPoint()
     openshift_certificates = RegistryPoint()
+    openvswitch_other_config = RegistryPoint()
     openvswitch_server_log = RegistryPoint()
     openvswitch_daemon_log = RegistryPoint()
     os_release = RegistryPoint(alias="os-release")
