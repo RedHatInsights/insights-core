@@ -13,5 +13,4 @@ def report(rel):
 
 if __name__ == "__main__":
     from insights import run
-    from insights import specs_default
     run(report, print_summary=True)
