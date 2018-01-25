@@ -5,7 +5,7 @@ import insights.client.schedule as sched
 def test_set_daily():
     target = tempfile.mktemp()
     with tempfile.NamedTemporaryFile() as source:
-        schedule = sched.InsightsSchedule(source.name, target)
+        schedule = sched.get_scheduler(source.name, target)
         assert not schedule.active
         assert schedule.set_daily()
         assert schedule.active
@@ -18,5 +18,5 @@ def test_failed_removal():
     Just verifying that trying to remove scheduling does not raise an exception
     """
     fname = tempfile.mktemp()
-    schedule = sched.InsightsSchedule(fname)
+    schedule = sched.get_scheduler(fname)
     schedule.remove_scheduling()
