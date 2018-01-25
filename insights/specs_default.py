@@ -369,6 +369,7 @@ class DefaultSpecs(Specs):
     oc_get_pvc = simple_command("/usr/bin/oc get pvc -o yaml --all-namespaces", context=OpenShiftContext)
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
     openshift_certificates = foreach_execute(crt, "/usr/bin/openssl x509 -noout -enddate -in %s")
+    openvswitch_other_config = simple_command("/usr/bin/ovs-vsctl -t 5 get Open_vSwitch . other_config")
     openvswitch_server_log = simple_file('/var/log/openvswitch/ovsdb-server.log')
     openvswitch_daemon_log = simple_file('/var/log/openvswitch/ovs-vswitchd.log')
     os_release = simple_file("etc/os-release")
