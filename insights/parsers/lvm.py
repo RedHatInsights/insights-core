@@ -193,6 +193,16 @@ class Pvs(Lvm):
         return [i for i in self.data["content"] if i["VG"] == name]
 
 
+@parser('pvs_noheadings_all')
+class PvsAll(Pvs):
+    """
+    Parse the output of the `/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config='global{locking_type=0} devices{filter=["a|.*|"]}'` command.
+
+    Uses the ``Pvs`` class defined in this module.
+    """
+    pass
+
+
 @parser('pvs')
 class PvsHeadings(LvmHeadings):
     """
@@ -328,6 +338,16 @@ class Vgs(Lvm):
     }
 
     PRIMARY_KEY = "VG"
+
+
+@parser('vgs_noheadings_all')
+class VgsAll(Vgs):
+    """
+    Parse the output of the `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'` command.
+
+    Uses the ``Vgs`` class defined in this module.
+    """
+    pass
 
 
 @parser('vgs')
@@ -502,6 +522,16 @@ class Lvs(Lvm):
     def vg(self, name):
         """Return all logical volumes in the given volume group"""
         return [i for i in self.data["content"] if i["VG"] == name]
+
+
+@parser('lvs_noheadings_all')
+class LvsAll(Lvs):
+    """
+    Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config='global{locking_type=0} devices{filter=["a|.*|"]}'` command.
+
+    Uses the ``Lvs`` class defined in this module.
+    """
+    pass
 
 
 @parser('lvs')
