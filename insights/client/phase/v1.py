@@ -103,8 +103,6 @@ def pre_update():
     if config['support']:
         support = InsightsSupport()
         support.collect_support_info()
-        logger.info(
-            "Support information collected in %s", config['logging_file'])
         sys.exit(constants.sig_kill_ok)
 
 
@@ -119,7 +117,7 @@ def update():
 def post_update():
     logger.debug("CONFIG: %s", format_config())
     if config['status']:
-        reg_check = registration_check()
+        reg_check = registration_check(client.get_connection())
         for msg in reg_check['messages']:
             logger.info(msg)
         sys.exit(constants.sig_kill_ok)
