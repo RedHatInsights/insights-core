@@ -6,6 +6,10 @@ import shlex
 import re
 import os
 import requests
+import tempfile
+import time
+import subprocess
+from insights import get_nvr
 from subprocess import Popen, PIPE, STDOUT
 
 from constants import InsightsConstants as constants
@@ -16,7 +20,7 @@ APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def registration_check():
+def registration_check(pconn):
     # check local registration record
     unreg_date = None
     unreachable = False
@@ -30,7 +34,6 @@ def registration_check():
         with open(constants.unregistered_file) as reg_file:
             local_record += ' Unregistered at ' + reg_file.readline()
 
-    pconn = InsightsConnection()
     api_reg_status = pconn.api_registration_check()
     logger.debug('Registration status: %s', api_reg_status)
     if type(api_reg_status) is bool:
@@ -61,20 +64,41 @@ class InsightsSupport(object):
         pass
 
     def collect_support_info(self):
+        logger.info('Collecting logs...')
+        self._support_diag_dump()
+        logger.info('Copying Insights logs to archive...')
+        log_archive_dir = tempfile.mkdtemp(prefix='/var/tmp/')
+        tar_file = os.path.join(log_archive_dir,
+                                'insights-client-logs-' +
+                                time.strftime('%Y%m%d%H%M%S') +
+                                '.tar.gz')
+        tar_cmd = 'tar czfS {0} -C {1} .'.format(
+            tar_file,
+            constants.log_dir)
+        subprocess.call(shlex.split(tar_cmd),
+                        stderr=subprocess.PIPE)
+        logger.info('Support information collected in %s', tar_file)
+
+    def _support_diag_dump(self):
         '''
         Collect log info for debug
         '''
         # check insights config
         cfg_block = []
 
-        logger.info('Insights version: %s' % (constants.version))
-        cfg_block += registration_check()
+        pconn = InsightsConnection()
+        logger.info('Insights version: %s', get_nvr())
+
+        reg_check = registration_check(pconn)
+        cfg_block.append('Registration check:')
+        for key in reg_check:
+            cfg_block.append(key + ': ' + str(reg_check[key]))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):
             with open(constants.lastupload_file) as upl_file:
                 lastupload = upl_file.readline().strip()
-        cfg_block.append('Last successful upload was ' + lastupload)
+        cfg_block.append('\nLast successful upload was ' + lastupload)
 
         cfg_block.append('auto_config: ' + str(config['auto_config']))
         if config['proxy']:
@@ -88,29 +112,37 @@ class InsightsSupport(object):
         logger.info('\n'.join(cfg_block))
         logger.info('python-requests: %s', requests.__version__)
 
+        succ = pconn.test_connection()
+        if succ == 0:
+            logger.info('Connection test: PASS\n')
+        else:
+            logger.info('Connection test: FAIL\n')
+
         # run commands
-        commands = ['insights-client --test-connection --quiet',
-                    'uname -a',
+        commands = ['uname -a',
                     'cat /etc/redhat-release',
                     'env',
                     'sestatus',
-                    'subscription-manager identity']
+                    'subscription-manager identity',
+                    'systemctl cat insights-client.timer',
+                    'systemctl cat insights-client.service',
+                    'systemctl status insights-client.timer',
+                    'systemctl status insights-client.service']
         for cmd in commands:
             logger.info("Running command: %s", cmd)
             try:
                 proc = Popen(
-                    shlex.split(cmd), shell=False, stdout=PIPE, stderr=STDOUT, close_fds=True)
+                    shlex.split(cmd), shell=False, stdout=PIPE, stderr=STDOUT,
+                    close_fds=True)
                 stdout, stderr = proc.communicate()
+            except OSError as o:
+                if 'systemctl' not in cmd:
+                    # suppress output for systemctl cmd failures
+                    logger.info('Error running command "%s": %s', cmd, o)
             except Exception as e:
+                # unknown error
                 logger.info("Process failed: %s", e)
-            if 'test-connection' in cmd:
-                if proc.returncode == 0:
-                    logger.info('Connection test: PASS\n')
-                else:
-                    logger.info('Connection test: FAIL\n')
-            else:
-                logger.info("Process output: \n%s", stdout)
-
+            logger.info("Process output: \n%s", stdout)
         # check available disk space for /var/tmp
         tmp_dir = '/var/tmp'
         dest_dir_stat = os.statvfs(tmp_dir)

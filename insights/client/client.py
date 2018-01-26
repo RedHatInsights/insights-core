@@ -111,7 +111,7 @@ def _is_client_registered():
     msg_rereg = 'Use --register if you would like to re-register this machine.'
 
     # check reg status w/ API
-    reg_check = registration_check()
+    reg_check = registration_check(get_connection())
     if not reg_check['status']:
         # not registered
         if reg_check['unreg_date']:
@@ -143,7 +143,7 @@ def try_register():
         return
 
     # check reg status with API
-    reg_check = registration_check()
+    reg_check = registration_check(get_connection())
     if reg_check['status']:
         logger.info('This host has already been registered.')
         # regenerate the .registered file
@@ -211,7 +211,7 @@ def handle_registration():
 
 
 def get_registration_status():
-    return registration_check()
+    return registration_check(get_connection())
 
 
 def handle_unregistration():
