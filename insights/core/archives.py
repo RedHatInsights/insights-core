@@ -6,7 +6,7 @@ import tempfile
 from contextlib import contextmanager
 from insights.util import content_type, fs, subproc
 
-from insights.util.content_type import _magic
+from insights.util.content_type import from_file
 logger = logging.getLogger(__name__)
 
 
@@ -91,7 +91,7 @@ class Extraction(object):
 
 @contextmanager
 def extract(path, timeout=None):
-    content_type = _magic.file(path)
+    content_type = from_file(path)
     if content_type == "application/zip":
         extractor = ZipExtractor(timeout=timeout)
     else:
