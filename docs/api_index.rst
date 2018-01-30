@@ -1,14 +1,6 @@
 API Documentation
 =================
 
-insights.config.specs
----------------------
-
-.. automodule:: insights.config.specs
-    :members:
-    :show-inheritance:
-    :undoc-members:
-
 insights.core
 -------------
 
