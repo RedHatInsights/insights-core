@@ -165,14 +165,15 @@ class RegistryPoint(object):
         is a registry point against which further subclasses can register
         datasource implementations by simply declaring them with the same name.
     """
-    def __init__(self, metadata=None, multi_output=False):
+    def __init__(self, metadata=None, multi_output=False, raw=False):
         self.metadata = metadata
         self.multi_output = multi_output
+        self.raw = raw
 
 
 def _registry_point(rp):
 
-    @datasource(metadata=rp.metadata, multi_output=rp.multi_output)
+    @datasource(metadata=rp.metadata, multi_output=rp.multi_output, raw=rp.raw)
     def inner(broker):
         for c in reversed(dr.get_added_dependencies(inner)):
             if c in broker:
@@ -275,7 +276,7 @@ def _get_context(context, alternatives, broker):
 
 def simple_file(path, context=None, kind=TextFileProvider):
 
-    @datasource(context or FSRoots)
+    @datasource(context or FSRoots, raw=(kind is RawFileProvider))
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         return kind(ctx.locate_path(path), root=ctx.root, ds=inner)
@@ -286,7 +287,7 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
-    @datasource(context or FSRoots, multi_output=True)
+    @datasource(context or FSRoots, multi_output=True, raw=(kind is RawFileProvider))
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         root = ctx.root
@@ -308,7 +309,7 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
 
 def first_file(files, context=None, kind=TextFileProvider):
 
-    @datasource(context or FSRoots)
+    @datasource(context or FSRoots, raw=(kind is RawFileProvider))
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         root = ctx.root
@@ -386,7 +387,7 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
 
 def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextFileProvider):
 
-    @datasource(provider, context, multi_output=True)
+    @datasource(provider, context, multi_output=True, raw=(kind is RawFileProvider))
     def inner(broker):
         result = []
         source = broker[provider]

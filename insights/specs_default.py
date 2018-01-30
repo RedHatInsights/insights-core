@@ -331,7 +331,7 @@ class DefaultSpecs(Specs):
     mdstat = simple_file("/proc/mdstat")
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
-    metadata_json = simple_file("metadata.json", context=ClusterArchiveContext)
+    metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
     module = listdir("/sys/module")
     modinfo = foreach_execute(module, "/usr/sbin/modinfo %s")

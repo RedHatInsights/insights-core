@@ -73,6 +73,7 @@ class DatasourceDelegate(dr.Delegate):
     def __init__(self, component, requires, optional):
         super(DatasourceDelegate, self).__init__(component, requires, optional)
         self.multi_output = False
+        self.raw = False
 
 
 _datasource = dr.new_component_type("datasource", executor=dr.broker_executor, delegate_class=DatasourceDelegate)
@@ -83,7 +84,9 @@ def datasource(*args, **kwargs):
     def _f(func):
         metadata = kwargs.get("metadata", {})
         c = _datasource(*args, metadata=metadata, component_type=datasource)(func)
-        dr.get_delegate(c).multi_output = kwargs.get("multi_output", False)
+        delegate = dr.get_delegate(c)
+        delegate.multi_output = kwargs.get("multi_output", False)
+        delegate.raw = kwargs.get("raw", False)
         return c
     return _f
 

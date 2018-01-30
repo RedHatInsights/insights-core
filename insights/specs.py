@@ -203,7 +203,7 @@ class Specs(SpecSet):
     mdstat = RegistryPoint()
     meminfo = RegistryPoint()
     messages = RegistryPoint()
-    metadata_json = RegistryPoint()
+    metadata_json = RegistryPoint(raw=True)
     mlx4_port = RegistryPoint()
     modinfo = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)

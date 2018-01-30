@@ -33,21 +33,24 @@ class MultiNodeProduct(object):
     def __init__(self, role=None):
         self.role = role
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(self.role)
+
+    __nonzero__ = __bool__
 
     def is_parent(self):
         return self.role == self.parent_type
 
-    @classmethod
-    def from_metadata(cls, metadata, hostname):
-        instance = cls()
-        current_system = get_system(metadata, hostname)
-        if metadata.get("product", "").lower() == cls.name and current_system:
+
+def create_product(metadata, hostname):
+    current_system = get_system(metadata, hostname)
+    for p in GLOBAL_PRODUCTS:
+        if metadata.get("product", "").lower() == p.name and current_system:
+            instance = p()
             instance.__dict__ = current_system
             if hasattr(instance, "type"):
                 instance.role = instance.type
-        return instance
+            return instance
 
 
 @product
@@ -80,9 +83,11 @@ class RHEL(object):
         self.version = version
         self.release = release
 
-    def __nonzero__(self):
+    def __bool__(self):
         return all([(self.version != DEFAULT_VERSION),
                    bool(self.release)])
+
+    __nonzero__ = __bool__
 
     @classmethod
     def from_metadata(cls, metadata, processor_obj):
@@ -104,11 +109,11 @@ class Context(object):
             if p.name in kwargs:
                 setattr(self, p.name, kwargs.pop(p.name))
             else:
-                setattr(self, p.name, p.from_metadata(self.metadata, self.hostname))
+                setattr(self, p.name, create_product(self.metadata, self.hostname))
 
     def product(self):
         for pname in PRODUCT_NAMES:
-            if getattr(self, pname):
+            if hasattr(self, pname):
                 return getattr(self, pname)
 
     def __repr__(self):
