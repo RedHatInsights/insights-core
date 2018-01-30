@@ -166,12 +166,11 @@ class JournaldConfAll(object):
         files_shadowed_not_used = sorted(files_shadowed_not_used)  # deterministic behavior, sorted paths
         sorted_file_names = sorted(effective_confd.keys())
 
-        central_parser = journal_conf[0]
         parsers_list = [effective_confd[file_name] for file_name in sorted_file_names]
         if central_file_lowest_prio:
-            parsers_list = [central_parser] + parsers_list
+            parsers_list = [journal_conf] + parsers_list
         else:
-            parsers_list = parsers_list + [central_parser]
+            parsers_list = parsers_list + [journal_conf]
 
         files_used_priority_order = []  # from lowest to highest priority, not including empty files
         # storing only the active values as (val, file_name), taking precedence rules into account
