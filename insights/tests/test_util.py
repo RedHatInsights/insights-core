@@ -66,17 +66,6 @@ def test_sane_defaults(ctx):
     assert ctx.version == ["-1", "-1"]
 
 
-def test_product_available(ctx):
-    ctx.osp.role = "Controller"
-    assert ctx.osp
-    assert ctx.osp.role == "Controller"
-
-
-def test_product_not_available(ctx):
-    assert not ctx.osp
-    assert ctx.osp.role is None
-
-
 def test_non_product_member(ctx):
     with pytest.raises(AttributeError):
         ctx.invalid_product()

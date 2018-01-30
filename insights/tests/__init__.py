@@ -1,5 +1,6 @@
 import copy
 import itertools
+import json
 import logging
 from six import wraps
 from StringIO import StringIO
@@ -26,6 +27,10 @@ def unordered_compare(result, expected):
     arbitrarily nested lists and remove differences based on ordering.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
+
+    if isinstance(result, dict) and expected is None:
+        assert result["type"] == "skip", result
+        return
 
     if not (type(result) in [unicode, str] and type(expected) in [unicode, str]):
         assert type(result) == type(expected)
@@ -93,6 +98,16 @@ def next_gn():
     return GLOBAL_NUMBER
 
 
+def create_metadata(system_id, product):
+    ctx_metadata = {
+        "system_id": system_id,
+        "links": []
+    }
+    ctx_metadata["type"] = product.role
+    ctx_metadata["product"] = product.__class__.__name__
+    return json.dumps(ctx_metadata)
+
+
 class InputData(object):
     """
     Helper class used with integrate. The role of this class is to represent
@@ -142,17 +157,21 @@ class InputData(object):
         if not path.startswith("/"):
             path = "/" + path
 
-        if not isinstance(content, list):
-            content_iter = [l.rstrip() for l in StringIO(content).readlines()]
-        else:
+        if dr.get_delegate(spec).raw:
             content_iter = content
+        else:
+            if not isinstance(content, list):
+                content_iter = [l.rstrip() for l in StringIO(content).readlines()]
+            else:
+                content_iter = content
 
-        if do_filter:
-            content_iter = list(apply_filters(spec, content_iter))
+            if do_filter:
+                content_iter = list(apply_filters(spec, content_iter))
 
         content_provider = ContentProvider()
         content_provider.path = path
         content_provider._content = content_iter
+
         if dr.get_delegate(spec).multi_output:
             if spec not in self.data:
                 self.data[spec] = []

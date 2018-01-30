@@ -43,3 +43,4 @@ archives/
 .ipynb_checkpoints/
 sosreport*
 output/
+share/
