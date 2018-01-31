@@ -76,7 +76,7 @@ def _run(graph=None, root=None, run_context=HostContext,
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        broker[archive_context] = archive_context(root=root)
+        broker[archive_context] = create_context(root, archive_context)
         return dr.run(graph, broker=broker)
 
     with extract(root) as ex:
