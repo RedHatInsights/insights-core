@@ -1,5 +1,19 @@
 # Change Log
 
+## [3.0rc1](https://github.com/RedHatInsights/insights-core/tree/3.0rc1) (2018-01-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.71.0-217...3.0rc1)
+
+## [insights-core-1.71.0-217](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.71.0-217) (2018-01-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.70.0-214...insights-core-1.71.0-217)
+
+**Implemented enhancements:**
+
+- Add parsers LvsAll, PvsAll, VgsAll and combiner LvmAll for getting LVM information for all accepted and rejected devices. [\#908](https://github.com/RedHatInsights/insights-core/pull/908) ([lonicerae](https://github.com/lonicerae))
+
+**Fixed bugs:**
+
+- Update --force-reregister messaging [\#703](https://github.com/RedHatInsights/insights-core/issues/703)
+
 ## [insights-core-1.70.0-214](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.70.0-214) (2018-01-23)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.69.0-211...insights-core-1.70.0-214)
 
