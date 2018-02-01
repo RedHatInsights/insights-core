@@ -1,0 +1,86 @@
+"""
+Combiner for `httpd -V` command
+===============================
+
+Combiner to get the valid parsed result of command `httpd -V`.
+
+Examples:
+
+    >>> HTTPDV2 = '''
+    ... Server version: Apache/2.2.6 (Red Hat Enterprise Linux)
+    ... Server's Module Magic Number: 20120211:24
+    ... Server MPM:     Prefork
+    ... Server compiled with....
+    ... -D APR_HAS_SENDFILE
+    ... -D APR_HAVE_IPV6 (IPv4-mapped addresses enabled)
+    ... -D AP_TYPES_CONFIG_FILE="conf/mime.types"
+    ... '''
+    >>> HTTPDV1 = '''
+    ... Server version: Apache/2.2.6 (Red Hat Enterprise Linux)
+    ... Server's Module Magic Number: 20120211:24
+    ... Server MPM:     Worker
+    ... Server compiled with....
+    ... -D APR_HAVE_IPV6 (IPv4-mapped addresses enabled)
+    ... -D AP_TYPES_CONFIG_FILE="conf/mime.types"
+    ... '''
+    >>> PS_AUXWW = '''
+    ... USER  PID %CPU %MEM    VSZ   RSS TTY STAT START   TIME COMMAND
+    ... root   41  0.0  0.0  21452  1536 ?   Ss   Mar09   0:01 httpd.worker
+    ... root   75  0.0  0.0      0     0 ?   S    Mar09   0:00 [kthreadd]
+    ... '''
+    >>> from insights.parsers.httpd_V import HttpdWorkerV as HWV, HttpdV as HV
+    >>> from insights.combiners.httpd_V import HttpdV
+    >>> hv1 = HWV(context_wrap(HTTPDV1))
+    >>> hv2 = HV(context_wrap(HTTPDV2))
+    >>> ps = PsAuxww(context_wrap(PS_AUXWW))
+    >>> shared = {HV: hv2, HWV hv1, PsAuxww: ps, redhat_release: RHEL6}
+    >>> hv = shared[HttpdV]
+    >>> hv['Server MPM']
+    'worker'
+    >>> hv["Server's Module Magic Number"]
+    '20120211:24'
+    >>> 'APR_HAS_SENDFILE' in hv['Server compiled with']
+    False
+    >>> hv['Server compiled with']['APR_HAVE_IPV6']
+    'IPv4-mapped addresses enabled'
+"""
+
+from insights.core.plugins import combiner
+from insights.combiners.redhat_release import redhat_release
+from insights.parsers.ps import PsAuxww
+from insights.parsers.httpd_V import HttpdV as HV
+from insights.parsers.httpd_V import HttpdWorkerV as HWV
+from insights.parsers.httpd_V import HttpdEventV as HEV
+from insights import SkipComponent, LegacyItemAccess
+
+
+@combiner(requires=[redhat_release, PsAuxww, [HV, HEV, HWV]])
+class HttpdV(LegacyItemAccess):
+    """
+    A combiner to get the valid :class:`insights.parsers.httpd_V.HttpdV` on a
+    rhel host.
+
+    Attributes:
+        data (dict): The bulk of the content is split on the colon and keys are
+            kept as is.  Lines beginning with '-D' are kept in a dictionary
+            keyed under 'Server compiled with'; each compilation option is a key
+            in this sub-dictionary.  The value of the compilation options is the
+            value after the equals sign, if one is present, or the value in
+            brackets after the compilation option, or 'True' if only the
+            compilation option is present.
+
+    Raises:
+        SkipComponent: When no valid HttpdV is found.
+    """
+    def __init__(self, local, shared):
+        super(HttpdV, self).__init__()
+        rhel_ver = shared[redhat_release].major
+        self.data = shared[HV].data if HV in shared else None
+        if rhel_ver == 6:
+            ps = shared[PsAuxww]
+            if ps.fuzzy_match('httpd.worker'):
+                self.data = shared[HWV].data if HWV in shared else None
+            elif ps.fuzzy_match('httpd.event'):
+                self.data = shared[HEV].data if HEV in shared else None
+        if self.data is None:
+            raise SkipComponent("Unable to get the valid `httpd -V` command")

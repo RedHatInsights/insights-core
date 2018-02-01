@@ -130,6 +130,8 @@ class Specs(SpecSet):
     httpd_pid = RegistryPoint()
     httpd_ssl_access_log = RegistryPoint()
     httpd_ssl_error_log = RegistryPoint()
+    httpd_worker_V = RegistryPoint()
+    httpd_event_V = RegistryPoint()
     httpd_V = RegistryPoint(multi_output=True)
     ifcfg = RegistryPoint(multi_output=True)
     ifconfig = RegistryPoint()

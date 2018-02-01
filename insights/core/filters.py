@@ -5,7 +5,7 @@ import yaml as ser
 from collections import defaultdict
 
 import insights
-from insights.core import dr
+from insights.core import dr, plugins
 
 
 # TODO: consider case insensitive and regex
@@ -25,10 +25,13 @@ def add_filter(name, patterns):
 
 def get_filters(component, filters=None):
     filters = filters or set()
+    if not plugins.is_datasource(component):
+        return filters
+
     if component in FILTERS:
         filters |= FILTERS[component]
 
-    for d in dr.get_dependencies(component):
+    for d in dr.get_dependents(component):
         filters |= get_filters(d, filters)
     return filters
 
@@ -38,10 +41,10 @@ def apply_filters(target, lines):
         for l in lines:
             yield l
 
+    filters = get_filters(target)
     for l in lines:
-        for f in get_filters(target):
-            if f in l:
-                yield l
+        if any(f in l for f in filters):
+            yield l
 
 
 _filename = ".".join(["filters", ser.__name__])

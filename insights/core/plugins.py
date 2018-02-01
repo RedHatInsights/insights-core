@@ -160,6 +160,8 @@ stage = combiner
 rule = make_rule_type(name="rule")
 """ A component that can see all parsers and combiners for a single host."""
 
+cluster_rule = partial(rule, cluster=True)
+
 condition = dr.new_component_type("condition")
 """ A component used by rules that allows automated statistical analysis."""
 
