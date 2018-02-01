@@ -270,10 +270,10 @@ def load_components(path, include=".*", exclude="test", continue_on_error=True):
     for _, name, is_pkg in pkgutil.iter_modules(path=package.__path__, prefix=prefix):
         if not name.startswith(prefix):
             name = prefix + name
-        if do_include(name) and not do_exclude(name):
-            if is_pkg:
-                num_loaded += load_components(name, include, exclude, continue_on_error)
-            else:
+        if is_pkg:
+            num_loaded += load_components(name, include, exclude, continue_on_error)
+        else:
+            if do_include(name) and not do_exclude(name):
                 _import(name, continue_on_error)
                 num_loaded += 1
 

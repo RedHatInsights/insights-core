@@ -5,12 +5,12 @@ from insights import tests
 from insights.core.dr import get_name, load_components
 
 
+def test_integration(component, compare_func, input_data, expected):
+    actual = tests.run_test(component, input_data)
+    compare_func(actual, expected)
+
+
 def pytest_generate_tests(metafunc):
-
-    def test_integration(component, compare_func, input_data, expected):
-        actual = tests.run_test(component, input_data)
-        compare_func(actual, expected)
-
     pattern = pytest.config.getoption("-k")
     generate_tests(metafunc, test_integration, "insights/tests", pattern=pattern)
 
