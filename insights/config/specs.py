@@ -437,6 +437,7 @@ static_specs = {
     "uname"                     : First([CommandSpec("/bin/uname -a"),
                                     SimpleFileSpec("uname")]),
     "up2date"                   : SimpleFileSpec("etc/sysconfig/rhn/up2date"),
+    "up2date_log"               : SimpleFileSpec("var/log/up2date", large_content=True),
     "uptime"                    : CommandSpec("/usr/bin/uptime"),
     "usr_journald.conf.d"       : PatternSpec(r"usr/lib/systemd/journald.conf.d/.+\.conf"),  # note that etc_journald.conf.d also exists
     "vgdisplay"                 : First([CommandSpec("/sbin/vgdisplay -vv"),
