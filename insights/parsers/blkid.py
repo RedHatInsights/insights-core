@@ -14,6 +14,7 @@ output.  Typical output looks like::
     /dev/cciss/c0d1p3: LABEL="/u02" UUID="004d0ca3-373f-4d44-a085-c19c47da8b5e" TYPE="ext3"
     /dev/cciss/c0d1p2: LABEL="/u01" UUID="ffb8b27e-5a3d-434c-b1bd-16cb17b0e325" TYPE="ext3"
     /dev/loop0: LABEL="Satellite-5.6.0 x86_64 Disc 0" TYPE="iso9660"
+    /dev/block/253:1: UUID="f8508c37-eeb1-4598-b084-5364d489031f" TYPE="ext3"
 
 The class has one attribute ``data`` which is a ``list`` representing each line
 of the input data as a ``dict`` with keys corresponding to the keys in the
@@ -28,6 +29,7 @@ Examples:
     >>> block_id.filter_by_type('ext3')
     [{'NAME': '/dev/cciss/c0d1p3', 'LABEL': '/u02', 'UUID': '004d0ca3-373f-4d44-a085-c19c47da8b5e',
       'TYPE': 'ext3'},
+     {'NAME': '/dev/block/253:1', 'UUID': 'f8508c37-eeb1-4598-b084-5364d489031f','TYPE': 'ext3'},
      {'NAME': '/dev/cciss/c0d1p2', 'LABEL': '/u01', 'UUID': 'ffb8b27e-5a3d-434c-b1bd-16cb17b0e325',
       'TYPE': 'ext3'}]
 
@@ -62,7 +64,7 @@ class BlockIDInfo(Parser):
     def parse_content(self, content):
         blkid_output = []
         for line in (l for l in content if l.strip()):
-            dev_name, attributes = line.split(":", 1)
+            dev_name, attributes = line.rsplit(":", 1)
             device = dict((k, v) for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line))
             device['NAME'] = dev_name.strip()
             blkid_output.append(device)
