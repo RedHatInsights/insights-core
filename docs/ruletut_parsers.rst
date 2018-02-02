@@ -25,10 +25,10 @@ Identify Parsers
 ================
 
 - For RPM-based distributions, we can identify the installed version of the
-  library by using the ``installed-rpms`` parser.
+  library by using the ``InstalledRpms`` parser.
 
-- We can use the ``lsof`` parser to identify if a running process is using the
+- We can use the ``Lsof`` parser to identify if a running process is using the
   shared library.
 
-- We can use the ``netstat`` parser to identify if a running process is
+- We can use the ``Netstat`` parser to identify if a running process is
   possibly listening on an external address.
