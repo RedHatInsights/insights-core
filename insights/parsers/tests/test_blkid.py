@@ -10,6 +10,7 @@ BLKID_INFO = """
 /dev/mapper/rhel_hp--dl160g8--3-lv_test: UUID="d403bcbd-0eea-4bff-95b9-2237740f5c8b" TYPE="ext4"
 /dev/cciss/c0d1p3: LABEL="/u02" UUID="004d0ca3-373f-4d44-a085-c19c47da8b5e" TYPE="ext3"
 /dev/loop0: LABEL="Satellite-5.6.0 x86_64 Disc 0" TYPE="iso9660"
+/dev/block/253:1: UUID="f8508c37-eeb1-4598-b084-5364d489031f" TYPE="ext2"
 """.strip()
 
 EXPECTED_RESULTS = [{'NAME': "/dev/sda1",
@@ -30,6 +31,9 @@ EXPECTED_RESULTS = [{'NAME': "/dev/sda1",
                     {'NAME': "/dev/mapper/rhel_hp--dl160g8--3-lv_test",
                      'UUID': "d403bcbd-0eea-4bff-95b9-2237740f5c8b",
                      'TYPE': "ext4"},
+                    {'NAME': "/dev/block/253:1",
+                     'UUID': "f8508c37-eeb1-4598-b084-5364d489031f",
+                     'TYPE': "ext2"},
                     {'NAME': "/dev/cciss/c0d1p3",
                      'LABEL': "/u02",
                      'UUID': "004d0ca3-373f-4d44-a085-c19c47da8b5e",
@@ -43,7 +47,8 @@ class TestBLKID():
     def test_get_blkid_info(self):
         blkid_info = BlockIDInfo(context_wrap(BLKID_INFO))
         expected_list = dict((r['NAME'], r) for r in EXPECTED_RESULTS)
-        assert len(blkid_info.data) == 8
+        assert len(blkid_info.data) == 9
+
         for result in blkid_info.data:
             assert result == expected_list[result['NAME']]
         ext4_only = blkid_info.filter_by_type("ext4")
@@ -56,3 +61,5 @@ class TestBLKID():
         assert len(xfs_only) == 3
         for result in xfs_only:
             assert result == expected_list[result['NAME']]
+        ext2_only = blkid_info.filter_by_type("ext2")
+        ext2_only[0]["NAME"] == "/dev/block/253:1"
