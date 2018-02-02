@@ -67,6 +67,9 @@ Examples:
 from .. import Parser, parser
 from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
+from insights.core.filters import add_filter
+
+add_filter(Specs.ps_auxww, "COMMAND")
 
 
 @parser(Specs.ps_auxww)
@@ -205,6 +208,9 @@ class PsAuxww(Parser):
 @parser(Specs.ps_auxcww)
 class PsAuxcww(PsAuxww):
     pass
+
+
+add_filter(Specs.ps_aux, "COMMAND")
 
 
 @parser(Specs.ps_aux)

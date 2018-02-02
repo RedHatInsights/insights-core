@@ -2,6 +2,7 @@ import copy
 import itertools
 import json
 import logging
+import traceback
 from six import wraps
 from StringIO import StringIO
 
@@ -9,6 +10,7 @@ from insights import apply_filters
 from insights.core import dr
 from insights.core.context import Context
 from insights.core.spec_factory import ContentProvider
+from insights.specs import Specs
 
 
 logger = logging.getLogger(__name__)
@@ -128,11 +130,13 @@ class InputData(object):
     contain the specified value in the context.path field.  This is useful for
     testing pattern-like file parsers.
     """
-    def __init__(self, name=None):
+    def __init__(self, name=None, hostname=None):
         cnt = input_data_cache.get(name, 0)
         self.name = "{0}-{1:0>5}".format(name, cnt)
         self.data = {}
         input_data_cache[name] = cnt + 1
+        if hostname:
+            self.add(Specs.hostname, hostname)
 
     def __setitem__(self, key, value):
         self.add(key, value)
@@ -177,6 +181,8 @@ class InputData(object):
                 self.data[spec] = []
             self.data[spec].append(content_provider)
         else:
+            logger.warn("Replacing %s", spec.__name__)
+            logger.warn(traceback.format_stack())
             self.data[spec] = content_provider
 
         return self
