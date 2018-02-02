@@ -365,6 +365,7 @@ class Specs(SpecSet):
     udev_persistent_net_rules = RegistryPoint()
     uname = RegistryPoint()
     up2date = RegistryPoint()
+    up2date_log = RegistryPoint()
     uploader_log = RegistryPoint()
     uptime = RegistryPoint()
     usr_journald_conf_d = RegistryPoint(multi_output=True)
