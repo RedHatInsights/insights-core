@@ -271,7 +271,7 @@ class Specs(SpecSet):
     pluginconf_d = RegistryPoint(multi_output=True)
     postgresql_conf = RegistryPoint()
     postgresql_log = RegistryPoint(multi_output=True)
-    prelink_orig_md5 = RegistryPoint()
+    prelink_orig_md5 = RegistryPoint(multi_output=True)
     prev_uploader_log = RegistryPoint()
     proc_snmp_ipv4 = RegistryPoint()
     proc_snmp_ipv6 = RegistryPoint()
