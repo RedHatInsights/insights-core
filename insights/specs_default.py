@@ -557,6 +557,7 @@ class DefaultSpecs(Specs):
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
+    up2date_log = simple_file("/var/log/up2date")
     uploader_log = simple_file("/var/log/redhat-access-insights/redhat-access-insights.log")
     uptime = simple_command("/usr/bin/uptime")
     usr_journald_conf_d = glob_file(r"usr/lib/systemd/journald.conf.d/*.conf")  # note that etc_journald.conf.d also exists
