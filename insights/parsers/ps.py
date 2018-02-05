@@ -105,7 +105,10 @@ class PsAuxww(Parser):
             # want to ignore them.
             self.data = [
                 row
-                for row in parse_delimited_table(content, max_splits=10, raw_line_key=raw_line_key)
+                for row in parse_delimited_table(
+                    content, heading_ignore=['USER'], max_splits=10,
+                    raw_line_key=raw_line_key
+                )
                 if "COMMAND" in row
             ]
             # The above list comprehension assures all rows have a command.

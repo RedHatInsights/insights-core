@@ -193,6 +193,23 @@ def test_ps_auxww_from_aux():
     assert p.search(STAT__contains='Z') == []
 
 
+PS_AUXWW_WITH_LATE_HEADER = '''
+your 131072x1 screen size is bogus. expect trouble
+USER        PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root          1  0.0  0.1 193704  5088 ?        Ss   Jan10   6:52 /usr/lib/systemd/systemd --switched-root --system --deserialize 21
+root          2  0.0  0.0      0     0 ?        S    Jan10   0:02 [kthreadd]
+root          3  0.0  0.0      0     0 ?        S    Jan10   0:29 [ksoftirqd/0]
+root          5  0.0  0.0      0     0 ?        S<   Jan10   0:00 [kworker/0:0H]
+root          7  0.0  0.0      0     0 ?        S    Jan10   0:00 [migration/0]
+'''
+
+
+def test_ps_auxww_with_late_header():
+    p = ps.PsAuxww(context_wrap(PS_AUXWW_WITH_LATE_HEADER))
+    assert '[kthreadd]' in p
+    assert p.data[0]['COMMAND'] == '/usr/lib/systemd/systemd --switched-root --system --deserialize 21'
+
+
 Ps_BAD = """
 /bin/ps: command or file not found
 """
