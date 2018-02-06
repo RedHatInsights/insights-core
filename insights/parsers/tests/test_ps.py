@@ -57,6 +57,15 @@ Ps_BAD = """
 /bin/ps: command or file not found
 """
 
+ps_auxcww_warn = """
+your 131072x1 screen size is bogus. expect trouble
+USER        PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root          1  0.0  0.1 193704  5088 ?        Ss   Jan10   6:52 systemd
+root          2  0.0  0.0      0     0 ?        S    Jan10   0:02 kthreadd
+root          3  0.0  0.0      0     0 ?        S    Jan10   0:29 ksoftirqd/0
+root          5  0.0  0.0      0     0 ?        S<   Jan10   0:00 kworker/0:0H
+""".strip()
+
 
 def test_ps_auxww_from_auxcww():
     # test with input from `ps auxcww`
@@ -208,6 +217,9 @@ def test_ps_auxcww():
         assert len(w) == 2
         assert issubclass(w[0].category, DeprecationWarning)
         assert issubclass(w[1].category, DeprecationWarning)
+
+        data_warn = ps.PsAuxcww(context_wrap(ps_auxcww_warn))
+        assert 'systemd' in data_warn.running
 
 
 def test_ps_aux():

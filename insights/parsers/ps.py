@@ -152,6 +152,7 @@ class PsAuxww(ProcessList):
         ParseException: Raised if the heading line (starting with 'USER' and
         ending with 'COMMAND') is not found in the input.
     """
+
     def __init__(self, *args, **kwargs):
         self.data = {}
         super(PsAuxww, self).__init__(*args, **kwargs)
@@ -165,8 +166,7 @@ class PsAuxww(ProcessList):
                 for row in parse_delimited_table(
                     content, heading_ignore=['USER'], max_splits=10
                 )
-                if 'COMMAND' in row
-            ]
+                if 'COMMAND' in row]
             # Strip paths and arguments for just command name
             self.cmd_names = [proc.split(' ')[0].split('/')[-1] for proc in self.running]
         else:
@@ -205,6 +205,7 @@ class PsAuxcww(ProcessList):
     Raises:
         ParseException: Raised if any error occurs parsing the content.
     """
+
     def __init__(self, *args, **kwargs):
         deprecated(PsAuxcww, "Use the `PsAuxww` parser in this module")
 
@@ -213,13 +214,14 @@ class PsAuxcww(ProcessList):
         super(PsAuxcww, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        if len(content) > 0 and "COMMAND" in content[0]:
-            self.data = parse_delimited_table(content)
+        if len(content) > 0 and any(
+                        line.startswith('USER') and line.endswith('COMMAND') for line in content):
+            self.data = parse_delimited_table(content, heading_ignore=['USER'])
             self.parse_services(content)
         else:
             raise ParseException(
-                    "PsAuxcww: Unable to parse content: {} ({})".format(
-                        len(content), content))
+                "PsAuxcww: Unable to parse content: {} ({})".format(
+                    len(content), content))
 
     def parse_services(self, content):
         """
@@ -250,6 +252,7 @@ class PsAux(ProcessList):
             headers and each item in the list represents a process. The command
             and its args (if any) are kept together in the COMMAND key.
     """
+
     def __init__(self, *args, **kwargs):
         deprecated(PsAux, "Use the `PsAuxww` parser in this module")
         super(PsAux, self).__init__(*args, **kwargs)
@@ -269,6 +272,7 @@ class PsAuxwww(PsAux):
         data (list):  List of dicts, where the keys in each dict are the column
             headers and each item in the list represents a process.
     """
+
     def __init__(self, *args, **kwargs):
         deprecated(PsAux, "Use the `PsAuxww` parser in this module")
         super(PsAux, self).__init__(*args, **kwargs)
@@ -287,6 +291,7 @@ class PsAxcwwo(ProcessList):
     Raises:
         ParseException: Raised if any error occurs parsing the content.
     """
+
     def __init__(self, *args, **kwargs):
         deprecated(PsAxcwwo, "Use the `PsAuxww` parser in this module")
         super(PsAxcwwo, self).__init__(*args, **kwargs)
@@ -296,5 +301,5 @@ class PsAxcwwo(ProcessList):
             self.data = parse_delimited_table(content, max_splits=2)
         else:
             raise ParseException(
-                    "PsAxcwwo: Unable to parse {} line(s) of content:({})".format(
-                        len(content), content))
+                "PsAxcwwo: Unable to parse {} line(s) of content:({})".format(
+                    len(content), content))
