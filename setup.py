@@ -15,7 +15,7 @@ entry_points = {
         'gen_api = insights.tools.generate_api_config:main',
         'insights-perf = insights.tools.perf:main',
         'client = insights.client:run',
-        'mangle = insights.config.mangle:main'
+        'mangle = insights.util.mangle:main'
     ]
 }
 
