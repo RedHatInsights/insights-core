@@ -17,6 +17,7 @@ def test_failed_removal():
     """
     Just verifying that trying to remove scheduling does not raise an exception
     """
-    fname = tempfile.mktemp()
-    schedule = sched.get_scheduler(fname)
-    schedule.remove_scheduling()
+    target = tempfile.mktemp()
+    with tempfile.NamedTemporaryFile() as source:
+        schedule = sched.get_scheduler(source.name, target)
+        schedule.remove_scheduling()
