@@ -495,16 +495,20 @@ meta_files = {
 """dict: Metadata files added to the Insights archive by the client."""
 
 openshift = {
-    "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
     "oc_get_bc"                 : CommandSpec("/usr/bin/oc get bc -o yaml --all-namespaces"),
     "oc_get_dc"                 : CommandSpec("/usr/bin/oc get dc -o yaml --all-namespaces"),
-    "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces"),
-    "oc_get_rolebinding"        : CommandSpec("/usr/bin/oc get rolebinding -o yaml --all-namespaces"),
+    "oc_get_egressnetworkpolicy": CommandSpec("/usr/bin/oc get egressnetworkpolicy -o yaml --all-namespaces"),
+    "oc_get_endpoints"          : CommandSpec("/usr/bin/oc get endpoints -o yaml --all-namespaces"),
+    "oc_get_event"              : CommandSpec("/usr/bin/oc get event -o yaml --all-namespaces"),
+    "oc_get_node"               : CommandSpec("/usr/bin/oc get nodes -o yaml"),
+    "oc_get_pod"                : CommandSpec("/usr/bin/oc get pod -o yaml --all-namespaces"),
     "oc_get_project"            : CommandSpec("/usr/bin/oc get project -o yaml --all-namespaces"),
-    "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
     "oc_get_pv"                 : CommandSpec("/usr/bin/oc get pv -o yaml --all-namespaces"),
     "oc_get_pvc"                : CommandSpec("/usr/bin/oc get pvc -o yaml --all-namespaces"),
-    "oc_get_endpoints"          : CommandSpec("/usr/bin/oc get endpoints -o yaml --all-namespaces")
+    "oc_get_rc"                 : CommandSpec("/usr/bin/oc get rc -o yaml --all-namespaces"),
+    "oc_get_role"               : CommandSpec("/usr/bin/oc get role -o yaml --all-namespaces"),
+    "oc_get_rolebinding"        : CommandSpec("/usr/bin/oc get rolebinding -o yaml --all-namespaces"),
+    "oc_get_service"            : CommandSpec("/usr/bin/oc get service -o yaml --all-namespaces")
 }
 """dict: Openshift specific data collection specifications."""
 
