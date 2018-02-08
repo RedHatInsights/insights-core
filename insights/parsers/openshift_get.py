@@ -16,8 +16,17 @@ OcGetBc - command ``oc get bc -o yaml --all-namespaces``
 OcGetDc - command ``oc get dc -o yaml --all-namespaces``
 --------------------------------------------------------
 
+OcGetEgressNetworkPolicy - command ``oc get egressnetworkpolicy -o yaml --all-namespaces``
+------------------------------------------------------------------------------------------
+
 OcGetEndPoints - command ``oc get endpoints -o yaml --all-namespaces``
 ----------------------------------------------------------------------
+
+OcGetEvent - command ``oc get event -o yaml --all-namespaces``
+--------------------------------------------------------------
+
+OcGetNode - command ``oc get node -o yaml``
+-------------------------------------------
 
 OcGetPod - command ``oc get pod -o yaml --all-namespaces``
 ----------------------------------------------------------
@@ -31,6 +40,9 @@ OcGetPv - command ``oc get pv -o yaml --all-namespaces``
 OcGetPvc - command ``oc get pvc -o yaml --all-namespaces``
 ----------------------------------------------------------
 
+OcGetRc - command ``oc get rc -o yaml --all-namespaces``
+--------------------------------------------------------
+
 OcGetRole - command ``oc get role -o yaml --all-namespaces``
 ------------------------------------------------------------
 
@@ -41,7 +53,8 @@ OcGetService - command ``oc get service -o yaml --all-namespaces``
 ------------------------------------------------------------------
 
 Examples:
-    >>> setting_dic = shared[OcGetService]
+    >>> type(setting_dic)
+    <class 'insights.parsers.openshift_get.OcGetService'>
     >>> setting_dic.data['items'][0]['kind']
     'Service'
     >>> setting_dic.data['items'][0]['spec']['clusterIP']
@@ -49,8 +62,8 @@ Examples:
     >>> setting_dic.data['items'][0]['metadata']['name']
     'kubernetes'
     >>> setting_dic.data['items'][1]['metadata']['name']
-    'docker-registry'
-    >>> "openshift" in setting_dic.data['items'][1]['metadata']['namespace']
+    'router-1'
+    >>> "zjj" in setting_dic.data['items'][1]['metadata']['namespace']
     True
 """
 
@@ -62,20 +75,12 @@ def metadata_name_items(data):
     return dict((item['metadata']['name'], item) for item in data['items'])
 
 
-@parser(Specs.oc_get_pod)
-class OcGetPod(YAMLParser):
-    """Class to parse ``oc get pod -o yaml --all-namespaces``"""
-
-    def get_pod(self):
-        """ dict: Returns a dictionary of openshift pods information."""
-        return metadata_name_items(self.data)
-
-
 @parser(Specs.oc_get_bc)
 class OcGetBc(YAMLParser):
     """Class to parse ``oc get bc -o yaml --all-namespaces``"""
 
-    def get_bc(self):
+    @property
+    def build_configs(self):
         """ dict: Returns a dictionary of openshift build configs information."""
         return metadata_name_items(self.data)
 
@@ -84,62 +89,19 @@ class OcGetBc(YAMLParser):
 class OcGetDc(YAMLParser):
     """Class to parse ``oc get dc -o yaml --all-namespaces``"""
 
-    def get_dc(self):
+    @property
+    def deployment_configs(self):
         """ dict: Returns a dictionary of openshift deploymentconfigs information."""
         return metadata_name_items(self.data)
 
 
-@parser(Specs.oc_get_service)
-class OcGetService(YAMLParser):
-    """Class to parse ``oc get service -o yaml --all-namespaces``"""
+@parser(Specs.oc_get_egressnetworkpolicy)
+class OcGetEgressNetworkPolicy(YAMLParser):
+    """Class to parse ``oc get egressnetworkpolicy -o yaml --all-namespaces``"""
 
-    def get_service(self):
-        """ dict: Returns a dictionary of openshift services information."""
-        return metadata_name_items(self.data)
-
-
-@parser(Specs.oc_get_rolebinding)
-class OcGetRolebinding(YAMLParser):
-    """Class to parse ``oc get rolebinding -o yaml --all-namespaces``"""
-
-    def get_rolebind(self):
-        """ dict: Returns a dictionary of openshift rolebind information."""
-        return metadata_name_items(self.data)
-
-
-@parser(Specs.oc_get_project)
-class OcGetProject(YAMLParser):
-    """Class to parse ``oc get project -o yaml --all-namespaces``"""
-
-    def get_project(self):
-        """ dict: Returns a dictionary of openshift project information."""
-        return metadata_name_items(self.data)
-
-
-@parser(Specs.oc_get_role)
-class OcGetRole(YAMLParser):
-    """Class to parse ``oc get role -o yaml --all-namespaces``"""
-
-    def get_role(self):
-        """ dict: Returns a dictionary of openshift role information."""
-        return metadata_name_items(self.data)
-
-
-@parser(Specs.oc_get_pv)
-class OcGetPv(YAMLParser):
-    """Class to parse ``oc get pv -o yaml --all-namespaces``"""
-
-    def get_pv(self):
-        """ dict: Returns a dictionary of openshift pv information."""
-        return metadata_name_items(self.data)
-
-
-@parser(Specs.oc_get_pvc)
-class OcGetPvc(YAMLParser):
-    """Class to parse ``oc get pvc -o yaml --all-namespaces``"""
-
-    def get_pvc(self):
-        """ dict: Returns a dictionary of openshift pvc information."""
+    @property
+    def egress_network_policies(self):
+        """ dict: Returns a dictionary of openshift egress network policy information."""
         return metadata_name_items(self.data)
 
 
@@ -147,6 +109,107 @@ class OcGetPvc(YAMLParser):
 class OcGetEndPoints(YAMLParser):
     """Class to parse ``oc get endpoints -o yaml --all-namespaces``"""
 
-    def get_endpoints(self):
+    @property
+    def endpoints(self):
         """ dict: Returns a dictionary of openshift endpoints information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_event)
+class OcGetEvent(YAMLParser):
+    """Class to parse ``oc get event -o yaml --all-namespaces``"""
+
+    @property
+    def events(self):
+        """ dict: Returns a dictionary of openshift events information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_node)
+class OcGetNode(YAMLParser):
+    """Class to parse ``oc get node -o yaml --all-namespaces``"""
+
+    @property
+    def nodes(self):
+        """ dict: Returns a dictionary of openshift nodes information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_pod)
+class OcGetPod(YAMLParser):
+    """Class to parse ``oc get pod -o yaml --all-namespaces``"""
+
+    @property
+    def pods(self):
+        """ dict: Returns a dictionary of openshift pods information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_project)
+class OcGetProject(YAMLParser):
+    """Class to parse ``oc get project -o yaml --all-namespaces``"""
+
+    @property
+    def projects(self):
+        """ dict: Returns a dictionary of openshift project information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_pv)
+class OcGetPv(YAMLParser):
+    """Class to parse ``oc get pv -o yaml --all-namespaces``"""
+
+    @property
+    def persistent_volumes(self):
+        """ dict: Returns a dictionary of openshift persistent volume information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_pvc)
+class OcGetPvc(YAMLParser):
+    """Class to parse ``oc get pvc -o yaml --all-namespaces``"""
+
+    @property
+    def persistent_volume_claims(self):
+        """ dict: Returns a dictionary of openshift persistent volume claim information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_rc)
+class OcGetRc(YAMLParser):
+    """Class to parse ``oc get rc -o yaml --all-namespaces``"""
+
+    @property
+    def replication_controllers(self):
+        """ dict: Returns a dictionary of openshift replication controllers information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_role)
+class OcGetRole(YAMLParser):
+    """Class to parse ``oc get role -o yaml --all-namespaces``"""
+
+    @property
+    def roles(self):
+        """ dict: Returns a dictionary of openshift role information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_rolebinding)
+class OcGetRolebinding(YAMLParser):
+    """Class to parse ``oc get rolebinding -o yaml --all-namespaces``"""
+
+    @property
+    def rolebindings(self):
+        """ dict: Returns a dictionary of openshift rolebind information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_service)
+class OcGetService(YAMLParser):
+    """Class to parse ``oc get service -o yaml --all-namespaces``"""
+
+    @property
+    def services(self):
+        """ dict: Returns a dictionary of openshift services information."""
         return metadata_name_items(self.data)
