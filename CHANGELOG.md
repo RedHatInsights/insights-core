@@ -1,7 +1,27 @@
 # Change Log
 
+## [insights-core-1.72.0-224](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.72.0-224) (2018-02-08)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0rc1...insights-core-1.72.0-224)
+
+**Closed issues:**
+
+- run\_phase: explicit handling of process.returncode values [\#931](https://github.com/RedHatInsights/insights-core/issues/931)
+- Keep .registered, .unregistered in /etc/redhat-access-insights [\#915](https://github.com/RedHatInsights/insights-core/issues/915)
+- PSAuxcww need to skip warning line [\#912](https://github.com/RedHatInsights/insights-core/issues/912)
+
+**Merged pull requests:**
+
+- add commands to the oc\_get parser [\#929](https://github.com/RedHatInsights/insights-core/pull/929) ([shzhou12](https://github.com/shzhou12))
+- Enhance parser blkid.py [\#922](https://github.com/RedHatInsights/insights-core/pull/922) ([zhangyi733](https://github.com/zhangyi733))
+- Make sure that PsAuxww parser handles the header line arriving late for 1.x branch [\#921](https://github.com/RedHatInsights/insights-core/pull/921) ([PaulWay](https://github.com/PaulWay))
+- Parser for logfile var log up2date 1.x [\#919](https://github.com/RedHatInsights/insights-core/pull/919) ([TripleJQK](https://github.com/TripleJQK))
+- Update PsAuxcww parser to skip heading warn message [\#914](https://github.com/RedHatInsights/insights-core/pull/914) ([chenlizhong](https://github.com/chenlizhong))
+
 ## [3.0rc1](https://github.com/RedHatInsights/insights-core/tree/3.0rc1) (2018-01-30)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.71.0-217...3.0rc1)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.4-2...3.0rc1)
+
+## [insights-core-3.0.4-2](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.4-2) (2018-01-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.71.0-217...insights-core-3.0.4-2)
 
 ## [insights-core-1.71.0-217](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.71.0-217) (2018-01-26)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.70.0-214...insights-core-1.71.0-217)
@@ -264,7 +284,7 @@
 - Add more `dig` commands for DNSSEC analysis [\#634](https://github.com/RedHatInsights/insights-core/pull/634) ([skontar](https://github.com/skontar))
 
 ## [insights-core-1.58.0-107](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.58.0-107) (2017-10-19)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.57.0-102...insights-core-1.58.0-107)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.3-1...insights-core-1.58.0-107)
 
 **Implemented enhancements:**
 
@@ -275,6 +295,9 @@
 - Remove the backslash for dots in the path of PatternSpecs [\#612](https://github.com/RedHatInsights/insights-core/pull/612) ([xiangce](https://github.com/xiangce))
 - Add Parser for sysconfig\_mongod in branch 1.x [\#595](https://github.com/RedHatInsights/insights-core/pull/595) ([JoySnow](https://github.com/JoySnow))
 - Add parser MongodConf at mongod\_conf.py [\#459](https://github.com/RedHatInsights/insights-core/pull/459) ([JoySnow](https://github.com/JoySnow))
+
+## [insights-core-3.0.3-1](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.3-1) (2017-10-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.57.0-102...insights-core-3.0.3-1)
 
 ## [insights-core-1.57.0-102](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.57.0-102) (2017-10-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.56.0-95...insights-core-1.57.0-102)
