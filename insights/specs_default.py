@@ -218,6 +218,7 @@ class DefaultSpecs(Specs):
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
     hammer_ping = simple_command("/usr/bin/hammer ping")
+    hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = simple_file("/etc/haproxy/haproxy.cfg")
     heat_api_log = simple_file("/var/log/heat/heat-api.log")
     heat_conf = simple_file("/etc/heat/heat.conf")

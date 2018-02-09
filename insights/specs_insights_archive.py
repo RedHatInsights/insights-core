@@ -55,6 +55,7 @@ class InsightsArchiveSpecs(Specs):
     grub1_config_perms = simple_file("insights_commands/ls_-l_.boot.grub.grub.conf")
     grub_config_perms = simple_file("insights_commands/ls_-l_.boot.grub2.grub.cfg")
     hammer_ping = simple_file("insights_commands/hammer_ping")
+    hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     # simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig")])
     host_installed_rpms = simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig")
