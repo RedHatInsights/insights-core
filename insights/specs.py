@@ -113,6 +113,7 @@ class Specs(SpecSet):
     grub_conf = RegistryPoint()
     grub_efi_conf = RegistryPoint()
     hammer_ping = RegistryPoint()
+    hammer_task_list = RegistryPoint()
     haproxy_cfg = RegistryPoint()
     heat_api_log = RegistryPoint()
     heat_conf = RegistryPoint()
