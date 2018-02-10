@@ -491,8 +491,44 @@ class Delegate(object):
         return self.executor(self.component, broker, self.requires, self.optional)
 
 
-def new_component_type(name=None,
-                       auto_requires=[],
+class TypeSetDescriptor(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, obj, obj_type):
+        return self.func
+
+    def __set__(self, obj, val):
+        raise AttributeError()
+
+
+class TypeSetMeta(type):
+    """ The metaclass that converts RegistryPoint markers to regisry point
+        datasources and hooks implementations for them into the registry.
+    """
+    def __new__(cls, name, bases, dct):
+        return super(TypeSetMeta, cls).__new__(cls, name, bases, dct)
+
+    def __init__(cls, name, bases, dct):
+        if name == "TypeSet":
+            return
+        if len(bases) > 1:
+            raise Exception("TypeSet subclasses must inherit from only one class.")
+
+        module = cls.__module__
+        for k, v in dct.items():
+            if six.callable(v):
+                v.__qualname__ = ".".join([cls.__name__, k])
+                v.__name__ = k
+                v.__module__ = module
+                setattr(cls, k, TypeSetDescriptor(v))
+
+
+class TypeSet(object):
+    __metaclass__ = TypeSetMeta
+
+
+def new_component_type(auto_requires=[],
                        auto_optional=[],
                        group=GROUPS.single,
                        executor=default_executor,
@@ -504,8 +540,6 @@ def new_component_type(name=None,
         rules, cluster rules, etc.
 
         Args:
-            name (str): the name of the component type the produced decorator
-                will define
             auto_requires (list): All decorated components automatically have
                 this requires spec. Anything specified when decorating a component
                 is added to this spec.
@@ -554,19 +588,10 @@ def new_component_type(name=None,
             return func
         return _f
 
-    if name:
-        decorator.__name__ = name
-        s = inspect.stack()
-        frame = s[1][0]
-        mod = inspect.getmodule(frame) or sys.modules.get("__main__")
-        if mod:
-            decorator.__module__ = mod.__name__
-            setattr(mod, name, decorator)
-
     return decorator
 
 
-def run_order(components, broker):
+def run_order(components):
     """ Returns components in an order that satisfies their dependency
         relationships.
     """
@@ -579,7 +604,7 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
     """
     broker = broker or Broker()
 
-    for component in run_order(components, broker):
+    for component in run_order(components):
         start = time.time()
         try:
             if component not in broker and component in DELEGATES:

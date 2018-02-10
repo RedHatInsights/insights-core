@@ -3,9 +3,7 @@ The plugins module defines the components used by the rest of Insights and
 specializes their interfaces and execution model where required.
 """
 
-import inspect
 import logging
-import sys
 import traceback
 import types
 
@@ -76,14 +74,60 @@ class DatasourceDelegate(dr.Delegate):
         self.raw = False
 
 
-_datasource = dr.new_component_type("datasource", executor=dr.broker_executor, delegate_class=DatasourceDelegate)
-""" Defines a component that one or more Parsers will consume."""
+def make_rule_type(auto_requires=[],
+                   auto_optional=[],
+                   group=dr.GROUPS.single,
+                   use_broker_executor=False,
+                   type_metadata={}):
+
+    executor = broker_rule_executor if use_broker_executor else rule_executor
+    _type = dr.new_component_type(auto_requires=auto_requires,
+                                  auto_optional=auto_optional,
+                                  group=group,
+                                  executor=executor,
+                                  type_metadata=type_metadata)
+
+    def decorator(*requires, **kwargs):
+        if kwargs.get("cluster"):
+            kwargs["group"] = dr.GROUPS.cluster
+        kwargs["component_type"] = decorator
+        return _type(*requires, **kwargs)
+
+    RULE_TYPES.add(decorator)
+    return decorator
+
+
+class StdTypes(dr.TypeSet):
+    _datasource = dr.new_component_type(executor=dr.broker_executor, delegate_class=DatasourceDelegate)
+    """ A component that one or more Parsers will consume."""
+
+    _metadata = dr.new_component_type(auto_requires=["metadata.json"], executor=parser_executor)
+
+    _parser = dr.new_component_type(executor=parser_executor)
+
+    combiner = dr.new_component_type()
+    """ A component that composes other components. """
+
+    rule = make_rule_type()
+    """ A component that can see all parsers and combiners for a single host."""
+
+    condition = dr.new_component_type()
+    """ A component used by rules that allows automated statistical analysis."""
+
+    incident = dr.new_component_type()
+    """ A component used by rules that allows automated statistical analysis."""
+
+
+combiner = StdTypes.combiner
+rule = StdTypes.rule
+condition = StdTypes.condition
+incident = StdTypes.incident
 
 
 def datasource(*args, **kwargs):
     def _f(func):
         metadata = kwargs.get("metadata", {})
-        c = _datasource(*args, metadata=metadata, component_type=datasource)(func)
+        c = StdTypes._datasource(*args, metadata=metadata, component_type=datasource)(func)
         delegate = dr.get_delegate(c)
         delegate.multi_output = kwargs.get("multi_output", False)
         delegate.raw = kwargs.get("raw", False)
@@ -91,17 +135,10 @@ def datasource(*args, **kwargs):
     return _f
 
 
-_metadata = dr.new_component_type("_metadata",
-        auto_requires=["metadata.json"], executor=parser_executor)
-
-
 def metadata(group=dr.GROUPS.single):
     def _f(func):
-        return _metadata(group=group, component_type=metadata)(func)
+        return StdTypes._metadata(group=group, component_type=metadata)(func)
     return _f
-
-
-_parser = dr.new_component_type("_parser", executor=parser_executor)
 
 
 def parser(dependency, group=dr.GROUPS.single):
@@ -112,59 +149,8 @@ def parser(dependency, group=dr.GROUPS.single):
     """
 
     def _f(component):
-        return _parser(dependency, group=group, component_type=parser)(component)
+        return StdTypes._parser(dependency, group=group, component_type=parser)(component)
     return _f
-
-
-def make_rule_type(name=None,
-                   auto_requires=[],
-                   auto_optional=[],
-                   group=dr.GROUPS.single,
-                   use_broker_executor=False,
-                   type_metadata={}):
-
-    executor = broker_rule_executor if use_broker_executor else rule_executor
-    _type = dr.new_component_type(name=None,
-                                  auto_requires=auto_requires,
-                                  auto_optional=auto_optional,
-                                  group=group,
-                                  executor=executor,
-                                  type_metadata=type_metadata)
-
-    def decorator(*requires, **kwargs):
-        if kwargs.get("cluster"):
-            kwargs["group"] = dr.GROUPS.cluster
-
-        kwargs["component_type"] = decorator
-
-        return _type(*requires, **kwargs)
-
-    if name:
-        decorator.__name__ = name
-        s = inspect.stack()
-        frame = s[1][0]
-        mod = inspect.getmodule(frame) or sys.modules.get("__main__")
-        if mod:
-            decorator.__module__ = mod.__name__
-            setattr(mod, name, decorator)
-
-    RULE_TYPES.add(decorator)
-    return decorator
-
-
-combiner = dr.new_component_type("combiner")
-""" A component that connects other components. """
-
-stage = combiner
-
-rule = make_rule_type(name="rule")
-""" A component that can see all parsers and combiners for a single host."""
-
-condition = dr.new_component_type("condition")
-""" A component used by rules that allows automated statistical analysis."""
-
-incident = dr.new_component_type("incident")
-""" A component used by rules that allows automated statistical analysis."""
 
 
 def is_type(component, _type):
