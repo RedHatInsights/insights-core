@@ -85,11 +85,10 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, s
         if timeout is not None and sys.platform != "darwin":
             cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
 
-        log.debug("Running %s" % cmd)
+        log.debug(cmd)
 
         if not shell:
             cmd = shlex.split(cmd)
-        log.debug(cmd)
         p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, shell=shell, **kwargs)
         output = p.communicate()[0]
         rc = p.poll()

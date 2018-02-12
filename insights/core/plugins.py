@@ -17,6 +17,11 @@ log = logging.getLogger(__name__)
 RULE_TYPES = set()
 
 
+class ContentException(dr.SkipComponent):
+    """ Raised whenever a datasource fails to get data. """
+    pass
+
+
 def parser_executor(component, broker, requires, optional):
     dependency = requires[0]
     if dependency not in broker:
@@ -36,10 +41,11 @@ def parser_executor(component, broker, requires, optional):
             log.debug(traceback.format_exc())
         except Exception as ex:
             log.exception(ex)
-            broker.add_exception(component, ex)
+            broker.add_exception(component, ex, traceback.format_exc())
 
     if not results:
-        raise dr.SkipComponent("All failed: %s" % dr.get_name(component))
+        log.exception("All failed: %s" % dr.get_name(component))
+        raise dr.SkipComponent()
 
     return results
 
@@ -48,7 +54,9 @@ def rule_executor(component, broker, requires, optional, executor=dr.default_exe
     try:
         r = executor(component, broker, requires, optional)
         if r is None:
-            raise dr.SkipComponent(dr.get_name(component))
+            name = dr.get_name(component)
+            log.debug("Rule %s returned None" % name)
+            raise dr.SkipComponent()
     except dr.MissingRequirements as mr:
         details = dr.stringify_requirements(mr.requirements)
         r = make_skip(dr.get_name(component),
@@ -57,14 +65,16 @@ def rule_executor(component, broker, requires, optional, executor=dr.default_exe
     return r
 
 
+def datasource_executor(component, broker, requires, optional):
+    try:
+        return dr.broker_executor(component, broker, requires, optional)
+    except ContentException as ce:
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug(ce)
+        raise ce
+
+
 broker_rule_executor = partial(rule_executor, executor=dr.broker_executor)
-
-
-class ContentException(Exception):
-    """
-    Raised whenever a datasource fails to get data.
-    """
-    pass
 
 
 class DatasourceDelegate(dr.Delegate):
@@ -98,7 +108,7 @@ def make_rule_type(auto_requires=[],
 
 
 class StdTypes(dr.TypeSet):
-    _datasource = dr.new_component_type(executor=dr.broker_executor, delegate_class=DatasourceDelegate)
+    _datasource = dr.new_component_type(executor=datasource_executor, delegate_class=DatasourceDelegate)
     """ A component that one or more Parsers will consume."""
 
     _metadata = dr.new_component_type(auto_requires=["metadata.json"], executor=parser_executor)
