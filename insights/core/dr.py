@@ -618,11 +618,9 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
                 log.debug("%s missing requirements %s" % (name, reqs))
             broker.add_exception(component, mr)
         except SkipComponent:
-            if log.isEnabledFor(logging.DEBUG):
-                log.debug("%s raised SkipComponent" % get_name(component))
+            pass
         except Exception as ex:
-            if log.isEnabledFor(logging.DEBUG):
-                log.debug(ex)
+            log.exception(ex)
             broker.add_exception(component, ex, traceback.format_exc())
         finally:
             broker.exec_times[component] = time.time() - start
