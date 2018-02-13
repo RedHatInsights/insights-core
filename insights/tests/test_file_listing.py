@@ -4,6 +4,17 @@ from insights.tests import context_wrap
 
 import unittest
 
+SINGLE_DIRECTORY = """
+total 32
+drwxr-xr-x.  5 root root  4096 Jun 28  2017 .
+drwxr-xr-x. 15 root root  4096 Aug 10 09:42 ..
+lrwxrwxrwx.  1 root root    49 Jun 28  2017 cert.pem -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+drwxr-xr-x.  2 root root  4096 Jun 28  2017 certs
+drwxr-xr-x.  2 root root  4096 Mar 29  2017 misc
+-rw-r--r--.  1 root root 10923 Feb  7  2017 openssl.cnf
+drwxr-xr-x.  2 root root  4096 Feb  7  2017 private
+"""
+
 MULTIPLE_DIRECTORIES = """
 /etc/sysconfig:
 total 96
@@ -106,8 +117,29 @@ adsf
 
 
 class TestFileListing(unittest.TestCase):
+    def test_single_directory(self):
+        # Mainly just testing that we can read a single directory and
+        # recognise it via the path rather than the directory in the output.
+        # Testing of the main functionality is mostly done below.
+        ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_.etc.pki.tls')
+        dirs = FileListing(ctx)
+
+        self.assertIn('/etc/pki/tls', dirs)
+        self.assertIn('/etc/pki/tls', dirs.listings)
+        self.assertNotIn('/etc/pki/tls/certs', dirs)
+        self.assertNotIn('/etc/pki', dirs)
+        self.assertNotIn('/etc', dirs)
+        self.assertEqual(dirs.listings['/etc/pki/tls']['name'], '/etc/pki/tls')
+
+        self.assertEqual(dirs.files_of('/etc/pki/tls'), [
+            'cert.pem', 'openssl.cnf'
+        ])
+        self.assertEqual(dirs.dirs_of('/etc/pki/tls'), [
+            '.', '..', 'certs', 'misc', 'private'
+        ])
+
     def test_multiple_directories(self):
-        dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
+        dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES, path='ls_-la_.etc'))
 
         self.assertIn('/etc/sysconfig', dirs)
         self.assertIn('/etc/sysconfig', dirs.listings)
