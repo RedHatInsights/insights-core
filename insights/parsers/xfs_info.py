@@ -6,14 +6,14 @@ The ``XFSInfo`` parser reads the output of the ``xfs_info`` command and turns
 it into a dictionary of keys and values in several sections, as given in the
 output of the command::
 
-     meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
-              =              sectsz=512   attr=2
-     data     =              bsize=4096   blocks=536869888, imaxpct=5
-              =              sunit=32     swidth=128 blks
-     naming   =version 2     bsize=4096
-     log      =internal      bsize=4096   blocks=32768, version=2
-              =              sectsz=512   sunit=32 blks, lazy-count=1
-     realtime =none          extsz=524288 blocks=0, rtextents=0
+    meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
+             =              sectsz=512   attr=2
+    data     =              bsize=4096   blocks=536869888, imaxpct=5
+             =              sunit=32     swidth=128 blks
+    naming   =version 2     bsize=4096
+    log      =internal      bsize=4096   blocks=32768, version=2
+             =              sectsz=512   sunit=32 blks, lazy-count=1
+    realtime =none          extsz=524288 blocks=0, rtextents=0
 
 The main sections are ``meta-data``, ``data``, ``naming``, ``log`` and
 ``realtime``, stored under those keys in the object's ``xfs_info`` property.
@@ -63,6 +63,9 @@ import re
 
 @parser('xfs_info')
 class XFSInfo(Parser):
+    """
+    Class for parsing the output of ``xfs-info`` command.
+    """
 
     def __init__(self, context):
         self.xfs_info = {}
@@ -72,24 +75,26 @@ class XFSInfo(Parser):
 
     def parse_content(self, content):
         """
-        In general the pattern is:
-        section = key1=value1 key2=value2, key3=value3
-                = key4=value4
-        nextsec =sectionkey sectionvalue  key=value otherkey=othervalue
+        In general the pattern is::
+
+            section = key1=value1 key2=value2, key3=value3
+                    = key4=value4
+            nextsec = sectionkey sectionvalue  key=value otherkey=othervalue
+
         Sections are continued over lines as per RFC822.  The first equals
         sign is column-aligned, and the first key=value is too, but the
         rest seems to be comma separated.  Specifiers come after the first
         equals sign, and sometimes have a value property, but sometimes not.
-        E.g.:
+        E.g.::
 
-         meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
-                  =              sectsz=512   attr=2
-         data     =              bsize=4096   blocks=536869888, imaxpct=5
-                  =              sunit=32     swidth=128 blks
-         naming   =version 2     bsize=4096
-         log      =internal      bsize=4096   blocks=32768, version=2
-                  =              sectsz=512   sunit=32 blks, lazy-count=1
-         realtime =none          extsz=524288 blocks=0, rtextents=0
+             meta-data=/dev/sda      isize=256    agcount=32, agsize=16777184 blks
+                      =              sectsz=512   attr=2
+             data     =              bsize=4096   blocks=536869888, imaxpct=5
+                      =              sunit=32     swidth=128 blks
+             naming   =version 2     bsize=4096
+             log      =internal      bsize=4096   blocks=32768, version=2
+                      =              sectsz=512   sunit=32 blks, lazy-count=1
+             realtime =none          extsz=524288 blocks=0, rtextents=0
         """
 
         sect_info = None
