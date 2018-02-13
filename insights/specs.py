@@ -97,6 +97,7 @@ class Specs(SpecSet):
     foreman_proxy_log = RegistryPoint()
     foreman_satellite_log = RegistryPoint()
     foreman_ssl_access_ssl_log = RegistryPoint()
+    foreman_rake_db_migrate_status = RegistryPoint()
     fstab = RegistryPoint()
     galera_cnf = RegistryPoint()
     getcert_list = RegistryPoint()
