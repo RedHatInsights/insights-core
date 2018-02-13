@@ -119,6 +119,7 @@ static_specs = {
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/etc/foreman-proxy/settings.yml")]),
     "foreman_proxy.log"         : First([SimpleFileSpec("var/log/foreman-proxy/proxy.log", large_content=True),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/var/log/foreman-proxy/proxy.log", large_content=True)]),
+    "foreman-rake db:migrate:status": CommandSpec("/usr/sbin/foreman-rake db:migrate:status"),
     "fstab"                     : SimpleFileSpec("etc/fstab"),
     "galera.cnf"                : SimpleFileSpec("etc/my.cnf.d/galera.cnf"),
     'getcert_list'              : First([CommandSpec("/usr/bin/getcert list"),
