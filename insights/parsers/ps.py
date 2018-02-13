@@ -11,58 +11,46 @@ sample of the output of this command looks like::
     root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
     root      1661  0.0  0.0 126252  1392 ?        Ss   May31   0:04 /usr/sbin/crond -n
     root      1691  0.0  0.0  42688   172 ?        Ss   May31   0:00 /usr/sbin/rpc.mountd
-    root      1821  0.0  0.0      0     0 ?        S    May31   0:29 [kondemand/0]
+    root      1821  0.0  0.0      0     0 ?        Z    May31   0:29 [kondemand/0]
     root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 /usr/sbin/irqbalance --foreground
-    user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash
+    user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 /bin/bash
     root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /usr/sbin/dhclient enp0s25
+    root     20457  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /bin/bash
 
 PsAuxww attempts to read the output of ``ps auxwww``, ``ps aux``, and ``ps
 auxcww`` commands from archives.
 
 Examples:
-    >>> ps_data = '''
-    ... USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-    ... root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-    ... root      1661  0.0  0.0 126252  1392 ?        Ss   May31   0:04 /usr/sbin/crond -n
-    ... root      1691  0.0  0.0  42688   172 ?        Ss   May31   0:00 /usr/sbin/rpc.mountd
-    ... root      1821  0.0  0.0      0     0 ?        S    May31   0:29 [kondemand/0]
-    ... root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 /usr/sbin/irqbalance --foreground
-    ... user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 bash
-    ... root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /usr/sbin/dhclient enp0s25
-    ... '''
-    >>> from insights.tests import context_wrap
-    >>> shared = {PsAuxww: PsAuxww(context_wrap(ps_data))}
-    >>> ps_info = shared[PsAuxww]
-    >>> ps_info.running
-    ['/usr/lib/systemd/systemd --switched-root --system --deserialize 22',
-     '/usr/sbin/crond -n', '/usr/sbin/rpc.mountd', '[kondemand/0]',
-     '/usr/sbin/irqbalance --foreground', 'bash', '/usr/sbin/dhclient enp0s25']
-    >>> ps_info.cpu_usage('[kondemand/0]')
+    >>> type(ps_auxww)
+    <class 'insights.parsers.ps.PsAuxww'>
+    >>> ps_auxww.running
+    set(['/bin/bash', '/usr/sbin/rpc.mountd', '/usr/lib/systemd/systemd --switched-root --system --deserialize 22', '/usr/sbin/irqbalance --foreground', '/usr/sbin/dhclient enp0s25', '[kondemand/0]', '/usr/sbin/crond -n'])
+    >>> ps_auxww.cpu_usage('[kondemand/0]')
     '0.0'
-    >>> ps_info.users('bash')
-    {'user1': ['20160']}
-    >>> ps_info.fuzzy_match('dhclient')
+    >>> ps_auxww.users('/bin/bash')
+    {'root': ['20457'], 'user1': ['20160']}
+    >>> ps_auxww.fuzzy_match('dhclient')
     True
-    >>> ps_info.fuzzy_match('qemu')
+    >>> ps_auxww.fuzzy_match('qemu')
     False
-    >>> 'dhclient' in ps_info # strict match - exact command
+    >>> 'dhclient' in ps_auxww # strict match - exact command
     False
-    >>> 'bash' in ps_info
+    >>> 'bash' in ps_auxww
     False
-    >>> 'dhclient' in ps_info.cmd_names  # Just the command names but must match full command
+    >>> 'dhclient' in ps_auxww.cmd_names  # Just the command names but must match full command
     True
-    >>> 'bash' in ps_info.cmd_names
+    >>> 'bash' in ps_auxww.cmd_names
     True
-    >>> ps_info.data[3]
-    {'USER': 'root', 'PID': '1691', '%CPU': '0.0', '%MEM': '0.0', 'VSZ': '42688',
-     'RSS': '172', 'TTY': '?', 'STAT': 'Ss', 'START': 'May31', 'TIME': '0:00',
-     'COMMAND': '/usr/sbin/rpc.mountd'}
-    >>> ps_info.data[-1]['START']
+    >>> ps_auxww.data[3]
+    {'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29', 'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}
+    >>> ps_auxww.services[3]
+    ('[kondemand/0]', 'root', 'root      1821  0.0  0.0      0     0 ?        Z    May31   0:29 [kondemand/0]')
+    >>> ps_auxww.data[-1]['START']
     '10:09'
-    >>> ps_info.search(STAT__contains='Z')
+    >>> ps_auxww.search(STAT__contains='l')
     []
-    >>> sum(int(p['VSZ']) for p in ps_info)
-    324132
+    >>> sum(int(p['VSZ']) for p in ps_auxww)
+    333252
 """
 from .. import Parser, parser
 from . import ParseException, parse_delimited_table, keyword_search
@@ -84,11 +72,13 @@ class PsAuxww(Parser):
     Attributes:
         data (list): List of dicts, where the keys in each dict are the
             column headers and each item in the list represents a process.
-        running (list): List of full command strings for each command
+        running (set): Set of full command strings for each command
             including optional path and arguments, in order of listing in the
             `ps` output.
-        cmd_names (list): List of just the command names, minus any path or
+        cmd_names (set): Set of just the command names, minus any path or
             arguments.
+        services (list): List of sets in format (cmd names, user, raw_line) for
+            each command.
 
     """
     def __init__(self, *args, **kwargs):
@@ -115,7 +105,9 @@ class PsAuxww(Parser):
             for proc in self.data:
                 cmd = proc["COMMAND"]
                 self.running.add(cmd)
-                cmd_name = cmd.split(" ")[0].split("/")[-1]
+                cmd_name = cmd
+                if cmd.startswith('/'):
+                    cmd_name = cmd.split(" ")[0].split("/")[-1]
                 proc["COMMAND_NAME"] = cmd_name
                 self.cmd_names.add(cmd_name)
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
@@ -200,10 +192,14 @@ class PsAuxww(Parser):
             search criteria.
 
         Examples:
-            >>> ps.search(COMMAND__contains='java')
-            >>> ps.search(USER='root', COMMAND__contains='watchdog')
-            >>> ps.search(TTY='pts/0')
-            >>> ps.search(STAT__contains='Z')
+            >>> ps_auxww.search(COMMAND__contains='bash')
+            [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}, {'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
+            >>> ps_auxww.search(USER='root', COMMAND__contains='bash')
+            [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
+            >>> ps_auxww.search(TTY='pts/3')
+            [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}]
+            >>> ps_auxww.search(STAT__contains='Z')
+            [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29', 'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}]
         """
         return keyword_search(self.data, **kwargs)
 

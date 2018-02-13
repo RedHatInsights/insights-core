@@ -4,9 +4,26 @@ from ...util import keys_in
 import pytest
 import doctest
 
+PsAuxww_TEST_DOC = """
+ USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+ root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+ root      1661  0.0  0.0 126252  1392 ?        Ss   May31   0:04 /usr/sbin/crond -n
+ root      1691  0.0  0.0  42688   172 ?        Ss   May31   0:00 /usr/sbin/rpc.mountd
+ root      1821  0.0  0.0      0     0 ?        Z    May31   0:29 [kondemand/0]
+ root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 /usr/sbin/irqbalance --foreground
+ user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 /bin/bash
+ root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /usr/sbin/dhclient enp0s25
+ root     20457  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /bin/bash
+"""
+
 
 def test_doc_examples():
-    assert doctest.testmod(ps)
+    env = {
+            'PsAuxww': ps.PsAuxww,
+            'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC))
+          }
+    failed, total = doctest.testmod(ps, globs=env)
+    assert failed == 0
 
 
 PsAuxww_TEST = """
