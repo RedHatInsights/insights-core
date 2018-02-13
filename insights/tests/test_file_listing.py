@@ -2,6 +2,17 @@
 from insights.core import FileListing
 from insights.tests import context_wrap
 
+SINGLE_DIRECTORY = """
+total 32
+drwxr-xr-x.  5 root root  4096 Jun 28  2017 .
+drwxr-xr-x. 15 root root  4096 Aug 10 09:42 ..
+lrwxrwxrwx.  1 root root    49 Jun 28  2017 cert.pem -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+drwxr-xr-x.  2 root root  4096 Jun 28  2017 certs
+drwxr-xr-x.  2 root root  4096 Mar 29  2017 misc
+-rw-r--r--.  1 root root 10923 Feb  7  2017 openssl.cnf
+drwxr-xr-x.  2 root root  4096 Feb  7  2017 private
+"""
+
 MULTIPLE_DIRECTORIES = """
 /etc/sysconfig:
 total 96
@@ -103,8 +114,26 @@ adsf
 # but still fit the patterns?  What should the parser do with such entries?
 
 
+def test_single_directory():
+    # Mainly just testing that we can read a single directory and
+    # recognise it via the path rather than the directory in the output.
+    # Testing of the main functionality is mostly done below.
+    ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_.etc.pki.tls')
+    dirs = FileListing(ctx)
+
+    assert '/etc/pki/tls' in dirs
+    assert '/etc/pki/tls' in dirs.listings
+    assert '/etc/pki/tls/certs' not in dirs
+    assert '/etc/pki' not in dirs
+    assert '/etc' not in dirs
+    assert dirs.listings['/etc/pki/tls']['name'] == '/etc/pki/tls'
+
+    assert dirs.files_of('/etc/pki/tls') == ['cert.pem', 'openssl.cnf']
+    assert dirs.dirs_of('/etc/pki/tls') == ['.', '..', 'certs', 'misc', 'private']
+
+
 def test_multiple_directories():
-    dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES))
+    dirs = FileListing(context_wrap(MULTIPLE_DIRECTORIES, path='ls_-la_.etc'))
 
     assert '/etc/sysconfig' in dirs
     assert '/etc/sysconfig' in dirs.listings

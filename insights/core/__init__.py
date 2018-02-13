@@ -1031,6 +1031,16 @@ class FileListing(Parser):
       directory, in the order found in the listing
     * total blocks allocated to all the entities in this directory
 
+    .. note:: For listings that only contain one directory, ``ls`` does not
+        output the directory name.  The directory is reverse engineered from
+        the path given to the parser by Insights - this assumes the
+        translation of spaces to underscores and '/' to '.' in paths.  For
+        example, ``ls -l /var/www/html`` will be translated to
+        ``ls_-l_.var.www.html``.  The reverse translation will make mistakes,
+        for example in translating ``.etc.yum.repos.d`` to
+        ``/etc/yum/repos/d``.  Use caution in checking the paths when
+        requesting single directories.
+
     Parses SELinux directory listings if the 'selinux' option is True.
     SELinux directory listings contain:
 
@@ -1101,6 +1111,16 @@ class FileListing(Parser):
             self.file_re = self.selinux_re
         else:
             self.file_re = self.normal_re
+        # Try to pull out the directory path from the command line, in case
+        # we're doing an ls on only one directory (which then doesn't list
+        # the directory name in the output).  Obviously if we don't have the
+        # '-R' flag we should grab this but it's probably not worth parsing
+        # the flags to ls for this.
+        self.first_path = None
+        path_re = re.compile(r'ls_-\w+_(?P<path>.*)$')
+        match = path_re.search(context.path)
+        if match:
+            self.first_path = match.group('path').replace('.', '/').replace('_', ' ')
         super(FileListing, self).__init__(context)
 
     def parse_file_match(self, this_dir, line):
@@ -1162,9 +1182,15 @@ class FileListing(Parser):
             l = line.strip()
             if not l:
                 continue
-            if l.startswith('/') and l.endswith(':'):
+            if (l.startswith('/') and l.endswith(':')) or (self.first_path):
+                # Directory name from output first and context path second
+                if (l.startswith('/') and l.endswith(':')):
+                    name = l[:-1]
+                else:
+                    name = self.first_path
+                # Unset the first path so we don't come here again.
+                self.first_path = None
                 # New structures for a new directory
-                name = l[:-1]
                 this_dir = {'entries': {}, 'files': [], 'dirs': [],
                             'specials': [], 'total': 0, 'raw_list': [],
                             'name': name}
@@ -1180,6 +1206,8 @@ class FileListing(Parser):
                 self.parse_file_match(this_dir, l)
 
         self.listings = listings
+        # No longer need the first path found, if any.
+        delattr(self, 'first_path')
 
     # Now some helpers to make some things easier:
     def __contains__(self, directory):
