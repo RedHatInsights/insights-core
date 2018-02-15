@@ -56,7 +56,7 @@ class InsightsSchedulerSystemd(object):
     @property
     def active(self):
         try:
-            systemctl_status = run_command_get_output('systemctl is-active insights-client.timer')
+            systemctl_status = run_command_get_output('systemctl is-enabled insights-client.timer')
             return systemctl_status['status'] == 0
         except OSError:
             logger.exception('Could not get systemd status')
@@ -67,6 +67,7 @@ class InsightsSchedulerSystemd(object):
         try:
             # Start timers in the case of rhel 7 running systemd
             systemctl_timer = run_command_get_output('systemctl start insights-client.timer')
+            systemctl_timer = run_command_get_output('systemctl enable insights-client.timer')
             logger.debug("Starting Insights Client systemd timer.")
             logger.debug("Status: %s", systemctl_timer['status'])
             logger.debug("Output: %s", systemctl_timer['output'])
@@ -79,6 +80,7 @@ class InsightsSchedulerSystemd(object):
         logger.debug('Stopping all systemd timers')
         try:
             # Stop timers in the case of rhel 7 running systemd
+            systemctl_timer = run_command_get_output('systemctl disable insights-client.timer')
             systemctl_timer = run_command_get_output('systemctl stop insights-client.timer')
             logger.debug("Stopping Insights Client systemd timer.")
             logger.debug("Status: %s", systemctl_timer['status'])
