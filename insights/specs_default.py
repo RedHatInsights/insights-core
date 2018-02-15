@@ -72,7 +72,7 @@ class DefaultSpecs(Specs):
                         simple_file('sos_commands/process/ps_auxcww', context=HostArchiveContext),
                         ])
 
-    @datasource(Specs.ps_auxww)
+    @datasource(ps_auxww)
     def tomcat_base(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -239,7 +239,7 @@ class DefaultSpecs(Specs):
     httpd_worker_V = simple_command("/usr/sbin/httpd.worker -V"),  # RHEL6
     httpd_event_V = simple_command("/usr/sbin/httpd.event -V"),  # RHEL6
 
-    @datasource(Specs.ps_auxww)
+    @datasource(ps_auxww)
     def httpd_cmd(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         for p in ps:
@@ -265,7 +265,7 @@ class DefaultSpecs(Specs):
     ipaupgrade_log = simple_file("/var/log/ipaupgrade.log")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
 
-    @datasource(Specs.ipcs_s)
+    @datasource(ipcs_s)
     def semid(broker):
         source = broker[DefaultSpecs.ipcs_s].content
         results = set()
@@ -413,7 +413,7 @@ class DefaultSpecs(Specs):
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
 
-    @datasource(Specs.ps_auxww, HostContext)
+    @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         ctx = broker[HostContext]
@@ -545,7 +545,7 @@ class DefaultSpecs(Specs):
     tomcat_server_xml = first_of([foreach_collect(tomcat_base, "%s/conf/server.xml"),
                                      glob_file("conf/tomcat/tomcat*/server.xml", context=HostArchiveContext)])
 
-    @datasource(Specs.ps_auxww)
+    @datasource(ps_auxww)
     def tomcat_home_base(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -602,7 +602,7 @@ class DefaultSpecs(Specs):
     # unify the different installed rpm provider types
     installed_rpms = first_of([host_installed_rpms, docker_installed_rpms])
 
-    @datasource(Specs.ps_auxww)
+    @datasource(ps_auxww, context=HostContext)
     def jboss_home(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -619,7 +619,7 @@ class DefaultSpecs(Specs):
 
     jboss_version = foreach_collect(jboss_home, "%s/version.txt")
 
-    @datasource(Specs.ps_auxww, multi_output=True)
+    @datasource(ps_auxww, context=HostContext, multi_output=True)
     def jboss_domain_server_log_dir(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
@@ -635,7 +635,7 @@ class DefaultSpecs(Specs):
 
     jboss_domain_server_log = foreach_collect(jboss_domain_server_log_dir, "%s/server.log*")
 
-    @datasource(Specs.ps_auxww, multi_output=True)
+    @datasource(ps_auxww, context=HostContext, multi_output=True)
     def jboss_standalone_main_config_files(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
