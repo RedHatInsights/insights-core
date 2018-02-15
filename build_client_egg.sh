@@ -19,7 +19,8 @@ rm -rf insights/parsers/*
 cp ../insights/parsers/__init__.py insights/parsers
 
 find insights -name '*.pyc' -delete
-zip ../insights.egg -r EGG-INFO/ insights/
+find . -type f -exec touch -c -t 201801010000.00 {} \;
+zip --no-dir-entries ../insights.zip -r EGG-INFO/ insights/
 cd ..
 rm -rf tmp
 git checkout MANIFEST.in
