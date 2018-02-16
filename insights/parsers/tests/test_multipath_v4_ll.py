@@ -1,5 +1,6 @@
 from insights.parsers import multipath_v4_ll
 from insights.tests import context_wrap
+import doctest
 
 MULTIPATH_V4_LL_INFO = """
 ===== paths list =====
@@ -336,3 +337,57 @@ L004 (360060160ade32800f2e3baf47665e211) dm-9 DGC,RAID 5
     paths = path_dev['path_group'][0]['path']
     assert len(paths) == 2
     assert paths[0] == ['3:0:1:4', 'sdk', '8:160', 'active', 'ready']
+
+
+MULTIPATH_V4_LL_DOC = """
+===== paths list =====
+uuid hcil    dev dev_t pri dm_st chk_st vend/prod/rev       dev_st
+     0:0:0:0 sda 8:0   -1  undef ready  VMware,Virtual disk running
+     3:0:0:1 sdb 8:16  -1  undef ready  IET,VIRTUAL-DISK    running
+     4:0:0:1 sdc 8:32  -1  undef ready  IET,VIRTUAL-DISK    running
+Oct 28 14:02:44 | *word = 0, len = 1
+Oct 28 14:02:44 | *word = E, len = 1
+Oct 28 14:02:44 | *word = 1, len = 1
+Oct 28 14:02:44 | *word = 0, len = 1
+Oct 28 14:02:44 | *word = A, len = 1
+Oct 28 14:02:44 | *word = 0, len = 1
+mpathg (36f01faf000da360b0000033c528fea6d) dm-2 DELL,MD36xxi
+size=54T features='3 queue_if_no_path pg_init_retries 50' hwhandler='1 rdac' wp=rw
+|-+- policy='round-robin 0' prio=0 status=active
+| |- 12:0:0:1 sdc 8:32   active ready running
+| |- 11:0:0:1 sdi 8:128  active ready running
+| |- 15:0:0:1 sdo 8:224  active ready running
+| `- 17:0:0:1 sdv 65:80  active ready running
+`-+- policy='round-robin 0' prio=0 status=enabled
+  |- 13:0:0:1 sdf 8:80   active ready running
+  |- 14:0:0:1 sdl 8:176  active ready running
+  |- 16:0:0:1 sdr 65:16  active ready running
+  `- 18:0:0:1 sdx 65:112 active ready running
+mpathe (36f01faf000da3761000004323aa6fbce) dm-4 DELL,MD36xxi
+size=54T features='3 queue_if_no_path pg_init_retries 55' hwhandler='1 rdac' wp=rw
+|-+- policy='round-robin 0' prio=0 status=active
+| |- 13:0:0:2 sdg 8:96   active faulty running
+| |- 14:0:0:2 sdm 8:192  active faulty running
+| |- 16:0:0:2 sds 65:32  active faulty running
+| `- 18:0:0:2 sdy 65:128 active faulty running
+`-+- policy='round-robin 0' prio=0 status=enabled
+  |- 12:0:0:2 sdd 8:48   active faulty running
+  |- 11:0:0:2 sdj 8:144  active faulty running
+  |- 15:0:0:2 sdp 8:240  active faulty running
+  `- 17:0:0:2 sdw 65:96  active faulty running
+36001405b1629f80d52a4c898f8856e43 dm-5 LIO-ORG ,block0_sdb
+size=2.0G features='0' hwhandler='0' wp=rw
+|-+- policy='service-time 0' prio=1 status=active
+| `- 3:0:0:0 sdc 8:32 active ready running
+`-+- policy='service-time 0' prio=1 status=enabled
+  `- 4:0:0:0 sdb 8:16 active ready running
+"""
+
+
+def test_doc_examples():
+    env = {
+            'MultipathDevices': multipath_v4_ll.MultipathDevices,
+            'mpaths': multipath_v4_ll.MultipathDevices(context_wrap(MULTIPATH_V4_LL_DOC)),
+          }
+    failed, total = doctest.testmod(multipath_v4_ll, globs=env)
+    assert failed == 0
