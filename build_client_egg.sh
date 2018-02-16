@@ -1,5 +1,6 @@
 #!/bin/bash
 
+rm -f insights.zip
 rm -rf insights_core.egg-info
 cp MANIFEST.in.client MANIFEST.in
 python setup.py egg_info
@@ -20,7 +21,8 @@ cp ../insights/parsers/__init__.py insights/parsers
 
 find insights -name '*.pyc' -delete
 find . -type f -exec touch -c -t 201801010000.00 {} \;
-zip --no-dir-entries ../insights.zip -r EGG-INFO/ insights/
+find . -type f -exec chmod 0444 {} \;
+find . -type f -print | sort -df | xargs zip --no-dir-entries -r ../insights.zip
 cd ..
 rm -rf tmp
 git checkout MANIFEST.in
