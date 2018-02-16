@@ -114,7 +114,9 @@ def run(component=None, root=None, print_summary=False,
         run_context=HostContext, archive_context=None):
 
     from .core import dr
-    dr.load_components("insights.specs")
+    dr.load_components("insights.specs.default")
+    dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.sos_archive")
 
     args = None
     if print_summary:
