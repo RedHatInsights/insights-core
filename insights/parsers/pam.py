@@ -94,17 +94,17 @@ Examples:
     True
 
 Normal use of the ``PamDConf`` class is to subclass it for a parser.  In
-``insights/specs.py``::
+``insights/specs/default.py``::
 
-    pam_sshd = sf.simple_file("etc/pam.d/sshd", name="pam_sshd")
+    pam_sshd = simple_file("etc/pam.d/sshd")
 
 In the parser module (e.g. ``insights/parsers/pam_sshd.py``)::
 
     from insights import parser
     from insights.parsers.pam import PamDConf
-    from insights.specs import pam_sshd
+    from insights.specs import Specs
 
-    @parser(pam_sshd)
+    @parser(Specs.pam_sshd)
     class PamSSHD(PamDConf):
         pass
 

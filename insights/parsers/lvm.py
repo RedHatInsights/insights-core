@@ -129,8 +129,8 @@ class Pvs(Lvm):
     """
     Parse the output of the `/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all` command.
 
-    Parse each line in the output of pvs based on the CommandSpec of "pvs" in
-    `specs.py` Output sample of pvs::
+    Parse each line in the output of pvs based on the of pvs datasource in
+    `insights/specs/` Output sample of pvs::
 
         LVM2_PV_FMT=''|LVM2_PV_UUID=''|LVM2_DEV_SIZE='500.00m'|...
         LVM2_PV_FMT='lvm2'|LVM2_PV_UUID='JvSULk-ileq-JbuS-GGgg-jkif-thuW-zvFBEl'|LVM2_DEV_SIZE='476.45g'|...
@@ -271,8 +271,8 @@ class Vgs(Lvm):
     """
     Parse the output of the `/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all` command.
 
-    Parse each line in the output of vgs based on the CommandSpec of "vgs" in
-    `specs.py` Output sample of vgs::
+    Parse each line in the output of vgs based on the vgs datasource in
+    `insights/specs/` Output sample of vgs::
 
         LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='YCpusB-LEly-THGL-YXhC-t3q6-mUQV-wyFZrx'|LVM2_VG_NAME='rhel'|LVM2_VG_ATTR='wz--n-'|...
         LVM2_VG_FMT='lvm2'|LVM2_VG_UUID='123456-LEly-THGL-YXhC-t3q6-mUQV-123456'|LVM2_VG_NAME='fedora'|LVM2_VG_ATTR='wz--n-'|...
@@ -379,8 +379,8 @@ class Lvs(Lvm):
     """
     Parse the output of the `/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_all` command.
 
-    Parse each line in the output of lvs based on the CommandSpec of "lvs" in
-    `specs.py`:
+    Parse each line in the output of lvs based on the lvs datasource in
+    `insights/specs/`:
 
     Output sample of lvs::
 
