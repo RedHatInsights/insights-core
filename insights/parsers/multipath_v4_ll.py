@@ -42,6 +42,7 @@ Examples:
 import re
 import shlex
 from insights import parser, Parser
+from insights.util import deprecated
 
 
 @parser('multipath_-v4_-ll')
@@ -261,4 +262,9 @@ class MultipathDevices(Parser):
 
 @parser('multipath_-v4_-ll')
 def get_multipath_v4_ll(context):
+    """
+    .. warning::
+        Deprecated parser, please use :class:`MultipathDevices` instead.
+    """
+    deprecated(get_multipath_v4_ll, "Use the `MultipathDevices` class instead.")
     return MultipathDevices(context).devices
