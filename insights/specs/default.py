@@ -579,6 +579,9 @@ class DefaultSpecs(Specs):
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
     woopsie = simple_command(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'")
+    x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
+    x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
+    x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     xfs_info = None
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
