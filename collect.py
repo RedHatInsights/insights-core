@@ -85,7 +85,9 @@ def main():
 
     out_path = args.output
 
-    dr.load_components("insights.specs")
+    dr.load_components("insights.specs.default")
+    dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.sos_archive")
     dr.load_components("insights.parsers")
     dr.load_components("insights.combiners")
     for path in args.plugins:
