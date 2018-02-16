@@ -6,9 +6,10 @@ This function converts the output of the ``multipath -v4 -ll`` command and
 stores the data around each multipath device given.
 
 Examples:
-    >>> mpaths = shared[MultipathDevices]
+    >>> type(mpaths)
+    <class 'insights.parsers.multipath_v4_ll.MultipathDevices'>
     >>> len(mpaths)  # Can treat the object as a list to iterate through
-    2
+    3
     >>> mpaths[0]['alias']
     'mpathg'
     >>> mpaths[0]['size']
@@ -17,10 +18,10 @@ Examples:
     'dm-2'
     >>> mpaths[0]['wwid']
     '36f01faf000da360b0000033c528fea6d'
-    >>> groups = mpath[0]['path_group']  # List of path groups for this device
+    >>> groups = mpaths[0]['path_group']  # List of path groups for this device
     >>> groups[0]['status']
     'active'
-    >>> length(groups[0]['path'])
+    >>> len(groups[0]['path'])
     4
     >>> path0 = groups[0]['path'][0]  # Each path group has an array of paths
     >>> path0[1]  # Paths are stored as a list of items
@@ -28,11 +29,11 @@ Examples:
     >>> path0[-1]
     'running'
     >>> mpaths.dms  # List of device names found
-    ['dm-2', 'dm-4', 'dm-5', 'dm-0', 'dm-0', 'dm-8', 'dm-19']
+    ['dm-2', 'dm-4', 'dm-5']
     >>> mpaths.by_dm['dm-2']['alias']  # Access by device name
     'mpathg'
     >>> mpaths.aliases  # Aliases found (again, in order)
-    ['mpathg', 'mpathe', 'mpatha', 'mpathb']
+    ['mpathg', 'mpathe']
     >>> mpaths.by_alias['mpathg']['dm_name']  # Access by alias
     'dm-2'
     >>> mpaths.by_wwid['36f01faf000da360b0000033c528fea6d']['dm_name']
@@ -43,6 +44,7 @@ import re
 import shlex
 from insights import parser, Parser
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @parser(Specs.multipath__v4__ll)
@@ -262,4 +264,9 @@ class MultipathDevices(Parser):
 
 @parser(Specs.multipath__v4__ll)
 def get_multipath_v4_ll(context):
+    """
+    .. warning::
+        Deprecated parser, please use :class:`MultipathDevices` instead.
+    """
+    deprecated(get_multipath_v4_ll, "Use the `MultipathDevices` class instead.")
     return MultipathDevices(context).devices
