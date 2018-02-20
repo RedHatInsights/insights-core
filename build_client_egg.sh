@@ -22,7 +22,7 @@ cp ../insights/parsers/__init__.py insights/parsers
 find insights -name '*.pyc' -delete
 find . -type f -exec touch -c -t 201801010000.00 {} \;
 find . -type f -exec chmod 0444 {} \;
-find . -type f -print | sort -df | xargs zip --no-dir-entries -r ../insights.zip
+find . -type f -print | sort -df | xargs zip -X --no-dir-entries -r ../insights.zip
 cd ..
 rm -rf tmp
 git checkout MANIFEST.in
