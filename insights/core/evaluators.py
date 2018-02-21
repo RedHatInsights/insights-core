@@ -23,6 +23,7 @@ class Evaluator(object):
         pass
 
     def post_process(self):
+
         self.hostname = self.broker[combiners.hostname.hostname].fqdn
         for c, exes in self.broker.exceptions.items():
             for e in exes:
@@ -97,12 +98,7 @@ class InsightsEvaluator(SingleEvaluator):
         self.type = "host"
 
     def post_process(self):
-        super(InsightsEvaluator, self).post_process()
-
-        _system_id = self.broker[specs.Specs.machine_id].content[0].strip()
-        if _system_id != self.system_id:
-            msg = "Id %s doesn't match %s from archive" % (_system_id, self.system_id)
-            raise archives.InvalidArchive(msg)
+        self.system_id = self.broker[specs.Specs.machine_id].content[0].strip()
 
         release = self.broker.get(specs.Specs.redhat_release)
         if release:
@@ -115,6 +111,8 @@ class InsightsEvaluator(SingleEvaluator):
         if md:
             self.product = md.get("product_code")
             self.type = md.get("role")
+
+        super(InsightsEvaluator, self).post_process()
 
     def format_result(self, result):
         result["system_id"] = self.system_id
