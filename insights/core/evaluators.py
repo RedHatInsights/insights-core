@@ -1,7 +1,7 @@
 import logging
 
 from insights import combiners, parsers, specs
-from insights.core import archives, dr, plugins
+from insights.core import dr, plugins
 
 log = logging.getLogger(__name__)
 
