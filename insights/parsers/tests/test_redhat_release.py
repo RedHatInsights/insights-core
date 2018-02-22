@@ -21,6 +21,13 @@ FEDORA = """
 Fedora release 23 (Twenty Three)
 """.strip()
 
+RHEL_69 = """
+Red Hat Enterprise Linux Server release 6.9 (Santiago)
+# This is a "SLES Expanded Support platform release 6.9"
+# The above "Red Hat Enterprise Linux Server" string is only used to
+# keep software compatibility.
+""".strip()
+
 
 def test_rhe6():
     release = RedhatRelease(context_wrap(REDHAT_RELEASE1))
@@ -70,3 +77,13 @@ def test_fedora23():
     assert release.version == "23"
     assert not release.is_rhel
     assert release.product == "Fedora"
+
+
+def test_rhe69():
+    release = RedhatRelease(context_wrap(RHEL_69))
+    assert release.raw == RHEL_69.splitlines()[0]
+    assert release.major == 6
+    assert release.minor == 9
+    assert release.version == "6.9"
+    assert release.is_rhel
+    assert release.product == "Red Hat Enterprise Linux Server"
