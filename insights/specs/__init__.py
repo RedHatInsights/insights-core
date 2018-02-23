@@ -61,7 +61,7 @@ class Specs(SpecSet):
     dirsrv = RegistryPoint()
     dirsrv_access = RegistryPoint(multi_output=True)
     dirsrv_errors = RegistryPoint(multi_output=True)
-    display_java = RegistryPoint(multi_output=True)
+    display_java = RegistryPoint()
     dmesg = RegistryPoint()
     dmidecode = RegistryPoint()
     docker_container_inspect = RegistryPoint(multi_output=True)

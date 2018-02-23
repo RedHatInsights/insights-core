@@ -50,27 +50,18 @@ format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
-    autofs_conf = simple_file("/etc/autofs.conf")
-    audit_log = simple_file("/var/log/audit/audit.log")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
+    audit_log = simple_file("/var/log/audit/audit.log")
+    autofs_conf = simple_file("/etc/autofs.conf")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
-    candlepin_error_log = first_of([
-                                   simple_file("/var/log/candlepin/error.log"),
-                                   simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log",
-                                   context=HostArchiveContext)
-                                   ])
+    candlepin_error_log = simple_file("/var/log/candlepin/error.log")
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
-    ps_auxww = first_of([
-                        simple_command("/bin/ps auxww"),
-                        simple_file('sos_commands/process/ps_aux', context=HostArchiveContext),
-                        simple_file('sos_commands/process/ps_auxwww', context=HostArchiveContext),
-                        simple_file('sos_commands/process/ps_auxcww', context=HostArchiveContext),
-                        ])
+    ps_auxww = simple_command("/bin/ps auxww")
 
     @datasource(ps_auxww)
     def tomcat_base(broker):
@@ -84,14 +75,8 @@ class DefaultSpecs(Specs):
                 results.extend(f for f in found if f[0] == '/')
         return list(set(results))
 
-    catalina_out = first_of([
-                            foreach_collect(tomcat_base, "%s/catalina.out"),
-                            glob_file("tomcat-logs/tomcat*/catalina.out", context=HostArchiveContext)
-                            ])
-    catalina_server_log = first_of([
-                                   foreach_collect(tomcat_base, "%s/catalina*.log"),
-                                   glob_file("tomcat-logs/tomcat*/catalina*.log", context=HostArchiveContext)
-                                   ])
+    catalina_out = foreach_collect(tomcat_base, "%s/catalina.out")
+    catalina_server_log = foreach_collect(tomcat_base, "%s/catalina*.log")
     cciss = glob_file("/proc/driver/cciss/cciss*")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
     ceilometer_collector_log = simple_file("/var/log/ceilometer/collector.log")
@@ -118,9 +103,13 @@ class DefaultSpecs(Specs):
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
     cmdline = simple_file("/proc/cmdline")
     cpe = simple_file("/etc/system-release-cpe")
+    # are these locations for different rhel versions?
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
+
     corosync = simple_file("/etc/sysconfig/corosync")
+
+    # why the /cpuinfo?
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
@@ -196,12 +185,11 @@ class DefaultSpecs(Specs):
     facter = simple_command("/usr/bin/facter")
     fc_match = simple_command("/bin/fc-match -sv 'sans:regular:roman' family fontformat")
     fdisk_l = simple_command("/sbin/fdisk -l")
-    fdisk_l_sos = glob_file(r"sos_commands/filesys/fdisk_-l_*", context=HostArchiveContext)
     foreman_production_log = simple_file("/var/log/foreman/production.log")
     foreman_proxy_conf = simple_file("/etc/foreman-proxy/settings.yml")
     foreman_proxy_log = simple_file("/var/log/foreman-proxy/proxy.log")
     foreman_satellite_log = simple_file("/var/log/foreman-installer/satellite.log")
-    foreman_ssl_access_ssl_log = first_of([simple_file("var/log/httpd/foreman-ssl_access_ssl.log"), simple_file(r"sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log", context=HostArchiveContext)])
+    foreman_ssl_access_ssl_log = simple_file("var/log/httpd/foreman-ssl_access_ssl.log")
     foreman_rake_db_migrate_status = simple_command('/usr/sbin/foreman-rake db:migrate:status')
     fstab = simple_file("/etc/fstab")
     galera_cnf = simple_file("/etc/my.cnf.d/galera.cnf")
@@ -230,7 +218,6 @@ class DefaultSpecs(Specs):
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
     httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"]),
-    httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"], context=HostArchiveContext)
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
@@ -285,7 +272,6 @@ class DefaultSpecs(Specs):
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
-    journal_since_boot = simple_file("sos_commands/logs/journalctl_--no-pager_--boot", context=HostArchiveContext)
     katello_service_status = simple_command("/usr/bin/katello-service status")
     kdump = simple_file("/etc/sysconfig/kdump")
     kdump_conf = simple_file("/etc/kdump.conf")
