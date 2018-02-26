@@ -1,5 +1,5 @@
 =============
-Insights Core
+Insights Core QE TESTING
 =============
 
 https://access.redhat.com/insights/
