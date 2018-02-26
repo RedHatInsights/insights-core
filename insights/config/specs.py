@@ -272,6 +272,7 @@ static_specs = {
                                     PatternSpec("opt/rh/nginx16/root/etc/nginx/nginx.conf"),
                                     PatternSpec("etc/opt/rh/rh-nginx110/nginx/nginx.conf"),
                                     PatternSpec("etc/opt/rh/rh-nginx18/nginx/nginx.conf")]),
+    "nmcli_dev_show"            : CommandSpec("/usr/bin/nmcli dev show"),
     "nova-api_log"              : SimpleFileSpec("var/log/nova/nova-api.log", large_content=True),
     "nova-compute.log"          : SimpleFileSpec("var/log/nova/nova-compute.log", large_content=True),
     "nova.conf"                 : SimpleFileSpec("etc/nova/nova.conf"),
