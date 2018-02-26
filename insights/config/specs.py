@@ -398,6 +398,8 @@ static_specs = {
     "sshd_config_perms"         : CommandSpec("/bin/ls -l /etc/ssh/sshd_config"),
     "sssd_config"               : SimpleFileSpec("etc/sssd/sssd.conf"),
     "sssd_logs"                 : PatternSpec(r"var/log/sssd/.*\.log$"),
+    "subscription_manager_list_consumed": CommandSpec("/usr/bin/subscription-manager list --consumed"),
+    "subscription_manager_list_installed": CommandSpec("/usr/bin/subscription-manager list --installed"),
     "swift_object_expirer_conf" : SimpleFileSpec("etc/swift/object-expirer.conf"),
     "swift_proxy_server_conf"   : SimpleFileSpec("etc/swift/proxy-server.conf"),
     "sysconfig_chronyd"         : SimpleFileSpec("etc/sysconfig/chronyd"),
