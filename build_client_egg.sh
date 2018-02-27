@@ -9,15 +9,17 @@ cp insights_core.egg-info/* tmp/EGG-INFO
 cp -r insights tmp
 cd tmp
 rm -rf insights/archive
-rm -rf insights/combiners
 rm -rf insights/contrib/pyparsing.py
 rm -rf insights/plugins
 rm -rf insights/tests
 rm -rf insights/tools
 
-# Remove all parsers but keep the package because it's imported in core/__init__.py
+# Remove all parsers/combiners but keep the packages because they're imported
+# in core/__init__.py
 rm -rf insights/parsers/*
 cp ../insights/parsers/__init__.py insights/parsers
+rm -rf insights/combiners/*
+cp ../insights/combiners/__init__.py insights/combiners
 
 find insights -name '*.pyc' -delete
 find . -type f -exec touch -c -t 201801010000.00 {} \;
