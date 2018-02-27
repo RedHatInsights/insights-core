@@ -1,5 +1,47 @@
 # Change Log
 
+## [insights-core-1.73.0-236](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.73.0-236) (2018-02-27)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.72.0-224...insights-core-1.73.0-236)
+
+**Implemented enhancements:**
+
+- Refactor insights/specs\_\*.py files into a specs package [\#948](https://github.com/RedHatInsights/insights-core/issues/948)
+- `FileListing` ignores `ls` listings that don't contain the name of the directory. [\#827](https://github.com/RedHatInsights/insights-core/issues/827)
+- Update 3.x specs to handle 1.x archives [\#809](https://github.com/RedHatInsights/insights-core/issues/809)
+- Insights test connection cleanup [\#708](https://github.com/RedHatInsights/insights-core/issues/708)
+- Stacked Decorators are Bad [\#14](https://github.com/RedHatInsights/insights-core/issues/14)
+- Subscription-manager list parser for 1.x branch [\#961](https://github.com/RedHatInsights/insights-core/pull/961) ([PaulWay](https://github.com/PaulWay))
+- Add foreman-rake db:migrate:status parser for 1.x branch [\#939](https://github.com/RedHatInsights/insights-core/pull/939) ([PaulWay](https://github.com/PaulWay))
+- FileListing class to handle single directory listings for 1.x branch [\#910](https://github.com/RedHatInsights/insights-core/pull/910) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- Parser error in cluster\_conf.py [\#785](https://github.com/RedHatInsights/insights-core/issues/785)
+- Parser error in `cluster\_conf.py` [\#679](https://github.com/RedHatInsights/insights-core/issues/679)
+- Parser error in `check\_iptableds\_pid` [\#671](https://github.com/RedHatInsights/insights-core/issues/671)
+- FileListing class to handle single directory listings for 1.x branch [\#910](https://github.com/RedHatInsights/insights-core/pull/910) ([PaulWay](https://github.com/PaulWay))
+
+**Closed issues:**
+
+- Parser nmcli dev show 3.x [\#973](https://github.com/RedHatInsights/insights-core/issues/973)
+- Separate specs required for Insights from those required for other archives [\#815](https://github.com/RedHatInsights/insights-core/issues/815)
+- Remove 1.x spec handling from 3.x [\#808](https://github.com/RedHatInsights/insights-core/issues/808)
+- Documentation referring to old parser requirement syntax [\#791](https://github.com/RedHatInsights/insights-core/issues/791)
+- Get rpm signature from InstalledRpms parser [\#688](https://github.com/RedHatInsights/insights-core/issues/688)
+- "runnable rules" [\#292](https://github.com/RedHatInsights/insights-core/issues/292)
+- For Fava, alter the doc for each Parser and Combiner [\#291](https://github.com/RedHatInsights/insights-core/issues/291)
+- run parsers and combiners \(and rules\) during collection [\#290](https://github.com/RedHatInsights/insights-core/issues/290)
+
+**Merged pull requests:**
+
+- modified attributes [\#970](https://github.com/RedHatInsights/insights-core/pull/970) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Backport changes from master branch to redhat\_release [\#964](https://github.com/RedHatInsights/insights-core/pull/964) ([bfahr](https://github.com/bfahr))
+- Parser nmcli dev show 1.x [\#963](https://github.com/RedHatInsights/insights-core/pull/963) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+- Pulp worker defaults 1.x [\#950](https://github.com/RedHatInsights/insights-core/pull/950) ([PaulWay](https://github.com/PaulWay))
+- Mark 'get\_multipath\_v4\_ll' as deprecated [\#945](https://github.com/RedHatInsights/insights-core/pull/945) ([xiangce](https://github.com/xiangce))
+- Fix document of XFSInfo [\#941](https://github.com/RedHatInsights/insights-core/pull/941) ([xiangce](https://github.com/xiangce))
+- VDSM version 3 & 4 log file parser [\#918](https://github.com/RedHatInsights/insights-core/pull/918) ([psachin](https://github.com/psachin))
+
 ## [insights-core-1.72.0-224](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.72.0-224) (2018-02-08)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0rc1...insights-core-1.72.0-224)
 
