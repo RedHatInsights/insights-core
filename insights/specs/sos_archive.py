@@ -57,15 +57,15 @@ class SosSpecs(Specs):
     root_crontab = simple_file("sos_commands/cron/root_crontab")
     route = simple_file("sos_commands/networking/route_-n")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
-    subscription_manager_list_consumed = simple_file(
+    subscription_manager_list_consumed = first_file([
         'sos_commands/yum/subscription-manager_list_--consumed',
         'sos_commands/subscription_manager/subscription-manager_list_--consumed',
-        'sos_commands/general/subscription-manager_list_--consumed',
+        'sos_commands/general/subscription-manager_list_--consumed']
     )
-    subscription_manager_list_installed = simple_file(
+    subscription_manager_list_installed = first_file([
         'sos_commands/yum/subscription-manager_list_--installed',
         'sos_commands/subscription_manager/subscription-manager_list_--installed',
-        'sos_commands/general/subscription-manager_list_--installed',
+        'sos_commands/general/subscription-manager_list_--installed']
     )
     sysctl = simple_file("sos_commands/kernel/sysctl_-a")
     uname = simple_file("sos_commands/kernel/uname_-a")
