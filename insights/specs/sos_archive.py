@@ -50,6 +50,7 @@ class SosSpecs(Specs):
     netstat_agn = simple_file("sos_commands/networking/netstat_-agn")
     netstat_i = simple_file("sos_commands/networking/netstat_-i")
     netstat_s = simple_file("sos_commands/networking/netstat_-s")
+    nmcli_dev_show = simple_file("sos_commands/networking/nmcli_dev_show")
     ntptime = simple_file("sos_commands/ntp/ntptime")
     ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
     pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")

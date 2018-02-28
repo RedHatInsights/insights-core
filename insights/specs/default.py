@@ -357,6 +357,7 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/nginx.conf",
                            "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
                            ])
+    nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = simple_file("/var/log/nova/nova-api.log")
     nova_compute_log = simple_file("/var/log/nova/nova-compute.log")
     nova_conf = simple_file("/etc/nova/nova.conf")

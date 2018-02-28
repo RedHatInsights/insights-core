@@ -231,6 +231,7 @@ class Specs(SpecSet):
     nfs_exports_d = RegistryPoint(multi_output=True)
     nfs_exports = RegistryPoint()
     nginx_conf = RegistryPoint(multi_output=True)
+    nmcli_dev_show = RegistryPoint()
     nova_api_log = RegistryPoint()
     nova_compute_log = RegistryPoint()
     nova_conf = RegistryPoint()
