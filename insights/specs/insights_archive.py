@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file
+from insights.core.spec_factory import first_file, first_of, glob_file, simple_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -59,7 +59,10 @@ class InsightsArchiveSpecs(Specs):
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     # simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig")])
-    installed_rpms = simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig")
+    installed_rpms = first_file([
+        "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig",
+        "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig"
+    ])
     hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_pid = simple_file("insights_commands/pgrep_-o_httpd")
