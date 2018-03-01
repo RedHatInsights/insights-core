@@ -314,7 +314,7 @@ class DefaultSpecs(Specs):
     lvdisplay = simple_command("/sbin/lvdisplay")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs = None  # simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')
-    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,vg_name,lv_size,region_size,mirror_log,lv_attr,devices,region_size --config=\"global{locking_type=0}\"")
+    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config=\"global{locking_type=0}\"")
     machine_id = simple_file("etc/redhat-access-insights/machine-id")
     manila_conf = simple_file("/etc/manila/manila.conf")
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
