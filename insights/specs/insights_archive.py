@@ -85,7 +85,7 @@ class InsightsArchiveSpecs(Specs):
     lpstat_p = simple_file("insights_commands/lpstat_-p")
     ls_boot = simple_file("insights_commands/ls_-lanR_.boot")
     ls_dev = simple_file("insights_commands/ls_-lanR_.dev")
-    ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk.by")
+    ls_disk = simple_file("insights_commands/ls_-lanR_.dev.disk")
     ls_docker_volumes = simple_file("insights_commands/ls_-lanR_.var.lib.docker.volumes")
     ls_etc = simple_file("insights_commands/ls_-lanR_.etc")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")

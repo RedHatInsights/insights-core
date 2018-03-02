@@ -306,7 +306,7 @@ class DefaultSpecs(Specs):
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
     ls_dev = simple_command("/bin/ls -lanR /dev")
-    ls_disk = simple_command("/bin/ls -lanR /dev/disk/by-*")
+    ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
