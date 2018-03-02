@@ -1,8 +1,8 @@
 """
-LsDisk - Command ``ls -lanR /dev/disk/by-*``
-============================================
+LsDisk - Command ``ls -lanR /dev/disk``
+=======================================
 
-The ``ls -lanR /dev/disk/by-*`` command provides information for the listing of the
+The ``ls -lanR /dev/disk`` command provides information for the listing of the
 directories under ``/dev/disk/`` .
 
 Sample input is shown in the Examples. See ``FileListing`` class for
@@ -63,5 +63,5 @@ from insights.specs import Specs
 
 @parser(Specs.ls_disk)
 class LsDisk(FileListing):
-    """Parses output of ``ls -lanR /dev/disk/by-*`` command."""
+    """Parses output of ``ls -lanR /dev/disk`` command."""
     pass
