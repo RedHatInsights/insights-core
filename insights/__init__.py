@@ -162,28 +162,7 @@ def run(component=None, root=None, print_summary=False,
 
     broker = _run(graph, root, run_context=run_context, archive_context=archive_context, show_dropped=show_dropped)
     if print_summary:
-
-        if args.missing:
-            print()
-            print("Missing Requirements:")
-            if broker.missing_requirements:
-                pprint(broker.missing_requirements)
-
-        if args.tracebacks:
-            print()
-            print("Tracebacks:")
-            for t in broker.tracebacks.values():
-                print(t)
-
-        print()
-        for _type in sorted(dr.COMPONENTS_BY_TYPE, key=dr.get_simple_name):
-            print()
-            print("{} instances:".format(dr.get_simple_name(_type)))
-            for c in sorted(broker.get_by_type(_type), key=dr.get_name):
-                v = broker[c]
-                pprint("{}:".format(dr.get_name(c)))
-                pprint(v)
-                print()
+        broker.describe(show_missing=args.missing, show_tracebacks=args.tracebacks)
     return broker
 
 
