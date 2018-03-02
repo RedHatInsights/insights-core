@@ -1,6 +1,7 @@
 """
 This module implements dependency resolution and execution within Red Hat Insights.
 """
+from __future__ import print_function
 
 import inspect
 import logging
@@ -14,6 +15,8 @@ import traceback
 
 from collections import defaultdict
 from functools import reduce as _reduce
+from pprint import pprint
+
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
 from insights.util import defaults, enum, KeyPassingDefaultDict
@@ -404,6 +407,29 @@ class Broker(object):
             return self[component]
         except KeyError:
             return default
+
+    def describe(self, show_missing=False, show_tracebacks=False):
+        if show_missing:
+            print()
+            print("Missing Requirements:")
+            if self.missing_requirements:
+                pprint(self.missing_requirements)
+
+        if show_tracebacks:
+            print()
+            print("Tracebacks:")
+            for t in self.tracebacks.values():
+                print(t)
+
+        print()
+        for _type in sorted(COMPONENTS_BY_TYPE, key=get_simple_name):
+            print()
+            print("{} instances:".format(get_simple_name(_type)))
+            for c in sorted(self.get_by_type(_type), key=get_name):
+                v = self[c]
+                pprint("{}:".format(get_name(c)))
+                pprint(v)
+                print()
 
 
 def get_missing_requirements(func, requires, d):
