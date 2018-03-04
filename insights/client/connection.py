@@ -573,7 +573,7 @@ class InsightsConnection(object):
             self.test_connection()
             return False
         # had to do a quick bugfix changing this around,
-        #   which makes the None-False-True dichotomy seem fucking weird
+        #   which makes the None-False-True dichotomy seem weird
         #   TODO: reconsider what gets returned, probably this:
         #       True for registered
         #       False for unregistered
