@@ -440,6 +440,9 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
             rc, result = raw
         else:
             result = raw
+
+        if split:
+            result = list(apply_filters(inner, result))
         return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
     COMMANDS[inner] = cmd
     return inner
@@ -490,7 +493,8 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
                     rc, output = raw
                 else:
                     output = raw
-
+                if split:
+                    output = list(apply_filters(inner, output))
                 result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split, keep_rc=keep_rc))
             except:
                 log.debug(traceback.format_exc())
