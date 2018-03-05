@@ -37,13 +37,13 @@ def get_filters(component, filters=None):
 
 
 def apply_filters(target, lines):
-    if target not in FILTERS:
-        for l in lines:
-            yield l
-
     filters = get_filters(target)
-    for l in lines:
-        if any(f in l for f in filters):
+    if filters:
+        for l in lines:
+            if any(f in l for f in filters):
+                yield l
+    else:
+        for l in lines:
             yield l
 
 
