@@ -209,7 +209,6 @@ class Specs(SpecSet):
     messages = RegistryPoint()
     metadata_json = RegistryPoint(raw=True)
     mlx4_port = RegistryPoint()
-    modinfo = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     module = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True)
