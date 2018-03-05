@@ -116,12 +116,21 @@ class FileProvider(ContentProvider):
 
 
 class RawFileProvider(FileProvider):
+    """
+    Class used in datasources that returns the contents of a file a single
+    string. The file is not filtered.
+    """
+
     def load(self):
         with open(self.path, 'rb') as f:
             return f.read()
 
 
 class TextFileProvider(FileProvider):
+    """
+    Class used in datasources that returns the contents of a file a list of
+    lines. Each line is filtered if filters are defined for the datasource.
+    """
     def load(self):
         with open(self.path, 'r') as f:
             if self.ds:
@@ -132,6 +141,9 @@ class TextFileProvider(FileProvider):
 
 
 class CommandOutputProvider(ContentProvider):
+    """
+    Class used in datasources to return output from commands.
+    """
     def __init__(self, cmd, ctx, args=None, content=None, rc=None, split=True, keep_rc=False):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
@@ -161,9 +173,10 @@ class CommandOutputProvider(ContentProvider):
 
 
 class RegistryPoint(object):
-    """ Marker class for declaring that an element of a `SpecSet` subclass
-        is a registry point against which further subclasses can register
-        datasource implementations by simply declaring them with the same name.
+    """
+    Marker class for declaring that an element of a `SpecSet` subclass
+    is a registry point against which further subclasses can register
+    datasource implementations by simply declaring them with the same name.
     """
     def __init__(self, metadata=None, multi_output=False, raw=False):
         self.metadata = metadata
@@ -183,8 +196,9 @@ def _registry_point(rp):
 
 
 class SpecDescriptor(object):
-    """ Descriptor Protocol handler that returns the literal function from a
-        class during dot (.) access.
+    """
+    Descriptor Protocol handler that returns the literal function from a
+    class during dot (.) access.
     """
     def __init__(self, func):
         self.func = func
@@ -243,8 +257,9 @@ def _resolve_registry_points(cls, base, dct):
 
 
 class SpecSetMeta(type):
-    """ The metaclass that converts RegistryPoint markers to regisry point
-        datasources and hooks implementations for them into the registry.
+    """
+    The metaclass that converts RegistryPoint markers to regisry point
+    datasources and hooks implementations for them into the registry.
     """
     def __new__(cls, name, bases, dct):
         dct["context_handlers"] = defaultdict(lambda: defaultdict(list))
@@ -260,8 +275,9 @@ class SpecSetMeta(type):
 
 
 class SpecSet(object):
-    """ The base class for all spec declarations. Extend this class and define
-        your datasources directly or with a `SpecFactory`.
+    """
+    The base class for all spec declarations. Extend this class and define your
+    datasources directly or with a `SpecFactory`.
     """
     __metaclass__ = SpecSetMeta
 
@@ -275,6 +291,18 @@ def _get_context(context, alternatives, broker):
 
 
 def simple_file(path, context=None, kind=TextFileProvider):
+    """
+    Creates a datasource that reads the file at path when evaluated.
+
+    Args:
+        path (str): path to the file to read
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        kind (FileProvider): One of TextFileProvider or RawFileProvider.
+
+    Returns:
+        function: A datasource that reads all files matching the glob patterns.
+    """
 
     @datasource(context or FSRoots, raw=(kind is RawFileProvider))
     def inner(broker):
@@ -284,6 +312,20 @@ def simple_file(path, context=None, kind=TextFileProvider):
 
 
 def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
+    """
+    Creates a datasource that reads all files matching the glob pattern(s).
+
+    Args:
+        patterns (str or [str]): glob pattern(s) of paths to read.
+        ignore (regex): a regular expression that is used to filter the paths
+            matched by pattern(s).
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        kind (FileProvider): One of TextFileProvider or RawFileProvider.
+
+    Returns:
+        function: A datasource that reads all files matching the glob patterns.
+    """
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
@@ -308,6 +350,20 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
 
 
 def first_file(files, context=None, kind=TextFileProvider):
+    """
+    Creates a datasource that returns the first existing and readable file in
+    files.
+
+    Args:
+        files (str): list of paths to find and read
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        kind (FileProvider): One of TextFileProvider or RawFileProvider.
+
+    Returns:
+        function: A datasource that returns the first file in files that exists
+            and is readable
+    """
 
     @datasource(context or FSRoots, raw=(kind is RawFileProvider))
     def inner(broker):
@@ -323,6 +379,19 @@ def first_file(files, context=None, kind=TextFileProvider):
 
 
 def listdir(path, context=None):
+    """
+    Executable a simple directory listing of all the files and directories in
+    path.
+
+    Args:
+        path (str): directory to list.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+
+    Returns:
+        function: A datasource that returns the list of files and directories
+            in the directory specified by path
+    """
 
     @datasource(context or FSRoots)
     def inner(broker):
@@ -340,6 +409,27 @@ def listdir(path, context=None):
 
 
 def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
+    """
+    Executable a simple command that has no dynamic arguments
+
+    Args:
+        cmd (str): the command to execute
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+
+    Returns:
+        function: A datasource that returns the output of a command that takes
+            no arguments
+    """
 
     @datasource(context)
     def inner(broker):
@@ -356,6 +446,31 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
 
 
 def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
+    """
+    Execute a command for each element in provider. Provider is the output of
+    a different datasource that returns a list of single elements or a list of
+    tuples. The command should have %s substitution parameters equal to the
+    number of elements in each tuple of the provider.
+
+    Args:
+        provider (list): a list of elements or tuples.
+        cmd (str): a command with substitution parameters.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        split (bool): whether the output of the command should be split into a
+            list of lines
+        keep_rc (bool): whether to return the error code returned by the
+            process executing the command. If False, any return code other than
+            zero with raise a CalledProcessError. If True, the return code and
+            output are always returned.
+        timeout (int): Number of seconds to wait for the command to complete.
+            If the timeout is reached before the command returns, a
+            CalledProcessError is raised. If None, timeout is infinite.
+
+    Returns:
+        function: A datasource that returns a list of outputs for each command
+        created by substituting each element of provider into the cmd template.
+    """
 
     @datasource(provider, context, multi_output=True)
     def inner(broker):
@@ -386,6 +501,21 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
 
 
 def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextFileProvider):
+    """
+    Subtitutes each element in provider into path and collects the files at the
+    resulting paths.
+
+    Args:
+        provider (list): a list of elements or tuples.
+        path (str): a path template with substitution parameters.
+        context (ExecutionContext): the context under which the datasource
+            should run.
+        kind (FileProvider): one of TextFileProvider or RawFileProvider
+
+    Returns:
+        function: A datasource that returns a list of file contents created by
+            substituting each element of provider into the path template.
+    """
 
     @datasource(provider, context, multi_output=True, raw=(kind is RawFileProvider))
     def inner(broker):
