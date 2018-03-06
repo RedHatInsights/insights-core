@@ -3,7 +3,7 @@ import subprocess
 from subprocess import PIPE
 
 try:
-    import magic
+    from insights.contrib import magic
 except Exception:
     magic_loaded = False
 else:
