@@ -100,7 +100,7 @@ class GrubConf(object):
         self.version = self.is_efi = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
         # get grub configuration
-        self.grub = grub1 or grub2 or grub2_efi or grub1_efi
+        self.grub = grub1 or grub1_efi or grub2 or grub2_efi
 
         if self.grub:
             self.version = self.grub._version
