@@ -410,6 +410,7 @@ static_specs = {
     "sysconfig_rh_mongodb26"    : PatternSpec("etc/opt/rh/rh-mongodb26/sysconfig/mongod"),
     "sysconfig_kdump"           : SimpleFileSpec("etc/sysconfig/kdump"),
     "sysconfig_ntpd"            : SimpleFileSpec("etc/sysconfig/ntpd"),
+    "sysconfig_memcached"       : SimpleFileSpec("etc/sysconfig/memcached"),
     "sysconfig_virt_who"        : SimpleFileSpec("etc/sysconfig/virt-who"),
     "sysctl"                    : CommandSpec("/sbin/sysctl -a"),
     "sysctl.conf"               : SimpleFileSpec("etc/sysctl.conf"),

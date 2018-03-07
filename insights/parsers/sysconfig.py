@@ -274,3 +274,28 @@ class MongodSysconfig(SysconfigOptions):
         False
     """
     pass
+
+
+@parser('sysconfig_memcached')
+class MemcachedSysconfig(SysconfigOptions):
+    """
+    A parser for ``memcached`` configuration, stored in
+    ``/etc/sysconfig/memcached``.
+
+    Sample Input::
+
+        PORT="11211"
+        USER="memcached"
+        # max connection 2048
+        MAXCONN="2048"
+        # set ram size to 2048 - 2GiB
+        CACHESIZE="4096"
+        # disable UDP and listen to loopback ip 127.0.0.1, for network connection use real ip e.g., 10.0.0.5
+        OPTIONS="-U 0 -l 127.0.0.1"
+
+    Examples:
+        >>> memcached_sysconfig = shared[MemcachedSysconfig]
+        >>> memcached_sysconfig.get('OPTIONS')
+        '-U 0 -l 127.0.0.1'
+    """
+    pass
