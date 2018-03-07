@@ -308,7 +308,7 @@ class NetstatSection(object):
         # exception in add_meta_data
         pidprogram = self.datalist[-1]['PID/Program name']
         if '/' in pidprogram:
-            pid, program = pidprogram.split('/')
+            pid, program = pidprogram.split('/', 1)
             self.datalist[-1]['PID'] = pid
             self.datalist[-1]['Program name'] = program
         # For convenience, unpack 'Local Address' into 'Local IP' and 'Port'
