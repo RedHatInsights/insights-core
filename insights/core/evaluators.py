@@ -60,7 +60,8 @@ class SingleEvaluator(Evaluator):
 
     def append_metadata(self, r):
         for k, v in r.items():
-            self.metadata[k] = v
+            if k != "type":
+                self.metadata[k] = v
 
     def format_response(self, response):
         return response
