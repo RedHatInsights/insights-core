@@ -504,6 +504,7 @@ class DefaultSpecs(Specs):
     sysconfig_httpd = simple_file("/etc/sysconfig/httpd")
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
+    sysconfig_memcached = simple_file("/etc/sysconfig/memcached")
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
