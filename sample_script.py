@@ -9,6 +9,8 @@ def report(rel):
 
     if "Fedora" in rel.product:
         return make_response("IS_FEDORA")
+    else:
+        return make_response("IS_NOT_FEDORA")
 
 
 if __name__ == "__main__":
