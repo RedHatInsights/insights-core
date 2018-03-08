@@ -319,6 +319,7 @@ class Specs(SpecSet):
     rsyslog_conf = RegistryPoint()
     running_java = RegistryPoint()
     samba = RegistryPoint()
+    saphostctl_getcimobject_sapinstance = RegistryPoint()
     satellite_version_rb = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
     scsi = RegistryPoint()
