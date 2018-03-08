@@ -377,6 +377,7 @@ static_specs = {
     "rpm_-V_packages"           : CommandSpec("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo"),
     "rsyslog.conf"              : SimpleFileSpec("etc/rsyslog.conf"),
     "samba"                     : SimpleFileSpec("etc/samba/smb.conf"),
+    'saphostctl_getcimobject_sapinstance': CommandSpec("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance"),
     "satellite_version.rb"      : First([SimpleFileSpec("usr/share/foreman/lib/satellite/version.rb"),
                                     SimpleFileSpec("sos_commands/foreman/foreman-debug/satellite_version"),
                                     SimpleFileSpec("satellite_version")]),
