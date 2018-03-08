@@ -26,8 +26,17 @@ bridge name     bridge id   STP enabled     interfaces
 
 """
 
+BRCTL_SHOW_LESS_COLUMN = """
+bridge name     bridge id
+
+"""
+
 BRCTL_SHOW_ERROR = """
 /usr/sbin/brctl: file not found
+""".strip()
+
+BRCTL_SHOW_TIMEOUT = """
+timeout: failed to run command `/usr/sbin/brctl': No such file or directory
 """.strip()
 
 
@@ -73,3 +82,11 @@ def test_get_brctl_show():
     no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_ERROR))
     assert len(no_bridges.data) == 0
     assert len(no_bridges.group_by_iface) == 0
+
+    no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_LESS_COLUMN))
+    assert len(no_bridges.data) == 0
+    assert len(no_bridges.group_by_iface) == 0
+
+    no_cmd = BrctlShow(context_wrap(BRCTL_SHOW_TIMEOUT))
+    assert len(no_cmd.data) == 0
+    assert len(no_cmd.group_by_iface) == 0
