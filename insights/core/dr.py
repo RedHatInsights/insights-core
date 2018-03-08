@@ -41,6 +41,10 @@ DELEGATES = {}
 HIDDEN = set()
 IGNORE = defaultdict(set)
 
+# A place for the run_order function to cache sorted graphs whose items haven't
+# changed.
+ORDER_CACHE = {}
+
 ANY_TYPE = object()
 
 
@@ -317,6 +321,13 @@ def register_component(delegate):
     dependencies = delegate.get_dependencies()
     DEPENDENCIES[component] = dependencies
     COMPONENTS[delegate.group][component] |= dependencies
+
+    # if a group of components is modified, clear the run order cache
+    # for that group.
+    group = COMPONENTS[delegate.group]
+    gid = id(group)
+    if gid in ORDER_CACHE:
+        del ORDER_CACHE[gid]
 
     COMPONENTS_BY_TYPE[delegate.type].add(component)
     DELEGATES[component] = delegate
@@ -621,7 +632,13 @@ def run_order(components):
     """ Returns components in an order that satisfies their dependency
         relationships.
     """
-    return toposort_flatten(components)
+
+    # skip the sort if we've already sorted components and they haven't changed.
+    i = id(components)
+    if i not in ORDER_CACHE:
+        ORDER_CACHE[i] = toposort_flatten(components)
+
+    return ORDER_CACHE[i]
 
 
 def run(components=COMPONENTS[GROUPS.single], broker=None):
