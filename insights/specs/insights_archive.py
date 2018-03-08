@@ -151,6 +151,7 @@ class InsightsArchiveSpecs(Specs):
     root_crontab = simple_file("insights_commands/crontab_-l_-u_root")
     route = simple_file("insights_commands/route_-n")
     rpm_V_packages = simple_file("insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo")
+    saphostctl_getcimobject_sapinstance = simple_file("insights_commands/saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_S = simple_file("insights_commands/smbstatus_-S")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
