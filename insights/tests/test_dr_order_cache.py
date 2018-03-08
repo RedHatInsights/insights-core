@@ -19,6 +19,7 @@ def add(a, b):
 def test_order_cache():
     group = dr.COMPONENTS[dr.GROUPS.single]
     gid = id(group)
-    assert gid not in dr.ORDER_CACHE
+    if gid in dr.ORDER_CACHE:
+        del dr.ORDER_CACHE[gid]
     dr.run(group)
     assert gid in dr.ORDER_CACHE

@@ -45,7 +45,43 @@ IGNORE = defaultdict(set)
 # changed.
 ORDER_CACHE = {}
 
+# tracks if a component is enabled
+ENABLED = defaultdict(lambda: True)
+
 ANY_TYPE = object()
+
+
+def set_enabled(component, enabled=True):
+    """
+    Enable a component for evaluation. If set to False, the component is
+    skipped, and all components that require it will not execute. If component
+    is a fully qualified name string of a callable object instead of the
+    callable object itself, the component's module is loaded as a side effect
+    of calling this function.
+
+    Args:
+        component (str or callable): fully qualified name of the component or
+            the component object itself.
+        enabled (bool): whether the component is enabled for evaluation.
+
+    Returns:
+        None
+    """
+    ENABLED[get_component(component) or component] = enabled
+
+
+def is_enabled(component):
+    """
+    Check to see if a component is enabled.
+
+    Args:
+        component (callable): The component to check. The component must
+        already be loaded.
+
+    Returns:
+        True if the component is enabled. False otherwise.
+    """
+    return ENABLED[component]
 
 
 def get_delegate(component):
@@ -70,8 +106,9 @@ def _get_from_class(name):
 
 
 def _get_component(name):
-    """ Returns a class, function, or class method specified by the fully
-        qualified name.
+    """
+    Returns a class, function, or class method specified by the fully qualified
+    name.
     """
     for f in (_get_from_module, _get_from_class):
         try:
@@ -135,8 +172,9 @@ class MissingRequirements(Exception):
 
 
 class SkipComponent(Exception):
-    """ This class should be raised by components that want to be taken out of
-        dependency resolution.
+    """
+    This class should be raised by components that want to be taken out of
+    dependency resolution.
     """
     pass
 
@@ -185,12 +223,14 @@ def is_hidden(component):
 
 
 def walk_dependencies(root, visitor):
-    """ Call visitor on root and all dependencies reachable from it in breadth
-        first order.
+    """
+    Call visitor on root and all dependencies reachable from it in breadth
+    first order.
 
-        :param component root: component function or class
-        :param function visitor: signature is `func(component, parent)`.
-            The call on root is `visitor(root, None)`.
+    Args:
+        root (component): component function or class
+        visitor (function): signature is `func(component, parent)`.  The
+            call on root is `visitor(root, None)`.
     """
     def visit(parent, visitor):
         for d in get_dependencies(parent):
@@ -466,9 +506,9 @@ def broker_executor(func, broker, requires=[], optional=[]):
 
 
 def default_executor(func, broker, requires=[], optional=[]):
-    """ Use this executor if your component signature matches your
-        dependency list. Can be used on individual components or
-        in component type definitions.
+    """
+    Use this executor if your component signature matches your dependency list.
+    Can be used on individual components or in component type definitions.
     """
     missing_requirements = get_missing_requirements(func, requires, broker)
     if missing_requirements:
@@ -540,8 +580,9 @@ class TypeSetDescriptor(object):
 
 
 class TypeSetMeta(type):
-    """ The metaclass that converts RegistryPoint markers to regisry point
-        datasources and hooks implementations for them into the registry.
+    """
+    The metaclass that converts RegistryPoint markers to regisry point
+    datasources and hooks implementations for them into the registry.
     """
     def __new__(cls, name, bases, dct):
         return super(TypeSetMeta, cls).__new__(cls, name, bases, dct)
@@ -571,31 +612,32 @@ def new_component_type(auto_requires=[],
                        executor=default_executor,
                        type_metadata={},
                        delegate_class=Delegate):
-    """ Factory that creates component decorators.
+    """
+    Factory that creates component decorators.
 
-        The functions this factory produces are decorators for parsers, combiners,
-        rules, cluster rules, etc.
+    The functions this factory produces are decorators for parsers, combiners,
+    rules, cluster rules, etc.
 
-        Args:
-            auto_requires (list): All decorated components automatically have
-                this requires spec. Anything specified when decorating a component
-                is added to this spec.
-            auto_optional (list): All decorated components automatically have
-                this optional spec. Anything specified when decorating a component
-                is added to this spec.
-            group (type): any symbol to group this component with similar components
-                in the dependency list. This will be used when calling run to
-                select the set of components to be executed: run(COMPONENTS[group])
-            executor (func): an optional function that controls how a component is
-                executed. It can impose restrictions on return value types, perform
-                component type specific exception handling, etc. The signature is
-                `executor(component, broker, requires=?, optional=?)`.
-                The default behavior is to call `default_executor`.
-            type_metadata (dict): an arbitrary dictionary to associate with all
-                components of this type.
+    Args:
+        auto_requires (list): All decorated components automatically have
+            this requires spec. Anything specified when decorating a component
+            is added to this spec.
+        auto_optional (list): All decorated components automatically have
+            this optional spec. Anything specified when decorating a component
+            is added to this spec.
+        group (type): any symbol to group this component with similar components
+            in the dependency list. This will be used when calling run to
+            select the set of components to be executed: run(COMPONENTS[group])
+        executor (func): an optional function that controls how a component is
+            executed. It can impose restrictions on return value types, perform
+            component type specific exception handling, etc. The signature is
+            `executor(component, broker, requires=?, optional=?)`.
+            The default behavior is to call `default_executor`.
+        type_metadata (dict): an arbitrary dictionary to associate with all
+            components of this type.
 
-        Returns:
-            A decorator function used to define components of the new type.
+    Returns:
+        A decorator function used to define components of the new type.
     """
 
     def decorator(*requires, **kwargs):
@@ -629,8 +671,9 @@ def new_component_type(auto_requires=[],
 
 
 def run_order(components):
-    """ Returns components in an order that satisfies their dependency
-        relationships.
+    """
+    Returns components in an order that satisfies their dependency
+    relationships.
     """
 
     # skip the sort if we've already sorted components and they haven't changed.
@@ -642,15 +685,16 @@ def run_order(components):
 
 
 def run(components=COMPONENTS[GROUPS.single], broker=None):
-    """ Executes components in an order that satisfies their dependency
-        relationships.
+    """
+    Executes components in an order that satisfies their dependency
+    relationships.
     """
     broker = broker or Broker()
 
     for component in run_order(components):
         start = time.time()
         try:
-            if component not in broker and component in DELEGATES:
+            if component not in broker and component in DELEGATES and ENABLED[component]:
                 log.info("Trying %s" % get_name(component))
                 result = DELEGATES[component](broker)
                 broker[component] = result
@@ -673,11 +717,12 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
 
 
 def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
-    """ Executes components in an order that satisfies their dependency
-        relationships. Disjoint subgraphs are executed one at a time and
-        a broker containing the results for each is yielded. If a broker
-        is passed here, its instances are used to seed the broker used
-        to hold state for each sub graph.
+    """
+    Executes components in an order that satisfies their dependency
+    relationships. Disjoint subgraphs are executed one at a time and a broker
+    containing the results for each is yielded. If a broker is passed here, its
+    instances are used to seed the broker used to hold state for each sub
+    graph.
     """
     seed_broker = broker or Broker()
     for graph in get_subgraphs(components):
