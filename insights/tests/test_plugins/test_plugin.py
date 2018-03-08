@@ -3,5 +3,5 @@ from insights.parsers import installed_rpms, uname
 
 
 @rule(optional=[installed_rpms.InstalledRpms, uname.Uname])
-def report(shared):
+def report(rpms, un):
     pass

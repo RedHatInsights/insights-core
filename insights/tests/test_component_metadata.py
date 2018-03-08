@@ -4,12 +4,12 @@ stage = dr.new_component_type(type_metadata={"description": "A processing stage.
 
 
 @stage()
-def report(broker):
+def report():
     return "this is a regular report"
 
 
 @stage(metadata={"description": "Reports stuff about things."})
-def special_report(broker):
+def special_report():
     return "this is a special report"
 
 
