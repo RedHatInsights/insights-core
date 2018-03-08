@@ -56,7 +56,11 @@ Examples:
     }
 """
 
+
 from .. import Parser, parser
+
+
+ERRORS = ["not found", "failed to run command ", "No such file or directory"]
 
 
 @parser("brctl_show")
@@ -76,28 +80,28 @@ class BrctlShow(Parser):
     def parse_content(self, content):
         self._group_by_iface = {}
         self.data = []
-        if "/usr/sbin/brctl: file not found" in content[0]:
+        if any(err_srt in content[0] for err_srt in ERRORS):
             return
-        elif "\t" in content[0]:
+        if "\t" in content[0]:
             head_line = filter(None, [v.strip() for v in content[0].split('\t')])
         else:
             head_line = filter(None, [v.strip() for v in content[0].split('  ')])
-        iface = head_line[3]
+        iface = head_line[3] if len(head_line) >= 3 else None
+        if iface:
+            for line in content[1:]:
+                if not line.startswith((' ', '\t')):
+                    iface_lst = []
+                    br_mapping = {}
+                    br_mapping = dict(zip(head_line, line.split()))
+                    if len(line.split()) == 4:
+                        iface_lst.append(line.split()[3])
+                        br_mapping[iface] = iface_lst
+                    if br_mapping:
+                        self.data.append(br_mapping)
 
-        for line in content[1:]:
-            if not line.startswith((' ', '\t')):
-                iface_lst = []
-                br_mapping = {}
-                br_mapping = dict(zip(head_line, line.split()))
-                if len(line.split()) == 4:
-                    iface_lst.append(line.split()[3])
+                else:
+                    iface_lst.append(line.strip())
                     br_mapping[iface] = iface_lst
-                if br_mapping:
-                    self.data.append(br_mapping)
-
-            else:
-                iface_lst.append(line.strip())
-                br_mapping[iface] = iface_lst
 
         for entry in self.data:
             self._group_by_iface[entry['bridge name']] = \
