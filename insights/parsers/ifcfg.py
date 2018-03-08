@@ -44,6 +44,7 @@ Examples:
 """
 
 import json
+import re
 from collections import OrderedDict
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 
@@ -100,6 +101,7 @@ class IfCFG(LegacyItemAccess, Parser):
                 value = json.loads(value.replace("\\", ""))
             if key == "BONDING_OPTS":
                 value_map = OrderedDict()
+                value = re.sub(r'\s*=\s*', '=', value)
                 for key_value_pair in value.split():
                     sub_key, sub_value = [
                         s.strip() for s in key_value_pair.split("=", 1)
