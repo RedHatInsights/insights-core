@@ -1,5 +1,37 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.74.0-241...HEAD)
+
+**Implemented enhancements:**
+
+- Cache Graph Run Order [\#974](https://github.com/RedHatInsights/insights-core/issues/974)
+- Ability to enable and disable arbitrary components [\#969](https://github.com/RedHatInsights/insights-core/issues/969)
+
+## [insights-core-1.74.0-241](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.74.0-241) (2018-03-08)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.73.0-236...insights-core-1.74.0-241)
+
+**Implemented enhancements:**
+
+- Parser for `saphostctrl -function GetCIMObject -enuminstances SAPInstance` command for 1.x branch [\#985](https://github.com/RedHatInsights/insights-core/pull/985) ([PaulWay](https://github.com/PaulWay))
+
+**Fixed bugs:**
+
+- Invalid Subscription Manager specs [\#972](https://github.com/RedHatInsights/insights-core/issues/972)
+
+**Closed issues:**
+
+- Add check for brctl "No such file or directory" [\#988](https://github.com/RedHatInsights/insights-core/issues/988)
+- Add parsers LvsAll, PvsAll, VgsAll and combiner LvmAll for getting LVM information for all accepted and rejected devices. \#908 [\#980](https://github.com/RedHatInsights/insights-core/issues/980)
+- Install instructions do not work on RHEL 7 [\#911](https://github.com/RedHatInsights/insights-core/issues/911)
+- Spec for command `modinfo` : remove OR enhance ? [\#730](https://github.com/RedHatInsights/insights-core/issues/730)
+
+**Merged pull requests:**
+
+- Initial spec + parser for /etc/sysconfig/memcached for insights-core 1x [\#995](https://github.com/RedHatInsights/insights-core/pull/995) ([jsvob](https://github.com/jsvob))
+- Modified IfCFG parser [\#993](https://github.com/RedHatInsights/insights-core/pull/993) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
+
 ## [insights-core-1.73.0-236](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.73.0-236) (2018-02-27)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.72.0-224...insights-core-1.73.0-236)
 
