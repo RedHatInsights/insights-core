@@ -315,6 +315,7 @@ class DefaultSpecs(Specs):
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs = None  # simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')
     lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config=\"global{locking_type=0}\"")
+    lvs_noheadings_all = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     machine_id = simple_file("etc/redhat-access-insights/machine-id")
     manila_conf = simple_file("/etc/manila/manila.conf")
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
@@ -438,6 +439,7 @@ class DefaultSpecs(Specs):
     puppet_ssl_cert_ca_pem = None
     pvs = simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"')
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
+    pvs_noheadings_all = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qpid_stat_q = simple_command("/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpid_stat_u = simple_command("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
@@ -562,6 +564,7 @@ class DefaultSpecs(Specs):
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
     vgs = None  # simple_command('/sbin/vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"')
     vgs_noheadings = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"")
+    vgs_noheadings_all = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     virt_what = simple_command("/usr/sbin/virt-what")
     virt_who_conf = glob_file([r"etc/virt-who.conf", r"etc/virt-who.d/*.conf"])
     vmcore_dmesg = glob_file("/var/crash/*/vmcore-dmesg.txt")

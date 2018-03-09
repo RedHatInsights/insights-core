@@ -3,37 +3,38 @@ from collections import namedtuple
 import pytest
 from insights.parsers.lvm import (Lvs, LvsHeadings, Pvs, PvsHeadings, Vgs,
                                   VgsHeadings)
-from insights.combiners.lvm import Lvm
+from insights.parsers.lvm import (LvsAll, PvsAll, VgsAll)
+from insights.combiners.lvm import Lvm, LvmAll
 from insights.combiners import lvm
 from insights.tests import context_wrap
 
 
 LVS_HEADINGS = """
   WARNING: Locking disabled. Be careful! This could corrupt your metadata.
-  LV            VG              Attr       LSize   Pool  Origin Data%  Meta%  Move Log Cpy%Sync Convert LV Tags Devices          
-  lv_brick1     data1           Vwi-aotz--   3.62t pool1        0.05                                                             
-  lv_hdfs1      data1           Vwi-aotz--   3.62t pool1        0.05                                                             
-  pool1         data1           twi-aotz--   3.62t              0.10   0.11                                     pool1_tdata(0)   
-  [pool1_tdata] data1           Twi-ao----   3.62t                                                              /dev/sdb1(4096)  
-  [pool1_tmeta] data1           ewi-ao----  16.00g                                                              /dev/sdb1(0)     
-  lv_brick2     data2           Vwi-aotz--   3.62t pool2        0.05                                                             
-  lv_hdfs2      data2           Vwi-aotz--   3.62t pool2        0.05                                                             
-  pool2         data2           twi-aotz--   3.62t              0.10   0.11                                     pool2_tdata(0)   
-  [pool2_tdata] data2           Twi-ao----   3.62t                                                              /dev/sdc1(4096)  
-  [pool2_tmeta] data2           ewi-ao----  16.00g                                                              /dev/sdc1(0)     
-  lv_brick3     data3           Vwi-aotz--   3.62t pool3        0.05                                                             
-  lv_hdfs3      data3           Vwi-aotz--   3.62t pool3        0.05                                                             
-  pool3         data3           twi-aotz--   3.62t              0.10   0.11                                     pool3_tdata(0)   
-  [pool3_tdata] data3           Twi-ao----   3.62t                                                              /dev/sdd1(4096)  
-  [pool3_tmeta] data3           ewi-ao----  16.00g                                                              /dev/sdd1(0)     
-  lv_brick4     data4           Vwi-aotz--   3.62t pool4        0.05                                                             
-  lv_hdfs4      data4           Vwi-aotz--   3.62t pool4        0.05                                                             
-  pool4         data4           twi-aotz--   3.62t              0.10   0.11                                     pool4_tdata(0)   
-  [pool4_tdata] data4           Twi-ao----   3.62t                                                              /dev/sde1(4096)  
-  [pool4_tmeta] data4           ewi-ao----  16.00g                                                              /dev/sde1(0)     
-  lv_brick5     data5           Vwi-aotz--   3.62t pool5        0.05                                                             
-  lv_hdfs5      data5           Vwi-aotz--   3.62t pool5        0.05                                                             
-  pool5         data5           twi-aotz--   3.62t              0.10   0.11                                     pool5_tdata(0)   
+  LV            VG              Attr       LSize   Pool  Origin Data%  Meta%  Move Log Cpy%Sync Convert LV Tags Devices
+  lv_brick1     data1           Vwi-aotz--   3.62t pool1        0.05
+  lv_hdfs1      data1           Vwi-aotz--   3.62t pool1        0.05
+  pool1         data1           twi-aotz--   3.62t              0.10   0.11                                     pool1_tdata(0)
+  [pool1_tdata] data1           Twi-ao----   3.62t                                                              /dev/sdb1(4096)
+  [pool1_tmeta] data1           ewi-ao----  16.00g                                                              /dev/sdb1(0)
+  lv_brick2     data2           Vwi-aotz--   3.62t pool2        0.05
+  lv_hdfs2      data2           Vwi-aotz--   3.62t pool2        0.05
+  pool2         data2           twi-aotz--   3.62t              0.10   0.11                                     pool2_tdata(0)
+  [pool2_tdata] data2           Twi-ao----   3.62t                                                              /dev/sdc1(4096)
+  [pool2_tmeta] data2           ewi-ao----  16.00g                                                              /dev/sdc1(0)
+  lv_brick3     data3           Vwi-aotz--   3.62t pool3        0.05
+  lv_hdfs3      data3           Vwi-aotz--   3.62t pool3        0.05
+  pool3         data3           twi-aotz--   3.62t              0.10   0.11                                     pool3_tdata(0)
+  [pool3_tdata] data3           Twi-ao----   3.62t                                                              /dev/sdd1(4096)
+  [pool3_tmeta] data3           ewi-ao----  16.00g                                                              /dev/sdd1(0)
+  lv_brick4     data4           Vwi-aotz--   3.62t pool4        0.05
+  lv_hdfs4      data4           Vwi-aotz--   3.62t pool4        0.05
+  pool4         data4           twi-aotz--   3.62t              0.10   0.11                                     pool4_tdata(0)
+  [pool4_tdata] data4           Twi-ao----   3.62t                                                              /dev/sde1(4096)
+  [pool4_tmeta] data4           ewi-ao----  16.00g                                                              /dev/sde1(0)
+  lv_brick5     data5           Vwi-aotz--   3.62t pool5        0.05
+  lv_hdfs5      data5           Vwi-aotz--   3.62t pool5        0.05
+  pool5         data5           twi-aotz--   3.62t              0.10   0.11                                     pool5_tdata(0)
   [pool5_tdata] data5           Twi-ao----   3.62t                                                              /dev/sdf1(4096)  
   [pool5_tmeta] data5           ewi-ao----  16.00g                                                              /dev/sdf1(0)     
   lv_brick6     data6           Vwi-aotz--   3.62t pool6        0.05                                                             
@@ -456,3 +457,160 @@ def test_combiner_lvs(lvm_data):
             for lv in filtered_lvm_info:
                 assert lv.LV in ['pool7', '[pool7_tdata]', '[pool7_tmeta]']
             assert Lvm.LvVgName(LV='pool7', VG='data7') in filtered_lvm_info
+
+
+@pytest.fixture
+def lvm_data_all():
+    vgsall = VgsAll(context_wrap(VGS_NO_HEADINGS))
+    pvsall = PvsAll(context_wrap(PVS_NO_HEADINGS))
+    lvsall = LvsAll(context_wrap(LVS_NO_HEADINGS))
+    shared_list = [
+        {VgsAll: vgsall},
+        {PvsAll: pvsall},
+        {LvsAll: lvsall},
+    ]
+    LvmData = namedtuple('LvmData', ['lvm_info', 'shared'])
+    yield [LvmData(LvmAll(shared.get(LvsAll),
+                          shared.get(PvsAll),
+                          shared.get(VgsAll)),
+                   shared)
+           for shared in shared_list]
+
+
+def test_combiner_vgsall(lvm_data_all):
+    has_vgsall = False
+    for data in lvm_data_all:
+        if VgsAll in data.shared:
+            has_vgsall = True
+            lvm_info = data.lvm_info
+            assert lvm_info.volume_groups is not None
+            assert len(list(lvm_info.volume_groups)) == 8
+            assert lvm_info.volume_groups['data7']['VG_UUID'] == 'r58iLs-sYla-lC4h-UURW-bZOG-P2Yd-lambpM'
+            assert lvm_info.volume_group_names == set([
+                'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7',
+                'rhel_ceehadoop1'
+            ])
+            assert lvm_info.volume_groups['data1']['VPerms'] == 'writeable'
+            filtered_lvm_info = lvm_info.filter_volume_groups('data')
+            assert set(filtered_lvm_info.keys()) == set([
+                'data1', 'data2', 'data3', 'data4', 'data5', 'data6', 'data7'
+            ])
+            assert filtered_lvm_info['data7']['VG_UUID'] == 'r58iLs-sYla-lC4h-UURW-bZOG-P2Yd-lambpM'
+    assert has_vgsall
+
+
+def test_combiner_pvsall(lvm_data_all):
+    has_pvsall = False
+    for data in lvm_data_all:
+        if PvsAll in data.shared:
+            has_pvsall = True
+            lvm_info = data.lvm_info
+            assert lvm_info.physical_volumes is not None
+            assert len(list(lvm_info.physical_volumes)) == 31
+            assert lvm_info.physical_volumes['/dev/sdh1+Ys0p6S-WJOW-TAZT-czmX-iOYq-0Tgg-v4cl0H']['VG'] == 'data7'
+            assert lvm_info.physical_volume_names == set([
+                '/dev/data1/lv_brick1',
+                '/dev/data1/lv_hdfs1',
+                '/dev/data2/lv_brick2',
+                '/dev/data2/lv_hdfs2',
+                '/dev/data3/lv_brick3',
+                '/dev/data3/lv_hdfs3',
+                '/dev/data4/lv_brick4',
+                '/dev/data4/lv_hdfs4',
+                '/dev/data5/lv_brick5',
+                '/dev/data5/lv_hdfs5',
+                '/dev/data6/lv_brick6',
+                '/dev/data6/lv_hdfs6',
+                '/dev/data7/lv_brick7',
+                '/dev/data7/lv_hdfs7',
+                '/dev/loop0',
+                '/dev/loop1',
+                '/dev/mapper/docker-253:3-100685290-pool',
+                '/dev/rhel_ceehadoop1/home',
+                '/dev/rhel_ceehadoop1/opt',
+                '/dev/rhel_ceehadoop1/root',
+                '/dev/rhel_ceehadoop1/swap',
+                '/dev/rhel_ceehadoop1/var',
+                '/dev/sda2',
+                '/dev/sda3',
+                '/dev/sdb1',
+                '/dev/sdc1',
+                '/dev/sdd1',
+                '/dev/sde1',
+                '/dev/sdf1',
+                '/dev/sdg1',
+                '/dev/sdh1'
+            ])
+            pv_sdg1 = lvm_info.filter_physical_volumes('/dev/sdg1')
+            assert len(pv_sdg1) == 1
+            pv_sdg1_key, pv_sdg1_values = pv_sdg1.popitem()
+            assert '/dev/sdg1' in lvm_info.physical_volume_names
+            assert lvm_info.physical_volumes[pv_sdg1_key]['LVM2_PV_MINOR'] == '97'
+            assert lvm_info.physical_volumes[pv_sdg1_key]['Missing'] is None
+            filtered_lvm_info = lvm_info.filter_physical_volumes('sda')
+            assert set([p['PV'] for p in filtered_lvm_info.values()]) == set(['/dev/sda2', '/dev/sda3'])
+            for pv in filtered_lvm_info.values():
+                if pv['PV'] == '/dev/sda2':
+                    assert pv['DevSize'] == '1.00g'
+    assert has_pvsall
+
+
+def test_combiner_lvsall(lvm_data_all):
+    has_lvsall = False
+    for data in lvm_data_all:
+        if LvsAll in data.shared:
+            has_lvsall = True
+            lvm_info = data.lvm_info
+            assert lvm_info.logical_volumes is not None
+            assert len(list(lvm_info.logical_volumes)) == 40
+            pool7 = lvm_info.logical_volumes[Lvm.LvVgName(LV='pool7', VG='data7')]
+            assert pool7['LVM2_REGION_SIZE'] == '0'
+            for k, v in LVS_NOHEADINGS_POOL7.iteritems():
+                assert pool7[k] == v
+            assert lvm_info.logical_volume_names == set([
+                LvmAll.LvVgName(LV='lv_brick1', VG='data1'),
+                LvmAll.LvVgName(LV='lv_hdfs1', VG='data1'),
+                LvmAll.LvVgName(LV='pool1', VG='data1'),
+                LvmAll.LvVgName(LV='[pool1_tdata]', VG='data1'),
+                LvmAll.LvVgName(LV='[pool1_tmeta]', VG='data1'),
+                LvmAll.LvVgName(LV='lv_brick2', VG='data2'),
+                LvmAll.LvVgName(LV='lv_hdfs2', VG='data2'),
+                LvmAll.LvVgName(LV='pool2', VG='data2'),
+                LvmAll.LvVgName(LV='[pool2_tdata]', VG='data2'),
+                LvmAll.LvVgName(LV='[pool2_tmeta]', VG='data2'),
+                LvmAll.LvVgName(LV='lv_brick3', VG='data3'),
+                LvmAll.LvVgName(LV='lv_hdfs3', VG='data3'),
+                LvmAll.LvVgName(LV='pool3', VG='data3'),
+                LvmAll.LvVgName(LV='[pool3_tdata]', VG='data3'),
+                LvmAll.LvVgName(LV='[pool3_tmeta]', VG='data3'),
+                LvmAll.LvVgName(LV='lv_brick4', VG='data4'),
+                LvmAll.LvVgName(LV='lv_hdfs4', VG='data4'),
+                LvmAll.LvVgName(LV='pool4', VG='data4'),
+                LvmAll.LvVgName(LV='[pool4_tdata]', VG='data4'),
+                LvmAll.LvVgName(LV='[pool4_tmeta]', VG='data4'),
+                LvmAll.LvVgName(LV='lv_brick5', VG='data5'),
+                LvmAll.LvVgName(LV='lv_hdfs5', VG='data5'),
+                LvmAll.LvVgName(LV='pool5', VG='data5'),
+                LvmAll.LvVgName(LV='[pool5_tdata]', VG='data5'),
+                LvmAll.LvVgName(LV='[pool5_tmeta]', VG='data5'),
+                LvmAll.LvVgName(LV='lv_brick6', VG='data6'),
+                LvmAll.LvVgName(LV='lv_hdfs6', VG='data6'),
+                LvmAll.LvVgName(LV='pool6', VG='data6'),
+                LvmAll.LvVgName(LV='[pool6_tdata]', VG='data6'),
+                LvmAll.LvVgName(LV='[pool6_tmeta]', VG='data6'),
+                LvmAll.LvVgName(LV='lv_brick7', VG='data7'),
+                LvmAll.LvVgName(LV='lv_hdfs7', VG='data7'),
+                LvmAll.LvVgName(LV='pool7', VG='data7'),
+                LvmAll.LvVgName(LV='[pool7_tdata]', VG='data7'),
+                LvmAll.LvVgName(LV='[pool7_tmeta]', VG='data7'),
+                LvmAll.LvVgName(LV='home', VG='rhel_ceehadoop1'),
+                LvmAll.LvVgName(LV='opt', VG='rhel_ceehadoop1'),
+                LvmAll.LvVgName(LV='root', VG='rhel_ceehadoop1'),
+                LvmAll.LvVgName(LV='swap', VG='rhel_ceehadoop1'),
+                LvmAll.LvVgName(LV='var', VG='rhel_ceehadoop1'),
+            ])
+            filtered_lvm_info = lvm_info.filter_logical_volumes('pool7')
+            for lv in filtered_lvm_info:
+                assert lv.LV in ['pool7', '[pool7_tdata]', '[pool7_tmeta]']
+            assert LvmAll.LvVgName(LV='pool7', VG='data7') in filtered_lvm_info
+    assert has_lvsall
