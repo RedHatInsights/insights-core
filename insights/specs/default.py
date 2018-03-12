@@ -193,7 +193,7 @@ class DefaultSpecs(Specs):
     foreman_rake_db_migrate_status = simple_command('/usr/sbin/foreman-rake db:migrate:status')
     fstab = simple_file("/etc/fstab")
     galera_cnf = simple_file("/etc/my.cnf.d/galera.cnf")
-    getcert_list = first_of([simple_command("/usr/bin/getcert list"), simple_file("sos_commands/ipa/ipa-getcert_list", context=HostArchiveContext)])
+    getcert_list = simple_command("/usr/bin/getcert list")
     getenforce = simple_command("/usr/sbin/getenforce")
     getsebool = simple_command("/usr/sbin/getsebool -a")
     glance_api_conf = simple_file("/etc/glance/glance-api.conf")
