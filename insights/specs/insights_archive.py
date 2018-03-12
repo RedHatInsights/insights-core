@@ -67,6 +67,7 @@ class InsightsArchiveSpecs(Specs):
     hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_pid = simple_file("insights_commands/pgrep_-o_httpd")
+    httpd_V = glob_file("insights_commands/httpd_-V")
     ifconfig = simple_file("insights_commands/ifconfig_-a")
     ip6tables = simple_file("insights_commands/ip6tables-save")
     ip_addr = simple_file("insights_commands/ip_addr")
