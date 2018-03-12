@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 this_file = os.path.abspath(__file__)
 with open(this_file) as f:
-    file_content = [l.rstrip() for l in f.readlines()]
+    file_content = list(f)
 
 
 class Stuff(SpecSet):
