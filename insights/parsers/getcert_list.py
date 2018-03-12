@@ -112,7 +112,7 @@ class CertList(Parser):
                 self._data[current_request] = {}
                 self.requests.append(current_request)
                 self._rq_list.append(self._data[current_request])
-            elif line.endswith(':'):
+            elif line.strip().endswith(':'):
                 # Key with no value - fake it
                 key = line[:-1].strip()
                 self._data[current_request][key] = ''
