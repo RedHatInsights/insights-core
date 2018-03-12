@@ -31,4 +31,5 @@ def test_get_filter():
     lines = ["COMMAND", "DISCARD"]
 
     lines = filters.apply_filters(DefaultSpecs.fstab, lines)
+    assert "COMMAND" in lines
     assert "DISCARD" not in lines

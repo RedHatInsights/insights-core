@@ -145,9 +145,9 @@ class TextFileProvider(FileProvider):
             results = []
             if self.ds:
                 # This should shell out to a grep pipeline
-                results = list(apply_filters(self.ds, (l.rstrip() for l in f)))
+                results = list(apply_filters(self.ds, f))
             else:
-                results = [l.rstrip() for l in f]
+                results = list(f)
         self.validate_lines(results)
         return results
 
