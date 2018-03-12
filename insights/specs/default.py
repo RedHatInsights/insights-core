@@ -217,14 +217,14 @@ class DefaultSpecs(Specs):
     hosts = simple_file("/etc/hosts")
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
-    httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"]),
+    httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
-    httpd_worker_V = simple_command("/usr/sbin/httpd.worker -V"),  # RHEL6
-    httpd_event_V = simple_command("/usr/sbin/httpd.event -V"),  # RHEL6
+    httpd_worker_V = simple_command("/usr/sbin/httpd.worker -V")  # RHEL6
+    httpd_event_V = simple_command("/usr/sbin/httpd.event -V")  # RHEL6
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):
