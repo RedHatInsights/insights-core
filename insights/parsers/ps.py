@@ -90,7 +90,7 @@ class PsAuxww(Parser):
 
     def parse_content(self, content):
         raw_line_key = "_line"
-        if any(line.startswith("USER") and line.endswith("COMMAND") for line in content):
+        if any(line.lstrip().startswith("USER") and line.rstrip().endswith("COMMAND") for line in content):
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
