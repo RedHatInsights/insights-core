@@ -177,11 +177,6 @@ class ClusterArchiveContext(ExecutionContext):
         super(ClusterArchiveContext, self).__init__()
 
 
-# No fs_root here. Dependence on this context should be explicit.
-class DockerHostContext(HostContext):
-    pass
-
-
 @fs_root
 class DockerImageContext(ExecutionContext):
     pass
