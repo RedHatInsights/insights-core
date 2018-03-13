@@ -141,7 +141,7 @@ class ExecutionContext(object):
             output = raw
 
         if split:
-            output = [l.rstrip() for l in output.splitlines()]
+            output = output.splitlines()
 
         return (rc, output) if keep_rc else output
 
