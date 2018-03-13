@@ -12,6 +12,7 @@ class Specs(SpecSet):
     brctl_show = RegistryPoint()
     candlepin_error_log = RegistryPoint()
     candlepin_log = RegistryPoint()
+    checkin_conf = RegistryPoint()
     catalina_out = RegistryPoint(multi_output=True)
     catalina_server_log = RegistryPoint(multi_output=True)
     cciss = RegistryPoint(multi_output=True)
