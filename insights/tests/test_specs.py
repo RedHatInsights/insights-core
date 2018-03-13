@@ -1,6 +1,6 @@
 import os
 
-from insights.core import dr
+from insights import add_filter, dr
 from insights.core.context import HostContext
 from insights.core.spec_factory import simple_file, simple_command, glob_file, SpecSet
 
@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 this_file = os.path.abspath(__file__)
 with open(this_file) as f:
-    file_content = list(f)
+    file_content = f.read().splitlines()
 
 
 class Stuff(SpecSet):
@@ -34,3 +34,16 @@ def test_spec_factory():
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
     assert dostuff in broker, broker.tracebacks
     assert broker[Stuff.smpl_file].content == file_content
+    assert not any(l.endswith("\n") for l in broker[Stuff.smpl_file].content)
+
+
+def test_line_terminators():
+    add_filter(Stuff.smpl_file, "def test")
+    hn = HostContext()
+    broker = dr.Broker()
+    broker[HostContext] = hn
+    broker = dr.run(dr.get_dependency_graph(dostuff), broker)
+
+    content = broker[Stuff.smpl_file].content
+    assert all("def test" in l for l in content)
+    assert not any(l.endswith("\n") for l in content)
