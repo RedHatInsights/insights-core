@@ -138,17 +138,22 @@ class TextFileProvider(FileProvider):
         if results:
             first = results[0]
             if any(l in first for l in self.bad_lines):
-                raise ContentException(first)
+                return False
+        return True
 
     def load(self):
-        with open(self.path, 'r') as f:
+        # read with universal newlines so all line terminators are converted to
+        # "\n"
+        with open(self.path, 'U') as f:
             results = []
             if self.ds:
                 # This should shell out to a grep pipeline
-                results = list(apply_filters(self.ds, f))
+                results = [l.rstrip("\n") for l in apply_filters(self.ds, f)]
             else:
-                results = list(f)
-        self.validate_lines(results)
+                results = f.read().splitlines()
+        if not self.validate_lines(results):
+            first = results[0] if results else "<no content>"
+            raise ContentException(self.relative_path + ": " + first)
         return results
 
 
