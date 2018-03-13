@@ -437,7 +437,6 @@ class DefaultSpecs(Specs):
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
     pulp_worker_defaults = simple_file("etc/default/pulp_workers")
-    puppet_ssl_cert_ca_pem = None
     pvs = simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"')
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
     pvs_noheadings_all = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
