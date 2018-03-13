@@ -100,6 +100,7 @@ class CertList(Parser):
         _TRACK_HEADER = 'Number of certificates and requests being tracked: '
         _RQ_HEADER = 'Request ID '
         for line in content:
+            line = line.strip()
             if line.startswith(_TRACK_HEADER):
                 num_tracked = line[len(_TRACK_HEADER):-1]
                 if not num_tracked.isdigit():
@@ -112,12 +113,12 @@ class CertList(Parser):
                 self._data[current_request] = {}
                 self.requests.append(current_request)
                 self._rq_list.append(self._data[current_request])
-            elif line.strip().endswith(':'):
+            elif line.endswith(':'):
                 # Key with no value - fake it
-                key = line[:-1].strip()
+                key = line[:-1]
                 self._data[current_request][key] = ''
             elif ': ' in line:
-                key, val = line.strip().split(': ', 1)
+                key, val = line.split(': ', 1)
                 self._data[current_request][key] = val
 
     def __contains__(self, rq):
