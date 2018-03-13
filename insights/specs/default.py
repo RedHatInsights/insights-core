@@ -12,7 +12,6 @@ import os
 import re
 
 from insights.core.context import ClusterArchiveContext
-from insights.core.context import DockerHostContext
 from insights.core.context import DockerImageContext
 from insights.core.context import HostContext
 from insights.core.context import HostArchiveContext
@@ -161,13 +160,13 @@ class DefaultSpecs(Specs):
             return list(result)
         raise ContentException("No docker containers.")
 
-    docker_host_machine_id = simple_file("/etc/redhat-access-insights/machine-id", context=DockerHostContext)
-    docker_image_inspect = foreach_execute(docker_image_ids, "/usr/bin/docker inspect %s", context=DockerHostContext)
-    docker_container_inspect = foreach_execute(docker_container_ids, "/usr/bin/docker inspect %s", context=DockerHostContext)
-    docker_network = simple_file("/etc/sysconfig/docker-network", context=DockerHostContext)
-    docker_storage = simple_file("/etc/sysconfig/docker-storage", context=DockerHostContext)
-    docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup", context=DockerHostContext)
-    docker_sysconfig = simple_file("/etc/sysconfig/docker", context=DockerHostContext)
+    docker_host_machine_id = simple_file("/etc/redhat-access-insights/machine-id")
+    docker_image_inspect = foreach_execute(docker_image_ids, "/usr/bin/docker inspect %s")
+    docker_container_inspect = foreach_execute(docker_container_ids, "/usr/bin/docker inspect %s")
+    docker_network = simple_file("/etc/sysconfig/docker-network")
+    docker_storage = simple_file("/etc/sysconfig/docker-storage")
+    docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
+    docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
