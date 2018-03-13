@@ -97,7 +97,7 @@ def parse_df_lines(df_content):
     columns = Record._fields
     for line in df_content[1:]:  # [1:] -> Skip the header
         # Stop at 5 splits to avoid splitting spaces in path
-        line_splits = line.split(None, 5)
+        line_splits = line.rstrip().split(None, 5)
         if len(line_splits) >= 6:
             for i, name in enumerate(columns):
                 df_ls[name] = line_splits[i]
@@ -178,18 +178,13 @@ class DiskFree(Parser):
         """
         Record: returns the Record object that contains the given path.
 
-        This finds the most specific mount path that contains the given path,
-        by successively removing the directory or file name on the end of
-        the path and seeing if that is a mount point.  This will always
-        terminate since / is always a mount point.  Strings that are not
-        absolute paths will return None.
+        This finds the most specific mount path that contains the given path.
         """
-        import os
-        while path != '':
-            if path in self.mounts:
-                return self.mounts[path]
-            path = os.path.split(path)[0]
-        return None
+        try:
+            longest = max(m for m in self.mounts if path.startswith(m))
+            return self.mounts[longest]
+        except ValueError:
+            return None
 
 
 @parser(Specs.df__li)
