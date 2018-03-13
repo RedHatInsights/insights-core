@@ -181,8 +181,9 @@ class InputData(object):
                 self.data[spec] = []
             self.data[spec].append(content_provider)
         else:
-            logger.warn("Replacing %s", spec.__name__)
-            logger.warn(traceback.format_stack())
+            if spec in self.data:
+                logger.warn("Replacing %s", spec.__name__)
+                logger.warn(traceback.format_stack())
             self.data[spec] = content_provider
 
         return self
