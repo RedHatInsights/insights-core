@@ -353,7 +353,7 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
         results = []
         for pattern in patterns:
             pattern = ctx.locate_path(pattern)
-            for path in glob(os.path.join(root, pattern.lstrip('/'))):
+            for path in sorted(glob(os.path.join(root, pattern.lstrip('/')))):
                 if ignore and re.search(ignore, path):
                     continue
                 try:
@@ -416,9 +416,9 @@ def listdir(path, context=None):
         p = os.path.join(ctx.root, path.lstrip('/'))
         p = ctx.locate_path(p)
         if os.path.isdir(p):
-            return os.listdir(p)
+            return sorted(os.listdir(p))
 
-        result = glob(p)
+        result = sorted(glob(p))
         if result:
             return [os.path.basename(r) for r in result]
         raise ContentException("Can't list %s or nothing there." % p)
