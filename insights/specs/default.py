@@ -223,21 +223,22 @@ class DefaultSpecs(Specs):
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
-    httpd_worker_V = simple_command("/usr/sbin/httpd.worker -V")  # RHEL6
-    httpd_event_V = simple_command("/usr/sbin/httpd.event -V")  # RHEL6
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):
         ps = broker[DefaultSpecs.ps_auxww].content
+        ps_httpds = set()
         for p in ps:
             p_splits = p.split(None, 10)
             if len(p_splits) >= 11:
                 cmd = p_splits[10].split()[0]
                 # Should compatible with RHEL6
                 # e.g. /usr/sbin/httpd, /usr/sbin/httpd.worker and /usr/sbin/httpd.event
-                if 'httpd' in os.path.basename(cmd):
-                    return [cmd]
-        return []
+                #      and SCL's httpd24-httpd
+                if os.path.basename(cmd).startswith('httpd'):
+                    ps_httpds.add(cmd)
+        # collect nothing if there are multiple httpd instances running
+        return ps_httpds if len(ps_httpds) == 1 else []
 
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")

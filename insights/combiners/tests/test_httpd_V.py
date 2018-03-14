@@ -97,8 +97,8 @@ root   75  0.0  0.0      0     0 ?   S    Mar09   0:00 [kthreadd]
 
 def test_httpd_V_RHEL6():
     hv1 = HV(context_wrap(HTTPDV1))
-    hv2 = HWV(context_wrap(HTTPDV2))
-    hv3 = HEV(context_wrap(HTTPDV3))
+    hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
+    hv3 = HEV(context_wrap(HTTPDV3, path='httpd.event_-V'))
     ps = PsAuxww(context_wrap(PS_WORKER))
     rh = RedhatRelease(context_wrap(RHEL6))
     shared = {HV: hv1, HWV: hv2, HEV: hv3, PsAuxww: ps, redhat_release: rh}
@@ -123,8 +123,8 @@ def test_httpd_V_RHEL6():
 
 def test_httpd_V_RHEL7():
     hv1 = HV(context_wrap(HTTPDV1))
-    hv2 = HWV(context_wrap(HTTPDV2))
-    hv3 = HEV(context_wrap(HTTPDV3))
+    hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
+    hv3 = HEV(context_wrap(HTTPDV3, path='httpd.event_-V'))
     ps = PsAuxww(context_wrap(PS_WORKER))
     rh = RedhatRelease(context_wrap(RHEL7))
     shared = {HV: hv1, HWV: hv2, HEV: hv3, PsAuxww: ps, redhat_release: rh}
@@ -140,7 +140,7 @@ def test_httpd_V_RHEL7():
 
 def test_httpd_V_failed():
     hv1 = HV(context_wrap(HTTPDV1))
-    hv2 = HWV(context_wrap(HTTPDV2))
+    hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
     ps = PsAuxww(context_wrap(PS_EVENT))
     rh = RedhatRelease(context_wrap(RHEL6))
     shared = {HV: hv1, HWV: hv2, PsAuxww: ps, redhat_release: rh}
