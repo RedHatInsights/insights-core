@@ -238,7 +238,7 @@ class DefaultSpecs(Specs):
                 if os.path.basename(cmd).startswith('httpd'):
                     ps_httpds.add(cmd)
         # collect nothing if there are multiple httpd instances running
-        return ps_httpds if len(ps_httpds) == 1 else []
+        return list(ps_httpds)
 
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
