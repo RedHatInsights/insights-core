@@ -4,6 +4,10 @@ Combiner for `httpd -V` command
 
 Combiner to get the valid parsed result of command `httpd -V`.
 
+.. warning::
+    Deprecated combiner in the 3.0 framework, please use the
+    :class:`insights.parsers.httpd_V.HttpdV` parser instead.
+
 Examples:
 
     >>> HTTPDV2 = '''
@@ -28,13 +32,8 @@ Examples:
     ... root   41  0.0  0.0  21452  1536 ?   Ss   Mar09   0:01 httpd.worker
     ... root   75  0.0  0.0      0     0 ?   S    Mar09   0:00 [kthreadd]
     ... '''
-    >>> from insights.parsers.httpd_V import HttpdWorkerV as HWV, HttpdV as HV
-    >>> from insights.combiners.httpd_V import HttpdV
-    >>> hv1 = HWV(context_wrap(HTTPDV1))
-    >>> hv2 = HV(context_wrap(HTTPDV2))
-    >>> ps = PsAuxww(context_wrap(PS_AUXWW))
-    >>> shared = {HV: hv2, HWV hv1, PsAuxww: ps, redhat_release: RHEL6}
-    >>> hv = shared[HttpdV]
+    >>> type(hv)
+    <class 'insights.combiner.httpd_V.HttpdV'>
     >>> hv['Server MPM']
     'worker'
     >>> hv["Server's Module Magic Number"]
@@ -52,6 +51,7 @@ from insights.parsers.httpd_V import HttpdV as HV
 from insights.parsers.httpd_V import HttpdWorkerV as HWV
 from insights.parsers.httpd_V import HttpdEventV as HEV
 from insights import SkipComponent, LegacyItemAccess
+from insights.util import deprecated
 
 
 @combiner(requires=[redhat_release, PsAuxww, [HV, HEV, HWV]])
@@ -73,6 +73,7 @@ class HttpdV(LegacyItemAccess):
         SkipComponent: When no valid HttpdV is found.
     """
     def __init__(self, local, shared):
+        deprecated(HttpdV, "Use the `HttpdV` parser in `insights.parsers.httpd_V`.")
         super(HttpdV, self).__init__()
         rhel_ver = shared[redhat_release].major
         self.data = shared[HV].data if HV in shared else None

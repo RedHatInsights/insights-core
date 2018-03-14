@@ -13,6 +13,7 @@ compilation option is present.
 
 from .. import Parser, parser, LegacyItemAccess
 from insights.specs import Specs
+from insights import SkipComponent
 
 
 @parser(Specs.httpd_V)
@@ -37,7 +38,8 @@ class HttpdV(LegacyItemAccess, Parser):
         -D SERVER_CONFIG_FILE="conf/httpd.conf"
 
     Examples:
-        >>> hv = shared[HttpdV]
+        >>> type(hv)
+        <class 'insights.parsers.httpd_V.HttpdV'>
         >>> hv['Server MPM']
         'prefork'
         >>> hv["Server's Module Magic Number"]
@@ -83,13 +85,31 @@ class HttpdV(LegacyItemAccess, Parser):
         self.data['Server compiled with'] = compiled_with
 
 
-@parser(Specs.httpd_event_V)
+@parser(Specs.httpd_V)
 class HttpdEventV(HttpdV):
-    """Class for parsing ``httpd.event -V`` command output."""
-    pass
+    """
+    Class for parsing ``httpd.event -V`` command output.
+
+    Raises:
+        SkipComponent: When no ``httpd.event -V`` command is found.
+    """
+    def parse_content(self, content):
+        if 'event' in self.file_name:
+            super(HttpdEventV, self).parse_content(content)
+        else:
+            raise SkipComponent("No 'httpd.event' command on this host.")
 
 
-@parser(Specs.httpd_worker_V)
+@parser(Specs.httpd_V)
 class HttpdWorkerV(HttpdV):
-    """Class for parsing ``httpd.worker -V`` command output."""
-    pass
+    """
+    Class for parsing ``httpd.worker -V`` command output.
+
+    Raises:
+        SkipComponent: When no ``httpd.worker -V`` command is found.
+    """
+    def parse_content(self, content):
+        if 'worker' in self.file_name:
+            super(HttpdWorkerV, self).parse_content(content)
+        else:
+            raise SkipComponent("No 'httpd.worker' command on this host.")

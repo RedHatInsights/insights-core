@@ -1,5 +1,9 @@
-from insights.parsers.httpd_V import HttpdV
+from insights.parsers import httpd_V
+from insights.parsers.httpd_V import HttpdV, HttpdEventV, HttpdWorkerV
 from insights.tests import context_wrap
+from insights import SkipComponent
+import pytest
+import doctest
 
 HTTPD_V_22 = """
 Server version: Apache/2.2.15 (Unix)
@@ -62,6 +66,20 @@ Server compiled with....
 """.strip()
 
 
+HTTPDV_DOC = """
+Server version: Apache/2.2.6 (Red Hat Enterprise Linux)
+Server's Module Magic Number: 20120211:24
+Compiled using: APR 1.4.8, APR-UTIL 1.5.2
+Architecture:   64-bit
+Server MPM:     Prefork
+Server compiled with....
+-D APR_HAS_SENDFILE
+-D APR_HAVE_IPV6 (IPv4-mapped addresses enabled)
+-D AP_TYPES_CONFIG_FILE="conf/mime.types"
+-D SERVER_CONFIG_FILE="conf/httpd.conf"
+""".strip()
+
+
 def test_httpd_V():
     result = HttpdV(context_wrap(HTTPD_V_22))
     assert result["Server MPM"] == "prefork"
@@ -80,3 +98,22 @@ def test_httpd_V():
     assert result['Server compiled with']['APR_HAS_MMAP'] is True
     assert result['Server compiled with']['APR_HAVE_IPV6'] == "IPv4-mapped addresses enabled"
     assert result['Server compiled with']['DEFAULT_PIDLOG'] == "/run/httpd/httpd.pid"
+
+
+def test_httpd_V_exp():
+    with pytest.raises(SkipComponent) as sc:
+        HttpdEventV(context_wrap(HTTPD_V_24))
+    assert "No 'httpd.event' command on this host." in str(sc)
+
+    with pytest.raises(SkipComponent) as sc:
+        HttpdWorkerV(context_wrap(HTTPD_V_24))
+    assert "No 'httpd.worker' command on this host." in str(sc)
+
+
+def test_httpd_V_doc():
+    env = {
+            'HttpdV': HttpdV,
+            'hv': HttpdV(context_wrap(HTTPDV_DOC))
+          }
+    failed, total = doctest.testmod(httpd_V, globs=env)
+    assert failed == 0
