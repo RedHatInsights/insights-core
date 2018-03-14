@@ -58,9 +58,7 @@ Examples:
 
 from .. import Parser, parser
 from insights.specs import Specs
-
-
-ERRORS = ["not found", "failed to run command ", "No such file or directory"]
+from insights.parsers import ParseException
 
 
 @parser(Specs.brctl_show)
@@ -80,8 +78,6 @@ class BrctlShow(Parser):
     def parse_content(self, content):
         self._group_by_iface = {}
         self.data = []
-        if any(err_srt in content[0] for err_srt in ERRORS):
-            return
         if "\t" in content[0]:
             head_line = filter(None, [v.strip() for v in content[0].split('\t')])
         else:
@@ -102,8 +98,8 @@ class BrctlShow(Parser):
                 else:
                     iface_lst.append(line.strip())
                     br_mapping[iface] = iface_lst
-
-        for entry in self.data:
-            self._group_by_iface[entry['bridge name']] = \
-                dict((k, v) for (k, v) in entry.iteritems() if k != 'bridge name')
-        return
+            for entry in self.data:
+                self._group_by_iface[entry['bridge name']] = \
+                    dict((k, v) for (k, v) in entry.iteritems() if k != 'bridge name')
+        else:
+            raise ParseException("Invalid Data Found")

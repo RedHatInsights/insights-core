@@ -1,5 +1,7 @@
+import pytest
 from insights.parsers.brctl_show import BrctlShow
 from insights.tests import context_wrap
+from insights.parsers import brctl_show, ParseException
 
 
 BRCTL_SHOW = """
@@ -74,19 +76,15 @@ def test_get_brctl_show():
             }
 
     # Test handling of system with no bridges
-    no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_NO_BRIDGES))
-    assert len(no_bridges.data) == 0
-    assert len(no_bridges.group_by_iface) == 0
+    with pytest.raises(ParseException) as e_info:
+        brctl_show.BrctlShow(context_wrap(BRCTL_SHOW_ERROR))
+    assert "Invalid Data Found" in str(e_info.value)
 
     # Test handling of error output
-    no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_ERROR))
-    assert len(no_bridges.data) == 0
-    assert len(no_bridges.group_by_iface) == 0
+    with pytest.raises(ParseException) as e_info:
+        brctl_show.BrctlShow(context_wrap(BRCTL_SHOW_LESS_COLUMN))
+    assert "Invalid Data Found" in str(e_info.value)
 
-    no_bridges = BrctlShow(context_wrap(BRCTL_SHOW_LESS_COLUMN))
-    assert len(no_bridges.data) == 0
-    assert len(no_bridges.group_by_iface) == 0
-
-    no_cmd = BrctlShow(context_wrap(BRCTL_SHOW_TIMEOUT))
-    assert len(no_cmd.data) == 0
-    assert len(no_cmd.group_by_iface) == 0
+    with pytest.raises(ParseException) as e_info:
+        brctl_show.BrctlShow(context_wrap(BRCTL_SHOW_TIMEOUT))
+    assert "Invalid Data Found" in str(e_info.value)
