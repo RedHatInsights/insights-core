@@ -2,12 +2,58 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.74.0-241...HEAD)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.75.0-245...HEAD)
+
+**Fixed bugs:**
+
+- WARNING:insights.tests:Replacing ps\_auxcww in --appdebug output [\#1007](https://github.com/RedHatInsights/insights-core/issues/1007)
+- Parser error in lsblk.py [\#790](https://github.com/RedHatInsights/insights-core/issues/790)
+- Parser error in scsi.py [\#789](https://github.com/RedHatInsights/insights-core/issues/789)
+- Parser error in fstab.py [\#788](https://github.com/RedHatInsights/insights-core/issues/788)
+- Parser error in lssap.py [\#787](https://github.com/RedHatInsights/insights-core/issues/787)
+- Parser error in lvm.py [\#784](https://github.com/RedHatInsights/insights-core/issues/784)
+- Parser error in ntp\_sources.py [\#783](https://github.com/RedHatInsights/insights-core/issues/783)
+- Parser error in dockerinfo.py [\#782](https://github.com/RedHatInsights/insights-core/issues/782)
+- Parser error in ssh.py [\#781](https://github.com/RedHatInsights/insights-core/issues/781)
+- Parser error in LsPci in lspci.py [\#780](https://github.com/RedHatInsights/insights-core/issues/780)
+- Parser error in iptables.py [\#779](https://github.com/RedHatInsights/insights-core/issues/779)
+- Parser error in netstat.py [\#778](https://github.com/RedHatInsights/insights-core/issues/778)
+- Error in parser `fstab.py` [\#682](https://github.com/RedHatInsights/insights-core/issues/682)
+- Error in combiner `lvm.py` [\#681](https://github.com/RedHatInsights/insights-core/issues/681)
+- Possible parser error in `rabbitmq.py` [\#680](https://github.com/RedHatInsights/insights-core/issues/680)
+- Another parser error in `iptables.py` [\#678](https://github.com/RedHatInsights/insights-core/issues/678)
+- Parser error in `ntp\_sources.py` [\#677](https://github.com/RedHatInsights/insights-core/issues/677)
+- Parser error in `ssh.py` [\#676](https://github.com/RedHatInsights/insights-core/issues/676)
+- Error in parser `iptables.py` [\#675](https://github.com/RedHatInsights/insights-core/issues/675)
+- Parser error in `blkid.py` [\#674](https://github.com/RedHatInsights/insights-core/issues/674)
+- Parser error in `netstat.py` [\#673](https://github.com/RedHatInsights/insights-core/issues/673)
+
+**Closed issues:**
+
+- Collect specs that aren't used by a rule [\#654](https://github.com/RedHatInsights/insights-core/issues/654)
+- Sync new style specs with old specs [\#598](https://github.com/RedHatInsights/insights-core/issues/598)
+
+## [insights-core-1.75.0-245](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.75.0-245) (2018-03-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.74.0-241...insights-core-1.75.0-245)
 
 **Implemented enhancements:**
 
 - Cache Graph Run Order [\#974](https://github.com/RedHatInsights/insights-core/issues/974)
 - Ability to enable and disable arbitrary components [\#969](https://github.com/RedHatInsights/insights-core/issues/969)
+- Command parsers to be based on a CommandParser class [\#898](https://github.com/RedHatInsights/insights-core/issues/898)
+
+**Fixed bugs:**
+
+- Engine should parse all specs associated with an All SpecGroup [\#807](https://github.com/RedHatInsights/insights-core/issues/807)
+
+**Closed issues:**
+
+- Design and develop client runtime API [\#9](https://github.com/RedHatInsights/insights-core/issues/9)
+
+**Merged pull requests:**
+
+- Ignore the trailing whitespace before endswith [\#1005](https://github.com/RedHatInsights/insights-core/pull/1005) ([xiangce](https://github.com/xiangce))
+- Enhance brctl\_show parser for 1.x [\#990](https://github.com/RedHatInsights/insights-core/pull/990) ([vishwanathjadhav](https://github.com/vishwanathjadhav))
 
 ## [insights-core-1.74.0-241](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.74.0-241) (2018-03-08)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.73.0-236...insights-core-1.74.0-241)
