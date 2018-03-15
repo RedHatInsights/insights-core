@@ -132,6 +132,7 @@ class InsightsArchiveSpecs(Specs):
     oc_get_rc = simple_file("insights_commands/oc_get_rc_-o_yaml_--all-namespaces")
     oc_get_role = simple_file("insights_commands/oc_get_role_-o_yaml_--all-namespaces")
     oc_get_rolebinding = simple_file("insights_commands/oc_get_rolebinding_-o_yaml_--all-namespaces")
+    oc_get_route = simple_file("insights_commands/oc_get_route_-o_yaml_--all-namespaces")
     oc_get_service = simple_file("insights_commands/oc_get_service_-o_yaml_--all-namespaces")
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
