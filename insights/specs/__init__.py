@@ -217,6 +217,7 @@ class Specs(SpecSet):
     multicast_querier = RegistryPoint()
     multipath_conf = RegistryPoint()
     multipath__v4__ll = RegistryPoint()
+    mysql_log = RegistryPoint(multi_output=True)
     named_checkconf_p = RegistryPoint()
     netconsole = RegistryPoint()
     netstat_agn = RegistryPoint()
