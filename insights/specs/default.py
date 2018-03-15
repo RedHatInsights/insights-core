@@ -169,6 +169,7 @@ class DefaultSpecs(Specs):
     docker_sysconfig = simple_file("/etc/sysconfig/docker")
     dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
+    engine_config_all = simple_command("/usr/bin/engine-config --all")
     engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
