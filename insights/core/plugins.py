@@ -38,13 +38,13 @@ def parser_executor(component, broker, requires, optional):
             if r is not None:
                 results.append(r)
         except dr.SkipComponent:
-            log.debug(traceback.format_exc())
+            pass
         except Exception as ex:
             log.exception(ex)
             broker.add_exception(component, ex, traceback.format_exc())
 
     if not results:
-        log.exception("All failed: %s" % dr.get_name(component))
+        log.warn("All failed: %s" % dr.get_name(component))
         raise dr.SkipComponent()
 
     return results
@@ -54,8 +54,6 @@ def rule_executor(component, broker, requires, optional, executor=dr.default_exe
     try:
         r = executor(component, broker, requires, optional)
         if r is None:
-            name = dr.get_name(component)
-            log.debug("Rule %s returned None" % name)
             raise dr.SkipComponent()
     except dr.MissingRequirements as mr:
         details = dr.stringify_requirements(mr.requirements)
@@ -69,9 +67,9 @@ def datasource_executor(component, broker, requires, optional):
     try:
         return dr.broker_executor(component, broker, requires, optional)
     except ContentException as ce:
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug(ce)
-        raise ce
+        log.warn(ce)
+        broker.add_exception(component, ce, traceback.format_exc())
+        raise dr.SkipComponent()
 
 
 broker_rule_executor = partial(rule_executor, executor=dr.broker_executor)

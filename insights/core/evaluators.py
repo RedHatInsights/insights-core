@@ -23,11 +23,7 @@ class Evaluator(object):
         pass
 
     def post_process(self):
-
         self.hostname = self.broker[combiners.hostname.hostname].fqdn
-        for c, exes in self.broker.exceptions.items():
-            for e in exes:
-                log.warn(self.broker.tracebacks[e])
 
         for p, r in self.broker.items():
             if plugins.is_rule(p):
