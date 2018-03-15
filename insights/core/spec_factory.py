@@ -135,7 +135,7 @@ class TextFileProvider(FileProvider):
 
     @classmethod
     def validate_lines(self, results):
-        if results:
+        if results and len(results) == 1:
             first = results[0]
             if any(l in first for l in self.bad_lines):
                 return False
