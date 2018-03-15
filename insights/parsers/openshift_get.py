@@ -49,6 +49,9 @@ OcGetRole - command ``oc get role -o yaml --all-namespaces``
 OcGetRolebinding - command ``oc get rolebinding -o yaml --all-namespaces``
 --------------------------------------------------------------------------
 
+OcGetRoute - command ``oc get route -o yaml --all-namespaces``
+--------------------------------------------------------------
+
 OcGetService - command ``oc get service -o yaml --all-namespaces``
 ------------------------------------------------------------------
 
@@ -202,6 +205,16 @@ class OcGetRolebinding(YAMLParser):
     @property
     def rolebindings(self):
         """ dict: Returns a dictionary of openshift rolebind information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_route)
+class OcGetRoute(YAMLParser):
+    """Class to parse ``oc get route -o yaml --all-namespaces``"""
+
+    @property
+    def routes(self):
+        """ dict: Returns a dictionary of openshift route information."""
         return metadata_name_items(self.data)
 
 

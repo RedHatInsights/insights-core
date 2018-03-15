@@ -382,6 +382,7 @@ class DefaultSpecs(Specs):
     oc_get_rc = simple_command("/usr/bin/oc get rc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_role = simple_command("/usr/bin/oc get role -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_rolebinding = simple_command("/usr/bin/oc get rolebinding -o yaml --all-namespaces", context=OpenShiftContext)
+    oc_get_route = simple_command("/usr/bin/oc get route -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_service = simple_command("/usr/bin/oc get service -o yaml --all-namespaces", context=OpenShiftContext)
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
     openshift_certificates = foreach_execute(crt, "/usr/bin/openssl x509 -noout -enddate -in %s")
