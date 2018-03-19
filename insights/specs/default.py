@@ -344,6 +344,8 @@ class DefaultSpecs(Specs):
                           "/var/log/mysql.log",
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
                           ])
+    mysqld_pid = simple_command("/usr/bin/pgrep -n mysqld")
+    mysqld_limits = foreach_collect(mysqld_pid, "/proc/%s/limits")
     named_checkconf_p = simple_command("/usr/sbin/named-checkconf -p")
     netconsole = simple_file("/etc/sysconfig/netconsole")
     netstat = simple_command("/bin/netstat -neopa")
