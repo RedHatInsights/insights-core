@@ -102,3 +102,11 @@ class HttpdLimits(ProcLimits):
     Class for parsing the ``limits`` file of the ``httpd`` process.
     """
     pass
+
+
+@parser(Specs.mysqld_limits)
+class MysqldLimits(ProcLimits):
+    """
+    Class for parsing the ``limits`` file of the ``mysqld`` process.
+    """
+    pass
