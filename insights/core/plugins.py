@@ -44,7 +44,7 @@ def parser_executor(component, broker, requires, optional):
             broker.add_exception(component, ex, traceback.format_exc())
 
     if not results:
-        log.warn("All failed: %s" % dr.get_name(component))
+        log.debug("All failed: %s" % dr.get_name(component))
         raise dr.SkipComponent()
 
     return results
@@ -67,7 +67,7 @@ def datasource_executor(component, broker, requires, optional):
     try:
         return dr.broker_executor(component, broker, requires, optional)
     except ContentException as ce:
-        log.warn(ce)
+        log.debug(ce)
         broker.add_exception(component, ce, traceback.format_exc())
         raise dr.SkipComponent()
 
