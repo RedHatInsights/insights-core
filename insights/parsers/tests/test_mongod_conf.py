@@ -127,3 +127,8 @@ def test_mongodb_conf():
     with pytest.raises(ParseException) as e:
         MongodbConf(context_wrap(YAML_CONF_UNPARSABLE))
     assert "mongod conf parse failed:" in str(e.value)
+
+    # add test for empty mongod.conf for "ZeroDivisionError: float division by zero"
+    with pytest.raises(ParseException) as e:
+        MongodbConf(context_wrap("#this is empty"))
+    assert "mongod.conf is empty or all lines are comments" in str(e.value)

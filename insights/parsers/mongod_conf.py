@@ -89,7 +89,10 @@ class MongodbConf(Parser, LegacyItemAccess):
         is_yaml (boolean): True if this is a yaml format file.
     """
     def parse_content(self, content):
-        self.is_yaml = self._file_type_is_yaml(content)
+        a_content = get_active_lines(content)
+        if not a_content:
+            raise ParseException("mongod.conf is empty or all lines are comments")
+        self.is_yaml = self._file_type_is_yaml(a_content)
         try:
             if self.is_yaml:
                 self.data = yaml.safe_load('\n'.join(content))
@@ -108,7 +111,7 @@ class MongodbConf(Parser, LegacyItemAccess):
             in each line. Use 0.9 rather than 1 here, just in case there're
             any unexpected lines with wrong settings.
         """
-        content = get_active_lines(content)
+
         cnt = sum([1 for line in content if "=" in line])
         percent = float(cnt) / len(content)
         return True if percent < 0.9 else False
