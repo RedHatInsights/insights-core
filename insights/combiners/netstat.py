@@ -32,7 +32,7 @@ from copy import deepcopy
 HANDLD_FLAGS = ["LOWER_UP", "NOARP", "NO-CARRIER"]
 
 
-@combiner([IpLinkInfo, Netstat_I])
+@combiner([Netstat_I, IpLinkInfo])
 class NetworkStats(object):
     """
     A combiner for working with both ``netstat -i`` and ``ip -s link`` That is if
