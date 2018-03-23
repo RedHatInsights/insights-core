@@ -1,3 +1,5 @@
+import pytest
+from insights.core.dr import SkipComponent
 from insights.parsers.ntp_sources import ChronycSources, NtpqPn, NtpqLeap
 from insights.tests import context_wrap
 
@@ -14,6 +16,11 @@ ntpq_leap_output = """
 leap=00
 """.strip()
 
+ntpq_leap_output_2 = """
+assID=0 status=06f4 leap_none, sync_ntp, 15 events, event_peer/strat_chg,
+leap=00
+""".strip()
+
 ntpd_output = """
      remote           refid      st t when poll reach   delay   offset  jitter
 ==============================================================================
@@ -27,6 +34,10 @@ ntpd_qn = """
  202.118.1.81    .INIT.          16 u    - 1024    0    0.000    0.000   0.000
 """
 
+ntp_connection_issue = """
+/usr/sbin/ntpq: read: Connection refused
+""".strip()
+
 
 def test_get_chrony_sources():
     parser_result = ChronycSources(context_wrap(chrony_output))
@@ -39,6 +50,13 @@ def test_get_ntpq_leap():
     parser_result = NtpqLeap(context_wrap(ntpq_leap_output))
     assert parser_result.leap == "00"
 
+    parser_result = NtpqLeap(context_wrap(ntpq_leap_output_2))
+    assert parser_result.leap == "00"
+
+    with pytest.raises(SkipComponent) as e:
+        NtpqLeap(context_wrap(ntp_connection_issue))
+    assert "NTP service is down" in str(e)
+
 
 def test_get_ntpd_sources():
     parser_result = NtpqPn(context_wrap(ntpd_output))
@@ -49,3 +67,7 @@ def test_get_ntpd_sources():
     parser_result2 = NtpqPn(context_wrap(ntpd_qn))
     assert parser_result2.data[0].get("source") == "202.118.1.81"
     assert parser_result2.data[0].get("flag") == " "
+
+    with pytest.raises(SkipComponent) as e:
+        NtpqPn(context_wrap(ntp_connection_issue))
+    assert "NTP service is down" in str(e)
