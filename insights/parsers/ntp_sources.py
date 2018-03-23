@@ -11,7 +11,9 @@ command to give leap second status.
 
 """
 
+import re
 from .. import Parser, parser
+from insights.core.dr import SkipComponent
 from insights.specs import Specs
 
 
@@ -75,11 +77,13 @@ class NtpqLeap(Parser):
     """
 
     def parse_content(self, content):
+        if "Connection refused" in content[0]:
+            raise SkipComponent("NTP service is down and connection refused")
         self.data = {}
-        line = content[0].strip()
-        if "=" in line:
-            k, v = line.split("=")
-            self.data = {k: v}
+        for line in content:
+            m = re.search(r'leap=(\d*)', line)
+            if m:
+                self.data["leap"] = m.group(1)
 
     @property
     def leap(self):
@@ -115,6 +119,8 @@ class NtpqPn(Parser):
     """
 
     def parse_content(self, content):
+        if "Connection refused" in content[0]:
+            raise SkipComponent("NTP service is down and connection refused")
         self.data = []
         for row in content[2:]:
             if row.strip():
