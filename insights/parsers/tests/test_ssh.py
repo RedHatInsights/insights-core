@@ -10,7 +10,8 @@ ListenAddress 10.110.0.1
 Port 22
 ListenAddress 10.110.1.1
 #ListenAddress ::
-
+# AllowUsers
+AllowUsers
 # The default requires explicit activation of protocol 1
 #Protocol 2
 Protocol 1

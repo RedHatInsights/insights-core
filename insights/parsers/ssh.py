@@ -83,7 +83,8 @@ class SshDConfig(Parser):
     def parse_content(self, content):
         self.lines = []
         for line in get_active_lines(content):
-            kw, val = [s.strip() for s in line.split(None, 1)]
+            line_splits = [s.strip() for s in line.split(None, 1)]
+            kw, val = line_splits[0], line_splits[1] if len(line_splits) == 2 else ''
             self.lines.append(self.KeyValue(
                 kw, val, kw.lower(), line
             ))
