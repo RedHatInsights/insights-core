@@ -18,6 +18,7 @@ Contents:
     custom_tutorial_index
     combiner_tutorial
     notebook_index
+    examples/README
 
 Indices and tables
 ==================

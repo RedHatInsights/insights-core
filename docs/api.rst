@@ -64,14 +64,164 @@ is executed against each rule.  At a high level:
 - The outputs of all rules is returned, along with other various bits
   of metadata, to the client, depending on what invoked the rules
   framework.
+  
+Contexts
+========
+
+The term ``Context`` refers to the context of the information that is collected
+and evaluated by Insights.  Examples of context are Host Context (directly
+collected from a host), Host Archive Context (uploaded Insights archive),
+SOSReports (uploaded SOSReport archive), and Docker Image Context (directly
+collected from Docker image).  The context determines which data sources are
+collected, and that in determines the hierarchy of parsers, collectors and rules
+that are executed.  Contexts enable differnt collection methods for data for
+each unique context, and also provide a default set of data sources that are
+common among one or more contexts.  All available contexts are defined in the
+module :py:mod:`insights.core.context`.
+  
+Data Sources
+============
+
+``Data Sources`` define how data processed by Insights is collected.  Each
+data source is specific to a unique set of data.  For example a data source
+is defined for the contents of the file ``/etc/hosts`` and for the output
+of the command ``/sbin/fdisk -l``.  The default data sources provide the
+primary data collection specifications for all contexts and are located in
+:py:class:`insights.specs.default.DefaultSpecs`.
+
+Each specific ``Context`` may
+override the a default data source to provide a different collection
+specification.  For instance when the Insights client collects the ``fdisk -l``
+information it will use the default datasource and execute the command on
+the target machine.  This is the :py:class:`insights.core.context.HostContext`.
+The Insights client stores that information as a file in an archive.
+
+When the client uploads that information to the Red Hat Insights
+service it is processed in the :py:class:`insights.core.context.HostArchiveContext`.
+Because the ``fdisk -l`` data is now in a file in the archive the data sources
+defined in :py:class:`insights.specs.insights_archive.InsightsArchiveSpecs` are 
+used instead.  In this case Insights will collect the data from a file
+named ``insights_commands/fdisk_-l``.
+
+While data sources are specific to the context, the purpose of the data source
+hierarcy is to provide a consistent set of input to ``Parsers``.  For this
+reason ``Parsers`` should generally depend upon :py:class:`insights.specs.Specs`
+data sources.
+
+.. _specification-factories:
+
+Specification Factories
+-----------------------
+
+Data sources may utilize various methods called spec factories for collection
+of information.
+Collection from a file (``/etc/hosts``) and from a command (``/sbin/fdisk -l``)
+are two of the most common.  These are implemented by the
+:py:func:`insights.core.spec_factory.simple_file`
+and :py:func:`insights.core.spec_factory.simple_command` spec factories
+respectively.  All of the spec factories currently available for the creation
+of data sources are listed below.
+
+:py:func:`insights.core.spec_factory.simple_file`
+    simple_file collects the contents of files, for example::
+        
+        auditd_conf = simple_file("/etc/audit/auditd.conf")
+        audit_log = simple_file("/var/log/audit/audit.log")
+
+:py:func:`insights.core.spec_factory.simple_command`
+    simple_command collects the output from a command, for example::
+        
+        blkid = simple_command("/sbin/blkid -c /dev/null")
+        brctl_show = simple_command("/usr/sbin/brctl show")
+
+:py:func:`insights.core.spec_factory.glob_file`
+    glob_file collects the contents of each file matching the glob pattern(s)
+    for example::
+        
+        httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
+        ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
+
+:py:func:`insights.core.spec_factory.first_file`
+    first_file collects the contents of the first readable file from a list
+    of files, for example::
+        
+        meminfo = first_file(["/proc/meminfo", "/meminfo"])
+        postgresql_conf = first_file([
+                                     "/var/lib/pgsql/data/postgresql.conf",
+                                     "/opt/rh/postgresql92/root/var/lib/pgsql/data/postgresql.conf",
+                                     "database/postgresql.conf"
+                                     ])
+
+:py:func:`insights.core.spec_factory.listdir`
+    listdir collects a simple directory listing of all the files and
+    directories in a path, for example::
+        
+        block_devices = listdir("/sys/block")
+        ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
+
+:py:func:`insights.core.spec_factory.foreach_execute`
+    foreach_execute executes a command for each element in provider. Provider
+    is the output of a different datasource that returns a list of single
+    elements or a list of tuples.  This spec factory is typically utilized
+    in combination with a simple_file, simple_command or listdir spec factory
+    to generate the input elements, for example::
+        
+        ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
+        ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
+        ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
+        ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
+
+:py:func:`insights.core.spec_factory.foreach_collect`
+    foreach_collect subtitutes each element in provider into path and collects
+    the files at the resulting paths.  This spec factory is typically utilized
+    in combination with a simple_command or listdir spec factory to generate
+    the input elements, for example::
+    
+        httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
+        httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
+        block_devices = listdir("/sys/block")
+        scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
+
+
+:py:func:`insights.core.spec_factory.first_of`
+    first_of returns the first of a list of dependencies that exists. At least
+    one must be present, or this component won't fire.  This spec factory is
+    typically utilized in combination with other spec factories to generate
+    the input list, for example::
+        
+        postgresql_log = first_of([glob_file("/var/lib/pgsql/data/pg_log/postgresql-*.log"),
+                                   glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
+                                   glob_file("/database/postgresql-*.log")])
+        systemid = first_of([simple_file("/etc/sysconfig/rhn/systemid"),
+                             simple_file("/conf/rhn/sysconfig/rhn/systemid")])
+
+Custom Data Source
+------------------
+
+If greater control over data source content is required than provided by the
+existing specification factories, it is possible to writ a customer data source.
+This is accomplished by decorating a function with the ``@datasource`` decorator
+and returning a ``list`` type.  Here's an example:
+
+.. code-block:: python
+   :linenos:
+
+   @datasource(HostContext)
+   def block(broker):
+       remove = (".", "ram", "dm-", "loop")
+       tmp = "/dev/%s"
+       return [(tmp % f) for f in os.listdir("/sys/block") if not f.startswith(remove)]
+
+.. todo::
+    It might be usefule to have a tutorial on custom data sources.
 
 Parsers
 =======
 
-A parser takes the raw content of a particular file or command output (from our
-specs), parses it, and then provides a small API for plugins to query.  The
-parsed data and computed facts available via the API are also serialized to be
-used in downstream processes.
+A ``Parser`` takes the raw content of a particular ``Data Source`` such as a
+file contents or command output, parses it, and then provides a small API for
+plugins to query.  The parsed data and computed facts available via the API are
+also serialized to be used in downstream processes.
 
 Choosing a Module
 -----------------
@@ -96,21 +246,14 @@ Registration and Symbolic Names
 
 Parsers are registered with the framework by use of the ``@parser`` decorator.
 This decorator will add the function object to the list of parsers associated
-with the given symbolic name.  Without the decorator, the parser will
+with the given data source name.  Without the decorator, the parser will
 never be found by the framework.
 
-Symbolic names represent all the possible file content types that can be
-analyzed by parsers.  The rules framework uses the symbolic name mapping
-defined in :py:mod:`insights.config.specs` to map a symbolic
-name to a command, a single file or multiple files.
-
-=========  ==============  ========================================
-Spec Name  Spec Type       Spec Identifier
-=========  ==============  ========================================
-"fstab"    SimpleFileSpec  "etc/fstab"
-"uname"    CommandSpec     "/bin/uname -a"
-"ifcfg"    PatternSpec     "etc/sysconfig/network-scripts/ifcfg-.*"
-=========  ==============  ========================================
+Data source names represent all the possible file content types that can be
+analyzed by parsers.  The rules framework uses the data source name mapping
+defined in :py:class:`insights.specs.Specs` to map a symbolic
+name to a command, a single file or multiple files.  More detail on this mapping
+is provided in the section :ref:`specification-factories`
 
 The same mapping is used to create the
 ``uploader.json`` file consumed by Insights Client to collect data from
@@ -164,29 +307,27 @@ with:
 .. autofunction:: insights.core.plugins.rule
    :noindex:
 
-Rule Context
-------------
+Rule Parameters
+---------------
 
-Each rule function must have only two parameters, named ``local`` and
-``shared``.  The ``local`` parameter contains parser outputs from local (i.e.
-legacy) parsers, and the ``shared`` parameter contains parser outputs from
-shared parsers.  Since local parsers are considered deprecated, the ``local``
-parameter will eventually be removed.
+The parameters for each rule function mirror the parser or parsers identified
+in the ``@rule`` decorator. This is best demonstrated by an example:
 
-.. note::
-   New plugins should avoid using the ``local`` context since it is deprecated.
+.. code-block:: python
+   :linenos:
 
-The ``shared`` context is a dictionary where the keys are the function object
-of the parser that produced the output.  This means that plugins must import
-every parser that they intend to use, and they should list the function objects
-in the ``requires`` keyword argument to the ``@rule`` decorator, if
-applicable.  If the symbolic name for the given parser is a pattern file, then
-the value of the parser's output will be a list, otherwise it will be whatever
-the parser returns.  If the given parser returns a ``Parser`` instance,
-plugins are are encouraged to use the higher-level functions defined on the
-given ``Parser`` object to perform its business logic over functions
-performed directly on the built-in data structures found in the
-``Parser`` instance.
+    @rule(InstalledRpms, Lsof, Netstat)
+    def heartburn(installed_rpms, lsof, netstat):
+        # Rule implementation
+        
+Line 1 of this example indicates that the rule depends on 3 parsers,
+``InstalledRpms``, ``Lsof``, and ``Netstat``.  The signature for the
+rule function on line 2 contains the parameters that correspond respectively
+to the parsers specified in the decorator.  All three parsers are required
+so if any are not present in the input data, then the rule will not be called.
+This also means that all three input parameters will have some value corresponding
+to the parser objects.  It is up to the rule to evaluate the object attributes
+and methods to determine if the criteria is met to trigger the rule.
 
 Rule Output
 -----------
@@ -203,7 +344,6 @@ To return system metadata, return the result of ``make_metadata``:
 
 .. autofunction:: insights.core.plugins.make_metadata
    :noindex:
-
 
 Testing
 =======

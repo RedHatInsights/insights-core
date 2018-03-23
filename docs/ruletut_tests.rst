@@ -16,8 +16,8 @@ out a test and the required imports.
    :linenos:
 
     from insights.specs import Specs
-    from insights.specs import InputData, archive_provider
-    from insights import make_response
+    from insights.tests import InputData, archive_provider
+    from insights.core.plugins import make_response
 
     from tutorial import heartburn
 
@@ -91,8 +91,8 @@ Now for the entire test:
     :linenos:
 
     from insights.specs import Specs
-    from insights.specs import InputData, archive_provider
-    from insights import make_response
+    from insights.tests import InputData, archive_provider
+    from insights.core.plugins import make_response
 
     from tutorial import heartburn
 

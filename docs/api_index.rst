@@ -34,6 +34,34 @@ insights.parsers
               parse_fixed_table, split_kv_pairs, unsplit_lines
     :show-inheritance:
     :undoc-members:
+    
+insights.specs
+--------------
+.. automodule:: insights.specs
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.default
+----------------------
+.. automodule:: insights.specs.default
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.insights_archive
+-------------------------------
+.. automodule:: insights.specs.insights_archive
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.sos_archive
+--------------------------
+.. automodule:: insights.specs.sos_archive
+    :members:
+    :show-inheritance:
+    :undoc-members:
 
 insights.tests
 --------------

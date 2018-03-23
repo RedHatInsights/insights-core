@@ -1,8 +1,8 @@
 .. _tutorial-parser-development:
 
-******************
-Parser Development
-******************
+*****************************
+Tutorial - Parser Development
+*****************************
 
 The purpose of a Parser is to process raw content collected by the Client
 and map it
@@ -12,6 +12,11 @@ may collected by Insights Client, or from some other source such
 as a SOS Report.  The following examples will demonstrate development of
 different types of parsers.
 
+You can find the complete implementation of the parser and test code in the
+directory ``insights/docs/examples/parsers``.
+
+.. _parser-development-environment:
+
 Preparing Your Development Environment
 ======================================
 
@@ -19,56 +24,80 @@ First you need to create your own fork of the insights-core project.  Do this by
 going to the `insights-core Repository`_ on github and clicking on the
 **Fork** button.
 
-You will now have an *insights-rules* repository under your github user that
+You will now have an *insights-core* repository under your github user that
 you can use to checkout the code to your development environment.  To check
 out the code go to the repository page for your fork and copy the link to
 download the repo.
 
 Once you have copied this link then go to a terminal in your working directory
 and use the ``git`` command to clone the repository.  In this example the
-working directory is ``/home/bfahr/work``::
+working directory is ``/home/userone/work``::
 
-    [bfahr@bfahrvm2 work]$ pwd
-    /home/bfahr/work
-    [bfahr@bfahrvm2 work]$ git clone git@github.com:bfahr/insights-core.git
+    [userone@hostone ~]$ mkdir work
+    [userone@hostone ~]$ cd work
+    [userone@hostone work]$ git clone https://github.com/RedHatInsights/insights-core.git
     Cloning into 'insights-core'...
-    remote: Counting objects: 5665, done.
-    remote: Compressing objects: 100% (1716/1716), done.
-    remote: Total 5665 (delta 4043), reused 5378 (delta 3890)
-    Receiving objects: 100% (5665/5665), 1.62 MiB | 292.00 KiB/s, done.
-    Resolving deltas: 100% (4043/4043), done.
+    remote: Counting objects: 21251, done.
+    remote: Compressing objects: 100% (88/88), done.
+    remote: Total 21251 (delta 68), reused 81 (delta 43), pack-reused 21118
+    Receiving objects: 100% (21251/21251), 5.95 MiB | 2.44 MiB/s, done.
+    Resolving deltas: 100% (15938/15938), done.
 
-Next you need to follow the steps documented in the file ``insights-core/readme.md``
+Next you need to follow the steps documented in the file ``insights-core/README.rst``
 to create a virtual environment and set it up for development::
 
-    [bfahr@bfahrvm2 work]$ cd insights-core
-    [bfahr@bfahrvm2 insights-core]$ virtualenv .
+    [userone@hostone work]$ cd insights-core
+    [userone@hostone insights-core]$ virtualenv .
     New python executable in ./bin/python
     Installing Setuptools..................................................done.
     Installing Pip....................................................done.
-    [bfahr@bfahrvm2 insights-core]$ source bin/activate
-    (insights-core)[bfahr@bfahrvm2 insights-core]$ pip install -e .[develop]
+    
+Setup your environment to use the new virtualenv you just created, and upgrade
+``pip`` to the latest version::
+    
+    [userone@hostone insights-core]$ source bin/activate
+    (insights-core)[userone@hostone insights-core]$ pip install --upgrade pip
+    
+Now install all of the required packages for ``insights-core`` development::
+    
+    (insights-core)[userone@hostone insights-core]$ pip install -e .[develop]
+
+If during this step you see errors indicating the ``gcc`` is not installed you
+will need to install it and run ``pip install -e .[develop]`` again.  On Red Hat
+Enterprise Linux you can do this with the command, as root: ``yum install gcc``.
 
 Once these steps have been completed you will have a complete development
 environment for parsers and combiners.  You can confirm that everything is setup
 correctly by running the tests, ``py.test``.  Your results should look
 something like this::
 
-    (insights-core)[bfahr@bfahrvm2 insights-core]$ py.test
+    (insights-core)[userone@hostone insights-core]$ py.test
     ======================== test session starts =============================
-    platform linux2 -- Python 2.7.5, pytest-3.0.3, py-1.4.31, pluggy-0.4.0
-    rootdir: /home/bfahr/work/insights-core, inifile: setup.cfg
+    platform linux2 -- Python 2.7.5, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
+    rootdir: /home/userone/work/insights-core, inifile: setup.cfg
     plugins: cov-2.4.0
-    collected 414 items
+    collected 825 items 
 
-    insights/console/tests/test_package_installed_package.py ......
-    [leaving out a long list of test names]
-    insights/web/tests/test_urls.py .
-    ====================== short test summary info ===========================
-    XFAIL insights/parsers/tests/test_installed_rpms.py::test_max_min_kernel
-      Incorrect implementation
+    insights/combiners/tests/test_grub_conf.py .....
+    insights/combiners/tests/test_hostname.py .....
+    ...
+    insights/tests/core/test_marshalling.py .....
+    insights/tests/core/test_plugins.py .........
+    ======================= short test summary info ==========================
+    SKIP [1] insights/tests/integration.py:7: got empty parameter set ['component',
+    'compare_func', 'input_data', 'expected'], function test_integration at
+    /home/userone/work/insights-core/insights/tests/integration.py:7
 
-    =============== 413 passed, 1 xfailed in 3.81 seconds ====================
+    ============= 824 passed, 1 skipped in 3.37 seconds ======================
+    
+If during this step you see a test failure similar to the following make sure
+you have ``unzip`` installed on your system::
+    
+    >           raise child_exception
+    E           CalledProcessError: <CalledProcessError(0, ['unzip', '-q', '-d',
+    '/tmp/tmplrXhIu', '/tmp/test.zip'], [Errno 2] No such file or directory)>
+
+    /usr/lib64/python2.7/subprocess.py:1327: CalledProcessError
 
 Your development environment is now ready to begin development and you may move
 on to the next section.  If you had problems with any of these steps then
@@ -111,10 +140,11 @@ Creating the Initial Parser Files
 
 First we need to create the parser file.  Parser files are implemented in modules.
 The module should be limited to one type of applications.  In this case we are
-working with ``ssh`` applications so we will create an ``ssh`` module.  Create
-the module file ``insights/parsers/ssh.py`` in the parsers directory::
+working with ``ssh`` applications so we will create an ``secure_shell`` module.
+Create the module file ``insights/parsers/secure_shell.py`` in the parsers
+directory::
 
-    $ touch insights/parsers/ssh.py
+    (insights-core)[userone@hostone insights-core]$ touch insights/parsers/secure_shell.py
 
 Now edit the file and create the parser skeleton:
 
@@ -122,9 +152,10 @@ Now edit the file and create the parser skeleton:
     :linenos:
 
     from .. import Parser, parser
+    from insights.specs import Specs
 
 
-    @parser('sshd_config')
+    @parser(Specs.sshd_config)
     class SshDConfig(Parser):
 
         def parse_content(self, content):
@@ -132,9 +163,9 @@ Now edit the file and create the parser skeleton:
 
 We start by importing the ``Parser`` class and the ``parser`` decorator.  Our
 parser will inherit from the ``Parser`` class and it will be associated with
-the ``sshd_config`` input data using the ``parser`` decorator. Finally we
+the ``Specs.sshd_config`` data source using the ``parser`` decorator. Finally we
 need to implement the ``parse_content`` subroutine which is required to parse
-store the input data in our class.  The base class ``Parser`` implements a
+and store the input data in our class.  The base class ``Parser`` implements a
 constructor that will invoke our ``parse_content`` method when the class
 is created.
 
@@ -143,48 +174,45 @@ is created.
        code elsewhere to help minimize changes to all parsers if the project
        name changes.
 
-Next we'll create the parser test file ``insights/parsers/tests/test_ssh.py``
+Next we'll create the parser test file ``insights/parsers/tests/test_secure_shell.py``
 as a skeleton that will aid in the parser development process:
 
 .. code-block:: python
     :linenos:
 
-    from insights.parsers.ssh import SshDConfig
+    from insights.parsers.secure_shell import SshDConfig
 
 
     def test_sshd_config():
         pass
 
 Once you have created and saved both of these files and we'll run the test
-to make sure everything is setup correctly:
+to make sure everything is setup correctly::
 
-.. code-block:: bash
-    :linenos:
-
-    (insights-core)[bfahr@bfahrvm2 insights-core]$ py.test -k test_ssh
+    (insights-core)[userone@hostone insights-core]$ py.test -k secure_shell
     ================== test session starts ========================
-    platform linux2 -- Python 2.7.5, pytest-3.0.3, py-1.4.31, pluggy-0.4.0
-    rootdir: /home/bfahr/work/insights-core, inifile: setup.cfg
+    platform linux2 -- Python 2.7.5, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
+    rootdir: /home/userone/work/insights-core, inifile: setup.cfg
     plugins: cov-2.4.0
-    collected 415 items
+    collected 826 items 
 
-    insights/parsers/tests/test_ssh.py .
+    insights/parsers/tests/test_secure_shell.py .
 
-    ================== 414 tests deselected =======================
-    ========= 1 passed, 414 deselected in 0.46 seconds ============
+    ================ 825 tests deselected ==========================
+    =========== 1 passed, 825 deselected in 1.26 seconds ===========
 
 When you invoke ``py.test`` with the ``-k`` option it will only run tests
-which match the filter, in this case tests that match *test_ssh*.  So our
+which match the filter, in this case tests that match *secure_shell*.  So our
 test passed as expected.
 
 .. hint:: You may sometimes see a message that ``py.test`` cannot be found,
        or see some other related message that doesn't make sense. The first
        think to check is that you have activated your virtual environment by
        executing the command ``source bin/activate`` from the root directory
-       of your project.  You prompt should change to include ``(insights-core)`` if
-       your virtual enviroment is activated. You can deactivate the virtual
-       environment by typing ``deactivate``. You can find more information
-       about virtual environments here:
+       of your insights-core project.  Your prompt should change to include
+       ``(insights-core)`` if your virtual enviroment is activated. You can
+       deactivate the virtual environment by typing ``deactivate``. You can
+       find more information about virtual environments here:
        http://docs.python-guide.org/en/latest/dev/virtualenvs/
 
 Parser Implementation
@@ -209,7 +237,7 @@ start by creating a test for the output that we want from our parser:
 .. code-block:: python
    :linenos:
 
-   from insights.parsers.ssh import SshDConfig
+   from insights.parsers.secure_shell import SshDConfig
    from insights.tests import context_wrap
 
    SSHD_CONFIG_INPUT = """
@@ -251,7 +279,7 @@ constructor:
    :linenos:
    :emphasize-lines: 2
 
-   from insights.parsers.ssh import SshDConfig
+   from insights.parsers.secure_shell import SshDConfig
    from insights.tests import context_wrap
 
 Next we include the sample data that will be used for the test.  Use of the
@@ -350,9 +378,10 @@ Now we need to implement the parser that will satisify our tests.
 
     from collections import namedtuple
     from .. import Parser, parser, get_active_lines
+    from insights.specs import Specs
 
 
-    @parser('sshd_config')
+    @parser(Specs.sshd_config)
     class SshDConfig(Parser):
 
         KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower'])
@@ -388,6 +417,7 @@ parsing logic.
 
     from collections import namedtuple
     from .. import Parser, parser, get_active_lines
+    from insights.specs import Specs
 
 We can use ``namedtuples`` to help simplify access to the information we
 are storing in our parser by creating a namedtuple with the named attributes
@@ -396,7 +426,7 @@ version of the *keyword*.
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 8
+   :lineno-start: 9
 
         KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower'])
 
@@ -409,7 +439,7 @@ unparsed as we don't know how a rule might need to evaluate them.
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 10
+   :lineno-start: 11
 
         def parse_content(self, content):
             self.lines = []
@@ -425,7 +455,7 @@ Finally we implement some "dunder" methods to simplify use of the class.
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 17
+   :lineno-start: 18
 
         def __contains__(self, keyword):
             return keyword.lower() in self.keywords
@@ -445,6 +475,8 @@ it is better keep the parser simple in the beginning.  Once it is in
 use by rules it will be easy to add functionality to the parser to
 allow simplification of the rules.
 
+.. _parser-documentation:
+
 Parser Documentation
 --------------------
 
@@ -458,10 +490,10 @@ The following shows our completed parser including documentation.
    :linenos:
 
     """
-    ssh - Files for configuration of `ssh`
-    ======================================
+    secure_shell - Files for configuration of `ssh`
+    ===============================================
 
-    The ``ssh`` module provides parsing for the ``sshd_config``
+    The ``secure_shell`` module provides parsing for the ``sshd_config``
     file.  The ``SshDConfig`` class implements the parsing and
     provides a ``list`` of all configuration lines present in
     the file.
@@ -499,9 +531,10 @@ The following shows our completed parser including documentation.
     """
     from collections import namedtuple
     from .. import Parser, parser, get_active_lines
+    from insights.specs import Specs
 
 
-    @parser('sshd_config')
+    @parser(Specs.sshd_config)
     class SshDConfig(Parser):
         """Parsing for ``sshd_config`` file.
 
@@ -540,19 +573,23 @@ The following shows our completed parser including documentation.
             if entries:
                 return entries[-1]
 
+.. _parser-testing:
+
 Parser Testing
 --------------
 
 It is important that we ensure our tests will run successfully after any
 change to our parser. We are able to do that in two ways, first by using
-``doctest`` to test our *Examples* section of the ``ssh`` module, and second
+``doctest`` to test our *Examples* section of the ``secure_shell`` module, and
+second
 by writing tests that can be tested automatically using ``pytest``.  Starting
 with adding ``import doctest`` our original code:
 
 .. code-block:: python
     :linenos:
 
-    from insights.parsers import ssh
+    from insights.parsers.secure_shell import SshDConfig
+    from insights.parsers import secure_shell
     from insights.tests import context_wrap
     import doctest
 
@@ -589,7 +626,7 @@ To test the documentation, we can then use ``doctest``:
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 35
+    :lineno-start: 37
 
     def test_sshd_documentation():
         """
@@ -600,9 +637,9 @@ To test the documentation, we can then use ``doctest``:
         this setup in the example code.
         """
         env = {
-            'sshd_config': ssh.SshDConfig(context_wrap(SSHD_CONFIG_INPUT)),
+            'sshd_config': SshDConfig(context_wrap(SSHD_CONFIG_INPUT)),
         }
-        failed, total = doctest.testmod(ssh, globs=env)
+        failed, total = doctest.testmod(secure_shell, globs=env)
         assert failed == 0
 
 The environment setup allows us to 'hide' the set-up of the environment that
@@ -623,7 +660,7 @@ of those tests and only test the 'corner cases':
 
 .. code-block:: python
     :linenos:
-    :lineno-start: 51
+    :lineno-start: 52
 
     SSHD_DOCS_EXAMPLE = '''
     Port 22
@@ -635,17 +672,89 @@ of those tests and only test the 'corner cases':
         Here we test any corner cases for behaviour we expect to deal with
         in the parser but doesn't make a good example.
         """
-        config = ssh.SshDConfig(context_wrap(SSHD_DOCS_EXAMPLE))
+        config = SshDConfig(context_wrap(SSHD_DOCS_EXAMPLE))
         assert config.last('AddressFamily') is None
         assert config['AddressFamily'] is None
         ports = [l for l in config if l.keyword == 'Port']
         assert len(ports) == 2
         assert ports[0].value == '22'
 
+The final version of our test now looks like this:
+
+.. code-block:: python
+    :linenos:
+
+    from insights.parsers.secure_shell import SshDConfig
+    from insights.parsers import secure_shell
+    from insights.tests import context_wrap
+    import doctest
+
+    SSHD_CONFIG_INPUT = """
+    #	$OpenBSD: sshd_config,v 1.93 2014/01/10 05:59:19 djm Exp $
+
+    Port 22
+    #AddressFamily any
+    ListenAddress 10.110.0.1
+    Port 22
+    ListenAddress 10.110.1.1
+    #ListenAddress ::
+
+    # The default requires explicit activation of protocol 1
+    #Protocol 2
+    Protocol 1
+    """
+
+    def test_sshd_config():
+        sshd_config = SshDConfig(context_wrap(SSHD_CONFIG_INPUT))
+        assert sshd_config is not None
+        assert 'Port' in sshd_config
+        assert 'PORT' in sshd_config
+        assert sshd_config['port'] == ['22', '22']
+        assert 'ListenAddress' in sshd_config
+        assert sshd_config['ListenAddress'] == ['10.110.0.1', '10.110.1.1']
+        assert sshd_config['Protocol'] == ['1']
+        assert 'AddressFamily' not in sshd_config
+        ports = [l for l in sshd_config if l.keyword == 'Port']
+        assert len(ports) == 2
+        assert ports[0].value == '22'
+
+
+    def test_sshd_documentation():
+        """
+        Here we test the examples in the documentation automatically using
+        doctest.  We set up an environment which is similar to what a
+        rule writer might see - a 'sshd_config' variable that has been
+        passed in as a parameter to the rule declaration.  This saves doing
+        this setup in the example code.
+        """
+        env = {
+            'sshd_config': SshDConfig(context_wrap(SSHD_CONFIG_INPUT)),
+        }
+        failed, total = doctest.testmod(secure_shell, globs=env)
+        assert failed == 0
+
+
+    SSHD_DOCS_EXAMPLE = '''
+    Port 22
+    Port 22
+    '''
+
+
+    def test_sshd_corner_cases():
+        """
+        Here we test any corner cases for behaviour we expect to deal with
+        in the parser but doesn't make a good example.
+        """
+        config = SshDConfig(context_wrap(SSHD_DOCS_EXAMPLE))
+        assert config.last('AddressFamily') is None
+        assert config['AddressFamily'] is None
+        ports = [l for l in config if l.keyword == 'Port']
+        assert len(ports) == 2
+        assert ports[0].value == '22'
 
 To run ``pytest`` on just the ``ssh`` parser execute the following command::
 
-    $ py.test -k test_ssh
+    $ py.test -k secure_shell
 
 You should also run all tests by executing the following command::
 
