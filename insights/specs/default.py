@@ -238,8 +238,9 @@ class DefaultSpecs(Specs):
                 #      and SCL's httpd24-httpd
                 if os.path.basename(cmd).startswith('httpd'):
                     ps_httpds.add(cmd)
-        # collect nothing if there are multiple httpd instances running
-        return list(ps_httpds) if len(ps_httpds) == 1 else []
+        # Running multiple httpd instances on RHEL is supported
+        # https://access.redhat.com/solutions/21680
+        return list(ps_httpds)
 
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
