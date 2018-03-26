@@ -1,7 +1,7 @@
 from insights.parsers import httpd_V
+from insights.parsers import SkipException, ParseException
 from insights.parsers.httpd_V import HttpdV, HttpdEventV, HttpdWorkerV
 from insights.tests import context_wrap
-from insights import SkipComponent
 import pytest
 import doctest
 
@@ -43,7 +43,7 @@ Server's Module Magic Number: 20120211:24
 Server loaded:  APR 1.4.8, APR-UTIL 1.5.2
 Compiled using: APR 1.4.8, APR-UTIL 1.5.2
 Architecture:   64-bit
-Server MPM:     prefork
+Server MPM:     Worker
   threaded:     no
     forked:     yes (variable process count)
 Server compiled with....
@@ -81,7 +81,7 @@ Server compiled with....
 
 
 def test_httpd_V():
-    result = HttpdV(context_wrap(HTTPD_V_22))
+    result = HttpdV(context_wrap(HTTPD_V_22, path='/usr/sbin/httpd_-V'))
     assert result["Server MPM"] == "prefork"
     assert result["Server version"] == "apache/2.2.15 (unix)"
     assert result["forked"] == "yes (variable process count)"
@@ -89,23 +89,37 @@ def test_httpd_V():
     assert result['Server compiled with']['APR_HAS_MMAP'] is True
     assert result['Server compiled with']['APR_HAVE_IPV6'] == "IPv4-mapped addresses enabled"
     assert result['Server compiled with']['DEFAULT_PIDLOG'] == "run/httpd.pid"
+    assert result.httpd_command == "/usr/sbin/httpd"
+    assert result.mpm == "prefork"
+    assert result.version == "apache/2.2.15 (unix)"
 
-    result = HttpdV(context_wrap(HTTPD_V_24))
-    assert result["Server MPM"] == "prefork"
+    result = HttpdV(context_wrap(HTTPD_V_24, path='/usr/sbin/httpd.worker_-V'))
+    assert result["Server MPM"] == "worker"
     assert result["Server version"] == "apache/2.4.6 (red hat enterprise linux)"
     assert result["forked"] == "yes (variable process count)"
     assert "APR_HAVE_IPV6" in result['Server compiled with']
     assert result['Server compiled with']['APR_HAS_MMAP'] is True
     assert result['Server compiled with']['APR_HAVE_IPV6'] == "IPv4-mapped addresses enabled"
     assert result['Server compiled with']['DEFAULT_PIDLOG'] == "/run/httpd/httpd.pid"
+    assert result.httpd_command == "/usr/sbin/httpd.worker"
+    assert result.mpm == "worker"
+    assert result.version == "apache/2.4.6 (red hat enterprise linux)"
 
 
 def test_httpd_V_exp():
-    with pytest.raises(SkipComponent) as sc:
+    with pytest.raises(ParseException) as sc:
+        HttpdV(context_wrap(""))
+    assert "Input content is empty" in str(sc)
+
+    with pytest.raises(ParseException) as sc:
+        HttpdV(context_wrap("TEST"))
+    assert "Input content is not empty but there is no useful parsed data." in str(sc)
+
+    with pytest.raises(SkipException) as sc:
         HttpdEventV(context_wrap(HTTPD_V_24))
     assert "No 'httpd.event' command on this host." in str(sc)
 
-    with pytest.raises(SkipComponent) as sc:
+    with pytest.raises(SkipException) as sc:
         HttpdWorkerV(context_wrap(HTTPD_V_24))
     assert "No 'httpd.worker' command on this host." in str(sc)
 
