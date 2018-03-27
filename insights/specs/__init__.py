@@ -131,6 +131,7 @@ class Specs(SpecSet):
     httpd_conf_sos = RegistryPoint(multi_output=True)
     httpd_error_log = RegistryPoint()
     httpd_limits = RegistryPoint(multi_output=True)
+    httpd_M = RegistryPoint(multi_output=True)
     httpd_pid = RegistryPoint()
     httpd_ssl_access_log = RegistryPoint()
     httpd_ssl_error_log = RegistryPoint()
