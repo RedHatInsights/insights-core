@@ -167,7 +167,7 @@ class InsightsFile(InsightsSpec):
             '{DOCKER_IMAGE_NAME}', target_name).replace(
             '{DOCKER_CONTAINER_NAME}', target_name)
         self.relative_path = spec['file'].replace(
-            mountpoint, '').replace(
+            mountpoint, '', 1).replace(
             '{CONTAINER_MOUNT_POINT}', '').replace(
             '{DOCKER_IMAGE_NAME}', target_name).replace(
             '{DOCKER_CONTAINER_NAME}', target_name)
