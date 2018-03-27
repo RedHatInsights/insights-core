@@ -36,6 +36,7 @@ from ..util import parse_keypair_lines
 from .. import add_filter
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from . import parse_fixed_table
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -94,6 +95,8 @@ class Lvm(Parser):
     """Base class for parsing LVM data in key=value format."""
 
     def parse_content(self, content):
+        if "Unrecognised field:" in content[-1]:
+            raise ParseException(content[-1])
         d = {"warnings": set(find_warnings(content))}
         content = [l for l in content if l not in d["warnings"]]
         d["content"] = list(map_keys(parse_keypair_lines(content), self.KEYS))
