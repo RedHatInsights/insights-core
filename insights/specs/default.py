@@ -222,8 +222,6 @@ class DefaultSpecs(Specs):
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
-    httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
-    httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):
@@ -242,6 +240,9 @@ class DefaultSpecs(Specs):
         # https://access.redhat.com/solutions/21680
         return list(ps_httpds)
 
+    httpd_M = foreach_execute(httpd_cmd, "%s -M")
+    httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
+    httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
     ifconfig = simple_command("/sbin/ifconfig -a")
