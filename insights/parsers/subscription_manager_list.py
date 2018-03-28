@@ -173,7 +173,7 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         )
 
 
-@parser('subscription_manager_list_installed')
+@parser(Specs.subscription_manager_list_installed)
 class SubscriptionManagerListInstalled(SubscriptionManagerList):
     """
     Read the output of ``subscription-manager list --installed``.
