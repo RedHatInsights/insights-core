@@ -2,7 +2,15 @@
 
 ## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
 
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-1.41.0-43...HEAD)
+## [insights-core-3.0.7-270](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.7-270) (2018-03-28)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.6-261...insights-core-3.0.7-270)
+
+**Closed issues:**
+
+- . [\#1044](https://github.com/RedHatInsights/insights-core/issues/1044)
+
+## [insights-core-3.0.6-261](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.6-261) (2018-03-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.6-257...insights-core-3.0.6-261)
 
 **Closed issues:**
 
