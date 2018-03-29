@@ -240,6 +240,13 @@ def make_response(error_key, **kwargs):
     return kwargs
 
 
+def make_metadata_key(key, value):
+    if key == "type":
+        raise ValueError("metadata key cannot be 'type'")
+
+    return {"type": "metadata_key", "key": key, "value": value}
+
+
 def make_metadata(**kwargs):
     if "type" in kwargs:
         raise ValueError("make_metadata kwargs contain 'type' key.")
@@ -257,7 +264,7 @@ class ValidationException(Exception):
 
 
 def validate_response(r):
-    RESPONSE_TYPES = set(["rule", "metadata", "skip"])
+    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key"])
     if not isinstance(r, types.DictType):
         raise ValidationException("Response is not a dict", type(r))
     if "type" not in r:
