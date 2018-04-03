@@ -661,3 +661,53 @@ class DefaultSpecs(Specs):
         return list(set(results))
 
     jboss_standalone_main_config = foreach_collect(jboss_standalone_main_config_files, "%s")
+
+    def jboss_domain_config_files(broker):
+        ps = broker[ps_auxww].content
+        results = []
+        search = re.compile(r"\-Djboss\.domain\.base\.dir=(\S+)").search
+        # Domain JBoss progress command content should contain jboss.domain.base.dir
+        for p in ps:
+            if any(i in p for i in ['-D[Process Controller]', '-D[Host Controller]']):
+                match = search(p)
+                # Only get the path which is absolute
+                if match and match.group(1)[0] == "/":
+                    main_config_path = match.group(1)
+                    domain_config_file = "domain.xml"
+                    host_config_file = "host.xml"
+                    if "--domain-config" in p:
+                        domain_config_file = p.split("--domain-config=")[1].split()[0]
+                    if "--host-config" in p:
+                        host_config_file = p.split("--host-config=")[1].split()[0]
+                    results.append(main_config_path + domain_config_file)
+                    results.append(main_config_path + host_config_file)
+        return list(set(results))
+
+    jboss_domain_config = sf.foreach_collect(jboss_domain_config_files, "%s")
+
+    @datasource(ps_auxww)
+    def jboss_domain_pid_conf_maps(broker):
+        ps = broker[ps_auxww].content
+        results = []
+        search = re.compile(r"\-Djboss\.domain\.base\.dir=(\S+)").search
+        # Domain JBoss progress command content should contain jboss.domain.base.dir
+        # By default, domain.xml and host.xml in $jboss.domain.base.dir will be used.
+        # Default domain.xml can be reassigned by `--domain-config` and host.xml
+        # can be reassigned by `--host-config`.
+        for p in ps:
+            if any(i in p for i in ['-D[Process Controller]', '-D[Host Controller]']):
+                pid = p.split(None, 2)[1]
+                match = search(p)
+                # Only get the path which is absolute
+                if match and match.group(1)[0] == "/":
+                    main_config_path = match.group(1)
+                    domain_config_file = "domain.xml"
+                    host_config_file = "host.xml"
+                    if "--domain-config" in p:
+                        domain_config_file = p.split("--domain-config=")[1].split()[0]
+                    if "--host-config" in p:
+                        host_config_file = p.split("--host-config=")[1].split()[0]
+                    results.append("|".join([pid, main_config_path + host_config_file, main_config_path + domain_config_file]))
+        return results
+
+    jboss_domain_pid_conf_map = sf.foreach_execute(jboss_domain_pid_conf_maps, "echo %s")
