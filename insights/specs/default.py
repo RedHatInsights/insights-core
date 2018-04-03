@@ -663,7 +663,7 @@ class DefaultSpecs(Specs):
     jboss_standalone_main_config = foreach_collect(jboss_standalone_main_config_files, "%s")
 
     def jboss_domain_config_files(broker):
-        ps = broker[ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.domain\.base\.dir=(\S+)").search
         # Domain JBoss progress command content should contain jboss.domain.base.dir
@@ -687,7 +687,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww)
     def jboss_domain_pid_conf_maps(broker):
-        ps = broker[ps_auxww].content
+        ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.domain\.base\.dir=(\S+)").search
         # Domain JBoss progress command content should contain jboss.domain.base.dir
