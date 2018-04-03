@@ -30,11 +30,11 @@ Raises:
 
 from .. import parser, Parser, LegacyItemAccess
 
-from insights.specs import jboss_domain_pid_conf_map
+from insights.specs import Specs
 from ..parsers import ParseException
 
 
-@parser(jboss_domain_pid_conf_map)
+@parser(Specs.jboss_domain_pid_conf_map)
 class JbossDomainPidConfMap(Parser, LegacyItemAccess):
     def parse_content(self, content):
         self.data = {}

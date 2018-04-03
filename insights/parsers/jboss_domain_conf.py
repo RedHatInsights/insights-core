@@ -44,10 +44,10 @@ Examples:
 
 from .. import parser, XMLParser
 
-from insights.specs import jboss_domain_config
+from insights.specs import Specs
 
 
-@parser(jboss_domain_config)
+@parser(Specs.jboss_domain_config)
 class JbossDomainConf(XMLParser):
     """
     Overwrite :func:`parse_dom`. ``self.data`` keeps parsed dict.

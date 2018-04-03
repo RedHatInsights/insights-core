@@ -683,7 +683,7 @@ class DefaultSpecs(Specs):
                     results.append(main_config_path + host_config_file)
         return list(set(results))
 
-    jboss_domain_config = sf.foreach_collect(jboss_domain_config_files, "%s")
+    jboss_domain_config = foreach_collect(jboss_domain_config_files, "%s")
 
     @datasource(ps_auxww)
     def jboss_domain_pid_conf_maps(broker):
@@ -710,4 +710,4 @@ class DefaultSpecs(Specs):
                     results.append("|".join([pid, main_config_path + host_config_file, main_config_path + domain_config_file]))
         return results
 
-    jboss_domain_pid_conf_map = sf.foreach_execute(jboss_domain_pid_conf_maps, "echo %s")
+    jboss_domain_pid_conf_map = foreach_execute(jboss_domain_pid_conf_maps, "echo %s")
