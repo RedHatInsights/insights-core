@@ -314,6 +314,7 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
+    ls_var_tmp = simple_command("/bin/ls -lanR /var/tmp")
     ls_var_www = simple_command("/bin/ls -la /dev/null /var/www")  # https://github.com/RedHatInsights/insights-core/issues/827
     lvdisplay = simple_command("/sbin/lvdisplay")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
