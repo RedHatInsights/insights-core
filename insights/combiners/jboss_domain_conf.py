@@ -64,7 +64,7 @@ class AllJbossDomainConf(object):
         Returns the list of certain properties.
 
         Parameters:
-            pid (int): The progress id
+            pid (int): The process id
             element (str): XPath expression of certain property
 
         Returns:
@@ -92,7 +92,7 @@ class AllJbossDomainConf(object):
         Returns the role of controller(host-controller or domain-controller)
 
         Parameters:
-            pid (int): The progress id
+            pid (int): The process id
 
         Returns:
             (str): The role of controller(host-controller or domain-controller)

@@ -612,7 +612,7 @@ class DefaultSpecs(Specs):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.home\.dir=(\S+)").findall
-        # JBoss progress command content should contain jboss.home.dir
+        # JBoss process command content should contain jboss.home.dir
         # and any of string ['-D[Standalone]', '-D[Host Controller]', '-D[Server:']
         for p in ps:
             if any(i in p for i in ['-D[Standalone]', '-D[Host Controller]', '-D[Server:']):
@@ -629,7 +629,7 @@ class DefaultSpecs(Specs):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.server\.log\.dir=(\S+)").findall
-        # JBoss domain server progress command content should contain jboss.server.log.dir
+        # JBoss domain server process command content should contain jboss.server.log.dir
         for p in ps:
             if '-D[Server:' in p:
                 found = findall(p)
@@ -645,7 +645,7 @@ class DefaultSpecs(Specs):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.server\.base\.dir=(\S+)").search
-        # JBoss progress command content should contain jboss.home.dir
+        # JBoss process command content should contain jboss.home.dir
         for p in ps:
             if '-D[Standalone]' in p:
                 match = search(p)
@@ -666,7 +666,7 @@ class DefaultSpecs(Specs):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.domain\.base\.dir=(\S+)").search
-        # Domain JBoss progress command content should contain jboss.domain.base.dir
+        # Domain JBoss process command content should contain jboss.domain.base.dir
         for p in ps:
             if any(i in p for i in ['-D[Process Controller]', '-D[Host Controller]']):
                 match = search(p)
@@ -690,7 +690,7 @@ class DefaultSpecs(Specs):
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.domain\.base\.dir=(\S+)").search
-        # Domain JBoss progress command content should contain jboss.domain.base.dir
+        # Domain JBoss process command content should contain jboss.domain.base.dir
         # By default, domain.xml and host.xml in $jboss.domain.base.dir will be used.
         # Default domain.xml can be reassigned by `--domain-config` and host.xml
         # can be reassigned by `--host-config`.
