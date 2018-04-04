@@ -222,6 +222,7 @@ class DefaultSpecs(Specs):
     httpd_error_log = simple_file("var/log/httpd/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
+    virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):

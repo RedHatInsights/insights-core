@@ -136,6 +136,7 @@ class Specs(SpecSet):
     httpd_ssl_access_log = RegistryPoint()
     httpd_ssl_error_log = RegistryPoint()
     httpd_V = RegistryPoint(multi_output=True)
+    virt_uuid_facts = RegistryPoint()
     ifcfg = RegistryPoint(multi_output=True)
     ifconfig = RegistryPoint()
     imagemagick_policy = RegistryPoint(multi_output=True)
