@@ -63,6 +63,27 @@ ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="sw
 ALIGNMENT="0" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0" FSTYPE="ext4" GROUP="disk" KNAME="dm-2" LABEL="" LOG-SEC="512" MAJ:MIN="253:2" MIN-IO="512" MODE="brw-rw----" MODEL="" MOUNTPOINT="/home" NAME="vg_trex-lv_home" OPT-IO="0" OWNER="root" PHY-SEC="512" RA="128" RM="0" RO="0" ROTA="1" RQ-SIZE="128" SCHED="" SIZE="95.1G" STATE="running" TYPE="lvm" UUID="eee3252d-de08-4732-9d55-f2e33f878664"
 """
 
+LSBLK_EXT_DATA_FAILED_PATH = """
+lsblk: dm-0: failed to get device path
+lsblk: dm-1: failed to get device path
+lsblk: dm-0: failed to get device path
+lsblk: dm-1: failed to get device path
+NAME="sda" KNAME="sda" MAJ:MIN="8:0" FSTYPE="" MOUNTPOINT="" LABEL="" UUID="" RA="4096" RO="0" RM="0" MODEL="PERC H710P      " SIZE="931G" STATE="running" OWNER="" GROUP="" MODE="" ALIGNMENT="0" MIN-IO="512" OPT-IO="0" PHY-SEC="512" LOG-SEC="512" ROTA="1" SCHED="deadline" RQ-SIZE="128" TYPE="disk" DISC-ALN="0" DISC-GRAN="0B" DISC-MAX="0B" DISC-ZERO="0"
+"""
+
+LSBLK_INVALID_OPTION = """
+/bin/lsblk: invalid option -- 'P'
+
+Usage:
+ lsblk [options] [<device> ...]
+
+Options:
+ -a, --all            print all devices
+ -b, --bytes          print SIZE in bytes rather than in human readable format
+
+For more information see lsblk(8).
+"""
+
 
 def test_lsblk():
     # Test Block methods
@@ -200,6 +221,18 @@ def test_lsblockpairs_no_type():
         blocks = lsblk.LSBlockPairs(context_wrap(LSBLOCKPAIRS_NO_TYPE_DATA))
         assert repr(blocks.rows[0]) is None
     assert 'TYPE not found in LsBlockPairs line' in str(exc)
+
+
+def test_lsblockpairs_failed():
+    blocks = lsblk.LSBlockPairs(context_wrap(LSBLK_EXT_DATA_FAILED_PATH))
+    assert "dm-0" in blocks.failed_device_paths
+    assert "dm-1" in blocks.failed_device_paths
+
+
+def test_lsblockpairs_invalid_option():
+    with pytest.raises(ParseException) as ex:
+        lsblk.LSBlockPairs(context_wrap(LSBLK_INVALID_OPTION))
+    assert "/bin/lsblk: invalid option" in str(ex)
 
 
 LSBLOCKPAIRS_NO_TRANSLATE_DATA = """

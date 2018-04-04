@@ -286,6 +286,7 @@ class LSBlockPairs(BlockDevices):
                 Column Name     Key Name
                 RM              removable
                 RO              read_only
+        failed_device_paths (set): Set of device names that failed to get device path
 
     Note:
         ``PARENT_NAMES`` is not available as a key because it is not listed
@@ -294,16 +295,23 @@ class LSBlockPairs(BlockDevices):
     """
     def parse_content(self, content):
         self.rows = []
+        self.failed_device_paths = set()
+        if "invalid option" in content[0] and "lsblk:" in content[0]:
+            raise ParseException(content[0])
         for line in content:
+            if ' TYPE=' not in line:
+                if 'failed to get device path' in line:
+                    self.failed_device_paths.add(line.split(":")[1].strip())
+                    continue
+                else:
+                    raise ParseException(
+                        "TYPE not found in LsBlockPairs line '{l}'".format(l=line)
+                    )
+
             d = dict((k, v) for k, v in re.findall(r'(\S+)=\"(.*?)\"\s?', line) if len(v) > 0)
 
             def str2bool(s):
                 return bool(int(s))
-
-            if 'TYPE' not in d:
-                raise ParseException(
-                    "TYPE not found in LsBlockPairs line '{l}'".format(l=line)
-                )
 
             for original, replace, transform in [("RM", "REMOVABLE", str2bool),
                                                  ("RO", "READ_ONLY", str2bool)]:
