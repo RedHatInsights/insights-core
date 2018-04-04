@@ -120,9 +120,14 @@ class FSTab(Parser):
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
-            line['fs_mntops'] = AttributeDict(optlist_to_dict(line['raw_fs_mntops']))
+            if line.get('raw_fs_mntops'):
+                line['fs_mntops'] = AttributeDict(optlist_to_dict(line.get('raw_fs_mntops')))
+            else:
+                # if there is no mntops, it is defaults.
+                # (/dev/foo /foo somefs defaults   0 0) and (/dev/foo /foo somefs) are same
+                line['fs_mntops'] = AttributeDict(optlist_to_dict('defaults'))
             # add `raw` here for displaying convenience on front-end
-            line['raw'] = [l for l in content if l.startswith(line['fs_spec'])][0]
+            line['raw'] = [l for l in content if l.strip().startswith(line['fs_spec'])][0]
             self.data.append(AttributeDict(line))
         # assert: all mount points of valid entries are unique by definition
         self.mounted_on = dict((row.fs_file, row) for row in self.data)
