@@ -1,75 +1,25 @@
 """
-Combiner for GRUB v1 and v2 configurations
-==========================================
-
+GrubConf - The valid GRUB configuration
+=======================================
 Combiner for Red Hat Grub v1 and Grub v2 information.
-This combiner uses both the Grub1Config and the Grub2Config parsers.
-It determines which parser was used by checking the class attribute in shared.
-When the appropriate Grub parser class is determined it executes the combiner
-method for that class.
-Successful completion of the combiner yields the following information
+
+This combiner uses the :class:`insights.parsers.grub_conf.Grub1Config`,
+:class:`insights.parsers.grub_conf.Grub1EFIConfig`,
+:class:`insights.parsers.grub_conf.Grub2Config` and
+:class:`insights.parsers.grub_conf.Grub2EFIConfig` parsers.
+It determines which parser was used by checking the InstalledRpms or CmdLine and
+LsSysFirmware parsers.
 
 Examples:
-    >>> GRUB1_TEMPLATE = '''
-    ... default=0
-    ... timeout=5
-    ... splashimage=(hd0,0)/grub/splash.xpm.gz
-    ... hiddenmenu
-    ... title Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64)
-    ...            root (hd0,0)
-    ...            kernel /vmlinuz-2.6.32-642.el6.x86_64 {kernel_boot_options} ro root=/dev/mapper/VolGroup-lv_root intel_iommu=off rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet
-    ...            initrd /initramfs-2.6.32-642.el6.x86_64.img
-    ... title Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64-2)
-    ...            root (hd0,0)
-    ...            kernel /vmlinuz-2.6.32-642.el6.x86_64 {kernel_boot_options} ro root=/dev/mapper/VolGroup-lv_root intel_iommu=on rd_NO_LUKS LANG=en_US.UTF-8 rd_NO_MD rd_LVM_LV=VolGroup/lv_swap SYSFONT=latarcyrheb-sun16 crashkernel=auto rd_LVM_LV=VolGroup/lv_root  KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet
-    ...            initrd /initramfs-2.6.32-642.el6.x86_64.img
-    ... '''.strip()
-
-    >>> config = Grub1Config(context_wrap(GRUB1_TEMPLATE))
-    >>> shared = {Grub1Config: config}
-    >>> grub_conf = shared[GrubConf]
+    >>> type(grub_conf)
+    <class 'insights.combiners.grub_conf.GrubConf'>
     >>> grub_conf.version
-    1
-    >>> grub_conf.kernel_initrds
-    {'grub_initrds': [
-        'initramfs-2.6.32-642.el6.x86_64.img',
-        'initramfs-2.6.32-642.el6.x86_64.img'],
-     'grub_kernels': [
-        'vmlinuz-2.6.32-642.el6.x86_64',
-        'vmlinuz-2.6.32-642.el6.x86_64']}
-    >>> grub_conf.is_kdump_iommu_enabled
-    False
-    >>> grub_conf.get_grub_cmdlines('vmlinuz')[0].name
-    'Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64)'
-    >>> grub_conf.get_grub_cmdlines()[1].name
-    'Red Hat Enterprise Linux 6 (2.6.32-642.el6.x86_64-2)'
-
-
-
-    >>> GRUB2_TEMPLATE = '''
-    ... set pager=1
-    ... /
-    ... menuentry 'Red Hat Enterprise Linux Workstation (3.10.0-327.36.3.el7.x86_64) 7.2 (Maipo)' --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option 'gnulinux-3.10.0-123.13.2.el7.x86_64-advanced-fbff9f50-62c3-484e-bca5-d53f672cda7c' {
-    ...     load_video
-    ...     set gfxpayload=keep
-    ...     insmod gzio
-    ...     insmod part_msdos
-    ...     insmod ext2
-    ...     set root='hd0,msdos1'
-    ...     linux16 /vmlinuz-3.10.0-327.36.3.el7.x86_64 root=/dev/RHEL7CSB/Root ro rd.lvm.lv=RHEL7CSB/Root rd.luks.uuid=luks-96c66446-77fd-4431-9508-f6912bd84194 crashkernel=128M@16M rd.lvm.lv=RHEL7CSB/Swap vconsole.font=latarcyrheb-sun16 rhgb quiet LANG=en_GB.utf8
-    ...     initrd16 /initramfs-3.10.0-327.36.3.el7.x86_64.img
-    ... '''.strip()
-
-    >>> config = Grub2Config(context_wrap(GRUB2_TEMPLATE))
-    >>> shared = {Grub2Config: config}
-    >>> grub_conf = shared[GrubConf]
+    2
     >>> grub_conf.is_efi
     False
     >>> grub_conf.kernel_initrds
-    {'grub_initrds': [
-        '/initramfs-3.10.0-327.36.3.el7.x86_64.img'],
-     'grub_kernels': [
-        '/vmlinuz-3.10.0-327.36.3.el7.x86_64']}
+    {'grub_initrds': ['/initramfs-3.10.0-327.36.3.el7.x86_64.img'],
+     'grub_kernels': ['/vmlinuz-3.10.0-327.36.3.el7.x86_64']}
     >>> grub_conf.is_kdump_iommu_enabled
     False
     >>> grub_conf.get_grub_cmdlines('')
@@ -79,11 +29,21 @@ Examples:
 from .. import defaults
 from insights.core.plugins import combiner
 from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig, Grub2Config, Grub2EFIConfig
+from insights.parsers.ls_sys_firmware import LsSysFirmware
+from insights.parsers.installed_rpms import InstalledRpms
+from insights.parsers.cmdline import CmdLine
+from insights.parsers import ParseException
 
 
-@combiner([Grub1Config, Grub2Config, Grub2EFIConfig, Grub1EFIConfig])
+@combiner([Grub1Config, Grub2Config, Grub1EFIConfig, Grub2EFIConfig],
+          optional=[InstalledRpms, CmdLine, LsSysFirmware])
 class GrubConf(object):
-    """Process Grub configuration v1 or v2 based on which type is passed in
+    """
+    Process Grub configuration v1 or v2 based on which type is passed in.
+
+    Raises:
+        ParseException: when cannot find any valid grub configuration for the
+                        booted system.
 
     Attributes:
         version (int): returns 1 or 2, version of the GRUB configuration
@@ -92,21 +52,45 @@ class GrubConf(object):
             files referenced in GRUB configuration files
         is_kdump_iommu_enabled (bool): returns true if any kernel entry
             contains "intel_iommu=on"
-
     """
 
-    def __init__(self, grub1, grub2, grub2_efi, grub1_efi):
+    def __init__(self, grub1, grub2, grub1_efi, grub2_efi,
+                 rpms, cmdline, sys_firmware):
 
-        self.version = self.is_efi = self.is_kdump_iommu_enabled = None
+        self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
-        # get grub configuration
-        self.grub = grub1 or grub1_efi or grub2 or grub2_efi
+        _grubs = filter(None, [grub1, grub2, grub1_efi, grub2_efi])
+        if len(_grubs) == 1:
+            self.grub = _grubs[0]
+            self.is_efi = self.grub._efi
+        else:
+            # Check if `/sys/firmware/efi` exist?
+            self.is_efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
+            _grub1 = grub1_efi if self.is_efi else grub1
+            _grub2 = grub2_efi if self.is_efi else grub2
+            # Check grub version via installed-rpms
+            if rpms:
+                # grub1
+                if 'grub2' not in rpms and 'grub' in rpms and _grub1 is not None:
+                    self.grub = _grub1
+                # grub2
+                if 'grub' not in rpms and 'grub2' in rpms and _grub2 is not None:
+                    self.grub = _grub2
+            # Check grub version via the booted CmdLine
+            if self.grub is None and cmdline:
+                # grub1
+                if "BOOT_IMAGE" not in cmdline or 'rd_LVM_LV' in cmdline:
+                    self.grub = _grub1
+                # grub2
+                if "BOOT_IMAGE" in cmdline or 'rd.lvm.lv' in cmdline:
+                    self.grub = _grub2
 
         if self.grub:
             self.version = self.grub._version
-            self.is_efi = self.grub._efi
             self.is_kdump_iommu_enabled = self.grub.is_kdump_iommu_enabled
             self.kernel_initrds = self.grub.kernel_initrds
+        else:
+            raise ParseException('No valid grub configuration is found.')
 
     @defaults([])
     def get_grub_cmdlines(self, search_text=None):
@@ -119,12 +103,8 @@ class GrubConf(object):
                 None by default.
 
         Returns:
-            A list of AttributeDict objects for each boot entry in which the
-                `cmdline` contains the `search_text`. The AttributeDict boot
-                entry looks like:
-
-                - 'name': "Red Hat Enterprise Linux Server"
-                - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 rhgb quiet"
+            A list of :class:`insights.core.AttributeDict` objects for each
+            boot entry in which the `cmdline` contains the `search_text`.
         """
         if search_text is None:
             return [entry for entry in self.grub.boot_entries]
