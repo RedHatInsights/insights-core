@@ -56,6 +56,8 @@ class SosSpecs(Specs):
     ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
     pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")
+    qpid_stat_q = simple_file("sos_commands/foreman/foreman-debug/qpid-stat-q")
+    qpid_stat_u = simple_file("sos_commands/foreman/foreman-debug/qpid-stat-u")
     root_crontab = simple_file("sos_commands/cron/root_crontab")
     route = simple_file("sos_commands/networking/route_-n")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
