@@ -9,6 +9,8 @@ Sample input is shown in the Examples. See ``FileListing`` class for
 additional information.
 
 Examples:
+    >>> from insights.parsers.ls_etc import LsEtc
+    >>> from insights.tests import context_wrap
     >>> LS_ETC = '''
     ... /etc/sysconfig:
     ... total 96
@@ -29,12 +31,12 @@ Examples:
     ... lrwxrwxrwx.  1 0 0   15 Jul  6 23:32 S97rhnsd -> ../init.d/rhnsd
     ... '''
     >>> ls_etc = LsEtc(context_wrap(LS_ETC))
-    >>> ls_etc
-    <insights.parsers.ls_etc.LsEtc object at 0x7f287406a1d0>
     >>> "sysconfig" in ls_etc
     False
     >>> "/etc/sysconfig" in ls_etc
     True
+    >>> len(ls_etc.files_of('/etc/sysconfig'))
+    3
     >>> ls_etc.files_of("/etc/sysconfig")
     ['ebtables-config', 'firewalld', 'grub']
     >>> ls_etc.dirs_of("/etc/sysconfig")
@@ -43,10 +45,14 @@ Examples:
     []
     >>> ls_etc.total_of("/etc/sysconfig")
     96
+    >>> ls_etc.dir_entry('/etc/sysconfig', 'grub')
+    {'group': '0', 'name': 'grub', 'links': 1, 'perms': 'rwxrwxrwx.', 'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub', 'owner': '0', 'link': '/etc/default/grub', 'date': 'Jul  6 23:32', 'type': 'l', 'dir': '/etc/sysconfig', 'size': 17}
+    >>> ls_etc.files_of('/etc/rc.d/rc3.d')
+    ['K50netconsole', 'S10network', 'S97rhnsd']
     >>> ls_etc.listing_of("/etc/sysconfig").keys()
     ['console', 'grub', '..', 'firewalld', '.', 'cbq', 'ebtables-config']
     >>> ls_etc.listing_of("/etc/sysconfig")['console'].keys()
-    ['group', 'name', 'links', 'perms', 'raw_entry', 'owner', 'date', 'type', 'size']
+    ['group', 'name', 'links', 'perms', 'raw_entry', 'owner', 'date', 'type', 'dir', 'size']
     >>> ls_etc.listing_of("/etc/sysconfig")['console']['type']
     'd'
     >>> ls_etc.listing_of("/etc/sysconfig")['console']['perms']
@@ -54,9 +60,7 @@ Examples:
     >>> ls_etc.dir_contains("/etc/sysconfig", "console")
     True
     >>> ls_etc.dir_entry("/etc/sysconfig", "console")
-    {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.',
-     'raw_entry': 'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console', 'owner': '0',
-     'date': 'Sep 16  2015', 'type': 'd', 'size': 6}
+    {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.', 'raw_entry': 'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console', 'owner': '0', 'date': 'Sep 16  2015', 'type': 'd', 'dir': '/etc/sysconfig', 'size': 6}
     >>> ls_etc.dir_entry("/etc/sysconfig", "grub")['type']
     'l'
     >>> ls_etc.dir_entry("/etc/sysconfig", "grub")['link']
@@ -71,3 +75,8 @@ from insights.specs import Specs
 class LsEtc(FileListing):
     """Parses output of ``ls -lanR /etc`` command."""
     pass
+
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
