@@ -25,6 +25,14 @@ insights.core.plugins
     :show-inheritance:
     :undoc-members:
 
+insights.core.filters
+---------------------
+
+.. automodule:: insights.core.filters
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.parsers
 ----------------
 
