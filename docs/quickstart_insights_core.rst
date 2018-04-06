@@ -54,25 +54,26 @@ for rule development::
     
 Clone the project::
 
-    $ git clone git@github.com:RedHatInsights/insights-core.git
+    [userone@hostone project_dir]$ git clone git@github.com:RedHatInsights/insights-core.git
 
 Or, alternatively, using HTTPS::
 
-    $ git clone https://github.com/RedHatInsights/insights-core.git
+    [userone@hostone project_dir]$ git clone https://github.com/RedHatInsights/insights-core.git
 
 Initialize a virtualenv::
 
-    $ cd insights-core
-    $ virtualenv .
+    [userone@hostone project_dir]$ cd insights-core
+    [userone@hostone project_dir/insights-core]$ virtualenv .
 
 Install the insights-core project and its dependencies into your virtualenv::
 
-    $ source bin/activate
-    (insights-core)$ bin/pip install -e .
+    [userone@hostone project_dir/insights-core]$ source bin/activate
+    (insights-core)[userone@hostone project_dir/insights-core]$ bin/pip install -e .
 
 From your project root directory create a directory for your rules::
     
-    (insights-core)$ mkdir -p myrules/MyRules
+    (insights-core)[userone@hostone project_dir/insights-core]$ cd ..
+    (insights-core)[userone@hostone project_dir]$ mkdir -p myrules/MyRules
 
 Create a basic setup file named ``setup.py`` in the ``myrules`` directory:
 
@@ -122,12 +123,12 @@ Create a sample rule called ``hostname_rel.py`` in the ``MyRules`` directory:
 
 Install your rule repository into your virtualenv::
 
-    (insights-core)$ cd myrule
-    (insights-core)$ pip install -e .
+    (insights-core)[userone@hostone project_dir]$ cd myrule
+    (insights-core)[userone@hostone project_dir/myrule]$ pip install -e .
     
-Now you can use Insights to evalute your rule by running your rule script::
+Now you can use Insights to evaluate your rule by running your rule script::
     
-    (insights-core)$ python MyRules/hostname_rel.py
+    (insights-core)[userone@hostone project_dir/myrule]$ python MyRules/hostname_rel.py
     
 Depending upon the computer you are using you will see several lines of
 output ending with a your rule results that should look something like this::
@@ -147,21 +148,22 @@ rules see the Tutorial section :ref:`tutorial-rule-development`.
 Contributor Setup
 *****************
 
-If you wish to contribute to the insights-core project you'll need to create a fork in github.
+If you wish to contribute to the insights-core project you'll need to create a fork in GitHub.
 
 1. Clone your fork::
 
-    $ git clone git@github.com:your-user/insights-core.git
+    [userone@hostone project_dir]$ git clone git@github.com:your-user/insights-core.git
 
 2. Reference the original project as "upstream"::
 
-    $ git remote add upstream git@github.com:RedHatInsights/insights-core.git
+    [userone@hostone project_dir]$ cd insights-core
+    [userone@hostone project_dir/insights-core]$ git remote add upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
 using the following commands::
 
-    $ git pull upstream master
-    $ git push origin master
+    [userone@hostone project_dir/insights-core]$ git pull upstream master
+    [userone@hostone project_dir/insights-core]$ git push origin master
 
 You will need to initialize the project per the
 `README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
@@ -173,7 +175,7 @@ tutorial sections :ref:`tutorial-parser-development` and
 Contributor Submissions
 ***********************
 
-Contributors should submit changes to the code via github "Pull
+Contributors should submit changes to the code via GitHub "Pull
 Requests."  One would normally start a new contribution with a branch
 from the current master branch of the upstream project.
 
@@ -212,14 +214,14 @@ from the current master branch of the upstream project.
    of the topic branch.  Again, such manipulations change history and
    require a ``--force`` push.
 
-6. When ready, use the github UI to submit a pull request (PR).
+6. When ready, use the GitHub UI to submit a pull request (PR).
 
 7. Repeat steps 4 and 5 as necessary.  Once you have submitted your
    PR it is not necessary to squash commits, that will be done
    when the PR is merged.  Also it is not necessary to rebase against the
    master branch unless the PR status indicates that there
    are merge issues.  Any subsequent pushes to the existing PR branch
-   will be reflected in the PR on Github.
+   will be reflected in the PR on GitHub.
 
 *****************
 Style Conventions

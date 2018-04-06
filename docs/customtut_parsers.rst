@@ -21,10 +21,10 @@ Preparing Your Development Environment
 ======================================
 
 First you need to create your own fork of the insights-core project.  Do this by
-going to the `insights-core Repository`_ on github and clicking on the
+going to the `insights-core Repository`_ on GitHub and clicking on the
 **Fork** button.
 
-You will now have an *insights-core* repository under your github user that
+You will now have an *insights-core* repository under your GitHub user that
 you can use to checkout the code to your development environment.  To check
 out the code go to the repository page for your fork and copy the link to
 download the repo.
@@ -102,7 +102,7 @@ you have ``unzip`` installed on your system::
 Your development environment is now ready to begin development and you may move
 on to the next section.  If you had problems with any of these steps then
 double check that you have completed all of the steps in order and if it still
-doesn't work, open a `Github issue <https://github.com/RedHatInsights/insights-core/issues/new>`_.
+doesn't work, open a `GitHub issue <https://github.com/RedHatInsights/insights-core/issues/new>`_.
 
 Secure Shell Parser
 ===================
@@ -139,8 +139,8 @@ Creating the Initial Parser Files
 ---------------------------------
 
 First we need to create the parser file.  Parser files are implemented in modules.
-The module should be limited to one type of applications.  In this case we are
-working with ``ssh`` applications so we will create an ``secure_shell`` module.
+The module should be limited to one type of application.  In this case we are
+working with the ``ssh`` application so we will create an ``secure_shell`` module.
 Create the module file ``insights/parsers/secure_shell.py`` in the parsers
 directory::
 
@@ -210,7 +210,7 @@ test passed as expected.
        think to check is that you have activated your virtual environment by
        executing the command ``source bin/activate`` from the root directory
        of your insights-core project.  Your prompt should change to include
-       ``(insights-core)`` if your virtual enviroment is activated. You can
+       ``(insights-core)`` if your virtual environment is activated. You can
        deactivate the virtual environment by typing ``deactivate``. You can
        find more information about virtual environments here:
        http://docs.python-guide.org/en/latest/dev/virtualenvs/
@@ -283,7 +283,7 @@ constructor:
    from insights.tests import context_wrap
 
 Next we include the sample data that will be used for the test.  Use of the
-``strip()`` function ensures that all whitespace at the beginning and end
+``strip()`` function ensures that all white space at the beginning and end
 of the data are removed:
 
 .. code-block:: python
@@ -324,7 +324,7 @@ access in our rules.  First a assumptions about the data:
 #. some keywords may be present more than once in the config file
 #. we want to access keywords in a case insensitive way
 #. order of the keywords matter
-#. we are not trying to validate the configration file so we won't parse the
+#. we are not trying to validate the configuration file so we won't parse the
    values or analyze sequence of keywords
 
 Now here are the tests:
@@ -368,10 +368,10 @@ or types.  Some general recommendations for parser class implementation are:
 * Choose attribute types that are not so complex they cannot be easily
   understood or serialized.  Unless you know you need something complex
   keep it simple.
-* Use the ``@property`` decorator to create readonly getters and simplify
+* Use the ``@property`` decorator to create read-only getters and simplify
   access to information.
 
-Now we need to implement the parser that will satisify our tests.
+Now we need to implement the parser that will satisfy our tests.
 
 .. code-block:: python
    :linenos:
@@ -516,7 +516,7 @@ The following shows our completed parser including documentation.
     Examples:
         >>> 'Port' in sshd_config
         True
-        >>> 'PORT' in sshd_config  # items are stored case-insentive
+        >>> 'PORT' in sshd_config  # items are stored case-insensitive
         True
         >>> 'AddressFamily' in sshd_config  # comments are ignored
         False
@@ -669,7 +669,7 @@ of those tests and only test the 'corner cases':
 
     def test_sshd_corner_cases():
         """
-        Here we test any corner cases for behaviour we expect to deal with
+        Here we test any corner cases for behavior we expect to deal with
         in the parser but doesn't make a good example.
         """
         config = SshDConfig(context_wrap(SSHD_DOCS_EXAMPLE))
@@ -742,7 +742,7 @@ The final version of our test now looks like this:
 
     def test_sshd_corner_cases():
         """
-        Here we test any corner cases for behaviour we expect to deal with
+        Here we test any corner cases for behavior we expect to deal with
         in the parser but doesn't make a good example.
         """
         config = SshDConfig(context_wrap(SSHD_DOCS_EXAMPLE))

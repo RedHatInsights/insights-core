@@ -8,7 +8,7 @@ Tutorial - Combiner Development
 Combiner Development
 ********************
 In the Map-Reduce model, Parsers are responsible for mapping the data from a
-data source and Combiners are responsible for reduce the data from multiple
+datasource and Combiners are responsible for reducing the data from multiple
 Parsers into a reduced dataset.  Combiners help to consolidate information from
 different data sources, hide differences between the same data source across
 operating system versions, and make Parser output more rule friendly. 
@@ -22,7 +22,7 @@ source of *hostname*, greatly simplifying logic in the rule.
 
 Another example is the ``GrubConf`` combiner which evaluates multiple versions
 (1, 2, non-EFI, EFI) Grub configuration data to provide one consolidated source
-of infomation for Grub configuration on a system.
+of information for Grub configuration on a system.
 
 You can find the complete implementation of the combiner and test code in the
 directory ``insights/docs/examples/combiners``.
@@ -33,8 +33,8 @@ Preparing Your Development Environment
 We will use the same development environment that is necessary for Parser
 Development which is described in :ref:`parser-development-environment`.
 
-Database File Locations Combiner
-================================
+Hostname Combiner
+=================
 
 Overview
 --------
@@ -85,7 +85,7 @@ We also need to pass the parser instance objects as arguments to the ``__init__`
 method of our combiner.  If either of these objects is not present then its
 value with be ``None``.
 
-Next we'll create the parser test file ``insights/combiners/tests/test_hostname_uh.py``
+Next we'll create the combiner test file ``insights/combiners/tests/test_hostname_uh.py``
 as a skeleton that will aid in the combiner development process:
 
 .. code-block:: python
@@ -97,7 +97,7 @@ as a skeleton that will aid in the combiner development process:
     def test_hostname_uh():
         pass
 
-Once you have created and saved both of these files and we'll run the test
+Once you have created and saved both of these files, you can the test
 to make sure everything is setup correctly::
 
     (insights-core)[userone@hostone insights-core]$ py.test -k hostname_uh
@@ -121,7 +121,7 @@ test passed as expected.
        think to check is that you have activated your virtual environment by
        executing the command ``source bin/activate`` from the root directory
        of your insights-core project.  Your prompt should change to include
-       ``(insights-core)`` if your virtual enviroment is activated. You can
+       ``(insights-core)`` if your virtual environment is activated. You can
        deactivate the virtual environment by typing ``deactivate``. You can
        find more information about virtual environments here:
        http://docs.python-guide.org/en/latest/dev/virtualenvs/
@@ -174,7 +174,7 @@ then use the parsers as input to our combiner tests.
        assert hostname_uh.hostname == HOSTNAME
 
 
-First we added an import our combiner object and the parser objects.  Next
+First we added an import for the combiner object and the parser objects.  Next
 we import a helper function ``context_wrap`` which we'll
 use to create our parser instance objects:
 
@@ -197,7 +197,7 @@ command and the ``uname -a`` command:
    HOSTNAME = "hostone_h.example.com"
    UNAME = "Linux hostone_u.example.com 3.10.0-693.21.1.el7.x86_64 #1 SMP Fri Feb 23 18:54:16 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux"
 
-Next, to the body of the test, we add code to create an instances of the
+Next, to the body of the test, we add code to create instances of the
 necessary parser classes:
 
 .. code-block:: python
@@ -249,10 +249,10 @@ are:
 * Choose attribute types that are not so complex they cannot be easily
   understood or serialized.  Unless you know you need something complex
   keep it simple.
-* Use the ``@property`` decorator to create readonly getters and simplify
+* Use the ``@property`` decorator to create read-only getters and simplify
   access to information.
 
-Now we need to implement the combiner that will satisify our tests.
+Now we need to implement the combiner that will satisfy our tests.
 
 .. code-block:: python
    :linenos:
@@ -300,7 +300,7 @@ The last step to complete implementation of our combiner is to create
 the documentation.  The guidelines and examples for combiner documentation is
 provided in the section :doc:`docs_guidelines` and parallels the information
 provided in the instructions for :ref:`parser-documentation`.  Combiner
-testing paralles the information provided in the instructions for the
+testing parallels the information provided in the instructions for the
 :ref:`parser-testing`
 
 .. --------------------------------------------------------------------

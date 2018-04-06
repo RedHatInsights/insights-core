@@ -8,13 +8,13 @@ Input Data Formats
 Before any data reaches the rules framework, it obviously has to be generated.
 There are currently several input data formats that can be processed by insights-core:
 
-SoSReports
+SOSReports
 ----------
 
-A SoSReport_ is a command-line tool for Red Hat Enterprise Linux (and other
+A SOSReport_ is a command-line tool for Red Hat Enterprise Linux (and other
 systems) to collect configuration and diagnostic information from the system.
 
-.. _SoSReport: https://github.com/sos/sosreport
+.. _SOSReport: https://github.com/sos/sosreport
 
 Insights Archives
 -----------------
@@ -74,7 +74,7 @@ collected from a host), Host Archive Context (uploaded Insights archive),
 SOSReports (uploaded SOSReport archive), and Docker Image Context (directly
 collected from Docker image).  The context determines which data sources are
 collected, and that in determines the hierarchy of parsers, collectors and rules
-that are executed.  Contexts enable differnt collection methods for data for
+that are executed.  Contexts enable different collection methods for data for
 each unique context, and also provide a default set of data sources that are
 common among one or more contexts.  All available contexts are defined in the
 module :py:mod:`insights.core.context`.
@@ -90,7 +90,7 @@ primary data collection specifications for all contexts and are located in
 :py:class:`insights.specs.default.DefaultSpecs`.
 
 Each specific ``Context`` may
-override the a default data source to provide a different collection
+override a default data source to provide a different collection
 specification.  For instance when the Insights client collects the ``fdisk -l``
 information it will use the default datasource and execute the command on
 the target machine.  This is the :py:class:`insights.core.context.HostContext`.
@@ -103,10 +103,33 @@ defined in :py:class:`insights.specs.insights_archive.InsightsArchiveSpecs` are
 used instead.  In this case Insights will collect the data from a file
 named ``insights_commands/fdisk_-l``.
 
+The command type datasources in ``default.py`` (``simple_command`` and
+``foreach_execute``) only target ``HostContext``. File based datasources fire for any
+context annotated with ``@fs_root`` (``HostContext``, ``InsightsArchiveContext``,
+``SosArchiveContext``, ``DockerImageContext``, and etc.).
+That's why we need a definition in the ``*_archive.py`` files for every command but only
+for the files that are different from ``default.py``.
+
+Also, the order in which spec modules load matters. Say we have 2 classes containing
+specs, A and B. If B loads after A and both A and B have entries for ``hostname``,
+the one that fires depends on the context that each one targets. E.g. if ``A.hostname``
+targets ``HostContext`` and ``B.hostname`` targets ``InsightsArchiveContext``, then
+they'll each fire for whichever context is loaded. But if both ``A.hostname`` and
+``B.hostname`` target ``HostContext``, the datasource in the class that loads last
+will win for that context.
+
 While data sources are specific to the context, the purpose of the data source
-hierarcy is to provide a consistent set of input to ``Parsers``.  For this
+hierarchy is to provide a consistent set of input to ``Parsers``.  For this
 reason ``Parsers`` should generally depend upon :py:class:`insights.specs.Specs`
 data sources.
+
+This hierarchy allows a developer to override a particular datasource.  For instance,
+if a developer found a bug in a sos_archive datasource,
+she could create her own class inheriting from :py:class:`insights.core.spec_factory.SpecSet`,
+create the datasource in it,
+and have the datasource target ``SosArchiveContext``. So long as the module containing
+her class loads after ``default.py``, ``insights_archive.py``, and ``sos_archive.py``,
+her definition will win for that datasource when running under a ``SosArchiveContext``.
 
 .. _specification-factories:
 
@@ -135,11 +158,15 @@ of data sources are listed below.
         brctl_show = simple_command("/usr/sbin/brctl show")
 
 :py:func:`insights.core.spec_factory.glob_file`
-    glob_file collects the contents of each file matching the glob pattern(s)
+    glob_file collects the contents of each file matching the glob pattern(s).
+    glob_file also can take a list of patterns as well as an ignore keyword
+    arg that is a regular expression telling it which of the matching files to throw out,
     for example::
         
         httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
         ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
+        rabbitmq_logs = glob_file("/var/log/rabbitmq/rabbit@*.log", ignore=".*rabbit@.*(?<!-sasl).log$")
+
 
 :py:func:`insights.core.spec_factory.first_file`
     first_file collects the contents of the first readable file from a list
@@ -172,7 +199,7 @@ of data sources are listed below.
         ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
 
 :py:func:`insights.core.spec_factory.foreach_collect`
-    foreach_collect subtitutes each element in provider into path and collects
+    foreach_collect substitutes each element in provider into path and collects
     the files at the resulting paths.  This spec factory is typically utilized
     in combination with a simple_command or listdir spec factory to generate
     the input elements, for example::
@@ -199,7 +226,7 @@ Custom Data Source
 ------------------
 
 If greater control over data source content is required than provided by the
-existing specification factories, it is possible to writ a customer data source.
+existing specification factories, it is possible to write a custom data source.
 This is accomplished by decorating a function with the ``@datasource`` decorator
 and returning a ``list`` type.  Here's an example:
 
@@ -212,13 +239,14 @@ and returning a ``list`` type.  Here's an example:
        tmp = "/dev/%s"
        return [(tmp % f) for f in os.listdir("/sys/block") if not f.startswith(remove)]
 
-.. todo::
-    It might be usefule to have a tutorial on custom data sources.
+Custom datasources also can return :py:class:`insights.core.spec_factory.CommandOutputProvider`,
+:py:class:`insights.core.spec_factory.TextFileProvider`, or
+:py:class:`insights.core.spec_factory.RawFileProvider` instances.
 
 Parsers
 =======
 
-A ``Parser`` takes the raw content of a particular ``Data Source`` such as a
+A ``Parser`` takes the raw content of a particular ``Data Source`` such as
 file contents or command output, parses it, and then provides a small API for
 plugins to query.  The parsed data and computed facts available via the API are
 also serialized to be used in downstream processes.

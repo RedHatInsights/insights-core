@@ -32,12 +32,12 @@ directory ``insights/docs/examples/rules``.
 Preparing Your Development Environment
 **************************************
 
-The following instructions assume that you have a insights-core development
+The following instructions assume that you have an insights-core development
 environment setup and working, and that your rules root dir and insights-core
-root dir a subdirs of the same root dir.  First you will need to create
+root dir are subdirs of the same root dir.  First you will need to create
 a ``mycomponents`` directory and then copy the example rules directory into
 ``mycomponents``.  You will also need to copy the ``conftest.py`` from the
-``insights-core`` root directory in order for you tests to work correctly.
+``insights-core`` root directory in order for your tests to work correctly.
 Here are the commands to setup your rule development environment::
 
     [userone@hostone work]$ pwd
@@ -52,7 +52,7 @@ Here are the commands to setup your rule development environment::
     conftest.py  rules
 
 Once you have completed this your project directory tree should look like this
-(note the details of the ``insights-core`` directory tree is not being shown)::
+(note the details of the ``insights-core`` directory tree are not being shown)::
 
     work
     ├── insights-core
@@ -66,14 +66,13 @@ Once you have completed this your project directory tree should look like this
             ├── test_integration.py
             └── test_sshd_secure.py
 
-
 Make sure
 you start with your virtual environment set to the insights-core project::
 
     [userone@hostone mycomponents]$ source ../insights-core/bin/activate
     (insights-core)[userone@hostone mycomponents]$ 
 
-You are now ready to being writing your rule.
+You are now ready to begin writing your rule.
 
 ************************
 Secure Shell Server Rule
@@ -82,8 +81,8 @@ Secure Shell Server Rule
 Rule Code
 =========
 
-First we need to create a template rule file.  It is recommendated that
-you name the file based the results it produces.  Since we are looking
+First we need to create a template rule file.  It is recommended that
+you name the file based on the results it produces.  Since we are looking
 at sshd security we will name the file ``mycomponents/rules/sshd_secure.py``.
 Notice that the file is located in the ``rules`` subdirectory
 of your project::
@@ -104,7 +103,7 @@ Here's the basic contents of the rule file:
    @rule(SshDConfig)
    def report(sshd_config):
        """
-       1. Evalute config file facts
+       1. Evaluate config file facts
        2. Evaluate version facts
        """
        if results_found:
@@ -167,7 +166,7 @@ The decorator for the rule and the rule signature will look like this:
         # ip_tables and ip_addr will be present if data is available
         # arguments will be None if data is not available
 
-Currently our rule requires one shared parser ``SshDConfig``.  We will add a
+Currently our rule requires one parser ``SshDConfig``.  We will add a
 requirement to obtain facts about installed RPMs in the final code.
 
 .. code-block:: python
@@ -183,8 +182,9 @@ in the parser object ``sshd_config``.  If any results
 are found in the evaluation then a response is created with the
 ``ERROR_KEY`` and any data that you want to be associated with
 the results are included in the response.  
-This data is made available in the customer interface
-or results output.  You may use zero or more named arguments to
+This data can be viewed in the results made available to a customer
+in the Red Hat Insights web interface.
+You may use zero or more named arguments to
 provide the data to ``make_response``.  You should use meaningful
 argument names as it helps in understanding of the results.
 
@@ -194,7 +194,7 @@ argument names as it helps in understanding of the results.
 
    def report(sshd_config):
        """
-       1. Evalute config file facts
+       1. Evaluate config file facts
        2. Evaluate version facts
        """
        if results_found:
@@ -403,7 +403,7 @@ by viewing the test code:
        """
        InputData acts as the data source for the parsers
        so that they may execute and then be used as input
-       to the rule.  So this is essentially and end-to-end
+       to the rule.  So this is essentially an end-to-end
        test of the component chain.
        """
        input_data = InputData("GOOD_CONFIG")
@@ -554,7 +554,7 @@ rule function name.  Typically we name the method ``integration_tests``.
    def integration_tests():
 
 Next we create an ``InputData`` object and it is useful to provide
-a name argument to the contstructor.  When you execute
+a name argument to the constructor.  When you execute
 integration tests, that name will show up in the results and make it
 easier to debug if you have any problems. Next you add your test
 inputs to the ``InputData`` object that will be used to create the

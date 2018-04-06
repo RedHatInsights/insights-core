@@ -25,6 +25,14 @@ insights.core.plugins
     :show-inheritance:
     :undoc-members:
 
+insights.core.spec_factory
+--------------------------
+
+.. automodule:: insights.core.spec_factory
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.parsers
 ----------------
 
