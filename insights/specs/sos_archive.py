@@ -33,7 +33,12 @@ class SosSpecs(Specs):
     ethtool_i = glob_file("sos_commands/networking/ethtool_-i_*")
     ethtool_k = glob_file("sos_commands/networking/ethtool_-k_*")
     fdisk_l_sos = glob_file(r"sos_commands/filesys/fdisk_-l_*")
-    foreman_ssl_access_ssl_log = first_file(["var/log/httpd/foreman-ssl_access_ssl.log", r"sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log"])
+    foreman_production_log = first_file(["var/log/foreman/production.log",
+                                         r"sos_commands/foreman-debug/var/log/foreman/"
+                                         r"sos_production.log"])
+    foreman_ssl_access_ssl_log = first_file(["var/log/httpd/foreman-ssl_access_ssl.log",
+                                             r"sos_commands/foreman/foreman-debug/var/log/httpd/"
+                                             r"foreman-ssl_access_ssl.log"])
     getcert_list = simple_file("sos_commands/ipa/ipa-getcert_list")
     hostname = first_of([simple_file("sos_commands/general/hostname_-f"), simple_file("sos_commands/general/hostname")])
     httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"])
@@ -53,9 +58,11 @@ class SosSpecs(Specs):
     netstat_s = simple_file("sos_commands/networking/netstat_-s")
     nmcli_dev_show = simple_file("sos_commands/networking/nmcli_dev_show")
     ntptime = simple_file("sos_commands/ntp/ntptime")
-    ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
+    ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux",
+                           "sos_commands/process/ps_auxcww"])
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
-    pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")
+    pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_"
+                      "pe_start_--config_global_locking_type_0")
     qpid_stat_q = simple_file("sos_commands/foreman/foreman-debug/qpid-stat-q")
     qpid_stat_u = simple_file("sos_commands/foreman/foreman-debug/qpid-stat-u")
     root_crontab = simple_file("sos_commands/cron/root_crontab")
@@ -75,5 +82,6 @@ class SosSpecs(Specs):
     uname = simple_file("sos_commands/kernel/uname_-a")
     uptime = simple_file("sos_commands/general/uptime")
     vgdisplay = simple_file("vgdisplay")
-    vgs = simple_file("sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0")
+    vgs = simple_file("sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_"
+                      "tags_--config_global_locking_type_0")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
