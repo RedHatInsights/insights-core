@@ -8,10 +8,11 @@ from collections import defaultdict
 from glob import glob
 
 from insights.core import blacklist, dr
-from insights.core.filters import apply_filters
+from insights.core.filters import get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.core.serde import deserializer, serializer
+from insights.util import subproc
 
 log = logging.getLogger(__name__)
 
@@ -142,15 +143,20 @@ class TextFileProvider(FileProvider):
         return True
 
     def load(self):
-        # read with universal newlines so all line terminators are converted to
-        # "\n"
-        with open(self.path, 'U') as f:
-            results = []
-            if self.ds:
-                # This should shell out to a grep pipeline
-                results = [l.rstrip("\n") for l in apply_filters(self.ds, f)]
+
+        filters = False
+        if self.ds:
+            filters = "\n".join(get_filters(self.ds))
+        if filters:
+            cmd = "/bin/grep -F '{0}' {1}".format(filters, self.path)
+            rc, out = subproc.call(cmd.encode("utf-8"), shell=False, keep_rc=True)
+            if rc == 0 and out != '':
+                results = out.splitlines()
             else:
-                results = f.read().splitlines()
+                return []
+        else:
+            out = subproc.call("cat {0}".format(self.path), shell=False)
+            results = out.splitlines()
         if not self.validate_lines(results):
             first = results[0] if results else "<no content>"
             raise ContentException(self.relative_path + ": " + first)
@@ -452,14 +458,18 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
     def inner(broker):
         ctx = broker[context]
         rc = None
-        raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+        if split:
+            filters = "\n".join(get_filters(inner))
+        if filters:
+            command = "{0} | grep -F '{1}'".format(cmd, filters)
+            raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
+        else:
+            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+
         if keep_rc:
             rc, result = raw
         else:
             result = raw
-
-        if split:
-            result = list(apply_filters(inner, result))
         return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
     COMMANDS[inner] = cmd
     return inner
@@ -505,14 +515,20 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
             try:
                 the_cmd = cmd % e
                 rc = None
-                raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+
+                if split:
+                    filters = "\n".join(get_filters(inner))
+                if filters:
+                    command = "{0} | grep -F '{1}'".format(the_cmd, filters)
+                    raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
+                else:
+                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
                 if keep_rc:
                     rc, output = raw
                 else:
                     output = raw
-                if split:
-                    output = list(apply_filters(inner, output))
-                result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split, keep_rc=keep_rc))
+                result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split,
+                                                    keep_rc=keep_rc))
             except:
                 log.debug(traceback.format_exc())
         if result:
