@@ -2,12 +2,10 @@ import logging
 import shlex
 import signal
 import subprocess
+from subprocess import Popen
 import sys
 
 log = logging.getLogger(__name__)
-
-STDOUT = subprocess.PIPE
-STDERR = subprocess.STDOUT
 
 
 class CalledProcessError(Exception):
@@ -46,7 +44,8 @@ class CalledProcessError(Exception):
         return '<{c}({r}, {cmd}, {o})>'.format(c=name, r=rc, cmd=cmd, o=output)
 
 
-def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, stderr=STDERR, keep_rc=False, **kwargs):
+def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+         keep_rc=False, **kwargs):
     """Call cmd with an optional timeout in seconds.
 
     If `timeout` is supplied and expires, the process is killed with
@@ -88,10 +87,22 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=STDOUT, s
         log.debug(cmd)
 
         if not shell:
-            cmd = shlex.split(cmd)
-        p = subprocess.Popen(cmd, stdout=stdout, stderr=stderr, shell=shell, **kwargs)
-        output = p.communicate()[0]
-        rc = p.poll()
+            spltcmd = cmd.split("|")
+            if len(spltcmd) > 1:
+                cmd = shlex.split(spltcmd[0])
+                cout = Popen(cmd, stdout=stdout)
+                del spltcmd[0]
+
+                for next in spltcmd:
+                    nxt = shlex.split(next)
+                    cout = Popen(nxt, stdout=stdout, stderr=stderr, stdin=cout.stdout)
+            else:
+                cmd = shlex.split(spltcmd[0])
+                cout = Popen(cmd, stdout=stdout, stderr=stderr, shell=shell)
+        else:
+            cout = Popen(cmd, stdout=stdout, stderr=stderr, shell=shell)
+        output = cout.communicate()[0]
+        rc = cout.poll()
     except Exception as e:
         raise CalledProcessError(rc, cmd, str(e)), None, sys.exc_info()[2]
     if keep_rc:
