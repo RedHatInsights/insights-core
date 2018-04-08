@@ -49,6 +49,10 @@ class SmbstatusS(Statuslist):
         >>> smbstatuss_info.data[0]['pid']
         '13668'
 
+    Raises:
+        ParseException: When there is no usefull data or the input content is
+        empty,  or does contain the header line.
+
     Attributes:
         data (list): List of dicts, where the keys in each dict are the column
             headers and each item in the list represents a connection.
@@ -81,6 +85,10 @@ class Smbstatusp(Statuslist):
         {'Username': 'testsmb', 'Signing': '-', 'Group': 'testsmb', 'Encryption': '-', 'PID': '12668', 'Machine': '10.66.208.149 (ipv4:10.66.208.149:44376)', 'Protocol_Version': 'SMB2_02'}
         >>> smbstatusp_info.data[0]['PID']
         '12668'
+
+    Raises:
+        ParseException: When there is no usefull data or the input content is
+        empty,  or does contain the header line.
 
     Attributes:
         data (list): List of dicts, where the keys in each dict are the column
