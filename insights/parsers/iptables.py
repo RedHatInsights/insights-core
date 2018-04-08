@@ -137,8 +137,12 @@ class IPTablesConfiguration(Parser):
                     "byte_counter": int(byte_counter),
                 })
             elif line.startswith("-"):
-                chain_name, rule = line[3:].split(None, 1)
-                target_option = [i for i in ('-j', '-g') if i in rule]
+                line_spl = line[3:].split(None, 1)
+                if not line_spl:
+                    continue
+                chain_name = line_spl[0]
+                rule = line_spl[1] if len(line_spl) == 2 else ''
+                target_option = [i for i in (' -j ', ' -g ') if i in rule]
                 if target_option:
                     constraints, target = [i.strip() for i in rule.split(target_option[-1])]
                     if " " in target:
@@ -149,7 +153,7 @@ class IPTablesConfiguration(Parser):
                         "table": current_table,
                         "chain": chain_name,
                         "rule": rule,
-                        "target_action": "jump" if target_option[-1] == "-j" else "goto",
+                        "target_action": "jump" if target_option[-1] == " -j " else "goto",
                         "constraints": constraints,
                         "target": target,
                         "target_options": target_options
