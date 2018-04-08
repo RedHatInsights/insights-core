@@ -8,6 +8,7 @@ IPTABLES_SAVE = """
 :FORWARD ACCEPT [0:0]
 :OUTPUT ACCEPT [769:196899]
 :REJECT-LOG - [0:0]
+:Drop - [0:0]
 -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -m state --state RELATED,ESTABLISHED -g ACCEPT
 -A INPUT -s 192.168.0.0/24 -j ACCEPT
@@ -15,6 +16,8 @@ IPTABLES_SAVE = """
 -A INPUT -p icmp -j ACCEPT
 -A INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
 -A INPUT -j REJECT --reject-with icmp-host-prohibited
+-A OUTPUT -d 192.168.0.23/32 -m comment --comment "Permit IP to device net-j" -j ACCEPT
+-A DROP
 -A REJECT-LOG -p tcp -j REJECT --reject-with tcp-reset
 COMMIT
 # Completed on Tue Aug 16 10:18:43 2016
@@ -49,8 +52,9 @@ PARSED_TCP_REJECT_RULE = {
 
 def check_iptables_rules_parsing(iptables_obj):
     ipt = iptables_obj
-    assert len(ipt.rules) == 8
+    assert len(ipt.rules) == 10
     assert len(ipt.get_chain("INPUT")) == 7
+    assert len(ipt.get_chain("OUTPUT")) == 1
     assert len(ipt.table_chains("mangle")) == 5
     assert ipt.rules[-1] == PARSED_TCP_REJECT_RULE
     assert ipt.get_table("nat")[1] == {
@@ -63,6 +67,8 @@ def check_iptables_rules_parsing(iptables_obj):
     assert "tcp-reset" in ipt
     assert "--sport" not in ipt
     assert ipt.get_rule("tcp-reset") == [PARSED_TCP_REJECT_RULE]
+    assert ipt.get_chain("DROP") == [
+                {'table': 'filter', 'rule': '', 'chain': 'DROP'}]
 
 
 def test_iptables_configuration():
