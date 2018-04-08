@@ -20,7 +20,11 @@ logger = logging.getLogger(__name__)
 def phase(func):
     @functools.wraps(func)
     def _f():
-        compile_config()
+        try:
+            compile_config()
+        except ValueError as e:
+            sys.stderr.write('ERROR:' + e)
+            sys.exit(constants.sig_kill_bad)
         client.set_up_logging()
         if config['debug']:
             logger.info("Core path: %s", os.path.dirname(__file__))

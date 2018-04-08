@@ -383,3 +383,6 @@ def compile_config():
 
     if CONFIG['offline']:
         CONFIG['no_upload'] = True
+
+    if CONFIG['obfuscate_hostname'] and not CONFIG['obfuscate']:
+        raise ValueError('Option `obfuscate_hostname` requires `obfuscate`')
