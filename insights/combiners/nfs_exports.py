@@ -11,19 +11,19 @@ Examples:
     <class 'insights.combiners.nfs_exports.AllNFSExports'>
     >>> all_nfs.files  # List of files exporting NFS shares
     ['/etc/exports', '/etc/exports.d/mnt.exports']
-    >>> '/home/redhat' in all_nfs.exports  # All exports stored by path
+    >>> '/home/example' in all_nfs.exports  # All exports stored by path
     True
-    >>> sorted(all_nfs.exports['/home/redhat'].keys())  # Each path is a dictionary of host specs and flags.
-    ['@rhtttttttttttt', 'ins1.redhat.com', 'ins2.redhat.com', 'ins3.redhat.com']
-    >>> all_nfs.exports['/home/redhat']['ins3.redhat.com']  # Each host contains a list of flags.
+    >>> sorted(all_nfs.exports['/home/example'].keys())  # Each path is a dictionary of host specs and flags.
+    ['@group', 'ins1.example.com', 'ins2.example.com']
+    >>> all_nfs.exports['/home/example']['ins2.example.com']  # Each host contains a list of flags.
     ['rw', 'sync', 'no_root_squash']
-    >>> '/home/redhat' in all_nfs.ignored_exports  # Ignored exports are remembered within one file
+    >>> '/home/example' in all_nfs.ignored_exports  # Ignored exports are remembered within one file
     True
-    >>> all_nfs.ignored_exports['/home/redhat'].keys()  # Each ignored export is then stored by source file...
+    >>> all_nfs.ignored_exports['/home/example'].keys()  # Each ignored export is then stored by source file...
     ['/etc/exports']
-    >>> all_nfs.ignored_exports['/home/redhat']['/etc/exports'].keys()  # ... and then by host spec...
-    ['ins2.redhat.com']
-    >>> all_nfs.ignored_exports['/home/redhat']['/etc/exports']['ins2.redhat.com']  # ... holding the values that were duplicated
+    >>> all_nfs.ignored_exports['/home/example']['/etc/exports'].keys()  # ... and then by host spec...
+    ['ins2.example.com']
+    >>> all_nfs.ignored_exports['/home/example']['/etc/exports']['ins2.example.com']  # ... holding the values that were duplicated
     ['rw', 'sync', 'no_root_squash']
     >>> '/home/insights/shared/rw'  in all_nfs.ignored_exports  # Ignored exports are remembered across files
     True

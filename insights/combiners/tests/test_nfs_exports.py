@@ -8,9 +8,12 @@ from doctest import testmod
 EXPORTS_D_EXTRAS = """
 /mnt/work       *(rw,sync)
 /mnt/backup     10.0.0.0/24(rw,sync,no_root_squash)
+# This is a duplicate share but a new host, so it should be stored
+/home/insights/shared/rw ins4.example.com(rw,sync,no_root_squash)
 # We expect the following to be stored in the ignored_exports property
 # as it has a duplicate host declaration for this path.
-/home/insights/shared/rw ins1.redhat.com(rw,sync,no_root_squash)
+/home/insights/shared/rw ins1.example.com(rw,sync,no_root_squash)
+/home/insights/shared/rw ins2.example.com(rw,sync,no_root_squash)
 """
 
 # Set up combined test environment for docs and for more thorough functional
@@ -38,11 +41,14 @@ def test_nfs_export_combiner():
     assert sorted(combined.exports.keys()) == sorted([
         '/home/utcs/shared/ro', '/home/insights/shared/rw',
         '/home/insights/shared/special/all/mail',
-        '/home/insights/ins/special/all/config', '/home/redhat', '/mnt/work',
+        '/home/insights/ins/special/all/config', '/home/example', '/mnt/work',
         '/mnt/backup'
     ])
-    for path, hosts in nfs_exportsf.data.iteritems(:
+    for path, hosts in nfs_exportsf.data.iteritems():
         assert hosts == combined.exports[path]
+    assert sorted(combined.exports['/home/insights/shared/rw'].keys()) == sorted([
+        '@group', 'ins1.example.com', 'ins2.example.com', 'ins4.example.com'
+    ])
 
     assert hasattr(combined, 'ignored_exports')
     assert isinstance(combined.ignored_exports, dict)
@@ -50,7 +56,7 @@ def test_nfs_export_combiner():
     assert len(combined.ignored_exports) == 2
     print combined.ignored_exports.keys()
     assert sorted(combined.ignored_exports.keys()) == sorted([
-        '/home/insights/shared/rw', '/home/redhat'
+        '/home/insights/shared/rw', '/home/example'
     ])
 
     assert hasattr(combined, 'raw_lines')
