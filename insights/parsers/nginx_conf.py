@@ -208,7 +208,7 @@ class NginxConf(Parser, LegacyItemAccess):
         """
         Function to count the depth of a list
         """
-        if isinstance(l, list):
+        if isinstance(l, list) and len(l) > 0:
             return 1 + max(self._depth(item) for item in l)
         else:
             return 0
