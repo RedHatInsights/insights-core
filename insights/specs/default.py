@@ -109,6 +109,9 @@ class DefaultSpecs(Specs):
 
     corosync = simple_file("/etc/sysconfig/corosync")
 
+    cpu_vulns_meltdown = simple_file("sys/devices/system/cpu/vulnerabilities/meltdown")
+    cpu_vulns_spectre_v1 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v1")
+    cpu_vulns_spectre_v2 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v2")
     # why the /cpuinfo?
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
@@ -586,6 +589,8 @@ class DefaultSpecs(Specs):
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
+    x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
+
     xfs_info = None
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
