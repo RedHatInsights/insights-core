@@ -51,7 +51,7 @@ class SmbstatusS(Statuslist):
 
     Raises:
         ParseException: When there is no usefull data or the input content is
-        empty,  or does contain the header line.
+            empty,  or does contain the header line.
 
     Attributes:
         data (list): List of dicts, where the keys in each dict are the column
@@ -88,7 +88,7 @@ class Smbstatusp(Statuslist):
 
     Raises:
         ParseException: When there is no usefull data or the input content is
-        empty,  or does contain the header line.
+            empty,  or does contain the header line.
 
     Attributes:
         data (list): List of dicts, where the keys in each dict are the column
