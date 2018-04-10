@@ -40,7 +40,7 @@ class AllNFSExports(object):
     Combiner for accessing all the NFS export configuration files.
 
     Exports are allowed to be listed multiple times, with all duplicate
-    host after the first causing `exportfs` to emit a warning and ignore
+    host after the first causing ``exportfs`` to emit a warning and ignore
     the host.  So we combine the raw lines and ignored exports into structures
     listing the source file for each
 
