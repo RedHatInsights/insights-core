@@ -172,8 +172,7 @@ class FSTab(Parser):
             return
 
         mos = self.mounted_on
-        mps = mos.keys()
-        mps.sort(reverse=True)
+        mps = sorted(mos, reverse=True)
 
         path = path if path.endswith('/') else path + '/'
         for mp in mps:

@@ -1,5 +1,5 @@
 import pytest
-from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm
+from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version
 from insights.tests import context_wrap
 
 
@@ -276,7 +276,6 @@ def test_version_compare():
 def test_formatting():
     rpm = InstalledRpm.from_package('kernel-3.10.0-327.el7.x86_64')
     assert str(rpm) == '0:kernel-3.10.0-327.el7'
-    assert unicode(rpm) == u'0:kernel-3.10.0-327.el7'
     assert repr(rpm) == '0:kernel-3.10.0-327.el7'
 
 
@@ -330,3 +329,8 @@ def test_unicode_char_in_rpms():
     assert u"openobex\u018e" in rpms.packages
     rpm = rpms.get_max(u'openobex\u018e')
     assert rpm.package == u'openobex\u018e-1.4-7.el6'
+
+
+def test_pad_version_uneven_sections():
+
+    assert pad_version('1.el7', '1.el7_4.ngx') == ([1, 'el', 7, 0, ''], [1, 'el', 7, 4, 'ngx'])

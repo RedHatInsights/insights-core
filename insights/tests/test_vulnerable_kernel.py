@@ -1,3 +1,4 @@
+from __future__ import print_function
 from insights.parsers.uname import Uname
 from insights.core.plugins import make_response
 from insights.tests import context_wrap, InputData, run_test
@@ -32,8 +33,8 @@ def test_vulnerable_kernel():
         result = vulnerable_kernel.report(Uname(context_wrap(uname_line)))
         expected = None
         if not (result == expected):
-            print result
-            print expected
+            print(result)
+            print(expected)
             assert result == expected
             assert False
     for kernel in VULNERABLE:
@@ -41,8 +42,8 @@ def test_vulnerable_kernel():
         result = vulnerable_kernel.report(Uname(context_wrap(uname_line)))
         expected = make_response(ERROR_KEY, kernel=kernel)
         if not (result == expected):
-            print result
-            print expected
+            print(result)
+            print(expected)
             assert result == expected
             assert False
 

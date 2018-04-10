@@ -1,12 +1,13 @@
 """
 Module responsible for scheduling Insights data collection in cron
 """
+from __future__ import absolute_import
 import os
 import logging
 
-from config import CONFIG as config
-from constants import InsightsConstants as constants
-from utilities import run_command_get_output
+from .config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .utilities import run_command_get_output
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)

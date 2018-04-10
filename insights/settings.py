@@ -24,15 +24,18 @@ CONFIGS = [
 config = {}
 
 for c in CONFIGS:
-        try:
-            y = yaml.safe_load(c)
-            for name, section in y.iteritems():
-                if name in config:
-                    config[name].update(section)
-                else:
-                    config[name] = section
-        except:
-            pass
+    if c is None:
+        continue
+    try:
+        y = yaml.safe_load(c)
+        for name, section in y.items():
+            if name in config:
+                config[name].update(section)
+            else:
+                config[name] = section
+    except Exception as e:
+        print(c)
+        print(e)
 
 # The defaults section is for keys that belong in every section and can be
 # overridden in particular sections if desired.  This adds the default values
@@ -44,5 +47,5 @@ for k in config["defaults"]:
             config[section][k] = config["defaults"][k]
 
 # Flatten the attribute hierarchy a bit by cutting out "config".
-for name, section in config.iteritems():
+for name, section in config.items():
     setattr(sys.modules[__name__], name, section)

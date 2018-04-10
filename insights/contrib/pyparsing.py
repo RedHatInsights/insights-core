@@ -1,3 +1,4 @@
+from __future__ import print_function
 # module pyparsing.py
 #
 # Copyright (c) 2003-2015  Paul T. McGuire
@@ -109,7 +110,7 @@ if PY_3:
     singleArgBuiltins = [sum, len, sorted, reversed, list, tuple, set, any, all, min, max]
 
 else:
-    _MAX_INT = sys.maxint
+    _MAX_INT = sys.maxsize
     range = xrange
 
     def _ustr(obj):
@@ -402,7 +403,7 @@ class ParseResults(object):
                 
         def items( self ):
             """Returns all named result keys and values as a list of tuples."""
-            return list(self.iteritems())
+            return list(self.items())
 
     def haskeys( self ):
         """Since keys() returns an iterator, this method is helpful in bypassing

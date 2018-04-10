@@ -76,18 +76,18 @@ def test_certificates_enddate():
     assert Cert2.certificates_path == []
 
     Cert3 = CertificatesEnddate(context_wrap(CRT3))
-    assert (Cert3.certificates_path == [
+    assert (set(Cert3.certificates_path) == set([
             '/etc/pki/consumer/cert.pem',
-            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
+            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
 
     Cert4 = CertificatesEnddate(context_wrap(CRT4))
-    assert (Cert4.certificates_path == [
+    assert (set(Cert4.certificates_path) == set([
             '/etc/pki/consumer/cert.pem',
-            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
+            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
 
     Cert5 = CertificatesEnddate(context_wrap(CRT5))
-    assert (Cert5.certificates_path == [
-            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem'])
+    assert (set(Cert5.certificates_path) == set([
+            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
 
 
 def test_certificates_enddate_unparsable_datatime():
@@ -97,8 +97,8 @@ def test_certificates_enddate_unparsable_datatime():
             '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem']))
     assert Cert6.expiration_date('/etc/pki/consumer/cert.pem').datetime is None
     assert (Cert6.expiration_date(
-                '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').str ==
-                'May 25 16:39:40')
+            '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').str ==
+            'May 25 16:39:40')
     assert (Cert6.expiration_date(
         '/etc/pki/ca-trust/extracted/pem/email-ca-bundle.pem').datetime is None)
     assert (Cert6.expiration_date('/etc/pki/email-ca-bundle.pem') is None)

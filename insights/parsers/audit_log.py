@@ -93,7 +93,7 @@ class AuditLog(LogFileOutput):
         info['timestamp'] = timestamp_id_sp[0]
         info['msg_ID'] = timestamp_id_sp[1]
 
-        for index in xrange(len(linesp) - 1, 1, -1):
+        for index in range(len(linesp) - 1, 1, -1):
             itemsp = linesp[index].split('=', 1)
             if len(itemsp) < 2:
                 unparsed1 = (line.rsplit(linesp[index + 1])[0]

@@ -79,10 +79,10 @@ class HammerPing(Parser):
         # Each service occupies 3 lines
         elif len(content) % 3 == 0:
             lines = iter(content)
-            for service_no in range(0, len(content) / 3):
-                service_line = lines.next().strip()
-                status_line = lines.next().strip()
-                response_line = lines.next().strip()
+            for service_no in range(0, len(content) // 3):
+                service_line = next(lines).strip()
+                status_line = next(lines).strip()
+                response_line = next(lines).strip()
 
                 service = service_line.split(':')[0]
                 status = status_line.split(':', 1)[-1].strip().lower()

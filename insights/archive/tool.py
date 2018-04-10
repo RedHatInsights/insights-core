@@ -7,7 +7,6 @@ import shutil
 import subprocess
 import shlex
 import tempfile
-import types
 from contextlib import contextmanager
 
 from insights.config import CommandSpec
@@ -102,7 +101,7 @@ class TempOverlay(BaseArchive):
             self.add_file(path, content)
 
     def add_file(self, path, content):
-        if not isinstance(path, types.StringTypes):
+        if not isinstance(path, str):
             raise ValueError("Invalid path type: {0}".format(type(path)))
         # We don't allow absolute paths
         if content:
@@ -346,7 +345,7 @@ class TestArchive(BaseArchive):
         if (input_data.version != ["-1", "-1"] and
                 not [t.path for t in self.transforms if t.path == "uname"]):
             rhel_version = ".".join(input_data.version)
-            for kernel, rhel in rhel_release_map.iteritems():
+            for kernel, rhel in rhel_release_map.items():
                 if rhel_version == rhel:
                     nvr_regex = " \d*\.\d*\.\d*-\d*"
                     self.transforms.append(Transform("uname").sub(nvr_regex, " " + kernel))

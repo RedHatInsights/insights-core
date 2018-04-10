@@ -1,3 +1,4 @@
+from __future__ import print_function
 import argparse
 import os
 import random
@@ -29,31 +30,31 @@ random.shuffle(demo_anchovies)
 def post_it(url, anchovy, file_name, args):
     r = session.post(url % anchovy.machine_id, files={"file": open(file_name, "rb")})
     if r.status_code == 201:
-        print "*** Uploaded", anchovy.name
+        print("*** Uploaded", anchovy.name)
         if args.verbose:
-            print json.dumps(r.json(), indent=4)
+            print(json.dumps(r.json(), indent=4))
         else:
-            print "Rule hits:", [str(rpt["rule_id"]) for rpt in r.json()["reports"]]
+            print("Rule hits:", [str(rpt["rule_id"]) for rpt in r.json()["reports"]])
     else:
-        print "*** Upload FAILED for %s: %d" % (anchovy.name, r.status_code)
-        print r.text
+        print("*** Upload FAILED for %s: %d" % (anchovy.name, r.status_code))
+        print(r.text)
         sys.exit(1)
 
 
 for i in range(args.exclude):
-    print "Excluding [%s]" % demo_anchovies.pop().name
+    print("Excluding [%s]" % demo_anchovies.pop().name)
 
 if args.which == "integration":
     dest = args.destination if args.destination else repo.DEFAULT_DEST
     if os.path.exists(dest) and args.clean:
-        print "Cleaning integration tests."
+        print("Cleaning integration tests.")
         fs.remove(dest)
     list(repo.build_integration_test_archives(args.package,
                                               machine_id="c21320b6-29b1-11e5-adc7-28d244603426"))
 else:
     dest = args.destination if args.destination else "./demo-archives"
     if os.path.exists(dest) and args.clean:
-        print "Cleaning demo archives."
+        print("Cleaning demo archives.")
         fs.remove(dest)
     demo_anchovies.sort(key=lambda x: x.name)
     repo.build_all(demo_anchovies, dest=dest, clean=args.clean)

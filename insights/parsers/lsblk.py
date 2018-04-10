@@ -100,6 +100,7 @@ Examples:
      'REMOVABLE': False, 'MAJ_MIN': '252:2', 'TYPE': 'part', 'SIZE': '8.5G'}]
 """
 
+from __future__ import division
 import re
 from .. import Parser, parser
 from . import ParseException, keyword_search
@@ -120,7 +121,7 @@ class BlockDevice(object):
     """
     def __init__(self, data):
         self.data = data
-        for k, v in data.iteritems():
+        for k, v in data.items():
             k = re.sub(r'[-:\.]', "_", k)
             setattr(self, k, v)
             setattr(self, k.lower(), v)
@@ -132,7 +133,10 @@ class BlockDevice(object):
         return self.data == other
 
     def iteritems(self):
-        return self.data.iteritems()
+        return self.items()
+
+    def items(self):
+        return self.data.items()
 
     def get(self, k, default=None):
         """Get any value by keyword (column) name."""
@@ -229,7 +233,7 @@ class LSBlock(BlockDevices):
             if name_match and len(name_match.groups()) == 9:
                 device = {}
                 name = name_match.group(2).strip()
-                generation = len(name_match.group(1)) / 2
+                generation = len(name_match.group(1)) // 2
                 parents[generation] = name
                 device['NAME'] = name
                 device['MAJ_MIN'] = name_match.group(3)

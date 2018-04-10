@@ -127,7 +127,7 @@ class InsightsClient(object):
 
         # Debug information
         logger.debug('Status code: %d', response.status_code)
-        for header, value in response.headers.iteritems():
+        for header, value in response.headers.items():
             logger.debug('%s: %s', header, value)
 
         # Debug the ETag
