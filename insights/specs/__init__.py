@@ -401,6 +401,7 @@ class Specs(SpecSet):
     virt_what = RegistryPoint()
     virt_who_conf = RegistryPoint(multi_output=True)
     vmcore_dmesg = RegistryPoint(multi_output=True)
+    vmware_tools_conf = RegistryPoint()
     vsftpd_conf = RegistryPoint()
     vsftpd = RegistryPoint()
     woopsie = RegistryPoint()
