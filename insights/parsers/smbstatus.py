@@ -1,41 +1,13 @@
 """
-SaMBa status commands
+Samba status commands
 =====================
 
-This module provides processing for the ``smbstatus`` command.Parsers included in this module are:
+This module provides processing for the ``smbstatus`` command.
 
-SmbstatusS - command ``smbstatus -S``
--------------------------------------
-
-Class ``SmbstatusS`` parses the output of the ``smbstatus -S`` command.
-
-Sample output of this command looks like::
-
-    Service      pid     Machine       Connected at                     Encryption   Signing
-    ----------------------------------------------------------------------------------------
-    share_test   13668   10.66.208.149 Wed Sep 27 10:33:55 AM 2017 CST  -            -
-
-Smbstatusp - command ``smbstatus -p``
--------------------------------------
-
-Class ``Smbstatusp`` parses the output of the ``smbstatus -p`` command.
-
-Sample output of this command looks like::
-
-    Samba version 4.6.2
-    PID     Username     Group        Machine                                   Protocol Version  Encryption           Signing
-    --------------------------------------------------------------------------------------------------------------------------
-    12668   testsmb       testsmb       10.66.208.149 (ipv4:10.66.208.149:44376)  SMB2_02           -                    -
-
-Examples:
-    >>> smbstatusS_info = shared[SmbstatusS]
-    >>> smbstatusS_info.data[0]
-    {'Signing': '-', 'Service': 'share_test1', 'Encryption': '-', 'pid': '12668', 'Machine': '10.66.208.149', 'Connected': 'Wed Sep 27', 'at': '10:33:55 AM 2017 CST'}
-    >>> smbstatusS_info.data[0]['PID']
-    '13668'
 """
 
 from .. import parser, Parser, get_active_lines
+from insights.parsers import ParseException
 from . import parse_fixed_table
 from insights.specs import Specs
 
@@ -50,36 +22,81 @@ class Statuslist(Parser):
         for row in self.data:
             yield row
 
+    def parse_content(self, content):
+        new_content = get_active_lines(content, '-----------')
+        if len(content) <= 1:
+            raise ParseException("Input content is empty or there is no useful parsed data.")
+        return new_content
+
 
 @parser(Specs.smbstatus_S)
 class SmbstatusS(Statuslist):
     """
-        Class for ``smbstatus -S`` command.
+    Class ``SmbstatusS`` parses the output of the ``smbstatus -S`` command.
 
-        The format of ``smbstatus -S`` is like table, and function `parse_fixed_table`
-        could parse it.
+    Sample output of this command looks like::
 
-        Attributes:
-            data (list): List of dicts, where the keys in each dict are the column
-                headers and each item in the list represents a connection.
+        Service      pid     Machine       Connected at                     Encryption   Signing
+        ----------------------------------------------------------------------------------------
+        share_test   13668   10.66.208.149 Wed Sep 27 10:33:55 AM 2017 CST  -            -
+
+    The format of ``smbstatus -S`` is like table, and function `parse_fixed_table`
+    could parse it.
+
+    Examples:
+        >>> smbstatuss_info.data[0]
+        {'Signing': '-', 'Service': 'share_test', 'Encryption': '-', 'pid': '13668', 'Machine': '10.66.208.149', 'Connected_at': 'Wed Sep 27 10:33:55 AM 2017 CST'}
+        >>> smbstatuss_info.data[0]['pid']
+        '13668'
+
+    Raises:
+        ParseException: When there is no usefull data or the input content is
+            empty,  or does contain the header line.
+
+    Attributes:
+        data (list): List of dicts, where the keys in each dict are the column
+            headers and each item in the list represents a connection.
     """
 
     def parse_content(self, content):
-        self.data = parse_fixed_table(get_active_lines(content, '-----------'), header_substitute=[('Connected at', 'Connected_at')])
+        content = super(SmbstatusS, self).parse_content(content)
+        if not content[0].startswith('Service '):
+            raise ParseException("Cannot find the header line.")
+        self.data = parse_fixed_table(content, header_substitute=[('Connected at', 'Connected_at')])
 
 
 @parser(Specs.smbstatus_p)
 class Smbstatusp(Statuslist):
     """
-        Class for ``smbstatus -p`` command.
+    Class ``Smbstatusp`` parses the output of the ``smbstatus -p`` command.
 
-        The format of ``smbstatus -p`` is like table, and function `parse_fixed_table`
-        could parse it.
+    Sample output of this command looks like::
 
-        Attributes:
-            data (list): List of dicts, where the keys in each dict are the column
-                headers and each item in the list represents a connection.
+        Samba version 4.6.2
+        PID     Username     Group        Machine                                   Protocol Version  Encryption           Signing
+        --------------------------------------------------------------------------------------------------------------------------
+        12668   testsmb       testsmb       10.66.208.149 (ipv4:10.66.208.149:44376)  SMB2_02           -                    -
+
+    The format of ``smbstatus -p`` is like table, and function `parse_fixed_table`
+    could parse it.
+
+    Examples:
+        >>> smbstatusp_info.data[0]
+        {'Username': 'testsmb', 'Signing': '-', 'Group': 'testsmb', 'Encryption': '-', 'PID': '12668', 'Machine': '10.66.208.149 (ipv4:10.66.208.149:44376)', 'Protocol_Version': 'SMB2_02'}
+        >>> smbstatusp_info.data[0]['PID']
+        '12668'
+
+    Raises:
+        ParseException: When there is no usefull data or the input content is
+            empty,  or does contain the header line.
+
+    Attributes:
+        data (list): List of dicts, where the keys in each dict are the column
+            headers and each item in the list represents a connection.
     """
 
     def parse_content(self, content):
-        self.data = parse_fixed_table(get_active_lines(content, '-----------'), heading_ignore=["PID     Username"], header_substitute=[('Protocol Version', 'Protocol_Version')])
+        content = super(Smbstatusp, self).parse_content(content)
+        if not any(l.startswith('PID ') for l in content):
+            raise ParseException("Cannot find the header line.")
+        self.data = parse_fixed_table(content, heading_ignore=["PID     Username"], header_substitute=[('Protocol Version', 'Protocol_Version')])
