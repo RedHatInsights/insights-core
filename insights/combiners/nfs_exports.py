@@ -34,7 +34,7 @@ from insights.core.plugins import combiner
 from insights.parsers.nfs_exports import NFSExports, NFSExportsD
 
 
-@combiner(NFSExports, NFSExportsD)
+@combiner(NFSExports, optional=[NFSExportsD])
 class AllNFSExports(object):
     """
     Combiner for accessing all the NFS export configuration files.
