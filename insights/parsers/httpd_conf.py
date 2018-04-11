@@ -33,14 +33,14 @@ Sample (edited) httpd.conf file::
     #NSSProtocol ALL
 
     # prefork MPM
-     <IfModule prefork.c>
+    <IfModule prefork.c>
     StartServers       8
     MinSpareServers    5
     MaxSpareServers   20
     ServerLimit      256
     MaxClients       256
     MaxRequestsPerChild  200
-     </IfModule>
+    </IfModule>
 
     # worker MPM
     <IfModule worker.c>
@@ -54,22 +54,23 @@ Sample (edited) httpd.conf file::
 
 Examples:
 
-    >>> httpconf = shared[HttpdConf]
-    >>> httpconf['ServerRoot'][-1].value # Quotes are not removed
-    '"/etc/httpd"'
-    >>> httpconf['LoadModule'][0].value
+    >>> httpd_conf['ServerRoot'][-1].value
+    '/etc/httpd'
+    >>> httpd_conf['LoadModule'][0].value
     'auth_basic_module modules/mod_auth_basic.so'
-    >>> httpconf['LoadModule'][-1].value
+    >>> httpd_conf['LoadModule'][-1].value
     'auth_digest_module modules/mod_auth_digest.so'
-    >>> httpconf['Directory', '/']['Options'][-1].value
+    >>> httpd_conf['Directory', '/']['Options'][-1].value
     'FollowSymLinks'
-    >>> type(httpconf[('IfModule','prefork.c')])
+    >>> type(httpd_conf[('IfModule','prefork.c')])
     <type 'dict'>
-    >>> httpconf[('IfModule','prefork.c')]['StartServers'] # No type conversion
+    >>> httpd_conf[('IfModule','mod_mime_magic.c')]
+    {'MIMEMagicFile': [ParsedData(value='conf/magic', line='MIMEMagicFile conf/magic', section='IfModule', section_name='mod_mime_magic.c', file_name='path', file_path='path')]}
+    >>> httpd_conf[('IfModule','prefork.c')]['StartServers'][0].value
     '8'
-    >>> 'ThreadsPerChild' in httpconf[('IfModule','prefork.c')]
+    >>> 'ThreadsPerChild' in httpd_conf[('IfModule','prefork.c')]
     False
-    >>> httpconf[('IfModule','prefork.c')]['MaxRequestsPerChild'][-1].value
+    >>> httpd_conf[('IfModule','worker.c')]['MaxRequestsPerChild'][-1].value
     '0'
 
 """
@@ -145,8 +146,8 @@ class HttpdConf(LegacyItemAccess, Parser):
 
             # new section start
             if line.startswith('<') and not line.startswith('</'):
-                typ, name = line.strip('<>').split(None, 1)
-                section.append(((typ, name), {}))
+                splits = line.strip('<>').split(None, 1)
+                section.append(((splits[0], splits[1] if len(splits) == 2 else ''), {}))
             # one section end
             elif line.startswith('</'):
                 sec, pd = section.pop()
