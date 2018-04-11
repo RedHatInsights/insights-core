@@ -1,9 +1,10 @@
-from insights import add_filter
+from insights.parsers import httpd_conf
 from insights.parsers.httpd_conf import HttpdConf
-from insights.specs import Specs
 from insights.tests import context_wrap
+import doctest
 
 HTTPD_CONF_1 = """
+ServerRoot "/etc/httpd"
 <Directory />
     Options FollowSymLinks
     AllowOverride None
@@ -109,6 +110,57 @@ HTTPD_CONF_NEST_2 = """
 </IfModule>
 """.strip()
 
+HTTPD_CONF_NO_NAME_SEC = """
+<RequireAll>
+    AuthName "NAME Access"
+    Require valid-user
+</RequireAll>
+""".strip()
+
+HTTPD_CONF_DOC = '''
+ServerRoot "/etc/httpd"
+LoadModule auth_basic_module modules/mod_auth_basic.so
+LoadModule auth_digest_module modules/mod_auth_digest.so
+
+<Directory />
+    Options FollowSymLinks
+    AllowOverride None
+</Directory>
+
+<IfModule mod_mime_magic.c>
+#   MIMEMagicFile /usr/share/magic.mime
+    MIMEMagicFile conf/magic
+</IfModule>
+
+ErrorLog "|/usr/sbin/httplog -z /var/log/httpd/error_log.%Y-%m-%d"
+
+SSLProtocol -ALL +SSLv3
+#SSLProtocol all -SSLv2
+
+NSSProtocol SSLV3 TLSV1.0
+#NSSProtocol ALL
+
+# prefork MPM
+ <IfModule prefork.c>
+StartServers       8
+MinSpareServers    5
+MaxSpareServers   20
+ServerLimit      256
+MaxClients       256
+MaxRequestsPerChild  200
+ </IfModule>
+
+# worker MPM
+<IfModule worker.c>
+StartServers         4
+MaxClients         300
+MinSpareThreads     25
+MaxSpareThreads     75
+ThreadsPerChild     25
+MaxRequestsPerChild  0
+</IfModule>
+'''.strip()
+
 
 def test_get_httpd_conf_nest_1():
     context = context_wrap(HTTPD_CONF_NEST_1, path=HTTPD_CONF_PATH)
@@ -140,17 +192,12 @@ def test_get_httpd_conf_nest_2():
     }
 
 
-add_filter(Specs.httpd_conf, [
-    'SSLProtocol', 'NSSProtocol', 'RequestHeader', 'FcgidPassHeader'
-    '<IfModule worker.c>', '<IfModule prefork.c>', '</IfModule>', 'MaxClients', 'UserDir',
-])
-
-
 def test_get_httpd_conf_1():
     context = context_wrap(HTTPD_CONF_1, path=HTTPD_CONF_PATH)
     result = HttpdConf(context)
 
     assert "SSLCipherSuite" not in result
+    assert result['ServerRoot'][0].value == '/etc/httpd'
     assert "SSLV3 TLSV1.0" in result["NSSProtocol"][-1]
     assert result[("IfModule", "prefork.c")]["MaxClients"][-1].value == "256"
     assert result[("IfModule", "worker.c")]["MaxClients"][-1].value == "300"
@@ -222,3 +269,20 @@ def test_multiple_values_for_directive():
     assert len(result['UserDir']) == 2
     assert result['UserDir'][0].value == 'disable'
     assert result['UserDir'][1].value == 'enable bob'
+
+
+def test_no_name_section():
+    context = context_wrap(HTTPD_CONF_NO_NAME_SEC, path=HTTPD_CONF_PATH)
+    result = HttpdConf(context)
+
+    assert result[("RequireAll", "")]["AuthName"][-1].value == "NAME Access"
+    assert result[("RequireAll", "")]["Require"][-1].value == "valid-user"
+
+
+def test_doc():
+    env = {
+            'HttpdConf': HttpdConf,
+            'httpd_conf': HttpdConf(context_wrap(HTTPD_CONF_DOC, path='path')),
+          }
+    failed, total = doctest.testmod(httpd_conf, globs=env)
+    assert failed == 0
