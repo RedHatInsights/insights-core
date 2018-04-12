@@ -1,4 +1,6 @@
-from insights.parsers.ls_etc import LsEtc
+import doctest
+
+from insights.parsers import ls_etc
 from insights.tests import context_wrap
 
 
@@ -24,14 +26,14 @@ lrwxrwxrwx.  1 0 0   15 Jul  6 23:32 S97rhnsd -> ../init.d/rhnsd
 
 
 def test_ls_etc():
-    ls_etc = LsEtc(context_wrap(LS_ETC))
-    assert "/etc/sysconfig" in ls_etc
-    assert len(ls_etc.files_of("/etc/sysconfig")) == 3
-    assert ls_etc.files_of("/etc/sysconfig") == ['ebtables-config', 'firewalld', 'grub']
-    assert ls_etc.dirs_of("/etc/sysconfig") == ['.', '..', 'cbq', 'console']
-    assert ls_etc.specials_of("/etc/sysconfig") == []
-    assert ls_etc.total_of("/etc/sysconfig") == 96
-    grub = ls_etc.dir_entry("/etc/sysconfig", "grub")
+    list_etc = ls_etc.LsEtc(context_wrap(LS_ETC))
+    assert "/etc/sysconfig" in list_etc
+    assert len(list_etc.files_of("/etc/sysconfig")) == 3
+    assert list_etc.files_of("/etc/sysconfig") == ['ebtables-config', 'firewalld', 'grub']
+    assert list_etc.dirs_of("/etc/sysconfig") == ['.', '..', 'cbq', 'console']
+    assert list_etc.specials_of("/etc/sysconfig") == []
+    assert list_etc.total_of("/etc/sysconfig") == 96
+    grub = list_etc.dir_entry("/etc/sysconfig", "grub")
     assert grub is not None
     assert grub == {
         'group': '0',
@@ -45,5 +47,13 @@ def test_ls_etc():
         'type': 'l',
         'size': 17,
         'dir': '/etc/sysconfig'}
-    assert ls_etc.files_of("/etc/rc.d/rc3.d") == ['K50netconsole',
+    assert list_etc.files_of("/etc/rc.d/rc3.d") == ['K50netconsole',
                                                   'S10network', 'S97rhnsd']
+
+
+def test_ls_etc_documentation():
+    failed_count, tests = doctest.testmod(
+        ls_etc,
+        globs={'ls_etc': ls_etc.LsEtc(context_wrap(LS_ETC))}
+    )
+    assert failed_count == 0
