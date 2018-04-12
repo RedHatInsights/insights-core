@@ -54,10 +54,61 @@ def test_nfs_export_combiner():
     assert isinstance(combined.ignored_exports, dict)
     assert combined.ignored_exports
     assert len(combined.ignored_exports) == 2
-    print combined.ignored_exports.keys()
     assert sorted(combined.ignored_exports.keys()) == sorted([
         '/home/insights/shared/rw', '/home/example'
     ])
+
+    assert hasattr(combined, 'raw_lines')
+    assert isinstance(combined.raw_lines, dict)
+    assert combined.raw_lines
+    assert combined.raw_lines.keys() == combined.exports.keys()
+    # Lines from only the exports file:
+    assert combined.raw_lines['/home/utcs/shared/ro'] == {
+        '/etc/exports': [
+            '/home/utcs/shared/ro                    @group(ro,sync)   ins1.example.com(rw,sync,no_root_squash) ins2.example.com(rw,sync,no_root_squash)'
+        ]
+    }
+    # Lines from only the exports.d file:
+    assert combined.raw_lines['/mnt/backup'] == {
+        '/etc/exports.d/mnt.exports': [
+            '/mnt/backup     10.0.0.0/24(rw,sync,no_root_squash)'
+        ],
+    }
+    # Lines from both the exports and exports.d files:
+    assert combined.raw_lines['/home/insights/shared/rw'] == {
+        '/etc/exports': [
+            '/home/insights/shared/rw                @group(rw,sync)   ins1.example.com(rw,sync,no_root_squash) ins2.example.com(ro,sync,no_root_squash)',
+        ],
+        '/etc/exports.d/mnt.exports': [
+            '/home/insights/shared/rw ins4.example.com(rw,sync,no_root_squash)',
+            '/home/insights/shared/rw ins1.example.com(rw,sync,no_root_squash)',
+            '/home/insights/shared/rw ins2.example.com(rw,sync,no_root_squash)'
+        ]
+    }
+
+
+def test_nfs_exports_with_no_exports_d():
+    combined = nfs_exports.AllNFSExports(nfs_exportsf, None)
+    assert hasattr(combined, 'exports')
+    assert isinstance(combined.exports, dict)
+    assert combined.exports
+    assert len(combined.exports) == 5
+    assert sorted(combined.exports.keys()) == sorted([
+        '/home/utcs/shared/ro', '/home/insights/shared/rw',
+        '/home/insights/shared/special/all/mail',
+        '/home/insights/ins/special/all/config', '/home/example'
+    ])
+    for path, hosts in nfs_exportsf.data.iteritems():
+        assert hosts == combined.exports[path]
+    assert sorted(combined.exports['/home/insights/shared/rw'].keys()) == sorted([
+        '@group', 'ins1.example.com', 'ins2.example.com', 'ins4.example.com'
+    ])
+
+    assert hasattr(combined, 'ignored_exports')
+    assert isinstance(combined.ignored_exports, dict)
+    assert combined.ignored_exports
+    assert len(combined.ignored_exports) == 1
+    assert sorted(combined.ignored_exports.keys()) == ['/home/example']
 
     assert hasattr(combined, 'raw_lines')
     assert isinstance(combined.raw_lines, dict)
