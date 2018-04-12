@@ -112,6 +112,8 @@ class Specs(SpecSet):
     glance_api_log = RegistryPoint()
     glance_cache_conf = RegistryPoint()
     glance_registry_conf = RegistryPoint()
+    gnocchi_conf = RegistryPoint()
+    gnocchi_metricd_log = RegistryPoint()
     grub1_config_perms = RegistryPoint()
     grub2_cfg = RegistryPoint()
     grub2_efi_cfg = RegistryPoint()

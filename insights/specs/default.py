@@ -204,6 +204,8 @@ class DefaultSpecs(Specs):
     glance_api_log = first_file(["/var/log/containers/glance/api.log", "/var/log/glance/api.log"])
     glance_cache_conf = simple_file("/etc/glance/glance-cache.conf")
     glance_registry_conf = simple_file("/etc/glance/glance-registry.conf")
+    gnocchi_conf = first_file(["/var/lib/config-data/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
+    gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
     grub_conf = simple_file("/boot/grub/grub.conf")
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
