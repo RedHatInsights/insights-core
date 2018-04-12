@@ -56,4 +56,4 @@ def test_ls_etc_documentation():
         ls_etc,
         globs={'ls_etc': ls_etc.LsEtc(context_wrap(LS_ETC))}
     )
-    failed_count == 0
+    assert failed_count == 0
