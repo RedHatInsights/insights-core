@@ -33,6 +33,8 @@ Examples:
 from insights.core.plugins import combiner
 from insights.parsers.nfs_exports import NFSExports, NFSExportsD
 
+import collections
+
 
 @combiner(NFSExports, optional=[NFSExportsD])
 class AllNFSExports(object):
@@ -67,8 +69,9 @@ class AllNFSExports(object):
 
         sources = [nfsexports]
         # Make sure exports are stored in the order they're parsed -
-        # alphabetically by file name
-        sources.extend(sorted(nfsexportsd, key=lambda f: f.file_path))
+        # alphabetically by file name.  Ignore it if nfsexportsd isn't valid.
+        if isinstance(nfsexportsd, collections.Iterable):
+            sources.extend(sorted(nfsexportsd, key=lambda f: f.file_path))
 
         def add_paths_to_dict(src_path, src_dict, dest_dict):
             # Because ignored_exports and raw_lines are stored by path, we
