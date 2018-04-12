@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-3.0.8-295](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.8-295) (2018-04-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.7-270...insights-core-3.0.8-295)
+
+**Fixed bugs:**
+
+- SubscriptionManagerListInstalled should depend on Specs.subscription\_manager\_list\_installed [\#1047](https://github.com/RedHatInsights/insights-core/issues/1047)
+- ssh.py: ValueError: need more than 1 value to unpack  [\#1034](https://github.com/RedHatInsights/insights-core/issues/1034)
+
+**Closed issues:**
+
+- \[ls\_etc\] Test can be merged into docstring [\#1079](https://github.com/RedHatInsights/insights-core/issues/1079)
+- Shippable fails with nbsphinx version 0.3.2 [\#1054](https://github.com/RedHatInsights/insights-core/issues/1054)
+
 ## [insights-core-3.0.7-270](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.7-270) (2018-03-28)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.6-261...insights-core-3.0.7-270)
 
@@ -100,11 +113,6 @@
 - "runnable rules" [\#292](https://github.com/RedHatInsights/insights-core/issues/292)
 - For Fava, alter the doc for each Parser and Combiner [\#291](https://github.com/RedHatInsights/insights-core/issues/291)
 - run parsers and combiners \(and rules\) during collection [\#290](https://github.com/RedHatInsights/insights-core/issues/290)
-
-**Merged pull requests:**
-
-- Revert "\[VDSMLog\] Migrated to 3.0" [\#955](https://github.com/RedHatInsights/insights-core/pull/955) ([bfahr](https://github.com/bfahr))
-- \[VDSMLog\] Migrated to 3.0 [\#947](https://github.com/RedHatInsights/insights-core/pull/947) ([psachin](https://github.com/psachin))
 
 ## [insights-core-1.72.0-224](https://github.com/RedHatInsights/insights-core/tree/insights-core-1.72.0-224) (2018-02-08)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0rc1...insights-core-1.72.0-224)
