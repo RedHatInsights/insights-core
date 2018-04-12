@@ -60,6 +60,7 @@ class InsightsArchiveSpecs(Specs):
     hammer_ping = simple_file("insights_commands/hammer_ping")
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
+    heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
     # simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig")])
     installed_rpms = first_file([
         "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig",
@@ -82,6 +83,7 @@ class InsightsArchiveSpecs(Specs):
     iscsiadm_m_session = simple_file("insights_commands/iscsiadm_-m_session")
     katello_service_status = simple_file("insights_commands/katello-service_status")
     keystone_crontab = simple_file("insights_commands/crontab_-l_-u_keystone")
+    keystone_crontab_container = simple_file("insights_commands/docker_exec_keystone_cron_.usr.bin.crontab_-l_-u_keystone")
     libkeyutils = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so")
     libkeyutils_objdumps = simple_file("insights_commands/find_-L_.lib_.lib64_-name_libkeyutils.so.1_-exec_objdump_-x")
     locale = simple_file("insights_commands/locale")
@@ -118,6 +120,7 @@ class InsightsArchiveSpecs(Specs):
     netstat_s = simple_file("insights_commands/netstat_-s")
     nmcli_dev_show = simple_file("insights_commands/nmcli_dev_show")
     nova_crontab = simple_file("insights_commands/crontab_-l_-u_nova")
+    nova_crontab_container = simple_file("insights_commands/docker_exec_nova_api_cron_.usr.bin.crontab_-l_-u_nova")
     ntpq_leap = simple_file("insights_commands/ntpq_-c_rv_0_leap")
     ntpq_pn = simple_file("insights_commands/ntpq_-pn")
     ntptime = simple_file("insights_commands/ntptime")
