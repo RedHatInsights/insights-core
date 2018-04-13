@@ -97,3 +97,37 @@ def _do(nfs_exports):
         "/home/insights/shared/special/all/mail",
         "/home/insights/ins/special/all/config", "/home/example"
     ])
+
+
+def test_reconstitute():
+    assert NFSExports.reconstitute(
+        "/home/utcs/shared/ro", {
+            "@group": ["ro", "sync"],
+            "ins1.example.com": ["rw", "sync", "no_root_squash"],
+            "ins2.example.com": ["rw", "sync", "no_root_squash"]
+        }
+    ) == '/home/utcs/shared/ro  @group(ro,sync) ins1.example.com(rw,sync,no_root_squash) ins2.example.com(rw,sync,no_root_squash)'
+
+
+NFS_EXPORTS_CORNER_CASES = '''
+# Host with default share options
+/mnt/share      host1
+# Export with two non-overlapping host definitions
+/mnt/share      host2(rw)
+# No matter how many times a host is listed, only the first gets picked up
+/mnt/share      host2(ro)
+# Need to list on separate lines because of dictionary key merging
+/mnt/share      host2(no_root_squash)
+'''
+
+
+def test_nfs_exports_corner_cases():
+    exports = NFSExports(context_wrap(NFS_EXPORTS_CORNER_CASES))
+    assert exports
+
+    assert exports.data['/mnt/share'] == {'host1': [], 'host2': ['rw']}
+    # Note: only the last ignored export gets stored per host.
+    assert exports.ignored_exports['/mnt/share'] == {'host2': ['no_root_squash']}
+    for path, hosts in exports:
+        assert path in exports.data
+        assert exports.data[path] == hosts
