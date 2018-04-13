@@ -55,7 +55,9 @@ METRICD_LOG = """
 
 def test_gnocchi_conf():
     gnocchi_conf = GnocchiConf(context_wrap(GNOCCHI_CONF))
+    assert gnocchi_conf.sections() == ['api', 'archive_policy', 'cors', 'cors.subdomain', 'database', 'healthcheck', 'incoming', 'indexer', 'metricd', 'oslo_middleware', 'oslo_policy', 'statsd', 'storage', 'keystone_authtoken']
     assert "storage" in gnocchi_conf.sections()
+    assert gnocchi_conf.has_option('indexer', 'url')
     assert gnocchi_conf.get("indexer", "url") == "mysql+pymysql://gnocchi:exampleabckeystring@192.168.0.1/gnocchi?charset=utf8"
     assert gnocchi_conf.getint("statsd", "flush_delay") == 10
 
@@ -63,4 +65,7 @@ def test_gnocchi_conf():
 def test_metrics_log():
     log = GnocchiMetricdLog(context_wrap(METRICD_LOG))
     assert len(log.get('INFO')) == 3
+    assert 'measurements bundles across 0 metrics wait to be processed' in log
+    assert log.get('ERROR') == [{'raw_message': '2017-04-13 21:06:11.676 114807 ERROR tooz.drivers.redis ToozError: Cannot extend an unlocked lock'}]
     assert len(list(log.get_after(datetime(2017, 04, 12, 19, 36, 38)))) == 1
+    assert list(log.get_after(datetime(2017, 04, 12, 19, 36, 38))) == [{'raw_message': '2017-04-13 21:06:11.676 114807 ERROR tooz.drivers.redis ToozError: Cannot extend an unlocked lock'}]
