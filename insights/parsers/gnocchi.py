@@ -62,7 +62,6 @@ class GnocchiConf(IniConfigFile):
 
     Examples:
 
-        >>> conf = shared[GnocchiConf]
         >>> conf.sections()
         ['api', 'archive_policy', 'indexer', 'metricd', 'oslo_middleware', 'oslo_policy', 'statsd', 'storage', 'keystone_authtoken']
         >>> 'storage' in conf
@@ -70,7 +69,7 @@ class GnocchiConf(IniConfigFile):
         >>> conf.has_option('indexer', 'url')
         True
         >>> conf.get('indexer', 'url')
-        "mysql+pymysql://gnocchi:exampleabckeystring@192.168.0.1/gnocchi?charset=utf8"
+        'mysql+pymysql://gnocchi:exampleabckeystring@192.168.0.1/gnocchi?charset=utf8'
         >>> conf.getint("statsd", "flush_delay")
         10
 
@@ -96,7 +95,6 @@ class GnocchiMetricdLog(LogFileOutput):
 
     Examples:
 
-        >>> log = shared[GnocchiMetricdLog]
         >>> 'measurements bundles across 0 metrics wait to be processed' in log
         True
         >>> log.get('ERROR')
