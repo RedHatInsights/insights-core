@@ -106,7 +106,7 @@ def main(filename):
         fh.write("Components Cross-Reference\n")
         fh.write("==========================\n")
 
-        fh.write("Specs Dependants\n")
+        fh.write("Specs Dependents\n")
         fh.write("----------------\n")
         for spec in specs:
             info = dict(name=dr.get_name(spec))
