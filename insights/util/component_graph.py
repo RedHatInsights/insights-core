@@ -11,7 +11,16 @@ It can be called from the commandline to manually generate the file or
 it may also be called inside the Sphinx *conf.py* `setup` function to
 generate the documentation automatically.
 
-Command line use:
+Command Line Use
+----------------
+
+This assumes that you have a working installation of insights-core
+and python environment for insights-core development.
+
+To run from the command line simply execute this utility and provide
+the name of the output file::
+
+    $ python insights/util/component_graph.py output_filename.rst
 
 """
 
