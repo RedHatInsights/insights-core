@@ -58,6 +58,7 @@ from itertools import chain
 from .. import Parser, parser
 from . import get_active_lines
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 class NFSExportsBase(Parser):
@@ -75,6 +76,9 @@ class NFSExportsBase(Parser):
 
         ignored_exports (dict): A dictionary of exported paths that have host
             definitions that conflicted with a previous definition.
+
+        ignored_lines (dict): A synonym for the above `ignored_exports`
+            dictionary, for historical reasons.
 
         raw_lines (dict of lists): The list of the raw lines that define each
             exported path, including any lines that may have ignored exports.
@@ -99,6 +103,7 @@ class NFSExportsBase(Parser):
         # `exportfs` to generate a warning when setting up the export.
         self.data = {}
         self.ignored_exports = {}
+        self.ignored_lines = self.ignored_exports
         self.raw_lines = {}
 
         for line in get_active_lines(content):
@@ -132,6 +137,38 @@ class NFSExportsBase(Parser):
 
     def __iter__(self):
         return self.data.iteritems()
+
+    @staticmethod
+    def reconstitute(path, d):
+        """
+        'Reconstitute' a line from its parsed value.  The original lines are
+        not used for this.  The hosts in d are listed in alphabetical order,
+        and the options are listed in the order originally given.
+
+        This function is deprecated.  Please use the `raw_lines` dictionary
+        property of the parser instance instead, as this contains the actual
+        lines from the exports file.
+
+        Arguments:
+            path (str): The exported path
+            d (dict): The hosts definition of the exported path
+
+        Returns:
+            str: A line simulating the definition of that exported path to
+            those hosts.
+        """
+        deprecated(
+            NFSExportsBase.reconstitute,
+            'Please use the `raw_lines` dictionary property of the parser instance'
+        )
+        return "{path}  {hosts}".format(
+            path=path,
+            hosts=' '.join((
+                '{host}({opts})'.format(
+                    host=h, opts=','.join(d[h]))
+                for h in sorted(d)
+            ))
+        )
 
 
 @parser(Specs.nfs_exports)
