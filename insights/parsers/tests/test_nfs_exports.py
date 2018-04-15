@@ -100,13 +100,20 @@ def _do(nfs_exports):
 
 
 def test_reconstitute():
-    assert NFSExports.reconstitute(
+    # This is deprecated and will be removed in the future and is here for
+    # testing completeness.
+    recon = NFSExports.reconstitute(
         "/home/utcs/shared/ro", {
             "@group": ["ro", "sync"],
             "ins1.example.com": ["rw", "sync", "no_root_squash"],
             "ins2.example.com": ["rw", "sync", "no_root_squash"]
         }
-    ) == '/home/utcs/shared/ro  @group(ro,sync) ins1.example.com(rw,sync,no_root_squash) ins2.example.com(rw,sync,no_root_squash)'
+    )
+    # Because reconstitute uses iteritems, we can't test the order
+    # definitively.  We have to check that it's included each host definition.
+    assert recon.startswith('/home/utcs/shared/ro')
+    for host in ('@group', 'ins1.example.com', 'ins2.example.com'):
+        assert ' ' + host + '(' in recon
 
 
 NFS_EXPORTS_CORNER_CASES = '''

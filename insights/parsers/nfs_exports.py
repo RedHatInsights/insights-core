@@ -161,14 +161,8 @@ class NFSExportsBase(Parser):
             NFSExportsBase.reconstitute,
             'Please use the `raw_lines` dictionary property of the parser instance'
         )
-        return "{path}  {hosts}".format(
-            path=path,
-            hosts=' '.join((
-                '{host}({opts})'.format(
-                    host=h, opts=','.join(d[h]))
-                for h in sorted(d)
-            ))
-        )
+        return "  ".join([path] + ["%s(%s)" % (host, ",".join(options))
+                         for host, options in d.iteritems()])
 
 
 @parser(Specs.nfs_exports)
