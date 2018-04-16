@@ -17,6 +17,7 @@ Contents:
     rule_tutorial_index
     custom_tutorial_index
     combiner_tutorial
+    components
     notebook_index
 
 Indices and tables
