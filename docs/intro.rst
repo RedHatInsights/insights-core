@@ -31,7 +31,7 @@ results to the customer interface component.  The Engine processes the informati
 by extracting each unique set of data, parsing the data into facts,
 and analyzing the facts via algorithms.  Parsing and analysis of the information
 is performed in a collection of plugin components.  The parsing and combining of
-is perfomed by the Parser and Combiner plugins, and the analysis is performed by
+is performed by the Parser and Combiner plugins, and the analysis is performed by
 Rule plugins (collectively "Plugins"). The results of the analysis
 are presented to the user via the user interface component ("UI").  The figure
 below provides a graphical overview of the components and the information flow.
@@ -147,7 +147,7 @@ If both facts are true then the Rule will report the results and it
 will be displayed with information regarding the vulnerability and
 how it can be resolved on the specific system. These results from
 all Rules are accumulated and consolidated by the Engine to provide to the
-Customer Inferface.
+Customer Interface.
 
 
 Customer Interface - Analysis Results

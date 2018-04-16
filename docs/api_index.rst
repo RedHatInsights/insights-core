@@ -25,6 +25,14 @@ insights.core.plugins
     :show-inheritance:
     :undoc-members:
 
+insights.core.spec_factory
+--------------------------
+
+.. automodule:: insights.core.spec_factory
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.parsers
 ----------------
 
@@ -37,15 +45,13 @@ insights.parsers
 
 insights.specs
 --------------
-
 .. automodule:: insights.specs
-   :members:
-   :show-inheritance:
-   :undoc-members:
+    :members:
+    :show-inheritance:
+    :undoc-members:
 
 insights.specs.default
 ----------------------
-
 .. automodule:: insights.specs.default
     :members:
     :show-inheritance:
@@ -53,19 +59,17 @@ insights.specs.default
 
 insights.specs.insights_archive
 -------------------------------
-
 .. automodule:: insights.specs.insights_archive
-   :members:
-   :show-inheritance:
-   :undoc-members:
+    :members:
+    :show-inheritance:
+    :undoc-members:
 
 insights.specs.sos_archive
 --------------------------
-
 .. automodule:: insights.specs.sos_archive
-   :members:
-   :show-inheritance:
-   :undoc-members:
+    :members:
+    :show-inheritance:
+    :undoc-members:
 
 insights.tests
 --------------
