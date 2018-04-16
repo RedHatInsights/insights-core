@@ -25,75 +25,54 @@ guidelines::
 
 We also want to know what version of OpenSSH we are running if we find any problems.
 
+You can find the complete implementation of the rule and test code in the
+directory ``insights/docs/examples/rules``.
+
 **************************************
 Preparing Your Development Environment
 **************************************
 
-The following instructions assume that you have a insights-core development
+The following instructions assume that you have an insights-core development
 environment setup and working, and that your rules root dir and insights-core
-root dir a subdirs of the same root dir.  First you will need to run
-a command that is in your insights-core environment to create a new rules
-development developmentdirectory.  The following commands will create a new
-``myrules`` project for development of your new rule.  Make sure
+root dir are subdirs of the same root dir.  First you will need to create
+a ``mycomponents`` directory and then copy the example rules directory into
+``mycomponents``.  You will also need to copy the ``conftest.py`` from the
+``insights-core`` root directory in order for your tests to work correctly.
+Here are the commands to setup your rule development environment::
+
+    [userone@hostone work]$ pwd
+    /home/userone/work
+    [userone@hostone work]$ ls
+    insights-core
+    [userone@hostone work]$ mkdir mycomponents
+    [userone@hostone work]$ cd mycomponents
+    [userone@hostone mycomponents]$ cp -R insights-core/docs/examples/rules ./rules
+    [userone@hostone mycomponents]$ cp ../insights-core/conftest.py .
+    [userone@hostone mycomponents]$ ls
+    conftest.py  rules
+
+Once you have completed this your project directory tree should look like this
+(note the details of the ``insights-core`` directory tree are not being shown)::
+
+    work
+    ├── insights-core
+    └── mycomponents
+        ├── parsers
+        ├── rules
+        │   ├── __init__.py
+        │   └── sshd_secure.py
+        └── tests
+            ├── __init__.py
+            ├── test_integration.py
+            └── test_sshd_secure.py
+
+Make sure
 you start with your virtual environment set to the insights-core project::
 
-    $ cd insights-core
-    $ source bin/activate
-    (insights-core) $ cd ..
-    (insights-core) $ mkdir myrules
-    (insights-core) $ cd myrules
-    (insights-core) $ insights-core-scaffold myrules
-    (insights-core) $ ls -R
-    .:
-    conftest.py  myrules  readme.md  setup.cfg  setup.py
-    
-    ./myrules:
-    __init__.py  plugins  tests
-    
-    ./myrules/plugins:
-    __init__.py
-    
-    ./myrules/tests:
-    __init__.py  integration.py
+    [userone@hostone mycomponents]$ source ../insights-core/bin/activate
+    (insights-core)[userone@hostone mycomponents]$ 
 
-Next you need to bootstrap your development environment to create
-a new virtual environment and install all required libraries::
-
-    (insights-core) $ deactivate
-    $ python setup.py bootstrap
-    running bootstrap
-    New python executable in /home/bfahr/work/insights/myrules/bin/python2
-    Also creating executable in /home/bfahr/work/insights/myrules/bin/python
-    Installing setuptools, pip, wheel...done.
-    Obtaining file:///home/bfahr/work/insights/myrules
-    Collecting insights-core (from Myrules==0.0.1)
-    Collecting coverage (from Myrules==0.0.1)
-    Collecting pytest (from Myrules==0.0.1)
-      Using cached pytest-3.0.3-py2.py3-none-any.whl
-    Collecting pytest-cov (from Myrules==0.0.1)
-      Using cached pytest_cov-2.4.0-py2.py3-none-any.whl
-    Collecting py>=1.4.29 (from pytest->Myrules==0.0.1)
-      Using cached py-1.4.31-py2.py3-none-any.whl
-    Installing collected packages: insights-core, coverage, py, pytest, pytest-cov, Myrules
-      Running setup.py develop for Myrules
-    Successfully installed Myrules coverage-4.2 insights-core-0.3.5 py-1.4.31 pytest-3.0.3 pytest-cov-2.4.0
-
-The last step in setting up your virtual environment is to enable
-your virtual environment and install your local development copy of
-the insights-core project::
-
-    $ source bin/activate
-    (myrules) $ pip install -e ../insights-core/
-    Obtaining file:///home/bfahr/work/insights/insights-core
-    Collecting pyyaml (from insights-core==1.13.0)
-    Installing collected packages: pyyaml, insights-core
-      Found existing installation: insights-core 0.3.5
-        Uninstalling insights-core-0.3.5:
-          Successfully uninstalled insights-core-0.3.5
-      Running setup.py develop for insights-core
-    Successfully installed insights-core pyyaml-3.12
-
-You are now ready to being writing your rule.
+You are now ready to begin writing your rule.
 
 ************************
 Secure Shell Server Rule
@@ -102,10 +81,10 @@ Secure Shell Server Rule
 Rule Code
 =========
 
-First we need to create a template rule file.  It is recommendated that
-you name the file based the results it produces.  Since we are looking
-at sshd security we will name the file ``myrules/plugins/sshd_secure.py``.
-Notice that the file is located in the ``myrules/plugins`` subdirectory
+First we need to create a template rule file.  It is recommended that
+you name the file based on the results it produces.  Since we are looking
+at sshd security we will name the file ``mycomponents/rules/sshd_secure.py``.
+Notice that the file is located in the ``rules`` subdirectory
 of your project::
 
     (myrules) $ touch myrules/plugins/sshd_secure.py
@@ -116,16 +95,15 @@ Here's the basic contents of the rule file:
    :linenos:
 
    from insights.core.plugins import make_response, rule
-   from insights.parsers.ssh import SshDConfig
+   from insights.parsers.secure_shell import SshDConfig
 
    ERROR_KEY = "SSHD_SECURE"
 
 
-   @rule(requires=[SshDConfig])
-   def report(local, shared):
-       sshd_config = shared[SshDConfig]
+   @rule(SshDConfig)
+   def report(sshd_config):
        """
-       1. Evalute config file facts
+       1. Evaluate config file facts
        2. Evaluate version facts
        """
        if results_found:
@@ -154,37 +132,59 @@ with the same key.
 
    ERROR_KEY = "SSHD_SECURE"
 
+.. _rule-decorator:
+
 The ``@rule()`` decorator is used to mark the rule method that will be
-invoked by insights-core.  Arguments to ``@rule()`` are listed in the
-following table. If the rule should handle Satellite clusters, use
-`@cluster_rule` instead of `@rule`.
+invoked by insights-core.  Arguments to ``@rule()`` consist of the parser
+and combiner objects that are necessary for rule processing.  Each object
+may be either *required*, *at least one* from a list, or *optional*.  All *required*
+objects must be available or the rule will not be called.  One or more objects from
+the *at least one* list must be available or the rule will not be called. Zero
+or more objects can be available from the *optional* list.
 
-========  =======  ==================================================
-Arg Name  Type     Description
-========  =======  ==================================================
-required  list     List of required shared parsers, it may include
-                   an embedded list meaning any one in the list is
-                   sufficient.
-optional  list     List of options shared parsers.
-========  =======  ==================================================
+In the ``rule`` decorator required
+objects are listed first, next are the "at least one" as a ``list`` argument,
+and finally the optional object as a ``list`` using the keyword ``optional``.
+For example if the a rule has the following input requirements:
 
-Our rule requires one shared parser ``SshDConfig``.  We will add a
+============  ===============================
+Criteria      ``@rule`` Decorator Arguments
+============  ===============================
+Requires      ``SshDConfig, InstalledRpms``
+At Least One  ``[ChkConfig, UnitFiles]``
+Optional      ``optional=[IPTables, IpAddr]``
+============  ===============================
+
+The decorator for the rule and the rule signature will look like this:
+
+.. code-block:: python
+    
+    @rule(SshDConfig, InstalledRpms, [ChkConfig, UnitFiles], optional=[IPTables, IpAddr])
+    def report(sshd_config, installed_rpms, chk_config, unit_files, ip_tables, ip_addr):
+        # sshd_config and installed_rpms will always be present
+        # at least one of chk_config and unit_files will be present
+        # ip_tables and ip_addr will be present if data is available
+        # arguments will be None if data is not available
+
+Currently our rule requires one parser ``SshDConfig``.  We will add a
 requirement to obtain facts about installed RPMs in the final code.
 
 .. code-block:: python
    :linenos:
    :lineno-start: 7
 
-   @rule(requires=[SshDConfig])
+   @rule(SshDConfig)
 
 The name of our
 rule method is ``report``, but the name may be any valid method name.
-The purpose of the method is to access the parser facts stored
-in ``shared[SshDConfig]``, evaluate the facts.  If any results
+The purpose of the method is to evaluate the parser facts stored
+in the parser object ``sshd_config``.  If any results
 are found in the evaluation then a response is created with the
 ``ERROR_KEY`` and any data that you want to be associated with
-the results.  This data is made available in the customer interface
-or results output.  You may use zero or more named arguments to
+the results are included in the response.  
+This data can be viewed in the results made available to a customer
+in the Red Hat Insights web interface.
+You may use zero or more named arguments to
 provide the data to ``make_response``.  You should use meaningful
 argument names as it helps in understanding of the results.
 
@@ -192,10 +192,9 @@ argument names as it helps in understanding of the results.
    :linenos:
    :lineno-start: 8
 
-   def report(local, shared):
-       sshd_config = shared[SshDConfig]
+   def report(sshd_config):
        """
-       1. Evalute config file facts
+       1. Evaluate config file facts
        2. Evaluate version facts
        """
        if results_found:
@@ -214,15 +213,14 @@ the software version:
    :linenos:
 
    from insights.core.plugins import make_response, rule
-   from insights.parsers.ssh import SshDConfig
+   from insights.parsers.secure_shell import SshDConfig
    from insights.parsers.installed_rpms import InstalledRpms
 
    ERROR_KEY = "SSHD_SECURE"
 
 
-   @rule(requires=[InstalledRpms, SshDConfig])
-   def report(local, shared):
-       sshd_config = shared[SshDConfig]
+   @rule(InstalledRpms, SshDConfig)
+   def report(installed_rpms, sshd_config):
        errors = {}
 
        auth_method = sshd_config.last('AuthenticationMethods')
@@ -253,7 +251,7 @@ the software version:
                errors['Protocol'] = protocol
 
        if errors:
-           openssh_version = shared[InstalledRpms].get_max('openssh')
+           openssh_version = installed_rpms.get_max('openssh')
            return make_response(ERROR_KEY, errors=errors, openssh=openssh_version.package)
 
 This rules code implements the checking of the four configuration values
@@ -262,6 +260,72 @@ and returns any errors found using ``make_response`` in the return. Also,
 if errors are found, the ``InstalledRpms`` parser facts are queried to determine
 the version of `OpenSSH` installed and that value is also returned.  If
 no values are found then an implicit ``None`` is returned.
+
+Now that we have the logic to check all of the rule conditions it is possible
+to refactor the rule to make the condition checks more obvious.  This is sometimes
+helpful in testing your rule as will be discussed below.  Here is the refactored
+rule:
+
+.. code-block:: python
+   :linenos:
+
+   from insights.core.plugins import make_response, rule
+   from insights.parsers.secure_shell import SshDConfig
+   from insights.parsers.installed_rpms import InstalledRpms
+
+   ERROR_KEY = "SSHD_SECURE"
+
+
+   def check_auth_method(sshd_config, errors):
+       auth_method = sshd_config.last('AuthenticationMethods')
+       if auth_method:
+           if auth_method.lower() != 'publickey':
+               errors['AuthenticationMethods'] = auth_method
+       else:
+           errors['AuthenticationMethods'] = 'default'
+       return errors
+
+
+   def check_log_level(sshd_config, errors):
+       log_level = sshd_config.last('LogLevel')
+       if log_level:
+           if log_level.lower() != 'verbose':
+               errors['LogLevel'] = log_level
+       else:
+           errors['LogLevel'] = 'default'
+       return errors
+
+
+   def check_permit_root(sshd_config, errors):
+       permit_root = sshd_config.last('PermitRootLogin')
+       if permit_root:
+           if permit_root.lower() != 'no':
+               errors['PermitRootLogin'] = permit_root
+       else:
+           errors['PermitRootLogin'] = 'default'
+       return errors
+
+
+   def check_protocol(sshd_config, errors):
+       # Default Protocol is 2 if not specified
+       protocol = sshd_config.last('Protocol')
+       if protocol:
+           if protocol.lower() != '2':
+               errors['Protocol'] = protocol
+       return errors
+
+
+   @rule(InstalledRpms, SshDConfig)
+   def report(installed_rpms, sshd_config):
+       errors = {}
+       errors = check_auth_method(sshd_config, errors)
+       errors = check_log_level(sshd_config, errors)
+       errors = check_permit_root(sshd_config, errors)
+       errors = check_protocol(sshd_config, errors)
+
+       if errors:
+           openssh_version = installed_rpms.get_max('openssh')
+           return make_response(ERROR_KEY, errors=errors, openssh=openssh_version.package)
 
 Rule Testing
 ============
@@ -278,12 +342,12 @@ by viewing the test code:
 .. code-block:: python
    :linenos:
 
-   from myrules.plugins import sshd_secure
+   from rules import sshd_secure
    from insights.tests import InputData, archive_provider, context_wrap
    from insights.core.plugins import make_response
+   from insights.specs import Specs
    # The following imports are not necessary for integration tests
-   from insights.parsers.ssh import SshDConfig
-   from insights.parsers.installed_rpms import InstalledRpms
+   from insights.parsers.secure_shell import SshDConfig
 
    OPENSSH_RPM = """
    openssh-6.6.1p1-31.el7.x86_64
@@ -311,39 +375,45 @@ by viewing the test code:
    """.strip()
 
 
-   def test_sshd_secure():
-       """This is not really necessary since it duplicates the testing
-       performed in the integration tests. But sometimes it is useful
-       when debugging a rule. It is useful if you have modules in your
-       rules that need to be tested.
+   def test_check_auth_method():
        """
-       local = {}
-       shared = {}
-       shared[SshDConfig] = SshDConfig(context_wrap(BAD_CONFIG))
-       shared[InstalledRpms] = InstalledRpms(context_wrap(OPENSSH_RPM))
-       result = sshd_secure.report(local, shared)
-       errors = {
-           'AuthenticationMethods': 'badkey',
-           'LogLevel': 'normal',
-           'PermitRootLogin': 'Yes',
-           'Protocol': '1'
-       }
-       expected = make_response(sshd_secure.ERROR_KEY,
-                                errors=errors,
-                                openssh=EXPECTED_OPENSSH)
-       assert result == expected
+       This is an example of using unit tests with integration tests.
+       Although integration tests should also test this function,
+       if problems exist it may be easier to find if you write unit
+       tests like these.
+       """
+       errors = {}
+       sshd_config = SshDConfig(context_wrap(BAD_CONFIG))
+       errors = sshd_secure.check_auth_method(sshd_config, errors)
+       assert errors == {'AuthenticationMethods': 'badkey'}
+
+       errors = {}
+       sshd_config = SshDConfig(context_wrap(GOOD_CONFIG))
+       errors = sshd_secure.check_auth_method(sshd_config, errors)
+       assert errors == {}
+
+       errors = {}
+       sshd_config = SshDConfig(context_wrap(DEFAULT_CONFIG))
+       errors = sshd_secure.check_auth_method(sshd_config, errors)
+       assert errors == {'AuthenticationMethods': 'default'}
 
 
-   @archive_provider(sshd_secure)
+   @archive_provider(sshd_secure.report)
    def integration_tests():
-       input_data = InputData(name="GOOD_CONFIG")
-       input_data.add("sshd_config", GOOD_CONFIG)
-       input_data.add("installed-rpms", OPENSSH_RPM)
-       yield input_data, []
+       """
+       InputData acts as the data source for the parsers
+       so that they may execute and then be used as input
+       to the rule.  So this is essentially an end-to-end
+       test of the component chain.
+       """
+       input_data = InputData("GOOD_CONFIG")
+       input_data.add(Specs.sshd_config, GOOD_CONFIG)
+       input_data.add(Specs.installed_rpms, OPENSSH_RPM)
+       yield input_data, None
 
-       input_data = InputData(name="BAD_CONFIG")
-       input_data.add("sshd_config", BAD_CONFIG)
-       input_data.add("installed-rpms", OPENSSH_RPM)
+       input_data = InputData("BAD_CONFIG")
+       input_data.add(Specs.sshd_config, BAD_CONFIG)
+       input_data.add(Specs.installed_rpms, OPENSSH_RPM)
        errors = {
            'AuthenticationMethods': 'badkey',
            'LogLevel': 'normal',
@@ -353,11 +423,11 @@ by viewing the test code:
        expected = make_response(sshd_secure.ERROR_KEY,
                                 errors=errors,
                                 openssh=EXPECTED_OPENSSH)
-       yield input_data, [expected]
+       yield input_data, expected
 
-       input_data = InputData(name="DEFAULT_CONFIG")
-       input_data.add("sshd_config", DEFAULT_CONFIG)
-       input_data.add("installed-rpms", OPENSSH_RPM)
+       input_data = InputData("DEFAULT_CONFIG")
+       input_data.add(Specs.sshd_config, DEFAULT_CONFIG)
+       input_data.add(Specs.installed_rpms, OPENSSH_RPM)
        errors = {
            'AuthenticationMethods': 'default',
            'LogLevel': 'default',
@@ -366,7 +436,7 @@ by viewing the test code:
        expected = make_response(sshd_secure.ERROR_KEY,
                                 errors=errors,
                                 openssh=EXPECTED_OPENSSH)
-       yield input_data, [expected]
+       yield input_data, expected
 
 Test Data
 ---------
@@ -417,9 +487,8 @@ is named ``test_sshd_secure``.  It may be named anything as long
 as the name begins with ``test_`` which is what ``py.test`` looks
 for to identify tests.  As with all unit tests, no framework is
 provided so you must create all of the necessary structures for
-your tests.  In this case we need a ``shared`` parameter which
-is a ``dict`` object, and it need keys for each parser that we
-require in our rule, here ``SshDConfig`` and ``InstalledRpms``.
+your tests.  In this case we need a ``sshd_config`` parameter which
+is a ``SshDConfig`` parser object.
 This looks very similar to our parser test code except that 
 we may have to support multiple parsers.  We invoke our 
 rule ``ssh_secure.report`` and compare the results to the
@@ -429,31 +498,32 @@ expected results using the ``assert`` statement:
    :linenos:
    :lineno-start: 34
 
-   def test_sshd_secure():
-       """This is not really necessary since it duplicates the testing
-       performed in the integration tests. But sometimes it is useful
-       when debugging a rule. It is useful if you have modules in your
-       rules that need to be tested.
+   def test_check_auth_method():
        """
-       local = {}
-       shared = {}
-       shared[SshDConfig] = SshDConfig(context_wrap(BAD_CONFIG))
-       shared[InstalledRpms] = InstalledRpms(context_wrap(OPENSSH_RPM))
-       result = sshd_secure.report(local, shared)
-       errors = {
-           'AuthenticationMethods': 'badkey',
-           'LogLevel': 'normal',
-           'PermitRootLogin': 'Yes',
-           'Protocol': '1'
-       }
-       expected = make_response(sshd_secure.ERROR_KEY,
-                                errors=errors,
-                                openssh=EXPECTED_OPENSSH)
-       assert result == expected
+       This is an example of using unit tests with integration tests.
+       Although integration tests should also test this function,
+       if problems exist it may be easier to find if you write unit
+       tests like these.
+       """
+       errors = {}
+       sshd_config = SshDConfig(context_wrap(BAD_CONFIG))
+       errors = sshd_secure.check_auth_method(sshd_config, errors)
+       assert errors == {'AuthenticationMethods': 'badkey'}
 
-As you will see when we review the integration tests, this code is
-duplicative of the testing done there.  However, it does show how
-unit tests work, and it is sometimes necessary to debug complex rules.
+       errors = {}
+       sshd_config = SshDConfig(context_wrap(GOOD_CONFIG))
+       errors = sshd_secure.check_auth_method(sshd_config, errors)
+       assert errors == {}
+
+       errors = {}
+       sshd_config = SshDConfig(context_wrap(DEFAULT_CONFIG))
+       errors = sshd_secure.check_auth_method(sshd_config, errors)
+       assert errors == {'AuthenticationMethods': 'default'}
+
+As you will see when we review the integration tests, this unit test is
+duplicative of the testing done in integration tests.  However, it does
+provides a more granular level of testing and can be easier to debug than
+when only integration tests are used.
 Because integration tests run in the framework, which is in turn run
 within py.test, it's not as easy to get output for debugging purposes.
 Performing these tests as unit tests removes one layer of complexity
@@ -467,41 +537,44 @@ Integration tests are performed within the insights-core framework.  The
 present, and the framework creates an archive file to be input to
 the insights-core framework so that the parsers will be invoked, and then
 the rules will be invoked.  You need to create ``InputData`` objects
-will all of the information that is necessary for parsers required
+with all information that is necessary for parsers required
 by your rules.  If input data is not present then parsers will not be
-executed, and if your rule requires any of those parsers, your rule.
+executed, and if your rule requires a missing parser it will not be executed.
 
 To create your integration tests you must first create a method that
 does not begin with ``test_`` and decorate that method with
 ``@archive_provider(rule_name)`` having an argument that is your
-rule module name.  Typically we name the method ``integration_tests``.
+rule function name.  Typically we name the method ``integration_tests``.
 
 .. code-block:: python
    :linenos:
    :lineno-start: 57
 
-   @archive_provider(sshd_secure)
+   @archive_provider(sshd_secure.report)
    def integration_tests():
 
 Next we create an ``InputData`` object and it is useful to provide
-a ``name=test_name`` argument to the contstructor.  When you execute
+a name argument to the constructor.  When you execute
 integration tests, that name will show up in the results and make it
 easier to debug if you have any problems. Next you add your test
 inputs to the ``InputData`` object that will be used to create the
-test archive. Once all of the data has been added, a ``yield``
+test archive. You add the data with the ``add`` method and identify
+the source of the data using the data source spec that is associated
+with the parser such as ``Specs.sshd_config``.
+Once all of the data has been added, a ``yield``
 statement provides the input data and expected results to the
 ``archive_provider`` to run the test.  In this particular test
-case we provided all `good` data so we did not expect any results
-``[]``.
+case we provided all *good* data so we did not expect any results
+``None``.
 
 .. code-block:: python
    :linenos:
    :lineno-start: 59
 
-       input_data = InputData(name="GOOD_CONFIG")
-       input_data.add("sshd_config", GOOD_CONFIG)
-       input_data.add("installed-rpms", OPENSSH_RPM)
-       yield input_data, []
+       input_data = InputData("GOOD_CONFIG")
+       input_data.add(Specs.sshd_config, GOOD_CONFIG)
+       input_data.add(Specs.installed-rpms, OPENSSH_RPM)
+       yield input_data, None
 
 .. note:: If your input data has a path that is significant
     to the interpretation of the data, such as
@@ -509,14 +582,14 @@ case we provided all `good` data so we did not expect any results
     multiple ``ifcfg`` scripts, you'll need to add the path as well.
     For example::
 
-        input_data.add("ifcfg",
+        input_data.add(Specs.ifcfg,
                        IFCFG_ETH0,
                        path="etc/sysconfig/network-scripts/ifcfg-eth0")
-        input_data.add("ifcfg",
+        input_data.add(Specs.ifcfg,
                        IFCFG_ETH1,
                        path="etc/sysconfig/network-scripts/ifcfg-eth1")
 
-In the second test case we are using `bad` input data so we have to
+In the second test case we are using *bad* input data so we have to
 also provide the errors that we expect our rule to return to the
 framework.  The expected results are in the same format that we
 create the return value in ``ssh_secure.report``.
@@ -526,8 +599,8 @@ create the return value in ``ssh_secure.report``.
    :lineno-start: 64
 
        input_data = InputData(name="BAD_CONFIG")
-       input_data.add("sshd_config", BAD_CONFIG)
-       input_data.add("installed-rpms", OPENSSH_RPM)
+       input_data.add(Specs.sshd_config, BAD_CONFIG)
+       input_data.add(Specs.installed-rpms, OPENSSH_RPM)
        errors = {
            'AuthenticationMethods': 'badkey',
            'LogLevel': 'normal',
@@ -537,7 +610,7 @@ create the return value in ``ssh_secure.report``.
        expected = make_response(sshd_secure.ERROR_KEY,
                                 errors=errors,
                                 openssh=EXPECTED_OPENSSH)
-       yield input_data, [expected]
+       yield input_data, expected
 
 Running the Tests
 =================
@@ -546,17 +619,17 @@ We execute these tests by moving to the root directory of our rules
 project, ensuring that our virtual environment is active, and running
 ``py.test``::
 
-    (myrules) $ py.test
-    ================== test session starts =======================
-    platform linux2 -- Python 2.7.12, pytest-3.0.3, py-1.4.31, pluggy-0.4.0
-    rootdir: /home/bfahr/work/insights/myrules, inifile: setup.cfg
+    (insights-core)[userone@hostone mycomponents]$ py.test
+    ====================== test session starts ===============================
+    platform linux2 -- Python 2.7.5, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
+    rootdir: /home/userone/work/mycomponents, inifile: 
     plugins: cov-2.4.0
-    collected 4 items
-    
-    myrules/tests/integration.py ...
-    myrules/tests/test_sshd_secure.py .
-    
-    ================ 4 passed in 0.02 seconds ===================
+    collected 4 items 
+
+    rules/tests/test_integration.py ...
+    rules/tests/test_sshd_secure.py .
+
+    =================== 4 passed in 0.07 seconds =============================
     
 If any tests fail you can use the following ``py.test`` ``-s -v --appdebug``
 options to help get additional information.  If you want to limit which

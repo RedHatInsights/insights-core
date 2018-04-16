@@ -5,12 +5,15 @@ Insights Core
 https://access.redhat.com/insights/
 
 **insights-core** is the framework, common components, and utilities for
-Insights rules.
+Insights rules.  Prior to setting up the project ensure that you have Python 2,
+Python Virtualenv, GCC, and Unzip installed.  The steps for this will vary
+depending upon your system.
 
 To get the project set up::
 
     virtualenv .
     source bin/activate
+    pip install --upgrade pip
     pip install -e .[develop]
 
 To run the tests::

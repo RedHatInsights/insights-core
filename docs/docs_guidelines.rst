@@ -81,9 +81,10 @@ in code contributed to the insights-core project:
         True
     """
     from .. import LogFileOutput, parser
+    from insights.specs import Specs
 
 
-    @parser('lspci')
+    @parser(Specs.lspci)
     class LsPci(LogFileOutput):
         """Parses output of the ``lspci`` command."""
         pass
@@ -109,6 +110,8 @@ Title
     """
     lspci - Command
     ===============
+
+.. Fix display in editors by terminating the docstring """
 
 The docstring module begins at the first line of the file using three double quotes.
 The second line is the name of the module and a descriptive phrase.  In this case
@@ -190,6 +193,8 @@ Examples
        >>> "0d:00.0" in pci_info
        True
    """
+
+.. Fix display in editor by terminating docstring """
 
 This section of the documentation is the most important section because of
 the information it conveys to the reader.  Make sure to include examples that
