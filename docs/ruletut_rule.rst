@@ -57,8 +57,10 @@ the `return value of a rule </api.html#rule-output>`_ function.
 
     @rule(InstalledRpms, Lsof, Netstat)
 
-Here we are specifying that this rule requires the output of the ``InstalledRpms``,
-``Lsof``, and ``Netstat`` parsers.
+Here we are specifying that this rule requires the output of the
+:py:class:`insights.parsers.installed_rpms.InstalledRpms`,
+:py:class:`insights.parsers.lsof.Lsof`, and
+:py:class:`insights.parsers.netstat.Netstat` parsers.
 
 Now let's add the rule logic
 

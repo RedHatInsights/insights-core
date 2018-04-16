@@ -19,6 +19,7 @@ Contents:
     combiner_tutorial
     components
     notebook_index
+    examples/README
 
 Indices and tables
 ==================
