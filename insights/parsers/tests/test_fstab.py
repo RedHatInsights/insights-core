@@ -22,6 +22,26 @@ FS_TAB_DATA = ['#',
                '/dev/mapper/vg0-lv2 /test1             ext4 defaults,data=writeback     1 1',
                'nfs_hostname.example.com:/nfs_share/data     /srv/rdu/data/000  nfs     ro,defaults,hard,intr,bg,noatime,nodev,nosuid,nfsvers=3,tcp,rsize=32768,wsize=32768     0']
 
+content_fstab_without_mntopts = """
+#
+# /etc/fstab
+# Created by anaconda on Mon Dec  5 14:53:47 2016
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk'
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info
+#
+/dev/mapper/vg_osbase-lv_root /                       ext4    defaults        1 1
+UUID=05ce4fc3-04c3-4111-xxxx /boot                   ext4    defaults        1 2
+/dev/mapper/vg_osbase-lv_home /home                   ext4    defaults        1 2
+/dev/mapper/vg_osbase-lv_tmp /tmp                    ext4    defaults        1 2
+
+## default mount options##
+/dev/foo /foo somefs
+###SIMBOX MOUNT###
+192.168.48.65:/cellSiteData /ceSiteData nfs
+    /dev/vg_data/lv_pg /var/opt/rh/rh-postgresql95/lib/pgsql  xfs rw,noatime        0        0
+"""
+
 
 def test_fstab():
     context = context_wrap(FS_TAB_DATA)
@@ -71,3 +91,11 @@ def test_fstab():
     assert results.search(fs_spec__startswith='LABEL=') == [l for l in results if l.fs_spec.startswith('LABEL')]
     assert results.search(fs_mntops__contains='uid') == [l for l in results if 'uid' in l.fs_mntops]
     assert results.search(fs_vfstype='xfs', fs_mntops__contains='relatime') == [l for l in results if l.fs_vfstype == 'xfs' and 'relatime' in l.fs_mntops]
+
+    results = fstab.FSTab(context_wrap(content_fstab_without_mntopts))
+    sitedata_mount_list = [result for result in results if result.fs_file == "/ceSiteData"]
+    assert len(sitedata_mount_list) == 1
+    sitedata_mount = sitedata_mount_list[0]
+    assert sitedata_mount.fs_mntops['defaults'] is True
+    assert sitedata_mount.fs_vfstype == "nfs"
+    assert sitedata_mount.fs_spec == "192.168.48.65:/cellSiteData"

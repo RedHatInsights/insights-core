@@ -59,55 +59,14 @@ Sample input data looks like::
 
 Examples:
 
-    >>> ipt = shared[IPTables]
-    >>> ipt6 = shared[IP6Tables]
     >>> ipt.rules[0]
-    {'chain': 'INPUT',
-     'constraints': '',
-     'rule': '-j INPUT_direct',
-     'table': 'security',
-     'target': 'INPUT_direct',
-     'target_action': 'jump',
-     'target_options': None}
-    >>> ipt.get_chain('INPUT')
-    [{'chain': 'INPUT',
-      'constraints': '-m state --state RELATED,ESTABLISHED',
-      'rule': '-m state --state RELATED,ESTABLISHED -j ACCEPT',
-      'table': 'filter',
-      'target': 'ACCEPT',
-      'target_action': 'jump',
-      'target_options': None},
-     {'chain': 'INPUT',
-      'constraints': '-s fe80::/64',
-      'rule': '-s fe80::/64 -j ACCEPT',
-      'table': 'filter',
-      'target': 'ACCEPT',
-      'target_action': 'jump',
-      'target_options': None},
-     {'chain': 'INPUT', 'rule': '-s fe80::/64', 'table': 'filter'}]
+    {'target': 'ACCEPT', 'chain': 'INPUT', 'rule': '-m state --state RELATED,ESTABLISHED -j ACCEPT', 'table': 'filter', 'target_options': None, 'target_action': 'jump', 'constraints': '-m state --state RELATED,ESTABLISHED'}
+    >>> ipt.get_chain('INPUT')[1]
+    {'target': 'ACCEPT', 'chain': 'INPUT', 'rule': '-s 192.168.0.0/24 -j ACCEPT', 'table': 'filter', 'target_options': None, 'target_action': 'jump', 'constraints': '-s 192.168.0.0/24'}
     >>> ipt.table_chains('mangle')
     {'FORWARD': [], 'INPUT': [], 'POSTROUTING': [], 'PREROUTING': [], 'OUTPUT': []}
-    >>> ipt.get_table('nat'))
-    [{'byte_counter': 0,
-      'name': 'PREROUTING',
-      'packet_counter': 0,
-      'policy': 'ACCEPT',
-      'table': 'nat'},
-     {'byte_counter': 0,
-      'name': 'INPUT',
-      'packet_counter': 0,
-      'policy': 'ACCEPT',
-      'table': 'nat'},
-     {'byte_counter': 0,
-      'name': 'OUTPUT',
-      'packet_counter': 0,
-      'policy': 'ACCEPT',
-      'table': 'nat'},
-     {'byte_counter': 0,
-      'name': 'POSTROUTING',
-      'packet_counter': 0,
-      'policy': 'ACCEPT',
-      'table': 'nat'}]
+    >>> ipt.get_table('nat')[-1]
+    {'policy': 'ACCEPT', 'table': 'nat', 'byte_counter': 450, 'name': 'OUTPUT', 'packet_counter': 3}
 """
 
 from .. import Parser, parser, get_active_lines
@@ -137,8 +96,12 @@ class IPTablesConfiguration(Parser):
                     "byte_counter": int(byte_counter),
                 })
             elif line.startswith("-"):
-                chain_name, rule = line[3:].split(None, 1)
-                target_option = [i for i in ('-j', '-g') if i in rule]
+                line_spl = line[3:].split(None, 1)
+                if not line_spl:
+                    continue
+                chain_name = line_spl[0]
+                rule = line_spl[1] if len(line_spl) == 2 else ''
+                target_option = [i for i in (' -j', '-j ', ' -g', '-g ') if i in rule]
                 if target_option:
                     constraints, target = [i.strip() for i in rule.split(target_option[-1])]
                     if " " in target:
@@ -149,7 +112,7 @@ class IPTablesConfiguration(Parser):
                         "table": current_table,
                         "chain": chain_name,
                         "rule": rule,
-                        "target_action": "jump" if target_option[-1] == "-j" else "goto",
+                        "target_action": "jump" if target_option[-1].strip() == "-j" else "goto",
                         "constraints": constraints,
                         "target": target,
                         "target_options": target_options

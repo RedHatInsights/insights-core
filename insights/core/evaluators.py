@@ -18,6 +18,7 @@ class Evaluator(object):
         self.rule_results = []
         self.hostname = None
         self.metadata = {}
+        self.metadata_keys = {}
 
     def pre_process(self):
         pass
@@ -63,7 +64,8 @@ class SingleEvaluator(Evaluator):
         return response
 
     def get_response(self):
-        return self.format_response({
+        r = dict(self.metadata_keys)
+        r.update({
             "system": {
                 "metadata": self.metadata,
                 "hostname": self.hostname
@@ -71,6 +73,7 @@ class SingleEvaluator(Evaluator):
             "reports": self.rule_results,
             "skips": self.rule_skips,
         })
+        return self.format_response(r)
 
     def handle_result(self, plugin, r):
         type_ = r["type"]
@@ -83,6 +86,8 @@ class SingleEvaluator(Evaluator):
             }))
         elif type_ == "skip":
             self.rule_skips.append(r)
+        elif type_ == "metadata_key":
+            self.metadata_keys[r["key"]] = r["value"]
 
 
 class InsightsEvaluator(SingleEvaluator):
