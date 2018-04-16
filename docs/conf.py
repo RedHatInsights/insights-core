@@ -15,6 +15,7 @@
 import sys
 import os
 import insights
+from insights.util import component_graph
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -355,3 +356,7 @@ def no_namedtuple_attrib_docstring(app, what, name, obj, options, lines):
 
 def setup(app):
     app.connect('autodoc-process-docstring', no_namedtuple_attrib_docstring)
+
+    # Dynamically generate cross reference for components prior to doc build
+    filename = os.path.join(app.confdir, "components.rst")
+    component_graph.main(filename)
