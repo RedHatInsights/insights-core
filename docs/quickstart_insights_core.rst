@@ -40,53 +40,133 @@ Rule Development Setup
 
 In order to develop rules to run in Red Hat Insights you'll need Insights
 Core (http://github.com/RedHatInsights/insights-core) as well as your own rules code.
+The commands below assume the following sample project directory structure
+containing the insights-core project repo and your directory and files
+for rule development::
 
+    project_dir
+    ├── insights-core
+    └── myrules
+        ├── setup.py
+        └── MyRules
+            └── hostname_rel.py
+
+    
 Clone the project::
 
-    git clone git@github.com:RedHatInsights/insights-core.git
+    [userone@hostone project_dir]$ git clone git@github.com:RedHatInsights/insights-core.git
 
 Or, alternatively, using HTTPS::
 
-    git clone https://github.com/RedHatInsights/insights-core.git
+    [userone@hostone project_dir]$ git clone https://github.com/RedHatInsights/insights-core.git
 
 Initialize a virtualenv::
 
-    cd insights-core
-    virtualenv .
+    [userone@hostone project_dir]$ cd insights-core
+    [userone@hostone project_dir/insights-core]$ virtualenv .
 
-Install the project and its dependencies::
+Install the insights-core project and its dependencies into your virtualenv::
 
-    bin/pip install -e .
+    [userone@hostone project_dir/insights-core]$ source bin/activate
+    (insights-core)[userone@hostone project_dir/insights-core]$ bin/pip install -e .
 
-Install a rule repository::
+From your project root directory create a directory for your rules::
+    
+    (insights-core)[userone@hostone project_dir/insights-core]$ cd ..
+    (insights-core)[userone@hostone project_dir]$ mkdir -p myrules/MyRules
 
-    bin/pip install -e path/to/rule/repo
+Create a basic setup file named ``setup.py`` in the ``myrules`` directory:
 
-For a more detailed description of how to develop your own rules see the Tutorial
-section :ref:`tutorial-rule-development`.
+.. code-block:: python
+   :linenos:
+
+    from setuptools import setup, find_packages
+    setup(
+
+        name="MyRules",
+        version="0.0.1",
+        packages=find_packages()
+    )
+
+Create a sample rule called ``hostname_rel.py`` in the ``MyRules`` directory:
+
+.. code-block:: python
+   :linenos:
+
+    #!/usr/bin/env python
+    from insights.core.plugins import make_response, rule
+    from insights.parsers.hostname import Hostname
+    from insights.parsers.redhat_release import RedhatRelease
+
+    ERROR_KEY_1 = "RELEASE_IS_RHEL"
+    ERROR_KEY_2 = "RELEASE_IS_NOT_RECOGNIZED"
+    ERROR_KEY_2 = "RELEASE_CANNOT_BE_DETERMINED"
+
+
+    @rule(Hostname, [RedhatRelease])
+    def report(hostname, release):
+        if release and release.is_rhel:
+            return make_response(ERROR_KEY_1,
+                                 hostname=hostname.fqdn,
+                                 release=release.version)
+        elif release:
+            return make_response(ERROR_KEY_2,
+                                 hostname=hostname.fqdn,
+                                 release=release.raw)
+        else:
+            return make_response(ERROR_KEY_3, hostname=hostname.fqdn)
+
+
+    if __name__ == "__main__":
+        from insights import run
+        run(report, print_summary=True)
+
+Install your rule repository into your virtualenv::
+
+    (insights-core)[userone@hostone project_dir]$ cd myrule
+    (insights-core)[userone@hostone project_dir/myrule]$ pip install -e .
+    
+Now you can use Insights to evaluate your rule by running your rule script::
+    
+    (insights-core)[userone@hostone project_dir/myrule]$ python MyRules/hostname_rel.py
+    
+Depending upon the computer you are using you will see several lines of
+output ending with a your rule results that should look something like this::
+    
+    rule instances:
+    '__main__.report:'
+    {'error_key': 'RELEASE_IS_RHEL',
+     'hostname': 'myhost.mydomain.com',
+     'release': '7.4',
+     'type': 'rule'}
+     
+By default Insights will collect information from your computer for evaluation
+of your rules.  For a more detailed description of how to develop your own
+rules see the Tutorial section :ref:`tutorial-rule-development`.
 
 *****************
 Contributor Setup
 *****************
 
-If you wish to contribute to the insights-core project you'll need to create a fork in github.
+If you wish to contribute to the insights-core project you'll need to create a fork in GitHub.
 
 1. Clone your fork::
 
-    git clone git@github.com:your-user/insights-core.git
+    [userone@hostone project_dir]$ git clone git@github.com:your-user/insights-core.git
 
 2. Reference the original project as "upstream"::
 
-    git remote add upstream git@github.com:RedHatInsights/insights-core.git
+    [userone@hostone project_dir]$ cd insights-core
+    [userone@hostone project_dir/insights-core]$ git remote add upstream git@github.com:RedHatInsights/insights-core.git
 
 At this point, you would synchronize your fork with the upstream project
 using the following commands::
 
-    git pull upstream master
-    git push origin master
+    [userone@hostone project_dir/insights-core]$ git pull upstream master
+    [userone@hostone project_dir/insights-core]$ git push origin master
 
 You will need to initialize the project per the
-`readme.md <https://github.com/RedHatInsights/insights-core/blob/master/README.md>`_
+`README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
 file.  For more detailed information about writing parsers and combiners see the
 tutorial sections :ref:`tutorial-parser-development` and
 :ref:`tutorial-combiner-development`.
@@ -95,7 +175,7 @@ tutorial sections :ref:`tutorial-parser-development` and
 Contributor Submissions
 ***********************
 
-Contributors should submit changes to the code via github "Pull
+Contributors should submit changes to the code via GitHub "Pull
 Requests."  One would normally start a new contribution with a branch
 from the current master branch of the upstream project.
 
@@ -134,11 +214,14 @@ from the current master branch of the upstream project.
    of the topic branch.  Again, such manipulations change history and
    require a ``--force`` push.
 
-6. When ready, use the github UI to submit a pull request.
+6. When ready, use the GitHub UI to submit a pull request (PR).
 
-7. Repeat steps 4 and 5 as necessary.  Note that a forced push to the
-   topic branch will work as expected.  The pull request will be
-   updated with the current view of the topic-branch.
+7. Repeat steps 4 and 5 as necessary.  Once you have submitted your
+   PR it is not necessary to squash commits, that will be done
+   when the PR is merged.  Also it is not necessary to rebase against the
+   master branch unless the PR status indicates that there
+   are merge issues.  Any subsequent pushes to the existing PR branch
+   will be reflected in the PR on GitHub.
 
 *****************
 Style Conventions
@@ -158,6 +241,8 @@ following rules as exceptions
 - E126: Continuation line over-indented for hanging indent
 - E127: Continuation line over-indented for visual indent
 - E128: Continuation line under-indented for visual indent
+- E722: Do not use bare except, specify exception instead
+- E741: Do not use variables named ‘l’, ‘O’, or ‘I’
 
 In some cases, a particular bit of code may require formatting that
 violates flake8 rules.  In such cases, one can, for example, annotate
