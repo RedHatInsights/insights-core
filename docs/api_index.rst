@@ -71,6 +71,38 @@ insights.specs.sos_archive
     :show-inheritance:
     :undoc-members:
 
+insights.specs
+--------------
+
+.. automodule:: insights.specs
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+insights.specs.default
+----------------------
+
+.. automodule:: insights.specs.default
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.specs.insights_archive
+-------------------------------
+
+.. automodule:: insights.specs.insights_archive
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+insights.specs.sos_archive
+--------------------------
+
+.. automodule:: insights.specs.sos_archive
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 insights.tests
 --------------
 

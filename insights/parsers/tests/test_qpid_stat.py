@@ -1,5 +1,35 @@
 from insights.parsers import qpid_stat
 from insights.tests import context_wrap
+import doctest
+
+QPID_STAT_Q_DOCS = '''
+Queues
+  queue                                                                      dur  autoDel  excl  msg   msgIn  msgOut  bytes  bytesIn  bytesOut  cons  bind
+  ==========================================================================================================================================================
+  00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0                                        Y        Y        0     2      2       0    486      486         1     2
+  0f7f1a3d-daff-42a6-a994-29050a2eabde:1.0                                        Y        Y        0     8      8       0   4.88k    4.88k        1     2
+'''
+
+QPID_STAT_U_DOCS = '''
+Subscriptions
+  subscr               queue                                                                      conn                                    procName          procId  browse  acked  excl  creditMode  delivered  sessUnacked
+  ===========================================================================================================================================================================================================================
+  0                    00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0                                   qpid.10.20.1.10:5671-10.20.1.10:33787   celery            21409                        CREDIT      2          0
+  0                    pulp.agent.c6a430bc-5ec7-42f8-99ce-f320ed0b9113                            qpid.10.20.1.10:5671-10.30.0.148:57423  goferd            32227           Y            CREDIT      0          0
+  1                    server.example.com:event                                                   qpid.10.20.1.10:5671-10.20.1.10:33848   Qpid Java Client  21066           Y      Y     WINDOW      2,623      0
+  0                    celeryev.4c77bd03-1cde-49eb-bdc0-b7c38f9ff93d                              qpid.10.20.1.10:5671-10.20.1.10:33777   celery            21356           Y            CREDIT      363,228    0
+  1                    celery                                                                     qpid.10.20.1.10:5671-10.20.1.10:33786   celery            21409           Y            CREDIT      5          0
+'''
+
+
+def test_qpid_stat_q_docs():
+    env = {
+        'qpid_stat_q': qpid_stat.QpidStatQ(context_wrap(QPID_STAT_Q_DOCS)),
+        'qpid_stat_u': qpid_stat.QpidStatU(context_wrap(QPID_STAT_U_DOCS)),
+    }
+    failed, total = doctest.testmod(qpid_stat, globs=env)
+    assert failed == 0
+
 
 QPID_STAT_Q = """
 COMMAND> qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671
@@ -8,26 +38,11 @@ Queues
   queue                                                                      dur  autoDel  excl  msg   msgIn  msgOut  bytes  bytesIn  bytesOut  cons  bind
   ==========================================================================================================================================================
   00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0                                        Y        Y        0     2      2       0    486      486         1     2
-  prrhss001058.example.com:event                                             Y             Y        0  2.62k  2.62k      0   45.5m    45.5m        1     2
+  server.example.com:event                                                   Y             Y        0  2.62k  2.62k      0   45.5m    45.5m        1     2
   celery                                                                     Y                      4    41     37    4.12k  37.5k    33.4k        8     2
   pulp.agent.836a7366-4790-482d-b3bc-efee9d42b3cd                            Y                      1     1      0     463    463        0         0     1
-  reserved_resource_worker-7@prrhss001058.example.com.celery.pidbox               Y                 0     0      0       0      0        0         1     2
-  reserved_resource_worker-7@prrhss001058.example.com.dq                     Y    Y                 0   182    182       0    229k     229k        1     2
-""".strip()
-
-
-QPID_STAT_U = """
-COMMAND> qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671
-
-Subscriptions
-  subscr               queue                                                                      conn                                    procName          procId  browse  acked  excl  creditMode  delivered  sessUnacked
-  ===========================================================================================================================================================================================================================
-  0                    00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0                                   qpid.10.20.1.10:5671-10.20.1.10:33787   celery            21409                        CREDIT      2          0
-  0                    pulp.agent.c6a430bc-5ec7-42f8-99ce-f320ed0b9113                            qpid.10.20.1.10:5671-10.30.0.148:57423  goferd            32227           Y            CREDIT      0          0
-  1                    prrhss001058.example.com:event                                             qpid.10.20.1.10:5671-10.20.1.10:33848   Qpid Java Client  21066           Y      Y     WINDOW      2,623      0
-  0                    celeryev.4c77bd03-1cde-49eb-bdc0-b7c38f9ff93d                              qpid.10.20.1.10:5671-10.20.1.10:33777   celery            21356           Y            CREDIT      363,228    0
-  1                    celery                                                                     qpid.10.20.1.10:5671-10.20.1.10:33786   celery            21409           Y            CREDIT      5          0
-  katello_event_queue  katello_event_queue                                                        qpid.10.20.1.10:5671-10.20.1.10:33911   ruby              21801           Y            CREDIT      7,642      0
+  reserved_resource_worker-7@server.example.com.celery.pidbox                     Y                 0     0      0       0      0        0         1     2
+  reserved_resource_worker-7@server.example.com.dq                           Y    Y                 0   182    182       0    229k     229k        1     2
 """.strip()
 
 
@@ -35,7 +50,7 @@ def test_qpid_stat_q():
     qpid_list = qpid_stat.QpidStatQ(context_wrap(QPID_STAT_Q))
     assert qpid_list.data[0].get('queue') == '00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0'
     assert qpid_list.data[0].get('dur') == ''
-    assert qpid_list.data[1].get('queue') == 'prrhss001058.example.com:event'
+    assert qpid_list.data[1].get('queue') == 'server.example.com:event'
     assert qpid_list.data[1].get('dur') == 'Y'
     assert qpid_list.data[1].get('autoDel') == ''
     assert qpid_list.data[1].get('excl') == 'Y'
@@ -50,7 +65,7 @@ def test_qpid_stat_q():
     assert qpid_list.data[2].get('msg') == '4'
     assert qpid_list.data[3].get('cons') == '0'
     assert qpid_list.data[4].get('bytesIn') == '0'
-    assert qpid_list.data[5].get('queue') == 'reserved_resource_worker-7@prrhss001058.example.com.dq'
+    assert qpid_list.data[5].get('queue') == 'reserved_resource_worker-7@server.example.com.dq'
     assert qpid_list.data[5].get('dur') == 'Y'
     assert qpid_list.data[5].get('autoDel') == 'Y'
     assert qpid_list.data[5].get('excl') == ''
@@ -66,12 +81,27 @@ def test_qpid_stat_q():
     # test iteration
     assert [d['queue'] for d in qpid_list] == [
         '00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0',
-        'prrhss001058.example.com:event',
+        'server.example.com:event',
         'celery',
         'pulp.agent.836a7366-4790-482d-b3bc-efee9d42b3cd',
-        'reserved_resource_worker-7@prrhss001058.example.com.celery.pidbox',
-        'reserved_resource_worker-7@prrhss001058.example.com.dq',
+        'reserved_resource_worker-7@server.example.com.celery.pidbox',
+        'reserved_resource_worker-7@server.example.com.dq',
     ]
+
+
+QPID_STAT_U = """
+COMMAND> qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671
+
+Subscriptions
+  subscr               queue                                                                      conn                                    procName          procId  browse  acked  excl  creditMode  delivered  sessUnacked
+  ===========================================================================================================================================================================================================================
+  0                    00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0                                   qpid.10.20.1.10:5671-10.20.1.10:33787   celery            21409                        CREDIT      2          0
+  0                    pulp.agent.c6a430bc-5ec7-42f8-99ce-f320ed0b9113                            qpid.10.20.1.10:5671-10.30.0.148:57423  goferd            32227           Y            CREDIT      0          0
+  1                    server.example.com:event                                                   qpid.10.20.1.10:5671-10.20.1.10:33848   Qpid Java Client  21066           Y      Y     WINDOW      2,623      0
+  0                    celeryev.4c77bd03-1cde-49eb-bdc0-b7c38f9ff93d                              qpid.10.20.1.10:5671-10.20.1.10:33777   celery            21356           Y            CREDIT      363,228    0
+  1                    celery                                                                     qpid.10.20.1.10:5671-10.20.1.10:33786   celery            21409           Y            CREDIT      5          0
+  katello_event_queue  katello_event_queue                                                        qpid.10.20.1.10:5671-10.20.1.10:33911   ruby              21801           Y            CREDIT      7,642      0
+""".strip()
 
 
 def test_qpid_stat_u():
@@ -92,7 +122,7 @@ def test_qpid_stat_u():
     assert qpid_list.data[1].get('acked') == 'Y'
     assert qpid_list.data[1].get('procName') == 'goferd'
     assert qpid_list.data[2].get('subscr') == '1'
-    assert qpid_list.data[2].get('queue') == 'prrhss001058.example.com:event'
+    assert qpid_list.data[2].get('queue') == 'server.example.com:event'
     assert qpid_list.data[2].get('conn') == 'qpid.10.20.1.10:5671-10.20.1.10:33848'
     assert qpid_list.data[2].get('procName') == 'Qpid Java Client'
     assert qpid_list.data[2].get('procId') == '21066'
@@ -109,7 +139,7 @@ def test_qpid_stat_u():
     assert [d['queue'] for d in qpid_list] == [
         '00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0',
         'pulp.agent.c6a430bc-5ec7-42f8-99ce-f320ed0b9113',
-        'prrhss001058.example.com:event',
+        'server.example.com:event',
         'celeryev.4c77bd03-1cde-49eb-bdc0-b7c38f9ff93d',
         'celery',
         'katello_event_queue',

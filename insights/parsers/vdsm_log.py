@@ -26,11 +26,10 @@ class VDSMLog(LogFileOutput):
     Example:
         >>> from insights.parsers.vdsm_log import VDSMLog
         >>> from insights.tests import context_wrap
-        >>> shared = {VDSMLog: VDSMLog(context_wrap(VDSM_LOG))}
-        >>> log = shared[VDSMLog]
-        >>> log.get('TaskManager')
+        >>> vdsm_log = VDSMLog(context_wrap(VDSM_LOG))
+        >>> vdsm_log.get('TaskManager')
         'Thread-4662::DEBUG::2015-05-08 18:01:05,560::task::595::TaskManager.Task::(_updateState) Task=`9a7948f6-b6d9-42c2-b91f-7e0346dfc1d6`::moving from state init -> state preparing'
-        >>> list(log.parse_lines(log.get('TaskManager')))[0]  # from generator to list to subscript
+        >>> list(vdsm_log.parse_lines(vdsm_log.get('TaskManager')))[0]  # from generator to list to subscript
         {'thread': 'Thread-4662',
          'level': 'DEBUG',
          'asctime': datetime(2015, 5, 8, 18, 1, 5, 56000),
@@ -58,8 +57,7 @@ class VDSMLog(LogFileOutput):
     Example:
         >>> from insights.parsers.vdsm_log import VDSMLog
         >>> from insights.tests import context_wrap
-        >>> shared = {VDSMLog: VDSMLog(context_wrap(VDSM_LOG))}
-        >>> vdsm_log = shared[VDSMLog]
+        >>> vdsm_log = VDSMLog(context_wrap(VDSM_LOG))
         >>> lines_with_error = vdsm_log.get('ERROR')
         >>> list(vdsm_log.parse_lines(lines_with_error))[0]
         {'asctime': datetime(2017, 4, 18, 14, 0, 1, 808000),
