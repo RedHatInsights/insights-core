@@ -33,6 +33,8 @@ class SosSpecs(Specs):
     ethtool_i = glob_file("sos_commands/networking/ethtool_-i_*")
     ethtool_k = glob_file("sos_commands/networking/ethtool_-k_*")
     fdisk_l_sos = glob_file(r"sos_commands/filesys/fdisk_-l_*")
+    foreman_production_log = first_file(["var/log/foreman/production.log",
+                                         r"sos_commands/foreman-debug/var/log/foreman/sos_production.log"])
     foreman_ssl_access_ssl_log = first_file(["var/log/httpd/foreman-ssl_access_ssl.log", r"sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log"])
     getcert_list = simple_file("sos_commands/ipa/ipa-getcert_list")
     hostname = first_of([simple_file("sos_commands/general/hostname_-f"), simple_file("sos_commands/general/hostname")])

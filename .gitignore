@@ -24,6 +24,7 @@ man
 pylint.out
 cover/
 docs/plugin_catalog/*.rst
+docs/components.rst
 build/
 .idea*
 dist/
