@@ -37,18 +37,21 @@ Examples:
 """
 
 from . import parse_delimited_table
-from .. import Parser, parser, LegacyItemAccess
+from .. import Parser, parser
 from insights.specs import Specs
 
 
 @parser(Specs.lsscsi)
-class LsSCSI(LegacyItemAccess, Parser):
+class LsSCSI(Parser):
     """
     Parse the output of ``/usr/bin/lsscsi``.
     """
     def parse_content(self, content):
         LSSCSI_TABLE_HEADER = ["HCTL  Peripheral-Type  Vendor  Model  Revision Primary-Device-Node"]
         self.data = parse_delimited_table(LSSCSI_TABLE_HEADER + content)
+
+    def __getitem__(self, idx):
+        return self.data[idx]
 
     @property
     def device_nodes(self):
