@@ -6,7 +6,8 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file, S
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-this_file = os.path.abspath(__file__)
+# hack to find this source file and not the .pyc version of it
+this_file = os.path.abspath(__file__).rstrip("c")
 with open(this_file) as f:
     file_content = f.read().splitlines()
 
@@ -45,5 +46,5 @@ def test_line_terminators():
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
 
     content = broker[Stuff.smpl_file].content
-    assert all("def test" in l for l in content)
+    assert all("def test" in l for l in content), content
     assert not any(l.endswith("\n") for l in content)

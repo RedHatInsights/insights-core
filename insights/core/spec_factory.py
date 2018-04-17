@@ -155,8 +155,8 @@ class TextFileProvider(FileProvider):
             else:
                 return []
         else:
-            out = subproc.call("cat {0}".format(self.path), shell=False)
-            results = out.splitlines()
+            with open(self.path, "rU") as f:
+                results = [l.rstrip("\n") for l in f]
         if not self.validate_lines(results):
             first = results[0] if results else "<no content>"
             raise ContentException(self.relative_path + ": " + first)
