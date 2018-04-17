@@ -1,5 +1,51 @@
 from insights.parsers import samba
 from insights.tests import context_wrap
+from doctest import testmod
+
+SAMBA_CONFIG_DOCUMENTATION = '''
+# This is the main Samba configuration file. You should read the
+# smb.conf(5) manual page in order to understand the options listed
+#...
+#======================= Global Settings =====================================
+
+[global]
+    workgroup = MYGROUP
+    server string = Samba Server Version %v
+    max log size = 50
+
+[homes]
+    comment = Home Directories
+    browseable = no
+    writable = yes
+;   valid users = %S
+;   valid users = MYDOMAIN\%S
+
+[printers]
+    comment = All Printers
+    path = /var/spool/samba
+    browseable = no
+    guest ok = no
+    writable = no
+    printable = yes
+
+# A publicly accessible directory, but read only, except for people in
+# the "staff" group
+[public]
+   comment = Public Stuff
+   path = /home/samba
+   public = yes
+   writable = yes
+   printable = no
+   write list = +staff
+'''
+
+
+def test_documentation():
+    failed, total = testmod(samba, globs={
+        'conf': samba.SambaConfig(context_wrap(SAMBA_CONFIG_DOCUMENTATION)),
+    })
+    assert failed == 0
+
 
 SAMBA_CONFIG = """
 # This is the main Samba configuration file. You should read the
