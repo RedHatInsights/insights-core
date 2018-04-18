@@ -38,12 +38,12 @@ ignore_me
 
 KDUMP_WITH_NET = """
 net user@raw.server.com
-raw /dev/sda5
+path /var/crash
 """.strip()
 
 KDUMP_MATCH_1 = """
 net user@raw.server.com
-raw /dev/sda5
+path /var/crash
 """.strip()
 
 
@@ -121,12 +121,12 @@ def test_blacklist_repeated():
     assert kd.using_local_disk
 
 
-def test_net_and_raw():
+def test_net():
     context = context_wrap(KDUMP_WITH_NET)
     kd = kdump.KDumpConf(context)
     assert 'net' in kd.data
-    assert 'raw' in kd.data
-    assert kd.using_local_disk
+    assert 'path' in kd.data
+    assert not kd.using_local_disk
     with pytest.raises(TypeError):
         assert kd[3]
 
@@ -163,3 +163,30 @@ def test_not_loaded():
 def test_loaded_bad():
     ctx = context_wrap(KDUMP_CRASH_LOADED_BAD, path='/sys/kernel/kexec_crash_loaded')
     assert not kdump.KexecCrashLoaded(ctx).is_loaded
+
+
+KDUMP_LOCAL_FS_1 = """
+ext3 UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82
+path /usr/local/cores
+core_collector makedumpfile -c --message-level 1 -d 31
+""".strip()
+
+KDUMP_LOCAL_FS_UNSUPPORTED_2 = """
+auto LABEL=/boot
+path /usr/local/cores
+core_collector makedumpfile -c --message-level 1 -d 31
+""".strip()
+
+
+def test_fs_partation():
+    kd = kdump.KDumpConf(context_wrap(KDUMP_LOCAL_FS_1))
+    assert kd.using_local_disk
+    assert kd.fs_and_partation == ('ext3', 'UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82')
+    assert kd.is_using_local_fs is True
+    assert kd['path'] == '/usr/local/cores'
+
+    kd = kdump.KDumpConf(context_wrap(KDUMP_LOCAL_FS_UNSUPPORTED_2))
+    assert kd.using_local_disk
+    assert kd.fs_and_partation is None
+    assert kd.is_using_local_fs is False
+    assert kd['path'] == '/usr/local/cores'

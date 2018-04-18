@@ -63,6 +63,7 @@ class KDumpConf(Parser):
         True
     """
     NET_COMMANDS = set(['nfs', 'net', 'ssh'])
+    FS_TYPES = ['ext2', 'ext3', 'ext4', 'btrfs', 'xfs']
 
     def parse_content(self, content):
         lines = list(content)
@@ -205,19 +206,37 @@ class KDumpConf(Parser):
         """
         Is kdump configured to only use local disk?
 
-        The logic used here is the first of these conditions:
+        More than one dump targets will lead to kudmp service start failure.
+        So let's suppose that only one target is set here.
+
+        The logic used here is:
 
         * If 'raw' is given as an option, then the dump is local.
         * If 'ssh', 'net', 'nfs', or 'nfs4' is given, then the dump is NOT local.
+        * If '<fs type> <partition>' is given, then the dump is local.
         * Otherwise, the dump is local.
         """
-        # The previous version used iteration across self.data.keys(), which
-        # is of course non-repeatable because hash key ordering may change.
-        # So we reverted to logic.
-        return ('raw' in self.data) or (not (
-            'ssh' in self.data or 'net' in self.data or
-            'nfs' in self.data or 'nfs4' in self.data)
-        )
+        # Simplify the logic to check by:
+        return not ('ssh' in self.data or 'net' in self.data or
+                    'nfs' in self.data or 'nfs4' in self.data)
+
+    @property
+    def fs_and_partation(self):
+        """
+        Return (fs_type, partation) as a tuple if set, else None.
+        https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/kernel_administration_guide/kernel_crash_dump_guide#sect-supported-kdump-targets
+        """
+        for t in self.FS_TYPES:
+            if t in self.data:
+                return (t, self.data[t])
+
+    @property
+    def is_using_local_fs(self):
+        """
+        Is kdump configured to use local file system as dump target?
+        Tell by if '<fs type> <partition>' is set.
+        """
+        return bool(self.fs_and_partation)
 
     def __getitem__(self, key):
         """
