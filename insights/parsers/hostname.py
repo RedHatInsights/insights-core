@@ -34,6 +34,7 @@ class Hostname(Parser):
         domain: The domain get from the fqdn.
     """
     def parse_content(self, content):
+        content = filter(None, content)
         raw = None
         if len(content) == 1:
             raw = content[0].strip()
