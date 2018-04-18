@@ -25,18 +25,17 @@ Sample input::
 
 Examples:
 
-    >>> lsscsi = LsSCSI(context_wrap(LSSCSI_1))
     >>> lsscsi[0]
     {'Model': 'Controller', 'Vendor': 'IET', 'HCTL': '[1:0:0:0]', 'Peripheral-Type': 'storage', 'Primary-Device-Node': '-', 'Revision': '0001'}
     >>> lsscsi.device_nodes
-        ['-', '/dev/sdb', '/dev/st0']
-    >>> len(lsscsi)
+    ['-', '/dev/sr0', '/dev/sdb', '/dev/st0']
+    >>> len(lsscsi.data)
     4
     >>> lsscsi[1]['Peripheral-Type']
     'cd/dvd'
 """
 
-from . import parse_delimited_table
+from . import ParseException
 from .. import Parser, parser
 from insights.specs import Specs
 
@@ -47,8 +46,41 @@ class LsSCSI(Parser):
     Parse the output of ``/usr/bin/lsscsi``.
     """
     def parse_content(self, content):
-        LSSCSI_TABLE_HEADER = ["HCTL  Peripheral-Type  Vendor  Model  Revision Primary-Device-Node"]
-        self.data = parse_delimited_table(LSSCSI_TABLE_HEADER + content)
+        if len(content) == 0:
+            # empty content of command output
+            self.data = []
+            return
+
+        LSSCSI_TABLE_HEADER_ITEMS = ['HCTL', 'Peripheral-Type', 'Vendor', 'Model', 'Revision', 'Primary-Device-Node']
+        LEN = len(LSSCSI_TABLE_HEADER_ITEMS)
+
+        col_index = None
+        pre_col_index = None
+        # Try to find the index of a proper six column line.
+        # If col_index can't be found in the above proper way,
+        # set it by squeezing redundant items to 'Model' column as a workaround.
+        for l in content:
+            col_split = l.strip().split()
+            if len(col_split) < LEN:
+                raise ParseException("Invalid format of content, unparsable.")
+            if len(col_split) == LEN:
+                col_index = [l.index(c) for c in col_split]
+                break
+            elif not pre_col_index and len(col_split) > LEN:
+                unfixed_index = [l.index(c) for c in col_split]
+                forth_str = l.split(col_split[2], 1)[-1].strip()
+                pre_col_index = unfixed_index[:3] + [l.index(forth_str)] + unfixed_index[-2:]
+
+        if not col_index and pre_col_index:
+            col_index = pre_col_index
+
+        self.data = []
+        for line in content:
+            col_data = dict((LSSCSI_TABLE_HEADER_ITEMS[i],
+                             line[col_index[i]:col_index[i + 1]].strip())
+                            for i in range(LEN - 1))
+            col_data[LSSCSI_TABLE_HEADER_ITEMS[-1]] = line[col_index[-1]:].strip()
+            self.data.append(col_data)
 
     def __getitem__(self, idx):
         return self.data[idx]
