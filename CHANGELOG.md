@@ -1,5 +1,14 @@
 # Change Log
 
+## [insights-core-3.0.9-309](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.9-309) (2018-04-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.8-295...insights-core-3.0.9-309)
+
+**Fixed bugs:**
+
+- Add pcs\_status to sos\_archive.py [\#1082](https://github.com/RedHatInsights/insights-core/issues/1082)
+- foreman production log needed for sos archives [\#1060](https://github.com/RedHatInsights/insights-core/issues/1060)
+- hostname parser doesn't handle sos\_commands/general/hostname [\#1055](https://github.com/RedHatInsights/insights-core/issues/1055)
+
 ## [insights-core-3.0.8-295](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.8-295) (2018-04-12)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.7-270...insights-core-3.0.8-295)
 
