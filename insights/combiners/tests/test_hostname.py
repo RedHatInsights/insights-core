@@ -112,6 +112,6 @@ def test_get_all_hostname():
 
 
 def test_hostname_raise():
-    hn = Hostname(context_wrap(""))
     with pytest.raises(Exception):
+        hn = Hostname(context_wrap(""))
         hostname(hn, None, None)
