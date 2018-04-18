@@ -47,23 +47,21 @@ class LsSCSI(Parser):
     """
     def parse_content(self, content):
         if len(content) == 0:
-            # empty content of command output
-            self.data = []
-            return
+            raise ParseException("Empty content of command output.")
 
         LSSCSI_TABLE_HEADER_ITEMS = ['HCTL', 'Peripheral-Type', 'Vendor', 'Model', 'Revision', 'Primary-Device-Node']
         LEN = len(LSSCSI_TABLE_HEADER_ITEMS)
 
-        col_index = None
-        pre_col_index = None
+        col_index = []
+        pre_col_index = []
         # Try to find the index of a proper six column line.
         # If col_index can't be found in the above proper way,
         # set it by squeezing redundant items to 'Model' column as a workaround.
         for l in content:
             col_split = l.strip().split()
             if len(col_split) < LEN:
-                raise ParseException("Invalid format of content, unparsable.")
-            if len(col_split) == LEN:
+                break
+            elif len(col_split) == LEN:
                 col_index = [l.index(c) for c in col_split]
                 break
             elif not pre_col_index and len(col_split) > LEN:
@@ -73,6 +71,9 @@ class LsSCSI(Parser):
 
         if not col_index and pre_col_index:
             col_index = pre_col_index
+
+        if len(col_index) != LEN:
+            raise ParseException("Invalid format of content, unparsable.")
 
         self.data = []
         for line in content:

@@ -22,7 +22,8 @@ LSSCSI_3 = """
 
 LSSCSI_4 = """
 [1:0:0:1]    cd/dvd  QEMU     QEMU DVD-ROM     2.5+  /dev/sr0
-[1:0:0:2]    disk    IET      VIRTUAL-DISK     0001  /dev/sdb
+[1:0:0:2]    cd/dvd  QEMU     QEMU DVD-ROM     2.5+  /dev/sr1
+[1:0:0:3]    disk    IET      VIRTUAL-DISK     0001  /dev/sdb
 [3:0:5:0]    tape    HP       C5713A           H910  /dev/st0
 """
 
@@ -33,9 +34,6 @@ LSSCSI_5 = """
 
 
 def test_lsscsi():
-    scsi = lsscsi.LsSCSI(context_wrap(""))
-    assert len(scsi.data) == 0
-
     scsi = lsscsi.LsSCSI(context_wrap(LSSCSI_1))
     assert len(scsi.data) == 4
     assert scsi[0] == {'Model': 'Controller', 'Vendor': 'IET',
@@ -55,11 +53,15 @@ def test_lsscsi():
     assert scsi[0]['Model'] == 'QEMU  DVD-ROM'
 
     scsi = lsscsi.LsSCSI(context_wrap(LSSCSI_4))
-    assert len(scsi.data) == 3
+    assert len(scsi.data) == 4
     assert len(scsi[0]) == 6
 
 
 def test_bad_lsscsi():
+    with pytest.raises(ParseException) as e_info:
+        lsscsi.LsSCSI(context_wrap(""))
+    assert "Empty content of command output" in str(e_info.value)
+
     with pytest.raises(ParseException) as e_info:
         lsscsi.LsSCSI(context_wrap(LSSCSI_5))
     assert "Invalid format of content, unparsable" in str(e_info.value)
