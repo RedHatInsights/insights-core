@@ -1,6 +1,7 @@
 """
-IpaupgradeLog - ``/var/log/ipaupgrade.log`` log File for IPA upgrade
-====================================================================
+IpaupgradeLog - file ``/var/log/ipaupgrade.log``
+================================================
+
 This file records the information of IPA server upgrade process while
 executing command ``ipa-server-upgrade``
 """

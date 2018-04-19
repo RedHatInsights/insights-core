@@ -1,5 +1,5 @@
 """
-fstab - file ``/etc/fstab``
+FSTab - file ``/etc/fstab``
 ===========================
 
 Parse the ``/etc/fstab`` file into a list of lines.  Each line is a dictionary
@@ -52,7 +52,8 @@ Typical content of the ``fstab`` looks like::
 
 Examples:
 
-    >>> fstab = shared[FSTab]
+    >>> type(fstab)
+    <class 'insights.parsers.fstab.FSTab'>
     >>> len(fstab)
     9
     >>> fstab.data[0]['fs_spec'] # Note that data is a list not a dict here

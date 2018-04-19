@@ -77,9 +77,12 @@ def context_wrap(lines,
                  release=DEFAULT_RELEASE,
                  version="-1.-1",
                  machine_id="machine_id",
+                 strip=True,
                  **kwargs):
     if isinstance(lines, basestring):
-        lines = lines.strip().splitlines()
+        if strip:
+            lines = lines.strip()
+        lines = lines.splitlines()
     return Context(content=lines,
                    path=path, hostname=hostname,
                    release=release, version=version.split("."),
