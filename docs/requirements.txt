@@ -5,4 +5,4 @@ requests
 pyOpenSSL
 importlib
 Jinja2==2.9.6
-nbsphinx
+nbsphinx==0.3.1

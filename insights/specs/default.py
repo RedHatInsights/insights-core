@@ -323,7 +323,8 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
-    ls_var_tmp = simple_command("/bin/ls -lanR /var/tmp")
+    ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
+    ls_osroot = simple_command("/bin/ls -lan /")
     ls_var_www = simple_command("/bin/ls -la /dev/null /var/www")  # https://github.com/RedHatInsights/insights-core/issues/827
     lvdisplay = simple_command("/sbin/lvdisplay")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
@@ -365,6 +366,7 @@ class DefaultSpecs(Specs):
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
     neutron_conf = simple_file("/etc/neutron/neutron.conf")
+    neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
     neutron_plugin_ini = simple_file("/etc/neutron/plugin.ini")
     neutron_server_log = simple_file("/var/log/neutron/server.log")

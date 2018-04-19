@@ -24,7 +24,8 @@ class Evaluator(object):
         pass
 
     def post_process(self):
-        self.hostname = self.broker[combiners.hostname.hostname].fqdn
+        if combiners.hostname.hostname in self.broker:
+            self.hostname = self.broker[combiners.hostname.hostname].fqdn
 
         for p, r in self.broker.items():
             if plugins.is_rule(p):
