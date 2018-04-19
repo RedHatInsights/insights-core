@@ -364,6 +364,7 @@ class DefaultSpecs(Specs):
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
     neutron_conf = simple_file("/etc/neutron/neutron.conf")
+    neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
     neutron_plugin_ini = simple_file("/etc/neutron/plugin.ini")
     neutron_server_log = simple_file("/var/log/neutron/server.log")
