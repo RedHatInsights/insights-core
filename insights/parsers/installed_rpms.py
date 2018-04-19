@@ -1,11 +1,12 @@
 """
-installed RPMs - Command ``rpm -qa``
-====================================
-The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.  Each line
-is parsed and stored in an ``InstalledRpm`` object.  The ``rpm -qa`` command may
-output data in different formats and each format can be handled by the parsing
-routines of this class. The basic format of command is the package and is shown
-in the Examples.
+InstalledRpms - Command ``rpm -qa``
+===================================
+
+The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.
+Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm
+-qa`` command may output data in different formats and each format can be
+handled by the parsing routines of this class. The basic format of command is
+the package and is shown in the Examples.
 
 Sample input data::
 
@@ -26,18 +27,8 @@ Sample input data::
 
 
 Examples:
-    >>> from insights.parsers.installed_rpms import InstalledRpms
-    >>> from insights.tests import context_wrap
-    >>> content = '''
-    ... openjpeg-libs-1.3-9.el6_3.x86_64
-    ... openldap-2.4.23-31.el6.x86_64
-    ... openobex-1.4-7.el6.x86_64
-    ... openssh-server-5.3p1-104.el6.x86_64
-    ... openssh-askpass-5.3p1-84.1.el6.x86_64
-    ... openssl-1.0.0-27.el6.x86_64
-    ... '''
-    >>> shared = {InstalledRpms: InstalledRpms(context_wrap(content))}
-    >>> rpms = shared[InstalledRpms]
+    >>> type(rpms)
+    <class 'insights.parsers.installed_rpms.InstalledRpms'>
     >>> 'openjpeg-libs' in rpms
     True
     >>> rpms.corrupt

@@ -1,11 +1,11 @@
 """
-NginxConf - nginx configuration files
-=====================================
-Parse the keyword-and-value of an Nginx configuration
-file.
+NginxConf - file ``/etc/nginx/nginx.conf`` and other Nginx configuration files
+==============================================================================
 
-Generally, each line is split on the first space into
-key and value, leading and trailing space being ignored.
+Parse the keyword-and-value of an Nginx configuration file.
+
+Generally, each line is split on the first space into key and value, leading
+and trailing space being ignored.
 
 Example nginx.conf file::
 

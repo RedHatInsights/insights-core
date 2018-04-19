@@ -2,14 +2,14 @@
 Parsers for detection of Linux/Ebury 1.6 malware indicators
 ===========================================================
 
-Libkeyutils
------------
+Libkeyutils - command ``find -L /lib /lib64 -name 'libkeyutils.so*'``
+---------------------------------------------------------------------
 
 Parses output of command ``find -L /lib /lib64 -name 'libkeyutils.so*'`` to find all potentially
 affected libraries.
 
-LibkeyutilsObjdumps
--------------------
+LibkeyutilsObjdumps - command ``find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;``
+-----------------------------------------------------------------------------------------------------
 
 Parses output of command ``find -L /lib /lib64 -name libkeyutils.so.1 -exec objdump -x "{}" \;`` to
 verify linked libraries.

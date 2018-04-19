@@ -1,12 +1,8 @@
 """
-JBoss Domain Log Files
-======================
+JbossDomainServerLog - file ``$JBOSS_SERVER_LOG_DIR/server.log*``
+=================================================================
 
-Parsers provided by this module:
-
-JbossDomainServerLog - JBoss Domain Server Log File ``$JBOSS_SERVER_LOG_DIR/server.log*``
------------------------------------------------------------------------------------------
-
+Parser for the JBoss Domain Server Log File.
 """
 
 from .. import LogFileOutput, parser
