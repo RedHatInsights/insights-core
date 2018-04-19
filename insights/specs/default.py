@@ -315,6 +315,7 @@ class DefaultSpecs(Specs):
     lspci = simple_command("/sbin/lspci")
     lsof = simple_command("/usr/sbin/lsof")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
+    lsscsi = simple_command("/usr/bin/lsscsi")
     ls_boot = simple_command("/bin/ls -lanR /boot")
     ls_docker_volumes = simple_command("/bin/ls -lanR /var/lib/docker/volumes")
     ls_dev = simple_command("/bin/ls -lanR /dev")
