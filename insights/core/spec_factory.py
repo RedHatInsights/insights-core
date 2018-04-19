@@ -149,7 +149,7 @@ class TextFileProvider(FileProvider):
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
         if filters:
-            cmd = "grep -F '{0}' {1}".format(filters, self.path)
+            cmd = [["/bin/grep", "-F", filters, self.path]]
             rc, out = subproc.call(cmd, shell=False, keep_rc=True)
             if rc == 0 and out != '':
                 results = out.splitlines()
@@ -475,7 +475,7 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
         if split:
             filters = "\n".join(get_filters(inner))
         if filters:
-            command = "{0} | grep -F '{1}'".format(cmd, filters)
+            command = [cmd.split(" ")] + [["grep", "-F", filters]]
             raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
         else:
             raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
@@ -533,7 +533,7 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
                 if split:
                     filters = "\n".join(get_filters(inner))
                 if filters:
-                    command = "{0} | grep -F '{1}'".format(the_cmd, filters)
+                    command = [the_cmd.split(" ")] + [["grep", "-F", filters]]
                     raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
                 else:
                     raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
