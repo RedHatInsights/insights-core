@@ -66,7 +66,7 @@ option_h = value_h # some comment
 option_i = value_i # this must be accessible, even after all these errors
 """.strip()
 
-AUDITD_CONF_PATH = "etc/audit/auditd.conf"
+AUDITD_CONF_PATH = "/etc/audit/auditd.conf"
 
 
 def test_constructor():

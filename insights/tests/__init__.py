@@ -86,7 +86,7 @@ def context_wrap(lines,
     return Context(content=lines,
                    path=path, hostname=hostname,
                    release=release, version=version.split("."),
-                   machine_id=machine_id, **kwargs)
+                   machine_id=machine_id, relative_path=path, **kwargs)
 
 
 input_data_cache = {}
@@ -176,6 +176,7 @@ class InputData(object):
 
         content_provider = ContentProvider()
         content_provider.path = path
+        content_provider.relative_path = path
         content_provider._content = content_iter
 
         if dr.get_delegate(spec).multi_output:

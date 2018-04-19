@@ -7,7 +7,7 @@ options ipv6 disable=1
 install ipv6 /bin/true
 """
 
-MOD_OPTION_INFO_PATH = "etc/modprobe.d/ipv6.conf"
+MOD_OPTION_INFO_PATH = "/etc/modprobe.d/ipv6.conf"
 
 MOD_COMPLETE = """
 #
@@ -40,7 +40,7 @@ alias scsi_hostadapter2 ata_piix failed comment
 balclkist ieee80211
 """
 
-MOD_COMPLETE_PATH = "etc/modprobe.conf"
+MOD_COMPLETE_PATH = "/etc/modprobe.conf"
 
 
 def test_all_modprobe():

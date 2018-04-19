@@ -60,7 +60,7 @@ class Parser(object):
     """
 
     def __init__(self, context):
-        self.file_path = context.path
+        self.file_path = os.path.join("/", context.relative_path) if context.relative_path is not None else None
         """str: Full context path of the input file."""
         self.file_name = os.path.basename(context.path) \
             if context.path is not None else None

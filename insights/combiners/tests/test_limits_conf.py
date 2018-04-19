@@ -21,9 +21,9 @@ DUP_LIMITS_D_CONF = """
 oracle hard stack 1926
 """
 
-LIMITS_CONF_PATH = "etc/security/limits.conf"
-LIMITS_D_PATH = "etc/security/limits.d/95-jack.conf"
-DUP_LIMITS_D_CONF_PATH = "etc/security/limits.d/oracle.conf"
+LIMITS_CONF_PATH = "/etc/security/limits.conf"
+LIMITS_D_PATH = "/etc/security/limits.d/95-jack.conf"
+DUP_LIMITS_D_CONF_PATH = "/etc/security/limits.d/oracle.conf"
 
 
 def test_all_limits_conf():
