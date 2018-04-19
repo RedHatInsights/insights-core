@@ -73,6 +73,7 @@ Examples:
 
 """
 
+import os
 from collections import namedtuple
 
 from .. import Parser, parser, get_active_lines, AttributeDict
@@ -161,3 +162,17 @@ class FSTab(Parser):
                 ``fstab.search(fs_vfstype='xfs', fs_mntops__contains='relatime')``
         """
         return keyword_search(self.data, **kwargs)
+
+    def match_device_of_path(self, path):
+        """
+        Return the device name if longest-matched mount-point of path is found,
+        else None.
+        """
+        longest_matched = max(os.path.commonprefix([point, path])
+                                    for point in self.mounted_on)
+        # longest_matched could be any type of ('', '/', '/xxx', '/xxx/').
+        if not longest_matched:
+            return
+        mp = (longest_matched.rstrip('/') if longest_matched > '/'
+                else longest_matched)
+        return self.mounted_on.get(mp, {}).get('fs_spec', None)
