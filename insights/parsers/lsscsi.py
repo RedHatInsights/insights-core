@@ -12,7 +12,8 @@ Each item is a dictionary with six keys:
 * ``Revision`` - the revision string
 * ``Primary-Device-Node`` - the primary device node name
 
-This dictionary is available in the ``data`` attribute.
+Attributes:
+    data (list of dict): List of the input lines, where each line is a dictionary having the keys identified above.
 
 Parsing refers to http://sg.danny.cz/scsi/lsscsi.html.
 
@@ -88,4 +89,7 @@ class LsSCSI(Parser):
 
     @property
     def device_nodes(self):
+        """
+        list: All lines' Primary-Device-Node values.
+        """
         return [v['Primary-Device-Node'] for v in self.data]
