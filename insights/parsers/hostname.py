@@ -19,6 +19,7 @@ Examples:
 
 """
 
+from . import ParseException
 from .. import Parser, parser
 from insights.specs import Specs
 
@@ -34,9 +35,11 @@ class Hostname(Parser):
         domain: The domain get from the fqdn.
     """
     def parse_content(self, content):
-        raw = None
-        if len(content) == 1:
-            raw = content[0].strip()
+        content = filter(None, content)
+        if len(content) != 1:
+            msg = "hostname data contains multiple non-empty lines"
+            raise ParseException(msg)
+        raw = content[0].strip()
         self.fqdn = raw
         self.hostname = raw.split(".")[0] if raw else None
         self.domain = ".".join(raw.split(".")[1:]) if raw else None
