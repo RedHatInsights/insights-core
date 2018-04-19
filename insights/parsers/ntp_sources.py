@@ -9,6 +9,18 @@ The parsers here provide information about the time sources used by
 There is also a parser for parsing the output of ``ntpq -c 'rv 0 leap'``
 command to give leap second status.
 
+Parsers in this module are:
+
+ChronycSources - command ``/usr/bin/chronyc sources``
+-----------------------------------------------------
+
+NtpqLeap - command ``/usr/sbin/ntpq -c 'rv 0 leap'``
+----------------------------------------------------
+
+NtpqPn - command ``/usr/sbin/ntpq -pn``
+---------------------------------------
+
+
 """
 
 import re
@@ -93,7 +105,8 @@ class NtpqLeap(Parser):
 @parser(Specs.ntpq_pn)
 class NtpqPn(Parser):
     """
-    Get source and flag for each NTP time source from the output of `ntpq -pn`.
+    Get source and flag for each NTP time source from the output of
+    ``/usr/sbin/ntpq -pn``.
 
     Currently, this only captures the source IP address and the 'flag'
     character in the first column at this stage.  Therefore it will need
