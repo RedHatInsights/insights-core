@@ -202,6 +202,7 @@ class Specs(SpecSet):
     lsof = RegistryPoint()
     lspci = RegistryPoint()
     lssap = RegistryPoint()
+    lsscsi = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     ls_var_log = RegistryPoint()
     ls_var_www = RegistryPoint()
