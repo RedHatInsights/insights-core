@@ -31,8 +31,10 @@ from insights.specs import Specs
 class Getsebool(LegacyItemAccess, Parser):
     """
     The output of "getsebool" command is like following:
-    tmpreaper_use_nfs --> off
-    tmpreaper_use_samba --> off
+
+        tmpreaper_use_nfs --> off
+        tmpreaper_use_samba --> off
+
     So we can return the value like {"tmpreaper_use_nfs":"off", "tmpreaper_use_samba":"off"}
     """
 

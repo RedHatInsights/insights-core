@@ -26,10 +26,9 @@ virt_use_xserver --> off
 """.strip()
 
 
-class Testgetsebool():
-    def test_getenforce(self):
-        result = getsebool.Getsebool(context_wrap(GETSEBOOL))
-        assert result["varnishd_connect_any"] == 'off'
-        assert result["virt_use_nfs"] == 'on'
-        assert "virt_use_xserver" in result
-        assert "not_exist_key" not in result
+def test_getsebool():
+    result = getsebool.Getsebool(context_wrap(GETSEBOOL))
+    assert result["varnishd_connect_any"] == 'off'
+    assert result["virt_use_nfs"] == 'on'
+    assert "virt_use_xserver" in result
+    assert "not_exist_key" not in result
