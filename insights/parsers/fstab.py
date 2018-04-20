@@ -73,7 +73,6 @@ Examples:
 
 """
 
-import os
 from collections import namedtuple
 
 from .. import Parser, parser, get_active_lines, AttributeDict
@@ -81,6 +80,7 @@ from ..parsers import optlist_to_dict, parse_delimited_table, keyword_search
 from insights.specs import Specs
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
+END = '-'
 
 type_info = namedtuple('type_info', field_names=['type', 'default'])
 
@@ -133,6 +133,7 @@ class FSTab(Parser):
             self.data.append(AttributeDict(line))
         # assert: all mount points of valid entries are unique by definition
         self.mounted_on = dict((row.fs_file, row) for row in self.data)
+        self._tree = None
 
     def search(self, **kwargs):
         """
@@ -168,11 +169,56 @@ class FSTab(Parser):
         Return the device name if longest-matched mount-point of path is found,
         else None.
         """
-        longest_matched = max(os.path.commonprefix([point, path])
-                                    for point in self.mounted_on)
-        # longest_matched could be any type of ('', '/', '/xxx', '/xxx/').
-        if not longest_matched:
+        if not path or not path.startswith('/'):
             return
-        mp = (longest_matched.rstrip('/') if longest_matched > '/'
-                else longest_matched)
-        return self.mounted_on.get(mp, {}).get('fs_spec', None)
+
+        paths = path.split('/')
+        cur_level = self._mount_points_tree
+        pre_levels = []
+        pre = []
+        for p in paths[1:] + ['', ]:
+            pre_levels.append(cur_level)
+            child_v = cur_level.get(p)
+            if child_v == END:
+                # Case-1: Exact match of mount point and to-search-path
+                break
+            elif not child_v:
+                # Case-2: part of path match, left part are diff
+                # Need to retrieve back to check the longest exist one in mounted_on.
+                for i in range(len(pre_levels) - 1, -1, -1):
+                    level = pre_levels[-i]
+                    if '' in level:
+                        pre = pre[:i]
+                        break
+                break
+            else:
+                pre.append(p)
+            cur_level = child_v
+
+        matched_path = '/' + '/'.join(pre)
+        return self.mounted_on.get(matched_path, {}).get('fs_spec', None)
+
+    @property
+    def _mount_points_tree(self):
+        """
+        Return the constracted tree(build with dict) of the mounting points.
+        """
+        if self._tree:
+            return self._tree
+
+        mps = self.mounted_on.keys()
+        tree = {}
+        for mp in mps:
+            if not mp.startswith('/'):
+                continue
+            if mp == '/':
+                tree[''] = END
+                continue
+
+            curlevel = tree
+            paths = mp.split('/')
+            for p in paths[1:]:
+                curlevel = curlevel.setdefault(p, {})
+            curlevel[''] = END
+        self._tree = tree
+        return tree
