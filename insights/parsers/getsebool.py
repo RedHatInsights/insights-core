@@ -1,6 +1,6 @@
 """
 getsebool - command ``/usr/sbin/getsebool -a``
-=============================================
+===================================================
 
 This parser returns the output of the ``getsebool``
 command.
