@@ -100,6 +100,7 @@ def test_fstab():
     assert sitedata_mount.fs_vfstype == "nfs"
     assert sitedata_mount.fs_spec == "192.168.48.65:/cellSiteData"
 
+
 END = fstab.END
 TREE = {
     '': END,
