@@ -22,7 +22,7 @@ option's value set to True so it can be conveniently searched.
 
 This data, as above, is available in the ``data`` property:
 
-* As wrapped as an FSTabEntry, each column can also be accessed as a property
+* As wrapped as an :class:`FSTabEntry`, each column can also be accessed as a property
   with the same name.
 * The mount options are a dictionary object with keys corresponding to the
   common mount options.
@@ -84,7 +84,7 @@ FS_HEADINGS = "fs_spec                               fs_file                 fs_
 class FSTabEntry(AttributeDict):
     """
     An object representing an entry in ``/etc/fstab``.  Each entry is a
-    :class:`insights.core.AttributeDict` object with below fixed properties:
+    :class:`insights.core.AttributeDict` object with below fixed attributes:
 
     Attributes:
         fs_spec (str): the device to mount
@@ -106,6 +106,7 @@ class FSTabEntry(AttributeDict):
         'fs_passno': AttributeDict.type_info(int, 0),
         'raw': AttributeDict.type_info(str, ''),
     }
+    """fixed_attrs (dict): The fixed attributes for FSTabEntry."""
 
     def __init__(self, data):
         super(FSTabEntry, self).__init__(data, fixed_attrs=FSTabEntry.fixed_attrs)
@@ -125,9 +126,8 @@ class FSTab(Parser):
         >>>         print fs.raw
 
     Attributes:
-        data (list): a list of parsed fstab entries as FSTabEntry objects.
-        mounted_on (dict): a dictionary of FSTabEntry objects keyed on mount
-            point.
+        data (list): a list of parsed fstab entries as :class:`FSTabEntry` objects.
+        mounted_on (dict): a dictionary of :class:`FSTabEntry` objects keyed on mount point.
     """
 
     def __len__(self):

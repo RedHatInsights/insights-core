@@ -51,7 +51,7 @@ class ProcLimits(Parser):
     is converted to lowercase and joined the words with underline '_'.  If not
     sure about whether an attribute is exist or not, check it via the
     '__contains__' method before fetching it.
-    The attribute value is set to a `ProcLimit` which wraps the
+    The attribute value is set to a :class:`Limits` which wraps the
     corresponding ``hard_limit``, ``soft_limit`` and ``units``.
 
     Typical content looks like::
@@ -75,7 +75,6 @@ class ProcLimits(Parser):
         Max realtime timeout      unlimited            unlimited            us
 
     Examples:
-        >>> proc_limits = shared[ProcLimits]
         >>> len(proc_limits)
         16
         >>> proc_limits.max_processes.hard_limit

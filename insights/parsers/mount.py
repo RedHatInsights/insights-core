@@ -10,8 +10,8 @@ implements parsing for the ``mount`` command output which looks like::
     /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
     dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
 
-The information is stored as a list of ``MountEntry`` objects.  Each
-``MountEntry`` object contains attributes for the following information that
+The information is stored as a list of :class:`MountEntry` objects.  Each
+`:class:`MountEntry` object contains attributes for the following information that
 are listed in the same order as in the command output::
 
     - filesystem: (str) Name of filesystem
@@ -31,7 +31,6 @@ MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
 
 Examples:
-    >>> mnt_info = shared[Mount]
     >>> mnt_info
     <insights.parsers.mount.Mount at 0x7fd4a7d3bbd0>
     >>> len(mnt_info)
@@ -95,7 +94,7 @@ class Mount(Parser):
     """Class of information for all output from ``mount`` command.
 
     Attributes:
-        rows (list of MountEntry): List of `MountEntry` objects for
+        rows (list of MountEntry): List of :class:`MountEntry` objects for
             each row of the command output.
 
     Raises:
