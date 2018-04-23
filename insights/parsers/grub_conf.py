@@ -62,12 +62,19 @@ Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 """
 
-from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict
+from collections import namedtuple
+from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess
 from insights.specs import Specs
 
 IOMMU = "intel_iommu=on"
 GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
+
+BootEntry = namedtuple('BootEntry', field_names=['name', 'cmdline'])
+"""
+namedtuple: Type for storing the corresponding boot entry which contains
+            ``name`` and ``cmdline``.
+"""
 
 
 class GrubConfig(LegacyItemAccess, Parser):
@@ -128,13 +135,13 @@ class GrubConfig(LegacyItemAccess, Parser):
             self.data.pop('configs')
 
         for line_full in self.data.get('title', []) + self.data.get('menuentry', []):
+            entry = []
             for name, line in line_full:
                 if name == 'menuentry_name' or name == 'title_name':
-                    entry = {}
-                    entry['name'] = line
+                    entry.append(line)
                 elif entry and name.startswith(('kernel', 'linux')):
-                    entry['cmdline'] = line
-                    self._boot_entries.append(AttributeDict(entry))
+                    entry.append(line)
+                    self._boot_entries.append(BootEntry(*entry))
                     break
 
     @property
@@ -143,7 +150,7 @@ class GrubConfig(LegacyItemAccess, Parser):
         Get all boot entries in GRUB configuration.
 
         Returns:
-            (list): A list of AttributeDict objects for each boot entry in below format:
+            (list): A list of :class:`BootEntry` objects for each boot entry in below format:
                     - 'name': "Red Hat Enterprise Linux Server"
                     - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet"
         """

@@ -11,6 +11,7 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 from insights.core.serde import deserializer, serializer
+from insights.util import deprecated
 
 import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
@@ -1285,9 +1286,10 @@ class FileListing(Parser):
         return self.listings[directory]['raw_list']
 
 
-class AttributeDict(dict):
+class AttributeDict(LegacyItemAccess):
     """
-    Class to convert the access to each item in a dict as attribute.
+    Class to convert the access to the item listed in ``fixed_attrs`` as
+    attribute.
 
     Examples:
         >>> data = {
@@ -1295,26 +1297,44 @@ class AttributeDict(dict):
         ... "fact2":"fact 2"
         ... "fact3":"fact 3"
         ... }
-        >>> d_obj = AttributeDict(data)
-        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> d_obj['fact1']
-        'fact 1'
+        >>> d = AttributeDict(data, fixed_attrs={'fact0': 'fact 0', 'fact1': ''})
+        {'fact0': 'fact 0', fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
+        >>> 'fact0' in d_obj
+        True
+        >>> d_obj['fact0']
+        'fact 0'
         >>> d_obj.get('fact1')
         'fact 1'
+        >>> d_obj.fact0
+        'fact 0'
         >>> d_obj.fact1
         'fact 1'
         >>> 'fact2' in d_obj
         True
-        >>> d_obj.get('fact3', default='no fact')
-        'fact 3'
-        >>> d_obj.get('fact4', default='no fact')
-        'no fact'
-    """
+        >>> hasattr(d_obj, 'fact2')
+        False
 
-    def __init__(self, *args, **kwargs):
-        super(AttributeDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
+    Attributes:
+        data (dict): All required specific properties can be included in data
+    """
+    type_info = namedtuple('type_info', field_names=['type', 'default'])
+    """namedtuple: Type for the ``fixed_attrs``"""
+    def __init__(self, data, fixed_attrs={}):
+        self.data = data
+        for k, v in fixed_attrs.items():
+            if k not in data:
+                data[k] = v
+            setattr(self, k, data.get(k))
+
+    def iteritems(self):
+        """
+        .. warning::
+            Deprecated method, please use :func:`__iter__` instead.
+        """
+        deprecated(AttributeDict.iteritems, "Please use `__iter__`.")
+        for k, v in self.data.items():
+            yield k, v
 
     def __iter__(self):
-        for k, v in self.__dict__.items():
-            yield k, v
+        for k in self.data:
+            yield k

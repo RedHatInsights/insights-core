@@ -10,14 +10,14 @@ implements parsing for the ``mount`` command output which looks like::
     /dev/mapper/HostVG-Config on /etc/shadow type ext4 (rw,noatime,seclabel,stripe=256,data=ordered)
     dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
 
-The information is stored as a list of ``AttributeDict`` objects.  Each
-``AttributeDict`` object contains attributes for the following information that
+The information is stored as a list of ``MountEntry`` objects.  Each
+``MountEntry`` object contains attributes for the following information that
 are listed in the same order as in the command output::
 
     - filesystem: (str) Name of filesystem
     - mount_point: (str) Name of mount point for filesystem
     - mount_type: (str) Name of filesystem type
-    - mount_options: (AttributeDict) Mount options as ``AttributeDict`` object
+    - mount_options: (MountOpts) Mount options as ``MountOpts`` object
     - mount_label: (str) Only present if optional label is present
     - mount_clause: (str) Full string from command output
 
@@ -59,11 +59,35 @@ Examples:
     'dev/sr0'
 """
 
+import re
+from insights.specs import Specs
 from ..parsers import optlist_to_dict, keyword_search
 from .. import Parser, parser, get_active_lines, AttributeDict
 
-import re
-from insights.specs import Specs
+
+class MountEntry(AttributeDict):
+    """
+    An object representing an entry in the output of ``mount`` command.  Each
+    entry is a :class:`insights.core.AttributeDict` object with below
+    properties:
+
+    Attributes:
+        mount_clause (str): Full string from command output
+        filesystem (str): Name of filesystem
+        mount_point (str): Name of mount point for filesystem
+        mount_type (str): Name of filesystem type
+        mount_options (dict): Mount options as a dictionary
+    """
+    fixed_attrs = {
+            'mount_clause': AttributeDict.type_info(str, ''),
+            'filesystem': AttributeDict.type_info(str, ''),
+            'mount_point': AttributeDict.type_info(str, ''),
+            'mount_type': AttributeDict.type_info(str, ''),
+            'mount_options': AttributeDict.type_info(dict, {}),
+    }
+
+    def __init__(self, data):
+        super(MountEntry, self).__init__(data, fixed_attrs=MountEntry.fixed_attrs)
 
 
 @parser(Specs.mount)
@@ -71,7 +95,7 @@ class Mount(Parser):
     """Class of information for all output from ``mount`` command.
 
     Attributes:
-        rows (list of AttributeDict): List of ``AttributeDict`` objects for
+        rows (list of MountEntry): List of `MountEntry` objects for
             each row of the command output.
 
     Raises:
@@ -111,20 +135,20 @@ class Mount(Parser):
                 mount['mount_point'] = match.group('mount_point')
                 mount['mount_type'] = match.group('mount_type')
                 mount_options = match.group('mount_options')
-                mount['mount_options'] = AttributeDict(optlist_to_dict(mount_options))
+                mount['mount_options'] = optlist_to_dict(mount_options)
                 if match.group('mount_label'):
                     mount['mount_label'] = match.group('mount_label')
             else:
                 mount['parse_error'] = 'Unable to parse line'
 
-            entry = AttributeDict(mount)
+            entry = MountEntry(mount)
             self.rows.append(entry)
             if match:
                 self.mounts[mount['mount_point']] = entry
 
     def get_dir(self, path):
         """
-        AttributeDict: returns the mount point that contains the given path.
+        MountEntry: returns the mount point that contains the given path.
 
         This finds the most specific mount path that contains the given path,
         by successively removing the directory or file name on the end of

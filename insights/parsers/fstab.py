@@ -22,10 +22,10 @@ option's value set to True so it can be conveniently searched.
 
 This data, as above, is available in the ``data`` property:
 
-* As wrapped as an AttributeDict, each column can also be accessed as a property
+* As wrapped as an FSTabEntry, each column can also be accessed as a property
   with the same name.
-* The mount options are also an AttributeDict object with properties
-  corresponding to the common mount options.
+* The mount options are a dictionary object with keys corresponding to the
+  common mount options.
 
 The data for each mount point is also available via the ``mounted_on``
 property; the data is the same as that stored in the ``data`` list.
@@ -73,7 +73,6 @@ Examples:
 
 """
 
-from collections import namedtuple
 
 from .. import Parser, parser, get_active_lines, AttributeDict
 from ..parsers import optlist_to_dict, parse_delimited_table, keyword_search
@@ -81,7 +80,35 @@ from insights.specs import Specs
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
 
-type_info = namedtuple('type_info', field_names=['type', 'default'])
+
+class FSTabEntry(AttributeDict):
+    """
+    An object representing an entry in ``/etc/fstab``.  Each entry is a
+    :class:`insights.core.AttributeDict` object with below fixed properties:
+
+    Attributes:
+        fs_spec (str): the device to mount
+        fs_file (str): the mount point
+        fs_vfstype (str): the type of file system
+        raw_fs_mntops (str): the mount options as a string
+        fs_mntops (dict): the mount options as a dictionary
+        fs_freq (int): the dump frequency
+        fs_passno (int): check the filesystem on reboot in this pass number
+        raw (str): the RAW line which is useful to front-end
+    """
+    fixed_attrs = {
+        'fs_spec': AttributeDict.type_info(str, ''),
+        'fs_file': AttributeDict.type_info(str, ''),
+        'fs_vfstype': AttributeDict.type_info(str, ''),
+        'raw_fs_mntops': AttributeDict.type_info(str, ''),
+        'fs_mntops': AttributeDict.type_info(dict, {}),
+        'fs_freq': AttributeDict.type_info(int, 0),
+        'fs_passno': AttributeDict.type_info(int, 0),
+        'raw': AttributeDict.type_info(str, ''),
+    }
+
+    def __init__(self, data):
+        super(FSTabEntry, self).__init__(data, fixed_attrs=FSTabEntry.fixed_attrs)
 
 
 @parser(Specs.fstab)
@@ -98,8 +125,8 @@ class FSTab(Parser):
         >>>         print fs.raw
 
     Attributes:
-        data (list): a list of parsed fstab entries as AttributeDict objects.
-        mounted_on (dict): a dictionary of AttributeDict objects keyed on mount
+        data (list): a list of parsed fstab entries as FSTabEntry objects.
+        mounted_on (dict): a dictionary of FSTabEntry objects keyed on mount
             point.
     """
 
@@ -121,15 +148,15 @@ class FSTab(Parser):
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
-            if line.get('raw_fs_mntops'):
-                line['fs_mntops'] = AttributeDict(optlist_to_dict(line.get('raw_fs_mntops')))
+            if 'raw_fs_mntops' in line:
+                line['fs_mntops'] = optlist_to_dict(line.get('raw_fs_mntops'))
             else:
                 # if there is no mntops, it is defaults.
                 # (/dev/foo /foo somefs defaults   0 0) and (/dev/foo /foo somefs) are same
-                line['fs_mntops'] = AttributeDict(optlist_to_dict('defaults'))
+                line['fs_mntops'] = optlist_to_dict('defaults')
             # add `raw` here for displaying convenience on front-end
             line['raw'] = [l for l in content if l.strip().startswith(line['fs_spec'])][0]
-            self.data.append(AttributeDict(line))
+            self.data.append(FSTabEntry(line))
         # assert: all mount points of valid entries are unique by definition
         self.mounted_on = dict((row.fs_file, row) for row in self.data)
 
