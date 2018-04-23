@@ -31,14 +31,13 @@ class DataCollector(object):
     '''
     Run commands and collect files
     '''
-    def __init__(self, archive_=None, config=None, mountpoint=None, target_name='', target_type='host'):
+    def __init__(self, archive_=None, mountpoint=None, target_name='', target_type='host'):
         self.archive = archive_ if archive_ else archive.InsightsArchive()
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
         self.target_name = target_name
         self.target_type = target_type
-        self.config = config
 
     def _get_meta_path(self, specname, conf):
         # should really never need these
@@ -201,7 +200,7 @@ class DataCollector(object):
                     else:
                         cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
                         for s in cmd_specs:
-                            cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name, self.config)
+                            cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
                             self.archive.add_to_archive(cmd_spec)
         else:
             logger.debug('Spec metadata type "%s" not found in spec.', metadata_spec)
@@ -260,7 +259,7 @@ class DataCollector(object):
                         else:
                             cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
                             for s in cmd_specs:
-                                cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name, self.config)
+                                cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
                                 self.archive.add_to_archive(cmd_spec)
             except LookupError:
                 logger.debug('Target type %s not found in spec %s. Skipping...', self.target_type, specname)

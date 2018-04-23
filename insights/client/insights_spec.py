@@ -30,7 +30,7 @@ class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name, config=None):
+    def __init__(self, spec, exclude, mountpoint, target_name):
         InsightsSpec.__init__(self, spec, exclude)
         # substitute mountpoint for collection
         # have to use .replace instead of .format because there are other
@@ -49,7 +49,6 @@ class InsightsCommand(InsightsSpec):
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
         self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
-        self.config = config
 
     def _mangle_command(self, command, name_max=255):
         """
