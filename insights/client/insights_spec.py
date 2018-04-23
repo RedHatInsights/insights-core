@@ -75,83 +75,27 @@ class InsightsCommand(InsightsSpec):
         # prepend native nix 'timeout' implementation
         timeout_command = 'timeout %s %s' % (timeout_interval, self.command)
 
-        # ensure consistent locale for collected command output
-        cmd_env = {'LC_ALL': 'C'}
-        args = shlex.split(timeout_command)
+        cmd = shlex.split(timeout_command)
 
         # never execute this stuff
-        if set.intersection(set(args), set(self.black_list)):
+        if set.intersection(set(cmd), set(self.black_list)):
             raise RuntimeError("Command Blacklist")
 
-        try:
-            logger.debug('Executing: %s', args)
-            proc0 = Popen(args, shell=False, stdout=PIPE, stderr=STDOUT,
-                          bufsize=-1, env=cmd_env, close_fds=True)
-        except OSError as err:
-            if err.errno == errno.ENOENT:
-                logger.debug('Command %s not found', self.command)
-                return
-            else:
-                raise err
-
-        dirty = False
-
-        cmd = "/bin/sed -rf " + constants.default_sed_file
-        sedcmd = Popen(shlex.split(cmd.encode('utf-8')),
-                       stdin=proc0.stdout,
-                       stdout=PIPE)
-        proc0.stdout.close()
-        proc0 = sedcmd
+        cmd.extend(shlex.split("/bin/sed -rf " + constants.default_sed_file))
 
         if self.exclude is not None:
-            exclude_file = NamedTemporaryFile()
-            exclude_file.write("\n".join(self.exclude))
-            exclude_file.flush()
-            cmd = "/bin/grep -F -v -f %s" % exclude_file.name
-            proc1 = Popen(shlex.split(cmd.encode("utf-8")),
-                          stdin=proc0.stdout,
-                          stdout=PIPE)
-            proc0.stdout.close()
-            stderr = None
-            if self.pattern is None or len(self.pattern) == 0:
-                stdout, stderr = proc1.communicate()
-
-            # always log return codes for debug
-            logger.debug('Proc1 Status: %s', proc1.returncode)
-            logger.debug('Proc1 stderr: %s', stderr)
-            proc0 = proc1
-
-            dirty = True
+            logger.info("Exclude file: %s", ", ".join('"%s"' % e for e in self.exclude))
+            cmd.append("|")
+            cmd.extend(shlex.split("/bin/grep -F -v -f {exclude_file}"))
 
         if self.pattern is not None and len(self.pattern):
-            pattern_file = NamedTemporaryFile()
-            pattern_file.write("\n".join(self.pattern))
-            pattern_file.flush()
-            cmd = "/bin/grep -F -f %s" % pattern_file.name
-            proc2 = Popen(shlex.split(cmd.encode("utf-8")),
-                          stdin=proc0.stdout,
-                          stdout=PIPE)
-            proc0.stdout.close()
-            stdout, stderr = proc2.communicate()
+            logger.info("Pattern file: %s", ", ".join('"%s"' % p for p in self.pattern))
+            cmd.append("|")
+            cmd.extend(shlex.split("/bin/grep -F -f {pattern_file}"))
 
-            # always log return codes for debug
-            logger.debug('Proc2 Status: %s', proc2.returncode)
-            logger.debug('Proc2 stderr: %s', stderr)
-            proc0 = proc2
-
-            dirty = True
-
-        if not dirty:
-            stdout, stderr = proc0.communicate()
-
-        # Required hack while we still pass shell=True to Popen; a Popen
-        # call with shell=False for a non-existant binary will raise OSError.
-        if proc0.returncode == 126 or proc0.returncode == 127:
-            stdout = "Could not find cmd: %s", self.command
-
-        logger.debug("Proc0 Status: %s", proc0.returncode)
-        logger.debug("Proc0 stderr: %s", stderr)
-        return stdout.decode('utf-8', 'ignore')
+        out = " ".join(cmd).strip()
+        logger.info(out)
+        return out
 
 
 class InsightsFile(InsightsSpec):
@@ -184,44 +128,21 @@ class InsightsFile(InsightsSpec):
                      self.real_path, self.archive_path, str(self.pattern))
 
         cmd = []
-        cmd.append("/bin/sed".encode('utf-8'))
-        cmd.append("-rf".encode('utf-8'))
-        cmd.append(constants.default_sed_file.encode('utf-8'))
-        cmd.append(self.real_path.encode('utf8'))
-        sedcmd = Popen(cmd,
-                       stdout=PIPE)
+        cmd.append("/bin/sed")
+        cmd.append("-rf")
+        cmd.append(constants.default_sed_file)
+        cmd.append(self.real_path)
 
         if self.exclude is not None:
-            exclude_file = NamedTemporaryFile()
-            exclude_file.write("\n".join(self.exclude))
-            exclude_file.flush()
+            logger.info("Exclude file: %s", ", ".join('"%s"' % e for e in self.exclude))
 
-            cmd = "/bin/grep -v -F -f %s" % exclude_file.name
-            args = shlex.split(cmd.encode("utf-8"))
-            proc = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
-            sedcmd.stdout.close()
-            stdin = proc.stdout
-            if self.pattern is None:
-                output = proc.communicate()[0]
-            else:
-                sedcmd = proc
+            cmd.append("|")
+            cmd.extend(shlex.split("/bin/grep -v -F -f {exclude_file}"))
 
         if self.pattern is not None:
-            pattern_file = NamedTemporaryFile()
-            pattern_file.write("\n".join(self.pattern))
-            pattern_file.flush()
+            logger.info("Pattern file: %s", ", ".join('"%s"' % p for p in self.pattern))
+            cmd.extend(shlex.split("/bin/grep -F -f {pattern_file}"))
 
-            cmd = "/bin/grep -F -f %s" % pattern_file.name
-            args = shlex.split(cmd.encode("utf-8"))
-            proc1 = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
-            sedcmd.stdout.close()
-
-            if self.exclude is not None:
-                stdin.close()
-
-            output = proc1.communicate()[0]
-
-        if self.pattern is None and self.exclude is None:
-            output = sedcmd.communicate()[0]
-
-        return output.decode('utf-8', 'ignore').strip()
+        out = " ".join(cmd).strip()
+        logger.info(out)
+        return out

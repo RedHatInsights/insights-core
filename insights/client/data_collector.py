@@ -210,7 +210,7 @@ class DataCollector(object):
         '''
         Run specs and collect all the data
         '''
-        logger.debug('Beginning to run collection spec...')
+        logger.info('Beginning to run collection spec...')
         exclude = None
         if rm_conf:
             try:
@@ -226,7 +226,9 @@ class DataCollector(object):
                 logger.debug('Finished running specific spec %s', specific_spec)
             return
 
+        out = {}
         for specname in conf['specs']:
+            logger.info(specname)
             try:
                 # spec group for a s
                 spec_group = conf['specs'][specname]
@@ -242,7 +244,7 @@ class DataCollector(object):
                             file_specs = self._parse_file_spec(spec)
                             for s in file_specs:
                                 file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
-                                self.archive.add_to_archive(file_spec)
+                                out[specname] = self.archive.add_to_archive(file_spec)
                     elif 'glob' in spec:
                         glob_specs = self._parse_glob_spec(spec)
                         for g in glob_specs:
@@ -251,7 +253,7 @@ class DataCollector(object):
                                 continue
                             else:
                                 glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
-                                self.archive.add_to_archive(glob_spec)
+                                out[specname] = self.archive.add_to_archive(glob_spec)
                     elif 'command' in spec:
                         if rm_conf and 'commands' in rm_conf and spec['command'] in rm_conf['commands']:
                             logger.warn("WARNING: Skipping command %s", spec['command'])
@@ -260,11 +262,12 @@ class DataCollector(object):
                             cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
                             for s in cmd_specs:
                                 cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
-                                self.archive.add_to_archive(cmd_spec)
+                                out[specname] = self.archive.add_to_archive(cmd_spec)
             except LookupError:
                 logger.debug('Target type %s not found in spec %s. Skipping...', self.target_type, specname)
                 continue
         logger.debug('Spec collection finished.')
+        print json.dumps(out, indent=4)
 
         # collect metadata
         logger.debug('Collecting metadata...')

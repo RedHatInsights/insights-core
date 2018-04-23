@@ -14,7 +14,6 @@ from insights_spec import InsightsFile, InsightsCommand
 
 logger = logging.getLogger(__name__)
 
-
 class InsightsArchive(object):
 
     """
@@ -168,6 +167,7 @@ class InsightsArchive(object):
         output = spec.get_output()
         if output:
             write_data_to_file(output, archive_path)
+            return output
 
     def add_metadata_to_archive(self, metadata, meta_path):
         '''
