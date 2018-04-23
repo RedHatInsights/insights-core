@@ -7,21 +7,31 @@ directory.
 
 """
 
-from collections import namedtuple
-from .. import Parser, parser
+from .. import Parser, parser, AttributeDict
 from ..parsers import parse_fixed_table, ParseException
 from insights.specs import Specs
 
 HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
 
-ProcLimit = namedtuple(
-        'ProcLimit',
-        field_names=['hard_limit', 'soft_limit', 'units']
-)
-"""
-namedtuple: Type for storing the corresponding limits: ``hard_limit``,
-            ``soft_limit`` and ``units``.
-"""
+
+class Limits(AttributeDict):
+    """
+    An object representing a line in the ``/proc/limits``.  Each entry is a
+    :class:`insights.core.AttributeDict` object with below properties:
+
+    Attributes:
+        hard_limit(str): Hard limit
+        soft_limit(str): Soft limit
+        units(str): Unit of the limit value
+    """
+    fixed_attrs = {
+            'hard_limit': AttributeDict.type_info(str, ''),
+            'soft_limit': AttributeDict.type_info(str, ''),
+            'units': AttributeDict.type_info(str, ''),
+    }
+
+    def __init__(self, data):
+        super(Limits, self).__init__(data, fixed_attrs=Limits.fixed_attrs)
 
 
 class ProcLimits(Parser):
@@ -101,7 +111,9 @@ class ProcLimits(Parser):
         for row in self.data:
             row['Limit'] = row['Limit'].lower().replace(' ', '_')
             setattr(self, row['Limit'],
-                    ProcLimit(row['Hard_Limit'], row['Soft_Limit'], row['Units']))
+                    Limits({'hard_limit': row['Hard_Limit'],
+                            'soft_limit': row['Soft_Limit'],
+                            'units': row['Units']}))
 
 
 @parser(Specs.httpd_limits)

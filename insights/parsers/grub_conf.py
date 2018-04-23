@@ -62,19 +62,31 @@ Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 """
 
-from collections import namedtuple
-from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess
+from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict
 from insights.specs import Specs
 
 IOMMU = "intel_iommu=on"
 GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
 
-BootEntry = namedtuple('BootEntry', field_names=['name', 'cmdline'])
-"""
-namedtuple: Type for storing the corresponding boot entry which contains
-            ``name`` and ``cmdline``.
-"""
+
+class BootEntry(AttributeDict):
+    """
+    An object representing an entry in the output of ``mount`` command.  Each
+    entry is a :class:`insights.core.AttributeDict` object with below
+    properties:
+
+    Attributes:
+        name (str): Name of the boot entry
+        cmdline (str): Cmdline of the boot entry
+    """
+    fixed_attrs = {
+            'name': AttributeDict.type_info(str, ''),
+            'cmdline': AttributeDict.type_info(str, ''),
+    }
+
+    def __init__(self, data):
+        super(BootEntry, self).__init__(data, fixed_attrs=BootEntry.fixed_attrs)
 
 
 class GrubConfig(LegacyItemAccess, Parser):
@@ -138,11 +150,11 @@ class GrubConfig(LegacyItemAccess, Parser):
             entry = []
             for name, line in line_full:
                 if name == 'menuentry_name' or name == 'title_name':
-                    entry.append(line)
+                    entry = {}
+                    entry['name'] = line
                 elif entry and name.startswith(('kernel', 'linux')):
-                    entry.append(line)
-                    self._boot_entries.append(BootEntry(*entry))
-                    break
+                    entry['cmdline'] = line
+                    self._boot_entries.append(BootEntry(entry))
 
     @property
     def boot_entries(self):

@@ -11,7 +11,6 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 from insights.core.serde import deserializer, serializer
-from insights.util import deprecated
 
 import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
@@ -1286,7 +1285,7 @@ class FileListing(Parser):
         return self.listings[directory]['raw_list']
 
 
-class AttributeDict(LegacyItemAccess):
+class AttributeDict(dict):
     """
     Class to convert the access to the item listed in ``fixed_attrs`` as
     attribute.
@@ -1297,7 +1296,7 @@ class AttributeDict(LegacyItemAccess):
         ... "fact2":"fact 2"
         ... "fact3":"fact 3"
         ... }
-        >>> d = AttributeDict(data, fixed_attrs={'fact0': 'fact 0', 'fact1': ''})
+        >>> d_obj = AttributeDict(data, fixed_attrs={'fact0': 'fact 0', 'fact1': ''})
         {'fact0': 'fact 0', fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
         >>> 'fact0' in d_obj
         True
@@ -1319,22 +1318,11 @@ class AttributeDict(LegacyItemAccess):
     """
     type_info = namedtuple('type_info', field_names=['type', 'default'])
     """namedtuple: Type for the ``fixed_attrs``"""
-    def __init__(self, data, fixed_attrs={}):
-        self.data = data
+    def __init__(self, *args, **kwargs):
+        data = args[0]
+        fixed_attrs = kwargs.pop('fixed_attrs', {})
         for k, v in fixed_attrs.items():
             if k not in data:
                 data[k] = v
             setattr(self, k, data.get(k))
-
-    def iteritems(self):
-        """
-        .. warning::
-            Deprecated method, please use :func:`__iter__` instead.
-        """
-        deprecated(AttributeDict.iteritems, "Please use `__iter__`.")
-        for k, v in self.data.items():
-            yield k, v
-
-    def __iter__(self):
-        for k in self.data:
-            yield k
+        super(AttributeDict, self).__init__(*args, **kwargs)
