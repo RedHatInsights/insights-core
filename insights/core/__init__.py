@@ -11,6 +11,7 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 from insights.core.serde import deserializer, serializer
+from insights.util import deprecated
 
 import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
@@ -1326,3 +1327,12 @@ class AttributeDict(dict):
                 data[k] = v
             setattr(self, k, data.get(k))
         super(AttributeDict, self).__init__(*args, **kwargs)
+
+    def __iter__(self):
+        """
+        .. warning::
+            Deprecated method, please use `items()`
+        """
+        deprecated(AttributeDict.__iter__, "Please use 'items()'.")
+        for k, v in self.__dict__.items():
+            yield k, v
