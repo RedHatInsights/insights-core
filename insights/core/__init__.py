@@ -1328,7 +1328,11 @@ class AttributeDict(dict):
     """namedtuple: Type for the values of the ``fixed_attrs`` dictionary"""
     def __init__(self, *args, **kwargs):
         if len(args) > 1:
-            raise TypeError("AttributeDict takes at most 1 argument ({} given)".format(len(args)))
+            raise TypeError(
+                "AttributeDict takes at most 1 argument ({n} given)".format(
+                    n=len(args)
+                )
+            )
 
         fixed_attrs = kwargs.pop('fixed_attrs', {})
         if not fixed_attrs:
