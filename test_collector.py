@@ -14,3 +14,4 @@ uploader_json, rm_conf = config.get_conf(False)
 
 dc = DataCollector()
 dc.run_collection(uploader_json, rm_conf, BRANCH_INFO)
+print dc.done(uploader_json, rm_conf)

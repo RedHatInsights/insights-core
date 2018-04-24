@@ -257,7 +257,6 @@ class DataCollector(object):
                     glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
                     out[specname] = self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
-        print json.dumps(out, indent=4)
 
         # collect metadata
         logger.debug('Collecting metadata...')
