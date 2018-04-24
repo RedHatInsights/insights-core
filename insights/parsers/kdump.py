@@ -115,7 +115,18 @@ class KDumpConf(Parser):
         self.data = items
         self.comments = comments
         self.inline_comments = inline_comments
-        self._check_target_conflict()
+
+        def check_target_conflict():
+            """
+            More than one dump targets will lead to kudmp service start failure.
+            So raise an exception here if more than one target is set here.
+            """
+            used_targets = (self.is_ssh(), self.is_nfs(),
+                            'raw' in self, bool(self.fs_and_partation))
+            if len(filter(None, used_targets)) > 1:
+                raise ParseException("More than one target is configured.")
+
+        check_target_conflict()
 
     def options(self, module):
         """
@@ -230,16 +241,6 @@ class KDumpConf(Parser):
         for t in self.SUPPORTED_FS_TYPES:
             if t in self.data:
                 return (t, self.data[t])
-
-    def _check_target_conflict(self):
-        """
-        More than one dump targets will lead to kudmp service start failure.
-        So raise an exception here if more than one target is set here.
-        """
-        used_targets = (self.is_ssh(), self.is_nfs(),
-                        'raw' in self, bool(self.fs_and_partation))
-        if len(filter(None, used_targets)) > 1:
-            raise ParseException("More than one target is configured.")
 
     def __getitem__(self, key):
         """
