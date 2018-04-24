@@ -18,6 +18,7 @@ SysconfigKdump - file ``/etc/sysconfig/kdump``
 import re
 from urlparse import urlparse
 from .. import Parser, parser
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -63,7 +64,7 @@ class KDumpConf(Parser):
         True
     """
     NET_COMMANDS = set(['nfs', 'net', 'ssh'])
-    FS_TYPES = ['ext2', 'ext3', 'ext4', 'btrfs', 'xfs']
+    SUPPORTED_FS_TYPES = ['ext2', 'ext3', 'ext4', 'btrfs', 'xfs']
 
     def parse_content(self, content):
         lines = list(content)
@@ -114,6 +115,7 @@ class KDumpConf(Parser):
         self.data = items
         self.comments = comments
         self.inline_comments = inline_comments
+        self._check_target_conflict()
 
     def options(self, module):
         """
@@ -206,17 +208,16 @@ class KDumpConf(Parser):
         """
         Is kdump configured to only use local disk?
 
-        More than one dump targets will lead to kudmp service start failure.
-        So let's suppose that only one target is set here.
+        Several target types:
 
-        The logic used here is:
-
-        * If 'raw' is given as an option, then the dump is local.
+        * If 'raw' is given, then the dump is local.
         * If 'ssh', 'net', 'nfs', or 'nfs4' is given, then the dump is NOT local.
         * If '<fs type> <partition>' is given, then the dump is local.
         * Otherwise, the dump is local.
+
+        Since only one target could be set, the logic used here is checking
+        if remote target is used, return True for not.
         """
-        # Simplify the logic to check by:
         return not ('ssh' in self.data or 'net' in self.data or
                     'nfs' in self.data or 'nfs4' in self.data)
 
@@ -226,17 +227,19 @@ class KDumpConf(Parser):
         Return (fs_type, partation) as a tuple if set, else None.
         https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/kernel_administration_guide/kernel_crash_dump_guide#sect-supported-kdump-targets
         """
-        for t in self.FS_TYPES:
+        for t in self.SUPPORTED_FS_TYPES:
             if t in self.data:
                 return (t, self.data[t])
 
-    @property
-    def is_using_local_fs(self):
+    def _check_target_conflict(self):
         """
-        Is kdump configured to use local file system as dump target?
-        Tell by if '<fs type> <partition>' is set.
+        More than one dump targets will lead to kudmp service start failure.
+        So raise an exception here if more than one target is set here.
         """
-        return bool(self.fs_and_partation)
+        used_targets = (self.is_ssh(), self.is_nfs(),
+                        'raw' in self, bool(self.fs_and_partation))
+        if len([v for v in used_targets if v]) > 1:
+            raise ParseException("More than one target is configured.")
 
     def __getitem__(self, key):
         """

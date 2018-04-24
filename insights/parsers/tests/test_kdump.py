@@ -1,5 +1,5 @@
 import pytest
-from insights.parsers import kdump
+from insights.parsers import kdump, ParseException
 from insights.tests import context_wrap
 
 KDUMP_WITH_NORMAL_COMMENTS = """
@@ -182,11 +182,21 @@ def test_fs_partation():
     kd = kdump.KDumpConf(context_wrap(KDUMP_LOCAL_FS_1))
     assert kd.using_local_disk
     assert kd.fs_and_partation == ('ext3', 'UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82')
-    assert kd.is_using_local_fs is True
     assert kd['path'] == '/usr/local/cores'
 
     kd = kdump.KDumpConf(context_wrap(KDUMP_LOCAL_FS_UNSUPPORTED_2))
     assert kd.using_local_disk
     assert kd.fs_and_partation is None
-    assert kd.is_using_local_fs is False
     assert kd['path'] == '/usr/local/cores'
+
+
+KDUMP_TARGET_CONFLICT = """
+net user@raw.server.com
+raw /dev/sda5
+"""
+
+
+def test_target_excptions():
+    with pytest.raises(ParseException) as e_info:
+        kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT))
+        assert "More than one target is configured" in str(e_info.value)
