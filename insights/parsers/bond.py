@@ -86,11 +86,14 @@ class Bond(Parser):
             if the key/value exists. Default is ``[]``.
         xmit_hash_policy(str): It will return Transmit Hash Policy set for bonding mode
             if the key/value exists. Default is ``None``
+        active_slave (str): It will return Currently Active Slave interface set for active-backup
+            mode if the key/values exists. Default is ``None``.
     """
 
     def parse_content(self, content):
         self._bond_mode = None
         self._partner_mac_address = None
+        self._active_slaves = None
         self.xmit_hash_policy = None
         self._slave_interface = []
         self._aggregator_id = []
@@ -113,6 +116,8 @@ class Bond(Parser):
                 # No need of values in bracket:
                 # Integer notification (0), (1), (2) of layer2, layer3+4, layer2+3 resp
                 self.xmit_hash_policy = line.split(":", 1)[1].split()[0]
+            elif line.strip().startswith("Currently Active Slave"):
+                self._active_slave = line.split(":", 1)[1].split()[0]
 
     @property
     def bond_mode(self):
@@ -145,3 +150,11 @@ class Bond(Parser):
         bond file, ``[]`` is returned.
         """
         return self._aggregator_id
+
+    @property
+    def active_slave(self):
+        """Returns the active slave of the "Currently Active Slave" in the bond
+        file if key/value exists. If the key is not in the bond file, ``None``
+        is returned.
+        """
+        return self._active_slave
