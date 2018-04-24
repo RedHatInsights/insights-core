@@ -103,6 +103,35 @@ Bonding Mode: reverse proximity hash combination mode
 """.strip()
 
 
+BONDINFO_MODE_5 = """
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: fault-tolerance (active-backup)
+Primary Slave: None
+Currently Active Slave: enp17s0f0
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+
+Slave Interface: enp17s0f0
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 00:1f:f3:af:d3:f0
+Slave queue ID: 0
+
+Slave Interface: enp17s0f1
+MII Status: up
+Speed: 10000 Mbps
+Duplex: full
+Link Failure Count: 0
+Permanent HW addr: 00:1f:f3:af:d3:f1
+Slave queue ID: 0
+""".strip()
+
+
 def test_bond_class():
 
     bond_obj = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH))
@@ -129,3 +158,7 @@ def test_bond_class():
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_2, CONTEXT_PATH))
     assert bond_obj.xmit_hash_policy == "layer2+3"
+
+    bond_obj = Bond(context_wrap(BONDINFO_MODE_5, CONTEXT_PATH))
+    bond_obj.bond_mode == 1
+    bond_obj.active_slave == "enp17s0f0"
