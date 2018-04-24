@@ -111,6 +111,8 @@ UUID=qX0bSg-p8CN-cWER-i8qY-cETN-jiZL-LDt93V /kdump                   ext4    def
 /dev/mapper/VolGroup-lv_swap swap                    swap    defaults        0 0
 proc                    /proc                   proc    defaults        0 0
 /dev/mapper/vgext-lv--test      /lv_test        ext3    defaults        0       0
+# TODO: please active this following line after issues-1126 is fixed.
+# /dev/sdb5                    /l\040ok/at                ext4    defaults        1 1
 """.strip()
 
 
@@ -127,6 +129,10 @@ def test_match_device_of_path():
                        'error': None,
                        '/abc': '/dev/sda2',
                        '/abc/xxx': '/dev/sda2',
+                       '/tmp/vm\ tools': '/dev/sda2',
+                       # TODO: please active these 2 test lines after issues-1126 is fixed.
+                       # '/l\ ok/at/you': '/dev/sdb5',
+                       # '/l\ ok': '/dev/sda2',
                        }
     for path, dev in path_device_map.items():
         assert dev == fstab_info.match_device_of_path(path)

@@ -167,6 +167,7 @@ class FSTab(Parser):
         Return the device name if longest-matched mount-point of path is found,
         else None.
         """
+        path = path.strip() if path else path
         if not path or not path.startswith('/'):
             return
 
