@@ -101,34 +101,6 @@ def test_fstab():
     assert sitedata_mount.fs_spec == "192.168.48.65:/cellSiteData"
 
 
-END = fstab.END
-TREE = {
-    '': END,
-    'var': {
-        '': END,
-        'crash': {
-            '': END,
-        },
-    },
-    'abc': {
-        'def': {
-            '': END,
-        },
-    },
-    'usr': {
-        '': END,
-    },
-    'lv_test': {
-        '': END,
-    },
-    'proc': {
-        '': END,
-    },
-    'kdump': {
-        '': END,
-    },
-}
-
 FSTAB_DEVICE_PATH_TEST_INFO = """
 /dev/sda2                    /                          ext4    defaults        1 1
 /dev/sdb2                    /var                       ext4    defaults        1 1
@@ -144,7 +116,6 @@ proc                    /proc                   proc    defaults        0 0
 
 def test_match_device_of_path():
     fstab_info = fstab.FSTab(context_wrap(FSTAB_DEVICE_PATH_TEST_INFO))
-    assert fstab_info._mount_points_tree == TREE
     path_device_map = {'/var/crash': '/dev/sdb3',
                        '/var/some/path': '/dev/sdb2',
                        '/var/crash_xxx': '/dev/sdb2',
