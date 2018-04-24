@@ -238,7 +238,7 @@ class KDumpConf(Parser):
         """
         used_targets = (self.is_ssh(), self.is_nfs(),
                         'raw' in self, bool(self.fs_and_partation))
-        if len([v for v in used_targets if v]) > 1:
+        if len(filter(None, used_targets)) > 1:
             raise ParseException("More than one target is configured.")
 
     def __getitem__(self, key):
