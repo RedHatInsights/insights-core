@@ -73,8 +73,8 @@ GRUB_INITRDS = 'grub_initrds'
 class BootEntry(AttributeDict):
     """
     An object representing an entry in the output of ``mount`` command.  Each
-    entry is a :class:`insights.core.AttributeDict` object with below
-    properties:
+    entry is a :class:`insights.core.AttributeDict` object with below fixed
+    attributes:
 
     Attributes:
         name (str): Name of the boot entry

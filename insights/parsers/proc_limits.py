@@ -17,7 +17,7 @@ HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
 class Limits(AttributeDict):
     """
     An object representing a line in the ``/proc/limits``.  Each entry is a
-    :class:`insights.core.AttributeDict` object with below properties:
+    :class:`insights.core.AttributeDict` object with below fixed attributes:
 
     Attributes:
         hard_limit(str): Hard limit

@@ -106,7 +106,6 @@ class FSTabEntry(AttributeDict):
         'fs_passno': AttributeDict.type_info(int, 0),
         'raw': AttributeDict.type_info(str, ''),
     }
-    """fixed_attrs (dict): The fixed attributes for FSTabEntry."""
 
     def __init__(self, data):
         super(FSTabEntry, self).__init__(data, fixed_attrs=FSTabEntry.fixed_attrs)

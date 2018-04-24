@@ -67,8 +67,8 @@ from .. import Parser, parser, get_active_lines, AttributeDict
 class MountEntry(AttributeDict):
     """
     An object representing an entry in the output of ``mount`` command.  Each
-    entry is a :class:`insights.core.AttributeDict` object with below
-    properties:
+    entry is a :class:`insights.core.AttributeDict` object with below fixed
+    attributes:
 
     Attributes:
         mount_clause (str): Full string from command output

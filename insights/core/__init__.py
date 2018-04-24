@@ -1288,8 +1288,8 @@ class FileListing(Parser):
 
 class AttributeDict(dict):
     """
-    Class to convert the access to the item listed in ``fixed_attrs`` as
-    attribute.
+    Class to convert the access to the keys in ``fixed_attrs`` dictionary as
+    attributes.
 
     Examples:
         >>> data = {
@@ -1314,18 +1314,32 @@ class AttributeDict(dict):
         >>> hasattr(d_obj, 'fact2')
         False
 
-    Attributes:
-        data (dict): All required specific properties can be included in data
+    Arguments:
+        (dict): The base dictionary will work on
+        fixed_attrs (dict): The fixed keys should be specified in this directory
+            with the values in type :class:`type_info`
+
+    Raises:
+        TypeError: When more than one directories are passed
+        ValueError: When no or an empty 'fixed_attrs' is passed
+
     """
     type_info = namedtuple('type_info', field_names=['type', 'default'])
-    """namedtuple: Type for the ``fixed_attrs``"""
+    """namedtuple: Type for the values of the ``fixed_attrs`` dictionary"""
     def __init__(self, *args, **kwargs):
-        data = args[0]
+        if len(args) > 1:
+            raise TypeError("AttributeDict takes at most 1 argument ({} given)".format(len(args)))
+
         fixed_attrs = kwargs.pop('fixed_attrs', {})
+        if not fixed_attrs:
+            raise ValueError("The 'fixed_attrs' must be specified")
+
+        data = args[0] if args else {}
         for k, v in fixed_attrs.items():
             if k not in data:
                 data[k] = v
             setattr(self, k, data.get(k))
+
         super(AttributeDict, self).__init__(*args, **kwargs)
 
     def __iter__(self):
