@@ -50,7 +50,7 @@ Examples:
     >>> bond_info.xmit_hash_policy
     layer2
     >>> bond_info.active_slave
-    enp17s0f0 
+    enp17s0f0
 """
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException
