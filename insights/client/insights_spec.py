@@ -1,5 +1,4 @@
 import os
-import re
 import errno
 import shlex
 import logging
