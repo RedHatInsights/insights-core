@@ -237,10 +237,20 @@ class KDumpConf(Parser):
         """
         Return (fs_type, partation) as a tuple if set, else None.
         https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/kernel_administration_guide/kernel_crash_dump_guide#sect-supported-kdump-targets
+        If more than one target is configured, kudmp service fails to start.
         """
-        for t in self.SUPPORTED_FS_TYPES:
-            if t in self.data:
-                return (t, self.data[t])
+        targets = []
+        for fs in self.SUPPORTED_FS_TYPES:
+            if fs in self.data:
+                partation = self.data[fs]
+                if isinstance(partation, list):
+                    raise ParseException("More than one <partition> targets \
+                            are configured for %s type fs." % fs)
+                targets.append((fs, partation))
+        if len(targets) > 1:
+            raise ParseException("More than one <fs type> <partition> type of \
+                    targets are configured.")
+        return targets[0] if targets else None
 
     def __getitem__(self, key):
         """

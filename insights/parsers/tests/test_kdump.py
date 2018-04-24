@@ -190,13 +190,32 @@ def test_fs_partation():
     assert kd['path'] == '/usr/local/cores'
 
 
-KDUMP_TARGET_CONFLICT = """
+KDUMP_TARGET_CONFLICT_1 = """
 net user@raw.server.com
 raw /dev/sda5
 """
 
+KDUMP_TARGET_CONFLICT_2 = """
+ext4 /dev/sdb1
+ext3 UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82
+"""
 
-def test_target_excptions():
+KDUMP_TARGET_CONFLICT_3 = """
+ext4 /dev/sdb1
+ext4 UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82
+"""
+
+
+def test_conflict_targets_excptions():
     with pytest.raises(ParseException) as e_info:
-        kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT))
+        kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT_1))
         assert "More than one target is configured" in str(e_info.value)
+
+    with pytest.raises(ParseException) as e_info:
+        kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT_2))
+        assert "More than one <fs type> <partition> type" in str(e_info.value)
+
+    with pytest.raises(ParseException) as e_info:
+        kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT_3))
+        assert "More than one <partition> targets" in str(e_info.value)
+        assert "ext4" in str(e_info.value)
