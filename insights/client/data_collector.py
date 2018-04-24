@@ -210,6 +210,8 @@ class DataCollector(object):
         '''
         Run specs and collect all the data
         '''
+        if rm_conf is None:
+            rm_conf = {}
         logger.info('Beginning to run collection spec...')
         exclude = None
         if rm_conf:
@@ -227,45 +229,33 @@ class DataCollector(object):
             return
 
         out = {}
-        for specname in conf['specs']:
-            logger.info(specname)
-            try:
-                # spec group for a s
-                spec_group = conf['specs'][specname]
-                # list of specs for a target
-                # there might be more than one spec (for compatability)
-                spec_list = spec_group[self.target_type]
-                for spec in spec_list:
-                    if 'file' in spec:
-                        if rm_conf and 'files' in rm_conf and spec['file'] in rm_conf['files']:
-                            logger.warn("WARNING: Skipping file %s", spec['file'])
-                            continue
-                        else:
-                            file_specs = self._parse_file_spec(spec)
-                            for s in file_specs:
-                                file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
-                                out[specname] = self.archive.add_to_archive(file_spec)
-                    elif 'glob' in spec:
-                        glob_specs = self._parse_glob_spec(spec)
-                        for g in glob_specs:
-                            if rm_conf and 'files' in rm_conf and g['file'] in rm_conf['files']:
-                                logger.warn("WARNING: Skipping file %s", g)
-                                continue
-                            else:
-                                glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
-                                out[specname] = self.archive.add_to_archive(glob_spec)
-                    elif 'command' in spec:
-                        if rm_conf and 'commands' in rm_conf and spec['command'] in rm_conf['commands']:
-                            logger.warn("WARNING: Skipping command %s", spec['command'])
-                            continue
-                        else:
-                            cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
-                            for s in cmd_specs:
-                                cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
-                                out[specname] = self.archive.add_to_archive(cmd_spec)
-            except LookupError:
-                logger.debug('Target type %s not found in spec %s. Skipping...', self.target_type, specname)
-                continue
+        for c in conf['commands']:
+            specname = c['symbolic_name']
+            if c['command'] in rm_conf.get('commands', []):
+                logger.warn("WARNING: Skipping command %s", c['command'])
+            else:
+                cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
+                for s in cmd_specs:
+                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
+                    out[specname] = self.archive.add_to_archive(cmd_spec)
+        for f in conf['files']:
+            specname = f['symbolic_name']
+            if f['file'] in rm_conf.get('files', []):
+                logger.warn("WARNING: Skipping file %s", f['file'])
+            else:
+                file_specs = self._parse_file_spec(f)
+                for s in file_specs:
+                    file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
+                    out[specname] = self.archive.add_to_archive(file_spec)
+        for g in conf['globs']:
+            specname = g['symbolic_name']
+            glob_specs = self._parse_glob_spec(g)
+            for g in glob_specs:
+                if g['file'] in rm_conf.get('files', []):
+                    logger.warn("WARNING: Skipping file %s", g)
+                else:
+                    glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
+                    out[specname] = self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
         print json.dumps(out, indent=4)
 

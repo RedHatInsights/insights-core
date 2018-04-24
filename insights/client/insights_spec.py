@@ -6,6 +6,7 @@ import logging
 import six
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+from insights.util import mangle
 
 from constants import InsightsConstants as constants
 from config import CONFIG as config
@@ -23,7 +24,10 @@ class InsightsSpec(object):
         # pattern for spec collection
         self.pattern = spec['pattern'] if spec['pattern'] else None
         # absolute destination inside the archive for this spec
-        self.archive_path = spec['archive_file_name']
+        if 'command' in spec:
+            self.archive_path = mangle.mangle_command(spec['command'])
+        else:  # 'file'
+            self.archive_path = spec['file']
 
 
 class InsightsCommand(InsightsSpec):
