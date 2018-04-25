@@ -1,11 +1,11 @@
 import os
-import re
 import errno
 import shlex
 import logging
 import six
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+from insights.util import mangle
 
 from constants import InsightsConstants as constants
 from config import CONFIG as config
@@ -22,15 +22,13 @@ class InsightsSpec(object):
         self.exclude = exclude
         # pattern for spec collection
         self.pattern = spec['pattern'] if spec['pattern'] else None
-        # absolute destination inside the archive for this spec
-        self.archive_path = spec['archive_file_name']
 
 
 class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name, config=None):
+    def __init__(self, spec, exclude, mountpoint, target_name):
         InsightsSpec.__init__(self, spec, exclude)
         # substitute mountpoint for collection
         # have to use .replace instead of .format because there are other
@@ -39,7 +37,7 @@ class InsightsCommand(InsightsSpec):
             '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
             '{DOCKER_IMAGE_NAME}', target_name).replace(
             '{DOCKER_CONTAINER_NAME}', target_name)
-        self.mangled_command = self._mangle_command(self.command)
+        self.mangled_command = mangle.mangle_command(self.command)
         # have to re-mangle archive path in case there's a pre-command arg
         # Only do this if there is a pre-command in the spec, this preserves
         # the original archive_file_name setting from the spec file
@@ -49,17 +47,6 @@ class InsightsCommand(InsightsSpec):
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
         self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
-        self.config = config
-
-    def _mangle_command(self, command, name_max=255):
-        """
-        Mangle the command name, lifted from sos
-        """
-        mangledname = re.sub(r"^/(usr/|)(bin|sbin)/", "", command)
-        mangledname = re.sub(r"[^\w\-\.\/]+", "_", mangledname)
-        mangledname = re.sub(r"/", ".", mangledname).strip(" ._-")
-        mangledname = mangledname[0:name_max]
-        return mangledname
 
     def get_output(self):
         '''
@@ -171,7 +158,6 @@ class InsightsFile(InsightsSpec):
             '{CONTAINER_MOUNT_POINT}', '').replace(
             '{DOCKER_IMAGE_NAME}', target_name).replace(
             '{DOCKER_CONTAINER_NAME}', target_name)
-        self.archive_path = self.archive_path.replace('{EXPANDED_FILE_NAME}', self.relative_path)
 
     def get_output(self):
         '''
@@ -180,9 +166,6 @@ class InsightsFile(InsightsSpec):
         if not os.path.isfile(self.real_path):
             logger.debug('File %s does not exist', self.real_path)
             return
-
-        logger.debug('Copying %s to %s with filters %s',
-                     self.real_path, self.archive_path, str(self.pattern))
 
         cmd = []
         cmd.append("/bin/sed".encode('utf-8'))

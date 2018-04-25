@@ -429,7 +429,6 @@ def collect(rc=0):
             logger.debug("Inferring target_type '%s' for SPEC collection", target_type)
             logger.debug("Inferred from '%s'", t['type'])
             dc = DataCollector(archive,
-                               config,
                                mountpoint=mp,
                                target_name=t['name'],
                                target_type=target_type)

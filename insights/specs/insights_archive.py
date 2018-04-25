@@ -63,6 +63,7 @@ class InsightsArchiveSpecs(Specs):
     heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
     # simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig")])
     installed_rpms = first_file([
+        "insights_commands/rpm_-qa_--root_._--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig",
         "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig",
         "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig"
     ])
