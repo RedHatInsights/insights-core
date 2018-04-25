@@ -14,7 +14,6 @@ from subprocess import Popen, PIPE, STDOUT
 from insights.contrib.ConfigParser import RawConfigParser
 
 from constants import InsightsConstants as constants
-from config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 

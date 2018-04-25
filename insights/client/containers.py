@@ -127,16 +127,10 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
                 logger.debug('%s equals %s' % (d, config['analyze_image_id']))
                 targets.append({'type': 'docker_image', 'name': d})
                 return targets  # return the first one that matches
-        for d in _docker_all_container_ids():
-            logger.debug('Checking if %s equals %s.' % (d, config['analyze_image_id']))
-            if config['analyze_image_id'] == d or d.startswith(config['analyze_image_id']):
-                logger.debug('%s equals %s' % (d, config['analyze_image_id']))
-                targets.append({'type': 'docker_container', 'name': d})
-                return targets  # return the first one that matches
         logger.debug('Done collecting targets')
         logger.debug(targets)
         if len(targets) == 0:
-            logger.error("There was an error collecting targets. No image or container was found matching this ID.")
+            logger.error("There was an error collecting targets. No image was found matching this ID.")
             sys.exit(constants.sig_kill_bad)
         return targets
 
@@ -309,6 +303,11 @@ else:
         the_verbiage = "Docker"
         the_exception = HaveDockerException
 
+    def get_targets():
+        logger.error('Could not connect to ' + the_verbiage + ' to collect from images and containers')
+        logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
+                     (the_exception if the_exception else ''))
+        return []
 
     def open_image(image_id):
         logger.error('Could not connect to ' + the_verbiage + ' to examine image %s' % image_id)

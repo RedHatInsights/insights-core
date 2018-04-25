@@ -265,7 +265,7 @@ def collect(rc=0):
         logger.debug("Client analyzing a compress filesystem.")
         target = {'type': 'compressed_file',
                   'name': os.path.splitext(
-                   os.path.basename(config['analyze_file']))[0],
+                        os.path.basename(config['analyze_file']))[0],
                   'location': config['analyze_file']}
 
     # mountpoints
@@ -273,7 +273,7 @@ def collect(rc=0):
         logger.debug("Client analyzing a filesystem already mounted.")
         target = {'type': 'mountpoint',
                   'name': os.path.splitext(
-                   os.path.basename(config['analyze_mountpoint']))[0],
+                        os.path.basename(config['analyze_mountpoint']))[0],
                   'location': config['analyze_mountpoint']}
 
     # container
@@ -287,7 +287,7 @@ def collect(rc=0):
     # the host
     else:
         logger.debug("Host selected as scanning target.")
-        targets = constants.default_target
+        target = constants.default_target
 
     branch_info = get_branch_info()
     pc = InsightsConfig()
@@ -334,18 +334,6 @@ def collect(rc=0):
                 logger.error('Could not open %s for analysis', logging_name)
                 return False
 
-        # analyze docker containers
-        elif target['type'] == 'docker_container':
-            from containers import open_container
-            container_connection = open_container(target['name'])
-            logging_name = 'Docker container ' + target['name']
-
-            if container_connection:
-                mp = container_connection.get_fs()
-            else:
-                logger.error('Could not open %s for analysis', logging_name)
-                return False
-
         # analyze compressed files
         elif target['type'] == 'compressed_file':
             logging_name = 'Compressed file ' + target['name'] + ' at location ' + target['location']
@@ -368,7 +356,6 @@ def collect(rc=0):
         # analyze the host
         elif target['type'] == 'host':
             logging_name = determine_hostname()
-            machine_id = generate_machine_id()
 
         # nothing found to analyze
         else:
