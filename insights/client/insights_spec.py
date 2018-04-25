@@ -138,8 +138,8 @@ class InsightsFile(InsightsSpec):
     def __init__(self, spec, exclude, mountpoint):
         InsightsSpec.__init__(self, spec, exclude)
         # substitute mountpoint for collection
-        self.real_path = spec['file']
-        self.archive_path = os.path.relpath(self.real_path, mountpoint)
+        self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
+        self.archive_path = spec['file']
 
     def get_output(self):
         '''

@@ -69,12 +69,10 @@ class DataCollector(object):
         Separate wildcard specs into more specs
         '''
         # separate wildcard specs into more specs
-        spec['file'] = os.path.join(self.mountpoint, spec['file'])
         if '*' in spec['file']:
             expanded_paths = _expand_paths(spec['file'])
             if not expanded_paths:
                 return []
-
             expanded_specs = []
             for p in expanded_paths:
                 _spec = copy.copy(spec)
