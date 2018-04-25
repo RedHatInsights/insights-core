@@ -99,3 +99,40 @@ def test_fstab():
     assert sitedata_mount.fs_mntops['defaults'] is True
     assert sitedata_mount.fs_vfstype == "nfs"
     assert sitedata_mount.fs_spec == "192.168.48.65:/cellSiteData"
+
+
+FSTAB_DEVICE_PATH_TEST_INFO = """
+/dev/sda2                    /                          ext4    defaults        1 1
+/dev/sdb2                    /var                       ext4    defaults        1 1
+/dev/sdb3                    /var/crash                 ext4    defaults        1 1
+/dev/sdb4                    /abc/def                   ext4    defaults        1 1
+/dev/mapper/VolGroup-lv_usr  /usr                       ext4    defaults        1 1
+UUID=qX0bSg-p8CN-cWER-i8qY-cETN-jiZL-LDt93V /kdump                   ext4    defaults        1 2
+/dev/mapper/VolGroup-lv_swap swap                    swap    defaults        0 0
+proc                    /proc                   proc    defaults        0 0
+/dev/mapper/vgext-lv--test      /lv_test        ext3    defaults        0       0
+# TODO: please active this following line after issues-1126 is fixed.
+# /dev/sdb5                    /l\040ok/at                ext4    defaults        1 1
+""".strip()
+
+
+def test_fsspec_of_path():
+    fstab_info = fstab.FSTab(context_wrap(FSTAB_DEVICE_PATH_TEST_INFO))
+    path_device_map = {'/var/crash': '/dev/sdb3',
+                       '/var/some/path': '/dev/sdb2',
+                       '/var/crash_xxx': '/dev/sdb2',
+                       '/kdump/crash': 'UUID=qX0bSg-p8CN-cWER-i8qY-cETN-jiZL-LDt93V',
+                       '/some/path': '/dev/sda2',
+                       '/lv_test': '/dev/mapper/vgext-lv--test',
+                       '/lv': '/dev/sda2',
+                       '/': '/dev/sda2',
+                       'error': None,
+                       '/abc': '/dev/sda2',
+                       '/abc/xxx': '/dev/sda2',
+                       '/tmp/vm\ tools': '/dev/sda2',
+                       # TODO: please active these 2 test lines after issues-1126 is fixed.
+                       # '/l\ ok/at/you': '/dev/sdb5',
+                       # '/l\ ok': '/dev/sda2',
+                       }
+    for path, dev in path_device_map.items():
+        assert dev == fstab_info.fsspec_of_path(path)
