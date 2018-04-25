@@ -212,7 +212,7 @@ class DataCollector(object):
         '''
         if rm_conf is None:
             rm_conf = {}
-        logger.info('Beginning to run collection spec...')
+        logger.debug('Beginning to run collection spec...')
         exclude = None
         if rm_conf:
             try:
@@ -228,34 +228,30 @@ class DataCollector(object):
                 logger.debug('Finished running specific spec %s', specific_spec)
             return
 
-        out = {}
         for c in conf['commands']:
-            specname = c['symbolic_name']
             if c['command'] in rm_conf.get('commands', []):
                 logger.warn("WARNING: Skipping command %s", c['command'])
             else:
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
                     cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
-                    out[specname] = self.archive.add_to_archive(cmd_spec)
+                    self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
-            specname = f['symbolic_name']
             if f['file'] in rm_conf.get('files', []):
                 logger.warn("WARNING: Skipping file %s", f['file'])
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
                     file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
-                    out[specname] = self.archive.add_to_archive(file_spec)
+                    self.archive.add_to_archive(file_spec)
         for g in conf['globs']:
-            specname = g['symbolic_name']
             glob_specs = self._parse_glob_spec(g)
             for g in glob_specs:
                 if g['file'] in rm_conf.get('files', []):
                     logger.warn("WARNING: Skipping file %s", g)
                 else:
                     glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
-                    out[specname] = self.archive.add_to_archive(glob_spec)
+                    self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
 
         # collect metadata
