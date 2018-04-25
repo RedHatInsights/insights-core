@@ -177,17 +177,27 @@ path /usr/local/cores
 core_collector makedumpfile -c --message-level 1 -d 31
 """.strip()
 
+KDUMP_REMOTE_TARGET_3 = """
+net user@raw.server.com
+path /usr/local/cores
+core_collector makedumpfile -c --message-level 1 -d 31
+""".strip()
 
-def test_fs_partation():
+
+def test_target():
     kd = kdump.KDumpConf(context_wrap(KDUMP_LOCAL_FS_1))
     assert kd.using_local_disk
-    assert kd.fs_and_partation == ('ext3', 'UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82')
+    assert kd.target == ('ext3', 'UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82')
     assert kd['path'] == '/usr/local/cores'
 
     kd = kdump.KDumpConf(context_wrap(KDUMP_LOCAL_FS_UNSUPPORTED_2))
     assert kd.using_local_disk
-    assert kd.fs_and_partation is None
+    assert kd.target is None
     assert kd['path'] == '/usr/local/cores'
+
+    kd = kdump.KDumpConf(context_wrap(KDUMP_REMOTE_TARGET_3))
+    assert not kd.using_local_disk
+    assert kd.target == ('net', 'user@raw.server.com')
 
 
 KDUMP_TARGET_CONFLICT_1 = """
@@ -197,25 +207,16 @@ raw /dev/sda5
 
 KDUMP_TARGET_CONFLICT_2 = """
 ext4 /dev/sdb1
-ext3 UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82
-"""
-
-KDUMP_TARGET_CONFLICT_3 = """
-ext4 /dev/sdb1
 ext4 UUID=f15759be-89d4-46c4-9e1d-1b67e5b5da82
 """
 
 
 def test_conflict_targets_excptions():
+
     with pytest.raises(ParseException) as e_info:
         kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT_1))
         assert "More than one target is configured" in str(e_info.value)
 
     with pytest.raises(ParseException) as e_info:
         kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT_2))
-        assert "More than one <fs type> <partition> type" in str(e_info.value)
-
-    with pytest.raises(ParseException) as e_info:
-        kdump.KDumpConf(context_wrap(KDUMP_TARGET_CONFLICT_3))
-        assert "More than one <partition> targets" in str(e_info.value)
-        assert "ext4" in str(e_info.value)
+        assert "More than one ext4 type targets" in str(e_info.value)

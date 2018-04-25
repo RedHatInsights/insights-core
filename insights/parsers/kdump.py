@@ -33,6 +33,7 @@ class KDumpConf(Parser):
         data (dict): a dictionary of options set in the data.
         comments(list): fully commented lines
         inline_comments(list): lines containing inline comments
+        target(tuple): target line parsed as a (x, y) tuple if set, else None
 
     The ``data`` property has two special behaviours:
 
@@ -42,6 +43,15 @@ class KDumpConf(Parser):
     * The ``options`` option is special - it appears in the form ``option
       module value``.  The ``options`` key in the data dictionary is therefore
       stored as a dictionary, keyed on the ``module`` name.
+
+    The ``target`` property has following possibilities:
+
+    * If target-line starts with any keyword in ['raw', 'ssh', 'net', 'nfs', 'nfs4'],
+      return tuple (keyword, value).
+    * If target-line is set with '<fs_type> <partation>',
+      return tuple (<fs_type>, <partation>).
+    * If target-line is not set, the target is default which is depending on
+      what's mounted in the current system, return None instead of tuple here.
 
     Main helper functions:
 
@@ -115,18 +125,7 @@ class KDumpConf(Parser):
         self.data = items
         self.comments = comments
         self.inline_comments = inline_comments
-
-        def check_target_conflict():
-            """
-            More than one dump targets will lead to kudmp service start failure.
-            So raise an exception here if more than one target is set here.
-            """
-            used_targets = (self.is_ssh(), self.is_nfs(),
-                            'raw' in self, bool(self.fs_and_partation))
-            if len(filter(None, used_targets)) > 1:
-                raise ParseException("More than one target is configured.")
-
-        check_target_conflict()
+        self._check_target_conflict()
 
     def options(self, module):
         """
@@ -232,25 +231,26 @@ class KDumpConf(Parser):
         return not ('ssh' in self.data or 'net' in self.data or
                     'nfs' in self.data or 'nfs4' in self.data)
 
-    @property
-    def fs_and_partation(self):
+    def _check_target_conflict(self):
         """
-        Return (fs_type, partation) as a tuple if set, else None.
+        More than one dump targets will lead to kudmp service start failure.
+        Raise an exception here if more than one target is set here.
         https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/kernel_administration_guide/kernel_crash_dump_guide#sect-supported-kdump-targets
-        If more than one target is configured, kudmp service fails to start.
         """
-        targets = []
-        for fs in self.SUPPORTED_FS_TYPES:
-            if fs in self.data:
-                partation = self.data[fs]
-                if isinstance(partation, list):
-                    raise ParseException("More than one <partition> targets \
-                            are configured for %s type fs." % fs)
-                targets.append((fs, partation))
-        if len(targets) > 1:
-            raise ParseException("More than one <fs type> <partition> type of \
-                    targets are configured.")
-        return targets[0] if targets else None
+        target = None
+        keys = ['ssh', 'net', 'nfs', 'nfs4', 'raw'] + self.SUPPORTED_FS_TYPES
+        for k in keys:
+            if k in self.data:
+                v = self.data[k]
+                if isinstance(v, list):
+                    raise ParseException("More than one %s type targets are\
+                                         configured." % k)
+                if target:
+                    raise ParseException("More than one target is configured.")
+                else:
+                    target = (k, v)
+
+        self.target = target
 
     def __getitem__(self, key):
         """
