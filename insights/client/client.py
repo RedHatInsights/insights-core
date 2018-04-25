@@ -277,7 +277,7 @@ def collect(rc=0):
                   'location': config['analyze_mountpoint']}
 
     # container
-    elif config['analyze_container'] or config['analyze_image']:
+    elif config['analyze_container'] or config['analyze_image_id']:
         logger.debug("Client running in container/image mode.")
         logger.debug("Scanning for matching container/image.")
 
