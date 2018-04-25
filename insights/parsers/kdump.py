@@ -27,10 +27,10 @@ class KDumpConf(Parser):
     """
     A dictionary like object for the values of the kdump.conf file.
 
-    Attributes::
+    Attributes:
 
         lines (list): raw lines from the file, in order
-        data (dict): a dictionary of options set in the data.
+        data (dict): a dictionary of options set in the data
         comments(list): fully commented lines
         inline_comments(list): lines containing inline comments
         target(tuple): target line parsed as a (x, y) tuple if set, else None
@@ -125,7 +125,7 @@ class KDumpConf(Parser):
         self.data = items
         self.comments = comments
         self.inline_comments = inline_comments
-        self._check_target_conflict()
+        self.target = self._parse_target()
 
     def options(self, module):
         """
@@ -231,7 +231,7 @@ class KDumpConf(Parser):
         return not ('ssh' in self.data or 'net' in self.data or
                     'nfs' in self.data or 'nfs4' in self.data)
 
-    def _check_target_conflict(self):
+    def _parse_target(self):
         """
         More than one dump targets will lead to kudmp service start failure.
         Raise an exception here if more than one target is set here.
@@ -249,8 +249,7 @@ class KDumpConf(Parser):
                     raise ParseException("More than one target is configured.")
                 else:
                     target = (k, v)
-
-        self.target = target
+        return target
 
     def __getitem__(self, key):
         """
