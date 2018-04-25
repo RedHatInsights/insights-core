@@ -24,6 +24,7 @@ filter_list = [
 ]
 add_filter(Specs.odbc_ini, filter_list)
 
+
 @parser(Specs.odbc_ini)
 class ODBCIni(IniConfigFile):
     """
