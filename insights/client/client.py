@@ -378,9 +378,7 @@ def collect(rc=0):
             target_type = target['type']
         logger.debug("Inferring target_type '%s' for SPEC collection", target_type)
         logger.debug("Inferred from '%s'", target['type'])
-        dc = DataCollector(archive,
-                           config,
-                           mountpoint=mp)
+        dc = DataCollector(archive, mountpoint=mp)
 
         logger.info('Starting to collect Insights data for %s', logging_name)
         dc.run_collection(collection_rules, rm_conf, branch_info)

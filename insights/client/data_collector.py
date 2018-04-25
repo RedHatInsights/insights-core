@@ -200,14 +200,15 @@ class DataCollector(object):
                 for s in file_specs:
                     file_spec = InsightsFile(s, exclude, self.mountpoint)
                     self.archive.add_to_archive(file_spec)
-        for g in conf['globs']:
-            glob_specs = self._parse_glob_spec(g)
-            for g in glob_specs:
-                if g['file'] in rm_conf.get('files', []):
-                    logger.warn("WARNING: Skipping file %s", g)
-                else:
-                    glob_spec = InsightsFile(g, exclude, self.mountpoint)
-                    self.archive.add_to_archive(glob_spec)
+        if 'globs' in conf:
+            for g in conf['globs']:
+                glob_specs = self._parse_glob_spec(g)
+                for g in glob_specs:
+                    if g['file'] in rm_conf.get('files', []):
+                        logger.warn("WARNING: Skipping file %s", g)
+                    else:
+                        glob_spec = InsightsFile(g, exclude, self.mountpoint)
+                        self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
 
         # collect metadata
@@ -219,7 +220,6 @@ class DataCollector(object):
         """
         Do finalization stuff
         """
-        self._write_uploader_log(conf)
         if config["obfuscate"]:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(self.archive.tmp_dir, rm_conf)
