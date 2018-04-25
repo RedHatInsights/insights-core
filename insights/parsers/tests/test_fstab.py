@@ -116,7 +116,7 @@ proc                    /proc                   proc    defaults        0 0
 """.strip()
 
 
-def test_device_of_path():
+def test_fsspec_of_path():
     fstab_info = fstab.FSTab(context_wrap(FSTAB_DEVICE_PATH_TEST_INFO))
     path_device_map = {'/var/crash': '/dev/sdb3',
                        '/var/some/path': '/dev/sdb2',
@@ -135,4 +135,4 @@ def test_device_of_path():
                        # '/l\ ok': '/dev/sda2',
                        }
     for path, dev in path_device_map.items():
-        assert dev == fstab_info.device_of_path(path)
+        assert dev == fstab_info.fsspec_of_path(path)

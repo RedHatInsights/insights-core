@@ -162,7 +162,7 @@ class FSTab(Parser):
         """
         return keyword_search(self.data, **kwargs)
 
-    def device_of_path(self, path):
+    def fsspec_of_path(self, path):
         """
         Return the device name if longest-matched mount-point of path is found,
         else None.
