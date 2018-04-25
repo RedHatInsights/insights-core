@@ -38,16 +38,10 @@ class DataCollector(object):
         if mountpoint:
             self.mountpoint = mountpoint
 
-    def _write_branch_info(self, conf, branch_info):
+    def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
         self.archive.add_metadata_to_archive(
-            json.dumps(branch_info), '')
-
-    def _write_uploader_log(self, conf):
-        logger.debug('Writing insights.log to archive...')
-        with open(config['logging_file']) as logfile:
-            self.archive.add_metadata_to_archive(
-                logfile.read().strip().decode('utf-8'), '')
+            json.dumps(branch_info), '/branch_info')
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -196,7 +190,7 @@ class DataCollector(object):
             else:
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
-                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
+                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
             if f['file'] in rm_conf.get('files', []):
@@ -204,7 +198,7 @@ class DataCollector(object):
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
-                    file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
+                    file_spec = InsightsFile(s, exclude, self.mountpoint)
                     self.archive.add_to_archive(file_spec)
         for g in conf['globs']:
             glob_specs = self._parse_glob_spec(g)
@@ -212,67 +206,13 @@ class DataCollector(object):
                 if g['file'] in rm_conf.get('files', []):
                     logger.warn("WARNING: Skipping file %s", g)
                 else:
-                    glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
+                    glob_spec = InsightsFile(g, exclude, self.mountpoint)
                     self.archive.add_to_archive(glob_spec)
-# =======
-#         logger.debug('Beginning to run Insights commands...')
-#         for cmd in conf['commands']:
-#             if rm_conf and 'commands' in rm_conf and cmd['command'] in rm_conf['commands']:
-#                 logger.warn("WARNING: Skipping command %s", spec['command'])
-#                 continue
-#             cmd_spec = InsightsCommand(
-#                 cmd, exclude, self.mountpoint, self.target_name, self.config)
-#             self.archive.add_to_archive(cmd_spec)
-#         logger.debug('Beginning to collect Insights files...')
-#         for fil in conf['files']:
-#             if rm_conf and 'files' in rm_conf and fil['file'] in rm_conf['files']:
-#                 logger.warn("WARNING: Skipping file %s", spec['file'])
-#                 continue
-#             file_spec = InsightsFile(
-#                 fil, exclude, self.mountpoint, self.target_name)
-#             self.archive.add_to_archive(file_spec)
-#         for glb in conf['globs']:
-#             if rm_conf and 'files' in rm_conf and glb['file'] in rm_conf['files']:
-#                 logger.warn("WARNING: Skipping file %s", spec['file'])
-#                 continue
-#             file_spec = InsightsFile(
-#                 glb, exclude, self.mountpoint, self.target_name)
-#             self.archive.add_to_archive(file_spec)
-# >>>>>>> start taking shit out!!
         logger.debug('Spec collection finished.')
-# =======
-#         logger.debug('Beginning to run Insights commands...')
-#         for cmd_spec in conf['commands']:
-#             for cmd in _parse_command_spec(cmd_spec):
-#                 if rm_conf and 'commands' in rm_conf and cmd['command'] in rm_conf['commands']:
-#                     logger.warn("WARNING: Skipping command %s", cmd['command'])
-#                 else:
-#                     self.archive.add_to_archive(
-#                         InsightsCommand(cmd, exclude, self.mountpoint))
-
-#         logger.debug('Beginning to collect Insights files...')
-#         for file_spec in conf['files']:
-#             for fil in _parse_file_spec(file_spec):
-#                 if rm_conf and 'files' in rm_conf and fil['file'] in rm_conf['files']:
-#                     logger.warn("WARNING: Skipping file %s", fil['file'])
-#                 else:
-#                     self.archive.add_to_archive(
-#                         InsightsFile(fil, exclude, self.mountpoint))
-
-#         for glb_spec in conf['globs']:
-#             for glb in _parse_glob_spec(glb_spec):
-#                 if rm_conf and 'files' in rm_conf and glb['file'] in rm_conf['files']:
-#                     logger.warn("WARNING: Skipping file %s", glb['file'])
-#                 else:
-#                     self.archive.add_to_archive(
-#                         InsightsFile(glb, exclude, self.mountpoint))
-
-#         logger.debug('Collection finished.')
-# >>>>>>> remove analysis targets and container mode
 
         # collect metadata
         logger.debug('Collecting metadata...')
-        self._write_branch_info(conf, branch_info)
+        self._write_branch_info(branch_info)
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):

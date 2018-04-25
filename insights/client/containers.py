@@ -140,22 +140,6 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
             sys.exit(constants.sig_kill_bad)
         return targets
 
-    def docker_display_name(docker_name, docker_type):
-        inspect = _docker_inspect_image(docker_name, docker_type)
-        if not inspect:
-            return docker_name
-
-        if docker_type == 'image':
-            try:
-                display_name = inspect['RepoTags'][0]
-            except LookupError:
-                display_name = docker_name
-
-        if docker_type == 'container':
-            display_name = inspect['Name'].lstrip('/')
-
-        return display_name
-
     class AtomicTemporaryMountPoint:
         # this is used for both images and containers
 
@@ -325,11 +309,6 @@ else:
         the_verbiage = "Docker"
         the_exception = HaveDockerException
 
-    def get_targets():
-        logger.error('Could not connect to ' + the_verbiage + ' to collect from images and containers')
-        logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
-                     (the_exception if the_exception else ''))
-        return []
 
     def open_image(image_id):
         logger.error('Could not connect to ' + the_verbiage + ' to examine image %s' % image_id)
@@ -339,12 +318,6 @@ else:
 
     def open_container(container_id):
         logger.error('Could not connect to ' + the_verbiage + ' to examine container %s' % container_id)
-        logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
-                     (the_exception if the_exception else ''))
-        return None
-
-    def docker_display_name(image_id):
-        logger.error('Could not connect to ' + the_verbiage + ' to examine image %s' % image_id)
         logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
                      (the_exception if the_exception else ''))
         return None

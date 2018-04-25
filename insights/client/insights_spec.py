@@ -32,13 +32,7 @@ class InsightsCommand(InsightsSpec):
         InsightsSpec.__init__(self, spec, exclude)
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
-        self.mangled_command = self._mangle_command(self.command)
-        # have to re-mangle archive path in case there's a pre-command arg
-        # Only do this if there is a pre-command in the spec, this preserves
-        # the original archive_file_name setting from the spec file
-        if "pre-command" in spec:
-            self.archive_path = os.path.join(
-                os.path.dirname(self.archive_path), self.mangled_command)
+        self.archive_path = mangle.mangle_command(self.command)
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
         self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
