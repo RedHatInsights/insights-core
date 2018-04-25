@@ -16,11 +16,14 @@ ODBCinstIni - file ``/etc/odbcinst.ini``
 from .. import parser, IniConfigFile, add_filter
 from insights.specs import Specs
 
+# Since the key values in file odbc.ini is case insensitive,
+# and curent filter_list is not support case insensitive,
+# will add several duplicate keys here to filter out more useful data.
 filter_list = [
         '[',
-        'driver',
-        'server',
-        'no_sspa',
+        'DRIVER', 'Driver', 'driver',
+        'SERVER', 'Server', 'server',
+        'NO_SSPA', 'No_sspa', 'no_sspa',
 ]
 add_filter(Specs.odbc_ini, filter_list)
 
