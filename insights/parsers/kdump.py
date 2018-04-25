@@ -18,6 +18,7 @@ SysconfigKdump - file ``/etc/sysconfig/kdump``
 import re
 from urlparse import urlparse
 from .. import Parser, parser
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -26,12 +27,13 @@ class KDumpConf(Parser):
     """
     A dictionary like object for the values of the kdump.conf file.
 
-    Attributes::
+    Attributes:
 
         lines (list): raw lines from the file, in order
-        data (dict): a dictionary of options set in the data.
+        data (dict): a dictionary of options set in the data
         comments(list): fully commented lines
         inline_comments(list): lines containing inline comments
+        target(tuple): target line parsed as a (x, y) tuple if set, else None
 
     The ``data`` property has two special behaviours:
 
@@ -41,6 +43,15 @@ class KDumpConf(Parser):
     * The ``options`` option is special - it appears in the form ``option
       module value``.  The ``options`` key in the data dictionary is therefore
       stored as a dictionary, keyed on the ``module`` name.
+
+    The ``target`` property has following possibilities:
+
+    * If target-line starts with any keyword in ['raw', 'ssh', 'net', 'nfs', 'nfs4'],
+      return tuple (keyword, value).
+    * If target-line is set with '<fs_type> <partation>',
+      return tuple (<fs_type>, <partation>).
+    * If target-line is not set, the target is default which is depending on
+      what's mounted in the current system, return None instead of tuple here.
 
     Main helper functions:
 
@@ -63,6 +74,7 @@ class KDumpConf(Parser):
         True
     """
     NET_COMMANDS = set(['nfs', 'net', 'ssh'])
+    SUPPORTED_FS_TYPES = ['ext2', 'ext3', 'ext4', 'btrfs', 'xfs']
 
     def parse_content(self, content):
         lines = list(content)
@@ -113,6 +125,7 @@ class KDumpConf(Parser):
         self.data = items
         self.comments = comments
         self.inline_comments = inline_comments
+        self.target = self._parse_target()
 
     def options(self, module):
         """
@@ -205,19 +218,38 @@ class KDumpConf(Parser):
         """
         Is kdump configured to only use local disk?
 
-        The logic used here is the first of these conditions:
+        Several target types:
 
-        * If 'raw' is given as an option, then the dump is local.
+        * If 'raw' is given, then the dump is local.
         * If 'ssh', 'net', 'nfs', or 'nfs4' is given, then the dump is NOT local.
+        * If '<fs type> <partition>' is given, then the dump is local.
         * Otherwise, the dump is local.
+
+        Since only one target could be set, the logic used here is checking
+        if remote target is used, return True for not.
         """
-        # The previous version used iteration across self.data.keys(), which
-        # is of course non-repeatable because hash key ordering may change.
-        # So we reverted to logic.
-        return ('raw' in self.data) or (not (
-            'ssh' in self.data or 'net' in self.data or
-            'nfs' in self.data or 'nfs4' in self.data)
-        )
+        return not ('ssh' in self.data or 'net' in self.data or
+                    'nfs' in self.data or 'nfs4' in self.data)
+
+    def _parse_target(self):
+        """
+        More than one dump targets will lead to kudmp service start failure.
+        Raise an exception here if more than one target is set here.
+        https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/kernel_administration_guide/kernel_crash_dump_guide#sect-supported-kdump-targets
+        """
+        target = None
+        keys = ['ssh', 'net', 'nfs', 'nfs4', 'raw'] + self.SUPPORTED_FS_TYPES
+        for k in keys:
+            if k in self.data:
+                v = self.data[k]
+                if isinstance(v, list):
+                    raise ParseException("More than one %s type targets are\
+                                         configured." % k)
+                if target:
+                    raise ParseException("More than one target is configured.")
+                else:
+                    target = (k, v)
+        return target
 
     def __getitem__(self, key):
         """
