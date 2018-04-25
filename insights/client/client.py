@@ -261,7 +261,7 @@ def collect(rc=0):
     """
     # initialize collection target
     # tar files
-    if config['analyze_file'] is not None:
+    if config['analyze_file']:
         logger.debug("Client analyzing a compress filesystem.")
         target = {'type': 'compressed_file',
                   'name': os.path.splitext(
@@ -269,17 +269,25 @@ def collect(rc=0):
                   'location': config['analyze_file']}
 
     # mountpoints
-    elif config['analyze_mountpoint'] is not None:
+    elif config['analyze_mountpoint']:
         logger.debug("Client analyzing a filesystem already mounted.")
         target = {'type': 'mountpoint',
                   'name': os.path.splitext(
                    os.path.basename(config['analyze_mountpoint']))[0],
                   'location': config['analyze_mountpoint']}
 
+    # container
+    elif config['analyze_container'] or config['analyze_image']:
+        logger.debug("Client running in container/image mode.")
+        logger.debug("Scanning for matching container/image.")
+
+        from containers import get_targets
+        target = get_targets()[0]
+
     # the host
     else:
         logger.debug("Host selected as scanning target.")
-        target = constants.default_target
+        targets = constants.default_target
 
     branch_info = get_branch_info()
     pc = InsightsConfig()
@@ -318,7 +326,7 @@ def collect(rc=0):
         if target['type'] == 'docker_image':
             from containers import open_image
             container_connection = open_image(target['name'])
-            logging_name = 'Docker image ' + t['name']
+            logging_name = 'Docker image ' + target['name']
 
             if container_connection:
                 mp = container_connection.get_fs()
@@ -329,8 +337,8 @@ def collect(rc=0):
         # analyze docker containers
         elif target['type'] == 'docker_container':
             from containers import open_container
-            container_connection = open_container(t['name'])
-            logging_name = 'Docker container ' + t['name']
+            container_connection = open_container(target['name'])
+            logging_name = 'Docker container ' + target['name']
 
             if container_connection:
                 mp = container_connection.get_fs()
