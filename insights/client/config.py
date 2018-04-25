@@ -37,7 +37,6 @@ CONFIG = {
     'collection_rules_url': None,
     'compressor': 'gz',
     'conf': CONF_FILE,
-    'container_mode': None,
     'egg_path': '/v1/static/core/insights-core.egg',
     'debug': False,  # Used by client wrapper script
     'disable_schedule': False,
@@ -371,7 +370,6 @@ def compile_config():
     # handle container mode stuff
     if (CONFIG['analyze_image_id'] or CONFIG['analyze_file'] or CONFIG['analyze_mountpoint']):
         CONFIG['analyze_container'] = True
-        CONFIG['container_mode'] = True
         # ASSUME --to-json unless otherwise specified
         if not CONFIG['to_stdout']:
             CONFIG['to_json'] = True

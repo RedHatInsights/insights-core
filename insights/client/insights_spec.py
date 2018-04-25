@@ -28,16 +28,11 @@ class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name):
+    def __init__(self, spec, exclude, mountpoint):
         InsightsSpec.__init__(self, spec, exclude)
-        # substitute mountpoint for collection
-        # have to use .replace instead of .format because there are other
-        #  braced keys in the collection spec not used here
         self.command = spec['command'].replace(
-            '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.mangled_command = mangle.mangle_command(self.command)
+            '{CONTAINER_MOUNT_POINT}', mountpoint)
+        self.mangled_command = self._mangle_command(self.command)
         # have to re-mangle archive path in case there's a pre-command arg
         # Only do this if there is a pre-command in the spec, this preserves
         # the original archive_file_name setting from the spec file
@@ -149,15 +144,8 @@ class InsightsFile(InsightsSpec):
     def __init__(self, spec, exclude, mountpoint, target_name):
         InsightsSpec.__init__(self, spec, exclude)
         # substitute mountpoint for collection
-        self.real_path = spec['file'].replace(
-            '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.relative_path = spec['file'].replace(
-            mountpoint, '', 1).replace(
-            '{CONTAINER_MOUNT_POINT}', '').replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
+        self.real_path = spec['file']
+        self.archive_path = os.path.relpath(mountpoint, self.real_path)
 
     def get_output(self):
         '''

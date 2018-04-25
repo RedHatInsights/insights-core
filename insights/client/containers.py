@@ -156,28 +156,6 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
 
         return display_name
 
-    def container_image_links():
-        from insights_client.utilities import generate_analysis_target_id
-        link_dict = {}
-        if UseAtomic:
-            docker_atomic = "atomic"
-        else:
-            docker_atomic = "docker"
-        ps_output = run_command_capture_output(docker_atomic + " ps --no-trunc --all")
-        ps_data = ps_output.splitlines()
-        ps_data.pop(0)  # remove heading
-        for l in ps_data:
-            elements = l.split()
-            c_id = elements[0]
-            i_id = elements[1]
-            link_dict[c_id] = [{'system_id': generate_analysis_target_id('docker_image', i_id),
-                                'type': 'image'}]
-            if i_id not in link_dict:
-                link_dict[i_id] = []
-            link_dict[i_id].append({'system_id': generate_analysis_target_id('docker_container', c_id),
-                                    'type': 'container'})
-        return link_dict
-
     class AtomicTemporaryMountPoint:
         # this is used for both images and containers
 
@@ -370,44 +348,3 @@ else:
         logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
                      (the_exception if the_exception else ''))
         return None
-
-    def container_image_links():
-        logger.error('Could not connect to ' + the_verbiage + '.')
-        logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
-                     (the_exception if the_exception else ''))
-        return None
-#
-# JSON data has lots of nested dictionaries, that are often optional.
-#
-# so for example you want to write:
-#
-#    foo = d['meta_specs']['uploader_log']['something_else']
-#
-# but d might not have 'meta_specs' and that might not have 'uploader_log' and ...
-# so write this instead
-#
-#   idx = ('meta_specs','uploader_log','something_else')
-#   if dictmultihas(d, idx):
-#      foo = dictmultiget(d, idx)
-#   else:
-#      ....
-#
-
-
-def dictmultihas(d, idx):
-    # 'idx' is a tuple of strings, indexing into 'd'
-    #  if d doesn't have these indexes, return False
-    for each in idx[:-1]:
-        if d and each in d:
-            d = d[each]
-    if d and len(idx) > 0 and idx[-1] in d:
-        return True
-    else:
-        return False
-
-
-def dictmultiget(d, idx):
-    # 'idx' is a tuple of strings, indexing into 'd'
-    for each in idx[:-1]:
-        d = d[each]
-    return d[idx[-1]]
