@@ -28,22 +28,11 @@ class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name):
+    def __init__(self, spec, exclude, mountpoint):
         InsightsSpec.__init__(self, spec, exclude)
-        # substitute mountpoint for collection
-        # have to use .replace instead of .format because there are other
-        #  braced keys in the collection spec not used here
         self.command = spec['command'].replace(
-            '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.mangled_command = mangle.mangle_command(self.command)
-        # have to re-mangle archive path in case there's a pre-command arg
-        # Only do this if there is a pre-command in the spec, this preserves
-        # the original archive_file_name setting from the spec file
-        if "pre-command" in spec:
-            self.archive_path = os.path.join(
-                os.path.dirname(self.archive_path), self.mangled_command)
+            '{CONTAINER_MOUNT_POINT}', mountpoint)
+        self.archive_path = mangle.mangle_command(self.command)
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
         self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
@@ -146,18 +135,11 @@ class InsightsFile(InsightsSpec):
     '''
     A file spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name):
+    def __init__(self, spec, exclude, mountpoint):
         InsightsSpec.__init__(self, spec, exclude)
         # substitute mountpoint for collection
-        self.real_path = spec['file'].replace(
-            '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.relative_path = spec['file'].replace(
-            mountpoint, '').replace(
-            '{CONTAINER_MOUNT_POINT}', '').replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
+        self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
+        self.archive_path = spec['file']
 
     def get_output(self):
         '''

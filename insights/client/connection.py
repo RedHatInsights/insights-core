@@ -665,7 +665,7 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
-    def upload_archive(self, data_collected, duration, cluster=None):
+    def upload_archive(self, data_collected, duration):
         """
         Do an HTTPS Upload of the archive
         """
@@ -687,9 +687,6 @@ class InsightsConnection(object):
         if config["analyze_container"]:
             logger.debug('Uploading container, image, mountpoint or tarfile.')
             upload_url = self.upload_url
-        elif cluster:
-            logger.debug('Uploading cluster/host.')
-            upload_url = self.upload_url + '/' + cluster
         else:
             logger.debug('Uploading a host.')
             upload_url = self.upload_url + '/' + generate_machine_id()
