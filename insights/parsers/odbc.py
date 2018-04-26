@@ -23,7 +23,7 @@ filter_list = [
         '[',
         'DRIVER', 'Driver', 'driver',
         'SERVER', 'Server', 'server',
-        'NO_SSPA', 'No_sspa', 'no_sspa',
+        'NO_SSPS', 'No_ssps', 'no_ssps',
 ]
 add_filter(Specs.odbc_ini, filter_list)
 
