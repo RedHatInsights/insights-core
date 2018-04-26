@@ -12,7 +12,7 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from ..contrib.soscleaner import SOSCleaner
-from utilities import _expand_paths, generate_analysis_target_id
+from utilities import _expand_paths
 from constants import InsightsConstants as constants
 from insights_spec import InsightsFile, InsightsCommand
 from config import CONFIG as config
@@ -31,59 +31,17 @@ class DataCollector(object):
     '''
     Run commands and collect files
     '''
-    def __init__(self, archive_=None, mountpoint=None, target_name='', target_type='host'):
+
+    def __init__(self, archive_=None, mountpoint=None):
         self.archive = archive_ if archive_ else archive.InsightsArchive()
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
-        self.target_name = target_name
-        self.target_type = target_type
 
-    def _get_meta_path(self, specname, conf):
-        # should really never need these
-        #   since spec should always have an "archive_file_name"
-        #   unless we are running old style spec
-        default_meta_spec = {'analysis_target': '/insights_data/analysis_target',
-                             'branch_info': '/branch_info',
-                             'machine-id': '/insights_data/machine-id',
-                             'uploader_log': '/insights_data/insights_logs/insights.log'}
-        try:
-            archive_path = conf['meta_specs'][specname]['archive_file_name']
-        except LookupError:
-            logger.debug('%s spec not found. Using default.', specname)
-            archive_path = default_meta_spec[specname]
-        return archive_path
-
-    def _write_branch_info(self, conf, branch_info):
+    def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
-        self.archive.add_metadata_to_archive(json.dumps(branch_info),
-                                             self._get_meta_path('branch_info', conf))
-
-    def _write_analysis_target_type(self, conf):
-        logger.debug('Writing target type to archive...')
-        self.archive.add_metadata_to_archive(self.target_type,
-                                             self._get_meta_path('analysis_target', conf))
-
-    def _write_analysis_target_id(self, conf):
-        # AKA machine-id
-        logger.debug('Writing machine-id to archive...')
-        if config['from_file'] is not None:
-            try:
-                with open(config['from_file']) as f:
-                    stdin_config = json.load(f)
-                    machine_id = stdin_config['machine-id']
-            except:
-                machine_id = generate_analysis_target_id(self.target_type, self.target_name)
-        else:
-            machine_id = generate_analysis_target_id(self.target_type, self.target_name)
-        self.archive.add_metadata_to_archive(machine_id,
-                                             self._get_meta_path('machine-id', conf))
-
-    def _write_uploader_log(self, conf):
-        logger.debug('Writing insights.log to archive...')
-        with open(config['logging_file']) as logfile:
-            self.archive.add_metadata_to_archive(logfile.read().strip().decode('utf-8'),
-                                                 self._get_meta_path('uploader_log', conf))
+        self.archive.add_metadata_to_archive(
+            json.dumps(branch_info), '/branch_info')
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -112,13 +70,9 @@ class DataCollector(object):
         '''
         # separate wildcard specs into more specs
         if '*' in spec['file']:
-            expanded_paths = _expand_paths(spec['file'].replace(
-                '{CONTAINER_MOUNT_POINT}', self.mountpoint).replace(
-                '{DOCKER_IMAGE_NAME}', self.target_name).replace(
-                '{DOCKER_CONTAINER_NAME}', self.target_name))
+            expanded_paths = _expand_paths(spec['file'])
             if not expanded_paths:
                 return []
-
             expanded_specs = []
             for p in expanded_paths:
                 _spec = copy.copy(spec)
@@ -234,7 +188,7 @@ class DataCollector(object):
             else:
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
-                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
+                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
             if f['file'] in rm_conf.get('files', []):
@@ -242,30 +196,28 @@ class DataCollector(object):
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
-                    file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
+                    file_spec = InsightsFile(s, exclude, self.mountpoint)
                     self.archive.add_to_archive(file_spec)
-        for g in conf['globs']:
-            glob_specs = self._parse_glob_spec(g)
-            for g in glob_specs:
-                if g['file'] in rm_conf.get('files', []):
-                    logger.warn("WARNING: Skipping file %s", g)
-                else:
-                    glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
-                    self.archive.add_to_archive(glob_spec)
+        if 'globs' in conf:
+            for g in conf['globs']:
+                glob_specs = self._parse_glob_spec(g)
+                for g in glob_specs:
+                    if g['file'] in rm_conf.get('files', []):
+                        logger.warn("WARNING: Skipping file %s", g)
+                    else:
+                        glob_spec = InsightsFile(g, exclude, self.mountpoint)
+                        self.archive.add_to_archive(glob_spec)
         logger.debug('Spec collection finished.')
 
         # collect metadata
         logger.debug('Collecting metadata...')
-        self._write_analysis_target_type(conf)
-        self._write_branch_info(conf, branch_info)
-        self._write_analysis_target_id(conf)
+        self._write_branch_info(branch_info)
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):
         """
         Do finalization stuff
         """
-        self._write_uploader_log(conf)
         if config["obfuscate"]:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(self.archive.tmp_dir, rm_conf)
