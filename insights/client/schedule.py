@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def cron_source():
-    extension = '-container' if config['container_mode'] else ''
+    extension = '-container' if config['analyze_container'] else ''
     return '/etc/%s/%s%s.cron' % (APP_NAME, APP_NAME, extension)
 
 

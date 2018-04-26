@@ -314,19 +314,16 @@ class InsightsClient(object):
         # scanning images/containers running in docker
         if kwargs.get('analyze_image_id'):
             logger.debug('Scanning an image id.')
-            config['container_mode'] = True
             config['analyze_image_id'] = kwargs.get('analyze_image_id')
 
         # compressed filesystems (tar files)
         if kwargs.get('analyze_file'):
             logger.debug('Scanning a tar file.')
-            config['container_mode'] = True
             config['analyze_file'] = kwargs.get('analyze_file')
 
         # FSs already mounted somewhere
         if kwargs.get('analyze_mountpoint'):
             logger.debug('Scanning a mount point.')
-            config['container_mode'] = True
             config['analyze_mountpoint'] = kwargs.get('analyze_mountpoint')
 
         # return collection results
