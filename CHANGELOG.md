@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-3.0.10-317](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.10-317) (2018-04-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.9-309...insights-core-3.0.10-317)
+
+**Fixed bugs:**
+
+- Archives are wrong, extraneous top level files \(BZ1561015\) [\#1042](https://github.com/RedHatInsights/insights-core/issues/1042)
+
+**Closed issues:**
+
+- `obfuscate\_hostname` should require `obfuscate` \(BZ1554999\) [\#1016](https://github.com/RedHatInsights/insights-core/issues/1016)
+
 ## [insights-core-3.0.9-309](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.9-309) (2018-04-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.8-295...insights-core-3.0.9-309)
 
@@ -10,16 +21,25 @@
 - hostname parser doesn't handle sos\_commands/general/hostname [\#1055](https://github.com/RedHatInsights/insights-core/issues/1055)
 
 ## [insights-core-3.0.8-295](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.8-295) (2018-04-12)
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.7-270...insights-core-3.0.8-295)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.4-3...insights-core-3.0.8-295)
 
 **Fixed bugs:**
 
-- SubscriptionManagerListInstalled should depend on Specs.subscription\_manager\_list\_installed [\#1047](https://github.com/RedHatInsights/insights-core/issues/1047)
 - ssh.py: ValueError: need more than 1 value to unpack  [\#1034](https://github.com/RedHatInsights/insights-core/issues/1034)
 
 **Closed issues:**
 
 - \[ls\_etc\] Test can be merged into docstring [\#1079](https://github.com/RedHatInsights/insights-core/issues/1079)
+
+## [insights-core-3.0.4-3](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.4-3) (2018-04-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.7-270...insights-core-3.0.4-3)
+
+**Fixed bugs:**
+
+- SubscriptionManagerListInstalled should depend on Specs.subscription\_manager\_list\_installed [\#1047](https://github.com/RedHatInsights/insights-core/issues/1047)
+
+**Closed issues:**
+
 - Shippable fails with nbsphinx version 0.3.2 [\#1054](https://github.com/RedHatInsights/insights-core/issues/1054)
 
 ## [insights-core-3.0.7-270](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.7-270) (2018-03-28)
