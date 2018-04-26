@@ -4,7 +4,7 @@ from insights.tests import context_wrap
 from doctest import testmod
 
 
-EXAMPLE_IN_DOCS ="""
+EXAMPLE_IN_DOCS = """
 devtoolset-7
 httpd24
 python27
@@ -30,19 +30,19 @@ rh-ruby24
 """
 
 EXAMPLE_WITH_SPACES = """
-        devtoolset-7   
+        devtoolset-7  \t
 httpd24
-python27   
-rh-mysql57   
-  rh-nodejs8
+python27   \t
+rh-mysql57   \t
+  rh-nodejs8  \t
 rh-php71
 rh-python36
-rh-ruby24   
+rh-ruby24   \n
 """
 
 EXAMPLE_EMPTY = ''
 
-COLLECTIONS_LIST =[
+COLLECTIONS_LIST = [
     'devtoolset-7',
     'httpd24',
     'python27',
