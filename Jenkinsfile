@@ -12,6 +12,17 @@ pipeline {
            virtualenv .
            source bin/activate
            pip install 'flake8==3.3.0' 'coverage==4.3.4' 'pytest==3.0.6' 'pytest-cov==2.4.0' 'futures==3.0.5' 'requests==2.13.0' 'six' 'wheel' 'pyyaml>=3.10,<=3.12' 'pyOpenSSL' 'importlib' 'Jinja2==2.9.6'
+        """
+      }
+    }
+    stage('Test Insights Core on RHEL6') {
+      agent {
+        node {
+          label 'python26'
+        }
+      }
+      steps {
+        sh """
            pytest
            flake8 
         """
@@ -33,10 +44,10 @@ pipeline {
         """
       }
     }
-    stage('Build RHEL7 Python 3.6') {
+/*    stage('Build RHEL7 Python 3.6') {
       agent {
         node {
-          label 'python36'
+          label 'python3'
         }
       }
       steps {
@@ -48,6 +59,6 @@ pipeline {
            flake8
         """
       }
-    }
+    } */
   }
 }
