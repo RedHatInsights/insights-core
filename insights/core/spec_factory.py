@@ -372,6 +372,19 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
     return inner
 
 
+def head(dep):
+    """
+    Return the first element of any datasource that produces a list.
+    """
+    @datasource(dep)
+    def inner(lst):
+        c = lst[dep]
+        if lst:
+            return c[0]
+        raise dr.SkipComponent()
+    return inner
+
+
 def first_file(files, context=None, kind=TextFileProvider):
     """
     Creates a datasource that returns the first existing and readable file in
