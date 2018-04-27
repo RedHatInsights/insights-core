@@ -1,6 +1,8 @@
 """
-VDSMConfIni & VDSMLoggerConf
-============================
+VDSMConfIni - file ``/etc/vdsm/vdsm.conf``
+------------------------------------------
+VDSMLoggerConf - file ``/etc/vdsm/logger.conf``
+-----------------------------------------------
 """
 
 from .. import IniConfigFile, parser
