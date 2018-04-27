@@ -13,6 +13,12 @@ from config import CONFIG as config
 logger = logging.getLogger(__name__)
 
 
+def hide_the_root(cmd):
+    if cmd.startswith('/bin/rpm'):
+        cmd = cmd.replace('--root={CONTAINER_MOUNT_POINT} ', '')
+    return cmd
+
+
 class InsightsSpec(object):
     '''
     A spec loaded from the uploader.json
@@ -32,7 +38,8 @@ class InsightsCommand(InsightsSpec):
         InsightsSpec.__init__(self, spec, exclude)
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
-        self.archive_path = mangle.mangle_command(self.command)
+        self.archive_path = mangle.mangle_command(
+            hide_the_root(spec['command']))
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
         self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
