@@ -147,7 +147,6 @@ class GrubConfig(LegacyItemAccess, Parser):
             self.data.pop('configs')
 
         for line_full in self.data.get('title', []) + self.data.get('menuentry', []):
-            entry = []
             for name, line in line_full:
                 if name == 'menuentry_name' or name == 'title_name':
                     entry = {}
