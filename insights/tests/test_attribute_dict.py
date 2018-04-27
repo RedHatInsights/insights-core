@@ -26,7 +26,7 @@ def test_attribute_dict_with_fixed_attributes():
     assert 'uid' in d_obj
     assert d_obj.get('mode', None) == '0400'
     assert 'mode' in d_obj
-    assert 'xmode' in d_obj
+    assert 'xmode' not in d_obj
     assert 'nosuid' in d_obj
     assert d_obj.mode == '0400'
     assert d_obj.xmode == 'TEST'

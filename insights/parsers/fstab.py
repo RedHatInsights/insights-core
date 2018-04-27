@@ -22,13 +22,28 @@ option's value set to True so it can be conveniently searched.
 
 This data, as above, is available in the ``data`` property:
 
-* As wrapped as an :class:`FSTabEntry`, each column can also be accessed as a property
-  with the same name.
-* The mount options are a dictionary object with keys corresponding to the
-  common mount options.
+* As wrapped as an :class:`FSTabEntry`, each column can also be accessed as a
+  property with the same name.
+* The `` fs_mntops`` is wrpped as a :class:`insights.parsers.mount.MountOpts`
+  object contains below fixed attributes:
 
-The data for each mount point is also available via the ``mounted_on``
-property; the data is the same as that stored in the ``data`` list.
+* ``rw`` - Read write
+* ``ro`` - Read only
+* ``defaults`` - Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
+* ``relatime`` - Inode access times relative to modify or change time
+* ``seclabel`` - `seclabel` is enabled or not
+* ``attr2`` - `opportunistic` improvement is enabled or not
+* ``inode64`` - `inode64` is enabled or not
+* ``noquota`` - Disk quotas are enforced or not
+
+For instance, the option ``rw`` in ``rw,dmode=0500`` may be accessed as
+``mnt_row_info.rw`` with the value ``True``, but the ``dmode`` can only be
+accessed as ``mnt_row_info.get('dmode')`` or ``mnt_row_info['dmode']`` with the
+value ``0500``.
+
+The :class:`FSTabEntry` for each mount point is also available via the
+:attr:`FSTab.mounted_on` property; the data is the same as that stored in the
+:attr:`FSTab.data` list.
 
 Typical content of the ``fstab`` looks like::
 
@@ -76,6 +91,7 @@ Examples:
 
 from .. import Parser, parser, get_active_lines, AttributeDict
 from ..parsers import optlist_to_dict, parse_delimited_table, keyword_search
+from ..parsers.mount import MountOpts
 from insights.specs import Specs
 
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
@@ -91,7 +107,7 @@ class FSTabEntry(AttributeDict):
         fs_file (str): the mount point
         fs_vfstype (str): the type of file system
         raw_fs_mntops (str): the mount options as a string
-        fs_mntops (dict): the mount options as a dictionary
+        fs_mntops (MountOpts): the mount options as a :class:`insights.parsers.mount.MountOpts` object
         fs_freq (int): the dump frequency
         fs_passno (int): check the filesystem on reboot in this pass number
         raw (str): the RAW line which is useful to front-end
@@ -101,7 +117,7 @@ class FSTabEntry(AttributeDict):
         'fs_file': AttributeDict.type_info(str, ''),
         'fs_vfstype': AttributeDict.type_info(str, ''),
         'raw_fs_mntops': AttributeDict.type_info(str, ''),
-        'fs_mntops': AttributeDict.type_info(dict, {}),
+        'fs_mntops': AttributeDict.type_info(MountOpts, MountOpts({})),
         'fs_freq': AttributeDict.type_info(int, 0),
         'fs_passno': AttributeDict.type_info(int, 0),
         'raw': AttributeDict.type_info(str, ''),
@@ -148,11 +164,11 @@ class FSTab(Parser):
             # optlist_to_dict converts 'key=value' to key: value and
             # 'key' to key: True
             if 'raw_fs_mntops' in line:
-                line['fs_mntops'] = optlist_to_dict(line.get('raw_fs_mntops'))
+                line['fs_mntops'] = MountOpts(optlist_to_dict(line.get('raw_fs_mntops')))
             else:
                 # if there is no mntops, it is defaults.
                 # (/dev/foo /foo somefs defaults   0 0) and (/dev/foo /foo somefs) are same
-                line['fs_mntops'] = optlist_to_dict('defaults')
+                line['fs_mntops'] = MountOpts(optlist_to_dict('defaults'))
             # add `raw` here for displaying convenience on front-end
             line['raw'] = [l for l in content if l.strip().startswith(line['fs_spec'])][0]
             self.data.append(FSTabEntry(line))

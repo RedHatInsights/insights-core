@@ -43,6 +43,7 @@ def test_mount():
     assert sr0.get('does not exist', 'failure') == 'failure'
     assert sr0['mount_type'] == 'iso9660'
     assert 'ro' in sr0['mount_options']
+    assert sr0.mount_options.ro
     assert 'relatime' in sr0['mount_options']
     assert sr0['mount_options']['uhelper'] == 'udisks2'
     assert sr0['mount_label'] == 'VMware Tools'
@@ -83,11 +84,9 @@ def test_mount():
     assert errors is not None
     assert len(errors) == 2
     assert not hasattr(errors[0], 'parse_error')
-    assert 'parse_error' not in errors[0]
     assert errors[0].filesystem == 'tmpfs'
-    assert not hasattr(errors[0], 'parse_error')
-    assert 'parse_error' in errors[1]
-    assert errors[1].get('parse_error') == 'Unable to parse line'
+    assert not hasattr(errors[1], 'parse_error')
+    assert errors[1]['parse_error'] == 'Unable to parse line'
 
     # Test search
     assert results.search(filesystem='/dev/sr0') == [sr0]

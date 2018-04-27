@@ -1340,9 +1340,7 @@ class AttributeDict(dict):
 
         data = args[0] if args else {}
         for k, v in fixed_attrs.items():
-            if k not in data:
-                data[k] = v
-            setattr(self, k, data.get(k))
+            setattr(self, k, data.get(k, v))
 
         super(AttributeDict, self).__init__(*args, **kwargs)
 

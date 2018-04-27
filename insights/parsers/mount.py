@@ -11,28 +11,39 @@ implements parsing for the ``mount`` command output which looks like::
     dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
 
 The information is stored as a list of :class:`MountEntry` objects.  Each
-`:class:`MountEntry` object contains attributes for the following information that
-are listed in the same order as in the command output::
+:class:`MountEntry` object contains attributes for the following information that
+are listed in the same order as in the command output:
 
-    - filesystem: (str) Name of filesystem
-    - mount_point: (str) Name of mount point for filesystem
-    - mount_type: (str) Name of filesystem type
-    - mount_options: (MountOpts) Mount options as ``MountOpts`` object
-    - mount_label: (str) Only present if optional label is present
-    - mount_clause: (str) Full string from command output
+ * ``filesystem`` - Name of filesystem
+ * ``mount_point`` - Name of mount point for filesystem
+ * ``mount_type`` - Name of filesystem type
+ * ``mount_options`` - Mount options as a dictionary
+ * ``mount_label`` - Only present if optional label is present
+ * ``mount_clause`` - Full string from command output
 
-The `` mount_options`` contains the mount options as attributes accessible
-via the attribute name as it appears in the command output.  For instance, the
-options ``(rw,dmode=0500)`` may be accessed as ''mnt_row_info.rw`` with the value
-``True`` and ``mnt_row_info.dmode`` with the value "0500".  The ``in`` operator
-may be used to determine if an option is present.
+The `` mount_options`` is stored as a :class:`MountOpts` object contains below
+fixed attributes:
+
+* ``rw`` - Read write
+* ``ro`` - Read only
+* ``defaults`` - Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
+* ``relatime`` - Inode access times relative to modify or change time
+* ``seclabel`` - `seclabel` is enabled or not
+* ``attr2`` - `opportunistic` improvement is enabled or not
+* ``inode64`` - `inode64` is enabled or not
+* ``noquota`` - Disk quotas are enforced or not
+
+For instance, the option ``rw`` in ``(rw,dmode=0500)`` may be accessed as
+``mnt_row_info.rw`` with the value ``True``, but the ``dmode`` can only be
+accessed as ``mnt_row_info.get('dmode')`` or ``mnt_row_info['dmode']`` with the
+value ``0500``.
 
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
 
 Examples:
-    >>> mnt_info
-    <insights.parsers.mount.Mount at 0x7fd4a7d3bbd0>
+    >>> type(mnt_info)
+    <class 'insights.parsers.mount.Mount'>
     >>> len(mnt_info)
     4
     >>> mnt_info[3].__dict__
@@ -51,8 +62,7 @@ Examples:
     >>> mnt_info[3].mount_options
     {'dmode': '0500', 'gid': '0', 'iocharset': 'utf8', 'mode': '0400', 'nodev': True,
      'nosuid': True, 'relatime': True, 'ro': True, 'uhelper': 'udisks2', 'uid': '0'}
-    >>> mnt_info[3].mount_options.dmode
-    >>> 'dmode' in mnt_info[3].mount_options
+    >>> mnt_info[3].mount_options.ro
     True
     >>> mnt_info.mounts['/run/media/root/VMware Tools'].filesystem
     'dev/sr0'
@@ -62,6 +72,41 @@ import re
 from insights.specs import Specs
 from ..parsers import optlist_to_dict, keyword_search
 from .. import Parser, parser, get_active_lines, AttributeDict
+
+
+class MountOpts(AttributeDict):
+    """
+    An object representing the mount options found in mount or fstab entry.
+    Each option in the comma-separated list is a key, and 'key=value'
+    pairs such as 'gid=5' are split so that e.g. the key is 'gid' and the value
+    is '5'.  Otherwise, the key is the option name and its value is 'True'.
+
+    In addition, the following attributes will always be available and are
+    False if not defined in the options list.
+
+    Attributes:
+        rw (bool): Read write
+        ro (bool): Read only
+        defaults: (bool): Use default options: rw, suid, dev, exec, auto, nouser, async, and relatime
+        relatime (bool): Inode access times relative to modify or change time
+        seclabel (bool): "seclabel" is enabled or not
+        attr2 (bool): "opportunistic" improvement is enabled or not
+        inode64 (bool): "inode64" is enabled or not
+        noquota (bool): Disk quotas are enforced or not
+    """
+    fixed_attrs = {
+        'rw': AttributeDict.type_info(bool, False),
+        'ro': AttributeDict.type_info(bool, False),
+        'defaults': AttributeDict.type_info(bool, False),
+        'relatime': AttributeDict.type_info(bool, False),
+        'seclabel': AttributeDict.type_info(bool, False),
+        'attr2': AttributeDict.type_info(bool, False),
+        'inode64': AttributeDict.type_info(bool, False),
+        'noquota': AttributeDict.type_info(bool, False)
+    }
+
+    def __init__(self, data):
+        super(MountOpts, self).__init__(data, fixed_attrs=MountOpts.fixed_attrs)
 
 
 class MountEntry(AttributeDict):
@@ -75,14 +120,14 @@ class MountEntry(AttributeDict):
         filesystem (str): Name of filesystem
         mount_point (str): Name of mount point for filesystem
         mount_type (str): Name of filesystem type
-        mount_options (dict): Mount options as a dictionary
+        mount_options (MountOpts): Mount options as a :class:`insights.parsers.mount.MountOpts` object
     """
     fixed_attrs = {
             'mount_clause': AttributeDict.type_info(str, ''),
             'filesystem': AttributeDict.type_info(str, ''),
             'mount_point': AttributeDict.type_info(str, ''),
             'mount_type': AttributeDict.type_info(str, ''),
-            'mount_options': AttributeDict.type_info(dict, {}),
+            'mount_options': AttributeDict.type_info(MountOpts, MountOpts({})),
     }
 
     def __init__(self, data):
@@ -134,7 +179,7 @@ class Mount(Parser):
                 mount['mount_point'] = match.group('mount_point')
                 mount['mount_type'] = match.group('mount_type')
                 mount_options = match.group('mount_options')
-                mount['mount_options'] = optlist_to_dict(mount_options)
+                mount['mount_options'] = MountOpts(optlist_to_dict(mount_options))
                 if match.group('mount_label'):
                     mount['mount_label'] = match.group('mount_label')
             else:
