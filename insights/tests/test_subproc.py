@@ -1,5 +1,6 @@
 import sys
 import pytest
+import shlex
 
 from insights.util import subproc
 
@@ -7,6 +8,13 @@ from insights.util import subproc
 def test_call():
     result = subproc.call('echo -n hello')
     assert result == b'hello'
+
+
+def test_call_list_of_lists():
+    cmd = "echo -n ' hello '"
+    cmd = shlex.split(cmd)
+    result = subproc.call([cmd, ["grep", "-F", "hello"]])
+    assert "hello" in result
 
 
 def test_call_timeout():

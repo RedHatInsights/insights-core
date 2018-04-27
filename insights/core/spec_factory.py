@@ -14,6 +14,7 @@ from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import subproc
+import shlex
 
 log = logging.getLogger(__name__)
 
@@ -450,7 +451,10 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
     Executable a simple command that has no dynamic arguments
 
     Args:
-        cmd (str): the command to execute
+        cmd (list of lists): the command(s) to execute. Breaking apart a command
+            string that might contain multiple commands separated by a pipe,
+            getting them ready for subproc operations.
+            IE. A command with filters applied
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -475,7 +479,7 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
         if split:
             filters = "\n".join(get_filters(inner))
         if filters:
-            command = [cmd.split(" ")] + [["grep", "-F", filters]]
+            command = [shlex.split(cmd)] + [["grep", "-F", filters]]
             raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
         else:
             raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
@@ -498,7 +502,10 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
 
     Args:
         provider (list): a list of elements or tuples.
-        cmd (str): a command with substitution parameters.
+        cmd (list of lists): a command with substitution parameters. Breaking
+            apart a command string that might contain multiple commands
+            separated by a pipe, getting them ready for subproc operations.
+            IE. A command with filters applied
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -533,7 +540,7 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
                 if split:
                     filters = "\n".join(get_filters(inner))
                 if filters:
-                    command = [the_cmd.split(" ")] + [["grep", "-F", filters]]
+                    command = [shlex.split(the_cmd)] + [["grep", "-F", filters]]
                     raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
                 else:
                     raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
