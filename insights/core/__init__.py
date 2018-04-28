@@ -7,6 +7,7 @@ import re
 import shlex
 import yaml
 import six
+
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException

@@ -6,7 +6,7 @@ DICT = {'dmode': '0500', 'relatime': True, 'uid': '0',
         'iocharset': 'utf8', 'gid': '0', 'mode': '0400', 'ro': True,
         'nosuid': True, 'uhelper': 'udisks2', 'nodev': True}
 
-DICT_DOC = {"fact1":"fact 1", "fact2":"fact 2", "fact3":"fact 3"}
+DICT_DOC = {"fact1": "fact 1", "fact2": "fact 2", "fact3": "fact 3"}
 
 
 def test_attribute_dict_exp():
@@ -32,8 +32,8 @@ def test_attribute_dict_with_fixed_attributes():
     assert d_obj.xmode == 'TEST'
     assert d_obj.nosuid is True
 
+
 def test_attribute_dict_doc_examples():
-    attrs = {'nosuid': False, 'mode': '', 'xmode': 'TEST'}
     d_obj = AttributeDict(data=DICT_DOC, attrs={'fact0': 'fact 0', 'fact1': ''})
     assert d_obj.fact0 == 'fact 0'
     assert 'fact0' not in d_obj
