@@ -1296,7 +1296,7 @@ class AttributeDict(dict):
         ... "fact2":"fact 2"
         ... "fact3":"fact 3"
         ... }
-        >>> d_obj = AttributeDict(data=data, attrs={'fact0': 'fact 0', 'fact1': ''})
+        >>> d_obj = AttributeDict(data, attrs={'fact0': 'fact 0', 'fact1': ''})
         {'fact0': 'fact 0', fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
         >>> d_obj.fact0             # There is such an attribute: 'fact0'
         'fact 0'

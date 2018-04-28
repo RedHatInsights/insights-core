@@ -30,7 +30,7 @@ class Limits(AttributeDict):
             'units': ''
     }
 
-    def __init__(self, data):
+    def __init__(self, data={}):
         super(Limits, self).__init__(data, attrs=Limits.attrs)
 
 
