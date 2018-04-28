@@ -85,7 +85,7 @@ class BootEntry(AttributeDict):
             'cmdline': '',
     }
 
-    def __init__(self, data):
+    def __init__(self, data={}):
         super(BootEntry, self).__init__(data, attrs=BootEntry.attrs)
 
 
