@@ -21,8 +21,8 @@ are listed in the same order as in the command output:
  * ``mount_label`` - Only present if optional label is present
  * ``mount_clause`` - Full string from command output
 
-The `` mount_options`` is stored as a :class:`MountOpts` object contains below
-fixed attributes:
+The ``mount_options`` is wrapped as a :class:`MountOpts` object which contains
+below fixed attributes:
 
 * ``rw`` - Read write
 * ``ro`` - Read only
@@ -94,19 +94,19 @@ class MountOpts(AttributeDict):
         inode64 (bool): "inode64" is enabled or not
         noquota (bool): Disk quotas are enforced or not
     """
-    fixed_attrs = {
-        'rw': AttributeDict.type_info(bool, False),
-        'ro': AttributeDict.type_info(bool, False),
-        'defaults': AttributeDict.type_info(bool, False),
-        'relatime': AttributeDict.type_info(bool, False),
-        'seclabel': AttributeDict.type_info(bool, False),
-        'attr2': AttributeDict.type_info(bool, False),
-        'inode64': AttributeDict.type_info(bool, False),
-        'noquota': AttributeDict.type_info(bool, False)
+    attrs = {
+        'rw': False,
+        'ro': False,
+        'defaults': False,
+        'relatime': False,
+        'seclabel': False,
+        'attr2': False,
+        'inode64': False,
+        'noquota': False
     }
 
-    def __init__(self, data):
-        super(MountOpts, self).__init__(data, fixed_attrs=MountOpts.fixed_attrs)
+    def __init__(self, data={}):
+        super(MountOpts, self).__init__(data, attrs=MountOpts.attrs)
 
 
 class MountEntry(AttributeDict):
@@ -122,16 +122,16 @@ class MountEntry(AttributeDict):
         mount_type (str): Name of filesystem type
         mount_options (MountOpts): Mount options as a :class:`insights.parsers.mount.MountOpts` object
     """
-    fixed_attrs = {
-            'mount_clause': AttributeDict.type_info(str, ''),
-            'filesystem': AttributeDict.type_info(str, ''),
-            'mount_point': AttributeDict.type_info(str, ''),
-            'mount_type': AttributeDict.type_info(str, ''),
-            'mount_options': AttributeDict.type_info(MountOpts, MountOpts({})),
+    attrs = {
+            'mount_clause': '',
+            'filesystem': '',
+            'mount_point': '',
+            'mount_type': '',
+            'mount_options': MountOpts(),
     }
 
-    def __init__(self, data):
-        super(MountEntry, self).__init__(data, fixed_attrs=MountEntry.fixed_attrs)
+    def __init__(self, data={}):
+        super(MountEntry, self).__init__(data, attrs=MountEntry.attrs)
 
 
 @parser(Specs.mount)

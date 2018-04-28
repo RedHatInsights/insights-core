@@ -24,14 +24,14 @@ class Limits(AttributeDict):
         soft_limit(str): Soft limit
         units(str): Unit of the limit value
     """
-    fixed_attrs = {
-            'hard_limit': AttributeDict.type_info(str, ''),
-            'soft_limit': AttributeDict.type_info(str, ''),
-            'units': AttributeDict.type_info(str, ''),
+    attrs = {
+            'hard_limit': '',
+            'soft_limit': '',
+            'units': ''
     }
 
     def __init__(self, data):
-        super(Limits, self).__init__(data, fixed_attrs=Limits.fixed_attrs)
+        super(Limits, self).__init__(data, attrs=Limits.attrs)
 
 
 class ProcLimits(Parser):

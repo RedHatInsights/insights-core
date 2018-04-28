@@ -1288,8 +1288,7 @@ class FileListing(Parser):
 
 class AttributeDict(dict):
     """
-    Class to convert the access to the keys in ``fixed_attrs`` dictionary as
-    attributes.
+    Class to convert the access to the keys in ``attrs`` dictionary as attributes.
 
     Examples:
         >>> data = {
@@ -1297,52 +1296,46 @@ class AttributeDict(dict):
         ... "fact2":"fact 2"
         ... "fact3":"fact 3"
         ... }
-        >>> d_obj = AttributeDict(data, fixed_attrs={'fact0': 'fact 0', 'fact1': ''})
+        >>> d_obj = AttributeDict(data=data, attrs={'fact0': 'fact 0', 'fact1': ''})
         {'fact0': 'fact 0', fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> 'fact0' in d_obj
-        True
-        >>> d_obj['fact0']
+        >>> d_obj.fact0             # There is such an attribute: 'fact0'
         'fact 0'
-        >>> d_obj.get('fact1')
-        'fact 1'
-        >>> d_obj.fact0
-        'fact 0'
-        >>> d_obj.fact1
-        'fact 1'
-        >>> 'fact2' in d_obj
-        True
-        >>> hasattr(d_obj, 'fact2')
+        >>> 'fact0' in d_obj        # But 'fact0' is not in the dictionary
         False
+        >>> d_obj.get('fact0')
+        None
+        >>> d_obj.fact1             # There is such an attribute: 'fact1'
+        'fact 1'
+        >>> 'fact1' in d_obj        # And 'fact1' is in the dictionary
+        True
+        >>> d_obj['fact1']
+        'fact 1'
+        >>> hasattr(d_obj, 'fact2') # No such attribute 'fact2'
+        False
+        >>> 'fact2' in d_obj        # But 'fact2' is in the dictionary
+        True
+        >>> d_obj['fact2']
+        'fact 2'
 
     Arguments:
-        (dict): The base dictionary will work on
-        fixed_attrs (dict): The fixed keys should be specified in this directory
-            with the values in type :class:`type_info`
+        data (dict): The base dictionary will work on
+        attrs (dict): The key-value pairs that will be fixed as attributes.
+            The key is the attribute and the value is the default value of the
+            attribute when there is no such key in ``data``.
 
     Raises:
-        TypeError: When more than one directories are passed
-        ValueError: When no or an empty 'fixed_attrs' is passed
+        ValueError: When no or an empty ``attrs`` is passed
 
     """
-    type_info = namedtuple('type_info', field_names=['type', 'default'])
-    """namedtuple: Type for the values of the ``fixed_attrs`` dictionary"""
-    def __init__(self, *args, **kwargs):
-        if len(args) > 1:
-            raise TypeError(
-                "AttributeDict takes at most 1 argument ({n} given)".format(
-                    n=len(args)
-                )
-            )
 
-        fixed_attrs = kwargs.pop('fixed_attrs', {})
-        if not fixed_attrs:
-            raise ValueError("The 'fixed_attrs' must be specified")
+    def __init__(self, data={}, attrs={}):
+        if not attrs:
+            raise ValueError("Argument 'attrs' must be specified as a dict and cannot be empty.")
 
-        data = args[0] if args else {}
-        for k, v in fixed_attrs.items():
+        for k, v in attrs.items():
             setattr(self, k, data.get(k, v))
 
-        super(AttributeDict, self).__init__(*args, **kwargs)
+        super(AttributeDict, self).__init__(data)
 
     def __iter__(self):
         """

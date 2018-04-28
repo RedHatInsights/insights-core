@@ -80,13 +80,13 @@ class BootEntry(AttributeDict):
         name (str): Name of the boot entry
         cmdline (str): Cmdline of the boot entry
     """
-    fixed_attrs = {
-            'name': AttributeDict.type_info(str, ''),
-            'cmdline': AttributeDict.type_info(str, ''),
+    attrs = {
+            'name': '',
+            'cmdline': '',
     }
 
     def __init__(self, data):
-        super(BootEntry, self).__init__(data, fixed_attrs=BootEntry.fixed_attrs)
+        super(BootEntry, self).__init__(data, attrs=BootEntry.attrs)
 
 
 class GrubConfig(LegacyItemAccess, Parser):

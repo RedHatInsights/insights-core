@@ -22,10 +22,10 @@ option's value set to True so it can be conveniently searched.
 
 This data, as above, is available in the ``data`` property:
 
-* As wrapped as an :class:`FSTabEntry`, each column can also be accessed as a
+* Wrapped as an :class:`FSTabEntry`, each column can also be accessed as a
   property with the same name.
-* The `` fs_mntops`` is wrpped as a :class:`insights.parsers.mount.MountOpts`
-  object contains below fixed attributes:
+* The ``fs_mntops`` is wrapped as a :class:`insights.parsers.mount.MountOpts`
+  which contains below fixed attributes:
 
 * ``rw`` - Read write
 * ``ro`` - Read only
@@ -112,19 +112,19 @@ class FSTabEntry(AttributeDict):
         fs_passno (int): check the filesystem on reboot in this pass number
         raw (str): the RAW line which is useful to front-end
     """
-    fixed_attrs = {
-        'fs_spec': AttributeDict.type_info(str, ''),
-        'fs_file': AttributeDict.type_info(str, ''),
-        'fs_vfstype': AttributeDict.type_info(str, ''),
-        'raw_fs_mntops': AttributeDict.type_info(str, ''),
-        'fs_mntops': AttributeDict.type_info(MountOpts, MountOpts({})),
-        'fs_freq': AttributeDict.type_info(int, 0),
-        'fs_passno': AttributeDict.type_info(int, 0),
-        'raw': AttributeDict.type_info(str, ''),
+    attrs = {
+        'fs_spec': '',
+        'fs_file': '',
+        'fs_vfstype': '',
+        'raw_fs_mntops': '',
+        'fs_mntops': MountOpts(),
+        'fs_freq': 0,
+        'fs_passno': 0,
+        'raw': '',
     }
 
-    def __init__(self, data):
-        super(FSTabEntry, self).__init__(data, fixed_attrs=FSTabEntry.fixed_attrs)
+    def __init__(self, data={}):
+        super(FSTabEntry, self).__init__(data, attrs=FSTabEntry.attrs)
 
 
 @parser(Specs.fstab)
