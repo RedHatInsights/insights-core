@@ -185,7 +185,7 @@ class DataCollector(object):
         for c in conf['commands']:
             if c['command'] in rm_conf.get('commands', []):
                 logger.warn("WARNING: Skipping command %s", c['command'])
-            else:
+            elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
                     cmd_spec = InsightsCommand(s, exclude, self.mountpoint)
