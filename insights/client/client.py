@@ -282,7 +282,10 @@ def collect(rc=0):
         logger.debug("Scanning for matching container/image.")
 
         from containers import get_targets
-        target = get_targets()[0]
+        targets = get_targets()
+        if len(targets) == 0:
+            sys.exit(constants.sig_kill_bad)
+        target = targets[0]
 
     # the host
     else:
