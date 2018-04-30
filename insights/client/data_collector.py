@@ -183,6 +183,18 @@ class DataCollector(object):
             return
 
         for c in conf['commands']:
+
+            # workaround for images-- GTFO for any commands other
+            #  than installed-rpms. Assume a mountpoint
+            #  other than / is a mounted image
+            if (self.mountpoint != '/' and
+                not (
+                    c['command'].startswith('/bin/rpm') and
+                    ' -V ' not in c['command'])
+                ):
+                logger.debug('Image scan. Skipping command %s', c['command'])
+                continue
+
             if c['command'] in rm_conf.get('commands', []):
                 logger.warn("WARNING: Skipping command %s", c['command'])
             else:
