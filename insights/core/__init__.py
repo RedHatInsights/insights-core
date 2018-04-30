@@ -1316,7 +1316,3 @@ class AttributeDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttributeDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
-
-    def __iter__(self):
-        for k, v in self.__dict__.iteritems():
-            yield k, v
