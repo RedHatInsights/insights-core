@@ -188,10 +188,8 @@ class DataCollector(object):
             #  than installed-rpms. Assume a mountpoint
             #  other than / is a mounted image
             if (self.mountpoint != '/' and
-                not (
-                    c['command'].startswith('/bin/rpm') and
-                    ' -V ' not in c['command'])
-                ):
+               not (c['command'].startswith('/bin/rpm') and
+               ' -V ' not in c['command'])):
                 logger.debug('Image scan. Skipping command %s', c['command'])
                 continue
 
