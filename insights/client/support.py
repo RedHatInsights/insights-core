@@ -1,6 +1,7 @@
 '''
 Module responsible for running the --support option for collecting debug information
 '''
+from __future__ import absolute_import
 import logging
 import shlex
 import re
@@ -12,9 +13,9 @@ import subprocess
 from insights import get_nvr
 from subprocess import Popen, PIPE, STDOUT
 
-from constants import InsightsConstants as constants
-from connection import InsightsConnection
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .connection import InsightsConnection
+from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)

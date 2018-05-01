@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import argparse
 import os
@@ -49,7 +50,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    print os.path.join("insights_commands", mangle_command(args.command))
+    print(os.path.join("insights_commands", mangle_command(args.command)))
 
 
 if __name__ == "__main__":

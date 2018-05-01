@@ -62,14 +62,14 @@ class GnocchiConf(IniConfigFile):
 
     Examples:
 
-        >>> conf.sections()
-        ['api', 'archive_policy', 'indexer', 'metricd', 'oslo_middleware', 'oslo_policy', 'statsd', 'storage', 'keystone_authtoken']
+        >>> sorted(conf.sections()) == sorted([u'api', u'archive_policy', u'indexer', u'metricd', u'oslo_middleware', u'oslo_policy', u'statsd', u'storage', u'keystone_authtoken'])
+        True
         >>> 'storage' in conf
         True
         >>> conf.has_option('indexer', 'url')
         True
-        >>> conf.get('indexer', 'url')
-        'mysql+pymysql://gnocchi:exampleabckeystring@192.168.0.1/gnocchi?charset=utf8'
+        >>> conf.get('indexer', 'url') == u'mysql+pymysql://gnocchi:exampleabckeystring@192.168.0.1/gnocchi?charset=utf8'
+        True
         >>> conf.getint("statsd", "flush_delay")
         10
 
@@ -100,7 +100,7 @@ class GnocchiMetricdLog(LogFileOutput):
         >>> log.get('ERROR')
         [{'raw_message': '2017-04-13 21:06:11.676 114807 ERROR tooz.drivers.redis ToozError: Cannot extend an unlocked lock'}]
         >>> from datetime import datetime
-        >>> list(log.get_after(datetime(2017, 04, 12, 19, 36, 38)))
+        >>> list(log.get_after(datetime(2017, 4, 12, 19, 36, 38)))
         [{'raw_message': '2017-04-13 21:06:11.676 114807 ERROR tooz.drivers.redis ToozError: Cannot extend an unlocked lock'}]
 
     """

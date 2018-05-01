@@ -1,6 +1,7 @@
 """
 Rules for data collection
 """
+from __future__ import absolute_import
 import hashlib
 import json
 import logging
@@ -12,8 +13,8 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)

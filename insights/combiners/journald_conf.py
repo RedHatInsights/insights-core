@@ -150,12 +150,12 @@ class JournaldConfAll(object):
 
         files_shadowed_not_used = set()  # full file paths of files that are shadowed by others
         effective_confd = {}  # deduplicated *.conf files, taking shadowing /usr by /etc into account
-        for file_name, parser_instance in usr_confd.iteritems():
+        for file_name, parser_instance in usr_confd.items():
             effective_confd[file_name] = parser_instance
         # /etc/systemd/journald.conf.d/*.conf shadow /usr/lib/systemd/journald.conf.d/*.conf files
         #  with the same name. The following loop overwrites these same-named files by their /etc
         #  counterparts:
-        for file_name, parser_instance in etc_confd.iteritems():
+        for file_name, parser_instance in etc_confd.items():
             if file_name in effective_confd:
                 shadowed_file_name = effective_confd[file_name].file_path
                 if shadowed_file_name:
@@ -164,7 +164,7 @@ class JournaldConfAll(object):
             effective_confd[file_name] = parser_instance
 
         files_shadowed_not_used = sorted(files_shadowed_not_used)  # deterministic behavior, sorted paths
-        sorted_file_names = sorted(effective_confd.keys())
+        sorted_file_names = sorted(effective_confd.keys(), key=str)
 
         parsers_list = [effective_confd[file_name] for file_name in sorted_file_names]
         if central_file_lowest_prio:
@@ -181,7 +181,7 @@ class JournaldConfAll(object):
                 if parser_instance.file_path:
                     # empty and None file names are not added (that is invalid anyway), see test_11
                     files_used_priority_order.append(parser_instance.file_path)
-                for k, v in parser_instance.active_settings.iteritems():
+                for k, v in parser_instance.active_settings.items():
                     resulting_options_with_file_name[k] = (v, parser_instance.file_path)
 
         # not named simply as `active_settings` so as not to confuse the contents with the

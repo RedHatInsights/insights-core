@@ -1,24 +1,30 @@
 """
 Module handling HTTP Requests and Connection Diagnostics
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import requests
 import os
+import six
 import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
 import socket
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 from OpenSSL import SSL, crypto
 
-from utilities import (determine_hostname,
-                       generate_machine_id,
-                       write_to_disk,
-                       write_unregistered_file)
-from cert_auth import rhsmCertificate
-from constants import InsightsConstants as constants
-from config import CONFIG as config
-from schedule import get_scheduler
+from .utilities import (determine_hostname,
+                        generate_machine_id,
+                        write_to_disk,
+                        write_unregistered_file)
+from .cert_auth import rhsmCertificate
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
+from .schedule import get_scheduler
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -56,7 +62,7 @@ class InsightsConnection(object):
         self.password = config["password"]
 
         self.cert_verify = config["cert_verify"]
-        if type(self.cert_verify) in (str, unicode):
+        if type(self.cert_verify) in six.string_types:
             if self.cert_verify.lower() == 'false':
                 self.cert_verify = False
             elif self.cert_verify.lower() == 'true':
@@ -237,11 +243,11 @@ class InsightsConnection(object):
                 else:
                     logger.info("Connection failed")
                     return False
-            except requests.ConnectionError, exc:
+            except requests.ConnectionError as exc:
                 last_ex = exc
                 logger.error(
                     "Could not successfully connect to: %s", test_url + ext)
-                print exc
+                print(exc)
         if last_ex:
             raise last_ex
 
@@ -312,9 +318,9 @@ class InsightsConnection(object):
             logger.debug('---\nCertificate chain')
             for depth, c in enumerate(certs):
                 logger.debug(self._generate_cert_str(c.get_subject(),
-                                                    str(depth) + ' s :/'))
+                                                     str(depth) + ' s :/'))
                 logger.debug(self._generate_cert_str(c.get_issuer(),
-                                                    '  i :/'))
+                                                     '  i :/'))
             # print server cert
             server_cert = ssl_conn.get_peer_certificate()
             logger.debug('---\nServer certificate')
@@ -360,8 +366,8 @@ class InsightsConnection(object):
                 logger.info("\nConnectivity tests completed with some errors")
                 logger.info("See %s for more details.", config['logging_file'])
                 rc = 1
-        except requests.ConnectionError, exc:
-            print exc
+        except requests.ConnectionError as exc:
+            print(exc)
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
             logger.error('Additional information may be in'
@@ -678,7 +684,7 @@ class InsightsConnection(object):
         except ImportError:
             magic = None
             logger.debug('python-magic not installed, using backup function...')
-            from utilities import magic_plan_b
+            from .utilities import magic_plan_b
             mime_type = magic_plan_b(data_collected)
 
         files = {

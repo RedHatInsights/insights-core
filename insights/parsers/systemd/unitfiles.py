@@ -109,7 +109,7 @@ class UnitFiles(Parser):
         return self.services.get(service_name, None)
 
     def exists(self, service_name):
-	"""
+        """
         Checks if the service is listed in systemctl.
 
         Args:

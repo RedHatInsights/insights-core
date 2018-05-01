@@ -98,7 +98,7 @@ class MongodbConf(Parser, LegacyItemAccess):
                 self.data = yaml.safe_load('\n'.join(content))
             else:
                 self.data = split_kv_pairs(content, use_partition=True)
-        except Exception, e:
+        except Exception as e:
             raise ParseException('mongod conf parse failed: %s', e)
 
     def _file_type_is_yaml(self, content):

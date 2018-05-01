@@ -79,9 +79,9 @@ class BrctlShow(Parser):
         self._group_by_iface = {}
         self.data = []
         if "\t" in content[0]:
-            head_line = filter(None, [v.strip() for v in content[0].split('\t')])
+            head_line = list(filter(None, [v.strip() for v in content[0].split('\t')]))
         else:
-            head_line = filter(None, [v.strip() for v in content[0].split('  ')])
+            head_line = list(filter(None, [v.strip() for v in content[0].split('  ')]))
         iface = head_line[3] if len(head_line) >= 3 else None
         if iface:
             for line in content[1:]:
@@ -100,6 +100,6 @@ class BrctlShow(Parser):
                     br_mapping[iface] = iface_lst
             for entry in self.data:
                 self._group_by_iface[entry['bridge name']] = \
-                    dict((k, v) for (k, v) in entry.iteritems() if k != 'bridge name')
+                    dict((k, v) for (k, v) in entry.items() if k != 'bridge name')
         else:
             raise ParseException("Invalid Data Found")

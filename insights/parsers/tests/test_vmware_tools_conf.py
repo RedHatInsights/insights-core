@@ -18,7 +18,7 @@ vmtoolsd.data = /tmp/vmtoolsd.log
 
 def test_vmware_tools_conf():
     conf = vmware_tools_conf.VMwareToolsConf(context_wrap(CONF))
-    assert conf.sections() == ['guestinfo', 'logging']
+    assert list(conf.sections()) == ['guestinfo', 'logging']
     assert conf.has_option('guestinfo', 'disable-query-diskinfo') is True
     assert conf.getboolean('guestinfo', 'disable-query-diskinfo') is True
     assert conf.get('guestinfo', 'disable-query-diskinfo') == 'true'
