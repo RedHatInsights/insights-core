@@ -1,6 +1,7 @@
 """
 Handle adding files and preparing the archive for upload
 """
+from __future__ import absolute_import
 import time
 import os
 import shutil
@@ -9,8 +10,8 @@ import shlex
 import logging
 import tempfile
 
-from utilities import determine_hostname, _expand_paths, write_data_to_file
-from insights_spec import InsightsFile, InsightsCommand
+from .utilities import determine_hostname, _expand_paths, write_data_to_file
+from .insights_spec import InsightsFile, InsightsCommand
 
 logger = logging.getLogger(__name__)
 

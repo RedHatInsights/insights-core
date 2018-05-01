@@ -37,8 +37,8 @@ class LsSCSI(Parser):
 
     Examples:
 
-        >>> lsscsi[0]
-        {'Model': 'Controller', 'Vendor': 'IET', 'HCTL': '[1:0:0:0]', 'Peripheral-Type': 'storage', 'Primary-Device-Node': '-', 'Revision': '0001'}
+        >>> lsscsi[0] == {'Model': 'Controller', 'Vendor': 'IET', 'HCTL': '[1:0:0:0]', 'Peripheral-Type': 'storage', 'Primary-Device-Node': '-', 'Revision': '0001'}
+        True
         >>> lsscsi.device_nodes
         ['-', '/dev/sr0', '/dev/sdb', '/dev/st0']
         >>> len(lsscsi.data)

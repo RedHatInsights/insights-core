@@ -18,7 +18,7 @@ def test__assert_type_gzip_no_tar():
     try:
         archive_path = os.path.join(tmp_dir, "file.log.gz")
         with closing(gzip.open(archive_path, 'wb')) as f:
-            f.write("testing contents")
+            f.write(b"testing contents")
 
         tar_ex = archives.TarExtractor()
         with pytest.raises(archives.InvalidArchive) as cm:

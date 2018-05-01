@@ -2,7 +2,6 @@ from __future__ import print_function
 import hashlib
 import os
 import sys
-import types
 from .tool import TestArchive, Transform, MultiArchive
 from insights.tests import InputData
 from insights.core import load_package
@@ -63,7 +62,7 @@ def build_integration_test_archive(module_name, i, test_tuple, dest, machine_id=
         print("X", end="")
     else:
         if console:
-            print("m" if isinstance(input_data, types.ListType) else ".", end="")
+            print("m" if isinstance(input_data, list) else ".", end="")
             sys.stdout.flush()
         return {
             "module": module_name,

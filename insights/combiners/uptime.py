@@ -14,15 +14,16 @@ Examples:
     03:45
 
 """
-
+from __future__ import division
 from collections import namedtuple
 from insights.core.plugins import combiner
 from insights.parsers.uptime import Uptime as upt
 from insights.parsers.facter import Facter
 
 Uptime = namedtuple("Uptime",
-                    field_names=["currtime", "updays", "uphhmm",
-                             "users", "loadavg", "uptime"])
+                    field_names=[
+                        "currtime", "updays", "uphhmm",
+                        "users", "loadavg", "uptime"])
 """namedtuple: Type for storing the uptime information."""
 
 
@@ -48,9 +49,9 @@ def uptime(ut, facter):
     if ft and hasattr(ft, 'uptime_seconds'):
         import datetime
         secs = int(ft.uptime_seconds)
-        up_dd = secs / (3600 * 24)
-        up_hh = (secs % (3600 * 24)) / 3600
-        up_mm = (secs % 3600) / 60
+        up_dd = secs // (3600 * 24)
+        up_hh = (secs % (3600 * 24)) // 3600
+        up_mm = (secs % 3600) // 60
         updays = str(up_dd) if up_dd > 0 else ''
         uphhmm = '%02d:%02d' % (up_hh, up_mm)
         up_time = datetime.timedelta(seconds=secs)

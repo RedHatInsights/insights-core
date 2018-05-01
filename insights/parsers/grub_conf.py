@@ -104,7 +104,7 @@ class GrubConfig(LegacyItemAccess, Parser):
             try:
 
                 if line is None:
-                    line = line_iter.next()
+                    line = next(line_iter)
 
                 if line.startswith('title '):
                     last_line = _parse_title(line_iter, line, conf)
@@ -378,7 +378,7 @@ def _parse_script(list, line, line_iter):
     """
     ifIdx = 0
     while (True):
-        line = line_iter.next()
+        line = next(line_iter)
         if line.startswith("fi"):
             if ifIdx == 0:
                 return
@@ -405,7 +405,7 @@ def _parse_menu_entry(line_iter, cur_line, conf):
         menu.append(_parse_cmd(v))
 
     while (True):
-        line = line_iter.next()
+        line = next(line_iter)
         if "{" in line:
             n, v = _parse_line("{", line)
             if v:
@@ -430,7 +430,7 @@ def _parse_title(line_iter, cur_line, conf):
     conf['title'].append(title)
     title.append(('title_name', cur_line.split('title', 1)[1].strip()))
     while (True):
-        line = line_iter.next()
+        line = next(line_iter)
         if line.startswith("title "):
             return line
 

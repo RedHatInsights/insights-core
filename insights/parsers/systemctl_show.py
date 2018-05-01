@@ -54,7 +54,7 @@ class SystemctlShow(LegacyItemAccess, Parser):
         data = split_kv_pairs(content, use_partition=False)
 
         """Remove empty key"""
-        self.data = dict((k, v) for k, v in data.iteritems() if not v == '')
+        self.data = dict((k, v) for k, v in data.items() if not v == '')
 
 
 @parser(Specs.systemctl_cinder_volume)

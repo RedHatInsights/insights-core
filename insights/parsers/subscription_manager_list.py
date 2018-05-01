@@ -19,6 +19,7 @@ from . import keyword_search
 from insights.specs import Specs
 from datetime import datetime
 import re
+import six
 
 
 class SubscriptionManagerList(Parser):
@@ -72,7 +73,7 @@ class SubscriptionManagerList(Parser):
             match = cont_val_re.search(line)
             if match:
                 # Add this value to the current key:
-                if isinstance(current_record[key], str):
+                if isinstance(current_record[key], six.string_types):
                     # Convert the single string into a list
                     current_record[key] = [
                         current_record[key], match.group('value')
@@ -148,14 +149,10 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         True
         >>> sub1['Status Details']  # Keys appear as given
         'Subscription is current'
-        >>> type(sub1['Provides'])  # Provides lines as a list
-        <type 'list'>
         >>> sub1['Provides'][1]
         'Red Hat Software Collections Beta (for RHEL Server)'
         >>> sub1['Starts']  # Basic field as text - note month/day/year
         '11/14/14'
-        >>> type(sub1['Starts timestamp'])  # Converted to date
-        <type 'datetime.datetime'>
         >>> sub1['Starts timestamp'].year
         2014
         >>> consumed.all_current  # Are all subscriptions listed as current?

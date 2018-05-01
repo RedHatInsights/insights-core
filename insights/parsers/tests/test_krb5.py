@@ -93,7 +93,7 @@ def test_krb5configuration():
     assert not common_conf_info.has_option("realms", "nosuchoption")
     assert not common_conf_info.has_option("nosucsection", "nosuchoption")
     assert not common_conf_info.options("realmsno")
-    assert common_conf_info.options("logging") == ['default', 'admin_server', 'kdc']
+    assert sorted(common_conf_info.options("logging")) == sorted(['default', 'admin_server', 'kdc'])
     assert common_conf_info.include == ["/etc/krb5test.conf"]
     assert common_conf_info.includedir == ["/etc/krb5.conf.d/"]
     assert common_conf_info.module == ["/etc/krb5test.conf:residual"]

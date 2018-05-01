@@ -59,14 +59,14 @@ Sample input data looks like::
 
 Examples:
 
-    >>> ipt.rules[0]
-    {'target': 'ACCEPT', 'chain': 'INPUT', 'rule': '-m state --state RELATED,ESTABLISHED -j ACCEPT', 'table': 'filter', 'target_options': None, 'target_action': 'jump', 'constraints': '-m state --state RELATED,ESTABLISHED'}
-    >>> ipt.get_chain('INPUT')[1]
-    {'target': 'ACCEPT', 'chain': 'INPUT', 'rule': '-s 192.168.0.0/24 -j ACCEPT', 'table': 'filter', 'target_options': None, 'target_action': 'jump', 'constraints': '-s 192.168.0.0/24'}
-    >>> ipt.table_chains('mangle')
-    {'FORWARD': [], 'INPUT': [], 'POSTROUTING': [], 'PREROUTING': [], 'OUTPUT': []}
-    >>> ipt.get_table('nat')[-1]
-    {'policy': 'ACCEPT', 'table': 'nat', 'byte_counter': 450, 'name': 'OUTPUT', 'packet_counter': 3}
+    >>> ipt.rules[0] == {'target': 'ACCEPT', 'chain': 'INPUT', 'rule': '-m state --state RELATED,ESTABLISHED -j ACCEPT', 'table': 'filter', 'target_options': None, 'target_action': 'jump', 'constraints': '-m state --state RELATED,ESTABLISHED'}
+    True
+    >>> ipt.get_chain('INPUT')[1] == {'target': 'ACCEPT', 'chain': 'INPUT', 'rule': '-s 192.168.0.0/24 -j ACCEPT', 'table': 'filter', 'target_options': None, 'target_action': 'jump', 'constraints': '-s 192.168.0.0/24'}
+    True
+    >>> ipt.table_chains('mangle') == {'FORWARD': [], 'INPUT': [], 'POSTROUTING': [], 'PREROUTING': [], 'OUTPUT': []}
+    True
+    >>> ipt.get_table('nat')[-1] == {'policy': 'ACCEPT', 'table': 'nat', 'byte_counter': 450, 'name': 'OUTPUT', 'packet_counter': 3}
+    True
 """
 
 from .. import Parser, parser, get_active_lines

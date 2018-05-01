@@ -25,10 +25,6 @@ Sample output of the command::
 
 Examples:
     >>> instances = shared[SAPHostInstances]
-    >>> type(instances)
-    <class 'insights.parsers.saphostctrl_instances.SAPHostInstances'>
-    >>> type(instances.data)
-    <type 'list'>
     >>> len(instances.data)
     2
     >>> h1 = instances.data[0]
@@ -43,13 +39,9 @@ Examples:
     >>> h1['instance_type']  # note lower case for inferred data
     'hana'
     >>> svcs_list = instances.search(FullQualifiedHostname__contains='svcs.example.com')  # Find instances by listed properties
-    >>> type(svcs_list)
-    <type 'list'>
     >>> len(svcs_list)
     0
     >>> d_list = instances.search(instance_type='hana')  # Find instances by derived properties
-    >>> type(d_list)
-    <type 'list'>
     >>> d_list[0] == h1  # List contains instances
     True
 
@@ -143,8 +135,6 @@ class SAPHostInstances(Lssap):
 
         Examples:
             >>> d_list = instances.search(instance_type='hana')  # Find instances by derived properties
-            >>> type(d_list)
-            <type 'list'>
             >>> d_list[0] == instances.data[0]  # List contains instances
             True
             >>> len(instances.search(SapVersionInfo__contains='changelist 1779613'))

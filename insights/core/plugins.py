@@ -5,7 +5,6 @@ specializes their interfaces and execution model where required.
 
 import logging
 import traceback
-import types
 
 from functools import partial
 
@@ -265,7 +264,7 @@ class ValidationException(Exception):
 
 def validate_response(r):
     RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key"])
-    if not isinstance(r, types.DictType):
+    if not isinstance(r, dict):
         raise ValidationException("Response is not a dict", type(r))
     if "type" not in r:
         raise ValidationException("Response requires 'type' key", r)
@@ -275,5 +274,5 @@ def validate_response(r):
         error_key = r.get("error_key")
         if not error_key:
             raise ValidationException("Rule response missing error_key", r)
-        elif not isinstance(error_key, types.StringTypes):
+        elif not isinstance(error_key, str):
             raise ValidationException("Response contains invalid error_key type", type(error_key))

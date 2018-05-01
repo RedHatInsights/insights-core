@@ -124,7 +124,7 @@ class SOSCleaner:
             formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s', '%m-%d %H:%M:%S')
             console.setFormatter(formatter)
             console.setLevel(console_log_level)
-	self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
         if not self.quiet:
             self.logger.addHandler(console) # pragma: no cover
 
@@ -164,7 +164,7 @@ class SOSCleaner:
 
                     return return_path
 
-                except Exception,e: # pragma: no cover
+                except Exception as e: # pragma: no cover
                     self.logger.exception(e)
                     raise Exception('DecompressionError, Unable to decrypt LZMA compressed file %s', path)
 
@@ -178,7 +178,7 @@ class SOSCleaner:
 
                     return return_path
 
-                except Exception, e:    # pragma: no cover
+                except Exception as e:    # pragma: no cover
                     self.logger.exception(e)
                     raise Exception("DeCompressionError: Unable to De-Compress %s into %s", path, self.origin_path)
         else:   # pragma: no cover
@@ -200,7 +200,7 @@ class SOSCleaner:
                     self.logger.debug("Obfuscating IP - %s > %s", ip, new_ip)
                     line = line.replace(ip, new_ip)
             return line
-        except Exception,e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('SubIPError: Unable to Substitute IP Address - %s', ip)
 
@@ -226,7 +226,7 @@ class SOSCleaner:
             self.logger.info('Completed IP Report')
 
             self.ip_report = ip_report_name
-        except Exception,e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating IP Report')
 
@@ -245,7 +245,7 @@ class SOSCleaner:
             self.logger.info('Completed Hostname Report')
 
             self.hn_report = hn_report_name
-        except Exception,e: #pragma: no cover
+        except Exception as e: #pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating Hostname Report')
 
@@ -265,7 +265,7 @@ class SOSCleaner:
 
             self.dn_report = dn_report_name
 
-        except Exception, e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateReport Error: Error Creating Domainname Report')
 
@@ -294,7 +294,7 @@ class SOSCleaner:
                 line = line.replace(self.hostname, self._hn2db(self.hostname))  #catch any non-fqdn instances of the system hostname
 
             return line
-        except Exception,e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('SubHostnameError: Unable to Substitute Hostname/Domainname')
 
@@ -306,7 +306,7 @@ class SOSCleaner:
         try:
             shutil.copytree(self.report, self.dir_path, symlinks=True, ignore=self._skip_file)
 
-        except Exception, e:    #pragma: no cover
+        except Exception as e:    #pragma: no cover
             self.logger.exception(e)
             raise Exception("DestinationEnvironment Error: Cannot Create Destination Environment")
 
@@ -322,7 +322,7 @@ class SOSCleaner:
                     f_archive = f_full.replace(self.report_dir,'')
                     self.logger.debug('adding %s to %s archive', f_archive, self.archive_path)
                     t.add(f_full, arcname=f_archive)
-        except Exception,e: #pragma: no cover
+        except Exception as e: #pragma: no cover
             self.logger.exception(e)
             raise Exception('CreateArchiveError: Unable to create Archive')
 
@@ -343,7 +343,7 @@ class SOSCleaner:
             self.logger.info('Removing Working Directory - %s', self.dir_path)
             shutil.rmtree(self.dir_path)
             self.logger.info('Clean Up Process Complete')
-        except Exception, e:    #pragma: no cover
+        except Exception as e:    #pragma: no cover
             self.logger.exception(e)
 
     def _process_hosts_file(self):
@@ -368,7 +368,7 @@ class SOSCleaner:
             else: # pragma: no cover
                 self.logger.con_out("Unable to Process Hosts File. Hosts File Processing Disabled")
 
-        except Exception, e:    #pragma: no cover
+        except Exception as e:    #pragma: no cover
             self.logger.exception(e)
 
     def _domains2db(self):
@@ -391,7 +391,7 @@ class SOSCleaner:
             self.domain_count = len(self.dn_db)
             return True
 
-        except Exception, e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
 
     def _keywords2db(self):
@@ -414,7 +414,7 @@ class SOSCleaner:
 
             self.kw_count = k_count
 
-        except Exception, e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
 
     def _kw2db(self, keyword):
@@ -452,7 +452,7 @@ class SOSCleaner:
 
             return hostname, domainname
 
-        except IOError, e: #the 'hostname' file doesn't exist or isn't readable for some reason
+        except IOError as e: #the 'hostname' file doesn't exist or isn't readable for some reason
             self.logger.warning("Unable to determine system hostname!!!")
             self.logger.warning("Automatic Hostname Data Obfuscation Will Not Occur!!!")
             self.logger.warning("To Remedy This Situation please enable the 'general' plugin when running sosreport")
@@ -465,7 +465,7 @@ class SOSCleaner:
 
             return hostname, domainname
 
-        except Exception, e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception('GetHostname Error: Cannot resolve hostname from %s') % hostfile
 
@@ -492,7 +492,7 @@ class SOSCleaner:
         ip_num = self._ip2int(ip)
         ip_found = False
         db = self.ip_db
-        for k,v in db.iteritems():
+        for k,v in db.items():
             if v == ip_num:
                 ret_ip = self._int2ip(k)
                 ip_found = True
@@ -513,7 +513,7 @@ class SOSCleaner:
         '''
         db = self.hn_db
         hn_found = False
-        for k,v in db.iteritems():
+        for k,v in db.items():
             if v == hn:  #the hostname is in the database
                 ret_hn = k
                 hn_found = True
@@ -542,7 +542,7 @@ class SOSCleaner:
                 dir_list[dirName] = x
 
             return dir_list
-        except Exception, e: # pragma: no cover
+        except Exception as e: # pragma: no cover
             self.logger.exception(e)
             raise Exception("WalkReport Error: Unable to Walk Report")
 
@@ -583,7 +583,7 @@ class SOSCleaner:
 
                     tmp_file.seek(0)
 
-            except Exception, e: # pragma: no cover
+            except Exception as e: # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CleanFile Error: Cannot Open File For Reading - %s" % f)
 
@@ -593,7 +593,7 @@ class SOSCleaner:
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
-            except Exception, e: # pragma: no cover
+            except Exception as e: # pragma: no cover
                 self.logger.exception(e)
                 raise Exception("CleanFile Error: Cannot Write to New File - %s" % f)
 
@@ -609,11 +609,11 @@ class SOSCleaner:
                 fname = os.path.basename(f)
                 f_new = os.path.join(self.dir_path, fname)
                 shutil.copyfile(f,f_new)
-        except IOError, e:
+        except IOError as e:
             self.logger.con_out("ExtraFileError: %s is not readable or does not exist. Skipping File" % f)
             self.logger.exception(e)
             pass
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("ExtraFileError: Unable to Process Extra File - %s" % f)
 
@@ -628,14 +628,14 @@ class SOSCleaner:
                 os.makedirs(self.dir_path)    # create the dir_path directory
             self._add_extra_files(files)
 
-        except OSError, e: # pragma: no cover
+        except OSError as e: # pragma: no cover
             if e.errno == errno.EEXIST:
                 pass
             else:   # pragma: no cover
                 self.logger.exception(e)
                 raise e
 
-        except Exception, e:    # pragma: no cover
+        except Exception as e:    # pragma: no cover
             self.logger.exception(e)
             raise Exception("CleanFilesOnlyError: unable to process")
 

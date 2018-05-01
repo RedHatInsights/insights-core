@@ -18,7 +18,11 @@ SystemdSystemConf - file ``/etc/systemd/system.conf``
 
 """
 
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 from insights.core import Parser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.parsers import unsplit_lines
@@ -178,7 +182,7 @@ def parse_systemd_ini(content):
 
     Config = cp(dict_type=MultiOrderedDict)
     Config.optionxform = str
-    Config.readfp(StringIO.StringIO('\n'.join(content)))
+    Config.readfp(StringIO('\n'.join(content)))
 
     dict_all = {}
     for section in Config.sections():

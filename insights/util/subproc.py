@@ -4,6 +4,7 @@ import signal
 import subprocess
 from subprocess import Popen
 import sys
+import six
 
 log = logging.getLogger(__name__)
 
@@ -80,13 +81,13 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
     output = None
     rc = 0
     try:
-        cmd = cmd.encode('utf-8', 'replace')
         if timeout is not None and sys.platform != "darwin":
             cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
 
         log.debug(cmd)
 
         if not shell:
+            print(type(cmd), cmd)
             spltcmd = cmd.split("|")
             if len(spltcmd) > 1:
                 cmd = shlex.split(spltcmd[0])
@@ -104,7 +105,7 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
         output = cout.communicate()[0]
         rc = cout.poll()
     except Exception as e:
-        raise CalledProcessError(rc, cmd, str(e)), None, sys.exc_info()[2]
+        six.reraise(CalledProcessError, CalledProcessError(rc, cmd, str(e)), sys.exc_info()[2])
     if keep_rc:
         return rc, output
     if rc:

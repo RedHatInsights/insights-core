@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 from insights.parsers.lvm import Pvs, PvsHeadings
 from insights.tests import context_wrap
-from test_lvm import compare_partial_dicts
+from .test_lvm import compare_partial_dicts
 
 PVS_INFO = """
     WARNING: Locking disabled. Be careful! This could corrupt your metadata.
@@ -126,7 +127,7 @@ PVS_HEADINGS_6 = {
 def test_pvs():
     pvs_records = Pvs(context_wrap(PVS_INFO))
     assert len(list(pvs_records)) == 2
-    for k, v in PVS_SDA2_INFO.iteritems():
+    for k, v in PVS_SDA2_INFO.items():
         assert pvs_records.data["content"][1][k] == v
     assert pvs_records["/dev/sda1"]["Attr"] == "---"
     assert pvs_records.data["content"][0]['LVM2_PV_MINOR'] == '1'
@@ -174,7 +175,7 @@ def test_pvs_dup():
 def test_pvs_headings():
     pvs_records = PvsHeadings(context_wrap(PVS_HEADINGS))
     assert len(pvs_records.data) == 9
-    for k, v in PVS_HEADINGS_6.iteritems():
+    for k, v in PVS_HEADINGS_6.items():
         assert pvs_records[6][k] == v
     assert pvs_records[6]['Missing'] is None
 

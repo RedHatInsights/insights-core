@@ -196,7 +196,7 @@ def parse_dmidecode(dmidecode_content, pythonic_keys=False):
                     value = value.strip()
 
                 if "\t" in value:
-                    current[key] = filter(None, value.split("\t"))
+                    current[key] = list(filter(None, value.split("\t")))
                 else:
                     current[key] = value
             else:

@@ -63,7 +63,7 @@ class HponConf(Parser):
         while True:
             try:
 
-                line = line_iter.next()
+                line = next(line_iter)
 
                 if 'Firmware Revision' in line:
                     line = line.replace('Firmware Revision', '').replace('Device type', '').replace('Driver name', '')
@@ -73,12 +73,12 @@ class HponConf(Parser):
                     self.data[DRIVER_NAME] = val[2]
 
                 if 'Host Information' in line:
-                    line = line_iter.next().strip()
+                    line = next(line_iter).strip()
                     val = line.split('Server Name:')
                     if len(val) > 1:
                         self.data['server_name'] = val[1].strip()
 
-                    line = line_iter.next().strip()
+                    line = next(line_iter).strip()
                     val = line.split('Server Number:')
                     if len(val) > 1:
                         self.data['server_number'] = val[1].strip()
