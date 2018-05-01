@@ -25,7 +25,7 @@ def from_file(name):
         cmd = "file --mime-type -b %s"
         p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
         stdout, _ = p.communicate()
-        return stdout.strip()
+        return stdout.strip().decode("utf-8")
 
 
 def from_buffer(b):
@@ -35,7 +35,7 @@ def from_buffer(b):
         cmd = "file --mime-type -b -"
         p = subprocess.Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE)
         stdout, stderr = p.communicate(b)
-        return stdout.strip()
+        return stdout.strip().decode("utf-8")
 
 
 def from_file_inner(name):
@@ -45,7 +45,7 @@ def from_file_inner(name):
         cmd = "file --mime-type -bz %s"
         p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
         stdout, _ = p.communicate()
-        return stdout.strip()
+        return stdout.strip().decode("utf-8")
 
 
 def from_buffer_inner(b):
@@ -55,4 +55,4 @@ def from_buffer_inner(b):
         cmd = "file --mime-type -bz -"
         p = subprocess.Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE)
         stdout, stderr = p.communicate(b)
-        return stdout.strip()
+        return stdout.strip().decode("utf-8")

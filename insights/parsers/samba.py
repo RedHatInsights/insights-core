@@ -55,13 +55,13 @@ Examples:
 
     >>> type(conf)
     <class 'insights.parsers.samba.SambaConfig'>
-    >>> sorted(conf.sections())
-    ['global', 'homes', 'printers', 'public']
+    >>> sorted(conf.sections()) == [u'global', u'homes', u'printers', u'public']
+    True
     >>> global_options = conf.items('global')  # get a section as a dictionary
-    >>> type(global_options)
-    <type 'dict'>
-    >>> conf.get('public', 'comment')  # Accessor for section and option
-    'Public Stuff'
+    >>> type(global_options) == type({})
+    True
+    >>> conf.get('public', 'comment') == u'Public Stuff'  # Accessor for section and option
+    True
     >>> conf.getboolean('public', 'writable')  # Type conversion, but no default
     True
     >>> conf.getint('global', 'max log size')  # Same for integer conversion
@@ -101,7 +101,7 @@ class SambaConfig(IniConfigFile):
         # and they are lowercase. smb.conf is special in the property that
         # section names and option names are case-insensitive and treated
         # like lower-case.
-        for old_key, old_section in self.data._sections.iteritems():
+        for old_key, old_section in self.data._sections.items():
             new_key = old_key.strip().lower()
             if new_key not in new_dict:
                 new_dict[new_key] = self.data._dict()

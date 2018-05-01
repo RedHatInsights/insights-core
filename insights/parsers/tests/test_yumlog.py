@@ -35,7 +35,7 @@ Jan 24 00:24:09 Updated:
 def test_iteration():
     yl = YumLog(context_wrap(OKAY))
     indices = [i.idx for i in yl]
-    assert indices == range(len(yl))
+    assert indices == list(range(len(yl)))
 
 
 def test_len():

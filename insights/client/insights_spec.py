@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import os
 import errno
 import shlex
@@ -7,8 +8,8 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from insights.util import mangle
 
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ class InsightsCommand(InsightsSpec):
 
         dirty = False
 
-        cmd = "/bin/sed -rf " + constants.default_sed_file
+        cmd = "sed -rf " + constants.default_sed_file
         sedcmd = Popen(shlex.split(cmd.encode('utf-8')),
                        stdin=proc0.stdout,
                        stdout=PIPE)
@@ -84,7 +85,7 @@ class InsightsCommand(InsightsSpec):
             exclude_file = NamedTemporaryFile()
             exclude_file.write("\n".join(self.exclude))
             exclude_file.flush()
-            cmd = "/bin/grep -F -v -f %s" % exclude_file.name
+            cmd = "grep -F -v -f %s" % exclude_file.name
             proc1 = Popen(shlex.split(cmd.encode("utf-8")),
                           stdin=proc0.stdout,
                           stdout=PIPE)
@@ -104,7 +105,7 @@ class InsightsCommand(InsightsSpec):
             pattern_file = NamedTemporaryFile()
             pattern_file.write("\n".join(self.pattern))
             pattern_file.flush()
-            cmd = "/bin/grep -F -f %s" % pattern_file.name
+            cmd = "grep -F -f %s" % pattern_file.name
             proc2 = Popen(shlex.split(cmd.encode("utf-8")),
                           stdin=proc0.stdout,
                           stdout=PIPE)
@@ -150,7 +151,7 @@ class InsightsFile(InsightsSpec):
             return
 
         cmd = []
-        cmd.append("/bin/sed".encode('utf-8'))
+        cmd.append("sed".encode('utf-8'))
         cmd.append("-rf".encode('utf-8'))
         cmd.append(constants.default_sed_file.encode('utf-8'))
         cmd.append(self.real_path.encode('utf8'))
@@ -162,7 +163,7 @@ class InsightsFile(InsightsSpec):
             exclude_file.write("\n".join(self.exclude))
             exclude_file.flush()
 
-            cmd = "/bin/grep -v -F -f %s" % exclude_file.name
+            cmd = "grep -v -F -f %s" % exclude_file.name
             args = shlex.split(cmd.encode("utf-8"))
             proc = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
             sedcmd.stdout.close()
@@ -177,7 +178,7 @@ class InsightsFile(InsightsSpec):
             pattern_file.write("\n".join(self.pattern))
             pattern_file.flush()
 
-            cmd = "/bin/grep -F -f %s" % pattern_file.name
+            cmd = "grep -F -f %s" % pattern_file.name
             args = shlex.split(cmd.encode("utf-8"))
             proc1 = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
             sedcmd.stdout.close()

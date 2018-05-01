@@ -1,3 +1,4 @@
+from __future__ import print_function
 from insights.core.context import OSP
 from insights.parsers import nova_conf
 from insights.tests import context_wrap
@@ -78,7 +79,7 @@ osp.role = "Compute"
 
 def test_nova_conf():
     result = nova_conf.NovaConf(context_wrap(nova_content, osp=osp))
-    print result
+    print(result)
     assert result.get("DEFAULT", "notification_driver") == ""
     assert result.get("DEFAULT", "report_interval") == "10"
     assert result.get("DEFAULT", "novncproxy_host") == "fd00:4888:1000:f901::c1"

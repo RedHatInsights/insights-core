@@ -252,14 +252,14 @@ class NetstatAGN(Parser):
         """
         result = defaultdict(list)
         for entry in self.data:
-            result[entry["interface"]].append(dict((k.lower(), v) for (k, v) in entry.iteritems() if k in ["refcnt", "group"]))
+            result[entry["interface"]].append(dict((k.lower(), v) for (k, v) in entry.items() if k in ["refcnt", "group"]))
         return dict(result)
 
     def parse_content(self, content):
         # Skip 'IPv6/IPv6 Group Memberships' and '-----' lines.
         content = content[1:2] + content[3:]
         table = parse_delimited_table(content)
-        self.data = map(lambda item: dict((k.lower(), v) for (k, v) in item.iteritems()), table)
+        self.data = [dict((k.lower(), v) for (k, v) in item.items()) for item in table]
 
 
 class NetstatSection(object):
@@ -618,11 +618,10 @@ class Netstat_I(Parser):
         self._group_by_iface = {}
         # heading_ignore is first line we _don't_ want to ignore...
         table = parse_delimited_table(content, heading_ignore=['Iface'])
-        self.data = map(lambda item:
-                        dict((k, v) for (k, v) in item.iteritems()), table)
+        self.data = [dict((k, v) for (k, v) in item.items()) for item in table]
         for entry in self.data:
             self._group_by_iface[entry["Iface"]] = \
-                dict((k, v) for (k, v) in entry.iteritems() if k != 'Iface')
+                dict((k, v) for (k, v) in entry.items() if k != 'Iface')
         return
 
 

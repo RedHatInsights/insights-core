@@ -90,7 +90,7 @@ class Uptime(Parser):
         if uptime_info['updays']:
             uptime_info['uptime'] += datetime.timedelta(days=int(uptime_info['updays']))
 
-        for k, v in uptime_info.iteritems():
+        for k, v in uptime_info.items():
             setattr(self, k, v)
 
         self.data = uptime_info

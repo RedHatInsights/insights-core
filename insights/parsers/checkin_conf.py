@@ -54,9 +54,9 @@ class CheckinConf(IniConfigFile):
         #flatten_orgs = False
 
     Examples:
-        >>> checkin_conf.sections()
-        ['logging', 'spacewalk', 'katello']
+        >>> list(checkin_conf.sections())
+        [u'logging', u'spacewalk', u'katello']
         >>> checkin_conf.get('spacewalk', 'host')
-        ''
+        u''
     """
     pass

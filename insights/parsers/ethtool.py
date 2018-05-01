@@ -670,7 +670,7 @@ class Statistics(Parser):
             no keys matched.
         """
         results = {}
-        for k, v in self.data.iteritems():
+        for k, v in self.data.items():
             if re.search(pattern, k, flags):
                 results[k] = v
         return results

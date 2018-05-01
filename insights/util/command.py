@@ -1,4 +1,5 @@
 import os
+from functools import reduce
 
 
 def path_join(path1, path2):

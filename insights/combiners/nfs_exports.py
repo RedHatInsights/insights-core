@@ -19,9 +19,9 @@ Examples:
     ['rw', 'sync', 'no_root_squash']
     >>> '/home/example' in all_nfs.ignored_exports  # Ignored exports are remembered within one file
     True
-    >>> all_nfs.ignored_exports['/home/example'].keys()  # Each ignored export is then stored by source file...
+    >>> list(all_nfs.ignored_exports['/home/example'].keys())  # Each ignored export is then stored by source file...
     ['/etc/exports']
-    >>> all_nfs.ignored_exports['/home/example']['/etc/exports'].keys()  # ... and then by host spec...
+    >>> list(all_nfs.ignored_exports['/home/example']['/etc/exports'].keys())  # ... and then by host spec...
     ['ins2.example.com']
     >>> all_nfs.ignored_exports['/home/example']['/etc/exports']['ins2.example.com']  # ... holding the values that were duplicated
     ['rw', 'sync', 'no_root_squash']
@@ -77,7 +77,7 @@ class AllNFSExports(object):
             # Because ignored_exports and raw_lines are stored by path, we
             # keep that and add the paths in them piecewise, stored by the
             # path of this source file.
-            for path, value in src_dict.iteritems():
+            for path, value in src_dict.items():
                 if path not in dest_dict:
                     dest_dict[path] = {src_path: value}
                 else:
@@ -91,11 +91,11 @@ class AllNFSExports(object):
             add_paths_to_dict(source.file_path, source.ignored_exports, self.ignored_exports)
             # For exports though we have to preserve existing host definitions
             # and ignore repeated host specs.
-            for path, hosts in source.data.iteritems():
+            for path, hosts in source.data.items():
                 if path in self.exports:
                     # Check whether the host specification has been listed
                     # more than once across different files:
-                    for host, flags in hosts.iteritems():
+                    for host, flags in hosts.items():
                         if host in self.exports[path]:
                             # Add this to the ignored_exports list.  But
                             # because we know that this path-host tuple isn't

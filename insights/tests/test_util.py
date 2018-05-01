@@ -73,7 +73,7 @@ def test_non_product_member(ctx):
 
 def test_str():
     unordered_compare("foo", "foo")
-    unordered_compare(u"foo", "foo")
+    unordered_compare(u"foo", u"foo")
     with pytest.raises(AssertionError):
         unordered_compare("foo", "bar")
 

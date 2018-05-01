@@ -1,10 +1,11 @@
 """
 Collect all the interesting data for analysis
 """
+from __future__ import absolute_import
 import os
 import errno
 import json
-import archive
+from . import archive
 import logging
 import copy
 import glob
@@ -12,10 +13,10 @@ from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
 from ..contrib.soscleaner import SOSCleaner
-from utilities import _expand_paths
-from constants import InsightsConstants as constants
-from insights_spec import InsightsFile, InsightsCommand
-from config import CONFIG as config
+from .utilities import _expand_paths
+from .constants import InsightsConstants as constants
+from .insights_spec import InsightsFile, InsightsCommand
+from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)

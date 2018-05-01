@@ -1,6 +1,7 @@
 """
 Utility functions
 """
+from __future__ import absolute_import
 import socket
 import os
 import logging
@@ -11,9 +12,9 @@ import re
 import stat
 import json
 from subprocess import Popen, PIPE, STDOUT
-from insights.contrib.ConfigParser import RawConfigParser
+from six.moves.configparser import RawConfigParser
 
-from constants import InsightsConstants as constants
+from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
@@ -177,12 +178,13 @@ def magic_plan_b(filename):
     '''
     cmd = shlex.split('file --mime-type --mime-encoding ' + filename)
     stdout, stderr = Popen(cmd, stdout=PIPE).communicate()
+    stdout = stdout.decode("utf-8")
     mime_str = stdout.split(filename + ': ')[1].strip()
     return mime_str
 
 
 def run_command_get_output(cmd):
-    proc = Popen(shlex.split(cmd.encode("utf-8")),
+    proc = Popen(shlex.split(cmd),
                  stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate()
 

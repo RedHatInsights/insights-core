@@ -23,14 +23,14 @@ Sample ``/etc/vmware-tools/tools.conf`` file::
 
 Examples:
 
-    >>> conf.sections()
-    ['guestinfo', 'logging']
+    >>> list(conf.sections()) == [u'guestinfo', u'logging']
+    True
     >>> conf.has_option('guestinfo', 'disable-query-diskinfo')
     True
     >>> conf.getboolean('guestinfo', 'disable-query-diskinfo')
     True
-    >>> conf.get('guestinfo', 'disable-query-diskinfo')
-    'true'
+    >>> conf.get('guestinfo', 'disable-query-diskinfo') == u'true'
+    True
 
 """
 from .. import IniConfigFile, parser

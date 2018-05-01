@@ -140,4 +140,4 @@ def test_rhn_schema_stats_ora():
 
 def test_rhn_schema_stats_none():
     log = DBStatsLog(context_wrap(NO_LOG))
-    assert log.data.keys() == []
+    assert list(log.data.keys()) == []
