@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 from insights.client.config import compile_config, CONFIG as config
 from insights.client import InsightsClient
@@ -11,7 +12,7 @@ def main():
     v = handle_startup()
     if v is not None:
         if type(v) != bool:
-            print v
+            print(v)
         return
     else:
         client = InsightsClient()
@@ -23,7 +24,7 @@ def main():
         if not config['no_upload']:
             client.upload(tar)
         else:
-            print ('Archive saved to ' + tar)
+            print('Archive saved to ' + tar)
 
 
 if __name__ == "__main__":

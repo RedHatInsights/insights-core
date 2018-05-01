@@ -17,6 +17,9 @@ IpLinkInfo - command ``ip -s link``
 -----------------------------------
 """
 
+from __future__ import print_function
+
+import six
 from collections import defaultdict, deque
 from .. import Parser, parser
 from ..contrib import ipaddress
@@ -26,14 +29,17 @@ from insights.specs import Specs
 class NetworkInterface(object):
     def __init__(self, d):
         self.data = d
-        addresses = [unicode("/".join([a["addr"], a["mask"]])) for a in self.data["addr"]]
-        self.addresses = map(ipaddress.ip_interface, addresses)
+        addresses = [u"/".join([a["addr"], a["mask"]]) for a in self.data["addr"]]
+        self.addresses = list(map(ipaddress.ip_interface, addresses))
 
     def __len__(self):
         return len(self.addresses)
 
-    def __cmp__(self, other):
-        return cmp(self["name"], other["name"])
+    def __lt__(self, other):
+        return self["name"] < other["name"]
+
+    def __eq__(self, other):
+        return self["name"] == other["name"]
 
     def __getitem__(self, item):
         return self.data[item]
@@ -70,7 +76,7 @@ def parse_ip_addr(content):
             rx_next_line = True
         elif line.startswith("TX"):
             tx_next_line = True
-    for k, v in r.iteritems():
+    for k, v in r.items():
         if_details[k] = NetworkInterface(v)
     return if_details
 
@@ -251,7 +257,7 @@ class IpAddr(Parser):
 
 class Route(object):
     def __init__(self, data):
-        for k, v in data.iteritems():
+        for k, v in data.items():
             setattr(self, k, v)
 
     def __repr__(self):
@@ -453,12 +459,12 @@ class RouteDevices(Parser):
         if ip is None:
             return
         routes = self.by_type.get('None', [])
-        addr = ipaddress.ip_address(unicode(ip))
+        addr = ipaddress.ip_address(six.u(ip))
         # Iterate through by descending netmask, so first found is most precise
         for route in sorted(routes, key=lambda r: r.netmask, reverse=True):
             if route.prefix == "default":
                 continue
-            net = ipaddress.ip_network(unicode(route.prefix))
+            net = ipaddress.ip_network(six.u(route.prefix))
             # Only test containment if this is the same verison of IP address.
             if addr.version != net.version:
                 continue
@@ -558,7 +564,7 @@ class IpNeighParser(Parser):
             # Don't parse this line if the first thing isn't an
             # IP address
             try:
-                addr = ipaddress.ip_address(unicode(split_result[0]))
+                addr = ipaddress.ip_address(six.u(split_result[0]))
             except ValueError:
                 self.unparsed_lines.append({
                     'line': line,

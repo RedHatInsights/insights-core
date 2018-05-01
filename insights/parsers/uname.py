@@ -196,7 +196,7 @@ class Uname(Parser):
         data = dict(self.defaults)
         data.update(self.data)
         self.data = data
-        for k, v in self.data.iteritems():
+        for k, v in self.data.items():
             setattr(self, k, v)
 
     def parse_content(self, content):

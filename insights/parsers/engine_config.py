@@ -122,8 +122,7 @@ class EngineConfigAll(Parser):
         """
         kw = keyword.lower()
         if kw in self.keywords:
-            return filter(None,
-                          [kv.value for kv in self.fields if kv.kw_lower == kw])
+            return [kv.value for kv in self.fields if kv.kw_lower == kw if kv.value]
         return []
 
     def head(self, keyword):
@@ -199,7 +198,5 @@ class EngineConfigAll(Parser):
         """
         kw = keyword.lower()
         if kw in self.keywords:
-            return filter(
-                None,
-                [kv.version for kv in self.fields if kv.kw_lower == kw])
+            return [kv.version for kv in self.fields if kv.kw_lower == kw if kv.version]
         return []

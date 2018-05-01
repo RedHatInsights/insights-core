@@ -50,8 +50,8 @@ class SmbstatusS(Statuslist):
     could parse it.
 
     Examples:
-        >>> smbstatuss_info.data[0]
-        {'Signing': '-', 'Service': 'share_test', 'Encryption': '-', 'pid': '13668', 'Machine': '10.66.208.149', 'Connected_at': 'Wed Sep 27 10:33:55 AM 2017 CST'}
+        >>> smbstatuss_info.data[0] == {'Signing': '-', 'Service': 'share_test', 'Encryption': '-', 'pid': '13668', 'Machine': '10.66.208.149', 'Connected_at': 'Wed Sep 27 10:33:55 AM 2017 CST'}
+        True
         >>> smbstatuss_info.data[0]['pid']
         '13668'
 
@@ -87,8 +87,8 @@ class Smbstatusp(Statuslist):
     could parse it.
 
     Examples:
-        >>> smbstatusp_info.data[0]
-        {'Username': 'testsmb', 'Signing': '-', 'Group': 'testsmb', 'Encryption': '-', 'PID': '12668', 'Machine': '10.66.208.149 (ipv4:10.66.208.149:44376)', 'Protocol_Version': 'SMB2_02'}
+        >>> smbstatusp_info.data[0] == {'Username': 'testsmb', 'Signing': '-', 'Group': 'testsmb', 'Encryption': '-', 'PID': '12668', 'Machine': '10.66.208.149 (ipv4:10.66.208.149:44376)', 'Protocol_Version': 'SMB2_02'}
+        True
         >>> smbstatusp_info.data[0]['PID']
         '12668'
 

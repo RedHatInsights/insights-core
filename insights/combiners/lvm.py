@@ -150,7 +150,7 @@ def merge_lvm_data(primary, secondary, name_key):
         else:
             # Data in both primary and secondary, pick primary if better or no secondary
             combined_data[name].update(dict(
-                (k, v) for k, v in pri_data[name].iteritems()
+                (k, v) for k, v in pri_data[name].items()
                 if v is not None or k not in combined_data[name]
             ))
 
@@ -160,7 +160,7 @@ def merge_lvm_data(primary, secondary, name_key):
 def set_defaults(lvm_data):
     """dict: Sets all existing null string values to None."""
     for l in lvm_data:
-        for k, v in lvm_data[l].iteritems():
+        for k, v in lvm_data[l].items():
             if v == '':
                 lvm_data[l][k] = None
 
@@ -226,22 +226,22 @@ class Lvm(object):
     def filter_volume_groups(self, vg_filter):
         """dict: Returns dictionary of volume group information with keys
             containing `vg_filter`."""
-        return dict((k, v) for k, v in self.volume_groups.iteritems() if vg_filter in k)
+        return dict((k, v) for k, v in self.volume_groups.items() if vg_filter in k)
 
     def filter_physical_volumes(self, pv_filter):
         """dict: Returns dictionary of physical volume information with keys
             containing `pv_filter`."""
-        return dict((k, v) for k, v in self.physical_volumes.iteritems() if pv_filter in k)
+        return dict((k, v) for k, v in self.physical_volumes.items() if pv_filter in k)
 
     def filter_logical_volumes(self, lv_filter, vg_filter=None):
         """dict: Returns dictionary of logical volume information having the
             `lv_filter` in the logical volume and if specified `vg_filter` in the
             volume group."""
         if vg_filter is None:
-            return dict((k, v) for k, v in self.logical_volumes.iteritems()
+            return dict((k, v) for k, v in self.logical_volumes.items()
                         if lv_filter in k.LV)
         else:
-            return dict((k, v) for k, v in self.logical_volumes.iteritems()
+            return dict((k, v) for k, v in self.logical_volumes.items()
                         if lv_filter in k.LV and vg_filter in k.VG)
 
 

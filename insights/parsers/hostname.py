@@ -35,7 +35,7 @@ class Hostname(Parser):
         domain: The domain get from the fqdn.
     """
     def parse_content(self, content):
-        content = filter(None, content)
+        content = list(filter(None, content))
         if len(content) != 1:
             msg = "hostname data contains multiple non-empty lines"
             raise ParseException(msg)

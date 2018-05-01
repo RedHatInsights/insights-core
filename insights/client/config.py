@@ -1,9 +1,11 @@
+from __future__ import absolute_import
 import logging
 import optparse
 import os
-from insights.contrib import ConfigParser
+import six
+from six.moves import configparser as ConfigParser
 
-from constants import InsightsConstants as constants
+from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
@@ -305,7 +307,7 @@ def parse_config_file(conf_file=constants.default_conf_file):
     except ConfigParser.Error:
         pass
     d = dict(parsedconfig.items(APP_NAME))
-    for key in (k for k in BOOLEAN_KEYS if type(d.get(k)) in (str, unicode)):
+    for key in (k for k in BOOLEAN_KEYS if type(d.get(k)) in six.string_types):
         d[key] = parsedconfig.getboolean(APP_NAME, key)
     return d
 
@@ -333,7 +335,7 @@ def compile_config():
     # In English, that's the uppercase version of the config key with
     # "INSIGHTS_" prepended to it.
     insights_env_opts = dict((k.lower().split("_", 1)[1], boolify(v))
-                             for k, v in os.environ.iteritems()
+                             for k, v in os.environ.items()
                              if k.upper().startswith("INSIGHTS_"))
     CONFIG.update(insights_env_opts)
 

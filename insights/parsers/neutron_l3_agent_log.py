@@ -26,7 +26,7 @@ class NeutronL3AgentLog(LogFileOutput):
           >>> len(agent_log.get("Duplicate iptables rule detected")) == 2
           True
           >>> from datetime import datetime
-          >>> len(list(agent_log.get_after(datetime(2017, 2, 17, 10, 05, 07))))
+          >>> len(list(agent_log.get_after(datetime(2017, 2, 17, 10, 5, 7))))
           3
 
       """

@@ -1,9 +1,15 @@
+from __future__ import print_function
 import copy
 import itertools
 import json
 import logging
-from six import wraps
-from StringIO import StringIO
+import six
+import six.moves
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 from insights import apply_filters
 from insights.core import dr
@@ -33,12 +39,12 @@ def unordered_compare(result, expected):
         assert result["type"] == "skip", result
         return
 
-    if not (type(result) in [unicode, str] and type(expected) in [unicode, str]):
+    if not all(isinstance(o, six.string_types) for o in (result, expected)):
         assert type(result) == type(expected)
 
     if isinstance(result, list):
         assert len(result) == len(expected)
-        for left_item, right_item in itertools.izip(sorted(result), sorted(expected)):
+        for left_item, right_item in six.moves.zip(sorted(result), sorted(expected)):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):
         assert len(result) == len(expected)
@@ -56,7 +62,7 @@ def run_input_data(component, input_data):
     graph = dr.get_dependency_graph(component)
     broker = dr.run(graph, broker=broker)
     for v in broker.tracebacks.values():
-        print v
+        print(v)
     return broker
 
 
@@ -79,10 +85,11 @@ def context_wrap(lines,
                  machine_id="machine_id",
                  strip=True,
                  **kwargs):
-    if isinstance(lines, basestring):
+    if isinstance(lines, six.string_types):
         if strip:
             lines = lines.strip()
         lines = lines.splitlines()
+
     return Context(content=lines,
                    path=path, hostname=hostname,
                    release=release, version=version.split("."),
@@ -273,7 +280,7 @@ def archive_provider(component, test_func=unordered_compare, stride=1):
     [1] insights.tests.unordered_compare()
     """
     def _wrap(func):
-        @wraps(func)
+        @six.wraps(func)
         def __wrap(stride=stride):
             for input_data, expected in itertools.islice(func(), None, None, stride):
                 yield component, test_func, input_data, expected

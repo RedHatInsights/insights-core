@@ -34,5 +34,5 @@ class TomcatVirtualDirContextCombined(object):
                     self.data[key] += parser.data[key]
 
         # Deduplicate lines
-        for key, value in self.data.iteritems():
+        for key, value in self.data.items():
             self.data[key] = sorted(set(value))

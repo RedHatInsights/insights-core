@@ -75,7 +75,7 @@ def test_server_xmlrpc_log_data():
     line = log.get('10.4.4.17: xmlrpc/registration.welcome_message')[0]
 
     assert line['timestamp'] == '2016/04/11 05:52:01 -04:00'
-    d = datetime(2016, 04, 11, 05, 52, 01)
+    d = datetime(2016, 0o4, 11, 0o5, 52, 0o1)
     assert line['datetime'] == d
     assert line['pid'] == '23630'
     assert line['client_ip'] == '10.4.4.17'
