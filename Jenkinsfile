@@ -11,7 +11,7 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh 'pip install -e .'
+            sh 'pip install --user -e .'
             echo "Testing with Pytest..."
             sh 'pytest'
             echo "Testing Syntax..."   
@@ -26,7 +26,7 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh 'pip install -e .'
+            sh 'pip install --user -e .'
             echo "Testing with Pytest..."
             sh 'pytest'
             echo "Testing Syntax..."   
@@ -43,7 +43,7 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh 'pip install -e .'
+            sh 'pip install --user -e .'
             echo "Testing with Pytest..."
             sh 'pytest'
             echo "Testing Syntax..."   
