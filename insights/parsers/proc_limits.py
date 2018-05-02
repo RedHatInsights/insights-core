@@ -7,17 +7,17 @@ directory.
 
 """
 
-from .. import Parser, parser, AttributeDict
+from .. import Parser, parser
 from ..parsers import parse_fixed_table, ParseException
 from insights.specs import Specs
 
 HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
 
 
-class Limits(AttributeDict):
+class Limits(object):
     """
-    An object representing a line in the ``/proc/limits``.  Each entry is a
-    :class:`insights.core.AttributeDict` object with below fixed attributes:
+    An object representing a line in the ``/proc/limits``.  Each entry contains
+    below fixed attributes:
 
     Attributes:
         hard_limit(str): Hard limit
@@ -31,7 +31,11 @@ class Limits(AttributeDict):
     }
 
     def __init__(self, data={}):
-        super(Limits, self).__init__(data, attrs=Limits.attrs)
+        for k, v in Limits.attrs.items():
+            if k not in data:
+                setattr(self, k, v)
+        for k, v in data.items():
+            setattr(self, k, v)
 
 
 class ProcLimits(Parser):

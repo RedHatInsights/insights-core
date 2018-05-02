@@ -89,7 +89,7 @@ Examples:
 """
 
 
-from .. import Parser, parser, get_active_lines, AttributeDict
+from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from ..parsers import optlist_to_dict, parse_delimited_table, keyword_search
 from ..parsers.mount import MountOpts
 from insights.specs import Specs
@@ -97,10 +97,10 @@ from insights.specs import Specs
 FS_HEADINGS = "fs_spec                               fs_file                 fs_vfstype raw_fs_mntops    fs_freq fs_passno"
 
 
-class FSTabEntry(AttributeDict):
+class FSTabEntry(LegacyItemAccess):
     """
-    An object representing an entry in ``/etc/fstab``.  Each entry is a
-    :class:`insights.core.AttributeDict` object with below fixed attributes:
+    An object representing an entry in ``/etc/fstab``.  Each entry contains
+    below fixed attributes:
 
     Attributes:
         fs_spec (str): the device to mount
@@ -124,7 +124,20 @@ class FSTabEntry(AttributeDict):
     }
 
     def __init__(self, data={}):
-        super(FSTabEntry, self).__init__(data, attrs=FSTabEntry.attrs)
+        self.data = data
+        for k, v in FSTabEntry.attrs.items():
+            if k not in data:
+                setattr(self, k, v)
+        for k, v in data.items():
+            setattr(self, k, v)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self.data.items():
+            yield k, v
 
 
 @parser(Specs.fstab)

@@ -85,8 +85,8 @@ def test_mount():
     assert len(errors) == 2
     assert not hasattr(errors[0], 'parse_error')
     assert errors[0].filesystem == 'tmpfs'
-    assert not hasattr(errors[1], 'parse_error')
-    assert errors[1]['parse_error'] == 'Unable to parse line'
+    assert hasattr(errors[1], 'parse_error')
+    assert errors[1].parse_error == 'Unable to parse line'
 
     # Test search
     assert results.search(filesystem='/dev/sr0') == [sr0]

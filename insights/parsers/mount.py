@@ -34,9 +34,8 @@ below fixed attributes:
 * ``noquota`` - Disk quotas are enforced or not
 
 For instance, the option ``rw`` in ``(rw,dmode=0500)`` may be accessed as
-``mnt_row_info.rw`` with the value ``True``, but the ``dmode`` can only be
-accessed as ``mnt_row_info.get('dmode')`` or ``mnt_row_info['dmode']`` with the
-value ``0500``.
+``mnt_row_info.rw`` with the value ``True``, the ``dmode`` can be accessed as
+``mnt_row_info.dmode`` with the value ``0500``.
 
 MountEntry lines are also available in a ``mounts`` property, keyed on the
 mount point.
@@ -71,10 +70,10 @@ Examples:
 import re
 from insights.specs import Specs
 from ..parsers import optlist_to_dict, keyword_search
-from .. import Parser, parser, get_active_lines, AttributeDict
+from .. import Parser, parser, get_active_lines, LegacyItemAccess
 
 
-class MountOpts(AttributeDict):
+class MountOpts(object):
     """
     An object representing the mount options found in mount or fstab entry.
     Each option in the comma-separated list is a key, and 'key=value'
@@ -106,14 +105,46 @@ class MountOpts(AttributeDict):
     }
 
     def __init__(self, data={}):
-        super(MountOpts, self).__init__(data, attrs=MountOpts.attrs)
+        # Use '_data' but not 'data' since the 'data' could be an mount option
+        self._data = data
+        for k, v in MountOpts.attrs.items():
+            if k not in data:
+                setattr(self, k, v)
+        for k, v in data.items():
+            setattr(self, k, v)
+
+    def __getitem__(self, item):
+        return self._data[item]
+
+    def __contains__(self, item):
+        return item in self._data
+
+    def get(self, item, default=None):
+        """Returns value of key ``item`` in self._data or ``default``
+        if key is not present.
+
+        Parameters:
+            item: Key to get from ``self.data``.
+            default: Default value to return if key is not present.
+
+        Returns:
+            (str): String value of the stored item, or the default if not found.
+        """
+        return self._data.get(item, default)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self._data.items():
+            yield k, v
 
 
-class MountEntry(AttributeDict):
+class MountEntry(LegacyItemAccess):
     """
     An object representing an entry in the output of ``mount`` command.  Each
-    entry is a :class:`insights.core.AttributeDict` object with below fixed
-    attributes:
+    entry contains below fixed attributes:
 
     Attributes:
         mount_clause (str): Full string from command output
@@ -131,7 +162,20 @@ class MountEntry(AttributeDict):
     }
 
     def __init__(self, data={}):
-        super(MountEntry, self).__init__(data, attrs=MountEntry.attrs)
+        self.data = data
+        for k, v in MountEntry.attrs.items():
+            if k not in data:
+                setattr(self, k, v)
+        for k, v in data.items():
+            setattr(self, k, v)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self.data.items():
+            yield k, v
 
 
 @parser(Specs.mount)

@@ -62,7 +62,7 @@ Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 """
 
-from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict
+from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess
 from insights.specs import Specs
 
 IOMMU = "intel_iommu=on"
@@ -70,11 +70,10 @@ GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
 
 
-class BootEntry(AttributeDict):
+class BootEntry(object):
     """
     An object representing an entry in the output of ``mount`` command.  Each
-    entry is a :class:`insights.core.AttributeDict` object with below fixed
-    attributes:
+    entry contains below fixed attributes:
 
     Attributes:
         name (str): Name of the boot entry
@@ -86,7 +85,11 @@ class BootEntry(AttributeDict):
     }
 
     def __init__(self, data={}):
-        super(BootEntry, self).__init__(data, attrs=BootEntry.attrs)
+        for k, v in BootEntry.attrs.items():
+            if k not in data:
+                setattr(self, k, v)
+        for k, v in data.items():
+            setattr(self, k, v)
 
 
 class GrubConfig(LegacyItemAccess, Parser):

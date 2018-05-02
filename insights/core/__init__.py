@@ -1289,7 +1289,10 @@ class FileListing(Parser):
 
 class AttributeDict(dict):
     """
-    Class to convert the access to the keys in ``attrs`` dictionary as attributes.
+    Class to convert the access to each item in a dict as attribute.
+
+    .. warning::
+        Deprecated class, please set attributes explicitly.
 
     Examples:
         >>> data = {
@@ -1297,52 +1300,23 @@ class AttributeDict(dict):
         ... "fact2":"fact 2"
         ... "fact3":"fact 3"
         ... }
-        >>> d_obj = AttributeDict(data, attrs={'fact0': 'fact 0', 'fact1': ''})
-        {'fact0': 'fact 0', fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
-        >>> d_obj.fact0             # There is such an attribute: 'fact0'
-        'fact 0'
-        >>> 'fact0' in d_obj        # But 'fact0' is not in the dictionary
-        False
-        >>> d_obj.get('fact0')
-        None
-        >>> d_obj.fact1             # There is such an attribute: 'fact1'
-        'fact 1'
-        >>> 'fact1' in d_obj        # And 'fact1' is in the dictionary
-        True
+        >>> d_obj = AttributeDict(data)
+        {'fact1': 'fact 1', 'fact2': 'fact 2', 'fact3': 'fact 3'}
         >>> d_obj['fact1']
         'fact 1'
-        >>> hasattr(d_obj, 'fact2') # No such attribute 'fact2'
-        False
-        >>> 'fact2' in d_obj        # But 'fact2' is in the dictionary
+        >>> d_obj.get('fact1')
+        'fact 1'
+        >>> d_obj.fact1
+        'fact 1'
+        >>> 'fact2' in d_obj
         True
-        >>> d_obj['fact2']
-        'fact 2'
-
-    Arguments:
-        data (dict): The base dictionary will work on
-        attrs (dict): The key-value pairs that will be fixed as attributes.
-            The key is the attribute and the value is the default value of the
-            attribute when there is no such key in ``data``.
-
-    Raises:
-        ValueError: When no or an empty ``attrs`` is passed
-
+        >>> d_obj.get('fact3', default='no fact')
+        'fact 3'
+        >>> d_obj.get('fact4', default='no fact')
+        'no fact'
     """
 
-    def __init__(self, data={}, attrs={}):
-        if not attrs:
-            raise ValueError("Argument 'attrs' must be specified as a dict and cannot be empty.")
-
-        for k, v in attrs.items():
-            setattr(self, k, data.get(k, v))
-
-        super(AttributeDict, self).__init__(data)
-
-    def __iter__(self):
-        """
-        .. warning::
-            Deprecated method, please use `items()`
-        """
-        deprecated(AttributeDict.__iter__, "Please use 'items()'.")
-        for k, v in self.__dict__.items():
-            yield k, v
+    def __init__(self, *args, **kwargs):
+        deprecated(AttributeDict, "Please set attributes explicitly.")
+        super(AttributeDict, self).__init__(*args, **kwargs)
+        self.__dict__ = self
