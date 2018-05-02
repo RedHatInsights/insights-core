@@ -41,7 +41,7 @@ class InsightsConfig(object):
         self.base_url = protocol + config['base_url']
         self.collection_rules_url = config['collection_rules_url']
         if self.collection_rules_url is None:
-            self.collection_rules_url = self.base_url + '/v1/static/uploader.json'
+            self.collection_rules_url = self.base_url + '/v1/static/uploader.v2.json'
         self.gpg = config['gpg']
         self.conn = conn
 
