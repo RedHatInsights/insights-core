@@ -1,4 +1,6 @@
 """
+This module contains the following parsers:
+
 VDSMConfIni - file ``/etc/vdsm/vdsm.conf``
 ------------------------------------------
 VDSMLoggerConf - file ``/etc/vdsm/logger.conf``
@@ -11,8 +13,8 @@ from insights.specs import Specs
 
 @parser(Specs.vdsm_conf)
 class VDSMConfIni(IniConfigFile):
-    """``VDSMConfIni`` parsers configuration file ``/etc/vdsm/vdsm.conf``
-    format and is read by the IniConfigFile parser.
+    """This class parses the ``/etc/vdsm/vdsm.conf`` file using the
+    ``IniConfigFile`` base parser.
 
     Sample configuration file::
 
@@ -41,9 +43,8 @@ class VDSMConfIni(IniConfigFile):
 
 @parser(Specs.vdsm_logger_conf)
 class VDSMLoggerConf(IniConfigFile):
-    """``VDSMLoggerConf`` parsers configuration file
-    ``/etc/vdsm/logger.conf`` format and is read by the IniConfigFile
-    parser.
+    """This class parses the ``/etc/vdsm/logger.conf`` file using the
+    ``IniConfigFile`` base parser.
 
     Sample configuration file::
 
