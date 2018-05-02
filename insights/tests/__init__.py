@@ -48,7 +48,7 @@ def unordered_compare(result, expected):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):
         assert len(result) == len(expected)
-        for item_key in result:
+        for item_key in result.keys():
             unordered_compare(result[item_key], expected[item_key])
     else:
         assert result == expected
