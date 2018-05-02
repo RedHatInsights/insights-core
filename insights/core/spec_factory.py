@@ -482,8 +482,8 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
             command = [shlex.split(cmd)] + [["grep", "-F", filters]]
             raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
         else:
-            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
-
+            command = [shlex.split(cmd)]
+            raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
         if keep_rc:
             rc, result = raw
         else:
@@ -543,7 +543,8 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
                     command = [shlex.split(the_cmd)] + [["grep", "-F", filters]]
                     raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
                 else:
-                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+                    command = [shlex.split(the_cmd)]
+                    raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
                 if keep_rc:
                     rc, output = raw
                 else:
