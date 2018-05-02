@@ -10,12 +10,16 @@ pipeline {
             }
           }
           steps {
-            echo "Installing Insights..."
-            sh 'pip install --user -e .'
+            echo "Building environment..."
+            sh """
+               virtualenv .
+               source bin/activate
+               pip install 'flake8==3.3.0'
+               """
             echo "Testing with Pytest..."
-            sh 'pytest'
+            sh 'bin/pytest'
             echo "Testing Syntax..."   
-            sh 'flake8'
+            sh 'bin/flake8 --config=.flake8'
           }
         }
         stage('Build RHEL7 Python 2.7') {
@@ -30,7 +34,7 @@ pipeline {
             echo "Testing with Pytest..."
             sh 'pytest'
             echo "Testing Syntax..."   
-            sh 'flake8'
+            sh 'flake8 --config=.flake8'
             echo "Building Docs..."
             sh 'sphinx-build -W -b html -qa -E docs docs/_build/html'
           }
@@ -47,9 +51,7 @@ pipeline {
             echo "Testing with Pytest..."
             sh 'pytest'
             echo "Testing Syntax..."   
-            sh 'flake8'
-            echo "Building Docs..."
-            sh 'sphinx-build -W -b html -qa -E docs docs/_build/html'
+            sh 'flake8 -config=.flake8'
           }
         }
       }
