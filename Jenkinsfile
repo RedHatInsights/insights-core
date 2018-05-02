@@ -35,22 +35,22 @@ pipeline {
             sh 'sphinx-build -W -b html -qa -E docs docs/_build/html'
           }
         }
-      }
-      stage('Build RHEL7 Python 3.6') {
-        agent {
-          node {
-            label 'python3'
+        stage('Build RHEL7 Python 3.6') {
+          agent {
+            node {
+              label 'python3'
+            }
           }
-        }
-        steps {
-          echo "Installing Insights..."
-          sh 'pip install -e .'
-          echo "Testing with Pytest..."
-          sh 'pytest'
-          echo "Testing Syntax..."   
-          sh 'flake8'
-          echo "Building Docs..."
-          sh 'sphinx-build -W -b html -qa -E docs docs/_build/html'
+          steps {
+            echo "Installing Insights..."
+            sh 'pip install -e .'
+            echo "Testing with Pytest..."
+            sh 'pytest'
+            echo "Testing Syntax..."   
+            sh 'flake8'
+            echo "Building Docs..."
+            sh 'sphinx-build -W -b html -qa -E docs docs/_build/html'
+          }
         }
       }
     }
