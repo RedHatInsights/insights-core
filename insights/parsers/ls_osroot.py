@@ -37,8 +37,8 @@ Sample directory list::
 
 Examples:
 
-    >>> ls_osroot.listing_of("/")['tmp']
-    {'group': '0', 'name': 'tmp', 'links': 40, 'perms': 'rwxrwxrwt.', 'raw_entry': 'drwxrwxrwt.  40 0 0    8192 Apr 18 11:17 tmp', 'owner': '0', 'date': 'Apr 18 11:17', 'type': 'd', 'dir': '/', 'size': 8192}
+    >>> ls_osroot.listing_of("/")['tmp'] == {'group': '0', 'name': 'tmp', 'links': 40, 'perms': 'rwxrwxrwt.', 'raw_entry': 'drwxrwxrwt.  40 0 0    8192 Apr 18 11:17 tmp', 'owner': '0', 'date': 'Apr 18 11:17', 'type': 'd', 'dir': '/', 'size': 8192}
+    True
     >>> ls_osroot.dir_entry("/", 'tmp')['perms']
     'rwxrwxrwt.'
 """

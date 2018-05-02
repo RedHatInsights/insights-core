@@ -28,7 +28,7 @@ service_provider = LOADBALANCER:Haproxy:neutron.services.loadbalancer.drivers.ha
 def test_neutron_conf():
     nconf = NeutronConf(context_wrap(NEUTRON_CONF))
     assert nconf is not None
-    assert nconf.sections() == ['quotas', 'agent', 'keystone_authtoken', 'database', 'service_providers']
+    assert list(nconf.sections()) == ['quotas', 'agent', 'keystone_authtoken', 'database', 'service_providers']
     assert nconf.defaults() == {
         'debug': 'False',
         'verbose': 'False',

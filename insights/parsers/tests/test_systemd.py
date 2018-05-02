@@ -137,7 +137,7 @@ def test_docker():
     assert docker_service.data["Service"]["NotifyAccess"] == "all"
     assert docker_service.data["Service"]["Environment"] == "GOTRACEBACK=crash"
     assert docker_service.data["Install"]["WantedBy"] == "multi-user.target"
-    assert docker_service.data["Install"].keys() == ["WantedBy"]
+    assert list(docker_service.data["Install"].keys()) == ["WantedBy"]
     assert docker_service.data["Service"]["ExecStart"] == "/bin/sh -c '/usr/bin/docker-current daemon --authorization-plugin=rhel-push-plugin --exec-opt native.cgroupdriver=systemd $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS $ADD_REGISTRY $BLOCK_REGISTRY $INSECURE_REGISTRY 2>&1 | /usr/bin/forward-journald -tag docker'"
 
 

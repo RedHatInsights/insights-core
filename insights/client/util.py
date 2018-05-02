@@ -17,11 +17,6 @@ import selinux
 ReturnTuple = collections.namedtuple('ReturnTuple',
                                      ['return_code', 'stdout', 'stderr'])
 
-if sys.version_info[0] < 3:
-    input = raw_input
-else:
-    input = input
-
 
 def _decompose(compound_name):
     """ '[reg/]repo[:tag]' -> (reg, repo, tag) """

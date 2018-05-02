@@ -1,8 +1,7 @@
-import doctest
-
 from insights.parsers import checkin_conf
 from insights.parsers.checkin_conf import CheckinConf
 from insights.tests import context_wrap
+from . import ic_testmod
 
 
 CONFIG = """
@@ -44,16 +43,16 @@ admin_pass=admin
 
 
 def test_checkin_conf():
-    resault = CheckinConf(context_wrap(CONFIG))
+    result = CheckinConf(context_wrap(CONFIG))
 
-    assert resault.sections() == ['logging', 'spacewalk', 'katello']
-    assert resault.get('spacewalk', 'host') == ''
+    assert list(result.sections()) == ['logging', 'spacewalk', 'katello']
+    assert result.get('spacewalk', 'host') == ''
 
 
 def test_checkin_conf_doc_examples():
     env = {
-            'CheckinConf': CheckinConf,
-            'checkin_conf': CheckinConf(context_wrap(CONFIG))
-          }
-    failed, total = doctest.testmod(checkin_conf, globs=env)
+        'CheckinConf': CheckinConf,
+        'checkin_conf': CheckinConf(context_wrap(CONFIG))
+    }
+    failed, total = ic_testmod(checkin_conf, globs=env)
     assert failed == 0

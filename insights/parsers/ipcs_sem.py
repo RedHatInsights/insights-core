@@ -53,7 +53,7 @@ class IpcsS(Parser):
     def parse_content(self, content):
         # heading_ignore is first line we _don't_ want to ignore...
         table = parse_delimited_table(content, heading_ignore=['key'])
-        data = map(lambda item: dict((k, v) for (k, v) in item.iteritems()), table)
+        data = map(lambda item: dict((k, v) for (k, v) in item.items()), table)
         self.data = {}
         for item in data:
             self.data[item.pop('semid')] = item

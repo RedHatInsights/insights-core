@@ -46,5 +46,5 @@ def test_line_terminators():
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
 
     content = broker[Stuff.smpl_file].content
-    assert all("def test" in l for l in content), content
-    assert not any(l.endswith("\n") for l in content)
+    assert all(b"def test" in l for l in content), content
+    assert not any(l.endswith(b"\n") for l in content)

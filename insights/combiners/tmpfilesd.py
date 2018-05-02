@@ -68,7 +68,7 @@ class AllTmpFiles(object):
             file path as the key.
         """
         match = {}
-        for r, d in self.active_rules.iteritems():
+        for r, d in self.active_rules.items():
             for i in self.active_rules[r]:
                 if i['path'] == path:
                     match[r] = i

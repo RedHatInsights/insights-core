@@ -7,14 +7,15 @@
 # and if the docker server on this machine is accessable, which isn't exactly the
 # same thing as 'there is no docker on this machine'.
 
+from __future__ import absolute_import
 import os
 import logging
 import shlex
 import subprocess
 import sys
 
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -152,7 +153,7 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
                 logger.debug("exception while unmounting image or container: %s" % e)
             shutil.rmtree(self.mount_point, ignore_errors=True)
 
-    from mount import DockerMount, Mount
+    from .mount import DockerMount, Mount
 
     class DockerTemporaryMountPoint:
         # this is used for both images and containers

@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 # !/usr/bin/python
 
-import util
+from . import util
 import json
 
 

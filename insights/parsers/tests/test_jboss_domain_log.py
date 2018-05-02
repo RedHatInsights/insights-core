@@ -42,7 +42,7 @@ def test_jboss_domain_server_log():
     assert out_log.get("GA-redhat-1")[0].get(
         "raw_message") == "16:22:57,476 INFO  [org.xnio] (MSC service thread 1-12) XNIO Version 3.0.14.GA-redhat-1"
     assert "Listening on 192.168.199.175:444" in out_log
-    assert len(list(out_log.get_after(time(16, 23, 04)))) == 16
+    assert len(list(out_log.get_after(time(16, 23, 0o4)))) == 16
 
 
 OUT2 = """

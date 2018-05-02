@@ -24,7 +24,7 @@ package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
 
 
 for name in package_info:
-    package_info[name] = pkgutil.get_data(__name__, name).strip()
+    package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
 
 
 def get_nvr():

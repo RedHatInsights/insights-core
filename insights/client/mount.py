@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 # Copyright (C) 2016 Red Hat, All rights reserved.
 # AUTHORS: William Temple <wtemple@redhat.com>
 #          Brent Baude    <bbaude@redhat.com>
@@ -8,17 +10,17 @@ import os
 import sys
 import json
 
-from constants import InsightsConstants as constants
+from .constants import InsightsConstants as constants
 
 try:
     import docker
 except ImportError:
-    print "The docker-py Python libraries do not appear to be installed. Please install the python-docker-py RPM package."
+    print("The docker-py Python libraries do not appear to be installed. Please install the python-docker-py RPM package.")
     sys.exit(constants.sig_kill_bad)
 from fnmatch import fnmatch as matches
 
-import util
-import dmsetupWrap
+from . import util
+from . import dmsetupWrap
 from docker.utils import kwargs_from_env
 
 

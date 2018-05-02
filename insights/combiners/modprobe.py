@@ -78,10 +78,10 @@ class AllModProbe(LegacyItemAccess):
         for mod in modprobe:
             filename = mod.file_path  # relative path inside archive
             # Copy data section
-            for section, sectdict in mod.data.iteritems():
+            for section, sectdict in mod.data.items():
                 if section not in self.data:
                     self.data[section] = {}
-                for name, value in sectdict.iteritems():
+                for name, value in sectdict.items():
                     if name in self.data[section]:
                         # append to this module's value - should only
                         # happen for aliases.

@@ -2,6 +2,7 @@ import itertools
 import logging
 import os
 import re
+import six
 import traceback
 
 from collections import defaultdict
@@ -148,8 +149,8 @@ class TextFileProvider(FileProvider):
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
         if filters:
-            cmd = "/bin/grep -F '{0}' {1}".format(filters, self.path)
-            rc, out = subproc.call(cmd.encode("utf-8"), shell=False, keep_rc=True)
+            cmd = "grep -F '{0}' {1}".format(filters, self.path)
+            rc, out = subproc.call(cmd, shell=False, keep_rc=True)
             if rc == 0 and out != '':
                 results = out.splitlines()
             else:
@@ -297,12 +298,12 @@ class SpecSetMeta(type):
         _resolve_registry_points(cls, bases[0], dct)
 
 
-class SpecSet(object):
+class SpecSet(six.with_metaclass(SpecSetMeta)):
     """
     The base class for all spec declarations. Extend this class and define your
     datasources directly or with a `SpecFactory`.
     """
-    __metaclass__ = SpecSetMeta
+    pass
 
 
 def _get_context(context, alternatives, broker):
@@ -369,6 +370,19 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
         if results:
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
+    return inner
+
+
+def head(dep):
+    """
+    Return the first element of any datasource that produces a list.
+    """
+    @datasource(dep)
+    def inner(lst):
+        c = lst[dep]
+        if lst:
+            return c[0]
+        raise dr.SkipComponent()
     return inner
 
 

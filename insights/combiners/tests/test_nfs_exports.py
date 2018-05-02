@@ -44,7 +44,7 @@ def test_nfs_export_combiner():
         '/home/insights/ins/special/all/config', '/home/example', '/mnt/work',
         '/mnt/backup'
     ])
-    for path, hosts in nfs_exportsf.data.iteritems():
+    for path, hosts in nfs_exportsf.data.items():
         assert hosts == combined.exports[path]
     assert sorted(combined.exports['/home/insights/shared/rw'].keys()) == sorted([
         '@group', 'ins1.example.com', 'ins2.example.com', 'ins4.example.com'
@@ -98,7 +98,7 @@ def test_nfs_exports_with_no_exports_d():
         '/home/insights/shared/special/all/mail',
         '/home/insights/ins/special/all/config', '/home/example'
     ])
-    for path, hosts in nfs_exportsf.data.iteritems():
+    for path, hosts in nfs_exportsf.data.items():
         assert hosts == combined.exports[path]
     assert sorted(combined.exports['/home/insights/shared/rw'].keys()) == sorted([
         '@group', 'ins1.example.com', 'ins2.example.com', 'ins4.example.com'

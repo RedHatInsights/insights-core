@@ -123,5 +123,5 @@ def test_get_active_setting_value():
     context = context_wrap(JOURNALD_CONF_1, AUDITD_CONF_PATH)
     result = JournaldConf(context)
     active_settings = build_active_settings_expected()
-    for key, value in active_settings.iteritems():
+    for key, value in active_settings.items():
         assert result.get_active_setting_value(key) == value

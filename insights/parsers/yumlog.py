@@ -138,7 +138,7 @@ class YumLog(Parser):
 
     def _packages_currently(self, states):
         result = {}
-        for k, v in self.pkgs.iteritems():
+        for k, v in self.pkgs.items():
             e = v[-1]
             if e.state in states:
                 result[k] = e

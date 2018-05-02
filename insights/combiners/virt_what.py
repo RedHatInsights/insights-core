@@ -69,7 +69,7 @@ class VirtWhat(object):
         if (vw is None or vw.errors) and dmi:
             sys_info = dmi.get("system_information", [{}])[0]
             bios_info = dmi.get("bios_information", [{}])[0]
-            dmi_info = sys_info.values() + bios_info.values()
+            dmi_info = list(sys_info.values()) + list(bios_info.values())
             if dmi_info:
                 for dmi_v in dmi_info:
                     if not self.generic:

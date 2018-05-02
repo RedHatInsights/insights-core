@@ -1,3 +1,5 @@
+from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import json
 import logging
@@ -5,20 +7,21 @@ import logging.handlers
 import os
 import time
 import shutil
+import six
 
-from auto_config import (_try_satellite6_configuration,
-                         _try_satellite5_configuration)
-from utilities import (generate_machine_id,
-                       write_to_disk,
-                       write_unregistered_file,
-                       determine_hostname)
-from collection_rules import InsightsConfig
-from data_collector import DataCollector
-from connection import InsightsConnection
-from archive import InsightsArchive
-from support import registration_check
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .auto_config import (_try_satellite6_configuration,
+                          _try_satellite5_configuration)
+from .utilities import (generate_machine_id,
+                        write_to_disk,
+                        write_unregistered_file,
+                        determine_hostname)
+from .collection_rules import InsightsConfig
+from .data_collector import DataCollector
+from .connection import InsightsConnection
+from .archive import InsightsArchive
+from .support import registration_check
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
 INSIGHTS_CONNECTION = None
@@ -34,7 +37,7 @@ def get_file_handler():
     log_file = config['logging_file']
     log_dir = os.path.dirname(log_file)
     if not os.path.exists(log_dir):
-        os.makedirs(log_dir, 0700)
+        os.makedirs(log_dir, 0o700)
     file_handler = logging.handlers.RotatingFileHandler(
         log_file, backupCount=3)
     file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
@@ -64,8 +67,8 @@ def configure_level():
     config_level = 'DEBUG' if config['verbose'] else config['loglevel']
 
     init_log_level = logging.getLevelName(config_level)
-    if type(init_log_level) in (str, unicode):
-        print "Invalid log level %s, defaulting to DEBUG" % config_level
+    if type(init_log_level) in six.string_types:
+        print("Invalid log level %s, defaulting to DEBUG" % config_level)
         init_log_level = logging.DEBUG
 
     logger.setLevel(init_log_level)
@@ -281,8 +284,11 @@ def collect(rc=0):
         logger.debug("Client running in container/image mode.")
         logger.debug("Scanning for matching container/image.")
 
-        from containers import get_targets
-        target = get_targets()[0]
+        from .containers import get_targets
+        targets = get_targets()
+        if len(targets) == 0:
+            sys.exit(constants.sig_kill_bad)
+        target = targets[0]
 
     # the host
     else:
@@ -324,7 +330,7 @@ def collect(rc=0):
     try:
         # analyze docker images
         if target['type'] == 'docker_image':
-            from containers import open_image
+            from .containers import open_image
             container_connection = open_image(target['name'])
             logging_name = 'Docker image ' + target['name']
 
@@ -338,7 +344,7 @@ def collect(rc=0):
         elif target['type'] == 'compressed_file':
             logging_name = 'Compressed file ' + target['name'] + ' at location ' + target['location']
 
-            from compressed_file import InsightsCompressedFile
+            from .compressed_file import InsightsCompressedFile
             compressed_filesystem = InsightsCompressedFile(target['location'])
 
             if compressed_filesystem.is_tarfile is False:
@@ -439,7 +445,7 @@ def upload(tar_file, collection_duration=None):
             account_number = config.get('account_number')
             if account_number:
                 logger.info("Successfully uploaded report from %s to account %s." % (
-                        machine_id, account_number))
+                            machine_id, account_number))
             else:
                 logger.info("Successfully uploaded report for %s." % (machine_id))
             break

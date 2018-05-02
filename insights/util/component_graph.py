@@ -103,13 +103,11 @@ def main(filename):
     dr.load_components("insights.parsers")
     dr.load_components("insights.combiners")
 
-    parsers = sorted([c for c in dr.DELEGATES if is_parser(c)],
-                     lambda x, y: cmp(dr.get_name(x), dr.get_name(y)))
-    combiners = sorted([c for c in dr.DELEGATES if is_combiner(c)],
-                       lambda x, y: cmp(dr.get_name(x), dr.get_name(y)))
+    parsers = sorted([c for c in dr.DELEGATES if is_parser(c)], key=dr.get_name)
+    combiners = sorted([c for c in dr.DELEGATES if is_combiner(c)], key=dr.get_name)
     specs = sorted([c for c in dr.DELEGATES
                     if is_datasource(c) and dr.get_module_name(c) == 'insights.specs'],
-                   lambda x, y: cmp(dr.get_name(x), dr.get_name(y)))
+                   key=dr.get_name)
 
     with open(filename, "w") as fh:
         fh.write("Components Cross-Reference\n")
