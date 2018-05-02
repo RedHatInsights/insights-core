@@ -7,14 +7,14 @@ directory.
 
 """
 
-from .. import Parser, parser
+from .. import Parser, parser, LegacyItemAccess
 from ..parsers import parse_fixed_table, ParseException
 from insights.specs import Specs
 
 HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
 
 
-class Limits(object):
+class Limits(LegacyItemAccess):
     """
     An object representing a line in the ``/proc/limits``.  Each entry contains
     below fixed attributes:
@@ -24,18 +24,19 @@ class Limits(object):
         soft_limit(str): Soft limit
         units(str): Unit of the limit value
     """
-    attrs = {
-            'hard_limit': '',
-            'soft_limit': '',
-            'units': ''
-    }
 
     def __init__(self, data={}):
-        for k, v in Limits.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
+        self.data = data
         for k, v in data.items():
             setattr(self, k, v)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self.data.items():
+            yield k, v
 
 
 class ProcLimits(Parser):

@@ -70,7 +70,7 @@ GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
 
 
-class BootEntry(object):
+class BootEntry(LegacyItemAccess):
     """
     An object representing an entry in the output of ``mount`` command.  Each
     entry contains below fixed attributes:
@@ -79,17 +79,18 @@ class BootEntry(object):
         name (str): Name of the boot entry
         cmdline (str): Cmdline of the boot entry
     """
-    attrs = {
-            'name': '',
-            'cmdline': '',
-    }
-
     def __init__(self, data={}):
-        for k, v in BootEntry.attrs.items():
-            if k not in data:
-                setattr(self, k, v)
+        self.data = data
         for k, v in data.items():
             setattr(self, k, v)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self.data.items():
+            yield k, v
 
 
 class GrubConfig(LegacyItemAccess, Parser):

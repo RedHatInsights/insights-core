@@ -37,9 +37,8 @@ This data, as above, is available in the ``data`` property:
 * ``noquota`` - Disk quotas are enforced or not
 
 For instance, the option ``rw`` in ``rw,dmode=0500`` may be accessed as
-``mnt_row_info.rw`` with the value ``True``, but the ``dmode`` can only be
-accessed as ``mnt_row_info.get('dmode')`` or ``mnt_row_info['dmode']`` with the
-value ``0500``.
+``mnt_row_info.rw`` with the value ``True``, and the ``dmode`` can be accessed
+as ``mnt_row_info.dmode`` with the value ``0500``.
 
 The :class:`FSTabEntry` for each mount point is also available via the
 :attr:`FSTab.mounted_on` property; the data is the same as that stored in the
