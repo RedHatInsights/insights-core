@@ -72,12 +72,12 @@ def test_fstab():
     assert nfs_host.fs_file == "/srv/rdu/data/000"
     assert nfs_host.fs_vfstype == "nfs"
     assert nfs_host.fs_mntops.ro
-    assert nfs_host.fs_mntops['hard']
+    assert nfs_host.fs_mntops.hard
     assert 'bg' in nfs_host.fs_mntops
-    assert nfs_host.fs_mntops['rsize'] == "32768"
+    assert nfs_host.fs_mntops.rsize == "32768"
     assert nfs_host.fs_freq == 0
     assert nfs_host.fs_passno == 0
-    assert dev_vg0.fs_mntops['data'] == 'writeback'
+    assert dev_vg0.fs_mntops.data == 'writeback'
     assert dev_vg0.raw == '/dev/mapper/vg0-lv2 /test1             ext4 defaults,data=writeback     1 1'
     for opt, v in dev_vg0.fs_mntops.items():
         if opt.startswith('data'):

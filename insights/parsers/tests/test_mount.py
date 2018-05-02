@@ -53,6 +53,7 @@ def test_mount():
     assert 'rw' in sda1['mount_options']
     assert 'seclabel' in sda1['mount_options']
     assert sda1['mount_options']['data'] == 'ordered'
+    assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
 
     # Test iteration
