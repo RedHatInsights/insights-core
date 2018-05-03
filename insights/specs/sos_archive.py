@@ -77,6 +77,7 @@ class SosSpecs(Specs):
         simple_file("sos_commands/foreman/foreman-debug/qpid_stat_subscriptions"),
         simple_file("sos_commands/foreman/foreman-debug/qpid-stat-u")
     ])
+    rhn_charsets = first_of([simple_file("database-character-sets")])
     root_crontab = simple_file("sos_commands/cron/root_crontab")
     route = simple_file("sos_commands/networking/route_-n")
     sestatus = simple_file("sos_commands/selinux/sestatus_-b")
