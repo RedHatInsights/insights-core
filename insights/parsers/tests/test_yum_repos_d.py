@@ -20,7 +20,7 @@ gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta,file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
 '''
 
-REPOPATH = 'etc/yum.repos.d/rhel-source.repo'
+REPOPATH = '/etc/yum.repos.d/rhel-source.repo'
 
 
 def test_yum_repos_d():
@@ -42,6 +42,6 @@ def test_yum_repos_d():
             'gpgkey': ['file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-beta',
                        'file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release']}
     assert repos_info.file_name == 'rhel-source.repo'
-    assert repos_info.file_path == 'etc/yum.repos.d/rhel-source.repo'
+    assert repos_info.file_path == REPOPATH
 
     assert sorted(list(repos_info)) == sorted(['rhel-source', 'rhel-source-beta'])
