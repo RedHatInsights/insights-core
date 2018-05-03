@@ -21,7 +21,7 @@ test_multiline_config = http://example.com/repos/test/
                         http://mirror_example.com/repos/test/
 '''
 
-PLUGINPATH = 'etc/yum/plugincon.d/rhnplugin.conf'
+PLUGINPATH = '/etc/yum/plugincon.d/rhnplugin.conf'
 
 
 def test_pluginconf_d():
@@ -30,7 +30,7 @@ def test_pluginconf_d():
     assert plugin_info.data['main'] == {'enabled': '0',
                                         'gpgcheck': '1',
                                         'timeout': '120'}
-    assert plugin_info.file_path == 'etc/yum/plugincon.d/rhnplugin.conf'
+    assert plugin_info.file_path == '/etc/yum/plugincon.d/rhnplugin.conf'
     assert plugin_info.file_name == 'rhnplugin.conf'
 
     assert plugin_info.data['test'] == {

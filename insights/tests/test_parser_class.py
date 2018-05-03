@@ -59,6 +59,7 @@ class Context(object):
     def __init__(self, content):
         self.content = content
         self.path = ""
+        self.relative_path = ""
 
 
 def simple_parser(context):

@@ -45,7 +45,7 @@ gpgkey =
 """
 
 
-CONF_PATH = 'etc/yum.conf'
+CONF_PATH = '/etc/yum.conf'
 
 
 def test_get_yum_conf():
@@ -79,4 +79,4 @@ def test_get_yum_conf():
     }
 
     assert yum_conf.file_name == 'yum.conf'
-    assert yum_conf.file_path == 'etc/yum.conf'
+    assert yum_conf.file_path == '/etc/yum.conf'

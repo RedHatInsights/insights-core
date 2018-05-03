@@ -65,7 +65,7 @@ Examples:
     >>> type(httpd_conf[('IfModule','prefork.c')]) == type({})
     True
     >>> httpd_conf[('IfModule','mod_mime_magic.c')]
-    {'MIMEMagicFile': [ParsedData(value='conf/magic', line='MIMEMagicFile conf/magic', section='IfModule', section_name='mod_mime_magic.c', file_name='path', file_path='path')]}
+    {'MIMEMagicFile': [ParsedData(value='conf/magic', line='MIMEMagicFile conf/magic', section='IfModule', section_name='mod_mime_magic.c', file_name='path', file_path='/path')]}
     >>> httpd_conf[('IfModule','prefork.c')]['StartServers'][0].value
     '8'
     >>> 'ThreadsPerChild' in httpd_conf[('IfModule','prefork.c')]

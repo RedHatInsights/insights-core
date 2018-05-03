@@ -60,7 +60,7 @@ SYSTEMID = '''
 
 
 def test_systemid():
-    info = SystemID(context_wrap(SYSTEMID, path='etc/sysconfig/rhn/systemid'))
+    info = SystemID(context_wrap(SYSTEMID, path='/etc/sysconfig/rhn/systemid'))
 
     assert info.get("username") == 'testuser'
     assert info.get("operating_system") == 'redhat-release-workstation'
@@ -73,4 +73,4 @@ def test_systemid():
     assert info.get("type") == 'REAL'
 
     assert info.file_name == 'systemid'
-    assert info.file_path == 'etc/sysconfig/rhn/systemid'
+    assert info.file_path == '/etc/sysconfig/rhn/systemid'
