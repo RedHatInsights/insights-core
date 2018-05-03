@@ -39,8 +39,8 @@ LoadModule auth_basic_module modules/mod_auth_basic.so
 LoadModule auth_digest_module modules/mod_auth_digest.so
 """.strip()
 
-HTTPD_CONF_PATH = "etc/httpd/conf/httpd.conf"
-HTTPD_CONF_D_PATH = "etc/httpd/conf.d/default.conf"
+HTTPD_CONF_PATH = "/etc/httpd/conf/httpd.conf"
+HTTPD_CONF_D_PATH = "/etc/httpd/conf.d/default.conf"
 
 HTTPD_CONF_D_1 = """
 SSLProtocol -ALL +SSLv3
@@ -180,14 +180,14 @@ def test_get_httpd_conf_nest_2():
             ('IfModule', '!php4_module'): {
                 ('Location', '/'): {
                     ('FilesMatch', '".php[45]?$"'): {
-                        'Deny': [('from all', 'Deny from all', 'FilesMatch', '".php[45]?$"', 'httpd.conf', 'etc/httpd/conf/httpd.conf')],
+                        'Deny': [('from all', 'Deny from all', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
                         'Order': [
-                            ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', 'httpd.conf', 'etc/httpd/conf/httpd.conf'),
-                            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', 'etc/httpd/conf/httpd.conf')]
+                            ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
                     }
                 }
             },
-            'JustATest': [('on', 'JustATest on', 'IfModule', '!php5_module', 'httpd.conf', 'etc/httpd/conf/httpd.conf')],
+            'JustATest': [('on', 'JustATest on', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
 
     }
 
@@ -282,7 +282,7 @@ def test_no_name_section():
 def test_doc():
     env = {
             'HttpdConf': HttpdConf,
-            'httpd_conf': HttpdConf(context_wrap(HTTPD_CONF_DOC, path='path')),
+            'httpd_conf': HttpdConf(context_wrap(HTTPD_CONF_DOC, path='/path')),
           }
     failed, total = doctest.testmod(httpd_conf, globs=env)
     assert failed == 0

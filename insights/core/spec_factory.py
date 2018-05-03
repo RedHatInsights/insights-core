@@ -60,6 +60,7 @@ class ContentProvider(object):
         self.args = None
         self.rc = None
         self.path = None
+        self.relative_path = None
         self._content = None
         self._exception = None
 

@@ -118,9 +118,7 @@ COMMENTS_CONTENT = """
 
 
 def test_initscript1():
-    context = context_wrap(NOTINITSCRIPT_CONTENT)
-    context.path = NOTINITSCRIPT_SCRIPT
-
+    context = context_wrap(NOTINITSCRIPT_CONTENT, path=NOTINITSCRIPT_SCRIPT)
     with pytest.raises(NotInitscriptException) as e_info:
         InitScript(context)
     assert context.path in str(e_info.value)
@@ -128,50 +126,38 @@ def test_initscript1():
 
 
 def test_initscript2():
-    context = context_wrap(CHKCONFIG_CONTENT)
-    context.path = CHKCONFIG_SCRIPT
-
+    context = context_wrap(CHKCONFIG_CONTENT, path=CHKCONFIG_SCRIPT)
     r = InitScript(context)
     assert r.file_name == "script_chkconfig"
 
 
 def test_initscript3():
-    context = context_wrap(LSB_CONTENT)
-    context.path = LSB_SCRIPT
-
+    context = context_wrap(LSB_CONTENT, path=LSB_SCRIPT)
     r = InitScript(context)
     assert r.file_name == "script_lsb"
 
 
 def test_initscript4():
-    context = context_wrap(CHKCONFIG_LSB_CONTENT)
-    context.path = CHKCONFIG_LSB_SCRIPT
-
+    context = context_wrap(CHKCONFIG_LSB_CONTENT, path=CHKCONFIG_LSB_SCRIPT)
     r = InitScript(context)
     assert r.file_name == "script_chkconfig+lsb"
 
 
 def test_initscript5():
-    context = context_wrap(HINTSONLY_CONTENT)
-    context.path = HINTSONLY_SCRIPT
-
+    context = context_wrap(HINTSONLY_CONTENT, path=HINTSONLY_SCRIPT)
     r = InitScript(context)
     assert r.file_name == "script_hintsonly"
 
 
 def test_initscript6():
-    context = context_wrap(EMPTY_CONTENT)
-    context.path = EMPTY_SCRIPT
-
+    context = context_wrap(EMPTY_CONTENT, path=EMPTY_SCRIPT)
     with pytest.raises(EmptyFileException) as e_info:
         InitScript(context)
     assert context.path in str(e_info.value)
 
 
 def test_initscript7():
-    context = context_wrap(COMMENTS_CONTENT)
-    context.path = COMMENTS_SCRIPT
-
+    context = context_wrap(COMMENTS_CONTENT, path=COMMENTS_SCRIPT)
     with pytest.raises(NotInitscriptException) as e_info:
         InitScript(context)
     assert context.path in str(e_info.value)
