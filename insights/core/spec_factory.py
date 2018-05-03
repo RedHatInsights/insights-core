@@ -352,6 +352,8 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
+    max_files = 1000
+
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
@@ -370,6 +372,9 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
                 except:
                     log.debug(traceback.format_exc())
         if results:
+            if len(results) > max_files:
+                raise ContentException("Number of files returned [{0}] is over the {1} file limit, please refine "
+                                       "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
     return inner

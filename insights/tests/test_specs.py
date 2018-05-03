@@ -2,9 +2,32 @@ import os
 
 from insights import add_filter, dr
 from insights.core.context import HostContext
+from insights.core.plugins import ContentException
 from insights.core.spec_factory import simple_file, simple_command, glob_file, SpecSet
+import tempfile
+import pytest
+import glob
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+DATA = """
+Some test data
+"""
+MAX_GLOBS = 1001
+
+
+# fixture to set up max glob file test
+@pytest.fixture
+def max_globs():
+    for f in range(MAX_GLOBS):
+        tmpfile = tempfile.NamedTemporaryFile(prefix='tmp_', suffix='_glob', delete=False)
+        tmpfile.close()
+        with open(tmpfile.name, 'w') as fd:
+            fd.write(DATA)
+    yield tempfile.gettempdir()
+    for fle in glob.glob1(tempfile.gettempdir(), "tmp_*_glob"):
+        os.remove(tempfile.gettempdir() + "/" + fle)
+
 
 # hack to find this source file and not the .pyc version of it
 this_file = os.path.abspath(__file__).rstrip("c")
@@ -53,3 +76,12 @@ def test_line_terminators():
     content = broker[Stuff.smpl_file].content
     assert all(b"def test" in l for l in content), content
     assert not any(l.endswith(b"\n") for l in content)
+
+
+def test_glob_max(max_globs):
+    too_many = glob_file(max_globs + "/tmp_*_glob")
+    hn = HostContext()
+    broker = dr.Broker()
+    broker[HostContext] = hn
+    with pytest.raises(ContentException):
+        too_many(broker)
