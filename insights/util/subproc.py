@@ -77,29 +77,29 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
         CalledProcessError
             Raised when cmd fails
     """
-
     output = None
     rc = 0
-    clist = False
     try:
-        if type(cmd) is list:
-            clist = True
-            command = cmd
-            cmd = []
-            for cl in command:
-                cmd += [[c.encode('utf-8', 'replace') for c in cl]]
-            if timeout is not None and sys.platform != "darwin":
-                cmd[0] = ['timeout', '-s', str(signum), str(timeout)] + cmd[0]
-        else:
-            cmd = cmd.encode('utf-8', 'replace')
-            if timeout is not None and sys.platform != "darwin":
-                cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
+        if not shell:
+            if type(cmd) is list:
+                command = cmd
+                if timeout is not None and sys.platform != "darwin":
+                    cmd[0] = ['timeout', '-s', '{0}'.format(signum), '{0}'.format(timeout)] + cmd[0]
+                cmd = []
+                for cl in command:
+                    cmd += [[c.encode('utf-8', 'replace') for c in cl]]
+            else:
+                if timeout is not None and sys.platform != "darwin":
+                   cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
+                command = [shlex.split(cmd)]
+                cmd = []
+                for cl in command:
+                    cmd += [[c.encode('utf-8', 'replace') for c in cl]]
+
 
         log.debug(cmd)
 
         if not shell:
-            if not clist:
-                cmd = [shlex.split(cmd)]
             if len(cmd) > 1:
                 cout = Popen(cmd[0], stdout=stdout)
                 del cmd[0]

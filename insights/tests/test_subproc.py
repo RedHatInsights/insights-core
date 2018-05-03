@@ -14,7 +14,7 @@ def test_call_list_of_lists():
     cmd = "echo -n ' hello '"
     cmd = shlex.split(cmd)
     result = subproc.call([cmd, ["grep", "-F", "hello"]])
-    assert "hello" in result
+    assert b"hello" in result
 
 
 def test_call_timeout():
