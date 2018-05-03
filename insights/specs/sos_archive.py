@@ -1,7 +1,7 @@
 from functools import partial
 from insights.specs import Specs
 from insights.core.context import SosArchiveContext
-from insights.core.spec_factory import simple_file, simple_command, first_of, first_file, glob_file
+from insights.core.spec_factory import simple_file, first_of, first_file, glob_file
 
 first_file = partial(first_file, context=SosArchiveContext)
 glob_file = partial(glob_file, context=SosArchiveContext)
@@ -66,14 +66,12 @@ class SosSpecs(Specs):
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
     pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")
     qpid_stat_q = first_of([
-        simple_command("/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671"),
         simple_file("qpid_stat_queues"),
         simple_file("qpid-stat-q"),
         simple_file("sos_commands/foreman/foreman-debug/qpid_stat_queues"),
         simple_file("sos_commands/foreman/foreman-debug/qpid-stat-q")
     ])
     qpid_stat_u = first_of([
-        simple_command("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671"),
         simple_file("qpid_stat_subscriptions"),
         simple_file("qpid-stat-u"),
         simple_file("sos_commands/foreman/foreman-debug/qpid_stat_subscriptions"),
