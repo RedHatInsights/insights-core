@@ -30,8 +30,8 @@ class VDSMConfIni(IniConfigFile):
     Examples:
         >>> 'vars' in conf
         True
-        >>> conf.get('addresses', 'qq')
-        '345'
+        >>> conf.get('addresses', 'qq') == '345'
+        True
         >>> conf.getboolean('vars', 'ssl')
         True
         >>> conf.getint('addresses', 'management_port')
@@ -82,12 +82,12 @@ class VDSMLoggerConf(IniConfigFile):
         True
         >>> vdsm_logger_conf.getboolean('logger_root', 'propagate')
         False
-        >>> vdsm_logger_conf.items('loggers')
-        {'keys': 'root,vds,storage,virt,ovirt_hosted_engine_ha,ovirt_hosted_engine_ha_config,IOProcess,devel'}
-        >>> vdsm_logger_conf.get('logger_ovirt_hosted_engine_ha', 'level')
-        'DEBUG'
-        >>> vdsm_logger_conf.get('formatter_sysform', 'datefmt')
-        ''
+        >>> vdsm_logger_conf.items('loggers') == {'keys': 'root,vds,storage,virt,ovirt_hosted_engine_ha,ovirt_hosted_engine_ha_config,IOProcess,devel'}
+        True
+        >>> vdsm_logger_conf.get('logger_ovirt_hosted_engine_ha', 'level') == 'DEBUG'
+        True
+        >>> vdsm_logger_conf.get('formatter_sysform', 'datefmt') == ''
+        True
 
     """
     pass
