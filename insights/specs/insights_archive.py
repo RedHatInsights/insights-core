@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_file, first_of, glob_file, simple_file
+from insights.core.spec_factory import first_of, glob_file, simple_file, head
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -61,11 +61,8 @@ class InsightsArchiveSpecs(Specs):
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
-    # simple_file("insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig")])
-    installed_rpms = first_file([
-        "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_VENDOR_BUILDHOST_DUMMY_SIGPGP_pgpsig",
-        "insights_commands/rpm_-qa_--qf_NAME_-_VERSION_-_RELEASE_._ARCH_INSTALLTIME_date_BUILDTIME_RSAHEADER_pgpsig_DSAHEADER_pgpsig"
-    ])
+    all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
+    installed_rpms = head(all_installed_rpms)
     hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_M = glob_file("insights_commands/httpd*_-M")

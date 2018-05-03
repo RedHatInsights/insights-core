@@ -10,7 +10,7 @@ def test_remove_exists():
     full_path = None
     with closing(tempfile.NamedTemporaryFile(delete=False)) as f:
         full_path = f.name
-        f.write('test')
+        f.write(b'test')
 
     assert os.path.exists(full_path)
     fs.remove(full_path)

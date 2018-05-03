@@ -371,6 +371,7 @@ def apply_upstring(upstring, component_list):
 
     def add_up_key(comp_dict, up_indicator):
         assert up_indicator == 'U' or up_indicator == "_"
-        comp_dict['up'] = True if up_indicator == 'U' else False
+        comp_dict['up'] = up_indicator == 'U'
 
-    map(add_up_key, component_list, upstring)
+    for comp_dict, up_indicator in zip(component_list, upstring):
+        add_up_key(comp_dict, up_indicator)

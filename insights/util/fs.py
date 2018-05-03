@@ -35,7 +35,7 @@ def remove(path, chmod=False):
     subproc.call(cmd)
 
 
-def ensure_path(path, mode=0777):
+def ensure_path(path, mode=0o777):
     """Ensure that path exists in a multiprocessing safe way.
 
     If the path does not exist, recursively create it and its parent

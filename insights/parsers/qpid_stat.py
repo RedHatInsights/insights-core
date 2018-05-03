@@ -43,10 +43,10 @@ class QpidStatQ(Parser):
     Examples:
         >>> type(qpid_stat_q)
         <class 'insights.parsers.qpid_stat.QpidStatQ'>
-        >>> type(qpid_stat_q.data)  # Queue data stored as it appears
-        <type 'list'>
-        >>> type(qpid_stat_q.data[0])  # Each row is a dictionary formed from the table
-        <type 'dict'>
+        >>> type(qpid_stat_q.data) == type([])  # Queue data stored as it appears
+        True
+        >>> type(qpid_stat_q.data[0]) == type({}) # Each row is a dictionary formed from the table
+        True
         >>> qpid_stat_q.data[0]['queue']
         '00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0'
         >>> qpid_stat_q.data[0]['dur']  # Blank columns are empty strings
@@ -57,8 +57,8 @@ class QpidStatQ(Parser):
         '2'
         >>> qpid_stat_q.data[1]['bytesOut']  # No byte measure conversion
         '4.88k'
-        >>> type(qpid_stat_q.by_queue)  # Dictionary lookup by queue ID
-        <type 'dict'>
+        >>> type(qpid_stat_q.by_queue) == type({}) # Dictionary lookup by queue ID
+        True
         >>> qpid_stat_q.by_queue['00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0'] == qpid_stat_q.data[0]
         True
         >>> total_messages_in = 0
@@ -130,10 +130,10 @@ class QpidStatU(Parser):
     Examples:
         >>> type(qpid_stat_u)
         <class 'insights.parsers.qpid_stat.QpidStatU'>
-        >>> type(qpid_stat_u.data)  # Subscription data stored as it appears
-        <type 'list'>
-        >>> type(qpid_stat_u.data[0])  # Each row is a dictionary formed from the table
-        <type 'dict'>
+        >>> type(qpid_stat_u.data) == type([]) # Subscription data stored as it appears
+        True
+        >>> type(qpid_stat_u.data[0]) == type({}) # Each row is a dictionary formed from the table
+        True
         >>> qpid_stat_u.data[0]['queue']
         '00d6cc19-15fc-4b7c-af3c-6a38e7bb386d:1.0'
         >>> qpid_stat_u.data[0]['browse']  # Blank columns are empty strings
@@ -144,8 +144,8 @@ class QpidStatU(Parser):
         '0'
         >>> qpid_stat_u.data[2]['delivered']  # Beware the commas
         '2,623'
-        >>> type(qpid_stat_u.by_queue)  # Dictionary lookup by queue ID
-        <type 'dict'>
+        >>> type(qpid_stat_u.by_queue) == type({}) # Dictionary lookup by queue ID
+        True
         >>> qpid_stat_u.by_queue['celery'] == qpid_stat_u.data[4]
         True
         >>> total_celery_queues = 0
@@ -156,8 +156,8 @@ class QpidStatU(Parser):
         >>> total_celery_queues
         3
         >>> event_queues = qpid_stat_u.search(queue__contains=':event')  # Keyword search
-        >>> type(event_queues)
-        <type 'list'>
+        >>> type(event_queues) == type([])
+        True
         >>> len(event_queues)
         1
         >>> event_queues[0] == qpid_stat_u.data[2]  # List contains matching items

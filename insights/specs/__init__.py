@@ -274,6 +274,8 @@ class Specs(SpecSet):
     oc_get_role = RegistryPoint()
     oc_get_route = RegistryPoint()
     oc_get_service = RegistryPoint()
+    odbc_ini = RegistryPoint()
+    odbcinst_ini = RegistryPoint()
     openvswitch_other_config = RegistryPoint()
     openvswitch_server_log = RegistryPoint()
     openshift_certificates = RegistryPoint(multi_output=True)

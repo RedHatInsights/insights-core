@@ -29,6 +29,8 @@ LvmConf - file ``/etc/lvm/lvm.conf``
 ------------------------------------
 
 """
+from __future__ import print_function
+
 import json
 from ..util import parse_keypair_lines
 from .. import add_filter
@@ -44,8 +46,8 @@ def map_keys(pvs, keys):
     """
     rs = []
     for pv in pvs:
-        r = dict((v, None) for k, v in keys.iteritems())
-        for k, v in pv.iteritems():
+        r = dict((v, None) for k, v in keys.items())
+        for k, v in pv.items():
             if k in keys:
                 r[keys[k]] = v
             r[k] = v
@@ -650,4 +652,4 @@ if __name__ == "__main__":
     headers = [h.strip().replace(" ", "_") for h in content[0].split("|")]
     nameprefixes = [v.split("=")[0].strip() for v in content[1].replace("0 ", "0").split("|")]
     pairs = zip(nameprefixes, headers)
-    print json.dumps(OrderedDict(sorted(pairs, cmp=lambda x, y: cmp(x[0], y[0]))))
+    print(json.dumps(OrderedDict(sorted(pairs))))

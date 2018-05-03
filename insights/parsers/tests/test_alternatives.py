@@ -83,7 +83,7 @@ java - status is auto.
  slave jre_exports: /usr/lib/jvm-exports/jre-1.4.2-gcj
  slave jre: /usr/lib/jvm/jre-1.4.2-gcj
 Current `best' version is /usr/lib/jvm/jre-1.6.0-ibm.x86_64/bin/java.
-""".strip().encode('utf8')
+""".strip()
 
 alter_no_java = """
 /usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java - priority 170079
@@ -109,7 +109,7 @@ alter_no_java = """
  slave tnameserv.1.gz: /usr/share/man/man1/tnameserv-java-1.7.0-openjdk.1.gz
  slave unpack200.1.gz: /usr/share/man/man1/unpack200-java-1.7.0-openjdk.1.gz
 Current `best' version is /usr/lib/jvm/jre-1.7.0-openjdk.x86_64/bin/java.
-""".strip().encode('utf8')
+""".strip()
 
 
 def test_class_no_java():

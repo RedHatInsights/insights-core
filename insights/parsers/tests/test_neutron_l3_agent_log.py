@@ -17,7 +17,7 @@ def test_metrics_log():
     assert len(log.get('INFO')) == 1
     assert 'Duplicate iptables rule detected' in log
     assert len(log.get('Duplicate iptables rule detected')) == 2
-    assert len(list(log.get_after(datetime(2017, 02, 17, 19, 36, 38)))) == 3
+    assert len(list(log.get_after(datetime(2017, 2, 17, 19, 36, 38)))) == 3
 
 
 def test_doc():

@@ -1,6 +1,7 @@
 """
 Module to interact with Satellite Based Certificates
 """
+from __future__ import print_function
 import os
 import logging
 
@@ -56,8 +57,8 @@ class rhsmCertificate:
             try:
                 cls.read()
                 return True
-            except Exception, e:
-                print e
+            except Exception as e:
+                print(e)
         return False
 
     def __init__(self, keystring, certstring):

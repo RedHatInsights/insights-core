@@ -161,3 +161,21 @@ class FSTab(Parser):
                 ``fstab.search(fs_vfstype='xfs', fs_mntops__contains='relatime')``
         """
         return keyword_search(self.data, **kwargs)
+
+    def fsspec_of_path(self, path):
+        """
+        Return the device name if longest-matched mount-point of path is found,
+        else None.
+        """
+        path = path.strip() if path else path
+        if not path or not path.startswith('/'):
+            return
+
+        mos = self.mounted_on
+        mps = sorted(mos, reverse=True)
+
+        path = path if path.endswith('/') else path + '/'
+        for mp in mps:
+            tmp = mp if mp.endswith('/') else mp + '/'
+            if path.startswith(tmp):
+                return mos[mp].get('fs_spec', None)

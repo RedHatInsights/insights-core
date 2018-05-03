@@ -59,7 +59,7 @@ class GrubConf(object):
 
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
-        _grubs = filter(None, [grub1, grub2, grub1_efi, grub2_efi])
+        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi]))
         if len(_grubs) == 1:
             self.grub = _grubs[0]
             self.is_efi = self.grub._efi

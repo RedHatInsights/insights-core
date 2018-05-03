@@ -1,6 +1,7 @@
 """
 Utility functions
 """
+from __future__ import absolute_import
 import socket
 import os
 import logging
@@ -11,10 +12,9 @@ import re
 import stat
 import json
 from subprocess import Popen, PIPE, STDOUT
-from insights.contrib.ConfigParser import RawConfigParser
+from six.moves.configparser import RawConfigParser
 
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +80,6 @@ def write_to_disk(filename, delete=False, content=get_time()):
 
 
 def generate_machine_id(new=False,
-                        docker_group=False,
                         destination_file=constants.machine_id_file):
     """
     Generate a machine-id if /etc/insights-client/machine-id does not exist
@@ -89,11 +88,6 @@ def generate_machine_id(new=False,
     machine_id_file = None
     logging_name = 'machine-id'
 
-    if docker_group:
-        # generate a docker group ("docking station") id
-        #   for the API to parse this group of systems
-        destination_file = constants.docker_group_id_file
-        logging_name = 'docker-group-id'
     if os.path.isfile(destination_file) and not new:
         logger.debug('Found %s', destination_file)
         with open(destination_file, 'r') as machine_id_file:
@@ -113,53 +107,6 @@ def generate_machine_id(new=False,
                 handler.write(json.dumps(machine_id_json))
 
     return str(machine_id).strip()
-
-
-def generate_analysis_target_id(analysis_target, name):
-    # this function generates 'machine-id's for analysis target's that
-    # might not be hosts.
-    #
-    # 'machine_id' is what Insights uses to uniquely identify
-    # the thing-to-be-analysed.  Primarily it determines when two uploads
-    # are for the 'same thing', and so the latest upload should update the
-    # later one Up till now that has only been hosts (machines), and so a
-    # random uuid (uuid4) machine-id was generated for the host as its machine-id,
-    # and written to a file on the host, and reused for all insights
-    # uploads for that host.
-    #
-    # For docker images and containers, it will be difficult to impossible
-    # to save their machine id's anywhere.  Also, while containers change
-    # over time just like hosts, images don't change over time, though they
-    # can be rebuilt.  So for images we want the 'machine-id' for an 'image'
-    # to follow the rebuilt image, not change every time the image is rebuilt.
-    # Typically when an image is rebuilt, the rebuilt image will have the same
-    # name as its predicessor, but a different version (tag).
-    #
-    # So for images and containers, instead of random uuids, we use namespace uuids
-    # (uuid5's).  This generates a new uuid based on a combination of another
-    # uuid, and a name (a character string).  This will always generate the
-    # same uuid for the same given base uuid and name.  This saves us from
-    # having to save the image's uuid anywhere, and lets us control the created uuid
-    # by controlling the name used to generate it.  Keep the name and base uuid) the
-    # same, we get the same uuid.
-    #
-    # For the base uuid we use the uuid of the host we are running on.
-    # For containers this is the obvious choice, for images it is less obviously
-    # what base uuid is correct.  For now we will just go with the host's uuid also.
-    #
-    # For the name, we leave that outside this function, but in general it should
-    # be the name of the container or the name of the image, and if you want to
-    # replace the results on the insights server, you have to use the same name
-
-    if analysis_target == "host":
-        return generate_machine_id()
-    elif (analysis_target == "docker_image" or
-            analysis_target == "docker_container" or
-            analysis_target == "compressed_file" or
-            analysis_target == "mountpoint"):
-        return generate_container_id(name)
-    else:
-        raise ValueError("Unknown analysis target: %s" % analysis_target)
 
 
 def _expand_paths(path):
@@ -231,20 +178,13 @@ def magic_plan_b(filename):
     '''
     cmd = shlex.split('file --mime-type --mime-encoding ' + filename)
     stdout, stderr = Popen(cmd, stdout=PIPE).communicate()
+    stdout = stdout.decode("utf-8")
     mime_str = stdout.split(filename + ': ')[1].strip()
     return mime_str
 
 
-def generate_container_id(container_name):
-    # container id is a uuid in the namespace of the machine
-    if not config["container_mode"]:
-        return str(uuid.uuid5(uuid.UUID(generate_machine_id()), container_name.encode('utf8')))
-    else:
-        return container_name.encode('utf8')
-
-
 def run_command_get_output(cmd):
-    proc = Popen(shlex.split(cmd.encode("utf-8")),
+    proc = Popen(shlex.split(cmd),
                  stdout=PIPE, stderr=STDOUT)
     stdout, stderr = proc.communicate()
 

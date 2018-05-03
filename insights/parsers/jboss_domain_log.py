@@ -104,7 +104,7 @@ class JbossDomainServerLog(JbossDomainLog):
         >>> 'Activating Security Subsystem' in log
         True
         >>> from datetime import time
-        >>> list(log.get_after(time(16, 23, 03)))[1]['raw_message']
+        >>> list(log.get_after(time(16, 23, 3)))[1]['raw_message']
         '16:23:03,958 INFO  [org.jboss.as.security] (ServerService Thread Pool -- 37) JBAS013371: Activating Security Subsystem'
     """
     pass

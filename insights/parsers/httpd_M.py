@@ -33,8 +33,12 @@ class HttpdM(LegacyItemAccess, Parser):
         <class 'insights.parsers.httpd_M.HttpdM'>
         >>> len(hm.loaded_modules)
         5
-        >>> hm.static_modules
-        ['core_module', 'http_module']
+        >>> len(hm.static_modules)
+        2
+        >>> 'core_module' in hm.static_modules
+        True
+        >>> 'http_module' in hm.static_modules
+        True
         >>> 'http_module' in hm
         True
         >>> 'http_module' in hm.shared_modules

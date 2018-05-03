@@ -6,7 +6,7 @@ from insights.util import subproc
 
 def test_call():
     result = subproc.call('echo -n hello')
-    assert result == 'hello'
+    assert result == b'hello'
 
 
 def test_call_timeout():

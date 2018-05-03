@@ -1,14 +1,15 @@
+from __future__ import absolute_import
 import os
-import re
 import errno
 import shlex
 import logging
 import six
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
+from insights.util import mangle
 
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 
@@ -22,44 +23,20 @@ class InsightsSpec(object):
         self.exclude = exclude
         # pattern for spec collection
         self.pattern = spec['pattern'] if spec['pattern'] else None
-        # absolute destination inside the archive for this spec
-        self.archive_path = spec['archive_file_name']
 
 
 class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name, config=None):
+    def __init__(self, spec, exclude, mountpoint):
         InsightsSpec.__init__(self, spec, exclude)
-        # substitute mountpoint for collection
-        # have to use .replace instead of .format because there are other
-        #  braced keys in the collection spec not used here
         self.command = spec['command'].replace(
-            '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.mangled_command = self._mangle_command(self.command)
-        # have to re-mangle archive path in case there's a pre-command arg
-        # Only do this if there is a pre-command in the spec, this preserves
-        # the original archive_file_name setting from the spec file
-        if "pre-command" in spec:
-            self.archive_path = os.path.join(
-                os.path.dirname(self.archive_path), self.mangled_command)
+            '{CONTAINER_MOUNT_POINT}', mountpoint)
+        self.archive_path = mangle.mangle_command(self.command)
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
         self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
-        self.config = config
-
-    def _mangle_command(self, command, name_max=255):
-        """
-        Mangle the command name, lifted from sos
-        """
-        mangledname = re.sub(r"^/(usr/|)(bin|sbin)/", "", command)
-        mangledname = re.sub(r"[^\w\-\.\/]+", "_", mangledname)
-        mangledname = re.sub(r"/", ".", mangledname).strip(" ._-")
-        mangledname = mangledname[0:name_max]
-        return mangledname
 
     def get_output(self):
         '''
@@ -97,7 +74,7 @@ class InsightsCommand(InsightsSpec):
 
         dirty = False
 
-        cmd = "/bin/sed -rf " + constants.default_sed_file
+        cmd = "sed -rf " + constants.default_sed_file
         sedcmd = Popen(shlex.split(cmd.encode('utf-8')),
                        stdin=proc0.stdout,
                        stdout=PIPE)
@@ -108,7 +85,7 @@ class InsightsCommand(InsightsSpec):
             exclude_file = NamedTemporaryFile()
             exclude_file.write("\n".join(self.exclude))
             exclude_file.flush()
-            cmd = "/bin/grep -F -v -f %s" % exclude_file.name
+            cmd = "grep -F -v -f %s" % exclude_file.name
             proc1 = Popen(shlex.split(cmd.encode("utf-8")),
                           stdin=proc0.stdout,
                           stdout=PIPE)
@@ -128,7 +105,7 @@ class InsightsCommand(InsightsSpec):
             pattern_file = NamedTemporaryFile()
             pattern_file.write("\n".join(self.pattern))
             pattern_file.flush()
-            cmd = "/bin/grep -F -f %s" % pattern_file.name
+            cmd = "grep -F -f %s" % pattern_file.name
             proc2 = Popen(shlex.split(cmd.encode("utf-8")),
                           stdin=proc0.stdout,
                           stdout=PIPE)
@@ -159,19 +136,11 @@ class InsightsFile(InsightsSpec):
     '''
     A file spec
     '''
-    def __init__(self, spec, exclude, mountpoint, target_name):
+    def __init__(self, spec, exclude, mountpoint):
         InsightsSpec.__init__(self, spec, exclude)
         # substitute mountpoint for collection
-        self.real_path = spec['file'].replace(
-            '{CONTAINER_MOUNT_POINT}', mountpoint).replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.relative_path = spec['file'].replace(
-            mountpoint, '', 1).replace(
-            '{CONTAINER_MOUNT_POINT}', '').replace(
-            '{DOCKER_IMAGE_NAME}', target_name).replace(
-            '{DOCKER_CONTAINER_NAME}', target_name)
-        self.archive_path = self.archive_path.replace('{EXPANDED_FILE_NAME}', self.relative_path)
+        self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
+        self.archive_path = spec['file']
 
     def get_output(self):
         '''
@@ -181,11 +150,8 @@ class InsightsFile(InsightsSpec):
             logger.debug('File %s does not exist', self.real_path)
             return
 
-        logger.debug('Copying %s to %s with filters %s',
-                     self.real_path, self.archive_path, str(self.pattern))
-
         cmd = []
-        cmd.append("/bin/sed".encode('utf-8'))
+        cmd.append("sed".encode('utf-8'))
         cmd.append("-rf".encode('utf-8'))
         cmd.append(constants.default_sed_file.encode('utf-8'))
         cmd.append(self.real_path.encode('utf8'))
@@ -197,7 +163,7 @@ class InsightsFile(InsightsSpec):
             exclude_file.write("\n".join(self.exclude))
             exclude_file.flush()
 
-            cmd = "/bin/grep -v -F -f %s" % exclude_file.name
+            cmd = "grep -v -F -f %s" % exclude_file.name
             args = shlex.split(cmd.encode("utf-8"))
             proc = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
             sedcmd.stdout.close()
@@ -212,7 +178,7 @@ class InsightsFile(InsightsSpec):
             pattern_file.write("\n".join(self.pattern))
             pattern_file.flush()
 
-            cmd = "/bin/grep -F -f %s" % pattern_file.name
+            cmd = "grep -F -f %s" % pattern_file.name
             args = shlex.split(cmd.encode("utf-8"))
             proc1 = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
             sedcmd.stdout.close()
