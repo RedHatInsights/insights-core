@@ -90,12 +90,11 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
                     cmd += [[c.encode('utf-8', 'replace') for c in cl]]
             else:
                 if timeout is not None and sys.platform != "darwin":
-                   cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
+                    cmd = "timeout -s {0} {1} {2}".format(signum, timeout, cmd)
                 command = [shlex.split(cmd)]
                 cmd = []
                 for cl in command:
                     cmd += [[c.encode('utf-8', 'replace') for c in cl]]
-
 
         log.debug(cmd)
 
