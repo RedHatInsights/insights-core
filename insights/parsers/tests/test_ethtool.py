@@ -69,8 +69,7 @@ TX negotiated:  off
 
 
 def test_ethtool_a():
-    context = context_wrap(SUCCESS_ETHTOOL_A)
-    context.path = SUCCESS_ETHTOOL_A_PATH
+    context = context_wrap(SUCCESS_ETHTOOL_A, path=SUCCESS_ETHTOOL_A_PATH)
     result = ethtool.Pause(context)
     assert result.ifname == "enp0s25"
     assert result.autonegotiate
@@ -81,23 +80,20 @@ def test_ethtool_a():
 
 
 def test_ethtool_a_1():
-    context = context_wrap(FAIL_ETHTOOL_A)
-    context.path = FAIL_ETHTOOL_A_PATH
+    context = context_wrap(FAIL_ETHTOOL_A, path=FAIL_ETHTOOL_A_PATH)
     result = ethtool.Pause(context)
     assert result.ifname == "__wlp3s0"
     assert not result.autonegotiate
 
 
 def test_ethtool_a_2():
-    context = context_wrap(FAIL_ETHTOOL_A_1)
-    context.path = FAIL_ETHTOOL_A_PATH_1
+    context = context_wrap(FAIL_ETHTOOL_A_1, path=FAIL_ETHTOOL_A_PATH_1)
     result = ethtool.Pause(context)
     assert result.ifname == "bond0.1384@bond0"
 
 
 def test_ethtool_a_3():
-    context = context_wrap(FAIL_ETHTOOL_A_2)
-    context.path = FAIL_ETHTOOL_A_PATH_2
+    context = context_wrap(FAIL_ETHTOOL_A_2, path=FAIL_ETHTOOL_A_PATH_2)
     result = ethtool.Pause(context)
     assert result.ifname == "g_bond2"
 
@@ -191,8 +187,7 @@ def test_get_ethtool_c_cannot_get():
 
 
 def test_get_ethtool_c_bad_args():
-    context = context_wrap(TEST_ETHTOOL_C_BAD_ARGS)
-    context.path = 'sos_commands/networking/ethtool_-c_eth0'
+    context = context_wrap(TEST_ETHTOOL_C_BAD_ARGS, path='sos_commands/networking/ethtool_-c_eth0')
     result = ethtool.CoalescingInfo(context)
     assert result.ifname == 'eth0'
 
@@ -288,8 +283,7 @@ def test_ethtool_g_1():
 
 
 def test_ethtool_g_2():
-    context = context_wrap(TEST_ETHTOOL_G_2)
-    context.path = TEST_ETHTOOL_G_PATH_2
+    context = context_wrap(TEST_ETHTOOL_G_2, path=TEST_ETHTOOL_G_PATH_2)
     result = ethtool.Ring(context)
     assert result.ifname == "eth2"
 

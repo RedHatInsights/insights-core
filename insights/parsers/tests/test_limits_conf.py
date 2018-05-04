@@ -11,7 +11,7 @@ oracle hard stack 3276
 root       soft    nproc     unlimited
 """.strip()
 
-LIMITS_CONF_PATH = "etc/security/limits.conf"
+LIMITS_CONF_PATH = "/etc/security/limits.conf"
 
 BAD_LIMITS_CONF = """
 

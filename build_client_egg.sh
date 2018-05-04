@@ -1,6 +1,12 @@
 #!/bin/bash
 
+if [[ -n "`git diff`" || -n "`git diff --cached`" ]]; then
+    echo "Please commit any changes before building an egg"
+    exit 1
+fi
+
 rm -f insights.zip
+
 rm -rf insights_core.egg-info
 cp MANIFEST.in.client MANIFEST.in
 python setup.py egg_info
@@ -13,6 +19,7 @@ rm -rf insights/contrib/pyparsing.py
 rm -rf insights/plugins
 rm -rf insights/tests
 rm -rf insights/tools
+git rev-parse --short HEAD > insights/COMMIT
 
 # Remove all parsers/combiners but keep the packages because they're imported
 # in core/__init__.py
