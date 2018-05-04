@@ -103,8 +103,8 @@ class GrubConf(object):
                 None by default.
 
         Returns:
-            A list of :class:`insights.core.AttributeDict` objects for each
-            boot entry in which the `cmdline` contains the `search_text`.
+            A list of :class:`insights.parsers.grub_conf.BootEntry` objects for
+            each boot entry in which the `cmdline` contains the `search_text`.
         """
         if search_text is None:
             return [entry for entry in self.grub.boot_entries]
