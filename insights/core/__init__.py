@@ -11,6 +11,7 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 from insights.core.serde import deserializer, serializer
+from insights.util import deprecated
 
 import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
@@ -1289,6 +1290,9 @@ class AttributeDict(dict):
     """
     Class to convert the access to each item in a dict as attribute.
 
+    .. warning::
+        Deprecated class, please set attributes explicitly.
+
     Examples:
         >>> data = {
         ... "fact1":"fact 1"
@@ -1312,9 +1316,6 @@ class AttributeDict(dict):
     """
 
     def __init__(self, *args, **kwargs):
+        deprecated(AttributeDict, "Please set attributes explicitly.")
         super(AttributeDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
-
-    def __iter__(self):
-        for k, v in self.__dict__.items():
-            yield k, v
