@@ -1,5 +1,16 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.13-338...HEAD)
+
+**Closed issues:**
+
+- Add sos\_commands path entry into sos\_archive.py specs file. [\#1141](https://github.com/RedHatInsights/insights-core/issues/1141)
+
+## [insights-core-3.0.13-338](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.13-338) (2018-05-04)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.12-335...insights-core-3.0.13-338)
+
 ## [insights-core-3.0.12-335](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.12-335) (2018-05-03)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.11-322...insights-core-3.0.12-335)
 
