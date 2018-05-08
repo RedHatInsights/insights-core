@@ -110,8 +110,11 @@ def test_using_huge_pages():
     assert m.huge_pages.using_transparent
     t = [
         "AnonHugePages:    0 kB",
-        "HugePages_Total:  123456"
+        "HugePages_Total:  123456",
+        "HugePages_Rsvd:     4096",
     ]
     m = meminfo.MemInfo(context_wrap(t))
     assert m.huge_pages.using
     assert not m.huge_pages.using_transparent
+    assert m.huge_pages.total == 123456
+    assert m.huge_pages.reserved == 4096
