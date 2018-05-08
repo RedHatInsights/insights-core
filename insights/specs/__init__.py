@@ -427,3 +427,4 @@ class Specs(SpecSet):
     yum_log = RegistryPoint()
     yum_repolist = RegistryPoint()
     yum_repos_d = RegistryPoint(multi_output=True)
+    zipl_conf = RegistryPoint()
