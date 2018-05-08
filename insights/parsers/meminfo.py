@@ -229,7 +229,7 @@ class MemInfo(Parser):
     """
 
     VALUE_IN_BYTES = [
-        "hugepages_total", "hugepages_free", "hugepages_reserved", "hugepages_surp"
+        "hugepages_total", "hugepages_free", "hugepages_rsvd", "hugepages_surp"
     ]
 
     mem_keys = [
