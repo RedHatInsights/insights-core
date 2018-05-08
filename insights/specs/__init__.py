@@ -237,6 +237,7 @@ class Specs(SpecSet):
     netstat_i = RegistryPoint()
     netstat = RegistryPoint()
     netstat_s = RegistryPoint()
+    networkmanager_dispatch_d = RegistryPoint(multi_output=True)
     neutron_conf = RegistryPoint()
     neutron_l3_agent_log = RegistryPoint()
     neutron_ovs_agent_log = RegistryPoint()
