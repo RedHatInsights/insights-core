@@ -79,7 +79,7 @@ def test_fstab():
     assert nfs_host.fs_passno == 0
     assert dev_vg0.fs_mntops.data == 'writeback'
     assert dev_vg0.raw == '/dev/mapper/vg0-lv2 /test1             ext4 defaults,data=writeback     1 1'
-    for opt, v in dev_vg0.fs_mntops:
+    for opt, v in dev_vg0.fs_mntops.items():
         if opt.startswith('data'):
             assert v == 'writeback'
 

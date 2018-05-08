@@ -7,11 +7,36 @@ directory.
 
 """
 
-from .. import Parser, parser, AttributeDict
+from .. import Parser, parser, LegacyItemAccess
 from ..parsers import parse_fixed_table, ParseException
 from insights.specs import Specs
 
 HEADER_SUBSTITUTE = [('Soft Limit', 'Soft_Limit'), ('Hard Limit', 'Hard_Limit')]
+
+
+class Limits(LegacyItemAccess):
+    """
+    An object representing a line in the ``/proc/limits``.  Each entry contains
+    below fixed attributes:
+
+    Attributes:
+        hard_limit(str): Hard limit
+        soft_limit(str): Soft limit
+        units(str): Unit of the limit value
+    """
+
+    def __init__(self, data={}):
+        self.data = data
+        for k, v in data.items():
+            setattr(self, k, v)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self.data.items():
+            yield k, v
 
 
 class ProcLimits(Parser):
@@ -31,8 +56,8 @@ class ProcLimits(Parser):
     is converted to lowercase and joined the words with underline '_'.  If not
     sure about whether an attribute is exist or not, check it via the
     '__contains__' method before fetching it.
-    The attribute value is set to a :py:class:`insights.core.AttributeDict`
-    which wraps the corresponding ``hard_limit``, ``soft_limit`` and ``units``.
+    The attribute value is set to a :class:`Limits` which wraps the
+    corresponding ``hard_limit``, ``soft_limit`` and ``units``.
 
     Typical content looks like::
 
@@ -55,7 +80,6 @@ class ProcLimits(Parser):
         Max realtime timeout      unlimited            unlimited            us
 
     Examples:
-        >>> proc_limits = shared[ProcLimits]
         >>> len(proc_limits)
         16
         >>> proc_limits.max_processes.hard_limit
@@ -91,9 +115,9 @@ class ProcLimits(Parser):
         for row in self.data:
             row['Limit'] = row['Limit'].lower().replace(' ', '_')
             setattr(self, row['Limit'],
-                    AttributeDict({'hard_limit': row['Hard_Limit'],
-                                   'soft_limit': row['Soft_Limit'],
-                                   'units': row['Units']}))
+                    Limits({'hard_limit': row['Hard_Limit'],
+                            'soft_limit': row['Soft_Limit'],
+                            'units': row['Units']}))
 
 
 @parser(Specs.httpd_limits)
