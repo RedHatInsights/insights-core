@@ -178,28 +178,36 @@ def test_active_httpd_nest():
     result = HttpdConfAll([httpd1, httpd2])
     assert result.get_setting_list('Order1', ('FilesMatch', 'php')) == []
     assert result.get_setting_list('Order', ('FilesMatch', 'pdf')) == []
-    # XXX: these tests depend on the order of a view, which isn't guranteed
-    # assert result.get_setting_list('Order', section=('FilesMatch', 'php')) == [
-    #         {('FilesMatch', '".php[45]?$"'): [
-    #             ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-    #             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]},
-    #         {('FilesMatch', '".php[45]"'): [
-    #             ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-    #             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]},
-    #         {('FilesMatch', '".php[45]?$"'): [
-    #             ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-    #             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]}]
-    # assert result.get_setting_list('RewriteEngine', 'IfModule') == [
-    #         {('IfModule', 'mod_rewrite.c'): [
-    #             ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-    #             ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]},
-    #         {('IfModule', 'mod_rewrite.c'): [
-    #             ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-    #             ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]}
-    # ]
-    # assert result.get_setting_list('EnableSendfile') == [
-    #         ('off', 'EnableSendfile off', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-    #         ('on', 'EnableSendfile on', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+    php_fm_order = result.get_setting_list('Order', section=('FilesMatch', 'php'))
+    assert {
+            ('FilesMatch', '".php[45]?$"'): [
+                ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
+           } in php_fm_order
+    assert {
+            ('FilesMatch', '".php[45]"'): [
+                ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')],
+           } in php_fm_order
+    assert {
+            ('FilesMatch', '".php[45]?$"'): [
+                ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+           } in php_fm_order
+    re_im = result.get_setting_list('RewriteEngine', 'IfModule')
+    assert {
+            ('IfModule', 'mod_rewrite.c'): [
+                ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+           } in re_im
+    assert {
+            ('IfModule', 'mod_rewrite.c'): [
+                ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
+           } in re_im
+    sorted(result.get_setting_list('EnableSendfile')) == sorted([
+            ('off', 'EnableSendfile off', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ('on', 'EnableSendfile on', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')])
     assert result.get_setting_list('LogLevel') == [
             ('warn', 'LogLevel warn', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
     assert result.get_setting_list('LogLevel1') == []
@@ -209,11 +217,10 @@ def test_active_httpd_nest():
     assert len(result.get_active_setting('Order', ('FilesMatch', '.php[45]?$'))) == 2
     assert len(result.get_active_setting('Order', ('FilesMatch',))) == 4
     assert len(result.get_active_setting('Order', ('FilesMatch', '.php[45]'))) == 3
-    # XXX: depends on ordering
-    # assert result.get_active_setting('Order', section=('FilesMatch', 'php')) == [
-    #         ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-    #         ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-    #         ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+    sorted(result.get_active_setting('Order', section=('FilesMatch', 'php'))) == sorted([
+            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')])
     assert sorted(result.get_active_setting('RewriteEngine', section='IfModule')) == sorted([
             ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
             ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')])
