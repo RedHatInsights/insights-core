@@ -172,8 +172,9 @@ class FSTab(Parser):
         self.data = []
         for line in fstab_output:
             if 'fs_file' in line:
-                # Decode fs_file just in case it contains '\040'.
-                line['fs_file'] = line['fs_file'].decode('string_escape')
+                # Decode fs_file to transfer the '\040' to ' '.
+                # Encode first and then decode works for both Python2 and Python3.
+                line['fs_file'] = line['fs_file'].encode().decode("unicode-escape")
             line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             # optlist_to_dict converts 'key=value' to key: value and
