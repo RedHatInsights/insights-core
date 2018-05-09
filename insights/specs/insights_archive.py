@@ -125,6 +125,7 @@ class InsightsArchiveSpecs(Specs):
     ntptime = simple_file("insights_commands/ntptime")
     numeric_user_group_name = simple_file("insights_commands/grep_-c_digit_.etc.passwd_.etc.group")
     oc_get_bc = simple_file("insights_commands/oc_get_bc_-o_yaml_--all-namespaces")
+    oc_get_build = simple_file("insights_commands/oc_get_build_-o_yaml_--all-namespaces")
     oc_get_dc = simple_file("insights_commands/oc_get_dc_-o_yaml_--all-namespaces")
     oc_get_egressnetworkpolicy = simple_file("insights_commands/oc_get_egressnetworkpolicy_-o_yaml_--all-namespaces")
     oc_get_endpoints = simple_file("insights_commands/oc_get_endpoints_-o_yaml_--all-namespaces")
