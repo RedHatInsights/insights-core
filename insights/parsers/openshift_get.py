@@ -13,6 +13,9 @@ Parsers included in this module are:
 OcGetBc - command ``oc get bc -o yaml --all-namespaces``
 --------------------------------------------------------
 
+OcGetBuild - command ``oc get build -o yaml --all-namespaces``
+--------------------------------------------------------------
+
 OcGetDc - command ``oc get dc -o yaml --all-namespaces``
 --------------------------------------------------------
 
@@ -85,6 +88,16 @@ class OcGetBc(YAMLParser):
     @property
     def build_configs(self):
         """ dict: Returns a dictionary of openshift build configs information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_build)
+class OcGetBuild(YAMLParser):
+    """Class to parse ``oc get build -o yaml --all-namespaces``"""
+
+    @property
+    def started_builds(self):
+        """ dict: Returns a dictionary of openshift started build information."""
         return metadata_name_items(self.data)
 
 
