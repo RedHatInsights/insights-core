@@ -47,10 +47,10 @@ Examples:
 from insights.specs import Specs
 
 from .. import FileListing
-from .. import parser
+from .. import parser, CommandParser
 
 
 @parser(Specs.ls_osroot)
-class LsOsroot(FileListing):
+class LsOsroot(CommandParser, FileListing):
     """Parses output of ``ls -lan /`` command."""
     pass

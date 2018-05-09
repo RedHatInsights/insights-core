@@ -34,12 +34,12 @@ def test_HTL_doc_examples():
     assert failed == 0
 
 
-hammer_task_list_no_hammer = '''
-/usr/bin/hammer: no such file or directory
-'''
+# hammer_task_list_no_hammer = '''
+# /usr/bin/hammer: no such file or directory
+# '''
 
 
-def test_HTL_no_run():
-    htl = hammer_task_list.HammerTaskList(context_wrap(hammer_task_list_no_hammer))
-    assert not htl.can_authenticate
-    assert htl.tasks == []
+# def test_HTL_no_run():
+#     htl = hammer_task_list.HammerTaskList(context_wrap(hammer_task_list_no_hammer))
+#     assert not htl.can_authenticate
+#     assert htl.tasks == []

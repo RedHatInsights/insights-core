@@ -18,12 +18,12 @@ https://www.welivesecurity.com/2017/10/30/windigo-ebury-update-2/
 """
 import re
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from ..specs import Specs
 
 
 @parser(Specs.libkeyutils)
-class Libkeyutils(Parser):
+class Libkeyutils(CommandParser):
     """
     This parser finds all 'libkeyutils.so*' libraries in either /lib or /lib64 directory and its
     sub-directories.
@@ -49,7 +49,7 @@ class Libkeyutils(Parser):
 
 
 @parser(Specs.libkeyutils_objdumps)
-class LibkeyutilsObjdumps(Parser):
+class LibkeyutilsObjdumps(CommandParser):
     """
     This parser goes through objdumps of all 'libkeyutils.so.1' libraries in either /lib or /lib64
     directory, and its sub-directories, to finds linked libraries.

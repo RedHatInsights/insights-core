@@ -37,12 +37,12 @@ Examples:
     ['.', '..', '_data']
 """
 
-from .. import FileListing, parser
+from .. import FileListing, parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_docker_volumes)
-class DockerVolumesDir(FileListing):
+class DockerVolumesDir(CommandParser, FileListing):
     """
     Read the directory for the docker volumes.
     """

@@ -23,13 +23,13 @@ SystemctlShowPulpCelerybeat - command ``systemctl show pulp_celerybeat``
 """
 
 from .. import LegacyItemAccess
-from .. import Parser
+from .. import CommandParser
 from .. import parser
 from ..parsers import split_kv_pairs
 from insights.specs import Specs
 
 
-class SystemctlShow(LegacyItemAccess, Parser):
+class SystemctlShow(LegacyItemAccess, CommandParser):
     """Class for parsing ``systemctl show <Service_Name>`` command output"""
 
     def parse_content(self, content):

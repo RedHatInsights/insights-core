@@ -39,13 +39,13 @@ GENERAL.CONNECTION:                     --
 GENERAL.CON-PATH:                       --
 WIRED-PROPERTIES.CARRIER:               off
 """
-NMCLI_SHOW_NOT = """
-bash: nmcli: command not found...
-"""
+# NMCLI_SHOW_NOT = """
+# bash: nmcli: command not found...
+# """
 
-NMCLI_SHOW_NO = """
-bash: /usr/sbin/nmcli: No such file or directory
-"""
+# NMCLI_SHOW_NO = """
+# bash: /usr/sbin/nmcli: No such file or directory
+# """
 
 NMCLI_SHOW_ERROR = """
 Error: Option '-l' is unknown, try 'nmcli -help'.
@@ -67,10 +67,10 @@ def test_nmcli():
     assert len(nmcli_obj.data['em3']) == 17
     assert len(nmcli_obj.data['em1']) == 7
 
-    nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW_NOT))
-    con_dev = nmcli_obj.connected_devices
-    assert con_dev == []
+    # nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW_NOT))
+    # con_dev = nmcli_obj.connected_devices
+    # assert con_dev == []
 
-    nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW_NO))
-    con_dev = nmcli_obj.connected_devices
-    assert con_dev == []
+    # nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW_NO))
+    # con_dev = nmcli_obj.connected_devices
+    # assert con_dev == []

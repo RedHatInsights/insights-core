@@ -241,6 +241,39 @@ class LegacyItemAccess(object):
         return self.data.get(item, default)
 
 
+class CommandParser(Parser):
+    """
+    A parser that checks output from command parser to be sure lines
+    do not contain certain string values
+    """
+
+    bad_lines = ["No such file or directory", "Command not found", "command not found"]
+
+
+#    @classmethod
+    def validate_lines(self, results):
+        if results and len(results) == 1:
+            first = results[0]
+            if any(l.lower() in first.lower() for l in self.bad_lines):
+                return False
+        return True
+
+    def __init__(self, context):
+        """
+            This __init__ will first validate that both there is only
+            one line in the content and the string in that line contains
+            one of the strings defined in THE "bad_lines" list variable.
+            If both of these are true a ContentException will be raised
+            if not the super class (Parser)__init__ will be called
+        """
+
+        if not self.validate_lines(context.content):
+            first = context.content[0] if context.content else "<no content>"
+            name = self.__class__.__name__
+            raise ParseException(name + ": " + first)
+        super(CommandParser, self).__init__(context)
+
+
 class XMLParser(LegacyItemAccess, Parser):
     """
     A parser class that reads XML files.  Base your own parser on this.

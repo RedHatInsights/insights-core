@@ -19,14 +19,14 @@ Examples:
     'rw-------'
 """
 
-from .. import FileListing, parser
+from .. import FileListing, parser, CommandParser
 
 from insights.util.file_permissions import FilePermissions
 from insights.specs import Specs
 
 
 @parser(Specs.ls_var_log)
-class LsVarLog(FileListing):
+class LsVarLog(CommandParser, FileListing):
     """
     A parser for accessing "ls -laR /var/log".
     """

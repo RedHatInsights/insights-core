@@ -73,7 +73,7 @@ Examples:
     True
 """
 
-from .. import YAMLParser, parser
+from .. import YAMLParser, parser, CommandParser
 from insights.specs import Specs
 
 
@@ -82,7 +82,7 @@ def metadata_name_items(data):
 
 
 @parser(Specs.oc_get_bc)
-class OcGetBc(YAMLParser):
+class OcGetBc(CommandParser, YAMLParser):
     """Class to parse ``oc get bc -o yaml --all-namespaces``"""
 
     @property
@@ -102,7 +102,7 @@ class OcGetBuild(YAMLParser):
 
 
 @parser(Specs.oc_get_dc)
-class OcGetDc(YAMLParser):
+class OcGetDc(CommandParser, YAMLParser):
     """Class to parse ``oc get dc -o yaml --all-namespaces``"""
 
     @property
@@ -112,7 +112,7 @@ class OcGetDc(YAMLParser):
 
 
 @parser(Specs.oc_get_egressnetworkpolicy)
-class OcGetEgressNetworkPolicy(YAMLParser):
+class OcGetEgressNetworkPolicy(CommandParser, YAMLParser):
     """Class to parse ``oc get egressnetworkpolicy -o yaml --all-namespaces``"""
 
     @property
@@ -122,7 +122,7 @@ class OcGetEgressNetworkPolicy(YAMLParser):
 
 
 @parser(Specs.oc_get_endpoints)
-class OcGetEndPoints(YAMLParser):
+class OcGetEndPoints(CommandParser, YAMLParser):
     """Class to parse ``oc get endpoints -o yaml --all-namespaces``"""
 
     @property
@@ -132,7 +132,7 @@ class OcGetEndPoints(YAMLParser):
 
 
 @parser(Specs.oc_get_event)
-class OcGetEvent(YAMLParser):
+class OcGetEvent(CommandParser, YAMLParser):
     """Class to parse ``oc get event -o yaml --all-namespaces``"""
 
     @property
@@ -142,7 +142,7 @@ class OcGetEvent(YAMLParser):
 
 
 @parser(Specs.oc_get_node)
-class OcGetNode(YAMLParser):
+class OcGetNode(CommandParser, YAMLParser):
     """Class to parse ``oc get node -o yaml --all-namespaces``"""
 
     @property
@@ -152,7 +152,7 @@ class OcGetNode(YAMLParser):
 
 
 @parser(Specs.oc_get_pod)
-class OcGetPod(YAMLParser):
+class OcGetPod(CommandParser, YAMLParser):
     """Class to parse ``oc get pod -o yaml --all-namespaces``"""
 
     @property
@@ -162,7 +162,7 @@ class OcGetPod(YAMLParser):
 
 
 @parser(Specs.oc_get_project)
-class OcGetProject(YAMLParser):
+class OcGetProject(CommandParser, YAMLParser):
     """Class to parse ``oc get project -o yaml --all-namespaces``"""
 
     @property
@@ -172,7 +172,7 @@ class OcGetProject(YAMLParser):
 
 
 @parser(Specs.oc_get_pv)
-class OcGetPv(YAMLParser):
+class OcGetPv(CommandParser, YAMLParser):
     """Class to parse ``oc get pv -o yaml --all-namespaces``"""
 
     @property
@@ -182,7 +182,7 @@ class OcGetPv(YAMLParser):
 
 
 @parser(Specs.oc_get_pvc)
-class OcGetPvc(YAMLParser):
+class OcGetPvc(CommandParser, YAMLParser):
     """Class to parse ``oc get pvc -o yaml --all-namespaces``"""
 
     @property
@@ -192,7 +192,7 @@ class OcGetPvc(YAMLParser):
 
 
 @parser(Specs.oc_get_rc)
-class OcGetRc(YAMLParser):
+class OcGetRc(CommandParser, YAMLParser):
     """Class to parse ``oc get rc -o yaml --all-namespaces``"""
 
     @property
@@ -202,7 +202,7 @@ class OcGetRc(YAMLParser):
 
 
 @parser(Specs.oc_get_role)
-class OcGetRole(YAMLParser):
+class OcGetRole(CommandParser, YAMLParser):
     """Class to parse ``oc get role -o yaml --all-namespaces``"""
 
     @property
@@ -212,7 +212,7 @@ class OcGetRole(YAMLParser):
 
 
 @parser(Specs.oc_get_rolebinding)
-class OcGetRolebinding(YAMLParser):
+class OcGetRolebinding(CommandParser, YAMLParser):
     """Class to parse ``oc get rolebinding -o yaml --all-namespaces``"""
 
     @property
@@ -222,7 +222,7 @@ class OcGetRolebinding(YAMLParser):
 
 
 @parser(Specs.oc_get_route)
-class OcGetRoute(YAMLParser):
+class OcGetRoute(CommandParser, YAMLParser):
     """Class to parse ``oc get route -o yaml --all-namespaces``"""
 
     @property
@@ -232,7 +232,7 @@ class OcGetRoute(YAMLParser):
 
 
 @parser(Specs.oc_get_service)
-class OcGetService(YAMLParser):
+class OcGetService(CommandParser, YAMLParser):
     """Class to parse ``oc get service -o yaml --all-namespaces``"""
 
     @property

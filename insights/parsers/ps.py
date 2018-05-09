@@ -52,7 +52,7 @@ Examples:
     >>> sum(int(p['VSZ']) for p in ps_auxww)
     333252
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
 from insights.core.filters import add_filter
@@ -61,7 +61,7 @@ add_filter(Specs.ps_auxww, "COMMAND")
 
 
 @parser(Specs.ps_auxww)
-class PsAuxww(Parser):
+class PsAuxww(CommandParser):
     """
     Class to parse ``ps auxww`` command output.
 

@@ -30,10 +30,10 @@ Examples:
 from insights.specs import Specs
 
 from .. import FileListing
-from .. import parser
+from .. import parser, CommandParser
 
 
 @parser(Specs.ls_var_tmp)
-class LsVarTmp(FileListing):
+class LsVarTmp(CommandParser, FileListing):
     """Parses output of ``ls -ln /var/tmp`` command."""
     pass

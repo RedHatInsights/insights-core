@@ -56,13 +56,13 @@ Examples:
     }
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 from insights.parsers import ParseException
 
 
 @parser(Specs.brctl_show)
-class BrctlShow(Parser):
+class BrctlShow(CommandParser):
     """
     Parse the output of the command "brctl show" to get bridge
     interface info table

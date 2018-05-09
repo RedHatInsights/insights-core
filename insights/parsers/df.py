@@ -55,7 +55,7 @@ Examples:
     >>> df_info.data[0]
     Record(filesystem='/dev/mapper/vg_lxcrhel6sat56-lv_root', total='6275072', used='124955', available='6150117', capacity='2%', mounted_on='/')
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from collections import namedtuple, defaultdict
 
 from insights.parsers import ParseException
@@ -125,7 +125,7 @@ def parse_df_lines(df_content):
     return df_out
 
 
-class DiskFree(Parser):
+class DiskFree(CommandParser):
     """Class to provide methods used by all ``df`` command classes.
 
     Attributes:
