@@ -39,11 +39,11 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh 'pip install --user -e .'
+            sh '/bin/python36 -m pip install --user -e .'
             echo "Testing with Pytest..."
-            sh 'pytest'
+            sh '/bin/python36 -m pytest'
             echo "Testing with flake8..."   
-            sh 'flake8'
+            sh '/bin/python36 -m flake8'
           }
         }
       }
