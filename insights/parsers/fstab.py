@@ -171,6 +171,9 @@ class FSTab(Parser):
         fstab_output = parse_delimited_table([FS_HEADINGS] + get_active_lines(content))
         self.data = []
         for line in fstab_output:
+            if 'fs_file' in line:
+                # Decode fs_file just in case it contains '\040'.
+                line['fs_file'] = line['fs_file'].decode('string_escape')
             line['fs_freq'] = int(line['fs_freq']) if 'fs_freq' in line else 0
             line['fs_passno'] = int(line['fs_passno']) if 'fs_passno' in line else 0
             # optlist_to_dict converts 'key=value' to key: value and
@@ -220,6 +223,8 @@ class FSTab(Parser):
         """
         Return the device name if longest-matched mount-point of path is found,
         else None.
+        If path contains any blank, pass it in directly or escape with '\040',
+        eg: '/VM TOOLS/cache' or '/VM\040TOOLS/cache'
         """
         path = path.strip() if path else path
         if not path or not path.startswith('/'):

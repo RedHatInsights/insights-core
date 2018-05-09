@@ -101,19 +101,33 @@ def test_fstab():
     assert sitedata_mount.fs_spec == "192.168.48.65:/cellSiteData"
 
 
-FSTAB_DEVICE_PATH_TEST_INFO = """
-/dev/sda2                    /                          ext4    defaults        1 1
-/dev/sdb2                    /var                       ext4    defaults        1 1
-/dev/sdb3                    /var/crash                 ext4    defaults        1 1
-/dev/sdb4                    /abc/def                   ext4    defaults        1 1
-/dev/mapper/VolGroup-lv_usr  /usr                       ext4    defaults        1 1
-UUID=qX0bSg-p8CN-cWER-i8qY-cETN-jiZL-LDt93V /kdump                   ext4    defaults        1 2
-/dev/mapper/VolGroup-lv_swap swap                    swap    defaults        0 0
-proc                    /proc                   proc    defaults        0 0
-/dev/mapper/vgext-lv--test      /lv_test        ext3    defaults        0       0
-# TODO: please active this following line after issues-1126 is fixed.
-# /dev/sdb5                    /l\040ok/at                ext4    defaults        1 1
-""".strip()
+FSTAB_WITH_BLANK_IN_PATH = [
+r'/dev/sda2                    /                          ext4    1 1  # work',
+r'/dev/sdb3                    /var/crash                 ext4    defaults        1 1',
+r'/dev/sdb5                    /l\040ok/at                ext4    defaults        1 1',
+r'/dev/sdb7                    /sdb7ok/at                 ext4    defaults',
+r'/dev/sdba                    /sdbal\040ok/ab\040ta      ext4,a,b    defaults,c,d        1 1',
+]
+
+
+def test_fstab_with_blank_in_path():
+    fstab_info = fstab.FSTab(context_wrap(FSTAB_WITH_BLANK_IN_PATH))
+    assert ([l.fs_file for l in fstab_info.search(fs_file__contains='ok')]
+             == ['/l ok/at', '/sdb7ok/at', '/sdbal ok/ab ta'])
+
+
+FSTAB_DEVICE_PATH_TEST_INFO = [
+r'/dev/sda2                    /                          ext4    defaults        1 1',
+r'/dev/sdb2                    /var                       ext4    defaults        1 1',
+r'/dev/sdb3                    /var/crash                 ext4    defaults        1 1',
+r'/dev/sdb4                    /abc/def                   ext4    defaults        1 1',
+r'/dev/mapper/VolGroup-lv_usr  /usr                       ext4    defaults        1 1',
+r'UUID=qX0bSg-p8CN-cWER-i8qY-cETN-jiZL-LDt93V /kdump                   ext4    defaults        1 2',
+r'/dev/mapper/VolGroup-lv_swap swap                    swap    defaults        0 0',
+r'proc                    /proc                   proc    defaults        0 0',
+r'/dev/mapper/vgext-lv--test      /lv_test        ext3    defaults        0       0',
+r'/dev/sdb5                    /l\040ok/at                ext4    defaults        1 1',
+]
 
 
 def test_fsspec_of_path():
@@ -129,10 +143,10 @@ def test_fsspec_of_path():
                        'error': None,
                        '/abc': '/dev/sda2',
                        '/abc/xxx': '/dev/sda2',
-                       '/tmp/vm\ tools': '/dev/sda2',
-                       # TODO: please active these 2 test lines after issues-1126 is fixed.
-                       # '/l\ ok/at/you': '/dev/sdb5',
-                       # '/l\ ok': '/dev/sda2',
+                       '/tmp/vm tools': '/dev/sda2',
+                       '/l ok/at/you': '/dev/sdb5',
+                       '/l ok': '/dev/sda2', # dict treat '/l\040ok' same as '/l ok'
+                       r'/l\040ok': '/dev/sda2',
                        }
     for path, dev in path_device_map.items():
         assert dev == fstab_info.fsspec_of_path(path)
