@@ -365,7 +365,7 @@ class DefaultSpecs(Specs):
     netstat_agn = simple_command("/bin/netstat -agn")
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
-    networkmanager_dispatch_d = glob_file("/etc/NetworkManager/dispatch.d/*-dhclient")
+    networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = simple_file("/etc/neutron/neutron.conf")
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
