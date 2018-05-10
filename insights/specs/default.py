@@ -392,6 +392,7 @@ class DefaultSpecs(Specs):
     ntptime = simple_command("/usr/sbin/ntptime")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
+    oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_dc = simple_command("/usr/bin/oc get dc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_egressnetworkpolicy = simple_command("/usr/bin/oc get egressnetworkpolicy -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_endpoints = simple_command("/usr/bin/oc get endpoints -o yaml --all-namespaces", context=OpenShiftContext)
