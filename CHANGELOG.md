@@ -1,12 +1,24 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+## [insights-core-3.0.14-345](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.14-345) (2018-05-10)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.13-338...insights-core-3.0.14-345)
 
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.13-338...HEAD)
+**Implemented enhancements:**
+
+- Use consistent heading and class style for parser catalogue [\#132](https://github.com/RedHatInsights/insights-core/issues/132)
+- Create log transaction-id for log messages associated with a single transaction. [\#126](https://github.com/RedHatInsights/insights-core/issues/126)
+
+**Fixed bugs:**
+
+- A bug caused by typo in parser meminfo [\#1151](https://github.com/RedHatInsights/insights-core/issues/1151)
+- fstab parser: parsing broken with ValueError [\#1126](https://github.com/RedHatInsights/insights-core/issues/1126)
 
 **Closed issues:**
 
+- Remove reminder comments after fixed mount-point-space issue from fstab's test [\#1157](https://github.com/RedHatInsights/insights-core/issues/1157)
 - Add sos\_commands path entry into sos\_archive.py specs file. [\#1141](https://github.com/RedHatInsights/insights-core/issues/1141)
+- LsPci needs to be anything but a LogFileOutput class [\#176](https://github.com/RedHatInsights/insights-core/issues/176)
+- Asserts should be try/except in Prod [\#113](https://github.com/RedHatInsights/insights-core/issues/113)
 
 ## [insights-core-3.0.13-338](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.13-338) (2018-05-04)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.12-335...insights-core-3.0.13-338)
