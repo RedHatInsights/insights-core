@@ -112,6 +112,7 @@ class InsightsArchiveSpecs(Specs):
     mount = simple_file("insights_commands/mount")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
+    mysqladmin_vars = simple_file("insights_commands/mysqladmin_variables")
     named_checkconf_p = simple_file("insights_commands/named-checkconf_-p")
     netstat = simple_file("insights_commands/netstat_-neopa")
     netstat_agn = simple_file("insights_commands/netstat_-agn")
