@@ -243,14 +243,12 @@ class LegacyItemAccess(object):
 
 class CommandParser(Parser):
     """
-    A parser that checks output from command parser to be sure lines
-    do not contain certain string values
+    This class checks output from the command defined in th spec to be sure line
+    do not contain certain string values and that there is only one line.
     """
 
     bad_lines = ["No such file or directory", "Command not found", "command not found"]
 
-
-#    @classmethod
     def validate_lines(self, results):
         if results and len(results) == 1:
             first = results[0]

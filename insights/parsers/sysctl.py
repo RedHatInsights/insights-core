@@ -13,7 +13,7 @@ SysctlConf - file ``/etc/sysctl.conf``
 --------------------------------------
 
 SysctlConfInitramfs - command ``lsinitrd``
----------------------------------------
+------------------------------------------
 
 """
 from .. import Parser, LogFileOutput, parser, LegacyItemAccess, CommandParser
