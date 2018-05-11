@@ -1318,6 +1318,70 @@ metadata:
   selfLink: ""
 """.strip()
 
+OC_GET_BUILD = """
+apiVersion: v1
+items:
+- apiVersion: build.openshift.io/v1
+  kind: Build
+  metadata:
+    annotations:
+      openshift.io/build-config.name: sample-app
+      openshift.io/build.number: "2"
+      openshift.io/build.pod-name: sample-app-2-build
+    creationTimestamp: 2018-05-08T13:25:35Z
+    labels:
+      app: sample-app
+      buildconfig: sample-app
+      openshift.io/build-config.name: sample-app
+      openshift.io/build.start-policy: Serial
+    name: sample-app-2
+    namespace: default
+    ownerReferences:
+    - apiVersion: build.openshift.io/v1
+      controller: true
+      kind: BuildConfig
+      name: sample-app
+      uid: 014c30d6-52c3-11e8-8f2a-001a4a16016f
+    resourceVersion: "38277"
+    selfLink: /apis/build.openshift.io/v1/namespaces/default/builds/sample-app-2
+    uid: 4a656a4e-52c3-11e8-8f2a-001a4a16016f
+  spec:
+    nodeSelector: null
+    output:
+      pushSecret:
+        name: builder-dockercfg-hwnx4
+      to:
+        kind: ImageStreamTag
+        name: sample-app:latest
+    postCommit: {}
+    resources: {}
+    serviceAccount: builder
+    source:
+      git:
+        uri: https://example.com/mfojtik/sample-app.git
+      type: Git
+    strategy:
+      sourceStrategy:
+        from:
+          kind: DockerImage
+          name: registry.access.example.com/rhscl/ruby-24-rhel7@sha256:da812edc2a0c0c8c28854daeb7629c733dcc5672c33d44f920ea8f1f2d6a058d
+      type: Source
+    triggeredBy:
+    - message: Manually triggered
+  status:
+    config:
+      kind: BuildConfig
+      name: sample-app
+      namespace: default
+    output: {}
+    outputDockerImageReference: docker-registry.example.svc:5000/default/sample-app:latest
+    phase: Pending
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+"""
+
 
 def test_oc_get_pod_yml():
     result = openshift_get.OcGetPod(context_wrap(OC_GET_POD))
@@ -1453,3 +1517,11 @@ def test_oc_get_route():
     assert result.data['items'][0]['metadata']['name'] == 'docker-registry'
     assert result.get('items')[0]['spec']['host'] == 'docker-registry-default.router.default.svc.cluster.local'
     assert result.routes['docker-registry']['spec']['wildcardPolicy'] == 'None'
+
+
+def test_oc_get_build():
+    result = openshift_get.OcGetBuild(context_wrap(OC_GET_BUILD))
+    assert result.data['items'][0]['kind'] == 'Build'
+    assert result.data['items'][0]['metadata']['annotations']['openshift.io/build.pod-name'] == 'sample-app-2-build'
+    assert result.get('items')[0]['status']['phase'] == 'Pending'
+    assert result.started_builds['sample-app-2']['status']['config']['kind'] == 'BuildConfig'
