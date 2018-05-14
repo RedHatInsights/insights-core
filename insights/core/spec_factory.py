@@ -337,7 +337,7 @@ def simple_file(path, context=None, kind=TextFileProvider):
     return inner
 
 
-def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
+def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_files=1000):
     """
     Creates a datasource that reads all files matching the glob pattern(s).
 
@@ -348,10 +348,12 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
         context (ExecutionContext): the context under which the datasource
             should run.
         kind (FileProvider): One of TextFileProvider or RawFileProvider.
+        max_files (int): Maximum number of glob files to process.
 
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
+
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
@@ -370,6 +372,9 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
                 except:
                     log.debug(traceback.format_exc())
         if results:
+            if len(results) > max_files:
+                raise ContentException("Number of files returned [{0}] is over the {1} file limit, please refine "
+                                       "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
     return inner
