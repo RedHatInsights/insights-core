@@ -205,7 +205,7 @@ def test_active_httpd_nest():
                 ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
                 ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
            } in re_im
-    sorted(result.get_setting_list('EnableSendfile')) == sorted([
+    assert sorted(result.get_setting_list('EnableSendfile')) == sorted([
             ('off', 'EnableSendfile off', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
             ('on', 'EnableSendfile on', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')])
     assert result.get_setting_list('LogLevel') == [
@@ -217,7 +217,7 @@ def test_active_httpd_nest():
     assert len(result.get_active_setting('Order', ('FilesMatch', '.php[45]?$'))) == 2
     assert len(result.get_active_setting('Order', ('FilesMatch',))) == 4
     assert len(result.get_active_setting('Order', ('FilesMatch', '.php[45]'))) == 3
-    sorted(result.get_active_setting('Order', section=('FilesMatch', 'php'))) == sorted([
+    assert sorted(result.get_active_setting('Order', section=('FilesMatch', 'php'))) == sorted([
             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')])
