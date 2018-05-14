@@ -25,7 +25,7 @@ INPUT_NORMAL = """
 """.strip()
 
 
-def test_odbc_ini():
+def test_mysqladmin_vars():
     res = MysqladminVars(context_wrap(INPUT_NORMAL))
     assert len(list(res.items())) == 14
     assert res.version_comment == 'MariaDB Server'
