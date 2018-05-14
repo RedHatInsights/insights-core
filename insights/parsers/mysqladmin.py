@@ -10,13 +10,13 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 
 """
 
-from .. import Parser, parser
+from .. import Parser, parser, LegacyItemAccess
 from insights.parsers import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.mysqladmin_vars)
-class MysqladminVars(Parser):
+class MysqladminVars(LegacyItemAccess, Parser):
     """
     The output of command ``/bin/mysqladmin variables`` is in mysql table format,
     contains 'Variable_name' and 'Value' two columns.
@@ -38,7 +38,7 @@ class MysqladminVars(Parser):
     Example:
         >>> output.version
         '5.5.56-MariaDB'
-        >>> 'DataDir' in output
+        >>> 'datadir' in output
         True
         >>> output.get('what', '233')
         '233'
@@ -53,51 +53,13 @@ class MysqladminVars(Parser):
         if len(content) < 5:
             raise ParseException("Empty or wrong content in table.")
 
-        self._data = {}
+        data = {}
         for l in content[3:-1]:
             lsp = l.split('|')
             if len(lsp) != 4:
-                raise ParseException("Unparseable line in table.")
-            self._data[lsp[1].strip().lower()] = lsp[2].strip()
-
-        for k, v in self._data.items():
-            setattr(self, k, v)
-
-    def items(self):
-        """
-        To make the parsed content can be iterated as a dictionary directly.
-        """
-        for k, v in self._data.items():
-            yield k, v
-
-    def get(self, keyword, default=None):
-        """
-        Get value for specified keyword, use default if keyword not found.
-        A "dictionary like" method.
-
-        Example:
-
-            >>> output.get('wait_timeout')
-            '3000'
-            >>> output.get('wait_what')
-            None
-            >>> output.get('wait_what', '100')
-            '100'
-
-        Args:
-
-            keyword (str): A key, case insensitive. For ex. `wait_timeout`.
-            default (str): A value.
-
-        Returns:
-
-            value (str or None): Values associated with a keyword. Returns
-            specific value in `default` if `keyword` does not exist, or None
-            if no `default` value set.
-        """
-        if default and not isinstance(default, str):
-            raise TypeError("Default value should be str type.")
-        return self._data.get(keyword.lower(), default)
+                raise ParseException("Unparseable line in table: %s." % l)
+            data[lsp[1].strip().lower()] = lsp[2].strip()
+        self.data = data
 
     def getint(self, keyword, default=None):
         """
@@ -109,24 +71,19 @@ class MysqladminVars(Parser):
             3000
             >>> output.getint('wait_what')
             None
-            >>> output.getiny('wait_what', 100)
+            >>> output.getint('wait_what', 100)
             100
 
         Args:
 
-            keyword (str): A key, case insensitive. For ex. `wait_timeout`.
-            default (int): A value.
+            keyword (str): Key to get from ``self.data``.
+            default (int): Default value to return if key is not present.
 
         Returns:
 
-            value (int or None): Values associated with a keyword.i
-            If `keyword` does not exist or it's not a number, returns specific
-            value in `default`.
+            value (int): Int value of the stored item, or the default if not found.
         """
         if default and not isinstance(default, int):
             raise TypeError("Default value should be int type.")
-        v = self._data.get(keyword.lower())
+        v = self.data.get(keyword)
         return int(v) if v and v.isdigit() else default
-
-    def __contains__(self, keyword):
-        return keyword.lower() in self._data
