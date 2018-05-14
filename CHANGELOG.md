@@ -1,5 +1,8 @@
 # Change Log
 
+## [insights-core-3.0.15-350](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.15-350) (2018-05-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.14-345...insights-core-3.0.15-350)
+
 ## [insights-core-3.0.14-345](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.14-345) (2018-05-10)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.13-338...insights-core-3.0.14-345)
 
