@@ -124,11 +124,15 @@ class StdTypes(dr.TypeSet):
     incident = dr.new_component_type()
     """ A component used by rules that allows automated statistical analysis."""
 
+    webservice = dr.new_component_type(type_metadata={"verify": False, "timeout": 5})
+    """ A component that fetches contents at URLs."""
+
 
 combiner = StdTypes.combiner
 rule = StdTypes.rule
 condition = StdTypes.condition
 incident = StdTypes.incident
+webservice = StdTypes.webservice
 
 
 def datasource(*args, **kwargs):

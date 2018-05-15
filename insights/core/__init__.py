@@ -4,12 +4,14 @@ import json
 import logging
 import os
 import re
+import requests
 import shlex
 import yaml
 import six
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
+from insights.core import dr
 from insights.core.serde import deserializer, serializer
 from insights.util import deprecated
 
@@ -374,6 +376,42 @@ class JSONParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         self.data = json.loads(''.join(content))
+
+
+class WebService(object):
+    """
+    A superclass that hides communication with http(s) endpoints. Subclasses
+    should create an appropriate API and delegate to the _get method to request
+    data from a given URL.
+
+    Decorate subclasses with `@webservice` from `insights.core.plugins`.
+
+    This class looks for the following items in its component metadata:
+    - verify (bool), perform ssl verification?, default = False
+    - timeout (int), default = 5 (seconds)
+    - username (str), default = None
+    - password (str), default = None
+    """
+    def __init__(self):
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+        meta = dr.get_metadata(self.__class__)
+
+        self.verify = meta.get("verify")
+        self.timeout = meta.get("timeout")
+        self.user = meta.get("username")
+        self.password = meta.get("password")
+        self.opts = {"verify": self.verify, "timeout": self.timeout}
+
+        if self.user:
+            self.opts["auth"] = (self.user, self.password)
+
+    def get(self, url, params=None):
+        opts = self.opts.copy()
+        if params:
+            opts["params"] = params
+        return requests.get(url, **opts)
 
 
 class ScanMeta(type):

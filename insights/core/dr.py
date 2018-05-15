@@ -118,6 +118,17 @@ COMPONENT_NAME_CACHE = KeyPassingDefaultDict(_get_component)
 get_component = COMPONENT_NAME_CACHE.__getitem__
 
 
+def apply_component_config(doc):
+    for k, v in doc.items():
+        comp = get_component(k)
+        if "enabled" in v:
+            set_enabled(comp, v["enabled"])
+
+        delegate = get_delegate(comp)
+        if delegate:
+            delegate.metadata.update(v.get("metadata", {}))
+
+
 @defaults(None)
 def get_component_type(component):
     return get_delegate(component).type

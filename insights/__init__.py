@@ -1,4 +1,5 @@
 from __future__ import print_function
+import yaml
 import os
 import pkgutil
 from pprint import pprint
@@ -130,6 +131,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
+        p.add_argument("-c", "--config", default=[], nargs="*", help="Configuration file for components.")
         p.add_argument("--rc", help="Run Context")
         p.add_argument("--ac", help="Archive Context")
         args = p.parse_args()
@@ -149,6 +151,10 @@ def run(component=None, root=None, print_summary=False,
             for c in dr.DELEGATES:
                 if c.__module__.startswith(plugins):
                     component.append(c)
+
+        for config in sorted(args.config):
+            with open(config) as cfg:
+                dr.apply_component_config(yaml.safe_load(cfg.read()))
 
     show_dropped = args.dropped if args else False
     if component:
