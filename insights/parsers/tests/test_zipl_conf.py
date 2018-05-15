@@ -39,7 +39,7 @@ def test_zipl_conf():
     assert res['linux']['image'] == "/boot/vmlinuz-3.10.0-693.el7.s390x"
     assert res[':menu1']['1'] == 'linux'
     assert 'defaultauto' in res['defaultboot']
-    assert res['defaultboot']['defaultauto'] is None
+    assert res['defaultboot']['defaultauto'] is True
     assert res.images == {
                             'linux': '/boot/vmlinuz-3.10.0-693.el7.s390x',
                             'linux-0-rescue-a27932c8d57248e390cee3798bbd3709': '/boot/vmlinuz-0-rescue-a27932c8d57248e390cee3798bbd3709'

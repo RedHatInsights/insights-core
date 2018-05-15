@@ -71,7 +71,7 @@ class ZiplConf(LegacyItemAccess, Parser):
     def parse_content(self, content):
         DEFLSECT = "defaultboot"
         self.data = {DEFLSECT: {}}
-        current = ""
+        current = DEFLSECT
         for line in get_active_lines(content):
             if line.startswith('[') and line.endswith(']'):
                 current = line[1:-1]
@@ -80,8 +80,6 @@ class ZiplConf(LegacyItemAccess, Parser):
                 current = line
                 self.data[current] = {}
             else:
-                if current == "":
-                    current = DEFLSECT
                 if '=' in line:
                     k, v = line.split('=', 1)
                     if v.startswith('"') and v.endswith('"'):
@@ -93,7 +91,7 @@ class ZiplConf(LegacyItemAccess, Parser):
                         self._dumptofses[current] = v
                     self.data[current][k] = v
                 else:
-                    self.data[current][line] = None
+                    self.data[current][line] = True
 
     @property
     def images(self):
