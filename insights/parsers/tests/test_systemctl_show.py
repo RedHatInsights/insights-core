@@ -1,11 +1,13 @@
-from insights.tests import context_wrap
 import doctest
+
 from insights.parsers import systemctl_show
 from insights.parsers.systemctl_show import SystemctlShowCinderVolume
+from insights.parsers.systemctl_show import SystemctlShowHttpd
 from insights.parsers.systemctl_show import SystemctlShowMariaDB
-from insights.parsers.systemctl_show import SystemctlShowPulpWorkers
-from insights.parsers.systemctl_show import SystemctlShowPulpResourceManager
 from insights.parsers.systemctl_show import SystemctlShowPulpCelerybeat
+from insights.parsers.systemctl_show import SystemctlShowPulpResourceManager
+from insights.parsers.systemctl_show import SystemctlShowPulpWorkers
+from insights.tests import context_wrap
 
 
 SYSTEMCTL_SHOW_EXAMPLES = """
@@ -63,6 +65,12 @@ def test_systemctl_show_pulp_celerybeat():
     assert len(context.data) == 21
 
 
+def test_systemctl_show_httpd():
+    context = SystemctlShowHttpd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
+    assert context["LimitNOFILE"] == "4096"
+    assert len(context.data) == 21
+
+
 def test_systemctl_show_doc_examples():
     env = {
         'SystemctlShowCinderVolume': SystemctlShowCinderVolume,
@@ -74,7 +82,9 @@ def test_systemctl_show_doc_examples():
         'SystemctlShowPulpResourceManager': SystemctlShowPulpResourceManager,
         'systemctl_show_pulp_resource_manager': SystemctlShowPulpResourceManager(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'SystemctlShowPulpCelerybeat': SystemctlShowPulpCelerybeat,
-        'systemctl_show_pulp_celerybeat': SystemctlShowPulpCelerybeat(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
+        'systemctl_show_pulp_celerybeat': SystemctlShowPulpCelerybeat(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
+        'SystemctlShowHttpd': SystemctlShowHttpd,
+        'systemctl_show_httpd': SystemctlShowHttpd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
     }
     failed, total = doctest.testmod(systemctl_show, globs=env)
     assert failed == 0
