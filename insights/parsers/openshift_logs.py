@@ -31,7 +31,7 @@ from insights.specs import Specs
 @parser(Specs.oc_logs_dc_router)
 class OpenShiftDcRouterLogs(LogFileOutput):
     """
-    Template class for reading OpenShiftDcLogs logs.
+    Class for reading OpenShiftDcRouterLogs logs.
 
     The logs have a standard format::
 
@@ -41,7 +41,7 @@ class OpenShiftDcRouterLogs(LogFileOutput):
         2018-05-15T03:19:42.975175000Z  - Health check ok : 0 retry attempt(s).
         2018-05-15T03:19:42.975431000Z I0515 03:19:42.970321       1 router.go:240] Router is including routes in all namespaces
 
-    following fields:
+    The log would be splitted into following fields:
 
     * **timestamp** - the UTC time stamp
     * **message** - the rest of the message.

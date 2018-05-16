@@ -1,4 +1,3 @@
-from __future__ import print_function
 from insights.parsers import openshift_logs
 from insights.tests import context_wrap
 
