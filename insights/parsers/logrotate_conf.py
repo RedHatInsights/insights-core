@@ -78,8 +78,8 @@ class LogrotateConf(Parser, LegacyItemAccess):
         {'mail': 'www@my.org', 'postrotate': ['/sbin/killall -HUP httpd'], 'rotate': '5', 'sharedscripts': True, 'size': '100k'}
 
     Attributes:
-        data(dict): All parsed options and log file are stored in this
-        dictionary.
+        data(dict): All parsed options and log files are stored in this
+            dictionary.
     """
 
     def parse_content(self, content):
@@ -156,6 +156,6 @@ class LogrotateConf(Parser, LegacyItemAccess):
 
     def options_of_logfile(self, log_file):
         """
-        Return a list of log files configured in this configuration file.
+        Return a dictionary contains the options of ``log_file``.
         """
         return self.data.get(log_file)
