@@ -72,10 +72,12 @@ class LogrotateConf(Parser, LegacyItemAccess):
         ['/var/log/messages', '/var/log/httpd/access.log', '/var/log/httpd/error.log', '/var/log/news/news.crit', '/var/log/news/olds.crit']
         >>> log_rt['compress']
         True
-        >>> log_rt['/var/log/messages']
-        {'postrotate': ['/sbin/killall -HUP syslogd'], 'rotate': '5', 'weekly': True}
-        >>> log_rt.options_of_logfile('/var/log/httpd/access.log')
-        {'mail': 'www@my.org', 'postrotate': ['/sbin/killall -HUP httpd'], 'rotate': '5', 'sharedscripts': True, 'size': '100k'}
+        >>> 'weekly' in log_rt['/var/log/messages']
+        True
+        >>> log_rt['/var/log/messages']['postrotate']
+        ['/sbin/killall -HUP syslogd']
+        >>> log_rt.options_of_logfile('/var/log/httpd/access.log')['mail']
+        'www@my.org'
 
     Attributes:
         data(dict): All parsed options and log files are stored in this

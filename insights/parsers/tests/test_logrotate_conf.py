@@ -105,6 +105,7 @@ def test_web_xml_doc_examples():
     failed, total = doctest.testmod(logrotate_conf, globs=env)
     assert failed == 0
 
+
 def test_logrotate_conf_1():
     log_rt = LogrotateConf(context_wrap(LOGROTATE_CONF_1, path='/etc/logrotate.conf'))
     assert 'compress' not in log_rt.options
@@ -113,13 +114,15 @@ def test_logrotate_conf_1():
     assert log_rt.log_files == ['/var/log/wtmp']
     assert log_rt['/var/log/wtmp']['create'] == '0664 root utmp'
 
+
 def test_logrotate_conf_2():
     log_rt = LogrotateConf(context_wrap(LOGROTATE_CONF_2, path='/etc/logrotate.conf'))
     assert log_rt.options == []
     assert '/var/log/candlepin/access.log' in log_rt.log_files
     assert log_rt['/var/log/candlepin/access.log']['rotate'] == '52'
-    assert log_rt['/var/log/candlepin/error.log']['missingok'] == True
+    assert log_rt['/var/log/candlepin/error.log']['missingok'] is True
     assert log_rt['/var/log/candlepin/audit.log']['create'] == '0644 tomcat tomcat'
+
 
 def test_logrotate_conf_3():
     log_rt = LogrotateConf(context_wrap(LOGROTATE_CONF_3, path='/etc/logrotate.conf'))
