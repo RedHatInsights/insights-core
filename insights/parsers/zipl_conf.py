@@ -81,10 +81,7 @@ class ZiplConf(LegacyItemAccess, Parser):
                 self.data[current] = {}
             else:
                 if '=' in line:
-                    k, v = line.split('=', 1)
-                    if v.startswith('"') and v.endswith('"'):
-                        v = v[1:-1]
-                    k, v = k.strip(), v.strip()
+                    k, v = [s.strip() for s in line.split('=', 1)]
                     if k == "image":
                         self._images[current] = v
                     elif k == "dumptofs":

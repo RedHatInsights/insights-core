@@ -15,6 +15,10 @@ target=/boot
     image=/boot/vmlinuz-0-rescue-a27932c8d57248e390cee3798bbd3709
     ramdisk=/boot/initramfs-0-rescue-a27932c8d57248e390cee3798bbd3709.img
     parameters="root=/dev/mapper/rhel_gss5-root crashkernel=auto rd.dasd=0.0.0100 rd.dasd=0.0.0101 rd.dasd=0.0.0102 rd.lvm.lv=rhel_gss5/root rd.lvm.lv=rhel_gss5/swap net.ifnames=0 rd.znet=qeth,0.0.0600,0.0.0601,0.0.0602,layer2=0,portname=gss5,portno=0"
+[other]
+    image=/boot/vmlinuz
+    ramdisk=/boot/initramfs.img
+    parameters="root=/dev/mapper/rhel_gss5-root crashkernel=auto rd.dasd=0.0.0100
 
 # Configuration for dumping to SCSI disk
 # Separate IPL and dump partitions
@@ -40,8 +44,10 @@ def test_zipl_conf():
     assert res[':menu1']['1'] == 'linux'
     assert 'defaultauto' in res['defaultboot']
     assert res['defaultboot']['defaultauto'] is True
+    assert res['other']['parameters'] == '"root=/dev/mapper/rhel_gss5-root crashkernel=auto rd.dasd=0.0.0100'
     assert res.images == {
                             'linux': '/boot/vmlinuz-3.10.0-693.el7.s390x',
-                            'linux-0-rescue-a27932c8d57248e390cee3798bbd3709': '/boot/vmlinuz-0-rescue-a27932c8d57248e390cee3798bbd3709'
+                            'linux-0-rescue-a27932c8d57248e390cee3798bbd3709': '/boot/vmlinuz-0-rescue-a27932c8d57248e390cee3798bbd3709',
+                            'other': '/boot/vmlinuz'
                         }
     assert res.dumptofses == {'dumpscsi': '/dev/sda2'}
