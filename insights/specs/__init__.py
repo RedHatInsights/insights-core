@@ -188,6 +188,7 @@ class Specs(SpecSet):
     limits_conf = RegistryPoint(multi_output=True)
     locale = RegistryPoint()
     localtime = RegistryPoint()
+    logrotate_conf = RegistryPoint(multi_output=True)
     lpstat_p = RegistryPoint()
     lsblk_pairs = RegistryPoint()
     lsblk = RegistryPoint()
