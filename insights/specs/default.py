@@ -578,6 +578,7 @@ class DefaultSpecs(Specs):
     tomcat_vdc_targeted = foreach_execute(tomcat_home_base, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s")
     tomcat_vdc_fallback = simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +")
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
+    tuned_adm_active = simple_command("/usr/sbin/tuned-adm active")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")

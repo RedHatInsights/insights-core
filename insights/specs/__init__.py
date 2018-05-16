@@ -396,6 +396,7 @@ class Specs(SpecSet):
     tomcat_vdc_targeted = RegistryPoint(multi_output=True)
     tomcat_web_xml = RegistryPoint(multi_output=True)
     tuned_adm = RegistryPoint()
+    tuned_adm_active = RegistryPoint()
     udev_persistent_net_rules = RegistryPoint()
     uname = RegistryPoint()
     up2date = RegistryPoint()
