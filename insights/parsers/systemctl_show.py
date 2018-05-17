@@ -25,12 +25,12 @@ SystemctlShowHttpd - command ``systemctl show httpd``
 -----------------------------------------------------
 """
 
-from insights.specs import Specs
 
 from .. import LegacyItemAccess
 from .. import Parser
 from .. import parser
 from ..parsers import split_kv_pairs
+from ..specs import Specs
 
 
 class SystemctlShow(LegacyItemAccess, Parser):

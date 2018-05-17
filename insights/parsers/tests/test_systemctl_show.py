@@ -73,17 +73,11 @@ def test_systemctl_show_httpd():
 
 def test_systemctl_show_doc_examples():
     env = {
-        'SystemctlShowCinderVolume': SystemctlShowCinderVolume,
         'systemctl_show_cinder_volume': SystemctlShowCinderVolume(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'SystemctlShowMariaDB': SystemctlShowMariaDB,
         'systemctl_show_mariadb': SystemctlShowMariaDB(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'SystemctlShowPulpWorkers': SystemctlShowPulpWorkers,
         'systemctl_show_pulp_workers': SystemctlShowPulpWorkers(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'SystemctlShowPulpResourceManager': SystemctlShowPulpResourceManager,
         'systemctl_show_pulp_resource_manager': SystemctlShowPulpResourceManager(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'SystemctlShowPulpCelerybeat': SystemctlShowPulpCelerybeat,
         'systemctl_show_pulp_celerybeat': SystemctlShowPulpCelerybeat(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'SystemctlShowHttpd': SystemctlShowHttpd,
         'systemctl_show_httpd': SystemctlShowHttpd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
     }
     failed, total = doctest.testmod(systemctl_show, globs=env)
