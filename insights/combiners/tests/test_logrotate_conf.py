@@ -140,6 +140,7 @@ def test_logrotate_conf_combiner():
     assert all_lrt.configfile_of_logfile('/var/log/maillog') == '/etc/logrotate.d/xx'
     assert all_lrt.options_of_logfile('/var/log/maillog')['sharedscripts'] is True
 
+
 def test_logrotate_conf_combiner_no_logfile():
     all_lrt = LogrotateConfAll(
             [
