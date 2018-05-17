@@ -76,8 +76,6 @@ class LogrotateConf(Parser, LegacyItemAccess):
         True
         >>> log_rt['/var/log/messages']['postrotate']
         ['/sbin/killall -HUP syslogd']
-        >>> log_rt.options_of_logfile('/var/log/httpd/access.log')['mail']
-        'www@my.org'
 
     Attributes:
         data(dict): All parsed options and log files are stored in this
@@ -145,9 +143,3 @@ class LogrotateConf(Parser, LegacyItemAccess):
                     # common options in log_file section
                     key, val = _parse_opts(line)
                     log_opts[key] = val
-
-    def options_of_logfile(self, log_file):
-        """
-        Return a dictionary contains the options of ``log_file``.
-        """
-        return self.data.get(log_file)
