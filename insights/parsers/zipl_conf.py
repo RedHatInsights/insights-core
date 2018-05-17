@@ -2,7 +2,7 @@
 ZiplConf - configuration file for zipl
 ======================================
 
-Shared mapper for parsing and extracting data from ``/etc/zipl.conf`` file.
+A parser file for parsing and extracting data from ``/etc/zipl.conf`` file.
 This module contains one parser:
 
 ZiplConf - file ``/etc/zipl.conf``
@@ -69,9 +69,8 @@ class ZiplConf(LegacyItemAccess, Parser):
         super(ZiplConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
-        DEFLSECT = "defaultboot"
-        self.data = {DEFLSECT: {}}
-        current = DEFLSECT
+        current = "defaultboot"
+        self.data = {current: {}}
         for line in get_active_lines(content):
             if line.startswith('[') and line.endswith(']'):
                 current = line[1:-1]
