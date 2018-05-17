@@ -24,16 +24,6 @@ LOG_LINES = """
 def test_openshift_logs_dc_router():
     logs = openshift_logs.OpenShiftDcRouterLogs(context_wrap(LOG_LINES))
     assert len(logs) == 14
-    reloaded = logs.get("Router reloaded")
-    assert reloaded[0] == {
-        'raw_message': '2018-05-15T03:19:42.974500000Z I0515 03:19:42.970212       1 router.go:554] Router reloaded:',
-        'timestamp': '2018-05-15T03:19:42.974500000Z',
-        'message': 'I0515 03:19:42.970212       1 router.go:554] Router reloaded:'
-    }
-    checking = logs.get("Checking http://localhost:80")
-    assert checking[2] == {
-        'raw_message': '2018-05-15T03:26:30.172338000Z  - Checking http://localhost:80 ...',
-        'timestamp': '2018-05-15T03:26:30.172338000Z',
-        'message': ' - Checking http://localhost:80 ...'
-    }
+    assert logs.get("Router reloaded")[0]["timestamp"] == '2018-05-15T03:19:42.974500000Z'
+    assert logs.get("Checking http://localhost:80")[2]["message"] == ' - Checking http://localhost:80 ...'
     assert len(list(logs.get_after(datetime(2018, 5, 15, 3, 21, 0)))) == 6
