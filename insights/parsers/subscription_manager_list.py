@@ -12,6 +12,8 @@ SubscriptionManagerListConsumed - command ``subscription-manager list --consumed
 SubscriptionManagerListInstalled - command ``subscription-manager list --installed``
 ------------------------------------------------------------------------------------
 
+SubscriptionManagerListInstalled - command ``subscription-manager repos --list-enabled``
+----------------------------------------------------------------------------------------
 """
 
 from .. import Parser, parser
@@ -225,3 +227,30 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
             sub['Status'] == 'Subscribed'
             for sub in self.records
         )
+
+
+@parser(Specs.subscription_manager_repos_list_enabled)
+class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
+    """
+    Read the output of ``subscription-manager repos --list-enabled``.
+
+    Sample input file::
+
+        +-------------------------------------------+
+           Available Repositories in /etc/yum.repos.d/redhat.repo
+        +-------------------------------------------+
+        Repo ID:   rhel-7-server-ansible-2-rpms
+        Repo Name: Red Hat Ansible Engine 2 RPMs for Red Hat Enterprise Linux 7 Server
+        Repo URL:  https://cdn.redhat.com/content/dist/rhel/server/7/7Server/$basearch/ansible/2/os
+        Enabled:   1
+
+    Examples:
+        >>> repolist = shared[SubscriptionManagerReposListEnabled]
+        >>> type(repolist)
+        <class 'insights.parsers.subscription_manager_list.SubscriptionManagerReposListEnabled'>
+        >>> len(repolist.records)
+        1
+        >>> repolist.records[0]['Repo ID']
+        'rhel-7-server-ansible-2-rpms'
+    """
+    pass
