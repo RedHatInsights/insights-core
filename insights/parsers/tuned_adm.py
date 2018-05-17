@@ -16,6 +16,8 @@ Examples::
     True
     >>> tuned_adm_active.data['Service ktune']
     'disabled, stopped'
+    >>> tuned_adm_active['Service ktune']
+    'disabled, stopped'
 """
 
 from insights.specs import Specs
