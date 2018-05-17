@@ -42,7 +42,7 @@ class MysqladminVars(LegacyItemAccess, Parser):
         True
         >>> output.get('what', '233')
         '233'
-        >>> config.getint('aria_block_size', '4096')
+        >>> output.getint('aria_block_size', '4096')
         8192
     """
     def parse_content(self, content):
