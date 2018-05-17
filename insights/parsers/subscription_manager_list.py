@@ -12,8 +12,8 @@ SubscriptionManagerListConsumed - command ``subscription-manager list --consumed
 SubscriptionManagerListInstalled - command ``subscription-manager list --installed``
 ------------------------------------------------------------------------------------
 
-SubscriptionManagerListInstalled - command ``subscription-manager repos --list-enabled``
-----------------------------------------------------------------------------------------
+SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
+-------------------------------------------------------------------------------------------
 """
 
 from .. import Parser, parser
