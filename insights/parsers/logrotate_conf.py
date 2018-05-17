@@ -2,7 +2,7 @@
 LogrotateConf - files ``/etc/logrotate.conf`` and others
 ========================================================
 
-Classes to parse logrotate confuration files:
+Class to parse logrotate confuration files:
 - ``/etc/logrotate.conf``
 - ``/etc/logrotate.d/*``
 
@@ -81,21 +81,24 @@ class LogrotateConf(Parser, LegacyItemAccess):
 
     Attributes:
         data(dict): All parsed options and log files are stored in this
-            dictionary.
+            dictionary
+        options(list): List of global options in the configuration file
+        log_files(list): List of log files in the configuration file
     """
 
     def parse_content(self, content):
 
         def _parse_opts(line):
             if '=' in line:
-                l_sp = line.split('=')
+                l_sp = line.split('=', 1)
             else:
                 l_sp = line.split(None, 1)
+            # return a (key, value) tuple
             return l_sp[0], l_sp[1] if len(l_sp) == 2 else True
 
         self.data = {}
-        self._options = []
-        self._log_files = []
+        self.options = []
+        self.log_files = []
 
         log_opts = script = None
         log_files = []
@@ -107,12 +110,12 @@ class LogrotateConf(Parser, LegacyItemAccess):
                     log_files.extend([l.strip(' \t\'"') for l in line.rstrip('{').split()])
                 if line.endswith('{'):
                     # start of the section
-                    log_opts = {}  # empty dict indicates necessary to parsing options
+                    log_opts = {}  # empty dict indicates in a log_file section
                 elif not log_files:
                     # global options
                     key1, val = _parse_opts(line)
                     self.data[key1] = val
-                    self._options.append(key1)
+                    self.options.append(key1)
             else:
                 # in log_file section
                 if line.endswith('}'):
@@ -121,10 +124,11 @@ class LogrotateConf(Parser, LegacyItemAccess):
                     for lf in log_files:
                         self.data[lf] = log_opts
                     # collect all log_files
-                    self._log_files.extend(log_files)
+                    self.log_files.extend(log_files)
                     log_files = []
                     log_opts = None
                     continue
+                # script options
                 if line in PAIRED_OPTS:
                     # in script section
                     script = line
@@ -141,20 +145,6 @@ class LogrotateConf(Parser, LegacyItemAccess):
                     # common options in log_file section
                     key, val = _parse_opts(line)
                     log_opts[key] = val
-
-    @property
-    def options(self):
-        """
-        Return a list of global options configured in this configuration file.
-        """
-        return self._options
-
-    @property
-    def log_files(self):
-        """
-        Return a list of log files configured in this configuration file.
-        """
-        return self._log_files
 
     def options_of_logfile(self, log_file):
         """

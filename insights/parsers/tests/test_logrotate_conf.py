@@ -99,7 +99,6 @@ compress
 
 def test_web_xml_doc_examples():
     env = {
-            'LogrotateConf': LogrotateConf,
             'log_rt': LogrotateConf(context_wrap(LOGROTATE_MAN_PAGE_DOC, path='/etc/logrotate.conf')),
           }
     failed, total = doctest.testmod(logrotate_conf, globs=env)
