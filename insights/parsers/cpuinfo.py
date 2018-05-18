@@ -67,6 +67,7 @@ Examples:
         "flags": "fpu vme de pse tsc msr pae mce",
         "clockspeeds": "2900.000",
         "cache_sizes": "20480 KB"
+        "cpu_cores": "1"
     }
 
 
@@ -111,6 +112,7 @@ class CpuInfo(LegacyItemAccess, Parser):
     * **families** - the *cpu family* line (e.g. ``6``)
     * **clockspeeds** - the *cpu MHz* line (e.g. ``2900.000``)
     * **cache_sizes** - the *cache size* line (e.g. ``20480 KB``)
+    * **cpu_cores** - the *cpu cores* line (e.g. ``1``)
     """
 
     def parse_content(self, content):
@@ -125,6 +127,7 @@ class CpuInfo(LegacyItemAccess, Parser):
             "cpu family": "families",
             "cpu MHz": "clockspeeds",
             "cache size": "cache_sizes",
+            "cpu cores": "cpu_cores",
             "flags": "flags"
         }
 
