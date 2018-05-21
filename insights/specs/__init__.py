@@ -47,6 +47,7 @@ class Specs(SpecSet):
     cpu_vulns_meltdown = RegistryPoint()
     cpu_vulns_spectre_v1 = RegistryPoint()
     cpu_vulns_spectre_v2 = RegistryPoint()
+    cpu_vulns_spec_store_bypass = RegistryPoint()
     cpuinfo_max_freq = RegistryPoint()
     cpuinfo = RegistryPoint()
     crt = RegistryPoint()
