@@ -162,6 +162,42 @@ DocumentRoot "/var/www/html"
 EnableSendfile off
 """.strip()
 
+HTTPD_CONF_NEST_3 = """
+<VirtualHost 128.39.140.28>
+    <IfModule !php5_module>
+        Testphp php5_v3_1
+        <IfModule !php4_module>
+            Testphp php4_v3_1
+        </IfModule>
+        Testphp php5_v3_2
+    </IfModule>
+</VirtualHost>
+<IfModule !php5_module>
+  Testphp php5_3_a
+  <IfModule !php4_module>
+    Testphp php4_3_a
+  </IfModule>
+</IfModule>
+""".strip()
+
+HTTPD_CONF_NEST_4 = """
+<VirtualHost 128.39.140.30>
+    <IfModule !php5_module>
+        Testphp php5_v4_1
+        <IfModule !php4_module>
+            Testphp php4_v4_1
+        </IfModule>
+        Testphp php5_v4_2
+    </IfModule>
+</VirtualHost>
+<IfModule !php5_module>
+  Testphp php5_4_b
+  <IfModule !php4_module>
+    Testphp php4_4_b
+  </IfModule>
+</IfModule>
+""".strip()
+
 
 def test_active_httpd_directory():
     httpd1 = HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
@@ -172,7 +208,7 @@ def test_active_httpd_directory():
     assert result.get_section_list(123456) == []
 
 
-def test_active_httpd_nest():
+def test_active_httpd_nest_1():
     httpd1 = HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = HttpdConf(context_wrap(HTTPD_CONF_NEST_2, path='/etc/httpd/conf.d/00-z.conf'))
     result = HttpdConfAll([httpd1, httpd2])
@@ -234,6 +270,35 @@ def test_active_httpd_nest():
     assert result.get_active_setting('RewriteRule', section=('IfModule', 'mod_rewrite.c', 'invalid_test')) == []
     assert result.get_active_setting('LogLevel') == ('warn', 'LogLevel warn', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')
     assert result.get_active_setting('LogLevel1') is None
+
+
+def test_active_httpd_nest_2():
+    httpd1 = HttpdConf(context_wrap(HTTPD_CONF_NEST_3, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = HttpdConf(context_wrap(HTTPD_CONF_NEST_4, path='/etc/httpd/conf.d/00-z.conf'))
+    result = HttpdConfAll([httpd1, httpd2])
+    testphp_im = result.get_setting_list('Testphp', 'IfModule')
+    assert {('IfModule', '!php5_module'): [
+            ('php5_v3_1', 'Testphp php5_v3_1', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ('php5_v3_2', 'Testphp php5_v3_2', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php4_module'): [
+            ('php4_v3_1', 'Testphp php4_v3_1', 'IfModule', '!php4_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php5_module'): [
+            ('php5_v4_1', 'Testphp php5_v4_1', 'IfModule', '!php5_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ('php5_v4_2', 'Testphp php5_v4_2', 'IfModule', '!php5_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php4_module'): [
+            ('php4_v4_1', 'Testphp php4_v4_1', 'IfModule', '!php4_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php5_module'): [
+            ('php5_3_a', 'Testphp php5_3_a', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ('php5_4_b', 'Testphp php5_4_b', 'IfModule', '!php5_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php4_module'): [
+            ('php4_3_a', 'Testphp php4_3_a', 'IfModule', '!php4_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ('php4_4_b', 'Testphp php4_4_b', 'IfModule', '!php4_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
 
 
 def test_active_httpd():

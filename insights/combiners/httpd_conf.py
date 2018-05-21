@@ -192,8 +192,7 @@ class HttpdConfAll(object):
                         val = v.get(dr)
                         if val:
                             result.append({d: val})
-                    else:
-                        result.extend(_deep_search(v, dr, sc))
+                    result.extend(_deep_search(v, dr, sc))
             return result
 
         if section:
