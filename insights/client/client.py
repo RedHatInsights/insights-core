@@ -15,7 +15,7 @@ from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_unregistered_file,
                         determine_hostname)
-from .collection_rules import InsightsConfig
+from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
 from .connection import InsightsConnection
 from .archive import InsightsArchive
@@ -229,7 +229,7 @@ def get_machine_id():
 
 def update_rules():
     pconn = get_connection()
-    pc = InsightsConfig(pconn)
+    pc = InsightsUploadConf(pconn)
     return pc.get_conf(True, {})
 
 
@@ -296,7 +296,7 @@ def collect(rc=0):
         target = constants.default_target
 
     branch_info = get_branch_info()
-    pc = InsightsConfig()
+    pc = InsightsUploadConf()
     tar_file = None
 
     # load config from stdin/file if specified

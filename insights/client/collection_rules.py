@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 net_logger = logging.getLogger('network')
 
 
-class InsightsConfig(object):
+class InsightsUploadConf(object):
     """
-    Insights configuration
+    Insights spec configuration from uploader.json
     """
 
     def __init__(self, conn=None):
