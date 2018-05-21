@@ -15,6 +15,18 @@ def test_make_metadata_should_not_allow_type():
         plugins.make_metadata(type="not_allowed", foo="bar")
 
 
+def test_make_fingerprint():
+    assert plugins.make_fingerprint(foo="bar") == {
+        "type": "fingerprint",
+        "foo": "bar"
+    }
+
+
+def test_make_fingerprint_should_not_allow_type():
+    with pytest.raises(Exception):
+        plugins.make_metadata(type="not_allowed", foo="bar")
+
+
 def test_validate_response_good():
     assert plugins.validate_response({
         "type": "rule",

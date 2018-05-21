@@ -239,6 +239,50 @@ def make_response(error_key, **kwargs):
     return kwargs
 
 
+def make_fingerprint(**kwargs):
+    """ Returns a JSON document approprate as a rule plugin final
+    result.
+
+    :param \*\*kwargs: Strings to pass additional information to the frontend for
+          rendering more complete messages in a customer system report.
+
+
+    Given::
+
+        make_fingerprint(manufacturer="Red Hat", product_name="insights")
+
+    The response will be the JSON string ::
+
+        {
+            "type": "fingerprint",
+            "manufacturer": "Red Hat",
+            "product_name": "insights"
+        }
+    """
+
+    if "type" in kwargs:
+        raise Exception("make_fingerprint kwargs contain 'type' key.")
+
+    r = {
+        "type": "fingerprint"
+    }
+    kwargs.update(r)
+
+    # using str() avoids many serialization issues and runs in about 75%
+    # of the time as json.dumps
+    detail_length = len(str(kwargs))
+
+    if detail_length > settings.defaults["max_detail_length"]:
+        log.error("Length of data in make_fingerprint is too long.", extra={
+            "max_detail_length": settings.defaults["max_detail_length"],
+            "len": detail_length
+        })
+        r["max_detail_length_error"] = detail_length
+        return r
+
+    return kwargs
+
+
 def make_metadata_key(key, value):
     if key == "type":
         raise ValueError("metadata key cannot be 'type'")
@@ -263,7 +307,7 @@ class ValidationException(Exception):
 
 
 def validate_response(r):
-    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key"])
+    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key", "fingerprint"])
     if not isinstance(r, dict):
         raise ValidationException("Response is not a dict", type(r))
     if "type" not in r:
