@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.17-362](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.17-362) (2018-05-21)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.16-355...insights-core-3.0.17-362)
+
+**Closed issues:**
+
+- Test of prodsec rules \(NFS\) are broken [\#1104](https://github.com/RedHatInsights/insights-core/issues/1104)
+
 ## [insights-core-3.0.16-355](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.16-355) (2018-05-16)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.15-350...insights-core-3.0.16-355)
 
