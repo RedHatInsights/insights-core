@@ -7,12 +7,14 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
-from .core.archives import extract  # noqa: F401
+from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.context import HostContext, HostArchiveContext  # noqa: F401
+from .core.cluster import process_cluster
+from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, metadata, parser, rule  # noqa: F401
+from .core.plugins import cluster_fact, cluster_rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
@@ -51,7 +53,7 @@ def add_status(name, nvr, commit):
 
 
 def _run(graph=None, root=None, run_context=HostContext,
-         archive_context=HostArchiveContext, show_dropped=False):
+         archive_context=None, show_dropped=False, use_pandas=False):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -76,7 +78,13 @@ def _run(graph=None, root=None, run_context=HostContext,
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        broker[archive_context] = create_context(root, archive_context)
+        ctx = create_context(root, archive_context)
+
+        if isinstance(ctx, ClusterArchiveContext):
+            archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
+            return process_cluster(archives, use_pandas=use_pandas)
+
+        broker[ctx.__class__] = ctx
         return dr.run(graph, broker=broker)
 
     with extract(root) as ex:
@@ -111,7 +119,7 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        run_context=HostContext, archive_context=None):
+        run_context=HostContext, archive_context=None, use_pandas=False):
 
     from .core import dr
     dr.load_components("insights.specs.default")
@@ -127,16 +135,19 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-p", "--plugins", default=[], nargs="*",
                        help="package(s) or module(s) containing plugins to run.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
+        p.add_argument("-q", "--quiet", help="Error output only.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
+        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster_rules")
         p.add_argument("--rc", help="Run Context")
         p.add_argument("--ac", help="Archive Context")
         args = p.parse_args()
 
-        logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO)
+        logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR if args.quiet else logging.INFO)
         run_context = _load_context(args.rc) or run_context
         archive_context = _load_context(args.ac) or archive_context
+        use_pandas = args.pandas or use_pandas
 
         root = args.archive or root
 
@@ -160,7 +171,8 @@ def run(component=None, root=None, print_summary=False,
     else:
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
-    broker = _run(graph, root, run_context=run_context, archive_context=archive_context, show_dropped=show_dropped)
+    broker = _run(graph, root, run_context=run_context, archive_context=archive_context, show_dropped=show_dropped, use_pandas=use_pandas)
+
     if print_summary:
         broker.describe(show_missing=args.missing, show_tracebacks=args.tracebacks)
     return broker
