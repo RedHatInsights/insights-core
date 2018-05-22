@@ -11,11 +11,10 @@ $ ../insights-core/insights/tools/specs_to_rules.py > report.html
 
 """
 from collections import defaultdict
-# import json
 import datetime
-from insights.core import plugins
-from insights.config.factory import get_config
+from insights.core import dr, filters
 from jinja2 import Environment
+from insights.core.plugins import is_datasource
 
 REPORT = """
 <html><head><title>Parser Rule Mapping Report ({{ report_date }})</title>
@@ -52,30 +51,34 @@ REPORT = """
 """.strip()
 
 
-def get_filters_for(name):
-    return list(plugins.NAME_TO_FILTER_MAP.get(name, ()))
-
-
 def main():
-    config = get_config()
+    # config = get_config()
 
-    plugins.load("insights.parsers")
-    plugins.load("insights.combiners")
-    plugins.load("telemetry.rules")
+    dr.load_components("insights.specs.default")
+    dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.sos_archive")
+    dr.load_components("insights.parsers")
+    dr.load_components("insights.combiners")
+    dr.load_components("telemetry.rules.plugins")
+    dr.load_components("prodsec")
 
-    parsers = [p for p in plugins.COMPONENTS_BY_TYPE[plugins.parser] if p.consumers]
+    # parsers = sorted([c for c in dr.DELEGATES if is_parser(c)], key=dr.get_simple_name)
+    # combiners = sorted([c for c in dr.DELEGATES if is_combiner(c)], key=dr.get_name)
+    specs = sorted([c for c in dr.DELEGATES
+                    if is_datasource(c) and dr.get_module_name(c) == 'insights.specs'],
+                   key=dr.get_simple_name)
+
     deps = defaultdict(dict)
 
-    for p in parsers:
-        for name in p.symbolic_names:
-            spec = config.get_specs(name)
-            rules = sorted(plugins.get_name(c) for c in p.consumers)
-
-            for s in spec:
-                deps[name][str(s)] = ", ".join(rules)
-                deps[name][name + "_filters"] = sorted(get_filters_for(name))
-
-    # print json.dumps(dict(deps))
+    for spec in specs:
+        info = dict(name=dr.get_simple_name(spec))
+        f = filters.get_filters(spec)
+        info['dependents'] = []
+        for d in dr.get_dependents(spec):
+            p = [dr.get_name(sd) for sd in dr.get_dependents(d)]
+            rules = sorted([x.rsplit('.', 2)[1] for x in p])
+            deps[info['name']][info['name']] = ", ".join(rules)
+            deps[info['name']][info['name'] + "_filters"] = f
 
     report = Environment().from_string(REPORT).render(
         report_date=datetime.date.today().strftime("%B %d, %Y"), specs=deps)
