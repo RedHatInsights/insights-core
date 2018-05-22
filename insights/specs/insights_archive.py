@@ -182,6 +182,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_pulp_celerybeat = simple_file("insights_commands/systemctl_show_pulp_celerybeat")
     tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
     tuned_adm = simple_file("insights_commands/tuned-adm_list")
+    tuned_adm_active = simple_file("insights_commands/tuned-adm_active")
     uname = simple_file("insights_commands/uname_-a")
     uptime = simple_file("insights_commands/uptime")
     vgdisplay = simple_file("insights_commands/vgdisplay")
