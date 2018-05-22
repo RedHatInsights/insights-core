@@ -57,17 +57,14 @@ from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
 from insights.core.filters import add_filter
 
-add_filter(Specs.ps_auxww, "COMMAND")
 
-
-@parser(Specs.ps_auxww)
-class PsAuxww(Parser):
+class PsTemplate(Parser):
     """
-    Class to parse ``ps auxww`` command output.
+    Template Class to parse ``ps`` command output.
 
     Raises:
-        ParseException: Raised if the heading line (starting with 'USER' and
-            ending with 'COMMAND') is not found in the input.
+        ParseException: Raised if the heading line (starting with 'USER'/'UID' and
+            ending with 'COMMAND'/'CMD') is not found in the input.
 
     Attributes:
         data (list): List of dicts, where the keys in each dict are the
@@ -77,33 +74,37 @@ class PsAuxww(Parser):
             `ps` output.
         cmd_names (set): Set of just the command names, minus any path or
             arguments.
-        services (list): List of sets in format (cmd names, user, raw_line) for
+        services (list): List of sets in format (cmd names, user/uid, raw_line) for
             each command.
 
     """
+    command_name = "COMMAND_TEMPLATE"
+    user_name = "USER_TEMPLATE"
+    max_splits = 0
+
     def __init__(self, *args, **kwargs):
         self.data = []
         self.running = set()
         self.cmd_names = set()
         self.services = []
-        super(PsAuxww, self).__init__(*args, **kwargs)
+        super(PsTemplate, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         raw_line_key = "_line"
-        if any(line.lstrip().startswith("USER") and line.rstrip().endswith("COMMAND") for line in content):
+        if any(line.lstrip().startswith(self.user_name) and line.rstrip().endswith(self.command_name) for line in content):
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
                 row
                 for row in parse_delimited_table(
-                    content, heading_ignore=['USER'], max_splits=10,
+                    content, heading_ignore=[self.user_name], max_splits=self.max_splits,
                     raw_line_key=raw_line_key
                 )
-                if "COMMAND" in row
+                if self.command_name in row
             ]
             # The above list comprehension assures all rows have a command.
             for proc in self.data:
-                cmd = proc["COMMAND"]
+                cmd = proc[self.command_name]
                 self.running.add(cmd)
                 cmd_name = cmd
                 if cmd.startswith('/'):
@@ -111,7 +112,7 @@ class PsAuxww(Parser):
                 proc["COMMAND_NAME"] = cmd_name
                 self.cmd_names.add(cmd_name)
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
-                self.services.append((cmd_name, proc["USER"], proc[raw_line_key]))
+                self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
                 del proc[raw_line_key]
         else:
             raise ParseException(
@@ -134,21 +135,6 @@ class PsAuxww(Parser):
         """
         return [row["PID"] for row in self.data if "PID" in row]
 
-    def cpu_usage(self, proc):
-        """
-        Searches for the first command matching ``proc`` and returns its
-        CPU usage as a string.
-
-        Returns:
-            str: the %CPU column corresponding to ``proc`` in COMMAND or
-            ``None`` if ``proc`` is not found.
-
-        .. note:: 'proc' must match the entire command and arguments.
-        """
-        for row in self.data:
-            if proc == row["COMMAND"]:
-                return row["%CPU"]
-
     def users(self, proc):
         """
         Searches for all users running a given command.
@@ -161,10 +147,10 @@ class PsAuxww(Parser):
         """
         ret = {}
         for row in self.data:
-            if proc == row["COMMAND"]:
-                if row["USER"] not in ret:
-                    ret[row["USER"]] = []
-                ret[row["USER"]].append(row["PID"])
+            if proc == row[self.command_name]:
+                if row[self.user_name] not in ret:
+                    ret[row[self.user_name]] = []
+                ret[row[self.user_name]].append(row["PID"])
         return ret
 
     def fuzzy_match(self, proc):
@@ -172,12 +158,12 @@ class PsAuxww(Parser):
         Are there any commands that contain the given text?
 
         Returns:
-            boolean: ``True`` if the word ``proc`` appears in the COMMAND column.
+            boolean: ``True`` if the word ``proc`` appears in the command column.
 
         .. note:: 'proc' can match anywhere in the command path, name or
             arguments.
         """
-        return any(proc in row['COMMAND'] for row in self.data)
+        return any(proc in row[self.command_name] for row in self.data)
 
     def search(self, **kwargs):
         """
@@ -192,16 +178,76 @@ class PsAuxww(Parser):
             search criteria.
 
         Examples:
-            >>> ps_auxww.search(COMMAND__contains='bash')
+            >>> PsTemplate.search(COMMAND__contains='bash')
             [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}, {'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
-            >>> ps_auxww.search(USER='root', COMMAND__contains='bash')
+            >>> PsTemplate.search(USER='root', COMMAND__contains='bash')
             [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
-            >>> ps_auxww.search(TTY='pts/3')
+            >>> PsTemplate.search(TTY='pts/3')
             [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}]
-            >>> ps_auxww.search(STAT__contains='Z')
+            >>> PsTemplate.search(STAT__contains='Z')
             [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29', 'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}]
         """
         return keyword_search(self.data, **kwargs)
+
+
+add_filter(Specs.ps_auxww, "COMMAND")
+
+
+@parser(Specs.ps_auxww)
+class PsAuxww(PsTemplate):
+    """
+    Class to parse ``ps auxww`` command output.
+    """
+    command_name = "COMMAND"
+    user_name = "USER"
+    max_splits = 10
+
+    def cpu_usage(self, proc):
+        """
+        Searches for the first command matching ``proc`` and returns its
+        CPU usage as a string.
+
+        Returns:
+            str: the %CPU column corresponding to ``proc`` in command or
+            ``None`` if ``proc`` is not found.
+
+        .. note:: 'proc' must match the entire command and arguments.
+        """
+        for row in self.data:
+            if proc == row[self.command_name]:
+                return row["%CPU"]
+
+    pass
+
+
+add_filter(Specs.ps_ef, "CMD")
+
+
+@parser(Specs.ps_ef)
+class PsEf(PsTemplate):
+    """
+    Class to parse ``ps ef`` command output.
+    """
+    command_name = "CMD"
+    user_name = "UID"
+    max_splits = 7
+
+    def parent_pid(self, pid):
+        """
+        Search for the parent pid of command matching ``pid`` and returns
+        the parent pid.
+
+        Returns:
+            str: The parent pid corresponding to ``pid`` in command or
+            ``None`` if ``proc`` is not found.
+        """
+        for row in self.data:
+            if pid == row["PID"]:
+                for sub_row in self.data:
+                    if sub_row["PID"] == row["PPID"]:
+                        return [row["PPID"], sub_row[self.command_name]]
+
+    pass
 
 
 @parser(Specs.ps_auxcww)

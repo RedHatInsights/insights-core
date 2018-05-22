@@ -306,6 +306,7 @@ class Specs(SpecSet):
     ps_aux = RegistryPoint()
     ps_auxcww = RegistryPoint()
     ps_auxww = RegistryPoint()
+    ps_ef = RegistryPoint()
     pulp_worker_defaults = RegistryPoint()
     puppet_ssl_cert_ca_pem = RegistryPoint()
     pvs_noheadings = RegistryPoint()

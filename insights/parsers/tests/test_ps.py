@@ -76,6 +76,49 @@ def test_ps_auxww_from_auxww():
     assert 13718356 == sum(int(proc['VSZ']) for proc in p)
 
 
+PsEf_TEST = """
+UID         PID   PPID  C STIME TTY          TIME CMD
+root          1      0  0 03:53 ?        00:00:06 /usr/lib/systemd/systemd --system --deserialize 15
+root          2      0  0 03:53 ?        00:00:00 [kthreadd]
+root       1803      1  5 03:54 ?        00:55:22 /usr/bin/openshift start master --config=/etc/origin/master/master-config.yaml --loglevel
+root       1969      1  3 03:54 ?        00:33:51 /usr/bin/openshift start node --config=/etc/origin/node/node-config.yaml --loglevel=2
+root       1995      1  0 03:54 ?        00:02:06 /usr/libexec/docker/rhel-push-plugin
+root       2078   1969  0 03:54 ?        00:00:00 journalctl -k -f
+root       7201      1  0 03:59 ?        00:00:00 /usr/bin/python /usr/libexec/rhsmd
+root     111434      1  0 22:32 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
+"""
+
+
+def test_ps_ef_from_ef():
+    # test with input from `ps -ef`
+    p = ps.PsEf(context_wrap(PsEf_TEST))
+    d = p.data
+    assert all('CMD' in row for row in d)
+    assert keys_in([
+        "UID", "PID", "PPID", "C", "STIME", "TTY", "TIME", "CMD"
+    ], d[0])
+    assert d[0] == {
+        'UID': 'root', 'TTY': '?', 'PID': '1', 'PPID': '0',
+        'TIME': '00:00:06', 'STIME': '03:53', 'C': '0',
+        'CMD': '/usr/lib/systemd/systemd --system --deserialize 15',
+        'COMMAND_NAME': 'systemd', 'ARGS': '--system --deserialize 15',
+    }
+    assert d[4]["CMD"] == '/usr/libexec/docker/rhel-push-plugin'
+    assert d[-5] == {
+        'TTY': '?', 'ARGS': '', 'UID': 'root',
+        'CMD': '/usr/libexec/docker/rhel-push-plugin',
+        'PID': '1995', 'C': '0', 'STIME': '03:54', 'TIME': '00:02:06',
+        'PPID': '1', 'COMMAND_NAME': 'rhel-push-plugin'
+    }
+    assert p.fuzzy_match('kthreadd')
+    assert p.parent_pid("111435") == ["111434", "nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf"]
+    assert '[kthreadd]' in p
+    assert 'sshd' not in p
+    assert not p.fuzzy_match("sshd")
+    assert p.running_pids() == ['1', '2', '1803', '1969', '1995', '2078', '7201', '111434', '111435']
+
+
 PsAuxcww_TEST = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 init
