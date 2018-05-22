@@ -4,13 +4,17 @@ import os
 from insights.core import archives
 from insights.core import dr
 from insights.core import serde
-from insights.core.context import JDRContext, HostArchiveContext, SosArchiveContext
+from insights.core.archives import COMPRESSION_TYPES
+from insights.core.context import ClusterArchiveContext, JDRContext, HostArchiveContext, SosArchiveContext
 from insights.core.evaluators import SingleEvaluator
 
 log = logging.getLogger(__name__)
 
 
 def create_context(path, context=None):
+    if context is None and any(f.endswith(COMPRESSION_TYPES) for f in os.listdir(path)):
+        context = ClusterArchiveContext
+
     all_files = []
     for f in archives.get_all_files(path):
         if os.path.isfile(f) and not os.path.islink(f):
@@ -25,7 +29,10 @@ def create_context(path, context=None):
 
     context = context or HostArchiveContext
     common_path = os.path.commonprefix(all_files)
-    real_root = os.path.join(path, common_path)
+    if context is not ClusterArchiveContext:
+        real_root = os.path.join(path, common_path)
+    else:
+        real_root = path
     return context(real_root, all_files=all_files)
 
 
