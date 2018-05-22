@@ -365,6 +365,7 @@ class Specs(SpecSet):
     sssd_logs = RegistryPoint(multi_output=True)
     subscription_manager_list_consumed = RegistryPoint()
     subscription_manager_list_installed = RegistryPoint()
+    subscription_manager_repos_list_enabled = RegistryPoint()
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
     sysconfig_chronyd = RegistryPoint()

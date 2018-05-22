@@ -530,6 +530,7 @@ class DefaultSpecs(Specs):
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_list_consumed = simple_command('/usr/bin/subscription-manager list --consumed')
     subscription_manager_list_installed = simple_command('/usr/bin/subscription-manager list --installed')
+    subscription_manager_repos_list_enabled = simple_command('/usr/bin/subscription-manager repos --list-enabled')
     swift_object_expirer_conf = first_file(["/var/lib/config-data/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sysconfig_chronyd = simple_file("/etc/sysconfig/chronyd")
