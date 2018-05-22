@@ -611,6 +611,7 @@ class DefaultSpecs(Specs):
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*")
+    zipl_conf = simple_file("/etc/zipl.conf")
 
     rpm_format = format_rpm()
 
