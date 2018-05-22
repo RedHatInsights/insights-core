@@ -10,6 +10,9 @@ from insights.util.content_type import from_file
 logger = logging.getLogger(__name__)
 
 
+COMPRESSION_TYPES = ("zip", "tar", "gz", "bz2", "xz")
+
+
 class InvalidArchive(Exception):
     def __init__(self, msg):
         super(InvalidArchive, self).__init__(msg)
@@ -24,7 +27,6 @@ class InvalidContentType(InvalidArchive):
 
 
 class ZipExtractor(object):
-
     def __init__(self, timeout=None):
         self.content_type = "application/zip"
         self.timeout = timeout
