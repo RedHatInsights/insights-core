@@ -93,7 +93,9 @@ HTTPD_CONF_NEST_1 = """
 
 HTTPD_CONF_NEST_2 = """
 <IfModule !php5_module>
+  Testphp php5_1
   <IfModule !php4_module>
+    Testphp php4_1
     <Location />
         <FilesMatch ".php[45]?$">
             Order allow,deny
@@ -103,9 +105,12 @@ HTTPD_CONF_NEST_2 = """
             Order deny,allow
         </FilesMatch>
     </Location>
+    Testphp php4_2
   </IfModule>
+  Testphp php5_2
 </IfModule>
 <IfModule !php5_module>
+    Testphp php5_3
     JustATest on
 </IfModule>
 """.strip()
@@ -177,18 +182,26 @@ def test_get_httpd_conf_nest_2():
     result = HttpdConf(context)
 
     assert result[("IfModule", "!php5_module")] == {
+            'Testphp': [
+                ('php5_1', 'Testphp php5_1', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                ('php5_2', 'Testphp php5_2', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                ('php5_3', 'Testphp php5_3', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
+            'JustATest': [
+                ('on', 'JustATest on', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
             ('IfModule', '!php4_module'): {
                 ('Location', '/'): {
                     ('FilesMatch', '".php[45]?$"'): {
-                        'Deny': [('from all', 'Deny from all', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
+                        'Deny': [
+                            ('from all', 'Deny from all', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
                         'Order': [
                             ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
                             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
                     }
-                }
-            },
-            'JustATest': [('on', 'JustATest on', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')],
-
+                },
+                'Testphp': [
+                    ('php4_1', 'Testphp php4_1', 'IfModule', '!php4_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+                    ('php4_2', 'Testphp php4_2', 'IfModule', '!php4_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+            }
     }
 
 
