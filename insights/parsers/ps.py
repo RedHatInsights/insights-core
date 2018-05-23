@@ -78,15 +78,21 @@ class PsTemplate(Parser):
             each command.
 
     """
-    # command_name means the command content in last row from the ps output.
-    # The value is the name of last row, and it is global variable in child process.
     command_name = "COMMAND_TEMPLATE"
-    # user_name means the user content in first row from the ps output.
-    # The value is the name of first row, and it is global variable in child process.
+    '''
+    ```command_name``` is the name of the last column from the header of ps output,
+    the subclass must override it correspondingly
+    '''
     user_name = "USER_TEMPLATE"
-    # max_splits means the split number for the rows from the ps output.
-    # The value is the number of rows, and it is global variable in child process.
+    '''
+    ```user_name``` is the name of the first column from the header of ps output,
+    the subclass must override it correspondingly
+    '''
     max_splits = 0
+    '''
+    ```max_splits``` is the split number for the columns from the ps output,
+    the subclass must override it correspondingly
+    '''
 
     def __init__(self, *args, **kwargs):
         self.data = []
