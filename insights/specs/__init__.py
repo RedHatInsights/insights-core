@@ -380,6 +380,7 @@ class Specs(SpecSet):
     sysctl_conf = RegistryPoint()
     sysctl = RegistryPoint()
     systemctl_cinder_volume = RegistryPoint()
+    systemctl_httpd = RegistryPoint()
     systemctl_list_unit_files = RegistryPoint()
     systemctl_list_units = RegistryPoint()
     systemctl_mariadb = RegistryPoint()

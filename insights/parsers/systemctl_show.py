@@ -20,13 +20,17 @@ SystemctlShowPulpResourceManager - command ``systemctl show pulp_resource_manage
 
 SystemctlShowPulpCelerybeat - command ``systemctl show pulp_celerybeat``
 ------------------------------------------------------------------------
+
+SystemctlShowHttpd - command ``systemctl show httpd``
+-----------------------------------------------------
 """
+
 
 from .. import LegacyItemAccess
 from .. import Parser
 from .. import parser
 from ..parsers import split_kv_pairs
-from insights.specs import Specs
+from ..specs import Specs
 
 
 class SystemctlShow(LegacyItemAccess, Parser):
@@ -211,6 +215,41 @@ class SystemctlShowPulpCelerybeat(SystemctlShow):
 
     Examples:
         >>> systemctl_show_pulp_celerybeat["LimitNOFILE"]
+        '4096'
+
+    """
+    pass
+
+
+@parser(Specs.systemctl_httpd)
+class SystemctlShowHttpd(SystemctlShow):
+    """
+    Class for ``systemctl show httpd``.
+
+    Typical output of ``/bin/systemctl show httpd`` command is::
+
+        Type=simple
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:32 CST
+        ExecMainStartTimestampMonotonic=104261679
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=2747
+        ExecMainCode=0
+        ExecMainStatus=0
+        ExecStart={ path=/usr/sbin/httpd ; argv[]=/usr/sbin/httpd $OPTIONS -DFOREGROUND ; ignore_errors=no ; start_time=[Tue 2018-05-15 09:30:08 CST] ; stop_time=[n/a] ; pid=1605 ; code=(null) ; status=0/0 }
+        ExecReload={ path=/usr/sbin/httpd ; argv[]=/usr/sbin/httpd $OPTIONS -k graceful ; ignore_errors=no ; start_time=[Wed 2018-05-16 03:07:01 CST] ; stop_time=[Wed 2018-05-16 03:07:01 CST] ; pid=21501 ; code=exited ; status=0 }
+        ExecStop={ path=/bin/kill ; argv[]=/bin/kill -WINCH ${MAINPID} ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+        Slice=system.slice
+        ControlGroup=/system.slice/httpd.service
+        LimitNOFILE=4096
+        ...
+
+    Examples:
+        >>> systemctl_show_httpd["LimitNOFILE"]
         '4096'
 
     """
