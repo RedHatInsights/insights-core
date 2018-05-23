@@ -544,6 +544,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_conf_initramfs = simple_command("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
+    systemctl_httpd = simple_command("/bin/systemctl show httpd")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_mariadb = simple_command("/bin/systemctl show mariadb")

@@ -174,6 +174,7 @@ class InsightsArchiveSpecs(Specs):
     sysctl = simple_file("insights_commands/sysctl_-a")
     sysctl_conf_initramfs = simple_file("insights_commands/lsinitrd_.boot.initramfs-_kdump.img_-f_.etc.sysctl.conf_.etc.sysctl.d._.conf")
     systemctl_cinder_volume = simple_file("insights_commands/systemctl_show_openstack-cinder-volume")
+    systemctl_httpd = simple_file("insights_commands/systemctl_show_httpd")
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")
     systemctl_list_units = simple_file("insights_commands/systemctl_list-units")
     systemctl_mariadb = simple_file("insights_commands/systemctl_show_mariadb")
