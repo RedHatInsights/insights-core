@@ -39,8 +39,8 @@ Sample content of the ``/etc/exports`` file::
 Examples:
     >>> type(exports)
     <class 'insights.parsers.nfs_exports.NFSExports'>
-    >>> type(exports.data)
-    <type 'dict'>
+    >>> type(exports.data) == type({})
+    True
     >>> exports.raw_lines['/home/insights/shared/rw']  # List of lines that define this path
     ['/home/insights/shared/rw                @group(rw,sync)   ins1.example.com(rw,sync,no_root_squash) ins2.example.com(ro,sync,no_root_squash)']
     >>> exports.raw_lines['/home/example']  # Lines are stored even if they contain duplicate hosts
@@ -116,7 +116,7 @@ class NFSExportsBase(Parser):
                 # Add to raw lines even if some (or all) hosts are ignored.
                 self.raw_lines[path].append(line)
                 # Have to check each path-host tuple
-                for host, flags in hosts.iteritems():
+                for host, flags in hosts.items():
                     if host not in self.data[path]:
                         # Only add if it doesn't already exist.
                         self.data[path][host] = flags
@@ -136,7 +136,7 @@ class NFSExportsBase(Parser):
         return set(chain.from_iterable(items))
 
     def __iter__(self):
-        return self.data.iteritems()
+        return iter(self.data.items())
 
     @staticmethod
     def reconstitute(path, d):
@@ -162,7 +162,7 @@ class NFSExportsBase(Parser):
             'Please use the `raw_lines` dictionary property of the parser instance'
         )
         return "  ".join([path] + ["%s(%s)" % (host, ",".join(options))
-                         for host, options in d.iteritems()])
+                         for host, options in d.items()])
 
 
 @parser(Specs.nfs_exports)

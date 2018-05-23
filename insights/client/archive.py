@@ -1,6 +1,7 @@
 """
 Handle adding files and preparing the archive for upload
 """
+from __future__ import absolute_import
 import time
 import os
 import shutil
@@ -9,8 +10,8 @@ import shlex
 import logging
 import tempfile
 
-from utilities import determine_hostname, _expand_paths, write_data_to_file
-from insights_spec import InsightsFile, InsightsCommand
+from .utilities import determine_hostname, _expand_paths, write_data_to_file
+from .insights_spec import InsightsFile, InsightsCommand
 
 logger = logging.getLogger(__name__)
 
@@ -157,9 +158,9 @@ class InsightsArchive(object):
         Use InsightsSpec.get_output() to get data
         '''
         if isinstance(spec, InsightsCommand):
-            archive_path = os.path.join(self.cmd_dir, spec.mangled_command.lstrip('/'))
+            archive_path = os.path.join(self.cmd_dir, spec.archive_path.lstrip('/'))
         if isinstance(spec, InsightsFile):
-            archive_path = self.get_full_archive_path(spec.relative_path.lstrip('/'))
+            archive_path = self.get_full_archive_path(spec.archive_path.lstrip('/'))
         output = spec.get_output()
         if output:
             write_data_to_file(output, archive_path)

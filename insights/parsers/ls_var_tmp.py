@@ -28,9 +28,13 @@ Examples:
 
 
 from insights.specs import Specs
+from insights.core.filters import add_filter
 
 from .. import FileListing
 from .. import parser
+
+
+add_filter(Specs.ls_var_tmp, "/var/tmp")
 
 
 @parser(Specs.ls_var_tmp)

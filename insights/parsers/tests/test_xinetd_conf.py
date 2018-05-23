@@ -114,8 +114,8 @@ service tftp
 }
 """
 
-CONF_PATH = 'etc/xinetd.conf'
-D_TFTP_PATH = 'etc/xinetd.d/tftp'
+CONF_PATH = '/etc/xinetd.conf'
+D_TFTP_PATH = '/etc/xinetd.d/tftp'
 
 
 def test_XinetdConf_0():

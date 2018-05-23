@@ -10,7 +10,7 @@ remove_file_content = """
 [remove]
 foo = bar
 potato = pancake
-""".strip()
+""".strip().encode("utf-8")
 
 
 def test_display_name():

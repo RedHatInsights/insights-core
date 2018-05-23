@@ -40,7 +40,7 @@ Examples:
 
     >>> jboss_main_config.file_path
     '/root/jboss/jboss-eap-6.4/standalone/configuration/standalone.xml'
-    >>> properties = sorted(jboss_main_config.get_elements(".//management/security-realms/security-realm/authentication/properties"))
+    >>> properties = sorted(jboss_main_config.get_elements(".//management/security-realms/security-realm/authentication/properties"), key=lambda e: e.tag)
     >>> properties[0].get("relative-to")
     'jboss.server.config.dir'
 

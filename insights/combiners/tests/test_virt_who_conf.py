@@ -104,11 +104,13 @@ def test_virt_who_conf_1():
     assert result.interval == 1000
     assert result.sm_type == 'sat6'
     assert sorted(result.hypervisor_types) == sorted(['esx', 'hyperv'])
-    assert sorted(result.hypervisors) == sorted([
-        {'name': 'esx_1', 'server': '10.72.32.219', 'env': 'Satellite',
-         'owner': 'Satellite', 'type': 'esx'},
-        {'name': 'hyperv_1', 'server': '10.72.32.209', 'env': 'Satellite',
-         'owner': 'Satellite', 'type': 'hyperv'}])
+
+    expected = [{'name': 'esx_1', 'server': '10.72.32.219', 'env': 'Satellite',
+                 'owner': 'Satellite', 'type': 'esx'},
+                {'name': 'hyperv_1', 'server': '10.72.32.209', 'env': 'Satellite',
+                 'owner': 'Satellite', 'type': 'hyperv'}]
+    for d in result.hypervisors:
+        assert d in expected
 
 
 def test_virt_who_conf_2():

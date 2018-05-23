@@ -1,15 +1,20 @@
 """
 Auto Configuration Helper
 """
+from __future__ import absolute_import
 import logging
 import os
 import requests
-from urlparse import urlparse
 
-from constants import InsightsConstants as constants
-from cert_auth import rhsmCertificate
-from connection import InsightsConnection
-from config import CONFIG as config
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
+
+from .constants import InsightsConstants as constants
+from .cert_auth import rhsmCertificate
+from .connection import InsightsConnection
+from .config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 APP_NAME = constants.app_name
@@ -85,8 +90,8 @@ def _try_satellite6_configuration():
         rhsm_config = initConfig()
 
         logger.debug('Trying to autoconfigure...')
-        cert = file(rhsmCertificate.certpath(), 'r').read()
-        key = file(rhsmCertificate.keypath(), 'r').read()
+        cert = open(rhsmCertificate.certpath(), 'r').read()
+        key = open(rhsmCertificate.keypath(), 'r').read()
         rhsm = rhsmCertificate(key, cert)
 
         # This will throw an exception if we are not registered
@@ -158,7 +163,7 @@ def _try_satellite5_configuration():
             return False
 
         logger.debug("Found Satellite 5 Config")
-        rhn_conf_file = file(rhn_config, 'r')
+        rhn_conf_file = open(rhn_config, 'r')
         hostname = None
         for line in rhn_conf_file:
             if line.startswith('serverURL='):

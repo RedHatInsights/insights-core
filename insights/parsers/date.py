@@ -46,6 +46,7 @@ Examples:
     'UTC'
 """
 
+import six
 import sys
 from datetime import datetime
 
@@ -88,7 +89,7 @@ class DateParser(Parser):
             no_tz = ' '.join(parts[:4]) + ' ' + parts[-1]
             self.datetime = datetime.strptime(no_tz, '%a %b %d %H:%M:%S %Y')
         except:
-            raise DateParseException(self.data), None, sys.exc_info()[2]
+            six.reraise(DateParseException, DateParseException(self.data), sys.exc_info()[2])
 
 
 @parser(Specs.date)

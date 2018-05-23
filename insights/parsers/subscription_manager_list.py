@@ -12,6 +12,8 @@ SubscriptionManagerListConsumed - command ``subscription-manager list --consumed
 SubscriptionManagerListInstalled - command ``subscription-manager list --installed``
 ------------------------------------------------------------------------------------
 
+SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
+-------------------------------------------------------------------------------------------
 """
 
 from .. import Parser, parser
@@ -19,6 +21,7 @@ from . import keyword_search
 from insights.specs import Specs
 from datetime import datetime
 import re
+import six
 
 
 class SubscriptionManagerList(Parser):
@@ -72,7 +75,7 @@ class SubscriptionManagerList(Parser):
             match = cont_val_re.search(line)
             if match:
                 # Add this value to the current key:
-                if isinstance(current_record[key], str):
+                if isinstance(current_record[key], six.string_types):
                     # Convert the single string into a list
                     current_record[key] = [
                         current_record[key], match.group('value')
@@ -148,14 +151,10 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         True
         >>> sub1['Status Details']  # Keys appear as given
         'Subscription is current'
-        >>> type(sub1['Provides'])  # Provides lines as a list
-        <type 'list'>
         >>> sub1['Provides'][1]
         'Red Hat Software Collections Beta (for RHEL Server)'
         >>> sub1['Starts']  # Basic field as text - note month/day/year
         '11/14/14'
-        >>> type(sub1['Starts timestamp'])  # Converted to date
-        <type 'datetime.datetime'>
         >>> sub1['Starts timestamp'].year
         2014
         >>> consumed.all_current  # Are all subscriptions listed as current?
@@ -228,3 +227,30 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
             sub['Status'] == 'Subscribed'
             for sub in self.records
         )
+
+
+@parser(Specs.subscription_manager_repos_list_enabled)
+class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
+    """
+    Read the output of ``subscription-manager repos --list-enabled``.
+
+    Sample input file::
+
+        +-------------------------------------------+
+           Available Repositories in /etc/yum.repos.d/redhat.repo
+        +-------------------------------------------+
+        Repo ID:   rhel-7-server-ansible-2-rpms
+        Repo Name: Red Hat Ansible Engine 2 RPMs for Red Hat Enterprise Linux 7 Server
+        Repo URL:  https://cdn.redhat.com/content/dist/rhel/server/7/7Server/$basearch/ansible/2/os
+        Enabled:   1
+
+    Examples:
+        >>> repolist = shared[SubscriptionManagerReposListEnabled]
+        >>> type(repolist)
+        <class 'insights.parsers.subscription_manager_list.SubscriptionManagerReposListEnabled'>
+        >>> len(repolist.records)
+        1
+        >>> repolist.records[0]['Repo ID']
+        'rhel-7-server-ansible-2-rpms'
+    """
+    pass

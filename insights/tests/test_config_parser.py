@@ -39,18 +39,18 @@ def test_ini_config_file_parser():
     ini = IniConfigFile(context_wrap(CONFIG_FILE))
 
     # sections() tests
-    assert ini.sections() == \
+    assert list(ini.sections()) == \
         ['global', 'comment tricks', 'value overwriting', 'value checks']
 
     # items() tests - here we return a dictionary
-    assert ini.items('global') == \
+    assert dict(ini.items('global')) == \
         {'keynospace': 'valuenospaces',
          'key with spaces': 'value with spaces',
          'key with continued value': "value1\nvalue2"}
-    assert ini.items('comment tricks') == \
+    assert dict(ini.items('comment tricks')) == \
         {'comment # in key': 'value still found',
          'comment in value': 'value includes # sign'}
-    assert ini.items('value overwriting') == \
+    assert dict(ini.items('value overwriting')) == \
         {'key': 'this one should be picked'}
 
     # get() tests on global section
@@ -95,7 +95,3 @@ def test_ini_config_file_parser():
     # __contains__ tests
     assert 'global' in ini
     assert 'value checks' in ini
-
-    # __repr__ test
-    assert repr(ini) == "INI file 'path' - sections:['global', " +\
-        "'comment tricks', 'value overwriting', 'value checks']"

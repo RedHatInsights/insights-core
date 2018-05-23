@@ -120,7 +120,7 @@ class SubMemInfo(object):
     def __init__(self, data):
         sub_dict = dict((sk, data.get(k)) for k, sk in self.sub_keys)
         self.data = sub_dict
-        for k, v in sub_dict.iteritems():
+        for k, v in sub_dict.items():
             setattr(self, k, v)
 
 
@@ -229,7 +229,7 @@ class MemInfo(Parser):
     """
 
     VALUE_IN_BYTES = [
-        "hugepages_total", "hugepages_free", "hugepages_reserved", "hugepages_surp"
+        "hugepages_total", "hugepages_free", "hugepages_rsvd", "hugepages_surp"
     ]
 
     mem_keys = [
@@ -267,7 +267,7 @@ class MemInfo(Parser):
             "cma": CmaMemInfo(self.data),
             "direct_map": DirectMapMemInfo(self.data)
         }
-        for name, cls in sub_classes.iteritems():
+        for name, cls in sub_classes.items():
             setattr(self, name, cls)
         for meminfo_key, k in self.mem_keys:
             setattr(self, k, self.data.get(meminfo_key))

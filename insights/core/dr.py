@@ -591,8 +591,8 @@ class TypeSetMeta(type):
                 setattr(cls, k, TypeSetDescriptor(v))
 
 
-class TypeSet(object):
-    __metaclass__ = TypeSetMeta
+class TypeSet(six.with_metaclass(TypeSetMeta)):
+    pass
 
 
 def new_component_type(auto_requires=[],
@@ -664,7 +664,7 @@ def run_order(components):
     Returns components in an order that satisfies their dependency
     relationships.
     """
-    return toposort_flatten(components)
+    return toposort_flatten(components, sort=False)
 
 
 def run(components=COMPONENTS[GROUPS.single], broker=None):

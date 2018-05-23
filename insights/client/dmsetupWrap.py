@@ -1,8 +1,10 @@
+from __future__ import print_function
+from __future__ import absolute_import
 # !/usr/bin/python
 # Copyright (C) 2016 Red Hat, All rights reserved.
 # AUTHORS: Alex Collins <alcollin@redhat.com>
 
-import util
+from . import util
 import string
 
 """ Module for extracting output of dmsetup. """
@@ -25,6 +27,6 @@ def getDmsetupLs():
     cmd = ['dmsetup', 'ls']
     r = util.subp(cmd)
     if r.return_code != 0:
-        print r.stderr
+        print(r.stderr)
         return -1
     return r.stdout

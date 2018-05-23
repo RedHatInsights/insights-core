@@ -78,7 +78,7 @@ VGS_HEADER_5 = {
 def test_vgs():
     vgs_records = Vgs(context_wrap(VGS_INFO))
     assert len(list(vgs_records)) == 2
-    for k, v in VGS_INFO_FEDORA.iteritems():
+    for k, v in VGS_INFO_FEDORA.items():
         assert vgs_records["fedora"][k] == v
     assert vgs_records["fedora"]['LVM2_VG_SEQNO'] == '4'
 
@@ -87,6 +87,6 @@ def test_vgs_headers():
     vgs_info = VgsHeadings(context_wrap(VGS_HEADER_INFO))
     assert vgs_info is not None
     assert len(vgs_info.data) == 6
-    for k, v in VGS_HEADER_5.iteritems():
+    for k, v in VGS_HEADER_5.items():
         assert vgs_info[5][k] == v
     assert vgs_info[5]['VPerms'] is None

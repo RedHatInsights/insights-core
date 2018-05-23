@@ -62,12 +62,35 @@ Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 """
 
-from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess, AttributeDict
+from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess
 from insights.specs import Specs
 
 IOMMU = "intel_iommu=on"
 GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
+
+
+class BootEntry(LegacyItemAccess):
+    """
+    An object representing an entry in the output of ``mount`` command.  Each
+    entry contains below fixed attributes:
+
+    Attributes:
+        name (str): Name of the boot entry
+        cmdline (str): Cmdline of the boot entry
+    """
+    def __init__(self, data={}):
+        self.data = data
+        for k, v in data.items():
+            setattr(self, k, v)
+
+    def items(self):
+        """
+        To keep backward compatibility and let it can be iterated as a
+        dictionary.
+        """
+        for k, v in self.data.items():
+            yield k, v
 
 
 class GrubConfig(LegacyItemAccess, Parser):
@@ -104,7 +127,7 @@ class GrubConfig(LegacyItemAccess, Parser):
             try:
 
                 if line is None:
-                    line = line_iter.next()
+                    line = next(line_iter)
 
                 if line.startswith('title '):
                     last_line = _parse_title(line_iter, line, conf)
@@ -134,8 +157,7 @@ class GrubConfig(LegacyItemAccess, Parser):
                     entry['name'] = line
                 elif entry and name.startswith(('kernel', 'linux')):
                     entry['cmdline'] = line
-                    self._boot_entries.append(AttributeDict(entry))
-                    break
+                    self._boot_entries.append(BootEntry(entry))
 
     @property
     def boot_entries(self):
@@ -143,7 +165,7 @@ class GrubConfig(LegacyItemAccess, Parser):
         Get all boot entries in GRUB configuration.
 
         Returns:
-            (list): A list of AttributeDict objects for each boot entry in below format:
+            (list): A list of :class:`BootEntry` objects for each boot entry in below format:
                     - 'name': "Red Hat Enterprise Linux Server"
                     - 'cmdline': "kernel /vmlinuz-2.6.32-431.11.2.el6.x86_64 crashkernel=128M rhgb quiet"
         """
@@ -378,7 +400,7 @@ def _parse_script(list, line, line_iter):
     """
     ifIdx = 0
     while (True):
-        line = line_iter.next()
+        line = next(line_iter)
         if line.startswith("fi"):
             if ifIdx == 0:
                 return
@@ -405,7 +427,7 @@ def _parse_menu_entry(line_iter, cur_line, conf):
         menu.append(_parse_cmd(v))
 
     while (True):
-        line = line_iter.next()
+        line = next(line_iter)
         if "{" in line:
             n, v = _parse_line("{", line)
             if v:
@@ -430,7 +452,7 @@ def _parse_title(line_iter, cur_line, conf):
     conf['title'].append(title)
     title.append(('title_name', cur_line.split('title', 1)[1].strip()))
     while (True):
-        line = line_iter.next()
+        line = next(line_iter)
         if line.startswith("title "):
             return line
 

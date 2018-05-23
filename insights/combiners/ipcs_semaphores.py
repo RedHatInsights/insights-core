@@ -28,7 +28,7 @@ class IpcsSemaphore(object):
         self.pid_list = []
         """list: List of the related PID."""
 
-        for k, v in data.iteritems():
+        for k, v in data.items():
             setattr(self, k, v)
 
 

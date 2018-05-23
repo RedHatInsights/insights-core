@@ -2,6 +2,7 @@ import itertools
 import logging
 import os
 import re
+import six
 import traceback
 
 from collections import defaultdict
@@ -13,6 +14,7 @@ from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.core.serde import deserializer, serializer
 from insights.util import subproc
+import shlex
 
 log = logging.getLogger(__name__)
 
@@ -59,6 +61,7 @@ class ContentProvider(object):
         self.args = None
         self.rc = None
         self.path = None
+        self.relative_path = None
         self._content = None
         self._exception = None
 
@@ -148,8 +151,8 @@ class TextFileProvider(FileProvider):
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
         if filters:
-            cmd = "/bin/grep -F '{0}' {1}".format(filters, self.path)
-            rc, out = subproc.call(cmd.encode("utf-8"), shell=False, keep_rc=True)
+            cmd = [["/bin/grep", "-F", filters, self.path]]
+            rc, out = subproc.call(cmd, shell=False, keep_rc=True)
             if rc == 0 and out != '':
                 results = out.splitlines()
             else:
@@ -297,12 +300,12 @@ class SpecSetMeta(type):
         _resolve_registry_points(cls, bases[0], dct)
 
 
-class SpecSet(object):
+class SpecSet(six.with_metaclass(SpecSetMeta)):
     """
     The base class for all spec declarations. Extend this class and define your
     datasources directly or with a `SpecFactory`.
     """
-    __metaclass__ = SpecSetMeta
+    pass
 
 
 def _get_context(context, alternatives, broker):
@@ -334,7 +337,7 @@ def simple_file(path, context=None, kind=TextFileProvider):
     return inner
 
 
-def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
+def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_files=1000):
     """
     Creates a datasource that reads all files matching the glob pattern(s).
 
@@ -345,10 +348,12 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
         context (ExecutionContext): the context under which the datasource
             should run.
         kind (FileProvider): One of TextFileProvider or RawFileProvider.
+        max_files (int): Maximum number of glob files to process.
 
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
+
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
@@ -367,8 +372,24 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
                 except:
                     log.debug(traceback.format_exc())
         if results:
+            if len(results) > max_files:
+                raise ContentException("Number of files returned [{0}] is over the {1} file limit, please refine "
+                                       "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
+    return inner
+
+
+def head(dep):
+    """
+    Return the first element of any datasource that produces a list.
+    """
+    @datasource(dep)
+    def inner(lst):
+        c = lst[dep]
+        if lst:
+            return c[0]
+        raise dr.SkipComponent()
     return inner
 
 
@@ -436,7 +457,10 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
     Executable a simple command that has no dynamic arguments
 
     Args:
-        cmd (str): the command to execute
+        cmd (list of lists): the command(s) to execute. Breaking apart a command
+            string that might contain multiple commands separated by a pipe,
+            getting them ready for subproc operations.
+            IE. A command with filters applied
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -461,11 +485,11 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
         if split:
             filters = "\n".join(get_filters(inner))
         if filters:
-            command = "{0} | grep -F '{1}'".format(cmd, filters)
+            command = [shlex.split(cmd)] + [["grep", "-F", filters]]
             raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
         else:
-            raw = ctx.shell_out(cmd, split=split, keep_rc=keep_rc, timeout=timeout)
-
+            command = [shlex.split(cmd)]
+            raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
         if keep_rc:
             rc, result = raw
         else:
@@ -484,7 +508,10 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
 
     Args:
         provider (list): a list of elements or tuples.
-        cmd (str): a command with substitution parameters.
+        cmd (list of lists): a command with substitution parameters. Breaking
+            apart a command string that might contain multiple commands
+            separated by a pipe, getting them ready for subproc operations.
+            IE. A command with filters applied
         context (ExecutionContext): the context under which the datasource
             should run.
         split (bool): whether the output of the command should be split into a
@@ -519,10 +546,11 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
                 if split:
                     filters = "\n".join(get_filters(inner))
                 if filters:
-                    command = "{0} | grep -F '{1}'".format(the_cmd, filters)
+                    command = [shlex.split(the_cmd)] + [["grep", "-F", filters]]
                     raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
                 else:
-                    raw = ctx.shell_out(the_cmd, split=split, keep_rc=keep_rc, timeout=timeout)
+                    command = [shlex.split(the_cmd)]
+                    raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
                 if keep_rc:
                     rc, output = raw
                 else:

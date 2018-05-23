@@ -42,22 +42,22 @@ Examples:
     []
     >>> ls_etc.total_of("/etc/sysconfig")
     96
-    >>> ls_etc.dir_entry('/etc/sysconfig', 'grub')
-    {'group': '0', 'name': 'grub', 'links': 1, 'perms': 'rwxrwxrwx.', 'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub', 'owner': '0', 'link': '/etc/default/grub', 'date': 'Jul  6 23:32', 'type': 'l', 'dir': '/etc/sysconfig', 'size': 17}
+    >>> ls_etc.dir_entry('/etc/sysconfig', 'grub') == {'group': '0', 'name': 'grub', 'links': 1, 'perms': 'rwxrwxrwx.', 'raw_entry': 'lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub', 'owner': '0', 'link': '/etc/default/grub', 'date': 'Jul  6 23:32', 'type': 'l', 'dir': '/etc/sysconfig', 'size': 17}
+    True
     >>> ls_etc.files_of('/etc/rc.d/rc3.d')
     ['K50netconsole', 'S10network', 'S97rhnsd']
-    >>> ls_etc.listing_of("/etc/sysconfig").keys()
-    ['console', 'grub', '..', 'firewalld', '.', 'cbq', 'ebtables-config']
-    >>> ls_etc.listing_of("/etc/sysconfig")['console'].keys()
-    ['group', 'name', 'links', 'perms', 'raw_entry', 'owner', 'date', 'type', 'dir', 'size']
+    >>> sorted(ls_etc.listing_of("/etc/sysconfig").keys()) == sorted(['console', 'grub', '..', 'firewalld', '.', 'cbq', 'ebtables-config'])
+    True
+    >>> sorted(ls_etc.listing_of("/etc/sysconfig")['console'].keys()) == sorted(['group', 'name', 'links', 'perms', 'raw_entry', 'owner', 'date', 'type', 'dir', 'size'])
+    True
     >>> ls_etc.listing_of("/etc/sysconfig")['console']['type']
     'd'
     >>> ls_etc.listing_of("/etc/sysconfig")['console']['perms']
     'rwxr-xr-x.'
     >>> ls_etc.dir_contains("/etc/sysconfig", "console")
     True
-    >>> ls_etc.dir_entry("/etc/sysconfig", "console")
-    {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.', 'raw_entry': 'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console', 'owner': '0', 'date': 'Sep 16  2015', 'type': 'd', 'dir': '/etc/sysconfig', 'size': 6}
+    >>> ls_etc.dir_entry("/etc/sysconfig", "console") == {'group': '0', 'name': 'console', 'links': 2, 'perms': 'rwxr-xr-x.', 'raw_entry': 'drwxr-xr-x.  2 0 0    6 Sep 16  2015 console', 'owner': '0', 'date': 'Sep 16  2015', 'type': 'd', 'dir': '/etc/sysconfig', 'size': 6}
+    True
     >>> ls_etc.dir_entry("/etc/sysconfig", "grub")['type']
     'l'
     >>> ls_etc.dir_entry("/etc/sysconfig", "grub")['link']

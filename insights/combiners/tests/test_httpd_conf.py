@@ -162,6 +162,42 @@ DocumentRoot "/var/www/html"
 EnableSendfile off
 """.strip()
 
+HTTPD_CONF_NEST_3 = """
+<VirtualHost 128.39.140.28>
+    <IfModule !php5_module>
+        Testphp php5_v3_1
+        <IfModule !php4_module>
+            Testphp php4_v3_1
+        </IfModule>
+        Testphp php5_v3_2
+    </IfModule>
+</VirtualHost>
+<IfModule !php5_module>
+  Testphp php5_3_a
+  <IfModule !php4_module>
+    Testphp php4_3_a
+  </IfModule>
+</IfModule>
+""".strip()
+
+HTTPD_CONF_NEST_4 = """
+<VirtualHost 128.39.140.30>
+    <IfModule !php5_module>
+        Testphp php5_v4_1
+        <IfModule !php4_module>
+            Testphp php4_v4_1
+        </IfModule>
+        Testphp php5_v4_2
+    </IfModule>
+</VirtualHost>
+<IfModule !php5_module>
+  Testphp php5_4_b
+  <IfModule !php4_module>
+    Testphp php4_4_b
+  </IfModule>
+</IfModule>
+""".strip()
+
 
 def test_active_httpd_directory():
     httpd1 = HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
@@ -172,33 +208,42 @@ def test_active_httpd_directory():
     assert result.get_section_list(123456) == []
 
 
-def test_active_httpd_nest():
+def test_active_httpd_nest_1():
     httpd1 = HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = HttpdConf(context_wrap(HTTPD_CONF_NEST_2, path='/etc/httpd/conf.d/00-z.conf'))
     result = HttpdConfAll([httpd1, httpd2])
     assert result.get_setting_list('Order1', ('FilesMatch', 'php')) == []
     assert result.get_setting_list('Order', ('FilesMatch', 'pdf')) == []
-    assert result.get_setting_list('Order', section=('FilesMatch', 'php')) == [
-            {('FilesMatch', '".php[45]?$"'): [
+    php_fm_order = result.get_setting_list('Order', section=('FilesMatch', 'php'))
+    assert {
+            ('FilesMatch', '".php[45]?$"'): [
                 ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]},
-            {('FilesMatch', '".php[45]"'): [
+                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
+           } in php_fm_order
+    assert {
+            ('FilesMatch', '".php[45]"'): [
                 ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]},
-            {('FilesMatch', '".php[45]?$"'): [
+                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')],
+           } in php_fm_order
+    assert {
+            ('FilesMatch', '".php[45]?$"'): [
                 ('allow,deny', 'Order allow,deny', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]}]
-    assert result.get_setting_list('RewriteEngine', 'IfModule') == [
-            {('IfModule', 'mod_rewrite.c'): [
+                ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+           } in php_fm_order
+    re_im = result.get_setting_list('RewriteEngine', 'IfModule')
+    assert {
+            ('IfModule', 'mod_rewrite.c'): [
                 ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-                ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]},
-            {('IfModule', 'mod_rewrite.c'): [
+                ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+           } in re_im
+    assert {
+            ('IfModule', 'mod_rewrite.c'): [
                 ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-                ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]}
-    ]
-    assert result.get_setting_list('EnableSendfile') == [
+                ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
+           } in re_im
+    assert sorted(result.get_setting_list('EnableSendfile')) == sorted([
             ('off', 'EnableSendfile off', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-            ('on', 'EnableSendfile on', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
+            ('on', 'EnableSendfile on', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')])
     assert result.get_setting_list('LogLevel') == [
             ('warn', 'LogLevel warn', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
     assert result.get_setting_list('LogLevel1') == []
@@ -208,13 +253,13 @@ def test_active_httpd_nest():
     assert len(result.get_active_setting('Order', ('FilesMatch', '.php[45]?$'))) == 2
     assert len(result.get_active_setting('Order', ('FilesMatch',))) == 4
     assert len(result.get_active_setting('Order', ('FilesMatch', '.php[45]'))) == 3
-    assert result.get_active_setting('Order', section=('FilesMatch', 'php')) == [
+    assert sorted(result.get_active_setting('Order', section=('FilesMatch', 'php'))) == sorted([
             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
             ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]"', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')]
-    assert result.get_active_setting('RewriteEngine', section='IfModule') == [
+            ('deny,allow', 'Order deny,allow', 'FilesMatch', '".php[45]?$"', 'httpd.conf', '/etc/httpd/conf/httpd.conf')])
+    assert sorted(result.get_active_setting('RewriteEngine', section='IfModule')) == sorted([
             ('Off', 'RewriteEngine Off', 'IfModule', 'mod_rewrite.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
-            ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
+            ('On', 'RewriteEngine On', 'IfModule', 'mod_rewrite.c', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')])
     assert result.get_active_setting('EnableSendfile').line == 'EnableSendfile on'
     assert result.get_active_setting('Deny', ('FilesMatch', 'test')) == []
     assert result.get_active_setting('Allow', ('FilesMatch', 'test'))[0].value == 'from all'
@@ -225,6 +270,35 @@ def test_active_httpd_nest():
     assert result.get_active_setting('RewriteRule', section=('IfModule', 'mod_rewrite.c', 'invalid_test')) == []
     assert result.get_active_setting('LogLevel') == ('warn', 'LogLevel warn', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf')
     assert result.get_active_setting('LogLevel1') is None
+
+
+def test_active_httpd_nest_2():
+    httpd1 = HttpdConf(context_wrap(HTTPD_CONF_NEST_3, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = HttpdConf(context_wrap(HTTPD_CONF_NEST_4, path='/etc/httpd/conf.d/00-z.conf'))
+    result = HttpdConfAll([httpd1, httpd2])
+    testphp_im = result.get_setting_list('Testphp', 'IfModule')
+    assert {('IfModule', '!php5_module'): [
+            ('php5_v3_1', 'Testphp php5_v3_1', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ('php5_v3_2', 'Testphp php5_v3_2', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php4_module'): [
+            ('php4_v3_1', 'Testphp php4_v3_1', 'IfModule', '!php4_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php5_module'): [
+            ('php5_v4_1', 'Testphp php5_v4_1', 'IfModule', '!php5_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ('php5_v4_2', 'Testphp php5_v4_2', 'IfModule', '!php5_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php4_module'): [
+            ('php4_v4_1', 'Testphp php4_v4_1', 'IfModule', '!php4_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php5_module'): [
+            ('php5_3_a', 'Testphp php5_3_a', 'IfModule', '!php5_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ('php5_4_b', 'Testphp php5_4_b', 'IfModule', '!php5_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
+    assert {('IfModule', '!php4_module'): [
+            ('php4_3_a', 'Testphp php4_3_a', 'IfModule', '!php4_module', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ('php4_4_b', 'Testphp php4_4_b', 'IfModule', '!php4_module', '00-z.conf', '/etc/httpd/conf.d/00-z.conf')
+            ]} in testphp_im
 
 
 def test_active_httpd():

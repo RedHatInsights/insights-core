@@ -1,6 +1,7 @@
 """
 Rules for data collection
 """
+from __future__ import absolute_import
 import hashlib
 import json
 import logging
@@ -12,8 +13,8 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
-from constants import InsightsConstants as constants
-from config import CONFIG as config
+from .constants import InsightsConstants as constants
+from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class InsightsConfig(object):
         self.base_url = protocol + config['base_url']
         self.collection_rules_url = config['collection_rules_url']
         if self.collection_rules_url is None:
-            self.collection_rules_url = self.base_url + '/v1/static/uploader.json'
+            self.collection_rules_url = self.base_url + '/v1/static/uploader.v2.json'
         self.gpg = config['gpg']
         self.conn = conn
 

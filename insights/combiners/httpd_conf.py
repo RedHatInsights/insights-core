@@ -192,8 +192,7 @@ class HttpdConfAll(object):
                         val = v.get(dr)
                         if val:
                             result.append({d: val})
-                    else:
-                        result.extend(_deep_search(v, dr, sc))
+                    result.extend(_deep_search(v, dr, sc))
             return result
 
         if section:
@@ -202,7 +201,7 @@ class HttpdConfAll(object):
             elif isinstance(section, tuple) and len(section) == 1:
                 section = (section[0], '')
             elif (not isinstance(section, tuple) or
-                     (len(section) == 0 or len(section) > 2)):
+                    (len(section) == 0 or len(section) > 2)):
                 return []
             return _deep_search(self.data, directive, section)
 
@@ -228,7 +227,7 @@ class HttpdConfAll(object):
                 ParsedData, in order how they are parsed.
                 If directive or section does not exist, returns empty list.
 
-                When `sectoin` is None, returns the named tuple ParsedData of
+                When `section` is None, returns the named tuple ParsedData of
                 the directive directly.
                 If directive or section does not exist, returns None.
 
@@ -239,7 +238,7 @@ class HttpdConfAll(object):
                 for i, val in enumerate(values_list):
                     # From each section, preserve only the last ParsedData
                     # {(section, ""): [ParsedData, ParsedData]} ---> ParsedData
-                    values_list[i] = val.values()[0][-1]
+                    values_list[i] = list(val.values())[0][-1]
                 return values_list
             return []
         else:

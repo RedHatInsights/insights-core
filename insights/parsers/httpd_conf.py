@@ -62,10 +62,10 @@ Examples:
     'auth_digest_module modules/mod_auth_digest.so'
     >>> httpd_conf['Directory', '/']['Options'][-1].value
     'FollowSymLinks'
-    >>> type(httpd_conf[('IfModule','prefork.c')])
-    <type 'dict'>
+    >>> type(httpd_conf[('IfModule','prefork.c')]) == type({})
+    True
     >>> httpd_conf[('IfModule','mod_mime_magic.c')]
-    {'MIMEMagicFile': [ParsedData(value='conf/magic', line='MIMEMagicFile conf/magic', section='IfModule', section_name='mod_mime_magic.c', file_name='path', file_path='path')]}
+    {'MIMEMagicFile': [ParsedData(value='conf/magic', line='MIMEMagicFile conf/magic', section='IfModule', section_name='mod_mime_magic.c', file_name='path', file_path='/path')]}
     >>> httpd_conf[('IfModule','prefork.c')]['StartServers'][0].value
     '8'
     >>> 'ThreadsPerChild' in httpd_conf[('IfModule','prefork.c')]
@@ -77,6 +77,7 @@ Examples:
 from collections import namedtuple
 
 import re
+from copy import deepcopy
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
@@ -202,6 +203,6 @@ def dict_deep_merge(tgt, src):
             if isinstance(tgt[k], dict) and isinstance(v, dict):
                 dict_deep_merge(tgt[k], v)
             else:
-                tgt[k].extend(v)
+                tgt[k].extend(deepcopy(v))
         else:
-            tgt[k] = v
+            tgt[k] = deepcopy(v)

@@ -14,6 +14,6 @@ def test_attribute_dict():
     assert 'uid' in d_obj
     assert d_obj.get('mode', None) == '0400'
     assert d_obj.get('xmode', None) is None
-    for d, v in d_obj:
+    for d, v in d_obj.items():
         if d.startswith('nod'):
             assert v is True
