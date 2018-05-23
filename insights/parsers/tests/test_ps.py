@@ -16,11 +16,25 @@ PsAuxww_TEST_DOC = """
  root     20457  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /bin/bash
 """
 
+PsEf_TEST_DOC = """
+UID         PID   PPID  C STIME TTY          TIME CMD
+root          1      0  0 03:53 ?        00:00:06 /usr/lib/systemd/systemd --system --deserialize 15
+root          2      0  0 03:53 ?        00:00:00 [kthreadd]
+root       1803      1  5 03:54 ?        00:55:22 /usr/bin/openshift start master --config=/etc/origin/master/master-config.yaml --loglevel
+root       1969      1  3 03:54 ?        00:33:51 /usr/bin/openshift start node --config=/etc/origin/node/node-config.yaml --loglevel=2
+root       1995      1  0 03:54 ?        00:02:06 /usr/libexec/docker/rhel-push-plugin
+root       2078   1969  0 03:54 ?        00:00:00 journalctl -k -f
+root       7201      1  0 03:59 ?        00:00:00 /usr/bin/python /usr/libexec/rhsmd
+root     111434      1  0 22:32 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
+"""
+
 
 def test_doc_examples():
     env = {
-            'PsAuxww': ps.PsAuxww,
-            'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC))
+            'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
+            'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
+            'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
           }
     failed, total = doctest.testmod(ps, globs=env)
     # XXX: these tests depend on the order of sets and dictionaries

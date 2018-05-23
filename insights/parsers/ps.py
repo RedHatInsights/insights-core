@@ -1,6 +1,6 @@
 """
-PsAuxww - command ``ps auxww``
-==============================
+Ps - command ``ps auxww`` and others
+====================================
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
@@ -80,7 +80,8 @@ class PsTemplate(Parser):
                 del proc[raw_line_key]
         else:
             raise ParseException(
-                "PsAuxww: Cannot find ps header line in output"
+                "{0}: Cannot find ps header line in output".format(
+                    self.__class__.__name__)
             )
 
     def __contains__(self, proc):
@@ -142,13 +143,13 @@ class PsTemplate(Parser):
             search criteria.
 
         Examples:
-            >>> PsTemplate.search(COMMAND__contains='bash')
+            >>> ps.search(COMMAND__contains='bash')
             [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}, {'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
-            >>> PsTemplate.search(USER='root', COMMAND__contains='bash')
+            >>> ps.search(USER='root', COMMAND__contains='bash')
             [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
-            >>> PsTemplate.search(TTY='pts/3')
+            >>> ps.search(TTY='pts/3')
             [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}]
-            >>> PsTemplate.search(STAT__contains='Z')
+            >>> ps.search(STAT__contains='Z')
             [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29', 'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}]
         """
         return keyword_search(self.data, **kwargs)
@@ -236,9 +237,9 @@ class PsEf(PsTemplate):
 
     Examples:
         >>> type(ps_ef)
-        <class 'insights.parsers.ps.PsAuxww'>
+        <class 'insights.parsers.ps.PsEf'>
         >>> ps_ef.parent_pid("111435")
-        ["111434", "nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf"]
+        ['111434', 'nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf']
         >>> ps_ef.users('nginx: worker process')
         {'nginx': ['111435']}
         >>> ps_ef.fuzzy_match('kthreadd')
