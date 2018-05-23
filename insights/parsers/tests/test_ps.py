@@ -117,6 +117,7 @@ def test_ps_ef_from_ef():
     assert 'sshd' not in p
     assert not p.fuzzy_match("sshd")
     assert p.running_pids() == ['1', '2', '1803', '1969', '1995', '2078', '7201', '111434', '111435']
+    assert p.users("nginx: worker process") == {'nginx': ['111435']}
 
 
 PsAuxcww_TEST = """

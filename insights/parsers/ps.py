@@ -3,54 +3,6 @@ PsAuxww - command ``ps auxww``
 ==============================
 
 This module provides processing for the various outputs of the ``ps`` command.
-
-Class ``PsAuxww`` parses the output of the ``ps auxww`` command.  A small
-sample of the output of this command looks like::
-
-    USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-    root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-    root      1661  0.0  0.0 126252  1392 ?        Ss   May31   0:04 /usr/sbin/crond -n
-    root      1691  0.0  0.0  42688   172 ?        Ss   May31   0:00 /usr/sbin/rpc.mountd
-    root      1821  0.0  0.0      0     0 ?        Z    May31   0:29 [kondemand/0]
-    root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 /usr/sbin/irqbalance --foreground
-    user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 /bin/bash
-    root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /usr/sbin/dhclient enp0s25
-    root     20457  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /bin/bash
-
-PsAuxww attempts to read the output of ``ps auxwww``, ``ps aux``, and ``ps
-auxcww`` commands from archives.
-
-Examples:
-    >>> type(ps_auxww)
-    <class 'insights.parsers.ps.PsAuxww'>
-    >>> ps_auxww.running
-    set(['/bin/bash', '/usr/sbin/rpc.mountd', '/usr/lib/systemd/systemd --switched-root --system --deserialize 22', '/usr/sbin/irqbalance --foreground', '/usr/sbin/dhclient enp0s25', '[kondemand/0]', '/usr/sbin/crond -n'])
-    >>> ps_auxww.cpu_usage('[kondemand/0]')
-    '0.0'
-    >>> ps_auxww.users('/bin/bash')
-    {'root': ['20457'], 'user1': ['20160']}
-    >>> ps_auxww.fuzzy_match('dhclient')
-    True
-    >>> ps_auxww.fuzzy_match('qemu')
-    False
-    >>> 'dhclient' in ps_auxww # strict match - exact command
-    False
-    >>> 'bash' in ps_auxww
-    False
-    >>> 'dhclient' in ps_auxww.cmd_names  # Just the command names but must match full command
-    True
-    >>> 'bash' in ps_auxww.cmd_names
-    True
-    >>> ps_auxww.data[3]
-    {'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29', 'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}
-    >>> ps_auxww.services[3]
-    ('[kondemand/0]', 'root', 'root      1821  0.0  0.0      0     0 ?        Z    May31   0:29 [kondemand/0]')
-    >>> ps_auxww.data[-1]['START']
-    '10:09'
-    >>> ps_auxww.search(STAT__contains='l')
-    []
-    >>> sum(int(p['VSZ']) for p in ps_auxww)
-    333252
 """
 from .. import Parser, parser
 from . import ParseException, parse_delimited_table, keyword_search
@@ -80,17 +32,17 @@ class PsTemplate(Parser):
     """
     command_name = "COMMAND_TEMPLATE"
     '''
-    ```command_name``` is the name of the last column from the header of ps output,
+    ``command_name`` is the name of the last column from the header of ps output,
     the subclass must override it correspondingly
     '''
     user_name = "USER_TEMPLATE"
     '''
-    ```user_name``` is the name of the first column from the header of ps output,
+    ``user_name`` is the name of the first column from the header of ps output,
     the subclass must override it correspondingly
     '''
     max_splits = 0
     '''
-    ```max_splits``` is the split number for the columns from the ps output,
+    ``max_splits`` is the split number for the columns from the ps output,
     the subclass must override it correspondingly
     '''
 
@@ -208,7 +160,35 @@ add_filter(Specs.ps_auxww, "COMMAND")
 @parser(Specs.ps_auxww)
 class PsAuxww(PsTemplate):
     """
-    Class to parse ``ps auxww`` command output.
+    Class ``PsAuxww`` parses the output of the ``ps auxww`` command.  A small
+    sample of the output of this command looks like::
+
+        USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+        root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+        root      1661  0.0  0.0 126252  1392 ?        Ss   May31   0:04 /usr/sbin/crond -n
+        root      1691  0.0  0.0  42688   172 ?        Ss   May31   0:00 /usr/sbin/rpc.mountd
+        root      1821  0.0  0.0      0     0 ?        Z    May31   0:29 [kondemand/0]
+        root      1864  0.0  0.0  18244   668 ?        Ss   May31   0:05 /usr/sbin/irqbalance --foreground
+        user1    20160  0.0  0.0 108472  1896 pts/3    Ss   10:09   0:00 /bin/bash
+        root     20357  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /usr/sbin/dhclient enp0s25
+        root     20457  0.0  0.0   9120   832 ?        Ss   10:09   0:00 /bin/bash
+
+    PsAuxww attempts to read the output of ``ps auxwww``, ``ps aux``, and ``ps
+    auxcww`` commands from archives.
+
+    Examples:
+        >>> type(ps_auxww)
+        <class 'insights.parsers.ps.PsAuxww'>
+        >>> ps_auxww.running
+        set(['/bin/bash', '/usr/sbin/rpc.mountd', '/usr/lib/systemd/systemd --switched-root --system --deserialize 22', '/usr/sbin/irqbalance --foreground', '/usr/sbin/dhclient enp0s25', '[kondemand/0]', '/usr/sbin/crond -n'])
+        >>> ps_auxww.cpu_usage('[kondemand/0]')
+        '0.0'
+        >>> ps_auxww.users('/bin/bash')
+        {'root': ['20457'], 'user1': ['20160']}
+        >>> ps_auxww.fuzzy_match('dhclient')
+        True
+        >>> sum(int(p['VSZ']) for p in ps_auxww)
+        333252
     """
     command_name = "COMMAND"
     user_name = "USER"
@@ -238,7 +218,31 @@ add_filter(Specs.ps_ef, "CMD")
 @parser(Specs.ps_ef)
 class PsEf(PsTemplate):
     """
-    Class to parse ``ps ef`` command output.
+    Class ``PsEf`` parses the output of the ``ps -ef`` command.  A small
+    sample of the output of this command looks like::
+
+        UID         PID   PPID  C STIME TTY          TIME CMD
+        root          1      0  0 03:53 ?        00:00:06 /usr/lib/systemd/systemd --system --deserialize 15
+        root          2      0  0 03:53 ?        00:00:00 [kthreadd]
+        root       1803      1  5 03:54 ?        00:55:22 /usr/bin/openshift start master --config=/etc/origin/master/master-config.yaml --loglevel
+        root       1969      1  3 03:54 ?        00:33:51 /usr/bin/openshift start node --config=/etc/origin/node/node-config.yaml --loglevel=2
+        root       1995      1  0 03:54 ?        00:02:06 /usr/libexec/docker/rhel-push-plugin
+        root       2078   1969  0 03:54 ?        00:00:00 journalctl -k -f
+        root       7201      1  0 03:59 ?        00:00:00 /usr/bin/python /usr/libexec/rhsmd
+        root     111434      1  0 22:32 ?        00:00:00 nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf
+        nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
+
+    PsEf attempts to read the output of ``ps -ef`` commands from archives.
+
+    Examples:
+        >>> type(ps_ef)
+        <class 'insights.parsers.ps.PsAuxww'>
+        >>> ps_ef.parent_pid("111435")
+        ["111434", "nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf"]
+        >>> ps_ef.users('nginx: worker process')
+        {'nginx': ['111435']}
+        >>> ps_ef.fuzzy_match('kthreadd')
+        True
     """
     command_name = "CMD"
     user_name = "UID"
