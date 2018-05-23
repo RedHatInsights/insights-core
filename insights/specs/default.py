@@ -522,6 +522,7 @@ class DefaultSpecs(Specs):
     smbstatus_S = simple_command("/usr/bin/smbstatus -S")
     smartctl = foreach_execute(block, "/sbin/smartctl -a %s", keep_rc=True)
     softnet_stat = simple_file("proc/net/softnet_stat")
+    software_collections_list = simple_command('/usr/bin/scl --list')
     spfile_ora = glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
     ss = simple_command("/usr/sbin/ss -tulpn")
     ssh_config = simple_file("/etc/ssh/ssh_config")
