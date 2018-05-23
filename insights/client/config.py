@@ -2,13 +2,15 @@ from __future__ import absolute_import
 import os
 import logging
 import optparse
-# import six
-# from six.moves import configparser as ConfigParser
+import copy
+import six
+from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
+APP_NAME = constants.app_name
 DEFAULT_OPTS = {
     'analyze_container': {
         'default': False,
@@ -65,7 +67,7 @@ DEFAULT_OPTS = {
     'cert_verify': {
         # non-CLI
         'default': os.path.join(
-            # constants.default_conf_dir,
+            constants.default_conf_dir,
             'cert-api.access.redhat.com.pem'),
     },
     'collection_rules_url': {
@@ -79,7 +81,7 @@ DEFAULT_OPTS = {
         'action': 'store_true'
     },
     'conf': {
-        'default': '',  # constants.default_conf_file,
+        'default': constants.default_conf_file,
         'opt': ['--conf', '-c'],
         'help': 'Pass a custom config file',
         'action': 'store'
@@ -333,6 +335,9 @@ DEFAULT_OPTS = {
     }
 }
 
+DEFAULT_KVS = {k: v['default'] for k, v in DEFAULT_OPTS.iteritems()}
+DEFAULT_BOOLS = [k for k, v in DEFAULT_KVS.iteritems() if type(v) is bool]
+
 
 class InsightsConfig(object):
     '''
@@ -340,10 +345,8 @@ class InsightsConfig(object):
     '''
 
     def __init__(self, *args, **kwargs):
-        import copy
         self._init_attrs = copy.copy(dir(self))
-        self._update_dict(
-            {k: v['default'] for k, v in DEFAULT_OPTS.iteritems()})
+        self._update_dict(DEFAULT_KVS)
         self._update_dict(args[0])
         self._update_dict(kwargs)
 
@@ -388,6 +391,10 @@ class InsightsConfig(object):
         self._update_dict(insights_env_opts)
 
     def load_command_line(self):
+        '''
+        Load config from command line switches.
+        NOTE: Not all config is available on the command line.
+        '''
         parser = optparse.OptionParser()
         debug_grp = optparse.OptionGroup(parser, "Debug options")
         cli_options = {k: v for k, v in DEFAULT_OPTS.iteritems() if (
@@ -405,22 +412,52 @@ class InsightsConfig(object):
         self._update_dict(vars(options))
 
     def load_config_file(self, fname=None):
-        pass
+        '''
+        Load config from config file. If fname is not specified,
+        config is loaded from the file named by InsightsConfig.conf
+        '''
+        parsedconfig = ConfigParser.RawConfigParser(DEFAULT_KVS)
+        try:
+            parsedconfig.read(fname or self.conf)
+        except ConfigParser.Error:
+            logger.error(
+                'ERROR: Could not read configuration file, using defaults')
+        try:
+            # Try to add the insights-client section
+            parsedconfig.add_section(APP_NAME)
+            # Try to add the redhat_access_insights section for back compat
+            parsedconfig.add_section('redhat_access_insights')
+        except ConfigParser.Error:
+            pass
+        d = dict(parsedconfig.items(APP_NAME))
+        for key in d:
+            if key in DEFAULT_BOOLS and type(d[key]) in six.string_types:
+                d[key] = parsedconfig.getboolean(APP_NAME, key)
+        self._update_dict(d)
 
     def _validate_options(self):
         '''
-        Make sure there are no conflicting options
+        Make sure there are no conflicting or invalid options
         '''
-        pass
+        if self.obfuscate_hostname and not self.obfuscate:
+            raise ValueError(
+                'Option `obfuscate_hostname` requires `obfuscate`')
+        if self.analyze_image_id is not None and len(self.analyze_image_id < 12):
+            raise ValueError(
+                'Image/Container ID must be at least twelve characters long.')
+        if self.from_stdin and self.from_file:
+            raise ValueError('Can\'t use both --from-stdin and --from-file.')
 
     def _imply_options(self):
         '''
         Some options enable others automatically
         '''
-        pass
+        self.no_upload = self.no_upload or self.to_stdout or self.offline
+        self.auto_update = self.auto_update or self.offline
+        self.analyze_container = self.analyze_file or self.analyze_mountpoint
+        self.to_json = self.analyze_container and not self.to_stdout
 
 
 if __name__ == '__main__':
     config = InsightsConfig({'username': 'fezzan'})
-    config.load_command_line()
     print(config)
