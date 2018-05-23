@@ -170,6 +170,7 @@ class InsightsArchiveSpecs(Specs):
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
     subscription_manager_list_consumed = simple_file('insights_commands/subscription-manager_list_--consumed')
     subscription_manager_list_installed = simple_file('insights_commands/subscription-manager_list_--installed')
+    subscription_manager_repos_list_enabled = simple_file('insights_commands/subscription-manager_repos_--list-enabled')
     sysctl = simple_file("insights_commands/sysctl_-a")
     sysctl_conf_initramfs = simple_file("insights_commands/lsinitrd_.boot.initramfs-_kdump.img_-f_.etc.sysctl.conf_.etc.sysctl.d._.conf")
     systemctl_cinder_volume = simple_file("insights_commands/systemctl_show_openstack-cinder-volume")
