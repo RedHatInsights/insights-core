@@ -10,7 +10,7 @@ from insights.specs import Specs
 from insights.core.filters import add_filter
 
 
-class PsTemplate(Parser):
+class Ps(Parser):
     """
     Template Class to parse ``ps`` command output.
 
@@ -51,7 +51,7 @@ class PsTemplate(Parser):
         self.running = set()
         self.cmd_names = set()
         self.services = []
-        super(PsTemplate, self).__init__(*args, **kwargs)
+        super(Ps, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         raw_line_key = "_line"
@@ -159,7 +159,7 @@ add_filter(Specs.ps_auxww, "COMMAND")
 
 
 @parser(Specs.ps_auxww)
-class PsAuxww(PsTemplate):
+class PsAuxww(Ps):
     """
     Class ``PsAuxww`` parses the output of the ``ps auxww`` command.  A small
     sample of the output of this command looks like::
@@ -217,7 +217,7 @@ add_filter(Specs.ps_ef, "CMD")
 
 
 @parser(Specs.ps_ef)
-class PsEf(PsTemplate):
+class PsEf(Ps):
     """
     Class ``PsEf`` parses the output of the ``ps -ef`` command.  A small
     sample of the output of this command looks like::
