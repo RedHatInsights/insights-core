@@ -254,7 +254,7 @@ class PsEf(PsTemplate):
         the parent pid.
 
         Returns:
-            str: The parent pid corresponding to ``pid`` in command or
+            list: First one is the parent pid corresponding to ``pid`` in command and second one is parent command name.
             ``None`` if ``proc`` is not found.
         """
         for row in self.data:
