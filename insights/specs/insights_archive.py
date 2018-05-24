@@ -148,6 +148,7 @@ class InsightsArchiveSpecs(Specs):
     ps_aux = simple_file("insights_commands/ps_aux")
     ps_auxcww = simple_file("insights_commands/ps_auxcww")
     ps_auxww = simple_file("insights_commands/ps_auxww")
+    ps_ef = simple_file("insights_commands/ps_-ef")
     pvs = simple_file("insights_commands/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_count_--config_global_locking_type_0")
     pvs_noheadings = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0")
     pvs_noheadings_all = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0_devices_filter_a")
