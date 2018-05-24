@@ -355,6 +355,7 @@ class DefaultSpecs(Specs):
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
+    mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
                           "/var/log/mysql.log",
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
@@ -522,6 +523,7 @@ class DefaultSpecs(Specs):
     smbstatus_S = simple_command("/usr/bin/smbstatus -S")
     smartctl = foreach_execute(block, "/sbin/smartctl -a %s", keep_rc=True)
     softnet_stat = simple_file("proc/net/softnet_stat")
+    software_collections_list = simple_command('/usr/bin/scl --list')
     spfile_ora = glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
     ss = simple_command("/usr/sbin/ss -tulpn")
     ssh_config = simple_file("/etc/ssh/ssh_config")
@@ -544,6 +546,7 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_conf_initramfs = simple_command("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
+    systemctl_httpd = simple_command("/bin/systemctl show httpd")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_mariadb = simple_command("/bin/systemctl show mariadb")
