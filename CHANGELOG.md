@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.18-371](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.18-371) (2018-05-24)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.17-362...insights-core-3.0.18-371)
+
+**Fixed bugs:**
+
+- httpd\_conf parser and combiner cannot handle directives in nest and parallel sections correct [\#1175](https://github.com/RedHatInsights/insights-core/issues/1175)
+
 ## [insights-core-3.0.17-362](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.17-362) (2018-05-21)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.16-355...insights-core-3.0.17-362)
 
