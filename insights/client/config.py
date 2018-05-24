@@ -9,7 +9,9 @@ from six.moves import configparser as ConfigParser
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
-
+CONFIG = {}
+def compile_config():
+    pass
 APP_NAME = constants.app_name
 DEFAULT_OPTS = {
     'analyze_container': {
@@ -347,15 +349,16 @@ class InsightsConfig(object):
     def __init__(self, *args, **kwargs):
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
-        self._update_dict(args[0])
+        if args:
+            self._update_dict(args[0])
         self._update_dict(kwargs)
 
     def __str__(self):
         _str = ''
         for key in dir(self):
             val = getattr(self, key)
-            if not key.startswith('_'):
-                # ignore built-in/private stuff
+            if not key.startswith('_') and key not in self._init_attrs:
+                # ignore built-ins and functions
                 _str += key + ': ' + str(val) + '\n'
         return _str
 
@@ -366,9 +369,15 @@ class InsightsConfig(object):
         dict_ = {k: v for k, v in dict_.iteritems() if (
                     k not in self._init_attrs)}
 
+        # zzz
+        if 'no_gpg' in dict_ and dict_['no_gpg']:
+            dict_['gpg'] = False
+
         if set(dict_.keys()).difference(set(DEFAULT_OPTS.keys())):
             raise ValueError
         self.__dict__.update(dict_)
+        self._imply_options()
+        self._validate_options()
 
     def load_env(self):
         '''
@@ -435,6 +444,14 @@ class InsightsConfig(object):
                 d[key] = parsedconfig.getboolean(APP_NAME, key)
         self._update_dict(d)
 
+    def load_all(self):
+        '''
+        Helper function for actual Insights client use
+        '''
+        self.load_env()
+        self.load_command_line()
+        self.load_config_file()
+
     def _validate_options(self):
         '''
         Make sure there are no conflicting or invalid options
@@ -447,6 +464,12 @@ class InsightsConfig(object):
                 'Image/Container ID must be at least twelve characters long.')
         if self.from_stdin and self.from_file:
             raise ValueError('Can\'t use both --from-stdin and --from-file.')
+        if self.enable_schedule and self.disable_schedule:
+            raise ValueError(
+                'Conflicting options: --enable-schedule and --disable-schedule')
+        if self.analyze_container and (self.register or self.unregister):
+            raise ValueError('Registration not supported with '
+                             'image or container analysis.')
 
     def _imply_options(self):
         '''
@@ -454,10 +477,13 @@ class InsightsConfig(object):
         '''
         self.no_upload = self.no_upload or self.to_stdout or self.offline
         self.auto_update = self.auto_update or self.offline
-        self.analyze_container = self.analyze_file or self.analyze_mountpoint
+        self.analyze_container = (self.analyze_file or
+                                  self.analyze_mountpoint or
+                                  self.analyze_image_id)
         self.to_json = self.analyze_container and not self.to_stdout
 
 
 if __name__ == '__main__':
     config = InsightsConfig({'username': 'fezzan'})
+    config.load_config_file(fname='/Users/jcrafts/projects/insights-core/conf.conf')
     print(config)
