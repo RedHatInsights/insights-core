@@ -8,7 +8,7 @@ from insights.core.hydration import create_context
 from insights.specs import Specs
 
 
-MACHINE_IDS = itertools.count()
+ID_GENERATOR = itertools.count()
 
 
 class ClusterMeta(object):
@@ -22,7 +22,7 @@ def machine_id(mid, hn):
     ds = mid or hn
     if ds:
         return ds.content[0].strip()
-    return str(next(MACHINE_IDS))
+    return str(next(ID_GENERATOR))
 
 
 def attach_machine_id(result, mid):
@@ -44,14 +44,12 @@ def process_archives(archives):
             yield dr.run(broker=broker)
 
 
-def extract_cluster_facts(brokers):
+def extract_facts(brokers):
     results = defaultdict(list)
     for b in brokers:
         mid = b[machine_id]
-        for k in b.instances:
-            if not plugins.is_type(k, plugins.cluster_fact):
-                continue
-            r = attach_machine_id(b[k], mid)
+        for k, v in b.get_by_type(plugins.fact).items():
+            r = attach_machine_id(v, mid)
             if isinstance(r, list):
                 results[k].extend(r)
             else:
@@ -59,7 +57,7 @@ def extract_cluster_facts(brokers):
     return results
 
 
-def process_cluster_facts(facts, meta, use_pandas=False):
+def process_facts(facts, meta, use_pandas=False):
     if use_pandas:
         import pandas as pd
 
@@ -72,6 +70,6 @@ def process_cluster_facts(facts, meta, use_pandas=False):
 
 def process_cluster(archives, use_pandas=False):
     brokers = process_archives(archives)
-    facts = extract_cluster_facts(brokers)
+    facts = extract_facts(brokers)
     meta = ClusterMeta(len(archives))
-    return process_cluster_facts(facts, meta, use_pandas=use_pandas)
+    return process_facts(facts, meta, use_pandas=use_pandas)
