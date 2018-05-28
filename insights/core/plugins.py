@@ -125,7 +125,7 @@ class StdTypes(dr.TypeSet):
     incident = dr.new_component_type()
     """ A component used by rules that allows automated statistical analysis."""
 
-    cluster_fact = dr.new_component_type()
+    fact = dr.new_component_type()
 
     cluster_rule = make_rule_type(group=dr.GROUPS.cluster)
 
@@ -134,7 +134,7 @@ combiner = StdTypes.combiner
 rule = StdTypes.rule
 condition = StdTypes.condition
 incident = StdTypes.incident
-cluster_fact = StdTypes.cluster_fact
+fact = StdTypes.fact
 cluster_rule = StdTypes.cluster_rule
 
 

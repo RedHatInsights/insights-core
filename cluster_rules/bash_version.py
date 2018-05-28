@@ -2,17 +2,17 @@
 from insights import run
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.combiners.hostname import hostname
-from insights.core.plugins import cluster_fact, cluster_rule
+from insights.core.plugins import fact, cluster_rule
 
 
-@cluster_fact(InstalledRpms)
+@fact(InstalledRpms)
 def bash_version(rpms):
     rpm = rpms.get_max("bash")
     return {"name": rpm.name, "version": rpm.nvr}
 
 
 # bet there'll be a bunch of these
-@cluster_fact(hostname)
+@fact(hostname)
 def get_hostname(hn):
     return {"hostname": hn.fqdn}
 

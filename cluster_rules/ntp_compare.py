@@ -1,11 +1,11 @@
 from insights import make_response
 from insights.specs import Specs
 from insights.core.cluster import ClusterMeta
-from insights.core.plugins import cluster_fact, cluster_rule
+from insights.core.plugins import fact, cluster_rule
 from insights.util.fs import sha256
 
 
-@cluster_fact(Specs.ntp_conf)
+@fact(Specs.ntp_conf)
 def ntp_sha256(ntp):
     return {"sha": sha256(ntp.path)}
 
