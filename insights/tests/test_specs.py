@@ -62,7 +62,7 @@ def test_spec_factory():
     assert dostuff in broker, broker.tracebacks
     assert broker[Stuff.smpl_file].content == file_content
     assert not any(l.endswith("\n") for l in broker[Stuff.smpl_file].content)
-    assert b"hello" in broker[Stuff.smpl_cmd_list_of_lists].content[0]
+    assert "hello" in broker[Stuff.smpl_cmd_list_of_lists].content[0]
     assert len(broker[Stuff.smpl_cmd_list_of_lists].content) == 1
 
 
@@ -74,8 +74,8 @@ def test_line_terminators():
     broker = dr.run(dr.get_dependency_graph(dostuff), broker)
 
     content = broker[Stuff.smpl_file].content
-    assert all(b"def test" in l for l in content), content
-    assert not any(l.endswith(b"\n") for l in content)
+    assert all("def test" in l for l in content), content
+    assert not any(l.endswith("\n") for l in content)
 
 
 def test_glob_max(max_globs):
