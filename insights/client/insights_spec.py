@@ -9,7 +9,6 @@ from tempfile import NamedTemporaryFile
 from insights.util import mangle
 
 from .constants import InsightsConstants as constants
-from .config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +17,8 @@ class InsightsSpec(object):
     '''
     A spec loaded from the uploader.json
     '''
-    def __init__(self, spec, exclude):
+    def __init__(self, config, spec, exclude):
+        self.config = config
         # exclusions patterns for this spec
         self.exclude = exclude
         # pattern for spec collection
@@ -29,8 +29,8 @@ class InsightsCommand(InsightsSpec):
     '''
     A command spec
     '''
-    def __init__(self, spec, exclude, mountpoint):
-        InsightsSpec.__init__(self, spec, exclude)
+    def __init__(self, config, spec, exclude, mountpoint):
+        InsightsSpec.__init__(self, config, spec, exclude)
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
         self.archive_path = mangle.mangle_command(self.command)
@@ -44,14 +44,8 @@ class InsightsCommand(InsightsSpec):
         the requested command is executable. Returns (returncode, stdout, 0)
         '''
         # all commands should timeout after a long interval so the client does not hang
-        # get the command timeout interval
-        if 'cmd_timeout' in config:
-            timeout_interval = config['cmd_timeout']
-        else:
-            timeout_interval = constants.default_cmd_timeout
-
         # prepend native nix 'timeout' implementation
-        timeout_command = 'timeout %s %s' % (timeout_interval, self.command)
+        timeout_command = 'timeout %s %s' % (self.config.timeout_interval, self.command)
 
         # ensure consistent locale for collected command output
         cmd_env = {'LC_ALL': 'C'}
@@ -137,7 +131,7 @@ class InsightsFile(InsightsSpec):
     A file spec
     '''
     def __init__(self, spec, exclude, mountpoint):
-        InsightsSpec.__init__(self, spec, exclude)
+        InsightsSpec.__init__(self, None, spec, exclude)
         # substitute mountpoint for collection
         self.real_path = os.path.join(mountpoint, spec['file'].lstrip('/'))
         self.archive_path = spec['file']

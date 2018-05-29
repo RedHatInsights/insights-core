@@ -5,7 +5,6 @@ from __future__ import absolute_import
 import os
 import logging
 
-from .config import CONFIG as config
 from .constants import InsightsConstants as constants
 from .utilities import run_command_get_output
 
@@ -13,16 +12,16 @@ APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def cron_source():
+def cron_source(config):
     extension = '-container' if config['analyze_container'] else ''
     return '/etc/%s/%s%s.cron' % (APP_NAME, APP_NAME, extension)
 
 
 class InsightsSchedulerCron(object):
 
-    def __init__(self, source=None, target='/etc/cron.daily/' + APP_NAME):
+    def __init__(self, config, source=None, target='/etc/cron.daily/' + APP_NAME):
         self.target = target
-        self.source = source if source else cron_source()
+        self.source = source if source else cron_source(config)
 
     @property
     def active(self):
@@ -92,8 +91,8 @@ class InsightsSchedulerSystemd(object):
             return False
 
 
-def get_scheduler(source=None, target='/etc/cron.daily/' + APP_NAME):
-    source = source if source else cron_source()
+def get_scheduler(config, source=None, target='/etc/cron.daily/' + APP_NAME):
+    source = source if source else cron_source(config)
     if os.path.exists(source):
         return InsightsSchedulerCron(source, target)
     else:

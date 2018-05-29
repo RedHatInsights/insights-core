@@ -9,7 +9,6 @@ from subprocess import Popen, PIPE
 from .. import package_info
 from . import client
 from .constants import InsightsConstants as constants
-from .config import CONFIG as config, compile_config
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
@@ -17,22 +16,11 @@ net_logger = logging.getLogger("network")
 
 class InsightsClient(object):
 
-    def __init__(self, read_config=True, setup_logging=True, **kwargs):
+    def __init__(self, config, setup_logging=True, **kwargs):
         """
-            Arguments:
-                read_config: Whether or not to read config files to
-                  determine configuration.  If False, defaults are
-                  assumed and can be overridden programmatically.
+        The Insights client interface
         """
-        if read_config:
-            compile_config()
-
-        invalid_keys = [k for k in kwargs if k not in config]
-        if invalid_keys:
-            raise ValueError("Invalid argument(s): %s" % invalid_keys)
-
-        for key, value in kwargs.items():
-            config[key] = value
+        self.config = config
 
         # set up logging
         if setup_logging:
@@ -44,7 +32,7 @@ class InsightsClient(object):
         self.connection = None
 
     def set_up_logging(self):
-        return client.set_up_logging()
+        return client.set_up_logging(self.config)
 
     def version(self):
         return "%s-%s" % (package_info["VERSION"], package_info["RELEASE"])
@@ -78,7 +66,7 @@ class InsightsClient(object):
         logger.debug("Beginning core fetch.")
 
         # run fetch for egg
-        updated = self._fetch(config['egg_path'],
+        updated = self._fetch(self.config.egg_path,
                               constants.core_etag_file,
                               fetch_results['core'],
                               force)
@@ -87,7 +75,7 @@ class InsightsClient(object):
         if updated:
             logger.debug("New core was fetched.")
             logger.debug("Beginning fetch for core gpg signature.")
-            self._fetch(config['egg_gpg_path'],
+            self._fetch(self.config.egg_gpg_path,
                         constants.core_gpg_sig_etag_file,
                         fetch_results['gpg_sig'],
                         force)
@@ -100,7 +88,7 @@ class InsightsClient(object):
         """
         # setup a request session
         if not self.session:
-            self.connection = client.get_connection()
+            self.connection = client.get_connection(self.config)
             self.session = self.connection.session
 
         url = self.connection.base_url + path
@@ -162,11 +150,11 @@ class InsightsClient(object):
 
     def update(self):
         # dont update if running in offline mode
-        if config['offline']:
+        if self.config.offline:
             logger.debug("Not updating Core. Running in offline mode.")
             return True
 
-        if config['auto_update']:
+        if self.config.auto_update:
             # fetch the new eggs and gpg
             egg_paths = self.fetch()
 
@@ -198,7 +186,7 @@ class InsightsClient(object):
                     'stdout': the_message,
                     'rc': 1,
                     'message': the_message}
-        if config["gpg"] and gpg_key and not os.path.isfile(gpg_key):
+        if self.config.gpg and gpg_key and not os.path.isfile(gpg_key):
             the_message = ("Running in GPG mode but cannot find "
                             "file %s to verify against." % (gpg_key))
             logger.debug(the_message)
@@ -209,7 +197,7 @@ class InsightsClient(object):
                     'message': the_message}
 
         # if we are running in no_gpg or not gpg mode then return true
-        if not config["gpg"]:
+        if not self.config.gpg:
             return {'gpg': True,
                     'stderr': None,
                     'stdout': None,
@@ -248,14 +236,14 @@ class InsightsClient(object):
             return {'success': False, 'message': the_message}
 
         # if running in gpg mode, check for valid sig
-        if config["gpg"] and new_egg_gpg_sig is None:
+        if self.config.gpg and new_egg_gpg_sig is None:
             the_message = "Must provide a valid Core GPG installation path."
             logger.debug(the_message)
             return {'success': False, 'message': the_message}
 
         # debug
         logger.debug("Installing the new Core %s", new_egg)
-        if config["gpg"]:
+        if self.config.gpg:
             logger.debug("Installing the new Core GPG Sig %s", new_egg_gpg_sig)
 
         # Make sure /var/lib/insights exists
@@ -287,47 +275,15 @@ class InsightsClient(object):
         """
             returns (dict): new client rules
         """
-        if config['offline'] or not config['auto_update']:
+        if self.config.offline or not self.config.auto_update:
             logger.debug("Bypassing rule update due to config "
                 "running in offline mode or auto updating turned off.")
         else:
-            return client.update_rules()
+            return client.update_rules(self.config)
 
-    def collect(self, **kwargs):
-        """
-            kwargs: analyze_image_id=UUID,
-                    analyze_file=/path/to/tar,
-                    analyze_mountpoint=/path/to/mountpoint
-            returns (str, json): will return a string path to archive, or json facts
-        """
-        # check if we are scanning a host or scanning one of the following:
-        # image/container running in docker
-        # tar_file
-        # OR a mount point (FS that is already mounted somewhere)
-        if (kwargs.get('analyze_image_id') or
-                kwargs.get('analyze_file') or
-                kwargs.get('analyze_mountpoint')):
-            config['analyze_container'] = True
-            logger.debug('Not scanning host.')
-
-        # setup other scanning cases
-        # scanning images/containers running in docker
-        if kwargs.get('analyze_image_id'):
-            logger.debug('Scanning an image id.')
-            config['analyze_image_id'] = kwargs.get('analyze_image_id')
-
-        # compressed filesystems (tar files)
-        if kwargs.get('analyze_file'):
-            logger.debug('Scanning a tar file.')
-            config['analyze_file'] = kwargs.get('analyze_file')
-
-        # FSs already mounted somewhere
-        if kwargs.get('analyze_mountpoint'):
-            logger.debug('Scanning a mount point.')
-            config['analyze_mountpoint'] = kwargs.get('analyze_mountpoint')
-
+    def collect(self):
         # return collection results
-        tar_file = client.collect()
+        tar_file = client.collect(self.config)
 
         # it is important to note that --to-stdout is utilized via the wrapper RPM
         # this file is received and then we invoke shutil.copyfileobj
@@ -340,9 +296,9 @@ class InsightsClient(object):
                             'response': response from API,
                             'code': http code}
         """
-        config['register'] = True
+        self.config.register = True
         if force_register:
-            config['reregister'] = True
+            self.config.reregister = True
         return client.handle_registration()
 
     def unregister(self):
@@ -372,11 +328,11 @@ class InsightsClient(object):
             returns (int): upload status code
         """
         # do the upload
-        upload_results = client.upload(path)
+        upload_results = client.upload(self.config, path)
         if upload_results:
 
             # delete the archive
-            if config['keep_archive']:
+            if self.config['keep_archive']:
                 logger.info('Insights archive retained in ' + path)
             else:
                 client.delete_archive(path)
@@ -387,7 +343,7 @@ class InsightsClient(object):
                     self.rotate_eggs()
                 except IOError:
                     message = ("Failed to rotate %s to %s" %
-                                (constants.insights_core_newest,
+                               (constants.insights_core_newest,
                                 constants.insights_core_last_stable))
                     logger.debug(message)
                     raise IOError(message)
@@ -454,8 +410,17 @@ class InsightsClient(object):
         """
         return client.delete_archive(path)
 
+    def _is_client_registered(self):
+        return client._is_client_registered(self.config)
 
-def format_config():
+    def try_register(self):
+        return client.try_register(self.config)
+
+    def get_connection(self):
+        return client.get_connection(self.config)
+
+
+def format_config(config):
     # Log config except the password
     # and proxy as it might have a pw as well
     config_copy = config.copy()

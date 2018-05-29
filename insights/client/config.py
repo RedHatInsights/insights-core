@@ -9,10 +9,7 @@ from six.moves import configparser as ConfigParser
 from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
-CONFIG = {}
-def compile_config():
-    pass
-APP_NAME = constants.app_name
+
 DEFAULT_OPTS = {
     'analyze_container': {
         'default': False,
@@ -71,6 +68,10 @@ DEFAULT_OPTS = {
         'default': os.path.join(
             constants.default_conf_dir,
             'cert-api.access.redhat.com.pem'),
+    },
+    'cmd_timeout': {
+        # non-CLI
+        'default': constants.default_cmd_timeout
     },
     'collection_rules_url': {
         # non-CLI
@@ -135,7 +136,8 @@ DEFAULT_OPTS = {
         'opt': ['--no-gpg'],
         'help': optparse.SUPPRESS_HELP,
         'action': 'store_false',
-        'group': 'debug'
+        'group': 'debug',
+        'dest': 'gpg'
     },
     'egg_gpg_path': {
         # non-CLI
@@ -266,9 +268,9 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'debug'
     },
-    # 'systemid': {
-    #     'default': None
-    # },
+    'systemid': {
+        'default': None
+    },
     'test_connection': {
         'default': False,
         'opt': ['--test-connection'],
@@ -338,29 +340,38 @@ DEFAULT_OPTS = {
 }
 
 DEFAULT_KVS = {k: v['default'] for k, v in DEFAULT_OPTS.iteritems()}
-DEFAULT_BOOLS = [k for k, v in DEFAULT_KVS.iteritems() if type(v) is bool]
+DEFAULT_BOOLS = {
+    k: v for k, v in DEFAULT_KVS.iteritems() if type(v) is bool}.keys()
 
 
 class InsightsConfig(object):
     '''
     Insights client configuration
     '''
-
     def __init__(self, *args, **kwargs):
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
+        self._cli_opts = None
 
     def __str__(self):
-        _str = ''
+        _str = '    '
         for key in dir(self):
-            val = getattr(self, key)
-            if not key.startswith('_') and key not in self._init_attrs:
-                # ignore built-ins and functions
-                _str += key + ': ' + str(val) + '\n'
+            if not (key.startswith('_') or
+               key in self._init_attrs or
+               key in ['password', 'proxy']):
+                # ignore built-ins, functions, and sensitive items
+                val = getattr(self, key)
+                _str += key + ': ' + str(val) + '\n    '
         return _str
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
 
     def _update_dict(self, dict_):
         '''
@@ -399,33 +410,44 @@ class InsightsConfig(object):
                                  if k.upper().startswith("INSIGHTS_"))
         self._update_dict(insights_env_opts)
 
-    def load_command_line(self):
+    def load_command_line(self, conf_only=False):
         '''
         Load config from command line switches.
         NOTE: Not all config is available on the command line.
         '''
+        # did we already parse cli (i.e. to get conf file)? don't run twice
+        if self._cli_opts:
+            self._update_dict(self._cli_opts)
+            return
         parser = optparse.OptionParser()
         debug_grp = optparse.OptionGroup(parser, "Debug options")
         cli_options = {k: v for k, v in DEFAULT_OPTS.iteritems() if (
-                        'opt' in v)}
+                       'opt' in v)}
         for _, o in cli_options.iteritems():
             g = debug_grp if o.pop("group", None) == "debug" else parser
             optnames = o.pop('opt')
             g.add_option(*optnames, **o)
 
         parser.add_option_group(debug_grp)
-        options, args = parser.parse_args()
+
+        # pass in optparse.Values() to get only options that were specified
+        options, args = parser.parse_args(values=optparse.Values())
         if len(args) > 0:
             parser.error("Unknown arguments: %s" % args)
 
-        self._update_dict(vars(options))
+        self._cli_opts = vars(options)
+        if conf_only and 'conf' in self._cli_opts:
+            self._update_dict({'conf': self._cli_opts['conf']})
+            return
+
+        self._update_dict(self._cli_opts)
 
     def load_config_file(self, fname=None):
         '''
         Load config from config file. If fname is not specified,
         config is loaded from the file named by InsightsConfig.conf
         '''
-        parsedconfig = ConfigParser.RawConfigParser(DEFAULT_KVS)
+        parsedconfig = ConfigParser.RawConfigParser()
         try:
             parsedconfig.read(fname or self.conf)
         except ConfigParser.Error:
@@ -440,7 +462,9 @@ class InsightsConfig(object):
             pass
         d = dict(parsedconfig.items(APP_NAME))
         for key in d:
-            if key in DEFAULT_BOOLS and type(d[key]) in six.string_types:
+            if key == 'retries':
+                d[key] = parsedconfig.getint(APP_NAME, key)
+            if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
                 d[key] = parsedconfig.getboolean(APP_NAME, key)
         self._update_dict(d)
 
@@ -448,9 +472,11 @@ class InsightsConfig(object):
         '''
         Helper function for actual Insights client use
         '''
+        # check for custom conf file before loading conf
+        self.load_command_line(conf_only=True)
+        self.load_config_file()
         self.load_env()
         self.load_command_line()
-        self.load_config_file()
 
     def _validate_options(self):
         '''
@@ -481,9 +507,13 @@ class InsightsConfig(object):
                                   self.analyze_mountpoint or
                                   self.analyze_image_id)
         self.to_json = self.analyze_container and not self.to_stdout
+        self.to_stdout = (self.to_stdout or
+                          self.from_stdin or
+                          self.from_file)
 
 
 if __name__ == '__main__':
-    config = InsightsConfig({'username': 'fezzan'})
-    config.load_config_file(fname='/Users/jcrafts/projects/insights-core/conf.conf')
+    config = InsightsConfig(conf='/Users/jcrafts/projects/insights-core/conf.conf', username='fezzan')
+    # config.load_config_file(conf='/Users/jcrafts/projects/insights-core/conf.conf')
+    config.load_all()
     print(config)

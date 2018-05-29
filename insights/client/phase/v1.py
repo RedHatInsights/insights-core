@@ -6,9 +6,8 @@ import os
 import shutil
 import sys
 
-from insights.client import InsightsClient, format_config
-from insights.client import client
-from insights.client.config import CONFIG as config, compile_config
+from insights.client import InsightsClient
+from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.auto_config import try_auto_configuration
 from insights.client.support import registration_check, InsightsSupport
@@ -22,16 +21,18 @@ def phase(func):
     @functools.wraps(func)
     def _f():
         try:
-            compile_config()
+            config = InsightsConfig()
+            config.load_all()
         except ValueError as e:
             sys.stderr.write('ERROR:' + e)
             sys.exit(constants.sig_kill_bad)
+        client = InsightsClient(config)
         client.set_up_logging()
-        if config['debug']:
+        if config.debug:
             logger.info("Core path: %s", os.path.dirname(__file__))
-        try_auto_configuration()
+        try_auto_configuration(config)
         try:
-            func()
+            func(client, config)
         except Exception:
             logger.exception("Fatal error")
             sys.exit(1)
@@ -57,46 +58,41 @@ def get_phases():
 
 
 @phase
-def pre_update():
-    if config['version']:
+def pre_update(client, config):
+    if config.version:
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
 
     # validate the remove file
-    if config['validate']:
+    if config.validate:
         if validate_remove_file():
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
-    if config['enable_schedule'] and config['disable_schedule']:
-        logger.error(
-            'Conflicting options: --enable-schedule and --disable-schedule')
-        sys.exit(constants.sig_kill_bad)
-
-    if config['enable_schedule']:
+    if config.enable_schedule:
         # enable automatic scheduling
         logger.debug('Updating config...')
-        updated = get_scheduler().set_daily()
+        updated = get_scheduler(config).set_daily()
         if updated:
             logger.info('Automatic scheduling for Insights has been enabled.')
         sys.exit(constants.sig_kill_ok)
 
-    if config['disable_schedule']:
+    if config.disable_schedule:
         # disable automatic schedling
-        updated = get_scheduler().remove_scheduling()
+        updated = get_scheduler(config).remove_scheduling()
         if updated:
             logger.info('Automatic scheduling for Insights has been disabled.')
-        if not config['register']:
+        if not config.register:
             sys.exit(constants.sig_kill_ok)
 
-    if config['analyze_container']:
+    if config.analyze_container:
         logger.debug('Not scanning host.')
         logger.debug('Scanning image ID, tar file, or mountpoint.')
 
     # test the insights connection
-    if config['test_connection']:
+    if config.test_connection:
         logger.info("Running Connection Tests...")
         pconn = client.get_connection()
         rc = pconn.test_connection()
@@ -105,22 +101,21 @@ def pre_update():
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if config['support']:
+    if config.support:
         support = InsightsSupport()
         support.collect_support_info()
         sys.exit(constants.sig_kill_ok)
 
 
 @phase
-def update():
-    c = InsightsClient()
-    c.update()
-    c.update_rules()
+def update(client, config):
+    client.update()
+    client.update_rules()
 
 
 @phase
-def post_update():
-    logger.debug("CONFIG: %s", format_config())
+def post_update(client, config):
+    logger.debug("CONFIG: %s", config)
     if config['status']:
         reg_check = registration_check(client.get_connection())
         for msg in reg_check['messages']:
@@ -153,7 +148,7 @@ def post_update():
             client.test_connection()
             sys.exit(constants.sig_kill_bad)
         if (not config['disable_schedule'] and
-           get_scheduler().set_daily()):
+           get_scheduler(config).set_daily()):
             logger.info('Automatic scheduling for Insights has been enabled.')
 
     # check registration before doing any uploads
@@ -168,11 +163,9 @@ def post_update():
 
 
 @phase
-def collect_and_output():
-    c = InsightsClient()
-    tar_file = c.collect(analyze_image_id=config["analyze_image_id"],
-                         analyze_file=config["analyze_file"],
-                         analyze_mountpoint=config["analyze_mountpoint"])
+def collect_and_output(client, config):
+    print(config)
+    tar_file = client.collect()
     if not tar_file:
         sys.exit(constants.sig_kill_bad)
     if config['to_stdout']:
@@ -181,9 +174,13 @@ def collect_and_output():
     else:
         resp = None
         if not config['no_upload']:
-            resp = c.upload(tar_file)
+            resp = client.upload(tar_file)
         else:
             logger.info('Archive saved at %s', tar_file)
         if resp and config["to_json"]:
             print(json.dumps(resp))
     sys.exit()
+
+
+if __name__ == '__main__':
+    collect_and_output()
