@@ -96,7 +96,7 @@ So, how would we code this using `insights-core`?  The following script
 will identify whether the current system has a version of `bash`
 installed within the range.
 
-.. code-block::
+.. code-block:: python
 
     from insights import rule, make_response, run
     from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm
