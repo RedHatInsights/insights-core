@@ -1,4 +1,6 @@
-============= Insights Core =============
+=============
+Insights Core
+=============
 
 Almost everyone who deals with diagnostic files and archives such as
 sosreports or JBoss server.log files automates the process of rummaging
@@ -58,7 +60,8 @@ A Simple Preview
 
 Let's start with a simple example that shows the motivation of the
 framework.  (This example is covered in a bit more detail in `one of the
-jupyter notebook examples <./docs/notebooks/Diagnostic%20Walkthrough.ipynb>`_.)
+jupyter notebook examples
+<https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Diagnostic%20Walkthrough.ipynb>`_.)
 
 Suppose that you are trying to detect if a Red Hat Enterprise Linux
 system contains a version of `bash` with a particular bug.  The first
@@ -93,7 +96,7 @@ So, how would we code this using `insights-core`?  The following script
 will identify whether the current system has a version of `bash`
 installed within the range.
 
-::
+.. code-block::
 
     from insights import rule, make_response, run
     from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm
@@ -146,10 +149,16 @@ places.
 
 First, complexity around parsing the `rpm -qa` command, and presenting
 it in a usable data model is handled by the `InstalledRpms` class.  It
-is just one(link) of many parsers(link) and combiners(link) that one can use.   In
-addition, new custom parsers can be easily created. (See the
-`stand_alone.py` script for a full example defining a full set of
-components.)
+is just `one
+<http://insights-core.readthedocs.io/en/latest/shared_parsers_catalog/installed_rpms.html#installedrpms-command-rpm-qa>`_
+of many `parsers
+<http://insights-core.readthedocs.io/en/latest/parsers_index.html#shared-parsers-catalog>`_
+and `combiners
+<http://insights-core.readthedocs.io/en/latest/combiners_index.html#shared-combiners-catalog>`_
+that one can use.   In addition, new custom parsers can be easily
+created. (See the `stand_alone.py
+<https://github.com/RedHatInsights/insights-core/blob/master/stand_alone.py>`_
+script for a full example defining a full set of components.)
 
 The complexity of execution is hidden in the `run` function.  This
 function understands the dependences that need to be met, determining
@@ -170,12 +179,12 @@ There are several resources for digging into the details of how to use `insights
 - The `core api docs <http://insights-core.readthedocs.io/en/latest/>`_
   has three tutorials
 
-    - `Rule Using Existing Parsers and Combiners
-      <http://insights-core.readthedocs.io/en/latest/rule_tutorial_index.html#tutorial-rule-using-existing-parsers-and-combiners>`_
-    - `Custom Parser and Rule
-      <http://insights-core.readthedocs.io/en/latest/custom_tutorial_index.html#tutorial-custom-parser-and-rule>`_
-    - `Combiner Development
-      <http://insights-core.readthedocs.io/en/latest/combiner_tutorial.html#tutorial-combiner-development>`_
+  - `Rule Using Existing Parsers and Combiners
+    <http://insights-core.readthedocs.io/en/latest/rule_tutorial_index.html#tutorial-rule-using-existing-parsers-and-combiners>`_
+  - `Custom Parser and Rule
+    <http://insights-core.readthedocs.io/en/latest/custom_tutorial_index.html#tutorial-custom-parser-and-rule>`_
+  - `Combiner Development
+    <http://insights-core.readthedocs.io/en/latest/combiner_tutorial.html#tutorial-combiner-development>`_
 
 - The basic architectural principles of `insights-core` can be found in
   the `Insights Core Tutorial
@@ -201,7 +210,9 @@ The steps for this will vary depending upon your system.
 Python 2
 ++++++++
 
-To get the project setup for Python 2, use the following commands::
+To get the project setup for Python 2, use the following commands
+
+.. code-block:: bash
 
     mkdir .python2
     virtualenv .  # Make sure you're using the python2 runtime
@@ -213,7 +224,9 @@ To get the project setup for Python 2, use the following commands::
 Python 3
 ++++++++
 
-To setup the project for Python 3, use the following commands::
+To setup the project for Python 3, use the following commands
+
+.. code-block:: bash
 
     mkdir .python3
     python3 venv -m .python3
@@ -228,7 +241,9 @@ You can validate the setup by running the unit tests::
 
     py.test
 
-To generate docs::
+To generate docs:
+
+.. code-block:: bash
 
     cd docs/
     make html
