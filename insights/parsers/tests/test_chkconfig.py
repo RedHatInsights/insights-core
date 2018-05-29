@@ -16,10 +16,6 @@ xinetd          0:off   1:off   2:on    3:on    4:on    5:on    6:off
         telnet:         on
 """.strip()
 
-# ERROR = """
-# -bash: chkconfig: command not found
-# """
-
 RHEL_73_SERVICES = """
 Note: This output shows SysV services only and does not include native
       systemd services. SysV configuration data might be overridden by native
@@ -59,16 +55,6 @@ def test_chkconfig():
     assert chkconfig.is_on('telnet')
     assert not chkconfig.is_on('restorecond')
     assert not chkconfig.is_on('rlogin')
-
-
-# def test_command_not_found():
-#     context = context_wrap(ERROR)
-#     chkconfig = ChkConfig(context)
-#     assert len(chkconfig.services) == 0
-#     assert len(chkconfig.parsed_lines) == 0
-#     assert not chkconfig.is_on('crond')
-#     assert not chkconfig.is_on('kdump')
-#     assert not chkconfig.is_on('restorecond')
 
 
 def test_levels_on():

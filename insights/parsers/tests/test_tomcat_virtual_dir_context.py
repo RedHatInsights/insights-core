@@ -22,17 +22,9 @@ FOUND_3 = """
 NOT_FOUND = """
 """.strip()
 
-# ERRORS_1 = """
-# /bin/grep: No such file or directory
-# """
-
 ERRORS_2 = """
 garbage garbage
 """
-
-# ERRORS_3 = """
-# /bin/grep: /usr/share/tomcat*: No such file or directory
-# """
 
 
 def test_tomcat_virtual_dir_context_found():
@@ -70,20 +62,6 @@ def test_tomcat_virtual_dir_context_not_found():
 
 def test_tomcat_virtual_dir_context_exceptions():
     for parser in [TomcatVirtualDirContextFallback, TomcatVirtualDirContextTargeted]:
-        # with pytest.raises(SkipException) as excinfo:
-        #     parser(context_wrap(ERRORS_1))
-        #     assert 'VirtualDirContext not used.' in str(excinfo.value)
-
         with pytest.raises(SkipException) as excinfo:
             parser(context_wrap(ERRORS_2))
             assert 'VirtualDirContext not used.' in str(excinfo.value)
-
-
-# def test_tomcat_bad_grep():
-#     """
-#     Make sure that old spec with non-working glob expansion is handled properly
-#     """
-#     for parser in [TomcatVirtualDirContextFallback, TomcatVirtualDirContextTargeted]:
-#         with pytest.raises(SkipException) as excinfo:
-#             parser(context_wrap(ERRORS_3))
-#             assert 'VirtualDirContext not used.' in str(excinfo.value)

@@ -99,8 +99,6 @@ IpExt:
     InBcastOctets: 46402081
 '''.strip()
 
-# NETSTAT_S_FAIL = "cannot open /proc/net/snmp:"
-
 NETSTAT_S_W = '''
 error parsing /proc/net/netstat: No such file or directory
 Ip:
@@ -202,10 +200,6 @@ class TestNetstats():
                                  'outoctets': '812810111',
                                  'inmcastoctets': '12992',
                                  'inbcastoctets': '46402081'}
-
-    # def test_netstat_s_fail(self):
-    #     with pytest.raises(ParseException):
-    #         NetstatS(context_wrap(NETSTAT_S_FAIL))
 
     def test_netstat_s_w(self):
         info = NetstatS(context_wrap(NETSTAT_S_W)).data

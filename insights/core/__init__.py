@@ -10,6 +10,7 @@ import six
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
+from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from insights.util import deprecated
 
@@ -243,32 +244,49 @@ class LegacyItemAccess(object):
 
 class CommandParser(Parser):
     """
-    This class checks output from the command defined in th spec to be sure line
-    do not contain certain string values and that there is only one line.
+    This class checks output from the command defined in the spec.
+    If `context.content` contains a single line and that line is
+    included in the `bad_lines` list a `ContentException` is raised
     """
 
-    bad_lines = ["No such file or directory", "Command not found", "command not found"]
+    bad_lines = ["no such file or directory", "command not found"]
+    """
+    This variable contains filters for bad responses from commands defined
+    with command specs.
+    When adding a new lin to the list make sure text is all lower case.
+    """
 
     def validate_lines(self, results):
+        """
+        If `results` contains a single line and that line is included
+        in the `bad_lines` list, this function returns `False`. If no bad
+        line is found the function returns `True`
+
+        Parameters:
+            results(str): The results string of the output from the command
+                defined by the command spec.
+
+        Returns:
+            (Boolean): True for no bad lines or False for bad line found.
+        """
+
         if results and len(results) == 1:
             first = results[0]
-            if any(l.lower() in first.lower() for l in self.bad_lines):
+            if any(l in first.lower() for l in self.bad_lines):
                 return False
         return True
 
     def __init__(self, context):
         """
-            This __init__ will first validate that both there is only
-            one line in the content and the string in that line contains
-            one of the strings defined in THE "bad_lines" list variable.
-            If both of these are true a ContentException will be raised
-            if not the super class (Parser)__init__ will be called
+            This __init__ calls `validate_lines` function to check for bad lines.
+            If `validate_lines` returns False, indicating bad line found, a
+            ContentException is thrown.
         """
 
         if not self.validate_lines(context.content):
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
-            raise ParseException(name + ": " + first)
+            raise ContentException(name + ": " + first)
         super(CommandParser, self).__init__(context)
 
 

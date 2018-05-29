@@ -81,6 +81,7 @@ class PsAuxww(CommandParser):
             each command.
 
     """
+
     def __init__(self, *args, **kwargs):
         self.data = []
         self.running = set()
