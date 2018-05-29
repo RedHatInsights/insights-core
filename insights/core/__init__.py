@@ -414,7 +414,10 @@ class YAMLParser(Parser, LegacyItemAccess):
     A parser class that reads YAML files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        self.data = yaml.safe_load('\n'.join(content))
+        if type(content) is list:
+            self.data = yaml.safe_load('\n'.join(content))
+        else:
+            self.data = yaml.safe_load(content)
 
 
 class JSONParser(Parser, LegacyItemAccess):
