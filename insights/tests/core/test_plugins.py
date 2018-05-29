@@ -15,18 +15,6 @@ def test_make_metadata_should_not_allow_type():
         plugins.make_metadata(type="not_allowed", foo="bar")
 
 
-def test_make_fingerprint():
-    assert plugins.make_fingerprint(foo="bar") == {
-        "type": "fingerprint",
-        "foo": "bar"
-    }
-
-
-def test_make_fingerprint_should_not_allow_type():
-    with pytest.raises(Exception):
-        plugins.make_metadata(type="not_allowed", foo="bar")
-
-
 def test_validate_response_good():
     assert plugins.validate_response({
         "type": "rule",
@@ -71,3 +59,15 @@ def test_make_response_too_big():
         "error_key": "TESTING",
         "max_detail_length_error": len(json.dumps({"error_key": "TESTING", "type": "rule", "big": content}))
     }
+
+
+def test_validate_fingerprint_good():
+    assert plugins.validate_response({
+        "type": "fingerprint",
+        "fingerprint_key": "FINGERPRINT",
+        "foo": "bar"}) is None
+
+
+def test_validate_response_missing_fingerprint_key():
+    with pytest.raises(plugins.ValidationException):
+        plugins.validate_response({"type": "fingerprint", "foo": "bar"})
