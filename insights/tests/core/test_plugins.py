@@ -71,3 +71,12 @@ def test_validate_fingerprint_good():
 def test_validate_response_missing_fingerprint_key():
     with pytest.raises(plugins.ValidationException):
         plugins.validate_response({"type": "fingerprint", "foo": "bar"})
+
+
+def test_make_fingerprint_too_big():
+    content = "foo" * 50000
+    assert plugins.make_fingerprint("TESTING", big=content) == {
+        "type": "fingerprint",
+        "fingerprint_key": "TESTING",
+        "max_detail_length_error": len(json.dumps({"fingerprint_key": "TESTING", "type": "fingerprint", "big": content}))
+    }

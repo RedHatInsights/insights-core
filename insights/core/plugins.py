@@ -284,7 +284,7 @@ def make_fingerprint(fingerprint_key, **kwargs):
 
     detail_length = len(str(kwargs))
 
-    if is_make_reponse_too_long(error_key, kwargs):
+    if is_make_reponse_too_long(fingerprint_key, kwargs):
         r["max_detail_length_error"] = detail_length
         return r
 
