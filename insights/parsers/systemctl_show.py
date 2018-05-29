@@ -264,7 +264,7 @@ class SystemctlShowHttpd(SystemctlShow):
 
 @parser(Specs.systemctl_qpidd)
 class SystemctlShowQpidd(SystemctlShow):
-    """ 
+    """
     Class for ``systemctl show qpidd``.
 
     Typical output of ``/bin/systemctl show qpidd`` command is::
@@ -297,7 +297,7 @@ class SystemctlShowQpidd(SystemctlShow):
 
 @parser(Specs.systemctl_qrouterd)
 class SystemctlShowQrouterd(SystemctlShow):
-    """ 
+    """
     Class for ``systemctl show qrouterd``.
 
     Typical output of ``/bin/systemctl show qrouterd`` command is::
