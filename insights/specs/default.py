@@ -14,7 +14,6 @@ import re
 from insights.core.context import ClusterArchiveContext
 from insights.core.context import DockerImageContext
 from insights.core.context import HostContext
-from insights.core.context import HostArchiveContext
 from insights.core.context import OpenShiftContext
 
 from insights.core.plugins import datasource
