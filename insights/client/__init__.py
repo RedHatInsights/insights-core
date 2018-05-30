@@ -9,6 +9,7 @@ from subprocess import Popen, PIPE
 from .. import package_info
 from . import client
 from .constants import InsightsConstants as constants
+from .config import InsightsConfig
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
@@ -20,7 +21,12 @@ class InsightsClient(object):
         """
         The Insights client interface
         """
-        self.config = config
+        #  small hack to maintain compatability with RPM wrapper
+        if isinstance(config, InsightsConfig):
+            self.config = config
+        else:
+            self.config = InsightsConfig().load_all()
+        # end hack. in the future, just set self.config=config
 
         # set up logging
         if setup_logging:
@@ -30,6 +36,10 @@ class InsightsClient(object):
         # used for requests
         self.session = None
         self.connection = None
+
+    def get_conf(self):
+        # need this getter to maintain compatability with RPM wrapper
+        return self.config
 
     def set_up_logging(self):
         return client.set_up_logging(self.config)
@@ -316,12 +326,6 @@ class InsightsClient(object):
         return {'machine-id': client.get_machine_id(),
                 'registration_status': registration_status,
                 'is_registered': registration_status['status']}
-
-    def get_conf(self):
-        """
-            returns (optparse): OptParse config/options
-        """
-        return config
 
     def upload(self, path, rotate_eggs=True):
         """

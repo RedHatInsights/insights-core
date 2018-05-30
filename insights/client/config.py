@@ -384,8 +384,10 @@ class InsightsConfig(object):
         if 'no_gpg' in dict_ and dict_['no_gpg']:
             dict_['gpg'] = False
 
-        if set(dict_.keys()).difference(set(DEFAULT_OPTS.keys())):
-            raise ValueError
+        unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
+        if unknown_opts:
+            raise ValueError(
+                'Unknown options: ' + ','.join(list(unknown_opts)))
         self.__dict__.update(dict_)
         self._imply_options()
         self._validate_options()
@@ -405,9 +407,13 @@ class InsightsConfig(object):
             else:
                 return v
 
+        # ignore these env as they are not config vars
+        ignore = ['INSIGHTS_PHASE']
+
         insights_env_opts = dict((k.lower().split("_", 1)[1], _boolify(v))
                                  for k, v in os.environ.items()
-                                 if k.upper().startswith("INSIGHTS_"))
+                                 if k.upper().startswith("INSIGHTS_") and
+                                 k.upper() not in ignore)
         self._update_dict(insights_env_opts)
 
     def load_command_line(self, conf_only=False):
@@ -477,6 +483,7 @@ class InsightsConfig(object):
         self.load_config_file()
         self.load_env()
         self.load_command_line()
+        return self
 
     def _validate_options(self):
         '''

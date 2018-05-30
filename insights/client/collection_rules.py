@@ -219,3 +219,8 @@ class InsightsUploadConf(object):
                 logger.debug(json.dumps(conf))
                 return conf, rm_conf
         raise ValueError("ERROR: Unable to download conf or read it from disk!")
+
+
+if __name__ == '__main__':
+    from .config import InsightsConfig
+    print(InsightsUploadConf(InsightsConfig().load_all()))

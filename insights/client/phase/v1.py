@@ -21,10 +21,9 @@ def phase(func):
     @functools.wraps(func)
     def _f():
         try:
-            config = InsightsConfig()
-            config.load_all()
+            config = InsightsConfig().load_all()
         except ValueError as e:
-            sys.stderr.write('ERROR:' + e)
+            sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
         client = InsightsClient(config)
         client.set_up_logging()
@@ -164,7 +163,6 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    print(config)
     tar_file = client.collect()
     if not tar_file:
         sys.exit(constants.sig_kill_bad)
