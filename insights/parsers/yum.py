@@ -73,3 +73,8 @@ class YumRepoList(Parser):
                 if eus_version in eus:
                     euses.append(eus_version)
         return euses
+
+    @property
+    def rhel_repos(self):
+        '''Get list of RHEL repos'''
+        return [i.split('/')[0] for i in self.repos.keys() if i.startswith('rhel')]
