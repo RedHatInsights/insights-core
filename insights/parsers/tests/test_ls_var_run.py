@@ -5,7 +5,6 @@ from insights.parsers.ls_var_run import LsVarRun
 from insights.tests import context_wrap
 
 LS_VAR_RUN = """
-/var/run:
 total 20
 drwx--x---.  2   0 984   40 May 15 09:29 openvpn
 drwxr-xr-x.  2   0   0   40 May 15 09:30 plymouth
@@ -19,7 +18,7 @@ drwx------.  2  32  32   40 May 15 09:29 rpcbind
 
 
 def test_ls_var_run():
-    ls_var_run = LsVarRun(context_wrap(LS_VAR_RUN))
+    ls_var_run = LsVarRun(context_wrap(LS_VAR_RUN, path='insights_commands/ls_-lnL_.var.run'))
     assert ls_var_run.dirs_of('/var/run') == ['openvpn', 'plymouth', 'ppp', 'radvd', 'rhsm', 'rpcbind']
     foreman = ls_var_run.dir_entry('/var/run', 'openvpn')
     assert foreman is not None
@@ -39,7 +38,7 @@ def test_ls_var_run():
 def test_ls_var_run_doc_examples():
     env = {
         'LsVarRun': LsVarRun,
-        'ls_var_run': LsVarRun(context_wrap(LS_VAR_RUN)),
+        'ls_var_run': LsVarRun(context_wrap(LS_VAR_RUN, path='insights_commands/ls_-lnL_.var.run')),
     }
     failed, total = doctest.testmod(ls_var_run, globs=env)
     assert failed == 0

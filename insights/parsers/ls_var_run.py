@@ -1,8 +1,8 @@
 """
-LsVarRun - command ``ls -ln /var/run``
-======================================
+LsVarRun - command ``ls -lnL /var/run``
+=======================================
 
-The ``ls -ln /var/run`` command provides information for the listing of the
+The ``ls -lnL /var/run`` command provides information for the listing of the
 ``/var/run`` directory.
 
 Sample input is shown in the Examples. See ``FileListing`` class for
@@ -10,7 +10,6 @@ additional information.
 
 Sample directory list::
 
-    /var/run:
     total 20
     drwx--x---.  2   0 984   40 May 15 09:29 openvpn
     drwxr-xr-x.  2   0   0   40 May 15 09:30 plymouth
@@ -40,5 +39,5 @@ from .. import parser
 
 @parser(Specs.ls_var_run)
 class LsVarRun(FileListing):
-    """Parses output of ``ls -ln /var/run`` command."""
+    """Parses output of ``ls -lnL /var/run`` command."""
     pass

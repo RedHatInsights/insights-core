@@ -95,7 +95,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")
-    ls_var_run = simple_file("insights_commands/ls_-ln_.var.run")
+    ls_var_run = simple_file("insights_commands/ls_-lnL_.var.run")
     ls_osroot = simple_file("insights_commands/ls_-lan_.")
     lsblk = simple_file("insights_commands/lsblk")
     lsblk_pairs = simple_file("insights_commands/lsblk_-P_-o_NAME_KNAME_MAJ_MIN_FSTYPE_MOUNTPOINT_LABEL_UUID_RA_RO_RM_MODEL_SIZE_STATE_OWNER_GROUP_MODE_ALIGNMENT_MIN-IO_OPT-IO_PHY-SEC_LOG-SEC_ROTA_SCHED_RQ-SIZE_TYPE_DISC-ALN_DISC-GRAN_DISC-MAX_DISC-ZERO")
