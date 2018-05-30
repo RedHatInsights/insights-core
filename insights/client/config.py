@@ -510,10 +510,12 @@ class InsightsConfig(object):
         '''
         self.no_upload = self.no_upload or self.to_stdout or self.offline
         self.auto_update = self.auto_update or self.offline
-        self.analyze_container = (self.analyze_file or
+        self.analyze_container = (self.analyze_container or
+                                  self.analyze_file or
                                   self.analyze_mountpoint or
                                   self.analyze_image_id)
-        self.to_json = self.analyze_container and not self.to_stdout
+        self.to_json = ((self.to_json or self.analyze_container) and
+                        not self.to_stdout)
         self.to_stdout = (self.to_stdout or
                           self.from_stdin or
                           self.from_file)

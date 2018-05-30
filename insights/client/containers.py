@@ -303,7 +303,7 @@ else:
         the_verbiage = "Docker"
         the_exception = HaveDockerException
 
-    def get_targets():
+    def get_targets(config):
         logger.error('Could not connect to ' + the_verbiage + ' to collect from images and containers')
         logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
                      (the_exception if the_exception else ''))
