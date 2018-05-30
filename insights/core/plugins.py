@@ -191,7 +191,7 @@ def make_skip(rule_fqdn, reason, details=None):
             "type": "skip"}
 
 
-def is_make_reponse_too_long(key, kwargs):
+def _is_make_reponse_too_long(key, kwargs):
     response_type = {"rule": "make_response", "fingerprint": "make_fingerprint"}
 
     # using str() avoids many serialization issues and runs in about 75%
@@ -242,7 +242,7 @@ def make_response(error_key, **kwargs):
 
     detail_length = len(str(kwargs))
 
-    if is_make_reponse_too_long(error_key, kwargs):
+    if _is_make_reponse_too_long(error_key, kwargs):
         r["max_detail_length_error"] = detail_length
         return r
 
@@ -284,7 +284,7 @@ def make_fingerprint(fingerprint_key, **kwargs):
 
     detail_length = len(str(kwargs))
 
-    if is_make_reponse_too_long(fingerprint_key, kwargs):
+    if _is_make_reponse_too_long(fingerprint_key, kwargs):
         r["max_detail_length_error"] = detail_length
         return r
 
