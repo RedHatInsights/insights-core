@@ -15,7 +15,6 @@ import subprocess
 import sys
 
 from .constants import InsightsConstants as constants
-from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -71,13 +70,13 @@ if not HaveDocker and HaveAtomic:
     UseAtomic = True
     UseDocker = False
 
-# force atomic or docker
-if config['use_docker']:
-    UseAtomic = False
-    UseDocker = True
-if config['use_atomic']:
-    UseAtomic = True
-    UseDocker = False
+# # force atomic or docker
+# if config['use_docker']:
+#     UseAtomic = False
+#     UseDocker = True
+# if config['use_atomic']:
+#     UseAtomic = True
+#     UseDocker = False
 
 # Check if docker is running
 DockerIsRunning = False
@@ -117,7 +116,7 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
     def pull_image(image):
         return runcommand(shlex.split("docker pull") + [image])
 
-    def get_targets():
+    def get_targets(config):
         targets = []
         logger.debug('Getting targets to scan...')
         for d in _docker_all_image_ids():

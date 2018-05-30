@@ -455,17 +455,17 @@ class InsightsConfig(object):
                 'ERROR: Could not read configuration file, using defaults')
         try:
             # Try to add the insights-client section
-            parsedconfig.add_section(APP_NAME)
+            parsedconfig.add_section(constants.app_name)
             # Try to add the redhat_access_insights section for back compat
             parsedconfig.add_section('redhat_access_insights')
         except ConfigParser.Error:
             pass
-        d = dict(parsedconfig.items(APP_NAME))
+        d = dict(parsedconfig.items(constants.app_name))
         for key in d:
             if key == 'retries':
-                d[key] = parsedconfig.getint(APP_NAME, key)
+                d[key] = parsedconfig.getint(constants.app_name, key)
             if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
-                d[key] = parsedconfig.getboolean(APP_NAME, key)
+                d[key] = parsedconfig.getboolean(constants.app_name, key)
         self._update_dict(d)
 
     def load_all(self):
@@ -513,7 +513,6 @@ class InsightsConfig(object):
 
 
 if __name__ == '__main__':
-    config = InsightsConfig(conf='/Users/jcrafts/projects/insights-core/conf.conf', username='fezzan')
-    # config.load_config_file(conf='/Users/jcrafts/projects/insights-core/conf.conf')
+    config = InsightsConfig()
     config.load_all()
     print(config)

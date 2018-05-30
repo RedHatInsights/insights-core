@@ -279,7 +279,7 @@ def collect(config):
         logger.debug("Scanning for matching container/image.")
 
         from .containers import get_targets
-        targets = get_targets()
+        targets = get_targets(config)
         if len(targets) == 0:
             sys.exit(constants.sig_kill_bad)
         target = targets[0]

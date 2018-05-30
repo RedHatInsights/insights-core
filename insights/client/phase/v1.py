@@ -180,7 +180,3 @@ def collect_and_output(client, config):
         if resp and config["to_json"]:
             print(json.dumps(resp))
     sys.exit()
-
-
-if __name__ == '__main__':
-    collect_and_output()
