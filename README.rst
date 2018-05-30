@@ -215,7 +215,7 @@ To get the project setup for Python 2, use the following commands
 .. code-block:: bash
 
     mkdir .python2
-    virtualenv .  # Make sure you're using the python2 runtime
+    virtualenv .python2  # Make sure you're using the python2 runtime
     source .python2/bin/activate
     pip install --upgrade pip
     pip install -e .[develop]
@@ -229,7 +229,7 @@ To setup the project for Python 3, use the following commands
 .. code-block:: bash
 
     mkdir .python3
-    python3 venv -m .python3
+    python3 -m venv .python3
     source .python3/bin/activate
     pip install --upgrade pip
     pip install -e .[develop]
@@ -237,7 +237,9 @@ To setup the project for Python 3, use the following commands
 After setup
 ++++++++++++
 
-You can validate the setup by running the unit tests::
+You can validate the setup by running the unit tests.
+
+.. code-block:: bash
 
     py.test
 
@@ -254,15 +256,19 @@ To Run the Jupyter Notebooks
 ++++++++++++++++++++++++++++
 
 If you would like to execute the jupyter notebooks locally, you can
-install jupyter::
+install jupyter:
+
+.. code-block:: bash
 
     pip install jupyter # be sure your virtual environment is activated.
 
-To start the notebook server::
+To start the notebook server:
+
+.. code-block:: bash
 
     jupyter notebook
 
 This should start a web-server and open a tab on your browser.  From
-there, you can navigate to docs/notebooks and select a notebook of
+there, you can navigate to `docs/notebooks` and select a notebook of
 interest.
 
