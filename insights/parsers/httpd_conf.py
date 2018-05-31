@@ -84,6 +84,8 @@ from insights.specs import Specs
 ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
 """namedtuple: Type for storing the parsed httpd configuration's directive information."""
 
+ParsedData2 = namedtuple('ParsedData', ['option', 'value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
+"""namedtuple: Type for storing the parsed httpd configuration's directive information."""
 
 @parser(Specs.httpd_conf)
 class HttpdConf(LegacyItemAccess, Parser):
@@ -206,7 +208,7 @@ class HttpdConf(LegacyItemAccess, Parser):
                     parsed_data = ParsedData(value, line, cur_sec[0], cur_sec[1], self.file_name, self.file_path)
                     # before: section = [(('IfModule', 'worker.c'), {})]
                     add_to_dict_list(section[-1][-1], option, parsed_data)
-                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': (256, 'MaxClients 256')}])]
+                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
                 else:
                     parsed_data = ParsedData(value, line, None, None, self.file_name, self.file_path)
                     add_to_dict_list(self.data, option, parsed_data)
@@ -215,16 +217,46 @@ class HttpdConf(LegacyItemAccess, Parser):
 
                 if nomerge_section:
                     nomerge_cur_sec = nomerge_section[-1][0]
-                    parsed_data = ParsedData(value, line, nomerge_cur_sec[0], nomerge_cur_sec[1], self.file_name, self.file_path)
+                    parsed_data = ParsedData2(option, value, line, nomerge_cur_sec[0], nomerge_cur_sec[1], self.file_name, self.file_path)
                     # before: nomerge_section = [(('IfModule', 'worker.c'), [])]
                     nomerge_section[-1][-1].append(parsed_data)
-                    # after:  nomerge_section = [(('IfModule', 'worker.c'), [{'MaxClients': (256, 'MaxClients 256')}])]
+                    # after:  nomerge_section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
                 else:
-                    parsed_data = ParsedData(value, line, None, None, self.file_name, self.file_path)
+                    parsed_data = ParsedData2(option, value, line, None, None, self.file_name, self.file_path)
                     self.nomerge_data.append(parsed_data)
                     if main_config:
                         nomerge_where_to_store.append(parsed_data)
 
+        # TODO cleanup the whole parser - e.g. it generates the legacy self.data only for it to be thrown away and generated again the new way
+        import q
+        q("BEFORE")
+        q(self.data)
+        self.data = convert_nomerge_to_merge(self.nomerge_data)
+        q("AFTER")
+        q(self.data)
+        q("END")
+        self.first_half = convert_nomerge_to_merge(self.nomerge_first_half)
+        self.second_half = convert_nomerge_to_merge(self.nomerge_second_half)
+
+
+def convert_nomerge_to_merge(data):
+    # TODO defaultdict?
+    merged = {}
+    for d in data:
+        if isinstance(d, ParsedData2):
+            if d.option not in merged:
+                merged[d.option] = []
+            merged[d.option].append(ParsedData(d.value, d.line, d.section, d.section_name, d.file_name, d.file_path))
+        else:
+            ((_sec, _sec_name), pd) = d
+            # making sure the section is identified by a tuple
+            sec = (_sec, _sec_name)
+
+            pd_processed = convert_nomerge_to_merge(pd)
+            if sec not in merged:
+                merged[sec] = {}
+            dict_deep_merge(merged[sec], pd_processed)
+    return merged
 
 
 def dict_deep_merge(tgt, src):
