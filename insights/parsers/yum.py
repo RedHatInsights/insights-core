@@ -76,5 +76,5 @@ class YumRepoList(Parser):
 
     @property
     def rhel_repos(self):
-        '''Get list of RHEL repos'''
+        '''Get list of RHEL repos/Repo IDs'''
         return [i.split('/')[0] for i in self.repos.keys() if i.startswith('rhel')]

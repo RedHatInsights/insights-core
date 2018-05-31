@@ -52,10 +52,10 @@ def test_eus():
 def test_rhel_repos():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
     assert len(repo_list.rhel_repos) == 4
-    assert repo_list.rhel_repos == ['rhel-7-server-satellite-capsule-6.1-rpms',
-                                    'rhel-server-rhscl-7-rpms',
-                                    'rhel-7-server-rpms',
-                                    'rhel-7-server-satellite-6.1-rpms']
+    assert set(repo_list.rhel_repos) == set(['rhel-7-server-rpms',
+                                             'rhel-7-server-satellite-6.1-rpms',
+                                             'rhel-7-server-satellite-capsule-6.1-rpms',
+                                             'rhel-server-rhscl-7-rpms'])
 
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
     assert len(repo_list.rhel_repos) == 0
