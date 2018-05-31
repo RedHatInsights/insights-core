@@ -23,6 +23,12 @@ SystemctlShowPulpCelerybeat - command ``systemctl show pulp_celerybeat``
 
 SystemctlShowHttpd - command ``systemctl show httpd``
 -----------------------------------------------------
+
+SystemctlShowQpidd - command ``systemctl show qpidd``
+-----------------------------------------------------
+
+SystemctlShowQrouterd - command ``systemctl show qrouterd``
+-----------------------------------------------------------
 """
 
 
@@ -250,6 +256,70 @@ class SystemctlShowHttpd(SystemctlShow):
 
     Examples:
         >>> systemctl_show_httpd["LimitNOFILE"]
+        '4096'
+
+    """
+    pass
+
+
+@parser(Specs.systemctl_qpidd)
+class SystemctlShowQpidd(SystemctlShow):
+    """
+    Class for ``systemctl show qpidd``.
+
+    Typical output of ``/bin/systemctl show qpidd`` command is::
+
+        Type=simple
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:32 CST
+        ExecMainStartTimestampMonotonic=104261679
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=2747
+        ExecMainCode=0
+        ExecMainStatus=0
+        ExecStart={ path=/usr/sbin/qpidd ; argv[]=/usr/sbin/qpidd --config /etc/qpid/qpi
+        Slice=system.slice
+        ControlGroup=/system.slice/qpidd.service
+        LimitNOFILE=4096
+        ...
+
+    Examples:
+        >>> systemctl_show_qpidd["LimitNOFILE"]
+        '4096'
+
+    """
+    pass
+
+
+@parser(Specs.systemctl_qrouterd)
+class SystemctlShowQrouterd(SystemctlShow):
+    """
+    Class for ``systemctl show qrouterd``.
+
+    Typical output of ``/bin/systemctl show qrouterd`` command is::
+
+        Type=simple
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:32 CST
+        ExecMainStartTimestampMonotonic=104261679
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=2747
+        ExecMainCode=0
+        ExecMainStatus=0
+        Slice=system.slice
+        LimitNOFILE=4096
+        ...
+
+    Examples:
+        >>> systemctl_show_qrouterd["LimitNOFILE"]
         '4096'
 
     """
