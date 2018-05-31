@@ -390,6 +390,8 @@ class Specs(SpecSet):
     systemctl_pulp_workers = RegistryPoint()
     systemctl_pulp_resmg = RegistryPoint()
     systemctl_pulp_celerybeat = RegistryPoint()
+    systemctl_qpidd = RegistryPoint()
+    systemctl_qrouterd = RegistryPoint()
     systemd_docker = RegistryPoint()
     systemd_openshift_node = RegistryPoint()
     systemd_system_conf = RegistryPoint()
