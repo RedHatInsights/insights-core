@@ -191,6 +191,23 @@ def make_skip(rule_fqdn, reason, details=None):
             "type": "skip"}
 
 
+def _is_make_reponse_too_long(key, kwargs):
+    response_type = {"rule": "make_response", "fingerprint": "make_fingerprint"}
+
+    # using str() avoids many serialization issues and runs in about 75%
+    # of the time as json.dumps
+    detail_length = len(str(kwargs))
+
+    if detail_length > settings.defaults["max_detail_length"]:
+        log.error("Length of data in %s is too long." % response_type[kwargs['type']], extra={
+            "max_detail_length": settings.defaults["max_detail_length"],
+            "error_key": key,
+            "len": detail_length
+        })
+        return True
+    return False
+
+
 def make_response(error_key, **kwargs):
     """ Returns a JSON document approprate as a rule plugin final
     result.
@@ -223,16 +240,51 @@ def make_response(error_key, **kwargs):
     }
     kwargs.update(r)
 
-    # using str() avoids many serialization issues and runs in about 75%
-    # of the time as json.dumps
     detail_length = len(str(kwargs))
 
-    if detail_length > settings.defaults["max_detail_length"]:
-        log.error("Length of data in make_response is too long.", extra={
-            "max_detail_length": settings.defaults["max_detail_length"],
-            "error_key": error_key,
-            "len": detail_length
-        })
+    if _is_make_reponse_too_long(error_key, kwargs):
+        r["max_detail_length_error"] = detail_length
+        return r
+
+    return kwargs
+
+
+def make_fingerprint(fingerprint_key, **kwargs):
+    """ Returns a JSON document appropriate as a fingerprint rule plugin final
+    result.
+
+    :param str fingerprint_key: The fingerprint key name is used for
+          identification of the plugin.
+    :param \*\*kwargs: Strings to pass additional information to the frontend for
+          rendering more complete messages in a customer system report.
+
+
+    Given::
+
+        make_fingerprint("FINGERPRINT", manufacturer="Red Hat", product="Insights")
+
+    The response will be the JSON string ::
+
+        {
+            "type": "fingerprint",
+            "fingerprint_key": "FINGERPRINT",
+            "manufacturer": "Red Hat",
+            "product": "Insights"
+        }
+    """
+
+    if "fingerprint_key" in kwargs or "type" in kwargs:
+        raise Exception("Can't use an invalid argument for make_fingerprint")
+
+    r = {
+        "type": "fingerprint",
+        "fingerprint_key": fingerprint_key
+    }
+    kwargs.update(r)
+
+    detail_length = len(str(kwargs))
+
+    if _is_make_reponse_too_long(fingerprint_key, kwargs):
         r["max_detail_length_error"] = detail_length
         return r
 
@@ -263,7 +315,7 @@ class ValidationException(Exception):
 
 
 def validate_response(r):
-    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key"])
+    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key", "fingerprint"])
     if not isinstance(r, dict):
         raise ValidationException("Response is not a dict", type(r))
     if "type" not in r:
@@ -276,3 +328,9 @@ def validate_response(r):
             raise ValidationException("Rule response missing error_key", r)
         elif not isinstance(error_key, str):
             raise ValidationException("Response contains invalid error_key type", type(error_key))
+    if r["type"] == "fingerprint":
+        fingerprint_key = r.get("fingerprint_key")
+        if not fingerprint_key:
+            raise ValidationException("Rule response missing fingerprint_key", r)
+        elif not isinstance(fingerprint_key, str):
+            raise ValidationException("Response contains invalid fingerprint_key type", type(fingerprint_key))
