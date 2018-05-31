@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.19-380](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.19-380) (2018-05-31)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.18-371...insights-core-3.0.19-380)
+
+**Closed issues:**
+
+- Make GrubConf combiner to get the valid grub. [\#987](https://github.com/RedHatInsights/insights-core/issues/987)
+
 ## [insights-core-3.0.18-371](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.18-371) (2018-05-24)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.17-362...insights-core-3.0.18-371)
 
