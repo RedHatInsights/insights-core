@@ -49,6 +49,21 @@ def test_eus():
     assert repo_list.eus == ["6.2.aus"]
 
 
+def test_rhel_repos():
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT))
+    assert len(repo_list.rhel_repos) == 4
+    assert set(repo_list.rhel_repos) == set(['rhel-7-server-rpms',
+                                             'rhel-7-server-satellite-6.1-rpms',
+                                             'rhel-7-server-satellite-capsule-6.1-rpms',
+                                             'rhel-server-rhscl-7-rpms'])
+
+    repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
+    assert len(repo_list.rhel_repos) == 0
+
+    repo_list = YumRepoList(context_wrap(''))
+    assert len(repo_list.rhel_repos) == 0
+
+
 def test_valueerror_in_parse():
     repo_list = YumRepoList(context_wrap(YUM_REPOLIST_CONTENT_MISSING_STATUS))
     assert repo_list[0]['name'] == ''
