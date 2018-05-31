@@ -208,7 +208,7 @@ class HttpdConf(LegacyItemAccess, Parser):
                     parsed_data = ParsedData(value, line, cur_sec[0], cur_sec[1], self.file_name, self.file_path)
                     # before: section = [(('IfModule', 'worker.c'), {})]
                     add_to_dict_list(section[-1][-1], option, parsed_data)
-                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
+                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': (256, 'MaxClients 256')}])]
                 else:
                     parsed_data = ParsedData(value, line, None, None, self.file_name, self.file_path)
                     add_to_dict_list(self.data, option, parsed_data)
