@@ -106,14 +106,29 @@ class HttpdConf(LegacyItemAccess, Parser):
                            same format as ``data``.
         second_half (dict): Parsed data from main config file after inclusion of other files in the
                             same format as ``data``.
+        nomerge_data (list): List of options and sections. Options are ParsedData. Sections are
+                             tuples with two elements:
+                             - tuple of section and section name.
+                             - list of options and sections (which can again contain ParsedData or
+                               tuples for nested sections).
+        nomerge_first_half (dict): Parsed data from main config file before inclusion of other files
+                                   in the same format as ``nomerge_data``.
+        nomerge_second_half (dict): Parsed data from main config file after inclusion of other files
+                                    in the same format as ``nomerge_data``.
     """
 
     def __init__(self, *args, **kwargs):
         self.data = {}
         self.first_half = {}
         self.second_half = {}
+        self.nomerge_data = []
+        self.nomerge_first_half = []
+        self.nomerge_second_half = []
         super(HttpdConf, self).__init__(*args, **kwargs)
 
+    # TODO - implement nonmerge
+    # TODO - carve out the old implementation and move it into a separate function
+    # TODO - reimplement the old implementation as regurgitation of the new data and run all tests to see it behaves the same
     def parse_content(self, content):
         def add_to_dict_list(dictionary, key, element):
             """
@@ -134,21 +149,25 @@ class HttpdConf(LegacyItemAccess, Parser):
                 dictionary[key].append(element)
 
         where_to_store = self.first_half  # Set which part of file is the parser at
+        nomerge_where_to_store = self.nomerge_first_half  # Set which part of file is the parser at
 
         # Flag to be used for different parsing of the main config file
         main_config = self.file_name == 'httpd.conf'
 
         section = []  # Can be treated as a stack
+        nomerge_section = []  # Can be treated as a stack
         for line in get_active_lines(content):
             if main_config and where_to_store is not self.second_half:
                 # Dividing line looks like 'IncludeOptional conf.d/*.conf'
                 if re.search(r'^\s*IncludeOptional\s+conf\.d', line):
                     where_to_store = self.second_half
+                    nomerge_where_to_store = self.nomerge_second_half
 
             # new section start
             if line.startswith('<') and not line.startswith('</'):
                 splits = line.strip('<>').split(None, 1)
                 section.append(((splits[0], splits[1] if len(splits) == 2 else ''), {}))
+                nomerge_section.append(((splits[0], splits[1] if len(splits) == 2 else ''), []))
             # one section end
             elif line.startswith('</'):
                 sec, pd = section.pop()
@@ -165,6 +184,15 @@ class HttpdConf(LegacyItemAccess, Parser):
                     dict_deep_merge(self.data[sec], pd)
                     if main_config:
                         dict_deep_merge(where_to_store[sec], pd)
+
+                sec, pd = nomerge_section.pop()
+                # for nested section
+                if nomerge_section:
+                    nomerge_section[-1][-1].append((sec, pd))
+                else:
+                    self.nomerge_data.append((sec, pd))
+                    if main_config:
+                        nomerge_where_to_store.append((sec, pd))
             else:
                 try:
                     option, value = [s.strip() for s in line.split(None, 1)]
@@ -184,6 +212,19 @@ class HttpdConf(LegacyItemAccess, Parser):
                     add_to_dict_list(self.data, option, parsed_data)
                     if main_config:
                         add_to_dict_list(where_to_store, option, parsed_data)
+
+                if nomerge_section:
+                    nomerge_cur_sec = nomerge_section[-1][0]
+                    parsed_data = ParsedData(value, line, nomerge_cur_sec[0], nomerge_cur_sec[1], self.file_name, self.file_path)
+                    # before: nomerge_section = [(('IfModule', 'worker.c'), [])]
+                    nomerge_section[-1][-1].append(parsed_data)
+                    # after:  nomerge_section = [(('IfModule', 'worker.c'), [{'MaxClients': (256, 'MaxClients 256')}])]
+                else:
+                    parsed_data = ParsedData(value, line, None, None, self.file_name, self.file_path)
+                    self.nomerge_data.append(parsed_data)
+                    if main_config:
+                        nomerge_where_to_store.append(parsed_data)
+
 
 
 def dict_deep_merge(tgt, src):
