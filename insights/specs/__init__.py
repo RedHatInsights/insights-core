@@ -209,6 +209,7 @@ class Specs(SpecSet):
     ls_var_log = RegistryPoint()
     ls_var_www = RegistryPoint()
     ls_var_tmp = RegistryPoint()
+    ls_var_run = RegistryPoint()
     ls_osroot = RegistryPoint()
     lvdisplay = RegistryPoint()
     lvm_conf = RegistryPoint()
