@@ -596,6 +596,7 @@ class DefaultSpecs(Specs):
     vdsm_conf = simple_file("etc/vdsm/vdsm.conf")
     vdsm_id = simple_file("etc/vdsm/vdsm.id")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
+    vdsm_logger_conf = simple_file("etc/vdsm/logger.conf")
     vmware_tools_conf = simple_file("etc/vmware-tools/tools.conf")
     vgs = None  # simple_command('/sbin/vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"')
     vgs_noheadings = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"")
