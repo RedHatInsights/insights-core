@@ -333,4 +333,4 @@ def validate_response(r):
         if not fingerprint_key:
             raise ValidationException("Rule response missing fingerprint_key", r)
         elif not isinstance(fingerprint_key, str):
-            raise ValidationException("Response contains invalid fingerprint_key type", type(error_key))
+            raise ValidationException("Response contains invalid fingerprint_key type", type(fingerprint_key))

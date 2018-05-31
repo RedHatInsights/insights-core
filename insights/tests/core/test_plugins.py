@@ -80,3 +80,12 @@ def test_make_fingerprint_too_big():
         "fingerprint_key": "TESTING",
         "max_detail_length_error": len(json.dumps({"fingerprint_key": "TESTING", "type": "fingerprint", "big": content}))
     }
+
+
+def test_validate_fingerprint_invalid_fingerprint_key_type():
+    for bad in [{}, None, 1, lambda x: x, set()]:
+        with pytest.raises(plugins.ValidationException):
+            plugins.validate_response({
+                "type": "fingerprint",
+                "fingerprint_key": bad
+            })
