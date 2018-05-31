@@ -99,6 +99,9 @@ def context_wrap(lines,
 input_data_cache = {}
 
 
+counter = itertools.count()
+
+
 def create_metadata(system_id, product):
     ctx_metadata = {
         "system_id": system_id,
@@ -136,7 +139,6 @@ class InputData(object):
         input_data_cache[name] = cnt + 1
         if hostname:
             self.add(Specs.hostname, hostname)
-        self.num_source = itertools.count()
 
     def __setitem__(self, key, value):
         self.add(key, value)
@@ -145,7 +147,7 @@ class InputData(object):
         return self.data[key]
 
     def _make_path(self):
-        return str(next(self.num_source)) + "BOGUS"
+        return str(next(counter)) + "BOGUS"
 
     def get(self, key, default):
         return self.data.get(key, default)
