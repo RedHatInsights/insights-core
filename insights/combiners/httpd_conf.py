@@ -66,6 +66,7 @@ from collections import namedtuple
 
 from insights.core.plugins import combiner
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
+from insights.util import deprecated
 
 
 @combiner(HttpdConf)
@@ -96,10 +97,13 @@ class HttpdConfAll(object):
                      such as ``UserDir``, are used.
         config_data (list): List of parsed config files in containing ConfigData named tuples.
     """
-    ConfigData = namedtuple('ConfigData', ['file_name', 'file_path', 'full_data_dict'])
+    # TODO document the changes (merged_data_dict, unmerged_data_list) in docstrings
+    # TODO somehow deprecate the name 'full_data_dict' in favor of 'merged_data_dict'
+    ConfigData = namedtuple('ConfigData', ['file_name', 'file_path', 'full_data_dict', 'unmerged_data_list'])
 
     def __init__(self, httpd_conf):
-        self.data = {}
+        self.merged_data_active_first = {}
+        self.merged_data_active_last = {}
         self.config_data = []
 
         config_files_data = []
@@ -114,12 +118,15 @@ class HttpdConfAll(object):
 
             if not main_config:
                 config_files_data.append(self.ConfigData(file_name, file_path,
-                                                         httpd_parser.data))
+                                                         httpd_parser.data,
+                                                         httpd_parser.nomerge_data))
             else:
                 main_config_data.append(self.ConfigData(file_name, file_path,
-                                                        httpd_parser.first_half))
+                                                        httpd_parser.first_half,
+                                                        httpd_parser.nomerge_first_half))
                 main_config_data.append(self.ConfigData(file_name, file_path,
-                                                        httpd_parser.second_half))
+                                                        httpd_parser.second_half,
+                                                        httpd_parser.nomerge_second_half))
 
         # Sort configuration files
         config_files_data.sort()
@@ -132,23 +139,45 @@ class HttpdConfAll(object):
         else:
             self.config_data = config_files_data
 
-        # Store active settings - the last parsed value us stored
-        self.data = {}
-        for _, _, full_data in self.config_data:
-            copy_data = full_data.copy()
+        # Store active settings - the first/last parsed value is stored
+        for _, _, merged_data, _ in self.config_data:
+            copy_data = merged_data.copy()
             for option, parsed_data in copy_data.items():
                 if isinstance(parsed_data, dict):
-                    if option not in self.data:
-                        self.data[option] = {}
-                    dict_deep_merge(self.data[option], parsed_data)
+                    # last version of the data is preserved
+                    if option not in self.merged_data_active_last:
+                        self.merged_data_active_last[option] = {}
+                    dict_deep_merge(self.merged_data_active_last[option], parsed_data)
+                    # first version of the data is preserved
+                    if option not in self.merged_data_active_first:
+                        self.merged_data_active_first[option] = {}
+                    tmp_contents = {}
+                    # first, put in the new data
+                    dict_deep_merge(tmp_contents, parsed_data)
+                    first_contents = self.merged_data_active_first[option]
+                    # second, overwrite the new data with the first version
+                    dict_deep_merge(tmp_contents, first_contents)
+                    # third, save that
+                    # TODO: Find out whether it would be possible to save it in fewer steps without
+                    #       the copying. I've seen [jsvoboda] hard to debug mistakes caused by
+                    #       using references to the same instance instead of shallow copies, so I
+                    #       took the safer route.
+                    dict_deep_merge(self.merged_data_active_first[option], parsed_data)
                 else:
-                    if option not in self.data:
-                        self.data[option] = []
-                    self.data[option].extend(parsed_data)
+                    # any method has to take the last element to get the active one
+                    if option not in self.merged_data_active_last:
+                        self.merged_data_active_last[option] = []
+                    self.merged_data_active_last[option].extend(parsed_data)
+                    # any method has to take the first element to get the active one
+                    if option not in self.merged_data_active_first:
+                        self.merged_data_active_first[option] = []
+                    self.merged_data_active_first[option].extend(parsed_data)
 
+    # TODO explain in docstring that it is merged
+    # TODO create an alternative that uses unmerged data (and mention it in the docstring)
     def get_setting_list(self, directive, section=None):
         """
-        Returns the parsed data of the specified directive as a list
+        Returns the parsed data of the specified directive as a list.
 
         Parameters:
             directive (str): The directive to look for
@@ -203,13 +232,24 @@ class HttpdConfAll(object):
             elif (not isinstance(section, tuple) or
                     (len(section) == 0 or len(section) > 2)):
                 return []
-            return _deep_search(self.data, directive, section)
+            return _deep_search(self.merged_data_active_last, directive, section)
 
-        return self.data.get(directive, [])
+        return self.merged_data_active_last.get(directive, [])
 
-    def get_active_setting(self, directive, section=None):
+    def get_setting_active_first(self, directive, section=None):
+        pass
+        # TODO
+
+    def get_setting_active_last(self, directive, section=None):
         """
-        Returns the parsed data of the specified directive as a list of named tuples.
+        Returns the parsed data of the specified directive as a list of named tuples. Returns only
+        the last value in the file load order, the previous values of the requested directive are
+        considered shadowed and inactive.
+
+        Note:
+            Use ``get_setting_active_first``  to get the opposite behavior of using the first
+            found matching directive and ignoring all others in the file load order.
+            Use ``get_setting_list`` to get all matching directives without any shadowing/ignoring.
 
         Parameters:
             directive (str): The directive to look for
@@ -244,6 +284,34 @@ class HttpdConfAll(object):
         else:
             if values_list:
                 return values_list[-1]
+
+    def get_active_setting(self, directive, section=None):
+        """
+        Returns the parsed data of the specified directive as a list
+
+        Parameters:
+            directive (str): The directive to look for
+            section (str or tuple): The section the directive belongs to
+
+                    - str: The section type, e.g. "IfModule"
+                    - tuple(section, section_name): e.g. ("IfModule", "prefork")
+
+                    Note::
+                        `section_name` can be ignored or can be a part of the actual name.
+
+        Returns:
+            (list of dict or named tuple `ParsedData`):
+                When `section` is not None, returns the list of dict that wraps
+                the section and the directive's named tuples ParsedData, in
+                order how they are parsed.
+
+                When `section` is None, returns the list of named tuples
+                ParsedData, in order how they are parsed.
+
+                If directive or section does not exist, returns empty list.
+        """
+        deprecated(self.get_active_setting, "Use get_setting_active_last() instead. Alternatively, consider using get_setting_list() because for many rules it is safer to hit on all matches than to presume which matched directives are or are not shadowed.")
+        return self.get_setting_active_last(directive, section=section)
 
     def get_section_list(self, section):
         """
@@ -298,6 +366,6 @@ class HttpdConfAll(object):
             return result
 
         if section:
-            return _deep_search(self.data, section)
+            return _deep_search(self.merged_data_active_last, section)
 
         return []
