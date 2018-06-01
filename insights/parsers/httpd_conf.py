@@ -132,69 +132,33 @@ class HttpdConf(LegacyItemAccess, Parser):
     # TODO - carve out the old implementation and move it into a separate function
     # TODO - reimplement the old implementation as regurgitation of the new data and run all tests to see it behaves the same
     def parse_content(self, content):
-        def add_to_dict_list(dictionary, key, element):
-            """
-            Utility function to create a dictionary of lists instead of using defaultdict, because
-            rule would be able to unknowingly modify defaultdict structures.
 
-            Args:
-                dictionary (dict): The changed dictionary.
-                key (str): The dictionary key to be changed. If it is in the dictionary, ``element``
-                           is going to be appended to ``dictionary[key]`` list. If the ``key`` is
-                           not in the dictionary, it is created so that
-                           ``dictionary[key] = [element]``.
-                element (Object): A value to be appended to the list under ``dictionary[key]``.
-            """
-            if key not in dictionary:
-                dictionary[key] = [element]
-            else:
-                dictionary[key].append(element)
-
-        where_to_store = self.first_half  # Set which part of file is the parser at
-        nomerge_where_to_store = self.nomerge_first_half  # Set which part of file is the parser at
+        where_to_store = self.nomerge_first_half  # Set which part of file is the parser at
 
         # Flag to be used for different parsing of the main config file
         main_config = self.file_name == 'httpd.conf'
 
         section = []  # Can be treated as a stack
-        nomerge_section = []  # Can be treated as a stack
         for line in get_active_lines(content):
-            if main_config and where_to_store is not self.second_half:
+            if main_config and where_to_store is not self.nomerge_second_half:
                 # Dividing line looks like 'IncludeOptional conf.d/*.conf'
                 if re.search(r'^\s*IncludeOptional\s+conf\.d', line):
-                    where_to_store = self.second_half
-                    nomerge_where_to_store = self.nomerge_second_half
+                    where_to_store = self.nomerge_second_half
 
             # new section start
             if line.startswith('<') and not line.startswith('</'):
                 splits = line.strip('<>').split(None, 1)
-                section.append(((splits[0], splits[1] if len(splits) == 2 else ''), {}))
-                nomerge_section.append(((splits[0], splits[1] if len(splits) == 2 else ''), []))
+                section.append(((splits[0], splits[1] if len(splits) == 2 else ''), []))
             # one section end
             elif line.startswith('</'):
                 sec, pd = section.pop()
                 # for nested section
                 if section:
-                    if sec not in section[-1][-1]:
-                        section[-1][-1][sec] = {}
-                    dict_deep_merge(section[-1][-1][sec], pd)
-                else:
-                    if sec not in self.data:
-                        self.data[sec] = {}
-                        if main_config:
-                            where_to_store[sec] = {}
-                    dict_deep_merge(self.data[sec], pd)
-                    if main_config:
-                        dict_deep_merge(where_to_store[sec], pd)
-
-                sec, pd = nomerge_section.pop()
-                # for nested section
-                if nomerge_section:
-                    nomerge_section[-1][-1].append((sec, pd))
+                    section[-1][-1].append((sec, pd))
                 else:
                     self.nomerge_data.append((sec, pd))
                     if main_config:
-                        nomerge_where_to_store.append((sec, pd))
+                        where_to_store.append((sec, pd))
             else:
                 try:
                     option, value = [s.strip() for s in line.split(None, 1)]
@@ -204,28 +168,16 @@ class HttpdConf(LegacyItemAccess, Parser):
                 value = value.strip('\'"')
 
                 if section:
-                    cur_sec = section[-1][0]
-                    parsed_data = ParsedData(value, line, cur_sec[0], cur_sec[1], self.file_name, self.file_path)
-                    # before: section = [(('IfModule', 'worker.c'), {})]
-                    add_to_dict_list(section[-1][-1], option, parsed_data)
-                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': (256, 'MaxClients 256')}])]
-                else:
-                    parsed_data = ParsedData(value, line, None, None, self.file_name, self.file_path)
-                    add_to_dict_list(self.data, option, parsed_data)
-                    if main_config:
-                        add_to_dict_list(where_to_store, option, parsed_data)
-
-                if nomerge_section:
-                    nomerge_cur_sec = nomerge_section[-1][0]
+                    nomerge_cur_sec = section[-1][0]
                     parsed_data = ParsedData2(option, value, line, nomerge_cur_sec[0], nomerge_cur_sec[1], self.file_name, self.file_path)
-                    # before: nomerge_section = [(('IfModule', 'worker.c'), [])]
-                    nomerge_section[-1][-1].append(parsed_data)
-                    # after:  nomerge_section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
+                    # before: section = [(('IfModule', 'worker.c'), [])]
+                    section[-1][-1].append(parsed_data)
+                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
                 else:
                     parsed_data = ParsedData2(option, value, line, None, None, self.file_name, self.file_path)
                     self.nomerge_data.append(parsed_data)
                     if main_config:
-                        nomerge_where_to_store.append(parsed_data)
+                        where_to_store.append(parsed_data)
 
         # TODO cleanup the whole parser - e.g. it generates the legacy self.data only for it to be thrown away and generated again the new way
         import q
