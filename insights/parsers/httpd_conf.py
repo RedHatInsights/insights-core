@@ -128,22 +128,13 @@ class HttpdConf(LegacyItemAccess, Parser):
         self.nomerge_second_half = []
         super(HttpdConf, self).__init__(*args, **kwargs)
 
-    # TODO - implement nonmerge
-    # TODO - carve out the old implementation and move it into a separate function
-    # TODO - reimplement the old implementation as regurgitation of the new data and run all tests to see it behaves the same
     def parse_content(self, content):
-
-        where_to_store = self.nomerge_first_half  # Set which part of file is the parser at
 
         # Flag to be used for different parsing of the main config file
         main_config = self.file_name == 'httpd.conf'
 
         section = []  # Can be treated as a stack
         for line in get_active_lines(content):
-            if main_config and where_to_store is not self.nomerge_second_half:
-                # Dividing line looks like 'IncludeOptional conf.d/*.conf'
-                if re.search(r'^\s*IncludeOptional\s+conf\.d', line):
-                    where_to_store = self.nomerge_second_half
 
             # new section start
             if line.startswith('<') and not line.startswith('</'):
@@ -157,8 +148,6 @@ class HttpdConf(LegacyItemAccess, Parser):
                     section[-1][-1].append((sec, pd))
                 else:
                     self.nomerge_data.append((sec, pd))
-                    if main_config:
-                        where_to_store.append((sec, pd))
             else:
                 try:
                     option, value = [s.strip() for s in line.split(None, 1)]
@@ -176,34 +165,60 @@ class HttpdConf(LegacyItemAccess, Parser):
                 else:
                     parsed_data = ParsedData2(option, value, line, None, None, self.file_name, self.file_path)
                     self.nomerge_data.append(parsed_data)
-                    if main_config:
-                        where_to_store.append(parsed_data)
 
-        # TODO cleanup the whole parser - e.g. it generates the legacy self.data only for it to be thrown away and generated again the new way
-        import q
-        q("BEFORE")
-        q(self.data)
+        where_to_store = self.nomerge_first_half  # Set which part of file is the parser at
+        if main_config:
+            for d in self.nomerge_data:
+                # assuming that the line doesn't appear inside a section
+                if isinstance(d, ParsedData2) and re.search(r'^\s*IncludeOptional\s+conf\.d', d.line):
+                    where_to_store = self.nomerge_second_half
+                where_to_store.append(d)
+
         self.data = convert_nomerge_to_merge(self.nomerge_data)
-        q("AFTER")
-        q(self.data)
-        q("END")
         self.first_half = convert_nomerge_to_merge(self.nomerge_first_half)
         self.second_half = convert_nomerge_to_merge(self.nomerge_second_half)
 
 
 def convert_nomerge_to_merge(data):
-    # TODO defaultdict?
+    """
+    Utility function that creates a merged representation of the httpd conf data.
+    In the merged representation, all observed values of a particular option are in a single list
+    in a dictionary keyed by the option, and all observed contents of sections are in a single
+    dict in a dictionary keyed by the section.
+
+    Note:
+        Before June 2018, this was the only format of the data and it is sufficient for most rules,
+        but not for all.
+
+    Parameters:
+        data (list): A list of objects, representing a httpd conf file. The list can contain only
+                     two types of objects:
+                     - ``ParsedData2`` - individual options,
+                     - ``tuple[tuple[str, str], list[union[ParsedData2, tuple]]]`` - sections with
+                       contents.
+
+    Returns:
+        dict[union[str, tuple[str, str]], union[list, dict]] - httpd conf representation where all
+                                                               options of the same name have values
+                                                               in a single list and all sections of
+                                                               the same type and name have contents
+                                                               in a single dict.
+    """
     merged = {}
     for d in data:
         if isinstance(d, ParsedData2):
             if d.option not in merged:
                 merged[d.option] = []
-            merged[d.option].append(ParsedData(d.value, d.line, d.section, d.section_name, d.file_name, d.file_path))
+            merged[d.option].append(ParsedData(value=d.value,
+                                               line=d.line,
+                                               section=d.section,
+                                               section_name=d.section_name,
+                                               file_name=d.file_name,
+                                               file_path=d.file_path))
         else:
-            ((_sec, _sec_name), pd) = d
             # making sure the section is identified by a tuple
+            ((_sec, _sec_name), pd) = d
             sec = (_sec, _sec_name)
-
             pd_processed = convert_nomerge_to_merge(pd)
             if sec not in merged:
                 merged[sec] = {}
