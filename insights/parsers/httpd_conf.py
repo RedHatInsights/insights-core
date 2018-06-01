@@ -157,8 +157,8 @@ class HttpdConf(LegacyItemAccess, Parser):
                 value = value.strip('\'"')
 
                 if section:
-                    nomerge_cur_sec = section[-1][0]
-                    parsed_data = ParsedData2(option, value, line, nomerge_cur_sec[0], nomerge_cur_sec[1], self.file_name, self.file_path)
+                    cur_sec = section[-1][0]
+                    parsed_data = ParsedData2(option, value, line, cur_sec[0], cur_sec[1], self.file_name, self.file_path)
                     # before: section = [(('IfModule', 'worker.c'), [])]
                     section[-1][-1].append(parsed_data)
                     # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
