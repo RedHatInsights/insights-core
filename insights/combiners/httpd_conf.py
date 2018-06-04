@@ -96,11 +96,6 @@ class HttpdConfAll(object):
                      such as ``UserDir``, are used.
         config_data (list): List of parsed config files in containing ConfigData named tuples.
     """
-    ##### v NEW v #####
-    ##### v NEW v #####
-    ConfigData2 = namedtuple('ConfigData', ['file_name', 'file_path', 'merged_data_dict', 'unmerged_data_list'])
-    ##### ^ NEW ^ #####
-    ##### ^ NEW ^ #####
     ConfigData = namedtuple('ConfigData', ['file_name', 'file_path', 'full_data_dict'])
 
     def __init__(self, httpd_conf):
@@ -150,46 +145,6 @@ class HttpdConfAll(object):
                     if option not in self.data:
                         self.data[option] = []
                     self.data[option].extend(parsed_data)
-
-        ##### v NEW v #####
-        ##### v NEW v #####
-        self.merged_data_active_first = {}
-        self.merged_data_active_last = {}
-        self.config_data2 = []
-        config_files_data2 = []
-        main_config_data2 = []
-
-        for httpd_parser in httpd_conf:
-            file_name = httpd_parser.file_name
-            file_path = httpd_parser.file_path
-
-            # Flag to be used for different handling of the main config file
-            main_config = httpd_parser.file_name == 'httpd.conf'
-
-            if not main_config:
-                config_files_data2.append(self.ConfigData2(file_name, file_path,
-                                                           httpd_parser.data,
-                                                           httpd_parser.nomerge_data))
-            else:
-                main_config_data2.append(self.ConfigData2(file_name, file_path,
-                                                          httpd_parser.first_half,
-                                                          httpd_parser.nomerge_first_half))
-                main_config_data2.append(self.ConfigData2(file_name, file_path,
-                                                          httpd_parser.second_half,
-                                                          httpd_parser.nomerge_second_half))
-        # Sort configuration files
-        config_files_data2.sort()
-
-        # Add both parts of main configuration file and store as attribute.
-        # These values can be used when looking for bad settings which are not actually active
-        # but may become active if other configurations are changed
-        if main_config_data2:
-            self.config_data2 = [main_config_data2[0]] + config_files_data2 + [main_config_data2[1]]
-        else:
-            self.config_data2 = config_files_data
-        ##### ^ NEW ^ #####
-        ##### ^ NEW ^ #####
-
 
     def get_setting_list(self, directive, section=None):
         """

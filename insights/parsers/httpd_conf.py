@@ -81,13 +81,9 @@ from copy import deepcopy
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
-# for compatibility with existing rules
-# TODO: deprecate in a future version of insights and use only ParsedData2
 ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
 """namedtuple: Type for storing the parsed httpd configuration's directive information."""
 
-ParsedData2 = namedtuple('ParsedData', ['option', 'value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
-"""namedtuple: Type for storing the parsed httpd configuration's directive information."""
 
 @parser(Specs.httpd_conf)
 class HttpdConf(LegacyItemAccess, Parser):
@@ -110,46 +106,65 @@ class HttpdConf(LegacyItemAccess, Parser):
                            same format as ``data``.
         second_half (dict): Parsed data from main config file after inclusion of other files in the
                             same format as ``data``.
-        nomerge_data (list): List of options and sections. Options are ParsedData2. Sections are
-                             tuples with two elements:
-                             - tuple of section and section name.
-                             - list of options and sections (which can again contain ParsedData2 or
-                               tuples for nested sections).
-        nomerge_first_half (dict): Parsed data from main config file before inclusion of other files
-                                   in the same format as ``nomerge_data``.
-        nomerge_second_half (dict): Parsed data from main config file after inclusion of other files
-                                    in the same format as ``nomerge_data``.
     """
 
     def __init__(self, *args, **kwargs):
         self.data = {}
         self.first_half = {}
         self.second_half = {}
-        self.nomerge_data = []
-        self.nomerge_first_half = []
-        self.nomerge_second_half = []
         super(HttpdConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
+        def add_to_dict_list(dictionary, key, element):
+            """
+            Utility function to create a dictionary of lists instead of using defaultdict, because
+            rule would be able to unknowingly modify defaultdict structures.
+
+            Args:
+                dictionary (dict): The changed dictionary.
+                key (str): The dictionary key to be changed. If it is in the dictionary, ``element``
+                           is going to be appended to ``dictionary[key]`` list. If the ``key`` is
+                           not in the dictionary, it is created so that
+                           ``dictionary[key] = [element]``.
+                element (Object): A value to be appended to the list under ``dictionary[key]``.
+            """
+            if key not in dictionary:
+                dictionary[key] = [element]
+            else:
+                dictionary[key].append(element)
+
+        where_to_store = self.first_half  # Set which part of file is the parser at
 
         # Flag to be used for different parsing of the main config file
         main_config = self.file_name == 'httpd.conf'
 
         section = []  # Can be treated as a stack
         for line in get_active_lines(content):
+            if main_config and where_to_store is not self.second_half:
+                # Dividing line looks like 'IncludeOptional conf.d/*.conf'
+                if re.search(r'^\s*IncludeOptional\s+conf\.d', line):
+                    where_to_store = self.second_half
 
             # new section start
             if line.startswith('<') and not line.startswith('</'):
                 splits = line.strip('<>').split(None, 1)
-                section.append(((splits[0], splits[1] if len(splits) == 2 else ''), []))
+                section.append(((splits[0], splits[1] if len(splits) == 2 else ''), {}))
             # one section end
             elif line.startswith('</'):
                 sec, pd = section.pop()
                 # for nested section
                 if section:
-                    section[-1][-1].append((sec, pd))
+                    if sec not in section[-1][-1]:
+                        section[-1][-1][sec] = {}
+                    dict_deep_merge(section[-1][-1][sec], pd)
                 else:
-                    self.nomerge_data.append((sec, pd))
+                    if sec not in self.data:
+                        self.data[sec] = {}
+                        if main_config:
+                            where_to_store[sec] = {}
+                    dict_deep_merge(self.data[sec], pd)
+                    if main_config:
+                        dict_deep_merge(where_to_store[sec], pd)
             else:
                 try:
                     option, value = [s.strip() for s in line.split(None, 1)]
@@ -160,72 +175,15 @@ class HttpdConf(LegacyItemAccess, Parser):
 
                 if section:
                     cur_sec = section[-1][0]
-                    parsed_data = ParsedData2(option, value, line, cur_sec[0], cur_sec[1], self.file_name, self.file_path)
-                    # before: section = [(('IfModule', 'worker.c'), [])]
-                    section[-1][-1].append(parsed_data)
-                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': ('MaxClients', 256, 'MaxClients 256')}])]
+                    parsed_data = ParsedData(value, line, cur_sec[0], cur_sec[1], self.file_name, self.file_path)
+                    # before: section = [(('IfModule', 'worker.c'), {})]
+                    add_to_dict_list(section[-1][-1], option, parsed_data)
+                    # after:  section = [(('IfModule', 'worker.c'), [{'MaxClients': (256, 'MaxClients 256')}])]
                 else:
-                    parsed_data = ParsedData2(option, value, line, None, None, self.file_name, self.file_path)
-                    self.nomerge_data.append(parsed_data)
-
-        where_to_store = self.nomerge_first_half  # Set which part of file is the parser at
-        if main_config:
-            for d in self.nomerge_data:
-                # assuming that the line doesn't appear inside a section
-                if isinstance(d, ParsedData2) and re.search(r'^\s*IncludeOptional\s+conf\.d', d.line):
-                    where_to_store = self.nomerge_second_half
-                where_to_store.append(d)
-
-        self.data = convert_nomerge_to_merge(self.nomerge_data)
-        self.first_half = convert_nomerge_to_merge(self.nomerge_first_half)
-        self.second_half = convert_nomerge_to_merge(self.nomerge_second_half)
-
-
-def convert_nomerge_to_merge(data):
-    """
-    Utility function that creates a merged representation of the httpd conf data.
-    In the merged representation, all observed values of a particular option are in a single list
-    in a dictionary keyed by the option, and all observed contents of sections are in a single
-    dict in a dictionary keyed by the section.
-
-    Note:
-        Before June 2018, this was the only format of the data and it is sufficient for most rules,
-        but not for all.
-
-    Parameters:
-        data (list): A list of objects, representing a httpd conf file. The list can contain only
-                     two types of objects:
-                     - ``ParsedData2`` - individual options,
-                     - ``tuple[tuple[str, str], list[union[ParsedData2, tuple]]]`` - sections with
-                       contents.
-
-    Returns:
-        dict[union[str, tuple[str, str]], union[list, dict]] - httpd conf representation where all
-                                                               options of the same name have values
-                                                               in a single list and all sections of
-                                                               the same type and name have contents
-                                                               in a single dict.
-    """
-    merged = {}
-    for d in data:
-        if isinstance(d, ParsedData2):
-            if d.option not in merged:
-                merged[d.option] = []
-            merged[d.option].append(ParsedData(value=d.value,
-                                               line=d.line,
-                                               section=d.section,
-                                               section_name=d.section_name,
-                                               file_name=d.file_name,
-                                               file_path=d.file_path))
-        else:
-            # making sure the section is identified by a tuple
-            ((_sec, _sec_name), pd) = d
-            sec = (_sec, _sec_name)
-            pd_processed = convert_nomerge_to_merge(pd)
-            if sec not in merged:
-                merged[sec] = {}
-            dict_deep_merge(merged[sec], pd_processed)
-    return merged
+                    parsed_data = ParsedData(value, line, None, None, self.file_name, self.file_path)
+                    add_to_dict_list(self.data, option, parsed_data)
+                    if main_config:
+                        add_to_dict_list(where_to_store, option, parsed_data)
 
 
 def dict_deep_merge(tgt, src):
