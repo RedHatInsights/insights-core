@@ -6,6 +6,7 @@
 .cache
 *.swp
 *.tsv
+.tox
 htmlcov
 *.log
 *.class
