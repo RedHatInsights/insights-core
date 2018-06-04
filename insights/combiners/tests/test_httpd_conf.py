@@ -392,13 +392,13 @@ def test_shadowing():
             ParsedData('3A', 'Bar 3A', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
             ParsedData('3B', 'Bar 3B', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
             ParsedData('3C', 'Bar 3C', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
-            ],
+        ],
         },
         {('IfModule', 'ASDF.prefork.c.ASDF'): [
             ParsedData('2A', 'Bar 2A', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
             ParsedData('2B', 'Bar 2B', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
             ParsedData('2C', 'Bar 2C', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
-            ],
+        ],
         },
     ]
     assert result.get_setting_list('Bar') == []
