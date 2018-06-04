@@ -410,7 +410,7 @@ def test_shadowing():
         ('3C', 'Bar 3C', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
         ('2C', 'Bar 2C', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
     ]
-    assert result.get_active_setting('Bar') == None
+    assert result.get_active_setting('Bar') is None
 
 
 def test_httpd_splits():
