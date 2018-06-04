@@ -81,6 +81,8 @@ from copy import deepcopy
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
+# for compatibility with existing rules
+# TODO: deprecate in a future version of insights and use only ParsedData2
 ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
 """namedtuple: Type for storing the parsed httpd configuration's directive information."""
 
@@ -108,10 +110,10 @@ class HttpdConf(LegacyItemAccess, Parser):
                            same format as ``data``.
         second_half (dict): Parsed data from main config file after inclusion of other files in the
                             same format as ``data``.
-        nomerge_data (list): List of options and sections. Options are ParsedData. Sections are
+        nomerge_data (list): List of options and sections. Options are ParsedData2. Sections are
                              tuples with two elements:
                              - tuple of section and section name.
-                             - list of options and sections (which can again contain ParsedData or
+                             - list of options and sections (which can again contain ParsedData2 or
                                tuples for nested sections).
         nomerge_first_half (dict): Parsed data from main config file before inclusion of other files
                                    in the same format as ``nomerge_data``.
