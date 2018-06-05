@@ -22,6 +22,11 @@ log = logging.getLogger(__name__)
 COMMANDS = {}
 
 
+def escape(s):
+    escape_encoding = "string_escape" if six.PY2 else "unicode_escape"
+    return s.encode(escape_encoding)
+
+
 def mangle_command(command, name_max=255):
     """
     Mangle a command line string into something suitable for use as the basename of a filename.
@@ -334,6 +339,7 @@ def simple_file(path, context=None, kind=TextFileProvider):
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         return kind(ctx.locate_path(path), root=ctx.root, ds=inner)
+    inner.__doc__ = 'Path: ' + path
     return inner
 
 
@@ -377,6 +383,7 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_fi
                                        "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
+    inner.__doc__ = 'Path: ' + ", ".join(patterns)
     return inner
 
 
@@ -419,6 +426,7 @@ def first_file(files, context=None, kind=TextFileProvider):
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(files))
+    inner.__doc__ = 'Path: ' + ", ".join(files)
     return inner
 
 
@@ -449,6 +457,7 @@ def listdir(path, context=None):
         if result:
             return [os.path.basename(r) for r in result]
         raise ContentException("Can't list %s or nothing there." % p)
+    inner.__doc__ = 'Path: ' + path
     return inner
 
 
@@ -496,6 +505,7 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
             result = raw
         return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
     COMMANDS[inner] = cmd
+    inner.__doc__ = 'Command: ' + cmd
     return inner
 
 
@@ -562,6 +572,7 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
         if result:
             return result
         raise ContentException("No results found for [%s]" % cmd)
+    inner.__doc__ = 'Command: ' + cmd
     return inner
 
 
@@ -604,6 +615,7 @@ def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextF
         if result:
             return result
         raise ContentException("No results found for [%s]" % path)
+    inner.__doc__ = 'Path: ' + path
     return inner
 
 
@@ -620,6 +632,9 @@ def first_of(deps):
             if c in broker:
                 return broker[c]
 
+    docs = [escape(d.__doc__) for d in deps if d.__doc__]
+    docs = ["Returns the first of the following:"] + docs
+    inner.__doc__ = "\n".join(docs)
     return inner
 
 
