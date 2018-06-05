@@ -29,8 +29,8 @@ class ZipExtractor(object):
         self.content_type = "application/zip"
         self.timeout = timeout
 
-    def from_path(self, path):
-        self.tmp_dir = tempfile.mkdtemp()
+    def from_path(self, path, extract_dir=None):
+        self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
         command = "unzip -q -d %s %s" % (self.tmp_dir, path)
         subproc.call(command, timeout=self.timeout)
         return self
@@ -90,7 +90,7 @@ class Extraction(object):
 
 
 @contextmanager
-def extract(path, timeout=None):
+def extract(path, timeout=None, extract_dir=None):
     content_type = from_file(path)
     if content_type == "application/zip":
         extractor = ZipExtractor(timeout=timeout)
@@ -99,7 +99,7 @@ def extract(path, timeout=None):
 
     tmp_dir = None
     try:
-        tmp_dir = extractor.from_path(path).tmp_dir
+        tmp_dir = extractor.from_path(path, extract_dir=extract_dir).tmp_dir
         content_type = extractor.content_type
         yield Extraction(tmp_dir, content_type)
     finally:
