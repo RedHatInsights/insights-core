@@ -633,8 +633,8 @@ def first_of(deps):
                 return broker[c]
 
     docs = [escape(d.__doc__) for d in deps if d.__doc__]
-    docs = ["Returns the first of the following:"] + docs
-    inner.__doc__ = "\n".join(docs)
+    docs = [b"Returns the first of the following:"] + docs
+    inner.__doc__ = b"\n".join(docs)
     return inner
 
 
