@@ -142,32 +142,32 @@ This is all executed by the `run` command.  The `run` command will
 That's cool, but is it really simpler?
 --------------------------------------
 
-Certainly, for a simple check, just grepping a file is simpler.
-However, there are gains as the complexity and automation requirements
-come into play.  In this particular case, the complexity is hidden in two
-places.
+Certainly, for a simple check, just grepping a file is quite simple and
+efficient.  However, as the complexity of the analysis increases
+the simple approach will not scale.  In this particular case, the
+complexity is encapsulated in two places that makes the rule itself
+easier to code and allows reuse of the common functions.
 
-First, complexity around parsing the `rpm -qa` command, and presenting
-it in a usable data model is handled by the `InstalledRpms` class.  It
+First, the parsing of the `rpm -qa` into 
+a structured data model is handled by the `InstalledRpms` class.  It
 is just `one
 <http://insights-core.readthedocs.io/en/latest/shared_parsers_catalog/installed_rpms.html#installedrpms-command-rpm-qa>`_
 of many `parsers
 <http://insights-core.readthedocs.io/en/latest/parsers_index.html#shared-parsers-catalog>`_
 and `combiners
 <http://insights-core.readthedocs.io/en/latest/combiners_index.html#shared-combiners-catalog>`_
-that one can use.   In addition, new custom parsers can be easily
-created. (See the `stand_alone.py
-<https://github.com/RedHatInsights/insights-core/blob/master/stand_alone.py>`_
+available.  If needed, custom parsers can be easily created. (See the
+`stand_alone.py <https://github.com/RedHatInsights/insights-core/blob/master/stand_alone.py>`_
 script for a full example defining a full set of components.)
 
-The complexity of execution is hidden in the `run` function.  This
+Second, the complexity of execution is hidden in the `run` function.  This
 function understands the dependences that need to be met, determining
 the order of processing.  In addition, it understands various contexts
-of execution.  In the above example, a "host" context is used and the
+of execution.  In the above example, a "host" context is used, and the
 data gathering command is simply executed on the current host.  But,
 contexts exist to run the same function over a sosreport, Red Hat
-Insights archive, or a directory containing expanded archives.  Finally,
-the same code could be run in Red Hat Insights itself.
+Insights archive, or a directory containing an expanded archive.
+Finally, the same code could be run in Red Hat Insights itself.
 
 Next Steps
 ----------
