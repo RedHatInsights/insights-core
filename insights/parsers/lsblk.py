@@ -102,7 +102,7 @@ Examples:
 
 from __future__ import division
 import re
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import ParseException, keyword_search
 from insights.specs import Specs
 
@@ -155,7 +155,7 @@ class BlockDevice(object):
             return '{type}:{name}'.format(type=self.data['TYPE'], name=self.data['NAME'])
 
 
-class BlockDevices(Parser):
+class BlockDevices(CommandParser):
     """Class to contain all information from ``lsblk`` command.
 
     Output of the ``lsblk`` command is contained in this base

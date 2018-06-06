@@ -96,12 +96,12 @@ Examples:
 
 import re
 from datetime import date
-from .. import LegacyItemAccess, Parser, parser, defaults
+from .. import LegacyItemAccess, parser, defaults, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.dmidecode)
-class DMIDecode(Parser, LegacyItemAccess):
+class DMIDecode(CommandParser, LegacyItemAccess):
     """
     Class for DMI information.
     """

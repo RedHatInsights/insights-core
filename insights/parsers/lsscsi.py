@@ -6,12 +6,12 @@ This module provides processing for the output of the ``/usr/bin/lsscsi`` comman
 """
 
 from . import ParseException
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.lsscsi)
-class LsSCSI(Parser):
+class LsSCSI(CommandParser):
     """
     This parser reads the output of ``/usr/bin/lsscsi`` into a list of dictionarys.
     Each item is a dictionary with six keys:

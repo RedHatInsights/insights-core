@@ -42,13 +42,13 @@ Examples:
 
 import re
 import shlex
-from insights import parser, Parser
+from insights import parser, CommandParser
 from insights.specs import Specs
 from insights.util import deprecated
 
 
 @parser(Specs.multipath__v4__ll)
-class MultipathDevices(Parser):
+class MultipathDevices(CommandParser):
     """
     ``multipath_-v4_ll`` command output
 

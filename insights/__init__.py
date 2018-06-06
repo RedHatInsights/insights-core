@@ -4,7 +4,7 @@ import pkgutil
 from pprint import pprint
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
-from .core import YAMLParser, JSONParser, XMLParser  # noqa: F401
+from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.archives import extract  # noqa: F401

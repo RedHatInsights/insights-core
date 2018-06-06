@@ -4,13 +4,13 @@ Ps - command ``ps auxww`` and others
 
 This module provides processing for the various outputs of the ``ps`` command.
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
 from insights.core.filters import add_filter
 
 
-class Ps(Parser):
+class Ps(CommandParser):
     """
     Template Class to parse ``ps`` command output.
 

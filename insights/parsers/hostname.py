@@ -20,12 +20,12 @@ Examples:
 """
 
 from . import ParseException
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.hostname)
-class Hostname(Parser):
+class Hostname(CommandParser):
     """Class for parsing ``hostname`` command output.
 
     Attributes:

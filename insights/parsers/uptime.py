@@ -39,13 +39,13 @@ Examples:
 
 import re
 import datetime
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.parsers import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.uptime)
-class Uptime(Parser):
+class Uptime(CommandParser):
     """Parser class to parse the output of ``uptime``."""
 
     def parse_content(self, content):

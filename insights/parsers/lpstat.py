@@ -28,7 +28,7 @@ Examples:
 
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 # Printer states
@@ -41,7 +41,7 @@ START_LINE_MARKER = 'printer '
 
 
 @parser(Specs.lpstat_p)
-class LpstatPrinters(Parser):
+class LpstatPrinters(CommandParser):
     """Class to parse ``lpstat -p`` command output.
 
     Raises:

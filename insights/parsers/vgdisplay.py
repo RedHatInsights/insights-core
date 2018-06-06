@@ -4,14 +4,14 @@ VgDisplay - command ``vgdisplay``
 
 """
 
-from .. import parser, Parser
+from .. import parser, CommandParser
 
 import re
 from insights.specs import Specs
 
 
 @parser(Specs.vgdisplay)
-class VgDisplay(Parser):
+class VgDisplay(CommandParser):
     """
     Parse the output of the ``vgdisplay -vv`` or ``vgdisplay`` commands.
 

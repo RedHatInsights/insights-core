@@ -53,14 +53,14 @@ Examples:
 
 """
 
-from .. import parser, Parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 COMPOUND_FIELDS = ['Filesystem features', 'Filesystem flags', 'Default mount options']
 
 
 @parser(Specs.dumpe2fs_h)
-class DumpE2fs(Parser, LegacyItemAccess):
+class DumpE2fs(CommandParser, LegacyItemAccess):
     """
     Parse each line in the output of the ``dumpe2fs`` command.
     """

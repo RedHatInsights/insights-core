@@ -31,13 +31,13 @@ from insights.specs import Specs
 from insights.core.filters import add_filter
 
 from .. import FileListing
-from .. import parser
+from .. import parser, CommandParser
 
 
 add_filter(Specs.ls_var_tmp, "/var/tmp")
 
 
 @parser(Specs.ls_var_tmp)
-class LsVarTmp(FileListing):
+class LsVarTmp(CommandParser, FileListing):
     """Parses output of ``ls -ln /var/tmp`` command."""
     pass

@@ -29,12 +29,12 @@ Examples:
     'iqn.2017-06.com.example:server2'
 """
 
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.iscsiadm_m_session)
-class IscsiAdmModeSession(Parser, LegacyItemAccess):
+class IscsiAdmModeSession(CommandParser, LegacyItemAccess):
     """Class to process the ``iscsiadm - m session`` command output.
 
     Attributes:
