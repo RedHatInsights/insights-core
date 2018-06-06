@@ -36,12 +36,12 @@ Examples:
 
 """
 
-from .. import LegacyItemAccess, Parser, parser
+from .. import LegacyItemAccess, parser, CommandParser
 from ..core.marshalling import unmarshal
 from insights.specs import Specs
 
 
-class DockerInspect(LegacyItemAccess, Parser):
+class DockerInspect(LegacyItemAccess, CommandParser):
     """
     Parse the output of command "docker inspect --type=image" and "docker
     inspect --type=container".  The output of these two commands is formatted

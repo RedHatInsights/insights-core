@@ -23,7 +23,7 @@ Examples:
     ['tomcat6', 'httpd']
 
 """
-from .. import parser, Parser, add_filter
+from .. import parser, add_filter, CommandParser
 from insights.specs import Specs
 
 add_filter(Specs.katello_service_status, ['Some services failed to status',
@@ -31,7 +31,7 @@ add_filter(Specs.katello_service_status, ['Some services failed to status',
 
 
 @parser(Specs.katello_service_status)
-class KatelloServiceStatus(Parser):
+class KatelloServiceStatus(CommandParser):
     """
     Read the ``katello-service status`` and get the list of ``failed_services``.
 

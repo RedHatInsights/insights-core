@@ -1,4 +1,4 @@
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 eus = [
@@ -49,7 +49,7 @@ def _parse(lines):
 
 
 @parser(Specs.yum_repolist)
-class YumRepoList(Parser):
+class YumRepoList(CommandParser):
 
     def __len__(self):
         return len(self.data)

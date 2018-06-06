@@ -12,11 +12,11 @@ Sysctl - command ``sysctl -a``
 SysctlConf - file ``/etc/sysctl.conf``
 --------------------------------------
 
-SysctlConfInitramfs - file ``lsinitrd``
----------------------------------------
+SysctlConfInitramfs - command ``lsinitrd``
+------------------------------------------
 
 """
-from .. import Parser, LogFileOutput, parser, LegacyItemAccess
+from .. import Parser, LogFileOutput, parser, LegacyItemAccess, CommandParser
 from ..parsers import split_kv_pairs
 from insights.specs import Specs
 
@@ -57,7 +57,7 @@ class SysctlConf(Parser):
 
 
 @parser(Specs.sysctl)
-class Sysctl(LegacyItemAccess, Parser):
+class Sysctl(LegacyItemAccess, CommandParser):
     """Parse the output of `sysctl -a` command.
 
     Sample input::
@@ -80,7 +80,7 @@ class Sysctl(LegacyItemAccess, Parser):
 
 
 @parser(Specs.sysctl_conf_initramfs)
-class SysctlConfInitramfs(LogFileOutput):
+class SysctlConfInitramfs(CommandParser, LogFileOutput):
     """Shared parser for the output of ``lsinitrd`` applied to kdump
     initramfs images to view ``sysctl.conf`` and ``sysctl.d``
     configurations.

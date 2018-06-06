@@ -1,4 +1,4 @@
-from .. import Parser, parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from . import parse_delimited_table
 from insights.specs import Specs
 
@@ -55,7 +55,7 @@ class LabelTable(Table):
 
 
 @parser(Specs.rhn_schema_stats)
-class DBStatsLog(Parser):
+class DBStatsLog(CommandParser):
     """
     Returns a DBStatsLog object which provides below two methods:
     - in:

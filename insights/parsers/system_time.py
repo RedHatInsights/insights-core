@@ -8,7 +8,7 @@ of its time setting resources.
 """
 
 import re
-from .. import Parser, parser, get_active_lines
+from .. import Parser, parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 
@@ -174,7 +174,7 @@ class NTPConf(NTPConfParser):
 
 
 @parser(Specs.localtime)
-class LocalTime(Parser):
+class LocalTime(CommandParser):
     """
     A parser for working with the output of command: `file -L /etc/localtime`
 
@@ -220,7 +220,7 @@ class LocalTime(Parser):
 
 
 @parser(Specs.ntptime)
-class NtpTime(Parser):
+class NtpTime(CommandParser):
     """
     A parser for working with the output of the ``ntptime``.
 

@@ -39,7 +39,7 @@ Examples:
 
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.parsers import ParseException
 from collections import namedtuple
 from insights.specs import Specs
@@ -51,7 +51,7 @@ Migration = namedtuple("Migration", ('status', 'id', 'name'))
 
 
 @parser(Specs.foreman_rake_db_migrate_status)
-class Sat6DBMigrateStatus(Parser):
+class Sat6DBMigrateStatus(CommandParser):
     """
     Parse the ``foreman-rake db:migrate:status`` command.
 

@@ -43,12 +43,12 @@ Examples:
     >>> "0d:00.0" in pci_info
     True
 """
-from .. import LogFileOutput, parser
+from .. import LogFileOutput, parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.lspci)
-class LsPci(LogFileOutput):
+class LsPci(CommandParser, LogFileOutput):
     """Parses output of the ``lspci`` command.
 
     .. note::

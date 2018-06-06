@@ -1,9 +1,9 @@
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ovs_vsctl_show)
-class OVSvsctlshow(Parser):
+class OVSvsctlshow(CommandParser):
     """
     Input example:
     ====================

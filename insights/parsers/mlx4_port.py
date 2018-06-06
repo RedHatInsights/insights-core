@@ -33,12 +33,12 @@ Examples:
 """
 
 from collections import defaultdict
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.mlx4_port)
-class Mlx4Port(Parser):
+class Mlx4Port(CommandParser):
     """
     Parse the output of the command:
 
