@@ -89,9 +89,6 @@ def main():
             cp = ''
             lines = []
 
-            if spec.func_name == 'installed_rpms':
-                o=0
-
             if d.__doc__ and "Returns the first" in d.__doc__:
                 lines = d.__doc__.replace(',', '\n')
                 lines = lines.splitlines()
