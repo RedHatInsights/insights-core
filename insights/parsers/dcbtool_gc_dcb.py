@@ -40,12 +40,12 @@ Dcbtool - Command ``/sbin/dcbtool gc {interface} dcb``
 
 """
 
-from .. import parser, LegacyItemAccess, Parser, get_active_lines
+from .. import parser, LegacyItemAccess, CommandParser, get_active_lines
 from insights.specs import Specs
 
 
 @parser(Specs.dcbtool_gc_dcb)
-class Dcbtool(LegacyItemAccess, Parser):
+class Dcbtool(LegacyItemAccess, CommandParser):
     """
     Parse the output of the `dcbtool` command.
 

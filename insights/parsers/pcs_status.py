@@ -75,12 +75,12 @@ Examples:
     >>> len(pcsstatus_info.get("Full list of resources"))
     3
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.pcs_status)
-class PCSStatus(Parser):
+class PCSStatus(CommandParser):
     """Class to process the output of ``pcs status`` command.
 
     Attributes:

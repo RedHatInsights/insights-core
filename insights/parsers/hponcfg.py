@@ -38,7 +38,7 @@ Examples:
     False
 """
 
-from .. import Parser, parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 DRIVER_NAME = 'driver_name'
@@ -47,7 +47,7 @@ FIRMWARE_REVISION = 'firmware_revision'
 
 
 @parser(Specs.hponcfg_g)
-class HponConf(Parser):
+class HponConf(CommandParser):
     """
     Read the output of the HP ILO configuration utility.
 

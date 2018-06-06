@@ -12,13 +12,13 @@ Smbstatusp - command ``/usr/bin/smbstatus -p``
 ----------------------------------------------
 """
 
-from .. import parser, Parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from insights.parsers import ParseException
 from . import parse_fixed_table
 from insights.specs import Specs
 
 
-class Statuslist(Parser):
+class Statuslist(CommandParser):
     """Base class implementing shared code."""
 
     def __len__(self):

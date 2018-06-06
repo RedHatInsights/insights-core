@@ -1,6 +1,7 @@
 from insights.parsers.numeric_user_group_name import NumericUserGroupName
 from insights.tests import context_wrap
 from insights.parsers import ParseException
+from insights.core.plugins import ContentException
 
 ZERO = """
 /etc/passwd:0
@@ -144,9 +145,17 @@ def test_numeric_user_group_name_8():
 
 
 def test_numeric_user_group_name_9():
-    for data in [ERRORS_1, ERRORS_2, ERRORS_3, ERRORS_4, ERRORS_5]:
+    for data in [ERRORS_1, ERRORS_2, ERRORS_3, ERRORS_4]:
         try:
             NumericUserGroupName(context_wrap(data))
             assert False
         except ParseException:
             assert True
+
+
+def test_numeric_user_group_name_10():
+    try:
+        NumericUserGroupName(context_wrap(ERRORS_5))
+        assert False
+    except ContentException:
+        assert True

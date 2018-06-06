@@ -52,12 +52,12 @@ Examples:
     'sdb2'
 """
 import re
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.mdstat)
-class Mdstat(Parser):
+class Mdstat(CommandParser):
     """
     Represents the information in the ``/proc/mdstat`` file.
 

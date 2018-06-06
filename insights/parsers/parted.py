@@ -74,7 +74,7 @@ Examples:
     >>> parted_info.partitions[0].flags
     'bios_grub'
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from ..parsers import ParseException, parse_fixed_table
 from insights.specs import Specs
 
@@ -135,7 +135,7 @@ class Partition(object):
 
 
 @parser(Specs.parted__l)
-class PartedL(Parser):
+class PartedL(CommandParser):
     """Class to represent attributes of the ``parted`` command output.
 
     The columns may vary depending upon the type of device.

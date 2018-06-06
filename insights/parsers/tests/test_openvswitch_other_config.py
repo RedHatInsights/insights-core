@@ -21,10 +21,6 @@ other_config_5 = """
 ovs-vsctl: unix:/var/run/openvswitch/db.sock: database connection failed (Permission denied)
 """.strip()
 
-other_config_6 = """
-bash: ovs-vsctl: command not found...
-""".strip()
-
 
 def test_openvswitch_():
     result = OpenvSwitchOtherConfig(context_wrap(other_config_1))
@@ -49,7 +45,3 @@ def test_openvswitch_():
 
     result = OpenvSwitchOtherConfig(context_wrap(other_config_5))
     assert result.get("dpdk-init") is None
-
-    result = OpenvSwitchOtherConfig(context_wrap(other_config_6))
-    assert result.get("dpdk-init") is None
-    assert "pmd-cpu-mask" not in result

@@ -10,6 +10,7 @@ import six
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
+from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from insights.util import deprecated
 
@@ -239,6 +240,54 @@ class LegacyItemAccess(object):
             (str): String value of the stored item, or the default if not found.
         """
         return self.data.get(item, default)
+
+
+class CommandParser(Parser):
+    """
+    This class checks output from the command defined in the spec.
+    If `context.content` contains a single line and that line is
+    included in the `bad_lines` list a `ContentException` is raised
+    """
+
+    bad_lines = ["no such file or directory", "command not found"]
+    """
+    This variable contains filters for bad responses from commands defined
+    with command specs.
+    When adding a new lin to the list make sure text is all lower case.
+    """
+
+    def validate_lines(self, results):
+        """
+        If `results` contains a single line and that line is included
+        in the `bad_lines` list, this function returns `False`. If no bad
+        line is found the function returns `True`
+
+        Parameters:
+            results(str): The results string of the output from the command
+                defined by the command spec.
+
+        Returns:
+            (Boolean): True for no bad lines or False for bad line found.
+        """
+
+        if results and len(results) == 1:
+            first = results[0]
+            if any(l in first.lower() for l in self.bad_lines):
+                return False
+        return True
+
+    def __init__(self, context):
+        """
+            This __init__ calls `validate_lines` function to check for bad lines.
+            If `validate_lines` returns False, indicating bad line found, a
+            ContentException is thrown.
+        """
+
+        if not self.validate_lines(context.content):
+            first = context.content[0] if context.content else "<no content>"
+            name = self.__class__.__name__
+            raise ContentException(name + ": " + first)
+        super(CommandParser, self).__init__(context)
 
 
 class XMLParser(LegacyItemAccess, Parser):
