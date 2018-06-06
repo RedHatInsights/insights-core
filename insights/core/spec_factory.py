@@ -112,6 +112,12 @@ class FileProvider(ContentProvider):
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
 
+        if os.path.islink(self.path):
+            resolved = os.path.realpath(self.path)
+            if not resolved.startswith(self.root):
+                msg = "Symbolic link points outside archive: %s -> %s."
+                raise Exception(msg % (self.path, resolved))
+
         if not os.access(self.path, os.R_OK):
             raise ContentException("Cannot access %s" % self.path)
 
