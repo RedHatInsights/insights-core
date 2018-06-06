@@ -14,12 +14,12 @@ NmcliDevShow - command ``/usr/bin/nmcli dev show``
 
 
 import re
-from .. import Parser, parser, LegacyItemAccess, get_active_lines
+from .. import parser, LegacyItemAccess, get_active_lines, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.nmcli_dev_show)
-class NmcliDevShow(Parser, LegacyItemAccess):
+class NmcliDevShow(CommandParser, LegacyItemAccess):
     """
     This class will parse the output of command ``nmcli dev show``, and the information
     will be stored in dictionary format.

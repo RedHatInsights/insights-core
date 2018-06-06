@@ -33,12 +33,12 @@ All these parsers are based on a shared class which processes the JSON
 information into a dictionary.
 """
 
-from .. import JSONParser, parser
+from .. import JSONParser, parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ceph_osd_dump)
-class CephOsdDump(JSONParser):
+class CephOsdDump(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph osd dump -f json-pretty``.
 
@@ -79,7 +79,7 @@ class CephOsdDump(JSONParser):
 
 
 @parser(Specs.ceph_osd_df)
-class CephOsdDf(JSONParser):
+class CephOsdDf(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph osd df -f json-pretty``.
 
@@ -124,7 +124,7 @@ class CephOsdDf(JSONParser):
 
 
 @parser(Specs.ceph_s)
-class CephS(JSONParser):
+class CephS(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph -s -f json-pretty``.
 
@@ -182,7 +182,7 @@ class CephS(JSONParser):
 
 
 @parser(Specs.ceph_df_detail)
-class CephDfDetail(JSONParser):
+class CephDfDetail(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph df detail -f json-pretty``.
 
@@ -224,7 +224,7 @@ class CephDfDetail(JSONParser):
 
 
 @parser(Specs.ceph_health_detail)
-class CephHealthDetail(JSONParser):
+class CephHealthDetail(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph health detail -f json-pretty``.
 
@@ -252,7 +252,7 @@ class CephHealthDetail(JSONParser):
 
 
 @parser(Specs.ceph_osd_ec_profile_get)
-class CephECProfileGet(JSONParser):
+class CephECProfileGet(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph osd erasure-code-profile get default -f json-pretty``.
 
@@ -274,7 +274,7 @@ class CephECProfileGet(JSONParser):
 
 
 @parser(Specs.ceph_config_show)
-class CephCfgInfo(JSONParser):
+class CephCfgInfo(CommandParser, JSONParser):
     """
     Class to parse the output of ``ceph daemon .. config show``
 
@@ -324,7 +324,7 @@ class CephCfgInfo(JSONParser):
 
 
 @parser(Specs.ceph_osd_tree)
-class CephOsdTree(JSONParser):
+class CephOsdTree(CommandParser, JSONParser):
     """
     Class to parse the output of the command "ceph osd tree -f json-pretty
 

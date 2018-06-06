@@ -60,14 +60,14 @@ Examples:
 
 """
 
-from .. import parser, Parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from collections import defaultdict
 import re
 from insights.specs import Specs
 
 
 @parser(Specs.lvdisplay)
-class LvDisplay(Parser, LegacyItemAccess):
+class LvDisplay(CommandParser, LegacyItemAccess):
     """
     Read the output of ``/sbin/lvdisplay``.
 

@@ -75,7 +75,7 @@ from collections import defaultdict
 import six
 
 from ..util import rsplit
-from .. import Parser, parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -142,7 +142,7 @@ here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 
 
 @parser(Specs.installed_rpms)
-class InstalledRpms(Parser):
+class InstalledRpms(CommandParser):
     """
     A parser for working with data containing a list of installed RPM files on the system and
     related information.

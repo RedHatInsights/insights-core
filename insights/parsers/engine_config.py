@@ -7,12 +7,12 @@ by parsing output of command ``engine-config --all``.
 from collections import namedtuple
 from operator import itemgetter
 
-from .. import Parser, parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.engine_config_all)
-class EngineConfigAll(Parser):
+class EngineConfigAll(CommandParser):
     """Parsing output of command ``engine-config --all``
 
     The parser tries its best to get `value` & `version` for specified

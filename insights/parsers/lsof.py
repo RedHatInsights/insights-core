@@ -60,14 +60,14 @@ Examples:
 
 """
 
-from .. import add_filter, Scannable, parser
+from .. import add_filter, Scannable, parser, CommandParser
 from insights.specs import Specs
 
 add_filter(Specs.lsof, ['COMMAND'])
 
 
 @parser(Specs.lsof)
-class Lsof(Scannable):
+class Lsof(CommandParser, Scannable):
     """
     A parser for the output of ``/usr/sbin/lsof`` - determines the column
     widths from the first row and then puts the data in each row into a

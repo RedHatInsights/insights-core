@@ -50,7 +50,7 @@ import six
 import sys
 from datetime import datetime
 
-from .. import Parser, parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 
@@ -58,7 +58,7 @@ class DateParseException(Exception):
     pass
 
 
-class DateParser(Parser):
+class DateParser(CommandParser):
     """Base class implementing shared code."""
 
     def parse_content(self, content):

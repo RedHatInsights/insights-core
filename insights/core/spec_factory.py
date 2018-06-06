@@ -141,15 +141,6 @@ class TextFileProvider(FileProvider):
     Class used in datasources that returns the contents of a file a list of
     lines. Each line is filtered if filters are defined for the datasource.
     """
-    bad_lines = ["No such file or directory", "Command not found"]
-
-    @classmethod
-    def validate_lines(self, results):
-        if results and len(results) == 1:
-            first = results[0]
-            if any(l in first for l in self.bad_lines):
-                return False
-        return True
 
     def load(self):
 
@@ -166,9 +157,6 @@ class TextFileProvider(FileProvider):
         else:
             with open(self.path, "rU") as f:
                 results = [l.rstrip("\n") for l in f]
-        if not self.validate_lines(results):
-            first = results[0] if results else "<no content>"
-            raise ContentException(self.relative_path + ": " + first)
         return results
 
 
