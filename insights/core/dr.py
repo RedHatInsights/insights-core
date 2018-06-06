@@ -490,6 +490,7 @@ class Broker(object):
                         printit(c, v)
 
 
+
 def get_missing_requirements(func, requires, d):
     if not requires:
         return None

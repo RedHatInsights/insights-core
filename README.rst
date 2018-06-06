@@ -99,20 +99,20 @@ installed within the range.
 .. code-block:: python
 
     from insights import rule, make_response, run
-    from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm
+    from insights.parsers import installed_rpms as rpm
 
-    lower = InstalledRpm.from_package("bash-4.4.16-1.fc27")
-    upper = InstalledRpm.from_package("bash-4.4.22-1.fc27")
+    lower = rpm.Rpm("bash-4.4.16-1.fc27")
+    upper = rpm.Rpm("bash-4.4.22-1.fc27")
 
-    @rule(InstalledRpms)
+    @rule(rpm.Installed)
     def report(rpms):
-        rpm = rpms.get_max("bash")
-        if rpm and rpm >= lower and rpm < upper:
-            return make_response("BASH_AFFECTED", version=rpm.nvr)
-        elif rpm:
-            return make_response("BASH_UNAFFECTED", version=rpm.nvr)
-        else:
+        bash = rpms.get_max("bash")
+        if not bash:
             return make_response("NO_BASH_FOUND")
+
+        msg = "BASH_AFFECTED" if lower <= bash < upper else "BASH_UNAFFECTED"
+
+        return make_response(msg, version=bash.nvr)
 
     if __name__ == "__main__":
         run(report, print_summary=True)
@@ -122,22 +122,22 @@ to the other tutorials and examples for further details.  However, let's
 highlight some points to help understand what's going on.
 
 After importing the components we need, we define the bounds of our
-version range by creating a `lower` and `upper` `InstalledRpm` version.
-Then we define our `rule` which depends upon the `InstalledRpms`
-"parser" class.  This class will be passed in as the first argument to
-the `report` function.
+version range by creating a `lower` and `upper` `Rpm` version.  Then we
+define our `rule` which depends upon the `Installed` "parser" class.
+This class will be passed in as the first argument to the `report`
+function.
 
 The `report` function gets the maximum version of `bash` found in
-`InstalledRpms` and then compares it to the `upper` and `lower` values.
-If a version of `bash` is found between those versions, it returns
+`Installed` and then compares it to the `upper` and `lower` values.  If
+a version of `bash` is found between those versions, it returns
 `BASH_AFFECTED` and the version it found.  Otherwise, if it finds a
 version of `bash` that is outside the range, it returns
 `BASH_UNAFFECTED` and the version found.  Finally, if it doesn't find
 any version of bash, it returns `NO_BASH_FOUND`.
 
 This is all executed by the `run` command.  The `run` command will
-"know" about the `report` function and that it depends upon
-`InstalledRpms` based on the `@rule` decorator.  
+"know" about the `report` function and that it depends upon `Installed`
+based on the `@rule` decorator.
 
 That's cool, but is it really simpler?
 --------------------------------------
