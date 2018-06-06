@@ -397,6 +397,7 @@ class DefaultSpecs(Specs):
     ntpq_pn = simple_command("/usr/sbin/ntpq -pn")
     ntptime = simple_command("/usr/sbin/ntptime")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
+    passwd_foreman = simple_command("/bin/grep  '^foreman:' /etc/passwd")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_dc = simple_command("/usr/bin/oc get dc -o yaml --all-namespaces", context=OpenShiftContext)
