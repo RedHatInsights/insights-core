@@ -4,7 +4,6 @@ import os
 import re
 import six
 import traceback
-import re
 
 from collections import defaultdict
 from glob import glob
@@ -637,8 +636,8 @@ def first_of(deps):
             if c in broker:
                 return broker[c]
 
-    docs = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", d.__doc__) if d.func_name != 'inner' else d.__doc__
-            for d in deps if d.__doc__]
+    docs = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", d.__doc__) if isinstance(d, list) and
+            d.func_name != 'inner' else d.__doc__ for d in deps if d.__doc__]
     docs = [escape(d) for d in docs]
     docs = [b"Returns the first of the following:"] + docs
     inner.__doc__ = b",".join(docs)
