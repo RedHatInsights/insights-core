@@ -28,4 +28,3 @@ class PasswdForeman(Parser):
     def parse_content(self, content):
         if len(content) == 1 and content[0].startswith('foreman:'):
             self.data = content[0].split(':')
-            print self.data
