@@ -87,9 +87,14 @@ def main():
 
         for d in dr.get_dependencies(spec):
             cp = ''
-            if d.__doc__:
-                lines = d.__doc__.splitlines()
-            if len(lines) > 1 and "Returns the first" in lines[0]:
+            lines = []
+
+            if spec.func_name == 'installed_rpms':
+                o=0
+
+            if d.__doc__ and "Returns the first" in d.__doc__:
+                lines = d.__doc__.replace(',', '\n')
+                lines = lines.splitlines()
                 head = [lines[0]]
                 top = ["<ul>"]
                 bottom = ["</ul>"]

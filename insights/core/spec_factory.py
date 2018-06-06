@@ -4,6 +4,7 @@ import os
 import re
 import six
 import traceback
+import re
 
 from collections import defaultdict
 from glob import glob
@@ -339,7 +340,7 @@ def simple_file(path, context=None, kind=TextFileProvider):
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         return kind(ctx.locate_path(path), root=ctx.root, ds=inner)
-    inner.__doc__ = 'Path: ' + path
+    inner.__doc__ = 'Path: ' + re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", path)
     return inner
 
 
@@ -383,6 +384,7 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_fi
                                        "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
+    patterns = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", p) for p in patterns]
     inner.__doc__ = 'Path: ' + ", ".join(patterns)
     return inner
 
@@ -397,6 +399,8 @@ def head(dep):
         if lst:
             return c[0]
         raise dr.SkipComponent()
+
+    inner.__doc__ = re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", dep.func_doc)
     return inner
 
 
@@ -426,6 +430,7 @@ def first_file(files, context=None, kind=TextFileProvider):
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(files))
+    files = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", f) for f in files]
     inner.__doc__ = 'Path: ' + ", ".join(files)
     return inner
 
@@ -457,7 +462,7 @@ def listdir(path, context=None):
         if result:
             return [os.path.basename(r) for r in result]
         raise ContentException("Can't list %s or nothing there." % p)
-    inner.__doc__ = 'Path: ' + path
+    inner.__doc__ = 'Path: ' + re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", path)
     return inner
 
 
@@ -505,7 +510,7 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
             result = raw
         return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
     COMMANDS[inner] = cmd
-    inner.__doc__ = 'Command: ' + cmd
+    inner.__doc__ = 'Command: ' + re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", cmd)
     return inner
 
 
@@ -572,7 +577,7 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
         if result:
             return result
         raise ContentException("No results found for [%s]" % cmd)
-    inner.__doc__ = 'Command: ' + cmd
+    inner.__doc__ = 'Command: ' + re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", cmd)
     return inner
 
 
@@ -615,7 +620,7 @@ def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextF
         if result:
             return result
         raise ContentException("No results found for [%s]" % path)
-    inner.__doc__ = 'Path: ' + path
+    inner.__doc__ = 'Path: ' + re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", path)
     return inner
 
 
@@ -632,9 +637,11 @@ def first_of(deps):
             if c in broker:
                 return broker[c]
 
-    docs = [escape(d.__doc__) for d in deps if d.__doc__]
+    docs = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", d.__doc__) if d.func_name != 'inner' else d.__doc__
+            for d in deps if d.__doc__]
+    docs = [escape(d) for d in docs]
     docs = [b"Returns the first of the following:"] + docs
-    inner.__doc__ = b"\n".join(docs)
+    inner.__doc__ = b",".join(docs)
     return inner
 
 
