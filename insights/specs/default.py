@@ -167,7 +167,7 @@ class DefaultSpecs(Specs):
 
     docker_host_machine_id = simple_file("/etc/redhat-access-insights/machine-id")
     docker_image_inspect = foreach_execute(docker_image_ids, "/usr/bin/docker inspect %s")
-    docker_container_inspect = foreach_execute(docker_container_ids, "/usr/bin/docker inspect %s")
+    docker_container_inspect = foreach_execute(docker_container_ids, "/usr/bin/docker inspect --type container %s")
     docker_network = simple_file("/etc/sysconfig/docker-network")
     docker_storage = simple_file("/etc/sysconfig/docker-storage")
     docker_storage_setup = simple_file("/etc/sysconfig/docker-storage-setup")
