@@ -33,6 +33,50 @@ MaxClients       512
 </IfModule>
 '''.strip()
 
+HTTPD_CONF_SHADOWTEST_1 = '''
+Foo 1A
+Foo 1B
+Foo 1C
+<IfModule prefork.c>
+Foo 1xA
+Foo 1xB
+Foo 1xC
+Bar 1A
+Bar 1B
+Bar 1C
+</IfModule>
+
+IncludeOptional conf.d/*.conf
+'''.strip()
+
+HTTPD_CONF_SHADOWTEST_2 = '''
+Foo 2A
+Foo 2B
+Foo 2C
+<IfModule ASDF.prefork.c.ASDF>
+Foo 2xA
+Foo 2xB
+Foo 2xC
+Bar 2A
+Bar 2B
+Bar 2C
+</IfModule>
+'''.strip()
+
+HTTPD_CONF_SHADOWTEST_3 = '''
+Foo 3A
+Foo 3B
+Foo 3C
+<IfModule prefork.c>
+Foo 3xA
+Foo 3xB
+Foo 3xC
+Bar 3A
+Bar 3B
+Bar 3C
+</IfModule>
+'''.strip()
+
 
 HTTPD_CONF_MAIN_1 = '''
 ServerRoot "/etc/httpd"
@@ -318,6 +362,55 @@ def test_active_httpd():
     assert result.get_active_setting('ServerLimit', section=('IfModule', 'prefork.c'))[0].value == '256'
     assert result.get_active_setting('JustForTest', section=('IfModule', 'prefork.c'))[-1].file_name == '00-z.conf'
     assert result.get_active_setting('JustForTest_NoSec').line == 'JustForTest_NoSec "/var/www/cgi"'
+
+
+def test_shadowing():
+    httpd1 = HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd3 = HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_3, path='/etc/httpd/conf.d/z-z.conf'))
+
+    result = HttpdConfAll([httpd1, httpd2, httpd3])
+
+    # get_setting_list returns ALL matching data
+
+    assert result.get_setting_list('Foo') == [
+        ParsedData('1A', 'Foo 1A', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+        ParsedData('1B', 'Foo 1B', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+        ParsedData('1C', 'Foo 1C', None, None, 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+        ParsedData('2A', 'Foo 2A', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+        ParsedData('2B', 'Foo 2B', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+        ParsedData('2C', 'Foo 2C', None, None, '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+        ParsedData('3A', 'Foo 3A', None, None, 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+        ParsedData('3B', 'Foo 3B', None, None, 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+        ParsedData('3C', 'Foo 3C', None, None, 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+    ]
+    assert result.get_setting_list('Bar', section=('IfModule', 'prefork.c')) == [
+        {('IfModule', 'prefork.c'): [
+            ParsedData('1A', 'Bar 1A', 'IfModule', 'prefork.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ParsedData('1B', 'Bar 1B', 'IfModule', 'prefork.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ParsedData('1C', 'Bar 1C', 'IfModule', 'prefork.c', 'httpd.conf', '/etc/httpd/conf/httpd.conf'),
+            ParsedData('3A', 'Bar 3A', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+            ParsedData('3B', 'Bar 3B', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+            ParsedData('3C', 'Bar 3C', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+        ],
+        },
+        {('IfModule', 'ASDF.prefork.c.ASDF'): [
+            ParsedData('2A', 'Bar 2A', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ParsedData('2B', 'Bar 2B', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+            ParsedData('2C', 'Bar 2C', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+        ],
+        },
+    ]
+    assert result.get_setting_list('Bar') == []
+
+    # get_active_setting returns the last value
+
+    assert result.get_active_setting('Foo') == ('3C', 'Foo 3C', None, None, 'z-z.conf', '/etc/httpd/conf.d/z-z.conf')
+    assert result.get_active_setting('Bar', section=('IfModule', 'prefork.c')) == [
+        ('3C', 'Bar 3C', 'IfModule', 'prefork.c', 'z-z.conf', '/etc/httpd/conf.d/z-z.conf'),
+        ('2C', 'Bar 2C', 'IfModule', 'ASDF.prefork.c.ASDF', '00-z.conf', '/etc/httpd/conf.d/00-z.conf'),
+    ]
+    assert result.get_active_setting('Bar') is None
 
 
 def test_httpd_splits():
