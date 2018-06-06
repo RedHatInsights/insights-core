@@ -384,8 +384,8 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_fi
                                        "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
-    patterns = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", p) for p in patterns]
-    inner.__doc__ = 'Path: ' + ", ".join(patterns)
+    pat = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", p) for p in patterns]
+    inner.__doc__ = 'Path: ' + ", ".join(pat)
     return inner
 
 
@@ -430,8 +430,8 @@ def first_file(files, context=None, kind=TextFileProvider):
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(files))
-    files = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", f) for f in files]
-    inner.__doc__ = 'Path: ' + ", ".join(files)
+    fls = [re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", f) for f in files]
+    inner.__doc__ = 'Path: ' + ", ".join(fls)
     return inner
 
 
