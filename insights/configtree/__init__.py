@@ -491,18 +491,18 @@ def _not(f):
     return inner
 
 
-class Op(object):
+class Bool(object):
     def __and__(self, other):
-        return Bool(_and(self, other))
+        return UnaryBool(_and(self, other))
 
     def __or__(self, other):
-        return Bool(_or(self, other))
+        return UnaryBool(_or(self, other))
 
     def __invert__(self):
-        return Bool(_not(self))
+        return UnaryBool(_not(self))
 
 
-class Bool(Op):
+class UnaryBool(Bool):
     def __init__(self, pred):
         self.pred = pred
 
@@ -513,9 +513,9 @@ class Bool(Op):
             return False
 
 
-def udf(op, _type):
-    """ Lifts operators into the DSL. """
-    class Predicate(Op):
+def BinaryBool(op, _type):
+    """ Lifts predicates into the DSL. """
+    class Predicate(Bool):
         def __init__(self, value):
             self.value = value
 
@@ -533,15 +533,15 @@ def udf(op, _type):
     return Predicate
 
 
-startswith = udf(str.startswith, str)
-endswith = udf(str.endswith, str)
-contains = udf(operator.contains, str)
+startswith = BinaryBool(str.startswith, str)
+endswith = BinaryBool(str.endswith, str)
+contains = BinaryBool(operator.contains, str)
 
-le = udf(operator.le, (int, float, str))
-lt = udf(operator.lt, (int, float, str))
-ge = udf(operator.ge, (int, float, str))
-gt = udf(operator.gt, (int, float, str))
-eq = udf(operator.eq, (int, float, str))
+le = BinaryBool(operator.le, (int, float, str))
+lt = BinaryBool(operator.lt, (int, float, str))
+ge = BinaryBool(operator.ge, (int, float, str))
+gt = BinaryBool(operator.gt, (int, float, str))
+eq = BinaryBool(operator.eq, (int, float, str))
 
 
 def __make_name_pred(name):
