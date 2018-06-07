@@ -529,11 +529,11 @@ startswith = __udf(str.startswith, str)
 endswith = __udf(str.endswith, str)
 contains = __udf(operator.contains, str)
 
-le = __udf(operator.le, (int, str))
-lt = __udf(operator.lt, (int, str))
-ge = __udf(operator.ge, (int, str))
-gt = __udf(operator.gt, (int, str))
-eq = __udf(operator.eq, (int, str))
+le = __udf(operator.le, (int, float, str))
+lt = __udf(operator.lt, (int, float, str))
+ge = __udf(operator.ge, (int, float, str))
+gt = __udf(operator.gt, (int, float, str))
+eq = __udf(operator.eq, (int, float, str))
 
 
 def __make_name_pred(name):

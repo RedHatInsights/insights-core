@@ -72,7 +72,8 @@ class HttpdConfAll(ConfigCombiner):
 
     @property
     def conf_path(self):
-        return self.main.select("ServerRoot", one=first).value
+        res = self.main.select("ServerRoot", one=first)
+        return res.value if res else "/etc/httpd"
 
 
 def get_conf(root=None):
