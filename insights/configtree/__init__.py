@@ -1,3 +1,26 @@
+"""
+configtree
+==========
+configtree models configurations that are similar to dictionaries except that
+each option may have a list of un-named attributes, and duplicate options are
+allowed. Compound options containing children in addition to attributes also
+are supported.
+
+This model fits many systems that have a main configuration file with
+supplementary files included in it by reference. Examples are httpd and nginx,
+although simple .ini files are also supported. Base classes for Insights
+parsers and combiners handle incorporating master and child documents into a
+single tree. They make integration with Insights concise.
+
+Individual document parsers are responsible for transforming raw content into
+the configtree model. Some base classes and primitive parsing functions are
+provided, but most systems' files (except maybe .ini) need specific handling.
+
+configtree provides a small DSL for querying its trees, so navigating them for
+specific information is less tedious and error prone.
+
+Generating documents of various formats from a master tree is straightforward.
+"""
 import operator
 import os
 import re
@@ -10,6 +33,20 @@ from insights.core import Parser
 # classes modeling configuration trees
 class Node(object):
     def __init__(self, name=None, attrs=None, children=None, ctx=None):
+        """
+        Base object of the document model. The documents are similar to
+        dictionaries except that each level may have a list of un-named
+        attributes, and duplicate keys at each level may be allowed.
+
+        Attributes:
+            name (str): something like "Directory" or "ServerRoot" from
+                httpd.conf, "http" from nginx, or the name of an option in an
+                ini file.
+            attrs (list): the list of attributes associated with the name.
+            children (list): child Nodes of this Node.
+            ctx (ConfigParser):  provides lineat function for accessing the raw
+                text from which the node was parsed.
+        """
         self.name = name
         self.attrs = attrs or []
         self.children = children or []
@@ -491,6 +528,7 @@ def _not(f):
 
 
 class Bool(object):
+    """ Allows boolean logic between predicates. """
     def __and__(self, other):
         return UnaryBool(_and(self, other))
 
@@ -502,6 +540,7 @@ class Bool(object):
 
 
 class UnaryBool(Bool):
+    """ Lifts predicates into the DSL. """
     def __init__(self, pred):
         self.pred = pred
 
@@ -665,6 +704,9 @@ class ConfigComponent(object):
     def __contains__(self, item):
         return item in self.doc
 
+    def __len__(self):
+        return len(self.doc)
+
     def __iter__(self):
         return iter(self.doc)
 
@@ -676,6 +718,9 @@ class ConfigComponent(object):
 
 
 class ConfigParser(Parser, ConfigComponent):
+    """
+    Base Insights component class for Parsers of configuration files.
+    """
     def parse_content(self, content):
         self.content = content
         self.doc = self.parse_doc(content)
@@ -685,6 +730,9 @@ class ConfigParser(Parser, ConfigComponent):
 
 
 class ConfigCombiner(ConfigComponent):
+    """
+    Base Insights component class for Combiners of configuration files.
+    """
     def __init__(self, confs, main_file, include_finder):
         self.confs = confs
         self.main = find_main(confs, main_file)
@@ -701,5 +749,5 @@ class ConfigCombiner(ConfigComponent):
                 for inc in includes:
                     node.children.extend(inc.doc.children)
 
-        # flatten all content from nested Includes into a main doc
+        # flatten all content from nested includes into a main doc
         self.doc = Root(children=flatten(self.main.doc.children, include_finder))

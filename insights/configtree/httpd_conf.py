@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """
+Insights Parser and Combiner for httpd configuration
+====================================================
 This module models httpd configuration as a tree. It correctly handles Include
-directives by splicing individual document trees into their parents and
-flattening the final structure into one document.
+and IncludeOptional directives by splicing individual document trees into their
+parents and flattening the final structure into one document.
 
 A DSL is provided to query the tree through a select function or brackets [].
 The brackets allow a more conventional lookup feel but aren't quite as powerful
@@ -16,7 +18,12 @@ from insights.specs import Specs
 
 
 class HttpConfDocParser(DocParser):
-    """ Wrapper class so parser functions don't have to thread ctx. """
+    """
+    Wrapper class so parser functions don't have to thread ctx.
+
+    This is not an Insights parser but a document parser indirectly used by an
+    Insights parser. It produces a configtree model.
+    """
     def parse_directive(self, lg):
         line = next(lg)
         name, attrs = parse_name_attrs(line)
