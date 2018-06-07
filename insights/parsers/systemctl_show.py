@@ -27,8 +27,8 @@ SystemctlShowHttpd - command ``systemctl show httpd``
 SystemctlShowQpidd - command ``systemctl show qpidd``
 -----------------------------------------------------
 
-SystemctlShowQrouterd - command ``systemctl show qrouterd``
------------------------------------------------------------
+SystemctlShowQdrouterd - command ``systemctl show qdrouterd``
+-------------------------------------------------------------
 """
 
 
@@ -295,12 +295,12 @@ class SystemctlShowQpidd(SystemctlShow):
     pass
 
 
-@parser(Specs.systemctl_qrouterd)
-class SystemctlShowQrouterd(SystemctlShow):
+@parser(Specs.systemctl_qdrouterd)
+class SystemctlShowQdrouterd(SystemctlShow):
     """
-    Class for ``systemctl show qrouterd``.
+    Class for ``systemctl show qdrouterd``.
 
-    Typical output of ``/bin/systemctl show qrouterd`` command is::
+    Typical output of ``/bin/systemctl show qdrouterd`` command is::
 
         Type=simple
         Restart=no
@@ -319,7 +319,7 @@ class SystemctlShowQrouterd(SystemctlShow):
         ...
 
     Examples:
-        >>> systemctl_show_qrouterd["LimitNOFILE"]
+        >>> systemctl_show_qdrouterd["LimitNOFILE"]
         '4096'
 
     """
