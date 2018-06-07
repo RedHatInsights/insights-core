@@ -66,6 +66,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww)
     def tomcat_base(broker):
+        """Path: Tomcat base path"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
@@ -140,6 +141,7 @@ class DefaultSpecs(Specs):
 
     @datasource(docker_list_images)
     def docker_image_ids(broker):
+        """Command: docker_image_ids"""
         images = broker[DefaultSpecs.docker_list_images]
         try:
             result = set()
@@ -154,6 +156,7 @@ class DefaultSpecs(Specs):
     # TODO: This parsing is broken.
     @datasource(docker_list_containers)
     def docker_container_ids(broker):
+        """Command: docker_container_ids"""
         containers = broker[DefaultSpecs.docker_list_containers]
         try:
             result = set()
@@ -234,6 +237,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):
+        """Command: httpd_command"""
         ps = broker[DefaultSpecs.ps_auxww].content
         ps_httpds = set()
         for p in ps:
@@ -267,6 +271,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ipcs_s)
     def semid(broker):
+        """Command: semids"""
         source = broker[DefaultSpecs.ipcs_s].content
         results = set()
         for s in source:
@@ -434,6 +439,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
+        """Command: package_and_java"""
         ps = broker[DefaultSpecs.ps_auxww].content
         ctx = broker[HostContext]
         results = set()
@@ -517,6 +523,7 @@ class DefaultSpecs(Specs):
 
     @datasource(HostContext)
     def block(broker):
+        """Path: /sys/block directories starting with . or ram or dm- or loop"""
         remove = (".", "ram", "dm-", "loop")
         tmp = "/dev/%s"
         return[(tmp % f) for f in os.listdir("/sys/block") if not f.startswith(remove)]
@@ -575,6 +582,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww)
     def tomcat_home_base(broker):
+        """Command: tomcat_home_base_paths"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Dcatalina\.(home|base)=(\S+)").findall
@@ -629,6 +637,7 @@ class DefaultSpecs(Specs):
 
     @datasource(DockerImageContext)
     def docker_installed_rpms(broker):
+        """ Command: /usr/bin/rpm -qa --root `%s` --qf `%s`"""
         ctx = broker[DockerImageContext]
         root = ctx.root
         fmt = DefaultSpecs.rpm_format
@@ -641,6 +650,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext)
     def jboss_home(broker):
+        """Command: JBoss home progress command content paths"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.home\.dir=(\S+)").findall
@@ -658,6 +668,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext, multi_output=True)
     def jboss_domain_server_log_dir(broker):
+        """Command: JBoss domain server log directory"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.server\.log\.dir=(\S+)").findall
@@ -674,6 +685,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext, multi_output=True)
     def jboss_standalone_main_config_files(broker):
+        """Command: JBoss standalone main config files"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.server\.base\.dir=(\S+)").search
