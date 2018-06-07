@@ -4,6 +4,7 @@ from insights import package_info
 
 
 class InsightsConstants(object):
+    sfr_version = os.environ.get('INSIGHTS_SFR', 'insights-client')
     app_name = 'insights-client'
     auth_method = 'BASIC'
     package_path = os.path.dirname(
@@ -13,14 +14,15 @@ class InsightsConstants(object):
     user_agent = os.path.join(app_name, package_info["VERSION"])
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
     default_conf_dir = '/etc/insights-client'
+    sfr_conf_dir = os.path.join(os.sep, 'etc', sfr_version)
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     base_url = ''
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
     collection_fallback_file = os.path.join(default_conf_dir, '.fallback.json')
     collection_remove_file_name = 'remove.conf'
     collection_remove_file = os.path.join(default_conf_dir, collection_remove_file_name)
-    unregistered_file = os.path.join(default_conf_dir, '.unregistered')
-    registered_file = os.path.join(default_conf_dir, '.registered')
+    unregistered_file = os.path.join(sfr_conf_dir, '.unregistered')
+    registered_file = os.path.join(sfr_conf_dir, '.registered')
     lastupload_file = os.path.join(default_conf_dir, '.lastupload')
     pub_gpg_path = os.path.join(default_conf_dir, 'redhattools.pub.gpg')
     machine_id_file = os.path.join(default_conf_dir, 'machine-id')
