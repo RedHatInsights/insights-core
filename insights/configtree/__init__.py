@@ -1,6 +1,7 @@
 import operator
 import os
 import re
+import six
 from fnmatch import fnmatch
 from itertools import chain
 
@@ -533,15 +534,15 @@ def BinaryBool(op, _type):
     return Predicate
 
 
-startswith = BinaryBool(str.startswith, str)
-endswith = BinaryBool(str.endswith, str)
-contains = BinaryBool(operator.contains, str)
+startswith = BinaryBool(str.startswith, six.string_types)
+endswith = BinaryBool(str.endswith, six.string_types)
+contains = BinaryBool(operator.contains, six.string_types)
 
-le = BinaryBool(operator.le, (int, float, str))
-lt = BinaryBool(operator.lt, (int, float, str))
-ge = BinaryBool(operator.ge, (int, float, str))
-gt = BinaryBool(operator.gt, (int, float, str))
-eq = BinaryBool(operator.eq, (int, float, str))
+le = BinaryBool(operator.le, (int, float) + six.string_types)
+lt = BinaryBool(operator.lt, (int, float) + six.string_types)
+ge = BinaryBool(operator.ge, (int, float) + six.string_types)
+gt = BinaryBool(operator.gt, (int, float) + six.string_types)
+eq = BinaryBool(operator.eq, (int, float) + six.string_types)
 
 
 def __make_name_pred(name):
