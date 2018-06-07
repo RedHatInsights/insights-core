@@ -1,6 +1,9 @@
+from ipaddress import ip_address, ip_network
+
 from insights.configtree import startswith, endswith, contains
 from insights.configtree import eq, le, lt, ge, gt
 from insights.configtree import first, last  # noqa: F401
+from insights.configtree import Bool, udf
 from insights.configtree.httpd_conf import _HttpdConf, HttpdConfAll
 from insights.tests import context_wrap
 
@@ -362,3 +365,11 @@ def test_complex_queries():
     # find all IfModule !php4_module stanzas anywhere beneath a top level VirtualHost
     res = result.select("VirtualHost").select(("IfModule", "!php4_module"), deep=True, roots=False)
     assert len(res) == 3
+
+    # extend the DSL with simple bool check
+    is_private = Bool(lambda x: ip_address(x).is_private)
+    assert len(result.select(("VirtualHost", ~is_private))) == 3
+
+    # extend the DSL with comparison function
+    in_network = udf(lambda x, y: (ip_address(x) in ip_network(y)), str)
+    assert len(result.select(("VirtualHost", in_network("128.39.0.0/16")))) == 3

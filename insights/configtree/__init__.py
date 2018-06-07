@@ -507,33 +507,41 @@ class Bool(Op):
         self.pred = pred
 
     def __call__(self, data):
-        return self.pred(data)
+        try:
+            return self.pred(data)
+        except:
+            return False
 
 
-def __udf(op, _type):
+def udf(op, _type):
     """ Lifts operators into the DSL. """
     class Predicate(Op):
         def __init__(self, value):
             self.value = value
 
         def __call__(self, data):
-            if isinstance(data, _type):
-                return op(data, self.value)
-            if isinstance(data, list):
-                return any(op(d, self.value) for d in data if isinstance(d, _type))
+            if not isinstance(data, list):
+                data = [data]
+            for d in data:
+                if isinstance(d, _type):
+                    try:
+                        if op(d, self.value):
+                            return True
+                    except:
+                        pass
             return False
     return Predicate
 
 
-startswith = __udf(str.startswith, str)
-endswith = __udf(str.endswith, str)
-contains = __udf(operator.contains, str)
+startswith = udf(str.startswith, str)
+endswith = udf(str.endswith, str)
+contains = udf(operator.contains, str)
 
-le = __udf(operator.le, (int, float, str))
-lt = __udf(operator.lt, (int, float, str))
-ge = __udf(operator.ge, (int, float, str))
-gt = __udf(operator.gt, (int, float, str))
-eq = __udf(operator.eq, (int, float, str))
+le = udf(operator.le, (int, float, str))
+lt = udf(operator.lt, (int, float, str))
+ge = udf(operator.ge, (int, float, str))
+gt = udf(operator.gt, (int, float, str))
+eq = udf(operator.eq, (int, float, str))
 
 
 def __make_name_pred(name):
