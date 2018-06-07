@@ -186,7 +186,7 @@ class InsightsArchiveSpecs(Specs):
     systemctl_pulp_resmg = simple_file("insights_commands/systemctl_show_pulp_resource_manager")
     systemctl_pulp_celerybeat = simple_file("insights_commands/systemctl_show_pulp_celerybeat")
     systemctl_qpidd = simple_file("insights_commands/systemctl_show_qpidd")
-    systemctl_qrouterd = simple_file("insights_commands/systemctl_show_qrouterd")
+    systemctl_qdrouterd = simple_file("insights_commands/systemctl_show_qdrouterd")
     tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
     tuned_adm = simple_file("insights_commands/tuned-adm_list")
     uname = simple_file("insights_commands/uname_-a")
