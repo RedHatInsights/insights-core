@@ -271,7 +271,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ipcs_s)
     def semid(broker):
-        """Command - semids"""
+        """Command: semids"""
         source = broker[DefaultSpecs.ipcs_s].content
         results = set()
         for s in source:
