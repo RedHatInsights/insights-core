@@ -16,7 +16,7 @@ SubscriptionManagerReposListEnabled - command ``subscription-manager repos --lis
 -------------------------------------------------------------------------------------------
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import keyword_search
 from insights.specs import Specs
 from datetime import datetime
@@ -24,7 +24,7 @@ import re
 import six
 
 
-class SubscriptionManagerList(Parser):
+class SubscriptionManagerList(CommandParser):
     """
     A general object for parsing the output of ``subscription-manager list``.
     This should be subclassed to read the specific output - e.g. ``--consumed``

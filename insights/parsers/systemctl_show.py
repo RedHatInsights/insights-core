@@ -33,13 +33,13 @@ SystemctlShowQdrouterd - command ``systemctl show qdrouterd``
 
 
 from .. import LegacyItemAccess
-from .. import Parser
+from .. import CommandParser
 from .. import parser
 from ..parsers import split_kv_pairs
 from ..specs import Specs
 
 
-class SystemctlShow(LegacyItemAccess, Parser):
+class SystemctlShow(LegacyItemAccess, CommandParser):
     """Class for parsing ``systemctl show <Service_Name>`` command output"""
 
     def parse_content(self, content):

@@ -57,11 +57,11 @@ Examples:
     '../../sdb'
 """
 
-from .. import parser, FileListing
+from .. import parser, FileListing, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_disk)
-class LsDisk(FileListing):
+class LsDisk(CommandParser, FileListing):
     """Parses output of ``ls -lanR /dev/disk`` command."""
     pass

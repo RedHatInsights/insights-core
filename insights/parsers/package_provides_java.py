@@ -40,13 +40,13 @@ Raises:
     insights.parsers.SkipException: if running java command is not provided by package installed through yum or rpm
 """
 
-from insights import parser, Parser
+from insights import parser, CommandParser
 from ..parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.package_provides_java)
-class PackageProvidesJava(Parser):
+class PackageProvidesJava(CommandParser):
     """
     Parse the output of pre_command::
 

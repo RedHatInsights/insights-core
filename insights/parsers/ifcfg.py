@@ -46,7 +46,7 @@ Examples:
 import json
 import re
 from collections import OrderedDict
-from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 JSON_FIELDS = ["TEAM_CONFIG", "TEAM_PORT_CONFIG"]
@@ -65,7 +65,7 @@ bond_mode_map = {
 
 
 @parser(Specs.ifcfg)
-class IfCFG(LegacyItemAccess, Parser):
+class IfCFG(LegacyItemAccess, CommandParser):
     """
     Parse `ifcfg-` file,return a dict contain ifcfg config file info.
     "iface" key is interface name parse from file name

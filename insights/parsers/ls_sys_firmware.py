@@ -38,11 +38,11 @@ Examples:
     ['pm_profile']
 """
 from .. import parser
-from .. import FileListing
+from .. import FileListing, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_sys_firmware)
-class LsSysFirmware(FileListing):
+class LsSysFirmware(CommandParser, FileListing):
     """Parses output of ``ls -lanR /sys/firmware`` command."""
     pass

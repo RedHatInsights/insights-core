@@ -38,12 +38,12 @@ Examples:
     True
 """
 
-from .. import FileListing, parser
+from .. import FileListing, parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_boot)
-class LsBoot(FileListing):
+class LsBoot(CommandParser, FileListing):
     """
     Parse the /boot directory listing using a standard FileListing parser.
     """
