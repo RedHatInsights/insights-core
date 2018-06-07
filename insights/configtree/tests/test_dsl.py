@@ -373,7 +373,7 @@ def test_complex_queries():
     assert len(result.select(("VirtualHost", ~is_private))) == 3
 
     # extend the DSL with comparison function
-    in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))), six.string_types)
+    in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
     res = result.select(("VirtualHost", in_network("128.39.0.0/16")))
     assert len(res) == 3
 

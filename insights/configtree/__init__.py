@@ -1,7 +1,6 @@
 import operator
 import os
 import re
-import six
 from fnmatch import fnmatch
 from itertools import chain
 
@@ -319,7 +318,6 @@ def pretty_format(doc, indent=4):
     return results
 
 
-# parser components that create trees of Nodes based on configuration files.
 class PushBack(object):
     """
     Wraps an iterable with push back capability. Tracks position in the stream.
@@ -514,7 +512,7 @@ class UnaryBool(Bool):
             return False
 
 
-def BinaryBool(op, _type):
+def BinaryBool(op):
     """ Lifts predicates into the DSL. """
     class Predicate(Bool):
         def __init__(self, value):
@@ -524,25 +522,24 @@ def BinaryBool(op, _type):
             if not isinstance(data, list):
                 data = [data]
             for d in data:
-                if isinstance(d, _type):
-                    try:
-                        if op(d, self.value):
-                            return True
-                    except:
-                        pass
+                try:
+                    if op(d, self.value):
+                        return True
+                except:
+                    pass
             return False
     return Predicate
 
 
-startswith = BinaryBool(str.startswith, six.string_types)
-endswith = BinaryBool(str.endswith, six.string_types)
-contains = BinaryBool(operator.contains, six.string_types)
+startswith = BinaryBool(str.startswith)
+endswith = BinaryBool(str.endswith)
+contains = BinaryBool(operator.contains)
 
-le = BinaryBool(operator.le, (int, float) + six.string_types)
-lt = BinaryBool(operator.lt, (int, float) + six.string_types)
-ge = BinaryBool(operator.ge, (int, float) + six.string_types)
-gt = BinaryBool(operator.gt, (int, float) + six.string_types)
-eq = BinaryBool(operator.eq, (int, float) + six.string_types)
+le = BinaryBool(operator.le)
+lt = BinaryBool(operator.lt)
+ge = BinaryBool(operator.ge)
+gt = BinaryBool(operator.gt)
+eq = BinaryBool(operator.eq)
 
 
 def __make_name_pred(name):
