@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.20-390](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.20-390) (2018-06-07)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.19-380...insights-core-3.0.20-390)
+
+**Merged pull requests:**
+
+- httpd conf combiner new test [\#1191](https://github.com/RedHatInsights/insights-core/pull/1191) ([jsvob](https://github.com/jsvob))
+
 ## [insights-core-3.0.19-380](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.19-380) (2018-05-31)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.18-371...insights-core-3.0.19-380)
 
