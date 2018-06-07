@@ -1,4 +1,6 @@
-from ipaddress import ip_address, ip_network
+import six
+
+from insights.contrib.ipaddress import ip_address, ip_network
 
 from insights.configtree import startswith, endswith, contains
 from insights.configtree import eq, le, lt, ge, gt
@@ -367,9 +369,11 @@ def test_complex_queries():
     assert len(res) == 3
 
     # extend the DSL with simple bool check
-    is_private = UnaryBool(lambda x: ip_address(x).is_private)
+    is_private = UnaryBool(lambda x: ip_address(six.u(x)).is_private)
     assert len(result.select(("VirtualHost", ~is_private))) == 3
 
     # extend the DSL with comparison function
-    in_network = BinaryBool(lambda x, y: (ip_address(x) in ip_network(y)), str)
-    assert len(result.select(("VirtualHost", in_network("128.39.0.0/16")))) == 3
+    in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))), six.string_types)
+    res = result.select(("VirtualHost", in_network("128.39.0.0/16")))
+    print(len(res))
+    assert len(res) == 3
