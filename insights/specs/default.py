@@ -556,7 +556,7 @@ class DefaultSpecs(Specs):
     systemctl_pulp_resmg = simple_command("/bin/systemctl show pulp_resource_manager")
     systemctl_pulp_celerybeat = simple_command("/bin/systemctl show pulp_celerybeat")
     systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
-    systemctl_qrouterd = simple_command("/bin/systemctl show qrouterd")
+    systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemd_docker = simple_file("/usr/lib/systemd/system/docker.service")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
