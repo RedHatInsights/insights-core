@@ -321,6 +321,30 @@ class Directive(Node):
             return self.parent.value
 
 
+def from_dict(dct):
+    """ Convert a dictionary into a configtree.  """
+    def inner(d):
+        results = []
+        for name, v in d.items():
+            if isinstance(v, dict):
+                results.append(Section(name=name, children=from_dict(v)))
+            elif isinstance(v, list):
+                if not any(isinstance(i, dict) for i in v):
+                    results.append(Directive(name=name, attrs=v))
+                else:
+                    for i in v:
+                        if isinstance(i, dict):
+                            results.append(Section(name=name, children=from_dict(i)))
+                        elif isinstance(i, list):
+                            results.append(Directive(name=name, attrs=i))
+                        else:
+                            results.append(Directive(name=name, attrs=[i]))
+            else:
+                results.append(Directive(name, attrs=[v]))
+        return results
+    return Root(children=inner(dct))
+
+
 def to_str(x):
     x = str(x)
     if " " in x or "'" in x or '"' in x:
@@ -648,6 +672,15 @@ def select(*queries, **kwargs):
             return results
         return inner(nodes)
 
+    def unique(roots):
+        seen = set()
+        results = []
+        for r in roots:
+            if r not in seen:
+                seen.add(r)
+                results.append(r)
+        return results
+
     def compiled_query(nodes):
         """
         This is the compiled query that can be run against a configuration.
@@ -658,9 +691,9 @@ def select(*queries, **kwargs):
         if kwargs.get("deep", False):
             results = deep_query(query, nodes)
             if roots:
-                results = [r.root for r in results]
+                results = unique([r.root for r in results])
         elif roots:
-            results = [n.root for n in query(nodes)]
+            results = unique([n.root for n in query(nodes)])
         else:
             results = query(nodes)
 
