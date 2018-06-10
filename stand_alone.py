@@ -7,6 +7,12 @@ from insights import make_response, rule, run
 from insights.core.spec_factory import SpecSet, simple_file
 from insights.parsers.redhat_release import RedhatRelease
 
+ERROR_KEY = "TOO_MANY_HOSTS"
+
+CONTENT = {
+    ERROR_KEY: """Too many hosts! {{hosts}}"""
+}
+
 
 class Specs(SpecSet):
     hosts = simple_file("/etc/hosts")
@@ -38,7 +44,7 @@ class HostParser(Parser):
 @rule(HostParser, RedhatRelease)
 def report(hp, rhr):
     if len(hp.hosts) > 1:
-        return make_response("ERROR_KEY_TOO_MANY_HOSTS", number=len(hp.hosts))
+        return make_response("TOO_MANY_HOSTS", hosts=len(hp.hosts))
 
 
 if __name__ == "__main__":
