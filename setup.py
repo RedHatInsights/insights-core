@@ -24,15 +24,17 @@ runtime = set([
     'six',
 ])
 
-try:
-    import importlib # noqa
-except ImportError:
-    runtime.add("importlib")
 
-try:
-    import argparse # noqa
-except ImportError:
-    runtime.add("argparse")
+def maybe_require(pkg):
+    try:
+        __import__(pkg)
+    except ImportError:
+        runtime.add(pkg)
+
+
+maybe_require("importlib")
+maybe_require("argparse")
+
 
 client = set([
     'requests',

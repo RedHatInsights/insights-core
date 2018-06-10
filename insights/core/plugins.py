@@ -4,6 +4,7 @@ specializes their interfaces and execution model where required.
 """
 
 import logging
+import sys
 import traceback
 
 from functools import partial
@@ -334,3 +335,21 @@ def validate_response(r):
             raise ValidationException("Rule response missing fingerprint_key", r)
         elif not isinstance(fingerprint_key, str):
             raise ValidationException("Response contains invalid fingerprint_key type", type(fingerprint_key))
+
+
+try:
+    from jinja2 import Template
+
+    def get_content(obj, key):
+        mod = sys.modules[obj.__module__]
+        return getattr(mod, "CONTENT", {}).get(key)
+
+    def format_rule(comp, val):
+        content = get_content(comp, val["error_key"])
+        if content:
+            return Template(content).render(val)
+        return str(val)
+
+    dr.set_formatter(format_rule, rule)
+except:
+    pass
