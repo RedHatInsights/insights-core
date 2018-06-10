@@ -15,7 +15,6 @@ import traceback
 
 from collections import defaultdict
 from functools import reduce as _reduce
-from pprint import pprint
 
 from insights.contrib import importlib
 from insights.contrib.toposort import toposort_flatten
@@ -45,6 +44,12 @@ IGNORE = defaultdict(set)
 ENABLED = defaultdict(lambda: True)
 
 ANY_TYPE = object()
+
+FORMATTER = {}
+
+
+def set_formatter(func, _type):
+    FORMATTER[_type] = func
 
 
 def set_enabled(component, enabled=True):
@@ -159,6 +164,12 @@ def observer(component_type=ANY_TYPE):
         add_observer(func, component_type)
         return func
     return inner
+
+
+def to_str(comp, val):
+    _type = get_component_type(comp)
+    func = FORMATTER.get(_type)
+    return func(comp, val) if func else str(val)
 
 
 class MissingRequirements(Exception):
@@ -453,7 +464,7 @@ class Broker(object):
             print()
             print("Missing Requirements:")
             if self.missing_requirements:
-                pprint(self.missing_requirements)
+                print(self.missing_requirements)
 
         if show_tracebacks:
             print()
@@ -467,8 +478,8 @@ class Broker(object):
             print("{} instances:".format(get_simple_name(_type)))
             for c in sorted(self.get_by_type(_type), key=get_name):
                 v = self[c]
-                pprint("{}:".format(get_name(c)))
-                pprint(v)
+                print("{}:".format(get_name(c)))
+                print(to_str(c, v))
                 print()
 
 
