@@ -43,28 +43,30 @@ def parse_bare(pb):
     return "".join(buf)
 
 
-def parse_attrs(pb):
+def parse_attrs(pb, end=";"):
     attrs = []
     eat_white(pb)
-    while pb.peek() not in ";{}":
+    while pb.peek() not in ("{}" + end):
         if pb.peek() in ('"', "'"):
             attrs.append(parse_string(pb))
         else:
             attrs.append(parse_bare(pb))
-        eat_white(pb)
+        if pb.peek() != end:
+            eat_white(pb)
 
     if len(attrs) == 1:
         attrs = [typed(attrs[0])]
 
-    if pb.peek() == ";":
+    if pb.peek() == end:
         next(pb)  # eat it
     eat_white(pb)
     return attrs
 
 
 class DocParser(object):
-    def __init__(self, ctx=None):
+    def __init__(self, ctx=None, line_end=";"):
         self.ctx = ctx
+        self.line_end = line_end
 
     def parse_section_body(self, pb):
         next(pb)  # eat bracket
@@ -82,7 +84,7 @@ class DocParser(object):
         eat_white(pb)
         pos = pb.lines
         name = parse_bare(pb)
-        attrs = parse_attrs(pb)
+        attrs = parse_attrs(pb, end=self.line_end)
         if pb.peek() == "{":
             body = self.parse_section_body(pb)
             el = Section(name=name, attrs=attrs, children=body, ctx=self.ctx)
@@ -102,5 +104,5 @@ class DocParser(object):
         return Root(children=results, ctx=self.ctx)
 
 
-def parse_doc(f, ctx=None):
-    return DocParser(ctx).parse_doc(LineCounter(f))
+def parse_doc(f, ctx=None, line_end=";"):
+    return DocParser(ctx, line_end=line_end).parse_doc(LineCounter(f))

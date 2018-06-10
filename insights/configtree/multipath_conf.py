@@ -17,7 +17,7 @@ from insights.specs import Specs
 @parser(Specs.multipath_conf)
 class MultipathConf(ConfigParser):
     def parse_doc(self, content):
-        return parse_doc("\n".join(content), ctx=self)
+        return parse_doc("\n".join(content), ctx=self, line_end="\n")
 
 
 def get_conf(root=None):
