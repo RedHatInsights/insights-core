@@ -478,9 +478,13 @@ class Broker(object):
             print("{} instances:".format(get_simple_name(_type)))
             for c in sorted(self.get_by_type(_type), key=get_name):
                 v = self[c]
-                print("{}:".format(get_name(c)))
-                print(to_str(c, v))
-                print()
+                try:
+                    if v["type"] != "skip":
+                        print("{}:".format(get_name(c)))
+                        print(to_str(c, v))
+                        print()
+                except:
+                    pass
 
 
 def get_missing_requirements(func, requires, d):
