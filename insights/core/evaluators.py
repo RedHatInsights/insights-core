@@ -73,7 +73,7 @@ class SingleEvaluator(Evaluator):
                 "hostname": self.hostname
             },
             "reports": self.rule_results,
-            "fingerprints":self.fingerprint_results,
+            "fingerprints": self.fingerprint_results,
             "skips": self.rule_skips,
         })
         return self.format_response(r)
