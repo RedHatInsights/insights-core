@@ -8,6 +8,7 @@ A DSL is provided to query the tree through a select function or brackets [].
 The brackets allow a more conventional lookup feel but aren't quite as powerful
 as using select directly.
 """
+import os
 from insights import combiner, parser, run
 from insights.configtree import ConfigCombiner, ConfigParser, eq
 from insights.configtree.dictlike import parse_doc
@@ -27,7 +28,7 @@ class NginxConfAll(ConfigCombiner):
 
     @property
     def conf_path(self):
-        return self.main.file_path
+        return os.path.dirname(self.main.file_path)
 
 
 def get_conf(root=None):

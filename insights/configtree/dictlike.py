@@ -53,6 +53,7 @@ def parse_attrs(pb, end=";"):
             attrs.append(parse_string(pb))
         else:
             attrs.append(parse_bare(pb))
+
         if pb.peek() != end:
             eat_white(pb, to=end)
 

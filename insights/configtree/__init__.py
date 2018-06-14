@@ -708,11 +708,6 @@ def select(*queries, **kwargs):
     return compiled_query
 
 
-def find_matches(confs, pattern):
-    results = [c for c in confs if fnmatch(c.file_path, pattern)]
-    return sorted(results, key=operator.attrgetter("file_name"))
-
-
 def find_main(confs, name):
     for c in confs:
         if c.file_name == name:
@@ -762,6 +757,9 @@ class ConfigParser(Parser, ConfigComponent):
         self.content = content
         self.doc = self.parse_doc(content)
 
+    def parse_doc(self, content):
+        raise NotImplemented()
+
     def lineat(self, pos):
         return self.content[pos] if pos is not None else None
 
@@ -782,9 +780,13 @@ class ConfigCombiner(ConfigComponent):
                 pattern = node.value
                 if not pattern.startswith("/"):
                     pattern = os.path.join(server_root, pattern)
-                includes = find_matches(confs, pattern)
+                includes = self.find_matches(confs, pattern)
                 for inc in includes:
                     node.children.extend(inc.doc.children)
 
         # flatten all content from nested includes into a main doc
         self.doc = Root(children=flatten(self.main.doc.children, include_finder))
+
+    def find_matches(self, confs, pattern):
+        results = [c for c in confs if fnmatch(c.file_path, pattern)]
+        return sorted(results, key=operator.attrgetter("file_name"))
