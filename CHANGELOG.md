@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-3.0.21-398](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.21-398) (2018-06-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.20-390...insights-core-3.0.21-398)
+
+**Fixed bugs:**
+
+- ps parser depends on implementation details of cpython [\#959](https://github.com/RedHatInsights/insights-core/issues/959)
+- ip parser depends on implementation specific details of cpython [\#958](https://github.com/RedHatInsights/insights-core/issues/958)
+- netstat combiner depends on implementation details of cpython [\#957](https://github.com/RedHatInsights/insights-core/issues/957)
+- httpd\_conf combiner depends on implementation details of python2 [\#956](https://github.com/RedHatInsights/insights-core/issues/956)
+- RPM Comparisons via `InstalledRPM` rely on naive `LooseVersion` comparisons [\#952](https://github.com/RedHatInsights/insights-core/issues/952)
+
 ## [insights-core-3.0.20-390](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.20-390) (2018-06-07)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.19-380...insights-core-3.0.20-390)
 
