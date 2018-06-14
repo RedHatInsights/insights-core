@@ -1168,10 +1168,11 @@ class FileListing(Parser):
         # '-R' flag we should grab this but it's probably not worth parsing
         # the flags to ls for this.
         self.first_path = None
-        path_re = re.compile(r'ls_-\w+_(?P<path>.*)$')
+        path_re = re.compile(r'ls_-\w+(?P<path>.*)$')
         match = path_re.search(context.path)
         if match:
-            self.first_path = match.group('path').replace('.', '/').replace('_', ' ')
+            fpath = match.group('path')
+            self.first_path = '/' if not fpath else fpath.replace('.', '/').replace('_', ' ')
         super(FileListing, self).__init__(context)
 
     def parse_file_match(self, this_dir, line):
