@@ -14,7 +14,7 @@ from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
-from .core.plugins import make_response, make_metadata  # noqa: F401
+from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
