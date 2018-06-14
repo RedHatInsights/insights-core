@@ -21,10 +21,12 @@ class LineCounter(PushBack):
     __next__ = next
 
 
-def eat_white(pb):
+def eat_white(pb, to=None):
     try:
         while pb.peek().isspace() or pb.peek() == "#":
             if pb.peek().isspace():
+                if pb.peek() == to:
+                    break
                 next(pb)
             if pb.peek() == "#":
                 while pb.peek() != "\n":
@@ -45,14 +47,14 @@ def parse_bare(pb):
 
 def parse_attrs(pb, end=";"):
     attrs = []
-    eat_white(pb)
+    eat_white(pb, to=end)
     while pb.peek() not in ("{}" + end):
         if pb.peek() in ('"', "'"):
             attrs.append(parse_string(pb))
         else:
             attrs.append(parse_bare(pb))
         if pb.peek() != end:
-            eat_white(pb)
+            eat_white(pb, to=end)
 
     if len(attrs) == 1:
         attrs = [typed(attrs[0])]
@@ -83,7 +85,7 @@ class DocParser(object):
     def parse_statement(self, pb):
         eat_white(pb)
         pos = pb.lines
-        name = parse_bare(pb)
+        name = parse_string(pb) if pb.peek() in ("'", '"') else parse_bare(pb)
         attrs = parse_attrs(pb, end=self.line_end)
         if pb.peek() == "{":
             body = self.parse_section_body(pb)

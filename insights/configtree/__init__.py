@@ -496,6 +496,10 @@ def parse_name_attrs(line, sep=None):
     attrs = []
     parts = re.split(sep, line, 1) if sep else line.split(None, 1)
     name = parts[0].strip()
+    if name[0] in ('"', "'"):
+        name = parse_string(PushBack(name))
+    else:
+        name = parse_bare(PushBack(name))
     if len(parts) > 1:
         attrs = parse_attrs(parts[1])
     return (name, attrs)
@@ -575,8 +579,8 @@ class UnaryBool(Bool):
             return False
 
 
-def BinaryBool(op):
-    """ Lifts predicates into the DSL. """
+def BinaryBool(pred):
+    """ Lifts predicates that take an argument into the DSL. """
     class Predicate(Bool):
         def __init__(self, value):
             self.value = value
@@ -586,7 +590,7 @@ def BinaryBool(op):
                 data = [data]
             for d in data:
                 try:
-                    if op(d, self.value):
+                    if pred(d, self.value):
                         return True
                 except:
                     pass
