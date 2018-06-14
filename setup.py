@@ -55,6 +55,14 @@ develop = set([
     'ipython<6',
 ])
 
+optional = set([
+    'jinja2',
+    'python-cjson',
+    'python-logstash',
+    'python-statsd',
+    'watchdog',
+])
+
 if __name__ == "__main__":
     # allows for runtime modification of rpm name
     name = os.environ.get("INSIGHTS_CORE_NAME", package_info["NAME"])
@@ -74,7 +82,7 @@ if __name__ == "__main__":
         extras_require={
             'develop': list(runtime | develop | client),
             'client': list(runtime | client),
-            'optional': ['python-cjson', 'python-logstash', 'python-statsd', 'watchdog'],
+            'optional': list(optional),
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',
