@@ -243,6 +243,59 @@ HTTPD_CONF_NEST_4 = """
 """.strip()
 
 
+def test_nopath():
+
+    # no path
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2))
+    try:
+        result = HttpdConfAll([httpd2])
+        # assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+        exception_happened = False
+    except:
+        exception_happened = True
+    assert exception_happened
+
+    # no httpd.conf
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    try:
+        result = HttpdConfAll([httpd2])
+        # assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+        exception_happened = False
+    except:
+        exception_happened = True
+    assert exception_happened
+
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfAll([httpd2])
+    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/laaalalalala/blablabla/httpd.conf'))
+    result = HttpdConfAll([httpd2])
+    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+
+    # no include in httpd.conf
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
+    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
+    result = HttpdConfAll([httpd2, httpd3])
+    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+
+    # no include in httpd.conf
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
+    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/aaa.conf'))
+    result = HttpdConfAll([httpd3, httpd2])
+    assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 1
+    assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+
+    # with an include
+    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    result = HttpdConfAll([httpd1, httpd2])
+    assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 2
+    assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256
+    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+
+
 def test_active_httpd():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
