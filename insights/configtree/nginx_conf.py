@@ -9,8 +9,11 @@ The brackets allow a more conventional lookup feel but aren't quite as powerful
 as using select directly.
 """
 import os
+import six
+from ipaddress import ip_address, ip_network
 from insights import combiner, parser, run
-from insights.configtree import ConfigCombiner, ConfigParser, eq
+from insights.configtree import ConfigCombiner, ConfigParser
+from insights.configtree import eq, BinaryBool, UnaryBool
 from insights.configtree.dictlike import parse_doc
 from insights.specs import Specs
 
@@ -33,6 +36,11 @@ class NginxConfAll(ConfigCombiner):
 
 def get_conf(root=None):
     return run(NginxConfAll, root=root).get(NginxConfAll)
+
+
+# Extend the DSL with some http predicates
+is_private = UnaryBool(lambda x: ip_address(six.u(x)).is_private)
+in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
 
 
 if __name__ == "__main__":
