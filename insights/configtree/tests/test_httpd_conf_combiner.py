@@ -295,6 +295,25 @@ def test_nopath():
     assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256
     assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
 
+    # colliding filenames
+    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
+    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/00-z.conf'))
+    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 3
+    assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256  # httpd1
+    assert result['IfModule', 'prefork.c']['ServerLimit'][1].value == 1024     # httpd2
+    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 256   # httpd3
+    assert len(result['IfModule', 'prefork.c']['MaxClients']) == 3
+    assert result['IfModule', 'prefork.c']['MaxClients'][first].value == 256  # httpd1
+    assert result['IfModule', 'prefork.c']['MaxClients'][1].value == 1024     # httpd2
+    assert result['IfModule', 'prefork.c']['MaxClients'][last].value == 512   # httpd3
+
+    # testing other ways to access the same indices
+    assert result['IfModule', 'prefork.c']['MaxClients'][0].value == 256   # httpd1
+    assert result['IfModule', 'prefork.c']['MaxClients'][2].value == 512   # httpd3
+    assert result['IfModule', 'prefork.c']['MaxClients'][-1].value == 512  # httpd3
+
 
 def test_active_httpd():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
