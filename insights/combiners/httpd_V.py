@@ -72,16 +72,15 @@ class HttpdV(LegacyItemAccess):
     Raises:
         SkipComponent: When no valid HttpdV is found.
     """
-    def __init__(self, local, shared):
+    def __init__(self, rel, ps, hv, hev, hwv):
         deprecated(HttpdV, "Use the `HttpdV` parser in `insights.parsers.httpd_V`.")
         super(HttpdV, self).__init__()
-        rhel_ver = shared[redhat_release].major
-        self.data = shared[HV].data if HV in shared else None
+        rhel_ver = rel.major
+        self.data = hv.data if hv else None
         if rhel_ver == 6:
-            ps = shared[PsAuxww]
             if ps.fuzzy_match('httpd.worker'):
-                self.data = shared[HWV].data if HWV in shared else None
+                self.data = hwv.data if hwv else None
             elif ps.fuzzy_match('httpd.event'):
-                self.data = shared[HEV].data if HEV in shared else None
+                self.data = hev.data if hev else None
         if self.data is None:
             raise SkipComponent("Unable to get the valid `httpd -V` command")
