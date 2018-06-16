@@ -12,6 +12,10 @@ class LineCounter(PushBack):
             self.lines -= 1
         super(LineCounter, self).push_back(item)
 
+    def push_all(self, items):
+        for i in reversed(items):
+            self.push_back(i)
+
     def next(self):
         v = super(LineCounter, self).next()
         if v == "\n":
@@ -35,41 +39,40 @@ def eat_white(pb, to=None):
         pass
 
 
-def parse_bare(pb):
-    buf = []
-    try:
-        while not pb.peek().isspace() and pb.peek() not in ";{":
-            buf.append(next(pb))
-    except StopIteration:
-        pass
-    return "".join(buf)
-
-
-def parse_attrs(pb, end=";"):
-    attrs = []
-    eat_white(pb, to=end)
-    while pb.peek() not in ("{}" + end):
-        if pb.peek() in ('"', "'"):
-            attrs.append(parse_string(pb))
-        else:
-            attrs.append(parse_bare(pb))
-
-        if pb.peek() != end:
-            eat_white(pb, to=end)
-
-    if len(attrs) == 1:
-        attrs = [typed(attrs[0])]
-
-    if pb.peek() == end:
-        next(pb)  # eat it
-    eat_white(pb)
-    return attrs
-
-
 class DocParser(object):
     def __init__(self, ctx=None, line_end=";"):
         self.ctx = ctx
         self.line_end = line_end
+
+    def parse_bare(self, pb):
+        buf = []
+        try:
+            end = "{" + self.line_end
+            while not pb.peek().isspace() and pb.peek() not in end:
+                buf.append(next(pb))
+        except StopIteration:
+            pass
+        return "".join(buf)
+
+    def parse_attrs(self, pb):
+        attrs = []
+        eat_white(pb, to=self.line_end)
+        while pb.peek() not in ("{}" + self.line_end):
+            if pb.peek() in ('"', "'"):
+                attrs.append(parse_string(pb))
+            else:
+                attrs.append(self.parse_bare(pb))
+
+            if pb.peek() != self.line_end:
+                eat_white(pb, to=self.line_end)
+
+        if len(attrs) == 1:
+            attrs = [typed(attrs[0])]
+
+        if pb.peek() == self.line_end:
+            next(pb)  # eat it
+        eat_white(pb)
+        return attrs
 
     def parse_section_body(self, pb):
         next(pb)  # eat bracket
@@ -86,8 +89,8 @@ class DocParser(object):
     def parse_statement(self, pb):
         eat_white(pb)
         pos = pb.lines
-        name = parse_string(pb) if pb.peek() in ("'", '"') else parse_bare(pb)
-        attrs = parse_attrs(pb, end=self.line_end)
+        name = parse_string(pb) if pb.peek() in ("'", '"') else self.parse_bare(pb)
+        attrs = self.parse_attrs(pb)
         if pb.peek() == "{":
             body = self.parse_section_body(pb)
             el = Section(name=name, attrs=attrs, children=body, ctx=self.ctx)
