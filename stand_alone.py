@@ -10,7 +10,7 @@ from insights.parsers.redhat_release import RedhatRelease
 ERROR_KEY = "TOO_MANY_HOSTS"
 
 CONTENT = {
-    ERROR_KEY: """Too many hosts! {{hosts}}"""
+    ERROR_KEY: """Too many hosts in /etc/hosts: {{num}}"""
 }
 
 
@@ -44,7 +44,7 @@ class HostParser(Parser):
 @rule(HostParser, RedhatRelease)
 def report(hp, rhr):
     if len(hp.hosts) > 1:
-        return make_response("TOO_MANY_HOSTS", hosts=len(hp.hosts))
+        return make_response("TOO_MANY_HOSTS", num=len(hp.hosts))
 
 
 if __name__ == "__main__":
