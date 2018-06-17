@@ -472,6 +472,11 @@ class Broker(object):
             for t in self.tracebacks.values():
                 print(t)
 
+        def printit(c, v):
+            print("{}:".format(get_name(c)))
+            print(to_str(c, v))
+            print()
+
         print()
         for _type in sorted(COMPONENTS_BY_TYPE, key=get_simple_name):
             print()
@@ -480,11 +485,9 @@ class Broker(object):
                 v = self[c]
                 try:
                     if v["type"] != "skip":
-                        print("{}:".format(get_name(c)))
-                        print(to_str(c, v))
-                        print()
+                        printit(c, v)
                 except:
-                    pass
+                        printit(c, v)
 
 
 def get_missing_requirements(func, requires, d):
