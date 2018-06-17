@@ -397,7 +397,7 @@ def head(dep):
             return c[0]
         raise dr.SkipComponent()
 
-    inner.__doc__ = escape(dep.func_doc)
+    inner.__doc__ = escape(dep.__doc__)
     return inner
 
 
