@@ -13,8 +13,7 @@ from .core.cluster import process_cluster
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
-from .core.plugins import combiner, metadata, parser, rule  # noqa: F401
-from .core.plugins import fact, cluster_rule  # noqa: F401
+from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
@@ -139,7 +138,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
-        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster_rules")
+        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules")
         p.add_argument("--rc", help="Run Context")
         p.add_argument("--ac", help="Archive Context")
         args = p.parse_args()
