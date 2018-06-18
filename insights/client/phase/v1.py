@@ -12,7 +12,11 @@ from insights.client.config import CONFIG as config, compile_config
 from insights.client.constants import InsightsConstants as constants
 from insights.client.auto_config import try_auto_configuration
 from insights.client.support import registration_check, InsightsSupport
-from insights.client.utilities import write_to_disk, generate_machine_id, validate_remove_file
+from insights.client.utilities import (write_to_disk,
+                                       generate_machine_id,
+                                       validate_remove_file,
+                                       delete_registered_file,
+                                       delete_unregistered_file)
 from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)

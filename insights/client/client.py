@@ -13,7 +13,10 @@ from .auto_config import (_try_satellite6_configuration,
                           _try_satellite5_configuration)
 from .utilities import (generate_machine_id,
                         write_to_disk,
+                        write_registered_file
                         write_unregistered_file,
+                        delete_registered_file,
+                        delete_unregistered_file,
                         determine_hostname)
 from .collection_rules import InsightsConfig
 from .data_collector import DataCollector
