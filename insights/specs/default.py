@@ -62,9 +62,11 @@ class DefaultSpecs(Specs):
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
+    ps_ef = simple_command("/bin/ps -ef")
 
     @datasource(ps_auxww)
     def tomcat_base(broker):
+        """Path: Tomcat base path"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Dcatalina\.base=(\S+)").findall
@@ -112,6 +114,7 @@ class DefaultSpecs(Specs):
     cpu_vulns_meltdown = simple_file("sys/devices/system/cpu/vulnerabilities/meltdown")
     cpu_vulns_spectre_v1 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v1")
     cpu_vulns_spectre_v2 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v2")
+    cpu_vulns_spec_store_bypass = simple_file("sys/devices/system/cpu/vulnerabilities/spec_store_bypass")
     # why the /cpuinfo?
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
@@ -138,6 +141,7 @@ class DefaultSpecs(Specs):
 
     @datasource(docker_list_images)
     def docker_image_ids(broker):
+        """Command: docker_image_ids"""
         images = broker[DefaultSpecs.docker_list_images]
         try:
             result = set()
@@ -152,6 +156,7 @@ class DefaultSpecs(Specs):
     # TODO: This parsing is broken.
     @datasource(docker_list_containers)
     def docker_container_ids(broker):
+        """Command: docker_container_ids"""
         containers = broker[DefaultSpecs.docker_list_containers]
         try:
             result = set()
@@ -232,6 +237,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww)
     def httpd_cmd(broker):
+        """Command: httpd_command"""
         ps = broker[DefaultSpecs.ps_auxww].content
         ps_httpds = set()
         for p in ps:
@@ -265,6 +271,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ipcs_s)
     def semid(broker):
+        """Command: semids"""
         source = broker[DefaultSpecs.ipcs_s].content
         results = set()
         for s in source:
@@ -303,6 +310,7 @@ class DefaultSpecs(Specs):
     limits_conf = glob_file(["/etc/security/limits.conf", "/etc/security/limits.d/*.conf"])
     locale = simple_command("/usr/bin/locale")
     localtime = simple_command("/usr/bin/file -L /etc/localtime")
+    logrotate_conf = glob_file(["/etc/logrotate.conf", "/etc/logrotate.d/*"])
     lpstat_p = simple_command("/usr/bin/lpstat -p")
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
@@ -324,6 +332,7 @@ class DefaultSpecs(Specs):
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
+    ls_var_run = simple_command("/bin/ls -lnL /var/run")
     ls_osroot = simple_command("/bin/ls -lan /")
     ls_var_www = simple_command("/bin/ls -la /dev/null /var/www")  # https://github.com/RedHatInsights/insights-core/issues/827
     lvdisplay = simple_command("/sbin/lvdisplay")
@@ -353,6 +362,7 @@ class DefaultSpecs(Specs):
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
+    mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
                           "/var/log/mysql.log",
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
@@ -365,6 +375,7 @@ class DefaultSpecs(Specs):
     netstat_agn = simple_command("/bin/netstat -agn")
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
+    networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = simple_file("/etc/neutron/neutron.conf")
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
@@ -428,6 +439,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
+        """Command: package_and_java"""
         ps = broker[DefaultSpecs.ps_auxww].content
         ctx = broker[HostContext]
         results = set()
@@ -511,6 +523,7 @@ class DefaultSpecs(Specs):
 
     @datasource(HostContext)
     def block(broker):
+        """Path: /sys/block directories starting with . or ram or dm- or loop"""
         remove = (".", "ram", "dm-", "loop")
         tmp = "/dev/%s"
         return[(tmp % f) for f in os.listdir("/sys/block") if not f.startswith(remove)]
@@ -519,6 +532,7 @@ class DefaultSpecs(Specs):
     smbstatus_S = simple_command("/usr/bin/smbstatus -S")
     smartctl = foreach_execute(block, "/sbin/smartctl -a %s", keep_rc=True)
     softnet_stat = simple_file("proc/net/softnet_stat")
+    software_collections_list = simple_command('/usr/bin/scl --list')
     spfile_ora = glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
     ss = simple_command("/usr/sbin/ss -tulpn")
     ssh_config = simple_file("/etc/ssh/ssh_config")
@@ -527,6 +541,7 @@ class DefaultSpecs(Specs):
     sssd_config = simple_file("/etc/sssd/sssd.conf")
     subscription_manager_list_consumed = simple_command('/usr/bin/subscription-manager list --consumed')
     subscription_manager_list_installed = simple_command('/usr/bin/subscription-manager list --installed')
+    subscription_manager_repos_list_enabled = simple_command('/usr/bin/subscription-manager repos --list-enabled')
     swift_object_expirer_conf = first_file(["/var/lib/config-data/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sysconfig_chronyd = simple_file("/etc/sysconfig/chronyd")
@@ -540,12 +555,15 @@ class DefaultSpecs(Specs):
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_conf_initramfs = simple_command("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
+    systemctl_httpd = simple_command("/bin/systemctl show httpd")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")
     systemctl_list_units = simple_command("/bin/systemctl list-units")
     systemctl_mariadb = simple_command("/bin/systemctl show mariadb")
     systemctl_pulp_workers = simple_command("/bin/systemctl show pulp_workers")
     systemctl_pulp_resmg = simple_command("/bin/systemctl show pulp_resource_manager")
     systemctl_pulp_celerybeat = simple_command("/bin/systemctl show pulp_celerybeat")
+    systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
+    systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemd_docker = simple_file("/usr/lib/systemd/system/docker.service")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
@@ -564,6 +582,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww)
     def tomcat_home_base(broker):
+        """Command: tomcat_home_base_paths"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Dcatalina\.(home|base)=(\S+)").findall
@@ -588,6 +607,7 @@ class DefaultSpecs(Specs):
     vdsm_conf = simple_file("etc/vdsm/vdsm.conf")
     vdsm_id = simple_file("etc/vdsm/vdsm.id")
     vdsm_log = simple_file("var/log/vdsm/vdsm.log")
+    vdsm_logger_conf = simple_file("etc/vdsm/logger.conf")
     vmware_tools_conf = simple_file("etc/vmware-tools/tools.conf")
     vgs = None  # simple_command('/sbin/vgs -v -o +vg_mda_count,vg_mda_free,vg_mda_size,vg_mda_used_count,vg_tags --config="global{locking_type=0}"')
     vgs_noheadings = simple_command("/sbin/vgs --nameprefixes --noheadings --separator='|' -a -o vg_all --config=\"global{locking_type=0}\"")
@@ -609,6 +629,7 @@ class DefaultSpecs(Specs):
     yum_log = simple_file("/var/log/yum.log")
     yum_repolist = simple_command("/usr/bin/yum -C repolist")
     yum_repos_d = glob_file("/etc/yum.repos.d/*")
+    zipl_conf = simple_file("/etc/zipl.conf")
 
     rpm_format = format_rpm()
 
@@ -616,6 +637,7 @@ class DefaultSpecs(Specs):
 
     @datasource(DockerImageContext)
     def docker_installed_rpms(broker):
+        """ Command: /usr/bin/rpm -qa --root `%s` --qf `%s`"""
         ctx = broker[DockerImageContext]
         root = ctx.root
         fmt = DefaultSpecs.rpm_format
@@ -628,6 +650,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext)
     def jboss_home(broker):
+        """Command: JBoss home progress command content paths"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.home\.dir=(\S+)").findall
@@ -645,6 +668,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext, multi_output=True)
     def jboss_domain_server_log_dir(broker):
+        """Command: JBoss domain server log directory"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         findall = re.compile(r"\-Djboss\.server\.log\.dir=(\S+)").findall
@@ -661,6 +685,7 @@ class DefaultSpecs(Specs):
 
     @datasource(ps_auxww, context=HostContext, multi_output=True)
     def jboss_standalone_main_config_files(broker):
+        """Command: JBoss standalone main config files"""
         ps = broker[DefaultSpecs.ps_auxww].content
         results = []
         search = re.compile(r"\-Djboss\.server\.base\.dir=(\S+)").search

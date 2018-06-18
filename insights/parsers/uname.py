@@ -39,7 +39,7 @@ kernel strings::
 
 from collections import namedtuple
 from distutils.version import LooseVersion, StrictVersion
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.core.context import Context
 from insights.specs import Specs
 
@@ -94,7 +94,8 @@ rhel_release_map = {
     "3.10.0-229": "7.1",
     "3.10.0-327": "7.2",
     "3.10.0-514": "7.3",
-    "3.10.0-693": "7.4"
+    "3.10.0-693": "7.4",
+    "3.10.0-862": "7.5"
 }
 
 release_to_kernel_map = dict((v, k) for k, v in rhel_release_map.items())
@@ -129,7 +130,7 @@ class UnameError(Exception):
 
 
 @parser(Specs.uname)
-class Uname(Parser):
+class Uname(CommandParser):
     """
     A utility class to parse uname content data and compare version and release
     information.

@@ -1,4 +1,4 @@
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 eus = [
@@ -49,7 +49,7 @@ def _parse(lines):
 
 
 @parser(Specs.yum_repolist)
-class YumRepoList(Parser):
+class YumRepoList(CommandParser):
 
     def __len__(self):
         return len(self.data)
@@ -73,3 +73,8 @@ class YumRepoList(Parser):
                 if eus_version in eus:
                     euses.append(eus_version)
         return euses
+
+    @property
+    def rhel_repos(self):
+        '''Get list of RHEL repos/Repo IDs'''
+        return [i.split('/')[0] for i in self.repos.keys() if i.startswith('rhel')]

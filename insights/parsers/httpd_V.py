@@ -11,14 +11,14 @@ or the value in brackets after the compilation option, or 'True' if only the
 compilation option is present.
 """
 
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 from insights.parsers import SkipException, ParseException
 from insights.util import deprecated
 
 
 @parser(Specs.httpd_V)
-class HttpdV(LegacyItemAccess, Parser):
+class HttpdV(LegacyItemAccess, CommandParser):
     """
     Class for parsing ``httpd -V`` command output.
 

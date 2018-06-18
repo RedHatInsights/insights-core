@@ -36,12 +36,12 @@ Examples:
     'ipt_MASQUERADE'
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.lsmod)
-class LsMod(Parser):
+class LsMod(CommandParser):
     """
     Parse the output of ``/sbin/lsmod``.
     """

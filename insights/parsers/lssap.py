@@ -34,13 +34,13 @@ Examples:
     >>> lssap.data[3]['Instance']
     'D51'
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.parsers import ParseException, parse_delimited_table
 from insights.specs import Specs
 
 
 @parser(Specs.lssap)
-class Lssap(Parser):
+class Lssap(CommandParser):
     """Class to parse ``lssap`` command output.
 
     Attributes:

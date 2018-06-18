@@ -38,12 +38,12 @@ Examples:
 
 from datetime import datetime
 from collections import namedtuple
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.certificates_enddate)
-class CertificatesEnddate(LegacyItemAccess, Parser):
+class CertificatesEnddate(LegacyItemAccess, CommandParser):
     """Class to parse the expiration dates."""
 
     ExpirationDate = namedtuple('ExpirationDate', ['str', 'datetime'])

@@ -1,6 +1,6 @@
 from collections import namedtuple
 from insights.contrib import pyparsing as p
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import ParseException
 from insights.specs import Specs
 
@@ -68,7 +68,7 @@ def create_parser():
 
 
 @parser(Specs.rabbitmq_report)
-class RabbitMQReport(Parser):
+class RabbitMQReport(CommandParser):
 
     def parse_content(self, content):
         """
@@ -119,7 +119,7 @@ class RabbitMQReport(Parser):
 
 
 @parser(Specs.rabbitmq_users)
-class RabbitMQUsers(Parser):
+class RabbitMQUsers(CommandParser):
 
     def parse_content(self, content):
         self.data = {}
@@ -134,7 +134,7 @@ TRUE_FALSE = {'true': True, 'false': False}
 
 
 @parser(Specs.rabbitmq_queues)
-class RabbitMQQueues(Parser):
+class RabbitMQQueues(CommandParser):
     """Parse the output of the `rabbitmqctl list_queues` command.
 
     The actual command is

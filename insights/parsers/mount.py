@@ -70,7 +70,7 @@ Examples:
 import re
 from insights.specs import Specs
 from ..parsers import optlist_to_dict, keyword_search
-from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
 
 
 class MountOpts(object):
@@ -141,7 +141,7 @@ class MountOpts(object):
             yield k, v
 
 
-class MountEntry(LegacyItemAccess):
+class MountEntry(LegacyItemAccess, CommandParser):
     """
     An object representing an entry in the output of ``mount`` command.  Each
     entry contains below fixed attributes:
@@ -179,7 +179,7 @@ class MountEntry(LegacyItemAccess):
 
 
 @parser(Specs.mount)
-class Mount(Parser):
+class Mount(CommandParser):
     """Class of information for all output from ``mount`` command.
 
     Attributes:

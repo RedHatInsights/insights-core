@@ -3,13 +3,13 @@ ChkConfig - command ``chkconfig``
 =================================
 """
 from collections import namedtuple
-from .. import Parser, parser
+from .. import parser, CommandParser
 import re
 from insights.specs import Specs
 
 
 @parser(Specs.chkconfig)
-class ChkConfig(Parser):
+class ChkConfig(CommandParser):
     """
     A parser for working with data gathered from `chkconfig` utility.
 
