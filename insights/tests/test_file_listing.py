@@ -304,3 +304,30 @@ def test_bad_directory():
     bad_listing = [s.strip() for s in BAD_DIRECTORY_ENTRIES.split('\n')[5:] if s]
     assert dirs.raw_directory('/badness') == bad_listing
     assert dirs.listing_of('/badness') == {}
+
+
+def test_single_directory_with_special_path():
+    def _content_asserts(dirs, path):
+        assert path in dirs
+        assert path in dirs.listings
+        assert '/etc/pki/tls/certs' not in dirs
+        assert '/etc' not in dirs
+        assert dirs.listings[path]['name'] == path
+
+        assert dirs.files_of(path) == ['cert.pem', 'openssl.cnf']
+        assert dirs.dirs_of(path) == ['.', '..', 'certs', 'misc', 'private']
+
+    ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_.etc.pki.tls')
+    _content_asserts(FileListing(ctx), '/etc/pki/tls')
+
+    ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_.etc.pki')
+    _content_asserts(FileListing(ctx), '/etc/pki')
+
+    ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_.')
+    _content_asserts(FileListing(ctx), '/')
+
+    ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la_')
+    _content_asserts(FileListing(ctx), '/')
+
+    ctx = context_wrap(SINGLE_DIRECTORY, path='ls_-la')
+    _content_asserts(FileListing(ctx), '/')
