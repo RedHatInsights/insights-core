@@ -339,9 +339,9 @@ DEFAULT_OPTS = {
     }
 }
 
-DEFAULT_KVS = dict((k, v['default']) for k, v in DEFAULT_OPTS.iteritems())
+DEFAULT_KVS = dict((k, v['default']) for k, v in DEFAULT_OPTS.items())
 DEFAULT_BOOLS = dict(
-    (k, v) for k, v in DEFAULT_KVS.iteritems() if type(v) is bool).keys()
+    (k, v) for k, v in DEFAULT_KVS.items() if type(v) is bool).keys()
 
 
 class InsightsConfig(object):
@@ -377,7 +377,7 @@ class InsightsConfig(object):
         '''
         Update without allowing undefined options or overwrite of class methods
         '''
-        dict_ = dict((k, v) for k, v in dict_.iteritems() if (
+        dict_ = dict((k, v) for k, v in dict_.items() if (
                     k not in self._init_attrs))
 
         # zzz
@@ -427,9 +427,9 @@ class InsightsConfig(object):
             return
         parser = optparse.OptionParser()
         debug_grp = optparse.OptionGroup(parser, "Debug options")
-        cli_options = dict((k, v) for k, v in DEFAULT_OPTS.iteritems() if (
+        cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
-        for _, o in cli_options.iteritems():
+        for _, o in cli_options.items():
             g = debug_grp if o.pop("group", None) == "debug" else parser
             optnames = o.pop('opt')
             g.add_option(*optnames, **o)
