@@ -57,7 +57,7 @@ def write_registered_file():
         if os.path.lexists(f):
             if os.path.islink(f):
                 # kill symlinks and regenerate
-                write_to_disk(f, delete=True)
+                os.remove(f)
                 write_to_disk(f)
         else:
             write_to_disk(f)
@@ -73,7 +73,7 @@ def write_unregistered_file(date=None):
         if os.path.lexists(f):
             if os.path.islink(f):
                 # kill symlinks and regenerate
-                write_to_disk(f, delete=True)
+                os.remove(f)
                 write_to_disk(f, content=str(date))
         else:
             write_to_disk(f, content=str(date))
