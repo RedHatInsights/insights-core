@@ -2,6 +2,7 @@ import tempfile
 import insights.client.schedule as sched
 from insights.client.config import InsightsConfig
 
+
 def test_set_daily():
     target = tempfile.mktemp()
     config = InsightsConfig()
