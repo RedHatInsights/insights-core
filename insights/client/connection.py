@@ -19,8 +19,7 @@ from OpenSSL import SSL, crypto
 
 from .utilities import (determine_hostname,
                         generate_machine_id,
-                        write_to_disk,
-                        write_unregistered_file)
+                        write_registered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from .config import CONFIG as config

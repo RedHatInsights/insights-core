@@ -51,6 +51,7 @@ def determine_hostname(display_name=None):
 def get_time():
     return datetime.datetime.isoformat(datetime.datetime.now())
 
+
 def write_registered_file():
     delete_unregistered_file()
     for f in constants.registered_files:
@@ -61,6 +62,7 @@ def write_registered_file():
                 write_to_disk(f)
         else:
             write_to_disk(f)
+
 
 def write_unregistered_file(date=None):
     """
@@ -78,9 +80,11 @@ def write_unregistered_file(date=None):
         else:
             write_to_disk(f, content=str(date))
 
+
 def delete_registered_file():
     for f in constants.registered_files:
         write_to_disk(f, delete=True)
+
 
 def delete_unregistered_file():
     for f in constants.unregistered_files:
