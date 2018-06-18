@@ -94,6 +94,6 @@ class InsightsSchedulerSystemd(object):
 def get_scheduler(config, source=None, target='/etc/cron.daily/' + APP_NAME):
     source = source if source else cron_source(config)
     if os.path.exists(source):
-        return InsightsSchedulerCron(source, target)
+        return InsightsSchedulerCron(config, source, target)
     else:
         return InsightsSchedulerSystemd()
