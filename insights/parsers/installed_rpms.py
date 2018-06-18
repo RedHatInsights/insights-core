@@ -232,6 +232,10 @@ class InstalledRpms(CommandParser):
         return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
                 False)
 
+    # re-export get_max/min with more descriptive names
+    newest = get_max
+    oldest = get_min
+
 
 p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
 
@@ -329,6 +333,9 @@ class InstalledRpm(object):
         """str: RPM package release."""
         self.arch = None
         """str: RPM package architecture."""
+
+        if isinstance(data, six.string_types):
+            data = self._parse_package(data)
 
         for k, v in data.items():
             setattr(self, k, v)
@@ -574,3 +581,9 @@ class InstalledRpm(object):
 
     def __le__(self, other):
         return isinstance(other, InstalledRpm) and not other.__lt__(self)
+
+
+# re-exports
+from_package = InstalledRpm.from_package
+Rpm = InstalledRpm
+Installed = InstalledRpms
