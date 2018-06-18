@@ -141,8 +141,8 @@ def post_update():
     if config['reregister']:
         new = True
         config['register'] = True
-        write_to_disk(constants.registered_file, delete=True)
-        write_to_disk(constants.registered_file, delete=True)
+        delete_registered_file()
+        delete_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
     logger.debug('Machine-id: %s', generate_machine_id(new))
 

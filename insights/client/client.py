@@ -124,15 +124,12 @@ def _is_client_registered():
             # no record of system in remote
             msg = '\n'.join([msg_notyet, msg_doreg])
             # clear any local records
-            write_to_disk(constants.registered_file, delete=True)
-            write_to_disk(constants.unregistered_file, delete=True)
+            delete_registered_file()
+            delete_unregistered_file()
             return msg, False
     else:
         # API confirms reg
-        if not os.path.isfile(constants.registered_file):
-            write_to_disk(constants.registered_file)
-        # delete any stray unregistered
-        write_to_disk(constants.unregistered_file, delete=True)
+        write_registered_file()
         return '', True
 
 
@@ -148,7 +145,7 @@ def try_register():
     if reg_check['status']:
         logger.info('This host has already been registered.')
         # regenerate the .registered file
-        write_to_disk(constants.registered_file)
+        write_registered_file()
         return True
     if reg_check['unreachable']:
         logger.error(reg_check['messages'][1])
@@ -195,8 +192,8 @@ def handle_registration():
         logger.debug('Re-register set, forcing registration.')
         new = True
         config['register'] = True
-        write_to_disk(constants.registered_file, delete=True)
-        write_to_disk(constants.unregistered_file, delete=True)
+        delete_registered_file()
+        delete_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
     logger.debug('Machine-id: %s', generate_machine_id(new))
 
