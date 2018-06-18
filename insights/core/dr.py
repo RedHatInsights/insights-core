@@ -5,6 +5,7 @@ from __future__ import print_function
 
 import inspect
 import logging
+import json
 import os
 import pkgutil
 import re
@@ -489,6 +490,10 @@ class Broker(object):
                 except:
                         printit(c, v)
 
+    def print_component(self, component_type):
+        print(json.dumps(
+            dict((get_name(c), self[c])
+                 for c in sorted(self.get_by_type(component_type), key=get_name))))
 
 
 def get_missing_requirements(func, requires, d):

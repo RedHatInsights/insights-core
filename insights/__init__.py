@@ -118,7 +118,8 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        run_context=HostContext, archive_context=None, use_pandas=False):
+        run_context=HostContext, archive_context=None, use_pandas=False,
+        print_component=None):
 
     from .core import dr
     dr.load_components("insights.specs.default")
@@ -174,6 +175,8 @@ def run(component=None, root=None, print_summary=False,
 
     if print_summary:
         broker.describe(show_missing=args.missing, show_tracebacks=args.tracebacks)
+    elif print_component:
+        broker.print_component(print_component)
     return broker
 
 
