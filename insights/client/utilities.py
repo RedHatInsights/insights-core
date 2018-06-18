@@ -92,7 +92,7 @@ def write_to_disk(filename, delete=False, content=get_time()):
     Write filename out to disk
     """
     if delete:
-        if os.path.isfile(filename):
+        if os.path.lexists(filename):
             os.remove(filename)
     else:
         with open(filename, 'w') as f:
