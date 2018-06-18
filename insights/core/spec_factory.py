@@ -21,6 +21,13 @@ log = logging.getLogger(__name__)
 
 COMMANDS = {}
 
+SAFE_ENV = {
+    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
+}
+"""
+A minimal set of environment variables for use in subprocess calls
+"""
+
 
 def enc(s):
     escape_encoding = "string_escape" if six.PY2 else "unicode_escape"
@@ -157,8 +164,8 @@ class TextFileProvider(FileProvider):
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
         if filters:
-            cmd = [["/bin/grep", "-F", filters, self.path]]
-            rc, out = subproc.call(cmd, shell=False, keep_rc=True)
+            cmd = [["grep", "-F", filters, self.path]]
+            rc, out = subproc.call(cmd, shell=False, keep_rc=True, env=SAFE_ENV)
             if rc == 0 and out != '':
                 results = out.splitlines()
             else:
