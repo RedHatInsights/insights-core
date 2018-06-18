@@ -85,6 +85,7 @@ class Specs(SpecSet):
     engine_log = RegistryPoint()
     etc_journald_conf_d = RegistryPoint(multi_output=True)
     etc_journald_conf = RegistryPoint()
+    etc_libvirt_qemu_xml = RegistryPoint(multi_output=True)
     ethernet_interfaces = RegistryPoint()
     ethtool_a = RegistryPoint(multi_output=True)
     ethtool_c = RegistryPoint(multi_output=True)
