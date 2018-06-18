@@ -14,35 +14,34 @@ from insights.contrib.ConfigParser import RawConfigParser
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 from .constants import InsightsConstants as constants
-from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger('network')
 
 
-class InsightsConfig(object):
+class InsightsUploadConf(object):
     """
-    Insights configuration
+    Insights spec configuration from uploader.json
     """
 
-    def __init__(self, conn=None):
+    def __init__(self, config, conn=None):
         """
         Load config from parent
         """
+        self.config = config
         self.fallback_file = constants.collection_fallback_file
         self.remove_file = constants.collection_remove_file
         self.collection_rules_file = constants.collection_rules_file
         protocol = "https://"
-        insecure_connection = config["insecure_connection"]
-        if insecure_connection:
+        if self.config.insecure_connection:
             # This really should not be used.
             protocol = "http://"
-        self.base_url = protocol + config['base_url']
-        self.collection_rules_url = config['collection_rules_url']
+        self.base_url = protocol + self.config.base_url
+        self.collection_rules_url = self.config.collection_rules_url
         if self.collection_rules_url is None:
             self.collection_rules_url = self.base_url + '/v1/static/uploader.v2.json'
-        self.gpg = config['gpg']
+        self.gpg = self.config.gpg
         self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):
@@ -220,3 +219,8 @@ class InsightsConfig(object):
                 logger.debug(json.dumps(conf))
                 return conf, rm_conf
         raise ValueError("ERROR: Unable to download conf or read it from disk!")
+
+
+if __name__ == '__main__':
+    from .config import InsightsConfig
+    print(InsightsUploadConf(InsightsConfig().load_all()))
