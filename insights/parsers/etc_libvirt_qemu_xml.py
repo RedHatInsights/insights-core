@@ -1,9 +1,13 @@
+"""
+EtcLibvirtQemuXML file ``/etc/libvirt/qemu/*.xml``
+--------------------------------------------------
+"""
 from .. import XMLParser, parser
 from insights.specs import Specs
 
 
 @parser(Specs.etc_libvirt_qemu_xml)
-class LibvirtQemuXML(XMLParser):
+class EtcLibvirtQemuXML(XMLParser):
     """This class parses xml files under ``/etc/libvirt/qemu/`` using
     ``XMLParser`` base parser
 
@@ -122,11 +126,11 @@ class LibvirtQemuXML(XMLParser):
         </domain>
 
     Examples:
-        >> xml_numa.file_name = 'vm.xml'
-        >> assert xml_numa.vm_name == '05-s00c06h0'
-        >> memnode = xml_numa.get_elements('./numatune/memnode', None)
-        >> assert memnode[0].items() == [('nodeset', '0'), ('cellid', '0'), ('mode', 'strict')]
-        >> assert memnode[1].items() == [('nodeset', '1'), ('cellid', '1'), ('mode', 'strict')]
+        >>> xml_numa.file_name = 'vm.xml'
+        >>> assert xml_numa.vm_name == '05-s00c06h0'
+        >>> memnode = xml_numa.get_elements('./numatune/memnode', None)
+        >>> assert len(memnode[0].items()) == 3
+        >>> assert len(memnode[1].items()) == 3
     """
     @property
     def vm_name(self):

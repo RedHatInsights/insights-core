@@ -1,6 +1,6 @@
 import doctest
 
-from insights.parsers import etc_libvirt_qemu_xml
+from insights.parsers import etc_libvirt_qemu_xml as qemu_xml
 from insights.tests import context_wrap
 
 XML_NUMA = """
@@ -133,7 +133,7 @@ or other application using the libvirt API.
 
 
 def test_vm_xml():
-    xml = etc_libvirt_qemu_xml.LibvirtQemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml'))
+    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml'))
     xml.file_name = 'vm.xml'
     assert xml.vm_name == '05-s00c06h0'
     memnode = xml.get_elements('./numatune/memnode', None)
@@ -141,13 +141,12 @@ def test_vm_xml():
     assert len(memnode[1].items()) == 3
 
     # No 'name' found
-    xml = etc_libvirt_qemu_xml.LibvirtQemuXML(context_wrap(XML_NUMA_NO_NAME))
+    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA_NO_NAME))
     assert xml.vm_name is None
 
 
 def test_documentation():
-    env = {'xml_numa': etc_libvirt_qemu_xml.LibvirtQemuXML(
-        context_wrap(XML_NUMA,
-                     path='/etc/libvirt/qemu/vm.xml'))}
-    failed_count, tests = doctest.testmod(etc_libvirt_qemu_xml, globs=env)
+    env = {'xml_numa': qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA,
+                                                               path='/etc/libvirt/qemu/vm.xml'))}
+    failed_count, tests = doctest.testmod(qemu_xml, globs=env)
     assert failed_count == 0
