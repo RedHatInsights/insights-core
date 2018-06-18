@@ -336,7 +336,7 @@ class InsightsClient(object):
         if upload_results:
 
             # delete the archive
-            if self.config['keep_archive']:
+            if self.config.keep_archive:
                 logger.info('Insights archive retained in ' + path)
             else:
                 client.delete_archive(path)

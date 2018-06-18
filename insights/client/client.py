@@ -310,7 +310,7 @@ def collect(config):
             branch_info = stdin_config['branch_info']
     except:
         logger.error('ERROR: Invalid config for %s! Exiting...',
-                     ('--from-file' if config['from_file'] else '--from-stdin'))
+                     ('--from-file' if config.from_file else '--from-stdin'))
         return False
 
     collection_rules, rm_conf = pc.get_conf(False, stdin_config)
@@ -436,7 +436,7 @@ def upload(config, tar_file, collection_duration=None):
                 with open(constants.insights_ansible_facts_file, 'w') as handler:
                     handler.write(json.dumps(insights_facts))
 
-            account_number = config['account_number']
+            account_number = config.account_number
             if account_number:
                 logger.info("Successfully uploaded report from %s to account %s." % (
                             machine_id, account_number))

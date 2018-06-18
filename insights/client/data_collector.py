@@ -175,9 +175,9 @@ class DataCollector(object):
             except LookupError:
                 logger.debug('Could not parse remove.conf. Ignoring...')
 
-        if self.config['run_specific_specs'] is not None:
-            logger.debug('Running specific specs %s', self.config['run_specific_specs'])
-            for specific_spec in self.config['run_specific_specs'].split(','):
+        if self.config.run_specific_specs is not None:
+            logger.debug('Running specific specs %s', self.config.run_specific_specs)
+            for specific_spec in self.config.run_specific_specs.split(','):
                 logger.debug('Running specific spec %s', specific_spec)
                 self.run_specific_specs(specific_spec, conf, rm_conf, exclude, branch_info)
                 logger.debug('Finished running specific spec %s', specific_spec)
@@ -219,7 +219,7 @@ class DataCollector(object):
         """
         Do finalization stuff
         """
-        if self.config["obfuscate"]:
+        if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
             clean_opts = CleanOptions(self.config, self.archive.tmp_dir, rm_conf)
             fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
@@ -253,7 +253,7 @@ class CleanOptions(object):
             except LookupError:
                 pass
 
-        if config["obfuscate_hostname"]:
+        if config.obfuscate_hostname:
             self.hostname_path = "insights_commands/hostname"
         else:
             self.hostname_path = None

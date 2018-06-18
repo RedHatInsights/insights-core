@@ -100,11 +100,11 @@ class InsightsSupport(object):
                 lastupload = upl_file.readline().strip()
         cfg_block.append('\nLast successful upload was ' + lastupload)
 
-        cfg_block.append('auto_config: ' + str(self.config['auto_config']))
-        if self.config['proxy']:
+        cfg_block.append('auto_config: ' + str(self.config.auto_config))
+        if self.config.proxy:
             obfuscated_proxy = re.sub(r'(.*)(:)(.*)(@.*)',
                                       r'\1\2********\4',
-                                      self.config['proxy'])
+                                      self.config.proxy)
         else:
             obfuscated_proxy = 'None'
         cfg_block.append('proxy: ' + obfuscated_proxy)

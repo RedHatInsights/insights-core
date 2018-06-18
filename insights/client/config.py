@@ -339,9 +339,9 @@ DEFAULT_OPTS = {
     }
 }
 
-DEFAULT_KVS = {k: v['default'] for k, v in DEFAULT_OPTS.iteritems()}
-DEFAULT_BOOLS = {
-    k: v for k, v in DEFAULT_KVS.iteritems() if type(v) is bool}.keys()
+DEFAULT_KVS = dict((k, v['default']) for k, v in DEFAULT_OPTS.iteritems())
+DEFAULT_BOOLS = dict(
+    (k, v) for k, v in DEFAULT_KVS.iteritems() if type(v) is bool).keys()
 
 
 class InsightsConfig(object):
@@ -377,8 +377,8 @@ class InsightsConfig(object):
         '''
         Update without allowing undefined options or overwrite of class methods
         '''
-        dict_ = {k: v for k, v in dict_.iteritems() if (
-                    k not in self._init_attrs)}
+        dict_ = dict((k, v) for k, v in dict_.iteritems() if (
+                    k not in self._init_attrs))
 
         # zzz
         if 'no_gpg' in dict_ and dict_['no_gpg']:
@@ -427,8 +427,8 @@ class InsightsConfig(object):
             return
         parser = optparse.OptionParser()
         debug_grp = optparse.OptionGroup(parser, "Debug options")
-        cli_options = {k: v for k, v in DEFAULT_OPTS.iteritems() if (
-                       'opt' in v)}
+        cli_options = dict((k, v) for k, v in DEFAULT_OPTS.iteritems() if (
+                       'opt' in v))
         for _, o in cli_options.iteritems():
             g = debug_grp if o.pop("group", None) == "debug" else parser
             optnames = o.pop('opt')
@@ -503,22 +503,25 @@ class InsightsConfig(object):
         if self.analyze_container and (self.register or self.unregister):
             raise ValueError('Registration not supported with '
                              'image or container analysis.')
+        if self.to_json and self.to_stdout:
+            raise ValueError(
+                'Conflicting options: --to-stdout and --to-json')
 
     def _imply_options(self):
         '''
         Some options enable others automatically
         '''
         self.no_upload = self.no_upload or self.to_stdout or self.offline
-        self.auto_update = self.auto_update or self.offline
+        self.auto_update = self.auto_update and not self.offline
         self.analyze_container = (self.analyze_container or
                                   self.analyze_file or
                                   self.analyze_mountpoint or
                                   self.analyze_image_id)
-        self.to_json = ((self.to_json or self.analyze_container) and
-                        not self.to_stdout)
         self.to_stdout = (self.to_stdout or
                           self.from_stdin or
                           self.from_file)
+        self.to_json = ((self.to_json or self.analyze_container) and
+                        not self.to_stdout)
 
 
 if __name__ == '__main__':
