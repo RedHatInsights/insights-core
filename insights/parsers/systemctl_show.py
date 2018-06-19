@@ -29,6 +29,9 @@ SystemctlShowQpidd - command ``systemctl show qpidd``
 
 SystemctlShowQdrouterd - command ``systemctl show qdrouterd``
 -------------------------------------------------------------
+
+SystemctlShowSmartpdc - command ``systemctl show smart_proxy_dynflow_core``
+---------------------------------------------------------------------------
 """
 
 
@@ -320,6 +323,37 @@ class SystemctlShowQdrouterd(SystemctlShow):
 
     Examples:
         >>> systemctl_show_qdrouterd["LimitNOFILE"]
+        '4096'
+
+    """
+    pass
+
+
+@parser(Specs.systemctl_smartpdc)
+class SystemctlShowSmartpdc(SystemctlShow):
+    """
+    Class for ``systemctl show smart_proxy_dynflow_core``.
+
+    Typical output of ``/bin/systemctl show smart_proxy_dynflow_core`` command is::
+
+        Type=simple
+        Restart=no
+        NotifyAccess=none
+        RestartUSec=100ms
+        TimeoutStartUSec=1min 30s
+        TimeoutStopUSec=1min 30s
+        ExecMainStartTimestamp=Thu 2018-01-11 14:22:32 CST
+        ExecMainStartTimestampMonotonic=104261679
+        ExecMainExitTimestampMonotonic=0
+        ExecMainPID=2747
+        ExecMainCode=0
+        ExecMainStatus=0
+        Slice=system.slice
+        LimitNOFILE=4096
+        ...
+
+    Examples:
+        >>> systemctl_show_smartpdc["LimitNOFILE"]
         '4096'
 
     """

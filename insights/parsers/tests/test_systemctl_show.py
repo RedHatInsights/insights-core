@@ -9,6 +9,7 @@ from insights.parsers.systemctl_show import SystemctlShowPulpResourceManager
 from insights.parsers.systemctl_show import SystemctlShowPulpWorkers
 from insights.parsers.systemctl_show import SystemctlShowQpidd
 from insights.parsers.systemctl_show import SystemctlShowQdrouterd
+from insights.parsers.systemctl_show import SystemctlShowSmartpdc
 from insights.tests import context_wrap
 
 
@@ -85,6 +86,12 @@ def test_systemctl_show_qdrouterd():
     assert len(context.data) == 21
 
 
+def test_systemctl_show_smartpdc():
+    context = SystemctlShowSmartpdc(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
+    assert context["LimitNOFILE"] == "4096"
+    assert len(context.data) == 21
+
+
 def test_systemctl_show_doc_examples():
     env = {
         'systemctl_show_cinder_volume': SystemctlShowCinderVolume(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
@@ -94,7 +101,8 @@ def test_systemctl_show_doc_examples():
         'systemctl_show_pulp_celerybeat': SystemctlShowPulpCelerybeat(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'systemctl_show_httpd': SystemctlShowHttpd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
         'systemctl_show_qpidd': SystemctlShowQpidd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
-        'systemctl_show_qdrouterd': SystemctlShowQdrouterd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
+        'systemctl_show_qdrouterd': SystemctlShowQdrouterd(context_wrap(SYSTEMCTL_SHOW_EXAMPLES)),
+        'systemctl_show_smartpdc': SystemctlShowSmartpdc(context_wrap(SYSTEMCTL_SHOW_EXAMPLES))
     }
     failed, total = doctest.testmod(systemctl_show, globs=env)
     assert failed == 0
