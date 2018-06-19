@@ -126,6 +126,7 @@ class InsightsArchiveSpecs(Specs):
     ntpq_pn = simple_file("insights_commands/ntpq_-pn")
     ntptime = simple_file("insights_commands/ntptime")
     numeric_user_group_name = simple_file("insights_commands/grep_-c_digit_.etc.passwd_.etc.group")
+    passwd_foreman = simple_file("insights_commands/grep_foreman_.etc.passwd")
     oc_get_bc = simple_file("insights_commands/oc_get_bc_-o_yaml_--all-namespaces")
     oc_get_build = simple_file("insights_commands/oc_get_build_-o_yaml_--all-namespaces")
     oc_get_dc = simple_file("insights_commands/oc_get_dc_-o_yaml_--all-namespaces")
