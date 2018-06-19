@@ -200,6 +200,7 @@ class DefaultSpecs(Specs):
     foreman_satellite_log = simple_file("/var/log/foreman-installer/satellite.log")
     foreman_ssl_access_ssl_log = simple_file("var/log/httpd/foreman-ssl_access_ssl.log")
     foreman_rake_db_migrate_status = simple_command('/usr/sbin/foreman-rake db:migrate:status')
+    smartpdc_conf = simple_file("/etc/smart_proxy_dynflow_core/settings.yml")
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getcert_list = simple_command("/usr/bin/getcert list")
