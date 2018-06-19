@@ -31,7 +31,6 @@ SMARTPDC_CONF = """
 def test_smartpdc_conf():
     smartpdc_conf = SmartpdcConf(context_wrap(SMARTPDC_CONF))
     assert smartpdc_conf.data[':listen'] == '0.0.0.0'
-    print "/etc/foreman-proxy/foreman_ssl_ca.pem" in smartpdc_conf.data[':foreman_ssl_ca']
     assert ("/etc/foreman-proxy/foreman_ssl_ca.pem" in smartpdc_conf.data[':foreman_ssl_ca']) is True
 
 
