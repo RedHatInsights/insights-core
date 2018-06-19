@@ -161,9 +161,7 @@ DEFAULT_OPTS = {
         'group': 'debug'
     },
     'logging_file': {
-        'default': os.path.join(
-            constants.log_dir,
-            constants.app_name) + '.log',
+        'default': constants.default_log_file,
         'opt': ['--logging-file'],
         'help': 'Path to log file location',
         'action': 'store'
