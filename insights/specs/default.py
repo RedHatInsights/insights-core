@@ -217,6 +217,7 @@ class DefaultSpecs(Specs):
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
+    grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
