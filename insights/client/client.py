@@ -420,10 +420,10 @@ def upload(config, tar_file, collection_duration=None):
                 insights_facts = {}
                 insights_facts['last_upload'] = api_response
 
-                sat6 = _try_satellite6_configuration()
+                sat6 = _try_satellite6_configuration(config)
                 sat5 = None
                 if not sat6:
-                    sat5 = _try_satellite5_configuration()
+                    sat5 = _try_satellite5_configuration(config)
 
                 if sat6:
                     connection = 'sat6'
