@@ -6,20 +6,25 @@ This parser returns the output of the ``grubby --default-index`` command.
 
 Examples:
 
-    >>> default_index
+    >>> grubby_default_index.default_index
     0
 """
 
-from .. import parser
 from insights.specs import Specs
+from .. import parser, Parser
+from . import SkipException
 
 
 @parser(Specs.grubby_default_index)
-def grub2_default_index(context):
+class GrubbyDefaultIndex(Parser):
     """
-    The output is the numeric index of the current default boot entry.
-    Should be a int type value, count from 0.
-    So we can return the content directly.
+    This parser will parse the output of command ``grubby --default-index``.
+
+    Attributes:
+        default_index (int): the numeric index of the current default boot entry, count from 0
     """
-    if context.content and context.content[0].isdigit():
-        return int(context.content[0])
+    def parse_content(self, content):
+        if content and content[0].isdigit():
+            self.default_index = int(content[0])
+        else:
+            raise SkipException('Invalid default index value.')
