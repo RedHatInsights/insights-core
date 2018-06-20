@@ -9,6 +9,8 @@ The main class is the MultipathConf class, which reads the multipath daemon's
 
 from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
+from insights.core import ConfigParser
+from insights.configtree.dictlike import parse_doc
 from insights.specs import Specs
 
 
@@ -129,3 +131,14 @@ class MultipathConf(Parser, LegacyItemAccess):
 
     def parse_content(self, content):
         self.data = MultipathConf._create_parser().parseString("\n".join(content))[0].asDict()
+
+
+@parser(Specs.multipath_conf)
+class MultipathConfTree(ConfigParser):
+    def parse_doc(self, content):
+        return parse_doc("\n".join(content), ctx=self, line_end="\n")
+
+
+def get_tree(root=None):
+    from insights import run
+    return run(MultipathConfTree, root=root).get(MultipathConfTree)

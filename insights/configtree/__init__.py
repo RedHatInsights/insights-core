@@ -22,12 +22,8 @@ specific information is less tedious and error prone.
 Generating documents of various formats from a master tree is straightforward.
 """
 import operator
-import os
 import re
-from fnmatch import fnmatch
 from itertools import chain
-
-from insights.core import Parser
 
 
 # classes modeling configuration trees
@@ -166,17 +162,34 @@ class Node(object):
         """
         return select(*queries, **kwargs)(self.children)
 
+    def find(self, *queries, **kwargs):
+        """
+        Finds the first result found anywhere in the configuration. Pass
+        `one=last` for the last result. Returns `None` if no results are found.
+        """
+        kwargs["deep"] = True
+        kwargs["roots"] = False
+        if "one" not in kwargs:
+            kwargs["one"] = first
+        return self.select(*queries, **kwargs)
+
+    def find_all(self, *queries):
+        """
+        Find all results matching the query anywhere in the configuration.
+        Returns an empty `SearchResult` if no results are found.
+        """
+        return self.select(*queries, deep=True, roots=False)
+
     def __getitem__(self, query):
         """
-        Similar to select, except tuples are automatically constructed, and
-        subselects of children are specified by chained brackets:
-        `conf["Directory", "/"] is the same as conf.select(("Directory", "/"))
+        Similar to select, except tuples are constructed without parentheses:
+        `conf["Directory", "/"]` is the same as `conf.select(("Directory", "/"))`
 
         Notice that queries return `SearchResult` instances, which also have
-        __getitem__ delegating to select except the select is against
-        grandchild nodes in the tree.  This allows more complicated queries,
+        `__getitem__` delegating to `select` except the select is against
+        grandchild nodes in the tree. This allows more complicated queries,
         like this one that gets all Options entries beneath the Directory
-        entries starting with "/var"
+        entries starting with "/var":
 
         `conf["Directory", startswith("/var")]["Options"]`
 
@@ -184,14 +197,14 @@ class Node(object):
 
         `conf.select(("Directory", startswith("/var")), "Options, roots=False)
 
-        Note you can recover the enclosing section with node.parent or a node's
-        ultimate root with node.root. If a Node is a root, node.root is just
-        the node itself.
+        Note you can recover the enclosing section with `node.parent` or a
+        node's ultimate root with `node.root`. If a `Node` is a root,
+        `node.root` is just the node itself.
 
         To get all root level Directory and Alias directives, you could do
         something like `conf[eq("Directory") | eq("Alias")]`
 
-        To get loaded auth modules
+        To get loaded auth modules:
         `conf["LoadModule", contains("auth")]`
         """
         if isinstance(query, int):
@@ -706,87 +719,3 @@ def select(*queries, **kwargs):
             return SearchResult(children=results)
         return results[one] if results else None
     return compiled_query
-
-
-def find_main(confs, name):
-    for c in confs:
-        if c.file_name == name:
-            return c
-
-
-def flatten(docs, pred):
-    def inner(children):
-        results = []
-        for c in children:
-            if select(pred)([c]) and c.children:
-                results.extend(inner(c.children))
-            else:
-                results.append(c)
-        return results
-    return inner(docs)
-
-
-class ConfigComponent(object):
-    def select(self, *queries, **kwargs):
-        return self.doc.select(*queries, **kwargs)
-
-    def __getitem__(self, query):
-        return self.select(query)
-
-    def __contains__(self, item):
-        return item in self.doc
-
-    def __len__(self):
-        return len(self.doc)
-
-    def __iter__(self):
-        return iter(self.doc)
-
-    def __repr__(self):
-        return str(self.doc)
-
-    def __str__(self):
-        return self.__repr__()
-
-
-class ConfigParser(Parser, ConfigComponent):
-    """
-    Base Insights component class for Parsers of configuration files.
-    """
-    def parse_content(self, content):
-        self.content = content
-        self.doc = self.parse_doc(content)
-
-    def parse_doc(self, content):
-        raise NotImplemented()
-
-    def lineat(self, pos):
-        return self.content[pos] if pos is not None else None
-
-
-class ConfigCombiner(ConfigComponent):
-    """
-    Base Insights component class for Combiners of configuration files.
-    """
-    def __init__(self, confs, main_file, include_finder):
-        self.confs = confs
-        self.main = find_main(confs, main_file)
-        server_root = self.conf_path
-
-        # Set the children of all include directives to the contents of the
-        # included configs
-        for conf in confs:
-            for node in conf.doc.select(include_finder, deep=True, roots=False):
-                pattern = node.value
-                if not pattern.startswith("/"):
-                    pattern = os.path.join(server_root, pattern)
-                includes = self.find_matches(confs, pattern)
-                for inc in includes:
-                    node.children.extend(inc.doc.children)
-
-        # flatten all content from nested includes into a main doc
-        self.doc = Root(children=flatten(self.main.doc.children, include_finder))
-
-    def find_matches(self, confs, pattern):
-        results = [c for c in confs if fnmatch(c.file_path, pattern)]
-        return sorted(results, key=operator.attrgetter("file_name"))

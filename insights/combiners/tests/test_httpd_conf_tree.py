@@ -1,5 +1,5 @@
 from insights.configtree import first, last  # noqa: F401
-from insights.configtree.httpd_conf import _HttpdConf, HttpdConfAll
+from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.tests import context_wrap
 
 
@@ -248,7 +248,7 @@ def test_nopath():
     # no path
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2))
     try:
-        result = HttpdConfAll([httpd2])
+        result = HttpdConfTree([httpd2])
         # assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
         exception_happened = False
     except:
@@ -258,7 +258,7 @@ def test_nopath():
     # no httpd.conf
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     try:
-        result = HttpdConfAll([httpd2])
+        result = HttpdConfTree([httpd2])
         # assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
         exception_happened = False
     except:
@@ -266,23 +266,23 @@ def test_nopath():
     assert exception_happened
 
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
-    result = HttpdConfAll([httpd2])
+    result = HttpdConfTree([httpd2])
     assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
 
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/laaalalalala/blablabla/httpd.conf'))
-    result = HttpdConfAll([httpd2])
+    result = HttpdConfTree([httpd2])
     assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
 
     # no include in httpd.conf
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
-    result = HttpdConfAll([httpd2, httpd3])
+    result = HttpdConfTree([httpd2, httpd3])
     assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
 
     # no include in httpd.conf
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/aaa.conf'))
-    result = HttpdConfAll([httpd3, httpd2])
+    result = HttpdConfTree([httpd3, httpd2])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 1
     assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 1024
     assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
@@ -290,7 +290,7 @@ def test_nopath():
     # with an include
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
-    result = HttpdConfAll([httpd1, httpd2])
+    result = HttpdConfTree([httpd1, httpd2])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 2
     assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256
     assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
@@ -299,7 +299,7 @@ def test_nopath():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/00-z.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 3
     assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256  # httpd1
     assert result['IfModule', 'prefork.c']['ServerLimit'][1].value == 1024     # httpd2
@@ -319,7 +319,7 @@ def test_active_httpd():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     assert result['IfModule', 'prefork.c']['MaxClients'][last].value == 512
     assert result['IfModule', 'prefork.c']['MaxClients'][last].file_path == '/etc/httpd/conf.d/z-z.conf'
@@ -333,7 +333,7 @@ def test_shadowing():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_2, path='/etc/httpd/conf.d/00-z.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_SHADOWTEST_3, path='/etc/httpd/conf.d/z-z.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     assert len(result["Foo"]) == 9
     assert len(result["IfModule"]) == 3
@@ -352,7 +352,7 @@ def test_splits():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][last]
     assert server_root.value == '/home/skontar/www'
@@ -369,7 +369,7 @@ def test_splits():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_2, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][last]
     assert server_root.value == '/etc/httpd'
@@ -386,7 +386,7 @@ def test_splits():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_MAIN_3, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_1, path='/etc/httpd/conf.d/00-a.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
 
     server_root = result['ServerRoot'][last]
     assert server_root.value == '/home/skontar/www'
@@ -401,7 +401,7 @@ def test_splits():
 
 def test_httpd_one_file_overwrites():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf/httpd.conf'))
-    result = HttpdConfAll([httpd])
+    result = HttpdConfTree([httpd])
 
     active_setting = result['UserDir'][last]
     assert active_setting.value == 'enable bob'

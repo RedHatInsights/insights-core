@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
 This module models nginx configuration as a tree. It correctly handles include
-directives by splicing individual document trees into their parents and
-flattening the final structure into one document.
+directives by splicing individual document trees into their parents until one
+document tree is left.
 
 A DSL is provided to query the tree through a select function or brackets [].
 The brackets allow a more conventional lookup feel but aren't quite as powerful
@@ -10,9 +10,9 @@ as using select directly.
 """
 import os
 import six
-from ipaddress import ip_address, ip_network
+from insights.contrib.ipaddress import ip_address, ip_network
 from insights import combiner, parser, run
-from insights.configtree import ConfigCombiner, ConfigParser
+from insights.core import ConfigCombiner, ConfigParser
 from insights.configtree import eq, BinaryBool, UnaryBool
 from insights.configtree.dictlike import parse_doc
 from insights.specs import Specs
@@ -25,23 +25,22 @@ class _NginxConf(ConfigParser):
 
 
 @combiner(_NginxConf)
-class NginxConfAll(ConfigCombiner):
+class NginxConfTree(ConfigCombiner):
     def __init__(self, confs):
-        super(NginxConfAll, self).__init__(confs, "nginx.conf", eq("include"))
+        super(NginxConfTree, self).__init__(confs, "nginx.conf", eq("include"))
 
     @property
     def conf_path(self):
         return os.path.dirname(self.main.file_path)
 
 
-def get_conf(root=None):
-    return run(NginxConfAll, root=root).get(NginxConfAll)
+def get_tree(root=None):
+    return run(NginxConfTree, root=root).get(NginxConfTree)
 
 
-# Extend the DSL with some http predicates
-is_private = UnaryBool(lambda x: ip_address(six.u(x)).is_private)
+is_private = UnaryBool(lambda xs: any(ip_address(six.u(x)).is_private for x in xs))
 in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
 
 
 if __name__ == "__main__":
-    run(NginxConfAll, print_summary=True)
+    run(NginxConfTree, print_summary=True)

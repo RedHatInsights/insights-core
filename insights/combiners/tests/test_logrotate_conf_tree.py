@@ -1,5 +1,5 @@
 from insights.configtree import first
-from insights.configtree.logrotate_conf import LogRotateConf, LogRotateConfAll
+from insights.combiners.logrotate_conf import _LogRotateConf, LogRotateConfTree
 from insights.tests import context_wrap
 
 
@@ -49,8 +49,9 @@ include /etc/logrotate.d
 """.strip()
 
 
-def test_logrotate_conf():
-    conf = LogRotateConfAll([LogRotateConf(context_wrap(CONF, path="/etc/logrotate.conf"))])
+def test_logrotate_tree():
+    p = _LogRotateConf(context_wrap(CONF, path="/etc/logrotate.conf"))
+    conf = LogRotateConfTree([p])
     assert len(conf["weekly"]) == 1
     assert len(conf["/var/log/wtmp"]["missingok"]) == 1
     assert conf["/var/log/wtmp"]["postrotate"][first].value == "do some stuff to wtmp"

@@ -1,12 +1,8 @@
-import six
-
-from insights.contrib.ipaddress import ip_address, ip_network
-
 from insights.configtree import startswith, endswith, contains
 from insights.configtree import eq, le, lt, ge, gt
 from insights.configtree import first, last  # noqa: F401
-from insights.configtree import UnaryBool, BinaryBool
-from insights.configtree.httpd_conf import _HttpdConf, HttpdConfAll
+from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
+from insights.combiners.httpd_conf import in_network, is_private
 from insights.tests import context_wrap
 
 
@@ -334,7 +330,7 @@ def test_greater_than_equals():
 
 def test_simple_queries():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
-    result = HttpdConfAll([httpd1])
+    result = HttpdConfTree([httpd1])
     assert result["EnableSendfile"][first].value
     assert len(result["VirtualHost"]) == 1
     assert len(result["VirtualHost"]["Directory"]) == 1
@@ -347,7 +343,7 @@ def test_complex_queries():
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_3, path='/etc/httpd/conf.d/00-a.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_4, path='/etc/httpd/conf.d/01-b.conf'))
-    result = HttpdConfAll([httpd1, httpd2, httpd3])
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
     assert len(result.select("VirtualHost")) == 3
     assert len(result.select(("VirtualHost", "128.39.140.28"))) == 2
     assert len(result.select(("VirtualHost", "128.39.140.30"))) == 1
@@ -368,12 +364,8 @@ def test_complex_queries():
     res = result.select("VirtualHost").select(("IfModule", "!php4_module"), deep=True, roots=False)
     assert len(res) == 3
 
-    # extend the DSL with simple bool check
-    is_private = UnaryBool(lambda x: ip_address(six.u(x)).is_private)
     assert len(result.select(("VirtualHost", ~is_private))) == 3
 
-    # extend the DSL with comparison function
-    in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
     res = result.select(("VirtualHost", in_network("128.39.0.0/16")))
     assert len(res) == 3
 

@@ -2,15 +2,12 @@
 Combiner for httpd configurations
 =================================
 
-Combiner for parsing part of httpd configurations. It collects all
-HttpdConf generated from each httpd configuration files and get the valid
-settings by sorting the file's in alphanumeric order. It provides an interface
-to get the valid value of specific directive.
-
-It also correctly handles position of ``IncludeOptional conf.d/*.conf`` line.
+Combiner for parsing part of httpd configurations. It collects all HttpdConf
+generated from each configuration file and combines them to expose a
+consolidated configuration tree.
 
 Note: at this point in time, you should **NOT** filter the httpd configurations
-to avoid find "directives" from incorrect "Sections"
+to avoid finding directives in incorrect sections.
 
 Examples:
     >>> HTTPD_CONF_1 = '''
@@ -62,10 +59,17 @@ Examples:
     >>> htd_conf.get_section_list("VirtualHost")
     [(('VirtualHost', '192.0.2.1'), '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
 """
+import six
+from insights.contrib.ipaddress import ip_address, ip_network
 from collections import namedtuple
 
-from insights.core.plugins import combiner
+from insights.core import ConfigCombiner, ConfigParser
+from insights.core.plugins import combiner, parser
+from insights.configtree import BinaryBool, UnaryBool
+from insights.configtree import Directive, Section
+from insights.configtree import DocParser, LineGetter, parse_name_attrs, startswith
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
+from insights.specs import Specs
 
 
 @combiner(HttpdConf)
@@ -301,3 +305,89 @@ class HttpdConfAll(object):
             return _deep_search(self.data, section)
 
         return []
+
+
+class HttpConfDocParser(DocParser):
+    """
+    Wrapper class so parser functions don't have to thread ctx.
+
+    This is not an Insights parser but a document parser indirectly used by an
+    Insights parser. It produces a configtree model constructed of ``Node``
+    instances.
+    """
+    def parse_directive(self, lg):
+        line = next(lg)
+        name, attrs = parse_name_attrs(line)
+        return Directive(name=name, attrs=attrs, ctx=self.ctx)
+
+    def parse_section_body(self, lg):
+        body = []
+        while not lg.peek().startswith("</"):
+            body.append(self.parse_statement(lg))
+        return body
+
+    def parse_section(self, lg):
+        line = next(lg).strip("<> ")
+        name, attrs = parse_name_attrs(line)
+        body = None
+        try:
+            body = self.parse_section_body(lg)
+        except:
+            raise Exception("Expected end tag for %s" % name)
+
+        end = next(lg).strip("</> ")
+        if not name == end:
+            raise Exception("Tag mismatch: %s != %s" % (name, end))
+        return Section(name=name, attrs=attrs, children=body, ctx=self.ctx)
+
+    def parse_statement(self, lg):
+        line = lg.peek()
+        pos = lg.pos
+        if line.startswith("<") and not line.startswith("</"):
+            el = self.parse_section(lg)
+        else:
+            el = self.parse_directive(lg)
+        el.pos = pos
+        return el
+
+
+def parse_doc(f, ctx=None):
+    """ Accepts an open file or a list of lines. """
+    return HttpConfDocParser(ctx).parse_doc(LineGetter(f))
+
+
+@parser(Specs.httpd_conf)
+class _HttpdConf(ConfigParser):
+    """ Parser for individual httpd configuration files. """
+    def parse_doc(self, content):
+        return parse_doc(content, ctx=self)
+
+
+@combiner(_HttpdConf)
+class HttpdConfTree(ConfigCombiner):
+    """
+    Exposes httpd configuration through the configtree interface. Correctly
+    handles all include directives.
+    """
+    def __init__(self, confs):
+        includes = startswith("Include")
+        super(HttpdConfTree, self).__init__(confs, "httpd.conf", includes)
+
+    @property
+    def conf_path(self):
+        res = self.main.find("ServerRoot")
+        return res.value if res else "/etc/httpd"
+
+
+def get_tree(root=None):
+    from insights import run
+    return run(HttpdConfTree, root=root).get(HttpdConfTree)
+
+
+is_private = UnaryBool(lambda xs: any(ip_address(six.u(x)).is_private for x in xs))
+in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
+
+
+if __name__ == "__main__":
+    from insights import run
+    run(HttpdConfTree, print_summary=True)

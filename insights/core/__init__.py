@@ -2,11 +2,15 @@ import datetime
 import io
 import json
 import logging
+import operator
 import os
 import re
 import shlex
 import yaml
 import six
+from fnmatch import fnmatch
+
+from insights.configtree import from_dict, iniconfig, Root, select, first
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
@@ -96,6 +100,110 @@ def default_parser_deserializer(_type, data):
     for k, v in data.items():
         setattr(obj, k, v)
     return obj
+
+
+def find_main(confs, name):
+    for c in confs:
+        if c.file_name == name:
+            return c
+
+
+def flatten(docs, pred):
+    def inner(children):
+        results = []
+        for c in children:
+            if select(pred)([c]) and c.children:
+                results.extend(inner(c.children))
+            else:
+                results.append(c)
+        return results
+    return inner(docs)
+
+
+class ConfigComponent(object):
+    def select(self, *queries, **kwargs):
+        return self.doc.select(*queries, **kwargs)
+
+    def find(self, *queries, **kwargs):
+        """
+        Finds the first result found anywhere in the configuration. Pass
+        `one=last` for the last result. Returns `None` if no results are found.
+        """
+        kwargs["deep"] = True
+        kwargs["roots"] = False
+        if "one" not in kwargs:
+            kwargs["one"] = first
+        return self.select(*queries, **kwargs)
+
+    def find_all(self, *queries):
+        """
+        Find all results matching the query anywhere in the configuration.
+        Returns an empty `SearchResult` if no results are found.
+        """
+        return self.select(*queries, deep=True, roots=False)
+
+    def __getitem__(self, query):
+        return self.select(query)
+
+    def __contains__(self, item):
+        return item in self.doc
+
+    def __len__(self):
+        return len(self.doc)
+
+    def __iter__(self):
+        return iter(self.doc)
+
+    def __repr__(self):
+        return str(self.doc)
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class ConfigParser(Parser, ConfigComponent):
+    """
+    Base Insights component class for Parsers of configuration files.
+    """
+    def parse_content(self, content):
+        self.content = content
+        self.doc = self.parse_doc(content)
+
+    def parse_doc(self, content):
+        raise NotImplemented()
+
+    def lineat(self, pos):
+        return self.content[pos] if pos is not None else None
+
+
+class ConfigCombiner(ConfigComponent):
+    """
+    Base Insights component class for Combiners of configuration files with
+    include directives for supplementary configuration files. httpd and nginx
+    are examples.
+    """
+    def __init__(self, confs, main_file, include_finder):
+        self.confs = confs
+        self.main = find_main(confs, main_file)
+        server_root = self.conf_path
+
+        # Set the children of all include directives to the contents of the
+        # included configs
+        for conf in confs:
+            for node in conf.doc.select(include_finder, deep=True, roots=False):
+                pattern = node.value
+                if not pattern.startswith("/"):
+                    pattern = os.path.join(server_root, pattern)
+                includes = self.find_matches(confs, pattern)
+                for inc in includes:
+                    node.children.extend(inc.doc.children)
+
+        # flatten all content from nested includes into a main doc
+        self.doc = Root(children=flatten(self.main.doc.children, include_finder))
+
+    def find_matches(self, confs, pattern):
+        results = [c for c in confs if fnmatch(c.file_path, pattern)]
+        return sorted(results, key=operator.attrgetter("file_name"))
 
 
 class SysconfigOptions(Parser):
@@ -419,6 +527,8 @@ class YAMLParser(Parser, LegacyItemAccess):
         else:
             self.data = yaml.safe_load(content)
 
+        self.doc = from_dict(self.data)
+
 
 class JSONParser(Parser, LegacyItemAccess):
     """
@@ -426,6 +536,7 @@ class JSONParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         self.data = json.loads(''.join(content))
+        self.doc = from_dict(self.data)
 
 
 class ScanMeta(type):
@@ -944,7 +1055,7 @@ class Syslog(LogFileOutput):
         return msg_info
 
 
-class IniConfigFile(Parser):
+class IniConfigFile(ConfigParser):
     """
     A class specifically for reading configuration files in 'ini' format.
 
@@ -1011,10 +1122,14 @@ class IniConfigFile(Parser):
                 super(YourClass, self).parse_content(content,
                                                      allow_no_values=True)
         """
+        super(IniConfigFile, self).parse_content(content)
         config = RawConfigParser(allow_no_value=allow_no_value)
         fp = io.StringIO(u"\n".join(content))
         config.readfp(fp, filename=self.file_name)
         self.data = config
+
+    def parse_doc(self, content):
+        return iniconfig.parse_doc(content)
 
     def sections(self):
         """list: Return a list of section names."""

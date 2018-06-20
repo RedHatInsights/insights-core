@@ -1,5 +1,5 @@
 from insights.configtree import first, last  # noqa: F401
-from insights.configtree.httpd_conf import _HttpdConf
+from insights.combiners.httpd_conf import _HttpdConf
 from insights.tests import context_wrap
 
 HTTPD_CONF_PATH = "/etc/httpd/conf/httpd.conf"
