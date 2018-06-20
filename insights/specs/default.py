@@ -507,6 +507,7 @@ class DefaultSpecs(Specs):
                                                "rhn-logs/rhn/rhn_taskomatic_daemon.log"])
     rhsm_conf = simple_file("/etc/rhsm/rhsm.conf")
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
+    qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo")
