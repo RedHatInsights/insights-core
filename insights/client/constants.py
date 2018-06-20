@@ -9,11 +9,12 @@ class InsightsConstants(object):
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 300
+    default_conf_dir = '/etc/insights-client'
     default_conf_file = '/etc/insights-client/insights-client.conf'
     user_agent = os.path.join(app_name, package_info["VERSION"])
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
-    default_conf_dir = '/etc/insights-client'
     simple_find_replace_dir = '/etc/redhat-access-insights'
+    default_log_file = os.path.join(log_dir, app_name + '.log')
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     base_url = ''
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')

@@ -1,7 +1,8 @@
 from __future__ import absolute_import
+import os
 import logging
 import optparse
-import os
+import copy
 import six
 from six.moves import configparser as ConfigParser
 
@@ -9,380 +10,519 @@ from .constants import InsightsConstants as constants
 
 logger = logging.getLogger(__name__)
 
-APP_NAME = 'insights-client'
-CONF_DIR = os.path.join('/etc', APP_NAME)
-CONF_FILE = os.path.join(CONF_DIR, 'insights-client.conf')
-
-BOOLEAN_KEYS = [
-    'analyze_container', 'auto_config', 'auto_update',
-    'debug', 'disable_schedule', 'enable_schedule', 'from_file', 'from_stdin',
-    'gpg', 'insecure_connection', 'keep_archive', 'net_debug', 'no_gpg',
-    'no_upload', 'obfuscate', 'obfuscate_hostname', 'offline', 'quiet',
-    'register', 'reregister', 'silent', 'status', 'support',
-    'test_connection', 'to_stdout', 'unregister', 'validate',
-    'verbose', 'version', 'to_json'
-]
-
-CONFIG = {
-    'analyze_container': False,
-    'analyze_image_id': None,
-    'analyze_file': None,
-    'analyze_mountpoint': None,
-    'api_url': None,
-    'app_name': 'insights-client',
-    'authmethod': 'BASIC',
-    'auto_config': True,
-    'auto_update': True,
-    'base_url': 'cert-api.access.redhat.com/r/insights',
-    'branch_info_url': None,
-    'cert_verify': os.path.join(CONF_DIR, 'cert-api.access.redhat.com.pem'),
-    'collection_rules_url': None,
-    'compressor': 'gz',
-    'conf': CONF_FILE,
-    'egg_path': '/v1/static/core/insights-core.egg',
-    'debug': False,  # Used by client wrapper script
-    'disable_schedule': False,
-    'display_name': None,
-    'enable_schedule': False,
-    'from_file': False,
-    'from_stdin': False,
-    'gpg': True,
-    'egg_gpg_path': '/v1/static/core/insights-core.egg.asc',
-    'group': None,
-    'insecure_connection': False,
-    'keep_archive': False,
-    'logging_file': os.path.join(constants.log_dir, APP_NAME) + '.log',
-    'loglevel': 'DEBUG',
-    'net_debug': False,
-    'no_gpg': False,  # legacy
-    'no_upload': False,
-    'obfuscate': False,
-    'obfuscate_hostname': False,
-    'offline': False,
-    'password': '',
-    'proxy': None,
-    'quiet': False,
-    'register': False,
-    'reregister': False,
-    'retries': 1,
-    'run_specific_specs': None,
-    'silent': False,
-    'status': False,
-    'support': False,
-    'systemid': None,
-    'test_connection': False,
-    'to_stdout': False,
-    'unregister': False,
-    'upload_url': None,
-    'use_atomic': None,
-    'use_docker': None,
-    'username': '',
-    'validate': False,
-    'verbose': False,
-    'version': False,
-    'to_json': False
+DEFAULT_OPTS = {
+    'analyze_container': {
+        'default': False,
+        'opt': ['--analyze-container'],
+        'help': optparse.SUPPRESS_HELP,  # ??
+        'action': 'store_true'
+    },
+    'analyze_image_id': {
+        'default': None,
+        'opt': ['--analyze-image-id'],
+        'help': optparse.SUPPRESS_HELP,  # ??
+        'action': 'store'
+    },
+    'analyze_file': {
+        'default': None,
+        'opt': ['--analyze-file'],
+        'help': optparse.SUPPRESS_HELP,  # ??
+        'action': 'store'
+    },
+    'analyze_mountpoint': {
+        'default': None,
+        'opt': ['--analyze-mountpoint'],
+        'help': optparse.SUPPRESS_HELP,  # ??
+        'action': 'store'
+    },
+    'api_url': {
+        # non-CLI
+        'default': None
+    },
+    'app_name': {
+        # non-CLI
+        'default': 'insights-client'
+    },
+    'authmethod': {
+        # non-CLI
+        'default': 'BASIC'
+    },
+    'auto_config': {
+        # non-CLI
+        'default': True
+    },
+    'auto_update': {
+        # non-CLI
+        'default': True
+    },
+    'base_url': {
+        # non-CLI
+        'default': 'cert-api.access.redhat.com/r/insights'
+    },
+    'branch_info_url': {
+        # non-CLI
+        'default': None
+    },
+    'cert_verify': {
+        # non-CLI
+        'default': os.path.join(
+            constants.default_conf_dir,
+            'cert-api.access.redhat.com.pem'),
+    },
+    'cmd_timeout': {
+        # non-CLI
+        'default': constants.default_cmd_timeout
+    },
+    'collection_rules_url': {
+        # non-CLI
+        'default': None
+    },
+    'compressor': {
+        'default': 'gz',
+        'opt': ['--compressor'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store_true'
+    },
+    'conf': {
+        'default': constants.default_conf_file,
+        'opt': ['--conf', '-c'],
+        'help': 'Pass a custom config file',
+        'action': 'store'
+    },
+    'egg_path': {
+        # non-CLI
+        'default': '/v1/static/core/insights-core.egg'
+    },
+    'debug': {
+        'default': False,  # Used by client wrapper script
+        'opt': ['--debug-phases'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store_true',
+        'dest': 'debug'
+    },
+    'disable_schedule': {
+        'default': False,
+        'opt': ['--disable-schedule'],
+        'help': 'Disable automatic scheduling',
+        'action': 'store_true'
+    },
+    'display_name': {
+        'default': None,
+        'opt': ['--display-name'],
+        'help': 'Display name for this system. '
+                'Must be used with --register',
+        'action': 'store'
+    },
+    'enable_schedule': {
+        'default': False,
+        'opt': ['--enable-schedule'],
+        'help': 'Enable automatic scheduling for collection to run',
+        'action': 'store_true',
+    },
+    'from_file': {
+        'default': False,
+        'opt': ['--from-file'],
+        'help': optparse.SUPPRESS_HELP,  # ?
+        'action': 'store'
+    },
+    'from_stdin': {
+        'default': False,
+        'opt': ['--from-stdin'],
+        'help': optparse.SUPPRESS_HELP,  # ?
+        'action': 'store_true',
+    },
+    'gpg': {
+        'default': True,
+        'opt': ['--no-gpg'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store_false',
+        'group': 'debug',
+        'dest': 'gpg'
+    },
+    'egg_gpg_path': {
+        # non-CLI
+        'default': '/v1/static/core/insights-core.egg.asc'
+    },
+    'group': {
+        'default': None,
+        'opt': ['--group'],
+        'help': 'Group to add this system to during registration',
+        'action': 'store',
+    },
+    'insecure_connection': {
+        # non-CLI
+        'default': False
+    },
+    'keep_archive': {
+        'default': False,
+        'opt': ['--keep-archive'],
+        'help': 'Do not delete archive after upload',
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'logging_file': {
+        'default': constants.default_log_file,
+        'opt': ['--logging-file'],
+        'help': 'Path to log file location',
+        'action': 'store'
+    },
+    'loglevel': {
+        # non-CLI
+        'default': 'DEBUG'
+    },
+    'net_debug': {
+        'default': False,
+        'opt': ['--net-debug'],
+        'help': 'Log the HTTP method and URL every time a network call is made.',
+        'action': 'store_true'
+    },
+    'no_gpg': {
+        # non-CLI
+        'default': False,  # legacy
+    },
+    'no_upload': {
+        'default': False,
+        'opt': ['--no-upload'],
+        'help': 'Do not upload the archive',
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'obfuscate': {
+        # non-CLI
+        'default': False
+    },
+    'obfuscate_hostname': {
+        # non-CLI
+        'default': False
+    },
+    'offline': {
+        'default': False,
+        'opt': ['--offline'],
+        'help': 'offline mode for OSP use',
+        'action': 'store_true'
+    },
+    'password': {
+        # non-CLI
+        'default': ''
+    },
+    'proxy': {
+        # non-CLI
+        'default': None
+    },
+    'quiet': {
+        'default': False,
+        'opt': ['--quiet'],
+        'help': 'Only display error messages to stdout',
+        'action': 'store_true'
+    },
+    'register': {
+        'default': False,
+        'opt': ['--register'],
+        'help': 'Register system to the Red Hat Insights Service',
+        'action': 'store_true'
+    },
+    'reregister': {
+        'default': False,
+        'opt': ['--force-reregister'],
+        'help': 'Forcefully reregister this machine to Red Hat. Use only as directed.',
+        'action': 'store_true',
+        'group': 'debug',
+        'dest': 'reregister'
+    },
+    'retries': {
+        'default': 1,
+        'opt': ['--retry'],
+        'help': ('Number of times to retry uploading. %s seconds between tries' %
+                 constants.sleep_time),
+        'action': 'store',
+        'type': 'int',
+        'dest': 'retries'
+    },
+    'run_specific_specs': {
+        'default': None,
+        'opt': ['--run-these'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store',
+        'group': 'debug',
+        'dest': 'run_specific_specs'
+    },
+    'silent': {
+        'default': False,
+        'opt': ['--silent'],
+        'help': 'Display no messages to stdout',
+        'action': 'store_true'
+    },
+    'status': {
+        'default': False,
+        'opt': ['--status'],
+        'help': 'Check this machine\'s registration status with Red Hat Insights',
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'support': {
+        'default': False,
+        'opt': ['--support'],
+        'help': 'Create a support logfile for Red Hat Insights',
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'systemid': {
+        'default': None
+    },
+    'test_connection': {
+        'default': False,
+        'opt': ['--test-connection'],
+        'help': 'Test connectivity to Red Hat',
+        'action': 'store_true'
+    },
+    'to_json': {
+        'default': False,
+        'opt': ['--to-json'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store_true'
+    },
+    'to_stdout': {
+        'default': False,
+        'opt': ['--to-stdout'],
+        'help': 'print archive to stdout; '
+                'sets --quiet and --no-upload',
+        'action': 'store_true'
+    },
+    'unregister': {
+        'default': False,
+        'opt': ['--unregister'],
+        'help': 'Unregister system from the Red Hat Insights Service',
+        'action': 'store_true'
+    },
+    'upload_url': {
+        # non-CLI
+        'default': None
+    },
+    'use_atomic': {
+        'default': None,
+        'opt': ['--use-atomic'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'use_docker': {
+        'default': None,
+        'opt': ['--use-docker'],
+        'help': optparse.SUPPRESS_HELP,
+        'action': 'store_true',
+        'group': 'debug'
+    },
+    'username': {
+        # non-CLI
+        'default': ''
+    },
+    'validate': {
+        'default': False,
+        'opt': ['--validate'],
+        'help': 'Validate remove.conf',
+        'action': 'store_true'
+    },
+    'verbose': {
+        'default': False,
+        'opt': ['--verbose'],
+        'help': "DEBUG output to stdout",
+        'action': "store_true",
+        'group': 'debug'
+    },
+    'version': {
+        'default': False,
+        'opt': ['--version'],
+        'help': "Display version",
+        'action': "store_true"
+    }
 }
 
-OPTS = [{
-    'opt': ['--version'],
-    'help': "Display version",
-    'action': "store_true",
-    'dest': "version",
-}, {
-    'opt': ['--register'],
-    'help': 'Register system to the Red Hat Insights Service',
-    'action': "store_true",
-    'dest': "register",
-}, {
-    'opt': ['--unregister'],
-    'help': 'Unregister system from the Red Hat Insights Service',
-    'action': "store_true",
-    'dest': "unregister",
-}, {
-    'opt': ['--display-name'],
-    'action': "store",
-    'help': 'Display name for this system.  '
-    'Must be used with --register',
-    'dest': "display_name"
-}, {
-    'opt': ['--group'],
-    'action': "store",
-    'help': 'Group to add this system to during registration',
-    'dest': "group"
-}, {
-    'opt': ['--retry'],
-    'action': "store",
-    'type': "int",
-    'help': ('Number of times to retry uploading. %s seconds between tries' %
-             constants.sleep_time),
-    'dest': "retries"
-}, {
-    'opt': ['--validate'],
-    'help': 'Validate remove.conf',
-    'action': "store_true",
-    'dest': "validate",
-}, {
-    'opt': ['--quiet'],
-    'help': 'Only display error messages to stdout',
-    'action': "store_true",
-    'dest': "quiet",
-}, {
-    'opt': ['--silent'],
-    'help': 'Display no messages to stdout',
-    'action': "store_true",
-    'dest': "silent",
-}, {
-    'opt': ['--enable-schedule'],
-    'help': 'Enable automatic scheduling for collection to run',
-    'action': "store_true",
-    'dest': 'enable_schedule',
-}, {
-    'opt': ['--disable-schedule'],
-    'help': 'Disable automatic scheduling',
-    'action': "store_true",
-    'dest': 'disable_schedule',
-}, {
-    'opt': ['-c', '--conf'],
-    'help': "Pass a custom config file",
-    'dest': "conf",
-}, {
-    'opt': ['--to-stdout'],
-    'help': 'print archive to stdout; '
-    'sets --quiet and --no-upload',
-    'dest': 'to_stdout',
-    'action': 'store_true'
-}, {
-    'opt': ['--compressor'],
-    'help': optparse.SUPPRESS_HELP,
-    'dest': 'compressor',
-}, {
-    'opt': ['--from-stdin'],
-    'help': optparse.SUPPRESS_HELP,
-    'dest': 'from_stdin',
-    'action': 'store_true',
-}, {
-    'opt': ['--from-file'],
-    'help': optparse.SUPPRESS_HELP,
-    'dest': 'from_file',
-    'action': 'store',
-}, {
-    'opt': ['--offline'],
-    'help': 'offline mode for OSP use',
-    'dest': 'offline',
-    'action': 'store_true',
-}, {
-    'opt': ['--analyze-container'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store_true',
-    'dest': 'analyze_container'
-}, {
-    'opt': ['--logging-file'],
-    'help': 'path to log file location',
-    'dest': 'logging_file'
-}, {
-    'opt': ['--analyze-file'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store",
-    'dest': "analyze_file",
-}, {
-    'opt': ['--analyze-mountpoint'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store",
-    'dest': "analyze_mountpoint",
-}, {
-    'opt': ['--analyze-image-id'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store",
-    'dest': "analyze_image_id",
-}, {
-    'opt': ['--test-connection'],
-    'help': 'Test connectivity to Red Hat',
-    'action': "store_true",
-    'dest': "test_connection",
-}, {
-    'opt': ['--force-reregister'],
-    'help': "Forcefully reregister this machine to Red Hat. Use only as directed.",
-    'action': "store_true",
-    'dest': "reregister",
-    'group': 'debug'
-}, {
-    'opt': ['--verbose'],
-    'help': "DEBUG output to stdout",
-    'action': "store_true",
-    'dest': "verbose",
-    'group': 'debug'
-}, {
-    'opt': ['--support'],
-    'help': "Create a support logfile for Red Hat Insights",
-    'action': "store_true",
-    'dest': "support",
-    'group': 'debug'
-}, {
-    'opt': ['--status'],
-    'help': "Check this machine's registration status with Red Hat Insights",
-    'action': "store_true",
-    'dest': "status",
-    'group': 'debug'
-}, {
-    'opt': ['--no-gpg'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store_false",
-    'dest': "gpg",
-    'group': 'debug'
-}, {
-    'opt': ['--no-upload'],
-    'help': "Do not upload the archive",
-    'action': "store_true",
-    'dest': "no_upload",
-    'group': 'debug'
-}, {
-    'opt': ['--keep-archive'],
-    'help': "Do not delete archive after upload",
-    'action': "store_true",
-    'dest': "keep_archive",
-    'group': 'debug'
-}, {
-    'opt': ['--use-docker'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store_true",
-    'dest': "use_docker",
-    'group': 'debug'
-}, {
-    'opt': ['--use-atomic'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store_true",
-    'dest': "use_atomic",
-    'group': 'debug'
-}, {
-    'opt': ['--run-these'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': "store",
-    'dest': "run_specific_specs",
-    'group': 'debug'
-}, {
-    'opt': ['--debug-phases'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store_true',
-    'dest': 'debug',
-    'group': 'debug'
-}, {
-    'opt': ['--net-debug'],
-    'help': "Log the HTTP method and URL every time a network call is made.",
-    'action': 'store_true',
-    'dest': 'net_debug'
-}, {
-    'opt': ['--to-json'],
-    'help': optparse.SUPPRESS_HELP,
-    'action': 'store_true',
-    'dest': 'to_json'
-}]
+DEFAULT_KVS = dict((k, v['default']) for k, v in DEFAULT_OPTS.items())
+DEFAULT_BOOLS = dict(
+    (k, v) for k, v in DEFAULT_KVS.items() if type(v) is bool).keys()
 
 
-def parse_options():
-    parser = optparse.OptionParser()
-    group = optparse.OptionGroup(parser, "Debug options")
-    for d in (dict(d) for d in OPTS):
-        g = group if d.pop("group", None) == "debug" else parser
-        optnames = d.pop("opt")
-        g.add_option(*optnames, default=CONFIG[d["dest"]], **d)
+class InsightsConfig(object):
+    '''
+    Insights client configuration
+    '''
+    def __init__(self, *args, **kwargs):
+        self._init_attrs = copy.copy(dir(self))
+        self._update_dict(DEFAULT_KVS)
+        if args:
+            self._update_dict(args[0])
+        self._update_dict(kwargs)
+        self._cli_opts = None
 
-    parser.add_option_group(group)
-    options, args = parser.parse_args()
-    if len(args) > 0:
-        parser.error("Unknown arguments: %s" % args)
-    return vars(options)
+    def __str__(self):
+        _str = '    '
+        for key in dir(self):
+            if not (key.startswith('_') or
+               key in self._init_attrs or
+               key in ['password', 'proxy']):
+                # ignore built-ins, functions, and sensitive items
+                val = getattr(self, key)
+                _str += key + ': ' + str(val) + '\n    '
+        return _str
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def _update_dict(self, dict_):
+        '''
+        Update without allowing undefined options or overwrite of class methods
+        '''
+        dict_ = dict((k, v) for k, v in dict_.items() if (
+                    k not in self._init_attrs))
+
+        # zzz
+        if 'no_gpg' in dict_ and dict_['no_gpg']:
+            dict_['gpg'] = False
+
+        unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
+        if unknown_opts:
+            raise ValueError(
+                'Unknown options: ' + ','.join(list(unknown_opts)))
+        self.__dict__.update(dict_)
+        self._imply_options()
+        self._validate_options()
+
+    def load_env(self):
+        '''
+        Options can be set as environment variables
+        The formula for the key is `"INSIGHTS_%s" % key.upper()`
+        In English, that's the uppercase version of the config key with
+        "INSIGHTS_" prepended to it.
+        '''
+        def _boolify(v):
+            if v.lower() == 'true':
+                return True
+            elif v.lower() == 'false':
+                return False
+            else:
+                return v
+
+        # ignore these env as they are not config vars
+        ignore = ['INSIGHTS_PHASE']
+
+        insights_env_opts = dict((k.lower().split("_", 1)[1], _boolify(v))
+                                 for k, v in os.environ.items()
+                                 if k.upper().startswith("INSIGHTS_") and
+                                 k.upper() not in ignore)
+        self._update_dict(insights_env_opts)
+
+    def load_command_line(self, conf_only=False):
+        '''
+        Load config from command line switches.
+        NOTE: Not all config is available on the command line.
+        '''
+        # did we already parse cli (i.e. to get conf file)? don't run twice
+        if self._cli_opts:
+            self._update_dict(self._cli_opts)
+            return
+        parser = optparse.OptionParser()
+        debug_grp = optparse.OptionGroup(parser, "Debug options")
+        cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
+                       'opt' in v))
+        for _, o in cli_options.items():
+            g = debug_grp if o.pop("group", None) == "debug" else parser
+            optnames = o.pop('opt')
+            g.add_option(*optnames, **o)
+
+        parser.add_option_group(debug_grp)
+
+        # pass in optparse.Values() to get only options that were specified
+        options, args = parser.parse_args(values=optparse.Values())
+        if len(args) > 0:
+            parser.error("Unknown arguments: %s" % args)
+
+        self._cli_opts = vars(options)
+        if conf_only and 'conf' in self._cli_opts:
+            self._update_dict({'conf': self._cli_opts['conf']})
+            return
+
+        self._update_dict(self._cli_opts)
+
+    def load_config_file(self, fname=None):
+        '''
+        Load config from config file. If fname is not specified,
+        config is loaded from the file named by InsightsConfig.conf
+        '''
+        parsedconfig = ConfigParser.RawConfigParser()
+        try:
+            parsedconfig.read(fname or self.conf)
+        except ConfigParser.Error:
+            logger.error(
+                'ERROR: Could not read configuration file, using defaults')
+        try:
+            # Try to add the insights-client section
+            parsedconfig.add_section(constants.app_name)
+            # Try to add the redhat_access_insights section for back compat
+            parsedconfig.add_section('redhat_access_insights')
+        except ConfigParser.Error:
+            pass
+        d = dict(parsedconfig.items(constants.app_name))
+        for key in d:
+            if key == 'retries':
+                d[key] = parsedconfig.getint(constants.app_name, key)
+            if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
+                d[key] = parsedconfig.getboolean(constants.app_name, key)
+        self._update_dict(d)
+
+    def load_all(self):
+        '''
+        Helper function for actual Insights client use
+        '''
+        # check for custom conf file before loading conf
+        self.load_command_line(conf_only=True)
+        self.load_config_file()
+        self.load_env()
+        self.load_command_line()
+        return self
+
+    def _validate_options(self):
+        '''
+        Make sure there are no conflicting or invalid options
+        '''
+        if self.obfuscate_hostname and not self.obfuscate:
+            raise ValueError(
+                'Option `obfuscate_hostname` requires `obfuscate`')
+        if self.analyze_image_id is not None and len(self.analyze_image_id < 12):
+            raise ValueError(
+                'Image/Container ID must be at least twelve characters long.')
+        if self.from_stdin and self.from_file:
+            raise ValueError('Can\'t use both --from-stdin and --from-file.')
+        if self.enable_schedule and self.disable_schedule:
+            raise ValueError(
+                'Conflicting options: --enable-schedule and --disable-schedule')
+        if self.analyze_container and (self.register or self.unregister):
+            raise ValueError('Registration not supported with '
+                             'image or container analysis.')
+        if self.to_json and self.to_stdout:
+            raise ValueError(
+                'Conflicting options: --to-stdout and --to-json')
+
+    def _imply_options(self):
+        '''
+        Some options enable others automatically
+        '''
+        self.no_upload = self.no_upload or self.to_stdout or self.offline
+        self.auto_update = self.auto_update and not self.offline
+        self.analyze_container = (self.analyze_container or
+                                  self.analyze_file or
+                                  self.analyze_mountpoint or
+                                  self.analyze_image_id)
+        self.to_stdout = (self.to_stdout or
+                          self.from_stdin or
+                          self.from_file)
+        self.to_json = ((self.to_json or self.analyze_container) and
+                        not self.to_stdout)
 
 
-def parse_config_file(conf_file=constants.default_conf_file):
-    parsedconfig = ConfigParser.RawConfigParser(CONFIG)
-    try:
-        parsedconfig.read(CONF_FILE)
-    except ConfigParser.Error:
-        logger.error("ERROR: Could not read configuration file, using defaults")
-    try:
-        # Try to add the insights-client section
-        parsedconfig.add_section(APP_NAME)
-        # Try to add the redhat_access_insights section for back compat
-        parsedconfig.add_section('redhat_access_insights')
-    except ConfigParser.Error:
-        pass
-    d = dict(parsedconfig.items(APP_NAME))
-    for key in (k for k in BOOLEAN_KEYS if type(d.get(k)) in six.string_types):
-        d[key] = parsedconfig.getboolean(APP_NAME, key)
-    return d
-
-
-def apply_legacy_config():
-    """
-    Map legacy options to the key that's used.
-    """
-    if CONFIG['no_gpg']:
-        CONFIG['gpg'] = False
-
-
-def boolify(v):
-    if v.lower() == "true":
-        return True
-    elif v.lower() == "false":
-        return False
-    else:
-        return v
-
-
-def compile_config():
-    # Options can be set as environment variables
-    # The formula for the key is `"INSIGHTS_%s" % key.upper()`
-    # In English, that's the uppercase version of the config key with
-    # "INSIGHTS_" prepended to it.
-    insights_env_opts = dict((k.lower().split("_", 1)[1], boolify(v))
-                             for k, v in os.environ.items()
-                             if k.upper().startswith("INSIGHTS_"))
-    CONFIG.update(insights_env_opts)
-
-    # This is done here specifically because it's after the legacy config file
-    # has been read yet before the new config file and command line arguments
-    # have been parsed.
-    apply_legacy_config()
-
-    # parse the options first so we can see if a custom conf was passed in
-    parsed_options = parse_options()
-
-    # parse the config file
-    # parsed_options["conf"] will default to /etc/insights-client/insights-client.conf
-    # otherwise will read a custom conf passed in
-    CONFIG.update(parse_config_file(parsed_options["conf"]))
-
-    # after the config is read, then update the config with the options
-    CONFIG.update(parsed_options)
-
-    # flags that imply no_upload
-    if CONFIG['to_stdout']:
-        CONFIG['no_upload'] = True
-
-    if (CONFIG['analyze_image_id'] is not None) and (len(CONFIG['analyze_image_id']) < 12):
-        raise ValueError("Image/Container ID must be at least twelve characters long.")
-
-    if CONFIG['from_stdin'] and CONFIG['from_file']:
-        raise ValueError("Can't use both --from-stdin and --from-file.")
-
-    # offline implied auto_update=False
-    if CONFIG['offline']:
-        CONFIG['auto_update'] = False
-
-    # handle container mode stuff
-    if (CONFIG['analyze_image_id'] or CONFIG['analyze_file'] or CONFIG['analyze_mountpoint']):
-        CONFIG['analyze_container'] = True
-        # ASSUME --to-json unless otherwise specified
-        if not CONFIG['to_stdout']:
-            CONFIG['to_json'] = True
-
-    if (CONFIG['analyze_container']):
-        # ASSUME --to-json unless otherwise specified
-        if not CONFIG['to_stdout']:
-            CONFIG['to_json'] = True
-
-    if CONFIG['offline']:
-        CONFIG['no_upload'] = True
-
-    if CONFIG['obfuscate_hostname'] and not CONFIG['obfuscate']:
-        raise ValueError('Option `obfuscate_hostname` requires `obfuscate`')
+if __name__ == '__main__':
+    config = InsightsConfig()
+    config.load_all()
+    print(config)
