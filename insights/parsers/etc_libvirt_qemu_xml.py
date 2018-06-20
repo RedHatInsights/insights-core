@@ -129,8 +129,14 @@ class EtcLibvirtQemuXML(XMLParser):
         >>> xml_numa.file_name = 'vm.xml'
         >>> assert xml_numa.vm_name == '05-s00c06h0'
         >>> memnode = xml_numa.get_elements('./numatune/memnode', None)
-        >>> assert len(memnode[0].items()) == 3
-        >>> assert len(memnode[1].items()) == 3
+        >>> len(memnode[0].items()) == 3
+        True
+        >>> len(memnode[1].items()) == 3
+        True
+        >>> memnode[0].get('cellid') == '0'
+        True
+        >>> memnode[1].get('mode') == 'strict'
+        True
     """
     @property
     def vm_name(self):
