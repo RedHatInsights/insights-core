@@ -1,5 +1,22 @@
 # Change Log
 
+## [insights-core-3.0.22-410](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.22-410) (2018-06-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.21-398...insights-core-3.0.22-410)
+
+**Implemented enhancements:**
+
+- Performance Degradation Processing Archives [\#1098](https://github.com/RedHatInsights/insights-core/issues/1098)
+
+**Fixed bugs:**
+
+- HttpdV combiner with 1.x interface [\#1206](https://github.com/RedHatInsights/insights-core/issues/1206)
+- Performance Degradation Processing Archives [\#1098](https://github.com/RedHatInsights/insights-core/issues/1098)
+
+**Closed issues:**
+
+- FileListing cannot get the `first\_path` of `ls\_osroot` [\#1203](https://github.com/RedHatInsights/insights-core/issues/1203)
+- FIX wrong command in parser systemctl\_show\_qdrouterd [\#1198](https://github.com/RedHatInsights/insights-core/issues/1198)
+
 ## [insights-core-3.0.21-398](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.21-398) (2018-06-14)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.20-390...insights-core-3.0.21-398)
 
