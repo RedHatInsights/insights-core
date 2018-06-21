@@ -1,6 +1,30 @@
 API Documentation
 =================
 
+insights.configtree
+-------------------
+
+.. automodule:: insights.configtree
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.configtree.dictlike
+----------------------------
+
+.. automodule:: insights.configtree.dictlike
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+insights.configtree.iniconfig
+-----------------------------
+
+.. automodule:: insights.configtree.iniconfig
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.core
 -------------
 
