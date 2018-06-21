@@ -207,7 +207,7 @@ class Node(object):
         To get loaded auth modules:
         `conf["LoadModule", contains("auth")]`
         """
-        if isinstance(query, int):
+        if isinstance(query, (int, slice)):
             return self.children[query]
         return select(query, roots=False)(self.children)
 
@@ -291,7 +291,7 @@ class SearchResult(Node):
         return any(c.name == item for c in self.grandchildren)
 
     def __getitem__(self, query):
-        if isinstance(query, int):
+        if isinstance(query, (int, slice)):
             return self.children[query]
         return select(query, roots=False)(self.grandchildren)
 

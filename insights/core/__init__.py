@@ -143,6 +143,8 @@ class ConfigComponent(object):
         return self.select(*queries, deep=True, roots=False)
 
     def __getitem__(self, query):
+        if isinstance(query, (int, slice)):
+            return self.doc[query]
         return self.select(query)
 
     def __contains__(self, item):
