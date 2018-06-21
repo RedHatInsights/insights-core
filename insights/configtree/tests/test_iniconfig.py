@@ -1,3 +1,4 @@
+# flake8: noqa
 from insights.configtree.iniconfig import parse_doc
 
 
