@@ -204,6 +204,11 @@ class _LogRotateConf(ConfigParser):
 
 @combiner(_LogRotateConf)
 class LogRotateConfTree(ConfigCombiner):
+    """
+    Exposes logrotate configuration through the configtree interface.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
+    """
     def __init__(self, confs):
         include = eq("include")
         main_file = "logrotate.conf"
@@ -224,5 +229,9 @@ class LogRotateConfTree(ConfigCombiner):
 
 
 def get_tree(root=None):
+    """
+    This is a helper function to get a logrotate configuration component for
+    your local machine or an archive. It's for use in interactive sessions.
+    """
     from insights import run
     return run(LogRotateConfTree, root=root).get(LogRotateConfTree)

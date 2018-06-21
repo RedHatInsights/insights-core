@@ -122,6 +122,115 @@ def flatten(docs, pred):
 
 class ConfigComponent(object):
     def select(self, *queries, **kwargs):
+        """
+        Given a list of queries, executes those queries against the set of
+        Nodes. A Node has three primary attributes: name (str), attrs
+        ([str|int]), and children ([Node]).
+
+        Nodes also have a value attribute that is either the first attribute
+        (in the case of simple directives that only have one), or the string
+        representation of all attributes joined by a single space.
+
+        Each positional argument to select represents a query against the name
+        and/or attributes of the corresponding level of the configuration tree.
+        The first argument queries root nodes, the second argument queries
+        children of the root nodes, etc.
+
+        An individual query is either a single value or a tuple. A single value
+        queries the name of a Node. A tuple queries the name and the attrs.
+
+        So: `select(name_predicate)` or `select((name_predicate,
+        attrs_predicate))`
+
+        In general, `select(pred1, pred2, pred3, ...)`
+
+        If a predicate is a simple value (string or int), an exact match is
+        required for names, and an exact match of any attribute is required for
+        attributes.
+
+        Examples:
+        `select("Directory")` queries for all root nodes named Directory.
+
+        `select("Directory", "Options")` queries for all root nodes named
+        Directory that contain at least one child node named Options. Notice
+        the argument positions: Directory is in position 1, and Options is in
+        position 2.
+
+        `select(("Directory", "/"))` queries for all root nodes named Directory
+        that contain an attribute exactly matching "/". Notice this is one
+        argument to select: a 2-tuple with predicates for name and attrs.
+
+        If you are only interested in attributes, just pass `None` for the name
+        predicate in the tuple: `select((None, "/"))` will return all root
+        nodes with at least one attribute of "/"
+
+        In addition to exact matches, the elements of a query can be functions
+        that accept the value corresponding to their position in the query. A
+        handful of useful functions and boolean operators between them are
+        provided.
+
+        `select(startswith("Dir"))` queries for all root nodes with names
+        starting with "Dir".
+
+        `select(~startswith("Dir"))` queries for all root nodes with names not
+        starting with "Dir".
+
+        `select(startswith("Dir") | startswith("Ali"))` queries for all root
+        nodes with names starting with "Dir" or "Ali". The return of `|` is a
+        single callable passed in the first argument position of select.
+
+        `select(~startswith("Dir") & ~startswith("Ali"))` queries for all root
+        nodes with names not starting with "Dir" or "Ali".
+
+        If a function is in an attribute position, it is considered True if it
+        returns True for any attribute.
+
+        For example, `select((None, 80))` often will return the list of one
+        Node [Listen 80]
+
+        `select(("Directory", startswith("/var")))` will return all root nodes
+        named Directory that also have an attribute starting with "/var"
+
+        If you know that your selection will only return one element, or you
+        only want the first or last result of the query , pass `one=first` or
+        `one=last`.
+
+        `select(("Directory", startswith("/")), one=last)` will return the
+        single root node for the last Directory entry starting with "/"
+
+        If instead of the root nodes that match you want the child nodes that
+        caused the match, pass `roots=False`.
+
+        `node = select(("Directory", "/var/www/html"), "Options", one=last,
+        roots=False)` might return the Options node if the Directory for
+        "/var/www/html" was defined and contained an Options Directive. You
+        could then access the attributes with `node.attrs`. If the query didn't
+        match anything, it would have returned None.
+
+        If you want to slide the query down the branches of the config, pass
+        deep=True to select.  That allows you to do `conf.select("Directory",
+        deep=True, roots=False)` and get back all Directory nodes regardless of
+        nesting depth.
+
+        conf.select() returns everything.
+
+        Available predicates are:
+        & (infix boolean and)
+        | (infix boolean or)
+        ~ (prefix boolean not)
+
+        For ints or strings:
+        eq (==)  e.g. conf.select("Directory, ("StartServers", eq(4)))
+        ge (>=)  e.g. conf.select("Directory, ("StartServers", ge(4)))
+        gt (>)
+        le (<=)
+        lt (<)
+
+        For strings:
+        contains
+        endswith
+        startswith
+        """
         return self.doc.select(*queries, **kwargs)
 
     def find(self, *queries, **kwargs):
@@ -143,6 +252,32 @@ class ConfigComponent(object):
         return self.select(*queries, deep=True, roots=False)
 
     def __getitem__(self, query):
+        """
+        Similar to select, except tuples are constructed without parentheses:
+        `conf["Directory", "/"]` is the same as `conf.select(("Directory", "/"))`
+
+        Notice that queries return `SearchResult` instances, which also have
+        `__getitem__` delegating to `select` except the select is against
+        grandchild nodes in the tree. This allows more complicated queries,
+        like this one that gets all Options entries beneath the Directory
+        entries starting with "/var":
+
+        `conf["Directory", startswith("/var")]["Options"]`
+
+        or equivalently
+
+        `conf.select(("Directory", startswith("/var")), "Options, roots=False)
+
+        Note you can recover the enclosing section with `node.parent` or a
+        node's ultimate root with `node.root`. If a `Node` is a root,
+        `node.root` is just the node itself.
+
+        To get all root level Directory and Alias directives, you could do
+        something like `conf[eq("Directory") | eq("Alias")]`
+
+        To get loaded auth modules:
+        `conf["LoadModule", contains("auth")]`
+        """
         if isinstance(query, (int, slice)):
             return self.doc[query]
         return self.select(query)

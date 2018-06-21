@@ -135,10 +135,19 @@ class MultipathConf(Parser, LegacyItemAccess):
 
 @parser(Specs.multipath_conf)
 class MultipathConfTree(ConfigParser):
+    """
+    Exposes multipath configuration through the configtree interface.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
+    """
     def parse_doc(self, content):
         return parse_doc("\n".join(content), ctx=self, line_end="\n")
 
 
 def get_tree(root=None):
+    """
+    This is a helper function to get a multipath configuration component for
+    your local machine or an archive. It's for use in interactive sessions.
+    """
     from insights import run
     return run(MultipathConfTree, root=root).get(MultipathConfTree)

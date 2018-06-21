@@ -63,6 +63,7 @@ import six
 from insights.contrib.ipaddress import ip_address, ip_network
 from collections import namedtuple
 
+from insights import run
 from insights.core import ConfigCombiner, ConfigParser
 from insights.core.plugins import combiner, parser
 from insights.configtree import BinaryBool, UnaryBool
@@ -368,6 +369,8 @@ class HttpdConfTree(ConfigCombiner):
     """
     Exposes httpd configuration through the configtree interface. Correctly
     handles all include directives.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def __init__(self, confs):
         includes = startswith("Include")
@@ -380,14 +383,29 @@ class HttpdConfTree(ConfigCombiner):
 
 
 def get_tree(root=None):
-    from insights import run
+    """
+    This is a helper function to get an httpd configuration component for your
+    local machine or an archive. It's for use in interactive sessions.
+    """
     return run(HttpdConfTree, root=root).get(HttpdConfTree)
 
 
-is_private = UnaryBool(lambda xs: any(ip_address(six.u(x)).is_private for x in xs))
+is_private = UnaryBool(lambda x: ip_address(six.u(x)).is_private)
+"""
+Predicate to check if an ip address is private.
+
+Example:
+    conf["VirtualHost", in_network("128.39.0.0/16")]
+"""
+
 in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
+"""
+Predicate to check if an ip address is in a given network.
+
+Example:
+    conf["VirtualHost", in_network("128.39.0.0/16")]
+"""
 
 
 if __name__ == "__main__":
-    from insights import run
     run(HttpdConfTree, print_summary=True)

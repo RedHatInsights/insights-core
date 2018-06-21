@@ -571,13 +571,25 @@ def _not(f):
 class Bool(object):
     """ Allows boolean logic between predicates. """
     def __and__(self, other):
-        return UnaryBool(_and(self, other))
+        return CompositeBool(_and(self, other))
 
     def __or__(self, other):
-        return UnaryBool(_or(self, other))
+        return CompositeBool(_or(self, other))
 
     def __invert__(self):
-        return UnaryBool(_not(self))
+        return CompositeBool(_not(self))
+
+
+class CompositeBool(Bool):
+    """ Combines two DSL predicates. """
+    def __init__(self, pred):
+        self.pred = pred
+
+    def __call__(self, data):
+        try:
+            return self.pred(data)
+        except:
+            return False
 
 
 class UnaryBool(Bool):
@@ -586,9 +598,14 @@ class UnaryBool(Bool):
         self.pred = pred
 
     def __call__(self, data):
-        try:
-            return self.pred(data)
-        except:
+            if not isinstance(data, list):
+                data = [data]
+            for d in data:
+                try:
+                    if self.pred(d):
+                        return True
+                except:
+                    pass
             return False
 
 

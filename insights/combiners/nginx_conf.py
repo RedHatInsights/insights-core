@@ -9,11 +9,9 @@ The brackets allow a more conventional lookup feel but aren't quite as powerful
 as using select directly.
 """
 import os
-import six
-from insights.contrib.ipaddress import ip_address, ip_network
 from insights import combiner, parser, run
 from insights.core import ConfigCombiner, ConfigParser
-from insights.configtree import eq, BinaryBool, UnaryBool
+from insights.configtree import eq
 from insights.configtree.dictlike import parse_doc
 from insights.specs import Specs
 
@@ -26,6 +24,11 @@ class _NginxConf(ConfigParser):
 
 @combiner(_NginxConf)
 class NginxConfTree(ConfigCombiner):
+    """
+    Exposes nginx configuration through the configtree interface.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
+    """
     def __init__(self, confs):
         super(NginxConfTree, self).__init__(confs, "nginx.conf", eq("include"))
 
@@ -35,11 +38,11 @@ class NginxConfTree(ConfigCombiner):
 
 
 def get_tree(root=None):
+    """
+    This is a helper function to get an nginx configuration component for your
+    local machine or an archive. It's for use in interactive sessions.
+    """
     return run(NginxConfTree, root=root).get(NginxConfTree)
-
-
-is_private = UnaryBool(lambda xs: any(ip_address(six.u(x)).is_private for x in xs))
-in_network = BinaryBool(lambda x, y: (ip_address(six.u(x)) in ip_network(six.u(y))))
 
 
 if __name__ == "__main__":
