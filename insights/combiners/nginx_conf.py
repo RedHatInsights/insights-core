@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 """
+NginxConfTree - Combiner for nginx configuration
+=======================================================
 This module models nginx configuration as a tree. It correctly handles include
 directives by splicing individual document trees into their parents until one
 document tree is left.
