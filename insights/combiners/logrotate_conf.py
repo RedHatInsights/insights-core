@@ -15,7 +15,7 @@ import os
 from fnmatch import fnmatch
 from insights.core import ConfigCombiner, ConfigParser
 from insights.configtree import parse_string, Directive, Section, eq
-from insights.configtree.dictlike import eat_white, DocParser, LineCounter
+from insights.configtree.dictlike import eat_whitespace, DocParser, LineCounter
 from insights.core.plugins import combiner, parser
 from insights.parsers.logrotate_conf import LogrotateConf
 from insights.specs import Specs
@@ -159,7 +159,7 @@ class LogRotateDocParser(DocParser):
 
     def parse_script_body(self, pb):
         results = []
-        eat_white(pb)
+        eat_whitespace(pb)
         word = self.parse_bare(pb)
         try:
             while word != "endscript":
@@ -168,14 +168,14 @@ class LogRotateDocParser(DocParser):
                 while pb.peek() != self.line_end:
                     line.append(next(pb))
                 results.append("".join(line))
-                eat_white(pb)
+                eat_whitespace(pb)
                 word = self.parse_bare(pb)
         except StopIteration:
             pass
         return "\n".join(results)
 
     def parse_statement(self, pb):
-        eat_white(pb)
+        eat_whitespace(pb)
         pos = pb.lines
         name = parse_string(pb) if pb.peek() in ("'", '"') else self.parse_bare(pb)
         attrs = self.parse_attrs(pb)
@@ -188,7 +188,7 @@ class LogRotateDocParser(DocParser):
         else:
             el = Directive(name=name, attrs=attrs, ctx=self.ctx)
         el.pos = pos
-        eat_white(pb)
+        eat_whitespace(pb)
         return el
 
 

@@ -25,7 +25,7 @@ class LineCounter(PushBack):
     __next__ = next
 
 
-def eat_white(pb, to=None):
+def eat_whitespace(pb, to=None):
     try:
         while pb.peek().isspace() or pb.peek() == "#":
             if pb.peek().isspace():
@@ -56,7 +56,7 @@ class DocParser(object):
 
     def parse_attrs(self, pb):
         attrs = []
-        eat_white(pb, to=self.line_end)
+        eat_whitespace(pb, to=self.line_end)
         while pb.peek() not in ("{}" + self.line_end):
             if pb.peek() in ('"', "'"):
                 attrs.append(parse_string(pb))
@@ -64,30 +64,30 @@ class DocParser(object):
                 attrs.append(self.parse_bare(pb))
 
             if pb.peek() != self.line_end:
-                eat_white(pb, to=self.line_end)
+                eat_whitespace(pb, to=self.line_end)
 
         if len(attrs) == 1:
             attrs = [typed(attrs[0])]
 
         if pb.peek() == self.line_end:
             next(pb)  # eat it
-        eat_white(pb)
+        eat_whitespace(pb)
         return attrs
 
     def parse_section_body(self, pb):
         next(pb)  # eat bracket
-        eat_white(pb)
+        eat_whitespace(pb)
 
         body = []
         while pb.peek() != "}":
             body.append(self.parse_statement(pb))
         next(pb)  # eat bracket
-        eat_white(pb)
+        eat_whitespace(pb)
 
         return body
 
     def parse_statement(self, pb):
-        eat_white(pb)
+        eat_whitespace(pb)
         pos = pb.lines
         name = parse_string(pb) if pb.peek() in ("'", '"') else self.parse_bare(pb)
         attrs = self.parse_attrs(pb)
@@ -97,7 +97,7 @@ class DocParser(object):
         else:
             el = Directive(name=name, attrs=attrs, ctx=self.ctx)
         el.pos = pos
-        eat_white(pb)
+        eat_whitespace(pb)
         return el
 
     def parse_doc(self, pb):
