@@ -67,7 +67,7 @@ or other application using the libvirt API.
       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </controller>
     <interface type='hostdev' managed='yes'>
-      <mac address='b2:59:73:15:00:00'/>
+      <mac address='aa:ss:bb:cc:dd:ee'/>
       <source>
         <address type='pci' domain='0x0000' bus='0x04' slot='0x10' function='0x0'/>
       </source>
@@ -75,7 +75,7 @@ or other application using the libvirt API.
       <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
     </interface>
     <interface type='hostdev' managed='yes'>
-      <mac address='b2:59:73:15:00:01'/>
+      <mac address='bb:55:77:11:00:00'/>
       <source>
         <address type='pci' domain='0x0000' bus='0x04' slot='0x10' function='0x1'/>
       </source>
@@ -197,7 +197,7 @@ or other application using the libvirt API.
       <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </controller>
     <interface type='network'>
-      <mac address='52:54:00:43:7e:91'/>
+      <mac address='aa:ss:bb:ff:ee:mm'/>
       <source network='default'/>
       <model type='virtio'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
