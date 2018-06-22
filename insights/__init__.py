@@ -178,6 +178,8 @@ def run(component=None, root=None, print_summary=False,
         use_pandas = args.pandas or use_pandas
 
         root = args.archive or root
+        if root:
+            root = os.path.realpath(root)
 
         for path in args.plugins:
             dr.load_components(path)
