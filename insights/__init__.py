@@ -117,6 +117,34 @@ def _load_context(path):
     return dr.get_component(path)
 
 
+def describe(broker, show_missing=False, show_tracebacks=False):
+    if show_missing and broker.missing_requirements:
+        print()
+        print("Missing Requirements:")
+        if broker.missing_requirements:
+            print(broker.missing_requirements)
+
+    if show_tracebacks and broker.tracebacks:
+        print()
+        print("Tracebacks:")
+        for t in broker.tracebacks.values():
+            print(t)
+
+    def printit(c, v):
+        name = dr.get_name(c)
+        print(name)
+        print('-' * len(name))
+        print(dr.to_str(c, v))
+        print()
+        print()
+
+    print()
+    for c in sorted(broker.get_by_type(rule), key=dr.get_name):
+        v = broker[c]
+        if v["type"] != "skip":
+            printit(c, v)
+
+
 def run(component=None, root=None, print_summary=False,
         run_context=HostContext, archive_context=None, use_pandas=False,
         print_component=None):
@@ -174,7 +202,7 @@ def run(component=None, root=None, print_summary=False,
     broker = _run(graph, root, run_context=run_context, archive_context=archive_context, show_dropped=show_dropped, use_pandas=use_pandas)
 
     if print_summary:
-        broker.describe(show_missing=args.missing, show_tracebacks=args.tracebacks)
+        describe(broker, show_missing=args.missing, show_tracebacks=args.tracebacks)
     elif print_component:
         broker.print_component(print_component)
     return broker
