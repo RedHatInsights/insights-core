@@ -684,7 +684,7 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
         except SkipComponent:
             pass
         except Exception as ex:
-            log.exception(ex)
+            log.warn(ex)
             broker.add_exception(component, ex, traceback.format_exc())
         finally:
             broker.exec_times[component] = time.time() - start
