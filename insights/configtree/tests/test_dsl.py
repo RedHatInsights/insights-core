@@ -371,3 +371,14 @@ def test_complex_queries():
 
     res = result.select(("VirtualHost", ~is_private & in_network("128.39.0.0/16")))
     assert len(res) == 3
+
+
+def test_directives_and_sections():
+    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_1, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_3, path='/etc/httpd/conf.d/00-a.conf'))
+    httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_NEST_4, path='/etc/httpd/conf.d/01-b.conf'))
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
+    assert len(result.directives) == 3
+    assert len(result.sections) == 7
+    assert len(result.find_all(startswith("Dir")).directives) == 1
+    assert len(result.find_all(startswith("Dir")).sections) == 1

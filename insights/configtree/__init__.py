@@ -180,6 +180,17 @@ class Node(object):
         """
         return self.select(*queries, deep=True, roots=False)
 
+    def _children_of_type(self, t):
+        return [c for c in self.children if isinstance(c, t)]
+
+    @property
+    def sections(self):
+        return SearchResult(children=self._children_of_type(Section))
+
+    @property
+    def directives(self):
+        return SearchResult(children=self._children_of_type(Directive))
+
     def __getitem__(self, query):
         """
         Similar to select, except tuples are constructed without parentheses:
