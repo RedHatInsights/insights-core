@@ -57,6 +57,7 @@ class InsightsArchiveSpecs(Specs):
     getsebool = simple_file("insights_commands/getsebool_-a")
     grub1_config_perms = simple_file("insights_commands/ls_-l_.boot.grub.grub.conf")
     grub_config_perms = simple_file("insights_commands/ls_-l_.boot.grub2.grub.cfg")
+    grubby_default_index = simple_file("insights_commands/grubby_--default-index")
     hammer_ping = simple_file("insights_commands/hammer_ping")
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
