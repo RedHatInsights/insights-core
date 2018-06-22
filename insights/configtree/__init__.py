@@ -442,6 +442,20 @@ class LineGetter(PushBack):
         return l.strip() if self.strip else l.rstrip()
 
 
+def eat_whitespace(pb, to=None):
+    try:
+        while pb.peek().isspace() or pb.peek() == "#":
+            if pb.peek().isspace():
+                if pb.peek() == to:
+                    break
+                next(pb)
+            if pb.peek() == "#":
+                while pb.peek() != "\n":
+                    next(pb)
+    except StopIteration:
+        pass
+
+
 def parse_string(pb):
     buf = []
     start = next(pb)  # eat quote

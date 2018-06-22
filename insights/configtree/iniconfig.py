@@ -21,7 +21,7 @@ class ConfigParser(DocParser):
 
         try:
             # handle continuations
-            spaces = " " * (line.find(name) + 1)
+            spaces = " " * (line.expandtabs().find(name) + 1)
             while lg.peek().expandtabs().startswith(spaces):
                 attrs.append(next(lg).lstrip())
         except:

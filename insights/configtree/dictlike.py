@@ -1,4 +1,4 @@
-from insights.configtree import PushBack, parse_string, typed
+from insights.configtree import PushBack, parse_string, typed, eat_whitespace
 from insights.configtree import Directive, Root, Section
 
 
@@ -23,20 +23,6 @@ class LineCounter(PushBack):
         return v
 
     __next__ = next
-
-
-def eat_whitespace(pb, to=None):
-    try:
-        while pb.peek().isspace() or pb.peek() == "#":
-            if pb.peek().isspace():
-                if pb.peek() == to:
-                    break
-                next(pb)
-            if pb.peek() == "#":
-                while pb.peek() != "\n":
-                    next(pb)
-    except StopIteration:
-        pass
 
 
 class DocParser(object):
