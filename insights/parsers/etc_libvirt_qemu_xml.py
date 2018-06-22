@@ -138,8 +138,16 @@ class EtcLibvirtQemuXML(XMLParser):
         >>> memnode[1].get('mode') == 'strict'
         True
     """
+    def parse_dom(self):
+        domain = {}
+        for child in self.dom:
+            if not child.getchildren():
+                domain[child.tag] = child.text
+            else:
+                domain[child.tag] = [c.items() for c in child.getchildren()]
+
+        return domain
+
     @property
     def vm_name(self):
-        name = self.get_elements('name', None)
-        if name:
-            return name[0].text
+        return self.parse_dom().get('name', None)

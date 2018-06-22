@@ -243,7 +243,7 @@ or other application using the libvirt API.
     </memballoon>
   </devices>
 </domain>
-""".strip()
+"""
 
 
 def test_vm_xml():
@@ -255,7 +255,7 @@ def test_vm_xml():
     assert len(memnode[1].items()) == 3
 
     # No 'name' found
-    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA_NO_NAME))
+    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA_NO_NAME, path='/etc/libvirt/qemu/no_name.xml'))
     assert xml.vm_name is None
 
 
@@ -266,6 +266,16 @@ def test_rhel_7_4():
     os = xml.get_elements('./os/type')[0]
     assert os.get('arch') == 'x86_64'
     assert os.get('machine') == 'pc-i440fx-2.10'
+
+
+def test_parse_dom():
+    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(RHEL_7_4_XML, path='/etc/libvirt/qemu/rhel7.4.xml'))
+    dom = xml.parse_dom()
+    assert dom.get('vcpu', None) == '4'
+
+    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA_NO_NAME, path='/etc/libvirt/qemu/no_name.xml'))
+    dom = xml.parse_dom()
+    assert dom.get('vcpu') is None
 
 
 def test_documentation():
