@@ -34,7 +34,7 @@ drwxr-xr-x.  21 0 0    4096 Apr  6 02:07 var
 
 
 def test_ls_osroot():
-    ls_osroot = LsOsroot(context_wrap(LS_LAN_OSROOT, path='ls_-lan_.'))
+    ls_osroot = LsOsroot(context_wrap(LS_LAN_OSROOT, path='ls_-lan'))
     assert '/' in ls_osroot
     assert len(ls_osroot.files_of("/")) == 7
     assert ls_osroot.files_of("/") == ['1', 'bin', 'channel-list', 'lib', 'lib64', '.readahead', 'sbin']
@@ -45,7 +45,7 @@ def test_ls_osroot():
 def test_ls_osroot_doc_examples():
     env = {
         'LsOsroot': LsOsroot,
-        'ls_osroot': LsOsroot(context_wrap(LS_LAN_OSROOT, path='ls_-lan_.')),
+        'ls_osroot': LsOsroot(context_wrap(LS_LAN_OSROOT, path='ls_-lan')),
     }
     failed, total = doctest.testmod(ls_osroot, globs=env)
     assert failed == 0
