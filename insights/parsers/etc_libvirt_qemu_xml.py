@@ -139,15 +139,19 @@ class EtcLibvirtQemuXML(XMLParser):
         True
     """
     def parse_dom(self):
-        domain = {}
-        for child in self.dom:
-            if not child.getchildren():
-                domain[child.tag] = child.text
-            else:
-                domain[child.tag] = [c.items() for c in child.getchildren()]
+        if self.dom is None:
+            return
+        else:
+            domain = {}
+            for child in self.dom:
+                if not child.getchildren():
+                    domain[child.tag] = child.text
+                else:
+                    domain[child.tag] = [c.items() for c in child.getchildren()]
 
-        return domain
+            return domain
 
     @property
     def vm_name(self):
-        return self.parse_dom().get('name', None)
+        if self.parse_dom():
+            return self.parse_dom().get('name', None)

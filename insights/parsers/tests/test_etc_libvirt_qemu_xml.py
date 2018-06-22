@@ -131,6 +131,9 @@ or other application using the libvirt API.
 </domain>
 """
 
+BLANK_XML = """
+"""
+
 RHEL_7_4_XML = """
 <!--
 WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
@@ -276,6 +279,12 @@ def test_parse_dom():
     xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(XML_NUMA_NO_NAME, path='/etc/libvirt/qemu/no_name.xml'))
     dom = xml.parse_dom()
     assert dom.get('vcpu') is None
+
+
+def test_blank_xml():
+    xml = qemu_xml.EtcLibvirtQemuXML(context_wrap(BLANK_XML, path='/etc/libvirt/qemu/blank.xml'))
+    assert xml.file_name == 'blank.xml'
+    assert xml.vm_name is None
 
 
 def test_documentation():
