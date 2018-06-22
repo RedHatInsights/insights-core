@@ -9,18 +9,22 @@ class InsightsConstants(object):
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
     sleep_time = 300
+    default_conf_dir = '/etc/insights-client'
     default_conf_file = '/etc/insights-client/insights-client.conf'
     user_agent = os.path.join(app_name, package_info["VERSION"])
     log_dir = os.path.join(os.sep, 'var', 'log', app_name)
-    default_conf_dir = '/etc/insights-client'
+    simple_find_replace_dir = '/etc/redhat-access-insights'
+    default_log_file = os.path.join(log_dir, app_name + '.log')
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
     base_url = ''
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
     collection_fallback_file = os.path.join(default_conf_dir, '.fallback.json')
     collection_remove_file_name = 'remove.conf'
     collection_remove_file = os.path.join(default_conf_dir, collection_remove_file_name)
-    unregistered_file = os.path.join(default_conf_dir, '.unregistered')
-    registered_file = os.path.join(default_conf_dir, '.registered')
+    unregistered_files = [os.path.join(default_conf_dir, '.unregistered'),
+                          os.path.join(simple_find_replace_dir, '.unregistered')]
+    registered_files = [os.path.join(default_conf_dir, '.registered'),
+                        os.path.join(simple_find_replace_dir, '.registered')]
     lastupload_file = os.path.join(default_conf_dir, '.lastupload')
     pub_gpg_path = os.path.join(default_conf_dir, 'redhattools.pub.gpg')
     machine_id_file = os.path.join(default_conf_dir, 'machine-id')

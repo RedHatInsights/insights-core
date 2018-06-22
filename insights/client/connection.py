@@ -12,14 +12,18 @@ import xml.etree.ElementTree as ET
 import warnings
 import socket
 try:
+    # python 2
     from urlparse import urlparse
+    from urllib import quote
 except ImportError:
+    # python 3
     from urllib.parse import urlparse
+    from urllib.parse import quote
 from OpenSSL import SSL, crypto
 
 from .utilities import (determine_hostname,
                         generate_machine_id,
-                        write_to_disk,
+                        write_registered_file,
                         write_unregistered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
@@ -500,8 +504,6 @@ class InsightsConnection(object):
                 'hostname': client_hostname}
         if self.config.display_name is not None:
             data['display_name'] = self.config.display_name
-        if self.config.display_name is not None:
-            data['display_name'] = self.config.display_name
         data = json.dumps(data)
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
@@ -522,7 +524,7 @@ class InsightsConnection(object):
         api_group_id = None
         headers = {'Content-Type': 'application/json'}
         group_path = self.api_url + '/v1/groups'
-        group_get_path = group_path + ('?display_name=%s' % group_name)
+        group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
         logger.debug("GET group: %s", group_get_path)
         net_logger.info("GET %s", group_get_path)
@@ -626,9 +628,6 @@ class InsightsConnection(object):
         """
         Register this machine
         """
-
-        write_to_disk(constants.unregistered_file, delete=True)
-
         client_hostname = determine_hostname()
         # This will undo a blacklist
         logger.debug("API: Create system")
@@ -645,7 +644,7 @@ class InsightsConnection(object):
 
         message = system.headers.get("x-rh-message", "")
 
-        write_to_disk(constants.registered_file)
+        write_registered_file()
 
         # Do grouping
         if self.config.group is not None:
