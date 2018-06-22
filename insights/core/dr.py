@@ -460,36 +460,6 @@ class Broker(object):
         except KeyError:
             return default
 
-    def describe(self, show_missing=False, show_tracebacks=False):
-        if show_missing:
-            print()
-            print("Missing Requirements:")
-            if self.missing_requirements:
-                print(self.missing_requirements)
-
-        if show_tracebacks:
-            print()
-            print("Tracebacks:")
-            for t in self.tracebacks.values():
-                print(t)
-
-        def printit(c, v):
-            print("{}:".format(get_name(c)))
-            print(to_str(c, v))
-            print()
-
-        print()
-        for _type in sorted(COMPONENTS_BY_TYPE, key=get_simple_name):
-            print()
-            print("{} instances:".format(get_simple_name(_type)))
-            for c in sorted(self.get_by_type(_type), key=get_name):
-                v = self[c]
-                try:
-                    if v["type"] != "skip":
-                        printit(c, v)
-                except:
-                        printit(c, v)
-
     def print_component(self, component_type):
         print(json.dumps(
             dict((get_name(c), self[c])
