@@ -52,7 +52,6 @@ class InsightsArchiveSpecs(Specs):
     fc_match = simple_file("insights_commands/fc-match_-sv_sans_regular_roman_family_fontformat")
     fdisk_l = simple_file("insights_commands/fdisk_-l")
     foreman_rake_db_migrate_status = simple_file('insights_commands/foreman-rake_db_migrate_status')
-    smartpdc_conf = ('insights_commands/etc.smart_proxy_dynflow_core.settings.yml')
     getcert_list = simple_file("insights_commands/getcert_list")
     getenforce = simple_file("insights_commands/getenforce")
     getsebool = simple_file("insights_commands/getsebool_-a")
