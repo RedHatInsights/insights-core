@@ -40,8 +40,9 @@ def parser_executor(component, broker, requires, optional):
         except dr.SkipComponent:
             pass
         except Exception as ex:
-            log.warn(ex)
-            broker.add_exception(component, ex, traceback.format_exc())
+            tb = traceback.format_exc()
+            log.warn(tb)
+            broker.add_exception(component, ex, tb)
 
     if not results:
         log.debug("All failed: %s" % dr.get_name(component))

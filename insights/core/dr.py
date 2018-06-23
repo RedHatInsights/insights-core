@@ -684,8 +684,9 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
         except SkipComponent:
             pass
         except Exception as ex:
-            log.warn(ex)
-            broker.add_exception(component, ex, traceback.format_exc())
+            tb = traceback.format_exc()
+            log.warn(tb)
+            broker.add_exception(component, ex, tb)
         finally:
             broker.exec_times[component] = time.time() - start
             broker.fire_observers(component)
