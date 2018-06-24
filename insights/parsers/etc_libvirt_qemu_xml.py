@@ -9,7 +9,7 @@ from insights.specs import Specs
 @parser(Specs.etc_libvirt_qemu_xml)
 class EtcLibvirtQemuXML(XMLParser):
     """This class parses xml files under ``/etc/libvirt/qemu/`` using
-    ``XMLParser`` base parser
+    ``XMLParser`` base parser.
 
     Sample file::
 
@@ -126,8 +126,10 @@ class EtcLibvirtQemuXML(XMLParser):
         </domain>
 
     Examples:
-        >>> xml_numa.file_name = 'vm.xml'
-        >>> assert xml_numa.vm_name == '05-s00c06h0'
+        >>> xml_numa.file_name == 'vm.xml'
+        True
+        >>> xml_numa.vm_name == '05-s00c06h0'
+        True
         >>> memnode = xml_numa.get_elements('./numatune/memnode', None)
         >>> len(memnode[0].items()) == 3
         True
@@ -153,5 +155,4 @@ class EtcLibvirtQemuXML(XMLParser):
 
     @property
     def vm_name(self):
-        if self.parse_dom():
-            return self.parse_dom().get('name', None)
+        return self.data.get('name', None)
