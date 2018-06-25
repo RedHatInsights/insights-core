@@ -1,13 +1,13 @@
 """
-EtcLibvirtQemuXML file ``/etc/libvirt/qemu/*.xml``
---------------------------------------------------
+QemuXML file ``/etc/libvirt/qemu/*.xml``
+----------------------------------------
 """
 from .. import XMLParser, parser
 from insights.specs import Specs
 
 
-@parser(Specs.etc_libvirt_qemu_xml)
-class EtcLibvirtQemuXML(XMLParser):
+@parser(Specs.qemu_xml)
+class QemuXML(XMLParser):
     """This class parses xml files under ``/etc/libvirt/qemu/`` using
     ``XMLParser`` base parser.
 
