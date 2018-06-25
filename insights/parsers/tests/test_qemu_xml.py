@@ -251,7 +251,7 @@ or other application using the libvirt API.
 
 def test_vm_xml():
     xml = qemu_xml.QemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml'))
-    xml.file_name = 'vm.xml'
+    assert xml.file_name == 'vm.xml'
     assert xml.vm_name == '05-s00c06h0'
     memnode = xml.get_elements('./numatune/memnode', None)
     assert len(memnode[0].items()) == 3
@@ -264,7 +264,7 @@ def test_vm_xml():
 
 def test_rhel_7_4():
     xml = qemu_xml.QemuXML(context_wrap(RHEL_7_4_XML, path='/etc/libvirt/qemu/rhel7.4.xml'))
-    xml.file_name = 'rhel7.4.xml'
+    assert xml.file_name == 'rhel7.4.xml'
     assert xml.vm_name == 'rhel7.4'
     os = xml.get_elements('./os/type')[0]
     assert os.get('arch') == 'x86_64'
