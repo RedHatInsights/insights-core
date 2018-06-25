@@ -99,8 +99,8 @@ def write_to_disk(filename, delete=False, content=get_time()):
         if os.path.lexists(filename):
             os.remove(filename)
     else:
-        with open(filename, 'w') as f:
-            f.write(content)
+        with open(filename, 'wb') as f:
+            f.write(content.encode('utf-8'))
 
 
 def generate_machine_id(new=False,
@@ -191,7 +191,7 @@ def write_data_to_file(data, filepath):
     except OSError:
         pass
 
-    write_to_disk(filepath, content=data.encode('utf8'))
+    write_to_disk(filepath, content=data)
 
 
 def magic_plan_b(filename):
