@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.24-426](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.24-426) (2018-06-26)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.22-410...insights-core-3.0.24-426)
+
+**Closed issues:**
+
+- path of ls\_osroot need to be fix [\#1221](https://github.com/RedHatInsights/insights-core/issues/1221)
+
 ## [insights-core-3.0.22-410](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.22-410) (2018-06-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.21-398...insights-core-3.0.22-410)
 
