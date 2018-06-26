@@ -318,6 +318,7 @@ class Specs(SpecSet):
     pvs_noheadings_all = RegistryPoint()
     pvs = RegistryPoint()
     qemu_conf = RegistryPoint()
+    qemu_xml = RegistryPoint(multi_output=True)
     qpid_stat_q = RegistryPoint()
     qpid_stat_u = RegistryPoint()
     qpidd_conf = RegistryPoint()
