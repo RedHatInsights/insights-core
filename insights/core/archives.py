@@ -32,7 +32,7 @@ class ZipExtractor(object):
         self.timeout = timeout
 
     def from_path(self, path, extract_dir=None):
-        self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
+        self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
         command = "unzip -q -d %s %s" % (self.tmp_dir, path)
         subproc.call(command, timeout=self.timeout)
         return self
@@ -68,7 +68,7 @@ class TarExtractor(object):
         else:
             self._assert_type(path, False)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
-            self.tmp_dir = tempfile.mkdtemp(dir=extract_dir)
+            self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
             command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
             logging.debug("Extracting files in '%s'", self.tmp_dir)
             subproc.call(command, timeout=self.timeout)

@@ -217,6 +217,7 @@ class DefaultSpecs(Specs):
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
+    grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
@@ -479,8 +480,10 @@ class DefaultSpecs(Specs):
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
     pvs_noheadings_all = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
+    qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
     qpid_stat_q = simple_command("/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpid_stat_u = simple_command("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
+    qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
     rabbitmq_logs = glob_file("/var/log/rabbitmq/rabbit@*.log", ignore=".*rabbit@.*(?<!-sasl).log$")
     rabbitmq_policies = simple_command("/usr/sbin/rabbitmqctl list_policies")
     rabbitmq_queues = simple_command("/usr/sbin/rabbitmqctl list_queues name messages consumers auto_delete")
@@ -565,6 +568,7 @@ class DefaultSpecs(Specs):
     systemctl_pulp_celerybeat = simple_command("/bin/systemctl show pulp_celerybeat")
     systemctl_qpidd = simple_command("/bin/systemctl show qpidd")
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
+    systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_file("/usr/lib/systemd/system/docker.service")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
