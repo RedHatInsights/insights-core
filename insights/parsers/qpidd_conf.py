@@ -31,7 +31,7 @@ class QpiddConf(Parser, LegacyItemAccess):
         auth=no
         require-encryption=yes
         ssl-require-client-authentication=yes
-        ssl-port=5671
+        ssl-port=5672
         ssl-cert-db=/etc/pki/katello/nssdb
         ssl-cert-password-file=/etc/pki/katello/nssdb/nss_db_password-file
         ssl-cert-name=broker
