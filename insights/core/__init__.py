@@ -11,6 +11,7 @@ import six
 from fnmatch import fnmatch
 
 from insights.configtree import from_dict, iniconfig, Root, select, first
+from insights.configtree import Directive, SearchResult, Section
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
@@ -250,6 +251,17 @@ class ConfigComponent(object):
         Returns an empty `SearchResult` if no results are found.
         """
         return self.select(*queries, deep=True, roots=False)
+
+    def _children_of_type(self, t):
+        return [c for c in self.doc.children if isinstance(c, t)]
+
+    @property
+    def sections(self):
+        return SearchResult(children=self._children_of_type(Section))
+
+    @property
+    def directives(self):
+        return SearchResult(children=self._children_of_type(Directive))
 
     def __getitem__(self, query):
         """
