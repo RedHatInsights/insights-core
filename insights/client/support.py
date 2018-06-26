@@ -24,14 +24,14 @@ def registration_check(pconn):
     # check local registration record
     unreg_date = None
     unreachable = False
-    if os.path.isfile(constants.registered_file):
+    if os.path.isfile(constants.registered_files[0]):
         local_record = 'System is registered locally via .registered file.'
-        with open(constants.registered_file) as reg_file:
+        with open(constants.registered_files[0]) as reg_file:
             local_record += ' Registered at ' + reg_file.readline()
     else:
         local_record = 'System is NOT registered locally via .registered file.'
-    if os.path.isfile(constants.unregistered_file):
-        with open(constants.unregistered_file) as reg_file:
+    if os.path.isfile(constants.unregistered_files[0]):
+        with open(constants.unregistered_files[0]) as reg_file:
             local_record += ' Unregistered at ' + reg_file.readline()
 
     api_reg_status = pconn.api_registration_check()

@@ -40,8 +40,9 @@ def parser_executor(component, broker, requires, optional):
         except dr.SkipComponent:
             pass
         except Exception as ex:
-            log.exception(ex)
-            broker.add_exception(component, ex, traceback.format_exc())
+            tb = traceback.format_exc()
+            log.warn(tb)
+            broker.add_exception(component, ex, tb)
 
     if not results:
         log.debug("All failed: %s" % dr.get_name(component))
@@ -348,10 +349,14 @@ try:
 
     def get_content(obj, key):
         mod = sys.modules[obj.__module__]
-        return getattr(mod, "CONTENT", {}).get(key)
+        c = getattr(mod, "CONTENT", None)
+        if c:
+            if isinstance(c, dict) and key:
+                return c.get(key)
+            return c
 
     def format_rule(comp, val):
-        content = get_content(comp, val["error_key"])
+        content = get_content(comp, val.get("error_key"))
         if content:
             return Template(content).render(val)
         return str(val)
