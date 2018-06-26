@@ -1,5 +1,5 @@
 =============
-Insights Core
+Insights Core QE TESTING
 =============
 
 Insights Core is a data collection and analysis framework that is built
