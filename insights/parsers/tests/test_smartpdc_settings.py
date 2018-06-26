@@ -1,10 +1,10 @@
 import doctest
 
-from insights.parsers import smartpdc_conf
-from insights.parsers.smartpdc_conf import SmartpdcConf
+from insights.parsers import smartpdc_settings
+from insights.parsers.smartpdc_settings import SmartpdcSettings
 from insights.tests import context_wrap
 
-SMARTPDC_CONF = """
+SMARTPDC_SETTINGS = """
 # Path to dynflow database, leave blank for in-memory non-persistent database
 :database:
 :console_auth: true
@@ -28,15 +28,15 @@ SMARTPDC_CONF = """
 """
 
 
-def test_smartpdc_conf():
-    smartpdc_conf = SmartpdcConf(context_wrap(SMARTPDC_CONF))
-    assert smartpdc_conf.data[':listen'] == '0.0.0.0'
-    assert ("/etc/foreman-proxy/foreman_ssl_ca.pem" in smartpdc_conf.data[':foreman_ssl_ca']) is True
+def test_smartpdc_settings():
+    smartpdc_settings = SmartpdcSettings(context_wrap(SMARTPDC_SETTINGS))
+    assert smartpdc_settings.data[':listen'] == '0.0.0.0'
+    assert ("/etc/foreman-proxy/foreman_ssl_ca.pem" in smartpdc_settings.data[':foreman_ssl_ca']) is True
 
 
-def test_ls_smartpdc_conf_doc_examples():
+def test_ls_smartpdc_settings_doc_examples():
     env = {
-        'smartpdc_conf': SmartpdcConf(context_wrap(SMARTPDC_CONF)),
+        'smartpdc_settings': SmartpdcSettings(context_wrap(SMARTPDC_SETTINGS)),
     }
-    failed, total = doctest.testmod(smartpdc_conf, globs=env)
+    failed, total = doctest.testmod(smartpdc_settings, globs=env)
     assert failed == 0
