@@ -480,6 +480,7 @@ class DefaultSpecs(Specs):
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
     pvs_noheadings_all = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
+    qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
     qpid_stat_q = simple_command("/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpid_stat_u = simple_command("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpidd_conf = simple_file("/etc/qpid/qpidd.conf")
