@@ -320,6 +320,8 @@ def collect(rc=0):
         return False
 
     collection_rules, rm_conf = pc.get_conf(False, stdin_config)
+    if rm_conf:
+        logger.warn("WARNING: Excluding data from files")
 
     # defaults
     archive = None
