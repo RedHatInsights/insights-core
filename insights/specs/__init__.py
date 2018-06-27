@@ -359,6 +359,7 @@ class Specs(SpecSet):
     semid = RegistryPoint()
     sestatus = RegistryPoint()
     smartctl = RegistryPoint(multi_output=True)
+    smartpdc_settings = RegistryPoint()
     smbstatus_p = RegistryPoint()
     smbstatus_S = RegistryPoint()
     softnet_stat = RegistryPoint()
