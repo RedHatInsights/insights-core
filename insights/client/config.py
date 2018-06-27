@@ -455,8 +455,10 @@ class InsightsConfig(object):
         try:
             parsedconfig.read(fname or self.conf)
         except ConfigParser.Error:
-            logger.error(
-                'ERROR: Could not read configuration file, using defaults')
+            if len(logging.root.handlers) > 0:
+                # suppress this if there's no logging available
+                logger.error(
+                    'ERROR: Could not read configuration file, using defaults')
         try:
             # Try to add the insights-client section
             parsedconfig.add_section(constants.app_name)
