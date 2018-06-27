@@ -10,6 +10,7 @@ relative rpms on every node according to the configuration.
 
 
 from .. import parser, Parser, get_active_lines, LegacyItemAccess
+from insights.parsers import ParseException
 from insights.specs import Specs
 
 
@@ -72,27 +73,36 @@ class OpenShiftHosts(Parser, LegacyItemAccess):
             else:
                 # Parser section [OSEv3:children]
                 if "OSEv3:children" in sub_section:
-                    dict_all[sub_section].append(line.strip())
+                    dict_all[sub_section].append(line)
                 # Parser section [OSEv3:vars]
                 elif "OSEv3:vars" in sub_section:
                     key, value = line.split("=")
                     dict_all[sub_section][key.strip()] = value.strip()
                 else:
-                    nodeinfo = line.strip().split()
-                    nodename = nodeinfo[0]
+                    nodename, nodeinfo = line.split(" ", 1)
                     dict_all[sub_section][nodename] = {}
-                    former_key = ""
-                    for info in nodeinfo[1:]:
-                        # There is key-value like "openshift_node_labels="{'region': 'infra'}"", in the nodeinfo list,
-                        # it will be splitted as [openshift_node_labels="{'region':, 'infra'}"]. In this for loop, second
-                        # value would be added to former value, and use same key "openshift_node_labels".
-                        if "=" not in info and "}" in info:
-                            dict_all[sub_section][nodename][former_key] = dict_all[sub_section][nodename][former_key] + info.strip()
+                    splitwithsqual = nodeinfo.split("=")
+                    keys = [splitwithsqual[0].strip()]
+                    values = []
+                    for item in splitwithsqual[1:-1]:
+                        value, key = item.rsplit(" ", 1)
+                        keys.append(key.strip())
+                        # There is key-value like "openshift_node_labels="{'region': 'infra','zone': 'default'}"",
+                        # convert the value as dict.
+                        if "{" and "}" in value:
+                            subkeyvalue = value[2:-2].split(",")
+                            subdict = {}
+                            for subitem in subkeyvalue:
+                                subkey, subvalue = subitem.split(":")
+                                subdict[subkey.strip()[1:-1]] = subvalue.strip()[1:-1]
+                            values.append(subdict)
                         else:
-                            key, value = info.split("=")
-                            dict_all[sub_section][nodename][key.strip()] = value.strip()
-                            if "{" in info and ":" in info:
-                                former_key = key.strip()
+                            values.append(value.strip())
+                    values.append(splitwithsqual[-1].strip())
+                    if len(keys) != len(values):
+                        raise ParseException("Wrong Configuration")
+                    for i in range(len(keys)):
+                        dict_all[sub_section][nodename][keys[i]] = values[i]
         self.data = dict_all
 
     def has_var(self, var):
