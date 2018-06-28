@@ -179,7 +179,6 @@ class InsightsUploadConf(object):
             rm_conf = {}
             for item, value in parsedconfig.items('remove'):
                 rm_conf[item] = value.strip().split(',')
-            logger.warn("WARNING: Excluding data from files")
         if stdin_config:
             rules_fp = NamedTemporaryFile(delete=False)
             rules_fp.write(stdin_config["uploader.json"])
