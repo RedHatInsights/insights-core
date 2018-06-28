@@ -163,6 +163,7 @@ class InsightsArchiveSpecs(Specs):
     rhn_charsets = simple_file("insights_commands/rhn-charsets")
     rhn_schema_stats = simple_file("insights_commands/rhn-schema-stats")
     rhn_schema_version = simple_file("insights_commands/rhn-schema-version")
+    rhv_log_collector_analyzer = simple_file("insights_commands/rhv-log-collector-analyzer_--json")
     root_crontab = simple_file("insights_commands/crontab_-l_-u_root")
     route = simple_file("insights_commands/route_-n")
     rpm_V_packages = simple_file("insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo")
