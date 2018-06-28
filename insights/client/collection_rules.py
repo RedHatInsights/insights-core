@@ -108,7 +108,7 @@ class InsightsUploadConf(object):
                 logger.debug("Successfully downloaded collection rules")
 
                 json_response = NamedTemporaryFile()
-                json_response.write(req.text)
+                json_response.write(req.text.encode())
                 json_response.file.flush()
             else:
                 logger.error("ERROR: Could not download dynamic configuration")
@@ -153,7 +153,7 @@ class InsightsUploadConf(object):
         """
         sig_text = self.fetch_gpg()
         sig_response = NamedTemporaryFile(suffix=".asc")
-        sig_response.write(sig_text)
+        sig_response.write(sig_text.encode())
         sig_response.file.flush()
         self.validate_gpg_sig(collection_rules.name, sig_response.name)
         self.write_collection_data(self.collection_rules_file + ".asc", sig_text)
@@ -202,7 +202,7 @@ class InsightsUploadConf(object):
                     raise ValueError("ERROR: Could not find version in json")
                 dyn_conf['file'] = self.collection_rules_file
                 logger.debug("Success reading config")
-                config_hash = hashlib.sha1(json.dumps(dyn_conf)).hexdigest()
+                config_hash = hashlib.sha1(json.dumps(dyn_conf).encode()).hexdigest()
                 logger.debug('sha1 of config: %s', config_hash)
                 return dyn_conf, rm_conf
         for conf_file in [self.collection_rules_file, self.fallback_file]:
