@@ -14,7 +14,6 @@ except ImportError:
 from .constants import InsightsConstants as constants
 from .cert_auth import rhsmCertificate
 from .connection import InsightsConnection
-from .config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 APP_NAME = constants.app_name
@@ -25,12 +24,12 @@ def _is_rhn_or_rhsm(hostname):
             hostname == 'subscription.rhsm.redhat.com')
 
 
-def verify_connectivity():
+def verify_connectivity(config):
     """
     Verify connectivity to satellite server
     """
     logger.debug("Verifying Connectivity")
-    ic = InsightsConnection()
+    ic = InsightsConnection(config)
     try:
         branch_info = ic.branch_info()
     except requests.ConnectionError as e:
@@ -51,7 +50,7 @@ def verify_connectivity():
         return False
 
 
-def set_auto_configuration(hostname, ca_cert, proxy):
+def set_auto_configuration(config, hostname, ca_cert, proxy):
     """
     Set config based on discovered data
     """
@@ -59,29 +58,29 @@ def set_auto_configuration(hostname, ca_cert, proxy):
     logger.debug("Attempting to auto configure hostname: %s", hostname)
     logger.debug("Attempting to auto configure CA cert: %s", ca_cert)
     logger.debug("Attempting to auto configure proxy: %s", proxy)
-    saved_base_url = config['base_url']
+    saved_base_url = config.base_url
     if ca_cert is not None:
-        saved_cert_verify = config['cert_verify']
-        config['cert_verify'] = ca_cert
+        saved_cert_verify = config.cert_verify
+        config.cert_verify = ca_cert
     if proxy is not None:
-        saved_proxy = config['proxy']
-        config['proxy'] = proxy
-    config['base_url'] = hostname + '/r/insights'
+        saved_proxy = config.proxy
+        config.proxy = proxy
+    config.base_url = hostname + '/r/insights'
 
-    if not verify_connectivity():
+    if not verify_connectivity(config):
         logger.warn("Could not auto configure, falling back to static config")
         logger.warn("See %s for additional information",
                     constants.default_log_file)
-        config['base_url'] = saved_base_url
+        config.base_url = saved_base_url
         if proxy is not None:
             if saved_proxy is not None and saved_proxy.lower() == 'none':
                 saved_proxy = None
-            config['proxy'] = saved_proxy
+            config.proxy = saved_proxy
         if ca_cert is not None:
-            config['cert_verify'] = saved_cert_verify
+            config.cert_verify = saved_cert_verify
 
 
-def _try_satellite6_configuration():
+def _try_satellite6_configuration(config):
     """
     Try to autoconfigure for Satellite 6
     """
@@ -121,7 +120,7 @@ def _try_satellite6_configuration():
         rhsm_ca = rhsm_config.get('rhsm', 'repo_ca_cert')
         logger.debug("Found CA: %s", rhsm_ca)
         logger.debug("Setting authmethod to CERT")
-        config['authmethod'] = 'CERT'
+        config.authmethod = 'CERT'
 
         # Directly connected to Red Hat, use cert auth directly with the api
         if _is_rhn_or_rhsm(rhsm_hostname):
@@ -134,7 +133,7 @@ def _try_satellite6_configuration():
             rhsm_hostname = rhsm_hostname + ':' + rhsm_hostport + '/redhat_access'
 
         logger.debug("Trying to set auto_configuration")
-        set_auto_configuration(rhsm_hostname, rhsm_ca, proxy)
+        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy)
         return True
     except Exception as e:
         logger.debug(e)
@@ -148,7 +147,7 @@ def _read_systemid_file(path):
     return data
 
 
-def _try_satellite5_configuration():
+def _try_satellite5_configuration(config):
     """
     Attempt to determine Satellite 5 Configuration
     """
@@ -157,7 +156,7 @@ def _try_satellite5_configuration():
     systemid = '/etc/sysconfig/rhn/systemid'
     if os.path.isfile(rhn_config):
         if os.path.isfile(systemid):
-            config['systemid'] = _read_systemid_file(systemid)
+            config.systemid = _read_systemid_file(systemid)
         else:
             logger.debug("Could not find Satellite 5 systemid file.")
             return False
@@ -204,10 +203,10 @@ def _try_satellite5_configuration():
         return False
 
 
-def try_auto_configuration():
+def try_auto_configuration(config):
     """
     Try to auto-configure if we are attached to a sat5/6
     """
-    if config['auto_config'] and not config['offline']:
-        if not _try_satellite6_configuration():
-            _try_satellite5_configuration()
+    if config.auto_config and not config.offline:
+        if not _try_satellite6_configuration(config):
+            _try_satellite5_configuration(config)

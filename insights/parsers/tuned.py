@@ -42,12 +42,12 @@ Examples:
     True
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.tuned_adm)
-class Tuned(Parser):
+class Tuned(CommandParser):
     """
     Parse data from the ``/usr/sbin/tuned-adm list`` command.
     """

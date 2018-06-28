@@ -99,14 +99,7 @@ def context_wrap(lines,
 input_data_cache = {}
 
 
-# UUID is kinda slow
-GLOBAL_NUMBER = 0
-
-
-def next_gn():
-    global GLOBAL_NUMBER
-    GLOBAL_NUMBER += 1
-    return GLOBAL_NUMBER
+counter = itertools.count()
 
 
 def create_metadata(system_id, product):
@@ -153,6 +146,9 @@ class InputData(object):
     def __getitem__(self, key):
         return self.data[key]
 
+    def _make_path(self):
+        return str(next(counter)) + "BOGUS"
+
     def get(self, key, default):
         return self.data.get(key, default)
 
@@ -164,9 +160,17 @@ class InputData(object):
         the_clone.name = name
         return the_clone
 
+    def add_component(self, comp, obj):
+        """
+        Allow adding arbitrary objects as components. This allows tests to mock
+        components that have external dependencies so their dependents can be
+        integration tested.
+        """
+        self.data[comp] = obj
+
     def add(self, spec, content, path=None, do_filter=True):
         if not path:  # path must change to allow parsers to fire
-            path = str(next_gn()) + "BOGUS"
+            path = self._make_path()
         if not path.startswith("/"):
             path = "/" + path
 

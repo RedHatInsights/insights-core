@@ -8,7 +8,9 @@ directory.
 .. toctree::
     :titlesonly:
 
+    notebooks/Config Tree Tutorial.ipynb
     notebooks/Datasource Registry.ipynb
     notebooks/Development Examples.ipynb
+    notebooks/Diagnostic Walkthrough.ipynb
     notebooks/Insights Core Tutorial.ipynb
     notebooks/Rule Migration Guide.ipynb

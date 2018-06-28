@@ -88,14 +88,14 @@ Examples:
     False
 
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.parsers import ParseException
 import re
 from insights.specs import Specs
 
 
 @parser(Specs.xfs_info)
-class XFSInfo(Parser):
+class XFSInfo(CommandParser):
     """
     This mapper reads the output of the ``xfs_info`` command.
 

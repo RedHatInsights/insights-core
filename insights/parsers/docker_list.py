@@ -53,12 +53,12 @@ Examples:
 
 """
 
-from .. import parser, Parser
+from .. import parser, CommandParser
 import re
 from insights.specs import Specs
 
 
-class DockerList(Parser):
+class DockerList(CommandParser):
     """
     A general class for parsing tabular docker list information.  Parsing
     rules are:

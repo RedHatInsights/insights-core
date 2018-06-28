@@ -1,6 +1,7 @@
 import sys
 
 from insights.client import InsightsClient
+from insights.client.config import InsightsConfig
 from insights import package_info
 
 
@@ -11,7 +12,8 @@ def test_version():
     sys.argv = []
 
     try:
-        client = InsightsClient(logging_file='/tmp/insights.log')
+        config = InsightsConfig(logging_file='/tmp/insights.log')
+        client = InsightsClient(config)
         result = client.version()
         assert result == "%s-%s" % (package_info["VERSION"], package_info["RELEASE"])
     finally:

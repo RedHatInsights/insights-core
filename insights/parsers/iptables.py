@@ -69,7 +69,7 @@ Examples:
     True
 """
 
-from .. import Parser, parser, get_active_lines
+from .. import Parser, parser, get_active_lines, CommandParser
 from insights.specs import Specs
 
 
@@ -179,7 +179,7 @@ class IPTablesConfiguration(Parser):
 
 
 @parser(Specs.iptables)
-class IPTables(IPTablesConfiguration):
+class IPTables(CommandParser, IPTablesConfiguration):
     """
     Process output of the ``iptables-save`` command.
 
@@ -190,7 +190,7 @@ class IPTables(IPTablesConfiguration):
 
 
 @parser(Specs.ip6tables)
-class IP6Tables(IPTablesConfiguration):
+class IP6Tables(CommandParser, IPTablesConfiguration):
     """
     Process output of the ``ip6tables-save`` command.
 

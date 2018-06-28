@@ -15,7 +15,6 @@ import subprocess
 import sys
 
 from .constants import InsightsConstants as constants
-from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -71,13 +70,13 @@ if not HaveDocker and HaveAtomic:
     UseAtomic = True
     UseDocker = False
 
-# force atomic or docker
-if config['use_docker']:
-    UseAtomic = False
-    UseDocker = True
-if config['use_atomic']:
-    UseAtomic = True
-    UseDocker = False
+# # force atomic or docker
+# if config.use_docker:
+#     UseAtomic = False
+#     UseDocker = True
+# if config.use_atomic:
+#     UseAtomic = True
+#     UseDocker = False
 
 # Check if docker is running
 DockerIsRunning = False
@@ -117,15 +116,15 @@ if ((DockerIsRunning and UseDocker and HaveDocker) or
     def pull_image(image):
         return runcommand(shlex.split("docker pull") + [image])
 
-    def get_targets():
+    def get_targets(config):
         targets = []
         logger.debug('Getting targets to scan...')
         for d in _docker_all_image_ids():
-            logger.debug('Checking if %s equals %s.' % (d, config['analyze_image_id']))
+            logger.debug('Checking if %s equals %s.' % (d, config.analyze_image_id))
             # pull the sha256: off the id to compare short IDs
-            if (config['analyze_image_id'] == d or
-               d.split('sha256:')[-1].startswith(config['analyze_image_id'])):
-                logger.debug('%s equals %s' % (d, config['analyze_image_id']))
+            if (config.analyze_image_id == d or
+               d.split('sha256:')[-1].startswith(config.analyze_image_id)):
+                logger.debug('%s equals %s' % (d, config.analyze_image_id))
                 targets.append({'type': 'docker_image', 'name': d})
                 return targets  # return the first one that matches
         logger.debug('Done collecting targets')
@@ -304,7 +303,7 @@ else:
         the_verbiage = "Docker"
         the_exception = HaveDockerException
 
-    def get_targets():
+    def get_targets(config):
         logger.error('Could not connect to ' + the_verbiage + ' to collect from images and containers')
         logger.error(the_verbiage + ' is either not installed or not accessable: %s' %
                      (the_exception if the_exception else ''))

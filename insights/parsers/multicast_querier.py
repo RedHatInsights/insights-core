@@ -36,12 +36,12 @@ Examples:
     {'br0': 0, 'br1': 1, 'br2': 0}
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.multicast_querier)
-class MulticastQuerier(Parser):
+class MulticastQuerier(CommandParser):
     """
     Parse the output of the command:
 

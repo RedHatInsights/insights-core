@@ -77,6 +77,7 @@ Examples:
 from collections import namedtuple
 
 import re
+from copy import deepcopy
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
@@ -202,6 +203,6 @@ def dict_deep_merge(tgt, src):
             if isinstance(tgt[k], dict) and isinstance(v, dict):
                 dict_deep_merge(tgt[k], v)
             else:
-                tgt[k].extend(v)
+                tgt[k].extend(deepcopy(v))
         else:
-            tgt[k] = v
+            tgt[k] = deepcopy(v)

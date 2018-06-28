@@ -23,12 +23,12 @@ Examples:
     'off'
 """
 
-from .. import parser, Parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.getsebool)
-class Getsebool(LegacyItemAccess, Parser):
+class Getsebool(LegacyItemAccess, CommandParser):
     """
     The output of "getsebool" command is like following:
 

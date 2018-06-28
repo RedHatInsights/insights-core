@@ -34,12 +34,12 @@ Examples:
     >>> hammer.services_of_status('OK')
     ['elasticsearch', 'foreman_tasks']
 """
-from .. import parser, Parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.hammer_ping)
-class HammerPing(Parser):
+class HammerPing(CommandParser):
     """
     Read the ``hammer ping`` status and convert it to dictionaries of
     status and response information.

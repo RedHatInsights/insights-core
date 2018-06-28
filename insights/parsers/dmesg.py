@@ -32,13 +32,13 @@ Examples:
     ['[    0.000000] AGP: Checking aperture...', '[    0.000000] AGP: No AGP bridge found']
 """
 
-from .. import LogFileOutput, parser
+from .. import LogFileOutput, parser, CommandParser
 from ..specs import Specs
 import re
 
 
 @parser(Specs.dmesg)
-class DmesgLineList(LogFileOutput):
+class DmesgLineList(CommandParser, LogFileOutput):
     """
     Class for reading output of ``dmesg`` using the LogFileOutput parser class.
 

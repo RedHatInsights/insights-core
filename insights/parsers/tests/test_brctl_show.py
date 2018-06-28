@@ -38,7 +38,7 @@ BRCTL_SHOW_ERROR = """
 """.strip()
 
 BRCTL_SHOW_TIMEOUT = """
-timeout: failed to run command `/usr/sbin/brctl': No such file or directory
+timeout: failed to run command `/usr/sbin/brctl':
 """.strip()
 
 

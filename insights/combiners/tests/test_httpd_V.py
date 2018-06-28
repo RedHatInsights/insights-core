@@ -1,5 +1,4 @@
 from insights.parsers.redhat_release import RedhatRelease
-from insights.combiners.redhat_release import redhat_release
 from insights.parsers.ps import PsAuxww
 from insights.parsers.httpd_V import HttpdV as HV
 from insights.parsers.httpd_V import HttpdWorkerV as HWV
@@ -101,8 +100,7 @@ def test_httpd_V_RHEL6():
     hv3 = HEV(context_wrap(HTTPDV3, path='httpd.event_-V'))
     ps = PsAuxww(context_wrap(PS_WORKER))
     rh = RedhatRelease(context_wrap(RHEL6))
-    shared = {HV: hv1, HWV: hv2, HEV: hv3, PsAuxww: ps, redhat_release: rh}
-    result = HttpdV(None, shared)
+    result = HttpdV(rh, ps, hv1, hv3, hv2)
     assert result["Server MPM"] == "worker"
     assert result["Server version"] == "apache/2.4.6 (red hat enterprise linux)"
     assert result["forked"] == "yes (variable process count)"
@@ -112,8 +110,7 @@ def test_httpd_V_RHEL6():
     assert result['Server compiled with']['DEFAULT_PIDLOG'] == "/run/httpd/httpd.pid"
 
     ps = PsAuxww(context_wrap(PS_EVENT))
-    shared = {HV: hv1, HWV: hv2, HEV: hv3, PsAuxww: ps, redhat_release: rh}
-    result = HttpdV(None, shared)
+    result = HttpdV(rh, ps, hv1, hv3, hv2)
     assert result["Server MPM"] == "event"
     assert result["Server version"] == "apache/2.4.6 (red hat enterprise linux)"
     assert result["forked"] == "yes (variable process count)"
@@ -127,8 +124,7 @@ def test_httpd_V_RHEL7():
     hv3 = HEV(context_wrap(HTTPDV3, path='httpd.event_-V'))
     ps = PsAuxww(context_wrap(PS_WORKER))
     rh = RedhatRelease(context_wrap(RHEL7))
-    shared = {HV: hv1, HWV: hv2, HEV: hv3, PsAuxww: ps, redhat_release: rh}
-    result = HttpdV(None, shared)
+    result = HttpdV(rh, ps, hv1, hv3, hv2)
     assert result["Server MPM"] == "prefork"
     assert result["Server version"] == "apache/2.2.15 (unix)"
     assert result["forked"] == "yes (variable process count)"
@@ -143,7 +139,6 @@ def test_httpd_V_failed():
     hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
     ps = PsAuxww(context_wrap(PS_EVENT))
     rh = RedhatRelease(context_wrap(RHEL6))
-    shared = {HV: hv1, HWV: hv2, PsAuxww: ps, redhat_release: rh}
     with pytest.raises(SkipComponent) as sc:
-        HttpdV(None, shared)
+        HttpdV(rh, ps, hv1, None, hv2)
     assert "Unable to get the valid `httpd -V` command" in str(sc)

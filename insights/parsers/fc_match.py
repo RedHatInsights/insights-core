@@ -36,12 +36,12 @@ Examples:
     {'fontformat': '"TrueType"(w)', 'family': '"DejaVu Sans"(s)'}
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.fc_match)
-class FCMatch(Parser):
+class FCMatch(CommandParser):
     """
     Class to parse command `/bin/fc-match -sv 'sans:regular:roman' family fontformat`.
     This object provides the ' __getitem__' and '__iter__' methods to allow it to

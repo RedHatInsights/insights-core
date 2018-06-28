@@ -56,10 +56,39 @@ using the following commands::
     git pull upstream master
     git push origin master
 
-You will need to initialize the project per the
-[readme.md](https://github.com/RedHatInsights/insights-core/blob/master/README.md)
-file.
+### Python 2
 
+To get the project setup for Python 2, use the following commands
+
+    mkdir .python2
+    virtualenv .python2  # Make sure you're using the python2 runtime
+    source .python2/bin/activate
+    pip install --upgrade pip
+    pip install -e .[develop]
+
+
+### Python 3
+
+To setup the project for Python 3, use the following commands
+
+    mkdir .python3
+    python3 -m venv .python3
+    source .python3/bin/activate
+    pip install --upgrade pip
+    pip install -e .[develop]
+
+### After setup
+
+You can validate the setup by running the unit tests.
+
+    py.test
+
+To generate docs:
+
+    cd docs/
+    make html
+
+And they can be found under `docs/_build/html`.
 
 ## Contributor Submissions
 

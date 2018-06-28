@@ -12,13 +12,13 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 ----------------------------------------------
 
 """
-from .. import Parser, parser, get_active_lines
+from .. import parser, get_active_lines, CommandParser
 from . import parse_delimited_table
 from insights.specs import Specs
 
 
 @parser(Specs.ipcs_s)
-class IpcsS(Parser):
+class IpcsS(CommandParser):
     """
     Class for parsing the output of `ipcs -s` command.
 
@@ -86,7 +86,7 @@ class IpcsS(Parser):
 
 
 @parser(Specs.ipcs_s_i)
-class IpcsSI(Parser):
+class IpcsSI(CommandParser):
     """
     Class for parsing the output of `ipcs -s -i ##` command. ``##`` will be
     replaced with specific semid

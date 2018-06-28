@@ -46,7 +46,7 @@ class CalledProcessError(Exception):
 
 
 def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-         keep_rc=False, **kwargs):
+         keep_rc=False, output_encoding="utf-8", **kwargs):
     """Call cmd with an optional timeout in seconds.
 
     If `timeout` is supplied and expires, the process is killed with
@@ -114,7 +114,7 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
     except Exception as e:
         six.reraise(CalledProcessError, CalledProcessError(rc, cmd, str(e)), sys.exc_info()[2])
     if keep_rc:
-        return rc, output
+        return rc, output.decode(output_encoding) if output_encoding else output
     if rc:
         raise CalledProcessError(rc, cmd, output)
-    return output
+    return output.decode(output_encoding) if output_encoding else output

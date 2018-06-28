@@ -1,7 +1,41 @@
 import errno
+import hashlib
 import os
 
 from insights.util import subproc
+
+
+def read_in_chunks(file_object, chunk_size=1024):
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+
+def touch(fname, times=None):
+    with open(fname, 'a'):
+        os.utime(fname, times)
+
+
+def hash_bytestr_iter(bytesiter, hasher):
+    for block in bytesiter:
+        hasher.update(block)
+    return hasher.hexdigest()
+
+
+def file_as_blockiter(afile, blocksize=65536):
+    block = afile.read(blocksize)
+    while len(block) > 0:
+        yield block
+        block = afile.read(blocksize)
+
+
+def sha256(path):
+    with open(path, "rb") as f:
+        block_iter = file_as_blockiter(f)
+        hasher = hashlib.sha256()
+        return hash_bytestr_iter(block_iter, hasher)
 
 
 def remove(path, chmod=False):

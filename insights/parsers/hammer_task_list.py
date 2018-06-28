@@ -51,13 +51,13 @@ Examples:
     '500 Internal Server Error'
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import parse_delimited_table, keyword_search
 from insights.specs import Specs
 
 
 @parser(Specs.hammer_task_list)
-class HammerTaskList(Parser):
+class HammerTaskList(CommandParser):
     """
     Parse the CSV output from the ``hammer --csv task list`` command.
 

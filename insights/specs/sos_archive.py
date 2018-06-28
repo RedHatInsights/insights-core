@@ -92,6 +92,8 @@ class SosSpecs(Specs):
         'sos_commands/general/subscription-manager_list_--installed']
     )
     sysctl = simple_file("sos_commands/kernel/sysctl_-a")
+    systemctl_list_unit_files = simple_file("sos_commands/systemd/systemctl_list-unit-files")
+    systemctl_list_units = simple_file("sos_commands/systemd/systemctl_list-units")
     uname = simple_file("sos_commands/kernel/uname_-a")
     uptime = simple_file("sos_commands/general/uptime")
     vgdisplay = simple_file("vgdisplay")

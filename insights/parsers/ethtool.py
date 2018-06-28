@@ -41,7 +41,7 @@ import os
 import re
 from collections import namedtuple
 from ..parsers import ParseException
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 
@@ -82,7 +82,7 @@ def extract_iface_name_from_content(content):
 
 
 @parser(Specs.ethtool_i)
-class Driver(Parser):
+class Driver(CommandParser):
     """
     Parse information for the ``ethtool -i`` command.
 
@@ -176,7 +176,7 @@ class Driver(Parser):
 
 
 @parser(Specs.ethtool_k)
-class Features(LegacyItemAccess, Parser):
+class Features(LegacyItemAccess, CommandParser):
     """
     Parse information for the ``ethtool -k`` command.
 
@@ -298,7 +298,7 @@ class Features(LegacyItemAccess, Parser):
 
 
 @parser(Specs.ethtool_a)
-class Pause(Parser):
+class Pause(CommandParser):
     """
     Parse information for the ``ethtool -a`` command.
 
@@ -392,7 +392,7 @@ class Pause(Parser):
 
 
 @parser(Specs.ethtool_c)
-class CoalescingInfo(Parser):
+class CoalescingInfo(CommandParser):
     """
     Parse information for the ``ethtool -c`` command.
 
@@ -504,7 +504,7 @@ class CoalescingInfo(Parser):
 
 
 @parser(Specs.ethtool_g)
-class Ring(Parser):
+class Ring(CommandParser):
     """
     Parse information for the ``ethtool -g`` command.
 
@@ -604,7 +604,7 @@ class Ring(Parser):
 
 
 @parser(Specs.ethtool_S)
-class Statistics(Parser):
+class Statistics(CommandParser):
     """
     Parse information for the ``ethtool -S`` command.
 
@@ -703,7 +703,7 @@ class Statistics(Parser):
 
 
 @parser(Specs.ethtool)
-class Ethtool(Parser):
+class Ethtool(CommandParser):
     """
     Parses output of ``ethtool`` command.
 

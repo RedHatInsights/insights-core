@@ -16,6 +16,7 @@ class Evaluator(object):
         self.broker = broker
         self.rule_skips = []
         self.rule_results = []
+        self.fingerprint_results = []
         self.hostname = None
         self.metadata = {}
         self.metadata_keys = {}
@@ -72,6 +73,7 @@ class SingleEvaluator(Evaluator):
                 "hostname": self.hostname
             },
             "reports": self.rule_results,
+            "fingerprints": self.fingerprint_results,
             "skips": self.rule_skips,
         })
         return self.format_response(r)
@@ -83,6 +85,11 @@ class SingleEvaluator(Evaluator):
         elif type_ == "rule":
             self.rule_results.append(self.format_result({
                 "rule_id": "{0}|{1}".format(get_simple_module_name(plugin), r["error_key"]),
+                "details": r
+            }))
+        elif type_ == "fingerprint":
+            self.fingerprint_results.append(self.format_result({
+                "fingerprint_id": "{0}|{1}".format(get_simple_module_name(plugin), r["fingerprint_key"]),
                 "details": r
             }))
         elif type_ == "skip":

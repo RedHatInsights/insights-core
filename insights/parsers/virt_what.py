@@ -27,14 +27,14 @@ Note:
         virt-what: virt-what-cpuid-helper program not found in $PATH
 
 '''
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 BAREMETAL = 'baremetal'
 
 
 @parser(Specs.virt_what)
-class VirtWhat(Parser):
+class VirtWhat(CommandParser):
     """
     Class for parsing ``virt-what`` command.
 

@@ -24,15 +24,17 @@ runtime = set([
     'six',
 ])
 
-try:
-    import importlib # noqa
-except ImportError:
-    runtime.add("importlib")
 
-try:
-    import argparse # noqa
-except ImportError:
-    runtime.add("argparse")
+def maybe_require(pkg):
+    try:
+        __import__(pkg)
+    except ImportError:
+        runtime.add(pkg)
+
+
+maybe_require("importlib")
+maybe_require("argparse")
+
 
 client = set([
     'requests',
@@ -53,6 +55,14 @@ develop = set([
     'ipython<6',
 ])
 
+optional = set([
+    'jinja2',
+    'python-cjson',
+    'python-logstash',
+    'python-statsd',
+    'watchdog',
+])
+
 if __name__ == "__main__":
     # allows for runtime modification of rpm name
     name = os.environ.get("INSIGHTS_CORE_NAME", package_info["NAME"])
@@ -60,7 +70,7 @@ if __name__ == "__main__":
     setup(
         name=name,
         version=package_info["VERSION"],
-        description="Insights core execution framework and rule API",
+        description="Insights Core is a data collection and analysis framework",
         long_description=open("README.rst").read(),
         url="https://github.com/redhatinsights/insights-core",
         author="Red Hat, Inc.",
@@ -72,7 +82,7 @@ if __name__ == "__main__":
         extras_require={
             'develop': list(runtime | develop | client),
             'client': list(runtime | client),
-            'optional': ['python-cjson', 'python-logstash', 'python-statsd', 'watchdog'],
+            'optional': list(optional),
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',
@@ -81,7 +91,11 @@ if __name__ == "__main__":
             'License :: OSI Approved :: Apache Software License',
             'Programming Language :: Python',
             'Programming Language :: Python :: 2.6',
-            'Programming Language :: Python :: 2.7'
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3.3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6'
         ],
         entry_points=entry_points,
         include_package_data=True

@@ -2,45 +2,130 @@
 Insights Core
 =============
 
-https://access.redhat.com/insights/
+Insights Core is a data collection and analysis framework that is built
+for extensibility and rapid development.  Included are a set of reusable
+components for gathering data in myriad ways and providing a reliable
+object model for commonly useful unstructured and semi-structured data.
 
-**insights-core** is the framework, common components, and utilities for
-Insights rules.  Prior to setting up the project ensure that you have Python 2,
-Python Virtualenv, GCC, and Unzip installed.  The steps for this will vary
-depending upon your system.
+.. code-block:: python
 
-To get the project set up::
+    >>> from insights import run
+    >>> from insights.parsers import installed_rpms as rpm
+    >>> lower = rpm.Rpm("bash-4.4.11-1.fc26")
+    >>> upper = rpm.Rpm("bash-4.4.22-1.fc26")
+    >>> results = run(rpm.Installed)
+    >>> rpms = results[rpm.Installed]
+    >>> rpms.newest("bash")
+    0:bash-4.4.12-7.fc26
+    >>> lower <= rpms.newest("bash") < upper
+    True
 
-    virtualenv .
-    source bin/activate
-    pip install --upgrade pip
-    pip install -e .[develop]
+Features
+--------
 
-To run the tests::
+* Over 200 Enterprise Linux data parsers
+* Support for Python 2.6+ and 3.3+
+* Built in support for local host collection
+* Data collection support for several archive formats
 
-    py.test
+Installation
+------------
 
-To generate docs::
+Releases can be installed via pip
 
-    cd docs/
-    make html
+.. code-block:: shell
 
-And they can be found under `docs/_build/html`.
+    $ pip install insights-core
 
-Configuration
+Documentation
 -------------
 
-Insights Core also houses the centralized configuration module for the Insights
-Engine and Insights Content Server.  This is to enable each project to use the
-same file(s) and code module for configuration.  insights-core checks several
-locations for the configuration file, in this order:
+There are several resources for digging into the details of how to use `insights-core`:
 
-- `$INSIGHTS_CORE/insights/defaults.yaml`
-- `/etc/insights.yaml`
-- `$HOME/.local/insights.yaml`
-- `$PWD/.insights.yaml`
+- A `detailed walk through of the constructing a rule
+  <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Diagnostic%20Walkthrough.ipynb>`_
+- The `core api docs <http://insights-core.readthedocs.io/en/latest/>`_
+  have three tutorials
 
-Options from files read later will override options from files read earlier.
+  - `Rule Using Existing Parsers and Combiners
+    <http://insights-core.readthedocs.io/en/latest/rule_tutorial_index.html#tutorial-rule-using-existing-parsers-and-combiners>`_
+  - `Custom Parser and Rule
+    <http://insights-core.readthedocs.io/en/latest/custom_tutorial_index.html#tutorial-custom-parser-and-rule>`_
+  - `Combiner Development
+    <http://insights-core.readthedocs.io/en/latest/combiner_tutorial.html#tutorial-combiner-development>`_
 
-To see the layout of the file and the available options, please take a look at
-`defaults.yaml <insights/defaults.yaml>`_ in this repo.
+- The basic architectural principles of `insights-core` can be found in
+  the `Insights Core Tutorial
+  <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Insights%20Core%20Tutorial.ipynb>`_ jupyter notebook
+- A simple `stand_alone.py
+  <https://github.com/RedHatInsights/insights-core/blob/master/stand_alone.py>`_
+  script encapsulates creating all the basic components in a single script
+  that can be easily executed locally
+
+To Run the Jupyter Notebooks
+++++++++++++++++++++++++++++
+
+If you would like to execute the jupyter notebooks locally, you can
+install jupyter:
+
+.. code-block:: bash
+
+    pip install jupyter
+
+To start the notebook server:
+
+.. code-block:: bash
+
+    jupyter notebook
+
+This should start a web-server and open a tab on your browser.  From
+there, you can navigate to `docs/notebooks` and select a notebook of
+interest.
+
+Motivation
+----------
+
+Almost everyone who deals with diagnostic files and archives such as
+sosreports or JBoss server.log files eventually automates the process of
+rummaging around inside them. Usually, the automation is comprised of
+fairly simple scripts, but as these scripts get reused and shared, their
+complexity grows and a more sophisticated design becomes worthwhile.
+
+A general process one might consider is:
+
+#. Collect some unstructured data (e.g. from a command, an archive, a
+   directory, directly from a system)
+
+#. Convert the unstructured data into objects with standard APIs.
+
+#. Optionally combine some of the objects to provide a higher level
+   interface than they provide individually (maybe all the networking
+   components go together to provide a high level API, or maybe multiple
+   individual objects provide the same information. Maybe the same
+   information can be gotten from multiple sources, not all of which are
+   available at the same time from a given system or archive).
+
+#. Use the data model above at any granularity to write rules that
+   formalize support knowledge, persisters that build database tables,
+   metadata components that extract contextual info for other systems,
+   and more.
+
+Insights Core provides this functionality. It is an extensible framework
+for collecting and analyzing data on systems, from archives,
+directories, etc. in a standard way.
+
+Insights Core verses Red Hat Insights
+-------------------------------------
+
+A common confusion about this project is how it relates to `Red Hat
+Insights <https://access.redhat.com/insights/>`_.  Red Hat Insights is a
+product produced by `Red Hat <https://www.redhat.com>`_ for automated
+discovery and remediation of issues in Red Hat products.  The
+`insights-core` project is used by Red Hat Insights, but only represents
+the data collection and rule analysis infrastructure.  This
+infrastructure is meant to be reusable by other projects.
+
+So, `insights-core` can be used for individuals wanting to perform
+analysis locally, or integrated into other diagnostics systems.  Parsers
+or rules written using `insights-core` can be executed in Red Hat
+Insights, but, it is not a requirement.

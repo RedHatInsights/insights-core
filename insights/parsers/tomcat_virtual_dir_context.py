@@ -41,12 +41,12 @@ Examples::
      }
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from ..specs import Specs
 from . import SkipException
 
 
-class TomcatVirtualDirContextBase(Parser):
+class TomcatVirtualDirContextBase(CommandParser):
     """
     Generic parser which finds whether there is a VirtualDirContext option used in TomCat
     configuration file.

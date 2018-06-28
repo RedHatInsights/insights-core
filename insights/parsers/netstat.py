@@ -24,7 +24,7 @@ SsTULPN - command ``ss -tulpn``
 
 from collections import defaultdict
 from . import ParseException, parse_delimited_table
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.parsers import keyword_search
 from insights.specs import Specs
 
@@ -40,7 +40,7 @@ NETSTAT_SECTION_ID = {
 
 
 @parser(Specs.netstat_s)
-class NetstatS(LegacyItemAccess, Parser):
+class NetstatS(LegacyItemAccess, CommandParser):
     """
     Parses data from the ``netstat -s`` command.
 
@@ -206,7 +206,7 @@ class NetstatS(LegacyItemAccess, Parser):
 
 
 @parser(Specs.netstat_agn)
-class NetstatAGN(Parser):
+class NetstatAGN(CommandParser):
     """
     Parse the ``netstat -agn`` command to get interface multicast infomation.
 
@@ -337,7 +337,7 @@ class NetstatSection(object):
 
 
 @parser(Specs.netstat)
-class Netstat(Parser):
+class Netstat(CommandParser):
     """
     Parsing the ``/bin/netstat -neopa`` command output.
 
@@ -576,7 +576,7 @@ class Netstat(Parser):
 
 
 @parser(Specs.netstat_i)
-class Netstat_I(Parser):
+class Netstat_I(CommandParser):
     """
     Parse the ``netstat -i`` command output  to get interface traffic info
     such as "TX-OK" and "RX-OK".
@@ -626,7 +626,7 @@ class Netstat_I(Parser):
 
 
 @parser(Specs.ss)
-class SsTULPN(Parser):
+class SsTULPN(CommandParser):
     """
     Parse the output of the ``/usr/sbin/ss -tulpn`` command.
 

@@ -24,13 +24,13 @@ Examples:
 
 """
 
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 from . import optlist_to_dict
 
 
 @parser(Specs.openvswitch_other_config)
-class OpenvSwitchOtherConfig(LegacyItemAccess, Parser):
+class OpenvSwitchOtherConfig(LegacyItemAccess, CommandParser):
     """Parses output of the ovs-vsctl -t 5 get Open_vSwitch . other_config command"""
 
     def parse_content(self, content):

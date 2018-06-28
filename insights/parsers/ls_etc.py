@@ -63,12 +63,12 @@ Examples:
     >>> ls_etc.dir_entry("/etc/sysconfig", "grub")['link']
     '/etc/default/grub'
 """
-from .. import parser
+from .. import parser, CommandParser
 from .. import FileListing
 from insights.specs import Specs
 
 
 @parser(Specs.ls_etc)
-class LsEtc(FileListing):
+class LsEtc(CommandParser, FileListing):
     """Parses output of ``ls -lanR /etc`` command."""
     pass

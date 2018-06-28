@@ -1,9 +1,9 @@
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.rhn_charsets)
-class RHNCharSets(LegacyItemAccess, Parser):
+class RHNCharSets(LegacyItemAccess, CommandParser):
     """
     ==== Sample (1) embedded database ====
      server_encoding

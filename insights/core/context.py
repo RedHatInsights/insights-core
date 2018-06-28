@@ -170,11 +170,7 @@ class SosArchiveContext(ExecutionContext):
 
 @fs_root
 class ClusterArchiveContext(ExecutionContext):
-    def __init__(self, root, paths, stored_command_prefix="insights_commands"):
-        self.root = root
-        self.paths = paths
-        self.stored_command_prefix = stored_command_prefix
-        super(ClusterArchiveContext, self).__init__()
+    pass
 
 
 @fs_root

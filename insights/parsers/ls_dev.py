@@ -49,11 +49,11 @@ Examples:
     >>> ls_dev.listing_of('/dev/rhel')['home']['link']
     '../dm-2'
 """
-from .. import parser, FileListing
+from .. import parser, FileListing, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.ls_dev)
-class LsDev(FileListing):
+class LsDev(CommandParser, FileListing):
     """Parses output of ``ls -lanR /dev`` command."""
     pass

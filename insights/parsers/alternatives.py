@@ -3,12 +3,12 @@ Alternatives - command ``/usr/bin/alternatives`` output
 =======================================================
 """
 
-from insights import parser, Parser
+from insights import parser, CommandParser
 from insights.core import ParseException
 from insights.specs import Specs
 
 
-class AlternativesOutput(Parser):
+class AlternativesOutput(CommandParser):
     """
     Read the output of ``/usr/sbin/alternatives --display *program*`` and
     convert into information about the given program's alternatives.

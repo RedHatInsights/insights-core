@@ -52,19 +52,43 @@ def get_time():
     return datetime.datetime.isoformat(datetime.datetime.now())
 
 
+def write_registered_file():
+    delete_unregistered_file()
+    for f in constants.registered_files:
+        if os.path.lexists(f):
+            if os.path.islink(f):
+                # kill symlinks and regenerate
+                os.remove(f)
+                write_to_disk(f)
+        else:
+            write_to_disk(f)
+
+
 def write_unregistered_file(date=None):
     """
     Write .unregistered out to disk
     """
-    write_to_disk(constants.registered_file, delete=True)
-    rc = 0
+    delete_registered_file()
     if date is None:
         date = get_time()
-    else:
-        rc = 1
+    for f in constants.unregistered_files:
+        if os.path.lexists(f):
+            if os.path.islink(f):
+                # kill symlinks and regenerate
+                os.remove(f)
+                write_to_disk(f, content=str(date))
+        else:
+            write_to_disk(f, content=str(date))
 
-    write_to_disk(constants.unregistered_file, content=str(date))
-    return rc
+
+def delete_registered_file():
+    for f in constants.registered_files:
+        write_to_disk(f, delete=True)
+
+
+def delete_unregistered_file():
+    for f in constants.unregistered_files:
+        write_to_disk(f, delete=True)
 
 
 def write_to_disk(filename, delete=False, content=get_time()):
@@ -72,7 +96,7 @@ def write_to_disk(filename, delete=False, content=get_time()):
     Write filename out to disk
     """
     if delete:
-        if os.path.isfile(filename):
+        if os.path.lexists(filename):
             os.remove(filename)
     else:
         with open(filename, 'w') as f:

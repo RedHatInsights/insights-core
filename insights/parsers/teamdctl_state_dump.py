@@ -45,12 +45,12 @@ Examples:
     'team0'
 """
 
-from .. import JSONParser, parser, defaults
+from .. import JSONParser, parser, defaults, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.teamdctl_state_dump)
-class TeamdctlStateDump(JSONParser):
+class TeamdctlStateDump(CommandParser, JSONParser):
     """
     Class to parse the output of ``teamdctl {team interface} state dump``.
     """

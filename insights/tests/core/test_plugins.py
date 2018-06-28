@@ -59,3 +59,33 @@ def test_make_response_too_big():
         "error_key": "TESTING",
         "max_detail_length_error": len(json.dumps({"error_key": "TESTING", "type": "rule", "big": content}))
     }
+
+
+def test_validate_fingerprint_good():
+    assert plugins.validate_response({
+        "type": "fingerprint",
+        "fingerprint_key": "FINGERPRINT",
+        "foo": "bar"}) is None
+
+
+def test_validate_response_missing_fingerprint_key():
+    with pytest.raises(plugins.ValidationException):
+        plugins.validate_response({"type": "fingerprint", "foo": "bar"})
+
+
+def test_make_fingerprint_too_big():
+    content = "foo" * 50000
+    assert plugins.make_fingerprint("TESTING", big=content) == {
+        "type": "fingerprint",
+        "fingerprint_key": "TESTING",
+        "max_detail_length_error": len(json.dumps({"fingerprint_key": "TESTING", "type": "fingerprint", "big": content}))
+    }
+
+
+def test_validate_fingerprint_invalid_fingerprint_key_type():
+    for bad in [{}, None, 1, lambda x: x, set()]:
+        with pytest.raises(plugins.ValidationException):
+            plugins.validate_response({
+                "type": "fingerprint",
+                "fingerprint_key": bad
+            })

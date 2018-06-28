@@ -24,13 +24,13 @@ NtpqPn - command ``/usr/sbin/ntpq -pn``
 """
 
 import re
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.core.dr import SkipComponent
 from insights.specs import Specs
 
 
 @parser(Specs.chronyc_sources)
-class ChronycSources(Parser):
+class ChronycSources(CommandParser):
     """
     Chronyc Sources parser
 
@@ -72,7 +72,7 @@ class ChronycSources(Parser):
 
 
 @parser(Specs.ntpq_leap)
-class NtpqLeap(Parser):
+class NtpqLeap(CommandParser):
     """
     Converts the output of ``ntpq -c 'rv 0 leap'`` into a dictionary in the
     ``data`` property, and sets the ``leap`` property to the value of the
@@ -103,7 +103,7 @@ class NtpqLeap(Parser):
 
 
 @parser(Specs.ntpq_pn)
-class NtpqPn(Parser):
+class NtpqPn(CommandParser):
     """
     Get source and flag for each NTP time source from the output of
     ``/usr/sbin/ntpq -pn``.

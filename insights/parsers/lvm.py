@@ -34,7 +34,7 @@ from __future__ import print_function
 import json
 from ..util import parse_keypair_lines
 from .. import add_filter
-from .. import Parser, parser, get_active_lines, LegacyItemAccess
+from .. import Parser, parser, get_active_lines, LegacyItemAccess, CommandParser
 from . import parse_fixed_table
 from insights.parsers import ParseException
 from insights.specs import Specs
@@ -78,7 +78,7 @@ def find_warnings(content):
                 yield l
 
 
-class LvmHeadings(Parser):
+class LvmHeadings(CommandParser):
     """Base class for parsing LVM data in table format."""
 
     def __iter__(self):
@@ -91,7 +91,7 @@ class LvmHeadings(Parser):
         return self.data[item]
 
 
-class Lvm(Parser):
+class Lvm(CommandParser):
     """Base class for parsing LVM data in key=value format."""
 
     def parse_content(self, content):

@@ -1,4 +1,4 @@
-from insights import Parser, parser
+from insights import parser, CommandParser
 from insights.parsers import get_active_lines, ParseException
 
 import re
@@ -32,7 +32,7 @@ def _make_cron_re():
     )
 
 
-class CrontabL(Parser):
+class CrontabL(CommandParser):
     """
     Parses output of ``crontab -l`` command.
 

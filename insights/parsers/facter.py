@@ -32,12 +32,12 @@ Examples:
     'x86_64'
 """
 
-from .. import Parser, parser, LegacyItemAccess
+from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.facter)
-class Facter(LegacyItemAccess, Parser):
+class Facter(LegacyItemAccess, CommandParser):
     """Class for parsing ``facter`` command output.
 
     Attributes are the facts in each line of the command output.

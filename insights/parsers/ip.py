@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import six
 from collections import defaultdict, deque
-from .. import Parser, parser
+from .. import parser, CommandParser
 from ..contrib import ipaddress
 from insights.specs import Specs
 
@@ -145,7 +145,7 @@ def parse_tx_stats(line, d):
 
 
 @parser(Specs.ip_addr)
-class IpAddr(Parser):
+class IpAddr(CommandParser):
     """
     This parser reads the output of ``ip addr`` into a dict whose key is
     the interface name.  The information about this interface`addr` key is a array to store all address.
@@ -265,7 +265,7 @@ class Route(object):
 
 
 @parser(Specs.ip_route_show_table_all)
-class RouteDevices(Parser):
+class RouteDevices(CommandParser):
     """
     This parser reads the output of the command ``ip route show table all``
     and provides access to the routing table.
@@ -478,7 +478,7 @@ class RouteDevices(Parser):
         return None
 
 
-class IpNeighParser(Parser):
+class IpNeighParser(CommandParser):
     """
     This parser takes the output of ``ip neigh show nud all`` results for
     ARP and NDISC cache entries and reads them into a dictionary of results

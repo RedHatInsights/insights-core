@@ -4,14 +4,14 @@ CertList - command ``getcert list``
 
 """
 
-from insights.core import Parser
+from insights.core import CommandParser
 from insights.parsers import ParseException, keyword_search
 from insights.core.plugins import parser
 from insights.specs import Specs
 
 
 @parser(Specs.getcert_list)
-class CertList(Parser):
+class CertList(CommandParser):
     """
     Parse the output of ``getcert list``.
 

@@ -21,6 +21,22 @@ log = logging.getLogger(__name__)
 
 COMMANDS = {}
 
+SAFE_ENV = {
+    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
+}
+"""
+A minimal set of environment variables for use in subprocess calls
+"""
+
+
+def enc(s):
+    escape_encoding = "string_escape" if six.PY2 else "unicode_escape"
+    return s.encode(escape_encoding)
+
+
+def escape(s):
+    return re.sub(r"([=\(\)|\-_!@*~\"&/\\\^\$\=])", r"\\\1", s)
+
 
 def mangle_command(command, name_max=255):
     """
@@ -112,6 +128,12 @@ class FileProvider(ContentProvider):
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
 
+        if os.path.islink(self.path):
+            resolved = os.path.realpath(self.path)
+            if not resolved.startswith(self.root):
+                msg = "Symbolic link points outside archive: %s -> %s."
+                raise Exception(msg % (self.path, resolved))
+
         if not os.access(self.path, os.R_OK):
             raise ContentException("Cannot access %s" % self.path)
 
@@ -135,15 +157,6 @@ class TextFileProvider(FileProvider):
     Class used in datasources that returns the contents of a file a list of
     lines. Each line is filtered if filters are defined for the datasource.
     """
-    bad_lines = ["No such file or directory", "Command not found"]
-
-    @classmethod
-    def validate_lines(self, results):
-        if results and len(results) == 1:
-            first = results[0]
-            if any(l in first for l in self.bad_lines):
-                return False
-        return True
 
     def load(self):
 
@@ -151,8 +164,8 @@ class TextFileProvider(FileProvider):
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
         if filters:
-            cmd = [["/bin/grep", "-F", filters, self.path]]
-            rc, out = subproc.call(cmd, shell=False, keep_rc=True)
+            cmd = [["grep", "-F", filters, self.path]]
+            rc, out = subproc.call(cmd, shell=False, keep_rc=True, env=SAFE_ENV)
             if rc == 0 and out != '':
                 results = out.splitlines()
             else:
@@ -160,9 +173,6 @@ class TextFileProvider(FileProvider):
         else:
             with open(self.path, "rU") as f:
                 results = [l.rstrip("\n") for l in f]
-        if not self.validate_lines(results):
-            first = results[0] if results else "<no content>"
-            raise ContentException(self.relative_path + ": " + first)
         return results
 
 
@@ -334,10 +344,11 @@ def simple_file(path, context=None, kind=TextFileProvider):
     def inner(broker):
         ctx = _get_context(context, FSRoots, broker)
         return kind(ctx.locate_path(path), root=ctx.root, ds=inner)
+    inner.__doc__ = 'Path: ' + escape(path)
     return inner
 
 
-def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
+def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_files=1000):
     """
     Creates a datasource that reads all files matching the glob pattern(s).
 
@@ -348,10 +359,12 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
         context (ExecutionContext): the context under which the datasource
             should run.
         kind (FileProvider): One of TextFileProvider or RawFileProvider.
+        max_files (int): Maximum number of glob files to process.
 
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
+
     if not isinstance(patterns, (list, set)):
         patterns = [patterns]
 
@@ -370,8 +383,13 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider):
                 except:
                     log.debug(traceback.format_exc())
         if results:
+            if len(results) > max_files:
+                raise ContentException("Number of files returned [{0}] is over the {1} file limit, please refine "
+                                       "the specs file pattern to narrow down results".format(len(results), max_files))
             return results
         raise ContentException("[%s] didn't match." % ', '.join(patterns))
+    pat = [escape(p) for p in patterns]
+    inner.__doc__ = 'Path: ' + ", ".join(pat)
     return inner
 
 
@@ -385,6 +403,8 @@ def head(dep):
         if lst:
             return c[0]
         raise dr.SkipComponent()
+
+    inner.__doc__ = escape(dep.__doc__)
     return inner
 
 
@@ -414,6 +434,8 @@ def first_file(files, context=None, kind=TextFileProvider):
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(files))
+    fls = [escape(f) for f in files]
+    inner.__doc__ = 'Path: ' + ", ".join(fls)
     return inner
 
 
@@ -444,6 +466,7 @@ def listdir(path, context=None):
         if result:
             return [os.path.basename(r) for r in result]
         raise ContentException("Can't list %s or nothing there." % p)
+    inner.__doc__ = 'Path: ' + escape(path)
     return inner
 
 
@@ -491,6 +514,7 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
             result = raw
         return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
     COMMANDS[inner] = cmd
+    inner.__doc__ = 'Command: ' + escape(cmd)
     return inner
 
 
@@ -557,6 +581,7 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
         if result:
             return result
         raise ContentException("No results found for [%s]" % cmd)
+    inner.__doc__ = 'Command: ' + escape(cmd)
     return inner
 
 
@@ -599,6 +624,7 @@ def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextF
         if result:
             return result
         raise ContentException("No results found for [%s]" % path)
+    inner.__doc__ = 'Path: ' + escape(path)
     return inner
 
 
@@ -615,6 +641,9 @@ def first_of(deps):
             if c in broker:
                 return broker[c]
 
+    docs = [escape(d) if isinstance(d, list) and d.func_name != 'inner' else d.__doc__ for d in deps if d.__doc__]
+    docs = [enc(d) for d in docs]
+    inner.__doc__ = b",".join([b"Returns the first of the following:"] + docs)
     return inner
 
 

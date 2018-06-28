@@ -3,7 +3,7 @@ SMARTctl - command ``/sbin/smartctl -a {device}``
 =================================================
 """
 
-from insights.core import Parser
+from insights.core import CommandParser
 from insights.core.plugins import parser
 from insights.parsers import ParseException
 
@@ -12,7 +12,7 @@ from insights.specs import Specs
 
 
 @parser(Specs.smartctl)
-class SMARTctl(Parser):
+class SMARTctl(CommandParser):
     """
     Parser for output of ``smartctl -a`` for each drive in system.
 

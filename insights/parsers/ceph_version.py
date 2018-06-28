@@ -24,7 +24,7 @@ Example:
 
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 import re
 from insights.specs import Specs
 
@@ -60,7 +60,7 @@ class CephVersionError(Exception):
 
 
 @parser(Specs.ceph_v)
-class CephVersion(Parser):
+class CephVersion(CommandParser):
     """ Class for parsing the content of ``ceph_version``."""
 
     def parse_content(self, content):

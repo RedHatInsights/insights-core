@@ -2,14 +2,20 @@ import datetime
 import io
 import json
 import logging
+import operator
 import os
 import re
 import shlex
 import yaml
 import six
+from fnmatch import fnmatch
+
+from insights.configtree import from_dict, iniconfig, Root, select, first
+from insights.configtree import Directive, SearchResult, Section
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
+from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from insights.util import deprecated
 
@@ -95,6 +101,258 @@ def default_parser_deserializer(_type, data):
     for k, v in data.items():
         setattr(obj, k, v)
     return obj
+
+
+def find_main(confs, name):
+    for c in confs:
+        if c.file_name == name:
+            return c
+
+
+def flatten(docs, pred):
+    def inner(children):
+        results = []
+        for c in children:
+            if select(pred)([c]) and c.children:
+                results.extend(inner(c.children))
+            else:
+                results.append(c)
+        return results
+    return inner(docs)
+
+
+class ConfigComponent(object):
+    def select(self, *queries, **kwargs):
+        """
+        Given a list of queries, executes those queries against the set of
+        Nodes. A Node has three primary attributes: name (str), attrs
+        ([str|int]), and children ([Node]).
+
+        Nodes also have a value attribute that is either the first attribute
+        (in the case of simple directives that only have one), or the string
+        representation of all attributes joined by a single space.
+
+        Each positional argument to select represents a query against the name
+        and/or attributes of the corresponding level of the configuration tree.
+        The first argument queries root nodes, the second argument queries
+        children of the root nodes, etc.
+
+        An individual query is either a single value or a tuple. A single value
+        queries the name of a Node. A tuple queries the name and the attrs.
+
+        So: `select(name_predicate)` or `select((name_predicate,
+        attrs_predicate))`
+
+        In general, `select(pred1, pred2, pred3, ...)`
+
+        If a predicate is a simple value (string or int), an exact match is
+        required for names, and an exact match of any attribute is required for
+        attributes.
+
+        Examples:
+        `select("Directory")` queries for all root nodes named Directory.
+
+        `select("Directory", "Options")` queries for all root nodes named
+        Directory that contain at least one child node named Options. Notice
+        the argument positions: Directory is in position 1, and Options is in
+        position 2.
+
+        `select(("Directory", "/"))` queries for all root nodes named Directory
+        that contain an attribute exactly matching "/". Notice this is one
+        argument to select: a 2-tuple with predicates for name and attrs.
+
+        If you are only interested in attributes, just pass `None` for the name
+        predicate in the tuple: `select((None, "/"))` will return all root
+        nodes with at least one attribute of "/"
+
+        In addition to exact matches, the elements of a query can be functions
+        that accept the value corresponding to their position in the query. A
+        handful of useful functions and boolean operators between them are
+        provided.
+
+        `select(startswith("Dir"))` queries for all root nodes with names
+        starting with "Dir".
+
+        `select(~startswith("Dir"))` queries for all root nodes with names not
+        starting with "Dir".
+
+        `select(startswith("Dir") | startswith("Ali"))` queries for all root
+        nodes with names starting with "Dir" or "Ali". The return of `|` is a
+        single callable passed in the first argument position of select.
+
+        `select(~startswith("Dir") & ~startswith("Ali"))` queries for all root
+        nodes with names not starting with "Dir" or "Ali".
+
+        If a function is in an attribute position, it is considered True if it
+        returns True for any attribute.
+
+        For example, `select((None, 80))` often will return the list of one
+        Node [Listen 80]
+
+        `select(("Directory", startswith("/var")))` will return all root nodes
+        named Directory that also have an attribute starting with "/var"
+
+        If you know that your selection will only return one element, or you
+        only want the first or last result of the query , pass `one=first` or
+        `one=last`.
+
+        `select(("Directory", startswith("/")), one=last)` will return the
+        single root node for the last Directory entry starting with "/"
+
+        If instead of the root nodes that match you want the child nodes that
+        caused the match, pass `roots=False`.
+
+        `node = select(("Directory", "/var/www/html"), "Options", one=last,
+        roots=False)` might return the Options node if the Directory for
+        "/var/www/html" was defined and contained an Options Directive. You
+        could then access the attributes with `node.attrs`. If the query didn't
+        match anything, it would have returned None.
+
+        If you want to slide the query down the branches of the config, pass
+        deep=True to select.  That allows you to do `conf.select("Directory",
+        deep=True, roots=False)` and get back all Directory nodes regardless of
+        nesting depth.
+
+        conf.select() returns everything.
+
+        Available predicates are:
+        & (infix boolean and)
+        | (infix boolean or)
+        ~ (prefix boolean not)
+
+        For ints or strings:
+        eq (==)  e.g. conf.select("Directory, ("StartServers", eq(4)))
+        ge (>=)  e.g. conf.select("Directory, ("StartServers", ge(4)))
+        gt (>)
+        le (<=)
+        lt (<)
+
+        For strings:
+        contains
+        endswith
+        startswith
+        """
+        return self.doc.select(*queries, **kwargs)
+
+    def find(self, *queries, **kwargs):
+        """
+        Finds the first result found anywhere in the configuration. Pass
+        `one=last` for the last result. Returns `None` if no results are found.
+        """
+        kwargs["deep"] = True
+        kwargs["roots"] = False
+        if "one" not in kwargs:
+            kwargs["one"] = first
+        return self.select(*queries, **kwargs)
+
+    def find_all(self, *queries):
+        """
+        Find all results matching the query anywhere in the configuration.
+        Returns an empty `SearchResult` if no results are found.
+        """
+        return self.select(*queries, deep=True, roots=False)
+
+    def _children_of_type(self, t):
+        return [c for c in self.doc.children if isinstance(c, t)]
+
+    @property
+    def sections(self):
+        return SearchResult(children=self._children_of_type(Section))
+
+    @property
+    def directives(self):
+        return SearchResult(children=self._children_of_type(Directive))
+
+    def __getitem__(self, query):
+        """
+        Similar to select, except tuples are constructed without parentheses:
+        `conf["Directory", "/"]` is the same as `conf.select(("Directory", "/"))`
+
+        Notice that queries return `SearchResult` instances, which also have
+        `__getitem__` delegating to `select` except the select is against
+        grandchild nodes in the tree. This allows more complicated queries,
+        like this one that gets all Options entries beneath the Directory
+        entries starting with "/var":
+
+        `conf["Directory", startswith("/var")]["Options"]`
+
+        or equivalently
+
+        `conf.select(("Directory", startswith("/var")), "Options, roots=False)
+
+        Note you can recover the enclosing section with `node.parent` or a
+        node's ultimate root with `node.root`. If a `Node` is a root,
+        `node.root` is just the node itself.
+
+        To get all root level Directory and Alias directives, you could do
+        something like `conf[eq("Directory") | eq("Alias")]`
+
+        To get loaded auth modules:
+        `conf["LoadModule", contains("auth")]`
+        """
+        if isinstance(query, (int, slice)):
+            return self.doc[query]
+        return self.select(query)
+
+    def __contains__(self, item):
+        return item in self.doc
+
+    def __len__(self):
+        return len(self.doc)
+
+    def __iter__(self):
+        return iter(self.doc)
+
+    def __repr__(self):
+        return str(self.doc)
+
+    def __str__(self):
+        return self.__repr__()
+
+
+class ConfigParser(Parser, ConfigComponent):
+    """
+    Base Insights component class for Parsers of configuration files.
+    """
+    def parse_content(self, content):
+        self.content = content
+        self.doc = self.parse_doc(content)
+
+    def parse_doc(self, content):
+        raise NotImplemented()
+
+    def lineat(self, pos):
+        return self.content[pos] if pos is not None else None
+
+
+class ConfigCombiner(ConfigComponent):
+    """
+    Base Insights component class for Combiners of configuration files with
+    include directives for supplementary configuration files. httpd and nginx
+    are examples.
+    """
+    def __init__(self, confs, main_file, include_finder):
+        self.confs = confs
+        self.main = find_main(confs, main_file)
+        server_root = self.conf_path
+
+        # Set the children of all include directives to the contents of the
+        # included configs
+        for conf in confs:
+            for node in conf.doc.select(include_finder, deep=True, roots=False):
+                pattern = node.value
+                if not pattern.startswith("/"):
+                    pattern = os.path.join(server_root, pattern)
+                includes = self.find_matches(confs, pattern)
+                for inc in includes:
+                    node.children.extend(inc.doc.children)
+
+        # flatten all content from nested includes into a main doc
+        self.doc = Root(children=flatten(self.main.doc.children, include_finder))
+
+    def find_matches(self, confs, pattern):
+        results = [c for c in confs if fnmatch(c.file_path, pattern)]
+        return sorted(results, key=operator.attrgetter("file_name"))
 
 
 class SysconfigOptions(Parser):
@@ -241,6 +499,54 @@ class LegacyItemAccess(object):
         return self.data.get(item, default)
 
 
+class CommandParser(Parser):
+    """
+    This class checks output from the command defined in the spec.
+    If `context.content` contains a single line and that line is
+    included in the `bad_lines` list a `ContentException` is raised
+    """
+
+    bad_lines = ["no such file or directory", "command not found"]
+    """
+    This variable contains filters for bad responses from commands defined
+    with command specs.
+    When adding a new lin to the list make sure text is all lower case.
+    """
+
+    def validate_lines(self, results):
+        """
+        If `results` contains a single line and that line is included
+        in the `bad_lines` list, this function returns `False`. If no bad
+        line is found the function returns `True`
+
+        Parameters:
+            results(str): The results string of the output from the command
+                defined by the command spec.
+
+        Returns:
+            (Boolean): True for no bad lines or False for bad line found.
+        """
+
+        if results and len(results) == 1:
+            first = results[0]
+            if any(l in first.lower() for l in self.bad_lines):
+                return False
+        return True
+
+    def __init__(self, context):
+        """
+            This __init__ calls `validate_lines` function to check for bad lines.
+            If `validate_lines` returns False, indicating bad line found, a
+            ContentException is thrown.
+        """
+
+        if not self.validate_lines(context.content):
+            first = context.content[0] if context.content else "<no content>"
+            name = self.__class__.__name__
+            raise ContentException(name + ": " + first)
+        super(CommandParser, self).__init__(context)
+
+
 class XMLParser(LegacyItemAccess, Parser):
     """
     A parser class that reads XML files.  Base your own parser on this.
@@ -365,7 +671,12 @@ class YAMLParser(Parser, LegacyItemAccess):
     A parser class that reads YAML files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        self.data = yaml.safe_load('\n'.join(content))
+        if type(content) is list:
+            self.data = yaml.safe_load('\n'.join(content))
+        else:
+            self.data = yaml.safe_load(content)
+
+        self.doc = from_dict(self.data)
 
 
 class JSONParser(Parser, LegacyItemAccess):
@@ -374,6 +685,7 @@ class JSONParser(Parser, LegacyItemAccess):
     """
     def parse_content(self, content):
         self.data = json.loads(''.join(content))
+        self.doc = from_dict(self.data)
 
 
 class ScanMeta(type):
@@ -892,7 +1204,7 @@ class Syslog(LogFileOutput):
         return msg_info
 
 
-class IniConfigFile(Parser):
+class IniConfigFile(ConfigParser):
     """
     A class specifically for reading configuration files in 'ini' format.
 
@@ -959,10 +1271,14 @@ class IniConfigFile(Parser):
                 super(YourClass, self).parse_content(content,
                                                      allow_no_values=True)
         """
+        super(IniConfigFile, self).parse_content(content)
         config = RawConfigParser(allow_no_value=allow_no_value)
         fp = io.StringIO(u"\n".join(content))
         config.readfp(fp, filename=self.file_name)
         self.data = config
+
+    def parse_doc(self, content):
+        return iniconfig.parse_doc(content)
 
     def sections(self):
         """list: Return a list of section names."""
@@ -1116,10 +1432,11 @@ class FileListing(Parser):
         # '-R' flag we should grab this but it's probably not worth parsing
         # the flags to ls for this.
         self.first_path = None
-        path_re = re.compile(r'ls_-\w+_(?P<path>.*)$')
+        path_re = re.compile(r'ls_-\w+(?P<path>.*)$')
         match = path_re.search(context.path)
         if match:
-            self.first_path = match.group('path').replace('.', '/').replace('_', ' ')
+            fpath = match.group('path')
+            self.first_path = '/' if not fpath else fpath.replace('.', '/').replace('_', ' ')
         super(FileListing, self).__init__(context)
 
     def parse_file_match(self, this_dir, line):

@@ -16,7 +16,6 @@ from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
-from .config import CONFIG as config
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -33,7 +32,8 @@ class DataCollector(object):
     Run commands and collect files
     '''
 
-    def __init__(self, archive_=None, mountpoint=None):
+    def __init__(self, config, archive_=None, mountpoint=None):
+        self.config = config
         self.archive = archive_ if archive_ else archive.InsightsArchive()
         self.mountpoint = '/'
         if mountpoint:
@@ -155,7 +155,7 @@ class DataCollector(object):
                     else:
                         cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
                         for s in cmd_specs:
-                            cmd_spec = InsightsCommand(s, exclude, self.mountpoint, self.target_name)
+                            cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint, self.target_name)
                             self.archive.add_to_archive(cmd_spec)
         else:
             logger.debug('Spec metadata type "%s" not found in spec.', metadata_spec)
@@ -175,9 +175,9 @@ class DataCollector(object):
             except LookupError:
                 logger.debug('Could not parse remove.conf. Ignoring...')
 
-        if config['run_specific_specs'] is not None:
-            logger.debug('Running specific specs %s', config['run_specific_specs'])
-            for specific_spec in config['run_specific_specs'].split(','):
+        if self.config.run_specific_specs is not None:
+            logger.debug('Running specific specs %s', self.config.run_specific_specs)
+            for specific_spec in self.config.run_specific_specs.split(','):
                 logger.debug('Running specific spec %s', specific_spec)
                 self.run_specific_specs(specific_spec, conf, rm_conf, exclude, branch_info)
                 logger.debug('Finished running specific spec %s', specific_spec)
@@ -189,7 +189,7 @@ class DataCollector(object):
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
-                    cmd_spec = InsightsCommand(s, exclude, self.mountpoint)
+                    cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
             if f['file'] in rm_conf.get('files', []):
@@ -219,9 +219,9 @@ class DataCollector(object):
         """
         Do finalization stuff
         """
-        if config["obfuscate"]:
+        if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
-            clean_opts = CleanOptions(self.archive.tmp_dir, rm_conf)
+            clean_opts = CleanOptions(self.config, self.archive.tmp_dir, rm_conf)
             fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
@@ -233,7 +233,7 @@ class CleanOptions(object):
     """
     Options for soscleaner
     """
-    def __init__(self, tmp_dir, rm_conf):
+    def __init__(self, config, tmp_dir, rm_conf):
         self.report_dir = tmp_dir
         self.domains = []
         self.files = []
@@ -253,7 +253,7 @@ class CleanOptions(object):
             except LookupError:
                 pass
 
-        if config["obfuscate_hostname"]:
+        if config.obfuscate_hostname:
             self.hostname_path = "insights_commands/hostname"
         else:
             self.hostname_path = None

@@ -14,13 +14,13 @@ QpidStatU - command ``/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/q
 ----------------------------------------------------------------------------------------------------------------------------------
 
 """
-from .. import Parser, parser
+from .. import parser, CommandParser
 from insights.parsers import parse_fixed_table, keyword_search
 from insights.specs import Specs
 
 
 @parser(Specs.qpid_stat_q)
-class QpidStatQ(Parser):
+class QpidStatQ(CommandParser):
     """
     This parser reads the output of the command ``qpid-stat -q
     --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b
@@ -103,7 +103,7 @@ class QpidStatQ(Parser):
 
 
 @parser(Specs.qpid_stat_u)
-class QpidStatU(Parser):
+class QpidStatU(CommandParser):
 
     """
     This parser reads the output of the command ``qpid-stat -u

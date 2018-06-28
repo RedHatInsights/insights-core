@@ -34,13 +34,13 @@ Examples:
     0
 """
 
-from .. import Parser, parser
+from .. import parser, CommandParser
 from . import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.numeric_user_group_name)
-class NumericUserGroupName(Parser):
+class NumericUserGroupName(CommandParser):
     """
     Reports whether there is a user or group with a name that starts with a digit.
     """
