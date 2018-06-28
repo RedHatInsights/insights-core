@@ -9,6 +9,7 @@ from . import archive
 import logging
 import copy
 import glob
+import six
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
@@ -63,6 +64,8 @@ class DataCollector(object):
         logger.debug("Return Code: %s", the_return_code)
         if the_return_code != 0:
             return []
+        if six.PY3:
+            stdout = stdout.decode('utf-8')
         return stdout.splitlines()
 
     def _parse_file_spec(self, spec):
