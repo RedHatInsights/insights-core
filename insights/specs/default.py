@@ -494,6 +494,7 @@ class DefaultSpecs(Specs):
     rc_local = simple_file("/etc/rc.d/rc.local")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
+    rhv_log_collector_analyzer = simple_command("rhv-log-collector-analyzer --json")
     rhn_charsets = simple_command("/usr/bin/rhn-charsets")
     rhn_conf = first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"])
     rhn_entitlement_cert_xml = first_of([glob_file("/etc/sysconfig/rhn/rhn-entitlement-cert.xml*"),
