@@ -501,13 +501,10 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
         ctx = broker[context]
         rc = None
         if split:
-            fters = get_filters(inner)
-            filters = "\n".join(fters)
+            filters = "\n".join(get_filters(inner))
         if filters:
             command = [shlex.split(cmd)] + [["grep", "-F", filters]]
             raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
-            gcmd = 'grep -F ' + " ".join(fters)
-            raw = [l for l in raw if gcmd not in l]
         else:
             command = [shlex.split(cmd)]
             raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
