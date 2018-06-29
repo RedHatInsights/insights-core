@@ -11,6 +11,12 @@ Apr 22 10:35:01 boy-bona CROND[27921]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)
 Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
+Jul 10 15:08:35 shelly audit[1]: USER_AVC pid=1 uid=0 auid=4112341244 ses=49287573824 subj=system_u:system_r:init_t:s0 msg='avc:  received policyload notice (seqno=2)
+                                 exe="/usr/lib/systemd/systemd" sauid=0 hostname=? addr=? terminal=?'
+Jul 10 15:08:35 shelly audit[1]: USER_AVC pid=1 uid=0 auid=4112341244 ses=49287573824 subj=system_u:system_r:init_t:s0
+                                 msg='avc:  received policyload notice (seqno=2)
+                                 exe="/usr/lib/systemd/systemd" sauid=0 hostname=? addr=? terminal=?'
+Jul 10 15:08:35 shelly systemd[1]: Reloading.
 """.strip()
 
 
@@ -27,3 +33,5 @@ def test_syslog():
     assert msg_info.get('Wrapper')[0].get('message') == "--> Wrapper Started as Daemon"
     assert msg_info.get('Launching')[0].get('raw_message') == "May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM..."
     assert 2 == len(msg_info.get('yum'))
+    import pdb; pdb.set_trace()
+    assert "exe" in msg_info.get('audit')[0].get('raw_message')
