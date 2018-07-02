@@ -31,7 +31,7 @@ the following installed:
 * Python PIP
 
 Further requirements can be found in the
-`README.md <https://github.com/RedHatInsights/insights-core/blob/master/README.md>`_
+`README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
 file associated with the insights-core project.
 
 **********************
