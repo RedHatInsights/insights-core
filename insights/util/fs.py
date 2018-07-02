@@ -74,7 +74,8 @@ def ensure_path(path, mode=0o777):
 
     If the path does not exist, recursively create it and its parent
     directories using the provided mode.  If the path already exists,
-    do nothing.
+    do nothing.  The umask is cleared to enable the mode to be set,
+    and then reset to the original value after the mode is set.
 
     Parameters
     ----------
@@ -94,7 +95,9 @@ def ensure_path(path, mode=0o777):
 
     if path:
         try:
+            umask = os.umask(000)
             os.makedirs(path, mode)
+            os.umask(umask)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise
