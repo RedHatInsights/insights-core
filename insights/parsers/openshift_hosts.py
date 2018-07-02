@@ -62,7 +62,6 @@ class OpenShiftHosts(Parser, LegacyItemAccess):
         dict_all = {}
         sub_section = ""
         for line in get_active_lines(content):
-            line = line.strip()
             if line.startswith("[") and line.endswith("]"):
                 sub_section = line[1:-1].strip()
                 if "OSEv3:children" in sub_section:
