@@ -8,7 +8,7 @@ The purpose of a Parser is to process raw content collected by the Client
 and map it
 into a format that is usable by Combiners and Rules.  Raw content
 is content obtained directly from a system file or command, and
-may collected by Insights Client, or from some other source such
+may be collected by Insights Client, or from some other source such
 as a SOS Report.  The following examples will demonstrate development of
 different types of parsers.
 

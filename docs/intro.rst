@@ -30,7 +30,7 @@ internal systems to process the information collected by the Client and provides
 results to the customer interface component.  The Engine processes the information
 by extracting each unique set of data, parsing the data into facts,
 and analyzing the facts via algorithms.  Parsing and analysis of the information
-is performed in a collection of plugin components.  The parsing and combining of
+is performed in a collection of plugin components.  The parsing and combining
 is performed by the Parser and Combiner plugins, and the analysis is performed by
 Rule plugins (collectively "Plugins"). The results of the analysis
 are presented to the user via the user interface component ("UI").  The figure
