@@ -20,7 +20,8 @@ class MysqladminVars(LegacyItemAccess, Parser):
     """
     The output of command ``/bin/mysqladmin variables`` is in mysql table format,
     contains 'Variable_name' and 'Value' two columns.
-    This parser will parse the table and set each variable as an class attribute.
+    This parser will parse the table and set each variable as an class
+    attribute. The unparsable lines are stored in the ``bad_lines`` property list.
 
     Sample command output::
 
@@ -50,16 +51,24 @@ class MysqladminVars(LegacyItemAccess, Parser):
         Parse output content table of command ``/bin/mysqladmin variables``.
         Set each variable as an class attribute.
         """
+        bad_lines = []
         if len(content) < 5:
             raise ParseException("Empty or wrong content in table.")
 
         data = {}
-        for l in content[3:-1]:
-            lsp = l.split('|')
-            if len(lsp) != 4:
-                raise ParseException("Unparseable line in table: %s." % l)
-            data[lsp[1].strip().lower()] = lsp[2].strip()
+        for _l in content[3:-1]:
+            l = _l.strip()
+            if not (l.startswith('|') and l.endswith('|')):
+                bad_lines.append(_l)
+                continue
+            l = l[1:-1]
+            lsp = l.split('|', 1)
+            if len(lsp) < 2:
+                bad_lines.append(_l)
+                continue
+            data[lsp[0].strip().lower()] = lsp[1].strip()
         self.data = data
+        self.bad_lines = bad_lines
 
     def getint(self, keyword, default=None):
         """
