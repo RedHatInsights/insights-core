@@ -58,7 +58,10 @@ INPUT_FORAMT_WRONG = """
 | Variable_name                                   | Value            |
 +-------------------------------------------------+------------------+
 | aria_block_size                                 | 1                |
-| aria_checkpoint_interval                        | 30   |    23     |
+| version_compile_machine                          x86_64           |
+| version_compile_machine                         | x86_64           |x
+| old_password********                                     ********
+| version_compile_machine                           | x86_64           |
 +-------------------------------------------------+------------------+
 """.strip()
 
@@ -69,6 +72,51 @@ def test_empty_mysqladmin_var():
         MysqladminVars(context_wrap(INPUT_EMPTY))
     assert "Empty or wrong content in table." in str(e_info.value)
 
-    with pytest.raises(ParseException) as e_info:
-        MysqladminVars(context_wrap(INPUT_FORAMT_WRONG))
-    assert "Unparseable line in table" in str(e_info.value)
+
+INPUT_STILL_PARSABLE_1 = """
++-------------------------------------------------+------------------+
+| Variable_name                                   | Value            |
++-------------------------------------------------+------------------+
+| aria_block_size                                 | 1                |
+| aria_checkpoint_interval                        | 30   |    23     |
++-------------------------------------------------+------------------+
+""".strip()
+
+INPUT_STILL_PARSABLE_2 = """
++---------------------------------------------------+-------------------
+| Variable_name                                     | Value            |
++---------------------------------------------------+------------------+
+| aria_block_size                                   | 8192             |
+| aria_checkpoint_interval                          | 30               |
+| ft_boolean_syntax                                 | + -><()~*:""&|   |
+| version_compile_machine                           | x86_64           |
+| version_compile_os                                | Linux            |
++---------------------------------------------------+------------------+
+""".strip()
+
+INPUT_FORAMT_WRONG = """
++-------------------------------------------------+------------------+
+| Variable_name                                   | Value            |
++-------------------------------------------------+------------------+
+| aria_block_size                                 | 1                |
+| version_compile_machine                          x86_64           |
+| version_compile_machine                         | x86_64           |x
+| old_password********                                     ********
+| version_compile_machine                           | x86_64           |
++-------------------------------------------------+------------------+
+""".strip()
+
+
+def test_mysqladmin_still_parsable():
+
+    res = MysqladminVars(context_wrap(INPUT_STILL_PARSABLE_1))
+    d = res.data
+    assert d['aria_checkpoint_interval'] == '30   |    23'
+
+    res = MysqladminVars(context_wrap(INPUT_STILL_PARSABLE_2))
+    d = res.data
+    assert d['ft_boolean_syntax'] == '+ -><()~*:""&|'
+
+    res = MysqladminVars(context_wrap(INPUT_FORAMT_WRONG))
+    assert len(res.bad_lines) == 3
+    assert res.bad_lines[1] == '| version_compile_machine                         | x86_64           |x'
