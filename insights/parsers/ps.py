@@ -7,7 +7,7 @@ This module provides processing for the various outputs of the ``ps`` command.
 from .. import parser, CommandParser
 from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
-from insights.core.filters import add_filter
+from insights.core.filters import add_filter, get_filters
 
 
 class Ps(CommandParser):
@@ -53,8 +53,22 @@ class Ps(CommandParser):
         self.services = []
         super(Ps, self).__init__(*args, **kwargs)
 
+    def filter_grep_lines(self, content):
+
+        filters = [get_filters(s) for s in (Specs.ps_ef, Specs.ps_aux, Specs.ps_auxww)]
+        fgrep_lines = ["grep -F " + " ".join(fters) for fters in filters]
+
+        for c in content:
+            for g in fgrep_lines:
+                if g in c:
+                    content.remove(c)
+        return content
+
     def parse_content(self, content):
         raw_line_key = "_line"
+
+        content = self.filter_grep_lines(content)
+
         if any(line.lstrip().startswith(self.user_name) and line.rstrip().endswith(self.command_name) for line in content):
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
