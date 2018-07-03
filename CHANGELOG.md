@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.26-436](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.26-436) (2018-07-02)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.25-430...insights-core-3.0.26-436)
+
+**Closed issues:**
+
+- insights.utils.fs.ensure\_path is not setting requested mode on dirs [\#1238](https://github.com/RedHatInsights/insights-core/issues/1238)
+
 ## [insights-core-3.0.25-430](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.25-430) (2018-06-28)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.24-426...insights-core-3.0.25-430)
 
