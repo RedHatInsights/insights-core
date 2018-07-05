@@ -33,11 +33,11 @@ class Sap(object):
     Examples:
         >>> type(saps)
         <class 'insights.combiners.sap.Sap'>
-        >>> saps.is_hana()
+        >>> saps.is_hana
         True
-        >>> saps.is_netweaver()
+        >>> saps.is_netweaver
         True
-        >>> saps.is_ascs()
+        >>> saps.is_ascs
         False
     """
     sap_type = {'D': 'netweaver',
@@ -61,14 +61,17 @@ class Sap(object):
         """list: List SAP instances running on the system."""
         return self._sap_apps
 
+    @property
     def is_netweaver(self):
         """bool: SAP Netweaver is running on the system."""
         return 'netweaver' in self._sap_apps
 
+    @property
     def is_hana(self):
         """bool: SAP Hana is running on the system."""
         return 'hana' in self._sap_apps
 
+    @property
     def is_ascs(self):
         """bool: SAP System Central Services is running on the system."""
         return 'ascs' in self._sap_apps

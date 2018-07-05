@@ -63,9 +63,9 @@ def test_lssap_netweaver():
     hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
     sap = Sap(hn, lssap)
     assert sap.running_saps == ['netweaver']
-    assert sap.is_netweaver() is True
-    assert sap.is_hana() is False
-    assert sap.is_ascs() is False
+    assert sap.is_netweaver is True
+    assert sap.is_hana is False
+    assert sap.is_ascs is False
 
 
 def test_lssap_hana():
@@ -73,9 +73,9 @@ def test_lssap_hana():
     hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
     sap = Sap(hn, lssap)
     assert sap.running_saps == ['hana']
-    assert sap.is_netweaver() is False
-    assert sap.is_hana() is True
-    assert sap.is_ascs() is False
+    assert sap.is_netweaver is False
+    assert sap.is_hana is True
+    assert sap.is_ascs is False
 
 
 def test_lssap_ascs():
@@ -83,9 +83,9 @@ def test_lssap_ascs():
     hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
     sap = Sap(hn, lssap)
     assert sap.running_saps == ['ascs']
-    assert sap.is_netweaver() is False
-    assert sap.is_hana() is False
-    assert sap.is_ascs() is True
+    assert sap.is_netweaver is False
+    assert sap.is_hana is False
+    assert sap.is_ascs is True
 
 
 def test_all():
@@ -93,9 +93,9 @@ def test_all():
     hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
     sap = Sap(hn, lssap)
     assert sorted(sap.running_saps) == sorted(['ascs', 'hana', 'netweaver'])
-    assert sap.is_netweaver() is True
-    assert sap.is_hana() is True
-    assert sap.is_ascs() is True
+    assert sap.is_netweaver is True
+    assert sap.is_hana is True
+    assert sap.is_ascs is True
 
 
 def test_doc_examples():
