@@ -2,7 +2,7 @@
 Sap - Combiner
 ==============
 
-This combiner analyze the SAP instances running on the system based on below
+This combiner gets the running SAP instances on the system based on below
 logic::
 
     if (SAPLOCALHOST = 'hostname') && InstanceType = D## ) then
