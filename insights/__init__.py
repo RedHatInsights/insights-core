@@ -210,5 +210,9 @@ def run(component=None, root=None, print_summary=False,
     return broker
 
 
-if __name__ == "__main__":
+def main():
     run(print_summary=True)
+
+
+if __name__ == "__main__":
+    main()
