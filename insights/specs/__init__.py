@@ -69,6 +69,7 @@ class Specs(SpecSet):
     display_java = RegistryPoint()
     dmesg = RegistryPoint()
     dmidecode = RegistryPoint()
+    dmsetup_info = RegistryPoint()
     docker_container_inspect = RegistryPoint(multi_output=True)
     docker_host_machine_id = RegistryPoint()
     docker_image_inspect = RegistryPoint(multi_output=True)
