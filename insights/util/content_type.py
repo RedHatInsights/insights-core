@@ -1,6 +1,7 @@
 import shlex
 import subprocess
 from subprocess import PIPE
+import six
 
 try:
     from insights.contrib import magic
@@ -10,7 +11,7 @@ else:
     # RHEL 6 does not have MAGIC_MIME_TYPE defined, but passing in the value
     # found in RHEL 7 (16, base 10), seems to work.
     mime_flag = magic.MAGIC_MIME_TYPE if hasattr(magic, "MAGIC_MIME_TYPE") else 16
-    _magic = magic.open(mime_flag)
+    _magic = magic.open(mime_flag | magic.CONTINUE)
     _magic.load()
 
     _magic_inner = magic.open(mime_flag | magic.MAGIC_COMPRESS)
@@ -20,7 +21,7 @@ else:
 
 def from_file(name):
     if magic_loaded:
-        return _magic.file(name)
+        return six.b(_magic.file(name)).decode("unicode-escape").splitlines()[0].strip()
     else:
         cmd = "file --mime-type -b %s"
         p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
