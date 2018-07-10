@@ -12,6 +12,9 @@ relative rpms on every node according to the configuration.
 from .. import parser, Parser, get_active_lines, LegacyItemAccess
 from insights.parsers import ParseException
 from insights.specs import Specs
+from insights.core.filters import add_filter
+
+add_filter(Specs.openshift_hosts, "[")
 
 
 @parser(Specs.openshift_hosts)

@@ -9,6 +9,8 @@ nfs
 masters
 etcd
 
+[BlankTest]
+
 [OSEv3:vars]
 openshift_master_cluster_public_hostname=None
 ansible_ssh_user=root
@@ -41,3 +43,4 @@ def test_openshifthosts():
     assert host_info.has_node("node1.ose35.com")
     assert not host_info.has_var("openshift_use_crio")
     assert host_info.has_node_type("etcd")
+    assert host_info["BlankTest"] == {}
