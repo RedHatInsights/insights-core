@@ -197,6 +197,7 @@ class InsightsArchiveSpecs(Specs):
     vgdisplay = simple_file("insights_commands/vgdisplay")
     vgs_noheadings = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0")
     vgs_noheadings_all = simple_file("insights_commands/vgs_--nameprefixes_--noheadings_--separator_-a_-o_vg_all_--config_global_locking_type_0_devices_filter_a")
+    virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
     woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
     yum_repolist = simple_file("insights_commands/yum_-C_repolist")
