@@ -10,6 +10,8 @@ pipeline {
             }
           }
           steps {
+            echo "Installing Insights..."
+            sh 'pip install --user -e .[develop]'
             echo "Testing with Pytest..."
             sh 'pytest'
           }
@@ -22,7 +24,7 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh 'pip install --user -e .'
+            sh 'pip install --user -e .[develop]'
             echo "Testing with Pytest..."
             sh 'pytest'
             echo "Testing with flake8..."   
@@ -37,7 +39,7 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh '/bin/python36 -m pip install --user -e .'
+            sh '/bin/python36 -m pip install --user -e .[develop]'
             echo "Testing with Pytest..."
             sh '/bin/python36 -m pytest'
             echo "Testing with flake8..."   
