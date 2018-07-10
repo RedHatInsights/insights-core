@@ -8,7 +8,7 @@ The purpose of a Parser is to process raw content collected by the Client
 and map it
 into a format that is usable by Combiners and Rules.  Raw content
 is content obtained directly from a system file or command, and
-may collected by Insights Client, or from some other source such
+may be collected by Insights Client, or from some other source such
 as a SOS Report.  The following examples will demonstrate development of
 different types of parsers.
 
@@ -20,7 +20,10 @@ directory ``insights/docs/examples/parsers``.
 Preparing Your Development Environment
 ======================================
 
-First you need to create your own fork of the insights-core project.  Do this by
+First you need to ensure you have the ``git`` and ``gcc`` tools available. 
+On Red Hat Enterprise Linux you can do this with the command, as root: ``yum install git gcc``.
+
+Now create your own fork of the insights-core project.  Do this by
 going to the `insights-core Repository`_ on GitHub and clicking on the
 **Fork** button.
 
@@ -61,10 +64,6 @@ Setup your environment to use the new virtualenv you just created, and upgrade
 Now install all of the required packages for ``insights-core`` development::
     
     (insights-core)[userone@hostone insights-core]$ pip install -e .[develop]
-
-If during this step you see errors indicating the ``gcc`` is not installed you
-will need to install it and run ``pip install -e .[develop]`` again.  On Red Hat
-Enterprise Linux you can do this with the command, as root: ``yum install gcc``.
 
 Once these steps have been completed you will have a complete development
 environment for parsers and combiners.  You can confirm that everything is setup
