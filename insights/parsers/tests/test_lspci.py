@@ -194,14 +194,12 @@ def test_lspci():
 def test_lspci_driver():
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS))
     assert len(lspci_obj.pci_dev_details) == 44
-    pci_devs = [pci_dev for pci_dev in lspci_obj.pci_dev_details]
-    dev_info = lspci_obj.get_pci_dev(pci_devs[0])
+    dev_info = lspci_obj.get_pci_dev('00:01.0')
     assert len(dev_info) == 3
     assert dev_info['Kernel driver in use'] == 'pcieport'
 
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS_2))
     assert len(lspci_obj.pci_dev_details) == 4
-    pci_devs = [pci_dev for pci_dev in lspci_obj.pci_dev_details]
-    dev_info = lspci_obj.get_pci_dev(pci_devs[0])
+    dev_info = lspci_obj.get_pci_dev('04:00.0')
     assert len(dev_info) == 1
     assert 'Kernel driver in use' not in dev_info
