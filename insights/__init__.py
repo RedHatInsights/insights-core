@@ -163,7 +163,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-p", "--plugins", default=[], nargs="*",
                        help="package(s) or module(s) containing plugins to run.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
-        p.add_argument("-q", "--quiet", help="Error output only.", action="store_true")
+        p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
@@ -172,7 +172,7 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("--ac", help="Archive Context")
         args = p.parse_args()
 
-        logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR if args.quiet else logging.INFO)
+        logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
         run_context = _load_context(args.rc) or run_context
         archive_context = _load_context(args.ac) or archive_context
         use_pandas = args.pandas or use_pandas
