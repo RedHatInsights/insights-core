@@ -245,6 +245,8 @@ class Specs(SpecSet):
     networkmanager_dispatcher_d = RegistryPoint(multi_output=True)
     neutron_conf = RegistryPoint()
     neutron_l3_agent_log = RegistryPoint()
+    neutron_metadata_agent_ini = RegistryPoint()
+    neutron_metadata_agent_log = RegistryPoint()
     neutron_ovs_agent_log = RegistryPoint()
     neutron_plugin_ini = RegistryPoint()
     neutron_server_log = RegistryPoint()
