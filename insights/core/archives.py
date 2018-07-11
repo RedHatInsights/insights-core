@@ -51,16 +51,17 @@ class TarExtractor(object):
         "application/x-tar": ""
     }
 
-    def _archive_type(self, _input, is_buffer=False):
+    def _archive_type(self, _input):
         _type = content_type.from_file(_input)
         if _type not in self.TAR_FLAGS:
             raise InvalidContentType(_type)
+        return _type
 
     def from_path(self, path, extract_dir=None, content_type=None):
         if os.path.isdir(path):
             self.tmp_dir = path
         else:
-            self.content_type = content_type or self._archive_type(path, False)
+            self.content_type = content_type or self._archive_type(path)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
             command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)

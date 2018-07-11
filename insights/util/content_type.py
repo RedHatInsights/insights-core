@@ -14,8 +14,6 @@ else:
     _magic = magic.open(mime_flag | magic.CONTINUE)
     _magic.load()
 
-    _magic_inner = magic.open(mime_flag | magic.MAGIC_COMPRESS)
-    _magic_inner.load()
     magic_loaded = True
 
 
@@ -34,26 +32,6 @@ def from_buffer(b):
         return _magic.buffer(b)
     else:
         cmd = "file --mime-type -b -"
-        p = subprocess.Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE)
-        stdout, stderr = p.communicate(b)
-        return stdout.strip().decode("utf-8")
-
-
-def from_file_inner(name):
-    if magic_loaded:
-        return _magic_inner.file(name)
-    else:
-        cmd = "file --mime-type -bz %s"
-        p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
-        stdout, _ = p.communicate()
-        return stdout.strip().decode("utf-8")
-
-
-def from_buffer_inner(b):
-    if magic_loaded:
-        return _magic_inner.buffer(b)
-    else:
-        cmd = "file --mime-type -bz -"
         p = subprocess.Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE)
         stdout, stderr = p.communicate(b)
         return stdout.strip().decode("utf-8")
