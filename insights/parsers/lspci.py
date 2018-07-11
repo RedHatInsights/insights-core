@@ -12,12 +12,12 @@ LsPciDriver - command ``/sbin/lspci -k``
 
 """
 
-from .. import LogFileOutput, Parser, parser, CommandParser, get_active_lines
+from .. import LogFileOutput, parser, CommandParser, get_active_lines
 from insights.specs import Specs
 
 
 @parser(Specs.lspci_kernel)
-class LsPciDriver(Parser):
+class LsPciDriver(CommandParser):
     """
     This module provides methods to access driver information of PCI devices from
     the ``/sbin/lspci -k`` command.
