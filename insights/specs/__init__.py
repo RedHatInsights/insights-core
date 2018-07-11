@@ -287,6 +287,7 @@ class Specs(SpecSet):
     openvswitch_other_config = RegistryPoint()
     openvswitch_server_log = RegistryPoint()
     openshift_certificates = RegistryPoint(multi_output=True)
+    openshift_hosts = RegistryPoint()
     openvswitch_daemon_log = RegistryPoint()
     openvswitch_server_log = RegistryPoint()
     osa_dispatcher_log = RegistryPoint()
