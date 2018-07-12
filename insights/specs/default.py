@@ -331,6 +331,7 @@ class DefaultSpecs(Specs):
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
+    ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
     ls_var_run = simple_command("/bin/ls -lnL /var/run")

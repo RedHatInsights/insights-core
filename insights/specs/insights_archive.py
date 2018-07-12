@@ -93,6 +93,7 @@ class InsightsArchiveSpecs(Specs):
     ls_docker_volumes = simple_file("insights_commands/ls_-lanR_.var.lib.docker.volumes")
     ls_etc = simple_file("insights_commands/ls_-lanR_.etc")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
+    ls_var_lib_mongodb = simple_file("insights_commands/ls_-la_.var.lib.mongodb")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")
