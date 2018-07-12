@@ -11,7 +11,7 @@ METADATA_AGENT_INI = """
 debug = False
 
 # The Neutron user information for accessing the Neutron API.
-auth_url = http://10.65.223.80:35357/v2.0
+auth_url = http://localhost:35357/v2.0
 # Turn off verification of the certificate for ssl
 # auth_insecure = False
 auth_insecure = False
@@ -26,7 +26,7 @@ admin_password = *********
 
 # IP address used by Nova metadata server
 # nova_metadata_ip = 127.0.0.1
-nova_metadata_ip = 10.65.223.12
+nova_metadata_ip = 127.0.0.1
 
 # TCP Port used by Nova metadata server
 # nova_metadata_port = 8775
@@ -85,17 +85,17 @@ cache_url = memory://?default_ttl=5
 [AGENT]
 # Log agent heartbeats from this Metadata agent
 log_agent_heartbeats = False
-"""
+""".strip()
 
 
 def test_neutron_metadata_agent_ini():
     nmda_ini = NeutronMetadataAgentIni(context_wrap(METADATA_AGENT_INI))
     assert nmda_ini.has_option('AGENT', 'log_agent_heartbeats')
-    assert nmda_ini.get("DEFAULT", "auth_url") == 'http://10.65.223.80:35357/v2.0'
+    assert nmda_ini.get("DEFAULT", "auth_url") == 'http://localhost:35357/v2.0'
     assert nmda_ini.getint("DEFAULT", "metadata_backlog") == 4096
 
 
 def test_doc():
-    env = {'metadata_agent_ini': NeutronMetadataAgentIni(context_wrap(METADATA_AGENT_INI, path='/var/log/neutron/metadata-agent.log'))}
+    env = {'metadata_agent_ini': NeutronMetadataAgentIni(context_wrap(METADATA_AGENT_INI, path='/etc/neutron/metadata_agent.ini'))}
     failed, total = doctest.testmod(neutron_metadata_agent_conf, globs=env)
     assert failed == 0

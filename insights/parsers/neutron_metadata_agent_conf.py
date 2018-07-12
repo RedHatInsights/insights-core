@@ -95,7 +95,7 @@ class NeutronMetadataAgentIni(IniConfigFile):
 
         >>> metadata_agent_ini.has_option('AGENT', 'log_agent_heartbeats')
         True
-        >>> metadata_agent_ini.get("DEFAULT", "auth_url") == 'http://10.65.223.80:35357/v2.0'
+        >>> metadata_agent_ini.get("DEFAULT", "auth_url") == 'http://localhost:35357/v2.0'
         True
         >>> metadata_agent_ini.getint("DEFAULT", "metadata_backlog")
         4096
