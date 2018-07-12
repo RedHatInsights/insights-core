@@ -214,4 +214,4 @@ def test_lspci_driver():
 
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS_3))
     assert len(lspci_obj.data) == 0
-    assert lspci_obj.pci_dev_list is None
+    assert len(lspci_obj.pci_dev_list) == 0
