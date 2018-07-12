@@ -44,14 +44,14 @@ class LsPciDriver(CommandParser):
     Example:
 
         >>> lspcidriv = shared[LsPciDriver]
-        >>> pci_devs = lspcidriv.pci_dev_details.keys()
+        >>> lspcidriv.get_pci_devs()
         ['00:00.0', '00:01.0', '00:02.0', '06:00.0', '06:00.1']
-        >>> lspcidriv.get_pci_dev(pci_devs[0])
+        >>> lspcidriv.pci_dev_details('00:00.0')
         {'Subsystem': 'Cisco Systems Inc Device 0101', 'Dev_Details': 'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'}
     """
 
     def __init__(self, *args, **kwargs):
-        self.pci_dev_details = {}
+        self.data = {}
         """dict: Dictionary service detail like active, running, exited, dead"""
         super(LsPciDriver, self).__init__(*args, **kwargs)
 
@@ -65,16 +65,16 @@ class LsPciDriver(CommandParser):
         bus_device_function = ""
         for line in get_active_lines(content):
             parts = line.split(None)
-            if parts[0] and parts[0] not in ['Subsystem:', 'Kernel']:
+            if parts[0] and parts[0] not in ['Subsystem:', 'Kernel'] \
+                    and len(parts[0].split(':')) == 2 and len(parts[0].split('.')) == 2:
                 bus_device_function = parts[0]
                 device_details = ' '.join(map(str, parts[1:]))
-                self.pci_dev_details[bus_device_function] = {'Dev_Details': device_details.lstrip()}
-            else:
+                self.data[bus_device_function] = {'Dev_Details': device_details.lstrip()}
+            elif bus_device_function:
                 parts = line.split(':')
-                if bus_device_function:
-                    self.pci_dev_details[bus_device_function][parts[0]] = parts[1].lstrip()
+                self.data[bus_device_function][parts[0]] = parts[1].lstrip()
 
-    def get_pci_dev(self, dev_name):
+    def pci_dev_details(self, dev_name):
         """
         It will return the PCI device and it's details.
 
@@ -85,7 +85,17 @@ class LsPciDriver(CommandParser):
             (dict): Returns device details along with 'Subsystem', 'Kernel Driver in Use', 'Kernel Modules'.
             Returns `None` if device doesn't exists
         """
-        return self.pci_dev_details.get(dev_name, None)
+        return self.data.get(dev_name, None)
+
+    @property
+    def get_pci_devs(self):
+        """
+        It will return list of PCI devices.
+
+        Returns:
+            (list): Returns device list on successes. Returns `None` if device doesn't exists
+        """
+        return self.data.keys() if self.data.keys() else None
 
 
 @parser(Specs.lspci)

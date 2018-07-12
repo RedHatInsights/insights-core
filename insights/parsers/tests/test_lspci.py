@@ -175,6 +175,12 @@ LSPCI_DRIVER_DETAILS_2 = """
 04:00.1 Fibre Channel: QLogic Corp. ISP2432-based 4Gb Fibre Channel to PCI Express HBA (rev 03)
 06:00.1 Ethernet controller: Intel Corporation 82598EB 10-Gigabit AF Dual Port Network Connection (rev 01)
 09:00.0 VGA compatible controller: Matrox Electronics Systems Ltd. MGA G200e [Pilot] ServerEngines (SEP1) (rev 02)
+VGA compatible controller: Matrox Electronics Systems Ltd:MGA G200e [Pilot] ServerEngines (SEP1) (rev 02)
+""".strip()
+
+LSPCI_DRIVER_DETAILS_3 = """
+Ethernet controller: Intel Corporation 82598EB 10-Gigabit AF Dual Port Network Connection (rev 01)
+VGA compatible controller: Matrox Electronics Systems Ltd:MGA G200e [Pilot] ServerEngines (SEP1) (rev 02)
 """.strip()
 
 
@@ -193,13 +199,19 @@ def test_lspci():
 
 def test_lspci_driver():
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS))
-    assert len(lspci_obj.pci_dev_details) == 44
-    dev_info = lspci_obj.get_pci_dev('00:01.0')
+    assert len(lspci_obj.data) == 44
+    dev_info = lspci_obj.pci_dev_details('00:01.0')
     assert len(dev_info) == 3
     assert dev_info['Kernel driver in use'] == 'pcieport'
+    assert len(lspci_obj.get_pci_devs) == 44
 
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS_2))
-    assert len(lspci_obj.pci_dev_details) == 4
-    dev_info = lspci_obj.get_pci_dev('04:00.0')
+    assert len(lspci_obj.data) == 4
+    dev_info = lspci_obj.pci_dev_details('04:00.0')
     assert len(dev_info) == 1
     assert 'Kernel driver in use' not in dev_info
+    assert len(lspci_obj.get_pci_devs) == 4
+
+    lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS_3))
+    assert len(lspci_obj.data) == 0
+    assert lspci_obj.get_pci_devs is None
