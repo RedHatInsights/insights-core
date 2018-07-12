@@ -62,16 +62,17 @@ class LsPciDriver(CommandParser):
         Args:
             content (context.content): Parser context content
         """
+        bus_device_function = ""
         for line in get_active_lines(content):
             parts = line.split(None)
-            if parts[0] not in ['Subsystem:', 'Kernel']:
+            if parts[0] and parts[0] not in ['Subsystem:', 'Kernel']:
                 bus_device_function = parts[0]
                 device_details = ' '.join(map(str, parts[1:]))
-                self.pci_dev_details[bus_device_function] = {'Dev_Details': ''}
-                self.pci_dev_details[bus_device_function]['Dev_Details'] = device_details.lstrip()
+                self.pci_dev_details[bus_device_function] = {'Dev_Details': device_details.lstrip()}
             else:
                 parts = line.split(':')
-                self.pci_dev_details[bus_device_function][parts[0]] = parts[1].lstrip()
+                if bus_device_function:
+                    self.pci_dev_details[bus_device_function][parts[0]] = parts[1].lstrip()
 
     def get_pci_dev(self, dev_name):
         """
