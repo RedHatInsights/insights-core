@@ -95,7 +95,7 @@ class LsPciDriver(CommandParser):
         Returns:
             (list): Returns device list on successes. Returns `None` if device doesn't exists
         """
-        return self.data.keys() if self.data.keys() else []
+        return self.data.keys()
 
 
 @parser(Specs.lspci)
