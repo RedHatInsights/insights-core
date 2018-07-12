@@ -19,6 +19,7 @@ Sample directory list::
 
 Examples:
 
+    >>> add_filter(Specs.ls_usr_sbin, "accessdb")
     >>> "accessdb" in ls_usr_sbin
     False
     >>> "/usr/sbin" in ls_usr_sbin
@@ -29,10 +30,14 @@ Examples:
 """
 
 
+from insights.core.filters import add_filter
 from insights.specs import Specs
 
 from .. import CommandParser, parser
 from .. import FileListing
+
+
+add_filter(Specs.ls_usr_sbin, "total")
 
 
 @parser(Specs.ls_usr_sbin)

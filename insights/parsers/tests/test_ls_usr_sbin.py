@@ -1,7 +1,9 @@
 import doctest
 
+from insights.core.filters import add_filter
 from insights.parsers import ls_usr_sbin
 from insights.parsers.ls_usr_sbin import LsUsrSbin
+from insights.specs import Specs
 from insights.tests import context_wrap
 
 LS_USR_SBIN = """
@@ -34,6 +36,8 @@ def test_ls_usr_sbin():
 
 def test_ls_usr_sbin_doc_examples():
     env = {
+        'Specs': Specs,
+        'add_filter': add_filter,
         'LsUsrSbin': LsUsrSbin,
         'ls_usr_sbin': LsUsrSbin(context_wrap(LS_USR_SBIN, path='insights_commands/ls_-ln_.usr.sbin')),
     }
