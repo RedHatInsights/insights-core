@@ -29,15 +29,10 @@ Examples:
 """
 
 
-from insights.core.filters import add_filter
 from insights.specs import Specs
 
 from .. import CommandParser, parser
 from .. import FileListing
-
-
-add_filter(Specs.ls_usr_sbin, "total")
-add_filter(Specs.ls_usr_sbin, "postdrop")
 
 
 @parser(Specs.ls_usr_sbin)
