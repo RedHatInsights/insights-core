@@ -337,7 +337,7 @@ class HttpConfDocParser(DocParser):
             raise Exception("Expected end tag for %s" % name)
 
         end = next(lg).strip("</> ")
-        if not name == end:
+        if name.lower() != end.lower():
             raise Exception("Tag mismatch: %s != %s" % (name, end))
         return Section(name=name, attrs=attrs, children=body, ctx=self.ctx)
 
