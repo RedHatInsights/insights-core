@@ -44,7 +44,7 @@ class LsPciDriver(CommandParser):
     Example:
 
         >>> lspcidriv = shared[LsPciDriver]
-        >>> lspcidriv.get_pci_devs()
+        >>> lspcidriv.pci_dev_list
         ['00:00.0', '00:01.0', '00:02.0', '06:00.0', '06:00.1']
         >>> lspcidriv.pci_dev_details('00:00.0')
         {'Subsystem': 'Cisco Systems Inc Device 0101', 'Dev_Details': 'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'}
@@ -88,7 +88,7 @@ class LsPciDriver(CommandParser):
         return self.data.get(dev_name, None)
 
     @property
-    def get_pci_devs(self):
+    def pci_dev_list(self):
         """
         It will return list of PCI devices.
 

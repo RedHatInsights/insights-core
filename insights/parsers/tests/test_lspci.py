@@ -203,15 +203,15 @@ def test_lspci_driver():
     dev_info = lspci_obj.pci_dev_details('00:01.0')
     assert len(dev_info) == 3
     assert dev_info['Kernel driver in use'] == 'pcieport'
-    assert len(lspci_obj.get_pci_devs) == 44
+    assert len(lspci_obj.pci_dev_list) == 44
 
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS_2))
     assert len(lspci_obj.data) == 4
     dev_info = lspci_obj.pci_dev_details('04:00.0')
     assert len(dev_info) == 1
     assert 'Kernel driver in use' not in dev_info
-    assert len(lspci_obj.get_pci_devs) == 4
+    assert len(lspci_obj.pci_dev_list) == 4
 
     lspci_obj = LsPciDriver(context_wrap(LSPCI_DRIVER_DETAILS_3))
     assert len(lspci_obj.data) == 0
-    assert lspci_obj.get_pci_devs is None
+    assert lspci_obj.pci_dev_list is None
