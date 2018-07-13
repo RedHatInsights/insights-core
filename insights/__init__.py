@@ -158,15 +158,15 @@ def run(component=None, root=None, print_summary=False,
         import argparse
         import logging
         p = argparse.ArgumentParser()
-        p.add_argument("archive", nargs="?", help="Archive or directory to analyze")
-        p.add_argument("-p", "--plugins", default="", help="package(s) or module(s) containing plugins to run.")
+        p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
+        p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
-        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules")
+        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules.")
         args = p.parse_args()
 
         logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
