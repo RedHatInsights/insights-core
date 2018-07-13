@@ -322,6 +322,7 @@ class DefaultSpecs(Specs):
                                  ])
     lsmod = simple_command("/sbin/lsmod")
     lspci = simple_command("/sbin/lspci")
+    lspci_kernel = simple_command("/sbin/lspci -k")
     lsof = simple_command("/usr/sbin/lsof")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
