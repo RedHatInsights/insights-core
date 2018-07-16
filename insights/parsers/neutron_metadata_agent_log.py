@@ -19,7 +19,7 @@ class NeutronMetadataAgentLog(LogFileOutput):
       Sample log lines::
 
           2018-06-08 17:29:55.894 11770 WARNING neutron.agent.metadata.agent [-] Server does not support metadata RPC, fallback to using neutron client
-          2018-06-08 17:29:55.907 11770 ERROR neutron.agent.metadata.agent [-] Unexpected error.
+          2018-06-08 17:29:55.907 11770 ERROR neutron.agent.metadata.agent [-] Unexpected error
           2018-06-08 17:29:56.126 11770 TRACE neutron.agent.metadata.agent Traceback (most recent call last):
           2018-06-08 17:29:56.126 11770 TRACE neutron.agent.metadata.agent   File "/usr/lib/python2.7/site-packages/neutron/agent/metadata/agent.py", line 109, in __call__
           2018-06-08 17:29:56.126 11770 TRACE neutron.agent.metadata.agent     self._authenticate_keystone()
