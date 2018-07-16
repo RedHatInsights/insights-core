@@ -31,7 +31,7 @@ class ZipExtractor(object):
         self.content_type = "application/zip"
         self.timeout = timeout
 
-    def from_path(self, path, extract_dir=None):
+    def from_path(self, path, extract_dir=None, content_type=None):
         self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
         command = "unzip -q -d %s %s" % (self.tmp_dir, path)
         subproc.call(command, timeout=self.timeout)
@@ -51,22 +51,17 @@ class TarExtractor(object):
         "application/x-tar": ""
     }
 
-    def _assert_type(self, _input, is_buffer=False):
-        self.content_type = content_type.from_file(_input)
+    def _archive_type(self, _input):
+        _type = content_type.from_file(_input)
+        if _type not in self.TAR_FLAGS:
+            raise InvalidContentType(_type)
+        return _type
 
-        if self.content_type not in self.TAR_FLAGS:
-            raise InvalidContentType(self.content_type)
-
-        inner_type = content_type.from_file_inner(_input)
-
-        if inner_type != 'application/x-tar':
-            raise InvalidArchive('No compressed tar archive')
-
-    def from_path(self, path, extract_dir=None):
+    def from_path(self, path, extract_dir=None, content_type=None):
         if os.path.isdir(path):
             self.tmp_dir = path
         else:
-            self._assert_type(path, False)
+            self.content_type = content_type or self._archive_type(path)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
             command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
@@ -92,8 +87,17 @@ class Extraction(object):
 
 
 @contextmanager
-def extract(path, timeout=None, extract_dir=None):
-    content_type = from_file(path)
+def extract(path, timeout=None, extract_dir=None, content_type=None):
+    """
+    Extract path into a temporary directory in `extract_dir`.
+
+    Yields an object containing the temporary path and the content type of the
+    original archive.
+
+    If the extraction takes longer than `timeout` seconds, the temporary path
+    is removed, and an exception is raised.
+    """
+    content_type = content_type or from_file(path)
     if content_type == "application/zip":
         extractor = ZipExtractor(timeout=timeout)
     else:
@@ -101,7 +105,8 @@ def extract(path, timeout=None, extract_dir=None):
 
     tmp_dir = None
     try:
-        tmp_dir = extractor.from_path(path, extract_dir=extract_dir).tmp_dir
+        ctx = extractor.from_path(path, extract_dir=extract_dir, content_type=content_type)
+        tmp_dir = ctx.tmp_dir
         content_type = extractor.content_type
         yield Extraction(tmp_dir, content_type)
     finally:
