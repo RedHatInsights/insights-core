@@ -3,6 +3,19 @@ from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.tests import context_wrap
 
 
+HTTPD_CONF_MIXED = '''
+JustFotTest_NoSec "/var/www/cgi"
+# prefork MPM
+<IfModule prefork.c>
+ServerLimit      256
+ThreadsPerChild  16
+JustForTest      "AB"
+MaxClients       256
+</IfMoDuLe>
+
+IncludeOptional conf.d/*.conf
+'''.strip()
+
 HTTPD_CONF_1 = '''
 JustFotTest_NoSec "/var/www/cgi"
 # prefork MPM
@@ -243,8 +256,12 @@ HTTPD_CONF_NEST_4 = """
 """.strip()
 
 
-def test_nopath():
+def test_mixed_case_tags():
+    httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
+    httpd.find("ServerLimit").value == 256
 
+
+def test_nopath():
     # no path
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2))
     try:
