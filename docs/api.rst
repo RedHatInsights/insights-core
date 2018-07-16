@@ -38,7 +38,7 @@ Filters
     the archive.
 Dynamic Uploader Configuration
     The client will download a configuration file from Red Hat (by
-    default) ever time it's executed that will list out every file to
+    default) every time it's executed that will list out every file to
     collect and command to run, including filters to apply to each file,
     specified by rule plugins.  The configuration is signed, which
     should be verified by the client before using it to collect data.
