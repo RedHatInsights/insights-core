@@ -1,8 +1,5 @@
-import gzip
 import os
-import pytest
 import shlex
-import shutil
 import subprocess
 import tempfile
 import zipfile
@@ -10,22 +7,6 @@ from contextlib import closing
 
 from insights.core import archives
 from insights.core.archives import extract
-
-
-def test__assert_type_gzip_no_tar():
-    tmp_dir = tempfile.mkdtemp()
-
-    try:
-        archive_path = os.path.join(tmp_dir, "file.log.gz")
-        with closing(gzip.open(archive_path, 'wb')) as f:
-            f.write(b"testing contents")
-
-        tar_ex = archives.TarExtractor()
-        with pytest.raises(archives.InvalidArchive) as cm:
-            tar_ex._assert_type(archive_path, False)
-            assert cm.msg == "No compressed tar archive"
-    finally:
-        shutil.rmtree(tmp_dir)
 
 
 def test_with_zip():

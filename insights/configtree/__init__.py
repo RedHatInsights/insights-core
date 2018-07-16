@@ -23,6 +23,8 @@ Generating documents of various formats from a master tree is straightforward.
 """
 import operator
 import re
+import six
+from functools import partial
 from itertools import chain
 
 
@@ -563,6 +565,16 @@ class DocParser(object):
         return Root(children=children, ctx=self.ctx)
 
 
+if six.PY3:
+    import unicodedata
+
+    def caseless(text):
+        return unicodedata.normalize("NFKD", text.casefold())
+else:
+    def caseless(text):
+        return text.lower()
+
+
 # DSL for querying trees of Nodes. Start with `select`.
 def __or(funcs, args):
     """ Support list sugar for "or" of two predicates. Used inside `select`. """
@@ -637,15 +649,16 @@ class UnaryBool(Bool):
 def BinaryBool(pred):
     """ Lifts predicates that take an argument into the DSL. """
     class Predicate(Bool):
-        def __init__(self, value):
-            self.value = value
+        def __init__(self, value, ignore_case=False):
+            self.value = caseless(value) if ignore_case else value
+            self.ignore_case = ignore_case
 
         def __call__(self, data):
             if not isinstance(data, list):
                 data = [data]
             for d in data:
                 try:
-                    if pred(d, self.value):
+                    if pred(caseless(d) if self.ignore_case else d, self.value):
                         return True
                 except:
                     pass
@@ -654,14 +667,28 @@ def BinaryBool(pred):
 
 
 startswith = BinaryBool(str.startswith)
+istartswith = partial(startswith, ignore_case=True)
+
 endswith = BinaryBool(str.endswith)
+iendswith = partial(endswith, ignore_case=True)
+
 contains = BinaryBool(operator.contains)
+icontains = partial(contains, ignore_case=True)
 
 le = BinaryBool(operator.le)
+ile = partial(le, ignore_case=True)
+
 lt = BinaryBool(operator.lt)
+ilt = partial(lt, ignore_case=True)
+
 ge = BinaryBool(operator.ge)
+ige = partial(ge, ignore_case=True)
+
 gt = BinaryBool(operator.gt)
+igt = partial(gt, ignore_case=True)
+
 eq = BinaryBool(operator.eq)
+ieq = partial(eq, ignore_case=True)
 
 
 def __make_name_pred(name):

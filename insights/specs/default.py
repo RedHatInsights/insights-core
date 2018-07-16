@@ -111,6 +111,9 @@ class DefaultSpecs(Specs):
 
     corosync = simple_file("/etc/sysconfig/corosync")
 
+    cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
+    cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
+    cpu_vulns = glob_file("sys/devices/system/cpu/vulnerabilities/*")
     cpu_vulns_meltdown = simple_file("sys/devices/system/cpu/vulnerabilities/meltdown")
     cpu_vulns_spectre_v1 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v1")
     cpu_vulns_spectre_v2 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v2")
@@ -322,6 +325,7 @@ class DefaultSpecs(Specs):
                                  ])
     lsmod = simple_command("/sbin/lsmod")
     lspci = simple_command("/sbin/lspci")
+    lspci_kernel = simple_command("/sbin/lspci -k")
     lsof = simple_command("/usr/sbin/lsof")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
@@ -380,6 +384,7 @@ class DefaultSpecs(Specs):
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = simple_file("/etc/neutron/neutron.conf")
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
+    neutron_metadata_agent_ini = first_file(["/var/lib/config-data/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
     neutron_plugin_ini = simple_file("/etc/neutron/plugin.ini")
     neutron_server_log = simple_file("/var/log/neutron/server.log")

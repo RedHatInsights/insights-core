@@ -51,8 +51,31 @@ def add_status(name, nvr, commit):
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
 
 
-def _run(graph=None, root=None, run_context=HostContext,
-         archive_context=None, show_dropped=False, use_pandas=False):
+def process_dir(root, graph, context, show_dropped=False, use_pandas=False):
+    broker = dr.Broker()
+    ctx = create_context(root, context)
+
+    if isinstance(ctx, ClusterArchiveContext):
+        archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
+        return process_cluster(archives, use_pandas=use_pandas)
+
+    broker[ctx.__class__] = ctx
+    broker = dr.run(graph, broker=broker)
+    if show_dropped:
+        ds = broker.get_by_type(datasource)
+        vals = []
+        for v in ds.values():
+            if isinstance(v, list):
+                vals.extend(d.path for d in v)
+            else:
+                vals.append(v.path)
+        dropped = set(ctx.all_files) - set(vals)
+        pprint("Dropped Files:")
+        pprint(dropped, indent=4)
+    return broker
+
+
+def _run(graph=None, root=None, context=None, show_dropped=False, use_pandas=False):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -70,42 +93,18 @@ def _run(graph=None, root=None, run_context=HostContext,
     Returns:
         broker: object containing the result of the evaluation.
     """
-    broker = dr.Broker()
 
     if not root:
-        broker[run_context] = run_context()
+        context = context or HostContext
+        broker = dr.Broker()
+        broker[context] = context()
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        ctx = create_context(root, archive_context)
-
-        if isinstance(ctx, ClusterArchiveContext):
-            archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
-            return process_cluster(archives, use_pandas=use_pandas)
-
-        broker[ctx.__class__] = ctx
-        return dr.run(graph, broker=broker)
-
-    with extract(root) as ex:
-        ctx = create_context(ex.tmp_dir, archive_context)
-        archive_context = ctx.__class__
-        broker = dr.Broker()
-        broker[archive_context] = ctx
-        result = dr.run(graph, broker=broker)
-        if not show_dropped:
-            return result
-
-        ds = broker.get_by_type(datasource)
-        vals = []
-        for v in ds.values():
-            if isinstance(v, list):
-                vals.extend(d.path for d in v)
-            else:
-                vals.append(v.path)
-        dropped = set(ctx.all_files) - set(vals)
-        pprint("Dropped Files:")
-        pprint(dropped, indent=4)
-        return result
+        return process_dir(root, graph, context, show_dropped, use_pandas)
+    else:
+        with extract(root) as ex:
+            return process_dir(ex.tmp_dir, graph, context, show_dropped, use_pandas)
 
 
 def _load_context(path):
@@ -146,7 +145,7 @@ def describe(broker, show_missing=False, show_tracebacks=False):
 
 
 def run(component=None, root=None, print_summary=False,
-        run_context=HostContext, archive_context=None, use_pandas=False,
+        context=None, use_pandas=False,
         print_component=None):
 
     from .core import dr
@@ -159,34 +158,39 @@ def run(component=None, root=None, print_summary=False,
         import argparse
         import logging
         p = argparse.ArgumentParser()
-        p.add_argument("archive", nargs="?", help="Archive or directory to analyze")
-        p.add_argument("-p", "--plugins", default=[], nargs="*",
-                       help="package(s) or module(s) containing plugins to run.")
+        p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
+        p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
-        p.add_argument("-q", "--quiet", help="Error output only.", action="store_true")
+        p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true", default=False)
-        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules")
-        p.add_argument("--rc", help="Run Context")
-        p.add_argument("--ac", help="Archive Context")
+        p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
+        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules.")
         args = p.parse_args()
 
-        logging.basicConfig(level=logging.DEBUG if args.verbose else logging.ERROR if args.quiet else logging.INFO)
-        run_context = _load_context(args.rc) or run_context
-        archive_context = _load_context(args.ac) or archive_context
+        logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
+        context = _load_context(args.context) or context
         use_pandas = args.pandas or use_pandas
 
         root = args.archive or root
         if root:
             root = os.path.realpath(root)
 
-        for path in args.plugins:
-            dr.load_components(path)
+        plugins = []
+        for path in args.plugins.split(","):
+            path = path.strip()
+            if path.endswith(".py"):
+                path, _ = os.path.splitext(path)
+            path = path.rstrip("/").replace("/", ".")
+            plugins.append(path)
+
+        for p in plugins:
+            dr.load_components(p)
 
         if component is None:
             component = []
-            plugins = tuple(args.plugins)
+            plugins = tuple(plugins)
             for c in dr.DELEGATES:
                 if c.__module__.startswith(plugins):
                     component.append(c)
@@ -201,7 +205,7 @@ def run(component=None, root=None, print_summary=False,
     else:
         graph = dr.COMPONENTS[dr.GROUPS.single]
 
-    broker = _run(graph, root, run_context=run_context, archive_context=archive_context, show_dropped=show_dropped, use_pandas=use_pandas)
+    broker = _run(graph, root, context=context, show_dropped=show_dropped, use_pandas=use_pandas)
 
     if print_summary:
         describe(broker, show_missing=args.missing, show_tracebacks=args.tracebacks)
@@ -210,5 +214,9 @@ def run(component=None, root=None, print_summary=False,
     return broker
 
 
-if __name__ == "__main__":
+def main():
     run(print_summary=True)
+
+
+if __name__ == "__main__":
+    main()
