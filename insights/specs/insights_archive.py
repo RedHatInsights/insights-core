@@ -95,6 +95,7 @@ class InsightsArchiveSpecs(Specs):
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
+    ls_var_spool_clientmq = simple_file("insights_commands/ls_-ln_.var.spool.clientmqueue")
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")
     ls_var_run = simple_file("insights_commands/ls_-lnL_.var.run")
     ls_osroot = simple_file("insights_commands/ls_-lan")
