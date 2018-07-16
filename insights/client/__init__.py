@@ -51,16 +51,13 @@ class InsightsClient(object):
         """
             returns (int): 0 if success 1 if failure
         """
-        return client.test_connection()
+        return client.test_connection(self.config)
 
     def branch_info(self):
         """
             returns (dict): {'remote_leaf': -1, 'remote_branch': -1}
         """
-        return client.get_branch_info()
-
-    def handle_startup(self):
-        return client.handle_startup()
+        return client.get_branch_info(self.config)
 
     def fetch(self, force=False):
         """
@@ -309,20 +306,20 @@ class InsightsClient(object):
         self.config.register = True
         if force_register:
             self.config.reregister = True
-        return client.handle_registration()
+        return client.handle_registration(self.config)
 
     def unregister(self):
         """
             returns (bool): True success, False failure
         """
-        return client.handle_unregistration()
+        return client.handle_unregistration(self.config)
 
     def get_registration_information(self):
         """
             returns (json): {'machine-id': uuid from API,
                             'response': response from API}
         """
-        registration_status = client.get_registration_status()
+        registration_status = client.get_registration_status(self.config)
         return {'machine-id': client.get_machine_id(),
                 'registration_status': registration_status,
                 'is_registered': registration_status['status']}
