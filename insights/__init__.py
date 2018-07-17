@@ -178,12 +178,13 @@ def run(component=None, root=None, print_summary=False,
             root = os.path.realpath(root)
 
         plugins = []
-        for path in args.plugins.split(","):
-            path = path.strip()
-            if path.endswith(".py"):
-                path, _ = os.path.splitext(path)
-            path = path.rstrip("/").replace("/", ".")
-            plugins.append(path)
+        if args.plugins:
+            for path in args.plugins.split(","):
+                path = path.strip()
+                if path.endswith(".py"):
+                    path, _ = os.path.splitext(path)
+                path = path.rstrip("/").replace("/", ".")
+                plugins.append(path)
 
         for p in plugins:
             dr.load_components(p)

@@ -1,6 +1,8 @@
 from insights.core import dr
 
-stage = dr.new_component_type()
+
+class stage(dr.ComponentType):
+    pass
 
 
 @stage("dep1")

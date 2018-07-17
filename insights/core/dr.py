@@ -30,8 +30,6 @@ BASE_MODULE_NAMES = {}
 
 TYPE_OBSERVERS = defaultdict(set)
 
-ALIASES_BY_COMPONENT = {}
-ALIASES = {}
 COMPONENTS_BY_TYPE = defaultdict(set)
 DEPENDENCIES = defaultdict(set)
 DEPENDENTS = defaultdict(set)
@@ -43,8 +41,6 @@ IGNORE = defaultdict(set)
 
 # tracks if a component is enabled
 ENABLED = defaultdict(lambda: True)
-
-ANY_TYPE = object()
 
 FORMATTER = {}
 
@@ -156,17 +152,6 @@ def get_added_dependencies(component):
     return get_delegate(component).added_dependencies
 
 
-def add_observer(o, component_type=ANY_TYPE):
-    TYPE_OBSERVERS[component_type].add(o)
-
-
-def observer(component_type=ANY_TYPE):
-    def inner(func):
-        add_observer(func, component_type)
-        return func
-    return inner
-
-
 def to_str(comp, val):
     _type = get_component_type(comp)
     func = FORMATTER.get(_type)
@@ -269,7 +254,7 @@ def get_dependency_graph(component):
     # Find all items that don't depend on anything.
     extra_items_in_deps = _reduce(set.union, graph.values(), set()) - set(graph.keys())
 
-    # Add empty dependences where needed.
+    # Add empty dependencies where needed.
     graph.update(dict((item, set()) for item in extra_items_in_deps))
 
     return graph
@@ -376,8 +361,119 @@ def register_component(delegate):
     MODULE_NAMES[component] = get_module_name(component)
     BASE_MODULE_NAMES[component] = get_base_module_name(component)
 
-    name = get_name(component)
-    COMPONENT_NAME_CACHE[name] = component
+
+class ComponentType(object):
+    """
+    ComponentType is the base class for all component type decorators.
+    """
+
+    requires = []
+    optional = []
+    metadata = {}
+    group = GROUPS.single
+
+    def __init__(self, *deps, **kwargs):
+        """
+        This constructor is the parameterized part of a decorator.
+        For Example:
+            class my_component_type(ComponentType):
+                pass
+
+            # A my_component_type instance is created whose __call__ function
+            # gets passed `my_func`.
+            @my_component_type("I need this")
+            def my_func(thing):
+                return "stuff"
+
+        Override it in a subclass if you want a specialized decorator interface,
+        but always remember to invoke the super class constructor.
+        """
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+        self.component = None
+        self.requires = []
+        self.at_least_one = []
+        self.deps = []
+        self.added_dependencies = []
+        self.type = self.__class__
+
+        deps = list(deps) or kwargs.get("requires", [])
+
+        requires = list(self.__class__.requires) + deps
+        for d in requires:
+            if isinstance(d, list):
+                self.at_least_one.append(d)
+                self.deps.extend(d)
+            else:
+                self.requires.append(d)
+                self.deps.append(d)
+
+        self.optional = list(self.__class__.optional)
+        optional = kwargs.get("optional", [])
+        if optional and not isinstance(optional, list):
+            optional = [optional]
+        self.optional.extend(optional)
+
+        self.deps.extend(self.optional)
+
+        self.dependencies = set(self.deps)
+
+        self.metadata = {}
+        self.metadata.update(self.__class__.metadata)
+        self.metadata.update(kwargs.get("metadata", {}) or {})
+
+        self.group = kwargs.get("group", self.__class__.group)
+        if kwargs.get("cluster", False):
+            self.group = GROUPS.cluster
+
+    def __call__(self, component):
+        """
+        This function is the part of the decorator that receives the function
+        or class.
+        """
+        self.component = component
+        self.__name__ = component.__name__
+        self.__module__ = component.__module__
+        self.__doc__ = component.__doc__
+        self.__qualname__ = getattr(component, "__qualname__", None)
+        for d in self.dependencies:
+            add_dependent(d, component)
+        register_component(self)
+        return component
+
+    def invoke(self, results):
+        """
+        Handles invocation of the component. The default implementation invokes
+        it with positional arguments based on order of dependency declaration.
+        """
+        args = [results.get(d) for d in self.deps]
+        return self.component(*args)
+
+    def process(self, broker):
+        """
+        Ensures dependencies have been met before delegating to `self.invoke`.
+        """
+        keys = set(broker.instances)
+        missing_required = [r for r in self.requires if r not in keys]
+        missing_at_least_one = [d for d in self.at_least_one if not set(d) & keys]
+        if missing_required or missing_at_least_one:
+            missing = (missing_required, missing_at_least_one)
+            raise MissingRequirements(missing)
+        return self.invoke(broker)
+
+    def get_dependencies(self):
+        return self.dependencies
+
+    def add_dependency(self, dep):
+        group = self.group
+        self.added_dependencies.append(dep)
+        self.deps.append(dep)
+        self.dependencies.add(dep)
+        add_dependent(dep, self.component)
+
+        DEPENDENCIES[self.component].add(dep)
+        COMPONENTS[group][self.component].add(dep)
 
 
 class Broker(object):
@@ -389,17 +485,17 @@ class Broker(object):
         self.exec_times = {}
 
         self.observers = defaultdict(set)
-        self.observers[ANY_TYPE] = set()
+        self.observers[ComponentType] = set()
         for k, v in TYPE_OBSERVERS.items():
             self.observers[k] = set(v)
 
-    def observer(self, component_type=ANY_TYPE):
+    def observer(self, component_type=ComponentType):
         def inner(func):
             self.add_observer(func, component_type)
             return func
         return inner
 
-    def add_observer(self, o, component_type=ANY_TYPE):
+    def add_observer(self, o, component_type=ComponentType):
         self.observers[component_type].add(o)
 
     def fire_observers(self, component):
@@ -407,11 +503,13 @@ class Broker(object):
         if not _type:
             return
 
-        for o in self.observers.get(_type, set()) | self.observers[ANY_TYPE]:
-            try:
-                o(component, self)
-            except Exception as e:
-                log.exception(e)
+        for k, v in self.observers.items():
+            if issubclass(_type, k):
+                for o in v:
+                    try:
+                        o(component, self)
+                    except Exception as e:
+                        log.exception(e)
 
     def add_exception(self, component, ex, tb=None):
         if isinstance(ex, MissingRequirements):
@@ -481,176 +579,15 @@ def get_missing_requirements(func, requires, d):
         return None
 
 
-def broker_executor(func, broker, requires=[], optional=[]):
-    missing_requirements = get_missing_requirements(func, requires, broker)
-    if missing_requirements:
-        raise MissingRequirements(missing_requirements)
-    return func(broker)
+def add_observer(o, component_type=ComponentType):
+    TYPE_OBSERVERS[component_type].add(o)
 
 
-def default_executor(func, broker, requires=[], optional=[]):
-    """
-    Use this executor if your component signature matches your dependency list.
-    Can be used on individual components or in component type definitions.
-    """
-    missing_requirements = get_missing_requirements(func, requires, broker)
-    if missing_requirements:
-        raise MissingRequirements(missing_requirements)
-    args = []
-    for r in requires:
-        if isinstance(r, list):
-            args.extend(r)
-        else:
-            args.append(r)
-    args.extend(optional)
-    args = [broker.get(a) for a in args]
-    return func(*args)
-
-
-class Delegate(object):
-    def __init__(self, component, requires, optional):
-        self.__name__ = component.__name__
-        self.__module__ = component.__module__
-        self.__doc__ = component.__doc__
-        self.__qualname__ = getattr(component, "__qualname__", None)
-
-        self.component = component
-        self.executor = default_executor
-        self.group = None
-        self.metadata = {}
-        self.requires = requires
-        self.optional = optional
-        self.added_dependencies = []
-        self.type = None
-
-        if requires:
-            _all, _any = split_requirements(requires)
-            _all = set(_all)
-            _any = set(i for o in _any for i in o)
-        else:
-            _all, _any = set(), set()
-        _optional = set(optional) if optional else set()
-
-        self.dependencies = _all | _any | _optional
-        for d in self.dependencies:
-            add_dependent(d, component)
-
-    def get_dependencies(self):
-        return self.dependencies
-
-    def add_dependency(self, dep):
-        group = self.group
-        self.added_dependencies.append(dep)
-        self.dependencies.add(dep)
-        add_dependent(dep, self.component)
-
-        DEPENDENCIES[self.component].add(dep)
-        COMPONENTS[group][self.component].add(dep)
-
-    def __call__(self, broker):
-        return self.executor(self.component, broker, self.requires, self.optional)
-
-
-class TypeSetDescriptor(object):
-    def __init__(self, func):
-        self.func = func
-
-    def __get__(self, obj, obj_type):
-        return self.func
-
-    def __set__(self, obj, val):
-        raise AttributeError()
-
-
-class TypeSetMeta(type):
-    """
-    The metaclass that converts RegistryPoint markers to regisry point
-    datasources and hooks implementations for them into the registry.
-    """
-    def __new__(cls, name, bases, dct):
-        return super(TypeSetMeta, cls).__new__(cls, name, bases, dct)
-
-    def __init__(cls, name, bases, dct):
-        if name == "TypeSet":
-            return
-        if len(bases) > 1:
-            raise Exception("TypeSet subclasses must inherit from only one class.")
-
-        module = cls.__module__
-        for k, v in dct.items():
-            if six.callable(v):
-                v.__qualname__ = ".".join([cls.__name__, k])
-                v.__name__ = k
-                v.__module__ = module
-                setattr(cls, k, TypeSetDescriptor(v))
-
-
-class TypeSet(six.with_metaclass(TypeSetMeta)):
-    pass
-
-
-def new_component_type(auto_requires=[],
-                       auto_optional=[],
-                       group=GROUPS.single,
-                       executor=default_executor,
-                       type_metadata={},
-                       delegate_class=Delegate):
-    """
-    Factory that creates component decorators.
-
-    The functions this factory produces are decorators for parsers, combiners,
-    rules, cluster rules, etc.
-
-    Args:
-        auto_requires (list): All decorated components automatically have
-            this requires spec. Anything specified when decorating a component
-            is added to this spec.
-        auto_optional (list): All decorated components automatically have
-            this optional spec. Anything specified when decorating a component
-            is added to this spec.
-        group (type): any symbol to group this component with similar components
-            in the dependency list. This will be used when calling run to
-            select the set of components to be executed: run(COMPONENTS[group])
-        executor (func): an optional function that controls how a component is
-            executed. It can impose restrictions on return value types, perform
-            component type specific exception handling, etc. The signature is
-            `executor(component, broker, requires=?, optional=?)`.
-            The default behavior is to call `default_executor`.
-        type_metadata (dict): an arbitrary dictionary to associate with all
-            components of this type.
-
-    Returns:
-        A decorator function used to define components of the new type.
-    """
-
-    def decorator(*requires, **kwargs):
-        optional = kwargs.get("optional", None)
-        the_group = kwargs.get("group", group)
-        component_type = kwargs.get("component_type", None)
-        metadata = kwargs.get("metadata", {}) or {}
-
-        requires = list(requires) or kwargs.get("requires", [])
-        optional = optional or []
-
-        requires.extend(auto_requires)
-        optional.extend(auto_optional)
-
-        component_metadata = {}
-        component_metadata.update(type_metadata)
-        component_metadata.update(metadata)
-
-        def _f(func):
-            delegate = delegate_class(func, requires, optional)
-            delegate.group = the_group
-            delegate.metadata = component_metadata
-            if executor:
-                delegate.executor = executor
-            delegate.type = component_type or decorator
-            register_component(delegate)
-            return func
-        return _f
-
-    return decorator
+def observer(component_type=ComponentType):
+    def inner(func):
+        add_observer(func, component_type)
+        return func
+    return inner
 
 
 def run_order(components):
@@ -671,9 +608,9 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
     for component in run_order(components):
         start = time.time()
         try:
-            if component not in broker and component in DELEGATES and ENABLED[component]:
+            if component not in broker and component in DELEGATES and is_enabled(component):
                 log.info("Trying %s" % get_name(component))
-                result = DELEGATES[component](broker)
+                result = DELEGATES[component].process(broker)
                 broker[component] = result
         except MissingRequirements as mr:
             if log.isEnabledFor(logging.DEBUG):

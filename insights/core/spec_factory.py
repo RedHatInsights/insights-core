@@ -218,17 +218,17 @@ class RegistryPoint(object):
         self.metadata = metadata
         self.multi_output = multi_output
         self.raw = raw
+        self.__name__ = self.__class__.__name__
+        datasource(metadata=metadata, multi_output=multi_output, raw=raw)(self)
 
-
-def _registry_point(rp):
-
-    @datasource(metadata=rp.metadata, multi_output=rp.multi_output, raw=rp.raw)
-    def inner(broker):
-        for c in reversed(dr.get_added_dependencies(inner)):
+    def __call__(self, broker):
+        for c in reversed(dr.get_added_dependencies(self)):
             if c in broker:
                 return broker[c]
         raise dr.SkipComponent()
-    return inner
+
+    def __repr__(self):
+        return dr.get_name(self)
 
 
 class SpecDescriptor(object):
@@ -277,7 +277,6 @@ def _resolve_registry_points(cls, base, dct):
     for k, v in dct.items():
         if isinstance(v, RegistryPoint):
             v.__name__ = k
-            v = _registry_point(v)
             cls.registry[k] = v
 
         if is_datasource(v):
@@ -371,6 +370,7 @@ class glob_file(object):
             patterns = [patterns]
         self.patterns = patterns
         self.ignore = ignore
+        self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
         self.context = context or FSRoots
         self.kind = kind
         self.raw = kind is RawFileProvider
@@ -385,7 +385,7 @@ class glob_file(object):
         for pattern in self.patterns:
             pattern = ctx.locate_path(pattern)
             for path in sorted(glob(os.path.join(root, pattern.lstrip('/')))):
-                if self.ignore and re.search(self.ignore, path):
+                if self.ignore_func(path) or os.path.isdir(path):
                     continue
                 try:
                     results.append(self.kind(path[len(root):], root=root, ds=self))
@@ -452,35 +452,36 @@ class first_file(object):
 
 class listdir(object):
     """
-    Executable a simple directory listing of all the files and directories in
+    Execute a simple directory listing of all the files and directories in
     path.
 
     Args:
-        path (str): directory to list.
+        path (str): directory or glob pattern to list.
         context (ExecutionContext): the context under which the datasource
             should run.
+        ignore (str): regular expression defining paths to ignore.
 
     Returns:
         function: A datasource that returns the list of files and directories
             in the directory specified by path
     """
 
-    def __init__(self, path, context=None):
+    def __init__(self, path, context=None, ignore=None):
         self.path = path
         self.context = context or FSRoots
+        self.ignore = ignore
+        self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
         self.__name__ = self.__class__.__name__
-        datasource(context)(self)
+        datasource(self.context)(self)
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
         p = os.path.join(ctx.root, self.path.lstrip('/'))
         p = ctx.locate_path(p)
-        if os.path.isdir(p):
-            return sorted(os.listdir(p))
+        result = sorted(os.listdir(p)) if os.path.isdir(p) else sorted(glob(p))
 
-        result = sorted(glob(p))
         if result:
-            return [os.path.basename(r) for r in result]
+            return [os.path.basename(r) for r in result if not self.ignore_func(r)]
         raise ContentException("Can't list %s or nothing there." % p)
 
 
@@ -518,7 +519,7 @@ class simple_command(object):
         self.timeout = timeout
         COMMANDS[self] = cmd
         self.__name__ = self.__class__.__name__
-        datasource(context)(self)
+        datasource(self.context)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
@@ -576,7 +577,7 @@ class foreach_execute(object):
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.__name__ = self.__class__.__name__
-        datasource(provider, context, multi_output=True)(self)
+        datasource(self.provider, self.context, multi_output=True)(self)
 
     def __call__(self, broker):
         result = []
@@ -633,11 +634,12 @@ class foreach_collect(object):
         self.provider = provider
         self.path = path
         self.ignore = ignore
+        self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
         self.context = context
         self.kind = kind
         self.raw = kind is RawFileProvider
         self.__name__ = self.__class__.__name__
-        datasource(provider, context, multi_output=True, raw=self.raw)(self)
+        datasource(self.provider, self.context, multi_output=True, raw=self.raw)(self)
 
     def __call__(self, broker):
         result = []
@@ -651,7 +653,7 @@ class foreach_collect(object):
         for e in source:
             pattern = ctx.locate_path(self.path % e)
             for p in glob(os.path.join(root, pattern.lstrip('/'))):
-                if self.ignore and re.search(self.ignore, p):
+                if self.ignore_func(p) or os.path.isdir(p):
                     continue
                 try:
                     result.append(self.kind(p[len(root):], root=root, ds=self))

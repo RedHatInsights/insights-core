@@ -69,7 +69,10 @@ def load_plugins():
 
 
 def get_specs():
-    """ Get datasources that don't have datasource dependents """
+    """
+    Get default datasources that implement a `RegistryPoint` defined in
+    `insights.specs.Specs`
+    """
     vals = vars(Specs).values()
     sd = sf.SpecDescriptor
     names = [d.__get__(d, None).__name__ for d in vals if isinstance(d, sd)]
