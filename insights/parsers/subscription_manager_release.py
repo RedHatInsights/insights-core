@@ -43,7 +43,7 @@ class SubscriptionManagerReleaseShow(CommandParser):
         self.set = self.major = self.minor = None
         l = len(content)
         if l != 1:
-            raise SkipException("Content takes at most 1 line ({} given).".format(l))
+            raise SkipException("Content takes at most 1 line ({0} given).".format(l))
         line = content[0].strip()
         if line != 'Release not set':
             line_splits = line.split()
