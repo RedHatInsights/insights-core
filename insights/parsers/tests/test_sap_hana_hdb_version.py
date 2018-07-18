@@ -31,7 +31,7 @@ HDB version info:
 """.strip()
 
 HDB_VER_NG_1 = """
-HDB version info:
+su: user hxeadm does not exist
 """.strip()
 
 HDB_VER_NG_2 = """
