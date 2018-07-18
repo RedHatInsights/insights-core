@@ -40,16 +40,19 @@ class SubscriptionManagerReleaseShow(CommandParser):
     """
 
     def parse_content(self, content):
+        self.set = self.major = self.minor = None
+        if len(content) != 1:
+            raise SkipException("Incorrect content: too many lines.")
         line = content[0].strip()
-        line_splits = line.split()
-        if (len(content) != 1 or len(line_splits) != 2 or
-                not line.startswith('Release:')):
+        if line != 'Release not set':
+            line_splits = line.split()
+            if len(line_splits) == 2:
+                rel = line_splits[-1]
+                rel_splits = rel.split('.')
+                if (len(rel_splits) == 2 and rel_splits[0].isdigit() and
+                        rel_splits[-1].isdigit()):
+                    self.set = rel
+                    self.major = int(rel_splits[0])
+                    self.minor = int(rel_splits[-1])
+                    return
             raise SkipException("Incorrect content: {0}".format(line))
-        rel = line_splits[-1]
-        rel_splits = rel.split('.')
-        if (len(rel_splits) != 2 or not rel_splits[0].isdigit() or
-                not rel_splits[-1].isdigit()):
-            raise SkipException("Incorrect content: {0}".format(line))
-        self.set = rel
-        self.major = int(rel_splits[0])
-        self.minor = int(rel_splits[-1])

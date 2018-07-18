@@ -8,7 +8,7 @@ INPUT_NORMAL = """
 Release: 7.2
 """.strip()
 
-INPUT_NO_SET = """
+INPUT_NOT_SET = """
 Release not set
 """.strip()
 
@@ -21,6 +21,9 @@ INPUT_NG_2 = """
 Release: '7.x'
 """.strip()
 
+INPUT_NG_3 = """
+Release: '7.x' DUMMY
+""".strip()
 
 def test_subscription_manager_release_show_ok():
     ret = SubscriptionManagerReleaseShow(context_wrap(INPUT_NORMAL))
@@ -30,19 +33,24 @@ def test_subscription_manager_release_show_ok():
 
 
 def test_subscription_manager_release_show_not_set():
-    with pytest.raises(SkipException) as e_info:
-        SubscriptionManagerReleaseShow(context_wrap(INPUT_NO_SET))
-    assert "Incorrect content: Release not set" in str(e_info.value)
+    ret = SubscriptionManagerReleaseShow(context_wrap(INPUT_NOT_SET))
+    assert ret.set is None
+    assert ret.major is None
+    assert ret.minor is None
 
 
 def test_subscription_manager_release_show_ng():
     with pytest.raises(SkipException) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_1))
-    assert "Incorrect content: XYC" in str(e_info.value)
+    assert "Incorrect content: too many lines" in str(e_info.value)
 
     with pytest.raises(SkipException) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_2))
     assert "Incorrect content: Release: '7.x'" in str(e_info.value)
+
+    with pytest.raises(SkipException) as e_info:
+        SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_3))
+    assert "Incorrect content: Release: '7.x' DUMMY" in str(e_info.value)
 
 
 def test_doc_examples():
