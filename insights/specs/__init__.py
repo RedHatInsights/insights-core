@@ -366,6 +366,7 @@ class Specs(SpecSet):
     running_java = RegistryPoint()
     samba = RegistryPoint()
     sap_host_profile = RegistryPoint()
+    sap_hdb_version = RegistryPoint()
     saphostctl_getcimobject_sapinstance = RegistryPoint()
     saphostexec_status = RegistryPoint()
     saphostexec_version = RegistryPoint()

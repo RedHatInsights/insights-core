@@ -535,6 +535,7 @@ class DefaultSpecs(Specs):
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
+    sap_hdb_version = simple_command("/bin/su hxeadm -lc 'HDB version'")
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")

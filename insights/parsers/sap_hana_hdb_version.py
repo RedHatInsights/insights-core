@@ -1,12 +1,12 @@
 """
-SAP HANA 'HDB version' commands
-===============================
+HDBVersion - Commands
+=====================
 
 Shared parser for parsing output of the ``su <SID>adm -lc 'HDB version'``
 commands.
 
-SapHxeadmHDBVersion- command ``su hxeadm -lc 'HDB version'``
-------------------------------------------------------------
+HxeadmHDBVersion- command ``su hxeadm -lc 'HDB version'``
+---------------------------------------------------------
 
 """
 from .. import parser, CommandParser, LegacyItemAccess
@@ -41,7 +41,7 @@ class HDBVersion(CommandParser, LegacyItemAccess):
 
     Examples:
         >>> type(hdb_ver)
-        <class 'insights.parsers.sap_hana_hdb_version.SapHxeadmHDBVersion'>
+        <class 'insights.parsers.sap_hana_hdb_version.HDBVersion'>
         >>> hdb_ver.version
         '2.00.030.00.1522210459'
         >>> hdb_ver.major
@@ -56,8 +56,8 @@ class HDBVersion(CommandParser, LegacyItemAccess):
 
     def parse_content(self, content):
         self.data = {}
-        self.version = self.revision = self.major = self.minor = None
-        if len(content) <= 1
+        self.version = self.revision = self.major = self.minor = self.patchlevel = None
+        if len(content) <= 1:
             raise SkipException("Incorrect content.")
         for line in content[1:]:
             key, val = [i.strip() for i in line.split(':', 1)]
@@ -67,14 +67,14 @@ class HDBVersion(CommandParser, LegacyItemAccess):
                 val_splits = val.split('.')
                 if len(val_splits) != 5:
                     raise SkipException("Incorrect HDB version: {0}.".format(val))
-                    self.major = val_splits[0]
-                    self.minor = val_splits[1]
-                    self.revision = val_splits[2]
-                    self.patchlevel = val_splits[3]
+                self.major = val_splits[0]
+                self.minor = val_splits[1]
+                self.revision = val_splits[2]
+                self.patchlevel = val_splits[3]
 
 
 @parser(Specs.sap_hxeadm_hdb_version)
-class SapHxeadmHDBVersion(HDBVersion):
+class HxeadmHDBVersion(HDBVersion):
     """
     Class for parsing the output of `su hxeadm -lc 'HDB version'` command.
     See its super class :class:`HDBVersion`.
