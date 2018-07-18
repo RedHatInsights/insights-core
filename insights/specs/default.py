@@ -113,6 +113,8 @@ class DefaultSpecs(Specs):
 
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
+    cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
+    cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
     cpu_vulns = glob_file("sys/devices/system/cpu/vulnerabilities/*")
     cpu_vulns_meltdown = simple_file("sys/devices/system/cpu/vulnerabilities/meltdown")
     cpu_vulns_spectre_v1 = simple_file("sys/devices/system/cpu/vulnerabilities/spectre_v1")
