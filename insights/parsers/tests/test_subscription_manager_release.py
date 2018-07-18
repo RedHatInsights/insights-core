@@ -25,6 +25,7 @@ INPUT_NG_3 = """
 Release: '7.x' DUMMY
 """.strip()
 
+
 def test_subscription_manager_release_show_ok():
     ret = SubscriptionManagerReleaseShow(context_wrap(INPUT_NORMAL))
     assert ret.set == '7.2'
@@ -42,7 +43,7 @@ def test_subscription_manager_release_show_not_set():
 def test_subscription_manager_release_show_ng():
     with pytest.raises(SkipException) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_1))
-    assert "Incorrect content: too many lines" in str(e_info.value)
+    assert "Content takes at most 1 line (2 given)." in str(e_info.value)
 
     with pytest.raises(SkipException) as e_info:
         SubscriptionManagerReleaseShow(context_wrap(INPUT_NG_2))
