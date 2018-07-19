@@ -47,13 +47,22 @@ class SubscriptionManagerReleaseShow(CommandParser):
         line = content[0].strip()
         if line != 'Release not set':
             line_splits = line.split()
+            # Release: 6.7 or Release 7Server
             if len(line_splits) == 2:
                 rel = line_splits[-1]
                 rel_splits = rel.split('.')
-                if (len(rel_splits) == 2 and rel_splits[0].isdigit() and
-                        rel_splits[-1].isdigit()):
+                # Release: 6.7
+                if len(rel_splits) == 2:
+                    if rel_splits[0].isdigit() and rel_splits[-1].isdigit():
+                        self.set = rel
+                        self.major = int(rel_splits[0])
+                        self.minor = int(rel_splits[-1])
+                        return
+                # Release: 7Server
+                elif rel.endswith('Server') and rel[0].isdigit():
                     self.set = rel
-                    self.major = int(rel_splits[0])
-                    self.minor = int(rel_splits[-1])
+                    self.major = int(rel[0])
+                    # leave self.minor as None
                     return
             raise SkipException("Incorrect content: {0}".format(line))
+        # Release not set
