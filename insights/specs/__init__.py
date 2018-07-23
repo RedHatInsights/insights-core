@@ -46,6 +46,8 @@ class Specs(SpecSet):
     cpe = RegistryPoint()
     cpu_cores = RegistryPoint()
     cpu_siblings = RegistryPoint()
+    cpu_smt_active = RegistryPoint()
+    cpu_smt_control = RegistryPoint()
     cpu_vulns = RegistryPoint()
     cpu_vulns_meltdown = RegistryPoint()
     cpu_vulns_spectre_v1 = RegistryPoint()
