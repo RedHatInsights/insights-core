@@ -1,6 +1,8 @@
 from insights.core import dr
 
-stage = dr.new_component_type(type_metadata={"description": "A processing stage."})
+
+class stage(dr.ComponentType):
+    metadata = {"description": "A processing stage."}
 
 
 @stage()
