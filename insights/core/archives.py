@@ -33,7 +33,7 @@ class ZipExtractor(object):
 
     def from_path(self, path, extract_dir=None, content_type=None):
         self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
-        command = "unzip -q -d %s %s" % (self.tmp_dir, path)
+        command = "unzip -n -q -d %s %s" % (self.tmp_dir, path)
         subproc.call(command, timeout=self.timeout)
         return self
 
