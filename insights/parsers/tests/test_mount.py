@@ -2,6 +2,7 @@
 test mount
 ==========
 """
+from insights.parsers import ParseException
 from insights.parsers.mount import Mount
 from insights.tests import context_wrap
 
@@ -27,6 +28,7 @@ fusectl on /sys/fs/fuse/connections type fusectl (rw,relatime)
 MOUNT_ERR_DATA = """
 tmpfs on /tmp type tmpfs (rw,seclabel)
 hugetlbfs /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
+/dev/mapper/fedora-root on / type ext4 (rw,relatime,seclabel,data=ordered)
 """.strip()
 
 
@@ -83,7 +85,7 @@ def test_mount():
     # Test parse failure
     errors = Mount(context_wrap(MOUNT_ERR_DATA))
     assert errors is not None
-    assert len(errors) == 2
+    assert len(errors) == 3
     assert not hasattr(errors[0], 'parse_error')
     assert errors[0].filesystem == 'tmpfs'
     assert hasattr(errors[1], 'parse_error')
@@ -97,3 +99,16 @@ def test_mount():
     assert results.search(mount_options__contains='seclabel') == [
         results.rows[n] for n in (0, 1, 3, 4, 5, 7, 8, 11)
     ]
+
+
+MOUNT_WITHOUT_ROOT = """
+tmpfs on /tmp type tmpfs (rw,seclabel)
+hugetlbfs on /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
+/dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
+""".strip()
+
+
+def test_mount_get_dir():
+    with pytest.raises(ParseException) as exc:
+        Mount(context_wrap(MOUNT_WITHOUT_ROOT))
+    assert "Input for mount must contain '/' mount point." in str(exc)

@@ -69,7 +69,7 @@ Examples:
 
 import re
 from insights.specs import Specs
-from ..parsers import optlist_to_dict, keyword_search
+from ..parsers import optlist_to_dict, keyword_search, ParseException
 from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
 
 
@@ -233,6 +233,9 @@ class Mount(CommandParser):
             self.rows.append(entry)
             if match:
                 self.mounts[mount['mount_point']] = entry
+
+        if '/' not in self.mounts:
+            raise ParseException("Input for mount must contain '/' mount point.")
 
     def get_dir(self, path):
         """
