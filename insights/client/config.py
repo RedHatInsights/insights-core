@@ -385,8 +385,6 @@ class InsightsConfig(object):
         # legacy opts
         if 'no_gpg' in dict_ and dict_['no_gpg']:
             dict_['gpg'] = False
-        if 'no_schedule' in dict_ and dict_['no_schedule']:
-            dict_['disable_schedule'] = True
 
         unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
         if unknown_opts:
@@ -476,6 +474,12 @@ class InsightsConfig(object):
                 d[key] = parsedconfig.getint(constants.app_name, key)
             if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
                 d[key] = parsedconfig.getboolean(constants.app_name, key)
+
+        if 'no_schedule' in d:
+            print('WARNING: no_schedule has been deprecated.'
+                  'To disable automatic scheduling, run'
+                  ' `insights-client --disable-schedule`')
+
         self._update_dict(d)
 
     def load_all(self):
