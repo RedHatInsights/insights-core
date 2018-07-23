@@ -7,6 +7,7 @@ from insights.core.spec_factory import simple_file, foreach_collect, first_file,
 first_file = partial(first_file, context=JDRContext)
 glob_file = partial(glob_file, context=JDRContext)
 simple_file = partial(simple_file, context=JDRContext)
+foreach_collect = partial(foreach_collect, context=JDRContext)
 
 
 class JDRSpecs(Specs):
@@ -34,15 +35,11 @@ class JDRSpecs(Specs):
                     config_xml = java_command.split('--server-config=')[1].split()[0]
                 elif '-c ' in java_command:
                     config_xml = java_command.split('-c ')[1].split()[0]
-                return config_xml
+                return [config_xml]
         return []
 
     # use foreach is to return list type result as jboss sepcs in defaults.py
-    jboss_standalone_main_config = foreach_collect(jboss_standlone_conf_file,
-                                                   "JBOSS_HOME/standalone/configuration/%s",
-                                                   context=JDRContext)
+    jboss_standalone_main_config = foreach_collect(jboss_standlone_conf_file, "JBOSS_HOME/standalone/configuration/%s")
 
     jboss_domain_servers = listdir("JBOSS_HOME/domain/servers/", context=JDRContext)
-    jboss_domain_server_log = foreach_collect(jboss_domain_servers,
-                                              "JBOSS_HOME/domain/servers/%s/log/server.log",
-                                              context=JDRContext)
+    jboss_domain_server_log = foreach_collect(jboss_domain_servers, "JBOSS_HOME/domain/servers/%s/log/server.log")
