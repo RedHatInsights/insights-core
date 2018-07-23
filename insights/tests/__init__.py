@@ -156,8 +156,10 @@ class InputData(object):
         return self.data.items()
 
     def clone(self, name):
-        the_clone = copy.deepcopy(self)
-        the_clone.name = name
+        the_clone = InputData(name)
+        the_clone.data = {}
+        for k, v in self.data.items():
+            the_clone.data[k] = copy.deepcopy(v)
         return the_clone
 
     def add_component(self, comp, obj):
