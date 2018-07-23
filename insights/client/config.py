@@ -180,6 +180,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': False,  # legacy
     },
+    'no_schedule': {
+        # non-CLI
+        'default': False
+    },
     'no_upload': {
         'default': False,
         'opt': ['--no-upload'],
@@ -378,9 +382,11 @@ class InsightsConfig(object):
         dict_ = dict((k, v) for k, v in dict_.items() if (
                     k not in self._init_attrs))
 
-        # zzz
+        # legacy opts
         if 'no_gpg' in dict_ and dict_['no_gpg']:
             dict_['gpg'] = False
+        if 'no_schedule' in dict_ and dict_['no_schedule']:
+            dict_['disable_schedule'] = True
 
         unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
         if unknown_opts:
