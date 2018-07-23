@@ -411,7 +411,9 @@ def upload(config, pconn, tar_file, collection_duration=None):
             else:
                 logger.info("Successfully uploaded report for %s." % (machine_id))
             break
-
+        elif upload.status_code == 202:
+            machine_id = generate_machine_id()
+            logger.info("Successfully uploaded report for %s." % (machine_id))
         elif upload.status_code == 412:
             pconn.handle_fail_rcs(upload)
             break

@@ -164,6 +164,10 @@ DEFAULT_OPTS = {
         'action': 'store_true',
         'group': 'debug'
     },
+    'legacy_upload': {
+        # non-CLI
+        'default': True
+    },
     'logging_file': {
         'default': constants.default_log_file,
         'opt': ['--logging-file'],

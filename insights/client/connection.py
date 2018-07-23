@@ -684,19 +684,26 @@ class InsightsConnection(object):
             from .utilities import magic_plan_b
             mime_type = magic_plan_b(data_collected)
 
-        files = {
-            'file': (file_name, open(data_collected, 'rb'), mime_type)}
+        if self.config.legacy_upload:
+            files = {
+                'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
-        if self.config.analyze_container:
-            logger.debug('Uploading container, image, mountpoint or tarfile.')
-            upload_url = self.upload_url
+            if self.config.analyze_container:
+                logger.debug('Uploading container, image, mountpoint or tarfile.')
+                upload_url = self.upload_url
+            else:
+                logger.debug('Uploading a host.')
+                upload_url = self.upload_url + '/' + generate_machine_id()
+            headers = {'x-rh-collection-time': str(duration)}
         else:
-            logger.debug('Uploading a host.')
-            upload_url = self.upload_url + '/' + generate_machine_id()
+            upload_url = 'http://upload-service-platform-ci.1b13.insights.openshiftapps.com/api/v1/upload'
+            files = {
+                'upload': (file_name, open(data_collected, 'rb'),
+                           'application/vnd.redhat.advisor.test+tgz')}
+            headers = {}
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        headers = {'x-rh-collection-time': str(duration)}
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
@@ -704,6 +711,8 @@ class InsightsConnection(object):
                      upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
             the_json = json.loads(upload.text)
+        elif upload.status_code == 202:
+            logger.debug(upload.text)
         else:
             logger.error("Upload archive failed with status code  %s", upload.status_code)
             return upload
