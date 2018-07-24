@@ -1,3 +1,7 @@
+"""
+This module defines all datasources for JDR report
+"""
+
 from functools import partial
 from insights.specs import Specs
 from insights.core.plugins import datasource
@@ -11,15 +15,13 @@ foreach_collect = partial(foreach_collect, context=JDRContext)
 
 
 class JDRSpecs(Specs):
-    # Here use glob_file is to return list type result to keep same with  jboss specs default.py
-    # jdr just collect files under one jboss home,
-    # For insights-client, we will collect files under different jboss home, return list is necessary.
+    """A class for all the JDR report datasources"""
+
     jboss_standalone_server_log = glob_file("JBOSS_HOME/standalone/log/server.log")
 
     @datasource(jboss_standalone_server_log, context=JDRContext, multi_output=True)
-    def jboss_standlone_conf_file(broker):
-        # read the server.log to detect if specific xml is using in the startup command
-        # the server.log maybe overwrite,  so just return []
+    def jboss_standalone_conf_file(broker):
+        """Get which jboss standalone conf file is using from server log"""
         log_files = broker[JDRSpecs.jboss_standalone_server_log]
         if log_files:
             log_content = log_files[-1].content
@@ -38,8 +40,8 @@ class JDRSpecs(Specs):
                 return [config_xml]
         return []
 
-    # use foreach is to return list type result as jboss sepcs in defaults.py
-    jboss_standalone_main_config = foreach_collect(jboss_standlone_conf_file, "JBOSS_HOME/standalone/configuration/%s")
+    # Get file content according the file name from server.log
+    jboss_standalone_main_config = foreach_collect(jboss_standalone_conf_file, "JBOSS_HOME/standalone/configuration/%s")
 
     jboss_domain_servers = listdir("JBOSS_HOME/domain/servers/", context=JDRContext)
     jboss_domain_server_log = foreach_collect(jboss_domain_servers, "JBOSS_HOME/domain/servers/%s/log/server.log")
