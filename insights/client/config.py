@@ -399,7 +399,6 @@ class InsightsConfig(object):
                                  'been deprecated. To disable automatic '
                                  'scheduling for Red Hat Insights, run '
                                  '`insights-client --disable-schedule`\n')
-            self._print_errors = False
         for u in unknown_opts:
             dict_.pop(u, None)
         self.__dict__.update(dict_)
@@ -471,8 +470,10 @@ class InsightsConfig(object):
         try:
             parsedconfig.read(fname or self.conf)
         except ConfigParser.Error:
-            sys.stdout.write(
-                'ERROR: Could not read configuration file, using defaults\n')
+            if self._print_errors:
+                sys.stdout.write(
+                    'ERROR: Could not read configuration file, '
+                    'using defaults\n')
         try:
             # Try to add the insights-client section
             parsedconfig.add_section(constants.app_name)
