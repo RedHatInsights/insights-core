@@ -4,6 +4,7 @@ import logging
 import tempfile
 import shlex
 import shutil
+import sys
 from subprocess import Popen, PIPE
 
 from .. import package_info
@@ -25,7 +26,11 @@ class InsightsClient(object):
         if isinstance(config, InsightsConfig):
             self.config = config
         else:
-            self.config = InsightsConfig().load_all()
+            try:
+                self.config = InsightsConfig(_print_errors=True).load_all()
+            except ValueError as e:
+                sys.stderr.write('ERROR: ' + str(e) + '\n')
+                sys.exit(constants.sig_kill_bad)
         # end hack. in the future, just set self.config=config
 
         # set up logging

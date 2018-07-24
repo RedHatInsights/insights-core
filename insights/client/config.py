@@ -4,6 +4,7 @@ import logging
 import optparse
 import copy
 import six
+import sys
 from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
@@ -383,8 +384,8 @@ class InsightsConfig(object):
             dict_['gpg'] = False
 
         unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
-        if unknown_opts:
-            raise ValueError(
+        if unknown_opts and self._print_errors:
+            sys.stdout.write(
                 'Unknown options: ' + ','.join(list(unknown_opts)))
         self.__dict__.update(dict_)
         self._imply_options()
