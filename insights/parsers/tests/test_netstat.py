@@ -622,7 +622,6 @@ def test_ss_tulpn_get_port():
     assert ss.get_localport("22") == exp03
     assert ss.get_peerport("22") == []
     assert ss.get_port("22") == exp03
-    assert ss.get_port("2049") == []
 
 
 # Because tests are done at the module level, we have to put all the shared
