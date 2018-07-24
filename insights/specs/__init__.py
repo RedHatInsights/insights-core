@@ -379,6 +379,7 @@ class Specs(SpecSet):
     sshd_config_perms = RegistryPoint()
     sshd_config = RegistryPoint()
     ss = RegistryPoint()
+    ss_tulpna = RegistryPoint()
     sssd_config = RegistryPoint()
     sssd_logs = RegistryPoint(multi_output=True)
     subscription_manager_list_consumed = RegistryPoint()
