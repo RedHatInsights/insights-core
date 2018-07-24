@@ -176,7 +176,7 @@ class InsightsArchiveSpecs(Specs):
     smbstatus_S = simple_file("insights_commands/smbstatus_-S")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
     software_collections_list = simple_file('insights_commands/scl_--list')
-    ss = simple_file("insights_commands/ss_-tulpn")
+    ss = simple_file("insights_commands/ss_-tulpna")
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
     subscription_manager_list_consumed = simple_file('insights_commands/subscription-manager_list_--consumed')
     subscription_manager_list_installed = simple_file('insights_commands/subscription-manager_list_--installed')

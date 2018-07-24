@@ -551,7 +551,7 @@ class DefaultSpecs(Specs):
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spfile_ora = glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
-    ss = simple_command("/usr/sbin/ss -tulpn")
+    ss = simple_command("/usr/sbin/ss -tulpna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
