@@ -348,6 +348,11 @@ class InsightsConfig(object):
     Insights client configuration
     '''
     def __init__(self, *args, **kwargs):
+        # this is only used to print configuration errors upon initial load
+        self._print_errors = False
+        if '_print_errors' in kwargs:
+            self._print_errors = kwargs['_print_errors']
+
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
         if args:
@@ -385,8 +390,15 @@ class InsightsConfig(object):
 
         unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
         if unknown_opts and self._print_errors:
+            # only print error once
             sys.stdout.write(
-                'Unknown options: ' + ','.join(list(unknown_opts)))
+                'Unknown options: ' + ', '.join(list(unknown_opts)) + '\n')
+            if 'no_schedule' in unknown_opts:
+                sys.stdout.write('Config option `no_schedule` has been '
+                                 'deprecated. To disable automatic scheduling '
+                                 'for Red Hat Insights, run '
+                                 '`insights-client --disable-schedule`\n')
+            self._print_errors = False
         self.__dict__.update(dict_)
         self._imply_options()
         self._validate_options()
@@ -456,8 +468,8 @@ class InsightsConfig(object):
         try:
             parsedconfig.read(fname or self.conf)
         except ConfigParser.Error:
-            logger.error(
-                'ERROR: Could not read configuration file, using defaults')
+            sys.stdout.write(
+                'ERROR: Could not read configuration file, using defaults\n')
         try:
             # Try to add the insights-client section
             parsedconfig.add_section(constants.app_name)
