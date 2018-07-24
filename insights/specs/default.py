@@ -350,7 +350,7 @@ class DefaultSpecs(Specs):
     lvs = None  # simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')
     lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config=\"global{locking_type=0}\"")
     lvs_noheadings_all = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
-    machine_id = simple_file("etc/redhat-access-insights/machine-id")
+    machine_id = first_file(["etc/redhat-access-insights/machine-id", "etc/insights-client/machine-id"])
     manila_conf = simple_file("/etc/manila/manila.conf")
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     mdstat = simple_file("/proc/mdstat")
