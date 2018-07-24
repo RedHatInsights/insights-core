@@ -633,7 +633,6 @@ def test_netstat_doc_examples():
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
         'ss': SsTULPN(context_wrap(SS_TULPN_DOCS)),
-        'ssa': SsTULPNA(context_wrap(SS_TULPNA_DOCS)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
