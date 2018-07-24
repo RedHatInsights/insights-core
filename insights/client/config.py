@@ -392,11 +392,12 @@ class InsightsConfig(object):
         if unknown_opts and self._print_errors:
             # only print error once
             sys.stdout.write(
-                'Unknown options: ' + ', '.join(list(unknown_opts)) + '\n')
+                'WARNING: Unknown options: ' +
+                ', '.join(list(unknown_opts)) + '\n')
             if 'no_schedule' in unknown_opts:
-                sys.stdout.write('Config option `no_schedule` has been '
-                                 'deprecated. To disable automatic scheduling '
-                                 'for Red Hat Insights, run '
+                sys.stdout.write('WARNING: Config option `no_schedule` has '
+                                 'been deprecated. To disable automatic '
+                                 'scheduling for Red Hat Insights, run '
                                  '`insights-client --disable-schedule`\n')
             self._print_errors = False
         self.__dict__.update(dict_)
