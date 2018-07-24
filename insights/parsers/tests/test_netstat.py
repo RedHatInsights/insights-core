@@ -622,6 +622,7 @@ def test_ss_tulpn_get_port():
     assert ss.get_localport("22") == exp03
     assert ss.get_peerport("22") == []
     assert ss.get_port("22") == exp03
+    assert ss.get_port("2049") == []
 
 
 # Because tests are done at the module level, we have to put all the shared
@@ -633,15 +634,16 @@ def test_netstat_doc_examples():
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
         'ss': SsTULPN(context_wrap(SS_TULPN_DOCS)),
-        'ssa': SsTULPN(context_wrap(SS_TULPNA_DOCS)),
+        'ssa': SsTULPNA(context_wrap(SS_TULPNA_DOCS)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
 
 
 def test_ss_tulpna_get_port():
-    ss = SsTULPNA(context_wrap(Ss_TULPNA))
+    ssa = SsTULPNA(context_wrap(Ss_TULPNA))
     exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
-    assert ss.get_peerport("2049") == exp01
-    assert ss.get_localport("2049") == []
-    assert ss.get_port("2049") == exp01
+    assert len(ssa.data) == 15
+    assert ssa.get_peerport("2049") == exp01
+    assert ssa.get_localport("2049") == []
+    assert ssa.get_port("2049") == exp01

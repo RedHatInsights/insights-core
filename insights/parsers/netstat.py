@@ -704,7 +704,7 @@ class SsTULPN(CommandParser):
         return self.get_localport(port) + self.get_peerport(port)
 
 
-@parser(Specs.ss)
+@parser(Specs.ss_tulpna)
 class SsTULPNA(SsTULPN):
     """
     Parse the output of the ``/usr/sbin/ss -tulpna`` command.
@@ -734,12 +734,14 @@ class SsTULPNA(SsTULPN):
     Examples:
 
         >>> type(ssa)
-        <class 'insights.parsers.netstat.SsTULPN'>
+        <class 'insights.parsers.netstat.SsTULPNA'>
         >>> sorted(ssa.data[1].keys())  # Rows stored by column headings
         ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
         >>> ssa.data[0]['Local-Address-Port']
         '*:68'
         >>> ssa.data[0]['State']
         'UNCONN'
+        >>> ssa.data[2]['State']
+        'ESTAB'
     """
     pass
