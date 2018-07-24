@@ -1,5 +1,31 @@
 # Change Log
 
+## [insights-core-3.0.30-462](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.30-462) (2018-07-24)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.29-455...insights-core-3.0.30-462)
+
+**Fixed bugs:**
+
+- Wrong comparison method is used in get\_localport and get\_peerport of SsTULPN parser   [\#1281](https://github.com/RedHatInsights/insights-core/issues/1281)
+- insights hang when extract jdr archive [\#1272](https://github.com/RedHatInsights/insights-core/issues/1272)
+- Dead loop in Mount.get\_dir\(\) when no '/' in mount output [\#1245](https://github.com/RedHatInsights/insights-core/issues/1245)
+- Commands return bytes instead of unicode [\#1181](https://github.com/RedHatInsights/insights-core/issues/1181)
+- Hostname parser doesn't raise exception on invalid data [\#1113](https://github.com/RedHatInsights/insights-core/issues/1113)
+
+**Closed issues:**
+
+- Enhance parser mysqladmin [\#1242](https://github.com/RedHatInsights/insights-core/issues/1242)
+- Failing tests in master [\#1231](https://github.com/RedHatInsights/insights-core/issues/1231)
+- Issue with simple\_command data source in spec\_factory [\#1228](https://github.com/RedHatInsights/insights-core/issues/1228)
+- No spec for docker\_image\_inspect and docker\_container\_inspect [\#1197](https://github.com/RedHatInsights/insights-core/issues/1197)
+- There are unnecessary secondary specs in DefaultSpecs [\#1186](https://github.com/RedHatInsights/insights-core/issues/1186)
+- Missing dependencies in README [\#1164](https://github.com/RedHatInsights/insights-core/issues/1164)
+
+## [insights-core-3.0.29-455](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.29-455) (2018-07-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.28...insights-core-3.0.29-455)
+
+## [insights-core-3.0.28](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.28) (2018-07-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.27-441...insights-core-3.0.28)
+
 ## [insights-core-3.0.27-441](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.27-441) (2018-07-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.26-436...insights-core-3.0.27-441)
 
