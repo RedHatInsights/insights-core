@@ -400,6 +400,8 @@ class InsightsConfig(object):
                                  'scheduling for Red Hat Insights, run '
                                  '`insights-client --disable-schedule`\n')
             self._print_errors = False
+        for u in unknown_opts:
+            dict_.pop(u, None)
         self.__dict__.update(dict_)
         self._imply_options()
         self._validate_options()
@@ -537,6 +539,6 @@ class InsightsConfig(object):
 
 
 if __name__ == '__main__':
-    config = InsightsConfig()
+    config = InsightsConfig(_print_errors=True)
     config.load_all()
     print(config)
