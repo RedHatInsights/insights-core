@@ -437,7 +437,7 @@ class first_file(object):
         self.kind = kind
         self.raw = kind is RawFileProvider
         self.__name__ = self.__class__.__name__
-        datasource(context, raw=self.raw)(self)
+        datasource(self.context, raw=self.raw)(self)
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
