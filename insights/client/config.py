@@ -474,6 +474,7 @@ class InsightsConfig(object):
                 sys.stdout.write(
                     'ERROR: Could not read configuration file, '
                     'using defaults\n')
+            return
         try:
             # Try to add the insights-client section
             parsedconfig.add_section(constants.app_name)
