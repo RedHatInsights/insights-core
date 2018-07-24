@@ -683,18 +683,18 @@ class SsTULPN(CommandParser):
     def get_localport(self, port):
         list_conn = []
         for line in self.data:
-            if line.get('Local-Address-Port') and\
-                    ':*' not in line.get("Local-Address-Port") and\
-                    int(port) == int(line.get("Local-Address-Port").split(':')[-1]):
+            local_port = line.get('Local-Address-Port')
+            if local_port and ':*' not in local_port and\
+                    int(port) == int(local_port.split(':')[-1]):
                 list_conn.append(line)
         return list_conn
 
     def get_peerport(self, port):
         list_conn = []
         for line in self.data:
-            if line.get('Peer-Address-Port') and\
-                    ':*' not in line.get("Peer-Address-Port") and\
-                    int(port) == int(line.get("Peer-Address-Port").split(':')[-1]):
+            peer_port = line.get('Peer-Address-Port')
+            if peer_port and ':*' not in peer_port and\
+                    int(port) == int(peer_port.split(':')[-1]):
                 list_conn.append(line)
         return list_conn
 
