@@ -562,12 +562,13 @@ tcp    LISTEN     0      100    127.0.0.1:25                    *:*             
 tcp    LISTEN     0      64        *:34850                 *:*
 tcp    LISTEN     0      64        *:35752                 *:*
 tcp    LISTEN     0      128      :::2223                 :::*                   users:(("sshd",pid=1416,fd=4))
+tcp    LISTEN     0      128      *:22                    *:*                    users:(("sshd",1231,3))
 """
 
 
 def test_ss_tulpn_data():
     ss = SsTULPN(context_wrap(Ss_TULPN)).data
-    assert len(ss) == 12
+    assert len(ss) == 13
     assert ss[0] == {'Netid': 'udp', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:55898', 'State': 'UNCONN', 'Recv-Q': '0'}
     assert ss[1].get("Netid") == "udp"
     assert ss[9].get("Process") is None
@@ -589,6 +590,10 @@ def test_ss_tulpn_get_port():
     exp02 = [{'Netid': 'udp', 'Process': 'users:(("rpc.statd",pid=29559,fd=10))', 'Peer-Address-Port': ':::12345', 'Send-Q': '0', 'Local-Address-Port': ':::37968', 'State': 'UNCONN', 'Recv-Q': '0'}]
     assert ss.get_peerport("12345") == exp02
     assert ss.get_port("12345") == exp02
+    exp03 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",1231,3))', 'Peer-Address-Port': '*:*', 'Send-Q': '128', 'Local-Address-Port': '*:22', 'State': 'LISTEN', 'Recv-Q': '0'}]
+    assert ss.get_localport("22") == exp03
+    assert ss.get_peerport("22") == []
+    assert ss.get_port("22") == exp03
 
 
 # Because tests are done at the module level, we have to put all the shared
