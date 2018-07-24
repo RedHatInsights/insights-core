@@ -111,12 +111,6 @@ class LsPciDriver(LsPci):
         Args:
             content (context.content): Parser context content
         """
-        # Use all the defined scanners to search the log file, setting the
-        # properties defined in the scanner.
-        self.lines = [l for l in content if len(l) > 0 and l[0].isdigit()]
-        for scanner in self.scanners:
-            scanner(self)
-        # Handle lines with kernel information
         self.data = {}
         bus_device_function = ""
         for line in get_active_lines(content):
@@ -129,6 +123,7 @@ class LsPciDriver(LsPci):
             elif bus_device_function:
                 parts = line.split(':')
                 self.data[bus_device_function][parts[0]] = parts[1].lstrip()
+        super(LsPciDriver, self).parse_content(content)
 
     def pci_dev_details(self, dev_name):
         """
