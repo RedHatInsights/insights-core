@@ -7,14 +7,10 @@ import logging
 import sys
 import traceback
 
-from functools import partial
-
 from insights.core import dr
 from insights import settings
 
 log = logging.getLogger(__name__)
-
-RULE_TYPES = set()
 
 
 class ContentException(dr.SkipComponent):
@@ -22,154 +18,114 @@ class ContentException(dr.SkipComponent):
     pass
 
 
-def parser_executor(component, broker, requires, optional):
-    dependency = requires[0]
-    if dependency not in broker:
-        raise dr.MissingRequirements(([dependency], []))
+class datasource(dr.ComponentType):
+    """ Decorates a component that one or more Parsers will consume. """
+    multi_output = False
+    raw = False
 
-    dep_value = broker[dependency]
-    if not isinstance(dep_value, list):
-        return component(dep_value)
-
-    results = []
-    for d in dep_value:
+    def invoke(self, broker):
         try:
-            r = component(d)
-            if r is not None:
-                results.append(r)
-        except dr.SkipComponent:
-            pass
-        except Exception as ex:
-            tb = traceback.format_exc()
-            log.warn(tb)
-            broker.add_exception(component, ex, tb)
-
-    if not results:
-        log.debug("All failed: %s" % dr.get_name(component))
-        raise dr.SkipComponent()
-
-    return results
-
-
-def rule_executor(component, broker, requires, optional, executor=dr.default_executor):
-    try:
-        r = executor(component, broker, requires, optional)
-        if r is None:
+            return self.component(broker)
+        except ContentException as ce:
+            log.debug(ce)
+            broker.add_exception(self.component, ce, traceback.format_exc())
             raise dr.SkipComponent()
-    except dr.MissingRequirements as mr:
-        details = dr.stringify_requirements(mr.requirements)
-        r = make_skip(dr.get_name(component),
-                reason="MISSING_REQUIREMENTS", details=details)
-    validate_response(r)
-    return r
 
 
-def datasource_executor(component, broker, requires, optional):
-    try:
-        return dr.broker_executor(component, broker, requires, optional)
-    except ContentException as ce:
-        log.debug(ce)
-        broker.add_exception(component, ce, traceback.format_exc())
-        raise dr.SkipComponent()
-
-
-broker_rule_executor = partial(rule_executor, executor=dr.broker_executor)
-
-
-class DatasourceDelegate(dr.Delegate):
-    def __init__(self, component, requires, optional):
-        super(DatasourceDelegate, self).__init__(component, requires, optional)
-        self.multi_output = False
-        self.raw = False
-
-
-def make_rule_type(auto_requires=[],
-                   auto_optional=[],
-                   group=dr.GROUPS.single,
-                   use_broker_executor=False,
-                   type_metadata={}):
-
-    executor = broker_rule_executor if use_broker_executor else rule_executor
-    _type = dr.new_component_type(auto_requires=auto_requires,
-                                  auto_optional=auto_optional,
-                                  group=group,
-                                  executor=executor,
-                                  type_metadata=type_metadata)
-
-    def decorator(*requires, **kwargs):
-        if kwargs.get("cluster"):
-            kwargs["group"] = dr.GROUPS.cluster
-        kwargs["component_type"] = decorator
-        return _type(*requires, **kwargs)
-
-    RULE_TYPES.add(decorator)
-    return decorator
-
-
-class StdTypes(dr.TypeSet):
-    _datasource = dr.new_component_type(executor=datasource_executor, delegate_class=DatasourceDelegate)
-    """ A component that one or more Parsers will consume."""
-
-    _metadata = dr.new_component_type(auto_requires=["metadata.json"], executor=parser_executor)
-
-    _parser = dr.new_component_type(executor=parser_executor)
-
-    combiner = dr.new_component_type()
-    """ A component that composes other components. """
-
-    rule = make_rule_type()
-    """ A component that can see all parsers and combiners for a single host."""
-
-    condition = dr.new_component_type()
-    """ A component used by rules that allows automated statistical analysis."""
-
-    incident = dr.new_component_type()
-    """ A component used by rules that allows automated statistical analysis."""
-
-    fact = dr.new_component_type()
-
-    cluster_rule = make_rule_type(group=dr.GROUPS.cluster)
-
-
-combiner = StdTypes.combiner
-rule = StdTypes.rule
-condition = StdTypes.condition
-incident = StdTypes.incident
-fact = StdTypes.fact
-cluster_rule = StdTypes.cluster_rule
-
-
-def datasource(*args, **kwargs):
-    def _f(func):
-        metadata = kwargs.get("metadata", {})
-        c = StdTypes._datasource(*args, metadata=metadata, component_type=datasource)(func)
-        delegate = dr.get_delegate(c)
-        delegate.multi_output = kwargs.get("multi_output", False)
-        delegate.raw = kwargs.get("raw", False)
-        return c
-    return _f
-
-
-def metadata(group=dr.GROUPS.single):
-    def _f(func):
-        return StdTypes._metadata(group=group, component_type=metadata)(func)
-    return _f
-
-
-def parser(dependency, group=dr.GROUPS.single):
+class parser(dr.ComponentType):
     """
-    Parses the raw content of a datasource into a strongly-typed
-    object usable by combiners and rules. `parser` is a specialization
-    of the general component interface.
+    Decorates a component responsible for parsing the output of a
+    datasource.
     """
+    def __init__(self, dep, group=dr.GROUPS.single):
+        super(parser, self).__init__(dep, group=group)
 
-    def _f(component):
-        return StdTypes._parser(dependency, group=group, component_type=parser)(component)
-    return _f
+    def invoke(self, broker):
+        dependency = self.requires[0]
+        if dependency not in broker:
+            raise dr.MissingRequirements(([dependency], []))
+
+        dep_value = broker[dependency]
+        if not isinstance(dep_value, list):
+            return self.component(dep_value)
+
+        results = []
+        for d in dep_value:
+            try:
+                r = self.component(d)
+                if r is not None:
+                    results.append(r)
+            except dr.SkipComponent:
+                pass
+            except Exception as ex:
+                tb = traceback.format_exc()
+                log.warn(tb)
+                broker.add_exception(self.component, ex, tb)
+
+        if not results:
+            log.debug("All failed: %s" % dr.get_name(self.component))
+            raise dr.SkipComponent()
+        return results
+
+
+class metadata(parser):
+    """ Used for old cluster uber-archives. """
+    # TODO: Mark deprecated
+    requires = ["metadata.json"]
+
+
+class combiner(dr.ComponentType):
+    """ ComponentType for a component that composes other components. """
+    pass
+
+
+class rule(dr.ComponentType):
+    """
+    ComponentType for a component that can see all parsers and combiners for a
+    single host.
+    """
+    def invoke(self, broker):
+        try:
+            r = super(rule, self).invoke(broker)
+            if r is None:
+                raise dr.SkipComponent()
+        except dr.MissingRequirements as mr:
+            details = dr.stringify_requirements(mr.requirements)
+            r = make_skip(dr.get_name(self.component),
+                    reason="MISSING_REQUIREMENTS", details=details)
+        validate_response(r)
+        return r
+
+
+class condition(dr.ComponentType):
+    """
+    ComponentType for a component used by rules that allows automated
+    statistical analysis.
+    """
+    pass
+
+
+class incident(dr.ComponentType):
+    """
+    ComponentType for a component used by rules that allows automated
+    statistical analysis.
+    """
+    pass
+
+
+class fact(dr.ComponentType):
+    """
+    ComponentType for a component that surfaces a dictionary or list of
+    dictionaries that will be used later by cluster rules.
+    """
+    pass
 
 
 def is_type(component, _type):
-    return dr.get_component_type(component) is _type
+    try:
+        return issubclass(dr.get_component_type(component), _type)
+    except:
+        return False
 
 
 def is_datasource(component):
@@ -185,7 +141,7 @@ def is_combiner(component):
 
 
 def is_rule(component):
-    return dr.get_component_type(component) in RULE_TYPES
+    return is_type(component, rule)
 
 
 def is_component(obj):
