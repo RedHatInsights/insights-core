@@ -69,6 +69,7 @@ from insights.core.plugins import combiner, parser
 from insights.configtree import BinaryBool, UnaryBool
 from insights.configtree import Directive, Section
 from insights.configtree import DocParser, LineGetter, parse_name_attrs, startswith
+from insights.configtree import caseless
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
 from insights.specs import Specs
 
@@ -337,7 +338,7 @@ class HttpConfDocParser(DocParser):
             raise Exception("Expected end tag for %s" % name)
 
         end = next(lg).strip("</> ")
-        if not name == end:
+        if caseless(name) != caseless(end):
             raise Exception("Tag mismatch: %s != %s" % (name, end))
         return Section(name=name, attrs=attrs, children=body, ctx=self.ctx)
 
