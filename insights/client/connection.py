@@ -684,19 +684,19 @@ class InsightsConnection(object):
             from .utilities import magic_plan_b
             mime_type = magic_plan_b(data_collected)
 
+        upload_url = self.upload_url
+
         if self.config.legacy_upload:
             files = {
                 'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
             if self.config.analyze_container:
                 logger.debug('Uploading container, image, mountpoint or tarfile.')
-                upload_url = self.upload_url
             else:
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
             headers = {'x-rh-collection-time': str(duration)}
         else:
-            upload_url = 'http://upload-service-platform-ci.1b13.insights.openshiftapps.com/api/v1/upload'
             files = {
                 'upload': (file_name, open(data_collected, 'rb'),
                            'application/vnd.redhat.advisor.test+tgz')}
