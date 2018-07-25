@@ -1,4 +1,4 @@
-from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTULPNA
+from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA
 from insights.tests import context_wrap
 from insights.parsers import netstat
 from ...parsers import ParseException
@@ -565,7 +565,7 @@ tcp    LISTEN     0      128      :::2223                 :::*                  
 tcp    LISTEN     0      128      *:22                    *:*                    users:(("sshd",1231,3))
 """
 
-Ss_TULPNA = """
+Ss_TUPNA = """
 Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
 tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
 tcp   UNCONN     0      0                     *:111                *:*      users:(("rpcbind",483,6))
@@ -633,14 +633,14 @@ def test_netstat_doc_examples():
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
         'ss': SsTULPN(context_wrap(SS_TULPN_DOCS)),
-        'ssa': SsTULPNA(context_wrap(SS_TULPNA_DOCS)),
+        'ssa': SsTUPNA(context_wrap(SS_TULPNA_DOCS)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
 
 
-def test_ss_tulpna_get_port():
-    ssa = SsTULPNA(context_wrap(Ss_TULPNA))
+def test_ss_tupna_get_port():
+    ssa = SsTUPNA(context_wrap(Ss_TUPNA))
     exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
     assert len(ssa.data) == 15
     assert ssa.get_peerport("2049") == exp01

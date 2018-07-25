@@ -20,7 +20,7 @@ Netstat_I - command ``netstat -i``
 SsTULPN - command ``ss -tulpn``
 -------------------------------
 
-SsTULPNA - command ``ss -tulpna``
+SsTUPNA - command ``ss -tupna``
 ---------------------------------
 """
 
@@ -704,10 +704,10 @@ class SsTULPN(CommandParser):
         return self.get_localport(port) + self.get_peerport(port)
 
 
-@parser(Specs.ss_tulpna)
-class SsTULPNA(SsTULPN):
+@parser(Specs.ss_tupna)
+class SsTUPNA(SsTULPN):
     """
-    Parse the output of the ``/usr/sbin/ss -tulpna`` command.
+    Parse the output of the ``/usr/sbin/ss -tupna`` command.
 
     This class parse the input as a table with header:
         "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
@@ -734,7 +734,7 @@ class SsTULPNA(SsTULPN):
     Examples:
 
         >>> type(ssa)
-        <class 'insights.parsers.netstat.SsTULPNA'>
+        <class 'insights.parsers.netstat.SsTUPNA'>
         >>> sorted(ssa.data[1].keys())  # Rows stored by column headings
         ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
         >>> ssa.data[0]['Local-Address-Port']
