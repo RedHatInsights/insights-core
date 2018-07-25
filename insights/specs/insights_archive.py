@@ -69,6 +69,7 @@ class InsightsArchiveSpecs(Specs):
     httpd_M = glob_file("insights_commands/httpd*_-M")
     httpd_pid = simple_file("insights_commands/pgrep_-o_httpd")
     httpd_V = glob_file("insights_commands/httpd*_-V")
+    init_process_cgroup = simple_file("insights_commands/cat_.proc.1.cgroup")
     ifconfig = simple_file("insights_commands/ifconfig_-a")
     ip6tables = simple_file("insights_commands/ip6tables-save")
     ip_addr = simple_file("insights_commands/ip_addr")
