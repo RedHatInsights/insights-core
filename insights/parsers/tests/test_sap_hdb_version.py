@@ -1,5 +1,5 @@
-from insights.parsers import SkipException, sap_hana_hdb_version
-from insights.parsers.sap_hana_hdb_version import HDBVersion, HxeadmHDBVersion
+from insights.parsers import SkipException, sap_hdb_version
+from insights.parsers.sap_hdb_version import HDBVersion
 from insights.tests import context_wrap
 import pytest
 import doctest
@@ -50,7 +50,7 @@ def test_HDBVersion_doc():
     env = {
             'hdb_ver': HDBVersion(context_wrap(HDB_VER_1)),
           }
-    failed, total = doctest.testmod(sap_hana_hdb_version, globs=env)
+    failed, total = doctest.testmod(sap_hdb_version, globs=env)
     assert failed == 0
 
 
@@ -64,15 +64,15 @@ def test_HDBVersion_ng():
     assert "Incorrect HDB version: 2.00.020.1500920972" in str(e_info.value)
 
 
-def test_HxeadmHDBVersion_1():
-    hdb_ver = HxeadmHDBVersion(context_wrap(HDB_VER_1))
+def test_HDBVersion_1():
+    hdb_ver = HDBVersion(context_wrap(HDB_VER_1))
     assert hdb_ver['branch'] == 'hanaws'
     assert hdb_ver['compile type'] == 'rel'
     assert hdb_ver['weekstone'] == '2018.13.0'
 
 
-def test_HxeadmHDBVersion_2():
-    hdb_ver = HxeadmHDBVersion(context_wrap(HDB_VER_2))
+def test_HDBVersion_2():
+    hdb_ver = HDBVersion(context_wrap(HDB_VER_2))
     assert hdb_ver['branch'] == 'fa/hana2sp02'
     assert hdb_ver['compile host'] == 'ld4551'
     assert 'compile_type' not in hdb_ver

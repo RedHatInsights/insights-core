@@ -5,15 +5,13 @@ HDBVersion - Commands
 Shared parser for parsing output of the ``su <SID>adm -lc 'HDB version'``
 commands.
 
-HxeadmHDBVersion- command ``su hxeadm -lc 'HDB version'``
----------------------------------------------------------
-
 """
 from .. import parser, CommandParser, LegacyItemAccess
 from insights.parsers import SkipException
 from insights.specs import Specs
 
 
+@parser(Specs.sap_hdb_version)
 class HDBVersion(CommandParser, LegacyItemAccess):
     """
     Class for parsing the output of `HDB version` command.
@@ -41,7 +39,7 @@ class HDBVersion(CommandParser, LegacyItemAccess):
 
     Examples:
         >>> type(hdb_ver)
-        <class 'insights.parsers.sap_hana_hdb_version.HDBVersion'>
+        <class 'insights.parsers.sap_hdb_version.HDBVersion'>
         >>> hdb_ver.version
         '2.00.030.00.1522210459'
         >>> hdb_ver.major
@@ -52,6 +50,8 @@ class HDBVersion(CommandParser, LegacyItemAccess):
         '030'
         >>> hdb_ver.patchlevel
         '00'
+        >>> hdb_ver['machine config']
+        'linuxx86_64'
     """
 
     def parse_content(self, content):
@@ -71,12 +71,3 @@ class HDBVersion(CommandParser, LegacyItemAccess):
                 self.minor = val_splits[1]
                 self.revision = val_splits[2]
                 self.patchlevel = val_splits[3]
-
-
-@parser(Specs.sap_hxeadm_hdb_version)
-class HxeadmHDBVersion(HDBVersion):
-    """
-    Class for parsing the output of `su hxeadm -lc 'HDB version'` command.
-    See its super class :class:`HDBVersion`.
-    """
-    pass
