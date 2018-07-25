@@ -549,10 +549,10 @@ class DefaultSpecs(Specs):
 
         """
         hana_ins = broker[DefaultSpecs.saphostctl_listinstances].content
-        hn = broker[DefaultSpecs.hostname].content.split('.')[0].strip()
+        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
         results = set()
         for ins in hana_ins:
-            ins_splits = ins.split('-')
+            ins_splits = ins.split(' - ')
             if ins_splits[2].strip() == hn:
                 results.add(ins_splits[0].split()[-1].lower())
         return list(results)
