@@ -237,6 +237,7 @@ def test_lspci_driver():
     assert len(lspci_obj.data) == 0
     assert len(lspci_obj.pci_dev_list) == 0
 
+
 def test_doc_examples():
     env = {
             'lspci': LsPci(context_wrap(LSPCI_DRIVER_DOC))

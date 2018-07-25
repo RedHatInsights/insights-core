@@ -2,8 +2,7 @@
 LsPci - Command ``lspci -k``
 ============================
 
-To parser the PCI device information gathered from the ``/usr/sbin/lspci -k``
-command.
+To parse the PCI device information gathered from the ``/sbin/lspci -k`` command.
 
 """
 
@@ -14,8 +13,8 @@ from insights.specs import Specs
 @parser(Specs.lspci)
 class LsPci(CommandParser, LogFileOutput):
     """
-    This module provides plugins access to the PCI device information gathered from
-    the ``/usr/sbin/lspci -k`` command.
+    Class to parse the PCI device information gathered from the
+    ``/sbin/lspci -k`` command.
 
     Typical output of the ``lspci -k`` command is::
 
@@ -49,8 +48,10 @@ class LsPci(CommandParser, LogFileOutput):
         False
         >>> sorted(lspci.pci_dev_list)
         ['00:00.0', '00:01.0', '00:02.0', '03:00.0', '06:00.0']
-        >>> lspci.pci_dev_details('00:00.0')
-        {'Subsystem': 'Cisco Systems Inc Device 0101', 'Dev_Details': 'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'}
+        >>> lspci.pci_dev_details('00:00.0')['Subsystem']
+        'Cisco Systems Inc Device 0101'
+        >>> lspci.pci_dev_details('00:00.0')['Dev_Details']
+        'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
 
     Attributes:
         data (dict): Dict where the keys are the device number and values are
@@ -60,9 +61,6 @@ class LsPci(CommandParser, LogFileOutput):
 
     """
     def parse_content(self, content):
-        """
-        Main parsing class method which stores all interesting data from the content.
-        """
         # Use all the defined scanners to search the log file, setting the
         # properties defined in the scanner.
         self.lines = [l for l in content if len(l) > 0 and l[0].isdigit()]
@@ -98,9 +96,6 @@ class LsPci(CommandParser, LogFileOutput):
     @property
     def pci_dev_list(self):
         """
-        It will return list of PCI devices.
-
-        Returns:
-            (list): Returns device list on successes. Returns `None` if device doesn't exists
+        The list of PCI devices.
         """
         return self.data.keys()
