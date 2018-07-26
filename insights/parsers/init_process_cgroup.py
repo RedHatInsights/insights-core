@@ -1,11 +1,12 @@
 """
-InitProcessCgroup - Command ``/usr/bin/cat /proc/1/cgroup``
-================================================================
+InitProcessCgroup - File ``/proc/1/cgroup``
+===========================================
 
-This parser reads the output of ``/usr/bin/cat /proc/1/cgroup``.
-This command shows the cgroup detail of init process. The format
-of the content is like key-value. We can also use this info to
-check if the archive is from container or host.
+This parser reads the content of ``/proc/1/cgroup``.
+This command shows the cgroup detail of init process.
+The format of the content is like key-value. We can
+also use this info to check if the archive is from
+container or host.
 """
 
 from .. import parser, CommandParser, get_active_lines, LegacyItemAccess
@@ -16,6 +17,11 @@ from insights.specs import Specs
 class InitProcessCgroup(CommandParser, LegacyItemAccess):
     """
     Class ``InitProcessCgroup`` parses the content of the ``/usr/bin/cat /proc/1/cgroup`` command output.
+
+    Attributes:
+        is_container (bool): It is used to check if a archive is from host or container.
+        Return True if the archive is from container.
+
     A small sample of the content of this file looks like::
 
         11:hugetlb:/
@@ -37,15 +43,10 @@ class InitProcessCgroup(CommandParser, LegacyItemAccess):
         ["10", "/"]
         >>> cgroupinfo.is_container
         False
-
     """
 
     def parse_content(self, content):
         self.data = {}
-        """
-        Attribute is_container is used to check if a archive is from host or container.
-        Return True if the archive is from container.
-        """
         self.is_container = False
         for line in get_active_lines(content):
             values = line.split(":")

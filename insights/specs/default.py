@@ -268,7 +268,7 @@ class DefaultSpecs(Specs):
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     init_ora = simple_file("${ORACLE_HOME}/dbs/init.ora")
     initscript = glob_file(r"etc/rc.d/init.d/*")
-    init_process_cgroup = simple_command("/usr/bin/cat /proc/1/cgroup")
+    init_process_cgroup = simple_file("/proc/1/cgroup")
     interrupts = simple_file("/proc/interrupts")
     ip_addr = simple_command("/sbin/ip addr")
     ip_route_show_table_all = simple_command("/sbin/ip route show table all")

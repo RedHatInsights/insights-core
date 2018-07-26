@@ -46,7 +46,7 @@ class SosSpecs(Specs):
     hostname = first_of([simple_file("sos_commands/general/hostname_-f"), simple_file("sos_commands/general/hostname")])
     httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"])
     installed_rpms = simple_file("installed-rpms")
-    init_process_cgroup = simple_file("sos_commands/cat_.proc.1.cgroup")
+    init_process_cgroup = simple_file("/proc/1/cgroup")
     journal_since_boot = simple_file("sos_commands/logs/journalctl_--no-pager_--boot")
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = simple_file("sos_commands/block/lsblk")
