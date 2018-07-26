@@ -152,6 +152,7 @@ def run(component=None, root=None, print_summary=False,
     dr.load_components("insights.specs.default")
     dr.load_components("insights.specs.insights_archive")
     dr.load_components("insights.specs.sos_archive")
+    dr.load_components("insights.specs.jdr_archive")
 
     args = None
     if print_summary:

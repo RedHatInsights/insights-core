@@ -28,6 +28,7 @@ class SosSpecs(Specs):
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
     dmesg = simple_file("sos_commands/kernel/dmesg")
     dmidecode = simple_file("dmidecode")
+    dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("sos_commands/networking/ethtool_-S_*")
