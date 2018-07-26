@@ -8,12 +8,12 @@ of the content is like key-value. We can also use this info to
 check if the archive is from container or host.
 """
 
-from .. import parser, CommandParser, get_active_lines
+from .. import parser, CommandParser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
 
 
 @parser(Specs.init_process_cgroup)
-class InitProcessCgroup(CommandParser):
+class InitProcessCgroup(CommandParser, LegacyItemAccess):
     """
     Class ``InitProcessCgroup`` parses the content of the ``/usr/bin/cat /proc/1/cgroup`` command output.
     A small sample of the content of this file looks like::
@@ -42,6 +42,10 @@ class InitProcessCgroup(CommandParser):
 
     def parse_content(self, content):
         self.data = {}
+        """
+        Attribute is_container is used to check if a archive is from host or container.
+        Return True if the archive is from container.
+        """
         self.is_container = False
         for line in get_active_lines(content):
             values = line.split(":")
