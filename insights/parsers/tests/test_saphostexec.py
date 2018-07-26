@@ -51,7 +51,6 @@ saphostexec stopped
 def test_saphostexec_status_abnormal():
     with pytest.raises(SkipException) as s:
         SAPHostExecStatus(context_wrap(STATUS_ABNORMAL))
-    print s
     assert "Incorrect status: 'sapstartsrv run (pid = 9163)'" in str(s)
     assert "Incorrect status: 'saposcol (pid = 9,23)'" not in str(s)
 

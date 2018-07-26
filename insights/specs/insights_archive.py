@@ -172,6 +172,8 @@ class InsightsArchiveSpecs(Specs):
     route = simple_file("insights_commands/route_-n")
     rpm_V_packages = simple_file("insights_commands/rpm_-V_coreutils_procps_procps-ng_shadow-utils_passwd_sudo")
     saphostctl_getcimobject_sapinstance = simple_file("insights_commands/saphostctrl_-function_GetCIMObject_-enuminstances_SAPInstance")
+    saphostexec_status = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-status")
+    saphostexec_version = simple_file("insights_commands/usr.sap.hostctrl.exe.saphostexec_-version")
     sestatus = simple_file("insights_commands/sestatus_-b")
     smbstatus_S = simple_file("insights_commands/smbstatus_-S")
     smbstatus_p = simple_file("insights_commands/smbstatus_-p")
