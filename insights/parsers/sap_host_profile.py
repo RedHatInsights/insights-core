@@ -1,0 +1,42 @@
+"""
+SAPHostProfile - File ``/usr/sap/hostctrl/exe/host_profile``
+============================================================
+
+Shared parser for parsing the ``/usr/sap/hostctrl/exe/host_profile`` file.
+
+"""
+from .. import Parser, parser, LegacyItemAccess, get_active_lines
+from insights.specs import Specs
+
+
+@parser(Specs.sap_host_profile)
+class SAPHostProfile(Parser, LegacyItemAccess):
+    """
+    Class for parsing the `/usr/sap/hostctrl/exe/host_profile` file.
+
+    Typical content of the file is::
+
+        SAPSYSTEMNAME = SAP
+        SAPSYSTEM = 99
+        service/porttypes = SAPHostControl SAPOscol SAPCCMS
+        DIR_LIBRARY = /usr/sap/hostctrl/exe
+        DIR_EXECUTABLE = /usr/sap/hostctrl/exe
+        DIR_PROFILE = /usr/sap/hostctrl/exe
+        DIR_GLOBAL = /usr/sap/hostctrl/exe
+        DIR_INSTANCE = /usr/sap/hostctrl/exe
+        DIR_HOME = /usr/sap/hostctrl/work
+
+    Examples:
+        >>> type(hpf)
+        <class 'insights.parsers.sap_host_profile.SAPHostProfile'>
+        >>> hpf['SAPSYSTEMNAME']
+        'SAP'
+        >>> hpf['service/porttypes']
+        'SAPHostControl SAPOscol SAPCCMS'
+    """
+
+    def parse_content(self, content):
+        self.data = {}
+        for line in get_active_lines(content):
+            key, val = line.split('=', 1)
+            self.data[key.strip()] = val.strip()
