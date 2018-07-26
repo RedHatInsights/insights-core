@@ -35,10 +35,10 @@ CGROUP_CONTAINER = """
 def test_init_process_cgroup():
     result = init_process_cgroup.InitProcessCgroup(context_wrap(CGROUP_HOST))
     assert result.data["memory"] == ["10", "/"]
-    if not result.is_container():
+    if not result.is_container:
         assert True
 
     result = init_process_cgroup.InitProcessCgroup(context_wrap(CGROUP_CONTAINER))
     assert result.data["memory"] == ["10", "/system.slice/docker-55b2b88feeb4fc56bb9384e55100a8581271ca7a22399c6ec52784a35dba933b.scope"]
-    if result.is_container():
+    if result.is_container:
         assert True

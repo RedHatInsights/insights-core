@@ -42,18 +42,9 @@ class InitProcessCgroup(CommandParser):
 
     def parse_content(self, content):
         self.data = {}
+        self.is_container = False
         for line in get_active_lines(content):
             values = line.split(":")
             self.data[values[1]] = [values[0], values[2]]
-
-    def is_container(self):
-        """
-        Function to check if the archive is from host or container. In container the cgroup value
-        is "/system.slice/docker-XXX.scope".
-        Return True when the archive is from container.
-        """
-        is_container = False
-        for value in self.data.values():
-            if "system.slice/docker-" in value[1]:
-                is_container = True
-        return is_container
+            if "system.slice/docker-" in values[2]:
+                self.is_container = True
