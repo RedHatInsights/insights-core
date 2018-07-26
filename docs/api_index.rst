@@ -95,6 +95,13 @@ insights.specs.sos_archive
     :show-inheritance:
     :undoc-members:
 
+insights.specs.jdr_archive
+--------------------------
+.. automodule:: insights.specs.jdr_archive
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.tests
 --------------
 

@@ -100,6 +100,7 @@ def main(filename):
     dr.load_components("insights.specs.default")
     dr.load_components("insights.specs.insights_archive")
     dr.load_components("insights.specs.sos_archive")
+    dr.load_components("insights.specs.jdr_archive")
     dr.load_components("insights.parsers")
     dr.load_components("insights.combiners")
 
