@@ -1,5 +1,7 @@
-from insights.configtree import startswith, endswith, contains
-from insights.configtree import eq, le, lt, ge, gt
+from insights.configtree import startswith, istartswith
+from insights.configtree import endswith, iendswith
+from insights.configtree import contains, icontains
+from insights.configtree import eq, ieq, le, ile, lt, ilt, ge, ige, gt, igt
 from insights.configtree import first, last  # noqa: F401
 from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.combiners.httpd_conf import in_network, is_private
@@ -249,6 +251,7 @@ HTTPD_CONF_NEST_4 = """
 def test_startswith():
     data = ["abc", "abrd", "ed"]
     assert startswith("ab")(data)
+    assert istartswith("AB")(data)
     assert startswith("ab")("abcde")
     assert not startswith("de")(data)
 
@@ -256,6 +259,7 @@ def test_startswith():
 def test_endswith():
     data = ["abc", "abrd", "ed"]
     assert endswith("d")(data)
+    assert iendswith("D")(data)
     assert endswith("d")("end")
     assert not endswith("re")(data)
 
@@ -263,6 +267,7 @@ def test_endswith():
 def test_contains():
     data = ["abc", "abrd", "ed"]
     assert contains("b")(data)
+    assert icontains("B")(data)
     assert contains("b")("abc")
     assert not contains("x")(data)
 
@@ -270,6 +275,7 @@ def test_contains():
 def test_equals():
     data = ["abc", "abrd", "ed"]
     assert eq("abc")(data)
+    assert ieq("ABC")(data)
     assert eq("b")("b")
     assert eq(10)([1, 2, 10])
     assert eq(10.0)([1, 2, 10.0])
@@ -280,6 +286,7 @@ def test_equals():
 def test_less_than():
     data = ["abc", "abrd", "ed"]
     assert lt("abd")(data)
+    assert ilt("ABD")(data)
     assert lt("b")("a")
     assert lt(10)([1, 2, 10])
     assert lt(10)(9)
@@ -290,6 +297,7 @@ def test_less_than():
 def test_less_than_equals():
     data = ["abc", "abrd", "ed"]
     assert le("abd")(data)
+    assert ile("ABD")(data)
     assert le("abc")(data)
     assert le("b")("b")
     assert le("b")("a")
@@ -305,6 +313,7 @@ def test_less_than_equals():
 def test_greater_than():
     data = ["abc", "abrd", "ed"]
     assert gt("abb")(data)
+    assert igt("ABB")(data)
     assert gt("b")("c")
     assert gt(10)([1, 2, 11])
     assert gt(10)(11)
@@ -315,6 +324,7 @@ def test_greater_than():
 def test_greater_than_equals():
     data = ["abc", "abrd", "ed"]
     assert ge("abb")(data)
+    assert ige("ABB")(data)
     assert ge("abc")(data)
     assert ge("b")("c")
     assert ge("c")("c")

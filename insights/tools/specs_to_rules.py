@@ -10,39 +10,41 @@ $ export PYTHONPATH=./
 $ ../insights-core/insights/tools/specs_to_rules.py > report.html
 
 """
-from collections import defaultdict
 import datetime
-from insights.core import dr, filters
+import logging
 from jinja2 import Environment
-from insights.core.plugins import is_datasource, datasource
+from operator import itemgetter
+
+from insights.core import dr, filters
+from insights.core import spec_factory as sf
+from insights.core.plugins import is_rule
+from insights.specs.default import DefaultSpecs
+from insights.specs import Specs
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 REPORT = """
-<html><head><title>Parser Rule Mapping Report ({{ report_date }})</title>
+<html><head><title>Spec to Rule Mapping Report ({{ report_date }})</title>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
 </head>
 <body>
-<h2>Parser Rule Mapping Report {{ report_date }}</h2>
-<p>This is the mapping of Red Hat Insights Parsers to Insights Rules that utilize those parsers.</p>
+<h2>Spec to Rule Mapping Report {{ report_date }}</h2>
+<p>This is the mapping of Red Hat Insights Specs to Insights Rules they affect.</p>
 
 <table class="table table-striped table-bordered">
 <thead>
 <tr><th>Spec Name</th><th>Spec</th><th>Rules</th><th>Filters</th></tr>
 </thead>
 <tbody>
-{% for name in specs.keys()|sort %}
-        {% if "_filters" not in spec %}
-            <tr>
-                <td>{{ name }}</td>
-                <td><code>{{ specs[name][name + "_spec-def"] }}</code></td>
-                <td>{{ specs[name][name + "_rules"] }}</td>
-                <td>
-                    {% for f in specs[name][name + "_filters"] %}
-                       <li>{{ f|e }}</li>
-                    {% endfor %}
-                </td>
-            </tr>
-        {% endif %}
+{% for info in infos %}
+    <tr>
+        <td>{{ info.name }}</td>
+        <td><code>{{ info.description }}</code></td>
+        <td>{{ info.rules }}</td>
+        <td>{{ info.filters }}</td>
+    </tr>
 {% endfor %}
 </tbody>
 </table>
@@ -50,80 +52,84 @@ REPORT = """
 """.strip()
 
 
-def main():
-    # config = get_config()
+def get_all(root, method=dr.get_dependencies):
+    for d in method(root):
+        yield d
+        for c in get_all(d, method=method):
+            yield c
 
+
+def load_plugins():
+    """ Load the plugins we care about """
     dr.load_components("insights.specs.default")
     dr.load_components("insights.parsers")
     dr.load_components("insights.combiners")
     dr.load_components("telemetry.rules.plugins")
     dr.load_components("prodsec")
-    ds = dr.COMPONENTS_BY_TYPE[datasource]
 
-    specs = []
-    for c in ds:
-        if not is_datasource(c):
-            continue
-        if not any(is_datasource(d) for d in dr.get_dependents(c)):
-            specs.append(c)
 
-    deps = defaultdict(dict)
+def get_specs():
+    """
+    Get default datasources that implement a `RegistryPoint` defined in
+    `insights.specs.Specs`
+    """
+    vals = vars(Specs).values()
+    sd = sf.SpecDescriptor
+    names = [d.__get__(d, None).__name__ for d in vals if isinstance(d, sd)]
+    return [d for d in [getattr(DefaultSpecs, name, None) for name in names] if d]
 
-    pspec = ''
-    for spec in sorted(specs, key=dr.get_name):
 
-        info = dict(name=dr.get_simple_name(spec))
+def li(item):
+    return "<li>%s</li>" % item
 
-        f = filters.get_filters(spec)
-        info['dependents'] = []
 
-        spds = None
-        d = [d for d in dr.get_dependencies(spec) if is_datasource(d)]
-        for dp in d:
-            c = dr.get_dependencies(dp)
-            for cdeps in c:
-                if is_datasource(cdeps) and '__qualname__' in cdeps.func_dict and 'DefaultSpecs' in cdeps.func_dict['__qualname__']:
-                    spds = cdeps
+def ul(lst):
+    return "<ul>\n%s\n</ul>\n" % "\n".join(li(i) for i in lst)
 
-        for d in dr.get_dependencies(spec):
-            cp = ''
-            lines = []
 
-            if d.__doc__ and "Returns the first" in d.__doc__:
-                lines = d.__doc__.replace(',', '\n')
-                lines = lines.splitlines()
-                head = [lines[0]]
-                top = ["<ul>"]
-                bottom = ["</ul>"]
-                if spds:
-                    lines = [l.replace('Command:', '') for l in lines]
-                    lines = [l.replace('Path:', '') for l in lines]
-                    lines = ["<li>" + l + "</li>" for l in lines[1:]]
-                    # lines = ["<li>" + spds.func_doc + ',' + l + "</li>" for l in lines[1:]]
-                else:
-                    lines = ["<li>" + l + "</li>" for l in lines[1:]]
-                cp = "\n".join(head + top + lines + bottom)
-            else:
-                if spds:
-                    d.__doc__ = d.__doc__.replace('Command:', '')
-                    d.__doc__ = d.__doc__.replace('Path:', '')
-                    d.__doc__ = spds.func_doc + ', ' + d.__doc__
-                cp = d.__doc__
+def get_description(spec):
+    if isinstance(spec, sf.simple_file):
+        return "Path: %s" % spec.path
+    if isinstance(spec, sf.glob_file):
+        return "All files matching any of%sIgnore: %s" % (ul(spec.patterns), spec.ignore)
+    if isinstance(spec, sf.simple_command):
+        return "Command: %s" % spec.cmd
+    if isinstance(spec, sf.listdir):
+        return "Directory Listing: %s" % spec.path
+    if isinstance(spec, sf.foreach_execute):
+        return "For each element in%s Command: %s" % (ul([get_description(spec.provider)]), spec.cmd)
+    if isinstance(spec, sf.foreach_collect):
+        return "For each element in%s Path: %s" % (ul([get_description(spec.provider)]), spec.path)
+    if isinstance(spec, sf.first_of):
+        return "First of%s" % ul(get_description(d) for d in spec.deps)
+    if isinstance(spec, sf.first_file):
+        return "First file of%s" % ul(spec.files)
+    return (spec.__doc__ or "").replace("\n", "<br />")
 
-        for d in dr.get_dependents(spec):
-            if dr.get_simple_name(pspec) == dr.get_simple_name(d):
-                continue
-            pspec = d
 
-            p = [dr.get_name(sd) for sd in dr.get_dependents(d)]
-            rules = sorted([x.rsplit('.', 2)[1] for x in p])
-            deps[info['name']][info['name'] + "_spec-def"] = cp
-            deps[info['name']][info['name'] + "_rules"] = ", ".join(rules)
-            deps[info['name']][info['name'] + "_filters"] = f
+def get_rules(spec):
+    return [r for r in get_all(spec, method=dr.get_dependents) if is_rule(r)]
 
-    report = Environment().from_string(REPORT).render(
-        report_date=datetime.date.today().strftime("%B %d, %Y"), specs=deps)
 
+def get_infos(specs):
+    def get_info(spec):
+        return {
+            "name": dr.get_simple_name(spec),
+            "description": get_description(spec),
+            "rules": ul(sorted(dr.get_name(r) for r in get_rules(spec))),
+            "filters": ul(sorted(filters.get_filters(spec))),
+        }
+    return sorted((get_info(s) for s in specs), key=itemgetter("name"))
+
+
+def main():
+    today = datetime.date.today().strftime("%B %d, %Y")
+    load_plugins()
+    specs = get_specs()
+    infos = get_infos(specs)
+
+    template = Environment().from_string(REPORT)
+    report = template.render(report_date=today, infos=infos)
     print(report)
 
 

@@ -42,7 +42,9 @@ class Stuff(SpecSet):
     smpl_cmd_list_of_lists = simple_command("echo -n ' hello '")
 
 
-stage = dr.new_component_type(executor=dr.broker_executor)
+class stage(dr.ComponentType):
+    def invoke(self, broker):
+        return self.component(broker)
 
 
 @stage(Stuff.smpl_file, Stuff.many, Stuff.smpl_cmd, Stuff.smpl_cmd_list_of_lists)

@@ -11,7 +11,7 @@ for name in package_info:
 
 entry_points = {
     'console_scripts': [
-        'insights-run = insights.core:main',
+        'insights-run = insights:main',
         'gen_api = insights.tools.generate_api_config:main',
         'insights-perf = insights.tools.perf:main',
         'client = insights.client:run',
@@ -20,7 +20,7 @@ entry_points = {
 }
 
 runtime = set([
-    'pyyaml>=3.10,<=3.12',
+    'pyyaml>=3.10,<=3.13',
     'six',
 ])
 
