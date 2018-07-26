@@ -28,8 +28,8 @@ OcGetEndPoints - command ``oc get endpoints -o yaml --all-namespaces``
 OcGetEvent - command ``oc get event -o yaml --all-namespaces``
 --------------------------------------------------------------
 
-OcGetNode - command ``oc get node -o yaml``
--------------------------------------------
+OcGetNode - command ``oc get nodes -o yaml``
+--------------------------------------------
 
 OcGetPod - command ``oc get pod -o yaml --all-namespaces``
 ----------------------------------------------------------
@@ -143,7 +143,7 @@ class OcGetEvent(CommandParser, YAMLParser):
 
 @parser(Specs.oc_get_node)
 class OcGetNode(CommandParser, YAMLParser):
-    """Class to parse ``oc get node -o yaml --all-namespaces``"""
+    """Class to parse ``oc get nodes -o yaml``"""
 
     @property
     def nodes(self):
