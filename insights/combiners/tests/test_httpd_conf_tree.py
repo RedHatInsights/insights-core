@@ -256,11 +256,9 @@ HTTPD_CONF_NEST_4 = """
 """.strip()
 
 HTTPD_CONF_QUOTES = r"""
-<VirtualHost>
-CustomLog logs/blabla_request_log 
-' ' ' '
-CustomLog logs/ssl_request_log 
-"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x "%r" %b"
+<VirtualHost *:443>
+CustomLog logs/ssl_request_log \
+"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
 SSLProtocol all -SSLv2
 </VirtualHost>
 """.strip()
