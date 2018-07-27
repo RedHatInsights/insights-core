@@ -21,7 +21,7 @@ class InitProcessCgroup(CommandParser, LegacyItemAccess):
     Attributes:
 
     is_container (bool): It is used to check if a archive is from host or container.
-    Return True if the archive is from container.
+            Return True if the archive is from container.
 
     A small sample of the content of this file looks like::
 
