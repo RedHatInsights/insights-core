@@ -270,6 +270,18 @@ HTTPD_CONF_NEST_4 = """
 </IfModule>
 """.strip()
 
+HTTPD_CONF_QUOTES = r"""
+<VirtualHost *:443>
+CustomLog logs/ssl_request_log \
+"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+SSLProtocol all -SSLv2
+</VirtualHost>
+""".strip()
+
+def test_superfluous_quotes():
+    httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_QUOTES, path="/etc/httpd/conf/httpd.conf"))
+    result = HttpdConfTree([httpd1])
+    assert result['VirtualHost']['SSLProtocol'][first].value == 'all -SSLv2'
 
 def test_mixed_case_tags():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
