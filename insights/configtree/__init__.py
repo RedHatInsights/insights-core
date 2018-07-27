@@ -479,9 +479,9 @@ def parse_string(pb):
     start = next(pb)  # eat quote
     while pb.peek() != start:
         c = next(pb)
-        buf.append(c)
         if c == "\\":
-            buf.append(next(pb))
+            c = next(pb)
+        buf.append(c)
     next(pb)  # eat quote
     return "".join(buf)
 
