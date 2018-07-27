@@ -1,6 +1,6 @@
 from insights.tests import context_wrap
 from insights.parsers import jboss_domain_log
-from insights.parsers.jboss_domain_log import JbossDomainServerLog
+from insights.parsers.jboss_domain_log import JbossDomainServerLog, JbossStandaloneServerLog
 from datetime import time
 import doctest
 
@@ -35,7 +35,8 @@ ectory=/home/test/jboss/machine2/domain/servers/server-one/data/messagingjournal
 
 def test_jboss_domain_server_log():
     out_log = JbossDomainServerLog(
-        context_wrap(OUT1, path="/home/test/jboss/machine2/domain/servers/server-one/log/server.log"))
+        context_wrap(OUT1,
+                     path="/home/test/jboss/machine2/domain/servers/server-one/log/server.log"))
     assert out_log.file_path == "/home/test/jboss/machine2/domain/servers/server-one/log/server.log"
     assert "XNIO Version 3.0.14.GA-redhat-1" in out_log
     assert len(out_log.get("GA-redhat-1")) == 2
@@ -53,11 +54,123 @@ OUT2 = """
 16:23:03,958 INFO  [org.jboss.as.security] (ServerService Thread Pool -- 37) JBAS013371: Activating Security Subsystem
 """.strip()
 
+standalong_server_log = """
+2018-07-17 10:58:44,606 INFO  [org.jboss.modules] (main) JBoss Modules version 1.6.0.Final-redhat-1
+2018-07-17 10:58:44,911 INFO  [org.jboss.msc] (main) JBoss MSC version 1.2.7.SP1-redhat-1
+2018-07-17 10:58:45,032 INFO  [org.jboss.as] (MSC service thread 1-7) WFLYSRV0049: JBoss EAP 7.1.0.GA (WildFly Core 3.0.10.Final-redhat-1) starting
+2018-07-17 10:58:45,033 DEBUG [org.jboss.as.config] (MSC service thread 1-7) Configured system properties:
+    [Standalone] =
+    awt.toolkit = sun.awt.X11.XToolkit
+    file.encoding = UTF-8
+    file.encoding.pkg = sun.io
+    file.separator = /
+    java.awt.graphicsenv = sun.awt.X11GraphicsEnvironment
+    java.awt.headless = true
+    java.awt.printerjob = sun.print.PSPrinterJob
+    java.class.path = /opt/jboss-eap-7.1/jboss-modules.jar
+    java.class.version = 52.0
+    java.endorsed.dirs = /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/endorsed
+    java.ext.dirs = /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/ext:/usr/java/packages/lib/ext
+    java.home = /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre
+    java.io.tmpdir = /tmp
+    java.library.path = /usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib
+    java.net.preferIPv4Stack = true
+    java.runtime.name = OpenJDK Runtime Environment
+    java.runtime.version = 1.8.0_111-b16
+    java.specification.name = Java Platform API Specification
+    java.specification.vendor = Oracle Corporation
+    java.specification.version = 1.8
+    java.util.logging.manager = org.jboss.logmanager.LogManager
+    java.vendor = Oracle Corporation
+    java.vendor.url = http://java.oracle.com/
+    java.vendor.url.bug = http://bugreport.sun.com/bugreport/
+    java.version = 1.8.0_111
+    java.vm.info = mixed mode
+    java.vm.name = OpenJDK 64-Bit Server VM
+    java.vm.specification.name = Java Virtual Machine Specification
+    java.vm.specification.vendor = Oracle Corporation
+    java.vm.specification.version = 1.8
+    java.vm.vendor = Oracle Corporation
+    java.vm.version = 25.111-b16
+    javax.management.builder.initial = org.jboss.as.jmx.PluggableMBeanServerBuilder
+    javax.xml.datatype.DatatypeFactory = __redirected.__DatatypeFactory
+    javax.xml.parsers.DocumentBuilderFactory = __redirected.__DocumentBuilderFactory
+    javax.xml.parsers.SAXParserFactory = __redirected.__SAXParserFactory
+    javax.xml.stream.XMLEventFactory = __redirected.__XMLEventFactory
+    javax.xml.stream.XMLInputFactory = __redirected.__XMLInputFactory
+    javax.xml.stream.XMLOutputFactory = __redirected.__XMLOutputFactory
+    javax.xml.transform.TransformerFactory = __redirected.__TransformerFactory
+    javax.xml.validation.SchemaFactory:http://www.w3.org/2001/XMLSchema = __redirected.__SchemaFactory
+    javax.xml.xpath.XPathFactory:http://java.sun.com/jaxp/xpath/dom = __redirected.__XPathFactory
+    jboss.home.dir = /opt/jboss-eap-7.1
+    jboss.host.name = mylinux
+    jboss.modules.dir = /opt/jboss-eap-7.1/modules
+    jboss.modules.system.pkgs = org.jboss.byteman
+    jboss.node.name = mylinux
+    jboss.qualified.host.name = mylinux
+    jboss.server.base.dir = /opt/jboss-eap-7.1/standalone
+    jboss.server.config.dir = /opt/jboss-eap-7.1/standalone/configuration
+    jboss.server.data.dir = /opt/jboss-eap-7.1/standalone/data
+    jboss.server.deploy.dir = /opt/jboss-eap-7.1/standalone/data/content
+    jboss.server.log.dir = /opt/jboss-eap-7.1/standalone/log
+    jboss.server.name = mylinux
+    jboss.server.persist.config = true
+    jboss.server.temp.dir = /opt/jboss-eap-7.1/standalone/tmp
+    line.separator =
+
+    logging.configuration = file:/opt/jboss-eap-7.1/standalone/configuration/logging.properties
+    module.path = /opt/jboss-eap-7.1/modules
+    org.jboss.boot.log.file = /opt/jboss-eap-7.1/standalone/log/server.log
+    org.jboss.resolver.warning = true
+    org.xml.sax.driver = __redirected.__XMLReaderFactory
+    os.arch = amd64
+    os.name = Linux
+    os.version = 4.8.13-100.fc23.x86_64
+    path.separator = :
+    sun.arch.data.model = 64
+    sun.boot.class.path = /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/resources.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/rt.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/jsse.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/jce.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/charsets.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/jfr.jar:/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/classes
+    sun.boot.library.path = /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.111-1.b16.fc23.x86_64/jre/lib/amd64
+    sun.cpu.endian = little
+    sun.cpu.isalist =
+    sun.desktop = gnome
+    sun.io.unicode.encoding = UnicodeLittle
+    sun.java.command = /opt/jboss-eap-7.1/jboss-modules.jar -mp /opt/jboss-eap-7.1/modules org.jboss.as.standalone -Djboss.home.dir=/opt/jboss-eap-7.1 -Djboss.server.base.dir=/opt/jboss-eap-7.1/standalone --server-config=standalone-ha.xml
+    sun.java.launcher = SUN_STANDARD
+    sun.jnu.encoding = UTF-8
+    sun.management.compiler = HotSpot 64-Bit Tiered Compilers
+    sun.os.patch.level = unknown
+    user.country = US
+    user.dir = /opt/jboss-eap-7.1/bin
+    user.home = /home/lizhong
+    user.language = en
+    user.name = lizhong
+    user.timezone = Asia/Shanghai
+2018-07-17 10:58:45,033 DEBUG [org.jboss.as.config] (MSC service thread 1-7) VM Arguments: -D[Standalone] -verbose:gc -Xloggc:/opt/jboss-eap-7.1/standalone/log/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -XX:-TraceClassUnloading -Xms1303m -Xmx1303m -XX:MetaspaceSize=96M -XX:MaxMetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dorg.jboss.boot.log.file=/opt/jboss-eap-7.1/standalone/log/server.log -Dlogging.configuration=file:/opt/jboss-eap-7.1/standalone/configuration/logging.properties
+2018-07-17 10:58:46,021 INFO  [org.jboss.as.controller.management-deprecated] (Controller Boot Thread) WFLYCTL0028: Attribute 'security-realm' in the resource at address '/core-service=management/management-interface=http-interface' is deprecated, and may be removed in future version. See the attribute description in the output of the read-resource-description operation to learn more about the deprecation.
+2018-07-17 10:58:46,033 INFO  [org.wildfly.security] (ServerService Thread Pool -- 30) ELY00001: WildFly Elytron version 1.1.7.Final-redhat-1
+2018-07-17 10:58:46,036 INFO  [org.jboss.as.controller.management-deprecated] (ServerService Thread Pool -- 15) WFLYCTL0028: Attribute 'security-realm' in the resource at address '/subsystem=undertow/server=default-server/https-listener=https' is deprecated, and may be removed in future version. See the attribute description in the output of the read-resource-description operation to learn more about the deprecation.
+2018-07-17 10:58:46,172 INFO  [org.jboss.as.server] (Controller Boot Thread) WFLYSRV0039: Creating http management service using socket-binding (management-http)
+"""
+
+
+def test_jboss_standalone_server_log():
+    out_log = JbossStandaloneServerLog(
+        context_wrap(standalong_server_log, path="JBOSS_HOME/standalone/log/server.log"))
+    assert out_log.file_path == "/JBOSS_HOME/standalone/log/server.log"
+    assert "sun.java.command =" in out_log
+    assert len(out_log.get("sun.java.command =")) == 1
+    assert out_log.get("java.specification.")[-1][
+               "raw_message"].strip() == "java.specification.version = 1.8"
+
 
 def test_jboss_domain_server_log_doc_examples():
     env = {
-            'JbossDomainServerLog': JbossDomainServerLog,
-            'log': JbossDomainServerLog(context_wrap(OUT2, path='/home/test/jboss/machine2/domain/servers/server-one/log/server.log')),
-          }
+        'JbossDomainServerLog': JbossDomainServerLog,
+        'log': JbossDomainServerLog(context_wrap(OUT2,
+                                                 path='/home/test/jboss/machine2/domain/servers/server-one/log/server.log')),
+        'JbossStandaloneServerLog': JbossStandaloneServerLog,
+        'standalone_log': JbossStandaloneServerLog(context_wrap(standalong_server_log,
+                                                                path="/JBOSS_HOME/standalone/log/server.log")),
+    }
     failed, total = doctest.testmod(jboss_domain_log, globs=env)
     assert failed == 0
