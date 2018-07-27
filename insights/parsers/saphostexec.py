@@ -29,7 +29,7 @@ class SAPHostExecStatus(CommandParser, LegacyItemAccess):
 
     Attributes:
         is_running (bool): The SAP Host Agent is running or not.
-        running_service (list): List of running services.
+        services (list): List of services.
 
     Examples:
         >>> type(sha_status)
