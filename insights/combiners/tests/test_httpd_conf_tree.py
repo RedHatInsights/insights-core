@@ -18,7 +18,7 @@ IncludeOptional conf.d/*.conf
 
 HTTPD_CONF_CONTINUATION = r'''
 JustFotTest_NoSec "/var/www/cgi"
-CustomLog logs/ssl_request_log \\
+CustomLog logs/ssl_request_log \
 "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
 # prefork MPM
 <IfModule prefork.c>
