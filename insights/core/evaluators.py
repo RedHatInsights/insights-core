@@ -32,8 +32,8 @@ class Evaluator(object):
             if plugins.is_rule(p):
                 self.handle_result(p, r)
 
-    def run_components(self):
-        dr.run(dr.COMPONENTS[dr.GROUPS.single], broker=self.broker)
+    def run_components(self, graph=None):
+        dr.run(graph or dr.COMPONENTS[dr.GROUPS.single], broker=self.broker)
 
     def format_response(self, response):
         """
@@ -48,9 +48,9 @@ class Evaluator(object):
         """
         return result
 
-    def process(self):
+    def process(self, graph=None):
         self.pre_process()
-        self.run_components()
+        self.run_components(graph)
         self.post_process()
         return self.get_response()
 
