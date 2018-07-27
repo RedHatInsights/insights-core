@@ -20,6 +20,8 @@ Netstat_I - command ``netstat -i``
 SsTULPN - command ``ss -tulpn``
 -------------------------------
 
+SsTUPNA - command ``ss -tupna``
+---------------------------------
 """
 
 from collections import defaultdict
@@ -700,3 +702,46 @@ class SsTULPN(CommandParser):
 
     def get_port(self, port):
         return self.get_localport(port) + self.get_peerport(port)
+
+
+@parser(Specs.ss_tupna)
+class SsTUPNA(SsTULPN):
+    """
+    Parse the output of the ``/usr/sbin/ss -tupna`` command.
+
+    This class parse the input as a table with header:
+        "Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"
+
+    Sample input data looks like::
+
+        Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
+        tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
+        tcp   UNCONN     0      0                     *:111                *:*      users:(("rpcbind",483,6))
+        tcp   UNCONN     0      0                     *:30057              *:*      users:(("dhclient",1171,20))
+        tcp   UNCONN     0      0                     *:648                *:*      users:(("rpcbind",483,7))
+        tcp   UNCONN     0      0                    :::111               :::*      users:(("rpcbind",483,9))
+        tcp   UNCONN     0      0                    :::6645              :::*      users:(("dhclient",1171,21))
+        tcp   UNCONN     0      0                    :::648               :::*      users:(("rpcbind",483,10))
+        tcp   LISTEN     0      128                   *:111                *:*      users:(("rpcbind",483,8))
+        tcp   LISTEN     0      128                   *:22                 *:*      users:(("sshd",1231,3))
+        tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
+        tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
+        tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
+        tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
+        tcp   LISTEN     0      128                  :::22                :::*      users:(("sshd",1231,4))
+        tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
+
+    Examples:
+
+        >>> type(ssa)
+        <class 'insights.parsers.netstat.SsTUPNA'>
+        >>> sorted(ssa.data[1].keys())  # Rows stored by column headings
+        ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
+        >>> ssa.data[0]['Local-Address-Port']
+        '*:68'
+        >>> ssa.data[0]['State']
+        'UNCONN'
+        >>> ssa.data[2]['State']
+        'ESTAB'
+    """
+    pass
