@@ -110,10 +110,10 @@ class JbossDomainServerLog(JbossDomainLog):
     pass
 
 
-@parser(Specs.jboss_domain_server_log)
+@parser(Specs.jboss_standalone_server_log)
 class JbossStandaloneServerLog(JbossDomainLog):
     """
-    Read JBoss domain server log file.
+    Read JBoss standalone server log file.
 
     Sample input::
 
