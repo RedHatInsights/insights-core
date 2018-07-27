@@ -438,6 +438,7 @@ class Specs(SpecSet):
     vgs_noheadings = RegistryPoint()
     vgs_noheadings_all = RegistryPoint()
     vgs = RegistryPoint()
+    virsh_list_all = RegistryPoint()
     virt_what = RegistryPoint()
     virt_who_conf = RegistryPoint(multi_output=True)
     vmcore_dmesg = RegistryPoint(multi_output=True)
