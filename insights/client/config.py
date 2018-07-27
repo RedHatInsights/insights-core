@@ -4,6 +4,7 @@ import logging
 import optparse
 import copy
 import six
+import sys
 from six.moves import configparser as ConfigParser
 
 from .constants import InsightsConstants as constants
@@ -347,6 +348,11 @@ class InsightsConfig(object):
     Insights client configuration
     '''
     def __init__(self, *args, **kwargs):
+        # this is only used to print configuration errors upon initial load
+        self._print_errors = False
+        if '_print_errors' in kwargs:
+            self._print_errors = kwargs['_print_errors']
+
         self._init_attrs = copy.copy(dir(self))
         self._update_dict(DEFAULT_KVS)
         if args:
@@ -383,9 +389,18 @@ class InsightsConfig(object):
             dict_['gpg'] = False
 
         unknown_opts = set(dict_.keys()).difference(set(DEFAULT_OPTS.keys()))
-        if unknown_opts:
-            raise ValueError(
-                'Unknown options: ' + ','.join(list(unknown_opts)))
+        if unknown_opts and self._print_errors:
+            # only print error once
+            sys.stdout.write(
+                'WARNING: Unknown options: ' +
+                ', '.join(list(unknown_opts)) + '\n')
+            if 'no_schedule' in unknown_opts:
+                sys.stdout.write('WARNING: Config option `no_schedule` has '
+                                 'been deprecated. To disable automatic '
+                                 'scheduling for Red Hat Insights, run '
+                                 '`insights-client --disable-schedule`\n')
+        for u in unknown_opts:
+            dict_.pop(u, None)
         self.__dict__.update(dict_)
         self._imply_options()
         self._validate_options()
@@ -455,8 +470,11 @@ class InsightsConfig(object):
         try:
             parsedconfig.read(fname or self.conf)
         except ConfigParser.Error:
-            logger.error(
-                'ERROR: Could not read configuration file, using defaults')
+            if self._print_errors:
+                sys.stdout.write(
+                    'ERROR: Could not read configuration file, '
+                    'using defaults\n')
+            return
         try:
             # Try to add the insights-client section
             parsedconfig.add_section(constants.app_name)
@@ -523,6 +541,6 @@ class InsightsConfig(object):
 
 
 if __name__ == '__main__':
-    config = InsightsConfig()
+    config = InsightsConfig(_print_errors=True)
     config.load_all()
     print(config)
