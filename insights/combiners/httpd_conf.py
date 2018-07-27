@@ -383,6 +383,56 @@ class HttpdConfTree(ConfigCombiner):
         return res.value if res else "/etc/httpd"
 
 
+@parser(Specs.httpd_conf_scl_httpd24)
+class _HttpdConfSclHttpd24(ConfigParser):
+    """ Parser for individual httpd configuration files. """
+    def parse_doc(self, content):
+        return parse_doc(content, ctx=self)
+
+
+@combiner(_HttpdConfSclHttpd24)
+class HttpdConfSclHttpd24Tree(ConfigCombiner):
+    """
+    Exposes httpd configuration Software Collection httpd24 through the configtree
+    interface. Correctly handles all include directives.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
+    """
+    def __init__(self, confs):
+        includes = startswith("Include")
+        super(HttpdConfSclHttpd24Tree, self).__init__(confs, "httpd.conf", includes)
+
+    @property
+    def conf_path(self):
+        res = self.main.find("ServerRoot")
+        return res.value if res else "/opt/rh/httpd24/root/etc/httpd"
+
+
+@parser(Specs.httpd_conf_scl_jbcs_httpd24)
+class _HttpdConfSclJbcsHttpd24(ConfigParser):
+    """ Parser for individual httpd configuration files. """
+    def parse_doc(self, content):
+        return parse_doc(content, ctx=self)
+
+
+@combiner(_HttpdConfSclJbcsHttpd24)
+class HttpdConfSclJbcsHttpd24Tree(ConfigCombiner):
+    """
+    Exposes httpd configuration Software Collection jbcs-httpd24 through the configtree
+    interface. Correctly handles all include directives.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
+    """
+    def __init__(self, confs):
+        includes = startswith("Include")
+        super(HttpdConfSclJbcsHttpd24Tree, self).__init__(confs, "httpd.conf", includes)
+
+    @property
+    def conf_path(self):
+        res = self.main.find("ServerRoot")
+        return res.value if res else "/opt/rh/jbcs-httpd24/root/etc/httpd"
+
+
 def get_tree(root=None):
     """
     This is a helper function to get an httpd configuration component for your
