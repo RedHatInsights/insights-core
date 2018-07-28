@@ -647,7 +647,6 @@ class DefaultSpecs(Specs):
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
 
-    xfs_info = None
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
     yum_log = simple_file("/var/log/yum.log")
