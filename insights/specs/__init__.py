@@ -452,7 +452,7 @@ class Specs(SpecSet):
     x86_ibpb_enabled = RegistryPoint()
     x86_ibrs_enabled = RegistryPoint()
     x86_retp_enabled = RegistryPoint()
-    xfs_info = RegistryPoint()
+    xfs_info = RegistryPoint(multi_output=True)
     xinetd_conf = RegistryPoint(multi_output=True)
     yum_conf = RegistryPoint()
     yum_log = RegistryPoint()
