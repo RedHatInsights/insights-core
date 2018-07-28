@@ -18,15 +18,9 @@ SystemdSystemConf - file ``/etc/systemd/system.conf``
 
 """
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
-
+from insights.configtree.iniconfig import parse_doc
 from insights.core import Parser, LegacyItemAccess
 from insights.core.plugins import parser
-from insights.parsers import unsplit_lines
-from insights.contrib.ConfigParser import RawConfigParser as cp
 from insights.specs import Specs
 
 
@@ -180,18 +174,15 @@ class MultiOrderedDict(dict):
 def parse_systemd_ini(content):
     """Function to parse config format file, the result format is dictionary"""
 
-    Config = cp(dict_type=MultiOrderedDict)
-    Config.optionxform = str
-    Config.readfp(StringIO('\n'.join(content)))
+    doc = parse_doc(content)
 
     dict_all = {}
-    for section in Config.sections():
-        dict_section = {}
-        for option in Config.options(section):
-            value = Config.get(section, option).splitlines()
-            value = list(unsplit_lines(value))
-            # If the len of value is 1, then set the value as string
-            dict_section[option] = value[0] if len(value) == 1 else value if len(value) > 1 else ''
-        dict_all[section] = dict_section
+    for section in doc:
+        section_dict = {}
+        option_names = set(o.name for o in section)
+        for name in option_names:
+            options = [str(o.value) for o in section[name]]
+            section_dict[name] = options[0] if len(options) == 1 else options
+        dict_all[section.name] = section_dict
 
     return dict_all
