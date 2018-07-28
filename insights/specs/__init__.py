@@ -171,6 +171,8 @@ class Specs(SpecSet):
     ipv4_neigh = RegistryPoint()
     ipv6_neigh = RegistryPoint()
     iscsiadm_m_session = RegistryPoint()
+    jboss_domain_config = RegistryPoint(multi_output=True)
+    jboss_domain_pid_conf_map = RegistryPoint(multi_output=True)
     jboss_domain_server_log = RegistryPoint(multi_output=True)
     jboss_standalone_server_log = RegistryPoint()
     jboss_standalone_main_config = RegistryPoint()
