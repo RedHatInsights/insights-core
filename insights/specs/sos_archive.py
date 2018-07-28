@@ -99,4 +99,5 @@ class SosSpecs(Specs):
     uptime = simple_file("sos_commands/general/uptime")
     vgdisplay = simple_file("vgdisplay")
     vgs = simple_file("sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0")
+    xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
