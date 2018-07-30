@@ -452,6 +452,11 @@ class LineGetter(PushBack):
         while l.strip() == "" or l.lstrip().startswith(self.comment_marker):
             self.pos += 1
             l = next(self.stream)
+        while l.endswith("\\"):
+            self.pos += 1
+            l = l.rstrip("\\")
+            l += next(self.stream).lstrip()
+
         return l.strip() if self.strip else l.rstrip()
 
 
@@ -474,9 +479,9 @@ def parse_string(pb):
     start = next(pb)  # eat quote
     while pb.peek() != start:
         c = next(pb)
-        buf.append(c)
         if c == "\\":
-            buf.append(next(pb))
+            c = next(pb)
+        buf.append(c)
     next(pb)  # eat quote
     return "".join(buf)
 

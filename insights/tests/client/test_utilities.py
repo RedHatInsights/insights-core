@@ -21,7 +21,7 @@ def test_determine_hostname():
     import socket
     hostname = socket.gethostname()
     fqdn = socket.getfqdn()
-    assert util.determine_hostname() == (hostname or fqdn)
+    assert util.determine_hostname() in (hostname, fqdn)
     assert util.determine_hostname() != 'foo'
 
 
