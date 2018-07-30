@@ -292,7 +292,7 @@ Additionally customers may not update the Client RPM on their systems.
 So developers need to check both the Insights Core and the Client applications
 to determine what information is available for processing in Insights.
 
-.. autofunction:: insights.core.plugins.parser
+.. autoclass:: insights.core.plugins.parser
    :noindex:
 
 Parser Contexts
@@ -332,7 +332,7 @@ with:
     - A longer description of what the plugin identifies
     - Links to Red Hat solutions
 
-.. autofunction:: insights.core.plugins.rule
+.. autoclass:: insights.core.plugins.rule
    :noindex:
 
 Rule Parameters
@@ -365,12 +365,12 @@ system metadata.
 
 To return a rule "hit", return the result of ``make_response``:
 
-.. autofunction:: insights.core.plugins.make_response
+.. autoclass:: insights.core.plugins.make_response
    :noindex:
 
 To return system metadata, return the result of ``make_metadata``:
 
-.. autofunction:: insights.core.plugins.make_metadata
+.. autoclass:: insights.core.plugins.make_metadata
    :noindex:
 
 Testing

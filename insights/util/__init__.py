@@ -9,6 +9,25 @@ import warnings
 TMP_DIR = os.path.join("/tmp", "insights-web")
 logger = logging.getLogger(__name__)
 
+TRUTH = {
+    "true": True,
+    "false": False,
+    "yes": True,
+    "no": False,
+    "1": True,
+    "0": False
+}
+
+
+def parse_bool(s, default=False):
+    """
+    Return the boolean value of an English string or default if it can't be
+    determined.
+    """
+    if s is None:
+        return default
+    return TRUTH.get(s.lower(), default)
+
 
 class KeyPassingDefaultDict(collections.defaultdict):
     """ A default dict that passes the key to its factory function. """
