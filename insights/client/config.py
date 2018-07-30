@@ -181,6 +181,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': False,  # legacy
     },
+    'no_schedule': {
+        # non-CLI
+        'default': False
+    },
     'no_upload': {
         'default': False,
         'opt': ['--no-upload'],
@@ -384,7 +388,7 @@ class InsightsConfig(object):
         dict_ = dict((k, v) for k, v in dict_.items() if (
                     k not in self._init_attrs))
 
-        # zzz
+        # legacy opts
         if 'no_gpg' in dict_ and dict_['no_gpg']:
             dict_['gpg'] = False
 
@@ -488,6 +492,12 @@ class InsightsConfig(object):
                 d[key] = parsedconfig.getint(constants.app_name, key)
             if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
                 d[key] = parsedconfig.getboolean(constants.app_name, key)
+
+        if 'no_schedule' in d:
+            print('WARNING: no_schedule has been deprecated.'
+                  'To disable automatic scheduling, run'
+                  ' `insights-client --disable-schedule`')
+
         self._update_dict(d)
 
     def load_all(self):
