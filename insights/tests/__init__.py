@@ -40,7 +40,7 @@ def unordered_compare(result, expected):
         return
 
     if not all(isinstance(o, six.string_types) for o in (result, expected)):
-        assert type(result) == type(expected)
+        assert issubclass(type(result), type(expected))
 
     if isinstance(result, list):
         assert len(result) == len(expected)
@@ -156,8 +156,10 @@ class InputData(object):
         return self.data.items()
 
     def clone(self, name):
-        the_clone = copy.deepcopy(self)
-        the_clone.name = name
+        the_clone = InputData(name)
+        the_clone.data = {}
+        for k, v in self.data.items():
+            the_clone.data[k] = copy.deepcopy(v)
         return the_clone
 
     def add_component(self, comp, obj):

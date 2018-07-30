@@ -7,14 +7,10 @@ import logging
 import sys
 import traceback
 
-from functools import partial
-
 from insights.core import dr
 from insights import settings
 
 log = logging.getLogger(__name__)
-
-RULE_TYPES = set()
 
 
 class ContentException(dr.SkipComponent):
@@ -22,154 +18,115 @@ class ContentException(dr.SkipComponent):
     pass
 
 
-def parser_executor(component, broker, requires, optional):
-    dependency = requires[0]
-    if dependency not in broker:
-        raise dr.MissingRequirements(([dependency], []))
+class datasource(dr.ComponentType):
+    """ Decorates a component that one or more Parsers will consume. """
+    multi_output = False
+    raw = False
 
-    dep_value = broker[dependency]
-    if not isinstance(dep_value, list):
-        return component(dep_value)
-
-    results = []
-    for d in dep_value:
+    def invoke(self, broker):
         try:
-            r = component(d)
-            if r is not None:
-                results.append(r)
-        except dr.SkipComponent:
-            pass
-        except Exception as ex:
-            tb = traceback.format_exc()
-            log.warn(tb)
-            broker.add_exception(component, ex, tb)
-
-    if not results:
-        log.debug("All failed: %s" % dr.get_name(component))
-        raise dr.SkipComponent()
-
-    return results
-
-
-def rule_executor(component, broker, requires, optional, executor=dr.default_executor):
-    try:
-        r = executor(component, broker, requires, optional)
-        if r is None:
+            return self.component(broker)
+        except ContentException as ce:
+            log.debug(ce)
+            broker.add_exception(self.component, ce, traceback.format_exc())
             raise dr.SkipComponent()
-    except dr.MissingRequirements as mr:
-        details = dr.stringify_requirements(mr.requirements)
-        r = make_skip(dr.get_name(component),
-                reason="MISSING_REQUIREMENTS", details=details)
-    validate_response(r)
-    return r
 
 
-def datasource_executor(component, broker, requires, optional):
-    try:
-        return dr.broker_executor(component, broker, requires, optional)
-    except ContentException as ce:
-        log.debug(ce)
-        broker.add_exception(component, ce, traceback.format_exc())
-        raise dr.SkipComponent()
-
-
-broker_rule_executor = partial(rule_executor, executor=dr.broker_executor)
-
-
-class DatasourceDelegate(dr.Delegate):
-    def __init__(self, component, requires, optional):
-        super(DatasourceDelegate, self).__init__(component, requires, optional)
-        self.multi_output = False
-        self.raw = False
-
-
-def make_rule_type(auto_requires=[],
-                   auto_optional=[],
-                   group=dr.GROUPS.single,
-                   use_broker_executor=False,
-                   type_metadata={}):
-
-    executor = broker_rule_executor if use_broker_executor else rule_executor
-    _type = dr.new_component_type(auto_requires=auto_requires,
-                                  auto_optional=auto_optional,
-                                  group=group,
-                                  executor=executor,
-                                  type_metadata=type_metadata)
-
-    def decorator(*requires, **kwargs):
-        if kwargs.get("cluster"):
-            kwargs["group"] = dr.GROUPS.cluster
-        kwargs["component_type"] = decorator
-        return _type(*requires, **kwargs)
-
-    RULE_TYPES.add(decorator)
-    return decorator
-
-
-class StdTypes(dr.TypeSet):
-    _datasource = dr.new_component_type(executor=datasource_executor, delegate_class=DatasourceDelegate)
-    """ A component that one or more Parsers will consume."""
-
-    _metadata = dr.new_component_type(auto_requires=["metadata.json"], executor=parser_executor)
-
-    _parser = dr.new_component_type(executor=parser_executor)
-
-    combiner = dr.new_component_type()
-    """ A component that composes other components. """
-
-    rule = make_rule_type()
-    """ A component that can see all parsers and combiners for a single host."""
-
-    condition = dr.new_component_type()
-    """ A component used by rules that allows automated statistical analysis."""
-
-    incident = dr.new_component_type()
-    """ A component used by rules that allows automated statistical analysis."""
-
-    fact = dr.new_component_type()
-
-    cluster_rule = make_rule_type(group=dr.GROUPS.cluster)
-
-
-combiner = StdTypes.combiner
-rule = StdTypes.rule
-condition = StdTypes.condition
-incident = StdTypes.incident
-fact = StdTypes.fact
-cluster_rule = StdTypes.cluster_rule
-
-
-def datasource(*args, **kwargs):
-    def _f(func):
-        metadata = kwargs.get("metadata", {})
-        c = StdTypes._datasource(*args, metadata=metadata, component_type=datasource)(func)
-        delegate = dr.get_delegate(c)
-        delegate.multi_output = kwargs.get("multi_output", False)
-        delegate.raw = kwargs.get("raw", False)
-        return c
-    return _f
-
-
-def metadata(group=dr.GROUPS.single):
-    def _f(func):
-        return StdTypes._metadata(group=group, component_type=metadata)(func)
-    return _f
-
-
-def parser(dependency, group=dr.GROUPS.single):
+class parser(dr.ComponentType):
     """
-    Parses the raw content of a datasource into a strongly-typed
-    object usable by combiners and rules. `parser` is a specialization
-    of the general component interface.
+    Decorates a component responsible for parsing the output of a
+    datasource.
     """
+    def __init__(self, dep, group=dr.GROUPS.single):
+        super(parser, self).__init__(dep, group=group)
 
-    def _f(component):
-        return StdTypes._parser(dependency, group=group, component_type=parser)(component)
-    return _f
+    def invoke(self, broker):
+        dependency = self.requires[0]
+        if dependency not in broker:
+            raise dr.MissingRequirements(([dependency], []))
+
+        dep_value = broker[dependency]
+        if not isinstance(dep_value, list):
+            return self.component(dep_value)
+
+        results = []
+        for d in dep_value:
+            try:
+                r = self.component(d)
+                if r is not None:
+                    results.append(r)
+            except dr.SkipComponent:
+                pass
+            except Exception as ex:
+                tb = traceback.format_exc()
+                log.warn(tb)
+                broker.add_exception(self.component, ex, tb)
+
+        if not results:
+            log.debug("All failed: %s" % dr.get_name(self.component))
+            raise dr.SkipComponent()
+        return results
+
+
+class metadata(parser):
+    """ Used for old cluster uber-archives. """
+    # TODO: Mark deprecated
+    requires = ["metadata.json"]
+
+
+class combiner(dr.ComponentType):
+    """ ComponentType for a component that composes other components. """
+    pass
+
+
+class rule(dr.ComponentType):
+    """
+    ComponentType for a component that can see all parsers and combiners for a
+    single host.
+    """
+    def invoke(self, broker):
+        try:
+            r = super(rule, self).invoke(broker)
+            if r is None:
+                raise dr.SkipComponent()
+        except dr.MissingRequirements as mr:
+            details = dr.stringify_requirements(mr.requirements)
+            r = _make_skip(dr.get_name(self.component),
+                    reason="MISSING_REQUIREMENTS", details=details)
+        if not isinstance(r, Response):
+            raise Exception("rules must return Response objects.")
+        return r
+
+
+class condition(dr.ComponentType):
+    """
+    ComponentType for a component used by rules that allows automated
+    statistical analysis.
+    """
+    pass
+
+
+class incident(dr.ComponentType):
+    """
+    ComponentType for a component used by rules that allows automated
+    statistical analysis.
+    """
+    pass
+
+
+class fact(dr.ComponentType):
+    """
+    ComponentType for a component that surfaces a dictionary or list of
+    dictionaries that will be used later by cluster rules.
+    """
+    pass
 
 
 def is_type(component, _type):
-    return dr.get_component_type(component) is _type
+    try:
+        return issubclass(dr.get_component_type(component), _type)
+    except:
+        return False
 
 
 def is_datasource(component):
@@ -185,134 +142,11 @@ def is_combiner(component):
 
 
 def is_rule(component):
-    return dr.get_component_type(component) in RULE_TYPES
+    return is_type(component, rule)
 
 
 def is_component(obj):
     return bool(dr.get_component_type(obj))
-
-
-def make_skip(rule_fqdn, reason, details=None):
-    return {"rule_fqdn": rule_fqdn,
-            "reason": reason,
-            "details": details,
-            "type": "skip"}
-
-
-def _is_make_reponse_too_long(key, kwargs):
-    response_type = {"rule": "make_response", "fingerprint": "make_fingerprint"}
-
-    # using str() avoids many serialization issues and runs in about 75%
-    # of the time as json.dumps
-    detail_length = len(str(kwargs))
-
-    if detail_length > settings.defaults["max_detail_length"]:
-        log.error("Length of data in %s is too long." % response_type[kwargs['type']], extra={
-            "max_detail_length": settings.defaults["max_detail_length"],
-            "error_key": key,
-            "len": detail_length
-        })
-        return True
-    return False
-
-
-def make_response(error_key, **kwargs):
-    """ Returns a JSON document approprate as a rule plugin final
-    result.
-
-    :param str error_key: The error name identified by the plugin
-    :param \*\*kwargs: Strings to pass additional information to the frontend for
-          rendering more complete messages in a customer system report.
-
-
-    Given::
-
-        make_response("CRITICAL_ERROR", cpu_number=2, cpu_type="intel")
-
-    The response will be the JSON string ::
-
-        {
-            "type": "rule",
-            "error_key": "CRITICAL_ERROR",
-            "cpu_number": 2,
-            "cpu_type": "intel"
-        }
-    """
-
-    if "error_key" in kwargs or "type" in kwargs:
-        raise Exception("Can't use an invalid argument for make_response")
-
-    r = {
-        "type": "rule",
-        "error_key": error_key
-    }
-    kwargs.update(r)
-
-    detail_length = len(str(kwargs))
-
-    if _is_make_reponse_too_long(error_key, kwargs):
-        r["max_detail_length_error"] = detail_length
-        return r
-
-    return kwargs
-
-
-def make_fingerprint(fingerprint_key, **kwargs):
-    """ Returns a JSON document appropriate as a fingerprint rule plugin final
-    result.
-
-    :param str fingerprint_key: The fingerprint key name is used for
-          identification of the plugin.
-    :param \*\*kwargs: Strings to pass additional information to the frontend for
-          rendering more complete messages in a customer system report.
-
-
-    Given::
-
-        make_fingerprint("FINGERPRINT", manufacturer="Red Hat", product="Insights")
-
-    The response will be the JSON string ::
-
-        {
-            "type": "fingerprint",
-            "fingerprint_key": "FINGERPRINT",
-            "manufacturer": "Red Hat",
-            "product": "Insights"
-        }
-    """
-
-    if "fingerprint_key" in kwargs or "type" in kwargs:
-        raise Exception("Can't use an invalid argument for make_fingerprint")
-
-    r = {
-        "type": "fingerprint",
-        "fingerprint_key": fingerprint_key
-    }
-    kwargs.update(r)
-
-    detail_length = len(str(kwargs))
-
-    if _is_make_reponse_too_long(fingerprint_key, kwargs):
-        r["max_detail_length_error"] = detail_length
-        return r
-
-    return kwargs
-
-
-def make_metadata_key(key, value):
-    if key == "type":
-        raise ValueError("metadata key cannot be 'type'")
-
-    return {"type": "metadata_key", "key": key, "value": value}
-
-
-def make_metadata(**kwargs):
-    if "type" in kwargs:
-        raise ValueError("make_metadata kwargs contain 'type' key.")
-
-    r = {"type": "metadata"}
-    r.update(kwargs)
-    return r
 
 
 class ValidationException(Exception):
@@ -322,26 +156,165 @@ class ValidationException(Exception):
         super(ValidationException, self).__init__(msg)
 
 
-def validate_response(r):
-    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key", "fingerprint"])
-    if not isinstance(r, dict):
-        raise ValidationException("Response is not a dict", type(r))
-    if "type" not in r:
-        raise ValidationException("Response requires 'type' key", r)
-    if r["type"] not in RESPONSE_TYPES:
-        raise ValidationException("Invalid response type", r["type"])
-    if r["type"] == "rule":
-        error_key = r.get("error_key")
-        if not error_key:
-            raise ValidationException("Rule response missing error_key", r)
-        elif not isinstance(error_key, str):
-            raise ValidationException("Response contains invalid error_key type", type(error_key))
-    if r["type"] == "fingerprint":
-        fingerprint_key = r.get("fingerprint_key")
-        if not fingerprint_key:
-            raise ValidationException("Rule response missing fingerprint_key", r)
-        elif not isinstance(fingerprint_key, str):
-            raise ValidationException("Response contains invalid fingerprint_key type", type(fingerprint_key))
+class Response(dict):
+    """
+    Response is the base class of response types that can be returned from
+    rules.
+
+    Subclasses must call __init__ of this class via super() and must provide
+    the response_type class attribute.
+
+    The key_name class attribute is optional, but if one is specified, the
+    first argument to __init__ must not be None. If key_name is None, then
+    the first argument to __init__ should be None. It's best to override
+    __init__ in subclasses so users aren't required to pass None explicitly.
+    """
+
+    response_type = None
+    """
+    response_type is something like 'rule', 'metadata', 'fingerprint', etc. It
+    is how downstream systems identify the type of information returned by a
+    rule.
+    """
+
+    key_name = None
+    """
+    key_name is something like 'error_key', 'fingerprint_key', etc.  It is the
+    key downstream systems use to look up the exact response returned by a
+    rule.
+    """
+
+    def __init__(self, key, **kwargs):
+        self.validate_kwargs(kwargs)
+
+        r = {"type": self.response_type}
+        if self.key_name:
+            self.validate_key(key)
+            r[self.key_name] = key
+
+        kwargs.update(r)
+        kwargs = self.adjust_for_length(key, r, kwargs)
+        super(Response, self).__init__(kwargs)
+
+    def get_key(self):
+        """
+        Helper function that uses the response's key_name to look up the
+        response identifier. For a rule, this is like
+        response.get("error_key").
+        """
+        if self.key_name:
+            return self.get(self.key_name)
+
+    def validate_kwargs(self, kwargs):
+        """
+        Validates expected subclass attributes and constructor keyword
+        arguments.
+        """
+        if not self.response_type:
+            msg = "response_type must be set on the Response subclass."
+            raise ValidationException(msg)
+
+        if (self.key_name and self.key_name in kwargs) or "type" in kwargs:
+            name = self.__class__.__name__
+            msg = "%s is an invalid argument for %s" % (self.key_name, name)
+            raise ValidationException(msg)
+
+    def validate_key(self, key):
+        """ Called if the key_name class attribute is not None. """
+        if not key:
+            name = self.__class__.__name__
+            msg = "%s response missing %s" % (name, self.key_name)
+            raise ValidationException(msg, self)
+        elif not isinstance(key, str):
+            msg = "Response contains invalid %s type" % self.key_name
+            raise ValidationException(msg, type(key))
+
+    def adjust_for_length(self, key, r, kwargs):
+        """
+        Converts the response to a string and compares its length to a max
+        length specified in settings. If the response is too long, an error is
+        logged, and an abbreviated response is returned instead.
+        """
+        length = len(str(kwargs))
+        if length > settings.defaults["max_detail_length"]:
+            self._log_length_error(key, length)
+            r["max_detail_length_error"] = length
+            return r
+        return kwargs
+
+    def _log_length_error(self, key, length):
+        """ Helper function for logging a response length error. """
+        extra = {
+            "max_detail_length": settings.defaults["max_detail_length"],
+            "len": length
+        }
+        if self.key_name:
+            extra[self.key_name] = key
+        msg = "Length of data in %s is too long." % self.__class__.__name__
+        log.error(msg, extra=extra)
+
+
+class make_response(Response):
+    """
+    Traditionally used by a rule to signal that its conditions have been met.
+    """
+    response_type = "rule"
+    key_name = "error_key"
+
+
+class make_fail(make_response):
+    """ An alias for make_response. """
+    pass
+
+
+class make_pass(Response):
+    """
+    Can be used by a rule to explicitly indicate that a system "passed" its
+    checks.
+    """
+    response_type = "pass"
+    key_name = "pass_key"
+
+
+class make_fingerprint(Response):
+    response_type = "fingerprint"
+    key_name = "fingerprint_key"
+
+
+class make_metadata_key(Response):
+    response_type = "metadata_key"
+    key_name = "key"
+
+    def __init__(self, key, value):
+        super(make_metadata_key, self).__init__(key, value=value)
+
+
+class make_metadata(Response):
+    """
+    Allows a rule to convey addtional metadata about a system to downstream
+    systems. It doesn't convey success or failure but purely information that
+    may be aggregated with other make_metadata responses. As such, it has no
+    response key.
+    """
+    response_type = "metadata"
+
+    def __init__(self, **kwargs):
+        super(make_metadata, self).__init__(None, **kwargs)
+
+
+class _make_skip(Response):
+    """
+    Called automatically whenever a rule's dependencies aren't met. Likely to
+    be deprecated or have its semantics changed. Do not call explicitly from
+    rules.
+    """
+    response_type = "skip"
+
+    def __init__(self, rule_fqdn, reason, details=None):
+        super(_make_skip, self).__init__(None,
+                                        rule_fqdn=rule_fqdn,
+                                        reason=reason,
+                                        details=details)
 
 
 try:
@@ -356,7 +329,7 @@ try:
             return c
 
     def format_rule(comp, val):
-        content = get_content(comp, val.get("error_key"))
+        content = get_content(comp, val.get_key())
         if content:
             return Template(content).render(val)
         return str(val)

@@ -448,6 +448,7 @@ def upload(config, tar_file, collection_duration=None):
 
         elif upload.status_code == 412:
             pconn.handle_fail_rcs(upload)
+            break
         else:
             logger.error("Upload attempt %d of %d failed! Status Code: %s",
                          tries + 1, config.retries, upload.status_code)

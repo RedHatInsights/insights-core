@@ -28,6 +28,7 @@ class SosSpecs(Specs):
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
     dmesg = simple_file("sos_commands/kernel/dmesg")
     dmidecode = simple_file("dmidecode")
+    dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("sos_commands/networking/ethtool_-S_*")
@@ -98,4 +99,5 @@ class SosSpecs(Specs):
     uptime = simple_file("sos_commands/general/uptime")
     vgdisplay = simple_file("vgdisplay")
     vgs = simple_file("sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0")
+    xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
