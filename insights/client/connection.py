@@ -66,7 +66,7 @@ class InsightsConnection(object):
         self.password = self.config.password
 
         self.cert_verify = self.config.cert_verify
-        if type(self.cert_verify) in six.string_types:
+        if isinstance(self.cert_verify, six.string_types):
             if self.cert_verify.lower() == 'false':
                 self.cert_verify = False
             elif self.cert_verify.lower() == 'true':
@@ -275,6 +275,9 @@ class InsightsConnection(object):
         '''
         Run a test with openssl to detect any MITM proxies
         '''
+        if not self.cert_verify:
+            logger.info('cert_verify set to False, skipping SSL check...')
+            return False
         success = True
         hostname = urlparse(self.base_url).netloc.split(':')
         sock = socket.socket()
