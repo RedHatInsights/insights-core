@@ -219,10 +219,10 @@ class RegistryPoint(object):
         self.multi_output = multi_output
         self.raw = raw
         self.__name__ = self.__class__.__name__
-        datasource(metadata=metadata, multi_output=multi_output, raw=raw)(self)
+        datasource([], metadata=metadata, multi_output=multi_output, raw=raw)(self)
 
     def __call__(self, broker):
-        for c in reversed(dr.get_added_dependencies(self)):
+        for c in reversed(dr.get_delegate(self).deps):
             if c in broker:
                 return broker[c]
         raise dr.SkipComponent()
@@ -437,7 +437,7 @@ class first_file(object):
         self.kind = kind
         self.raw = kind is RawFileProvider
         self.__name__ = self.__class__.__name__
-        datasource(context, raw=self.raw)(self)
+        datasource(self.context, raw=self.raw)(self)
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)

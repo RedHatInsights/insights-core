@@ -91,9 +91,10 @@ class rule(dr.ComponentType):
                 raise dr.SkipComponent()
         except dr.MissingRequirements as mr:
             details = dr.stringify_requirements(mr.requirements)
-            r = make_skip(dr.get_name(self.component),
+            r = _make_skip(dr.get_name(self.component),
                     reason="MISSING_REQUIREMENTS", details=details)
-        validate_response(r)
+        if not isinstance(r, Response):
+            raise Exception("rules must return Response objects.")
         return r
 
 
@@ -148,129 +149,6 @@ def is_component(obj):
     return bool(dr.get_component_type(obj))
 
 
-def make_skip(rule_fqdn, reason, details=None):
-    return {"rule_fqdn": rule_fqdn,
-            "reason": reason,
-            "details": details,
-            "type": "skip"}
-
-
-def _is_make_reponse_too_long(key, kwargs):
-    response_type = {"rule": "make_response", "fingerprint": "make_fingerprint"}
-
-    # using str() avoids many serialization issues and runs in about 75%
-    # of the time as json.dumps
-    detail_length = len(str(kwargs))
-
-    if detail_length > settings.defaults["max_detail_length"]:
-        log.error("Length of data in %s is too long." % response_type[kwargs['type']], extra={
-            "max_detail_length": settings.defaults["max_detail_length"],
-            "error_key": key,
-            "len": detail_length
-        })
-        return True
-    return False
-
-
-def make_response(error_key, **kwargs):
-    """ Returns a JSON document approprate as a rule plugin final
-    result.
-
-    :param str error_key: The error name identified by the plugin
-    :param \*\*kwargs: Strings to pass additional information to the frontend for
-          rendering more complete messages in a customer system report.
-
-
-    Given::
-
-        make_response("CRITICAL_ERROR", cpu_number=2, cpu_type="intel")
-
-    The response will be the JSON string ::
-
-        {
-            "type": "rule",
-            "error_key": "CRITICAL_ERROR",
-            "cpu_number": 2,
-            "cpu_type": "intel"
-        }
-    """
-
-    if "error_key" in kwargs or "type" in kwargs:
-        raise Exception("Can't use an invalid argument for make_response")
-
-    r = {
-        "type": "rule",
-        "error_key": error_key
-    }
-    kwargs.update(r)
-
-    detail_length = len(str(kwargs))
-
-    if _is_make_reponse_too_long(error_key, kwargs):
-        r["max_detail_length_error"] = detail_length
-        return r
-
-    return kwargs
-
-
-def make_fingerprint(fingerprint_key, **kwargs):
-    """ Returns a JSON document appropriate as a fingerprint rule plugin final
-    result.
-
-    :param str fingerprint_key: The fingerprint key name is used for
-          identification of the plugin.
-    :param \*\*kwargs: Strings to pass additional information to the frontend for
-          rendering more complete messages in a customer system report.
-
-
-    Given::
-
-        make_fingerprint("FINGERPRINT", manufacturer="Red Hat", product="Insights")
-
-    The response will be the JSON string ::
-
-        {
-            "type": "fingerprint",
-            "fingerprint_key": "FINGERPRINT",
-            "manufacturer": "Red Hat",
-            "product": "Insights"
-        }
-    """
-
-    if "fingerprint_key" in kwargs or "type" in kwargs:
-        raise Exception("Can't use an invalid argument for make_fingerprint")
-
-    r = {
-        "type": "fingerprint",
-        "fingerprint_key": fingerprint_key
-    }
-    kwargs.update(r)
-
-    detail_length = len(str(kwargs))
-
-    if _is_make_reponse_too_long(fingerprint_key, kwargs):
-        r["max_detail_length_error"] = detail_length
-        return r
-
-    return kwargs
-
-
-def make_metadata_key(key, value):
-    if key == "type":
-        raise ValueError("metadata key cannot be 'type'")
-
-    return {"type": "metadata_key", "key": key, "value": value}
-
-
-def make_metadata(**kwargs):
-    if "type" in kwargs:
-        raise ValueError("make_metadata kwargs contain 'type' key.")
-
-    r = {"type": "metadata"}
-    r.update(kwargs)
-    return r
-
-
 class ValidationException(Exception):
     def __init__(self, msg, r=None):
         if r:
@@ -278,26 +156,165 @@ class ValidationException(Exception):
         super(ValidationException, self).__init__(msg)
 
 
-def validate_response(r):
-    RESPONSE_TYPES = set(["rule", "metadata", "skip", "metadata_key", "fingerprint"])
-    if not isinstance(r, dict):
-        raise ValidationException("Response is not a dict", type(r))
-    if "type" not in r:
-        raise ValidationException("Response requires 'type' key", r)
-    if r["type"] not in RESPONSE_TYPES:
-        raise ValidationException("Invalid response type", r["type"])
-    if r["type"] == "rule":
-        error_key = r.get("error_key")
-        if not error_key:
-            raise ValidationException("Rule response missing error_key", r)
-        elif not isinstance(error_key, str):
-            raise ValidationException("Response contains invalid error_key type", type(error_key))
-    if r["type"] == "fingerprint":
-        fingerprint_key = r.get("fingerprint_key")
-        if not fingerprint_key:
-            raise ValidationException("Rule response missing fingerprint_key", r)
-        elif not isinstance(fingerprint_key, str):
-            raise ValidationException("Response contains invalid fingerprint_key type", type(fingerprint_key))
+class Response(dict):
+    """
+    Response is the base class of response types that can be returned from
+    rules.
+
+    Subclasses must call __init__ of this class via super() and must provide
+    the response_type class attribute.
+
+    The key_name class attribute is optional, but if one is specified, the
+    first argument to __init__ must not be None. If key_name is None, then
+    the first argument to __init__ should be None. It's best to override
+    __init__ in subclasses so users aren't required to pass None explicitly.
+    """
+
+    response_type = None
+    """
+    response_type is something like 'rule', 'metadata', 'fingerprint', etc. It
+    is how downstream systems identify the type of information returned by a
+    rule.
+    """
+
+    key_name = None
+    """
+    key_name is something like 'error_key', 'fingerprint_key', etc.  It is the
+    key downstream systems use to look up the exact response returned by a
+    rule.
+    """
+
+    def __init__(self, key, **kwargs):
+        self.validate_kwargs(kwargs)
+
+        r = {"type": self.response_type}
+        if self.key_name:
+            self.validate_key(key)
+            r[self.key_name] = key
+
+        kwargs.update(r)
+        kwargs = self.adjust_for_length(key, r, kwargs)
+        super(Response, self).__init__(kwargs)
+
+    def get_key(self):
+        """
+        Helper function that uses the response's key_name to look up the
+        response identifier. For a rule, this is like
+        response.get("error_key").
+        """
+        if self.key_name:
+            return self.get(self.key_name)
+
+    def validate_kwargs(self, kwargs):
+        """
+        Validates expected subclass attributes and constructor keyword
+        arguments.
+        """
+        if not self.response_type:
+            msg = "response_type must be set on the Response subclass."
+            raise ValidationException(msg)
+
+        if (self.key_name and self.key_name in kwargs) or "type" in kwargs:
+            name = self.__class__.__name__
+            msg = "%s is an invalid argument for %s" % (self.key_name, name)
+            raise ValidationException(msg)
+
+    def validate_key(self, key):
+        """ Called if the key_name class attribute is not None. """
+        if not key:
+            name = self.__class__.__name__
+            msg = "%s response missing %s" % (name, self.key_name)
+            raise ValidationException(msg, self)
+        elif not isinstance(key, str):
+            msg = "Response contains invalid %s type" % self.key_name
+            raise ValidationException(msg, type(key))
+
+    def adjust_for_length(self, key, r, kwargs):
+        """
+        Converts the response to a string and compares its length to a max
+        length specified in settings. If the response is too long, an error is
+        logged, and an abbreviated response is returned instead.
+        """
+        length = len(str(kwargs))
+        if length > settings.defaults["max_detail_length"]:
+            self._log_length_error(key, length)
+            r["max_detail_length_error"] = length
+            return r
+        return kwargs
+
+    def _log_length_error(self, key, length):
+        """ Helper function for logging a response length error. """
+        extra = {
+            "max_detail_length": settings.defaults["max_detail_length"],
+            "len": length
+        }
+        if self.key_name:
+            extra[self.key_name] = key
+        msg = "Length of data in %s is too long." % self.__class__.__name__
+        log.error(msg, extra=extra)
+
+
+class make_response(Response):
+    """
+    Traditionally used by a rule to signal that its conditions have been met.
+    """
+    response_type = "rule"
+    key_name = "error_key"
+
+
+class make_fail(make_response):
+    """ An alias for make_response. """
+    pass
+
+
+class make_pass(Response):
+    """
+    Can be used by a rule to explicitly indicate that a system "passed" its
+    checks.
+    """
+    response_type = "pass"
+    key_name = "pass_key"
+
+
+class make_fingerprint(Response):
+    response_type = "fingerprint"
+    key_name = "fingerprint_key"
+
+
+class make_metadata_key(Response):
+    response_type = "metadata_key"
+    key_name = "key"
+
+    def __init__(self, key, value):
+        super(make_metadata_key, self).__init__(key, value=value)
+
+
+class make_metadata(Response):
+    """
+    Allows a rule to convey addtional metadata about a system to downstream
+    systems. It doesn't convey success or failure but purely information that
+    may be aggregated with other make_metadata responses. As such, it has no
+    response key.
+    """
+    response_type = "metadata"
+
+    def __init__(self, **kwargs):
+        super(make_metadata, self).__init__(None, **kwargs)
+
+
+class _make_skip(Response):
+    """
+    Called automatically whenever a rule's dependencies aren't met. Likely to
+    be deprecated or have its semantics changed. Do not call explicitly from
+    rules.
+    """
+    response_type = "skip"
+
+    def __init__(self, rule_fqdn, reason, details=None):
+        super(_make_skip, self).__init__(None,
+                                        rule_fqdn=rule_fqdn,
+                                        reason=reason,
+                                        details=details)
 
 
 try:
@@ -312,7 +329,7 @@ try:
             return c
 
     def format_rule(comp, val):
-        content = get_content(comp, val.get("error_key"))
+        content = get_content(comp, val.get_key())
         if content:
             return Template(content).render(val)
         return str(val)

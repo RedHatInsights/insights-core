@@ -16,6 +16,21 @@ MaxClients       256
 IncludeOptional conf.d/*.conf
 '''.strip()
 
+HTTPD_CONF_CONTINUATION = r'''
+JustFotTest_NoSec "/var/www/cgi"
+CustomLog logs/ssl_request_log \
+"%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
+# prefork MPM
+<IfModule prefork.c>
+ServerLimit      256
+ThreadsPerChild  16
+JustForTest      "AB"
+MaxClients       256
+</IfModule>
+
+IncludeOptional conf.d/*.conf
+'''.strip()
+
 HTTPD_CONF_1 = '''
 JustFotTest_NoSec "/var/www/cgi"
 # prefork MPM
@@ -258,7 +273,13 @@ HTTPD_CONF_NEST_4 = """
 
 def test_mixed_case_tags():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
-    httpd.find("ServerLimit").value == 256
+    assert httpd.find("ServerLimit").value == 256
+
+
+def test_line_continuation():
+    httpd = _HttpdConf(context_wrap(HTTPD_CONF_CONTINUATION, path='/etc/httpd/conf/httpd.conf'))
+    val = httpd.find("CustomLog").attrs
+    assert val == [r'logs/ssl_request_log', r'%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x "%r" %b'], val
 
 
 def test_nopath():

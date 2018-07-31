@@ -1,4 +1,4 @@
-from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN
+from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA
 from insights.tests import context_wrap
 from insights.parsers import netstat
 from ...parsers import ParseException
@@ -565,6 +565,34 @@ tcp    LISTEN     0      128      :::2223                 :::*                  
 tcp    LISTEN     0      128      *:22                    *:*                    users:(("sshd",1231,3))
 """
 
+Ss_TUPNA = """
+Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
+tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
+tcp   UNCONN     0      0                     *:111                *:*      users:(("rpcbind",483,6))
+tcp   UNCONN     0      0                     *:30057              *:*      users:(("dhclient",1171,20))
+tcp   UNCONN     0      0                     *:648                *:*      users:(("rpcbind",483,7))
+tcp   UNCONN     0      0                    :::111               :::*      users:(("rpcbind",483,9))
+tcp   UNCONN     0      0                    :::6645              :::*      users:(("dhclient",1171,21))
+tcp   UNCONN     0      0                    :::648               :::*      users:(("rpcbind",483,10))
+tcp   LISTEN     0      128                   *:111                *:*      users:(("rpcbind",483,8))
+tcp   LISTEN     0      128                   *:22                 *:*      users:(("sshd",1231,3))
+tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
+tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
+tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
+tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
+tcp   LISTEN     0      128                  :::22                :::*      users:(("sshd",1231,4))
+tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
+""".strip()
+
+SS_TULPNA_DOCS = """
+Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
+tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
+tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
+tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
+tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
+tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
+""".strip()
+
 
 def test_ss_tulpn_data():
     ss = SsTULPN(context_wrap(Ss_TULPN)).data
@@ -605,6 +633,16 @@ def test_netstat_doc_examples():
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
         'ss': SsTULPN(context_wrap(SS_TULPN_DOCS)),
+        'ssa': SsTUPNA(context_wrap(SS_TULPNA_DOCS)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
+
+
+def test_ss_tupna_get_port():
+    ssa = SsTUPNA(context_wrap(Ss_TUPNA))
+    exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
+    assert len(ssa.data) == 15
+    assert ssa.get_peerport("2049") == exp01
+    assert ssa.get_localport("2049") == []
+    assert ssa.get_port("2049") == exp01

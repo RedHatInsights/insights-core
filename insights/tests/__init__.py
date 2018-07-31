@@ -40,7 +40,7 @@ def unordered_compare(result, expected):
         return
 
     if not all(isinstance(o, six.string_types) for o in (result, expected)):
-        assert type(result) == type(expected)
+        assert issubclass(type(result), type(expected))
 
     if isinstance(result, list):
         assert len(result) == len(expected)
