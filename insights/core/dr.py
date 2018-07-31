@@ -448,9 +448,8 @@ class ComponentType(object):
         """
         Gets required and at-least-one dependencies not provided by the broker.
         """
-        keys = six.viewkeys(broker)
-        missing_required = [r for r in self.requires if r not in keys]
-        missing_at_least_one = [d for d in self.at_least_one if not set(d) & keys]
+        missing_required = [r for r in self.requires if r not in broker]
+        missing_at_least_one = [d for d in self.at_least_one if not set(d).intersection(broker)]
         if missing_required or missing_at_least_one:
             return (missing_required, missing_at_least_one)
 
@@ -519,23 +518,17 @@ class Broker(object):
             self.exceptions[component].append(ex)
             self.tracebacks[ex] = tb
 
+    def __iter__(self):
+        return iter(self.instances)
+
     def keys(self):
         return self.instances.keys()
-
-    def viewkeys(self):
-        return six.viewkeys(self.instances)
 
     def items(self):
         return self.instances.items()
 
-    def viewitems(self):
-        return six.viewitems(self.instances)
-
     def values(self):
         return self.instances.values()
-
-    def viewvalues(self):
-        return six.viewvalues(self.instances)
 
     def get_by_type(self, _type):
         r = {}
