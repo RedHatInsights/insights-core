@@ -290,6 +290,7 @@ class InsightsClient(object):
         logger.debug("The new Insights Core was installed successfully.")
         return {'success': True}
 
+    @_net
     def update_rules(self):
         """
             returns (dict): new client rules
@@ -337,6 +338,7 @@ class InsightsClient(object):
         """
         return client.get_registration_status(self.config, self.connection)
 
+    @_net
     def upload(self, path, rotate_eggs=True):
         """
             returns (int): upload status code
@@ -424,6 +426,7 @@ class InsightsClient(object):
         """
         return client.delete_archive(path)
 
+    @_net
     def get_registration_status(self):
         return client.get_registration_status(self.config, self.connection)
 
