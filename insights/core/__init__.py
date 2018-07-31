@@ -671,10 +671,20 @@ class YAMLParser(Parser, LegacyItemAccess):
     A parser class that reads YAML files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        if type(content) is list:
-            self.data = yaml.safe_load('\n'.join(content))
-        else:
-            self.data = yaml.safe_load(content)
+        try:
+            if type(content) is list:
+                self.data = yaml.safe_load('\n'.join(content))
+            else:
+                self.data = yaml.safe_load(content)
+
+            if not isinstance(self.data, (dict, list)):
+                raise ParseException("YAML didn't produce a dictionary or list.")
+        except:
+            tb = sys.exc_info()[2]
+            cls = self.__class__
+            name = ".".join([cls.__module__, cls.__name__])
+            msg = "%s couldn't parse yaml." % name
+            six.reraise(ParseException, ParseException(msg), tb)
 
         self.doc = from_dict(self.data)
 
@@ -684,7 +694,15 @@ class JSONParser(Parser, LegacyItemAccess):
     A parser class that reads JSON files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        self.data = json.loads(''.join(content))
+        try:
+            self.data = json.loads(''.join(content))
+        except:
+            tb = sys.exc_info()[2]
+            cls = self.__class__
+            name = ".".join([cls.__module__, cls.__name__])
+            msg = "%s couldn't parse json." % name
+            six.reraise(ParseException, ParseException(msg), tb)
+
         self.doc = from_dict(self.data)
 
 
