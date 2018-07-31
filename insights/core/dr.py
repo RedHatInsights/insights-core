@@ -147,11 +147,6 @@ def add_dependency(component, dep):
     get_delegate(component).add_dependency(dep)
 
 
-@defaults([])
-def get_added_dependencies(component):
-    return get_delegate(component).added_dependencies
-
-
 def to_str(comp, val):
     _type = get_component_type(comp)
     func = FORMATTER.get(_type)
@@ -395,7 +390,6 @@ class ComponentType(object):
         self.requires = []
         self.at_least_one = []
         self.deps = []
-        self.added_dependencies = []
         self.type = self.__class__
 
         deps = list(deps) or kwargs.get("requires", [])
@@ -450,15 +444,21 @@ class ComponentType(object):
         args = [results.get(d) for d in self.deps]
         return self.component(*args)
 
+    def get_missing_dependencies(self, broker):
+        """
+        Gets required and at-least-one dependencies not provided by the broker.
+        """
+        missing_required = [r for r in self.requires if r not in broker]
+        missing_at_least_one = [d for d in self.at_least_one if not set(d).intersection(broker)]
+        if missing_required or missing_at_least_one:
+            return (missing_required, missing_at_least_one)
+
     def process(self, broker):
         """
         Ensures dependencies have been met before delegating to `self.invoke`.
         """
-        keys = set(broker.instances)
-        missing_required = [r for r in self.requires if r not in keys]
-        missing_at_least_one = [d for d in self.at_least_one if not set(d) & keys]
-        if missing_required or missing_at_least_one:
-            missing = (missing_required, missing_at_least_one)
+        missing = self.get_missing_dependencies(broker)
+        if missing:
             raise MissingRequirements(missing)
         return self.invoke(broker)
 
@@ -467,7 +467,7 @@ class ComponentType(object):
 
     def add_dependency(self, dep):
         group = self.group
-        self.added_dependencies.append(dep)
+        self.at_least_one[0].append(dep)
         self.deps.append(dep)
         self.dependencies.add(dep)
         add_dependent(dep, self.component)
@@ -518,11 +518,17 @@ class Broker(object):
             self.exceptions[component].append(ex)
             self.tracebacks[ex] = tb
 
+    def __iter__(self):
+        return iter(self.instances)
+
     def keys(self):
         return self.instances.keys()
 
     def items(self):
         return self.instances.items()
+
+    def values(self):
+        return self.instances.values()
 
     def get_by_type(self, _type):
         r = {}
