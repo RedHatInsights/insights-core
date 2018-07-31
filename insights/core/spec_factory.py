@@ -218,17 +218,17 @@ class RegistryPoint(object):
         self.metadata = metadata
         self.multi_output = multi_output
         self.raw = raw
+        self.__name__ = self.__class__.__name__
+        datasource([], metadata=metadata, multi_output=multi_output, raw=raw)(self)
 
-
-def _registry_point(rp):
-
-    @datasource(metadata=rp.metadata, multi_output=rp.multi_output, raw=rp.raw)
-    def inner(broker):
-        for c in reversed(dr.get_added_dependencies(inner)):
+    def __call__(self, broker):
+        for c in reversed(dr.get_delegate(self).deps):
             if c in broker:
                 return broker[c]
         raise dr.SkipComponent()
-    return inner
+
+    def __repr__(self):
+        return dr.get_name(self)
 
 
 class SpecDescriptor(object):
@@ -277,7 +277,6 @@ def _resolve_registry_points(cls, base, dct):
     for k, v in dct.items():
         if isinstance(v, RegistryPoint):
             v.__name__ = k
-            v = _registry_point(v)
             cls.registry[k] = v
 
         if is_datasource(v):
@@ -318,15 +317,13 @@ class SpecSet(six.with_metaclass(SpecSetMeta)):
     pass
 
 
-def _get_context(context, alternatives, broker):
-    if context:
-        if isinstance(context, list):
-            return dr.first_of(context, broker)
-        return broker.get(context)
-    return dr.first_of(alternatives, broker)
+def _get_context(context, broker):
+    if isinstance(context, list):
+        return dr.first_of(context, broker)
+    return broker.get(context)
 
 
-def simple_file(path, context=None, kind=TextFileProvider):
+class simple_file(object):
     """
     Creates a datasource that reads the file at path when evaluated.
 
@@ -339,16 +336,20 @@ def simple_file(path, context=None, kind=TextFileProvider):
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
+    def __init__(self, path, context=None, kind=TextFileProvider):
+        self.path = path
+        self.context = context or FSRoots
+        self.kind = kind
+        self.raw = kind is RawFileProvider
+        self.__name__ = self.__class__.__name__
+        datasource(self.context, raw=self.raw)(self)
 
-    @datasource(context or FSRoots, raw=(kind is RawFileProvider))
-    def inner(broker):
-        ctx = _get_context(context, FSRoots, broker)
-        return kind(ctx.locate_path(path), root=ctx.root, ds=inner)
-    inner.__doc__ = 'Path: ' + escape(path)
-    return inner
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
+        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self)
 
 
-def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_files=1000):
+class glob_file(object):
     """
     Creates a datasource that reads all files matching the glob pattern(s).
 
@@ -364,51 +365,57 @@ def glob_file(patterns, ignore=None, context=None, kind=TextFileProvider, max_fi
     Returns:
         function: A datasource that reads all files matching the glob patterns.
     """
+    def __init__(self, patterns, ignore=None, context=None, kind=TextFileProvider, max_files=1000):
+        if not isinstance(patterns, (list, set)):
+            patterns = [patterns]
+        self.patterns = patterns
+        self.ignore = ignore
+        self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
+        self.context = context or FSRoots
+        self.kind = kind
+        self.raw = kind is RawFileProvider
+        self.max_files = max_files
+        self.__name__ = self.__class__.__name__
+        datasource(self.context, multi_output=True, raw=self.raw)(self)
 
-    if not isinstance(patterns, (list, set)):
-        patterns = [patterns]
-
-    @datasource(context or FSRoots, multi_output=True, raw=(kind is RawFileProvider))
-    def inner(broker):
-        ctx = _get_context(context, FSRoots, broker)
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
         root = ctx.root
         results = []
-        for pattern in patterns:
+        for pattern in self.patterns:
             pattern = ctx.locate_path(pattern)
             for path in sorted(glob(os.path.join(root, pattern.lstrip('/')))):
-                if ignore and re.search(ignore, path):
+                if self.ignore_func(path) or os.path.isdir(path):
                     continue
                 try:
-                    results.append(kind(path[len(root):], root=root, ds=inner))
+                    results.append(self.kind(path[len(root):], root=root, ds=self))
                 except:
                     log.debug(traceback.format_exc())
         if results:
-            if len(results) > max_files:
+            if len(results) > self.max_files:
                 raise ContentException("Number of files returned [{0}] is over the {1} file limit, please refine "
-                                       "the specs file pattern to narrow down results".format(len(results), max_files))
+                                       "the specs file pattern to narrow down results".format(len(results), self.max_files))
             return results
-        raise ContentException("[%s] didn't match." % ', '.join(patterns))
-    pat = [escape(p) for p in patterns]
-    inner.__doc__ = 'Path: ' + ", ".join(pat)
-    return inner
+        raise ContentException("[%s] didn't match." % ', '.join(self.patterns))
 
 
-def head(dep):
+class head(object):
     """
     Return the first element of any datasource that produces a list.
     """
-    @datasource(dep)
-    def inner(lst):
-        c = lst[dep]
+    def __init__(self, dep):
+        self.dep = dep
+        self.__name__ = self.__class__.__name__
+        datasource(dep)(self)
+
+    def __call__(self, lst):
+        c = lst[self.dep]
         if lst:
             return c[0]
         raise dr.SkipComponent()
 
-    inner.__doc__ = escape(dep.__doc__)
-    return inner
 
-
-def first_file(files, context=None, kind=TextFileProvider):
+class first_file(object):
     """
     Creates a datasource that returns the first existing and readable file in
     files.
@@ -424,53 +431,61 @@ def first_file(files, context=None, kind=TextFileProvider):
             and is readable
     """
 
-    @datasource(context or FSRoots, raw=(kind is RawFileProvider))
-    def inner(broker):
-        ctx = _get_context(context, FSRoots, broker)
+    def __init__(self, files, context=None, kind=TextFileProvider):
+        self.files = files
+        self.context = context or FSRoots
+        self.kind = kind
+        self.raw = kind is RawFileProvider
+        self.__name__ = self.__class__.__name__
+        datasource(self.context, raw=self.raw)(self)
+
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
         root = ctx.root
-        for f in files:
+        for f in self.files:
             try:
-                return kind(ctx.locate_path(f), root=root, ds=inner)
+                return self.kind(ctx.locate_path(f), root=root, ds=self)
             except:
                 pass
-        raise ContentException("None of [%s] found." % ', '.join(files))
-    fls = [escape(f) for f in files]
-    inner.__doc__ = 'Path: ' + ", ".join(fls)
-    return inner
+        raise ContentException("None of [%s] found." % ', '.join(self.files))
 
 
-def listdir(path, context=None):
+class listdir(object):
     """
-    Executable a simple directory listing of all the files and directories in
+    Execute a simple directory listing of all the files and directories in
     path.
 
     Args:
-        path (str): directory to list.
+        path (str): directory or glob pattern to list.
         context (ExecutionContext): the context under which the datasource
             should run.
+        ignore (str): regular expression defining paths to ignore.
 
     Returns:
         function: A datasource that returns the list of files and directories
             in the directory specified by path
     """
 
-    @datasource(context or FSRoots)
-    def inner(broker):
-        ctx = _get_context(context, FSRoots, broker)
-        p = os.path.join(ctx.root, path.lstrip('/'))
+    def __init__(self, path, context=None, ignore=None):
+        self.path = path
+        self.context = context or FSRoots
+        self.ignore = ignore
+        self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
+        self.__name__ = self.__class__.__name__
+        datasource(self.context)(self)
+
+    def __call__(self, broker):
+        ctx = _get_context(self.context, broker)
+        p = os.path.join(ctx.root, self.path.lstrip('/'))
         p = ctx.locate_path(p)
-        if os.path.isdir(p):
-            return sorted(os.listdir(p))
+        result = sorted(os.listdir(p)) if os.path.isdir(p) else sorted(glob(p))
 
-        result = sorted(glob(p))
         if result:
-            return [os.path.basename(r) for r in result]
+            return [os.path.basename(r) for r in result if not self.ignore_func(r)]
         raise ContentException("Can't list %s or nothing there." % p)
-    inner.__doc__ = 'Path: ' + escape(path)
-    return inner
 
 
-def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
+class simple_command(object):
     """
     Executable a simple command that has no dynamic arguments
 
@@ -496,29 +511,35 @@ def simple_command(cmd, context=HostContext, split=True, keep_rc=False, timeout=
             no arguments
     """
 
-    @datasource(context)
-    def inner(broker):
-        ctx = broker[context]
+    def __init__(self, cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
+        self.cmd = cmd
+        self.context = context
+        self.split = split
+        self.keep_rc = keep_rc
+        self.timeout = timeout
+        COMMANDS[self] = cmd
+        self.__name__ = self.__class__.__name__
+        datasource(self.context)(self)
+
+    def __call__(self, broker):
+        ctx = broker[self.context]
         rc = None
-        if split:
-            filters = "\n".join(get_filters(inner))
+        if self.split:
+            filters = "\n".join(get_filters(self))
         if filters:
-            command = [shlex.split(cmd)] + [["grep", "-F", filters]]
-            raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
+            command = [shlex.split(self.cmd)] + [["grep", "-F", filters]]
+            raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
         else:
-            command = [shlex.split(cmd)]
-            raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
-        if keep_rc:
+            command = [shlex.split(self.cmd)]
+            raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
+        if self.keep_rc:
             rc, result = raw
         else:
             result = raw
-        return CommandOutputProvider(cmd, ctx, split=split, content=result, rc=rc, keep_rc=keep_rc)
-    COMMANDS[inner] = cmd
-    inner.__doc__ = 'Command: ' + escape(cmd)
-    return inner
+        return CommandOutputProvider(self.cmd, ctx, split=self.split, content=result, rc=rc, keep_rc=self.keep_rc)
 
 
-def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
+class foreach_execute(object):
     """
     Execute a command for each element in provider. Provider is the output of
     a different datasource that returns a list of single elements or a list of
@@ -548,44 +569,51 @@ def foreach_execute(provider, cmd, context=HostContext, split=True, keep_rc=Fals
         created by substituting each element of provider into the cmd template.
     """
 
-    @datasource(provider, context, multi_output=True)
-    def inner(broker):
+    def __init__(self, provider, cmd, context=HostContext, split=True, keep_rc=False, timeout=None):
+        self.provider = provider
+        self.cmd = cmd
+        self.context = context
+        self.split = split
+        self.keep_rc = keep_rc
+        self.timeout = timeout
+        self.__name__ = self.__class__.__name__
+        datasource(self.provider, self.context, multi_output=True)(self)
+
+    def __call__(self, broker):
         result = []
-        source = broker[provider]
-        ctx = broker[context]
+        source = broker[self.provider]
+        ctx = broker[self.context]
         if isinstance(source, ContentProvider):
             source = source.content
         if not isinstance(source, (list, set)):
             source = [source]
         for e in source:
             try:
-                the_cmd = cmd % e
+                the_cmd = self.cmd % e
                 rc = None
 
-                if split:
-                    filters = "\n".join(get_filters(inner))
+                if self.split:
+                    filters = "\n".join(get_filters(self))
                 if filters:
                     command = [shlex.split(the_cmd)] + [["grep", "-F", filters]]
-                    raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
+                    raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
                 else:
                     command = [shlex.split(the_cmd)]
-                    raw = ctx.shell_out(command, split=split, keep_rc=keep_rc, timeout=timeout)
-                if keep_rc:
+                    raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
+                if self.keep_rc:
                     rc, output = raw
                 else:
                     output = raw
-                result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=split,
-                                                    keep_rc=keep_rc))
+                result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=self.split,
+                                                    keep_rc=self.keep_rc))
             except:
                 log.debug(traceback.format_exc())
         if result:
             return result
-        raise ContentException("No results found for [%s]" % cmd)
-    inner.__doc__ = 'Command: ' + escape(cmd)
-    return inner
+        raise ContentException("No results found for [%s]" % self.cmd)
 
 
-def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextFileProvider):
+class foreach_collect(object):
     """
     Subtitutes each element in provider into path and collects the files at the
     resulting paths.
@@ -602,49 +630,55 @@ def foreach_collect(provider, path, ignore=None, context=HostContext, kind=TextF
             substituting each element of provider into the path template.
     """
 
-    @datasource(provider, context, multi_output=True, raw=(kind is RawFileProvider))
-    def inner(broker):
+    def __init__(self, provider, path, ignore=None, context=HostContext, kind=TextFileProvider):
+        self.provider = provider
+        self.path = path
+        self.ignore = ignore
+        self.ignore_func = re.compile(ignore).search if ignore else lambda x: False
+        self.context = context
+        self.kind = kind
+        self.raw = kind is RawFileProvider
+        self.__name__ = self.__class__.__name__
+        datasource(self.provider, self.context, multi_output=True, raw=self.raw)(self)
+
+    def __call__(self, broker):
         result = []
-        source = broker[provider]
-        ctx = _get_context(context, FSRoots, broker)
+        source = broker[self.provider]
+        ctx = _get_context(self.context, broker)
         root = ctx.root
         if isinstance(source, ContentProvider):
             source = source.content
         if not isinstance(source, (list, set)):
             source = [source]
         for e in source:
-            pattern = ctx.locate_path(path % e)
+            pattern = ctx.locate_path(self.path % e)
             for p in glob(os.path.join(root, pattern.lstrip('/'))):
-                if ignore and re.search(ignore, p):
+                if self.ignore_func(p) or os.path.isdir(p):
                     continue
                 try:
-                    result.append(kind(p[len(root):], root=root, ds=inner))
+                    result.append(self.kind(p[len(root):], root=root, ds=self))
                 except:
                     log.debug(traceback.format_exc())
         if result:
             return result
-        raise ContentException("No results found for [%s]" % path)
-    inner.__doc__ = 'Path: ' + escape(path)
-    return inner
+        raise ContentException("No results found for [%s]" % self.path)
 
 
-def first_of(deps):
+class first_of(object):
     """ Given a list of dependencies, returns the first of the list
         that exists in the broker. At least one must be present, or this
         component won't fire.
     """
-    dr.mark_hidden(deps)
+    def __init__(self, deps):
+        self.deps = deps
+        dr.mark_hidden(deps)
+        self.__name__ = self.__class__.__name__
+        datasource(deps)(self)
 
-    @datasource(deps)
-    def inner(broker):
-        for c in deps:
+    def __call__(self, broker):
+        for c in self.deps:
             if c in broker:
                 return broker[c]
-
-    docs = [escape(d) if isinstance(d, list) and d.func_name != 'inner' else d.__doc__ for d in deps if d.__doc__]
-    docs = [enc(d) for d in docs]
-    inner.__doc__ = b",".join([b"Returns the first of the following:"] + docs)
-    return inner
 
 
 @serializer(TextFileProvider)
