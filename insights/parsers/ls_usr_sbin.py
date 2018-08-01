@@ -23,11 +23,9 @@ Sample directory list collected::
 
     total 41472
     -rwxr-xr-x. 1 0  0   11720 Mar 18  2014 accessdb
-    -rwxr-sr-x. 1 0 90  218552 Jan 27  2014 postdrop
 
 Examples:
 
-    >>> add_filter(Specs.ls_usr_sbin, "accessdb")
     >>> "accessdb" in ls_usr_sbin
     False
     >>> "/usr/sbin" in ls_usr_sbin
@@ -48,7 +46,6 @@ Sample directory list collected::
 
 Examples:
 
-    >>> add_filter(Specs.ls_usr_sbin, "accessdb")
     >>> "accessdb" in ls_usr_sbin
     False
     >>> "/usr/sbin" in ls_usr_sbin
