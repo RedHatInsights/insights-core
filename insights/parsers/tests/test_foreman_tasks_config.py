@@ -42,7 +42,6 @@ def test_foreman_tasks_config():
 
 def test_foreman_tasks_config_doc_examples():
     env = {
-        'ForemanTasksConfig': ForemanTasksConfig,
         'foreman_tasks_config': ForemanTasksConfig(context_wrap(FOREMAN_TASKS_CONFIG)).data,
     }
     failed, total = doctest.testmod(foreman_tasks_config, globs=env)
