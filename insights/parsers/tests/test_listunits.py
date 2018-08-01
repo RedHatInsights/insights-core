@@ -192,6 +192,7 @@ LISTUNITS_CONTENT = """
   docker-cleanup.timer                                                        loaded active waiting   Run docker-cleanup every hour
   systemd-tmpfiles-clean.timer                                                loaded active waiting   Daily Cleanup of Temporary Directories
   unbound-anchor.timer                                                        loaded active waiting   daily update of the root trust anchor for DNSSEC
+* openstack-swift-proxy.service                                               loaded failed failed    OpenStack Object Storage (swift) - Proxy Server
 
 LOAD   = Reflects whether the unit definition was properly loaded.
 ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
@@ -220,6 +221,17 @@ def test_listunits():
     service_name = "virtlogd.socket"
     service_details = list_units.get_service_details(service_name)
     assert service_details['SUB'] == "listening"
+    service_name = "NetworkManager-wait-online.service"
+    service_details = list_units.get_service_details(service_name)
+    assert service_details['SUB'] == "failed"
+    service_name = "ovirt-guest-agent.service"
+    service_details = list_units.get_service_details(service_name)
+    assert service_details['ACTIVE'] == "failed"
+    service_name = "docker-storage-setup.service"
+    assert list_units.is_running(service_name) is False
+    service_name = "openstack-swift-proxy.service"
+    service_details = list_units.get_service_details(service_name)
+    assert service_details['SUB'] == "failed"
 
     context = context_wrap(LISTUNITS_CONTENT_2)
     list_units = ListUnits(context)
