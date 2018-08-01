@@ -130,6 +130,7 @@ def test_single_directory():
 
     assert dirs.files_of('/etc/pki/tls') == ['cert.pem', 'openssl.cnf']
     assert dirs.dirs_of('/etc/pki/tls') == ['.', '..', 'certs', 'misc', 'private']
+    assert dirs.total_of('/etc/pki/tls') == 32
 
 
 def test_multiple_directories():

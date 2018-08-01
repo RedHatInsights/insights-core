@@ -1494,24 +1494,25 @@ class FileListing(Parser):
         """
         listings = {}
         this_dir = {}
+        # Directory name from context
+        name = self.first_path if self.first_path else None
         for line in content:
             l = line.strip()
             if not l:
                 continue
-            if (l.startswith('/') and l.endswith(':')) or (self.first_path):
-                # Directory name from output first and context path second
-                if (l.startswith('/') and l.endswith(':')):
-                    name = l[:-1]
-                else:
-                    name = self.first_path
-                # Unset the first path so we don't come here again.
-                self.first_path = None
+            # Directory name from output
+            if l.startswith('/') and l.endswith(':'):
+                name = l[:-1]
+                continue
+            if name:
                 # New structures for a new directory
                 this_dir = {'entries': {}, 'files': [], 'dirs': [],
                             'specials': [], 'total': 0, 'raw_list': [],
                             'name': name}
                 listings[name] = this_dir
-            elif l.startswith('total') and l[6:].isdigit():
+                # Unset the Name for inner directory
+                name = None
+            if this_dir and l.startswith('total') and l[6:].isdigit():
                 this_dir['total'] = int(l[6:])
             elif not this_dir:
                 # This state can happen if processing an archive that filtered
