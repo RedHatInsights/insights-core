@@ -677,7 +677,8 @@ class SsTULPN(CommandParser):
     def parse_content(self, content):
         # Use headings without spaces and colons
         SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
-        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
+        content1 = [line for line in content if (('UNCONN' in line) or ('LISTEN' in line))]
+        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content1)
 
     def get_service(self, service):
         return [l for l in self.data if l.get("Process", None) and service in l["Process"]]
@@ -704,7 +705,7 @@ class SsTULPN(CommandParser):
         return self.get_localport(port) + self.get_peerport(port)
 
 
-@parser(Specs.ss_tupna)
+@parser(Specs.ss)
 class SsTUPNA(SsTULPN):
     """
     Parse the output of the ``/usr/sbin/ss -tupna`` command.
@@ -744,4 +745,8 @@ class SsTUPNA(SsTULPN):
         >>> ssa.data[2]['State']
         'ESTAB'
     """
-    pass
+
+    def parse_content(self, content):
+        # Use headings without spaces and colons
+        SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
+        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
