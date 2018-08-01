@@ -1492,8 +1492,8 @@ class FileListing(Parser):
         Called automatically to process the directory listing(s) contained in
         the content.
         """
-        this_dir = {}
         listings = {}
+        this_dir = {}
         # Directory name from context
         name = self.first_path if self.first_path else None
         for line in content:
@@ -1512,15 +1512,15 @@ class FileListing(Parser):
                 listings[name] = this_dir
                 # Unset the Name for inner directory
                 name = None
-            if l.startswith('total') and l[6:].isdigit():
+            if this_dir and l.startswith('total') and l[6:].isdigit():
                 this_dir['total'] = int(l[6:])
-                continue
-            if not this_dir:
+            elif not this_dir:
                 # This state can happen if processing an archive that filtered
                 # a file listing due to an old spec definition.
                 # Let's just skip these lines.
                 continue
-            self.parse_file_match(this_dir, l)
+            else:
+                self.parse_file_match(this_dir, l)
 
         self.listings = listings
         # No longer need the first path found, if any.
