@@ -117,7 +117,7 @@ def handle_registration(config, pconn):
         delete_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
 
-    logger.debug('Machine-id: %s', generate_machine_id(config.reregister))
+    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
 
     # check registration with API
     check = get_registration_status(config, pconn)
