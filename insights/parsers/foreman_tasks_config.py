@@ -1,6 +1,6 @@
 """
 ForemanTasksConfig - file ``/etc/sysconfig/foreman-tasks``
-========================================================
+==========================================================
 """
 from insights.specs import Specs
 
