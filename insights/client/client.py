@@ -110,12 +110,14 @@ def handle_registration(config, pconn):
             False - machine is unregistered
             None - could not reach the API
     '''
+    logger.debug('Trying registration.')
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
     if config.reregister:
         delete_registered_file()
         delete_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
+        logger.debug('Re-register set, forcing registration.')
 
     logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
 
