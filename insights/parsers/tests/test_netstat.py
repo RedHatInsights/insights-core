@@ -707,7 +707,7 @@ def test_netstat_doc_examples():
     assert failed == 0
 
 
-def test_ss_tupnla_get_port():
+def test_ss_tupna_get_port():
     ssa = SsTUPNA(context_wrap(Ss_TUPNA))
     exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0',
               'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
@@ -716,19 +716,24 @@ def test_ss_tupnla_get_port():
     assert ssa.get_localport("2049") == []
     assert ssa.get_port("2049") == exp01
 
+
+def test_ss_tupnla_get_port():
     # Added test cases for testing two parser for one spec.
+    # Used data from spec ss -tulpn and run parser SsTULPN(ss -tulpn)
     ssl = SsTULPN(context_wrap(SS_TULPN_2))
     exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
               'State': 'UNCONN', 'Recv-Q': '0'}]
     assert len(ssl.data) == 22
     assert ssl.get_localport("34453") == exp02
 
+    # Used data from spec ss -tupna and run parser SsTULPN(ss -tulpn)
     ssl = SsTULPN(context_wrap(SS_TUPNA_2))
     exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
               'State': 'UNCONN', 'Recv-Q': '0'}]
     assert len(ssl.data) == 22
     assert ssl.get_localport("34453") == exp02
 
+    # Used data from spec ss -tupna and run parser SsTUPNA(ss -tupna)
     ssl = SsTUPNA(context_wrap(SS_TUPNA_2))
     exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
               'State': 'UNCONN', 'Recv-Q': '0'}]
