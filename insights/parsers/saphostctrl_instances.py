@@ -50,6 +50,19 @@ from .. import parser
 from .lssap import Lssap
 from insights.parsers import keyword_search
 from insights.specs import Specs
+from insights.core.filters import add_filter
+
+
+SAP_INST_FILTERS = [
+        '******',
+        'CreationClassName',
+        'SID',
+        'SystemNumber',
+        'InstanceName',
+        'Hostname',
+        'SapVersionInfo',
+]
+add_filter(Specs.saphostctl_getcimobject_sapinstance, SAP_INST_FILTERS)
 
 
 @parser(Specs.saphostctl_getcimobject_sapinstance)
