@@ -42,6 +42,15 @@ class InsightsClient(object):
         self.session = None
         self.connection = None
 
+    def _net(func):
+        def _init_connection(self, *args, **kwargs):
+            # setup a request session
+            if not self.config.offline and not self.session:
+                self.connection = client.get_connection(self.config)
+                self.session = self.connection.session
+            return func(self, *args, **kwargs)
+        return _init_connection
+
     def get_conf(self):
         # need this getter to maintain compatability with RPM wrapper
         return self.config
@@ -52,17 +61,19 @@ class InsightsClient(object):
     def version(self):
         return "%s-%s" % (package_info["VERSION"], package_info["RELEASE"])
 
+    @_net
     def test_connection(self):
         """
             returns (int): 0 if success 1 if failure
         """
-        return client.test_connection(self.config)
+        return self.connection.test_connection()
 
+    @_net
     def branch_info(self):
         """
             returns (dict): {'remote_leaf': -1, 'remote_branch': -1}
         """
-        return client.get_branch_info(self.config)
+        return client.get_branch_info(self.config, self.connection)
 
     def fetch(self, force=False):
         """
@@ -94,15 +105,11 @@ class InsightsClient(object):
 
             return fetch_results
 
+    @_net
     def _fetch(self, path, etag_file, target_path, force):
         """
             returns (str): path to new egg. None if no update.
         """
-        # setup a request session
-        if not self.session:
-            self.connection = client.get_connection(self.config)
-            self.session = self.connection.session
-
         url = self.connection.base_url + path
         # Searched for cached etag information
         current_etag = None
@@ -283,6 +290,7 @@ class InsightsClient(object):
         logger.debug("The new Insights Core was installed successfully.")
         return {'success': True}
 
+    @_net
     def update_rules(self):
         """
             returns (dict): new client rules
@@ -291,50 +299,52 @@ class InsightsClient(object):
             logger.debug("Bypassing rule update due to config "
                 "running in offline mode or auto updating turned off.")
         else:
-            return client.update_rules(self.config)
+            return client.update_rules(self.config, self.connection)
 
+    @_net
     def collect(self):
         # return collection results
-        tar_file = client.collect(self.config)
+        tar_file = client.collect(self.config, self.connection)
 
         # it is important to note that --to-stdout is utilized via the wrapper RPM
         # this file is received and then we invoke shutil.copyfileobj
         return tar_file
 
-    def register(self, force_register=False):
+    @_net
+    def register(self):
         """
-            returns (json): {'success': bool,
-                            'machine-id': uuid from API,
-                            'response': response from API,
-                            'code': http code}
+            returns (bool | None):
+                True - machine is registered
+                False - machine is unregistered
+                None - could not reach the API
         """
-        self.config.register = True
-        if force_register:
-            self.config.reregister = True
-        return client.handle_registration(self.config)
+        return client.handle_registration(self.config, self.connection)
 
+    @_net
     def unregister(self):
         """
             returns (bool): True success, False failure
         """
-        return client.handle_unregistration(self.config)
+        return client.handle_unregistration(self.config, self.connection)
 
+    @_net
     def get_registration_information(self):
         """
-            returns (json): {'machine-id': uuid from API,
-                            'response': response from API}
+            returns (json):
+                {'messages': [dotfile message, api message],
+                 'status': (bool) registered = true; unregistered = false
+                 'unreg_date': Date the machine was unregistered | None,
+                 'unreachable': API could not be reached}
         """
-        registration_status = client.get_registration_status(self.config)
-        return {'machine-id': client.get_machine_id(),
-                'registration_status': registration_status,
-                'is_registered': registration_status['status']}
+        return client.get_registration_status(self.config, self.connection)
 
+    @_net
     def upload(self, path, rotate_eggs=True):
         """
             returns (int): upload status code
         """
         # do the upload
-        upload_results = client.upload(self.config, path)
+        upload_results = client.upload(self.config, self.connection, path)
         if upload_results:
 
             # delete the archive
@@ -416,14 +426,9 @@ class InsightsClient(object):
         """
         return client.delete_archive(path)
 
-    def _is_client_registered(self):
-        return client._is_client_registered(self.config)
-
-    def try_register(self):
-        return client.try_register(self.config)
-
-    def get_connection(self):
-        return client.get_connection(self.config)
+    @_net
+    def get_registration_status(self):
+        return client.get_registration_status(self.config, self.connection)
 
 
 def format_config(config):
