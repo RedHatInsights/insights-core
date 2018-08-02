@@ -24,9 +24,9 @@ from .connection import InsightsConnection
 from .archive import InsightsArchive
 from .support import registration_check
 from .constants import InsightsConstants as constants
+from .schedule import get_scheduler
 
 LOG_FORMAT = ("%(asctime)s %(levelname)8s %(name)s %(message)s")
-INSIGHTS_CONNECTION = None
 logger = logging.getLogger(__name__)
 
 
@@ -88,79 +88,7 @@ def set_up_logging(config):
         logger.debug("Logging initialized")
 
 
-def test_connection(config):
-    """
-    Test the connection
-    """
-    pconn = get_connection(config)
-    return pconn.test_connection()
-
-
-def _is_client_registered(config):
-
-    # If the client is running in container mode, bypass this stuff
-    if config.analyze_container:
-        return 'Client running in container/image mode. Bypassing registration check', False
-
-    # All other cases
-    msg_notyet = 'This machine has not yet been registered.'
-    msg_unreg = 'This machine has been unregistered.'
-    msg_doreg = 'Use --register to register this machine.'
-    msg_rereg = 'Use --register if you would like to re-register this machine.'
-
-    # check reg status w/ API
-    reg_check = registration_check(get_connection(config))
-    if not reg_check['status']:
-        # not registered
-        if reg_check['unreg_date']:
-            # system has been unregistered from the UI
-            msg = '\n'.join([msg_unreg, msg_rereg])
-            write_unregistered_file(reg_check['unreg_date'])
-            return msg, False
-        else:
-            # no record of system in remote
-            msg = '\n'.join([msg_notyet, msg_doreg])
-            # clear any local records
-            delete_registered_file()
-            delete_unregistered_file()
-            return msg, False
-    else:
-        # API confirms reg
-        write_registered_file()
-        return '', True
-
-
-def try_register(config):
-
-    # if we are running an image analysis then dont register
-    if config.analyze_container:
-        logger.info("Running client in Container mode. Bypassing registration.")
-        return
-
-    # check reg status with API
-    reg_check = registration_check(get_connection(config))
-    if reg_check['status']:
-        logger.info('This host has already been registered.')
-        # regenerate the .registered file
-        write_registered_file()
-        return True
-    if reg_check['unreachable']:
-        logger.error(reg_check['messages'][1])
-        return None
-    message, hostname, group, display_name = register(config)
-    if config.display_name is None and config.group is None:
-        logger.info('Successfully registered host %s', hostname)
-    elif config.display_name is None:
-        logger.info('Successfully registered host %s in group %s', hostname, group)
-    else:
-        logger.info('Successfully registered host %s as %s in group %s',
-                    hostname, display_name, group)
-    if message:
-        logger.info(message)
-    return reg_check, message, hostname, group, display_name
-
-
-def register(config):
+def register(config, pconn):
     """
     Do registration using basic auth
     """
@@ -171,63 +99,113 @@ def register(config):
     if not username and not password and not auto_config and authmethod == 'BASIC':
         logger.debug('Username and password must be defined in configuration file with BASIC authentication method.')
         return False
-    pconn = get_connection(config)
     return pconn.register()
 
 
-def handle_registration(config):
-    """
-        returns (json): {'success': bool,
-                        'machine-id': uuid from API,
-                        'response': response from API,
-                        'code': http code}
-    """
+def handle_registration(config, pconn):
+    '''
+        Handle the registration process
+        Returns:
+            True - machine is registered
+            False - machine is unregistered
+            None - could not reach the API
+    '''
+    logger.debug('Trying registration.')
     # force-reregister -- remove machine-id files and registration files
     # before trying to register again
-    new = False
     if config.reregister:
-        logger.debug('Re-register set, forcing registration.')
-        new = True
-        config.register = True
         delete_registered_file()
         delete_unregistered_file()
         write_to_disk(constants.machine_id_file, delete=True)
-    logger.debug('Machine-id: %s', generate_machine_id(new))
+        logger.debug('Re-register set, forcing registration.')
 
-    logger.debug('Trying registration.')
-    registration = try_register()
-    if registration is None:
+    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
+
+    # check registration with API
+    check = get_registration_status(config, pconn)
+
+    for m in check['messages']:
+        logger.debug(m)
+
+    if check['unreachable']:
+        # Run connection test and exit
         return None
-    msg, is_registered = _is_client_registered()
 
-    return {'success': is_registered,
-            'machine-id': generate_machine_id(),
-            'registration': registration}
+    if check['status']:
+        # registered in API, resync files
+        if config.register:
+            logger.info('This host has already been registered.')
+        write_registered_file()
+        return True
+
+    if config.register:
+        # register if specified
+        message, hostname, group, display_name = register(config, pconn)
+        if not hostname:
+            # API could not be reached, run connection test and exit
+            logger.error(message)
+            return None
+        if config.display_name is None and config.group is None:
+            logger.info('Successfully registered host %s', hostname)
+        elif config.display_name is None:
+            logger.info('Successfully registered host %s in group %s',
+                        hostname, group)
+        else:
+            logger.info('Successfully registered host %s as %s in group %s',
+                        hostname, display_name, group)
+        if message:
+            logger.info(message)
+        write_registered_file()
+        return True
+    else:
+        # unregistered in API, resync files
+        write_unregistered_file(date=check['unreg_date'])
+        # print messaging and exit
+        if check['unreg_date']:
+            # registered and then unregistered
+            logger.info('This machine has been unregistered. '
+                        'Use --register if you would like to '
+                        're-register this machine.')
+        else:
+            # not yet registered
+            logger.info('This machine has not yet been registered.'
+                        'Use --register to register this machine.')
+        return False
 
 
-def get_registration_status(config):
-    return registration_check(get_connection(config))
+def get_registration_status(config, pconn):
+    '''
+        Handle the registration process
+        Returns:
+            True - machine is registered
+            False - machine is unregistered
+            None - could not reach the API
+    '''
+    return registration_check(pconn)
 
 
-def handle_unregistration(config):
+def handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
-    pconn = get_connection(config)
-    return pconn.unregister()
+    unreg = pconn.unregister()
+    if unreg:
+        # only set if unreg was successful
+        write_unregistered_file()
+        get_scheduler(config).remove_scheduling()
+    return unreg
 
 
 def get_machine_id():
     return generate_machine_id()
 
 
-def update_rules(config):
-    pconn = get_connection(config)
+def update_rules(config, pconn):
     pc = InsightsUploadConf(config, conn=pconn)
     return pc.get_conf(True, {})
 
 
-def get_branch_info(config):
+def get_branch_info(config, pconn):
     """
     Get branch info for a system
     returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
@@ -243,7 +221,6 @@ def get_branch_info(config):
 
     # otherwise continue reaching out to obtain branch info
     try:
-        pconn = get_connection(config)
         branch_info = pconn.branch_info()
     except LookupError:
         logger.debug("There was an error obtaining branch information.")
@@ -252,7 +229,7 @@ def get_branch_info(config):
     return branch_info
 
 
-def collect(config):
+def collect(config, pconn):
     """
     All the heavy lifting done here
     """
@@ -289,7 +266,7 @@ def collect(config):
         logger.debug("Host selected as scanning target.")
         target = constants.default_target
 
-    branch_info = get_branch_info(config)
+    branch_info = get_branch_info(config, pconn)
     pc = InsightsUploadConf(config)
     tar_file = None
 
@@ -395,15 +372,11 @@ def collect(config):
 
 
 def get_connection(config):
-    global INSIGHTS_CONNECTION
-    if INSIGHTS_CONNECTION is None:
-        INSIGHTS_CONNECTION = InsightsConnection(config)
-    return INSIGHTS_CONNECTION
+    return InsightsConnection(config)
 
 
-def upload(config, tar_file, collection_duration=None):
+def upload(config, pconn, tar_file, collection_duration=None):
     logger.info('Uploading Insights data.')
-    pconn = get_connection(config)
     api_response = None
     for tries in range(config.retries):
         upload = pconn.upload_archive(tar_file, collection_duration)

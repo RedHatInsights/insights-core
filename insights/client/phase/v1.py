@@ -11,11 +11,7 @@ from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.auto_config import try_auto_configuration
 from insights.client.support import registration_check, InsightsSupport
-from insights.client.utilities import (write_to_disk,
-                                       generate_machine_id,
-                                       validate_remove_file,
-                                       delete_registered_file,
-                                       delete_unregistered_file)
+from insights.client.utilities import validate_remove_file
 from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)
@@ -97,8 +93,7 @@ def pre_update(client, config):
     # test the insights connection
     if config.test_connection:
         logger.info("Running Connection Tests...")
-        pconn = client.get_connection()
-        rc = pconn.test_connection()
+        rc = client.test_connection()
         if rc == 0:
             sys.exit(constants.sig_kill_ok)
         else:
@@ -119,50 +114,41 @@ def update(client, config):
 @phase
 def post_update(client, config):
     logger.debug("CONFIG: %s", config)
-    if config['status']:
+    if config.status:
         reg_check = registration_check(client.get_connection())
         for msg in reg_check['messages']:
             logger.info(msg)
         sys.exit(constants.sig_kill_ok)
 
     # put this first to avoid conflicts with register
-    if config['unregister']:
-        pconn = client.get_connection()
-        if pconn.unregister():
+    if config.unregister:
+        if client.unregister():
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)
 
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    new = False
-    if config['reregister']:
-        new = True
-        config['register'] = True
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-    logger.debug('Machine-id: %s', generate_machine_id(new))
+    if config.offline:
+        logger.debug('Running client in offline mode. Bypassing registration.')
+        return
 
-    if config['register']:
-        registration = client.try_register()
-        if registration is None:
-            logger.info('Running connection test...')
-            client.test_connection()
-            sys.exit(constants.sig_kill_bad)
-        if (not config['disable_schedule'] and
+    if config.analyze_container:
+        logger.debug(
+            'Running client in container mode. Bypassing registration.')
+        return
+
+    reg = client.register()
+    if reg is None:
+        # API unreachable
+        logger.info('Running connection test...')
+        client.test_connection()
+        sys.exit(constants.sig_kill_bad)
+    elif reg is False:
+        # unregistered
+        sys.exit(constants.sig_kill_bad)
+    if config.register:
+        if (not config.disable_schedule and
            get_scheduler(config).set_daily()):
             logger.info('Automatic scheduling for Insights has been enabled.')
-
-    # check registration before doing any uploads
-    # only do this if we are not running in container mode
-    # Ignore if in offline mode
-    if not config["analyze_container"]:
-        if not config['register'] and not config['offline']:
-            msg, is_registered = client._is_client_registered()
-            if not is_registered:
-                logger.error(msg)
-                sys.exit(constants.sig_kill_bad)
 
 
 @phase
