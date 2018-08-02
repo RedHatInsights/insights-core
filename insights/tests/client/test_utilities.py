@@ -2,8 +2,10 @@ import os
 import tempfile
 import uuid
 import insights.client.utilities as util
-from insights.client.constants import InsightsConstants
+from insights.client.constants import InsightsConstants as constants
 import re
+from mock.mock import patch
+
 
 machine_id = str(uuid.uuid4())
 remove_file_content = """
@@ -43,10 +45,10 @@ def test_write_to_disk():
 
 
 def test_generate_machine_id():
-    orig_dir = InsightsConstants.insights_ansible_facts_dir
-    InsightsConstants.insights_ansible_facts_dir = tempfile.mkdtemp()
-    InsightsConstants.insights_ansible_machine_id_file = os.path.join(
-        InsightsConstants.insights_ansible_facts_dir, "ansible_machine_id.fact")
+    orig_dir = constants.insights_ansible_facts_dir
+    constants.insights_ansible_facts_dir = tempfile.mkdtemp()
+    constants.insights_ansible_machine_id_file = os.path.join(
+        constants.insights_ansible_facts_dir, "ansible_machine_id.fact")
     machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
                                 util.generate_machine_id(destination_file='/tmp/testmachineid'))
     assert machine_id_regex.group(0) is not None
@@ -54,11 +56,11 @@ def test_generate_machine_id():
         machine_id = _file.read()
     assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
-    os.remove(InsightsConstants.insights_ansible_machine_id_file)
-    os.rmdir(InsightsConstants.insights_ansible_facts_dir)
-    InsightsConstants.insights_ansible_facts_dir = orig_dir
-    InsightsConstants.insights_ansible_machine_id_file = os.path.join(
-        InsightsConstants.insights_ansible_facts_dir, "ansible_machine_id.fact")
+    os.remove(constants.insights_ansible_machine_id_file)
+    os.rmdir(constants.insights_ansible_facts_dir)
+    constants.insights_ansible_facts_dir = orig_dir
+    constants.insights_ansible_machine_id_file = os.path.join(
+        constants.insights_ansible_facts_dir, "ansible_machine_id.fact")
 
 
 def test_expand_paths():
@@ -86,3 +88,53 @@ def test_validate_remove_file():
     assert util.validate_remove_file(remove_file=tf) is False
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(remove_file=tf) is not False
+
+# TODO: DRY
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       ['/tmp/insights-client.registered',
+        '/tmp/redhat-access-insights.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       ['/tmp/insights-client.unregistered',
+        '/tmp/redhat-access-insights.unregistered'])
+def test_write_registered_file():
+    util.write_registered_file()
+    for r in constants.registered_files:
+        assert os.path.isfile(r) is True
+    for u in constants.unregistered_files:
+        assert os.path.isfile(u) is False
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       ['/tmp/insights-client.registered',
+        '/tmp/redhat-access-insights.registered'])
+def test_delete_registered_file():
+    util.write_registered_file()
+    util.delete_registered_file()
+    for r in constants.registered_files:
+        assert os.path.isfile(r) is False
+
+
+@patch('insights.client.utilities.constants.registered_files',
+       ['/tmp/insights-client.registered',
+        '/tmp/redhat-access-insights.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       ['/tmp/insights-client.unregistered',
+        '/tmp/redhat-access-insights.unregistered'])
+def test_write_unregistered_file():
+    util.write_unregistered_file()
+    for r in constants.registered_files:
+        assert os.path.isfile(r) is False
+    for u in constants.unregistered_files:
+        assert os.path.isfile(u) is True
+
+
+@patch('insights.client.utilities.constants.unregistered_files',
+       ['/tmp/insights-client.unregistered',
+        '/tmp/redhat-access-insights.unregistered'])
+def test_delete_unregistered_file():
+    util.write_unregistered_file()
+    util.delete_unregistered_file()
+    for u in constants.unregistered_files:
+        assert os.path.isfile(u) is False
