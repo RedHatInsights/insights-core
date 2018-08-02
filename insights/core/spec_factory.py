@@ -431,8 +431,8 @@ class first_file(object):
             and is readable
     """
 
-    def __init__(self, files, context=None, kind=TextFileProvider):
-        self.files = files
+    def __init__(self, paths, context=None, kind=TextFileProvider):
+        self.paths = paths
         self.context = context or FSRoots
         self.kind = kind
         self.raw = kind is RawFileProvider
@@ -442,12 +442,12 @@ class first_file(object):
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
         root = ctx.root
-        for f in self.files:
+        for p in self.paths:
             try:
-                return self.kind(ctx.locate_path(f), root=root, ds=self)
+                return self.kind(ctx.locate_path(p), root=root, ds=self)
             except:
                 pass
-        raise ContentException("None of [%s] found." % ', '.join(self.files))
+        raise ContentException("None of [%s] found." % ', '.join(self.paths))
 
 
 class listdir(object):
@@ -515,11 +515,12 @@ class simple_command(object):
         self.cmd = cmd
         self.context = context
         self.split = split
+        self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
         COMMANDS[self] = cmd
         self.__name__ = self.__class__.__name__
-        datasource(self.context)(self)
+        datasource(self.context, raw=self.raw)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
@@ -574,10 +575,11 @@ class foreach_execute(object):
         self.cmd = cmd
         self.context = context
         self.split = split
+        self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, multi_output=True)(self)
+        datasource(self.provider, self.context, multi_output=True, raw=self.raw)(self)
 
     def __call__(self, broker):
         result = []
@@ -671,6 +673,7 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
+        self.raw = deps[0].raw
         dr.mark_hidden(deps)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
