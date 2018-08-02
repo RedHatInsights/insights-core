@@ -1,5 +1,4 @@
 import pytest
-from insights import add_filter
 from insights.parsers.audit_log import AuditLog
 from insights.tests import context_wrap
 from datetime import date
@@ -48,11 +47,6 @@ type=AVC msg=audit(1506abc181.009:32794): avc:  denied  { create } for  pid=2796
 """.strip()
 
 LAST_LINE_OF_TEMPLATE = """type=CRED_REFR msg=audit(1508476956.471:13339): pid=30909 uid=0 auid=0 ses=1559 subj=unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023 msg='op=PAM:setcred grantors=pam_unix acct="root" exe="/usr/sbin/sshd" hostname=foo.example.com addr=192.0.2.2 terminal=ssh res=success'"""
-
-add_filter("audit_log", [
-    "CRYPTO_KEY_USER",
-    "LOGIN"
-])
 
 
 def test_audit_log():
