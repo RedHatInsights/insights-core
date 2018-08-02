@@ -364,6 +364,8 @@ class Specs(SpecSet):
     running_java = RegistryPoint()
     samba = RegistryPoint()
     saphostctl_getcimobject_sapinstance = RegistryPoint()
+    saphostexec_status = RegistryPoint()
+    saphostexec_version = RegistryPoint()
     satellite_version_rb = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
     scsi = RegistryPoint()

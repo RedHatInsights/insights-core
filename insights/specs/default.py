@@ -533,6 +533,8 @@ class DefaultSpecs(Specs):
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
+    saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
+    saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
