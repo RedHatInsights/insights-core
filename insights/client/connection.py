@@ -23,11 +23,9 @@ from OpenSSL import SSL, crypto
 
 from .utilities import (determine_hostname,
                         generate_machine_id,
-                        write_registered_file,
                         write_unregistered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
-from .schedule import get_scheduler
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -233,9 +231,9 @@ class InsightsConnection(object):
                 logger.debug("Testing: %s", test_url + ext)
                 if method is "POST":
                     test_req = self.session.post(
-                        test_url + ext, timeout=10, data=test_flag)
+                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
                 elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=10)
+                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
                 logger.info("HTTP Status Code: %d", test_req.status_code)
                 logger.info("HTTP Status Text: %s", test_req.reason)
                 logger.info("HTTP Response Text: %s", test_req.text)
@@ -577,7 +575,7 @@ class InsightsConnection(object):
         try:
             url = self.api_url + '/v1/systems/' + machine_id
             net_logger.info("GET %s", url)
-            res = self.session.get(url, timeout=10)
+            res = self.session.get(url, timeout=self.config.http_timeout)
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
@@ -619,8 +617,6 @@ class InsightsConnection(object):
             self.session.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
-            write_unregistered_file()
-            get_scheduler(self.config).remove_scheduling()
             return True
         except requests.ConnectionError as e:
             logger.debug(e)
@@ -646,8 +642,6 @@ class InsightsConnection(object):
         logger.debug("System: %s", system.json())
 
         message = system.headers.get("x-rh-message", "")
-
-        write_registered_file()
 
         # Do grouping
         if self.config.group is not None:

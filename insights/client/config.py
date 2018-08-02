@@ -150,6 +150,9 @@ DEFAULT_OPTS = {
         'help': 'Group to add this system to during registration',
         'action': 'store',
     },
+    'http_timeout': {
+        'default': 10
+    },
     'insecure_connection': {
         # non-CLI
         'default': False
@@ -538,6 +541,7 @@ class InsightsConfig(object):
                           self.from_file)
         self.to_json = ((self.to_json or self.analyze_container) and
                         not self.to_stdout)
+        self.register = (self.register or self.reregister) and not self.offline
 
 
 if __name__ == '__main__':
