@@ -515,11 +515,12 @@ class simple_command(object):
         self.cmd = cmd
         self.context = context
         self.split = split
+        self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
         COMMANDS[self] = cmd
         self.__name__ = self.__class__.__name__
-        datasource(self.context)(self)
+        datasource(self.context, raw=self.raw)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
@@ -574,10 +575,11 @@ class foreach_execute(object):
         self.cmd = cmd
         self.context = context
         self.split = split
+        self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, multi_output=True)(self)
+        datasource(self.provider, self.context, multi_output=True, raw=self.raw)(self)
 
     def __call__(self, broker):
         result = []
@@ -671,6 +673,7 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
+        self.raw = deps[0].raw
         dr.mark_hidden(deps)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
