@@ -1,5 +1,30 @@
 # Change Log
 
+## [insights-core-3.0.32-494](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.32-494) (2018-08-02)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.31-466...insights-core-3.0.32-494)
+
+**Implemented enhancements:**
+
+- No JSON object could be decoded [\#996](https://github.com/RedHatInsights/insights-core/issues/996)
+- Filter only when collecting on host? [\#981](https://github.com/RedHatInsights/insights-core/issues/981)
+- Enable filtering and copying of large files outside the python process [\#949](https://github.com/RedHatInsights/insights-core/issues/949)
+
+**Fixed bugs:**
+
+- FileListing Parser does not return total for a single directory listing [\#1306](https://github.com/RedHatInsights/insights-core/issues/1306)
+- Quotes and doublequotes break configtree parser [\#1300](https://github.com/RedHatInsights/insights-core/issues/1300)
+- Add xfs\_info spec to default and sos\_archive [\#1117](https://github.com/RedHatInsights/insights-core/issues/1117)
+- Better handling of files containing failed command output [\#1076](https://github.com/RedHatInsights/insights-core/issues/1076)
+- parse\_systemd\_ini relies on implementation details of ConfigParser [\#324](https://github.com/RedHatInsights/insights-core/issues/324)
+
+**Closed issues:**
+
+- About the parser 'pcs\_status', the spec of it does include the full correct file path [\#1315](https://github.com/RedHatInsights/insights-core/issues/1315)
+- Key error in spec.httpd\_conf [\#1308](https://github.com/RedHatInsights/insights-core/issues/1308)
+- InstalledRpm parser not working [\#1299](https://github.com/RedHatInsights/insights-core/issues/1299)
+- httpd\_conf parser creating list of objects [\#1288](https://github.com/RedHatInsights/insights-core/issues/1288)
+- dirsrv\_access and dirsrv\_errors will never collect [\#891](https://github.com/RedHatInsights/insights-core/issues/891)
+
 ## [insights-core-3.0.31-466](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.31-466) (2018-07-26)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.30-462...insights-core-3.0.31-466)
 
