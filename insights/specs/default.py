@@ -342,6 +342,7 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
+    ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_spool_clientmq = simple_command("/bin/ls -ln /var/spool/clientmqueue")
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
