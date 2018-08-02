@@ -59,21 +59,15 @@ def test_version():
 @patch('insights.client.utilities.constants.machine_id_file',
        '/tmp/machine-id')
 def test_register():
-    tmp = sys.argv
-    sys.argv = []
-
-    try:
-        config = InsightsConfig(register=True)
-        client = InsightsClient(config)
-        client.connection = FakeConnection()
-        client.session = True
-        assert client.register() is True
-        for r in constants.registered_files:
-            assert os.path.isfile(r) is True
-        for u in constants.unregistered_files:
-            assert os.path.isfile(u) is False
-    finally:
-        sys.argv = tmp
+    config = InsightsConfig(register=True)
+    client = InsightsClient(config)
+    client.connection = FakeConnection()
+    client.session = True
+    assert client.register() is True
+    for r in constants.registered_files:
+        assert os.path.isfile(r) is True
+    for u in constants.unregistered_files:
+        assert os.path.isfile(u) is False
 
 
 @pytest.mark.skip(reason="Mocked paths not working in QE jenkins")
