@@ -671,10 +671,20 @@ class YAMLParser(Parser, LegacyItemAccess):
     A parser class that reads YAML files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        if type(content) is list:
-            self.data = yaml.safe_load('\n'.join(content))
-        else:
-            self.data = yaml.safe_load(content)
+        try:
+            if type(content) is list:
+                self.data = yaml.safe_load('\n'.join(content))
+            else:
+                self.data = yaml.safe_load(content)
+
+            if not isinstance(self.data, (dict, list)):
+                raise ParseException("YAML didn't produce a dictionary or list.")
+        except:
+            tb = sys.exc_info()[2]
+            cls = self.__class__
+            name = ".".join([cls.__module__, cls.__name__])
+            msg = "%s couldn't parse yaml." % name
+            six.reraise(ParseException, ParseException(msg), tb)
 
         self.doc = from_dict(self.data)
 
@@ -684,7 +694,15 @@ class JSONParser(Parser, LegacyItemAccess):
     A parser class that reads JSON files.  Base your own parser on this.
     """
     def parse_content(self, content):
-        self.data = json.loads(''.join(content))
+        try:
+            self.data = json.loads(''.join(content))
+        except:
+            tb = sys.exc_info()[2]
+            cls = self.__class__
+            name = ".".join([cls.__module__, cls.__name__])
+            msg = "%s couldn't parse json." % name
+            six.reraise(ParseException, ParseException(msg), tb)
+
         self.doc = from_dict(self.data)
 
 
@@ -1494,24 +1512,25 @@ class FileListing(Parser):
         """
         listings = {}
         this_dir = {}
+        # Directory name from context
+        name = self.first_path if self.first_path else None
         for line in content:
             l = line.strip()
             if not l:
                 continue
-            if (l.startswith('/') and l.endswith(':')) or (self.first_path):
-                # Directory name from output first and context path second
-                if (l.startswith('/') and l.endswith(':')):
-                    name = l[:-1]
-                else:
-                    name = self.first_path
-                # Unset the first path so we don't come here again.
-                self.first_path = None
+            # Directory name from output
+            if l.startswith('/') and l.endswith(':'):
+                name = l[:-1]
+                continue
+            if name:
                 # New structures for a new directory
                 this_dir = {'entries': {}, 'files': [], 'dirs': [],
                             'specials': [], 'total': 0, 'raw_list': [],
                             'name': name}
                 listings[name] = this_dir
-            elif l.startswith('total') and l[6:].isdigit():
+                # Unset the Name for inner directory
+                name = None
+            if this_dir and l.startswith('total') and l[6:].isdigit():
                 this_dir['total'] = int(l[6:])
             elif not this_dir:
                 # This state can happen if processing an archive that filtered
