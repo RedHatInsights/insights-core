@@ -8,12 +8,12 @@ HOST_PROFILE_DOC = """
 SAPSYSTEMNAME = SAP
 SAPSYSTEM = 99
 service/porttypes = SAPHostControl SAPOscol SAPCCMS
-DIR_LIBRARY = /usr/sap/hostctrl/exe
+DIR_LIBRARY =
 DIR_EXECUTABLE = /usr/sap/hostctrl/exe
 DIR_PROFILE = /usr/sap/hostctrl/exe
 DIR_GLOBAL = /usr/sap/hostctrl/exe
 DIR_INSTANCE = /usr/sap/hostctrl/exe
-DIR_HOME =
+DIR_HOME = /usr/sap/hostctrl/work
 """.strip()
 
 HOST_PROFILE_AB = """
@@ -31,7 +31,7 @@ def test_sap_host_profile():
     hpf = SAPHostProfile(context_wrap(HOST_PROFILE_DOC))
     assert "SAPSYSTEM" in hpf
     assert hpf["DIR_GLOBAL"] == "/usr/sap/hostctrl/exe"
-    assert hpf["DIR_HOME"] == ""
+    assert hpf["DIR_LIBRARY"] == ""
 
 
 def test_sap_host_profile_abnormal():

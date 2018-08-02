@@ -5,9 +5,14 @@ SAPHostProfile - File ``/usr/sap/hostctrl/exe/host_profile``
 Shared parser for parsing the ``/usr/sap/hostctrl/exe/host_profile`` file.
 
 """
-from .. import Parser, parser, LegacyItemAccess, get_active_lines
+from .. import Parser, parser, LegacyItemAccess, get_active_lines, add_filter
 from insights.parsers import SkipException
 from insights.specs import Specs
+
+filter_list = [
+        'SAPSYSTEM', 'DIR_',
+]
+add_filter(Specs.sap_host_profile, filter_list)
 
 
 @parser(Specs.sap_host_profile)
@@ -32,8 +37,8 @@ class SAPHostProfile(Parser, LegacyItemAccess):
         <class 'insights.parsers.sap_host_profile.SAPHostProfile'>
         >>> hpf['SAPSYSTEMNAME']
         'SAP'
-        >>> hpf['service/porttypes']
-        'SAPHostControl SAPOscol SAPCCMS'
+        >>> hpf['DIR_HOME']
+        '/usr/sap/hostctrl/work'
     """
 
     def parse_content(self, content):
