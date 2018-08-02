@@ -431,8 +431,8 @@ class first_file(object):
             and is readable
     """
 
-    def __init__(self, files, context=None, kind=TextFileProvider):
-        self.files = files
+    def __init__(self, paths, context=None, kind=TextFileProvider):
+        self.paths = paths
         self.context = context or FSRoots
         self.kind = kind
         self.raw = kind is RawFileProvider
@@ -442,12 +442,12 @@ class first_file(object):
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
         root = ctx.root
-        for f in self.files:
+        for p in self.paths:
             try:
-                return self.kind(ctx.locate_path(f), root=root, ds=self)
+                return self.kind(ctx.locate_path(p), root=root, ds=self)
             except:
                 pass
-        raise ContentException("None of [%s] found." % ', '.join(self.files))
+        raise ContentException("None of [%s] found." % ', '.join(self.paths))
 
 
 class listdir(object):
