@@ -21,7 +21,7 @@ SsTULPN - command ``ss -tulpn``
 -------------------------------
 
 SsTUPNA - command ``ss -tupna``
----------------------------------
+-------------------------------
 """
 
 from collections import defaultdict
@@ -677,8 +677,8 @@ class SsTULPN(CommandParser):
     def parse_content(self, content):
         # Use headings without spaces and colons
         SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
-        content1 = [line for line in content if (('UNCONN' in line) or ('LISTEN' in line))]
-        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content1)
+        content = [line for line in content if (('UNCONN' in line) or ('LISTEN' in line))]
+        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content)
 
     def get_service(self, service):
         return [l for l in self.data if l.get("Process", None) and service in l["Process"]]
@@ -748,5 +748,5 @@ class SsTUPNA(SsTULPN):
 
     def parse_content(self, content):
         # Use headings without spaces and colons
-        SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
-        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
+        SSTUPNA_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
+        self.data = parse_delimited_table(SSTUPNA_TABLE_HEADER + content[1:])
