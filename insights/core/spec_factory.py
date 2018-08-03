@@ -74,8 +74,9 @@ class ContentProvider(object):
         self.cmd = None
         self.args = None
         self.rc = None
-        self.path = None
+        self.root = None
         self.relative_path = None
+        self.loaded = False
         self._content = None
         self._exception = None
 
@@ -93,6 +94,10 @@ class ContentProvider(object):
 
     def _stream(self):
         raise NotImplemented()
+
+    @property
+    def path(self):
+        return os.path.join(self.root, self.relative_path)
 
     @property
     def content(self):
@@ -124,8 +129,6 @@ class FileProvider(ContentProvider):
         super(FileProvider, self).__init__()
         self.root = root
         self.relative_path = relative_path.lstrip("/")
-
-        self.path = os.path.join(root, self.relative_path)
         self.file_name = os.path.basename(self.path)
 
         self.ds = ds
@@ -159,6 +162,7 @@ class RawFileProvider(FileProvider):
     """
 
     def load(self):
+        self.loaded = True
         with open(self.path, 'rb') as f:
             return f.read()
 
@@ -170,6 +174,7 @@ class TextFileProvider(FileProvider):
     """
 
     def load(self):
+        self.loaded = True
         filters = False
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
@@ -215,7 +220,10 @@ class CommandOutputProvider(ContentProvider):
     def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
+        self.root = "insights_commands"
+        self.relative_path = mangle_command(cmd)
         self.ctx = ctx
+        self.loaded = True
         # args are already interpolated into cmd. They're stored here for context."
         self.args = args
         self.split = split
@@ -223,7 +231,6 @@ class CommandOutputProvider(ContentProvider):
         self.ds = ds
         self.timeout = timeout
 
-        self.path = os.path.join("insights_commands", mangle_command(cmd))
         self._content = None
         self.rc = None
 
@@ -396,7 +403,7 @@ def _resolve_registry_points(cls, base, dct):
 
 class SpecSetMeta(type):
     """
-    The metaclass that converts RegistryPoint markers to regisry point
+    The metaclass that converts RegistryPoint markers to registry point
     datasources and hooks implementations for them into the registry.
     """
     def __new__(cls, name, bases, dct):
@@ -763,28 +770,35 @@ class first_of(object):
                 return broker[c]
 
 
-@serializer(TextFileProvider)
-def serialize_text_provider(obj):
-    d = {}
-    d["path"] = obj.path
-    d["_content"] = obj.content
-    return d
+@serializer(FileProvider)
+def serialize_provider(obj):
+    return {
+        "root": obj.root,
+        "relative_path": obj.relative_path,
+        "file_name": obj.file_name,
+        "loaded": obj.loaded,
+        "_content": obj._content,
+        "_exception": None
+    }
 
 
 @serializer(CommandOutputProvider)
 def serialize_command_provider(obj):
-    d = {}
-    d["rc"] = obj.rc
-    d["cmd"] = obj.cmd
-    d["args"] = obj.args
-    d["path"] = obj.path
-    d["_content"] = obj.content
-    return d
+    return {
+        "rc": obj.rc,
+        "cmd": obj.cmd,
+        "args": obj.args,
+        "root": obj.root,
+        "relative_path": obj.relative_path,
+        "loaded": obj.loaded,
+        "_content": obj.content,
+        "_exception": None
+    }
 
 
 @deserializer(ContentProvider)
-def deserialize_content(_type, obj):
-    c = ContentProvider()
-    for k, v in obj.items():
-        setattr(c, k, v)
-    return c
+def deserialize_content(_type, data):
+    obj = _type.__new__(_type)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    return obj

@@ -12,7 +12,7 @@ from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
-from .core.hydration import create_context
+from .core.hydration import create_context, initialize_broker
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
@@ -64,7 +64,7 @@ def process_dir(broker, root, graph, context, use_pandas=False):
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
         return process_cluster(archives, use_pandas=use_pandas, broker=broker)
 
-    broker[ctx.__class__] = ctx
+    broker = initialize_broker(ctx, broker=broker)
     broker = dr.run(graph, broker=broker)
     return broker
 

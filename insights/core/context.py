@@ -189,6 +189,11 @@ class ClusterArchiveContext(ExecutionContext):
 
 
 @fs_root
+class SerializedArchiveContext(ExecutionContext):
+    pass
+
+
+@fs_root
 class DockerImageContext(ExecutionContext):
     pass
 

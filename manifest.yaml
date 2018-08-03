@@ -1,0 +1,53 @@
+---
+# version is for the format of the file, not its contents
+version: 0
+
+context:
+    class: insights.core.context.HostContext
+    args:
+        timeout: 10 # timeout in seconds for commands. Doesn't apply to files.
+
+# disable everything by default
+# defaults to false if not specified.
+default_component_enabled: false
+
+# commands and files to ignore
+blacklist:
+    commands: []
+    files: []
+
+# packages and modules to load
+packages:
+    - insights.specs.default
+
+# Can be a list of dictionaries with name/enabled fields or a list of strings
+# where the string is the name and enabled is assumed to be true. Matching is
+# by prefix, and later entries override previous ones. Persistence for a
+# component is disabled by default.
+persist:
+    - name: insights.specs.Specs
+      enabled: true
+
+# If a file datasource hasn't already been pulled into memory, its contents are
+# serialized with other info about the datasource if they're smaller than this
+# value. Otherwise, they're copied into a raw_data directory, and a pointer to
+# the file is put into the datasource's record. Set to 0 to put everything into
+# json regardless of file size. Set to a negative number to put everything into
+# a raw data directory. Defaults to 0 if not specified. Below is 2**19.
+max_serializable_file_size: 524288
+
+# configuration of loaded components. names are prefixes, so any component with
+# a fully qualified name that starts with a key will get the associated
+# configuration applied. Can specify timeout, which will apply to command
+# datasources. Can specify metadata, which must be a dictionary and will be
+# merged with the components' default metadata.
+configs:
+    - name: insights.specs.Specs
+      enabled: true
+
+    - name: insights.specs.default.DefaultSpecs
+      enabled: true
+
+# needed because some specs aren't given names before they're used in DefaultSpecs
+    - name: insights.core.spec_factory
+      enabled: true
