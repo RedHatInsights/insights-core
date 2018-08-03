@@ -30,9 +30,12 @@ class ZipExtractor(object):
     def __init__(self, timeout=None):
         self.content_type = "application/zip"
         self.timeout = timeout
+        self.tmp_dir = None
+        self.created_tmp_dir = False
 
     def from_path(self, path, extract_dir=None, content_type=None):
         self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
+        self.created_tmp_dir = True
         command = "unzip -n -q -d %s %s" % (self.tmp_dir, path)
         subproc.call(command, timeout=self.timeout)
         return self
@@ -42,6 +45,7 @@ class TarExtractor(object):
 
     def __init__(self, timeout=None):
         self.timeout = timeout
+        self.tmp_dir = None
 
     TAR_FLAGS = {
         "application/x-xz": "-J",
@@ -64,6 +68,7 @@ class TarExtractor(object):
             self.content_type = content_type or self._archive_type(path)
             tar_flag = self.TAR_FLAGS.get(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
+            self.created_tmp_dir = True
             command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
             logging.debug("Extracting files in '%s'", self.tmp_dir)
             subproc.call(command, timeout=self.timeout)
@@ -103,12 +108,10 @@ def extract(path, timeout=None, extract_dir=None, content_type=None):
     else:
         extractor = TarExtractor(timeout=timeout)
 
-    tmp_dir = None
     try:
         ctx = extractor.from_path(path, extract_dir=extract_dir, content_type=content_type)
-        tmp_dir = ctx.tmp_dir
         content_type = extractor.content_type
-        yield Extraction(tmp_dir, content_type)
+        yield Extraction(ctx.tmp_dir, content_type)
     finally:
-        if tmp_dir:
-            fs.remove(tmp_dir, chmod=True)
+        if extractor.created_tmp_dir:
+            fs.remove(extractor.tmp_dir, chmod=True)
