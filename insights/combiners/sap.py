@@ -22,6 +22,7 @@ https://wiki.scn.sap.com/wiki/x/rDK7Gg
 
 from collections import namedtuple
 from insights import LegacyItemAccess
+from insights.parsers import SkipException
 from insights.core.plugins import combiner
 from insights.combiners.hostname import hostname
 from insights.parsers.lssap import Lssap
@@ -82,7 +83,7 @@ class Sap(LegacyItemAccess):
                                             inst['InstanceType'],
                                             inst['SystemNumber'],
                                             inst['SapVersionInfo'])
-        else:
+        elif lssap:
             for inst in lssap.data:
                 k = inst['Instance']
                 t = k.rstrip('1234567890')
@@ -96,6 +97,8 @@ class Sap(LegacyItemAccess):
                                             t,
                                             inst['Nr'],
                                             inst['Version'])
+        else:
+            raise SkipException('No SAP instance.')
 
     def version(self, instance):
         """str: Returns the version of the ``instance``."""

@@ -1,10 +1,12 @@
 from ...parsers.hostname import Hostname
+from ...parsers import SkipException
 from ...parsers.lssap import Lssap
 from ...parsers.saphostctrl import SAPHostCtrlInstances
 from ...combiners import sap
 from ...combiners.sap import Sap
 from ...combiners.hostname import hostname
 from ...tests import context_wrap
+import pytest
 import doctest
 
 Lssap_nw_TEST = """
@@ -265,3 +267,10 @@ def test_doc_examples():
           }
     failed, total = doctest.testmod(sap, globs=env)
     assert failed == 0
+
+
+def test_ab():
+    hn = hostname(Hostname(context_wrap(HOSTNAME)), None, None)
+    with pytest.raises(SkipException) as se:
+        Sap(hn, None, None)
+    assert 'No SAP instance.' in str(se)
