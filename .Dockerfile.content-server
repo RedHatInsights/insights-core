@@ -1,0 +1,6 @@
+# Dockerfile for layering insights-core into the content-server on OpenShift
+# docker build -t content-server-layer4-core -f .Dockerfile.content-server .
+FROM content-server-layer3-plugins
+
+COPY . ../insights-core
+RUN scl enable python27 "pip install -e ../insights-core"
