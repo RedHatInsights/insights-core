@@ -60,7 +60,7 @@ class Sap(LegacyItemAccess):
 
     Attributes:
         all_instances (list): List all the SAP instances listed by the command.
-        local_instances (list): List SAP instances which is running on the system.
+        local_instances (list): List SAP instances which are running on the system.
     """
 
     def __init__(self, hostname, insts, lssap):
