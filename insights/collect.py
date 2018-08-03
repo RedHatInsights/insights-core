@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+This module runs insights and serializes the results into a directory. It is
+configurable with a yaml manifest that specifies what to load, what to run,
+and what to serialize. If a manifest isn't provided, a default one is used that
+runs all datasources in ``insights.specs.Specs`` and
+``insights.specs.default.DefaultSpecs`` and saves all datasources in
+``insights.specs.Specs``.
+"""
 from __future__ import print_function
 import argparse
 import logging
@@ -51,6 +59,7 @@ configs:
 
 
 def check_output(cmd, env=SAFE_ENV):
+    """ Helper for getting output from external commands. """
     proc = Popen(cmd, stdout=PIPE, env=env)
     output, error = proc.communicate()
     if error:
@@ -59,6 +68,10 @@ def check_output(cmd, env=SAFE_ENV):
 
 
 def copy(src, dst, filters=None, bufsize=-1):
+    """
+    Helper for copying files outside of python while optionally applying
+    filters.
+    """
     fs.ensure_path(os.path.dirname(dst), mode=0o770)
 
     if filters:
@@ -71,6 +84,7 @@ def copy(src, dst, filters=None, bufsize=-1):
 
 
 def load_manifest(data):
+    """ Helper for loading a manifest yaml doc. """
     if isinstance(data, dict):
         return data
     doc = yaml.safe_load(data)
@@ -80,6 +94,10 @@ def load_manifest(data):
 
 
 def apply_default_enabled(default_enabled):
+    """
+    Configures dr and already loaded components with a default enabled
+    value.
+    """
     for k in dr.ENABLED:
         dr.ENABLED[k] = default_enabled
 
@@ -102,6 +120,10 @@ def apply_blacklist(cfg):
 
 
 def apply_configs(configs):
+    """
+    Configures components based on manifest options. They can be enabled or
+    disabled, have timeouts set if applicable, and have metadata customized.
+    """
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
     for comp_cfg in configs:
         name = comp_cfg["name"]
@@ -118,6 +140,11 @@ def apply_configs(configs):
 
 
 def create_context(ctx):
+    """
+    Loads and constructs the specified context with the specified arguments.
+    If a '.' isn't in the class name, the 'insights.core.context' package is
+    assumed.
+    """
     ctx_cls_name = ctx.get("class", "insights.core.context.HostContext")
     if "." not in ctx_cls_name:
         ctx_cls_name = "insights.core.context." + ctx_cls_name
@@ -127,6 +154,10 @@ def create_context(ctx):
 
 
 def relocate(results, root, max_size, filters):
+    """
+    Copies datasource files into a raw_data directory if they're over a maximum
+    size and haven't already been loaded into memory.
+    """
     def move_it(result):
         if not isinstance(result, FileProvider):
             return result
@@ -148,6 +179,18 @@ def relocate(results, root, max_size, filters):
 
 
 def make_persister(to_persist, root, max_size=0):
+    """
+    Creates a function that gets called after every component executes and
+    stores its output into a directory. The created function is registered on
+    the dr broker just before execution.
+
+    Args:
+        to_persist (set): List of components to persist. Skip everything else.
+        root (str): Path to store output.
+        max_size (int): Files smaller than this are serialized directly into
+            the datasource json record. Larger files are filtered and copied
+            into a raw_data directory outside of the python process.
+    """
     ser_name = dr.get_base_module_name(ser)
 
     raw_data_dir = os.path.join(root, "raw_data")
@@ -182,6 +225,10 @@ def make_persister(to_persist, root, max_size=0):
 
 
 def get_to_persist(persisters):
+    """
+    Given a specification of what to persist, generates the corresponded set of
+    components.
+    """
     def specs():
         for p in persisters:
             if isinstance(p, dict):
@@ -203,18 +250,42 @@ def get_to_persist(persisters):
     return results
 
 
-def create_archive(path):
+def create_archive(path, remove_path=True):
+    """
+    Creates a tar.gz of the path using the path basename + "tar.gz"
+    The resulting file is in the parent directory of the original path, and
+    the original path is removed.
+    """
     root_path = os.path.dirname(path)
     relative_path = os.path.basename(path)
     archive_path = path + ".tar.gz"
 
     cmd = ["tar", "-C", root_path, "-czf", archive_path, relative_path]
     call(cmd, env=SAFE_ENV)
-    fs.remove(path)
+    if remove_path:
+        fs.remove(path)
     return archive_path
 
 
 def collect(manifest=default_manifest, tmp_path=None, compress=False):
+    """
+    This is the collection entry point. It accepts a manifest, a temporary
+    directory in which to store output, and a boolean for optional compression.
+
+    Args:
+        manifest (str or dict): json document or dictionary containing the
+            collection manifest. See default_manifest for an example.
+        tmp_path (str): The temporary directory that will be used to create a
+            working directory for storing component output as well as the final
+            tar.gz if one is generated.
+        compress (boolean): True to create a tar.gz and remove the original
+            workspace containing output. False to leave the workspace without
+            creating a tar.gz
+
+    Returns:
+        The full path to the created tar.gz or workspace.
+    """
+
     manifest = load_manifest(manifest)
     tmp_path = tmp_path or tempfile.gettempdir()
 
