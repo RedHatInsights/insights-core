@@ -10,7 +10,7 @@ from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.auto_config import try_auto_configuration
-from insights.client.support import registration_check, InsightsSupport
+from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file
 from insights.client.schedule import get_scheduler
 
@@ -115,7 +115,7 @@ def update(client, config):
 def post_update(client, config):
     logger.debug("CONFIG: %s", config)
     if config.status:
-        reg_check = registration_check(client.get_connection())
+        reg_check = client.get_registration_status()
         for msg in reg_check['messages']:
             logger.info(msg)
         sys.exit(constants.sig_kill_ok)

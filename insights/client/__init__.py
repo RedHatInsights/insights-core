@@ -328,17 +328,6 @@ class InsightsClient(object):
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
-    def get_registration_information(self):
-        """
-            returns (json):
-                {'messages': [dotfile message, api message],
-                 'status': (bool) registered = true; unregistered = false
-                 'unreg_date': Date the machine was unregistered | None,
-                 'unreachable': API could not be reached}
-        """
-        return client.get_registration_status(self.config, self.connection)
-
-    @_net
     def upload(self, path, rotate_eggs=True):
         """
             returns (int): upload status code
@@ -428,6 +417,13 @@ class InsightsClient(object):
 
     @_net
     def get_registration_status(self):
+        """
+            returns (json):
+                {'messages': [dotfile message, api message],
+                 'status': (bool) registered = true; unregistered = false
+                 'unreg_date': Date the machine was unregistered | None,
+                 'unreachable': API could not be reached}
+        """
         return client.get_registration_status(self.config, self.connection)
 
 
