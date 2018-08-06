@@ -54,7 +54,8 @@ def test_generate_machine_id():
     assert machine_id_regex.group(0) is not None
     with open('/tmp/testmachineid', 'r') as _file:
         machine_id = _file.read()
-    assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
+    assert util.generate_machine_id(
+        destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
     os.remove(constants.insights_ansible_machine_id_file)
     os.rmdir(constants.insights_ansible_facts_dir)
@@ -76,7 +77,8 @@ def test_magic_plan_b():
 
 def test_run_command_get_output():
     cmd = 'echo hello'
-    assert util.run_command_get_output(cmd) == {'status': 0, 'output': u'hello\n'}
+    assert util.run_command_get_output(
+        cmd) == {'status': 0, 'output': u'hello\n'}
 
 
 def test_validate_remove_file():
@@ -88,6 +90,10 @@ def test_validate_remove_file():
     assert util.validate_remove_file(remove_file=tf) is False
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(remove_file=tf) is not False
+
+    if os.path.isfile(tf):
+        os.remove(tf)
+
 
 # TODO: DRY
 
