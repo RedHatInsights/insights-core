@@ -167,7 +167,7 @@ using the following commands::
 
 
 After setup
-==========
+===========
 
 You can validate the setup by running the unit tests::
     
