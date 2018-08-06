@@ -1,4 +1,4 @@
-from insights.core.spec_factory import first_of, glob_file, simple_file, head
+from insights.core.spec_factory import first_of, glob_file, simple_file, head, first_file
 from functools import partial
 from insights.core.context import HostArchiveContext
 from insights.specs import Specs
@@ -108,7 +108,7 @@ class InsightsArchiveSpecs(Specs):
     lscpu = simple_file("insights_commands/lscpu")
     lsmod = simple_file("insights_commands/lsmod")
     lsof = simple_file("insights_commands/lsof")
-    lspci = simple_file("insights_commands/lspci_-k")
+    lspci = first_file(["insights_commands/lspci_-k", "insights_commands/lspci"])
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
     lvdisplay = simple_file("insights_commands/lvdisplay")
