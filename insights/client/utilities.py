@@ -95,6 +95,8 @@ def write_to_disk(filename, delete=False, content=get_time()):
     """
     Write filename out to disk
     """
+    if not os.path.exists(os.path.dirname(filename)):
+        return
     if delete:
         if os.path.lexists(filename):
             os.remove(filename)
