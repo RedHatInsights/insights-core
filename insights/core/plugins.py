@@ -293,6 +293,9 @@ class make_metadata_key(Response):
     def __init__(self, key, value):
         super(make_metadata_key, self).__init__(key, value=value)
 
+    def adjust_for_length(self, key, r, kwargs):
+        return kwargs
+
 
 class make_metadata(Response):
     """
