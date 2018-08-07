@@ -2,7 +2,7 @@ from __future__ import print_function
 from pprint import pprint
 from insights import dr, datasource, rule
 from insights.core.context import ExecutionContext
-from insights.formats import Formatter
+from insights.formats import Formatter, render
 
 
 def _find_context(broker):
@@ -24,6 +24,19 @@ class HumanReadableFormat(Formatter):
         self.missing = args.missing
         self.tracebacks = args.tracebacks
         self.dropped = args.dropped
+
+    def progress_bar(self, c, broker):
+        v = broker.get(c)
+        if v:
+            if v["type"] == "skip":
+                print("S", end="")
+            else:
+                print(".", end="")
+        elif c in broker.exceptions:
+            print("F", end="")
+
+    def preprocess(self, broker):
+        broker.add_observer(self.progress_bar, rule)
 
     def postprocess(self, broker):
         if self.missing:
@@ -68,12 +81,14 @@ class HumanReadableFormat(Formatter):
             name = dr.get_name(c)
             print(name)
             print('-' * len(name))
-            print(dr.to_str(c, v))
+
+            # if v["type"] != "skip":
+            print(render(c, v))
+
             print()
             print()
 
-        print()
+        print("\n")
         for c in sorted(broker.get_by_type(rule), key=dr.get_name):
             v = broker[c]
-            if v["type"] != "skip":
-                printit(c, v)
+            printit(c, v)
