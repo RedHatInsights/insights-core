@@ -1,10 +1,13 @@
 from __future__ import print_function
 import copy
+import inspect
 import itertools
 import json
 import logging
 import six
 import six.moves
+from collections import defaultdict
+from functools import wraps
 
 try:
     from StringIO import StringIO
@@ -12,9 +15,40 @@ except ImportError:
     from io import StringIO
 
 from insights import apply_filters
-from insights.core import dr
+from insights.core import dr, filters
 from insights.core.context import Context
+from insights.core.spec_factory import ContentProvider, RegistryPoint
 from insights.specs import Specs
+
+
+# we intercept the add_filter call during integration testing so we can ensure
+# that rules add filters to datasources that *should* be filterable
+ADDED_FILTERS = defaultdict(set)
+add_filter = filters.add_filter
+
+
+def _intercept(func):
+    @wraps(func)
+    def inner(ds, pattern):
+        ret = add_filter(ds, pattern)
+        calling_module = inspect.stack()[2][0].f_globals.get("__name__")
+        ADDED_FILTERS[calling_module].add(ds)
+        return ret
+    return inner
+
+
+filters.add_filter = _intercept(filters.add_filter)
+
+
+def _get_registry_points(component):
+    results = set()
+    for c in dr.walk_tree(component):
+        try:
+            if isinstance(c, RegistryPoint):
+                results.add(c)
+        except:
+            pass
+    return results
 
 
 logger = logging.getLogger(__name__)
@@ -66,6 +100,16 @@ def run_input_data(component, input_data):
 
 
 def run_test(component, input_data, expected=None):
+    if filters.ENABLED:
+        mod = component.__module__
+        rps = _get_registry_points(component)
+        filterable = set(d for d in rps if dr.get_delegate(d).filterable)
+        missing_filters = filterable - ADDED_FILTERS.get(mod, set())
+        if missing_filters:
+            names = [dr.get_name(m) for m in missing_filters]
+            msg = "%s must add filters to %s"
+            raise Exception(msg % (mod, ", ".join(names)))
+
     broker = run_input_data(component, input_data)
     if expected:
         unordered_compare(broker.get(component), expected)
