@@ -1,5 +1,7 @@
 import os
+from pkg_resources import parse_version
 from setuptools import setup, find_packages
+from sys import version_info
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,8 +44,15 @@ client = set([
     'pyOpenSSL',
 ])
 
+
+python_version = "%d.%d.%d" % version_info[:3]
+if parse_version(python_version) < parse_version("2.7"):
+    flake8_version = "2.6.2"  # Python 2.6 support was dropped with Flake8 version 3.0.0.
+else:
+    flake8_version = "3.3.0"
+
 develop = set([
-    'flake8==3.3.0',
+    'flake8==%s' % flake8_version,
     'coverage==4.3.4',
     'pytest==3.0.6',
     'pytest-cov==2.4.0',
