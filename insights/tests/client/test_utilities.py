@@ -15,6 +15,13 @@ potato = pancake
 """.strip().encode("utf-8")
 
 
+def teardown_function(func):
+    if func is test_validate_remove_file:
+        tf = '/tmp/remove.cfg'
+        if os.path.isfile(tf):
+            os.remove(tf)
+
+
 def test_display_name():
     assert util.determine_hostname(display_name='foo') == 'foo'
 
@@ -90,9 +97,6 @@ def test_validate_remove_file():
     assert util.validate_remove_file(remove_file=tf) is False
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(remove_file=tf) is not False
-
-    if os.path.isfile(tf):
-        os.remove(tf)
 
 
 # TODO: DRY
