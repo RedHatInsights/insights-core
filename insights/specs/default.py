@@ -184,7 +184,6 @@ class DefaultSpecs(Specs):
     dumpdev = simple_command("/bin/awk '/ext[234]/ { print $1; }' /proc/mounts")
     dumpe2fs_h = foreach_execute(dumpdev, "/sbin/dumpe2fs -h %s")
     engine_config_all = simple_command("/usr/bin/engine-config --all")
-    engine_log = simple_file("/var/log/ovirt-engine/engine.log")
     etc_journald_conf = simple_file(r"etc/systemd/journald.conf")
     etc_journald_conf_d = glob_file(r"etc/systemd/journald.conf.d/*.conf")
     ethernet_interfaces = listdir("/sys/class/net", context=HostContext)
@@ -452,6 +451,10 @@ class DefaultSpecs(Specs):
     ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
     ovirt_engine_confd = glob_file("/etc/ovirt-engine/engine.conf.d/*")
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
+    ovirt_engine_log = simple_file("/var/log/ovirt-engine/engine.log")
+    ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
+    ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
+    ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
 
