@@ -293,7 +293,7 @@ class InsightsConnection(object):
                 logger.debug(e)
                 logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
                 return False
-            sock.send(connect_str)
+            sock.send(connect_str.encode())
             res = sock.recv(4096)
             if '200 Connection established' not in res:
                 logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
