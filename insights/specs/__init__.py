@@ -221,6 +221,7 @@ class Specs(SpecSet):
     ls_var_tmp = RegistryPoint()
     ls_var_run = RegistryPoint()
     ls_var_spool_postfix_maildrop = RegistryPoint()
+    ls_ocp_cni_openshift_sdn = RegistryPoint()
     ls_osroot = RegistryPoint()
     lvdisplay = RegistryPoint()
     lvm_conf = RegistryPoint()
