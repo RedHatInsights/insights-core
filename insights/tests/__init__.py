@@ -102,9 +102,10 @@ def run_input_data(component, input_data):
 def run_test(component, input_data, expected=None):
     if filters.ENABLED:
         mod = component.__module__
+        sup_mod = '.'.join(mod.split('.')[:-1])
         rps = _get_registry_points(component)
         filterable = set(d for d in rps if dr.get_delegate(d).filterable)
-        missing_filters = filterable - ADDED_FILTERS.get(mod, set())
+        missing_filters = filterable - ADDED_FILTERS.get(mod, set()) - ADDED_FILTERS.get(sup_mod, set())
         if missing_filters:
             names = [dr.get_name(m) for m in missing_filters]
             msg = "%s must add filters to %s"
