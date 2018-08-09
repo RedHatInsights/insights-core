@@ -14,6 +14,8 @@ pipeline {
             sh 'pip install --user -e .[develop]'
             echo "Testing with Pytest..."
             sh 'pytest'
+            echo "Testing with flake8..."
+            sh 'flake8'
           }
         }
         stage('Build RHEL7 Python 2.7') {
