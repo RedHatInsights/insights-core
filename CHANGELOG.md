@@ -1,5 +1,29 @@
 # Change Log
 
+## [insights-core-3.0.36-512](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.36-512) (2018-08-09)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.36-511...insights-core-3.0.36-512)
+
+## [insights-core-3.0.36-511](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.36-511) (2018-08-09)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.35-1...insights-core-3.0.36-511)
+
+## [3.0.35-1](https://github.com/RedHatInsights/insights-core/tree/3.0.35-1) (2018-08-08)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.34-1...3.0.35-1)
+
+**Closed issues:**
+
+- Consistent size constraints on make\_metadata\_key cause a plugin to fail [\#1329](https://github.com/RedHatInsights/insights-core/issues/1329)
+- `add\_filter` is completely undocumented [\#927](https://github.com/RedHatInsights/insights-core/issues/927)
+
+## [3.0.34-1](https://github.com/RedHatInsights/insights-core/tree/3.0.34-1) (2018-08-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.33-1...3.0.34-1)
+
+**Closed issues:**
+
+- Check if a archive is from container or host [\#1291](https://github.com/RedHatInsights/insights-core/issues/1291)
+
+## [3.0.33-1](https://github.com/RedHatInsights/insights-core/tree/3.0.33-1) (2018-08-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.32-494...3.0.33-1)
+
 ## [insights-core-3.0.32-494](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.32-494) (2018-08-02)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.31-466...insights-core-3.0.32-494)
 
