@@ -46,7 +46,7 @@ Examples:
 
 from insights.core.plugins import combiner
 from insights.combiners.redhat_release import redhat_release
-from insights.parsers.ps import PsAuxww
+from insights.parsers.ps import PsAuxcww
 from insights.parsers.httpd_V import HttpdV as HV
 from insights.parsers.httpd_V import HttpdWorkerV as HWV
 from insights.parsers.httpd_V import HttpdEventV as HEV
@@ -54,7 +54,7 @@ from insights import SkipComponent, LegacyItemAccess
 from insights.util import deprecated
 
 
-@combiner(requires=[redhat_release, PsAuxww, [HV, HEV, HWV]])
+@combiner(requires=[redhat_release, PsAuxcww, [HV, HEV, HWV]])
 class HttpdV(LegacyItemAccess):
     """
     A combiner to get the valid :class:`insights.parsers.httpd_V.HttpdV` on a
