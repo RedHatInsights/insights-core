@@ -210,6 +210,13 @@ def is_hidden(component):
     return component in HIDDEN
 
 
+def walk_tree(root, method=get_dependencies):
+    for d in method(root):
+        yield d
+        for c in walk_tree(d, method=method):
+            yield c
+
+
 def walk_dependencies(root, visitor):
     """
     Call visitor on root and all dependencies reachable from it in breadth
@@ -457,6 +464,8 @@ class ComponentType(object):
         """
         Ensures dependencies have been met before delegating to `self.invoke`.
         """
+        if any(i in broker for i in IGNORE.get(self.component, [])):
+            raise SkipComponent()
         missing = self.get_missing_dependencies(broker)
         if missing:
             raise MissingRequirements(missing)

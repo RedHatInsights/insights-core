@@ -150,6 +150,9 @@ DEFAULT_OPTS = {
         'help': 'Group to add this system to during registration',
         'action': 'store',
     },
+    'http_timeout': {
+        'default': 10
+    },
     'insecure_connection': {
         # non-CLI
         'default': False
@@ -484,10 +487,20 @@ class InsightsConfig(object):
             pass
         d = dict(parsedconfig.items(constants.app_name))
         for key in d:
-            if key == 'retries':
-                d[key] = parsedconfig.getint(constants.app_name, key)
-            if key in DEFAULT_BOOLS and isinstance(d[key], six.string_types):
-                d[key] = parsedconfig.getboolean(constants.app_name, key)
+            try:
+                if key == 'retries':
+                    d[key] = parsedconfig.getint(constants.app_name, key)
+                if key == 'http_timeout':
+                    d[key] = parsedconfig.getfloat(constants.app_name, key)
+                if key in DEFAULT_BOOLS and isinstance(
+                        d[key], six.string_types):
+                    d[key] = parsedconfig.getboolean(constants.app_name, key)
+            except ValueError as e:
+                if self._print_errors:
+                    sys.stdout.write(
+                        'ERROR: {0}.\nCould not read configuration file, '
+                        'using defaults\n'.format(e))
+                return
         self._update_dict(d)
 
     def load_all(self):
@@ -538,6 +551,7 @@ class InsightsConfig(object):
                           self.from_file)
         self.to_json = ((self.to_json or self.analyze_container) and
                         not self.to_stdout)
+        self.register = (self.register or self.reregister) and not self.offline
 
 
 if __name__ == '__main__':

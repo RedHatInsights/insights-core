@@ -736,14 +736,16 @@ class SsTUPNA(SsTULPN):
 
         >>> type(ssa)
         <class 'insights.parsers.netstat.SsTUPNA'>
-        >>> sorted(ssa.data[1].keys())  # Rows stored by column headings
-        ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
-        >>> ssa.data[0]['Local-Address-Port']
-        '*:68'
-        >>> ssa.data[0]['State']
-        'UNCONN'
-        >>> ssa.data[2]['State']
-        'ESTAB'
+        >>> type(ssa.data)
+        <type 'list'>
+        >>> ssa.get_service("sshd")  # All connections opened by rpcbind
+        [{'Netid': 'tcp', 'Process': 'users:(("sshd",11427,3))', 'Peer-Address-Port': '192.168.0.101:59232', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:22', 'State': 'ESTAB', 'Recv-Q': '0'}]
+        >>> ssa.get_port("2049")  # Both local and peer port searched
+        [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
+        >>> ssa.get_localport("739")  # local port searched
+        [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
+        >>> ssa.get_peerport("59232")  # peer port searched
+        [{'Netid': 'tcp', 'Process': 'users:(("sshd",11427,3))', 'Peer-Address-Port': '192.168.0.101:59232', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:22', 'State': 'ESTAB', 'Recv-Q': '0'}]
     """
 
     def parse_content(self, content):

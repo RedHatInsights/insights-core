@@ -538,13 +538,16 @@ def test_get_netstat_i():
     }
 
 
-SS_TULPN_DOCS = '''
+SS_TUPNA_DOCS = '''
 Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
 udp    UNCONN     0      0                  *:55898                 *:*
 udp    UNCONN     0      0          127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
 udp    UNCONN     0      0                  *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
 udp    UNCONN     0      0                 :::37968                :::12345               users:(("rpc.statd",pid=29559,fd=10))
 tcp    LISTEN     0      128                *:111                   *:*                   users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))
+tcp   ESTAB      0      0      192.168.31.148:38746    104.74.50.85:443                 users:(("firefox",pid=12645,fd=213))
+tcp   ESTAB      0      0      192.168.31.148:33694   74.125.200.17:443                 users:(("firefox",pid=12645,fd=55))
+tcp   TIME-WAIT  0      0        10.67.116.74:59568      10.75.5.17:631
 '''
 
 Ss_TULPN = """
@@ -583,7 +586,7 @@ tcp   LISTEN     0      128                  :::22                :::*      user
 tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
 """.strip()
 
-SS_TULPNA_DOCS = """
+SS_TUPNA_DOCS_2 = """
 Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
 tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
 tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
@@ -700,8 +703,8 @@ def test_netstat_doc_examples():
         'multicast': NetstatAGN(context_wrap(TEST_NETSTAT_AGN)),
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
-        'ss': SsTULPN(context_wrap(SS_TULPN_DOCS)),
-        'ssa': SsTUPNA(context_wrap(SS_TULPNA_DOCS)),
+        'ss': SsTULPN(context_wrap(SS_TUPNA_DOCS)),
+        'ssa': SsTUPNA(context_wrap(SS_TUPNA_DOCS_2)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
