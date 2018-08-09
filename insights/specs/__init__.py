@@ -43,6 +43,7 @@ class Specs(SpecSet):
     corosync = RegistryPoint()
     cpe = RegistryPoint()
     cpu_cores = RegistryPoint(multi_output=True)
+    cpuset_cpus = RegistryPoint()
     cpu_siblings = RegistryPoint(multi_output=True)
     cpu_smt_active = RegistryPoint()
     cpu_smt_control = RegistryPoint()
