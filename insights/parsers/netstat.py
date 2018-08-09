@@ -717,35 +717,25 @@ class SsTUPNA(SsTULPN):
 
         Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
         tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
-        tcp   UNCONN     0      0                     *:111                *:*      users:(("rpcbind",483,6))
-        tcp   UNCONN     0      0                     *:30057              *:*      users:(("dhclient",1171,20))
-        tcp   UNCONN     0      0                     *:648                *:*      users:(("rpcbind",483,7))
-        tcp   UNCONN     0      0                    :::111               :::*      users:(("rpcbind",483,9))
-        tcp   UNCONN     0      0                    :::6645              :::*      users:(("dhclient",1171,21))
-        tcp   UNCONN     0      0                    :::648               :::*      users:(("rpcbind",483,10))
-        tcp   LISTEN     0      128                   *:111                *:*      users:(("rpcbind",483,8))
-        tcp   LISTEN     0      128                   *:22                 *:*      users:(("sshd",1231,3))
         tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
         tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
         tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
         tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
-        tcp   LISTEN     0      128                  :::22                :::*      users:(("sshd",1231,4))
-        tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
 
     Examples:
 
         >>> type(ssa)
         <class 'insights.parsers.netstat.SsTUPNA'>
-        >>> type(ssa.data)
-        <type 'list'>
-        >>> ssa.get_service("sshd")  # All connections opened by rpcbind
-        [{'Netid': 'tcp', 'Process': 'users:(("sshd",11427,3))', 'Peer-Address-Port': '192.168.0.101:59232', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:22', 'State': 'ESTAB', 'Recv-Q': '0'}]
-        >>> ssa.get_port("2049")  # Both local and peer port searched
-        [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
-        >>> ssa.get_localport("739")  # local port searched
-        [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
-        >>> ssa.get_peerport("59232")  # peer port searched
-        [{'Netid': 'tcp', 'Process': 'users:(("sshd",11427,3))', 'Peer-Address-Port': '192.168.0.101:59232', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:22', 'State': 'ESTAB', 'Recv-Q': '0'}]
+        >>> sorted(ssa.data[2].items())
+        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_service("sshd")[0].items())  # All connections opened by rpcbind
+        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_port("2049")[0].items())  # Both local and peer port searched
+        [('Local-Address-Port', '192.168.0.106:739'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.105:2049'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_localport("739")[0].items())  # local port searched
+        [('Local-Address-Port', '192.168.0.106:739'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.105:2049'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_peerport("59232")[0].items())  # peer port searched
+        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
     """
 
     def parse_content(self, content):
