@@ -1,12 +1,11 @@
-from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA
-from insights.tests import context_wrap
-from insights.parsers import netstat
-from ...parsers import ParseException
-
-import pytest
-
 import doctest
 
+import pytest
+from insights.parsers import netstat
+from insights.parsers.netstat import Netstat, NetstatAGN, NetstatS, Netstat_I, SsTULPN, SsTUPNA
+from insights.tests import context_wrap
+
+from ...parsers import ParseException
 
 NETSTAT_S = '''
 Ip:
@@ -322,18 +321,18 @@ def test_get_netstat_keyword_search():
         search_list=[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS],
         State__contains='LISTEN'
     ) == [
-        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
-        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
-    ]
+               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+           ]
 
     # Search with a string
     assert ns.search(
         search_list=netstat.ACTIVE_UNIX_DOMAIN_SOCKETS,
         State__contains='LISTEN'
     ) == [
-        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
-        ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
-    ]
+               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][1],
+               ns.datalist[netstat.ACTIVE_UNIX_DOMAIN_SOCKETS][2],
+           ]
 
     # Search with neither string nor list
     assert ns.search(
@@ -528,24 +527,27 @@ def test_get_netstat_i():
     result = Netstat_I(context_wrap(NETSTAT_I)).group_by_iface
     assert len(result) == 7
     assert result["bond0"] == {
-            "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
-            "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
-            "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMmRU"
-                }
+        "MTU": "1500", "Met": "0", "RX-OK": "845265", "RX-ERR": "0",
+        "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1753", "TX-ERR": "0",
+        "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMmRU"
+    }
     assert result["eth0"] == {
-            "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
-            "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
-            "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMsRU"
-                }
+        "MTU": "1500", "Met": "0", "RX-OK": "422518", "RX-ERR": "0",
+        "RX-DRP": "0", "RX-OVR": "0", "TX-OK": "1703", "TX-ERR": "0",
+        "TX-DRP": "0", "TX-OVR": "0", "Flg": "BMsRU"
+    }
 
 
-SS_TULPN_DOCS = '''
+SS_TUPNA_DOCS = '''
 Netid  State      Recv-Q Send-Q Local Address:Port               Peer Address:Port
 udp    UNCONN     0      0                  *:55898                 *:*
 udp    UNCONN     0      0          127.0.0.1:904                   *:*                   users:(("rpc.statd",pid=29559,fd=7))
 udp    UNCONN     0      0                  *:111                   *:*                   users:(("rpcbind",pid=953,fd=9))
 udp    UNCONN     0      0                 :::37968                :::12345               users:(("rpc.statd",pid=29559,fd=10))
 tcp    LISTEN     0      128                *:111                   *:*                   users:(("rpcbind",pid=1139,fd=5),("systemd",pid=1,fd=41))
+tcp   ESTAB      0      0      192.168.31.148:38746    104.74.50.85:443                 users:(("firefox",pid=12645,fd=213))
+tcp   ESTAB      0      0      192.168.31.148:33694   74.125.200.17:443                 users:(("firefox",pid=12645,fd=55))
+tcp   TIME-WAIT  0      0        10.67.116.74:59568      10.75.5.17:631
 '''
 
 Ss_TULPN = """
@@ -584,7 +586,7 @@ tcp   LISTEN     0      128                  :::22                :::*      user
 tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
 """.strip()
 
-SS_TULPNA_DOCS = """
+SS_TUPNA_DOCS_2 = """
 Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
 tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
 tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
@@ -593,11 +595,75 @@ tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
 tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
 """.strip()
 
+SS_TUPNA_2 = """
+Netid State      Recv-Q Send-Q  Local Address:Port     Peer Address:Port
+udp   UNCONN     0      0       192.168.122.1:53            0.0.0.0:*
+udp   UNCONN     0      0      0.0.0.0%virbr0:67            0.0.0.0:*
+udp   UNCONN     9728   0             0.0.0.0:68            0.0.0.0:*
+udp   UNCONN     0      0             0.0.0.0:111           0.0.0.0:*
+udp   UNCONN     0      0           127.0.0.1:323           0.0.0.0:*
+udp   UNCONN     0      0             0.0.0.0:631           0.0.0.0:*
+udp   UNCONN     0      0             0.0.0.0:34453         0.0.0.0:*
+udp   ESTAB      0      0        10.67.116.74:54211      10.68.5.26:53
+udp   UNCONN     51712  0             0.0.0.0:5353          0.0.0.0:*
+udp   UNCONN     34560  2560          0.0.0.0:59774         0.0.0.0:*
+udp   UNCONN     0      0                [::]:111              [::]:*
+udp   UNCONN     0      0               [::1]:323              [::]:*
+udp   UNCONN     28928  0                [::]:5353             [::]:*
+udp   UNCONN     0      0                [::]:47485            [::]:*
+tcp   LISTEN     0      128           0.0.0.0:111           0.0.0.0:*
+tcp   LISTEN     0      32      192.168.122.1:53            0.0.0.0:*
+tcp   LISTEN     0      128           0.0.0.0:22            0.0.0.0:*
+tcp   LISTEN     0      5           127.0.0.1:631           0.0.0.0:*
+tcp   LISTEN     0      100           0.0.0.0:3080          0.0.0.0:*
+tcp   TIME-WAIT  0      0        10.67.116.74:59574      10.75.5.17:631
+tcp   TIME-WAIT  0      0      192.168.31.148:45190  74.125.200.113:443
+tcp   ESTAB      0      0      192.168.31.148:38746    104.74.50.85:443                 users:(("firefox",pid=12645,fd=213))
+tcp   ESTAB      0      0      192.168.31.148:33694   74.125.200.17:443                 users:(("firefox",pid=12645,fd=55))
+tcp   TIME-WAIT  0      0        10.67.116.74:59568      10.75.5.17:631
+tcp   ESTAB      0      0        10.67.116.74:35606    10.10.177.77:22                  users:(("ssh",pid=15184,fd=3))
+tcp   ESTAB      0      0        10.67.116.74:53290    10.16.184.98:22                  users:(("ssh",pid=17220,fd=3))
+tcp   ESTAB      0      0      192.168.31.148:48100  198.252.206.25:443                 users:(("firefox",pid=12645,fd=180))
+tcp   ESTAB      0      0           127.0.0.1:54718       127.0.0.1:3080
+tcp   ESTAB      0      0           127.0.0.1:3080        127.0.0.1:54718
+tcp   LISTEN     0      128              [::]:111              [::]:*
+tcp   LISTEN     0      128                 *:80                  *:*
+tcp   LISTEN     0      128              [::]:22               [::]:*
+tcp   LISTEN     0      5               [::1]:631              [::]:*
+""".strip()
+
+SS_TULPN_2 = """
+Netid State      Recv-Q Send-Q   Local Address:Port   Peer Address:Port
+udp   UNCONN     0      0        192.168.122.1:53          0.0.0.0:*
+udp   UNCONN     0      0       0.0.0.0%virbr0:67          0.0.0.0:*
+udp   UNCONN     14592  0              0.0.0.0:68          0.0.0.0:*
+udp   UNCONN     0      0              0.0.0.0:111         0.0.0.0:*
+udp   UNCONN     0      0            127.0.0.1:323         0.0.0.0:*
+udp   UNCONN     0      0              0.0.0.0:631         0.0.0.0:*
+udp   UNCONN     0      0              0.0.0.0:34453       0.0.0.0:*
+udp   UNCONN     15616  0              0.0.0.0:5353        0.0.0.0:*
+udp   UNCONN     21760  0              0.0.0.0:59774       0.0.0.0:*
+udp   UNCONN     0      0                 [::]:111            [::]:*
+udp   UNCONN     0      0                [::1]:323            [::]:*
+udp   UNCONN     36096  0                 [::]:5353           [::]:*
+udp   UNCONN     0      0                 [::]:47485          [::]:*
+tcp   LISTEN     0      128            0.0.0.0:111         0.0.0.0:*
+tcp   LISTEN     0      32       192.168.122.1:53          0.0.0.0:*
+tcp   LISTEN     0      128            0.0.0.0:22          0.0.0.0:*
+tcp   LISTEN     0      5            127.0.0.1:631         0.0.0.0:*
+tcp   LISTEN     0      100            0.0.0.0:3080        0.0.0.0:*
+tcp   LISTEN     0      128               [::]:111            [::]:*
+tcp   LISTEN     0      128                  *:80                *:*
+tcp   LISTEN     0      128               [::]:22             [::]:*
+tcp   LISTEN     0      5                [::1]:631            [::]:*
+""".strip()
+
 
 def test_ss_tulpn_data():
     ss = SsTULPN(context_wrap(Ss_TULPN)).data
     assert len(ss) == 13
-    assert ss[0] == {'Netid': 'udp', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:55898', 'State': 'UNCONN', 'Recv-Q': '0'}
+    assert ss[0] == {'Netid': 'udp', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:55898',
+                     'State': 'UNCONN', 'Recv-Q': '0'}
     assert ss[1].get("Netid") == "udp"
     assert ss[9].get("Process") is None
     assert "sshd" in ss[-1].get("Process")
@@ -606,19 +672,24 @@ def test_ss_tulpn_data():
 
 def test_ss_tulpn_get_service():
     ss = SsTULPN(context_wrap(Ss_TULPN))
-    exp = [{'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=9))', 'Peer-Address-Port': '*:*', 'Send-Q': '0', 'Local-Address-Port': '*:111', 'State': 'UNCONN', 'Recv-Q': '0'},
-           {'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=11))', 'Peer-Address-Port': ':::*', 'Send-Q': '0', 'Local-Address-Port': ':::111', 'State': 'UNCONN', 'Recv-Q': '0'}]
+    exp = [{'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=9))', 'Peer-Address-Port': '*:*', 'Send-Q': '0',
+            'Local-Address-Port': '*:111', 'State': 'UNCONN', 'Recv-Q': '0'},
+           {'Netid': 'udp', 'Process': 'users:(("rpcbind",pid=953,fd=11))', 'Peer-Address-Port': ':::*', 'Send-Q': '0',
+            'Local-Address-Port': ':::111', 'State': 'UNCONN', 'Recv-Q': '0'}]
     assert ss.get_service("rpcbind") == exp
 
 
 def test_ss_tulpn_get_port():
     ss = SsTULPN(context_wrap(Ss_TULPN))
-    exp01 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",pid=1416,fd=4))', 'Peer-Address-Port': ':::*', 'Send-Q': '128', 'Local-Address-Port': ':::2223', 'State': 'LISTEN', 'Recv-Q': '0'}]
+    exp01 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",pid=1416,fd=4))', 'Peer-Address-Port': ':::*', 'Send-Q': '128',
+              'Local-Address-Port': ':::2223', 'State': 'LISTEN', 'Recv-Q': '0'}]
     assert ss.get_localport("2223") == exp01
-    exp02 = [{'Netid': 'udp', 'Process': 'users:(("rpc.statd",pid=29559,fd=10))', 'Peer-Address-Port': ':::12345', 'Send-Q': '0', 'Local-Address-Port': ':::37968', 'State': 'UNCONN', 'Recv-Q': '0'}]
+    exp02 = [{'Netid': 'udp', 'Process': 'users:(("rpc.statd",pid=29559,fd=10))', 'Peer-Address-Port': ':::12345',
+              'Send-Q': '0', 'Local-Address-Port': ':::37968', 'State': 'UNCONN', 'Recv-Q': '0'}]
     assert ss.get_peerport("12345") == exp02
     assert ss.get_port("12345") == exp02
-    exp03 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",1231,3))', 'Peer-Address-Port': '*:*', 'Send-Q': '128', 'Local-Address-Port': '*:22', 'State': 'LISTEN', 'Recv-Q': '0'}]
+    exp03 = [{'Netid': 'tcp', 'Process': 'users:(("sshd",1231,3))', 'Peer-Address-Port': '*:*', 'Send-Q': '128',
+              'Local-Address-Port': '*:22', 'State': 'LISTEN', 'Recv-Q': '0'}]
     assert ss.get_localport("22") == exp03
     assert ss.get_peerport("22") == []
     assert ss.get_port("22") == exp03
@@ -632,8 +703,8 @@ def test_netstat_doc_examples():
         'multicast': NetstatAGN(context_wrap(TEST_NETSTAT_AGN)),
         'ns': Netstat(context_wrap(NETSTAT_DOCS)),
         'traf': Netstat_I(context_wrap(NETSTAT_I)),
-        'ss': SsTULPN(context_wrap(SS_TULPN_DOCS)),
-        'ssa': SsTUPNA(context_wrap(SS_TULPNA_DOCS)),
+        'ss': SsTULPN(context_wrap(SS_TUPNA_DOCS)),
+        'ssa': SsTUPNA(context_wrap(SS_TUPNA_DOCS_2)),
     }
     failed, total = doctest.testmod(netstat, globs=env)
     assert failed == 0
@@ -641,8 +712,33 @@ def test_netstat_doc_examples():
 
 def test_ss_tupna_get_port():
     ssa = SsTUPNA(context_wrap(Ss_TUPNA))
-    exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0', 'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
+    exp01 = [{'Netid': 'tcp', 'Peer-Address-Port': '192.168.0.105:2049', 'Send-Q': '0',
+              'Local-Address-Port': '192.168.0.106:739', 'State': 'ESTAB', 'Recv-Q': '0'}]
     assert len(ssa.data) == 15
     assert ssa.get_peerport("2049") == exp01
     assert ssa.get_localport("2049") == []
     assert ssa.get_port("2049") == exp01
+
+
+def test_ss_tupnla_get_port():
+    # Added test cases for testing two parser for one spec.
+    # Used data from spec ss -tulpn and run parser SsTULPN(ss -tulpn)
+    ssl = SsTULPN(context_wrap(SS_TULPN_2))
+    exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
+              'State': 'UNCONN', 'Recv-Q': '0'}]
+    assert len(ssl.data) == 22
+    assert ssl.get_localport("34453") == exp02
+
+    # Used data from spec ss -tupna and run parser SsTULPN(ss -tulpn)
+    ssl = SsTULPN(context_wrap(SS_TUPNA_2))
+    exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
+              'State': 'UNCONN', 'Recv-Q': '0'}]
+    assert len(ssl.data) == 22
+    assert ssl.get_localport("34453") == exp02
+
+    # Used data from spec ss -tupna and run parser SsTUPNA(ss -tupna)
+    ssl = SsTUPNA(context_wrap(SS_TUPNA_2))
+    exp02 = [{'Netid': 'udp', 'Peer-Address-Port': '0.0.0.0:*', 'Send-Q': '0', 'Local-Address-Port': '0.0.0.0:34453',
+              'State': 'UNCONN', 'Recv-Q': '0'}]
+    assert len(ssl.data) == 33
+    assert ssl.get_localport("34453") == exp02
