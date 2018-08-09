@@ -31,7 +31,7 @@ def _intercept(func):
     @wraps(func)
     def inner(ds, pattern):
         ret = add_filter(ds, pattern)
-        calling_module = inspect.stack()[2][0].f_globals.get("__name__")
+        calling_module = inspect.stack()[1][0].f_globals.get("__name__")
         ADDED_FILTERS[calling_module].add(ds)
         return ret
     return inner
