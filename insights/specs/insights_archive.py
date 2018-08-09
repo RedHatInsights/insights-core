@@ -102,6 +102,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")
     ls_var_run = simple_file("insights_commands/ls_-lnL_.var.run")
     ls_var_spool_postfix_maildrop = simple_file("insights_commands/ls_-ln_.var.spool.postfix.maildrop")
+    ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
     ls_osroot = simple_file("insights_commands/ls_-lan")
     lsblk = simple_file("insights_commands/lsblk")
     lsblk_pairs = simple_file("insights_commands/lsblk_-P_-o_NAME_KNAME_MAJ_MIN_FSTYPE_MOUNTPOINT_LABEL_UUID_RA_RO_RM_MODEL_SIZE_STATE_OWNER_GROUP_MODE_ALIGNMENT_MIN-IO_OPT-IO_PHY-SEC_LOG-SEC_ROTA_SCHED_RQ-SIZE_TYPE_DISC-ALN_DISC-GRAN_DISC-MAX_DISC-ZERO")
