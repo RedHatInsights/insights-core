@@ -10,6 +10,12 @@ pipeline {
             }
           }
           steps {
+			sh '''
+				pip freeze |grep flake8
+				virtualenv venv
+				source venv/bin/activate
+			'''
+			  
             echo "Installing Insights..."
             sh 'pip install --user -e .[develop]'
             echo "Testing with Pytest..."
