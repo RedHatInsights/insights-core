@@ -1,5 +1,5 @@
 from insights.parsers.ipcs_sem import IpcsSI, IpcsS
-from insights.parsers.ps import PsAuxww
+from insights.parsers.ps import PsAuxcww
 from insights.combiners.ipcs_semaphores import IpcsSemaphores
 from insights.tests import context_wrap
 
@@ -110,7 +110,7 @@ def test_ipcs_semaphores():
     sem5 = IpcsSI(context_wrap(IPCS_S_I_5))
     sem6 = IpcsSI(context_wrap(IPCS_S_I_6))
     sems = IpcsS(context_wrap(IPCS_S))
-    ps = PsAuxww(context_wrap(PsAuxcww_OUT))
+    ps = PsAuxcww(context_wrap(PsAuxcww_OUT))
     rst = IpcsSemaphores(sems, [sem1, sem2, sem3, sem4, sem5, sem6], ps)
     rst.get_sem('65536').pid_list == ['0', '2265', '4390', '6151', '6152']
     rst.count_of_all_sems() == 6
