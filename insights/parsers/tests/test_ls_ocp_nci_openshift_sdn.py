@@ -24,7 +24,6 @@ def test_ls_ocp_cni_openshift_sdn():
                                                                                         '10.130.0.116', '10.130.0.117',
                                                                                         '10.130.0.15', '10.130.0.20',
                                                                                         'last_reserved_ip.0']
-    assert ls_ocp_cni_openshift_sdn.get_cni_files_number() == 6
 
 
 def test_ls_ocp_cni_openshift_sdn_doc_examples():

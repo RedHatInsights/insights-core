@@ -34,11 +34,4 @@ from .. import parser, CommandParser
 @parser(Specs.ls_osroot)
 class LsOcpCniOpenshiftSdn(CommandParser, FileListing):
     """Parses output of ``ls -l /var/lib/cni/networks/openshift-sdn`` command."""
-
-    def get_cni_files_number(self):
-        files = self.files_of("/var/lib/cni/networks/openshift-sdn")
-        cni_files_count = 0
-        for file in files:
-            if len(file.split(".")) == 4:
-                cni_files_count += 1
-        return cni_files_count
+    pass
