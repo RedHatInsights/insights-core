@@ -205,6 +205,7 @@ class Specs(SpecSet):
     ls_disk = RegistryPoint()
     ls_docker_volumes = RegistryPoint()
     ls_etc = RegistryPoint()
+    ls_ocp_cni_openshift_sdn = RegistryPoint()
     lsinitrd_lvm_conf = RegistryPoint()
     lsmod = RegistryPoint()
     lsof = RegistryPoint()
