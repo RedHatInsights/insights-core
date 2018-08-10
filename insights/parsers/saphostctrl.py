@@ -61,6 +61,8 @@ class SAPHostCtrlInstances(CommandParser):
         'HDB'
 
     Attributes:
+        data (list): List of dicts where keys are the lead name of each line and
+            values are the string value.
         instances (list): The list of instances found in the cluster output.
         sids (list): The list of SID found in the cluster output.
         types (list): The list of instance types found in the cluster output.
