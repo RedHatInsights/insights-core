@@ -31,7 +31,7 @@ from .. import FileListing
 from .. import parser, CommandParser
 
 
-@parser(Specs.ls_osroot)
+@parser(Specs.ls_ocp_cni_openshift_sdn)
 class LsOcpCniOpenshiftSdn(CommandParser, FileListing):
     """Parses output of ``ls -l /var/lib/cni/networks/openshift-sdn`` command."""
     pass
