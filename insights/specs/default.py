@@ -340,6 +340,7 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_etc = simple_command("/bin/ls -lanR /etc")
+    ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
