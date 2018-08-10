@@ -1,5 +1,4 @@
 # -*- coding: UTF-8 -*-
-from insights.configtree import PushBack
 from insights.core.ls_parser import parse, parse_entry
 
 
@@ -128,7 +127,7 @@ def test_parse_selinux():
 
 def test_parse_entry_non_selinux():
     d = "lrwxrwxrwx.  1 root root    49 Jun 28  2017 cert.pem -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
-    res = parse_entry(PushBack(d))
+    res = parse_entry(d)
     assert res["type"] == "l"
     assert res["owner"] == "root"
     assert res["group"] == "root"
