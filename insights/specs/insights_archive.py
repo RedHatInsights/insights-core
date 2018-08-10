@@ -108,7 +108,7 @@ class InsightsArchiveSpecs(Specs):
     lscpu = simple_file("insights_commands/lscpu")
     lsmod = simple_file("insights_commands/lsmod")
     lsof = simple_file("insights_commands/lsof")
-    lspci = first_file(["insights_commands/lspci_-k", "insights_commands/lspci"])
+    lspci = simple_file("insights_commands/lspci_-k")
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
     lvdisplay = simple_file("insights_commands/lvdisplay")

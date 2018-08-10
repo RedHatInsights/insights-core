@@ -330,7 +330,7 @@ class DefaultSpecs(Specs):
                                  simple_command("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")
                                  ])
     lsmod = simple_command("/sbin/lsmod")
-    lspci = first_of([simple_command("/sbin/lspci -k"), simple_command("/sbin/lspci")]),
+    lspci = simple_command("/sbin/lspci -k")
     lsof = simple_command("/usr/sbin/lsof")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
