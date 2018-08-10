@@ -1,7 +1,15 @@
-from insights.configtree import LineGetter
-
+from insights.configtree import PushBack
 
 PERMBITS = set("-+.dlbcpsrwxtT")
+
+
+class LineGetter(PushBack):
+    def _next(self):
+        l = next(self.stream)
+        while l == "":
+            self.pos += 1
+            l = next(self.stream)
+        return l
 
 
 def parse_name(lg):
