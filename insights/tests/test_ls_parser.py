@@ -110,8 +110,8 @@ adsf
 
 
 def test_parse_selinux():
-    results = parse(SELINUX_DIRECTORY.splitlines())
-    stanza = results[0]
+    results = parse(SELINUX_DIRECTORY.splitlines(), "/boot")
+    stanza = results["/boot"]
     assert stanza["name"] == "/boot"
     assert stanza["total"] == 3
     assert len(stanza["entries"]) == 3
@@ -139,9 +139,9 @@ def test_parse_entry_non_selinux():
 
 
 def test_parse_single_directory():
-    results = parse(SINGLE_DIRECTORY.splitlines())
-    stanza = results[0]
-    assert stanza["name"] is None
+    results = parse(SINGLE_DIRECTORY.splitlines(), "/etc")
+    stanza = results["/etc"]
+    assert stanza["name"] == "/etc"
     assert stanza["total"] == 32
     assert len(stanza["entries"]) == 7
     res = stanza["entries"]["cert.pem"]
@@ -152,18 +152,18 @@ def test_parse_single_directory():
     assert res["name"] == "cert.pem"
     assert res["link"] == "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
     assert res["links"] == 1
-    assert res["dir"] is None
+    assert res["dir"] == "/etc"
 
 
 def test_parse_multiple_directories():
-    results = parse(MULTIPLE_DIRECTORIES.splitlines())
+    results = parse(MULTIPLE_DIRECTORIES.splitlines(), None)
     assert len(results) == 2
-    assert results[0]["name"] == "/etc/sysconfig"
-    assert results[0]["total"] == 96
-    assert results[1]["name"] == "/etc/rc.d/rc3.d"
-    assert results[1]["total"] == 4
+    assert results["/etc/sysconfig"]["name"] == "/etc/sysconfig"
+    assert results["/etc/sysconfig"]["total"] == 96
+    assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
+    assert results["/etc/rc.d/rc3.d"]["total"] == 4
 
-    res = results[0]["entries"]["ebtables-config"]
+    res = results["/etc/sysconfig"]["entries"]["ebtables-config"]
     assert res["type"] == "-"
     assert res["links"] == 1
     assert res["owner"] == "0"
@@ -175,11 +175,11 @@ def test_parse_multiple_directories():
 
 
 def test_complicated_files():
-    results = parse(COMPLICATED_FILES.splitlines())
+    results = parse(COMPLICATED_FILES.splitlines(), "/tmp")
     assert len(results) == 1
-    assert results[0]["total"] == 16, results[0]["total"]
-    assert results[0]["name"] == "/tmp", results[0]["name"]
-    res = results[0]["entries"]["dm-10"]
+    assert results["/tmp"]["total"] == 16, results[0]["total"]
+    assert results["/tmp"]["name"] == "/tmp", results[0]["name"]
+    res = results["/tmp"]["entries"]["dm-10"]
     assert res["type"] == "b"
     assert res["links"] == 1
     assert res["owner"] == "0"
@@ -192,11 +192,11 @@ def test_complicated_files():
 
 
 def test_files_with_selinux_disabled():
-    results = parse(FILES_CREATED_WITH_SELINUX_DISABLED.splitlines())
+    results = parse(FILES_CREATED_WITH_SELINUX_DISABLED.splitlines(), "/dev/mapper")
     assert len(results) == 1
-    assert results[0]["total"] == 2
-    assert results[0]["name"] == "/dev/mapper", results[0]["name"]
-    res = results[0]["entries"]["lv_cpwtk001_data01"]
+    assert results["/dev/mapper"]["total"] == 2
+    assert results["/dev/mapper"]["name"] == "/dev/mapper", results[0]["name"]
+    res = results["/dev/mapper"]["entries"]["lv_cpwtk001_data01"]
     assert res["type"] == "l"
     assert res["links"] == 1
     assert res["owner"] == "0"

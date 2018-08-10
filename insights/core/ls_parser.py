@@ -117,10 +117,13 @@ def parse_entry(pb):
     return entry
 
 
-def parse_stanza(lg):
+def parse_stanza(lg, root):
     name = parse_name(lg)
     total = parse_total(lg)
-    entries = []
+    dirs = []
+    ents = {}
+    files = []
+    specials = []
     while True:
         try:
             line = lg.peek()
@@ -129,30 +132,24 @@ def parse_stanza(lg):
                 pb = PushBack(next(lg))
                 entry = parse_entry(pb)
                 entry["raw_entry"] = line
-                entry["dir"] = name
-                entries.append(entry)
+                entry["dir"] = name or root
+                nm = entry["name"]
+                ents[nm] = entry
+                typ = entry["type"]
+                if typ in "bc":
+                    specials.append(nm)
+                elif typ == "d":
+                    dirs.append(nm)
+                else:
+                    files.append(nm)
             else:
                 break
         except StopIteration:
             break
-    total = total if total is not None else len(entries)
-    dirs = []
-    ents = {}
-    files = []
-    specials = []
-    for e in entries:
-        nm = e["name"]
-        ents[nm] = e
-        typ = e["type"]
-        if typ in "bc":
-            specials.append(nm)
-        elif typ == "d":
-            dirs.append(nm)
-        else:
-            files.append(nm)
+    total = total if total is not None else len(ents)
 
     result = {
-        "name": name,
+        "name": name or root,
         "total": total,
         "entries": ents,
         "files": files,
@@ -160,21 +157,23 @@ def parse_stanza(lg):
         "specials": specials
     }
 
-    return result
+    return result["name"], result
 
 
-def parse(lines):
-    results = []
+def parse(lines, root):
+    results = {}
     lg = LineGetter(lines)
     while True:
         try:
             line = lg.peek()
             if line.endswith(":") or line.startswith("total"):
-                results.append(parse_stanza(lg))
+                name, stanza = parse_stanza(lg, root)
+                results[name] = stanza
             else:
                 perms = set(line[:10])
                 if perms and perms & PERMBITS == perms:
-                    results.append(parse_stanza(lg))
+                    name, stanza = parse_stanza(lg, root)
+                    results[name] = stanza
                 else:
                     next(lg)
         except StopIteration:

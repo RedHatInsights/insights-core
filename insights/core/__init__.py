@@ -1429,12 +1429,7 @@ class FileListing(Parser):
         Called automatically to process the directory listing(s) contained in
         the content.
         """
-        self.listings = {}
-        for r in ls_parser.parse(content):
-            r["name"] = r["name"] or self.first_path
-            self.listings[r["name"]] = r
-            for k, v in six.iteritems(r["entries"]):
-                v["dir"] = v["dir"] or self.first_path
+        self.listings = ls_parser.parse(content, self.first_path)
 
         # No longer need the first path found, if any.
         delattr(self, 'first_path')
