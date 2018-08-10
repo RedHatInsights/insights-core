@@ -41,6 +41,14 @@ insights.core.context
     :show-inheritance:
     :undoc-members:
 
+insights.core.filters
+---------------------
+
+.. automodule:: insights.core.filters
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.core.plugins
 ---------------------
 

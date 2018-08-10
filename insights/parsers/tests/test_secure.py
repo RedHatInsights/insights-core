@@ -1,4 +1,3 @@
-from insights import add_filter
 from insights.parsers.secure import Secure
 from insights.tests import context_wrap
 
@@ -17,11 +16,6 @@ Aug 25 14:04:04 localhost sshd[23085]: pam_unix(sshd:session): session closed fo
 Strange line with : but not otherwise parseable for testing code correctness
     Test continuation line
 """.strip()
-
-add_filter("secure", [
-    "polkitd",
-    "sshd"
-])
 
 
 def test_secure():

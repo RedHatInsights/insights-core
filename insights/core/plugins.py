@@ -8,6 +8,7 @@ import sys
 import traceback
 
 from insights.core import dr
+from insights.util.subproc import CalledProcessError
 from insights import settings
 
 log = logging.getLogger(__name__)
@@ -29,6 +30,10 @@ class datasource(dr.ComponentType):
         except ContentException as ce:
             log.debug(ce)
             broker.add_exception(self.component, ce, traceback.format_exc())
+            raise dr.SkipComponent()
+        except CalledProcessError as cpe:
+            log.debug(cpe)
+            broker.add_exception(self.component, cpe, traceback.format_exc())
             raise dr.SkipComponent()
 
 
@@ -287,6 +292,9 @@ class make_metadata_key(Response):
 
     def __init__(self, key, value):
         super(make_metadata_key, self).__init__(key, value=value)
+
+    def adjust_for_length(self, key, r, kwargs):
+        return kwargs
 
 
 class make_metadata(Response):

@@ -21,7 +21,7 @@ SsTULPN - command ``ss -tulpn``
 -------------------------------
 
 SsTUPNA - command ``ss -tupna``
----------------------------------
+-------------------------------
 """
 
 from collections import defaultdict
@@ -677,7 +677,8 @@ class SsTULPN(CommandParser):
     def parse_content(self, content):
         # Use headings without spaces and colons
         SSTULPN_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
-        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content[1:])
+        content = [line for line in content if (('UNCONN' in line) or ('LISTEN' in line))]
+        self.data = parse_delimited_table(SSTULPN_TABLE_HEADER + content)
 
     def get_service(self, service):
         return [l for l in self.data if l.get("Process", None) and service in l["Process"]]
@@ -704,7 +705,7 @@ class SsTULPN(CommandParser):
         return self.get_localport(port) + self.get_peerport(port)
 
 
-@parser(Specs.ss_tupna)
+@parser(Specs.ss)
 class SsTUPNA(SsTULPN):
     """
     Parse the output of the ``/usr/sbin/ss -tupna`` command.
@@ -716,32 +717,28 @@ class SsTUPNA(SsTULPN):
 
         Netid State      Recv-Q Send-Q    Local Address:Port    Peer Address:Port
         tcp   UNCONN     0      0                     *:68                 *:*      users:(("dhclient",1171,6))
-        tcp   UNCONN     0      0                     *:111                *:*      users:(("rpcbind",483,6))
-        tcp   UNCONN     0      0                     *:30057              *:*      users:(("dhclient",1171,20))
-        tcp   UNCONN     0      0                     *:648                *:*      users:(("rpcbind",483,7))
-        tcp   UNCONN     0      0                    :::111               :::*      users:(("rpcbind",483,9))
-        tcp   UNCONN     0      0                    :::6645              :::*      users:(("dhclient",1171,21))
-        tcp   UNCONN     0      0                    :::648               :::*      users:(("rpcbind",483,10))
-        tcp   LISTEN     0      128                   *:111                *:*      users:(("rpcbind",483,8))
-        tcp   LISTEN     0      128                   *:22                 *:*      users:(("sshd",1231,3))
         tcp   LISTEN     0      100           127.0.0.1:25                 *:*      users:(("master",1326,13))
         tcp   ESTAB      0      0         192.168.0.106:22     192.168.0.101:59232  users:(("sshd",11427,3))
         tcp   ESTAB      0      0         192.168.0.106:739    192.168.0.105:2049
         tcp   LISTEN     0      128                  :::111               :::*      users:(("rpcbind",483,11))
-        tcp   LISTEN     0      128                  :::22                :::*      users:(("sshd",1231,4))
-        tcp   LISTEN     0      100                 ::1:25                :::*      users:(("master",1326,14))
 
     Examples:
 
         >>> type(ssa)
         <class 'insights.parsers.netstat.SsTUPNA'>
-        >>> sorted(ssa.data[1].keys())  # Rows stored by column headings
-        ['Local-Address-Port', 'Netid', 'Peer-Address-Port', 'Process', 'Recv-Q', 'Send-Q', 'State']
-        >>> ssa.data[0]['Local-Address-Port']
-        '*:68'
-        >>> ssa.data[0]['State']
-        'UNCONN'
-        >>> ssa.data[2]['State']
-        'ESTAB'
+        >>> sorted(ssa.data[2].items())
+        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_service("sshd")[0].items())  # All connections opened by rpcbind
+        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_port("2049")[0].items())  # Both local and peer port searched
+        [('Local-Address-Port', '192.168.0.106:739'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.105:2049'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_localport("739")[0].items())  # local port searched
+        [('Local-Address-Port', '192.168.0.106:739'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.105:2049'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
+        >>> sorted(ssa.get_peerport("59232")[0].items())  # peer port searched
+        [('Local-Address-Port', '192.168.0.106:22'), ('Netid', 'tcp'), ('Peer-Address-Port', '192.168.0.101:59232'), ('Process', 'users:(("sshd",11427,3))'), ('Recv-Q', '0'), ('Send-Q', '0'), ('State', 'ESTAB')]
     """
-    pass
+
+    def parse_content(self, content):
+        # Use headings without spaces and colons
+        SSTUPNA_TABLE_HEADER = ["Netid  State  Recv-Q  Send-Q  Local-Address-Port Peer-Address-Port  Process"]
+        self.data = parse_delimited_table(SSTUPNA_TABLE_HEADER + content[1:])

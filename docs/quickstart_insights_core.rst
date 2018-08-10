@@ -165,6 +165,21 @@ using the following commands::
     [userone@hostone project_dir/insights-core]$ git pull upstream master
     [userone@hostone project_dir/insights-core]$ git push origin master
 
+
+After setup
+===========
+
+You can validate the setup by running the unit tests::
+    
+    [userone@hostone project_dir/insights-core]$ py.test
+
+To generate docs::
+    
+    [userone@hostone project_dir/insights-core]$ cd docs/
+    [userone@hostone project_dir/insights-core/docs]$ make html
+
+And they can be found under `docs/_build/html`.
+
 You will need to initialize the project per the
 `README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
 file.  For more detailed information about writing parsers and combiners see the

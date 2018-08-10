@@ -246,28 +246,37 @@ class SpecDescriptor(object):
         raise AttributeError()
 
 
-def _get_ctx_dependencies(func):
-    ctxs = []
-    try:
-        for c in dr.get_dependencies(func):
+def _get_ctx_dependencies(component):
+    ctxs = set()
+    for c in dr.walk_tree(component):
+        try:
             if issubclass(c, ExecutionContext):
-                ctxs.append(c)
-    except:
-        pass
+                ctxs.add(c)
+        except:
+            pass
     return ctxs
 
 
-def _register_context_handler(parents, func):
-    name = func.__name__
+def _register_context_handler(parents, component):
+    name = component.__name__
     parents = list(itertools.takewhile(lambda x: name in x.registry, parents))
     if not parents:
         return
 
+    # If the new component handles a context, we need to tell the
+    # previously registered components that would have handled it to ignore it.
+
+    # The components that handle a context are registered on the highest class
+    # of the MRO list. This is so overrides work correctly even if a
+    # component isn't a direct sibling of the component it's overriding.
+
+    # instead of trying to unhook all of the dependencies, we just tell the
+    # previous handler of a context to ignore it.
     ctx_handlers = parents[-1].context_handlers
-    for c in _get_ctx_dependencies(func):
+    for c in _get_ctx_dependencies(component):
         for old in ctx_handlers[name][c]:
             dr.add_ignore(old, c)
-        ctx_handlers[name][c].append(func)
+        ctx_handlers[name][c].append(component)
 
 
 def _resolve_registry_points(cls, base, dct):
@@ -276,6 +285,7 @@ def _resolve_registry_points(cls, base, dct):
 
     for k, v in dct.items():
         if isinstance(v, RegistryPoint):
+            # add v under its name to this class's registry.
             v.__name__ = k
             cls.registry[k] = v
 
@@ -285,9 +295,19 @@ def _resolve_registry_points(cls, base, dct):
             v.__module__ = module
             setattr(cls, k, SpecDescriptor(v))
             if k in base.registry:
+                # if the datasource has the same name as a RegistryPoint in the
+                # base class, the datasource to the RegistryPoint.
                 point = base.registry[k]
+
+                # the RegistryPoint gets the implementation datasource as a
+                # dependency
                 dr.add_dependency(point, v)
                 dr.mark_hidden(v)
+
+                # Datasources override previously defined datasources of the
+                # same name for contexts they all depend on. Here we tell
+                # datasources of the same name not to execute under contexts
+                # the new datasource will handle.
                 _register_context_handler(parents, v)
 
 
@@ -431,8 +451,8 @@ class first_file(object):
             and is readable
     """
 
-    def __init__(self, files, context=None, kind=TextFileProvider):
-        self.files = files
+    def __init__(self, paths, context=None, kind=TextFileProvider):
+        self.paths = paths
         self.context = context or FSRoots
         self.kind = kind
         self.raw = kind is RawFileProvider
@@ -442,12 +462,12 @@ class first_file(object):
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
         root = ctx.root
-        for f in self.files:
+        for p in self.paths:
             try:
-                return self.kind(ctx.locate_path(f), root=root, ds=self)
+                return self.kind(ctx.locate_path(p), root=root, ds=self)
             except:
                 pass
-        raise ContentException("None of [%s] found." % ', '.join(self.files))
+        raise ContentException("None of [%s] found." % ', '.join(self.paths))
 
 
 class listdir(object):
@@ -515,11 +535,12 @@ class simple_command(object):
         self.cmd = cmd
         self.context = context
         self.split = split
+        self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
         COMMANDS[self] = cmd
         self.__name__ = self.__class__.__name__
-        datasource(self.context)(self)
+        datasource(self.context, raw=self.raw)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
@@ -574,10 +595,11 @@ class foreach_execute(object):
         self.cmd = cmd
         self.context = context
         self.split = split
+        self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
         self.__name__ = self.__class__.__name__
-        datasource(self.provider, self.context, multi_output=True)(self)
+        datasource(self.provider, self.context, multi_output=True, raw=self.raw)(self)
 
     def __call__(self, broker):
         result = []
@@ -671,6 +693,7 @@ class first_of(object):
     """
     def __init__(self, deps):
         self.deps = deps
+        self.raw = deps[0].raw
         dr.mark_hidden(deps)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
