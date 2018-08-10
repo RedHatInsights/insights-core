@@ -535,7 +535,6 @@ class DefaultSpecs(Specs):
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-    sap_hdb_version = simple_command("/bin/su hxeadm -lc 'HDB version'")
     saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
     @datasource(saphostctl_listinstances, hostname, context=HostContext)
@@ -557,7 +556,7 @@ class DefaultSpecs(Specs):
                 results.add(ins_splits[0].split()[-1].lower())
         return list(results)
 
-    sap_hdb_version = foreach_execute(sap_hana_sid, "/bin/su %sadm -lc 'HDB version'", keep_rc=True)
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
