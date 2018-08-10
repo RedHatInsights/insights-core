@@ -28,7 +28,6 @@ def test_ls_ocp_cni_openshift_sdn():
 
 def test_ls_ocp_cni_openshift_sdn_doc_examples():
     env = {
-        'LsOcpCniOpenshiftSdn': LsOcpCniOpenshiftSdn,
         'ls_ocp_cni_openshift_sdn': LsOcpCniOpenshiftSdn(
             context_wrap(LS_CNI_OPENSHIFT_SDN, path='insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn')),
     }
