@@ -6,19 +6,12 @@ PERMBITS = set("-+.dlbcpsrwxtT")
 
 def parse_name(lg):
     if lg.peek().endswith(":"):
-        return next(lg).strip().rstrip(":")
+        return next(lg).rstrip(":")
 
 
 def parse_total(lg):
     if lg.peek().startswith("total"):
         return int(next(lg).split()[1])
-
-
-def parse_perms(perms):
-    return {
-        "type": perms[0],
-        "perms": perms[1:]
-    }
 
 
 def parse_path(path):
@@ -34,24 +27,23 @@ def parse_non_selinux(parts):
         "group": group,
     }
 
-    size = parts[3]
-    start = 4
+    rest = parts[-1].split(None, 4)
+    size = rest[0]
     if "," in size:
-        major = int(size.strip(","))
-        minor = int(parts[4])
-        start = 5
+        rest = parts[-1].split(None, 5)[1:]
+        major = int(size.rstrip(","))
+        minor = int(rest[0])
         result["major"] = major
         result["minor"] = minor
     else:
         result["size"] = int(size)
 
-    month, day, extra = parts[start:start + 3]
+    month, day, extra = rest[1:4]
     fst = " " * (3 - (len(day)))
     snd = " " * (6 - (len(extra)))
-    start += 3
 
     date = "%s%s%s%s%s" % (month, fst, day, snd, extra)
-    path, link = parse_path(" ".join(parts[start:]))
+    path, link = parse_path(rest[-1])
 
     result["date"] = date
     result["name"] = path
@@ -64,14 +56,15 @@ def parse_non_selinux(parts):
 def parse_selinux(parts):
     owner, group = parts[:2]
     selinux = parts[2].split(":")
-    path, link = parse_path(" ".join(parts[3:]))
+    lsel = len(selinux)
+    path, link = parse_path(parts[-1])
     result = {
         "owner": owner,
         "group": group,
         "se_user": selinux[0],
-        "se_role": selinux[1] if len(selinux) > 1 else None,
-        "se_type": selinux[2] if len(selinux) > 2 else None,
-        "se_mls": selinux[3] if len(selinux) > 3 else None,
+        "se_role": selinux[1] if lsel > 1 else None,
+        "se_type": selinux[2] if lsel > 2 else None,
+        "se_mls": selinux[3] if lsel > 3 else None,
         "name": path
     }
     if link:
@@ -80,8 +73,11 @@ def parse_selinux(parts):
 
 
 def parse_entry(line):
-    parts = line.split()
-    entry = parse_perms(parts[0])
+    parts = line.split(None, 4)
+    entry = {
+        "type": parts[0][0],
+        "perms": parts[0][1:]
+    }
 
     if parts[1][0].isdigit():
         rest = parse_non_selinux(parts[1:])
@@ -153,6 +149,8 @@ def parse(lines, root):
         except StopIteration:
             break
         except:
+            import traceback
+            traceback.print_exc()
             try:
                 line = next(lg)
             except StopIteration:

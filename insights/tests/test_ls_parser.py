@@ -176,8 +176,8 @@ def test_parse_multiple_directories():
 def test_complicated_files():
     results = parse(COMPLICATED_FILES.splitlines(), "/tmp")
     assert len(results) == 1
-    assert results["/tmp"]["total"] == 16, results[0]["total"]
-    assert results["/tmp"]["name"] == "/tmp", results[0]["name"]
+    assert results["/tmp"]["total"] == 16, results["/tmp"]["total"]
+    assert results["/tmp"]["name"] == "/tmp", results["/tmp"]["name"]
     res = results["/tmp"]["entries"]["dm-10"]
     assert res["type"] == "b"
     assert res["links"] == 1
