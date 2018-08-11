@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-from insights.core.ls_parser import parse, parse_entry
+from insights.core.ls_parser import parse
 
 
 SINGLE_DIRECTORY = """
@@ -123,18 +123,6 @@ def test_parse_selinux():
     assert res["se_type"] == "boot_t"
     assert res["se_mls"] == "s0"
     assert res["name"] == "config-3.10.0-267"
-
-
-def test_parse_entry_non_selinux():
-    d = "lrwxrwxrwx.  1 root root    49 Jun 28  2017 cert.pem -> /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
-    res = parse_entry(d)
-    assert res["type"] == "l"
-    assert res["owner"] == "root"
-    assert res["group"] == "root"
-    assert res["date"] == "Jun 28  2017"
-    assert res["name"] == "cert.pem"
-    assert res["link"] == "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
-    assert res["links"] == 1
 
 
 def test_parse_single_directory():

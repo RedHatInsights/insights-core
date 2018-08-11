@@ -1,59 +1,34 @@
-from insights.configtree import PushBack
+import logging
 
+log = logging.getLogger(__name__)
 PERMBITS = set("-+.dlbcpsrwxtT")
-
-
-class LineGetter(PushBack):
-    def _next(self):
-        l = next(self.stream)
-        while l == "":
-            self.pos += 1
-            l = next(self.stream)
-        return l
-
-
-def parse_name(lg):
-    if lg.peek().endswith(":"):
-        return next(lg).rstrip(":")
-
-
-def parse_total(lg):
-    if lg.peek().startswith("total"):
-        return int(next(lg).split()[1])
 
 
 def parse_path(path):
     path, _, link = path.partition(" -> ")
-    return path, (link or None)
+    return path, link
 
 
 def parse_non_selinux(parts):
-    links, owner, group = parts[:3]
+    links, owner, group, last = parts
     result = {
         "links": int(links),
         "owner": owner,
         "group": group,
     }
 
-    rest = parts[-1].split(None, 4)
-    size = rest[0]
-    if "," in size:
-        rest = parts[-1].split(None, 5)[1:]
-        major = int(size.rstrip(","))
-        minor = int(rest[0])
-        result["major"] = major
-        result["minor"] = minor
+    # device numbers only go to 256
+    if "," in last[:4]:
+        major, minor, rest = last.split(None, 2)
+        result["major"] = int(major.rstrip(","))
+        result["minor"] = int(minor)
     else:
+        size, rest = last.split(None, 1)
         result["size"] = int(size)
 
-    month, day, extra = rest[1:4]
-    fst = " " * (3 - (len(day)))
-    snd = " " * (6 - (len(extra)))
+    path, link = parse_path(rest[13:])
 
-    date = "%s%s%s%s%s" % (month, fst, day, snd, extra)
-    path, link = parse_path(rest[-1])
-
-    result["date"] = date
+    result["date"] = rest[:12]
     result["name"] = path
     if link:
         result["link"] = link
@@ -80,34 +55,45 @@ def parse_selinux(parts):
     return result
 
 
-def parse_entry(line):
-    parts = line.split(None, 4)
-    entry = {
-        "type": parts[0][0],
-        "perms": parts[0][1:]
-    }
-
-    if parts[1][0].isdigit():
-        rest = parse_non_selinux(parts[1:])
-    else:
-        rest = parse_selinux(parts[1:])
-    entry.update(rest)
-    return entry
-
-
-def parse_stanza(lg, root):
-    name = parse_name(lg)
-    total = parse_total(lg)
-    dirs = []
-    ents = {}
-    files = []
-    specials = []
+def parse(lines, root):
+    results = {}
+    idx = 0
+    length = len(lines)
     while True:
+        while idx < length and not lines[idx]:
+            idx += 1
+        if idx == length:
+            break
+        line = lines[idx]
         try:
-            line = lg.peek()
+            name = None
+            total = None
+            if line.endswith(":"):
+                name = line[:-1]
+                idx += 1
+                line = lines[idx]
+            if line.startswith("total"):
+                total = int(line.split()[1])
+                idx += 1
+                line = lines[idx]
+
+            dirs = []
+            ents = {}
+            files = []
+            specials = []
             perms = set(line[:10])
-            if perms & PERMBITS == perms:
-                entry = parse_entry(line)
+            while line and perms & PERMBITS == perms:
+                parts = line.split(None, 4)
+                entry = {
+                    "type": parts[0][0],
+                    "perms": parts[0][1:]
+                }
+
+                if parts[1][0].isdigit():
+                    rest = parse_non_selinux(parts[1:])
+                else:
+                    rest = parse_selinux(parts[1:])
+                entry.update(rest)
                 entry["raw_entry"] = line
                 entry["dir"] = name or root
                 nm = entry["name"]
@@ -119,49 +105,23 @@ def parse_stanza(lg, root):
                     dirs.append(nm)
                 else:
                     files.append(nm)
-                next(lg)
-            else:
-                break
-        except StopIteration:
-            break
-    total = total if total is not None else len(ents)
-
-    result = {
-        "name": name or root,
-        "total": total,
-        "entries": ents,
-        "files": files,
-        "dirs": dirs,
-        "specials": specials
-    }
-
-    return result["name"], result
-
-
-def parse(lines, root):
-    results = {}
-    lg = LineGetter(lines)
-    while True:
-        try:
-            line = lg.peek()
-            if line.endswith(":") or line.startswith("total"):
-                name, stanza = parse_stanza(lg, root)
-                results[name] = stanza
-            else:
-                perms = set(line[:10])
-                if perms and perms & PERMBITS == perms:
-                    name, stanza = parse_stanza(lg, root)
-                    results[name] = stanza
+                idx += 1
+                if idx < length:
+                    line = lines[idx]
+                    perms = set(line[:10])
                 else:
-                    next(lg)
-        except StopIteration:
-            break
-        except:
-            import traceback
-            traceback.print_exc()
-            try:
-                line = next(lg)
-            except StopIteration:
-                break
+                    break
+            total = total if total is not None else len(ents)
 
+            result = {
+                "name": name or root,
+                "total": total,
+                "entries": ents,
+                "files": files,
+                "dirs": dirs,
+                "specials": specials
+            }
+            results[result["name"]] = result
+        except:
+            log.info("Failed to parse: %s" % line)
     return results
