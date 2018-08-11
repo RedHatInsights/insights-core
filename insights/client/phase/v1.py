@@ -100,7 +100,7 @@ def pre_update(client, config):
             sys.exit(constants.sig_kill_bad)
 
     if config.support:
-        support = InsightsSupport()
+        support = InsightsSupport(config)
         support.collect_support_info()
         sys.exit(constants.sig_kill_ok)
 
