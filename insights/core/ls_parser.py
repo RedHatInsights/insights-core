@@ -71,11 +71,11 @@ def parse(lines, root):
             if line.endswith(":"):
                 name = line[:-1]
                 idx += 1
-                line = lines[idx]
+                line = lines[idx].strip()
             if line.startswith("total"):
                 total = int(line.split()[1])
                 idx += 1
-                line = lines[idx]
+                line = lines[idx].strip()
 
             dirs = []
             ents = {}
@@ -106,7 +106,7 @@ def parse(lines, root):
                     files.append(nm)
                 idx += 1
                 if idx < length:
-                    line = lines[idx]
+                    line = lines[idx].strip()
                 else:
                     break
             total = total if total is not None else len(ents)
