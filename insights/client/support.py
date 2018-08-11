@@ -86,7 +86,7 @@ class InsightsSupport(object):
         # check insights config
         cfg_block = []
 
-        pconn = InsightsConnection()
+        pconn = InsightsConnection(self.config)
         logger.info('Insights version: %s', get_nvr())
 
         reg_check = registration_check(pconn)
