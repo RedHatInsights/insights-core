@@ -81,8 +81,7 @@ def parse(lines, root):
             ents = {}
             files = []
             specials = []
-            perms = set(line[:10])
-            while line and perms & PERMBITS == perms:
+            while line and line[0] in PERMBITS:
                 parts = line.split(None, 4)
                 entry = {
                     "type": parts[0][0],
@@ -108,7 +107,6 @@ def parse(lines, root):
                 idx += 1
                 if idx < length:
                     line = lines[idx]
-                    perms = set(line[:10])
                 else:
                     break
             total = total if total is not None else len(ents)
