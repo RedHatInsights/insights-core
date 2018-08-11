@@ -51,6 +51,25 @@ brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
 lrwxrwxrwx.  1 0 0       11 Aug  4  2014 link with spaces -> ../file with spaces
 """
 
+COMPLICATED_FILES_BAD_LINE = """
+/tmp:
+total 16
+dr-xr-xr-x.  2 0 0     4096 Mar  4 16:19 .
+dr-xr-xr-x. 10 0 0     4096 Mar  4 16:19 ..
+-rw-r--r--.  1 0 0   123891 Aug 25  2015 config-3.10.0-229.14.1.el7.x86_64
+ls: cannot open directory '/etc/audisp': Permission denied
+lrwxrwxrwx.  1 0 0       11 Aug  4  2014 menu.lst -> ./grub.conf
+brw-rw----.  1 0 6 253,  10 Aug  4 16:56 dm-10
+crw-------.  1 0 0 10,  236 Jul 25 10:00 control
+srw-------.  1 26214 17738 0 Oct 19 08:48 geany_socket.c46453c2
+-rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 File name with spaces in it!
+-rw-rw-r--.  1 24306 24306 13895 Oct 21 15:42 Unicode ÅÍÎÏÓÔÒÚÆ☃ madness.txt
+drwxr-xr-x+  2 0 0       41 Jul  6 23:32 additional_ACLs
+brw-rw----.  1 0 6  1048576 Aug  4 16:56 block dev with no comma also valid
+-rwxr-xr-x.  2 0 0     1024 Jul  6 23:32 file_name_ending_with_colon:
+lrwxrwxrwx.  1 0 0       11 Aug  4  2014 link with spaces -> ../file with spaces
+"""
+
 SELINUX_DIRECTORY = """
 /boot:
 total 3
@@ -193,3 +212,20 @@ def test_files_with_selinux_disabled():
     assert res["name"] == "lv_cpwtk001_data01"
     assert res["link"] == "../dm-7"
     assert res["dir"] == "/dev/mapper"
+
+
+def test_bad_line():
+    results = parse(COMPLICATED_FILES_BAD_LINE.splitlines(), "/tmp")
+    assert len(results) == 1
+    assert results["/tmp"]["total"] == 16, results["/tmp"]["total"]
+    assert results["/tmp"]["name"] == "/tmp", results["/tmp"]["name"]
+    res = results["/tmp"]["entries"]["dm-10"]
+    assert res["type"] == "b"
+    assert res["links"] == 1
+    assert res["owner"] == "0"
+    assert res["group"] == "6"
+    assert res["major"] == 253
+    assert res["minor"] == 10
+    assert res["date"] == "Aug  4 16:56"
+    assert res["name"] == "dm-10"
+    assert res["dir"] == "/tmp"

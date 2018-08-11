@@ -84,10 +84,15 @@ def parse(lines, root):
             specials = []
             while line and line[0] in PERMBITS:
                 parts = line.split(None, 4)
-                typ = parts[0][0]
+                perms = parts[0]
+                if len(perms) < 10:
+                    idx += 1
+                    line = lines[idx]
+                    continue
+                typ = perms[0]
                 entry = {
                     "type": typ,
-                    "perms": parts[0][1:]
+                    "perms": perms[1:]
                 }
 
                 if parts[1][0].isdigit():
