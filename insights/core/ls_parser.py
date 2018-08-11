@@ -77,14 +77,16 @@ def parse(lines, root):
                 idx += 1
                 line = lines[idx].strip()
 
+            name = name or root
             dirs = []
             ents = {}
             files = []
             specials = []
             while line and line[0] in PERMBITS:
                 parts = line.split(None, 4)
+                typ = parts[0][0]
                 entry = {
-                    "type": parts[0][0],
+                    "type": typ,
                     "perms": parts[0][1:]
                 }
 
@@ -94,25 +96,26 @@ def parse(lines, root):
                     rest = parse_selinux(parts[1:])
                 entry.update(rest)
                 entry["raw_entry"] = line
-                entry["dir"] = name or root
+                entry["dir"] = name
                 nm = entry["name"]
                 ents[nm] = entry
-                typ = entry["type"]
-                if typ in "bc":
-                    specials.append(nm)
+                if typ not in "bcd":
+                    files.append(nm)
                 elif typ == "d":
                     dirs.append(nm)
-                else:
-                    files.append(nm)
+                elif typ in "bc":
+                    specials.append(nm)
                 idx += 1
                 if idx < length:
                     line = lines[idx].strip()
                 else:
                     break
-            total = total if total is not None else len(ents)
+
+            if total is None:
+                total = len(ents)
 
             result = {
-                "name": name or root,
+                "name": name,
                 "total": total,
                 "entries": ents,
                 "files": files,
