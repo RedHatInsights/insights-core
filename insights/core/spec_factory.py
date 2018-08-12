@@ -6,7 +6,9 @@ import six
 import traceback
 
 from collections import defaultdict
+from contextlib import contextmanager
 from glob import glob
+from subprocess import PIPE, Popen
 
 from insights.core import blacklist, dr
 from insights.core.filters import get_filters
@@ -157,9 +159,17 @@ class TextFileProvider(FileProvider):
     Class used in datasources that returns the contents of a file a list of
     lines. Each line is filtered if filters are defined for the datasource.
     """
+    stream_options = {
+        "bufsize": -1,  # use OS defaults. Non buffered if not set.
+        "universal_newlines": True,  # convert all to "\n"
+        "stdout": PIPE  # pipe to Popen.stdout instead of literally stdout
+    }
+
+    def _reader(self, stream):
+        for line in stream:
+            yield line.rstrip("\n")
 
     def load(self):
-
         filters = False
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
@@ -171,9 +181,29 @@ class TextFileProvider(FileProvider):
             else:
                 return []
         else:
-            with open(self.path, "rU") as f:
+            with open(self.path, "rU") as f:  # universal newlines
                 results = [l.rstrip("\n") for l in f]
         return results
+
+    @contextmanager
+    def stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        filters = get_filters(self.ds) if self.ds else None
+        if filters:
+            filters = "\n".join(filters)
+            cmd = ["grep", "-F", filters, self.path]
+            output = None
+            try:
+                output = Popen(cmd, env=SAFE_ENV, **TextFileProvider.stream_options)
+                yield self._reader(output.stdout)
+            finally:
+                if output:
+                    output.wait()
+        else:
+            with open(self.path, "rU") as f:  # universal newlines
+                yield self.reader(f)
 
 
 class CommandOutputProvider(ContentProvider):
