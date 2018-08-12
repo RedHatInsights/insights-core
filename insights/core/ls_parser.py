@@ -77,6 +77,10 @@ def parse(lines, root):
                 idx += 1
                 line = lines[idx].strip()
 
+            if not name and not total:
+                idx += 1
+                continue
+
             name = name or root
             dirs = []
             ents = {}
@@ -129,5 +133,6 @@ def parse(lines, root):
             }
             results[result["name"]] = result
         except:
+            idx += 1
             log.info("Failed to parse: %s" % line)
     return results
