@@ -46,7 +46,7 @@ class Specs(SpecSet):
     cpu_siblings = RegistryPoint(multi_output=True)
     cpu_smt_active = RegistryPoint()
     cpu_smt_control = RegistryPoint()
-    cpu_vulns = RegistryPoint()
+    cpu_vulns = RegistryPoint(multi_output=True)
     cpu_vulns_meltdown = RegistryPoint()
     cpu_vulns_spectre_v1 = RegistryPoint()
     cpu_vulns_spectre_v2 = RegistryPoint()
