@@ -1359,7 +1359,7 @@ class IniConfigFile(ConfigParser):
                    sections=self.data.sections())
 
 
-class FileListing(Parser):
+class FileListing(StreamParser):
     """
     Reads a series of concatenated directory listings and turns them into
     a dictionary of entities by name.  Stores all the information for
