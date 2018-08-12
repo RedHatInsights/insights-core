@@ -177,16 +177,22 @@ class TextFileProvider(FileProvider):
         """
         Returns a generator of lines instead of a list of lines.
         """
-        if self._content:
-            yield streams.reader(self._content)
-        filters = get_filters(self.ds) if self.ds else None
-        if filters:
-            cmd = ["grep", "-F", "\n".join(filters), self.path]
-            with streams.stream(cmd, env=SAFE_ENV) as s:
-                yield streams.reader(s)
-        else:
-            with open(self.path, "rU") as f:  # universal newlines
-                yield streams.reader(f)
+        if self._exception:
+            raise self._exception
+        try:
+            if self._content:
+                yield streams.reader(self._content)
+            filters = get_filters(self.ds) if self.ds else None
+            if filters:
+                cmd = ["grep", "-F", "\n".join(filters), self.path]
+                with streams.stream(cmd, env=SAFE_ENV) as s:
+                    yield streams.reader(s)
+            else:
+                with open(self.path, "rU") as f:  # universal newlines
+                    yield streams.reader(f)
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
 
 
 class CommandOutputProvider(ContentProvider):
@@ -239,16 +245,22 @@ class CommandOutputProvider(ContentProvider):
         """
         Returns a generator of lines instead of a list of lines.
         """
-        if self._content:
-            yield streams.reader(self._content)
-        filters = get_filters(self.ds) if self.ds else None
-        if filters:
-            grep = ["grep", "-F", "\n".join(filters)]
-            with self.ctx.connect(self.cmd, grep, env=SAFE_ENV, timeout=self.timeout) as s:
-                yield streams.reader(s)
-        else:
-            with self.ctx.stream(self.cmd, env=SAFE_ENV, timeout=self.timeout) as s:
-                yield streams.reader(s)
+        if self._exception:
+            raise self._exception
+        try:
+            if self._content:
+                yield streams.reader(self._content)
+            filters = get_filters(self.ds) if self.ds else None
+            if filters:
+                grep = ["grep", "-F", "\n".join(filters)]
+                with self.ctx.connect(self.cmd, grep, env=SAFE_ENV, timeout=self.timeout) as s:
+                    yield streams.reader(s)
+            else:
+                with self.ctx.stream(self.cmd, env=SAFE_ENV, timeout=self.timeout) as s:
+                    yield streams.reader(s)
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
 
     def __repr__(self):
         return 'CommandOutputProvider("%s")' % self.cmd
