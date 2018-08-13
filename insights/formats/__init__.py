@@ -7,6 +7,9 @@ from insights.core.evaluators import SingleEvaluator
 _FORMATTERS = {}
 
 
+counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0}
+
+
 def get_formatter(name):
     """
     Looks up a formatter class given a prefix to it.

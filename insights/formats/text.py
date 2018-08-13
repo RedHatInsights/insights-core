@@ -1,12 +1,25 @@
 from __future__ import print_function
+import six
+
 from pprint import pprint
 from insights import dr, datasource, rule
 from insights.core.context import ExecutionContext
-from insights.formats import Formatter, render
-from colorama import Fore, Style
+from insights.formats import Formatter, render, counts
 
+try:
+    from colorama import Fore, Style
+except ImportError:
+    print("Install colorama if console colors are prefered.")
 
-_counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0}
+    class Default(type):
+        def __getattr__(*args):
+            return ""
+
+    class Fore(six.with_metaclass(Default)):
+        pass
+
+    class Style(six.with_metaclass(Default)):
+        pass
 
 
 def _find_context(broker):
@@ -117,19 +130,19 @@ class HumanReadableFormat(Formatter):
             name = None
 
             if v["type"] == "skip":
-                _counts[v["type"]] += 1
+                counts[v["type"]] += 1
                 name = Fore.BLUE + dr.get_name(c) + Style.RESET_ALL
             elif v["type"] == "pass":
-                _counts[v["type"]] += 1
+                counts[v["type"]] += 1
                 name = Fore.GREEN + dr.get_name(c) + Style.RESET_ALL
             elif v["type"] == "rule":
-                _counts[v["type"]] += 1
+                counts[v["type"]] += 1
                 name = Fore.RED + dr.get_name(c) + Style.RESET_ALL
             elif v["type"] == "metadata":
-                _counts[v["type"]] += 1
+                counts[v["type"]] += 1
                 name = Fore.YELLOW + dr.get_name(c) + Style.RESET_ALL
             elif v["type"] == "metadata_key":
-                _counts[v["type"]] += 1
+                counts[v["type"]] += 1
                 name = Fore.MAGENTA + dr.get_name(c) + Style.RESET_ALL
             if name:
                 print(name)
@@ -145,8 +158,8 @@ class HumanReadableFormat(Formatter):
         print(Fore.CYAN + '*' * 31 + Style.RESET_ALL)
         print(Fore.CYAN + "**** Counts By Return Type ****" + Style.RESET_ALL)
         print(Fore.CYAN + '*' * 31 + Style.RESET_ALL)
-        print(Fore.BLUE + "Total Skipped Due To Rule Dependencies Not Met - {}".format(_counts['skip']) + Style.RESET_ALL)
-        print(Fore.GREEN + "Total Return Type 'make_pass' - {}".format(_counts['pass']) + Style.RESET_ALL)
-        print(Fore.RED + "Total Return Type 'make_fail/make_response' - {}".format(_counts['rule']) + Style.RESET_ALL)
-        print(Fore.YELLOW + "Total Return Type 'make_metedata' - {}".format(_counts['metadata']) + Style.RESET_ALL)
-        print(Fore.MAGENTA + "Total Return Type 'make_metadata_key' - {}".format(_counts['metadata_key']) + Style.RESET_ALL)
+        print(Fore.BLUE + "Total Skipped Due To Rule Dependencies Not Met - {}".format(counts['skip']) + Style.RESET_ALL)
+        print(Fore.GREEN + "Total Return Type 'make_pass' - {}".format(counts['pass']) + Style.RESET_ALL)
+        print(Fore.RED + "Total Return Type 'make_fail/make_response' - {}".format(counts['rule']) + Style.RESET_ALL)
+        print(Fore.YELLOW + "Total Return Type 'make_metedata' - {}".format(counts['metadata']) + Style.RESET_ALL)
+        print(Fore.MAGENTA + "Total Return Type 'make_metadata_key' - {}".format(counts['metadata_key']) + Style.RESET_ALL)
