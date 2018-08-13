@@ -1,5 +1,30 @@
 # Change Log
 
+## [insights-core-3.0.37-525](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.37-525) (2018-08-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.36-512...insights-core-3.0.37-525)
+
+**Implemented enhancements:**
+
+- Add threshold for grep vs in-process filtering [\#1099](https://github.com/RedHatInsights/insights-core/issues/1099)
+- Insights core tests should use Insights Demo Plugins repository as a test bed [\#1009](https://github.com/RedHatInsights/insights-core/issues/1009)
+- Evaluate including psutil with Insights [\#689](https://github.com/RedHatInsights/insights-core/issues/689)
+- Parser tests should be able to pass files by path rather than context\_wrap [\#413](https://github.com/RedHatInsights/insights-core/issues/413)
+
+**Fixed bugs:**
+
+- Specs with precommands that are not at the end don't work [\#664](https://github.com/RedHatInsights/insights-core/issues/664)
+- Specs may work differently when extracting from an archive vs in the Insights client. [\#594](https://github.com/RedHatInsights/insights-core/issues/594)
+
+**Closed issues:**
+
+- Python 3 Issue in Client  [\#1322](https://github.com/RedHatInsights/insights-core/issues/1322)
+- Research options around customer notifications for updated uploader.json/egg [\#774](https://github.com/RedHatInsights/insights-core/issues/774)
+- Need to document how Specs work and how to test them [\#662](https://github.com/RedHatInsights/insights-core/issues/662)
+- Content for Custom Rules [\#293](https://github.com/RedHatInsights/insights-core/issues/293)
+- include and run custom rules during data collection on individual hosts [\#289](https://github.com/RedHatInsights/insights-core/issues/289)
+- Improve the examples in lvm.py [\#287](https://github.com/RedHatInsights/insights-core/issues/287)
+- SysctlConfInitramfs should be a Scannable, not a LogFileOutput [\#210](https://github.com/RedHatInsights/insights-core/issues/210)
+
 ## [insights-core-3.0.36-512](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.36-512) (2018-08-09)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.36-511...insights-core-3.0.36-512)
 
