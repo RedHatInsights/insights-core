@@ -56,83 +56,80 @@ def parse_selinux(parts):
 
 
 def parse(lines, root):
+    lines = iter(lines)
     results = {}
-    idx = 0
-    length = len(lines)
     while True:
-        while idx < length and not lines[idx]:
-            idx += 1
-        if idx == length:
-            break
-        line = lines[idx]
         try:
-            name = None
-            total = None
-            if line.endswith(":"):
-                name = line[:-1]
-                idx += 1
-                line = lines[idx].strip()
-            if line.startswith("total"):
-                total = int(line.split()[1])
-                idx += 1
-                line = lines[idx].strip()
+            line = next(lines)
+            while not(line):
+                line = next(lines)
+            try:
+                name = None
+                total = None
+                if line.endswith(":"):
+                    name = line[:-1]
+                    line = next(lines).strip()
+                if line.startswith("total"):
+                    total = int(line.split()[1])
+                    line = next(lines).strip()
 
-            if not name and not total:
-                idx += 1
-                continue
-
-            name = name or root
-            dirs = []
-            ents = {}
-            files = []
-            specials = []
-            while line and line[0] in PERMBITS:
-                parts = line.split(None, 4)
-                perms = parts[0]
-                if len(perms) < 10:
-                    idx += 1
-                    line = lines[idx]
+                if not name and not total:
                     continue
-                typ = perms[0]
-                entry = {
-                    "type": typ,
-                    "perms": perms[1:]
+
+                name = name or root
+                dirs = []
+                ents = {}
+                files = []
+                specials = []
+                while line and line[0] in PERMBITS:
+                    parts = line.split(None, 4)
+                    perms = parts[0]
+                    if len(perms) < 10:
+                        line = next(lines).strip()
+                        continue
+                    typ = perms[0]
+                    entry = {
+                        "type": typ,
+                        "perms": perms[1:]
+                    }
+
+                    if parts[1][0].isdigit():
+                        rest = parse_non_selinux(parts[1:])
+                    else:
+                        rest = parse_selinux(parts[1:])
+                    entry.update(rest)
+                    entry["raw_entry"] = line
+                    entry["dir"] = name
+                    nm = entry["name"]
+                    ents[nm] = entry
+                    if typ not in "bcd":
+                        files.append(nm)
+                    elif typ == "d":
+                        dirs.append(nm)
+                    elif typ in "bc":
+                        specials.append(nm)
+                    try:
+                        line = next(lines).strip()
+                    except StopIteration:
+                        break
+
+                if total is None:
+                    total = len(ents)
+
+                result = {
+                    "name": name,
+                    "total": total,
+                    "entries": ents,
+                    "files": files,
+                    "dirs": dirs,
+                    "specials": specials
                 }
-
-                if parts[1][0].isdigit():
-                    rest = parse_non_selinux(parts[1:])
-                else:
-                    rest = parse_selinux(parts[1:])
-                entry.update(rest)
-                entry["raw_entry"] = line
-                entry["dir"] = name
-                nm = entry["name"]
-                ents[nm] = entry
-                if typ not in "bcd":
-                    files.append(nm)
-                elif typ == "d":
-                    dirs.append(nm)
-                elif typ in "bc":
-                    specials.append(nm)
-                idx += 1
-                if idx < length:
-                    line = lines[idx].strip()
-                else:
-                    break
-
-            if total is None:
-                total = len(ents)
-
-            result = {
-                "name": name,
-                "total": total,
-                "entries": ents,
-                "files": files,
-                "dirs": dirs,
-                "specials": specials
-            }
-            results[result["name"]] = result
-        except:
-            idx += 1
-            log.info("Failed to parse: %s" % line)
+                results[result["name"]] = result
+            except StopIteration:
+                raise
+            except Exception:
+                line = next(lines)
+                log.info("Failed to parse: %s" % line)
+        except StopIteration:
+            break
     return results
