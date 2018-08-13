@@ -1,5 +1,5 @@
 """
-InitProcessCgroup - File ``/sys/fs/cgroup/cpuset/cpuset.cpus``
+CpuSetCpus - File ``/sys/fs/cgroup/cpuset/cpuset.cpus``
 ==============================================================
 
 This parser reads the content of ``/sys/fs/cgroup/cpuset/cpuset.cpus``.
@@ -7,16 +7,17 @@ This file shows the default cgroup cpuset.cpu of system. The format
 of the content is string including comma.
 """
 
-from .. import parser, CommandParser, LegacyItemAccess
+from .. import parser, CommandParser
 from insights.specs import Specs
 
 
 @parser(Specs.cpuset_cpus)
-class CpusetCpus(CommandParser, LegacyItemAccess):
+class CpusetCpus(CommandParser):
     """
     Class ``CpusetCpus`` parses the content of the ``/sys/fs/cgroup/cpuset/cpuset.cpus``.
 
     Attributes:
+        cpuset (lis): It is used to show the list of allowed cpu.
 
         cpu_number (int): It is used to display the number of allowed cpu.
 
@@ -27,25 +28,21 @@ class CpusetCpus(CommandParser, LegacyItemAccess):
     Examples:
         >>> type(cpusetinfo)
         <class 'insights.parsers.cpuset_cpus.CpusetCpus'>
-        >>> cpusetinfo.data
+        >>> cpusetinfo.cpuset
         ["0", "2", "3", "4", "7"]
         >>> cpusetinfo.cpu_number
         5
     """
 
     def parse_content(self, content):
-        self.data = []
+        self.cpuset = []
         self.cpu_number = 0
         values = content[0].strip().split(",")
         for value in values:
             if "-" in value:
-                # Parser the case that the value is like "2-4"
+                # Parse the value like "2-4"
                 start, end = value.split("-")
-                startint = int(start)
-                endint = int(end)
-                while startint <= endint:
-                    self.data.append(str(startint))
-                    startint = startint + 1
+                self.cpuset.extend([str(i) for i in range(int(start), int(end) + 1)])
             else:
-                self.data.append(value)
-        self.cpu_number = len(self.data)
+                self.cpuset.append(value)
+        self.cpu_number = len(self.cpuset)
