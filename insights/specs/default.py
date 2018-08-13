@@ -112,7 +112,6 @@ class DefaultSpecs(Specs):
     corosync = simple_file("/etc/sysconfig/corosync")
 
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
-    cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
     cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
     cpu_smt_control = simple_file("sys/devices/system/cpu/smt/control")
@@ -124,6 +123,7 @@ class DefaultSpecs(Specs):
     # why the /cpuinfo?
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+    cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
