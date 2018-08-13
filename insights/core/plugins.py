@@ -4,7 +4,6 @@ specializes their interfaces and execution model where required.
 """
 
 import logging
-import sys
 import traceback
 
 from insights.core import dr
@@ -323,25 +322,3 @@ class _make_skip(Response):
                                         rule_fqdn=rule_fqdn,
                                         reason=reason,
                                         details=details)
-
-
-try:
-    from jinja2 import Template
-
-    def get_content(obj, key):
-        mod = sys.modules[obj.__module__]
-        c = getattr(mod, "CONTENT", None)
-        if c:
-            if isinstance(c, dict) and key:
-                return c.get(key)
-            return c
-
-    def format_rule(comp, val):
-        content = get_content(comp, val.get_key())
-        if content:
-            return Template(content).render(val)
-        return str(val)
-
-    dr.set_formatter(format_rule, rule)
-except:
-    pass

@@ -55,6 +55,7 @@ develop = set([
     'requests==2.13.0',
     'wheel',
     'ipython<6',
+    'colorama',
 ])
 
 optional = set([
