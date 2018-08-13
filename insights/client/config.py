@@ -521,7 +521,7 @@ class InsightsConfig(object):
         if self.obfuscate_hostname and not self.obfuscate:
             raise ValueError(
                 'Option `obfuscate_hostname` requires `obfuscate`')
-        if self.analyze_image_id is not None and len(self.analyze_image_id < 12):
+        if self.analyze_image_id is not None and len(self.analyze_image_id) < 12:
             raise ValueError(
                 'Image/Container ID must be at least twelve characters long.')
         if self.from_stdin and self.from_file:
@@ -542,10 +542,11 @@ class InsightsConfig(object):
         '''
         self.no_upload = self.no_upload or self.to_stdout or self.offline
         self.auto_update = self.auto_update and not self.offline
-        self.analyze_container = (self.analyze_container or
-                                  self.analyze_file or
-                                  self.analyze_mountpoint or
-                                  self.analyze_image_id)
+        if (self.analyze_container or
+           self.analyze_file or
+           self.analyze_mountpoint or
+           self.analyze_image_id):
+            self.analyze_container = True
         self.to_stdout = (self.to_stdout or
                           self.from_stdin or
                           self.from_file)
