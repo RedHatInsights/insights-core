@@ -6,7 +6,6 @@ import six
 import traceback
 
 from collections import defaultdict
-from contextlib import contextmanager
 from glob import glob
 
 from insights.core import blacklist, dr
@@ -83,8 +82,16 @@ class ContentProvider(object):
     def load(self):
         raise NotImplemented()
 
-    @contextmanager
     def stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        st = self._stream()
+        for l in next(st):
+            yield l.rstrip("\n")
+        st.send(None)
+
+    def _stream(self):
         raise NotImplemented()
 
     @property
@@ -176,8 +183,7 @@ class TextFileProvider(FileProvider):
                 results = [l.rstrip("\n") for l in f]
         return results
 
-    @contextmanager
-    def stream(self):
+    def _stream(self):
         """
         Returns a generator of lines instead of a list of lines.
         """
@@ -185,15 +191,18 @@ class TextFileProvider(FileProvider):
             raise self._exception
         try:
             if self._content:
-                yield streams.reader(self._content)
+                yield self._content
+                raise StopIteration
             filters = get_filters(self.ds) if self.ds else None
             if filters:
                 cmd = ["grep", "-F", "\n".join(filters), self.path]
                 with streams.stream(cmd, env=SAFE_ENV) as s:
-                    yield streams.reader(s)
+                    yield s
             else:
                 with open(self.path, "rU") as f:  # universal newlines
-                    yield streams.reader(f)
+                    yield f
+        except StopIteration:
+            raise
         except Exception as ex:
             self._exception = ex
             raise ContentException(str(ex))
@@ -244,8 +253,7 @@ class CommandOutputProvider(ContentProvider):
             output = raw
         return output
 
-    @contextmanager
-    def stream(self):
+    def _stream(self):
         """
         Returns a generator of lines instead of a list of lines.
         """
@@ -253,15 +261,18 @@ class CommandOutputProvider(ContentProvider):
             raise self._exception
         try:
             if self._content:
-                yield streams.reader(self._content)
+                yield self._content
+                raise StopIteration
             filters = get_filters(self.ds) if self.ds else None
             if filters:
                 grep = ["grep", "-F", "\n".join(filters)]
                 with self.ctx.connect(self.cmd, grep, env=SAFE_ENV, timeout=self.timeout) as s:
-                    yield streams.reader(s)
+                    yield s
             else:
                 with self.ctx.stream(self.cmd, env=SAFE_ENV, timeout=self.timeout) as s:
-                    yield streams.reader(s)
+                    yield s
+        except StopIteration:
+            raise
         except Exception as ex:
             self._exception = ex
             raise ContentException(str(ex))

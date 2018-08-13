@@ -112,9 +112,8 @@ class Context(object):
             else:
                 setattr(self, p.name, create_product(self.metadata, self.hostname))
 
-    @contextmanager
     def stream(self):
-        yield iter(self.content)
+        return iter(self.content)
 
     def product(self):
         for pname in PRODUCT_NAMES:
