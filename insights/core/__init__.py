@@ -875,7 +875,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Use all the defined scanners to search the log file, setting the
         properties defined in the scanner.
         """
-        self.lines = list(content)
+        self.lines = content
         for scanner in self.scanners:
             scanner(self)
 
