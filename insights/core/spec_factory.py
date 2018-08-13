@@ -83,6 +83,10 @@ class ContentProvider(object):
     def load(self):
         raise NotImplemented()
 
+    @contextmanager
+    def stream(self):
+        raise NotImplemented()
+
     @property
     def content(self):
         if self._exception:

@@ -98,11 +98,8 @@ class StreamParser(Parser):
     """
 
     def _handle_content(self, context):
-        if hasattr(context, "stream"):
-            with context.stream() as lines:
-                self.parse_content(lines)
-        else:
-            self.parse_content(context.content)
+        with context.stream() as lines:
+            self.parse_content(lines)
 
 
 @serializer(Parser)
