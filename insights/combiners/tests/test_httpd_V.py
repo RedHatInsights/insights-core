@@ -1,5 +1,5 @@
 from insights.parsers.redhat_release import RedhatRelease
-from insights.parsers.ps import PsAuxww
+from insights.parsers.ps import PsAuxcww
 from insights.parsers.httpd_V import HttpdV as HV
 from insights.parsers.httpd_V import HttpdWorkerV as HWV
 from insights.parsers.httpd_V import HttpdEventV as HEV
@@ -98,7 +98,7 @@ def test_httpd_V_RHEL6():
     hv1 = HV(context_wrap(HTTPDV1))
     hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
     hv3 = HEV(context_wrap(HTTPDV3, path='httpd.event_-V'))
-    ps = PsAuxww(context_wrap(PS_WORKER))
+    ps = PsAuxcww(context_wrap(PS_WORKER))
     rh = RedhatRelease(context_wrap(RHEL6))
     result = HttpdV(rh, ps, hv1, hv3, hv2)
     assert result["Server MPM"] == "worker"
@@ -109,7 +109,7 @@ def test_httpd_V_RHEL6():
     assert result['Server compiled with']['APR_HAVE_IPV6'] == "IPv4-mapped addresses enabled"
     assert result['Server compiled with']['DEFAULT_PIDLOG'] == "/run/httpd/httpd.pid"
 
-    ps = PsAuxww(context_wrap(PS_EVENT))
+    ps = PsAuxcww(context_wrap(PS_EVENT))
     result = HttpdV(rh, ps, hv1, hv3, hv2)
     assert result["Server MPM"] == "event"
     assert result["Server version"] == "apache/2.4.6 (red hat enterprise linux)"
@@ -122,7 +122,7 @@ def test_httpd_V_RHEL7():
     hv1 = HV(context_wrap(HTTPDV1))
     hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
     hv3 = HEV(context_wrap(HTTPDV3, path='httpd.event_-V'))
-    ps = PsAuxww(context_wrap(PS_WORKER))
+    ps = PsAuxcww(context_wrap(PS_WORKER))
     rh = RedhatRelease(context_wrap(RHEL7))
     result = HttpdV(rh, ps, hv1, hv3, hv2)
     assert result["Server MPM"] == "prefork"
@@ -137,7 +137,7 @@ def test_httpd_V_RHEL7():
 def test_httpd_V_failed():
     hv1 = HV(context_wrap(HTTPDV1))
     hv2 = HWV(context_wrap(HTTPDV2, path='httpd.worker_-V'))
-    ps = PsAuxww(context_wrap(PS_EVENT))
+    ps = PsAuxcww(context_wrap(PS_EVENT))
     rh = RedhatRelease(context_wrap(RHEL6))
     with pytest.raises(SkipComponent) as sc:
         HttpdV(rh, ps, hv1, None, hv2)
