@@ -123,6 +123,7 @@ class DefaultSpecs(Specs):
     # why the /cpuinfo?
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+    cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
