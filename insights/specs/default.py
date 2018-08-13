@@ -398,7 +398,7 @@ class DefaultSpecs(Specs):
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
-    neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
+    neutron_ovs_agent_log = first_file(["/var/log/containers/neutron/openvswitch-agent.log", "/var/log/neutron/openvswitch-agent.log"])
     neutron_plugin_ini = simple_file("/etc/neutron/plugin.ini")
     neutron_server_log = simple_file("/var/log/neutron/server.log")
     nfnetlink_queue = simple_file("/proc/net/netfilter/nfnetlink_queue")
