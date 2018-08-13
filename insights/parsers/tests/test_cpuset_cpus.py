@@ -9,5 +9,5 @@ CPUSET_CPU = """
 
 def test_init_process_cgroup():
     cpusetinfo = cpuset_cpus.CpusetCpus(context_wrap(CPUSET_CPU))
-    assert cpusetinfo.data == ["0", "2", "3", "4", "7"]
+    assert cpusetinfo.cpuset == ["0", "2", "3", "4", "7"]
     assert cpusetinfo.cpu_number == 5
