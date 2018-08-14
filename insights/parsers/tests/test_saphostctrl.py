@@ -1,6 +1,8 @@
-from ...parsers import saphostctrl_instances
+from ...parsers import saphostctrl, ParseException
+from ...parsers.saphostctrl import SAPHostCtrlInstances
 from ...tests import context_wrap
-from doctest import testmod
+import doctest
+import pytest
 
 SAPHOSTCTRL_HOSTINSTANCES_DOCS = '''
 *********************************************************
@@ -21,23 +23,8 @@ SAPHOSTCTRL_HOSTINSTANCES_DOCS = '''
  FullQualifiedHostname , String , hdb90.example.com
  IPAddress , String , 10.0.0.90
  SapVersionInfo , String , 749, patch 211, changelist 1754007
+*********************************************************
 '''
-
-
-def test_saphostctrl_docs():
-    parser_under_test = saphostctrl_instances.SAPHostInstances(
-        context_wrap(SAPHOSTCTRL_HOSTINSTANCES_DOCS)
-    )
-    globs = {
-        'SAPHostInstances': saphostctrl_instances.SAPHostInstances,
-        'shared': {
-            saphostctrl_instances.SAPHostInstances: parser_under_test,
-        },
-        'instances': parser_under_test,
-    }
-    failed, total = testmod(saphostctrl_instances, globs=globs)
-    assert failed == 0
-
 
 SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
 *********************************************************
@@ -132,69 +119,51 @@ SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
  SapVersionInfo , String , 749, patch 200, changelist 1746260
 '''
 
-
-def test_saphostctrl():
-    sap = saphostctrl_instances.SAPHostInstances(
-        context_wrap(SAPHOSTCTRL_HOSTINSTANCES_GOOD)
-    )
-    assert hasattr(sap, 'data')
-    assert isinstance(sap.data, list)
-    assert len(sap.data) == 10
-    assert hasattr(sap, 'running_inst_types')
-    assert isinstance(sap.running_inst_types, set)
-    assert hasattr(sap, 'ignored_lines')
-    assert isinstance(sap.ignored_lines, list)
-    assert sap.ignored_lines == []
-
-    # Test Lssap-compatible properties
-    assert sap.version('D54') == '749, patch 401, changelist 1806777'
-    assert sap.version('D55') is None
-    assert sap.instances == [
-        'HDB88', 'HDB90', 'ERS08', 'ASCS07', 'DVEBMGS09', 'SCS10', 'HDB62',
-        'ASCS52', 'D54', 'SMDA91'
-    ]
-    # Can't test sid content directly because it's using a set and the output
-    # is in random order.
-    # assert sap.sid == [
-    #     'D89', 'D90', 'D79', 'D79', 'D79', 'D80', 'D62', 'D52', 'D52', 'SMA'
-    # ]
-    for sid in ['D89', 'D90', 'D79', 'D80', 'D62', 'D52', 'SMA']:
-        assert sid in sap.sid
-    assert sap.is_netweaver()
-    assert sap.is_hana()
-    assert sap.is_ascs()
-
-    # Test search interface
-
-
 SAPHOSTCTRL_HOSTINSTANCES_BAD = '''
  CreationClassName , String
  SID , String , D89
  SystemNumber , String , 88
 '''
 
+SAPHOSTCTRL_HOSTINSTANCES_BAD1 = '''
+ CreationClassName , String , SAPInstance
+ SID , String , D89
+ SystemNumber , String , 88
+'''
+
+
+def test_saphostctrl_docs():
+    globs = {
+        'sap_inst': SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_DOCS))
+    }
+    failed, total = doctest.testmod(saphostctrl, globs=globs)
+    assert failed == 0
+
+
+def test_saphostctrl():
+    sap = SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_GOOD))
+    assert len(sap) == 10
+    assert sap.data[-2]['SapVersionInfo'] == '749, patch 401, changelist 1806777'
+    assert sorted(sap.instances) == sorted([
+        'HDB88', 'HDB90', 'ERS08', 'ASCS07', 'DVEBMGS09', 'SCS10', 'HDB62',
+        'ASCS52', 'D54', 'SMDA91'
+    ])
+    for sid in ['D89', 'D90', 'D79', 'D80', 'D62', 'D52', 'SMA']:
+        assert sid in sap.sids
+    assert sorted(sap.types) == sorted([
+        'HDB', 'ERS', 'ASCS', 'DVEBMGS', 'SCS', 'D', 'SMDA'
+    ])
+
 
 def test_saphostctrl_bad():
-    sap = saphostctrl_instances.SAPHostInstances(
-        context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD)
-    )
-    assert hasattr(sap, 'data')
-    assert isinstance(sap.data, list)
-    assert len(sap.data) == 1
-    assert hasattr(sap, 'running_inst_types')
-    assert isinstance(sap.running_inst_types, set)
-    assert sap.running_inst_types == set()
-    assert hasattr(sap, 'ignored_lines')
-    assert isinstance(sap.ignored_lines, list)
-    assert sap.ignored_lines == ['CreationClassName , String']
+    with pytest.raises(ParseException) as pe:
+        SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD))
+    assert "Incorrect line: 'CreationClassName , String'" in str(pe)
 
-    sap = saphostctrl_instances.SAPHostInstances(context_wrap(''))
-    assert hasattr(sap, 'data')
-    assert isinstance(sap.data, list)
-    assert sap.data == []
-    assert hasattr(sap, 'running_inst_types')
-    assert isinstance(sap.running_inst_types, set)
-    assert sap.running_inst_types == set()
-    assert hasattr(sap, 'ignored_lines')
-    assert isinstance(sap.ignored_lines, list)
-    assert sap.ignored_lines == []
+    with pytest.raises(ParseException) as pe:
+        SAPHostCtrlInstances(context_wrap(''))
+    assert "Incorrect content: '[]'" in str(pe)
+
+    with pytest.raises(ParseException) as pe:
+        SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD1))
+    assert "Incorrect content." in str(pe)
