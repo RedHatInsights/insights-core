@@ -328,30 +328,12 @@ class InsightsClient(object):
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
-    def upload(self, path, rotate_eggs=True):
+    def upload(self, path):
         """
             returns (int): upload status code
         """
         # do the upload
         upload_results = client.upload(self.config, self.connection, path)
-        if upload_results:
-
-            # delete the archive
-            if self.config.keep_archive:
-                logger.info('Insights archive retained in ' + path)
-            else:
-                client.delete_archive(path)
-
-            # if we are rotating the eggs and success on upload do rotation
-            if rotate_eggs:
-                try:
-                    self.rotate_eggs()
-                except IOError:
-                    message = ("Failed to rotate %s to %s" %
-                               (constants.insights_core_newest,
-                                constants.insights_core_last_stable))
-                    logger.debug(message)
-                    raise IOError(message)
 
         # return api response
         return upload_results
