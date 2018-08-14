@@ -1,12 +1,20 @@
 """
-Show which components would run given a set that have already executed.
+Allow users to interrogate components.
+
+``insights-info foo bar baz`` will search for all datasources that might handle
+foo, bar, or baz files or commands along with all components that could be
+activated if they were present and valid.
+
+``insights-info -i insights.specs.Specs.hosts`` will display dependency
+information about the hosts datasource. There are several other options to
+the script. ``insights-info -h`` for more info.
 """
 from __future__ import print_function
 import argparse
 import logging
 import re
 
-from insights import dr
+from insights import dr, get_filters
 from insights.core.plugins import datasource, is_type
 from insights.core import spec_factory as sf
 
@@ -57,9 +65,10 @@ def glob2re(pat):
 
 def parse_args():
     p = argparse.ArgumentParser(__doc__.strip())
-    p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
-    p.add_argument("-f", "--files", help="Comma separated list of paths or commands to match.")
+    p.add_argument("paths", nargs="*", help="Archive or directory to analyze.")
     p.add_argument("-c", "--components", help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.")
+    p.add_argument("-i", "--info", help="Comma separated list of components to get dependency info about.", action="store_true")
+    p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
     p.add_argument("-t", "--types", help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.")
     p.add_argument("-v", "--verbose", help="Print component dependencies.", action="store_true")
     return p.parse_args()
@@ -114,19 +123,19 @@ def get_datasources():
 
 def matches(d, path):
     if isinstance(d, sf.simple_file):
-        return d.path.strip("/") == path.strip("/")
+        return d.path.strip("/").startswith(path.strip("/"))
 
     if isinstance(d, sf.glob_file):
         return any(re.match(glob2re(pat), path) and not d.ignore_func(path) for pat in d.patterns)
 
     if isinstance(d, sf.simple_command):
-        return d.cmd.strip("/") == path.strip("/")
+        return path.strip("/") in d.cmd.strip("/")
 
     if isinstance(d, sf.first_file):
-        return any(p.strip("/") == path.strip("/") for p in d.paths)
+        return any(p.strip("/").startswith(path.strip("/")) for p in d.paths)
 
     if isinstance(d, sf.foreach_execute):
-        return d.cmd.strip("/").startswith(path.strip("/"))
+        return path.strip("/") in d.cmd.strip("/")
 
     if isinstance(d, sf.foreach_collect):
         return d.path.strip("/").startswith(path.strip("/")) and not d.ignore_func(path)
@@ -135,7 +144,6 @@ def matches(d, path):
 def get_matching_datasources(paths):
     if not paths:
         return []
-    paths = [p.strip() for p in paths.split(",")]
     ds = get_datasources()
     results = set()
     for path in paths:
@@ -163,6 +171,50 @@ def dry_run(graph=dr.COMPONENTS[dr.GROUPS.single], broker=None):
             yield c
 
 
+def dump_ds(d, space=""):
+    dbl_space = space * 2
+    delegate = dr.get_delegate(d)
+    try:
+        print(space + "Class: %s" % d.__class__)
+    except:
+        pass
+
+    try:
+        print(space + "Filtered: %s" % delegate.filterable)
+    except:
+        pass
+
+    print(space + "Raw: %s" % delegate.raw)
+    print(space + "Multioutput: %s" % delegate.multi_output)
+
+    if isinstance(d, sf.simple_file):
+        print(space + "Path: %s" % d.path)
+
+    if isinstance(d, (sf.simple_command, sf.foreach_execute)):
+        print(space + "Command: %s" % d.cmd)
+
+    if isinstance(d, sf.first_file):
+        print(space + "Paths:")
+        for p in d.paths:
+            print(dbl_space + p)
+
+    if isinstance(d, sf.glob_file):
+        print(space + "Patterns:")
+        for p in d.patterns:
+            print(dbl_space + p)
+        print(space + "Ignore: %s" % d.ignore)
+
+    if isinstance(d, sf.foreach_collect):
+        print(space + "Path: %s" % d.path)
+        print(space + "Ignore: %s" % d.ignore)
+
+    filters = get_filters(d)
+    if filters:
+        print(space + "Filters:")
+        for f in filters:
+            print(dbl_space + f)
+
+
 def print_component(comp, verbose=False):
     print(dr.get_name(comp))
 
@@ -173,43 +225,65 @@ def print_component(comp, verbose=False):
     dbl_space = space * 2
 
     d = dr.get_delegate(comp)
+    print(space + "Type: %s" % dr.get_name(d.type))
+    if is_type(comp, datasource):
+        dump_ds(comp, space=space)
+
+    print()
     if d.requires:
-        print(space + "Requires")
+        print(space + "Requires:")
         for r in d.requires:
             print(dbl_space + dr.get_name(r))
     else:
-        print(space + "Requires nothing")
+        print(space + "Requires: nothing")
 
     if d.at_least_one and d.at_least_one[0]:
         for one in d.at_least_one:
-            print(space + "At least one of")
+            print(space + "At least one of:")
             for o in one:
                 print(dbl_space + dr.get_name(o))
 
     if d.optional:
-        print(space + "Optional")
+        print(space + "Optional:")
         for r in d.optional:
+            print(dbl_space + dr.get_name(r))
+
+    dependents = dr.get_dependents(comp)
+    if dependents:
+        print(space + "Dependents:")
+        for r in sorted(dependents, key=dr.get_name):
             print(dbl_space + dr.get_name(r))
     print()
 
 
 def print_results(results, types, verbose):
-    print("Could have run:")
-    print()
     for r in results:
         if not types or is_type(r, types):
             print_component(r, verbose=verbose)
 
 
+def dump_info(comps):
+    for c in comps:
+        comp = dr.get_component(c)
+        if not comp:
+            print("Unknown component: %s" % c)
+        else:
+            print_component(comp, verbose=True)
+
+
 def main():
     args = parse_args()
-
     load_default_components()
     preload_components(args.preload)
+
+    if args.info:
+        dump_info(args.paths)
+        return
+
     types = get_components(args.types, "insights.core.plugins")
 
     components = get_components(args.components, "insights.specs.Specs")
-    ds = get_matching_datasources(args.files)
+    ds = get_matching_datasources(args.paths)
 
     broker = create_broker(components + ds)
     results = dry_run(broker=broker)

@@ -266,8 +266,9 @@ class InsightsConnection(object):
         return True
 
     def _generate_cert_str(self, cert_data, prefix):
-        return prefix + '/'.join(['='.join(a) for a in
-                                  cert_data.get_components()])
+        return prefix + '/'.join(
+                [a[0].decode() + '=' + a[1].decode()
+                    for a in cert_data.get_components()])
 
     def _test_openssl(self):
         '''
@@ -292,7 +293,7 @@ class InsightsConnection(object):
                 logger.debug(e)
                 logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
                 return False
-            sock.send(connect_str)
+            sock.send(connect_str.encode())
             res = sock.recv(4096)
             if '200 Connection established' not in res:
                 logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)

@@ -9,7 +9,7 @@ use ``PsAuxcww`` parsers to determine if one semaphore is orphan.
 """
 
 from insights.core.plugins import combiner
-from insights.parsers.ps import PsAuxww
+from insights.parsers.ps import PsAuxcww
 from insights.parsers.ipcs_sem import IpcsS, IpcsSI
 
 
@@ -32,7 +32,7 @@ class IpcsSemaphore(object):
             setattr(self, k, v)
 
 
-@combiner(IpcsS, IpcsSI, PsAuxww)
+@combiner(IpcsS, IpcsSI, PsAuxcww)
 class IpcsSemaphores(object):
     """
     Class for parsing all semaphores. Will generate IpcsSemaphore objects for

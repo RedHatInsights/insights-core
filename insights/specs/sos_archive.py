@@ -26,7 +26,7 @@ class SosSpecs(Specs):
     df__alP = simple_file("sos_commands/filesys/df_-alP")
     df__li = simple_file("sos_commands/filesys/df_-li")
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
-    docker_list_containers = simple_file("sos_commands/docker_ps_-a")
+    docker_list_containers = first_file(["sos_commands/docker/docker_ps", "sos_commands/docker/docker_ps_-a"])
     dmesg = simple_file("sos_commands/kernel/dmesg")
     dmidecode = simple_file("dmidecode")
     dmsetup_info = simple_file("sos_commands/devicemapper/dmsetup_info_-c")
