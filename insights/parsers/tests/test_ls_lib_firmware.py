@@ -1,3 +1,6 @@
+import doctest
+
+from insights.parsers import ls_lib_firmware
 from insights.parsers.ls_lib_firmware import LsLibFW
 from insights.tests import context_wrap
 
@@ -250,6 +253,22 @@ total 136K
 
 def test_ls_lib_firmware():
     lslib = LsLibFW(context_wrap(LS_LIB_FW))
-    assert lslib.data["/lib/firmware/bnx2"]["bnx2-mips-06-6.2.1.fw"] == ['-rw-r--r--.', '1', 'root', 'root', '91K','May', '24', '18:46']
-    assert lslib.check_file_present("/lib/firmware/bnx2/bnx2-mips-06-6.2.1.fw") == True
-    assert lslib.get_file_details("/lib/firmware/bnx2/bnx2-mips-06-6.2.1.fw") == ['-rw-r--r--.', '1', 'root', 'root', '91K','May', '24', '18:46']
+    assert lslib.data["/lib/firmware/bnx2"]["bnx2-mips-06-6.2.1.fw"] == ['-rw-r--r--.', '1', 'root', 'root', '91K',
+                                                                         'May', '24', '18:46']
+    assert lslib.path_exist("/lib/firmware/bnx2/bnx2-mips-06-6.2.1.fw") is True
+    assert lslib.get_file_details("/lib/firmware/bnx2/bnx2-mips-06-6.2.1.fw") == ['-rw-r--r--.', '1', 'root', 'root',
+                                                                                  '91K', 'May', '24', '18:46']
+    assert lslib.path_exist("/lib/firmware/bnx2/") is True
+    assert lslib.path_exist("/lib/firmware/bnx2x/") is True
+    assert lslib.path_exist("/lib/firmware/bnx2x/") is True
+    assert lslib.get_file_details("/lib/firmware/bnx2/anx2-mips-06-6.2.1.fw") is None
+    assert lslib.path_exist("bnx2-mips-06-6.2.1.fw") is False
+    assert lslib.get_file_details("") is None
+
+
+def test_ls_lib_firmware_doc_examples():
+    env = {
+        'lslibfw': LsLibFW(context_wrap(LS_LIB_FW)),
+    }
+    failed, total = doctest.testmod(ls_lib_firmware, globs=env)
+    assert failed == 0
