@@ -166,11 +166,14 @@ def collect_and_output(client, config):
         else:
             logger.info('Archive saved at %s', tar_file)
         if resp:
+            if config["to_json"]:
+                print(json.dumps(resp))
+
             # delete the archive
             if config.keep_archive:
                 logger.info('Insights archive retained in ' + tar_file)
             else:
-                client.delete_archive(tar_file)
+                client.delete_archive(tar_file, delete_parent_dir=True)
 
             # if we are rotating the eggs and success on upload do rotation
             try:
