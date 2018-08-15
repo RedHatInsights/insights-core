@@ -139,7 +139,7 @@ class Specs(SpecSet):
     hostname = RegistryPoint()
     hosts = RegistryPoint()
     hponcfg_g = RegistryPoint()
-    httpd_access_log = RegistryPoint()
+    httpd_access_log = RegistryPoint(filterable=True)
     httpd_conf = RegistryPoint(multi_output=True)
     httpd_conf_sos = RegistryPoint(multi_output=True)
     httpd_conf_scl_httpd24 = RegistryPoint(multi_output=True)
