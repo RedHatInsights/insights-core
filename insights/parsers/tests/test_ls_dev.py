@@ -53,8 +53,8 @@ def test_ls_dev():
         '.': {'group': '0', 'name': '.', 'links': 2, 'perms': 'rwxr-xr-x.',
               'raw_entry': 'drwxr-xr-x.  2 0 0  100 Jul 25 10:00 .', 'owner': '0',
               'date': 'Jul 25 10:00', 'type': 'd', 'size': 100, 'dir': '/dev/rhel'}}
-    assert ls_dev.listings.get("/dev/mapper")['files'] == ['control', 'docker-253:0-1443032-pool', 'rhel-home',
-
-                                                           'rhel-root', 'rhel-swap']
+    expected = ['docker-253:0-1443032-pool', 'rhel-home', 'rhel-root', 'rhel-swap']
+    actual = ls_dev.listings.get("/dev/mapper")['files']
+    assert actual == expected
 
     assert ls_dev.listings.get("/dev/mapper")['entries']['rhel-home']['link'] == "../dm-2"
