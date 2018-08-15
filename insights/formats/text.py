@@ -46,14 +46,13 @@ class HumanReadableFormat(Formatter):
         self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0}
         response = collections.namedtuple('response', 'color intl title')
         self.responses = {'skip': response(color=Fore.BLUE, intl='S', title="Total Skipped Due To Rule Dependencies "
-                                                                            "Not Met - " ),
+                                                                            "Not Met - "),
                           'pass': response(color=Fore.GREEN, intl='P', title="Total Return Type 'make_pass' - "),
                           'rule': response(color=Fore.RED, intl='R', title="Total Return Type "
                                                                            "'make_fail/make_response' - "),
-                          'metadata':response(color=Fore.YELLOW, intl='M', title="Total Return Type 'make_metedata' - "),
+                          'metadata': response(color=Fore.YELLOW, intl='M', title="Total Return Type 'make_metedata' - "),
                           'metadata_key': response(color=Fore.MAGENTA, intl='K', title="Total Return Type "
                                                                                        "'make_metadata_key' - ")}
-
 
     def progress_bar(self, c, broker):
         """ Print the formated progress information for the processed return types
@@ -153,4 +152,3 @@ class HumanReadableFormat(Formatter):
 
         for c in self.counts:
             print(self.responses[c].color + self.responses[c].title + str(self.counts[c]) + Style.RESET_ALL)
-
