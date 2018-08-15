@@ -5,11 +5,12 @@ from pprint import pprint
 from insights import dr, datasource, rule
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, render
+import collections
 
 try:
     from colorama import Fore, Style
 except ImportError:
-    print("Install colorama if console colors are prefered.")
+    print("Install colorama if console colors are preferred.")
 
     class Default(type):
         def __getattr__(*args):
@@ -43,6 +44,16 @@ class HumanReadableFormat(Formatter):
         self.tracebacks = args.tracebacks
         self.dropped = args.dropped
         self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0}
+        response = collections.namedtuple('response', 'color intl title')
+        self.responses = {'skip': response(color=Fore.BLUE, intl='S', title="Total Skipped Due To Rule Dependencies "
+                                                                            "Not Met - " ),
+                          'pass': response(color=Fore.GREEN, intl='P', title="Total Return Type 'make_pass' - "),
+                          'rule': response(color=Fore.RED, intl='R', title="Total Return Type "
+                                                                           "'make_fail/make_response' - "),
+                          'metadata':response(color=Fore.YELLOW, intl='M', title="Total Return Type 'make_metedata' - "),
+                          'metadata_key': response(color=Fore.MAGENTA, intl='K', title="Total Return Type "
+                                                                                       "'make_metadata_key' - ")}
+
 
     def progress_bar(self, c, broker):
         """ Print the formated progress information for the processed return types
@@ -50,16 +61,8 @@ class HumanReadableFormat(Formatter):
         v = broker.get(c)
 
         if v:
-            if v["type"] == "skip":
-                print(Fore.BLUE + "S" + Style.RESET_ALL, end="")
-            elif v["type"] == "pass":
-                print(Fore.GREEN + "P" + Style.RESET_ALL, end="")
-            elif v["type"] == "rule":
-                print(Fore.RED + "R" + Style.RESET_ALL, end="")
-            elif v["type"] == "metadata":
-                print(Fore.YELLOW + "M" + Style.RESET_ALL, end="")
-            elif v["type"] == "metadata_key":
-                print(Fore.MAGENTA + "K" + Style.RESET_ALL, end="")
+            if v["type"] in self.responses:
+                print(self.responses[v["type"]].color + self.responses[v["type"]].intl + Style.RESET_ALL, end="")
             else:
                 print(".", end="")
         elif c in broker.exceptions:
@@ -74,7 +77,7 @@ class HumanReadableFormat(Formatter):
         broker.add_observer(self.progress_bar, rule)
 
     def postprocess(self, broker):
-        """Print heading for list of rules tseted and calls show_description to print list of rules and responses
+        """Print heading for list of rules tested and calls show_description to print list of rules and responses
         """
         if self.missing:
             self.show_missing(broker)
@@ -125,26 +128,14 @@ class HumanReadableFormat(Formatter):
             pprint(dropped, indent=4)
 
     def show_description(self, broker):
-        """ Prints the formated response for the matching return type
+        """ Prints the formatted response for the matching return type
         """
         def printit(c, v):
             name = None
 
-            if v["type"] == "skip":
+            if v["type"] in self.responses:
                 self.counts[v["type"]] += 1
-                name = Fore.BLUE + dr.get_name(c) + Style.RESET_ALL
-            elif v["type"] == "pass":
-                self.counts[v["type"]] += 1
-                name = Fore.GREEN + dr.get_name(c) + Style.RESET_ALL
-            elif v["type"] == "rule":
-                self.counts[v["type"]] += 1
-                name = Fore.RED + dr.get_name(c) + Style.RESET_ALL
-            elif v["type"] == "metadata":
-                self.counts[v["type"]] += 1
-                name = Fore.YELLOW + dr.get_name(c) + Style.RESET_ALL
-            elif v["type"] == "metadata_key":
-                self.counts[v["type"]] += 1
-                name = Fore.MAGENTA + dr.get_name(c) + Style.RESET_ALL
+                name = self.responses[v["type"]].color + dr.get_name(c) + Style.RESET_ALL
             if name:
                 print(name)
                 print('-' * len(name))
@@ -159,8 +150,7 @@ class HumanReadableFormat(Formatter):
         print(Fore.CYAN + '*' * 31 + Style.RESET_ALL)
         print(Fore.CYAN + "**** Counts By Return Type ****" + Style.RESET_ALL)
         print(Fore.CYAN + '*' * 31 + Style.RESET_ALL)
-        print(Fore.BLUE + "Total Skipped Due To Rule Dependencies Not Met - {}".format(self.counts['skip']) + Style.RESET_ALL)
-        print(Fore.GREEN + "Total Return Type 'make_pass' - {}".format(self.counts['pass']) + Style.RESET_ALL)
-        print(Fore.RED + "Total Return Type 'make_fail/make_response' - {}".format(self.counts['rule']) + Style.RESET_ALL)
-        print(Fore.YELLOW + "Total Return Type 'make_metedata' - {}".format(self.counts['metadata']) + Style.RESET_ALL)
-        print(Fore.MAGENTA + "Total Return Type 'make_metadata_key' - {}".format(self.counts['metadata_key']) + Style.RESET_ALL)
+
+        for c in self.counts:
+            print(self.responses[c].color + self.responses[c].title + str(self.counts[c]) + Style.RESET_ALL)
+
