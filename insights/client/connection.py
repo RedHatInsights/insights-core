@@ -696,7 +696,7 @@ class InsightsConnection(object):
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        headers = {'x-rh-collection-time': duration}
+        headers = {'x-rh-collection-time': str(duration)}
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
