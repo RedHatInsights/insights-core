@@ -438,7 +438,7 @@ def upload(config, pconn, tar_file, collection_duration=None):
     return api_response
 
 
-def delete_archive(path):
+def delete_archive(path, delete_parent_dir):
     removed_archive = False
 
     try:
@@ -448,11 +448,11 @@ def delete_archive(path):
         dirname = os.path.dirname
         abspath = os.path.abspath
         parent_tmp_dir = dirname(abspath(path))
-
-        logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
-        if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-            logger.debug("Removing %s", parent_tmp_dir)
-            shutil.rmtree(parent_tmp_dir)
+        if delete_parent_dir:
+            logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
+            if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
+                logger.debug("Removing %s", parent_tmp_dir)
+                shutil.rmtree(parent_tmp_dir)
 
     except:
         logger.error("Error removing %s", path)
