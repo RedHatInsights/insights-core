@@ -43,18 +43,27 @@ client = set([
 ])
 
 develop = set([
-    'flake8==3.3.0',
+    'futures==3.0.5',
+    'requests==2.13.0',
+    'wheel',
+])
+
+docs = set([
+    'Sphinx',
+    'nbsphinx==0.3.1',
+    'sphinx_rtd_theme',
+    'ipython<6',
+])
+
+testing = set([
     'coverage==4.3.4',
     'pytest==3.0.6',
     'pytest-cov==2.4.0',
     'mock==2.0.0',
-    'Sphinx',
-    'nbsphinx==0.3.1',
-    'sphinx_rtd_theme',
-    'futures==3.0.5',
-    'requests==2.13.0',
-    'wheel',
-    'ipython<6',
+])
+
+flake8 = set([
+    'flake8==3.3.0',
 ])
 
 optional = set([
@@ -82,9 +91,12 @@ if __name__ == "__main__":
         package_data={'': ['LICENSE']},
         license='Apache 2.0',
         extras_require={
-            'develop': list(runtime | develop | client),
+            'develop': list(runtime | develop | client | docs | flake8 | testing),
             'client': list(runtime | client),
             'optional': list(optional),
+            'docs': list(docs),
+            'flake8': list(flake8 | client),
+            'testing': list(testing | client)
         },
         classifiers=[
             'Development Status :: 5 - Production/Stable',
