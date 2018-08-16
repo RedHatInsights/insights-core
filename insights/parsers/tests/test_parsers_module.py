@@ -310,6 +310,14 @@ def test_optlist_strip_quotes():
     assert d['key4'] == "inner'quotes"
 
 
+def test_optlist_with_spaces():
+    d = optlist_to_dict(
+        '''key1=foo,  key2=bar'''
+    )
+    assert 'key1' in d
+    assert 'key2' in d
+
+
 PS_AUX_TEST = """
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.0  0.0  19356  1544 ?        Ss   May31   0:01 /sbin/init
