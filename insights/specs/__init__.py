@@ -368,6 +368,7 @@ class Specs(SpecSet):
     rsyslog_conf = RegistryPoint()
     running_java = RegistryPoint()
     samba = RegistryPoint()
+    sap_hdb_version = RegistryPoint(multi_output=True)
     sap_host_profile = RegistryPoint()
     saphostctl_getcimobject_sapinstance = RegistryPoint()
     saphostexec_status = RegistryPoint()
