@@ -13,13 +13,11 @@ from insights.core.filters import get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.core.serde import deserializer, serializer
-from insights.util import subproc
+from insights.util import streams, which
 import shlex
 
 log = logging.getLogger(__name__)
 
-
-COMMANDS = {}
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
@@ -84,6 +82,18 @@ class ContentProvider(object):
     def load(self):
         raise NotImplemented()
 
+    def stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        st = self._stream()
+        for l in next(st):
+            yield l.rstrip("\n")
+        st.send(None)
+
+    def _stream(self):
+        raise NotImplemented()
+
     @property
     def content(self):
         if self._exception:
@@ -110,7 +120,7 @@ class ContentProvider(object):
 
 
 class FileProvider(ContentProvider):
-    def __init__(self, relative_path, root="/", ds=None):
+    def __init__(self, relative_path, root="/", ds=None, ctx=None):
         super(FileProvider, self).__init__()
         self.root = root
         self.relative_path = relative_path.lstrip("/")
@@ -119,6 +129,7 @@ class FileProvider(ContentProvider):
         self.file_name = os.path.basename(self.path)
 
         self.ds = ds
+        self.ctx = ctx
         self.validate()
 
     def validate(self):
@@ -159,50 +170,112 @@ class TextFileProvider(FileProvider):
     """
 
     def load(self):
-
         filters = False
         if self.ds:
             filters = "\n".join(get_filters(self.ds))
         if filters:
             cmd = [["grep", "-F", filters, self.path]]
-            rc, out = subproc.call(cmd, shell=False, keep_rc=True, env=SAFE_ENV)
-            if rc == 0 and out != '':
-                results = out.splitlines()
-            else:
-                return []
+            rc, out = self.ctx.shell_out(cmd, keep_rc=True, env=SAFE_ENV)
+            self.rc = rc
+            return out
         else:
-            with open(self.path, "rU") as f:
+            with open(self.path, "rU") as f:  # universal newlines
                 results = [l.rstrip("\n") for l in f]
         return results
+
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        if self._exception:
+            raise self._exception
+        try:
+            if self._content:
+                yield self._content
+                raise StopIteration
+            filters = get_filters(self.ds) if self.ds else None
+            if filters:
+                cmd = ["grep", "-F", "\n".join(filters), self.path]
+                with streams.stream(cmd, env=SAFE_ENV) as s:
+                    yield s
+            else:
+                with open(self.path, "rU") as f:  # universal newlines
+                    yield f
+        except StopIteration:
+            raise
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
 
 
 class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, args=None, content=None, rc=None, split=True, keep_rc=False):
+    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
-        self.path = os.path.join("insights_commands", mangle_command(cmd))
         self.ctx = ctx
         # args are already interpolated into cmd. They're stored here for context."
         self.args = args
-        self._content = content
-        self.rc = rc
         self.split = split
         self.keep_rc = keep_rc
+        self.ds = ds
+        self.timeout = timeout
+
+        self.path = os.path.join("insights_commands", mangle_command(cmd))
+        self._content = None
+        self.rc = None
+
         self.validate()
 
     def validate(self):
         if not blacklist.allow_command(self.cmd):
             raise dr.SkipComponent()
 
+        if not which(shlex.split(self.cmd)[0]):
+            raise ContentException("Couldn't execute: %s" % self.cmd)
+
     def load(self):
-        if self.keep_rc:
-            self.rc, result = self.ctx.shell_out(self.cmd, self.split, keep_rc=True)
-            return result
+        if self.split:
+            filters = "\n".join(get_filters(self.ds))
+        if filters:
+            command = [shlex.split(self.cmd)] + [["grep", "-F", filters]]
+            raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
+                    timeout=self.timeout, env=SAFE_ENV)
         else:
-            return self.ctx.shell_out(self.cmd, self.split)
+            command = [shlex.split(self.cmd)]
+            raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
+                    timeout=self.timeout, env=SAFE_ENV)
+        if self.keep_rc:
+            self.rc, output = raw
+        else:
+            output = raw
+        return output
+
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        if self._exception:
+            raise self._exception
+        try:
+            if self._content:
+                yield self._content
+                raise StopIteration
+            filters = get_filters(self.ds) if self.ds else None
+            if filters:
+                grep = ["grep", "-F", "\n".join(filters)]
+                with self.ctx.connect(self.cmd, grep, env=SAFE_ENV, timeout=self.timeout) as s:
+                    yield s
+            else:
+                with self.ctx.stream(self.cmd, env=SAFE_ENV, timeout=self.timeout) as s:
+                    yield s
+        except StopIteration:
+            raise
+        except Exception as ex:
+            self._exception = ex
+            raise ContentException(str(ex))
 
     def __repr__(self):
         return 'CommandOutputProvider("%s")' % self.cmd
@@ -366,7 +439,7 @@ class simple_file(object):
 
     def __call__(self, broker):
         ctx = _get_context(self.context, broker)
-        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self)
+        return self.kind(ctx.locate_path(self.path), root=ctx.root, ds=self, ctx=ctx)
 
 
 class glob_file(object):
@@ -408,7 +481,7 @@ class glob_file(object):
                 if self.ignore_func(path) or os.path.isdir(path):
                     continue
                 try:
-                    results.append(self.kind(path[len(root):], root=root, ds=self))
+                    results.append(self.kind(path[len(root):], root=root, ds=self, ctx=ctx))
                 except:
                     log.debug(traceback.format_exc())
         if results:
@@ -464,7 +537,7 @@ class first_file(object):
         root = ctx.root
         for p in self.paths:
             try:
-                return self.kind(ctx.locate_path(p), root=root, ds=self)
+                return self.kind(ctx.locate_path(p), root=root, ds=self, ctx=ctx)
             except:
                 pass
         raise ContentException("None of [%s] found." % ', '.join(self.paths))
@@ -538,26 +611,13 @@ class simple_command(object):
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
-        COMMANDS[self] = cmd
         self.__name__ = self.__class__.__name__
         datasource(self.context, raw=self.raw)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
-        rc = None
-        if self.split:
-            filters = "\n".join(get_filters(self))
-        if filters:
-            command = [shlex.split(self.cmd)] + [["grep", "-F", filters]]
-            raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
-        else:
-            command = [shlex.split(self.cmd)]
-            raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
-        if self.keep_rc:
-            rc, result = raw
-        else:
-            result = raw
-        return CommandOutputProvider(self.cmd, ctx, split=self.split, content=result, rc=rc, keep_rc=self.keep_rc)
+        return CommandOutputProvider(self.cmd, ctx, split=self.split,
+                keep_rc=self.keep_rc, ds=self, timeout=self.timeout)
 
 
 class foreach_execute(object):
@@ -612,23 +672,12 @@ class foreach_execute(object):
         for e in source:
             try:
                 the_cmd = self.cmd % e
-                rc = None
-
-                if self.split:
-                    filters = "\n".join(get_filters(self))
-                if filters:
-                    command = [shlex.split(the_cmd)] + [["grep", "-F", filters]]
-                    raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
-                else:
-                    command = [shlex.split(the_cmd)]
-                    raw = ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc, timeout=self.timeout)
-                if self.keep_rc:
-                    rc, output = raw
-                else:
-                    output = raw
-                result.append(CommandOutputProvider(the_cmd, ctx, args=e, content=output, rc=rc, split=self.split,
-                                                    keep_rc=self.keep_rc))
+                cop = CommandOutputProvider(the_cmd, ctx, args=e,
+                        split=self.split, keep_rc=self.keep_rc, ds=self,
+                        timeout=self.timeout)
+                result.append(cop)
             except:
+                traceback.print_exc()
                 log.debug(traceback.format_exc())
         if result:
             return result
@@ -678,7 +727,7 @@ class foreach_collect(object):
                 if self.ignore_func(p) or os.path.isdir(p):
                     continue
                 try:
-                    result.append(self.kind(p[len(root):], root=root, ds=self))
+                    result.append(self.kind(p[len(root):], root=root, ds=self, ctx=ctx))
                 except:
                     log.debug(traceback.format_exc())
         if result:

@@ -79,12 +79,27 @@ class Parser(object):
         else:
             self.last_client_run = None
         self.args = context.args if hasattr(context, "args") else None
+        self._handle_content(context)
+
+    def _handle_content(self, context):
         self.parse_content(context.content)
 
     def parse_content(self, content):
         """This method must be implemented by classes based on this class."""
         msg = "Parser subclasses must implement parse_content(self, content)."
         raise NotImplementedError(msg)
+
+
+class StreamParser(Parser):
+    """
+    Parsers that don't have to store lines or look back in the data stream
+    should implement StreamParser instead of Parser as it is more memory
+    efficient. The only difference between StreamParser and Parser is that
+    StreamParser.parse_content will receive a generator instead of a list.
+    """
+
+    def _handle_content(self, context):
+        self.parse_content(context.stream())
 
 
 @serializer(Parser)
