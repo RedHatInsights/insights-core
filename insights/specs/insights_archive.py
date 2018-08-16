@@ -107,7 +107,7 @@ class InsightsArchiveSpecs(Specs):
     lsblk = simple_file("insights_commands/lsblk")
     lsblk_pairs = simple_file("insights_commands/lsblk_-P_-o_NAME_KNAME_MAJ_MIN_FSTYPE_MOUNTPOINT_LABEL_UUID_RA_RO_RM_MODEL_SIZE_STATE_OWNER_GROUP_MODE_ALIGNMENT_MIN-IO_OPT-IO_PHY-SEC_LOG-SEC_ROTA_SCHED_RQ-SIZE_TYPE_DISC-ALN_DISC-GRAN_DISC-MAX_DISC-ZERO")
     lscpu = simple_file("insights_commands/lscpu")
-    ls_lib_fw = simple_file("insights_commands/ls_-lARkhvX.lib.firmware")
+    ls_lib_fw = simple_file("insights_commands/ls_-lanR.lib.firmware")
     lsmod = simple_file("insights_commands/lsmod")
     lsof = simple_file("insights_commands/lsof")
     lspci = simple_file("insights_commands/lspci")
