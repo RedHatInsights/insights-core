@@ -341,6 +341,7 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_etc = simple_command("/bin/ls -lanR /etc")
+    ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
@@ -535,6 +536,28 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo")
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
+    saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
+
+    @datasource(saphostctl_listinstances, hostname, context=HostContext)
+    def sap_hana_sid(broker):
+        """
+        Command: Get the SID for running "HDB version".
+
+        Typical output of saphostctl_listinstances::
+        # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
+        Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
+
+        """
+        hana_ins = broker[DefaultSpecs.saphostctl_listinstances].content
+        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
+        results = set()
+        for ins in hana_ins:
+            ins_splits = ins.split(' - ')
+            if ins_splits[2].strip() == hn:
+                results.add(ins_splits[0].split()[-1].lower())
+        return list(results)
+
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
