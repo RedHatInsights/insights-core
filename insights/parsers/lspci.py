@@ -1,14 +1,8 @@
 """
-Lists ALL the PCI Devices With Details
-======================================
+LsPci - Command ``lspci -k``
+============================
 
-Parsers included in this module are:
-
-LsPci - command ``/sbin/lspci``
--------------------------------
-
-LsPciDriver - command ``/sbin/lspci -k``
-----------------------------------------
+To parse the PCI device information gathered from the ``/sbin/lspci -k`` command.
 
 """
 
@@ -16,11 +10,11 @@ from .. import LogFileOutput, parser, CommandParser, get_active_lines
 from insights.specs import Specs
 
 
-@parser(Specs.lspci_kernel)
-class LsPciDriver(CommandParser):
+@parser(Specs.lspci)
+class LsPci(CommandParser, LogFileOutput):
     """
-    This module provides methods to access driver information of PCI devices from
-    the ``/sbin/lspci -k`` command.
+    Class to parse the PCI device information gathered from the
+    ``/sbin/lspci -k`` command.
 
     Typical output of the ``lspci -k`` command is::
 
@@ -32,36 +26,48 @@ class LsPciDriver(CommandParser):
         00:02.0 PCI bridge: Intel Corporation 5520/5500/X58 I/O Hub PCI Express Root Port 2 (rev 13)
                 Kernel driver in use: pcieport
                 Kernel modules: shpchp
+        03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
+                Subsystem: Cisco Systems Inc Device 004a
+                Kernel driver in use: ixgbe
+                Kernel modules: ixgbe
         06:00.0 Ethernet controller: Intel Corporation 82598EB 10-Gigabit AF Dual Port Network Connection (rev 01)
                 Subsystem: Cisco Systems Inc Device 004a
                 Kernel driver in use: ixgbe
                 Kernel modules: ixgbe
-        06:00.1 Ethernet controller: Intel Corporation 82598EB 10-Gigabit AF Dual Port Network Connection (rev 01)
-                Subsystem: Cisco Systems Inc Device 004a
-                Kernel driver in use: ixgbe
-                Kernel modules: ixgbe
 
-    Example:
+    Examples:
+        >>> type(lspci)
+        <class 'insights.parsers.lspci.LsPci'>
+        >>> lspci.get("Intel Corporation")[0]['raw_message']
+        '00:00.0 Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
+        >>> len(lspci.get("Network controller"))
+        1
+        >>> "Centrino Advanced-N 6205" in lspci
+        True
+        >>> "0d:00.0" in lspci
+        False
+        >>> sorted(lspci.pci_dev_list)
+        ['00:00.0', '00:01.0', '00:02.0', '03:00.0', '06:00.0']
+        >>> lspci.pci_dev_details('00:00.0')['Subsystem']
+        'Cisco Systems Inc Device 0101'
+        >>> lspci.pci_dev_details('00:00.0')['Dev_Details']
+        'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'
 
-        >>> lspcidriv = shared[LsPciDriver]
-        >>> lspcidriv.pci_dev_list
-        ['00:00.0', '00:01.0', '00:02.0', '06:00.0', '06:00.1']
-        >>> lspcidriv.pci_dev_details('00:00.0')
-        {'Subsystem': 'Cisco Systems Inc Device 0101', 'Dev_Details': 'Host bridge: Intel Corporation 5500 I/O Hub to ESI Port (rev 13)'}
+    Attributes:
+        data (dict): Dict where the keys are the device number and values are
+            details of the device.
+        lines (list): List of details of each listed device, the same to the
+            values of `self.data`
+
     """
-
-    def __init__(self, *args, **kwargs):
-        self.data = {}
-        """dict: Dictionary service detail like active, running, exited, dead"""
-        super(LsPciDriver, self).__init__(*args, **kwargs)
-
     def parse_content(self, content):
-        """
-        Main parsing class method which stores all interesting data from the content.
-
-        Args:
-            content (context.content): Parser context content
-        """
+        # Use all the defined scanners to search the log file, setting the
+        # properties defined in the scanner.
+        self.lines = [l for l in content if len(l) > 0 and l[0].isdigit()]
+        for scanner in self.scanners:
+            scanner(self)
+        # Parse kernel driver lines
+        self.data = {}
         bus_device_function = ""
         for line in get_active_lines(content):
             parts = line.split(None)
@@ -90,56 +96,6 @@ class LsPciDriver(CommandParser):
     @property
     def pci_dev_list(self):
         """
-        It will return list of PCI devices.
-
-        Returns:
-            (list): Returns device list on successes. Returns `None` if device doesn't exists
+        The list of PCI devices.
         """
         return self.data.keys()
-
-
-@parser(Specs.lspci)
-class LsPci(CommandParser, LogFileOutput):
-    """
-    This module provides plugins access to the PCI device information gathered from
-    the ``/usr/sbin/lspci`` command.
-
-    Typical output of the ``lspci`` command is::
-
-        00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
-        00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
-        03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
-        0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
-
-    The data is exposed via the ``obj.lines`` attribute which is a list containing
-    each line in the output.  The data may also be filtered using the
-    ``obj.get("filter string")`` method.  This method will return a list of lines
-    containing only "filter string".  The ``in`` operator may also be used to test
-    whether a particular string is in the ``lspci`` output.  Other methods/operators
-    are also supported, see the :py:class:`insights.core.LogFileOutput` class for more information.
-
-    .. note::
-
-        The examples in this module may be executed with the following command:
-        ``python -m insights.parsers.lspci``
-
-    Examples:
-        >>> lspci_content = '''
-        ... 00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)
-        ... 00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)
-        ... 03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)
-        ... 0d:00.0 System peripheral: Ricoh Co Ltd PCIe SDXC/MMC Host Controller (rev 07)
-        ... '''.strip()
-        >>> from insights.tests import context_wrap
-        >>> shared = {LsPci: LsPci(context_wrap(lspci_content))}
-        >>> pci_info = shared[LsPci]
-        >>> pci_info.get("Intel Corporation")[0]['raw_message']
-        '00:00.0 Host bridge: Intel Corporation 2nd Generation Core Processor Family DRAM Controller (rev 09)', '00:02.0 VGA compatible controller: Intel Corporation 2nd Generation Core Processor Family Integrated Graphics Controller (rev 09)', '03:00.0 Network controller: Intel Corporation Centrino Advanced-N 6205 [Taylor Peak] (rev 34)'
-        >>> len(pci_info.get("Network controller"))
-        1
-        >>> "Centrino Advanced-N 6205" in pci_info
-        True
-        >>> "0d:00.0" in pci_info
-        True
-    """
-    pass
