@@ -14,7 +14,6 @@ except ImportError:
 from insights import apply_filters
 from insights.core import dr
 from insights.core.context import Context
-from insights.core.spec_factory import ContentProvider
 from insights.specs import Specs
 
 
@@ -84,11 +83,13 @@ def context_wrap(lines,
                  version="-1.-1",
                  machine_id="machine_id",
                  strip=True,
+                 split=True,
                  **kwargs):
     if isinstance(lines, six.string_types):
         if strip:
             lines = lines.strip()
-        lines = lines.splitlines()
+        if split:
+            lines = lines.splitlines()
 
     return Context(content=lines,
                    path=path, hostname=hostname,
@@ -187,11 +188,7 @@ class InputData(object):
             if do_filter:
                 content_iter = list(apply_filters(spec, content_iter))
 
-        content_provider = ContentProvider()
-        content_provider.path = path
-        content_provider.relative_path = path
-        content_provider._content = content_iter
-
+        content_provider = context_wrap(content_iter, path=path, split=False)
         if dr.get_delegate(spec).multi_output:
             if spec not in self.data:
                 self.data[spec] = []
