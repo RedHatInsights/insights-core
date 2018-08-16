@@ -14,7 +14,7 @@ from insights.specs import Specs
 from .. import parser, CommandParser, FileListing
 
 
-@parser(Specs.ls_lib_fw)
+@parser(Specs.ls_lib_firmware)
 class LsLibFW(CommandParser, FileListing):
     """
     This parser will help to parse the output of command ``/bin/ls -lanR /lib/firmware``
