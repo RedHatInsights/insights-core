@@ -29,6 +29,20 @@ def parse_bool(s, default=False):
     return TRUTH.get(s.lower(), default)
 
 
+def which(cmd, env=os.environ):
+    if cmd.startswith("/"):
+        if os.access(cmd, os.X_OK) and os.path.isfile(cmd):
+            return cmd
+        return None
+
+    paths = env.get("PATH").split(os.pathsep)
+    for path in paths:
+        c = os.path.join(path, cmd)
+        if os.access(c, os.X_OK) and os.path.isfile(c):
+            return c
+    return None
+
+
 class KeyPassingDefaultDict(collections.defaultdict):
     """ A default dict that passes the key to its factory function. """
 
