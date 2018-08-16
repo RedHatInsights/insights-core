@@ -215,6 +215,7 @@ class Specs(SpecSet):
     lspci_kernel = RegistryPoint()
     lssap = RegistryPoint()
     lsscsi = RegistryPoint()
+    ls_lib_firmware = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     ls_var_lib_mongodb = RegistryPoint()
     ls_usr_sbin = RegistryPoint()
