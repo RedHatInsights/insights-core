@@ -67,7 +67,10 @@ class HumanReadableFormat(Formatter):
             else:
                 print(".", end="")
         elif c in broker.exceptions:
-            self.counts['exception'] += 1
+            if broker.exceptions[c] > 1:
+                self.counts['exception'] += len(broker.exceptions[c])
+            else:
+                self.counts['exception'] += 1
             print(Fore.RED + "E" + Style.RESET_ALL, end="")
 
     def preprocess(self, broker):
