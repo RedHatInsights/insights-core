@@ -65,7 +65,8 @@ class ConsoleLog(LogFileOutput):
     pass
 
 
-@parser(Specs.ovirt_engine_log)
+# Using existing engine_log specs
+@parser(Specs.engine_log)
 class EngineLog(LogFileOutput):
     '''Provide access to ``/var/log/ovirt-engine/engine.log`` using the LogFileoutput parser class.
 

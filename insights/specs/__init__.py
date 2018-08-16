@@ -307,7 +307,7 @@ class Specs(SpecSet):
     os_release = RegistryPoint()
     ovirt_engine_confd = RegistryPoint(multi_output=True)
     ovirt_engine_server_log = RegistryPoint()
-    ovirt_engine_log = RegistryPoint()
+    # ovirt_engine_log = RegistryPoint()
     ovirt_engine_ui_log = RegistryPoint()
     ovirt_engine_boot_log = RegistryPoint()
     ovirt_engine_console_log = RegistryPoint()
