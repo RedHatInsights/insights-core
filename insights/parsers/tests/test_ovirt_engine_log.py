@@ -5,7 +5,7 @@ from insights.parsers import ovirt_engine_log
 from insights.tests import context_wrap
 
 
-SERVER_LOG = r"""
+SERVER_LOG = """
 2018-01-17 01:46:15,022+05 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-1) WFLYSRV0027: Starting deployment of "restapi.war" (runtime-name: "restapi.war")
 2018-01-17 01:46:15,022+05 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-5) WFLYSRV0027: Starting deployment of "rhev.ear" (runtime-name: "rhev.ear")
 2018-01-17 01:46:15,022+05 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-6) WFLYSRV0027: Starting deployment of "apidoc.war" (runtime-name: "apidoc.war")
@@ -26,16 +26,15 @@ SERVER_LOG = r"""
 2018-01-17 01:46:15,834+05 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-6) WFLYSRV0207: Starting subdeployment (runtime-name: "services.war")
 2018-01-17 01:46:16,834+05 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-1) WFLYSRV0207: Starting subdeployment (runtime-name: "webadmin.war")
 2018-01-17 01:46:17,739+05 WARN  [org.jboss.as.dependency.unsupported] (MSC service thread 1-7) WFLYSRV0019: Deployment "deployment.engine.ear" is using an unsupported module ("org.dom4j") which may be changed or removed in future versions without notice.
-"""
+""".strip()
 
-# Not used now
-UI_LOG = r"""
+UI_LOG = """
 2018-01-24 05:31:26,243+05 ERROR [org.ovirt.engine.ui.frontend.server.gwt.OvirtRemoteLoggingService] (default task-134) [] Permutation name: C068E8B2E40A504D3054A1BDCF2A72BB
-2018-01-24 05:31:26,243+05 ERROR [org.ovirt.engine.ui.frontend.server.gwt.OvirtRemoteLoggingService] (default task-134) [] Uncaught exception: com.google.gwt.core.client.JavaScriptException: (TypeError)
-"""
+2018-01-24 05:32:26,243+05 ERROR [org.ovirt.engine.ui.frontend.server.gwt.OvirtRemoteLoggingService] (default task-134) [] Uncaught exception: com.google.gwt.core.client.JavaScriptException: (TypeError)
+""".strip()
 
-# Not used now
-CONSOLE_LOG = r"""
+# We cannot test this at the moment as LogFileOutput cannot read continuation multi line. Please see open issue#1256
+CONSOLE_LOG = """
 2018-08-01 09:15:14
 Full thread dump OpenJDK 64-Bit Server VM (25.181-b13 mixed mode):
 
@@ -104,10 +103,9 @@ Full thread dump OpenJDK 64-Bit Server VM (25.181-b13 mixed mode):
         at sun.nio.fs.LinuxWatchService.access$600(LinuxWatchService.java:47)
         at sun.nio.fs.LinuxWatchService$Poller.run(LinuxWatchService.java:314)
         at java.lang.Thread.run(Thread.java:748)
-"""
+""".strip()
 
-# Not used now
-ENGINE_LOG = r"""
+ENGINE_LOG = """
 2018-08-06 04:06:33,229+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'engine' is using 0 threads out of 500, 8 threads waiting for tasks and 0 tasks in queue.
 2018-08-06 04:06:33,229+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'engineScheduled' is using 0 threads out of 100, 100 threads waiting for tasks.
 2018-08-06 04:06:33,229+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'engineThreadMonitoring' is using 1 threads out of 1, 0 threads waiting for tasks.
@@ -121,10 +119,9 @@ ENGINE_LOG = r"""
 2018-08-06 04:26:33,233+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'commandCoordinator' is using 0 threads out of 10, 2 threads waiting for tasks.
 2018-08-06 04:26:33,233+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'default' is using 0 threads out of 1, 5 threads waiting for tasks.
 2018-08-06 04:26:33,233+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'engine' is using 0 threads out of 500, 8 threads waiting for tasks and 0 tasks in queue.
-"""
+""".strip()
 
-# Not used now
-BOOT_LOG = r"""
+BOOT_LOG = """
 03:46:17,790 INFO  [org.jboss.modules] JBoss Modules version 1.6.4.Final-redhat-1
 03:46:18,067 INFO  [org.jboss.msc] JBoss MSC version 1.2.7.SP1-redhat-1
 03:46:18,181 INFO  [org.jboss.as] WFLYSRV0049: JBoss EAP 7.1.3.GA (WildFly Core 3.0.16.Final-redhat-1) starting
@@ -138,10 +135,10 @@ BOOT_LOG = r"""
 03:46:19,238 INFO  [org.jboss.as.server] WFLYSRV0039: Creating http management service using socket-binding (management)
 03:46:19,242 INFO  [org.xnio] XNIO version 3.5.5.Final-redhat-1
 03:46:19,250 INFO  [org.xnio.nio] XNIO NIO Implementation Version 3.5.5.Final-redhat-1
-"""
+""".strip()
 
 
-def test_log():
+def test_server_log():
     server_log = ovirt_engine_log.ServerLog(context_wrap(SERVER_LOG))
     assert 'is using an unsupported module' in server_log
     assert len(list(server_log.get_after(datetime(2018, 1, 17, 1, 46, 16, 0)))) == 2
@@ -150,9 +147,42 @@ def test_log():
     assert server_log.get('WARN')[-1].get('raw_message') == matched_line
 
 
+def test_ui_log():
+    ui_log = ovirt_engine_log.UILog(context_wrap(UI_LOG))
+    assert 'Permutation name' in ui_log
+    assert len(list(ui_log.get_after(datetime(2018, 1, 24, 5, 31, 26, 0)))) == 2
+
+
+def test_engine_log():
+    engine_log = ovirt_engine_log.EngineLog(context_wrap(ENGINE_LOG))
+    assert "Thread pool 'engine'" in engine_log
+    assert len(list(engine_log.get_after(datetime(2018, 8, 6, 4, 16, 33, 0)))) == 9
+
+    matched_line = "2018-08-06 04:16:33,231+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'hostUpdatesChecker' is using 0 threads out of 5, 5 threads waiting for tasks."
+    assert engine_log.get('hostUpdatesChecker')[-1].get('raw_message') == matched_line
+
+
+def test_boot_log():
+    boot_log = ovirt_engine_log.BootLog(context_wrap(BOOT_LOG))
+    assert "Creating http management service using socket-binding" in boot_log
+    xnio_lines = boot_log.get('xnio.nio')
+    assert len(xnio_lines) == 1
+    assert xnio_lines[0].get('procname') == 'org.xnio.nio'
+    assert xnio_lines[0].get('level') == 'INFO'
+    assert xnio_lines[0].get('message') == 'XNIO NIO Implementation Version 3.5.5.Final-redhat-1'
+
+    log_line = '2018-01-17 INFO  [org.jboss.as.server.deployment] (MSC service thread 1-1) WFLYSRV0027: Starting deployment of "restapi.war" (runtime-name: "restapi.war")'
+    boot_log = ovirt_engine_log.BootLog(context_wrap(log_line))
+    assert "restapi" in boot_log
+    assert boot_log.get('restapi')[0]['raw_message'] == log_line
+
+
 def test_documentation():
     failed_count, tests = doctest.testmod(
         ovirt_engine_log,
-        globs={'server_log': ovirt_engine_log.ServerLog(context_wrap(SERVER_LOG))}
+        globs={'server_log': ovirt_engine_log.ServerLog(context_wrap(SERVER_LOG)),
+               'boot_log': ovirt_engine_log.BootLog(context_wrap(BOOT_LOG)),
+               'engine_log': ovirt_engine_log.EngineLog(context_wrap(ENGINE_LOG)),
+               'ui_log': ovirt_engine_log.UILog(context_wrap(UI_LOG))}
     )
     assert failed_count == 0

@@ -86,6 +86,7 @@ class Specs(SpecSet):
     dumpdev = RegistryPoint()
     dumpe2fs_h = RegistryPoint(multi_output=True)
     engine_config_all = RegistryPoint()
+    engine_log = RegistryPoint()
     etc_journald_conf_d = RegistryPoint(multi_output=True)
     etc_journald_conf = RegistryPoint()
     ethernet_interfaces = RegistryPoint()
