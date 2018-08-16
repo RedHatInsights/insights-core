@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.38-534](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.38-534) (2018-08-16)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.37-525...insights-core-3.0.38-534)
+
+**Closed issues:**
+
+- Spec for docker\_ps [\#1347](https://github.com/RedHatInsights/insights-core/issues/1347)
+
 ## [insights-core-3.0.37-525](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.37-525) (2018-08-13)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.36-512...insights-core-3.0.37-525)
 
