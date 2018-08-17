@@ -250,10 +250,10 @@ def collect(config, pconn):
                         os.path.basename(config.analyze_mountpoint))[0],
                   'location': config.analyze_mountpoint}
 
-    # container
-    elif config.analyze_container or config.analyze_image_id:
-        logger.debug("Client running in container/image mode.")
-        logger.debug("Scanning for matching container/image.")
+    # image
+    elif config.analyze_image_id:
+        logger.debug("Client running in image mode.")
+        logger.debug("Scanning for matching image.")
 
         from .containers import get_targets
         targets = get_targets(config)
@@ -261,9 +261,12 @@ def collect(config, pconn):
             sys.exit(constants.sig_kill_bad)
         target = targets[0]
 
-    # the host
+    # host, or inside container
     else:
-        logger.debug("Host selected as scanning target.")
+        if config.analyze_container:
+            logger.debug('Client running in container mode.')
+        else:
+            logger.debug("Host selected as scanning target.")
         target = constants.default_target
 
     branch_info = get_branch_info(config, pconn)
@@ -387,7 +390,7 @@ def upload(config, pconn, tar_file, collection_duration=None):
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
-                handler.write(upload.text.encode('utf-8'))
+                handler.write(upload.text)
             write_to_disk(constants.lastupload_file)
 
             # Write to ansible facts directory
@@ -435,7 +438,7 @@ def upload(config, pconn, tar_file, collection_duration=None):
     return api_response
 
 
-def delete_archive(path):
+def delete_archive(path, delete_parent_dir):
     removed_archive = False
 
     try:
@@ -445,11 +448,11 @@ def delete_archive(path):
         dirname = os.path.dirname
         abspath = os.path.abspath
         parent_tmp_dir = dirname(abspath(path))
-
-        logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
-        if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-            logger.debug("Removing %s", parent_tmp_dir)
-            shutil.rmtree(parent_tmp_dir)
+        if delete_parent_dir:
+            logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
+            if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
+                logger.debug("Removing %s", parent_tmp_dir)
+                shutil.rmtree(parent_tmp_dir)
 
     except:
         logger.error("Error removing %s", path)

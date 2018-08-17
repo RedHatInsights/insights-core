@@ -123,6 +123,7 @@ class DefaultSpecs(Specs):
     # why the /cpuinfo?
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
+    cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
@@ -206,6 +207,7 @@ class DefaultSpecs(Specs):
     foreman_satellite_log = simple_file("/var/log/foreman-installer/satellite.log")
     foreman_ssl_access_ssl_log = simple_file("var/log/httpd/foreman-ssl_access_ssl.log")
     foreman_rake_db_migrate_status = simple_command('/usr/sbin/foreman-rake db:migrate:status')
+    foreman_tasks_config = simple_file("/etc/sysconfig/foreman-tasks")
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getcert_list = simple_command("/usr/bin/getcert list")
@@ -330,8 +332,7 @@ class DefaultSpecs(Specs):
                                  simple_command("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")
                                  ])
     lsmod = simple_command("/sbin/lsmod")
-    lspci = simple_command("/sbin/lspci")
-    lspci_kernel = simple_command("/sbin/lspci -k")
+    lspci = simple_command("/sbin/lspci -k")
     lsof = simple_command("/usr/sbin/lsof")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
@@ -340,6 +341,8 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_etc = simple_command("/bin/ls -lanR /etc")
+    ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
+    ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
@@ -353,8 +356,8 @@ class DefaultSpecs(Specs):
     lvdisplay = simple_command("/sbin/lvdisplay")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs = None  # simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')
-    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config=\"global{locking_type=0}\"")
-    lvs_noheadings_all = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
+    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype --config=\"global{locking_type=0}\"")
+    lvs_noheadings_all = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     machine_id = first_file(["etc/redhat-access-insights/machine-id", "etc/insights-client/machine-id", "etc/redhat_access_proactive/machine-id"])
     manila_conf = simple_file("/etc/manila/manila.conf")
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
@@ -395,7 +398,7 @@ class DefaultSpecs(Specs):
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
-    neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
+    neutron_ovs_agent_log = first_file(["/var/log/containers/neutron/openvswitch-agent.log", "/var/log/neutron/openvswitch-agent.log"])
     neutron_plugin_ini = simple_file("/etc/neutron/plugin.ini")
     neutron_server_log = simple_file("/var/log/neutron/server.log")
     nfnetlink_queue = simple_file("/proc/net/netfilter/nfnetlink_queue")
@@ -536,6 +539,28 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo")
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
+    saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
+
+    @datasource(saphostctl_listinstances, hostname, context=HostContext)
+    def sap_hana_sid(broker):
+        """
+        Command: Get the SID for running "HDB version".
+
+        Typical output of saphostctl_listinstances::
+        # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
+        Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
+
+        """
+        hana_ins = broker[DefaultSpecs.saphostctl_listinstances].content
+        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
+        results = set()
+        for ins in hana_ins:
+            ins_splits = ins.split(' - ')
+            if ins_splits[2].strip() == hn:
+                results.add(ins_splits[0].split()[-1].lower())
+        return list(results)
+
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
@@ -562,8 +587,7 @@ class DefaultSpecs(Specs):
     softnet_stat = simple_file("proc/net/softnet_stat")
     software_collections_list = simple_command('/usr/bin/scl --list')
     spfile_ora = glob_file("${ORACLE_HOME}/dbs/spfile*.ora")
-    ss = simple_command("/usr/sbin/ss -tulpn")
-    ss_tupna = simple_command("/usr/sbin/ss -tupna")
+    ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")

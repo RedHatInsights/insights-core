@@ -100,7 +100,7 @@ def pre_update(client, config):
             sys.exit(constants.sig_kill_bad)
 
     if config.support:
-        support = InsightsSupport()
+        support = InsightsSupport(config)
         support.collect_support_info()
         sys.exit(constants.sig_kill_ok)
 
@@ -165,6 +165,23 @@ def collect_and_output(client, config):
             resp = client.upload(tar_file)
         else:
             logger.info('Archive saved at %s', tar_file)
-        if resp and config["to_json"]:
-            print(json.dumps(resp))
+        if resp:
+            if config["to_json"]:
+                print(json.dumps(resp))
+
+            # delete the archive
+            if config.keep_archive:
+                logger.info('Insights archive retained in ' + tar_file)
+            else:
+                client.delete_archive(tar_file, delete_parent_dir=True)
+
+            # if we are rotating the eggs and success on upload do rotation
+            try:
+                client.rotate_eggs()
+            except IOError:
+                message = ("Failed to rotate %s to %s" %
+                           (constants.insights_core_newest,
+                            constants.insights_core_last_stable))
+                logger.debug(message)
+                raise IOError(message)
     sys.exit()

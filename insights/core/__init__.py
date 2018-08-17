@@ -17,6 +17,7 @@ from insights.contrib.ConfigParser import RawConfigParser
 from insights.parsers import ParseException
 from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
+from . import ls_parser
 from insights.util import deprecated
 
 import sys
@@ -78,12 +79,27 @@ class Parser(object):
         else:
             self.last_client_run = None
         self.args = context.args if hasattr(context, "args") else None
+        self._handle_content(context)
+
+    def _handle_content(self, context):
         self.parse_content(context.content)
 
     def parse_content(self, content):
         """This method must be implemented by classes based on this class."""
         msg = "Parser subclasses must implement parse_content(self, content)."
         raise NotImplementedError(msg)
+
+
+class StreamParser(Parser):
+    """
+    Parsers that don't have to store lines or look back in the data stream
+    should implement StreamParser instead of Parser as it is more memory
+    efficient. The only difference between StreamParser and Parser is that
+    StreamParser.parse_content will receive a generator instead of a list.
+    """
+
+    def _handle_content(self, context):
+        self.parse_content(context.stream())
 
 
 @serializer(Parser)
@@ -875,7 +891,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Use all the defined scanners to search the log file, setting the
         properties defined in the scanner.
         """
-        self.lines = list(content)
+        self.lines = content
         for scanner in self.scanners:
             scanner(self)
 
@@ -1409,41 +1425,7 @@ class FileListing(Parser):
         './grub.conf'
     """
 
-    # I know I'm missing some types in the 'type' subexpression...
-    # Modify the last '\S+' to '\S*' to match where there is no '.' at the end
-    perms_regex = r'^(?P<type>[bcdlps-])' +\
-        r'(?P<perms>[r-][w-][sSx-][r-][w-][sSx-][r-][w-][xsSt-]([.+-])?)'
-    links_regex = r'(?P<links>\d+)'
-    owner_regex = r'(?P<owner>[a-zA-Z0-9_-]+)\s+(?P<group>[a-zA-Z0-9_-]+)'
-    # In 'size' we also cope with major, minor format character devices
-    # by just catching the \d+, and then splitting it off later.
-    size_regex = r'(?P<size>(?:\d+,\s+)?\d+)'
-    # Note that we don't try to determine nonexistent month, day > 31, hour
-    # > 23, minute > 59 or improbable year here.
-    # TODO: handle non-English formatted dates here.
-    date_regex = r'(?P<date>\w{3}\s[ 0-9][0-9]\s(?:[012]\d:\d{2}|\s\d{4}))'
-    name_regex = r'(?P<name>[^/ ][^/]*?)(?: -> (?P<link>\S.*))?$'
-    normal_regex = '\s+'.join((perms_regex, links_regex, owner_regex,
-                              size_regex, date_regex, name_regex))
-    normal_re = re.compile(normal_regex)
-
-    context_regex = r'(?P<se_user>\w+_u):(?P<se_role>\w+_r):' +\
-        r'(?P<se_type>\w+_t):(?P<se_mls>\S+)'
-    selinux_regex = '\s+'.join((perms_regex, owner_regex, context_regex,
-                               name_regex))
-    selinux_re = re.compile(selinux_regex)
-
     def __init__(self, context, selinux=False):
-        """
-            You can set the 'selinux' parameter to True to have this
-            directory listing parsed as a 'ls -Z' directory listing.
-        """
-        self.selinux = selinux
-        # Pick the right regex to use and save that as a property
-        if selinux:
-            self.file_re = self.selinux_re
-        else:
-            self.file_re = self.normal_re
         # Try to pull out the directory path from the command line, in case
         # we're doing an ls on only one directory (which then doesn't list
         # the directory name in the output).  Obviously if we don't have the
@@ -1457,90 +1439,13 @@ class FileListing(Parser):
             self.first_path = '/' if not fpath else fpath.replace('.', '/').replace('_', ' ')
         super(FileListing, self).__init__(context)
 
-    def parse_file_match(self, this_dir, line):
-        # Save all the raw directory entries, even if we can't parse them
-        this_dir['raw_list'].append(line)
-        match = self.file_re.search(line)
-        if not match:
-            # Can't do anything more with the line here
-            return
-
-        # Get the fields from the regex
-        this_file = match.groupdict()
-        this_file['raw_entry'] = line
-        this_file['dir'] = this_dir['name']
-        typ = match.group('type')
-
-        # There's a bunch of stuff that the SELinux listing doesn't contain:
-        if not self.selinux:
-            # Type conversions
-            this_file['links'] = int(this_file['links'])
-            # Is this a character or block device?  If so, it should
-            # have a major, minor 'size':
-            size = match.group('size')
-            if typ in 'bc':
-                # What should we do if we expect a major, minor size but
-                # don't get one?
-                if ',' in size:
-                    major, minor = match.group('size').split(',')
-                    this_file['major'] = int(major.strip())
-                    this_file['minor'] = int(minor.strip())
-                    # Remove other 'size' entries
-                    del(this_file['size'])
-            else:
-                # What should we do if we get a comma here?
-                if ',' not in size:
-                    this_file['size'] = int(match.group('size'))
-
-        # If this is not a symlink, remove the link key
-        if not this_file['link']:
-            del this_file['link']
-        # Now add it to our various properties
-        file_name = this_file['name']
-        this_dir['entries'][file_name] = this_file
-        if typ in 'bc':
-            this_dir['specials'].append(file_name)
-        if typ == 'd':
-            this_dir['dirs'].append(file_name)
-        else:
-            this_dir['files'].append(file_name)
-
     def parse_content(self, content):
         """
         Called automatically to process the directory listing(s) contained in
         the content.
         """
-        listings = {}
-        this_dir = {}
-        # Directory name from context
-        name = self.first_path if self.first_path else None
-        for line in content:
-            l = line.strip()
-            if not l:
-                continue
-            # Directory name from output
-            if l.startswith('/') and l.endswith(':'):
-                name = l[:-1]
-                continue
-            if name:
-                # New structures for a new directory
-                this_dir = {'entries': {}, 'files': [], 'dirs': [],
-                            'specials': [], 'total': 0, 'raw_list': [],
-                            'name': name}
-                listings[name] = this_dir
-                # Unset the Name for inner directory
-                name = None
-            if this_dir and l.startswith('total') and l[6:].isdigit():
-                this_dir['total'] = int(l[6:])
-            elif not this_dir:
-                # This state can happen if processing an archive that filtered
-                # a file listing due to an old spec definition.
-                # Let's just skip these lines.
-                continue
-            else:
-                self.parse_file_match(this_dir, l)
+        self.listings = ls_parser.parse(content, self.first_path)
 
-        self.listings = listings
         # No longer need the first path found, if any.
         delattr(self, 'first_path')
 
@@ -1614,12 +1519,6 @@ class FileListing(Parser):
         if name not in self.listings[directory]['entries']:
             return None
         return self.listings[directory]['entries'][name]
-
-    def raw_directory(self, directory):
-        """
-        The list of raw lines from the directory, as is.
-        """
-        return self.listings[directory]['raw_list']
 
 
 class AttributeDict(dict):
