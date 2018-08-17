@@ -85,7 +85,7 @@ class YumRepoList(CommandParser):
                 try:
                     name, status = right.rsplit(None, 1)
                 except ValueError:
-                    raise SkipException("Incorrect line: '{}'".format(line))
+                    raise SkipException("Incorrect line: '{0}'".format(line))
                 self.data.append({
                     "id": _id.strip(),
                     "name": name.strip(),
