@@ -17,7 +17,7 @@ except ImportError:
 from insights import apply_filters
 from insights.core import dr, filters
 from insights.core.context import Context
-from insights.core.spec_factory import ContentProvider, RegistryPoint
+from insights.core.spec_factory import RegistryPoint
 from insights.specs import Specs
 
 
