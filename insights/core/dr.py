@@ -42,12 +42,6 @@ IGNORE = defaultdict(set)
 # tracks if a component is enabled
 ENABLED = defaultdict(lambda: True)
 
-FORMATTER = {}
-
-
-def set_formatter(func, _type):
-    FORMATTER[_type] = func
-
 
 def set_enabled(component, enabled=True):
     """
@@ -145,12 +139,6 @@ def get_dependencies(component):
 
 def add_dependency(component, dep):
     get_delegate(component).add_dependency(dep)
-
-
-def to_str(comp, val):
-    _type = get_component_type(comp)
-    func = FORMATTER.get(_type)
-    return func(comp, val) if func else str(val)
 
 
 class MissingRequirements(Exception):

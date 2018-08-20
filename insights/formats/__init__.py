@@ -1,5 +1,6 @@
 import six
-from insights import dr
+import sys
+from insights import dr, rule
 from insights.core.evaluators import SingleEvaluator
 
 
@@ -69,3 +70,35 @@ class EvaluatorFormatter(Formatter):
 
     def dump(self, data):
         raise NotImplemented("Subclasses must implement the dump method.")
+
+
+RENDERERS = {}
+
+try:
+    from jinja2 import Template
+
+    def get_content(obj, key):
+        mod = sys.modules[obj.__module__]
+        c = getattr(mod, "CONTENT", None)
+        if c:
+            if isinstance(c, dict):
+                if key:
+                    return c.get(key)
+            else:
+                return c
+
+    def format_rule(comp, val):
+        content = get_content(comp, val.get_key())
+        if content:
+            return Template(content).render(val)
+        return str(val)
+
+    RENDERERS[rule] = format_rule
+except:
+    pass
+
+
+def render(comp, val):
+    _type = dr.get_component_type(comp)
+    func = RENDERERS.get(_type)
+    return func(comp, val) if func else str(val)
