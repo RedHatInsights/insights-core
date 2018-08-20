@@ -9,7 +9,7 @@ import six
 import shlex
 import os
 import requests
-from insights.contrib.ConfigParser import RawConfigParser
+from six.moves import configparser as ConfigParser
 
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
@@ -108,7 +108,7 @@ class InsightsUploadConf(object):
                 logger.debug("Successfully downloaded collection rules")
 
                 json_response = NamedTemporaryFile()
-                json_response.write(req.text.encode())
+                json_response.write(req.text.encode('utf-8'))
                 json_response.file.flush()
             else:
                 logger.error("ERROR: Could not download dynamic configuration")
@@ -153,7 +153,7 @@ class InsightsUploadConf(object):
         """
         sig_text = self.fetch_gpg()
         sig_response = NamedTemporaryFile(suffix=".asc")
-        sig_response.write(sig_text.encode())
+        sig_response.write(sig_text.encode('utf-8'))
         sig_response.file.flush()
         self.validate_gpg_sig(collection_rules.name, sig_response.name)
         self.write_collection_data(self.collection_rules_file + ".asc", sig_text)
@@ -174,17 +174,17 @@ class InsightsUploadConf(object):
         rm_conf = None
         # Convert config object into dict
         if os.path.isfile(self.remove_file):
-            parsedconfig = RawConfigParser()
+            parsedconfig = ConfigParser.RawConfigParser()
             parsedconfig.read(self.remove_file)
             rm_conf = {}
             for item, value in parsedconfig.items('remove'):
                 rm_conf[item] = value.strip().split(',')
         if stdin_config:
             rules_fp = NamedTemporaryFile(delete=False)
-            rules_fp.write(stdin_config["uploader.json"])
+            rules_fp.write(stdin_config["uploader.json"].encode('utf-8'))
             rules_fp.flush()
             sig_fp = NamedTemporaryFile(delete=False)
-            sig_fp.write(stdin_config["sig"])
+            sig_fp.write(stdin_config["sig"].encode('utf-8'))
             sig_fp.flush()
             if not self.gpg or self.validate_gpg_sig(rules_fp.name, sig_fp.name):
                 return json.loads(stdin_config["uploader.json"]), rm_conf
@@ -202,7 +202,7 @@ class InsightsUploadConf(object):
                     raise ValueError("ERROR: Could not find version in json")
                 dyn_conf['file'] = self.collection_rules_file
                 logger.debug("Success reading config")
-                config_hash = hashlib.sha1(json.dumps(dyn_conf).encode()).hexdigest()
+                config_hash = hashlib.sha1(json.dumps(dyn_conf).encode('utf-8')).hexdigest()
                 logger.debug('sha1 of config: %s', config_hash)
                 return dyn_conf, rm_conf
         for conf_file in [self.collection_rules_file, self.fallback_file]:
