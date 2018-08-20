@@ -62,7 +62,7 @@ testing = set([
     'mock==2.0.0',
 ])
 
-flake8 = set([
+linting = set([
     'flake8==3.3.0',
 ])
 
@@ -91,11 +91,11 @@ if __name__ == "__main__":
         package_data={'': ['LICENSE']},
         license='Apache 2.0',
         extras_require={
-            'develop': list(runtime | develop | client | docs | flake8 | testing),
+            'develop': list(runtime | develop | client | docs | linting | testing),
             'client': list(runtime | client),
             'optional': list(optional),
             'docs': list(docs),
-            'flake8': list(flake8 | client),
+            'linting': list(linting | client),
             'testing': list(testing | client)
         },
         classifiers=[

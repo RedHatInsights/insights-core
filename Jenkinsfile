@@ -10,10 +10,12 @@ pipeline {
             }
           }
           steps {
-            echo "Installing Insights..."
-            sh 'pip install --user -e .[testing]'
-            echo "Testing with Pytest..."
-            sh 'pytest'
+            sh """
+                virtualenv .testenv
+                source .testenv/bin/activate
+                pip install -e .[testing]
+                pytest
+            """
           }
         }
         stage('Build RHEL7 Python 2.7') {
@@ -30,11 +32,11 @@ pipeline {
                 pip install -e .[testing]
                 pytest
             """
-            echo "Testing with flake8..."
+            echo "Testing with Linter..."
             sh """
-                virtualenv .f8env
-                source .f8env/bin/activate
-                pip install -e .[flake8]
+                virtualenv .lintenv
+                source .lintenv/bin/activate
+                pip install -e .[linting]
                 flake8
             """
           }
@@ -53,11 +55,11 @@ pipeline {
                 pip install -e .[testing]
                 pytest
             """
-            echo "Testing with flake8..."
+            echo "Testing with Linter..."
             sh """
-                /bin/python36 -m venv .f8env
-                source .f8env/bin/activate
-                pip install -e .[flake8]
+                /bin/python36 -m venv .lintenv
+                source .lintenv/bin/activate
+                pip install -e .[linting]
                 flake8
             """
           }
