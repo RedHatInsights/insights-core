@@ -136,6 +136,13 @@ def post_update(client, config):
             'Running client in container mode. Bypassing registration.')
         return
 
+    if config.display_name and not config.register:
+        # setting display name independent of registration
+        if client.set_display_name(config.display_name):
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
+
     reg = client.register()
     if reg is None:
         # API unreachable
