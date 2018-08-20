@@ -43,7 +43,6 @@ class InsightsCommand(InsightsSpec):
         self.archive_path = mangle.mangle_command(self.command)
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
-        self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
 
     def get_output(self):
         '''
@@ -59,7 +58,7 @@ class InsightsCommand(InsightsSpec):
         args = shlex.split(timeout_command)
 
         # never execute this stuff
-        if set.intersection(set(args), set(self.black_list)):
+        if set.intersection(set(args), constants.command_blacklist):
             raise RuntimeError("Command Blacklist")
 
         try:
