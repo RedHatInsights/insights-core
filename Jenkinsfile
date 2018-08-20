@@ -10,12 +10,10 @@ pipeline {
             }
           }
           steps {
-            sh """
-                virtualenv .testenv
-                source .testenv/bin/activate
-                pip install -e .[testing]
-                pytest
-            """
+            echo "Installing Insights..."
+            sh 'pip install --user -e .[develop]'
+            echo "Testing with Pytest..."
+            sh 'pytest'
           }
         }
         stage('Build RHEL7 Python 2.7') {
