@@ -408,6 +408,13 @@ class InsightsClient(object):
         """
         return client.get_registration_status(self.config, self.connection)
 
+    @_net
+    def set_display_name(self, display_name):
+        '''
+            returns True on success, False on failure
+        '''
+        return self.connection.set_display_name(display_name)
+
 
 def format_config(config):
     # Log config except the password
