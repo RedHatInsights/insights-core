@@ -48,13 +48,13 @@ develop = set([
     'pytest==3.0.6',
     'pytest-cov==2.4.0',
     'mock==2.0.0',
-    'Sphinx',
-    'nbsphinx==0.3.1',
-    'sphinx_rtd_theme',
+    'Sphinx;python_version>="2.7"',
+    'nbsphinx==0.3.1;python_version>="2.7"',
+    'sphinx_rtd_theme;python_version>="2.7"',
     'futures==3.0.5',
     'requests==2.13.0',
     'wheel',
-    'ipython<6',
+    'ipython<6;python_version>="2.7"',
     'colorama',
 ])
 
