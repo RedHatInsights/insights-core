@@ -11,7 +11,7 @@ pipeline {
           }
           steps {
             echo "Installing Insights..."
-            sh 'pip install --user -e .[develop]'
+            sh 'pip install --user -e .[testing]'
             echo "Testing with Pytest..."
             sh 'pytest'
           }
