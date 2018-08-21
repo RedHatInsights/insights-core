@@ -39,7 +39,8 @@ maybe_require("argparse")
 
 client = set([
     'requests',
-    'pyOpenSSL',
+    'pycparser<=2.18',
+    'pyOpenSSL<=17.5.0',
 ])
 
 develop = set([
