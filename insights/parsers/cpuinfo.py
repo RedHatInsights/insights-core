@@ -222,7 +222,6 @@ class CpuInfo(LegacyItemAccess, Parser):
         else:
             return None
 
-
     def get_processor_by_index(self, index):
         """
         Construct a dictionary of the information stored for the given CPU.
