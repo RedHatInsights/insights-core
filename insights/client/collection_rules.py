@@ -167,57 +167,78 @@ class InsightsUploadConf(object):
         with os.fdopen(fd, 'w') as dyn_conf_file:
             dyn_conf_file.write(data)
 
-    def get_conf(self, update, stdin_config=None):
+    def get_conf_file(self):
         """
-        Get the config
+        Get config from local config file, first try cache, then fallback.
         """
-        rm_conf = None
-        # Convert config object into dict
-        if os.path.isfile(self.remove_file):
-            parsedconfig = ConfigParser.RawConfigParser()
-            parsedconfig.read(self.remove_file)
-            rm_conf = {}
-            for item, value in parsedconfig.items('remove'):
-                rm_conf[item] = value.strip().split(',')
-        if stdin_config:
-            rules_fp = NamedTemporaryFile(delete=False)
-            rules_fp.write(stdin_config["uploader.json"].encode('utf-8'))
-            rules_fp.flush()
-            sig_fp = NamedTemporaryFile(delete=False)
-            sig_fp.write(stdin_config["sig"].encode('utf-8'))
-            sig_fp.flush()
-            if not self.gpg or self.validate_gpg_sig(rules_fp.name, sig_fp.name):
-                return json.loads(stdin_config["uploader.json"]), rm_conf
-            else:
-                logger.error("Unable to validate GPG signature in from_stdin mode.")
-                raise Exception("from_stdin mode failed to validate GPG sig")
-        elif update:
-            if not self.conn:
-                raise ValueError('ERROR: Cannot update rules in --offline mode. '
-                                 'Disable auto_update in config file.')
-            dyn_conf = self.get_collection_rules()
-            if dyn_conf:
-                version = dyn_conf.get('version', None)
-                if version is None:
-                    raise ValueError("ERROR: Could not find version in json")
-                dyn_conf['file'] = self.collection_rules_file
-                logger.debug("Success reading config")
-                config_hash = hashlib.sha1(json.dumps(dyn_conf).encode('utf-8')).hexdigest()
-                logger.debug('sha1 of config: %s', config_hash)
-                return dyn_conf, rm_conf
         for conf_file in [self.collection_rules_file, self.fallback_file]:
             logger.debug("trying to read conf from: " + conf_file)
             conf = self.try_disk(conf_file, self.gpg)
-            if conf:
-                version = conf.get('version', None)
-                if version is None:
-                    raise ValueError("ERROR: Could not find version in json")
 
-                conf['file'] = conf_file
-                logger.debug("Success reading config")
-                logger.debug(json.dumps(conf))
-                return conf, rm_conf
+            if not conf:
+                continue
+
+            version = conf.get('version', None)
+            if version is None:
+                raise ValueError("ERROR: Could not find version in json")
+
+            conf['file'] = conf_file
+            logger.debug("Success reading config")
+            logger.debug(json.dumps(conf))
+            return conf
+
         raise ValueError("ERROR: Unable to download conf or read it from disk!")
+
+    def get_conf_update(self):
+        """
+        Get updated config from URL, fallback to local file if download fails.
+        """
+        dyn_conf = self.get_collection_rules()
+
+        if not dyn_conf:
+            return self.get_conf_file()
+
+        version = dyn_conf.get('version', None)
+        if version is None:
+            raise ValueError("ERROR: Could not find version in json")
+
+        dyn_conf['file'] = self.collection_rules_file
+        logger.debug("Success reading config")
+        config_hash = hashlib.sha1(json.dumps(dyn_conf).encode('utf-8')).hexdigest()
+        logger.debug('sha1 of config: %s', config_hash)
+        return dyn_conf
+
+    def get_conf_stdin(self, stdin_config):
+        """
+        Get config from STDIN.
+        """
+        rules_fp = NamedTemporaryFile(delete=False)
+        rules_fp.write(stdin_config["uploader.json"].encode('utf-8'))
+        rules_fp.flush()
+        sig_fp = NamedTemporaryFile(delete=False)
+        sig_fp.write(stdin_config["sig"].encode('utf-8'))
+        sig_fp.flush()
+        if not self.gpg or self.validate_gpg_sig(rules_fp.name, sig_fp.name):
+            return json.loads(stdin_config["uploader.json"])
+        else:
+            logger.error("Unable to validate GPG signature in from_stdin mode.")
+            raise Exception("from_stdin mode failed to validate GPG sig")
+
+    def get_rm_conf(self):
+        """
+        Get excluded files config from remove_file.
+        """
+        if not os.path.isfile(self.remove_file):
+            return None
+
+        # Convert config object into dict
+        parsedconfig = ConfigParser.RawConfigParser()
+        parsedconfig.read(self.remove_file)
+        rm_conf = {}
+        for item, value in parsedconfig.items('remove'):
+            rm_conf[item] = value.strip().split(',')
+
+        return rm_conf
 
 
 if __name__ == '__main__':

@@ -201,8 +201,12 @@ def get_machine_id():
 
 
 def update_rules(config, pconn):
+    if not pconn:
+        raise ValueError('ERROR: Cannot update rules in --offline mode. '
+                         'Disable auto_update in config file.')
+
     pc = InsightsUploadConf(config, conn=pconn)
-    return pc.get_conf(True, {})
+    return pc.get_conf_update()
 
 
 def get_branch_info(config, pconn):
@@ -293,7 +297,11 @@ def collect(config, pconn):
                      ('--from-file' if config.from_file else '--from-stdin'))
         return False
 
-    collection_rules, rm_conf = pc.get_conf(False, stdin_config)
+    if stdin_config:
+        collection_rules = pc.get_conf_stdin(stdin_config)
+    else:
+        collection_rules = pc.get_conf_file()
+    rm_conf = pc.get_rm_conf()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
 
