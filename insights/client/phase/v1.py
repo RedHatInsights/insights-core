@@ -136,6 +136,13 @@ def post_update(client, config):
             'Running client in container mode. Bypassing registration.')
         return
 
+    if config.display_name and not config.register:
+        # setting display name independent of registration
+        if client.set_display_name(config.display_name):
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
+
     reg = client.register()
     if reg is None:
         # API unreachable
@@ -165,6 +172,23 @@ def collect_and_output(client, config):
             resp = client.upload(tar_file)
         else:
             logger.info('Archive saved at %s', tar_file)
-        if resp and config["to_json"]:
-            print(json.dumps(resp))
+        if resp:
+            if config["to_json"]:
+                print(json.dumps(resp))
+
+            # delete the archive
+            if config.keep_archive:
+                logger.info('Insights archive retained in ' + tar_file)
+            else:
+                client.delete_archive(tar_file, delete_parent_dir=True)
+
+            # if we are rotating the eggs and success on upload do rotation
+            try:
+                client.rotate_eggs()
+            except IOError:
+                message = ("Failed to rotate %s to %s" %
+                           (constants.insights_core_newest,
+                            constants.insights_core_last_stable))
+                logger.debug(message)
+                raise IOError(message)
     sys.exit()

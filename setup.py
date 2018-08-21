@@ -12,7 +12,7 @@ for name in package_info:
 entry_points = {
     'console_scripts': [
         'insights-run = insights:main',
-        'dry_run = insights.tools.dry_run:main',
+        'insights-info = insights.tools.query:main',
         'gen_api = insights.tools.generate_api_config:main',
         'insights-perf = insights.tools.perf:main',
         'client = insights.client:run',
@@ -55,6 +55,7 @@ develop = set([
     'requests==2.13.0',
     'wheel',
     'ipython<6',
+    'colorama',
 ])
 
 optional = set([
