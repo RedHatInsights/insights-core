@@ -14,6 +14,7 @@ try:
 except ImportError:
     from io import StringIO
 
+import insights
 from insights import apply_filters
 from insights.core import dr, filters
 from insights.core.context import Context
@@ -38,6 +39,7 @@ def _intercept(func):
 
 
 filters.add_filter = _intercept(filters.add_filter)
+insights.add_filter = _intercept(insights.add_filter)
 
 
 def _get_registry_points(component):
