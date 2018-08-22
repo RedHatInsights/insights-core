@@ -211,6 +211,17 @@ class CpuInfo(LegacyItemAccess, Parser):
         """
         return self.data["vendors"][0]
 
+    @property
+    @defaults()
+    def core_total(self):
+        """
+        str: Returns the total number of cores for the server if available, else None.
+        """
+        if self.data and 'cpu_cores' in self.data:
+            return sum([int(c) for c in self.data['cpu_cores']])
+        else:
+            return None
+
     def get_processor_by_index(self, index):
         """
         Construct a dictionary of the information stored for the given CPU.
