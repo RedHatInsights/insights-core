@@ -24,7 +24,7 @@ Examples:
      '2016-05-18 14:00:51,318 ERROR [org.ovirt.engine.core.dal.dbbroker.auditloghandling.AuditLogDirector] (DefaultQuartzScheduler_Worker-95) [5bc194fa] Correlation ID: null, Call Stack: null, Custom Event ID: -1, Message: VM ADLG8201 has paused due to storage I/O problem.']
 
 """
-
+from insights.util import deprecated
 from .. import LogFileOutput, parser
 from insights.specs import Specs
 
@@ -34,4 +34,6 @@ class EngineLog(LogFileOutput):
     """
     Provide access to ovirt engine logs using the LogFileOutput parser class.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(EngineLog, "Import EngineLog from insights.parsers.ovirt_engine_log instead")
+        super(EngineLog, self).__init__(*args, **kwargs)
