@@ -455,6 +455,9 @@ class DefaultSpecs(Specs):
     ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
     ovirt_engine_confd = glob_file("/etc/ovirt-engine/engine.conf.d/*")
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
+    ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
+    ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
+    ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
 
