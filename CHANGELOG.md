@@ -1,5 +1,22 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.39-545...HEAD)
+
+**Fixed bugs:**
+
+- Initialize release in evaluators.py [\#1383](https://github.com/RedHatInsights/insights-core/issues/1383)
+- The rule component type overrides invoke but should override process [\#1376](https://github.com/RedHatInsights/insights-core/issues/1376)
+
+## [insights-core-3.0.39-545](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.39-545) (2018-08-22)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.38-534...insights-core-3.0.39-545)
+
+**Closed issues:**
+
+- Do not install docs tools on Python 2.6 [\#1387](https://github.com/RedHatInsights/insights-core/issues/1387)
+- Limit Sphinx version to 1.6.7 [\#1385](https://github.com/RedHatInsights/insights-core/issues/1385)
+
 ## [insights-core-3.0.38-534](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.38-534) (2018-08-16)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.37-525...insights-core-3.0.38-534)
 
