@@ -49,6 +49,7 @@ format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
+    amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
     autofs_conf = simple_file("/etc/autofs.conf")
