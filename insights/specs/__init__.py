@@ -2,6 +2,7 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Specs(SpecSet):
+    amq_broker = RegistryPoint(multi_output=True)
     auditd_conf = RegistryPoint()
     audit_log = RegistryPoint(filterable=True)
     autofs_conf = RegistryPoint()
