@@ -102,7 +102,7 @@ def extract(path, timeout=None, extract_dir=None, content_type=None):
     If the extraction takes longer than `timeout` seconds, the temporary path
     is removed, and an exception is raised.
     """
-    content_type = content_type or from_file(path)
+    content_type = content_type or content_type_from_file(path)
     if content_type == "application/zip":
         extractor = ZipExtractor(timeout=timeout)
     else:
