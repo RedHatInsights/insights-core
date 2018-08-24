@@ -59,8 +59,13 @@ def add_filter(ds, patterns):
     if not plugins.is_datasource(ds):
         raise Exception("Filters are applicable only to datasources.")
 
-    if dr.get_delegate(ds).raw:
+    delegate = dr.get_delegate(ds)
+
+    if delegate.raw:
         raise Exception("Filters aren't applicable to raw datasources.")
+
+    if not delegate.filterable:
+        raise Exception("Filters aren't applicable to %s." % dr.get_name(ds))
 
     if ds in _CACHE:
         del _CACHE[ds]
