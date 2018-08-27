@@ -20,6 +20,7 @@ class Evaluator(object):
         self.hostname = None
         self.metadata = {}
         self.metadata_keys = {}
+        self.release = None
 
     def pre_process(self):
         pass
