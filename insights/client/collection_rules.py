@@ -219,7 +219,8 @@ class InsightsUploadConf(object):
         sig_fp.write(stdin_config["sig"].encode('utf-8'))
         sig_fp.flush()
         if not self.gpg or self.validate_gpg_sig(rules_fp.name, sig_fp.name):
-            return json.loads(stdin_config["uploader.json"])
+            with open(str(stdin_config["uploader.json"])) as data_file:
+                return json.load(data_file)
         else:
             logger.error("Unable to validate GPG signature in from_stdin mode.")
             raise Exception("from_stdin mode failed to validate GPG sig")
