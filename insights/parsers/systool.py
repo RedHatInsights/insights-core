@@ -12,9 +12,7 @@ SystoolSCSIBus - command ``/bin/systool -b scsi -v``
 """
 
 from . import ParseException
-from .. import LegacyItemAccess
-from .. import CommandParser
-from .. import parser
+from .. import LegacyItemAccess, CommandParser, parser
 from ..specs import Specs
 
 
@@ -80,6 +78,9 @@ class SystoolSCSIBus(LegacyItemAccess, CommandParser):
     """
 
     def parse_content(self, content):
+
+        content = [l for l in content if l]
+
         if content[0] and not all([v in content[0] for v in ("Bus", "=", "scsi")]):
             raise ParseException("Unparseable first line of input: %s" % content[0])
 
@@ -92,27 +93,26 @@ class SystoolSCSIBus(LegacyItemAccess, CommandParser):
 
         for _l in content[1:]:
             l = _l.strip()
-            if l:
-                if not multi_lines_str:
-                    # Starter of a new logical line
-                    k, v = self._split_line(l)
-                    if v.startswith('"') and not v.endswith('"'):
-                        # Starter of a multi_lines line
-                        multi_lines_str = l + ' '
-                    else:
-                        # fairly a normal line
-                        self._record_pair(k, v)
+            if not multi_lines_str:
+                # Starter of a new logical line
+                k, v = self._split_line(l)
+                if v.startswith('"') and not v.endswith('"'):
+                    # Starter of a multi_lines line
+                    multi_lines_str = l + ' '
                 else:
-                    # Continue that multi-lines line
-                    if l.endswith('"'):
-                        # End of a multi_lines line
-                        multi_lines_str += l
-                        k, v = self._split_line(multi_lines_str)
-                        multi_lines_str = None
-                        self._record_pair(k, v)
-                    else:
-                        # Mid of a multi_lines line
-                        multi_lines_str += l + ' '
+                    # fairly a normal line
+                    self._record_pair(k, v)
+            else:
+                # Continue that multi-lines line
+                if l.endswith('"'):
+                    # End of a multi_lines line
+                    multi_lines_str += l
+                    k, v = self._split_line(multi_lines_str)
+                    multi_lines_str = None
+                    self._record_pair(k, v)
+                else:
+                    # Mid of a multi_lines line
+                    multi_lines_str += l + ' '
 
         data = {}
         for k, v in zip(self.device_names, self.devices):
