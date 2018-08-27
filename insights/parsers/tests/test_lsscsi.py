@@ -42,6 +42,9 @@ def test_lsscsi():
     assert scsi[1]['Peripheral-Type'] == 'cd/dvd'
     assert ['-', '/dev/sr0', '/dev/sdb', '/dev/st0'] == scsi.device_nodes
 
+    assert scsi[1]['Vendor'] == 'QEMU'
+    assert ['IET', 'QEMU', 'IET', 'HP'] == scsi.device_vendors
+
     scsi = lsscsi.LsSCSI(context_wrap(LSSCSI_2))
     assert len(scsi.data) == 1
     assert scsi[0] == {'Model': 'QEMU DVD-ROM', 'Vendor': 'QEMU',
