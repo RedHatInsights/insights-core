@@ -4,9 +4,9 @@ import logging
 import os
 import tempfile
 from contextlib import contextmanager
-from insights.util import content_type, fs, subproc
+from insights.util import fs, subproc
+from insights.util.content_type import from_file as content_type_from_file
 
-from insights.util.content_type import from_file
 logger = logging.getLogger(__name__)
 
 
@@ -55,18 +55,18 @@ class TarExtractor(object):
         "application/x-tar": ""
     }
 
-    def _archive_type(self, _input):
-        _type = content_type.from_file(_input)
-        if _type not in self.TAR_FLAGS:
-            raise InvalidContentType(_type)
-        return _type
+    def _tar_flag_for_content_type(self, content_type):
+        flag = self.TAR_FLAGS.get(content_type)
+        if not flag:
+            raise InvalidContentType(content_type)
+        return flag
 
     def from_path(self, path, extract_dir=None, content_type=None):
         if os.path.isdir(path):
             self.tmp_dir = path
         else:
-            self.content_type = content_type or self._archive_type(path)
-            tar_flag = self.TAR_FLAGS.get(self.content_type)
+            self.content_type = content_type or content_type_from_file(path)
+            tar_flag = self._tar_flag_for_content_type(self.content_type)
             self.tmp_dir = tempfile.mkdtemp(prefix="insights-", dir=extract_dir)
             self.created_tmp_dir = True
             command = "tar %s -x --exclude=*/dev/null -f %s -C %s" % (tar_flag, path, self.tmp_dir)
@@ -102,7 +102,7 @@ def extract(path, timeout=None, extract_dir=None, content_type=None):
     If the extraction takes longer than `timeout` seconds, the temporary path
     is removed, and an exception is raised.
     """
-    content_type = content_type or from_file(path)
+    content_type = content_type or content_type_from_file(path)
     if content_type == "application/zip":
         extractor = ZipExtractor(timeout=timeout)
     else:
