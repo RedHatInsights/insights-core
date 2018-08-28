@@ -189,7 +189,7 @@ class DataCollector(object):
 
         for c in conf['commands']:
             # remember hostname archive path
-            if c['command'].startswith('/bin/hostname'):
+            if 'symbolic_name' in c and c['symbolic_name'] == 'hostname':
                 self.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
 
