@@ -113,7 +113,7 @@ class DataCollector(object):
 
                 if set.intersection(set(shlex.split(precmd)),
                                     constants.command_blacklist):
-                    raise RuntimeError("Command Blacklist")
+                    raise RuntimeError("Command Blacklist: " + precmd)
 
                 args = self._run_pre_command(precmd)
                 logger.debug('Pre-command results: %s', args)

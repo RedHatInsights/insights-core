@@ -59,7 +59,7 @@ class InsightsCommand(InsightsSpec):
 
         # never execute this stuff
         if set.intersection(set(args), constants.command_blacklist):
-            raise RuntimeError("Command Blacklist")
+            raise RuntimeError("Command Blacklist: " + self.command)
 
         try:
             logger.debug('Executing: %s', args)
