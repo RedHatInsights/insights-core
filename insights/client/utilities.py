@@ -10,7 +10,6 @@ import datetime
 import shlex
 import re
 import stat
-import json
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
 
@@ -123,14 +122,6 @@ def generate_machine_id(new=False,
         machine_id = str(uuid.uuid4())
         logger.debug("Creating %s", destination_file)
         write_to_disk(destination_file, content=machine_id)
-
-    # update the ansible machine id facts file
-    if os.path.isdir(constants.insights_ansible_facts_dir):
-        if not (os.path.isfile(constants.insights_ansible_machine_id_file) and machine_id) or new:
-            machine_id_json = {'machine-id': machine_id}
-            with open(constants.insights_ansible_machine_id_file, 'w') as handler:
-                logger.debug('Writing Ansible machine-id facts file %s', constants.insights_ansible_machine_id_file)
-                handler.write(json.dumps(machine_id_json))
 
     return str(machine_id).strip()
 

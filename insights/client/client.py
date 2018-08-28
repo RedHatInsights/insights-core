@@ -9,8 +9,6 @@ import time
 import shutil
 import six
 
-from .auto_config import (_try_satellite6_configuration,
-                          _try_satellite5_configuration)
 from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
@@ -400,27 +398,6 @@ def upload(config, pconn, tar_file, collection_duration=None):
             with open(constants.last_upload_results_file, 'w') as handler:
                 handler.write(upload.text)
             write_to_disk(constants.lastupload_file)
-
-            # Write to ansible facts directory
-            if os.path.isdir(constants.insights_ansible_facts_dir):
-                insights_facts = {}
-                insights_facts['last_upload'] = api_response
-
-                sat6 = _try_satellite6_configuration(config)
-                sat5 = None
-                if not sat6:
-                    sat5 = _try_satellite5_configuration(config)
-
-                if sat6:
-                    connection = 'sat6'
-                elif sat5:
-                    connection = 'sat5'
-                else:
-                    connection = 'rhsm'
-
-                insights_facts['conf'] = {'machine-id': machine_id, 'connection': connection}
-                with open(constants.insights_ansible_facts_file, 'w') as handler:
-                    handler.write(json.dumps(insights_facts))
 
             account_number = config.account_number
             if account_number:
