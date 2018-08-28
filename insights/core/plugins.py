@@ -22,6 +22,7 @@ class datasource(dr.ComponentType):
     """ Decorates a component that one or more Parsers will consume. """
     multi_output = False
     raw = False
+    filterable = False
 
     def invoke(self, broker):
         try:
