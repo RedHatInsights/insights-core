@@ -36,10 +36,10 @@ with open(this_file) as f:
 
 
 class Stuff(SpecSet):
-    smpl_file = simple_file(this_file)
+    smpl_file = simple_file(this_file, filterable=True)
     many = glob_file(here + "/*.py")
     smpl_cmd = simple_command("/usr/bin/uptime")
-    smpl_cmd_list_of_lists = simple_command("echo -n ' hello '")
+    smpl_cmd_list_of_lists = simple_command("echo -n ' hello '", filterable=True)
 
 
 class stage(dr.ComponentType):

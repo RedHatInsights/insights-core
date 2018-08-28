@@ -4,7 +4,6 @@ specializes their interfaces and execution model where required.
 """
 
 import logging
-import sys
 import traceback
 
 from insights.core import dr
@@ -23,6 +22,7 @@ class datasource(dr.ComponentType):
     """ Decorates a component that one or more Parsers will consume. """
     multi_output = False
     raw = False
+    filterable = False
 
     def invoke(self, broker):
         try:
@@ -46,11 +46,7 @@ class parser(dr.ComponentType):
         super(parser, self).__init__(dep, group=group)
 
     def invoke(self, broker):
-        dependency = self.requires[0]
-        if dependency not in broker:
-            raise dr.MissingRequirements(([dependency], []))
-
-        dep_value = broker[dependency]
+        dep_value = broker[self.requires[0]]
         if not isinstance(dep_value, list):
             return self.component(dep_value)
 
@@ -89,15 +85,20 @@ class rule(dr.ComponentType):
     ComponentType for a component that can see all parsers and combiners for a
     single host.
     """
-    def invoke(self, broker):
-        try:
-            r = super(rule, self).invoke(broker)
-            if r is None:
-                raise dr.SkipComponent()
-        except dr.MissingRequirements as mr:
-            details = dr.stringify_requirements(mr.requirements)
-            r = _make_skip(dr.get_name(self.component),
+    def process(self, broker):
+        """
+        Ensures dependencies have been met before delegating to `self.invoke`.
+        """
+        if any(i in broker for i in dr.IGNORE.get(self.component, [])):
+            raise dr.SkipComponent()
+        missing = self.get_missing_dependencies(broker)
+        if missing:
+            details = dr.stringify_requirements(missing)
+            return _make_skip(dr.get_name(self.component),
                     reason="MISSING_REQUIREMENTS", details=details)
+        r = self.invoke(broker)
+        if r is None:
+            raise dr.SkipComponent()
         if not isinstance(r, Response):
             raise Exception("rules must return Response objects.")
         return r
@@ -323,25 +324,3 @@ class _make_skip(Response):
                                         rule_fqdn=rule_fqdn,
                                         reason=reason,
                                         details=details)
-
-
-try:
-    from jinja2 import Template
-
-    def get_content(obj, key):
-        mod = sys.modules[obj.__module__]
-        c = getattr(mod, "CONTENT", None)
-        if c:
-            if isinstance(c, dict) and key:
-                return c.get(key)
-            return c
-
-    def format_rule(comp, val):
-        content = get_content(comp, val.get_key())
-        if content:
-            return Template(content).render(val)
-        return str(val)
-
-    dr.set_formatter(format_rule, rule)
-except:
-    pass

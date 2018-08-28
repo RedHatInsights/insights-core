@@ -110,8 +110,7 @@ DEFAULT_OPTS = {
     'display_name': {
         'default': None,
         'opt': ['--display-name'],
-        'help': 'Display name for this system. '
-                'Must be used with --register',
+        'help': 'Set a display name for this system. ',
         'action': 'store'
     },
     'enable_schedule': {
@@ -151,6 +150,7 @@ DEFAULT_OPTS = {
         'action': 'store',
     },
     'http_timeout': {
+        # non-CLI
         'default': 10
     },
     'insecure_connection': {
@@ -178,7 +178,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--net-debug'],
         'help': 'Log the HTTP method and URL every time a network call is made.',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'debug'
     },
     'no_gpg': {
         # non-CLI
