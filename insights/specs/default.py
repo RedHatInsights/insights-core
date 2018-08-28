@@ -493,6 +493,7 @@ class DefaultSpecs(Specs):
                               glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
                               glob_file("/database/postgresql-*.log")
                               ])
+    puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
     md5chk_files = simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
