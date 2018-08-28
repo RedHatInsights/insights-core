@@ -10,6 +10,7 @@ import logging
 import copy
 import glob
 import six
+import shlex
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
@@ -111,6 +112,11 @@ class DataCollector(object):
             precmd_alias = spec['pre_command']
             try:
                 precmd = precmds[precmd_alias]
+
+                if set.intersection(set(shlex.split(precmd)),
+                                    constants.command_blacklist):
+                    raise RuntimeError("Command Blacklist: " + precmd)
+
                 args = self._run_pre_command(precmd)
                 logger.debug('Pre-command results: %s', args)
 
