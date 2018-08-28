@@ -40,6 +40,7 @@ class DataCollector(object):
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
+        self.hostname_path = None
 
     def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
@@ -189,7 +190,7 @@ class DataCollector(object):
 
         for c in conf['commands']:
             # remember hostname archive path
-            if 'symbolic_name' in c and c['symbolic_name'] == 'hostname':
+            if c.get('symbolic_name') == 'hostname':
                 self.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
 
@@ -264,6 +265,7 @@ class CleanOptions(object):
                 pass
 
         if config.obfuscate_hostname:
-            self.hostname_path = hostname_path
+            # default to its original location
+            self.hostname_path = hostname_path or 'insights_commands/hostname'
         else:
             self.hostname_path = None
