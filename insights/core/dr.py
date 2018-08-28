@@ -42,12 +42,6 @@ IGNORE = defaultdict(set)
 # tracks if a component is enabled
 ENABLED = defaultdict(lambda: True)
 
-FORMATTER = {}
-
-
-def set_formatter(func, _type):
-    FORMATTER[_type] = func
-
 
 def set_enabled(component, enabled=True):
     """
@@ -147,12 +141,6 @@ def add_dependency(component, dep):
     get_delegate(component).add_dependency(dep)
 
 
-def to_str(comp, val):
-    _type = get_component_type(comp)
-    func = FORMATTER.get(_type)
-    return func(comp, val) if func else str(val)
-
-
 class MissingRequirements(Exception):
     def __init__(self, requirements):
         self.requirements = requirements
@@ -208,6 +196,13 @@ def mark_hidden(component):
 
 def is_hidden(component):
     return component in HIDDEN
+
+
+def walk_tree(root, method=get_dependencies):
+    for d in method(root):
+        yield d
+        for c in walk_tree(d, method=method):
+            yield c
 
 
 def walk_dependencies(root, visitor):
@@ -457,6 +452,8 @@ class ComponentType(object):
         """
         Ensures dependencies have been met before delegating to `self.invoke`.
         """
+        if any(i in broker for i in IGNORE.get(self.component, [])):
+            raise SkipComponent()
         missing = self.get_missing_dependencies(broker)
         if missing:
             raise MissingRequirements(missing)

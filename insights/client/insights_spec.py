@@ -176,7 +176,7 @@ class InsightsFile(InsightsSpec):
 
         if self.pattern is not None:
             pattern_file = NamedTemporaryFile()
-            pattern_file.write("\n".join(self.pattern).encode())
+            pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
 
             cmd = "grep -F -f %s" % pattern_file.name

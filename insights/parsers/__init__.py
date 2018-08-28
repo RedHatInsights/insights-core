@@ -88,6 +88,7 @@ def optlist_to_dict(optlist, opt_sep=',', kv_sep='=', strip_quotes=False):
     def make_kv(opt):
         if kv_sep is not None and kv_sep in opt:
             k, v = opt.split(kv_sep, 1)
+            k = k.strip()
             if strip_quotes and v[0] in ('"', "'") and v[-1] == v[0]:
                 return k, v[1:-1]
             else:

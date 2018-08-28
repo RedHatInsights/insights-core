@@ -23,11 +23,9 @@ from OpenSSL import SSL, crypto
 
 from .utilities import (determine_hostname,
                         generate_machine_id,
-                        write_registered_file,
                         write_unregistered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
-from .schedule import get_scheduler
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -66,7 +64,7 @@ class InsightsConnection(object):
         self.password = self.config.password
 
         self.cert_verify = self.config.cert_verify
-        if type(self.cert_verify) in six.string_types:
+        if isinstance(self.cert_verify, six.string_types):
             if self.cert_verify.lower() == 'false':
                 self.cert_verify = False
             elif self.cert_verify.lower() == 'true':
@@ -99,7 +97,7 @@ class InsightsConnection(object):
         self.session = self._init_session()
         # need this global -- [barfing intensifies]
         # tuple of self-signed cert flag & cert chain list
-        self.cert_chain = (False, [])
+        self.cert_chain = [False, []]
 
     def _init_session(self):
         """
@@ -233,9 +231,9 @@ class InsightsConnection(object):
                 logger.debug("Testing: %s", test_url + ext)
                 if method is "POST":
                     test_req = self.session.post(
-                        test_url + ext, timeout=10, data=test_flag)
+                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
                 elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=10)
+                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
                 logger.info("HTTP Status Code: %d", test_req.status_code)
                 logger.info("HTTP Status Text: %s", test_req.reason)
                 logger.info("HTTP Response Text: %s", test_req.text)
@@ -268,13 +266,17 @@ class InsightsConnection(object):
         return True
 
     def _generate_cert_str(self, cert_data, prefix):
-        return prefix + '/'.join(['='.join(a) for a in
-                                  cert_data.get_components()])
+        return prefix + '/'.join(
+                [a[0].decode() + '=' + a[1].decode()
+                    for a in cert_data.get_components()])
 
     def _test_openssl(self):
         '''
         Run a test with openssl to detect any MITM proxies
         '''
+        if not self.cert_verify:
+            logger.info('cert_verify set to False, skipping SSL check...')
+            return False
         success = True
         hostname = urlparse(self.base_url).netloc.split(':')
         sock = socket.socket()
@@ -291,7 +293,7 @@ class InsightsConnection(object):
                 logger.debug(e)
                 logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
                 return False
-            sock.send(connect_str)
+            sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
             if '200 Connection established' not in res:
                 logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
@@ -574,7 +576,7 @@ class InsightsConnection(object):
         try:
             url = self.api_url + '/v1/systems/' + machine_id
             net_logger.info("GET %s", url)
-            res = self.session.get(url, timeout=10)
+            res = self.session.get(url, timeout=self.config.http_timeout)
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
@@ -616,8 +618,6 @@ class InsightsConnection(object):
             self.session.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
-            write_unregistered_file()
-            get_scheduler(self.config).remove_scheduling()
             return True
         except requests.ConnectionError as e:
             logger.debug(e)
@@ -643,8 +643,6 @@ class InsightsConnection(object):
         logger.debug("System: %s", system.json())
 
         message = system.headers.get("x-rh-message", "")
-
-        write_registered_file()
 
         # Do grouping
         if self.config.group is not None:
@@ -715,3 +713,30 @@ class InsightsConnection(object):
             self.config.account_number = None
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
+
+    def set_display_name(self, display_name):
+        machine_id = generate_machine_id()
+        try:
+            url = self.api_url + '/v1/systems/' + machine_id
+            net_logger.info("PUT %s", url)
+            res = self.session.put(url,
+                                   timeout=self.config.http_timeout,
+                                   headers={'Content-Type': 'application/json'},
+                                   data=json.dumps(
+                                        {'display_name': display_name}))
+            if res.status_code == 200:
+                logger.info('System display name changed to %s', display_name)
+                return True
+            elif res.status_code == 404:
+                logger.error('System not found. '
+                             'Please run insights-client --register.')
+                return False
+            else:
+                logger.error('Unable to set display name: %s %s',
+                             res.status_code, res.text)
+                return False
+        except requests.ConnectionError:
+            # can't connect, run connection test
+            logger.error('Connection timed out. Running connection test...')
+            self.test_connection()
+            return False

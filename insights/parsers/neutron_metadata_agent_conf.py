@@ -6,8 +6,10 @@ The ``NeutronMetadataAgentIni`` class parses the metadata-agent configuration fi
 See the ``IniConfigFile`` class for more usage information.
 '''
 
-from .. import parser, IniConfigFile
+from .. import add_filter, parser, IniConfigFile
 from insights.specs import Specs
+
+add_filter(Specs.neutron_metadata_agent_ini, ["["])
 
 
 @parser(Specs.neutron_metadata_agent_ini)

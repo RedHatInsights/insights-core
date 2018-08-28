@@ -9,6 +9,39 @@ import warnings
 TMP_DIR = os.path.join("/tmp", "insights-web")
 logger = logging.getLogger(__name__)
 
+TRUTH = {
+    "true": True,
+    "false": False,
+    "yes": True,
+    "no": False,
+    "1": True,
+    "0": False
+}
+
+
+def parse_bool(s, default=False):
+    """
+    Return the boolean value of an English string or default if it can't be
+    determined.
+    """
+    if s is None:
+        return default
+    return TRUTH.get(s.lower(), default)
+
+
+def which(cmd, env=os.environ):
+    if cmd.startswith("/"):
+        if os.access(cmd, os.X_OK) and os.path.isfile(cmd):
+            return cmd
+        return None
+
+    paths = env.get("PATH").split(os.pathsep)
+    for path in paths:
+        c = os.path.join(path, cmd)
+        if os.access(c, os.X_OK) and os.path.isfile(c):
+            return c
+    return None
+
 
 class KeyPassingDefaultDict(collections.defaultdict):
     """ A default dict that passes the key to its factory function. """

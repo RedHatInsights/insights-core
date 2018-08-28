@@ -1,4 +1,3 @@
-from insights.core.filters import add_filter
 from insights.parsers.journal_since_boot import JournalSinceBoot
 from insights.tests import context_wrap
 
@@ -14,15 +13,6 @@ Apr 22 10:37:32 boy-bona crontab[28951]: (root) LIST (root)
 Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1)
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 """.strip()
-
-add_filter("messages", [
-    "LIST",
-    "CROND",
-    "jabberd",
-    "Wrapper",
-    "Launching",
-    "yum"
-])
 
 
 def test_messages():
