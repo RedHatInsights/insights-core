@@ -97,7 +97,7 @@ class InsightsConnection(object):
         self.session = self._init_session()
         # need this global -- [barfing intensifies]
         # tuple of self-signed cert flag & cert chain list
-        self.cert_chain = (False, [])
+        self.cert_chain = [False, []]
 
     def _init_session(self):
         """

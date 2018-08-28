@@ -30,6 +30,8 @@ NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 ---------------------------------------------------
 
+LibvirtGuestsSysconfig - file ``/etc/sysconfig/libvirt-guests``
+---------------------------------------------------------------
 """
 
 from .. import parser, SysconfigOptions
@@ -294,5 +296,32 @@ class MemcachedSysconfig(SysconfigOptions):
         >>> memcached_sysconfig = shared[MemcachedSysconfig]
         >>> memcached_sysconfig.get('OPTIONS')
         '-U 0 -l 127.0.0.1'
+    """
+    pass
+
+
+@parser(Specs.sysconfig_libvirt_guests)
+class LibvirtGuestsSysconfig(SysconfigOptions):
+    """A parser for ``libvirt-guests`` configuration, stored in
+    ``/etc/sysconfig/libvirt-guests``
+
+    Sample Input::
+
+        # URIs to check for running guests
+        # example: URIS='default xen:/// vbox+tcp://host/system lxc:///'
+        #URIS=default
+
+        # action taken on host boot
+        # - start   all guests which were running on shutdown are started on boot
+        #           regardless on their autostart settings
+        # - ignore  libvirt-guests init script won't start any guest on boot, however,
+        #           guests marked as autostart will still be automatically started by
+        #           libvirtd
+        ON_BOOT=ignore
+
+    Examples:
+        >>> libvirt_guests_sysconfig.get('ON_BOOT')
+        'ignore'
+
     """
     pass
