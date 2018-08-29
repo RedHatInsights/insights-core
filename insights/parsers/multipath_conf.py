@@ -1,9 +1,16 @@
 """
-MultipathConf - file ``/etc/multipath.conf``
-============================================
+multipath.conf file content
+===========================
 
-The main class is the MultipathConf class, which reads the multipath daemon's
-``/etc/multipath.conf`` configuration file.  This is in a pseudo-JSON format.
+The base class is the MultipathConfParser class, which reads the multipath
+daemon's ``/etc/multipath.conf`` configuration file.
+This is in a pseudo-JSON format.
+
+MultipathConf - file ``/etc/multipath.conf``
+--------------------------------------------
+
+MultipathConfInitramfs - command ``lsinitrd -f /etc/multipath.conf``
+--------------------------------------------------------------------
 
 """
 
@@ -14,9 +21,12 @@ from insights.configtree.dictlike import parse_doc
 from insights.specs import Specs
 
 
-@parser(Specs.multipath_conf)
-class MultipathConf(Parser, LegacyItemAccess):
+class MultipathConfParser(Parser, LegacyItemAccess):
     """
+    Shared parser for the file ``/etc/multipath.conf`` and output of
+    ``lsinitrd -f /etc/multipath.conf`` applied to
+    /boot/initramfs-<kernel-version>.img.
+
     Return a dict where the keys are the name of sections in multipath
     configuraion file.  If there are subsections, the value is a list of
     dictionaries with parameters as key and value.  Otherwise the value is
@@ -90,7 +100,7 @@ class MultipathConf(Parser, LegacyItemAccess):
         }
 
     Examples:
-        >>> conf = shared[MultipathConf]
+        >>> conf = shared[MultipathConfParser]
         >>> conf.data['blacklist']['devnode']  # Access via data property
         '^hd[a-z]'
         >>> conf['defaults']['user_friendly_names']  # Pseudo-dict access
@@ -130,7 +140,24 @@ class MultipathConf(Parser, LegacyItemAccess):
         return my_conf
 
     def parse_content(self, content):
-        self.data = MultipathConf._create_parser().parseString("\n".join(content))[0].asDict()
+        self.data = MultipathConfParser._create_parser().parseString("\n".join(content))[0].asDict()
+
+
+@parser(Specs.multipath_conf)
+class MultipathConf(MultipathConfParser):
+    """
+    Parser for the file ``/etc/multipath.conf``.
+    """
+    pass
+
+
+@parser(Specs.multipath_conf_initramfs)
+class MultipathConfInitramfs(MultipathConfParser):
+    """
+    Parser for the output of ``lsinitrd -f /etc/multipath.conf`` applied to
+    /boot/initramfs-<kernel-version>.img.
+    """
+    pass
 
 
 @parser(Specs.multipath_conf)

@@ -62,6 +62,15 @@ def test_multipath_conf():
     assert multipath_conf_info.get('blacklist').get('devnode') == '^hd[a-z]'
 
 
+def test_multipath_conf_initramfs():
+    multipath_conf_initramfs = multipath_conf.MultipathConfInitramfs(context_wrap(MULTIPATH_CONF_INFO))
+    assert multipath_conf_initramfs.get('defaults').get('udev_dir') == '/dev'
+    assert multipath_conf_initramfs.get('defaults').get('path_selector') == 'round-robin 0'
+    assert multipath_conf_initramfs.get('multipaths')[1].get('alias') == 'red'
+    assert multipath_conf_initramfs.get('devices')[0].get('no_path_retry') == 'queue'
+    assert multipath_conf_initramfs.get('blacklist').get('devnode') == '^hd[a-z]'
+
+
 def test_multipath_conf_tree():
     conf = multipath_conf.MultipathConfTree(context_wrap(CONF))
     assert len(conf["blacklist"]) == 1
