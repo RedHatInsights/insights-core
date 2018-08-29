@@ -100,6 +100,9 @@ def test_write_registered_file():
 @patch('insights.client.utilities.constants.registered_files',
        ['/tmp/insights-client.registered',
         '/tmp/redhat-access-insights.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       ['/tmp/insights-client.unregistered',
+        '/tmp/redhat-access-insights.unregistered'])
 def test_delete_registered_file():
     util.write_registered_file()
     util.delete_registered_file()
@@ -121,6 +124,9 @@ def test_write_unregistered_file():
         assert os.path.isfile(u) is True
 
 
+@patch('insights.client.utilities.constants.registered_files',
+       ['/tmp/insights-client.registered',
+        '/tmp/redhat-access-insights.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
        ['/tmp/insights-client.unregistered',
         '/tmp/redhat-access-insights.unregistered'])
