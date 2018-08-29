@@ -39,6 +39,5 @@ def test_getsebool():
 
 def test_getsebool_disabled():
     with pytest.raises(SkipException) as excinfo:
-        result = getsebool.Getsebool(context_wrap(SELINUX_DISABLED))
+        getsebool.Getsebool(context_wrap(SELINUX_DISABLED))
     assert 'SELinux is disabled' in str(excinfo.value)
-
