@@ -4,7 +4,7 @@ import six
 from pprint import pprint
 from insights import dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
-from insights.formats import Formatter, render
+from insights.formats import Formatter, FormatterAdapter, render
 import collections
 
 try:
@@ -30,19 +30,13 @@ def _find_context(broker):
 
 
 class HumanReadableFormat(Formatter):
-    """ Displays results in a human readable format.
-    """
+    def __init__(self, broker, missing=False, tracebacks=False, dropped=False):
+        self.broker = broker
+        self.missing = missing
+        self.tracebacks = tracebacks
+        self.dropped = dropped
 
-    @staticmethod
-    def configure(p):
-        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
-        p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
-        p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
-
-    def __init__(self, args):
-        self.missing = args.missing
-        self.tracebacks = args.tracebacks
-        self.dropped = args.dropped
+    def preprocess(self):
         self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'exception': 0}
         response = collections.namedtuple('response', 'color intl title')
         self.responses = {'skip': response(color=Fore.BLUE, intl='S', title="Total Skipped Due To Rule Dependencies "
@@ -55,6 +49,14 @@ class HumanReadableFormat(Formatter):
                                                                                        "'make_metadata_key' - "),
                           'exception': response(color=Fore.RED, intl='E', title="Total Exceptions Reported to Broker - ")
                           }
+
+        print(Fore.CYAN + '-' * 9)
+        print("Progress:")
+        print('-' * 9 + Style.RESET_ALL)
+        self.broker.add_observer(self.progress_bar, rule)
+        self.broker.add_observer(self.progress_bar, condition)
+        self.broker.add_observer(self.progress_bar, incident)
+        self.broker.add_observer(self.progress_bar, parser)
 
     def progress_bar(self, c, broker):
         """ Print the formated progress information for the processed return types
@@ -72,59 +74,31 @@ class HumanReadableFormat(Formatter):
             else:
                 self.counts['exception'] += 1
             print(Fore.RED + "E" + Style.RESET_ALL, end="")
+        return self
 
-    def preprocess(self, broker):
-        """Print progress heading
-        """
-        print(Fore.CYAN + '-' * 9)
-        print("Progress:")
-        print('-' * 9 + Style.RESET_ALL)
-        broker.add_observer(self.progress_bar, rule)
-        broker.add_observer(self.progress_bar, condition)
-        broker.add_observer(self.progress_bar, incident)
-        broker.add_observer(self.progress_bar, parser)
-
-    def postprocess(self, broker):
-        """Print heading for list of rules tested and calls show_description to print list of rules and responses
-        """
-        if self.missing:
-            self.show_missing(broker)
-        if self.tracebacks:
-            self.show_tracebacks(broker)
-        if self.dropped:
-            self.show_dropped(broker)
-
-        print()
-        print()
-        print(Fore.CYAN + "-" * 13)
-        print("Rules Tested:")
-        print('-' * 13 + Style.RESET_ALL)
-
-        self.show_description(broker)
-
-    def show_missing(self, broker):
+    def show_missing(self):
         """ Show missing requirements
         """
-        if broker.missing_requirements:
+        if self.broker.missing_requirements:
             print()
             print("Missing Requirements:")
-            print(broker.missing_requirements)
+            print(self.broker.missing_requirements)
 
-    def show_tracebacks(self, broker):
+    def show_tracebacks(self):
         """ Show tracebacks
         """
-        if broker.tracebacks:
+        if self.broker.tracebacks:
             print()
             print("Tracebacks:")
-            for t in broker.tracebacks.values():
+            for t in self.broker.tracebacks.values():
                 print(t)
 
-    def show_dropped(self, broker):
+    def show_dropped(self):
         """ Show dropped files
         """
-        ctx = _find_context(broker)
+        ctx = _find_context(self.broker)
         if ctx and ctx.all_files:
-            ds = broker.get_by_type(datasource)
+            ds = self.broker.get_by_type(datasource)
             vals = []
             for v in ds.values():
                 if isinstance(v, list):
@@ -135,7 +109,7 @@ class HumanReadableFormat(Formatter):
             pprint("Dropped Files:")
             pprint(dropped, indent=4)
 
-    def show_description(self, broker):
+    def show_description(self):
         """ Prints the formatted response for the matching return type
         """
         def printit(c, v):
@@ -150,8 +124,8 @@ class HumanReadableFormat(Formatter):
                 print(render(c, v))
                 print()
 
-        for c in sorted(broker.get_by_type(rule), key=dr.get_name):
-            v = broker[c]
+        for c in sorted(self.broker.get_by_type(rule), key=dr.get_name):
+            v = self.broker[c]
             printit(c, v)
         print()
 
@@ -161,3 +135,43 @@ class HumanReadableFormat(Formatter):
 
         for c in self.counts:
             print(self.responses[c].color + self.responses[c].title + str(self.counts[c]) + Style.RESET_ALL)
+
+    def postprocess(self):
+        if self.missing:
+            self.show_missing()
+        if self.tracebacks:
+            self.show_tracebacks()
+        if self.dropped:
+            self.show_dropped()
+
+        print()
+        print()
+        print(Fore.CYAN + "-" * 13)
+        print("Rules Tested:")
+        print('-' * 13 + Style.RESET_ALL)
+
+        self.show_description()
+
+
+class HumanReadableFormatAdapter(FormatterAdapter):
+    """ Displays results in a human readable format.
+    """
+
+    @staticmethod
+    def configure(p):
+        p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
+        p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
+        p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
+
+    def __init__(self, args):
+        self.missing = args.missing
+        self.tracebacks = args.tracebacks
+        self.dropped = args.dropped
+        self.formatter = None
+
+    def preprocess(self, broker):
+        self.formatter = HumanReadableFormat(broker, self.missing, self.tracebacks, self.dropped)
+        self.formatter.preprocess()
+
+    def postprocess(self, broker):
+        self.formatter.postprocess()
