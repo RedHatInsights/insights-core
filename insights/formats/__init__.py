@@ -71,6 +71,7 @@ class Formatter(object):
 
 class EvaluatorFormatter(Formatter):
     def preprocess(self):
+        dr.load_components("insights.combiners.hostname")
         self.evaluator = SingleEvaluator(broker=self.broker)
 
     def postprocess(self):
