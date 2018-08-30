@@ -132,6 +132,7 @@ class FileProvider(ContentProvider):
         self.file_name = os.path.basename(self.path)
 
         self.ds = ds
+        self.filter = True
         self.ctx = ctx
         self.validate()
 
@@ -175,6 +176,8 @@ class TextFileProvider(FileProvider):
 
     def create_args(self):
         args = []
+        if not self.filter:
+            return args
 
         filters = "\n".join(get_filters(self.ds)) if self.ds else None
         if filters:
@@ -804,6 +807,7 @@ def serialize_provider(obj):
         "relative_path": obj.relative_path,
         "file_name": obj.file_name,
         "loaded": obj.loaded,
+        "filter": False,
         "_content": obj._content,
         "_exception": None
     }

@@ -16,7 +16,7 @@ blacklist:
     files: []
     commands: []
     patterns: []
-    keywords: ["alonzo", "nginx"]
+    keywords: ["alonzo"]
 
 # packages and modules to load
 packages:
@@ -36,7 +36,8 @@ persist:
 # the file is put into the datasource's record. Set to 0 to put everything into
 # json regardless of file size. Set to a negative number to put everything into
 # a raw data directory. Defaults to 0 if not specified. Below is 2**19.
-max_serializable_file_size: 524288
+# max_serializable_file_size: 524288
+max_serializable_file_size: -1
 
 # configuration of loaded components. names are prefixes, so any component with
 # a fully qualified name that starts with a key will get the associated

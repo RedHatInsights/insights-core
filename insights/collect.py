@@ -48,7 +48,7 @@ packages:
 persist:
     - name: insights.specs.Specs
       enabled: true
-max_serializable_file_size: 524288
+max_serializable_file_size: -1
 configs:
     - name: insights.specs.Specs
       enabled: true
@@ -68,18 +68,48 @@ def check_output(cmd, env=SAFE_ENV):
     return output.decode("utf-8")
 
 
-def copy(src, dst, filters=None, bufsize=-1):
+def connect(args, out_stream, bufsize=-1):
+    if len(args) == 1:
+        Popen(args[0], bufsize=bufsize, stdout=out_stream).wait()
+        return
+
+    stdout = Popen(args[0], bufsize=bufsize).stdout
+    last = len(args) - 2
+    for i, arg in enumerate(args[1:]):
+        if i < last:
+            stdout = Popen(arg, bufsize=bufsize, stdin=stdout).stdout
+        else:
+            Popen(arg, bufsize=bufsize, stdin=stdout, stdout=out_stream).wait()
+
+
+def copy(src, dst, filters=None, patterns=None, keywords=None, bufsize=-1):
     """
     Helper for copying files outside of python while optionally applying
     filters.
     """
     fs.ensure_path(os.path.dirname(dst), mode=0o770)
+    args = []
 
     if filters:
-        filters = "\n".join(filters)
-        args = ["grep", "-F", filters, src]
+        args.append(["grep", "-F", "\n".join(filters), src])
+
+    if patterns:
+        grep = ["grep", "-v" "-F", "\n".join(patterns)]
+        if not args:
+            grep.append(src)
+        args.append(grep)
+
+    if keywords:
+        sed = ["sed"]
+        for kw in keywords:
+            sed.extend(["-e", "s/%s/keyword/g" % kw.replace("/", "\\/")])
+        if not args:
+            sed.append(src)
+        args.append(sed)
+
+    if args:
         with open(dst, "wb") as out:
-            Popen(args, bufsize=bufsize, stdout=out).wait()
+            connect(args, out, bufsize=bufsize)
     else:
         call(["cp", src, dst], env=SAFE_ENV)
 
@@ -160,7 +190,7 @@ def create_context(ctx):
     return ctx_cls(**ctx_args)
 
 
-def relocate(results, root, max_size, filters):
+def relocate(results, root, max_size, filters, patterns, keywords):
     """
     Copies datasource files into a raw_data directory if they're over a maximum
     size and haven't already been loaded into memory.
@@ -174,7 +204,7 @@ def relocate(results, root, max_size, filters):
             if max_size and os.path.getsize(src) > max_size:
                 rel = result.relative_path
                 dst = os.path.join(root, rel)
-                copy(src, dst, filters=filters)
+                copy(src, dst, filters=filters, patterns=patterns, keywords=keywords)
             else:
                 result.content
         return result
@@ -213,7 +243,10 @@ def make_persister(to_persist, root, max_size=0):
             try:
                 value = broker.get(c)
                 if value:
-                    value = relocate(value, raw_data_dir, max_size, get_filters(c))
+                    fil = get_filters(c)
+                    pats = blacklist.get_disallowed_patterns()
+                    kws = blacklist.get_disallowed_keywords()
+                    value = relocate(value, raw_data_dir, max_size, fil, pats, kws)
 
                 doc = {
                     "name": name,

@@ -161,4 +161,7 @@ def serialize_exception(ex):
 
 @deserializer(BaseException)
 def deserialize_exception(_type, data):
-    return _type(*data)
+    obj = _type.__new__(_type)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    return obj
