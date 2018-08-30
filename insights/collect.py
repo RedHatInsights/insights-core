@@ -23,6 +23,7 @@ from insights.core import blacklist
 from insights.core.serde import marshal, ser
 from insights.core.spec_factory import FileProvider
 from insights.util import fs
+from insights.util.subproc import CalledProcessError
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
@@ -112,11 +113,17 @@ def load_packages(pkgs):
 
 
 def apply_blacklist(cfg):
+    for b in cfg.get("files", []):
+        blacklist.add_file(b)
+
     for b in cfg.get("commands", []):
         blacklist.add_command(b)
 
-    for b in cfg.get("files", []):
-        blacklist.add_file(b)
+    for b in cfg.get("patterns", []):
+        blacklist.add_pattern(b)
+
+    for b in cfg.get("keywords", []):
+        blacklist.add_keyword(b)
 
 
 def apply_configs(configs):
@@ -202,24 +209,31 @@ def make_persister(to_persist, root, max_size=0):
     def persister(c, broker):
         name = dr.get_name(c)
         if c in broker and c in to_persist:
-            value = broker.get(c)
-            if value:
-                value = relocate(value, raw_data_dir, max_size, get_filters(c))
-
-            doc = {
-                "name": name,
-                "time": broker.exec_times.get(c),
-                "results": marshal(value),
-                "errors": marshal(broker.exceptions.get(c))
-            }
-
-            path = os.path.join(data_dir, name + "." + ser_name)
+            path = None
             try:
-                with open(path, "w") as f:
-                    ser.dump(doc, f)
-            except Exception as boom:
-                log.error("Could not serialize %s to %s: %s" % (name, ser_name, boom))
-                fs.remove(path)
+                value = broker.get(c)
+                if value:
+                    value = relocate(value, raw_data_dir, max_size, get_filters(c))
+
+                doc = {
+                    "name": name,
+                    "time": broker.exec_times.get(c),
+                    "results": marshal(value),
+                    "errors": marshal(broker.exceptions.get(c))
+                }
+            except (dr.SkipComponent, CalledProcessError) as sc:
+                log.debug(sc)
+            except Exception as ex:
+                log.error("Could not serialize %s to %s: %s" % (name, ser_name, ex))
+            else:
+                try:
+                    path = os.path.join(data_dir, name + "." + ser_name)
+                    with open(path, "w") as f:
+                        ser.dump(doc, f)
+                except Exception as boom:
+                    log.error("Could not serialize %s to %s: %s" % (name, ser_name, boom))
+                    if path:
+                        fs.remove(path)
 
     return persister
 

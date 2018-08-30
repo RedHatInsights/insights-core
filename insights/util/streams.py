@@ -49,7 +49,7 @@ def stream(command, stdin=None, env=os.environ, timeout=None):
 
     cmd = which(command[0])
     if cmd is None:
-        raise Exception("Couldn't execute: %s" % command)
+        raise Exception("Command not in PATH: %s" % command)
 
     command[0] = cmd
 

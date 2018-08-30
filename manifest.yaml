@@ -13,8 +13,10 @@ default_component_enabled: false
 
 # commands and files to ignore
 blacklist:
-    commands: []
     files: []
+    commands: []
+    patterns: []
+    keywords: ["alonzo", "nginx"]
 
 # packages and modules to load
 packages:

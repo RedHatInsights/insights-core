@@ -100,7 +100,7 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
 
         if not shell:
             if len(cmd) > 1:
-                cout = Popen(cmd[0], stdout=stdout, **kwargs)
+                cout = Popen(cmd[0], stdout=stdout, stderr=stderr, **kwargs)
                 del cmd[0]
 
                 for next in cmd:

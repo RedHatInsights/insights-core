@@ -173,20 +173,39 @@ class TextFileProvider(FileProvider):
     lines. Each line is filtered if filters are defined for the datasource.
     """
 
+    def create_args(self):
+        args = []
+
+        filters = "\n".join(get_filters(self.ds)) if self.ds else None
+        if filters:
+            args.append(["grep", "-F", filters, self.path])
+
+        patterns = "\n".join(blacklist.get_disallowed_patterns())
+        if patterns:
+            grep = ["grep", "-v" "-F", patterns]
+            if not args:
+                grep.append(self.path)
+            args.append(grep)
+
+        keywords = blacklist.get_disallowed_keywords()
+        if keywords:
+            sed = ["sed"]
+            for kw in keywords:
+                sed.extend(["-e", "s/%s/keyword/g" % kw.replace("/", "\\/")])
+            if not args:
+                sed.append(self.path)
+            args.append(sed)
+        return args
+
     def load(self):
         self.loaded = True
-        filters = False
-        if self.ds:
-            filters = "\n".join(get_filters(self.ds))
-        if filters:
-            cmd = [["grep", "-F", filters, self.path]]
-            rc, out = self.ctx.shell_out(cmd, keep_rc=True, env=SAFE_ENV)
+        args = self.create_args()
+        if args:
+            rc, out = self.ctx.shell_out(args, keep_rc=True, env=SAFE_ENV)
             self.rc = rc
             return out
-        else:
-            with open(self.path, "rU") as f:  # universal newlines
-                results = [l.rstrip("\n") for l in f]
-        return results
+        with open(self.path, "rU") as f:  # universal newlines
+            return [l.rstrip("\n") for l in f]
 
     def _stream(self):
         """
@@ -198,10 +217,10 @@ class TextFileProvider(FileProvider):
             if self._content:
                 yield self._content
                 raise StopIteration
-            filters = get_filters(self.ds) if self.ds else None
-            if filters:
-                cmd = ["grep", "-F", "\n".join(filters), self.path]
-                with streams.stream(cmd, env=SAFE_ENV) as s:
+
+            args = self.create_args()
+            if args:
+                with streams.connect(*args, env=SAFE_ENV) as s:
                     yield s
             else:
                 with open(self.path, "rU") as f:  # universal newlines
@@ -243,17 +262,30 @@ class CommandOutputProvider(ContentProvider):
         if not which(shlex.split(self.cmd)[0]):
             raise ContentException("Couldn't execute: %s" % self.cmd)
 
-    def load(self):
+    def create_args(self):
+        command = [shlex.split(self.cmd)]
+
         if self.split:
             filters = "\n".join(get_filters(self.ds))
-        if filters:
-            command = [shlex.split(self.cmd)] + [["grep", "-F", filters]]
-            raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
-                    timeout=self.timeout, env=SAFE_ENV)
-        else:
-            command = [shlex.split(self.cmd)]
-            raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
-                    timeout=self.timeout, env=SAFE_ENV)
+            if filters:
+                command.append(["grep", "-F", filters])
+
+            patterns = "\n".join(blacklist.get_disallowed_patterns())
+            if patterns:
+                command.append(["grep", "-v", "-F", patterns])
+
+            keywords = blacklist.get_disallowed_keywords()
+            if keywords:
+                sed = ["sed"]
+                for kw in keywords:
+                    sed.extend(["-e", "s/%s/keyword/g" % kw.replace("/", "\\/")])
+                command.append(sed)
+        return command
+
+    def load(self):
+        command = self.create_args()
+        raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
+                timeout=self.timeout, env=SAFE_ENV)
         if self.keep_rc:
             self.rc, output = raw
         else:
@@ -270,14 +302,10 @@ class CommandOutputProvider(ContentProvider):
             if self._content:
                 yield self._content
                 raise StopIteration
-            filters = get_filters(self.ds) if self.ds else None
-            if filters:
-                grep = ["grep", "-F", "\n".join(filters)]
-                with self.ctx.connect(self.cmd, grep, env=SAFE_ENV, timeout=self.timeout) as s:
-                    yield s
-            else:
-                with self.ctx.stream(self.cmd, env=SAFE_ENV, timeout=self.timeout) as s:
-                    yield s
+
+            args = self.create_args()
+            with self.ctx.connect(*args, env=SAFE_ENV, timeout=self.timeout) as s:
+                yield s
         except StopIteration:
             raise
         except Exception as ex:
@@ -694,7 +722,6 @@ class foreach_execute(object):
                         timeout=self.timeout)
                 result.append(cop)
             except:
-                traceback.print_exc()
                 log.debug(traceback.format_exc())
         if result:
             return result
