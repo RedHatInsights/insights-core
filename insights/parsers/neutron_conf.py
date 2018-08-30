@@ -25,8 +25,10 @@ Sample input data is in the format::
 
 See the ``IniConfigFile`` class for examples.
 """
-from .. import IniConfigFile, parser
+from .. import IniConfigFile, parser, add_filter
 from insights.specs import Specs
+
+add_filter(Specs.neutron_conf, ["["])
 
 
 @parser(Specs.neutron_conf)
