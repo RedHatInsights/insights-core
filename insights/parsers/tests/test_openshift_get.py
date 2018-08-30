@@ -311,6 +311,179 @@ kind: List
 metadata: {}
 """.strip()
 
+OC_GET_CONFIGMAP = """
+apiVersion: v1
+items:
+- apiVersion: v1
+  data:
+    node-config.yaml: |
+      apiVersion: v1
+      authConfig:
+        authenticationCacheSize: 1000
+        authenticationCacheTTL: 5m
+        authorizationCacheSize: 1000
+        authorizationCacheTTL: 5m
+      dnsBindAddress: 127.0.0.1:53
+      dnsDomain: cluster.local
+      dnsIP: 0.0.0.0
+      dnsNameservers: null
+      dnsRecursiveResolvConf: /etc/origin/node/resolv.conf
+      dockerConfig:
+        dockerShimRootDirectory: /var/lib/dockershim
+        dockerShimSocket: /var/run/dockershim.sock
+        execHandlerName: native
+      enableUnidling: true
+      imageConfig:
+        format: registry.access.redhat.com/openshift3/ose-${component}:${version}
+        latest: false
+      iptablesSyncPeriod: 30s
+      kind: NodeConfig
+      kubeletArguments:
+        bootstrap-kubeconfig:
+        - /etc/origin/node/bootstrap.kubeconfig
+        cert-dir:
+        - /etc/origin/node/certificates
+        cloud-config:
+        - /etc/origin/cloudprovider/openstack.conf
+        cloud-provider:
+        - openstack
+        container-runtime:
+        - remote
+        container-runtime-endpoint:
+        - /var/run/crio/crio.sock
+        enable-controller-attach-detach:
+        - 'true'
+        feature-gates:
+        - RotateKubeletClientCertificate=true,RotateKubeletServerCertificate=true
+        image-service-endpoint:
+        - /var/run/crio/crio.sock
+        node-labels:
+        - node-role.kubernetes.io/infra=true,node-role.kubernetes.io/master=true,node-role.kubernetes.io/compute=true
+        pod-manifest-path:
+        - /etc/origin/node/pods
+        rotate-certificates:
+        - 'true'
+        runtime-request-timeout:
+        - 10m
+      masterClientConnectionOverrides:
+        acceptContentTypes: application/vnd.kubernetes.protobuf,application/json
+        burst: 40
+        contentType: application/vnd.kubernetes.protobuf
+        qps: 20
+      masterKubeConfig: node.kubeconfig
+      networkConfig:
+        mtu: 1450
+        networkPluginName: redhat/openshift-ovs-networkpolicy
+      servingInfo:
+        bindAddress: 0.0.0.0:10250
+        bindNetwork: tcp4
+        clientCA: client-ca.crt
+      volumeConfig:
+        localQuota:
+          perFSGroup: null
+      volumeDirectory: /var/lib/origin/openshift.local.volumes
+    volume-config.yaml: |
+      apiVersion: kubelet.config.openshift.io/v1
+      kind: VolumeConfig
+      localQuota:
+        perFSGroup: 512Mi
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: 2018-08-07T14:56:15Z
+    name: node-config-all-in-one
+    namespace: openshift-node
+    resourceVersion: "1057"
+    selfLink: /api/v1/namespaces/openshift-node/configmaps/node-config-all-in-one
+    uid: 0856aa7e-9a52-11e8-b4f0-fa163e0d4482
+- apiVersion: v1
+  data:
+    fluent.conf: |
+      # This file is the fluentd configuration entrypoint. Edit with care.
+
+      @include configs.d/openshift/system.conf
+
+      # In each section below, pre- and post- includes don't include anything initially;
+      # they exist to enable future additions to openshift conf as needed.
+
+      ## sources
+      ## ordered so that syslog always runs last...
+      @include configs.d/openshift/input-pre-*.conf
+      @include configs.d/dynamic/input-docker-*.conf
+      @include configs.d/dynamic/input-syslog-*.conf
+      @include configs.d/openshift/input-post-*.conf
+      ##
+
+      <label @INGRESS>
+      ## filters
+        @include configs.d/openshift/filter-pre-*.conf
+        @include configs.d/openshift/filter-retag-journal.conf
+        @include configs.d/openshift/filter-k8s-meta.conf
+        @include configs.d/openshift/filter-kibana-transform.conf
+        @include configs.d/openshift/filter-k8s-flatten-hash.conf
+        @include configs.d/openshift/filter-k8s-record-transform.conf
+        @include configs.d/openshift/filter-syslog-record-transform.conf
+        @include configs.d/openshift/filter-viaq-data-model.conf
+        @include configs.d/openshift/filter-post-*.conf
+      ##
+      </label>
+
+      <label @OUTPUT>
+      ## matches
+        @include configs.d/openshift/output-pre-*.conf
+        @include configs.d/openshift/output-operations.conf
+        @include configs.d/openshift/output-applications.conf
+        # no post - applications.conf matches everything left
+      ##
+      </label>
+    secure-forward.conf: |
+      # <store>
+      # @type secure_forward
+
+      # self_hostname ${hostname}
+      # shared_key <SECRET_STRING>
+
+      # secure yes
+      # enable_strict_verification yes
+
+      # ca_cert_path /etc/fluent/keys/your_ca_cert
+      # ca_private_key_path /etc/fluent/keys/your_private_key
+        # for private CA secret key
+      # ca_private_key_passphrase passphrase
+
+      # <server>
+        # or IP
+      #   host server.fqdn.example.com
+      #   port 24284
+      # </server>
+      # <server>
+        # ip address to connect
+      #   host 203.0.113.8
+        # specify hostlabel for FQDN verification if ipaddress is used for host
+      #   hostlabel server.fqdn.example.com
+      # </server>
+      # </store>
+    throttle-config.yaml: |
+      # Logging example fluentd throttling config file
+
+      #example-project:
+      #  read_lines_limit: 10
+      #
+      #.operations:
+      #  read_lines_limit: 100
+  kind: ConfigMap
+  metadata:
+    creationTimestamp: 2018-08-07T15:36:51Z
+    name: logging-fluentd
+    namespace: openshift-logging
+    resourceVersion: "8922"
+    selfLink: /api/v1/namespaces/openshift-logging/configmaps/logging-fluentd
+    uid: b4b8f35c-9a57-11e8-b5ba-fa163e0d4482
+kind: List
+metadata:
+  resourceVersion: ""
+  selfLink: ""
+""".strip()
+
 OC_GET_BC = """
 apiVersion: v1
 items:
@@ -1404,6 +1577,12 @@ def test_oc_get_service_yml():
     assert result.get("items")[0]['spec']['clusterIP'] == '172.30.0.1'
     assert "zjj-project" in result.data['items'][1]['metadata']['namespace']
     assert result.services["router-1"]["metadata"]["resourceVersion"] == "1638401"
+
+
+def test_oc_get_configmap_yml():
+    result = openshift_get.OcGetConfigmap(context_wrap(OC_GET_CONFIGMAP))
+    assert result.data['items'][0]['kind'] == 'ConfigMap'
+    assert result.data['items'][0]['metadata']['name'] == 'node-config-all-in-one'
 
 
 def test_oc_get_bc_yml():
