@@ -394,7 +394,7 @@ class DefaultSpecs(Specs):
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
-    neutron_conf = simple_file("/etc/neutron/neutron.conf")
+    neutron_conf = first_file(["/var/lib/config-data/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
