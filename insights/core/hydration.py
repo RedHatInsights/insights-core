@@ -2,11 +2,8 @@ import logging
 import os
 
 from insights.core import archives
-from insights.core import dr
-from insights.core import serde
 from insights.core.archives import COMPRESSION_TYPES
 from insights.core.context import ClusterArchiveContext, JDRContext, HostArchiveContext, SosArchiveContext
-from insights.core.evaluators import SingleEvaluator
 
 log = logging.getLogger(__name__)
 
@@ -39,13 +36,3 @@ def create_context(path, context=None):
     common_path = os.path.dirname(os.path.commonprefix(all_files))
     context = context or determine_context(common_path, all_files)
     return context(common_path, all_files=all_files)
-
-
-def hydrate_new_dir(path, broker=None):
-    broker = broker or dr.Broker()
-    for root, dirs, names in os.walk(path):
-        for name in names:
-            p = os.path.join(root, name)
-            with open(p) as f:
-                serde.hydrate(serde.ser.load(f), broker)
-    return SingleEvaluator(broker=broker)
