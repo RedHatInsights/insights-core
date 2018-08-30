@@ -8,7 +8,6 @@ from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.cluster import process_cluster
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
@@ -55,6 +54,7 @@ def process_dir(broker, root, graph, context, use_pandas=False):
     ctx = create_context(root, context)
 
     if isinstance(ctx, ClusterArchiveContext):
+        from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
         return process_cluster(archives, use_pandas=use_pandas, broker=broker)
 

@@ -30,6 +30,8 @@ def mock_get_proxies(obj):
        mock_init_session)
 @patch('insights.client.connection.InsightsConnection.get_proxies',
        mock_get_proxies)
+@patch('insights.client.utilities.constants.machine_id_file',
+       '/tmp/machine-id')
 def test_set_display_name():
     conf = InsightsConfig()
     c = InsightsConnection(conf)
