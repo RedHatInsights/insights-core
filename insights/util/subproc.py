@@ -100,15 +100,15 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
 
         if not shell:
             if len(cmd) > 1:
-                cout = Popen(cmd[0], stdout=stdout)
+                cout = Popen(cmd[0], stdout=stdout, **kwargs)
                 del cmd[0]
 
                 for next in cmd:
-                    cout = Popen(next, stdout=stdout, stderr=stderr, stdin=cout.stdout)
+                    cout = Popen(next, stdout=stdout, stderr=stderr, stdin=cout.stdout, **kwargs)
             else:
-                cout = Popen(cmd[0], stdout=stdout, stderr=stderr, shell=shell)
+                cout = Popen(cmd[0], stdout=stdout, stderr=stderr, shell=shell, **kwargs)
         else:
-            cout = Popen(cmd, stdout=stdout, stderr=stderr, shell=shell)
+            cout = Popen(cmd, stdout=stdout, stderr=stderr, shell=shell, **kwargs)
         output = cout.communicate()[0]
         rc = cout.poll()
     except Exception as e:

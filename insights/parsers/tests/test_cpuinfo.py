@@ -280,6 +280,7 @@ def test_one_socket_cpuinfo():
     cpu_info = CpuInfo(context_wrap(ONE_SOCKET_CPUINFO))
     assert cpu_info.cpu_count == 8
     assert cpu_info.socket_count == 1
+    assert cpu_info.core_total == 32
 
 
 def test_empty_cpuinfo():

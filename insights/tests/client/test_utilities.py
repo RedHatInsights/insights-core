@@ -45,10 +45,6 @@ def test_write_to_disk():
 
 
 def test_generate_machine_id():
-    orig_dir = constants.insights_ansible_facts_dir
-    constants.insights_ansible_facts_dir = tempfile.mkdtemp()
-    constants.insights_ansible_machine_id_file = os.path.join(
-        constants.insights_ansible_facts_dir, "ansible_machine_id.fact")
     machine_id_regex = re.match('\w{8}-\w{4}-\w{4}-\w{4}-\w{12}',
                                 util.generate_machine_id(destination_file='/tmp/testmachineid'))
     assert machine_id_regex.group(0) is not None
@@ -56,11 +52,6 @@ def test_generate_machine_id():
         machine_id = _file.read()
     assert util.generate_machine_id(destination_file='/tmp/testmachineid') == machine_id
     os.remove('/tmp/testmachineid')
-    os.remove(constants.insights_ansible_machine_id_file)
-    os.rmdir(constants.insights_ansible_facts_dir)
-    constants.insights_ansible_facts_dir = orig_dir
-    constants.insights_ansible_machine_id_file = os.path.join(
-        constants.insights_ansible_facts_dir, "ansible_machine_id.fact")
 
 
 def test_expand_paths():
@@ -109,6 +100,9 @@ def test_write_registered_file():
 @patch('insights.client.utilities.constants.registered_files',
        ['/tmp/insights-client.registered',
         '/tmp/redhat-access-insights.registered'])
+@patch('insights.client.utilities.constants.unregistered_files',
+       ['/tmp/insights-client.unregistered',
+        '/tmp/redhat-access-insights.unregistered'])
 def test_delete_registered_file():
     util.write_registered_file()
     util.delete_registered_file()
@@ -130,6 +124,9 @@ def test_write_unregistered_file():
         assert os.path.isfile(u) is True
 
 
+@patch('insights.client.utilities.constants.registered_files',
+       ['/tmp/insights-client.registered',
+        '/tmp/redhat-access-insights.registered'])
 @patch('insights.client.utilities.constants.unregistered_files',
        ['/tmp/insights-client.unregistered',
         '/tmp/redhat-access-insights.unregistered'])

@@ -97,7 +97,7 @@ class InsightsConnection(object):
         self.session = self._init_session()
         # need this global -- [barfing intensifies]
         # tuple of self-signed cert flag & cert chain list
-        self.cert_chain = (False, [])
+        self.cert_chain = [False, []]
 
     def _init_session(self):
         """
@@ -293,7 +293,7 @@ class InsightsConnection(object):
                 logger.debug(e)
                 logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
                 return False
-            sock.send(connect_str.encode())
+            sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
             if '200 Connection established' not in res:
                 logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
@@ -696,7 +696,7 @@ class InsightsConnection(object):
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        headers = {'x-rh-collection-time': duration}
+        headers = {'x-rh-collection-time': str(duration)}
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
@@ -713,3 +713,30 @@ class InsightsConnection(object):
             self.config.account_number = None
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
+
+    def set_display_name(self, display_name):
+        machine_id = generate_machine_id()
+        try:
+            url = self.api_url + '/v1/systems/' + machine_id
+            net_logger.info("PUT %s", url)
+            res = self.session.put(url,
+                                   timeout=self.config.http_timeout,
+                                   headers={'Content-Type': 'application/json'},
+                                   data=json.dumps(
+                                        {'display_name': display_name}))
+            if res.status_code == 200:
+                logger.info('System display name changed to %s', display_name)
+                return True
+            elif res.status_code == 404:
+                logger.error('System not found. '
+                             'Please run insights-client --register.')
+                return False
+            else:
+                logger.error('Unable to set display name: %s %s',
+                             res.status_code, res.text)
+                return False
+        except requests.ConnectionError:
+            # can't connect, run connection test
+            logger.error('Connection timed out. Running connection test...')
+            self.test_connection()
+            return False

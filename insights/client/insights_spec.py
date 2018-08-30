@@ -43,7 +43,6 @@ class InsightsCommand(InsightsSpec):
         self.archive_path = mangle.mangle_command(self.command)
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
-        self.black_list = ['rm', 'kill', 'reboot', 'shutdown']
 
     def get_output(self):
         '''
@@ -59,8 +58,8 @@ class InsightsCommand(InsightsSpec):
         args = shlex.split(timeout_command)
 
         # never execute this stuff
-        if set.intersection(set(args), set(self.black_list)):
-            raise RuntimeError("Command Blacklist")
+        if set.intersection(set(args), constants.command_blacklist):
+            raise RuntimeError("Command Blacklist: " + self.command)
 
         try:
             logger.debug('Executing: %s', args)
@@ -176,7 +175,7 @@ class InsightsFile(InsightsSpec):
 
         if self.pattern is not None:
             pattern_file = NamedTemporaryFile()
-            pattern_file.write("\n".join(self.pattern).encode())
+            pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
 
             cmd = "grep -F -f %s" % pattern_file.name

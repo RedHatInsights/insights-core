@@ -9,8 +9,6 @@ import time
 import shutil
 import six
 
-from .auto_config import (_try_satellite6_configuration,
-                          _try_satellite5_configuration)
 from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
@@ -201,8 +199,12 @@ def get_machine_id():
 
 
 def update_rules(config, pconn):
+    if not pconn:
+        raise ValueError('ERROR: Cannot update rules in --offline mode. '
+                         'Disable auto_update in config file.')
+
     pc = InsightsUploadConf(config, conn=pconn)
-    return pc.get_conf(True, {})
+    return pc.get_conf_update()
 
 
 def get_branch_info(config, pconn):
@@ -250,10 +252,10 @@ def collect(config, pconn):
                         os.path.basename(config.analyze_mountpoint))[0],
                   'location': config.analyze_mountpoint}
 
-    # container
-    elif config.analyze_container or config.analyze_image_id:
-        logger.debug("Client running in container/image mode.")
-        logger.debug("Scanning for matching container/image.")
+    # image
+    elif config.analyze_image_id:
+        logger.debug("Client running in image mode.")
+        logger.debug("Scanning for matching image.")
 
         from .containers import get_targets
         targets = get_targets(config)
@@ -261,9 +263,12 @@ def collect(config, pconn):
             sys.exit(constants.sig_kill_bad)
         target = targets[0]
 
-    # the host
+    # host, or inside container
     else:
-        logger.debug("Host selected as scanning target.")
+        if config.analyze_container:
+            logger.debug('Client running in container mode.')
+        else:
+            logger.debug("Host selected as scanning target.")
         target = constants.default_target
 
     branch_info = get_branch_info(config, pconn)
@@ -290,7 +295,11 @@ def collect(config, pconn):
                      ('--from-file' if config.from_file else '--from-stdin'))
         return False
 
-    collection_rules, rm_conf = pc.get_conf(False, stdin_config)
+    if stdin_config:
+        collection_rules = pc.get_conf_stdin(stdin_config)
+    else:
+        collection_rules = pc.get_conf_file()
+    rm_conf = pc.get_rm_conf()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")
 
@@ -390,27 +399,6 @@ def upload(config, pconn, tar_file, collection_duration=None):
                 handler.write(upload.text)
             write_to_disk(constants.lastupload_file)
 
-            # Write to ansible facts directory
-            if os.path.isdir(constants.insights_ansible_facts_dir):
-                insights_facts = {}
-                insights_facts['last_upload'] = api_response
-
-                sat6 = _try_satellite6_configuration(config)
-                sat5 = None
-                if not sat6:
-                    sat5 = _try_satellite5_configuration(config)
-
-                if sat6:
-                    connection = 'sat6'
-                elif sat5:
-                    connection = 'sat5'
-                else:
-                    connection = 'rhsm'
-
-                insights_facts['conf'] = {'machine-id': machine_id, 'connection': connection}
-                with open(constants.insights_ansible_facts_file, 'w') as handler:
-                    handler.write(json.dumps(insights_facts))
-
             account_number = config.account_number
             if account_number:
                 logger.info("Successfully uploaded report from %s to account %s." % (
@@ -435,7 +423,7 @@ def upload(config, pconn, tar_file, collection_duration=None):
     return api_response
 
 
-def delete_archive(path):
+def delete_archive(path, delete_parent_dir):
     removed_archive = False
 
     try:
@@ -445,11 +433,11 @@ def delete_archive(path):
         dirname = os.path.dirname
         abspath = os.path.abspath
         parent_tmp_dir = dirname(abspath(path))
-
-        logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
-        if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
-            logger.debug("Removing %s", parent_tmp_dir)
-            shutil.rmtree(parent_tmp_dir)
+        if delete_parent_dir:
+            logger.debug("Detected parent temporary directory %s", parent_tmp_dir)
+            if parent_tmp_dir != "/var/tmp" and parent_tmp_dir != "/var/tmp/":
+                logger.debug("Removing %s", parent_tmp_dir)
+                shutil.rmtree(parent_tmp_dir)
 
     except:
         logger.error("Error removing %s", path)
