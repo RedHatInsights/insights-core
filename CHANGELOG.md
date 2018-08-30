@@ -1,13 +1,32 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+## [insights-core-3.0.42-564](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.42-564) (2018-08-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.41-1...insights-core-3.0.42-564)
 
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.39-545...HEAD)
+**Fixed bugs:**
+
+- getsebool parser "need more than 1 value to unpack" [\#1394](https://github.com/RedHatInsights/insights-core/issues/1394)
+- Unicode Warning in Python 2.7 for unitfiles module [\#1366](https://github.com/RedHatInsights/insights-core/issues/1366)
+
+**Closed issues:**
+
+- Need to patch machine-id in the test\_set\_display\_name [\#1407](https://github.com/RedHatInsights/insights-core/issues/1407)
+- Split setuptools develop extras bundle [\#1261](https://github.com/RedHatInsights/insights-core/issues/1261)
+
+## [3.0.41-1](https://github.com/RedHatInsights/insights-core/tree/3.0.41-1) (2018-08-29)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.40-1...3.0.41-1)
+
+## [3.0.40-1](https://github.com/RedHatInsights/insights-core/tree/3.0.40-1) (2018-08-29)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.39-545...3.0.40-1)
 
 **Fixed bugs:**
 
 - Initialize release in evaluators.py [\#1383](https://github.com/RedHatInsights/insights-core/issues/1383)
 - The rule component type overrides invoke but should override process [\#1376](https://github.com/RedHatInsights/insights-core/issues/1376)
+
+**Closed issues:**
+
+- Client Test Attempts to  Removes non-user Insights App File [\#1380](https://github.com/RedHatInsights/insights-core/issues/1380)
 
 ## [insights-core-3.0.39-545](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.39-545) (2018-08-22)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.38-534...insights-core-3.0.39-545)
