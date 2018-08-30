@@ -297,6 +297,7 @@ class Specs(SpecSet):
     oc_get_role = RegistryPoint()
     oc_get_route = RegistryPoint()
     oc_get_service = RegistryPoint()
+    oc_get_configmap = RegistryPoint()
     odbc_ini = RegistryPoint(filterable=True)
     odbcinst_ini = RegistryPoint()
     openvswitch_other_config = RegistryPoint()
