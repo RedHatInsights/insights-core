@@ -493,6 +493,7 @@ class DefaultSpecs(Specs):
                               glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
                               glob_file("/database/postgresql-*.log")
                               ])
+    puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
     md5chk_files = simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
@@ -602,6 +603,7 @@ class DefaultSpecs(Specs):
     sysconfig_httpd = simple_file("/etc/sysconfig/httpd")
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
+    sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_memcached = first_file(["/var/lib/config-data/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
