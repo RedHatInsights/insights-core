@@ -629,6 +629,7 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
+    systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
     teamdctl_state_dump = foreach_execute(ethernet_interfaces, "/usr/bin/teamdctl %s state dump")
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")

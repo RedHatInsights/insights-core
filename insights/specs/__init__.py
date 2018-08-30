@@ -430,6 +430,7 @@ class Specs(SpecSet):
     systemd_openshift_node = RegistryPoint()
     systemd_system_conf = RegistryPoint()
     systemid = RegistryPoint()
+    systool_b_scsi_v = RegistryPoint()
     teamdctl_state_dump = RegistryPoint(multi_output=True)
     thp_enabled = RegistryPoint()
     thp_use_zero_page = RegistryPoint()
