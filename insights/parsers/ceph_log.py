@@ -32,7 +32,7 @@ class CephLog(LogFileOutput):
           >>> len(ceph_log.get("[WRN] slow request")) == 2
           True
           >>> from datetime import datetime
-          >>> len(list(ceph_log.get_after(datetime(2017, 5, 31, 13, 01, 46))))
+          >>> len(list(ceph_log.get_after(datetime(2017, 5, 31, 13, 1, 46))))
           7
 
       """

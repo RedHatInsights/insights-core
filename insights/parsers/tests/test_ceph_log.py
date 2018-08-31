@@ -22,7 +22,7 @@ CEPH_LOG = """
 def test_ceph_log():
     ceph_logs = CephLog(context_wrap(CEPH_LOG))
     assert len(ceph_logs.get("[WRN] slow request")) == 2
-    assert len(list(ceph_logs.get_after(datetime(2017, 5, 31, 13, 01, 46)))) == 7
+    assert len(list(ceph_logs.get_after(datetime(2017, 5, 31, 13, 1, 46)))) == 7
     assert len(ceph_logs.get("[INF]")) == 6
     assert "slow requests" in ceph_logs
 
