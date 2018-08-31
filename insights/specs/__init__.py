@@ -321,7 +321,7 @@ class Specs(SpecSet):
     pam_conf = RegistryPoint()
     parted__l = RegistryPoint()
     password_auth = RegistryPoint()
-    pcs_status = RegistryPoint(filterable=True)
+    pcs_status = RegistryPoint()
     pluginconf_d = RegistryPoint(multi_output=True)
     postgresql_conf = RegistryPoint()
     postgresql_log = RegistryPoint(multi_output=True, filterable=True)
