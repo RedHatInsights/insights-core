@@ -22,7 +22,7 @@ class Specs(SpecSet):
     ceph_config_show = RegistryPoint(multi_output=True)
     ceph_df_detail = RegistryPoint()
     ceph_health_detail = RegistryPoint()
-    ceph_log = RegistryPoint(multi_output=True, filterable=True)
+    ceph_log = RegistryPoint(filterable=True)
     ceph_osd_df = RegistryPoint()
     ceph_osd_dump = RegistryPoint()
     ceph_osd_ec_profile_get = RegistryPoint(multi_output=True)

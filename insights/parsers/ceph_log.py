@@ -3,7 +3,7 @@ CephLog - file ``/var/log/ceph/ceph.log``
 =========================================
 """
 
-from .. import LogFileOutput, parser
+from insights import LogFileOutput, parser
 from insights.specs import Specs
 
 
