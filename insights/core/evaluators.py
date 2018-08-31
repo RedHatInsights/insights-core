@@ -1,7 +1,9 @@
 import logging
 
-from insights import combiners, parsers, specs
-from insights.core import dr, plugins
+from ..specs import Specs
+from ..combiners.hostname import hostname as combiner_hostname
+from ..parsers.branch_info import BranchInfo
+from . import dr, plugins
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +28,8 @@ class Evaluator(object):
         pass
 
     def post_process(self):
-        if combiners.hostname.hostname in self.broker:
-            self.hostname = self.broker[combiners.hostname.hostname].fqdn
+        if combiner_hostname in self.broker:
+            self.hostname = self.broker[combiner_hostname].fqdn
 
         for p, r in self.broker.items():
             if plugins.is_rule(p):
@@ -109,13 +111,16 @@ class InsightsEvaluator(SingleEvaluator):
         self.type = "host"
 
     def post_process(self):
-        self.system_id = self.broker[specs.Specs.machine_id].content[0].strip()
+        if Specs.machine_id in self.broker:
+            self.system_id = self.broker[Specs.machine_id].content[0].strip()
+        else:
+            self.system_id = None
 
-        release = self.broker.get(specs.Specs.redhat_release)
+        release = self.broker.get(Specs.redhat_release)
         if release:
             self.release = release.content[0].strip()
 
-        branch_info = self.broker.get(parsers.branch_info.BranchInfo)
+        branch_info = self.broker.get(BranchInfo)
         self.branch_info = branch_info.data if branch_info else {}
 
         md = self.broker.get("metadata.json")

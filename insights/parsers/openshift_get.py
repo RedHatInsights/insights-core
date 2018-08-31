@@ -58,6 +58,9 @@ OcGetRoute - command ``oc get route -o yaml --all-namespaces``
 OcGetService - command ``oc get service -o yaml --all-namespaces``
 ------------------------------------------------------------------
 
+OcGetConfigmap - command ``oc get configmap -o yaml --all-namespaces``
+----------------------------------------------------------------------
+
 Examples:
     >>> type(setting_dic)
     <class 'insights.parsers.openshift_get.OcGetService'>
@@ -238,4 +241,14 @@ class OcGetService(CommandParser, YAMLParser):
     @property
     def services(self):
         """ dict: Returns a dictionary of openshift services information."""
+        return metadata_name_items(self.data)
+
+
+@parser(Specs.oc_get_configmap)
+class OcGetConfigmap(CommandParser, YAMLParser):
+    """Class to parse ``oc get configmap -o yaml --all-namespaces``"""
+
+    @property
+    def configmaps(self):
+        """ dict: Returns a dictionary of openshift configmaps information."""
         return metadata_name_items(self.data)

@@ -2,7 +2,7 @@
 from ..systemd.unitfiles import ListUnits
 from ...tests import context_wrap
 
-LISTUNITS_CONTENT = """
+LISTUNITS_CONTENT = u"""
   proc-sys-fs-binfmt_misc.automount                                           loaded active waiting   Arbitrary Executable File Formats File System Automount Point
   sys-devices-pci0000:00-0000:00:03.0-virtio0-net-eth0.device                 loaded active plugged   Virtio network device
   sys-devices-pci0000:00-0000:00:04.0-virtio1-net-eth1.device                 loaded active plugged   Virtio network device

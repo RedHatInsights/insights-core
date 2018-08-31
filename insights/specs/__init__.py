@@ -2,6 +2,7 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Specs(SpecSet):
+    amq_broker = RegistryPoint(multi_output=True)
     auditd_conf = RegistryPoint()
     audit_log = RegistryPoint(filterable=True)
     autofs_conf = RegistryPoint()
@@ -296,6 +297,7 @@ class Specs(SpecSet):
     oc_get_role = RegistryPoint()
     oc_get_route = RegistryPoint()
     oc_get_service = RegistryPoint()
+    oc_get_configmap = RegistryPoint()
     odbc_ini = RegistryPoint(filterable=True)
     odbcinst_ini = RegistryPoint()
     openvswitch_other_config = RegistryPoint()
@@ -429,6 +431,7 @@ class Specs(SpecSet):
     systemd_openshift_node = RegistryPoint()
     systemd_system_conf = RegistryPoint()
     systemid = RegistryPoint()
+    systool_b_scsi_v = RegistryPoint()
     teamdctl_state_dump = RegistryPoint(multi_output=True)
     thp_enabled = RegistryPoint()
     thp_use_zero_page = RegistryPoint()
