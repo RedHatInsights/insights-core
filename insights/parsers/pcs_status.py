@@ -75,8 +75,10 @@ Examples:
     >>> len(pcsstatus_info.get("Full list of resources"))
     3
 """
-from .. import parser, CommandParser
+from .. import parser, CommandParser, add_filter
 from insights.specs import Specs
+
+add_filter(Specs.pcs_status, ["["])
 
 
 @parser(Specs.pcs_status)
