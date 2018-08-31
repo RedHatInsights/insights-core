@@ -38,8 +38,6 @@ COMPONENTS = defaultdict(lambda: defaultdict(set))
 DELEGATES = {}
 HIDDEN = set()
 IGNORE = defaultdict(set)
-
-# tracks if a component is enabled
 ENABLED = defaultdict(lambda: True)
 
 
@@ -668,6 +666,17 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
     """
     Executes components in an order that satisfies their dependency
     relationships.
+
+    Keyword Args:
+        components: Can be one of a dependency graph, a single component, a
+            component group, or a component type. If it's anything other than a
+            dependency graph, the appropriate graph is built for you and before
+            evaluation.
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+    Returns:
+        Broker: The broker after evaluation.
     """
     components = _determine_components(components)
     broker = broker or Broker()
@@ -705,6 +714,17 @@ def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
     containing the results for each is yielded. If a broker is passed here, its
     instances are used to seed the broker used to hold state for each sub
     graph.
+
+    Keyword Args:
+        components: Can be one of a dependency graph, a single component, a
+            component group, or a component type. If it's anything other than a
+            dependency graph, the appropriate graph is built for you and before
+            evaluation.
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+    Yields:
+        Broker: the broker used to evaluate each subgraph.
     """
     components = _determine_components(components)
     seed_broker = broker or Broker()
