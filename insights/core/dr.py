@@ -38,8 +38,6 @@ COMPONENTS = defaultdict(lambda: defaultdict(set))
 DELEGATES = {}
 HIDDEN = set()
 IGNORE = defaultdict(set)
-
-# tracks if a component is enabled
 ENABLED = defaultdict(lambda: True)
 
 
@@ -84,6 +82,14 @@ def add_ignore(c, i):
     IGNORE[c].add(i)
 
 
+def hashable(v):
+    try:
+        hash(v)
+    except:
+        return False
+    return True
+
+
 def _get_from_module(name):
     mod, _, n = name.rpartition(".")
     if mod not in sys.modules:
@@ -117,6 +123,10 @@ get_component = COMPONENT_NAME_CACHE.__getitem__
 @defaults(None)
 def get_component_type(component):
     return get_delegate(component).type
+
+
+def get_components_of_type(_type):
+    return COMPONENTS_BY_TYPE.get(_type)
 
 
 @defaults(None)
@@ -277,7 +287,7 @@ def _import(path, continue_on_error):
             raise
 
 
-def load_components(path, include=".*", exclude="test", continue_on_error=True):
+def _load_components(path, include=".*", exclude="test", continue_on_error=True):
     num_loaded = 0
     if path.endswith(".py"):
         path, _ = os.path.splitext(path)
@@ -301,12 +311,40 @@ def load_components(path, include=".*", exclude="test", continue_on_error=True):
         if not name.startswith(prefix):
             name = prefix + name
         if is_pkg:
-            num_loaded += load_components(name, include, exclude, continue_on_error)
+            num_loaded += _load_components(name, include, exclude, continue_on_error)
         else:
             if do_include(name) and not do_exclude(name):
                 _import(name, continue_on_error)
                 num_loaded += 1
 
+    return num_loaded
+
+
+def load_components(*paths, **kwargs):
+    """
+    Loads all components on the paths. Each path should be a package or module.
+    All components beneath a path are loaded.
+
+    Args:
+        paths (str): A package or module to load
+
+    Keyword Args:
+        include (str): A regular expression of packages and modules to include.
+            Defaults to '.*'
+        exclude (str): A regular expression of packges and modules to exclude.
+            Defaults to 'test'
+        continue_on_error (bool): If True, continue importing even if something
+            raises an ImportError. If False, raise the first ImportError.
+
+    Returns:
+        int: The total number of modules loaded.
+
+    Raises:
+        ImportError
+    """
+    num_loaded = 0
+    for path in paths:
+        num_loaded += _load_components(path, **kwargs)
     return num_loaded
 
 
@@ -346,6 +384,9 @@ def register_component(delegate):
     COMPONENTS[delegate.group][component] |= dependencies
 
     COMPONENTS_BY_TYPE[delegate.type].add(component)
+    for k, v in COMPONENTS_BY_TYPE.items():
+        if issubclass(delegate.type, k) and delegate.type is not k:
+            v.add(component)
     DELEGATES[component] = delegate
 
     MODULE_NAMES[component] = get_module_name(component)
@@ -601,11 +642,43 @@ def run_order(components):
     return toposort_flatten(components, sort=False)
 
 
+def _determine_components(components):
+    if isinstance(components, dict):
+        return components
+
+    if hashable(components) and components in COMPONENTS_BY_TYPE:
+        components = get_components_of_type(components)
+
+    if isinstance(components, (list, set)):
+        graph = {}
+        for c in components:
+            graph.update(get_dependency_graph(c))
+        return graph
+
+    if hashable(components) and components in DELEGATES:
+        return get_dependency_graph(components)
+
+    if hashable(components) and components in COMPONENTS:
+        return COMPONENTS[components]
+
+
 def run(components=COMPONENTS[GROUPS.single], broker=None):
     """
     Executes components in an order that satisfies their dependency
     relationships.
+
+    Keyword Args:
+        components: Can be one of a dependency graph, a single component, a
+            component group, or a component type. If it's anything other than a
+            dependency graph, the appropriate graph is built for you and before
+            evaluation.
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+    Returns:
+        Broker: The broker after evaluation.
     """
+    components = _determine_components(components)
     broker = broker or Broker()
 
     for component in run_order(components):
@@ -641,7 +714,19 @@ def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
     containing the results for each is yielded. If a broker is passed here, its
     instances are used to seed the broker used to hold state for each sub
     graph.
+
+    Keyword Args:
+        components: Can be one of a dependency graph, a single component, a
+            component group, or a component type. If it's anything other than a
+            dependency graph, the appropriate graph is built for you and before
+            evaluation.
+        broker (Broker): Optionally pass a broker to use for evaluation. One is
+            created by default, but it's often useful to seed a broker with an
+            initial dependency.
+    Yields:
+        Broker: the broker used to evaluate each subgraph.
     """
+    components = _determine_components(components)
     seed_broker = broker or Broker()
     for graph in get_subgraphs(components):
         broker = Broker(seed_broker)
