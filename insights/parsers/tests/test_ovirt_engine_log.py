@@ -147,11 +147,20 @@ def test_server_log():
     matched_line = '2018-01-17 01:46:17,739+05 WARN  [org.jboss.as.dependency.unsupported] (MSC service thread 1-7) WFLYSRV0019: Deployment "deployment.engine.ear" is using an unsupported module ("org.dom4j") which may be changed or removed in future versions without notice.'
     assert server_log.get('WARN')[-1].get('raw_message') == matched_line
 
+    sec_lines = server_log.get('org.wildfly.security')
+    assert len(sec_lines) == 1
+    assert sec_lines[0]['level'] == 'INFO'
+
 
 def test_ui_log():
     ui_log = ovirt_engine_log.UILog(context_wrap(UI_LOG))
     assert 'Permutation name' in ui_log
     assert len(list(ui_log.get_after(datetime(2018, 1, 24, 5, 31, 26, 0)))) == 2
+
+    exception_lines = ui_log.get('Uncaught exception')
+    assert len(exception_lines) == 1
+    assert exception_lines[0].get('procname') == 'org.ovirt.engine.ui.frontend.server.gwt.OvirtRemoteLoggingService'
+    assert exception_lines[0].get('level') == 'ERROR'
 
 
 def test_engine_log():

@@ -116,8 +116,8 @@ class EngineLog(LogFileOutput):
 
 
 @parser(Specs.ovirt_engine_server_log)
-class ServerLog(LogFileOutput):
-    '''Provide access to ``/var/log/ovirt-engine/server.log`` using the LogFileoutput parser class.
+class ServerLog(EngineLog):
+    '''Provide access to ``/var/log/ovirt-engine/server.log`` using the EngineLog parser class.
 
     Sample input::
 
@@ -136,13 +136,18 @@ class ServerLog(LogFileOutput):
         >>> matched_line = '2018-01-17 01:46:17,739+05 WARN  [org.jboss.as.dependency.unsupported] (MSC service thread 1-7) WFLYSRV0019: Deployment "deployment.engine.ear" is using an unsupported module ("org.dom4j") which may be changed or removed in future versions without notice.'
         >>> server_log.get('WARN')[-1].get('raw_message') == matched_line
         True
+        >>> sec_lines = server_log.get('org.wildfly.security')
+        >>> len(sec_lines)
+        1
+        >>> sec_lines[0]['level']
+        'INFO'
     '''
     pass
 
 
 @parser(Specs.ovirt_engine_ui_log)
-class UILog(LogFileOutput):
-    '''Provide access to ``/var/log/ovirt-engine/ui.log`` using the LogFileoutput parser class.
+class UILog(EngineLog):
+    '''Provide access to ``/var/log/ovirt-engine/ui.log`` using the EngineLog parser class.
 
     Sample input::
 
@@ -156,5 +161,12 @@ class UILog(LogFileOutput):
         >>> from datetime import datetime
         >>> len(list(ui_log.get_after(datetime(2018, 1, 24, 5, 31, 26, 0))))
         2
+        >>> exception_lines = ui_log.get('Uncaught exception')
+        >>> len(exception_lines)
+        1
+        >>> exception_lines[0].get('procname')
+        'org.ovirt.engine.ui.frontend.server.gwt.OvirtRemoteLoggingService'
+        >>> exception_lines[0].get('level')
+        'ERROR'
     '''
     pass
