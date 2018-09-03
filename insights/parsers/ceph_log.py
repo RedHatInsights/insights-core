@@ -12,9 +12,7 @@ class CephLog(LogFileOutput):
     """
       Parse the ``/var/log/ceph/ceph.log`` file.
 
-      .. note::
-          Please refer to its super-class :class:`insights.core.LogFileOutput` for more
-          details.
+      Provide access to ceph logs using the LogFileOutput parser class.
 
       Sample log lines::
 
