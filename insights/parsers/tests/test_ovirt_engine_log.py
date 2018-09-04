@@ -170,7 +170,7 @@ def test_engine_log():
 
     matched_line = "2018-08-06 04:16:33,231+05 INFO  [org.ovirt.engine.core.bll.utils.ThreadPoolMonitoringService] (EE-ManagedThreadFactory-engineThreadMonitoring-Thread-1) [] Thread pool 'hostUpdatesChecker' is using 0 threads out of 5, 5 threads waiting for tasks."
     assert engine_log.get('hostUpdatesChecker')[-1].get('raw_message') == matched_line
-    engine_log.get('vdsbroker')[-1].get('procname') == 'org.ovirt.engine.core.vdsbroker.vdsbroker.HotUnplugLeaseVDSCommand'
+    assert engine_log.get('vdsbroker')[-1].get('procname') == 'org.ovirt.engine.core.vdsbroker.vdsbroker.HotUnplugLeaseVDSCommand'
 
 
 def test_boot_log():
