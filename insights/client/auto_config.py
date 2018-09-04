@@ -193,7 +193,7 @@ def _try_satellite5_configuration(config):
                 else:
                     proxy = proxy + proxy_host_port
                     logger.debug("RHN Proxy: %s", proxy)
-            set_auto_configuration(hostname, rhn_ca, proxy)
+            set_auto_configuration(config, hostname, rhn_ca, proxy)
         else:
             logger.debug("Could not find hostname")
             return False
