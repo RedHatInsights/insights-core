@@ -428,12 +428,9 @@ def upload(config, pconn, tar_file, collection_duration=None):
 def _delete_archive_internal(config, archive):
     '''
     Only used during built-in collection.
-    Delete archive and tmp dir on unexpected exit.
+    Delete archive and tmp dirs on unexpected exit.
     '''
-    if not (config.keep_archive or
-            config.offline or
-            config.no_upload or
-            config.obfuscate):
+    if not config.keep_archive:
         archive.delete_tmp_dir()
         archive.delete_archive_file()
 
