@@ -46,6 +46,7 @@ class TarExtractor(object):
     def __init__(self, timeout=None):
         self.timeout = timeout
         self.tmp_dir = None
+        self.created_tmp_dir = False
 
     TAR_FLAGS = {
         "application/x-xz": "-J",
