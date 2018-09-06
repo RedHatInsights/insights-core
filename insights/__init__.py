@@ -129,6 +129,9 @@ def apply_configs(configs):
             if cname.startswith(name):
                 dr.ENABLED[c] = comp_cfg.get("enabled", True)
                 delegate.metadata.update(comp_cfg.get("metadata", {}))
+                for k, v in delegate.metadata.items():
+                    if hasattr(c, k):
+                        setattr(c, k, v)
                 if hasattr(c, "timeout"):
                     c.timeout = comp_cfg.get("timeout")
             if cname == name:
