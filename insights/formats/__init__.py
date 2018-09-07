@@ -1,7 +1,6 @@
 import six
 import sys
 from insights import dr, rule
-from insights.core.evaluators import SingleEvaluator
 
 
 _FORMATTERS = {}
@@ -71,6 +70,7 @@ class Formatter(object):
 
 class EvaluatorFormatter(Formatter):
     def preprocess(self):
+        from insights.core.evaluators import SingleEvaluator
         self.evaluator = SingleEvaluator(broker=self.broker)
 
     def postprocess(self):
