@@ -69,7 +69,7 @@ class HumanReadableFormat(Formatter):
             else:
                 print(".", end="")
         elif c in broker.exceptions:
-            if broker.exceptions[c] > 1:
+            if len(broker.exceptions[c]) > 1:
                 self.counts['exception'] += len(broker.exceptions[c])
             else:
                 self.counts['exception'] += 1
