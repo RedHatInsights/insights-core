@@ -1,3 +1,4 @@
+from __future__ import print_function
 import six
 import sys
 from insights import dr, rule
@@ -51,8 +52,9 @@ class FormatterAdapter(six.with_metaclass(FormatterAdapterMeta)):
 
 
 class Formatter(object):
-    def __init__(self, broker):
+    def __init__(self, broker, stream=sys.stdout):
         self.broker = broker
+        self.stream = stream
 
     def __enter__(self):
         self.preprocess()
@@ -75,7 +77,7 @@ class EvaluatorFormatter(Formatter):
 
     def postprocess(self):
         self.evaluator.post_process()
-        print(self.dump(self.evaluator.get_response()))
+        print(self.dump(self.evaluator.get_response()), file=self.stream)
 
     def dump(self, data):
         raise NotImplemented("Subclasses must implement the dump method.")
