@@ -16,7 +16,7 @@ blacklist:
     files: []
     commands: []
     patterns: []
-    keywords: ["alonzo"]
+    keywords: []
 
 # packages and modules to load
 packages:
