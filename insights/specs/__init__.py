@@ -217,6 +217,7 @@ class Specs(SpecSet):
     lssap = RegistryPoint()
     lsscsi = RegistryPoint()
     ls_lib_firmware = RegistryPoint()
+    ls_pgsql_data = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     ls_var_lib_mongodb = RegistryPoint()
     ls_usr_sbin = RegistryPoint(filterable=True)

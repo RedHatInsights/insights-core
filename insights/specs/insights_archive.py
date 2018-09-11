@@ -94,6 +94,7 @@ class InsightsArchiveSpecs(Specs):
     ls_docker_volumes = simple_file("insights_commands/ls_-lanR_.var.lib.docker.volumes")
     ls_etc = simple_file("insights_commands/ls_-lanR_.etc")
     ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
+    ls_pgsql_data = simple_file("insights_commands/ls_-lan_.var.lib.pgsql.data")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
     ls_var_lib_mongodb = simple_file("insights_commands/ls_-la_.var.lib.mongodb")
     ls_usr_sbin = simple_file("insights_commands/ls_-ln_.usr.sbin")
