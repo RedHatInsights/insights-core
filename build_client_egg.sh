@@ -1,12 +1,6 @@
 #!/bin/bash
 
-if [[ -n "`git diff`" || -n "`git diff --cached`" ]]; then
-    echo "Please commit any changes before building an egg"
-    exit 1
-fi
-
 rm -f insights.zip
-
 rm -rf insights_core.egg-info
 cp MANIFEST.in.client MANIFEST.in
 python setup.py egg_info

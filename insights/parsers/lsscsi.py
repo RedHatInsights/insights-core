@@ -94,3 +94,10 @@ class LsSCSI(CommandParser):
         list: All lines' Primary-Device-Node values.
         """
         return [v['Primary-Device-Node'] for v in self.data]
+
+    @property
+    def device_vendors(self):
+        """
+        list: All lines' Vendor values
+        """
+        return [v['Vendor'] for v in self.data]

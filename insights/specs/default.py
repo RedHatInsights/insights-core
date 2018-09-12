@@ -49,6 +49,7 @@ format_rpm = _make_rpm_formatter()
 
 
 class DefaultSpecs(Specs):
+    amq_broker = glob_file("/var/opt/amq-broker/*/etc/broker.xml")
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
     autofs_conf = simple_file("/etc/autofs.conf")
@@ -87,6 +88,7 @@ class DefaultSpecs(Specs):
     ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json-pretty")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json-pretty")
+    ceph_log = simple_file("/var/log/ceph/ceph.log")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json-pretty")
     ceph_osd_df = simple_command("/usr/bin/ceph osd df -f json-pretty")
     ceph_osd_ec_profile_ls = simple_command("/usr/bin/ceph osd erasure-code-profile ls")
@@ -332,8 +334,7 @@ class DefaultSpecs(Specs):
                                  simple_command("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")
                                  ])
     lsmod = simple_command("/sbin/lsmod")
-    lspci = simple_command("/sbin/lspci")
-    lspci_kernel = simple_command("/sbin/lspci -k")
+    lspci = simple_command("/sbin/lspci -k")
     lsof = simple_command("/usr/sbin/lsof")
     lssap = simple_command("/usr/sap/hostctrl/exe/lssap")
     lsscsi = simple_command("/usr/bin/lsscsi")
@@ -342,6 +343,7 @@ class DefaultSpecs(Specs):
     ls_dev = simple_command("/bin/ls -lanR /dev")
     ls_disk = simple_command("/bin/ls -lanR /dev/disk")
     ls_etc = simple_command("/bin/ls -lanR /etc")
+    ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
@@ -394,11 +396,11 @@ class DefaultSpecs(Specs):
     netstat_i = simple_command("/bin/netstat -i")
     netstat_s = simple_command("/bin/netstat -s")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
-    neutron_conf = simple_file("/etc/neutron/neutron.conf")
+    neutron_conf = first_file(["/var/lib/config-data/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
-    neutron_ovs_agent_log = simple_file("/var/log/neutron/openvswitch-agent.log")
+    neutron_ovs_agent_log = first_file(["/var/log/containers/neutron/openvswitch-agent.log", "/var/log/neutron/openvswitch-agent.log"])
     neutron_plugin_ini = simple_file("/etc/neutron/plugin.ini")
     neutron_server_log = simple_file("/var/log/neutron/server.log")
     nfnetlink_queue = simple_file("/proc/net/netfilter/nfnetlink_queue")
@@ -438,6 +440,7 @@ class DefaultSpecs(Specs):
     oc_get_rolebinding = simple_command("/usr/bin/oc get rolebinding -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_route = simple_command("/usr/bin/oc get route -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_service = simple_command("/usr/bin/oc get service -o yaml --all-namespaces", context=OpenShiftContext)
+    oc_get_configmap = simple_command("/usr/bin/oc get configmap -o yaml --all-namespaces", context=OpenShiftContext)
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
@@ -455,6 +458,9 @@ class DefaultSpecs(Specs):
     ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
     ovirt_engine_confd = glob_file("/etc/ovirt-engine/engine.conf.d/*")
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
+    ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
+    ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
+    ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
 
@@ -490,6 +496,7 @@ class DefaultSpecs(Specs):
                               glob_file("/opt/rh/postgresql92/root/var/lib/pgsql/data/pg_log/postgresql-*.log"),
                               glob_file("/database/postgresql-*.log")
                               ])
+    puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
     md5chk_files = simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
@@ -536,6 +543,28 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo")
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
+    saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
+
+    @datasource(saphostctl_listinstances, hostname, context=HostContext)
+    def sap_hana_sid(broker):
+        """
+        Command: Get the SID for running "HDB version".
+
+        Typical output of saphostctl_listinstances::
+        # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
+        Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
+
+        """
+        hana_ins = broker[DefaultSpecs.saphostctl_listinstances].content
+        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
+        results = set()
+        for ins in hana_ins:
+            ins_splits = ins.split(' - ')
+            if ins_splits[2].strip() == hn:
+                results.add(ins_splits[0].split()[-1].lower())
+        return list(results)
+
+    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
@@ -577,6 +606,7 @@ class DefaultSpecs(Specs):
     sysconfig_httpd = simple_file("/etc/sysconfig/httpd")
     sysconfig_irqbalance = simple_file("etc/sysconfig/irqbalance")
     sysconfig_kdump = simple_file("etc/sysconfig/kdump")
+    sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_memcached = first_file(["/var/lib/config-data/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
@@ -601,6 +631,7 @@ class DefaultSpecs(Specs):
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
     ])
+    systool_b_scsi_v = simple_command("/bin/systool -b scsi -v")
     teamdctl_state_dump = foreach_execute(ethernet_interfaces, "/usr/bin/teamdctl %s state dump")
     thp_use_zero_page = simple_file("/sys/kernel/mm/transparent_hugepage/use_zero_page")
     thp_enabled = simple_file("/sys/kernel/mm/transparent_hugepage/enabled")

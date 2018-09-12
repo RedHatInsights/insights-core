@@ -1,6 +1,7 @@
 from __future__ import print_function
-import os
 import pkgutil
+import os
+import yaml
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
@@ -8,13 +9,13 @@ from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.cluster import process_cluster
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
+from .core.plugins import make_pass, make_fail  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
@@ -55,6 +56,7 @@ def process_dir(broker, root, graph, context, use_pandas=False):
     ctx = create_context(root, context)
 
     if isinstance(ctx, ClusterArchiveContext):
+        from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
         return process_cluster(archives, use_pandas=use_pandas, broker=broker)
 
@@ -94,6 +96,49 @@ def _run(broker, graph=None, root=None, context=None, use_pandas=False):
             return process_dir(broker, ex.tmp_dir, graph, context, use_pandas)
 
 
+def apply_configs(configs):
+    """
+    Configures components. They can be enabled or disabled, have timeouts set
+    if applicable, and have metadata customized. Valid keys are name, enabled,
+    metadata, and timeout.
+
+    Args:
+        configs (list): a list of dictionaries with the following keys:
+            name, enabled, metadata, and timeout. All keys are optional except
+            name.
+
+            name is the prefix or exact name of any loaded component. Any
+            component starting with name will have the associated configuration
+            applied.
+
+            enabled is whether the matching components will execute even if
+            their dependencies are met. Defaults to True.
+
+            timeout sets the class level timeout attribute of any component so
+            long as the attribute already exists.
+
+            metadata is any dictionary that you want to attach to the
+            component. The dictionary can be retrieved by the component at
+            runtime.
+    """
+    delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
+    for comp_cfg in configs:
+        name = comp_cfg["name"]
+        for c in delegate_keys:
+            delegate = dr.DELEGATES[c]
+            cname = dr.get_name(c)
+            if cname.startswith(name):
+                dr.ENABLED[c] = comp_cfg.get("enabled", True)
+                delegate.metadata.update(comp_cfg.get("metadata", {}))
+                for k, v in delegate.metadata.items():
+                    if hasattr(c, k):
+                        setattr(c, k, v)
+                if hasattr(c, "timeout"):
+                    c.timeout = comp_cfg.get("timeout")
+            if cname == name:
+                break
+
+
 def _load_context(path):
     if path is None:
         return
@@ -121,6 +166,7 @@ def run(component=None, root=None, print_summary=False,
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
         p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
@@ -163,6 +209,10 @@ def run(component=None, root=None, print_summary=False,
 
         for p in plugins:
             dr.load_components(p)
+
+        if args.config:
+            with open(args.config) as f:
+                apply_configs(yaml.load(f))
 
         if component is None:
             component = []

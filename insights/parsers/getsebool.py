@@ -24,6 +24,7 @@ Examples:
 """
 
 from .. import parser, LegacyItemAccess, CommandParser
+from . import SkipException
 from insights.specs import Specs
 
 
@@ -36,9 +37,15 @@ class Getsebool(LegacyItemAccess, CommandParser):
         tmpreaper_use_samba --> off
 
     So we can return the value like {"tmpreaper_use_nfs":"off", "tmpreaper_use_samba":"off"}
+
+    Raises:
+        SkipException: When SELinux is not enabled.
     """
 
     def parse_content(self, content):
+        if content and 'selinux is disabled' in content[0].lower():
+            raise SkipException('SELinux is disabled')
+
         self.data = {}
         for line in content:
             key, value = line.split("-->")

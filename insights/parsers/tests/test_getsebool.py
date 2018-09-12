@@ -1,4 +1,5 @@
-from insights.parsers import getsebool
+import pytest
+from insights.parsers import getsebool, SkipException
 from insights.tests import context_wrap
 
 
@@ -25,6 +26,8 @@ virt_use_usb --> on
 virt_use_xserver --> off
 """.strip()
 
+SELINUX_DISABLED = '/usr/sbin/getsebool:  SELinux is disabled'
+
 
 def test_getsebool():
     result = getsebool.Getsebool(context_wrap(GETSEBOOL))
@@ -32,3 +35,9 @@ def test_getsebool():
     assert result["virt_use_nfs"] == 'on'
     assert "virt_use_xserver" in result
     assert "not_exist_key" not in result
+
+
+def test_getsebool_disabled():
+    with pytest.raises(SkipException) as excinfo:
+        getsebool.Getsebool(context_wrap(SELINUX_DISABLED))
+    assert 'SELinux is disabled' in str(excinfo.value)
