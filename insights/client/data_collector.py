@@ -148,7 +148,7 @@ class DataCollector(object):
                     else:
                         file_specs = self._parse_file_spec(spec)
                         for s in file_specs:
-                            file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
+                            file_spec = InsightsFile(s, exclude, self.mountpoint)
                             self.archive.add_to_archive(file_spec)
                 elif 'glob' in spec:
                     glob_specs = self._parse_glob_spec(spec)
@@ -157,7 +157,7 @@ class DataCollector(object):
                             logger.warn("WARNING: Skipping file %s", g)
                             continue
                         else:
-                            glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
+                            glob_spec = InsightsFile(g, exclude, self.mountpoint)
                             self.archive.add_to_archive(glob_spec)
                 elif 'command' in spec:
                     if rm_conf and 'commands' in rm_conf and spec['command'] in rm_conf['commands']:
@@ -166,7 +166,7 @@ class DataCollector(object):
                     else:
                         cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
                         for s in cmd_specs:
-                            cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint, self.target_name)
+                            cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                             self.archive.add_to_archive(cmd_spec)
         else:
             logger.debug('Spec metadata type "%s" not found in spec.', metadata_spec)
