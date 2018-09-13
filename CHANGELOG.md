@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.44-586](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.44-586) (2018-09-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.43-576...insights-core-3.0.44-586)
+
+**Closed issues:**
+
+- No parser for getting number of cpu cores [\#1422](https://github.com/RedHatInsights/insights-core/issues/1422)
+
 ## [insights-core-3.0.43-576](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.43-576) (2018-09-05)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.42-564...insights-core-3.0.43-576)
 
