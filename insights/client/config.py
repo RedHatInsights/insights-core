@@ -226,6 +226,10 @@ DEFAULT_OPTS = {
         'help': 'Register system to the Red Hat Insights Service',
         'action': 'store_true'
     },
+    'remove_file': {
+        # non-CLI
+        'default': constants.collection_remove_file
+    },
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],
