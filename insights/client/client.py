@@ -8,6 +8,7 @@ import os
 import time
 import shutil
 import six
+import atexit
 
 from .utilities import (generate_machine_id,
                         write_to_disk,
@@ -352,6 +353,7 @@ def collect(config, pconn):
 
         archive = InsightsArchive(compressor=config.compressor,
                                   target_name=target['name'])
+        atexit.register(_delete_archive_internal, config, archive)
 
         # determine the target type and begin collection
         # we infer "docker_image" SPEC analysis for certain types
@@ -424,6 +426,16 @@ def upload(config, pconn, tar_file, collection_duration=None):
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
     return api_response
+
+
+def _delete_archive_internal(config, archive):
+    '''
+    Only used during built-in collection.
+    Delete archive and tmp dirs on unexpected exit.
+    '''
+    if not config.keep_archive:
+        archive.delete_tmp_dir()
+        archive.delete_archive_file()
 
 
 def delete_archive(path, delete_parent_dir):
