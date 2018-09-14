@@ -31,7 +31,7 @@ class InsightsConstants(object):
     machine_id_file = os.path.join(default_conf_dir, 'machine-id')
     default_target = {'type': 'host', 'name': ''}
     default_branch_info = {'remote_branch': -1, 'remote_leaf': -1}
-    default_cmd_timeout = 600  # default command execution to ten minutes, prevents long running commands that will hang
+    default_cmd_timeout = 120  # default command execution to two minutes, prevents long running commands that will hang
     default_egg_gpg_key = os.path.join(default_conf_dir, 'insights-core.gpg')
     core_etag_file = os.path.join(default_conf_dir, '.insights-core.etag')
     core_gpg_sig_etag_file = os.path.join(default_conf_dir, '.insights-core-gpg-sig.etag')
