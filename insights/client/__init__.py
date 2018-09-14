@@ -127,10 +127,10 @@ class InsightsClient(object):
         if current_etag and not force:
             logger.debug('Requesting new file with etag %s', current_etag)
             etag_headers = {'If-None-Match': current_etag}
-            response = self.session.get(url, headers=etag_headers)
+            response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
         else:
             logger.debug('Found no etag or forcing fetch')
-            response = self.session.get(url)
+            response = self.session.get(url, timeout=self.config.http_timeout)
 
         # Debug information
         logger.debug('Status code: %d', response.status_code)
