@@ -396,7 +396,10 @@ def upload(config, pconn, tar_file, collection_duration=None):
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
-                handler.write(upload.text)
+                if six.PY3:
+                    handler.write(upload.text)
+                else:
+                    handler.write(upload.text.encode('utf-8'))
             write_to_disk(constants.lastupload_file)
 
             account_number = config.account_number
