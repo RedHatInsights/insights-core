@@ -71,16 +71,18 @@ def test_multipath_conf_initramfs():
     assert multipath_conf_initramfs.get('blacklist').get('devnode') == '^hd[a-z]'
 
 
-def test_multipath_conf_tree():
-    conf = multipath_conf.MultipathConfTree(context_wrap(CONF))
-    assert len(conf["blacklist"]) == 1
-    assert len(conf["blacklist"]["device"]) == 2
+def test_multipath_conf_trees():
+    for c in (multipath_conf.MultipathConfTree,
+              multipath_conf.MultipathConfTreeInitramfs):
+        conf = c(context_wrap(CONF))
+        assert len(conf["blacklist"]) == 1
+        assert len(conf["blacklist"]["device"]) == 2
 
-    assert len(conf["blacklist"]["device"]["vendor"]) == 2
-    assert len(conf["blacklist"]["device"]["product"]) == 2
+        assert len(conf["blacklist"]["device"]["vendor"]) == 2
+        assert len(conf["blacklist"]["device"]["product"]) == 2
 
-    assert conf["blacklist"]["device"]["vendor"][first].value == "IBM"
-    assert conf["blacklist"]["device"]["vendor"][last].value == "HP"
+        assert conf["blacklist"]["device"]["vendor"][first].value == "IBM"
+        assert conf["blacklist"]["device"]["vendor"][last].value == "HP"
 
-    assert conf["blacklist"]["device"]["product"][first].value == "3S42"
-    assert conf["blacklist"]["device"]["product"][last].value == "*"
+        assert conf["blacklist"]["device"]["product"][first].value == "3S42"
+        assert conf["blacklist"]["device"]["product"][last].value == "*"

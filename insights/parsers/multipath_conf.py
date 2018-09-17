@@ -98,17 +98,6 @@ class MultipathConfParser(Parser, LegacyItemAccess):
             }
           ]
         }
-
-    Examples:
-        >>> conf = shared[MultipathConfParser]
-        >>> conf.data['blacklist']['devnode']  # Access via data property
-        '^hd[a-z]'
-        >>> conf['defaults']['user_friendly_names']  # Pseudo-dict access
-        'yes'
-        >>> len(conf['multipaths'])
-        2
-        >>> conf['multipaths'][0]['alias']
-        'yellow'
     """
 
     @classmethod
@@ -147,6 +136,17 @@ class MultipathConfParser(Parser, LegacyItemAccess):
 class MultipathConf(MultipathConfParser):
     """
     Parser for the file ``/etc/multipath.conf``.
+
+    Examples:
+        >>> conf = shared[MultipathConf]
+        >>> conf.data['blacklist']['devnode']  # Access via data property
+        '^hd[a-z]'
+        >>> conf['defaults']['user_friendly_names']  # Pseudo-dict access
+        'yes'
+        >>> len(conf['multipaths'])
+        2
+        >>> conf['multipaths'][0]['alias']
+        'yellow'
     """
     pass
 
@@ -156,6 +156,17 @@ class MultipathConfInitramfs(MultipathConfParser):
     """
     Parser for the output of ``lsinitrd -f /etc/multipath.conf`` applied to
     /boot/initramfs-<kernel-version>.img.
+
+    Examples:
+        >>> conf = shared[MultipathConfInitramfs]
+        >>> conf.data['blacklist']['devnode']  # Access via data property
+        '^hd[a-z]'
+        >>> conf['defaults']['user_friendly_names']  # Pseudo-dict access
+        'yes'
+        >>> len(conf['multipaths'])
+        2
+        >>> conf['multipaths'][0]['alias']
+        'yellow'
     """
     pass
 
@@ -178,3 +189,25 @@ def get_tree(root=None):
     """
     from insights import run
     return run(MultipathConfTree, root=root).get(MultipathConfTree)
+
+
+@parser(Specs.multipath_conf_initramfs)
+class MultipathConfTreeInitramfs(ConfigParser):
+    """
+    Exposes the multipath configuration from initramfs image through the
+    configtree interface.
+
+    See the :py:class:`insights.core.ConfigComponent` class for example usage.
+    """
+    def parse_doc(self, content):
+        return parse_doc("\n".join(content), ctx=self, line_end="\n")
+
+
+def get_tree_from_initramfs(root=None):
+    """
+    This is a helper function to get a multipath configuration(from initramfs
+    image) component for your local machine or an archive. It's for use in
+    interactive sessions.
+    """
+    from insights import run
+    return run(MultipathConfTreeInitramfs, root=root).get(MultipathConfTreeInitramfs)
