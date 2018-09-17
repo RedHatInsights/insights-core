@@ -19,7 +19,7 @@ def collect_args(*insights_config_args, **insights_config_custom_kwargs):
     """
     Instantiates InsightsConfig with a default logging_file argument.
     """
-    all_insights_config_kwargs = {"logging_file": "/tmp/insights.log"}
+    all_insights_config_kwargs = {"logging_file": "/tmp/insights.log", "remove_file": "/tmp/remove.conf"}
     all_insights_config_kwargs.update(insights_config_custom_kwargs)
     return InsightsConfig(*insights_config_args, **all_insights_config_kwargs), Mock()
 
