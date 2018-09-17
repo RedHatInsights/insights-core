@@ -113,8 +113,11 @@ def call(cmd, timeout=None, signum=signal.SIGKILL, shell=False, stdout=subproces
         rc = cout.poll()
     except Exception as e:
         six.reraise(CalledProcessError, CalledProcessError(rc, cmd, str(e)), sys.exc_info()[2])
+
+    cmd_stdout_str = output.decode(output_encoding, 'ignore') if output_encoding else output
+
     if keep_rc:
-        return rc, output.decode(output_encoding) if output_encoding else output
+        return rc, cmd_stdout_str
     if rc:
         raise CalledProcessError(rc, cmd, output)
-    return output.decode(output_encoding) if output_encoding else output
+    return cmd_stdout_str

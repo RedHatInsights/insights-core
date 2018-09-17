@@ -554,6 +554,7 @@ class InsightsConfig(object):
         self.to_json = ((self.to_json or self.analyze_container) and
                         not self.to_stdout)
         self.register = (self.register or self.reregister) and not self.offline
+        self.keep_archive = self.keep_archive or self.no_upload
 
 
 if __name__ == '__main__':
