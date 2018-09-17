@@ -14,6 +14,10 @@ GnocchiMetricdLog - file ``gnocchi-metricd.log`` or ``metricd.log``
 
 from .. import parser, IniConfigFile, LogFileOutput
 from insights.specs import Specs
+from insights.core.filters import add_filter
+
+
+add_filter(Specs.gnocchi_conf, "[")
 
 
 @parser(Specs.gnocchi_conf)
