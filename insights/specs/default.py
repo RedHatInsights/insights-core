@@ -22,6 +22,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
+from insights.parsers.mount import Mount
 from insights.specs import Specs
 
 
@@ -684,6 +685,14 @@ class DefaultSpecs(Specs):
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
+
+    @datasource(Mount)
+    def xfs_mounts(broker):
+        mnt = broker[Mount]
+        mps = mnt.search(mount_type='xfs')
+        return [m.mount_point for m in mps if mps]
+
+    xfs_info = foreach_execute(xfs_mounts, "sudo /usr/sbin/xfs_info %s")
 
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
