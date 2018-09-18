@@ -413,6 +413,7 @@ class Specs(SpecSet):
     sysconfig_memcached = RegistryPoint()
     sysconfig_mongod = RegistryPoint(multi_output=True)
     sysconfig_ntpd = RegistryPoint()
+    sysconfig_prelink = RegistryPoint()
     sysconfig_virt_who = RegistryPoint()
     sysctl_conf_initramfs = RegistryPoint()
     sysctl_conf = RegistryPoint()
