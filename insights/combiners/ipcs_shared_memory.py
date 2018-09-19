@@ -35,24 +35,24 @@ class IpcsSharedMemory(LegacyItemAccess):
         >>> type(ism)
         <class 'insights.combiners.ipcs_shared_memory.IpcsSharedMemory'>
         >>> ism.get_shm_size_of_pid('1105')
-        '41222144'
+        41222144
     """
     def __init__(self, shm, shmp):
+        if shm.data.keys() != shmp.data.keys():
+            raise ParseException("The output of 'ipcs -m' doesn't match with 'ipcs -m -p'.")
         self.data = {}
-        for s, v in shmp.data.items():
-            self.data[s] = v
-            if s in shm:
-                self.data[s].update(shm[s])
-            else:
-                raise ParseException("shm and shmp doesn't match")
+        for s, v in shm.data.items():
+            self.data[s] = v.copy()
+            self.data[s].update(shmp[s])
 
     def get_shm_size_of_pid(self, pid):
         """
-        Return an IpcsSemaphore instance which semid is ``semid``
+        Return the shared memory size of specified ``pid``.
 
         Returns:
-            (IpcsSemaphore): the instance of IpcsSemaphore
+            (int): size of the shared memory, 0 by default.
         """
         for _, v in self.data.items():
             if v['cpid'] == pid:
-                return v['bytes']
+                return int(v['bytes'])
+        return 0

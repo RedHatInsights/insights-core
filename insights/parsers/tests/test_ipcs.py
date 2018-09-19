@@ -1,6 +1,7 @@
-from insights.parsers import ipcs
+from insights.parsers import ipcs, ParseException, SkipException
 from insights.parsers.ipcs import IpcsS, IpcsSI, IpcsM, IpcsMP
 from insights.tests import context_wrap
+import pytest
 import doctest
 
 IPCS_S = """
@@ -53,6 +54,13 @@ shmid      owner      cpid       lpid
 1          postgres   1105       9882
 """.strip()
 
+IPCS_M_AB = """
+------ Shared Memory Segments --------
+key        shid      owner      perms      bytes      nattch     status
+0x0052e2c1 0          postgres   600        37879808   26
+0x0052e2c2 1          postgres   600        41222144   24
+""".strip()
+
 
 def test_ipcs_s():
     sem = IpcsS(context_wrap(IPCS_S))
@@ -85,6 +93,16 @@ def test_ipcs_mp():
     assert '1' in shm
     assert '1074' not in shm
     assert shm.get('1').get('cpid') == '1105'
+
+
+def test_ipcs_abnormal():
+    with pytest.raises(SkipException) as pe:
+        IpcsMP(context_wrap(""))
+    assert "Nothing to parse." in str(pe)
+
+    with pytest.raises(ParseException) as pe:
+        IpcsMP(context_wrap(IPCS_M_AB))
+    assert "Unexpected heading line." in str(pe)
 
 
 def test_doc_examples():

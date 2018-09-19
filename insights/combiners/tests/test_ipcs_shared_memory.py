@@ -1,8 +1,10 @@
+from insights.parsers import ParseException
 from insights.parsers.ipcs import IpcsM, IpcsMP
 from insights.combiners import ipcs_shared_memory
 from insights.combiners.ipcs_shared_memory import IpcsSharedMemory
 from insights.tests import context_wrap
 import doctest
+import pytest
 
 IPCS_M = """
 ------ Shared Memory Segments --------
@@ -18,12 +20,26 @@ shmid      owner      cpid       lpid
 1          postgres   1105       9882
 """.strip()
 
+IPCS_M_P_AB = """
+------ Shared Memory Creator/Last-op --------
+shmid      owner      cpid       lpid
+0          postgres   1833       23566
+""".strip()
+
 
 def test_ipcs_shm():
     shm = IpcsM(context_wrap(IPCS_M))
     shmp = IpcsMP(context_wrap(IPCS_M_P))
     rst = IpcsSharedMemory(shm, shmp)
-    assert rst.get_shm_size_of_pid('1833') == '37879808'
+    assert rst.get_shm_size_of_pid('1833') == 37879808
+
+
+def test_ipcs_shm_abnormal():
+    shm = IpcsM(context_wrap(IPCS_M))
+    shmp = IpcsMP(context_wrap(IPCS_M_P_AB))
+    with pytest.raises(ParseException) as pe:
+        IpcsSharedMemory(shm, shmp)
+    assert "The output of 'ipcs -m' doesn't match with 'ipcs -m -p'." in str(pe)
 
 
 def test_doc_examples():

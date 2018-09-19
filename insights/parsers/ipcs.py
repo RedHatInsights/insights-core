@@ -18,7 +18,7 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 
 """
 from insights import parser, get_active_lines, CommandParser
-from insights.parsers import parse_delimited_table
+from insights.parsers import parse_delimited_table, ParseException, SkipException
 from insights.specs import Specs
 
 
@@ -33,13 +33,15 @@ class IPCS(CommandParser):
         # heading_ignore is first line we _don't_ want to ignore...
         ids = ['semid', 'shmid', 'msqid']
         table = parse_delimited_table(content, heading_ignore=['key'] + ids)
-        data = map(lambda item: dict((k, v) for (k, v) in item.items()), table)
+        if not table:
+            raise SkipException('Nothing to parse.')
+        id_s = [i for i in table[0] if i in ids]
+        if not id_s or len(id_s) != 1:
+            raise ParseException('Unexpected heading line.')
+        id_ok = id_s[0]
         self.data = {}
-        id_n = None
-        for item in data:
-            id_n = [i for i in item if i in ids][0] if id_n is None else id_n
-            if id_n:
-                self.data[item.pop(id_n)] = item
+        for item in table:
+            self.data[item.pop(id_ok)] = item
 
     def __contains__(self, sid):
         """
@@ -58,11 +60,11 @@ class IPCS(CommandParser):
         if key is not present.
 
         Parameters:
-            item (str): Key to get from ``self.data``.
+            sid(str): Key to get from ``self.data``.
             default (str): Default value to return if key is not present.
 
         Returns:
-            {dict}: the stored dict item, or the default if not found.
+            {dict}: the stored dict item, or the ``default`` if not found.
 
         """
         return self.data.get(sid, default)
@@ -84,6 +86,8 @@ class IpcsM(IPCS):
         False
         >>> '0' in shm
         True
+        >>> shm.get('2602', {}).get('bytes')
+
         >>> shm.get('0', {}).get('bytes')
         '37879808'
     """
