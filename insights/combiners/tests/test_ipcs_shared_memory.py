@@ -32,6 +32,7 @@ def test_ipcs_shm():
     shmp = IpcsMP(context_wrap(IPCS_M_P))
     rst = IpcsSharedMemory(shm, shmp)
     assert rst.get_shm_size_of_pid('1833') == 37879808
+    assert rst.get_shm_size_of_pid('33') == 0
 
 
 def test_ipcs_shm_abnormal():
