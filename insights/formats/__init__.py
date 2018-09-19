@@ -1,4 +1,3 @@
-from __future__ import print_function
 import six
 import sys
 from insights import dr, rule
@@ -68,19 +67,6 @@ class Formatter(object):
 
     def postprocess(self):
         pass
-
-
-class EvaluatorFormatter(Formatter):
-    def preprocess(self):
-        from insights.core.evaluators import SingleEvaluator
-        self.evaluator = SingleEvaluator(broker=self.broker)
-
-    def postprocess(self):
-        self.evaluator.post_process()
-        print(self.dump(self.evaluator.get_response()), file=self.stream)
-
-    def dump(self, data):
-        raise NotImplemented("Subclasses must implement the dump method.")
 
 
 class EvaluatorFormatterAdapter(FormatterAdapter):
