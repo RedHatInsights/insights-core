@@ -17,8 +17,8 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 ----------------------------------------------
 
 """
-from .. import parser, get_active_lines, CommandParser
-from . import parse_delimited_table
+from insights import parser, get_active_lines, CommandParser
+from insights.parsers import parse_delimited_table
 from insights.specs import Specs
 
 
@@ -37,7 +37,7 @@ class IPCS(CommandParser):
         self.data = {}
         id_n = None
         for item in data:
-            id_n = [i for i in item if i in ids][0] if not id_n else id_n
+            id_n = [i for i in item if i in ids][0] if id_n is None else id_n
             if id_n:
                 self.data[item.pop(id_n)] = item
 
