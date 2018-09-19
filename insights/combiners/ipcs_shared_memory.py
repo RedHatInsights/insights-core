@@ -20,12 +20,14 @@ class IpcsSharedMemory(LegacyItemAccess):
     and ``ipcs -m -p``.
 
     Typical output of command ``ipcs -m`` is::
+
         ------ Shared Memory Segments --------
         key        shmid      owner      perms      bytes      nattch     status
         0x0052e2c1 0          postgres   600        37879808   26
         0x0052e2c2 1          postgres   600        41222144   24
 
     Typical output of command ``ipcs -m -p`` is::
+
         ------ Shared Memory Creator/Last-op --------
         shmid      owner      cpid       lpid
         0          postgres   1833       23566

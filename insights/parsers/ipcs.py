@@ -82,14 +82,14 @@ class IpcsM(IPCS):
         0x0052e2c1 0          postgres   600        37879808   26
 
     Examples:
-        >>> '2602' in shm
-        False
         >>> '0' in shm
         True
-        >>> shm.get('2602', {}).get('bytes')
-
         >>> shm.get('0', {}).get('bytes')
         '37879808'
+        >>> '2602' in shm
+        False
+        >>> shm.get('2602', {}).get('bytes')
+
     """
     pass
 
