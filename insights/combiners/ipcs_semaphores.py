@@ -1,5 +1,5 @@
 """
-Ipcs Semaphores
+IPCS Semaphores
 ===============
 
 Combiner for parsing all semaphores. It uses the results of the
@@ -10,7 +10,7 @@ use ``PsAuxcww`` parsers to determine if one semaphore is orphan.
 
 from insights.core.plugins import combiner
 from insights.parsers.ps import PsAuxcww
-from insights.parsers.ipcs_sem import IpcsS, IpcsSI
+from insights.parsers.ipcs import IpcsS, IpcsSI
 
 
 class IpcsSemaphore(object):

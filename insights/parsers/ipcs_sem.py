@@ -41,7 +41,6 @@ class IpcsS(CommandParser):
         0x00000000 688140     apache     600        1
 
     Examples:
-        >>> sem = shared[IpcsS]
         >>> '622602' in sem
         True
         >>> sem['622602']
@@ -112,7 +111,6 @@ class IpcsSI(CommandParser):
         7          1          0          0          4390
 
     Examples:
-        >>> sem = shared[IpcsSI]
         >>> sem.semid
         '65536'
         >>> sem.pid_list

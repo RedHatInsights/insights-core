@@ -1,4 +1,4 @@
-from insights.parsers.ipcs_sem import IpcsSI, IpcsS
+from insights.parsers.ipcs import IpcsSI, IpcsS
 from insights.parsers.ps import PsAuxcww
 from insights.combiners.ipcs_semaphores import IpcsSemaphores
 from insights.tests import context_wrap
