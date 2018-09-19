@@ -1,6 +1,13 @@
+@Library('fh-pipeline-library')_
+
 pipeline {
   agent none
   stages {
+    stage('Trust') {
+      steps {
+        enforceTrustedApproval('RedHatInsights')
+      }
+    }
     stage('Build and Test Insights Core') {
       parallel {
         stage('Build RHEL6') {
