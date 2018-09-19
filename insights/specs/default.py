@@ -381,6 +381,7 @@ class DefaultSpecs(Specs):
     mount = simple_command("/bin/mount")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
+    multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
     mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([

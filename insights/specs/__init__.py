@@ -247,6 +247,7 @@ class Specs(SpecSet):
     mount = RegistryPoint()
     multicast_querier = RegistryPoint()
     multipath_conf = RegistryPoint()
+    multipath_conf_initramfs = RegistryPoint()
     multipath__v4__ll = RegistryPoint()
     mysqladmin_vars = RegistryPoint()
     mysql_log = RegistryPoint(multi_output=True, filterable=True)
