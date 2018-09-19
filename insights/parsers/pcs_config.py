@@ -52,7 +52,7 @@ Typical ``/usr/sbin/pcs config`` output looks something like:
          stonith-enabled: false
 
 
-The class provides attribute ``data`` as dictionary with lines parsed line by line based on keys, which are 
+The class provides attribute ``data`` as dictionary with lines parsed line by line based on keys, which are
 the key words of the output.
 Information in keys ``Corosync Nodes`` and ``Pacemaker Nodes`` is parsed in one line.
 The get method ``get(str)`` provides lines from ``data`` based on given key.
@@ -109,13 +109,12 @@ Examples:
     ['cluster-infrastructure: corosync', 'cluster-name: cluster-1']
     >>> pcs_config.get_resources_clones()
     {'clone-1': ['Meta Attrs: interleave=true ordered=true', 'Resource: res-1 (class=ocf provider=pacemaker type=controld)', 'Operations: start interval=0s timeout=90 (dlm-start-interval-0s)', 'stop interval=0s timeout=100 (dlm-stop-interval-0s)', 'monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)', '']}
-    
+
 """
 
 
 from .. import parser, CommandParser
 from insights.specs import Specs
-import sys
 
 
 @parser(Specs.pcs_config)
@@ -151,7 +150,7 @@ class PCSConfig(CommandParser):
     Methods:
         get_resources_clones(self) (dict): Returns a dictionary of ``Clones`` in ``Resources`` keyed with their name.
             the form::
-            { 
+            {
                 "clone-1": [
                     "Meta Attrs: interleave=true ordered=true",
                     "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
@@ -181,7 +180,7 @@ class PCSConfig(CommandParser):
         skip_lines = 0
         config_tuple = ("Resources", "Stonith Devices", "Fencing Levels", "Location Constraints", "Ordering Constraints",
                         "Colocation Constraints", "Ticket Constraints", "Alerts", "Resources Defaults",
-                        "Operations Defaults" ,"Cluster Properties" ,"Quorum")
+                        "Operations Defaults", "Cluster Properties", "Quorum")
         for i, line in enumerate(content):
             if skip_lines > 0:
                 skip_lines -= 1
@@ -190,11 +189,11 @@ class PCSConfig(CommandParser):
                 self.data["Cluster Name"] = line.split("Cluster Name:")[-1].lstrip()
                 continue
             if line.startswith("Corosync Nodes:"):
-                self.data["Corosync Nodes"] = content[i+1].split()
+                self.data["Corosync Nodes"] = content[i + 1].split()
                 skip_lines = 1
                 continue
             if line.startswith("Pacemaker Nodes:"):
-                self.data["Pacemaker Nodes"] = content[i+1].split()
+                self.data["Pacemaker Nodes"] = content[i + 1].split()
                 skip_lines = 1
                 continue
             if line == "":
@@ -210,13 +209,11 @@ class PCSConfig(CommandParser):
                 dc_key = line.split(":")[0]
                 continue
             list_data.append(line.lstrip())
-        if not dc_key == "" and not dc_key in self.data.keys():
+        if not dc_key == "" and dc_key not in self.data.keys():
             self.data[dc_key] = list_data
-
 
     def get(self, key):
         return self.data.get(key)
-
 
     def get_resources_clones(self):
         clones = {}
@@ -237,7 +234,6 @@ class PCSConfig(CommandParser):
             clones[name].append(line)
         return clones
 
-
     def get_resources_groups(self):
         groups = {}
         name = ""
@@ -251,7 +247,7 @@ class PCSConfig(CommandParser):
             if in_group == 0:
                 continue
             if line.startswith("Clone:"):
-                in_group =  0
+                in_group = 0
                 name = ""
                 continue
             groups[name].append(line)
