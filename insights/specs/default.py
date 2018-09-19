@@ -610,6 +610,7 @@ class DefaultSpecs(Specs):
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_memcached = first_file(["/var/lib/config-data/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
+    sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
