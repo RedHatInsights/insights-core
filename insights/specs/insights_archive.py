@@ -75,6 +75,8 @@ class InsightsArchiveSpecs(Specs):
     ip_addr = simple_file("insights_commands/ip_addr")
     ip_route_show_table_all = simple_file("insights_commands/ip_route_show_table_all")
     ip_s_link = simple_file("insights_commands/ip_-s_link")
+    ipcs_m = simple_file("insights_commands/ipcs_-m")
+    ipcs_m_p = simple_file("insights_commands/ipcs_-m_-p")
     ipcs_s = simple_file("insights_commands/ipcs_-s")
     iptables = simple_file("insights_commands/iptables-save")
     ipv4_neigh = simple_file("insights_commands/ip_-4_neighbor_show_nud_all")
