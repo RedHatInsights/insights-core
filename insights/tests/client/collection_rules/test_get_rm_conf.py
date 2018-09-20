@@ -4,8 +4,8 @@ from .helpers import insights_upload_conf
 from mock.mock import patch
 
 
-remove_file = '/etc/insights-client/remove.conf'
-remove_files = ["/etc/remove.conf", "/tmp/remove.conf"]
+conf_remove_file = '/tmp/remove.conf'
+removed_files = ["/etc/some_file", "/tmp/another_file"]
 
 
 def patch_isfile(isfile):
@@ -29,28 +29,28 @@ def patch_raw_config_parser(items):
     return decorator
 
 
-@patch_isfile(False)
 @patch_raw_config_parser([])
-def test_no_file(raw_config_parser, isfile):
-    upload_conf = insights_upload_conf(remove_file=remove_file)
+@patch_isfile(False)
+def test_no_file(isfile, raw_config_parser):
+    upload_conf = insights_upload_conf(remove_file=conf_remove_file)
     result = upload_conf.get_rm_conf()
 
-    isfile.assert_called_once_with(remove_file)
+    isfile.assert_called_once_with(conf_remove_file)
     raw_config_parser.assert_not_called()
 
     assert result is None
 
 
-@patch_raw_config_parser([("files", ",".join(remove_files))])
+@patch_raw_config_parser([("files", ",".join(removed_files))])
 @patch_isfile(True)
 def test_return(isfile, raw_config_parser):
-    upload_conf = insights_upload_conf(remove_file=remove_file)
+    upload_conf = insights_upload_conf(remove_file=conf_remove_file)
     result = upload_conf.get_rm_conf()
 
-    isfile.assert_called_once_with(remove_file)
+    isfile.assert_called_once_with(conf_remove_file)
 
     raw_config_parser.assert_called_once_with()
-    raw_config_parser.return_value.read.assert_called_with(remove_file)
+    raw_config_parser.return_value.read.assert_called_with(conf_remove_file)
     raw_config_parser.return_value.items.assert_called_with('remove')
 
-    assert result == {"files": remove_files}
+    assert result == {"files": removed_files}
