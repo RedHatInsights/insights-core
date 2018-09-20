@@ -20,8 +20,6 @@ class InsightsConstants(object):
     base_url = ''
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
     collection_fallback_file = os.path.join(default_conf_dir, '.fallback.json')
-    collection_remove_file_name = 'remove.conf'
-    collection_remove_file = os.path.join(default_conf_dir, collection_remove_file_name)
     unregistered_files = [os.path.join(default_conf_dir, '.unregistered'),
                           os.path.join(simple_find_replace_dir, '.unregistered')]
     registered_files = [os.path.join(default_conf_dir, '.registered'),

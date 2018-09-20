@@ -228,7 +228,7 @@ DEFAULT_OPTS = {
     },
     'remove_file': {
         # non-CLI
-        'default': constants.collection_remove_file
+        'default': os.path.join(constants.default_conf_dir, 'remove.conf')
     },
     'reregister': {
         'default': False,

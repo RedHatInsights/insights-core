@@ -12,6 +12,7 @@ from tempfile import NamedTemporaryFile, TemporaryFile
 stdin_uploader_json = {"some key": "some value"}
 stdin_sig = "some signature"
 stdin_payload = {"uploader.json": json_dumps(stdin_uploader_json), "sig": stdin_sig}
+remove_file = "/tmp/remove.conf"
 remove_files = ["/etc/insights-client/remove.conf", "/tmp/remove.conf"]
 
 
@@ -19,7 +20,7 @@ def collect_args(*insights_config_args, **insights_config_custom_kwargs):
     """
     Instantiates InsightsConfig with a default logging_file argument.
     """
-    all_insights_config_kwargs = {"logging_file": "/tmp/insights.log", "remove_file": "/tmp/remove.conf"}
+    all_insights_config_kwargs = {"logging_file": "/tmp/insights.log", "remove_file": remove_file}
     all_insights_config_kwargs.update(insights_config_custom_kwargs)
     return InsightsConfig(*insights_config_args, **all_insights_config_kwargs), Mock()
 
@@ -117,20 +118,15 @@ def patch_isfile(remove_file_exists):
     given value.
     """
     def decorator(old_function):
-        remove_file = "/tmp/remove.conf"
-
         def decider(*args, **kwargs):
             if args[0] == remove_file:
                 return remove_file_exists
             else:
                 return True
 
-        isfile_patcher = patch("insights.client.collection_rules.os.path.isfile", decider)
-        isfile_patched = isfile_patcher(old_function)
-
-        collection_remove_file_patcher = patch("insights.client.collection_rules.constants.collection_remove_file",
-                                               remove_file)
-        return collection_remove_file_patcher(isfile_patched)
+        patcher = patch("insights.client.collection_rules.os.path.isfile", decider)
+        isfile_patched = patcher(old_function)
+        return isfile_patched
     return decorator
 
 
