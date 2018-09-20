@@ -2,8 +2,13 @@
 IPCS commands
 =============
 
-Shared parsers for parsing output of the ``ipcs -s`` and ``ipcs -s -i``
-commands.
+Shared parsers for parsing output of the ``ipcs`` commands.
+
+IpcsM - command ``ipcs -m``
+---------------------------
+
+IpcsMP - command ``ipcs -m -p``
+-------------------------------
 
 IpcsS - command ``ipcs -s``
 ---------------------------
@@ -12,14 +17,105 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 ----------------------------------------------
 
 """
-from insights.util import deprecated
-from .. import parser, get_active_lines, CommandParser
-from . import parse_delimited_table
+from insights import parser, get_active_lines, CommandParser
+from insights.parsers import parse_delimited_table, ParseException, SkipException
 from insights.specs import Specs
 
 
+class IPCS(CommandParser):
+    """
+    Base class for parsing the output of `ipcs -X` command in which the `X`
+    could be `m`, `s` or `q`.
+
+    """
+
+    def parse_content(self, content):
+        # heading_ignore is first line we _don't_ want to ignore...
+        ids = ['semid', 'shmid', 'msqid']
+        table = parse_delimited_table(content, heading_ignore=['key'] + ids)
+        if not table:
+            raise SkipException('Nothing to parse.')
+        id_s = [i for i in table[0] if i in ids]
+        if not id_s or len(id_s) != 1:
+            raise ParseException('Unexpected heading line.')
+        id_ok = id_s[0]
+        self.data = {}
+        for item in table:
+            self.data[item.pop(id_ok)] = item
+
+    def __contains__(self, sid):
+        """
+        Check if ``sid`` is contained or not
+        """
+        return sid in self.data
+
+    def __getitem__(self, sid):
+        """
+        Retrieves an item from the underlying data dictionary.
+        """
+        return self.data[sid]
+
+    def get(self, sid, default=None):
+        """Returns value of key ``item`` in self.data or ``default``
+        if key is not present.
+
+        Parameters:
+            sid(str): Key to get from ``self.data``.
+            default (str): Default value to return if key is not present.
+
+        Returns:
+            {dict}: the stored dict item, or the ``default`` if not found.
+
+        """
+        return self.data.get(sid, default)
+
+
+@parser(Specs.ipcs_m)
+class IpcsM(IPCS):
+    """
+    Class for parsing the output of `ipcs -m` command.
+
+    Typical output of the command is::
+
+        ------ Shared Memory Segments --------
+        key        shmid      owner      perms      bytes      nattch     status
+        0x0052e2c1 0          postgres   600        37879808   26
+
+    Examples:
+        >>> '0' in shm
+        True
+        >>> shm.get('0', {}).get('bytes')
+        '37879808'
+        >>> '2602' in shm
+        False
+        >>> shm.get('2602', {}).get('bytes')
+
+    """
+    pass
+
+
+@parser(Specs.ipcs_m_p)
+class IpcsMP(IPCS):
+    """
+    Class for parsing the output of `ipcs -m -p` command.
+
+    Typical output of the command is::
+
+        ------ Shared Memory Creator/Last-op --------
+        shmid      owner      cpid       lpid
+        0          postgres   1833       14111
+
+    Examples:
+        >>> '0' in shmp
+        True
+        >>> shmp.get('0').get('cpid')
+        '1833'
+    """
+    pass
+
+
 @parser(Specs.ipcs_s)
-class IpcsS(CommandParser):
+class IpcsS(IPCS):
     """
     Class for parsing the output of `ipcs -s` command.
 
@@ -42,51 +138,14 @@ class IpcsS(CommandParser):
         0x00000000 688140     apache     600        1
 
     Examples:
-        >>> sem = shared[IpcsS]
         >>> '622602' in sem
         True
-        >>> sem['622602']
-        {'owner': 'apache', 'perms': '600', 'nsems': '1', 'key': '0x00000000'}
-        >>> sem.get('262150')
-        {'owner': 'postgres', 'perms': '600', 'nsems': '1', 'key': '0x00000000'}
+        >>> '262150' in sem
+        True
+        >>> sem.get('262150').get('owner')
+        'postgres'
     """
-    def __init__(self, *args, **kwargs):
-        deprecated(IpcsS, "Import IpcsS from insights.parsers.ipcs instead")
-        super(IpcsS, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        # heading_ignore is first line we _don't_ want to ignore...
-        table = parse_delimited_table(content, heading_ignore=['key'])
-        data = map(lambda item: dict((k, v) for (k, v) in item.items()), table)
-        self.data = {}
-        for item in data:
-            self.data[item.pop('semid')] = item
-
-    def __contains__(self, semid):
-        """
-        Check if ``semid`` is contained or not
-        """
-        return semid in self.data
-
-    def __getitem__(self, semid):
-        """
-        Retrieves an item from the underlying data dictionary.
-        """
-        return self.data[semid]
-
-    def get(self, semid, default=None):
-        """Returns value of key ``item`` in self.data or ``default``
-        if key is not present.
-
-        Parameters:
-            item (str): Key to get from ``self.data``.
-            default (str): Default value to return if key is not present.
-
-        Returns:
-            {dict}: the stored dict item, or the default if not found.
-
-        """
-        return self.data.get(semid, default)
+    pass
 
 
 @parser(Specs.ipcs_s_i)
@@ -116,16 +175,12 @@ class IpcsSI(CommandParser):
         7          1          0          0          4390
 
     Examples:
-        >>> sem = shared[IpcsSI]
-        >>> sem.semid
+        >>> semi.semid
         '65536'
-        >>> sem.pid_list
+        >>> semi.pid_list
         ['0', '2265', '4390', '6151', '6152']
 
     """
-    def __init__(self, *args, **kwargs):
-        deprecated(IpcsSI, "Import IpcsSI from insights.parsers.ipcs instead")
-        super(IpcsSI, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         # parse the output of `ipcs -s -i ##` command
