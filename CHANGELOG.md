@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.45-594](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.45-594) (2018-09-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.44-586...insights-core-3.0.45-594)
+
+**Closed issues:**
+
+- utf-8 UnicodeDecodeError in 'var/log/messages' parsing [\#1432](https://github.com/RedHatInsights/insights-core/issues/1432)
+
 ## [insights-core-3.0.44-586](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.44-586) (2018-09-13)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.43-576...insights-core-3.0.44-586)
 
