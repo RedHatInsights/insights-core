@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-from .helpers import insights_upload_conf
 from mock.mock import patch
 from pytest import raises
 
@@ -11,7 +10,7 @@ collection_rules_file = "/tmp/collection-rules"
 
 @patch("insights.client.collection_rules.InsightsUploadConf.get_conf_file")
 @patch("insights.client.collection_rules.InsightsUploadConf.get_collection_rules", return_value=None)
-def test_load_from_file(get_collection_rules, get_conf_file):
+def test_load_from_file(get_collection_rules, get_conf_file, insights_upload_conf):
     """
     Falls back to file if collection rules are not downloaded.
     """
@@ -25,7 +24,7 @@ def test_load_from_file(get_collection_rules, get_conf_file):
 
 @patch("insights.client.collection_rules.InsightsUploadConf.get_conf_file")
 @patch("insights.client.collection_rules.InsightsUploadConf.get_collection_rules", return_value={"some": "value"})
-def test_no_version_error(get_collection_rules, get_conf_file):
+def test_no_version_error(get_collection_rules, get_conf_file, insights_upload_conf):
     """
     Error is raised if there is no version in the collection rules loaded from URL.
     """
@@ -40,7 +39,7 @@ def test_no_version_error(get_collection_rules, get_conf_file):
 @patch("insights.client.collection_rules.constants.collection_rules_file", collection_rules_file)
 @patch("insights.client.collection_rules.InsightsUploadConf.get_conf_file")
 @patch("insights.client.collection_rules.InsightsUploadConf.get_collection_rules", return_value=collection_rules)
-def test_load_from_url(get_collection_rules, get_conf_file):
+def test_load_from_url(get_collection_rules, get_conf_file, insights_upload_conf):
     """
     Return collection rules loaded from URL with added file path.
     """

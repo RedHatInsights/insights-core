@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-from .helpers import insights_upload_conf
 from mock.mock import patch
 
 
@@ -31,7 +30,7 @@ def patch_raw_config_parser(items):
 
 @patch_raw_config_parser([])
 @patch_isfile(False)
-def test_no_file(isfile, raw_config_parser):
+def test_no_file(isfile, raw_config_parser, insights_upload_conf):
     upload_conf = insights_upload_conf(remove_file=conf_remove_file)
     result = upload_conf.get_rm_conf()
 
@@ -43,7 +42,7 @@ def test_no_file(isfile, raw_config_parser):
 
 @patch_raw_config_parser([("files", ",".join(removed_files))])
 @patch_isfile(True)
-def test_return(isfile, raw_config_parser):
+def test_return(isfile, raw_config_parser, insights_upload_conf):
     upload_conf = insights_upload_conf(remove_file=conf_remove_file)
     result = upload_conf.get_rm_conf()
 

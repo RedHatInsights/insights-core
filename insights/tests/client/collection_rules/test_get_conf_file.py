@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-from .helpers import insights_upload_conf
 from mock.mock import call, patch
 from pytest import raises
 
@@ -41,7 +40,7 @@ def patch_try_disk(return_values):
 
 @patch_try_disk([{"version": "1.2.3"}])
 @patch_collection_rules_file()
-def test_collection_rules_file_try_disk(try_disk):
+def test_collection_rules_file_try_disk(try_disk, insights_upload_conf):
     """
     Collection rules are loaded from the default file while performing signature validation.
     """
@@ -53,7 +52,7 @@ def test_collection_rules_file_try_disk(try_disk):
 
 
 @patch_try_disk([{"version": None}])
-def test_collection_rules_file_no_version_error(try_disk):
+def test_collection_rules_file_no_version_error(try_disk, insights_upload_conf):
     """
     Collection rules from the default file are rejected if they don't specify version.
     """
@@ -65,7 +64,7 @@ def test_collection_rules_file_no_version_error(try_disk):
 
 @patch_try_disk([{"version": "1.2.3"}])
 @patch_collection_rules_file()
-def test_return_collection_rules(try_disk):
+def test_return_collection_rules(try_disk, insights_upload_conf):
     """
     Collection rules from the default file are returned with the filename appended to the data.
     """
@@ -77,7 +76,7 @@ def test_return_collection_rules(try_disk):
 @patch_try_disk([None, {"version": "1.2.3"}])
 @patch_collection_fallback_file()
 @patch_collection_rules_file()
-def test_fallback_file_try_disk(try_disk):
+def test_fallback_file_try_disk(try_disk, insights_upload_conf):
     """
     If there are no collection rules in the default file, they are loaded from the fallback file while performing
     signature validation.
@@ -92,7 +91,7 @@ def test_fallback_file_try_disk(try_disk):
 
 
 @patch_try_disk([None, {"version": None}])
-def test_fallback_file_no_version_error(try_disk):
+def test_fallback_file_no_version_error(try_disk, insights_upload_conf):
     """
     Collection rules from the fallback file are rejected if they don't specify version.
     """
@@ -104,7 +103,7 @@ def test_fallback_file_no_version_error(try_disk):
 
 @patch_try_disk([None, {"version": "1.2.3"}])
 @patch_collection_fallback_file()
-def test_return_collection_fallback(try_disk):
+def test_return_collection_fallback(try_disk, insights_upload_conf):
     """
     Collection rules from the fallback file are returned with the filename appended to the data.
     """
@@ -114,7 +113,7 @@ def test_return_collection_fallback(try_disk):
 
 
 @patch_try_disk([None, None])
-def test_no_file_error(try_disk):
+def test_no_file_error(try_disk, insights_upload_conf):
     """
     An error is raised if there are no collection rules neither in the default nor the fallback file.
     """

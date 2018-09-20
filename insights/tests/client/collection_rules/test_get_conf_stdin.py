@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-from .helpers import insights_upload_conf
 from json import dumps as json_dumps
 from mock.mock import call, Mock, patch
 from pytest import raises
@@ -40,7 +39,7 @@ def patch_validate_gpg_sig(valid):
 
 
 @patch_named_temporary_file()
-def test_file_writes(named_temporary_file):
+def test_file_writes(named_temporary_file, insights_upload_conf):
     """
     Correct data is written into the temporary files, that are to be passed to signature validation.
     """
@@ -58,7 +57,7 @@ def test_file_writes(named_temporary_file):
 
 @patch_validate_gpg_sig(False)
 @patch_named_temporary_file()
-def test_invalid_gpg(named_temporary_file, validate_gpg_sig):
+def test_invalid_gpg(named_temporary_file, validate_gpg_sig, insights_upload_conf):
     """
     GPG signature is validated, invalid signature raises an exception.
     """
@@ -70,7 +69,7 @@ def test_invalid_gpg(named_temporary_file, validate_gpg_sig):
     validate_gpg_sig.assert_called_once_with(named_temporary_file.rules_fp.name, named_temporary_file.sig_fp.name)
 
 
-def test_return():
+def test_return(insights_upload_conf):
     """
     The collection rules present under the "uploader.json" key of the stdin data is returned.
     """
