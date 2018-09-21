@@ -690,10 +690,9 @@ class DefaultSpecs(Specs):
     def xfs_mounts(broker):
         mnt = broker[Mount]
         mps = mnt.search(mount_type='xfs')
-        return [m.mount_point for m in mps if mps]
+        return [m.mount_point for m in mps]
 
     xfs_info = foreach_execute(xfs_mounts, "/usr/sbin/xfs_info %s")
-
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
     yum_log = simple_file("/var/log/yum.log")
