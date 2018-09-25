@@ -18,6 +18,9 @@ class ContentException(dr.SkipComponent):
     pass
 
 
+component = dr.ComponentType
+
+
 class datasource(dr.ComponentType):
     """ Decorates a component that one or more Parsers will consume. """
     multi_output = False
