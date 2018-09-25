@@ -29,20 +29,10 @@ def patch_raw_config_parser(items):
     return decorator
 
 
-def patch_collection_remove_file():
-    """
-    Mocks InsightsConstants collection_remove_file so it contains a fixed value.
-    """
-    def decorator(old_function):
-        patcher = patch("insights.client.collection_rules.constants.collection_remove_file", remove_file)
-        return patcher(old_function)
-    return decorator
-
-
 @patch_isfile(False)
 @patch_raw_config_parser([])
 def test_no_file(raw_config_parser, isfile):
-    upload_conf = insights_upload_conf()
+    upload_conf = insights_upload_conf(remove_file=remove_file)
     result = upload_conf.get_rm_conf()
 
     isfile.assert_called_once_with(remove_file)
@@ -51,11 +41,10 @@ def test_no_file(raw_config_parser, isfile):
     assert result is None
 
 
-@patch_collection_remove_file()
 @patch_raw_config_parser([("files", ",".join(remove_files))])
 @patch_isfile(True)
 def test_return(isfile, raw_config_parser):
-    upload_conf = insights_upload_conf()
+    upload_conf = insights_upload_conf(remove_file=remove_file)
     result = upload_conf.get_rm_conf()
 
     isfile.assert_called_once_with(remove_file)
