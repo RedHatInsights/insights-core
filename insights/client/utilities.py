@@ -146,7 +146,7 @@ def _expand_paths(path):
         logger.debug("Could not expand %s", path)
 
 
-def validate_remove_file(remove_file=constants.collection_remove_file):
+def validate_remove_file(remove_file):
     """
     Validate the remove file
     """
