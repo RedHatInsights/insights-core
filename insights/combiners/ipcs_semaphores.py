@@ -1,5 +1,5 @@
 """
-Ipcs Semaphores
+IPCS Semaphores
 ===============
 
 Combiner for parsing all semaphores. It uses the results of the
@@ -10,7 +10,7 @@ use ``PsAuxcww`` parsers to determine if one semaphore is orphan.
 
 from insights.core.plugins import combiner
 from insights.parsers.ps import PsAuxcww
-from insights.parsers.ipcs_sem import IpcsS, IpcsSI
+from insights.parsers.ipcs import IpcsS, IpcsSI
 
 
 class IpcsSemaphore(object):
@@ -44,17 +44,16 @@ class IpcsSemaphores(object):
     - Related PID cannot be found in running PIDs
 
     Examples:
-        >>> oph_sem = shared[IpcsSemaphores]
         >>> oph_sem.count_of_all_sems()
-        4
+        5
         >>> oph_sem.count_of_all_sems(owner='apache')
-        3
+        4
         >>> oph_sem.count_of_orphan_sems()
         2
         >>> oph_sem.count_of_orphan_sems('apache')
-        1
-        >>> oph_sem.get_sem('65536')
-        <IpcsSemaphore object at 0x7ffa907bda10>
+        2
+        >>> oph_sem.get_sem('65536').is_orphan
+        False
 
     """
     def __init__(self, sem_s, sem_si, ps):

@@ -134,7 +134,7 @@ def apply_configs(configs):
                     if hasattr(c, k):
                         setattr(c, k, v)
                 if hasattr(c, "timeout"):
-                    c.timeout = comp_cfg.get("timeout")
+                    c.timeout = comp_cfg.get("timeout", c.timeout)
             if cname == name:
                 break
 
