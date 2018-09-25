@@ -226,6 +226,10 @@ DEFAULT_OPTS = {
         'help': 'Register system to the Red Hat Insights Service',
         'action': 'store_true'
     },
+    'remove_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'remove.conf')
+    },
     'reregister': {
         'default': False,
         'opt': ['--force-reregister'],
