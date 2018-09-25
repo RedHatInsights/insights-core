@@ -178,6 +178,54 @@ class NginxConf(Parser, LegacyItemAccess):
                     dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
             return {li[0][0]: dict_result}
 
+        def _listdepth_nine(self, li):
+            """
+            Function to convert list whose depth is nine to dict.
+            """
+            dict_result = {}
+            for sub_item in li[1]:
+                if self._depth(sub_item) == 1:
+                    dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
+                if self._depth(sub_item) == 3:
+                    tmp_dict = _listdepth_three(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+                if self._depth(sub_item) == 5:
+                    tmp_dict = _listdepth_five(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+                if self._depth(sub_item) == 7:
+                    tmp_dict = _listdepth_seven(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+            return {li[0][0]: dict_result}
+
+        def _listdepth_eleven(self, li):
+            """
+            Function to convert list whose depth is eleven to dict.
+            """
+            dict_result = {}
+            for sub_item in li[1]:
+                if self._depth(sub_item) == 1:
+                    dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
+                if self._depth(sub_item) == 3:
+                    tmp_dict = _listdepth_three(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+                if self._depth(sub_item) == 5:
+                    tmp_dict = _listdepth_five(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+                if self._depth(sub_item) == 7:
+                    tmp_dict = _listdepth_seven(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+                if self._depth(sub_item) == 9:
+                    tmp_dict = _listdepth_nine(self, sub_item)
+                    tmp_key = list(tmp_dict.keys())[0]
+                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+            return {li[0][0]: dict_result}
+
         dict_all = {}
         for item in li:
             if self._depth(item) == 1:
@@ -188,6 +236,10 @@ class NginxConf(Parser, LegacyItemAccess):
                 dict_all.update(_listdepth_five(self, item))
             if self._depth(item) == 7:
                 dict_all.update(_listdepth_seven(self, item))
+            if self._depth(item) == 9:
+                dict_all.update(_listdepth_nine(self, item))
+            if self._depth(item) == 11:
+                dict_all.update(_listdepth_eleven(self, item))
         return dict_all
 
     def _handle_key_value(self, t_dict, key, value):
