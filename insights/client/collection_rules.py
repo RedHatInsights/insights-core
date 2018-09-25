@@ -31,7 +31,7 @@ class InsightsUploadConf(object):
         """
         self.config = config
         self.fallback_file = constants.collection_fallback_file
-        self.remove_file = constants.collection_remove_file
+        self.remove_file = config.remove_file
         self.collection_rules_file = constants.collection_rules_file
         protocol = "https://"
         if self.config.insecure_connection:
