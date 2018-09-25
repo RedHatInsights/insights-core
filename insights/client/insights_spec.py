@@ -76,8 +76,8 @@ class InsightsCommand(InsightsSpec):
         proc0 = sedcmd
 
         if self.exclude is not None:
-            exclude_file = NamedTemporaryFile(mode='wt')
-            exclude_file.write("\n".join(self.exclude))
+            exclude_file = NamedTemporaryFile()
+            exclude_file.write("\n".join(self.exclude).encode('utf-8'))
             exclude_file.flush()
             cmd = "grep -F -v -f %s" % exclude_file.name
             proc1 = Popen(shlex.split(cmd),
@@ -96,8 +96,8 @@ class InsightsCommand(InsightsSpec):
             dirty = True
 
         if self.pattern is not None and len(self.pattern):
-            pattern_file = NamedTemporaryFile(mode='wt')
-            pattern_file.write("\n".join(self.pattern))
+            pattern_file = NamedTemporaryFile()
+            pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
             cmd = "grep -F -f %s" % pattern_file.name
             proc2 = Popen(shlex.split(cmd),
@@ -153,8 +153,8 @@ class InsightsFile(InsightsSpec):
                        stdout=PIPE)
 
         if self.exclude is not None:
-            exclude_file = NamedTemporaryFile(mode='wt')
-            exclude_file.write("\n".join(self.exclude))
+            exclude_file = NamedTemporaryFile()
+            exclude_file.write("\n".join(self.exclude).encode('utf-8'))
             exclude_file.flush()
 
             cmd = "grep -v -F -f %s" % exclude_file.name
@@ -168,8 +168,8 @@ class InsightsFile(InsightsSpec):
                 sedcmd = proc
 
         if self.pattern is not None:
-            pattern_file = NamedTemporaryFile(mode='wt')
-            pattern_file.write("\n".join(self.pattern))
+            pattern_file = NamedTemporaryFile()
+            pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
 
             cmd = "grep -F -f %s" % pattern_file.name
