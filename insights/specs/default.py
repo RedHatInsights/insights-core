@@ -22,6 +22,7 @@ from insights.core.spec_factory import CommandOutputProvider, ContentException, 
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
+from insights.parsers.mount import Mount
 from insights.specs import Specs
 
 
@@ -281,6 +282,8 @@ class DefaultSpecs(Specs):
     ip_route_show_table_all = simple_command("/sbin/ip route show table all")
     ip_s_link = simple_command("/sbin/ip -s link")
     ipaupgrade_log = simple_file("/var/log/ipaupgrade.log")
+    ipcs_m = simple_command("/usr/bin/ipcs -m")
+    ipcs_m_p = simple_command("/usr/bin/ipcs -m -p")
     ipcs_s = simple_command("/usr/bin/ipcs -s")
 
     @datasource(ipcs_s)
@@ -381,6 +384,7 @@ class DefaultSpecs(Specs):
     mount = simple_command("/bin/mount")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
+    multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
     mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
@@ -609,6 +613,7 @@ class DefaultSpecs(Specs):
     sysconfig_libvirt_guests = simple_file("etc/sysconfig/libvirt-guests")
     sysconfig_memcached = first_file(["/var/lib/config-data/puppet-generated/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
+    sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
@@ -679,12 +684,19 @@ class DefaultSpecs(Specs):
     vmcore_dmesg = glob_file("/var/crash/*/vmcore-dmesg.txt")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
-    woopsie = simple_command(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report'")
+    woopsie = simple_command(r"/usr/bin/find /var/crash /var/tmp -path '*.reports-*/whoopsie-report' -print -quit")
     x86_pti_enabled = simple_file("sys/kernel/debug/x86/pti_enabled")
     x86_ibpb_enabled = simple_file("sys/kernel/debug/x86/ibpb_enabled")
     x86_ibrs_enabled = simple_file("sys/kernel/debug/x86/ibrs_enabled")
     x86_retp_enabled = simple_file("sys/kernel/debug/x86/retp_enabled")
 
+    @datasource(Mount)
+    def xfs_mounts(broker):
+        mnt = broker[Mount]
+        mps = mnt.search(mount_type='xfs')
+        return [m.mount_point for m in mps]
+
+    xfs_info = foreach_execute(xfs_mounts, "/usr/sbin/xfs_info %s")
     xinetd_conf = glob_file(["/etc/xinetd.conf", "/etc/xinetd.d/*"])
     yum_conf = simple_file("/etc/yum.conf")
     yum_log = simple_file("/var/log/yum.log")

@@ -21,17 +21,20 @@ IrqbalanceSysconfig - file ``/etc/sysconfig/irqbalance``
 KdumpSysconfig - file ``/etc/sysconfig/kdump``
 ----------------------------------------------
 
+LibvirtGuestsSysconfig - file ``/etc/sysconfig/libvirt-guests``
+---------------------------------------------------------------
+
 MongodSysconfig - file ``/etc/sysconfig/mongod``
 ------------------------------------------------
 
 NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 --------------------------------------------
 
+PrelinkSysconfig - file ``/etc/sysconfig/prelink``
+--------------------------------------------------
+
 VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 ---------------------------------------------------
-
-LibvirtGuestsSysconfig - file ``/etc/sysconfig/libvirt-guests``
----------------------------------------------------------------
 """
 
 from .. import parser, SysconfigOptions
@@ -322,6 +325,36 @@ class LibvirtGuestsSysconfig(SysconfigOptions):
     Examples:
         >>> libvirt_guests_sysconfig.get('ON_BOOT')
         'ignore'
+
+    """
+    pass
+
+
+@parser(Specs.sysconfig_prelink)
+class PrelinkSysconfig(SysconfigOptions):
+    """A parser for ``prelink`` configuration, stored in
+    ``/etc/sysconfig/prelink``
+
+    Sample Input::
+
+        # Set this to no to disable prelinking altogether
+        # (if you change this from yes to no prelink -ua
+        # will be run next night to undo prelinking)
+        PRELINKING=no
+
+        # Options to pass to prelink
+        # -m    Try to conserve virtual memory by allowing overlapping
+        #       assigned virtual memory slots for libraries which
+        #       never appear together in one binary
+        # -R    Randomize virtual memory slot assignments for libraries.
+        #       This makes it slightly harder for various buffer overflow
+        #       attacks, since library addresses will be different on each
+        #       host using -R.
+        PRELINK_OPTS=-mR
+
+    Examples:
+        >>> prelink_sysconfig.get('PRELINKING')
+        'no'
 
     """
     pass
