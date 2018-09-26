@@ -12,6 +12,7 @@ IpcsSI - command ``ipcs -s -i {semaphore ID}``
 ----------------------------------------------
 
 """
+from insights.util import deprecated
 from .. import parser, get_active_lines, CommandParser
 from . import parse_delimited_table
 from insights.specs import Specs
@@ -49,6 +50,9 @@ class IpcsS(CommandParser):
         >>> sem.get('262150')
         {'owner': 'postgres', 'perms': '600', 'nsems': '1', 'key': '0x00000000'}
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(IpcsS, "Import IpcsS from insights.parsers.ipcs instead")
+        super(IpcsS, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         # heading_ignore is first line we _don't_ want to ignore...
@@ -119,6 +123,9 @@ class IpcsSI(CommandParser):
         ['0', '2265', '4390', '6151', '6152']
 
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(IpcsSI, "Import IpcsSI from insights.parsers.ipcs instead")
+        super(IpcsSI, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         # parse the output of `ipcs -s -i ##` command

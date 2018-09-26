@@ -1,6 +1,13 @@
+@Library('fh-pipeline-library')_
+
 pipeline {
   agent none
   stages {
+    stage('Trust') {
+      steps {
+        enforceTrustedApproval('RedHatInsights')
+      }
+    }
     stage('Build and Test Insights Core') {
       parallel {
         stage('Build RHEL6') {
@@ -10,10 +17,15 @@ pipeline {
             }
           }
           steps {
-            echo "Installing Insights..."
-            sh 'pip install --user -e .[testing]'
             echo "Testing with Pytest..."
-            sh 'pytest'
+            sh """
+                virtualenv .testenv
+                source .testenv/bin/activate
+                pip install "pycparser<=2.18"
+                pip install "pyOpenSSL<=17.5.0"
+                pip install -e .[testing]
+                pytest
+            """
           }
         }
         stage('Build RHEL7 Python 2.7') {

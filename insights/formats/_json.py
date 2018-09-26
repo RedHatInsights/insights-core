@@ -1,8 +1,13 @@
 import json
 
-from insights.formats import EvaluatorFormatter
+from insights.core.evaluators import SingleEvaluator
+from insights.formats import EvaluatorFormatterAdapter
 
 
-class JsonFormatter(EvaluatorFormatter):
-    def dump(self, data):
-        return json.dumps(data)
+class JsonFormat(SingleEvaluator):
+    def postprocess(self):
+        json.dump(self.get_response(), self.stream)
+
+
+class JsonFormatterAdapter(EvaluatorFormatterAdapter):
+    Impl = JsonFormat

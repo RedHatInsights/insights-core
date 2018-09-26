@@ -8,9 +8,8 @@ import os
 import time
 import shutil
 import six
+import atexit
 
-from .auto_config import (_try_satellite6_configuration,
-                          _try_satellite5_configuration)
 from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
@@ -354,6 +353,7 @@ def collect(config, pconn):
 
         archive = InsightsArchive(compressor=config.compressor,
                                   target_name=target['name'])
+        atexit.register(_delete_archive_internal, config, archive)
 
         # determine the target type and begin collection
         # we infer "docker_image" SPEC analysis for certain types
@@ -398,29 +398,11 @@ def upload(config, pconn, tar_file, collection_duration=None):
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
-                handler.write(upload.text)
-            write_to_disk(constants.lastupload_file)
-
-            # Write to ansible facts directory
-            if os.path.isdir(constants.insights_ansible_facts_dir):
-                insights_facts = {}
-                insights_facts['last_upload'] = api_response
-
-                sat6 = _try_satellite6_configuration(config)
-                sat5 = None
-                if not sat6:
-                    sat5 = _try_satellite5_configuration(config)
-
-                if sat6:
-                    connection = 'sat6'
-                elif sat5:
-                    connection = 'sat5'
+                if six.PY3:
+                    handler.write(upload.text)
                 else:
-                    connection = 'rhsm'
-
-                insights_facts['conf'] = {'machine-id': machine_id, 'connection': connection}
-                with open(constants.insights_ansible_facts_file, 'w') as handler:
-                    handler.write(json.dumps(insights_facts))
+                    handler.write(upload.text.encode('utf-8'))
+            write_to_disk(constants.lastupload_file)
 
             account_number = config.account_number
             if account_number:
@@ -444,6 +426,16 @@ def upload(config, pconn, tar_file, collection_duration=None):
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
     return api_response
+
+
+def _delete_archive_internal(config, archive):
+    '''
+    Only used during built-in collection.
+    Delete archive and tmp dirs on unexpected exit.
+    '''
+    if not config.keep_archive:
+        archive.delete_tmp_dir()
+        archive.delete_archive_file()
 
 
 def delete_archive(path, delete_parent_dir):

@@ -15,25 +15,25 @@ DEFAULT_OPTS = {
     'analyze_container': {
         'default': False,
         'opt': ['--analyze-container'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Treat the current filesystem as a container and upload to the /images endpoint.',
         'action': 'store_true'
     },
     'analyze_image_id': {
         'default': None,
         'opt': ['--analyze-image-id'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Analyze a docker image with the specified ID.',
         'action': 'store'
     },
     'analyze_file': {
         'default': None,
         'opt': ['--analyze-file'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Analyze an archived filesystem at the specified path.',
         'action': 'store'
     },
     'analyze_mountpoint': {
         'default': None,
         'opt': ['--analyze-mountpoint'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Analyze a filesystem at the specified mountpoint.',
         'action': 'store'
     },
     'api_url': {
@@ -110,8 +110,7 @@ DEFAULT_OPTS = {
     'display_name': {
         'default': None,
         'opt': ['--display-name'],
-        'help': 'Display name for this system. '
-                'Must be used with --register',
+        'help': 'Set a display name for this system. ',
         'action': 'store'
     },
     'enable_schedule': {
@@ -151,6 +150,7 @@ DEFAULT_OPTS = {
         'action': 'store',
     },
     'http_timeout': {
+        # non-CLI
         'default': 10
     },
     'insecure_connection': {
@@ -178,7 +178,8 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--net-debug'],
         'help': 'Log the HTTP method and URL every time a network call is made.',
-        'action': 'store_true'
+        'action': 'store_true',
+        'group': 'debug'
     },
     'no_gpg': {
         # non-CLI
@@ -224,6 +225,10 @@ DEFAULT_OPTS = {
         'opt': ['--register'],
         'help': 'Register system to the Red Hat Insights Service',
         'action': 'store_true'
+    },
+    'remove_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'remove.conf')
     },
     'reregister': {
         'default': False,
@@ -553,6 +558,7 @@ class InsightsConfig(object):
         self.to_json = ((self.to_json or self.analyze_container) and
                         not self.to_stdout)
         self.register = (self.register or self.reregister) and not self.offline
+        self.keep_archive = self.keep_archive or self.no_upload
 
 
 if __name__ == '__main__':

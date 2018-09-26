@@ -1,7 +1,11 @@
 import logging
+import sys
 
-from insights import combiners, parsers, specs
-from insights.core import dr, plugins
+from ..formats import Formatter
+from ..specs import Specs
+from ..combiners.hostname import hostname as combiner_hostname
+from ..parsers.branch_info import BranchInfo
+from . import dr, plugins
 
 log = logging.getLogger(__name__)
 
@@ -10,31 +14,33 @@ def get_simple_module_name(obj):
     return dr.BASE_MODULE_NAMES.get(obj, None)
 
 
-class Evaluator(object):
-
-    def __init__(self, broker=None):
-        self.broker = broker
+class Evaluator(Formatter):
+    def __init__(self, broker=None, stream=sys.stdout, incremental=False):
+        super(Evaluator, self).__init__(broker or dr.Broker(), stream)
         self.rule_skips = []
         self.rule_results = []
         self.fingerprint_results = []
         self.hostname = None
         self.metadata = {}
         self.metadata_keys = {}
-        self.release = None
+        self.incremental = incremental
 
-    def pre_process(self):
-        pass
+    def observer(self, comp, broker):
+        if comp is combiner_hostname and comp in broker:
+            self.hostname = broker[comp].fqdn
 
-    def post_process(self):
-        if combiners.hostname.hostname in self.broker:
-            self.hostname = self.broker[combiners.hostname.hostname].fqdn
+        if plugins.is_rule(comp) and comp in broker:
+            self.handle_result(comp, broker[comp])
 
-        for p, r in self.broker.items():
-            if plugins.is_rule(p):
-                self.handle_result(p, r)
+    def preprocess(self):
+        self.broker.add_observer(self.observer)
 
-    def run_components(self, graph=None):
+    def run_serial(self, graph=None):
         dr.run(graph or dr.COMPONENTS[dr.GROUPS.single], broker=self.broker)
+
+    def run_incremental(self, graph=None):
+        for _ in dr.run_incremental(graph or dr.COMPONENTS[dr.GROUPS.single], broker=self.broker):
+            pass
 
     def format_response(self, response):
         """
@@ -50,14 +56,15 @@ class Evaluator(object):
         return result
 
     def process(self, graph=None):
-        self.pre_process()
-        self.run_components(graph)
-        self.post_process()
+        with self:
+            if self.incremental:
+                self.run_incremental(graph)
+            else:
+                self.run_serial(graph)
         return self.get_response()
 
 
 class SingleEvaluator(Evaluator):
-
     def append_metadata(self, r):
         for k, v in r.items():
             if k != "type":
@@ -100,30 +107,29 @@ class SingleEvaluator(Evaluator):
 
 
 class InsightsEvaluator(SingleEvaluator):
-
-    def __init__(self, broker=None, system_id=None):
-        super(InsightsEvaluator, self).__init__(broker)
+    def __init__(self, broker=None, system_id=None, stream=sys.stdout, incremental=False):
+        super(InsightsEvaluator, self).__init__(broker, stream=sys.stdout, incremental=incremental)
         self.system_id = system_id
-        self.branch_info = None
+        self.branch_info = {}
         self.product = "rhel"
         self.type = "host"
+        self.release = None
 
-    def post_process(self):
-        self.system_id = self.broker[specs.Specs.machine_id].content[0].strip()
+    def observer(self, comp, broker):
+        super(InsightsEvaluator, self).observer(comp, broker)
+        if comp is Specs.machine_id and comp in broker:
+            self.system_id = broker[Specs.machine_id].content[0].strip()
 
-        release = self.broker.get(specs.Specs.redhat_release)
-        if release:
-            self.release = release.content[0].strip()
+        if comp is Specs.redhat_release and comp in broker:
+            self.release = broker[comp].content[0].strip()
 
-        branch_info = self.broker.get(parsers.branch_info.BranchInfo)
-        self.branch_info = branch_info.data if branch_info else {}
+        if comp is BranchInfo and BranchInfo in broker:
+            self.branch_info = broker[comp].data
 
-        md = self.broker.get("metadata.json")
-        if md:
+        if comp is Specs.metadata_json and comp in broker:
+            md = broker[comp]
             self.product = md.get("product_code")
             self.type = md.get("role")
-
-        super(InsightsEvaluator, self).post_process()
 
     def format_result(self, result):
         result["system_id"] = self.system_id

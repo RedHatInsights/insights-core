@@ -97,7 +97,7 @@ class InsightsConnection(object):
         self.session = self._init_session()
         # need this global -- [barfing intensifies]
         # tuple of self-signed cert flag & cert chain list
-        self.cert_chain = (False, [])
+        self.cert_chain = [False, []]
 
     def _init_session(self):
         """
@@ -126,7 +126,7 @@ class InsightsConnection(object):
                 # Need to make a request that will fail to get proxies set up
                 net_logger.info("GET https://cert-api.access.redhat.com/r/insights")
                 session.request(
-                    "GET", "https://cert-api.access.redhat.com/r/insights")
+                    "GET", "https://cert-api.access.redhat.com/r/insights", timeout=self.config.http_timeout)
             except requests.ConnectionError:
                 pass
             # Major hack, requests/urllib3 does not make access to
@@ -470,7 +470,7 @@ class InsightsConnection(object):
         logger.debug("Obtaining branch information from %s",
                      self.branch_info_url)
         net_logger.info("GET %s", self.branch_info_url)
-        response = self.session.get(self.branch_info_url)
+        response = self.session.get(self.branch_info_url, timeout=self.config.http_timeout)
         logger.debug("GET branch_info status: %s", response.status_code)
         if response.status_code != 200:
             logger.error("Bad status from server: %s", response.status_code)
@@ -696,7 +696,7 @@ class InsightsConnection(object):
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        headers = {'x-rh-collection-time': duration}
+        headers = {'x-rh-collection-time': str(duration)}
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 

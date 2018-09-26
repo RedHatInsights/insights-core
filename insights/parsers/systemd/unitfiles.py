@@ -138,12 +138,13 @@ class ListUnits(Parser):
 
     Example:
 
-        >>> conf = shared[ListUnits]
-        >>> conf.get_service_details('swap.target')
+        >>> units.get_service_details('swap.target')
         {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'active', 'UNIT': 'swap.target'}
-        >>> conf.unit_list['swap.target']
+        >>> units.unit_list['swap.target']
         {'LOAD': 'loaded', 'ACTIVE': 'active', 'SUB': 'active', 'UNIT': 'swap.target'}
-        >>> conf.unit_list['random.service']
+        >>> units.is_active('swap.target')
+        True
+        >>> units.unit_list['random.service']
         {'LOAD': None, 'ACTIVE': None, 'SUB': None, 'UNIT': None}
     """
     def __init__(self, *args, **kwargs):
@@ -175,9 +176,11 @@ class ListUnits(Parser):
         Args:
             content (context.content): Parser context content
         """
+        BULLET_CHAR_U = u'\u25CF'
+        BULLET_CHAR_B = b"\xe2\x97\x8f"
         for line in get_active_lines(content):
             parts = line.split(None)  # AWK like split, strips whitespaces
-            if parts[0] == u'\u25CF' or parts[0] == "\xe2\x97\x8f" or parts[0] == "*":
+            if parts[0] == BULLET_CHAR_U or parts[0].encode('utf-8') == BULLET_CHAR_B or parts[0] == '*':
                 self.unit_list[parts[1]] = self.parse_service_details(parts[1:])
             else:
                 self.unit_list[parts[0]] = self.parse_service_details(parts)

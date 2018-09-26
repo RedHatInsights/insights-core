@@ -1,8 +1,13 @@
 import yaml
 
-from insights.formats import EvaluatorFormatter
+from insights.core.evaluators import SingleEvaluator
+from insights.formats import EvaluatorFormatterAdapter
 
 
-class YamlFormatter(EvaluatorFormatter):
-    def dump(self, data):
-        return yaml.dump(data)
+class YamlFormat(SingleEvaluator):
+    def postprocess(self):
+        yaml.dump(self.get_response(), self.stream)
+
+
+class YamlFormatterAdapter(EvaluatorFormatterAdapter):
+    Impl = YamlFormat

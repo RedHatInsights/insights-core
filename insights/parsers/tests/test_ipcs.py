@@ -1,5 +1,8 @@
-from insights.parsers.ipcs_sem import IpcsS, IpcsSI
+from insights.parsers import ipcs, ParseException, SkipException
+from insights.parsers.ipcs import IpcsS, IpcsSI, IpcsM, IpcsMP
 from insights.tests import context_wrap
+import pytest
+import doctest
 
 IPCS_S = """
 ------ Semaphore Arrays --------
@@ -37,6 +40,27 @@ semnum     value      ncount     zcount     pid
 7          1          0          0          4390
 """.strip()
 
+IPCS_M = """
+------ Shared Memory Segments --------
+key        shmid      owner      perms      bytes      nattch     status
+0x0052e2c1 0          postgres   600        37879808   26
+0x0052e2c2 1          postgres   600        41222144   24
+""".strip()
+
+IPCS_M_P = """
+------ Shared Memory Creator/Last-op --------
+shmid      owner      cpid       lpid
+0          postgres   1833       23566
+1          postgres   1105       9882
+""".strip()
+
+IPCS_M_AB = """
+------ Shared Memory Segments --------
+key        shid      owner      perms      bytes      nattch     status
+0x0052e2c1 0          postgres   600        37879808   26
+0x0052e2c2 1          postgres   600        41222144   24
+""".strip()
+
 
 def test_ipcs_s():
     sem = IpcsS(context_wrap(IPCS_S))
@@ -54,3 +78,39 @@ def test_ipcs_si():
 
     assert sem.semid == '65536'
     assert sem.pid_list == ['0', '2265', '4390', '6151', '6152']
+
+
+def test_ipcs_m():
+    shm = IpcsM(context_wrap(IPCS_M))
+    assert '1' in shm
+    assert '0' in shm
+    assert '11074' not in shm
+    assert shm.get('0').get('bytes') == '37879808'
+
+
+def test_ipcs_mp():
+    shm = IpcsMP(context_wrap(IPCS_M_P))
+    assert '1' in shm
+    assert '1074' not in shm
+    assert shm.get('1').get('cpid') == '1105'
+
+
+def test_ipcs_abnormal():
+    with pytest.raises(SkipException) as pe:
+        IpcsMP(context_wrap(""))
+    assert "Nothing to parse." in str(pe)
+
+    with pytest.raises(ParseException) as pe:
+        IpcsMP(context_wrap(IPCS_M_AB))
+    assert "Unexpected heading line." in str(pe)
+
+
+def test_doc_examples():
+    env = {
+            'sem': IpcsS(context_wrap(IPCS_S)),
+            'semi': IpcsSI(context_wrap(IPCS_S_I)),
+            'shm': IpcsM(context_wrap(IPCS_M)),
+            'shmp': IpcsMP(context_wrap(IPCS_M_P))
+          }
+    failed, total = doctest.testmod(ipcs, globs=env)
+    assert failed == 0

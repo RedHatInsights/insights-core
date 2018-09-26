@@ -10,9 +10,11 @@ import logging
 import copy
 import glob
 import six
+import shlex
 from subprocess import Popen, PIPE, STDOUT
 from tempfile import NamedTemporaryFile
 
+from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
 from .utilities import _expand_paths
 from .constants import InsightsConstants as constants
@@ -39,6 +41,7 @@ class DataCollector(object):
         self.mountpoint = '/'
         if mountpoint:
             self.mountpoint = mountpoint
+        self.hostname_path = None
 
     def _write_branch_info(self, branch_info):
         logger.debug("Writing branch information to archive...")
@@ -109,6 +112,11 @@ class DataCollector(object):
             precmd_alias = spec['pre_command']
             try:
                 precmd = precmds[precmd_alias]
+
+                if set.intersection(set(shlex.split(precmd)),
+                                    constants.command_blacklist):
+                    raise RuntimeError("Command Blacklist: " + precmd)
+
                 args = self._run_pre_command(precmd)
                 logger.debug('Pre-command results: %s', args)
 
@@ -140,7 +148,7 @@ class DataCollector(object):
                     else:
                         file_specs = self._parse_file_spec(spec)
                         for s in file_specs:
-                            file_spec = InsightsFile(s, exclude, self.mountpoint, self.target_name)
+                            file_spec = InsightsFile(s, exclude, self.mountpoint)
                             self.archive.add_to_archive(file_spec)
                 elif 'glob' in spec:
                     glob_specs = self._parse_glob_spec(spec)
@@ -149,7 +157,7 @@ class DataCollector(object):
                             logger.warn("WARNING: Skipping file %s", g)
                             continue
                         else:
-                            glob_spec = InsightsFile(g, exclude, self.mountpoint, self.target_name)
+                            glob_spec = InsightsFile(g, exclude, self.mountpoint)
                             self.archive.add_to_archive(glob_spec)
                 elif 'command' in spec:
                     if rm_conf and 'commands' in rm_conf and spec['command'] in rm_conf['commands']:
@@ -158,7 +166,7 @@ class DataCollector(object):
                     else:
                         cmd_specs = self._parse_command_spec(spec, conf['pre_commands'])
                         for s in cmd_specs:
-                            cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint, self.target_name)
+                            cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                             self.archive.add_to_archive(cmd_spec)
         else:
             logger.debug('Spec metadata type "%s" not found in spec.', metadata_spec)
@@ -187,6 +195,11 @@ class DataCollector(object):
             return
 
         for c in conf['commands']:
+            # remember hostname archive path
+            if c.get('symbolic_name') == 'hostname':
+                self.hostname_path = os.path.join(
+                    'insights_commands', mangle.mangle_command(c['command']))
+
             if c['command'] in rm_conf.get('commands', []):
                 logger.warn("WARNING: Skipping command %s", c['command'])
             elif self.mountpoint == "/" or c.get("image"):
@@ -224,7 +237,8 @@ class DataCollector(object):
         """
         if self.config.obfuscate:
             cleaner = SOSCleaner(quiet=True)
-            clean_opts = CleanOptions(self.config, self.archive.tmp_dir, rm_conf)
+            clean_opts = CleanOptions(
+                self.config, self.archive.tmp_dir, rm_conf, self.hostname_path)
             fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
@@ -236,7 +250,7 @@ class CleanOptions(object):
     """
     Options for soscleaner
     """
-    def __init__(self, config, tmp_dir, rm_conf):
+    def __init__(self, config, tmp_dir, rm_conf, hostname_path):
         self.report_dir = tmp_dir
         self.domains = []
         self.files = []
@@ -257,6 +271,7 @@ class CleanOptions(object):
                 pass
 
         if config.obfuscate_hostname:
-            self.hostname_path = "insights_commands/hostname"
+            # default to its original location
+            self.hostname_path = hostname_path or 'insights_commands/hostname'
         else:
             self.hostname_path = None

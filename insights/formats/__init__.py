@@ -1,7 +1,6 @@
 import six
 import sys
 from insights import dr, rule
-from insights.core.evaluators import SingleEvaluator
 
 
 _FORMATTERS = {}
@@ -17,16 +16,16 @@ def get_formatter(name):
             return _FORMATTERS[k]
 
 
-class FormatterMeta(type):
+class FormatterAdapterMeta(type):
     """ Automatically registers subclasses for later lookup. """
 
     def __init__(cls, name, bases, dct):
-        if name not in ("Formatter", "EvaluatorFormatter"):
+        if name not in ("FormatterAdapter", "EvaluatorFormatterAdapter"):
             _FORMATTERS[dr.get_name(cls)] = cls
-        super(FormatterMeta, cls).__init__(name, bases, dct)
+        super(FormatterAdapterMeta, cls).__init__(name, bases, dct)
 
 
-class Formatter(six.with_metaclass(FormatterMeta)):
+class FormatterAdapter(six.with_metaclass(FormatterAdapterMeta)):
 
     @staticmethod
     def configure(p):
@@ -51,25 +50,43 @@ class Formatter(six.with_metaclass(FormatterMeta)):
         """
 
 
-class EvaluatorFormatter(Formatter):
+class Formatter(object):
+    def __init__(self, broker, stream=sys.stdout):
+        self.broker = broker
+        self.stream = stream
+
+    def __enter__(self):
+        self.preprocess()
+        return self
+
+    def __exit__(self, _type, value, tb):
+        self.postprocess()
+
+    def preprocess(self):
+        pass
+
+    def postprocess(self):
+        pass
+
+
+class EvaluatorFormatterAdapter(FormatterAdapter):
     """
     Base class for formatters that want to serialize a SingleEvaluator after
     execution.
     """
+    Impl = None
+
     def __init__(self, args=None):
         if args:
             hn = "insights.combiners.hostname"
             args.plugins = ",".join([args.plugins, hn]) if args.plugins else hn
 
     def preprocess(self, broker):
-        self.evaluator = SingleEvaluator(broker=broker)
+        self.formatter = self.Impl(broker)
+        self.formatter.preprocess()
 
     def postprocess(self, broker):
-        self.evaluator.post_process()
-        print(self.dump(self.evaluator.get_response()))
-
-    def dump(self, data):
-        raise NotImplemented("Subclasses must implement the dump method.")
+        self.formatter.postprocess()
 
 
 RENDERERS = {}

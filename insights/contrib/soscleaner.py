@@ -218,7 +218,7 @@ class SOSCleaner:
         try:
             ip_report_name = os.path.join(self.report_dir, "%s-ip.csv" % self.session)
             self.logger.con_out('Creating IP Report - %s', ip_report_name)
-            ip_report = open(ip_report_name, 'w')
+            ip_report = open(ip_report_name, 'wt')
             ip_report.write('Obfuscated IP,Original IP\n')
             for k,v in self.ip_db.items():
                 ip_report.write('%s,%s\n' %(self._int2ip(k),self._int2ip(v)))
@@ -234,7 +234,7 @@ class SOSCleaner:
         try:
             hn_report_name = os.path.join(self.report_dir, "%s-hostname.csv" % self.session)
             self.logger.con_out('Creating Hostname Report - %s', hn_report_name)
-            hn_report = open(hn_report_name, 'w')
+            hn_report = open(hn_report_name, 'wt')
             hn_report.write('Obfuscated Hostname,Original Hostname\n')
             if self.hostname_count > 0:
                 for k,v in self.hn_db.items():
@@ -253,7 +253,7 @@ class SOSCleaner:
         try:
             dn_report_name = os.path.join(self.report_dir, "%s-dn.csv" % self.session)
             self.logger.con_out('Creating Domainname Report - %s', dn_report_name)
-            dn_report = open(dn_report_name, 'w')
+            dn_report = open(dn_report_name, 'wt')
             dn_report.write('Obfuscated Domain,Original Domain\n')
             if self.domain_count > 0:
                 for k,v in self.dn_db.items():
@@ -401,7 +401,7 @@ class SOSCleaner:
                 k_count = 0
                 for f in self.keywords:
                     if os.path.isfile(f):
-                        with open(f, 'r') as klist:
+                        with open(f, 'rt') as klist:
                             for keyword in klist.readlines():
                                 o_kw = "keyword%s" % k_count
                                 self.kw_db[keyword.rstrip()] = o_kw
@@ -442,7 +442,7 @@ class SOSCleaner:
 
         try:
             hostfile = os.path.join(self.dir_path, hostname)
-            fh = open(hostfile, 'r')
+            fh = open(hostfile, 'rt')
             name_list = fh.readline().rstrip().split('.')
             hostname = name_list[0]
             if len(name_list) > 1:
@@ -571,15 +571,15 @@ class SOSCleaner:
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file
         in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
-            tmp_file = tempfile.TemporaryFile()
+            tmp_file = tempfile.TemporaryFile(mode='w+b')
             try:
-                fh = open(f,'r')
+                fh = open(f, 'r')
                 data = fh.readlines()
                 fh.close()
                 if len(data) > 0: #if the file isn't empty:
                     for l in data:
                         new_l = self._clean_line(l)
-                        tmp_file.write(new_l)
+                        tmp_file.write(new_l.encode('utf-8'))
 
                     tmp_file.seek(0)
 
@@ -589,7 +589,7 @@ class SOSCleaner:
 
             try:
                 if len(data) > 0:
-                    new_fh = open(f, 'w')
+                    new_fh = open(f, 'wb')
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
