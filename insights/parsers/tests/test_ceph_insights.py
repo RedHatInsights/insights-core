@@ -1609,6 +1609,7 @@ TEST_DATA = """
 }
 """
 
+
 def test_ceph_insights():
     ceph = CephInsights(context_wrap(TEST_DATA))
     assert ceph is not None
@@ -1634,6 +1635,7 @@ def test_ceph_insights():
     assert isinstance(ceph.data["osd_metadata"], dict)
     assert isinstance(ceph.data["version"], dict)
     assert isinstance(ceph.data["errors"], list)
+
 
 def test_ceph_insights_documentation():
     env = {

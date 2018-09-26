@@ -4,9 +4,9 @@ ceph_insights - command ``ceph insights``
 """
 import json
 import re
-import six
 from .. import Parser, parser
 from insights.specs import Specs
+
 
 @parser(Specs.ceph_insights)
 class CephInsights(Parser):
