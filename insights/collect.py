@@ -18,7 +18,7 @@ from collections import defaultdict
 from datetime import datetime
 from subprocess import call, Popen, PIPE
 
-from insights import dr, get_filters
+from insights import dr, apply_configs, get_filters
 from insights.core import blacklist
 from insights.core.serde import marshal, ser
 from insights.core.spec_factory import FileProvider
@@ -198,26 +198,6 @@ def apply_blacklist(cfg):
 
     for b in cfg.get("keywords", []):
         blacklist.add_keyword(b)
-
-
-def apply_configs(configs):
-    """
-    Configures components based on manifest options. They can be enabled or
-    disabled, have timeouts set if applicable, and have metadata customized.
-    """
-    delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
-    for comp_cfg in configs:
-        name = comp_cfg["name"]
-        for c in delegate_keys:
-            delegate = dr.DELEGATES[c]
-            cname = dr.get_name(c)
-            if cname.startswith(name):
-                dr.ENABLED[c] = comp_cfg.get("enabled", True)
-                delegate.metadata.update(comp_cfg.get("metadata", {}))
-                if hasattr(c, "timeout"):
-                    c.timeout = comp_cfg.get("timeout")
-            if cname == name:
-                break
 
 
 def create_context(ctx):
