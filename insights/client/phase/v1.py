@@ -162,7 +162,15 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    tar_file = client.collect()
+    if config.payload:
+        if os.path.exists(config.payload):
+            tar_file = config.payload
+        else:
+            logger.error('File %s does not exist.', config.payload)
+            sys.exit(constants.sig_kill_bad)
+    else:
+        tar_file = client.collect()
+
     if not tar_file:
         sys.exit(constants.sig_kill_bad)
     if config['to_stdout']:

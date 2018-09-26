@@ -22,7 +22,8 @@ DEFAULT_OPTS = {
         'default': None,
         'opt': ['--analyze-image-id'],
         'help': 'Analyze a docker image with the specified ID.',
-        'action': 'store'
+        'action': 'store',
+        'metavar': 'ID'
     },
     'analyze_file': {
         'default': None,
@@ -163,10 +164,6 @@ DEFAULT_OPTS = {
         'help': 'Do not delete archive after upload',
         'action': 'store_true',
         'group': 'debug'
-    },
-    'legacy_upload': {
-        # non-CLI
-        'default': True
     },
     'logging_file': {
         'default': constants.default_log_file,
@@ -347,6 +344,26 @@ DEFAULT_OPTS = {
         'opt': ['--version'],
         'help': "Display version",
         'action': "store_true"
+    },
+
+    # platform options
+    'legacy_upload': {
+        # non-CLI
+        'default': True
+    },
+    'payload': {
+        'default': None,
+        'opt': ['--payload'],
+        'help': 'Use Insights client to upload an archive',
+        'action': 'store',
+        'group': 'platform'
+    },
+    'content-type': {
+        'default': None,
+        'opt': ['--content-type'],
+        'help': 'Content type of the archive specified with --payload',
+        'action': 'store',
+        'group': 'platform'
     }
 }
 
@@ -452,14 +469,26 @@ class InsightsConfig(object):
             return
         parser = optparse.OptionParser()
         debug_grp = optparse.OptionGroup(parser, "Debug options")
+        platf_grp = optparse.OptionGroup(parser, "Platform options")
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
         for _, o in cli_options.items():
-            g = debug_grp if o.pop("group", None) == "debug" else parser
+            group = o.pop('group', None)
+            if group == 'debug':
+                g = debug_grp
+            elif group == 'platform':
+                g = platf_grp
+            else:
+                g = parser
+            # g = debug_grp if o.pop("group", None) == "debug" else parser
+            # g = platf_grp if o.pop("group", None) == "platform" else parser
             optnames = o.pop('opt')
             g.add_option(*optnames, **o)
 
         parser.add_option_group(debug_grp)
+
+        # To be revealed... one day.
+        # parser.add_option_group(platf_grp)
 
         # pass in optparse.Values() to get only options that were specified
         options, args = parser.parse_args(values=optparse.Values())
@@ -544,6 +573,9 @@ class InsightsConfig(object):
         if self.to_json and self.to_stdout:
             raise ValueError(
                 'Conflicting options: --to-stdout and --to-json')
+        if self.payload and not self.content_type:
+            raise ValueError(
+                '--payload requires --content-type')
 
     def _imply_options(self):
         '''

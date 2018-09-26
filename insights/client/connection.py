@@ -699,7 +699,7 @@ class InsightsConnection(object):
         else:
             files = {
                 'upload': (file_name, open(data_collected, 'rb'),
-                           'application/vnd.redhat.advisor.test+tgz')}
+                           self.config.content_type)}
             headers = {}
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
