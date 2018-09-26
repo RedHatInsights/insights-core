@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 
 
 SAFE_ENV = {
-    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
+    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"]),
 }
 """
 A minimal set of environment variables for use in subprocess calls
@@ -239,7 +239,7 @@ class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
     """
-    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None):
+    def __init__(self, cmd, ctx, args=None, split=True, keep_rc=False, ds=None, timeout=None, inherit_env=None):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.root = "insights_commands"
@@ -252,6 +252,7 @@ class CommandOutputProvider(ContentProvider):
         self.keep_rc = keep_rc
         self.ds = ds
         self.timeout = timeout
+        self.inherit_env = inherit_env or []
 
         self._content = None
         self.rc = None
@@ -285,10 +286,19 @@ class CommandOutputProvider(ContentProvider):
                 command.append(sed)
         return command
 
+    def create_env(self):
+        env = {}
+        env.update(SAFE_ENV)
+        for e in self.inherit_env:
+            if e in os.environ:
+                env[e] = os.environ[e]
+        return env
+
     def load(self):
         command = self.create_args()
+
         raw = self.ctx.shell_out(command, split=self.split, keep_rc=self.keep_rc,
-                timeout=self.timeout, env=SAFE_ENV)
+                timeout=self.timeout, env=self.create_env())
         if self.keep_rc:
             self.rc, output = raw
         else:
@@ -307,7 +317,7 @@ class CommandOutputProvider(ContentProvider):
                 raise StopIteration
 
             args = self.create_args()
-            with self.ctx.connect(*args, env=SAFE_ENV, timeout=self.timeout) as s:
+            with self.ctx.connect(*args, env=self.create_env(), timeout=self.timeout) as s:
                 yield s
         except StopIteration:
             raise
@@ -646,26 +656,29 @@ class simple_command(object):
         timeout (int): Number of seconds to wait for the command to complete.
             If the timeout is reached before the command returns, a
             CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
 
     Returns:
         function: A datasource that returns the output of a command that takes
             no arguments
     """
 
-    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, **kwargs):
+    def __init__(self, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
         self.cmd = cmd
         self.context = context
         self.split = split
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
+        self.inherit_env = inherit_env
         self.__name__ = self.__class__.__name__
         datasource(self.context, *deps, raw=self.raw, **kwargs)(self)
 
     def __call__(self, broker):
         ctx = broker[self.context]
         return CommandOutputProvider(self.cmd, ctx, split=self.split,
-                keep_rc=self.keep_rc, ds=self, timeout=self.timeout)
+                keep_rc=self.keep_rc, ds=self, timeout=self.timeout, inherit_env=self.inherit_env)
 
 
 class foreach_execute(object):
@@ -692,13 +705,16 @@ class foreach_execute(object):
         timeout (int): Number of seconds to wait for the command to complete.
             If the timeout is reached before the command returns, a
             CalledProcessError is raised. If None, timeout is infinite.
+        inherit_env (list): The list of environment variables to inherit from the
+            calling process when the command is invoked.
+
 
     Returns:
         function: A datasource that returns a list of outputs for each command
         created by substituting each element of provider into the cmd template.
     """
 
-    def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, **kwargs):
+    def __init__(self, provider, cmd, context=HostContext, deps=[], split=True, keep_rc=False, timeout=None, inherit_env=[], **kwargs):
         self.provider = provider
         self.cmd = cmd
         self.context = context
@@ -706,6 +722,7 @@ class foreach_execute(object):
         self.raw = not split
         self.keep_rc = keep_rc
         self.timeout = timeout
+        self.inherit_env = inherit_env
         self.__name__ = self.__class__.__name__
         datasource(self.provider, self.context, *deps, multi_output=True, raw=self.raw, **kwargs)(self)
 
@@ -722,7 +739,7 @@ class foreach_execute(object):
                 the_cmd = self.cmd % e
                 cop = CommandOutputProvider(the_cmd, ctx, args=e,
                         split=self.split, keep_rc=self.keep_rc, ds=self,
-                        timeout=self.timeout)
+                        timeout=self.timeout, inherit_env=self.inherit_env)
                 result.append(cop)
             except:
                 log.debug(traceback.format_exc())

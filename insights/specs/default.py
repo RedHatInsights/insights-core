@@ -23,6 +23,8 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
+from insights.combiners.hostname import hostname as c_hostname
+from insights.parsers import parse_fixed_table
 from insights.specs import Specs
 
 
@@ -435,31 +437,40 @@ class DefaultSpecs(Specs):
     ntptime = simple_command("/usr/sbin/ntptime")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
 
-    @datasource(ps_auxww)
+    oc_get_nodes = simple_command("oc get nodes", inherit_env=["KUBECONFIG"])
+
+    @datasource(oc_get_nodes, c_hostname)
     def is_openshift_master(broker):
         """ Determine if this is the openshift master node. """
-        ps = broker[DefaultSpecs.ps_auxww].content
-        start_master = "openshift start master"
-        if not any(start_master in line for line in ps):
-            raise dr.SkipComponent()
+        raw_nodes = broker[DefaultSpecs.oc_get_nodes].content
+        nodes = parse_fixed_table(raw_nodes)
+        if len(nodes) == 1:
+            return
 
-    oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_dc = simple_command("/usr/bin/oc get dc -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_egressnetworkpolicy = simple_command("/usr/bin/oc get egressnetworkpolicy -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_endpoints = simple_command("/usr/bin/oc get endpoints -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_event = simple_command("/usr/bin/oc get event -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_node = simple_command("/usr/bin/oc get nodes -o yaml", deps=[is_openshift_master])
-    oc_get_pod = simple_command("/usr/bin/oc get pod -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_project = simple_command("/usr/bin/oc get project -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_pv = simple_command("/usr/bin/oc get pv -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_pvc = simple_command("/usr/bin/oc get pvc -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_rc = simple_command("/usr/bin/oc get rc -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_role = simple_command("/usr/bin/oc get role -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_rolebinding = simple_command("/usr/bin/oc get rolebinding -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_route = simple_command("/usr/bin/oc get route -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_service = simple_command("/usr/bin/oc get service -o yaml --all-namespaces", deps=[is_openshift_master])
-    oc_get_configmap = simple_command("/usr/bin/oc get configmap -o yaml --all-namespaces", deps=[is_openshift_master])
+        fqdn = broker[c_hostname].fqdn.lower()
+        for node in nodes:
+            if node["NAME"] == fqdn and "master" in node["ROLES"].lower():
+                return
+
+        raise dr.SkipComponent()
+
+    oc_get_bc = simple_command("oc get bc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_build = simple_command("oc get build -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_dc = simple_command("oc get dc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_egressnetworkpolicy = simple_command("oc get egressnetworkpolicy -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_endpoints = simple_command("oc get endpoints -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_event = simple_command("oc get event -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_node = simple_command("oc get nodes -o yaml", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_pod = simple_command("oc get pod -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_project = simple_command("oc get project -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_pv = simple_command("oc get pv -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_pvc = simple_command("oc get pvc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_rc = simple_command("oc get rc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_role = simple_command("oc get role -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_rolebinding = simple_command("oc get rolebinding -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_route = simple_command("oc get route -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_service = simple_command("oc get service -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_get_configmap = simple_command("oc get configmap -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")

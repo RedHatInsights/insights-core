@@ -51,6 +51,18 @@ configs:
     - name: insights.specs.default.DefaultSpecs
       enabled: true
 
+    - name: insights.parsers.hostname
+      enabled: true
+
+    - name: insights.parsers.facter
+      enabled: true
+
+    - name: insights.parsers.systemid
+      enabled: true
+
+    - name: insights.combiners.hostname
+      enabled: true
+
 # needed because some specs aren't given names before they're used in DefaultSpecs
     - name: insights.core.spec_factory
       enabled: true
