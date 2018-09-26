@@ -4,12 +4,12 @@ ceph_insights - command ``ceph insights``
 """
 import json
 import re
-from .. import Parser, parser
+from .. import CommandParser, parser
 from insights.specs import Specs
 
 
 @parser(Specs.ceph_insights)
-class CephInsights(Parser):
+class CephInsights(CommandParser):
     """
     Parse the output of the ``ceph insights`` command.
 
@@ -54,6 +54,11 @@ class CephInsights(Parser):
     IGNORE_RE = [
          "\*\*\* DEVELOPER MODE",
          "\d+-\d+-\d+.+WARNING: all dangerous"
+    ]
+
+    bad_lines = CommandParser.bad_lines + [
+        "module 'insights' is not enabled",
+        "no valid command found"
     ]
 
     def _sanitize_content(self, content):
