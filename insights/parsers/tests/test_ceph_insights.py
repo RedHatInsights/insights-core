@@ -1609,32 +1609,40 @@ TEST_DATA = """
 }
 """
 
+DEV_TEST_DATA = """
+*** DEVELOPER MODE: setting PATH, PYTHONPATH and LD_LIBRARY_PATH ***
+2018-09-26 11:32:02.830 7f39e866c700 -1 WARNING: all dangerous and experimental features are enabled.
+2018-09-26 11:32:02.879 7f39e866c700 -1 WARNING: all dangerous and experimental features are enabled.
+""" + TEST_DATA
+
 
 def test_ceph_insights():
-    ceph = CephInsights(context_wrap(TEST_DATA))
-    assert ceph is not None
+    for content in (TEST_DATA, DEV_TEST_DATA):
+        ceph = CephInsights(context_wrap(content))
 
-    assert isinstance(ceph.version, dict)
-    assert isinstance(ceph.version["full"], basestring)
-    for key in ("release", "major", "minor"):
-        assert isinstance(ceph.version[key], int)
+        assert ceph is not None
 
-    assert isinstance(ceph.data["crashes"], dict)
-    assert isinstance(ceph.data["health"], dict)
-    assert isinstance(ceph.data["config"], list)
-    assert isinstance(ceph.data["osd_dump"], dict)
-    assert isinstance(ceph.data["df"], dict)
-    assert isinstance(ceph.data["osd_tree"], dict)
-    assert isinstance(ceph.data["fs_map"], dict)
-    assert isinstance(ceph.data["crush_map"], dict)
-    assert isinstance(ceph.data["mon_map"], dict)
-    assert isinstance(ceph.data["service_map"], dict)
-    assert isinstance(ceph.data["manager_map"], dict)
-    assert isinstance(ceph.data["mon_status"], dict)
-    assert isinstance(ceph.data["pg_summary"], dict)
-    assert isinstance(ceph.data["osd_metadata"], dict)
-    assert isinstance(ceph.data["version"], dict)
-    assert isinstance(ceph.data["errors"], list)
+        assert isinstance(ceph.version, dict)
+        assert isinstance(ceph.version["full"], basestring)
+        for key in ("release", "major", "minor"):
+            assert isinstance(ceph.version[key], int)
+
+        assert isinstance(ceph.data["crashes"], dict)
+        assert isinstance(ceph.data["health"], dict)
+        assert isinstance(ceph.data["config"], list)
+        assert isinstance(ceph.data["osd_dump"], dict)
+        assert isinstance(ceph.data["df"], dict)
+        assert isinstance(ceph.data["osd_tree"], dict)
+        assert isinstance(ceph.data["fs_map"], dict)
+        assert isinstance(ceph.data["crush_map"], dict)
+        assert isinstance(ceph.data["mon_map"], dict)
+        assert isinstance(ceph.data["service_map"], dict)
+        assert isinstance(ceph.data["manager_map"], dict)
+        assert isinstance(ceph.data["mon_status"], dict)
+        assert isinstance(ceph.data["pg_summary"], dict)
+        assert isinstance(ceph.data["osd_metadata"], dict)
+        assert isinstance(ceph.data["version"], dict)
+        assert isinstance(ceph.data["errors"], list)
 
 
 def test_ceph_insights_documentation():

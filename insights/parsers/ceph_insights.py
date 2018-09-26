@@ -66,7 +66,7 @@ class CephInsights(CommandParser):
         slice_point = 0
         ignore_re = re.compile('|'.join(CephInsights.IGNORE_RE))
         for line in content:
-            if ignore_re.match(line):
+            if not line or ignore_re.match(line):
                 slice_point += 1
                 continue
             break
