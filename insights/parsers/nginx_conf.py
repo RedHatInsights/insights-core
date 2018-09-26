@@ -158,6 +158,8 @@ class NginxConf(Parser, LegacyItemAccess):
                     tmp_dict = _listdepth_three(self, sub_item)
                     tmp_key = list(tmp_dict.keys())[0]
                     dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+            if len(li[0]) > 1:
+                dict_result["name"] = ' '.join(li[0][1:])
             return {li[0][0]: dict_result}
 
         def _listdepth_seven(self, li):
@@ -176,6 +178,8 @@ class NginxConf(Parser, LegacyItemAccess):
                     tmp_dict = _listdepth_five(self, sub_item)
                     tmp_key = list(tmp_dict.keys())[0]
                     dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+            if len(li[0]) > 1:
+                dict_result["name"] = ' '.join(li[0][1:])
             return {li[0][0]: dict_result}
 
         def _listdepth_nine(self, li):
@@ -198,6 +202,8 @@ class NginxConf(Parser, LegacyItemAccess):
                     tmp_dict = _listdepth_seven(self, sub_item)
                     tmp_key = list(tmp_dict.keys())[0]
                     dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+            if len(li[0]) > 1:
+                dict_result["name"] = ' '.join(li[0][1:])
             return {li[0][0]: dict_result}
 
         def _listdepth_eleven(self, li):
@@ -224,6 +230,8 @@ class NginxConf(Parser, LegacyItemAccess):
                     tmp_dict = _listdepth_nine(self, sub_item)
                     tmp_key = list(tmp_dict.keys())[0]
                     dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
+            if len(li[0]) > 1:
+                dict_result["name"] = ' '.join(li[0][1:])
             return {li[0][0]: dict_result}
 
         dict_all = {}
