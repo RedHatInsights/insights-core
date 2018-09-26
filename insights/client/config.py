@@ -358,7 +358,7 @@ DEFAULT_OPTS = {
         'action': 'store',
         'group': 'platform'
     },
-    'content-type': {
+    'content_type': {
         'default': None,
         'opt': ['--content-type'],
         'help': 'Content type of the archive specified with --payload',
