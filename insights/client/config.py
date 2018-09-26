@@ -15,25 +15,25 @@ DEFAULT_OPTS = {
     'analyze_container': {
         'default': False,
         'opt': ['--analyze-container'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Treat the current filesystem as a container and upload to the /images endpoint.',
         'action': 'store_true'
     },
     'analyze_image_id': {
         'default': None,
         'opt': ['--analyze-image-id'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Analyze a docker image with the specified ID.',
         'action': 'store'
     },
     'analyze_file': {
         'default': None,
         'opt': ['--analyze-file'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Analyze an archived filesystem at the specified path.',
         'action': 'store'
     },
     'analyze_mountpoint': {
         'default': None,
         'opt': ['--analyze-mountpoint'],
-        'help': optparse.SUPPRESS_HELP,  # ??
+        'help': 'Analyze a filesystem at the specified mountpoint.',
         'action': 'store'
     },
     'api_url': {
@@ -225,6 +225,10 @@ DEFAULT_OPTS = {
         'opt': ['--register'],
         'help': 'Register system to the Red Hat Insights Service',
         'action': 'store_true'
+    },
+    'remove_file': {
+        # non-CLI
+        'default': os.path.join(constants.default_conf_dir, 'remove.conf')
     },
     'reregister': {
         'default': False,
