@@ -1,5 +1,8 @@
 # Change Log
 
+## [insights-core-3.0.46-605](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.46-605) (2018-09-27)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.45-594...insights-core-3.0.46-605)
+
 ## [insights-core-3.0.45-594](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.45-594) (2018-09-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.44-586...insights-core-3.0.45-594)
 
