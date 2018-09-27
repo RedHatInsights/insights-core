@@ -177,24 +177,10 @@ class PCSConfig(CommandParser):
         self.data = {}
         dc_key = ""
         list_data = []
-        skip_lines = 0
-        config_tuple = ("Resources", "Stonith Devices", "Fencing Levels", "Location Constraints", "Ordering Constraints",
-                        "Colocation Constraints", "Ticket Constraints", "Alerts", "Resources Defaults",
-                        "Operations Defaults", "Cluster Properties", "Quorum")
+        in_line_tuple = ("Corosync Nodes", "Pacemaker Nodes")
         for i, line in enumerate(content):
-            if skip_lines > 0:
-                skip_lines -= 1
-                continue
             if line.startswith("Cluster Name:"):
                 self.data["Cluster Name"] = line.split("Cluster Name:")[-1].lstrip()
-                continue
-            if line.startswith("Corosync Nodes:"):
-                self.data["Corosync Nodes"] = content[i + 1].split()
-                skip_lines = 1
-                continue
-            if line.startswith("Pacemaker Nodes:"):
-                self.data["Pacemaker Nodes"] = content[i + 1].split()
-                skip_lines = 1
                 continue
             if line == "":
                 if not dc_key == "":
@@ -202,7 +188,7 @@ class PCSConfig(CommandParser):
                     list_data = []
                     dc_key = ""
                 continue
-            if line.startswith(config_tuple) and (len(line) - len(line.lstrip()) == 0):
+            if (len(line) - line.find(":") == 1) and (len(line) - len(line.lstrip()) == 0):
                 if not dc_key == "":
                     self.data[dc_key] = list_data
                     list_data = []
@@ -211,6 +197,9 @@ class PCSConfig(CommandParser):
             list_data.append(line.lstrip())
         if not dc_key == "" and dc_key not in self.data.keys():
             self.data[dc_key] = list_data
+        for in_line in in_line_tuple:
+            if isinstance(self.data.get(in_line), list):
+                self.data[in_line] = self.data[in_line][0].split()
 
     def get(self, key):
         return self.data.get(key)
