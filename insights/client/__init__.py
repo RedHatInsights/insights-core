@@ -411,7 +411,9 @@ class InsightsClient(object):
     @_net
     def set_display_name(self, display_name):
         '''
-            returns True on success, False on failure
+            returns True on success,
+                    False on failure,
+                    None on unchanged
         '''
         return self.connection.set_display_name(display_name)
 
