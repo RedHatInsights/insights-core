@@ -7,15 +7,20 @@ class MockSession(object):
     def __init__(self):
         self.status_code = None
         self.text = None
+        self.content = '{"display_name": "test"}'
+
+    def get(self, url=None, timeout=None, headers=None, data=None):
+        return MockResponse(self.status_code, self.text, self.content)
 
     def put(self, url=None, timeout=None, headers=None, data=None):
-        return MockResponse(self.status_code, self.text)
+        return MockResponse(self.status_code, self.text, None)
 
 
 class MockResponse(object):
-    def __init__(self, expected_status, expected_text):
+    def __init__(self, expected_status, expected_text, expected_content):
         self.status_code = expected_status
         self.text = expected_text
+        self.content = expected_content
 
 
 def mock_init_session(obj):
