@@ -724,7 +724,7 @@ class InsightsConnection(object):
             old_display_name = json.loads(res.content).get('display_name', None)
             if display_name == old_display_name:
                 logger.debug('Display name unchanged: %s', old_display_name)
-                return None
+                return True
 
             net_logger.info("PUT %s", url)
             res = self.session.put(url,
