@@ -11,6 +11,8 @@ data sources that standard Insights `Parsers` resolve against.
 import os
 import re
 
+from functools import partial
+
 from insights.core import dr
 from insights.core.context import ClusterArchiveContext
 from insights.core.context import DockerImageContext
@@ -454,23 +456,25 @@ class DefaultSpecs(Specs):
 
         raise dr.SkipComponent()
 
-    oc_get_bc = simple_command("oc get bc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_build = simple_command("oc get build -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_dc = simple_command("oc get dc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_egressnetworkpolicy = simple_command("oc get egressnetworkpolicy -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_endpoints = simple_command("oc get endpoints -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_event = simple_command("oc get event -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_node = simple_command("oc get nodes -o yaml", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_pod = simple_command("oc get pod -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_project = simple_command("oc get project -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_pv = simple_command("oc get pv -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_pvc = simple_command("oc get pvc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_rc = simple_command("oc get rc -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_role = simple_command("oc get role -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_rolebinding = simple_command("oc get rolebinding -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_route = simple_command("oc get route -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_service = simple_command("oc get service -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
-    oc_get_configmap = simple_command("oc get configmap -o yaml --all-namespaces", deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+    oc_command = partial(simple_command, deps=[is_openshift_master], inherit_env=["KUBECONFIG"])
+
+    oc_get_bc = oc_command("oc get bc -o yaml --all-namespaces")
+    oc_get_build = oc_command("oc get build -o yaml --all-namespaces")
+    oc_get_dc = oc_command("oc get dc -o yaml --all-namespaces")
+    oc_get_egressnetworkpolicy = oc_command("oc get egressnetworkpolicy -o yaml --all-namespaces")
+    oc_get_endpoints = oc_command("oc get endpoints -o yaml --all-namespaces")
+    oc_get_event = oc_command("oc get event -o yaml --all-namespaces")
+    oc_get_node = oc_command("oc get nodes -o yaml")
+    oc_get_pod = oc_command("oc get pod -o yaml --all-namespaces")
+    oc_get_project = oc_command("oc get project -o yaml --all-namespaces")
+    oc_get_pv = oc_command("oc get pv -o yaml --all-namespaces")
+    oc_get_pvc = oc_command("oc get pvc -o yaml --all-namespaces")
+    oc_get_rc = oc_command("oc get rc -o yaml --all-namespaces")
+    oc_get_role = oc_command("oc get role -o yaml --all-namespaces")
+    oc_get_rolebinding = oc_command("oc get rolebinding -o yaml --all-namespaces")
+    oc_get_route = oc_command("oc get route -o yaml --all-namespaces")
+    oc_get_service = oc_command("oc get service -o yaml --all-namespaces")
+    oc_get_configmap = oc_command("oc get configmap -o yaml --all-namespaces")
     odbc_ini = simple_file("/etc/odbc.ini")
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
