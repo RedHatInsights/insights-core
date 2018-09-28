@@ -11,7 +11,6 @@ $ ../insights-core/insights/tools/specs_to_rules.py > report.html
 
 """
 import datetime
-from jinja2 import Environment
 from operator import itemgetter
 import argparse
 import logging
