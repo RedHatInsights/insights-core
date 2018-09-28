@@ -12,14 +12,15 @@ from tempfile import NamedTemporaryFile, TemporaryFile
 stdin_uploader_json = {"some key": "some value"}
 stdin_sig = "some signature"
 stdin_payload = {"uploader.json": json_dumps(stdin_uploader_json), "sig": stdin_sig}
-remove_files = ["/etc/insights-client/remove.conf", "/tmp/remove.conf"]
+conf_remove_file = "/tmp/remove.conf"
+removed_files = ["/etc/some_file", "/tmp/another_file"]
 
 
 def collect_args(*insights_config_args, **insights_config_custom_kwargs):
     """
     Instantiates InsightsConfig with a default logging_file argument.
     """
-    all_insights_config_kwargs = {"logging_file": "/tmp/insights.log"}
+    all_insights_config_kwargs = {"logging_file": "/tmp/insights.log", "remove_file": conf_remove_file}
     all_insights_config_kwargs.update(insights_config_custom_kwargs)
     return InsightsConfig(*insights_config_args, **all_insights_config_kwargs), Mock()
 
@@ -117,20 +118,18 @@ def patch_isfile(remove_file_exists):
     given value.
     """
     def decorator(old_function):
-        remove_file = "/tmp/remove.conf"
-
         def decider(*args, **kwargs):
-            if args[0] == remove_file:
+            """
+            Returns given value for remove_file and True for any other file.
+            """
+            if args[0] == conf_remove_file:
                 return remove_file_exists
             else:
                 return True
 
-        isfile_patcher = patch("insights.client.collection_rules.os.path.isfile", decider)
-        isfile_patched = isfile_patcher(old_function)
+        patcher = patch("insights.client.collection_rules.os.path.isfile", decider)
+        return patcher(old_function)
 
-        collection_remove_file_patcher = patch("insights.client.collection_rules.constants.collection_remove_file",
-                                               remove_file)
-        return collection_remove_file_patcher(isfile_patched)
     return decorator
 
 
@@ -139,7 +138,7 @@ def patch_raw_config_parser():
     Mocks RawConfigParser, so it returns a fixed configuration of removed files.
     """
     def decorator(old_function):
-        files = ",".join(remove_files)
+        files = ",".join(removed_files)
         patcher = patch("insights.client.collection_rules.ConfigParser.RawConfigParser",
                         **{"return_value.items.return_value": [("files", files)]})
         return patcher(old_function)
@@ -328,7 +327,7 @@ def test_stdin_result(get_branch_info, stdin, raw_config_parser, validate_gpg_si
     collect(config, pconn)
 
     collection_rules = stdin_uploader_json
-    rm_conf = {"files": remove_files}
+    rm_conf = {"files": removed_files}
     branch_info = get_branch_info.return_value
     data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)
     data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
@@ -403,7 +402,7 @@ def test_file_result(get_branch_info, try_disk, raw_config_parser, data_collecto
     collection_rules = try_disk.return_value.copy()
     collection_rules.update({"file": args[0]})
 
-    rm_conf = {"files": remove_files}
+    rm_conf = {"files": removed_files}
     branch_info = get_branch_info.return_value
 
     data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)

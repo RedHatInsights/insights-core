@@ -718,6 +718,14 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
+
+            net_logger.info("GET %s", url)
+            res = self.session.get(url, timeout=self.config.http_timeout)
+            old_display_name = json.loads(res.content).get('display_name', None)
+            if display_name == old_display_name:
+                logger.debug('Display name unchanged: %s', old_display_name)
+                return True
+
             net_logger.info("PUT %s", url)
             res = self.session.put(url,
                                    timeout=self.config.http_timeout,
@@ -725,7 +733,9 @@ class InsightsConnection(object):
                                    data=json.dumps(
                                         {'display_name': display_name}))
             if res.status_code == 200:
-                logger.info('System display name changed to %s', display_name)
+                logger.info('System display name changed from %s to %s',
+                            old_display_name,
+                            display_name)
                 return True
             elif res.status_code == 404:
                 logger.error('System not found. '

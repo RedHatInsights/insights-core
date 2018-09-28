@@ -571,15 +571,15 @@ class SOSCleaner:
         '''this will take a given file path, scrub it accordingly, and save a new copy of the file
         in the same location'''
         if os.path.exists(f) and not os.path.islink(f):
-            tmp_file = tempfile.TemporaryFile(mode='w+t')
+            tmp_file = tempfile.TemporaryFile(mode='w+b')
             try:
-                fh = open(f,'rt')
+                fh = open(f, 'r')
                 data = fh.readlines()
                 fh.close()
                 if len(data) > 0: #if the file isn't empty:
                     for l in data:
                         new_l = self._clean_line(l)
-                        tmp_file.write(new_l)
+                        tmp_file.write(new_l.encode('utf-8'))
 
                     tmp_file.seek(0)
 
@@ -589,7 +589,7 @@ class SOSCleaner:
 
             try:
                 if len(data) > 0:
-                    new_fh = open(f, 'wt')
+                    new_fh = open(f, 'wb')
                     for line in tmp_file:
                         new_fh.write(line)
                     new_fh.close()
