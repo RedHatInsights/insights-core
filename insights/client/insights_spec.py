@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 from insights.util import mangle
 
 from .constants import InsightsConstants as constants
+from .utilities import determine_hostname
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class InsightsCommand(InsightsSpec):
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
         self.archive_path = mangle.mangle_command(self.command)
+        self.is_hostname = spec.get('symbolic_name') == 'hostname'
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
 
@@ -42,6 +44,10 @@ class InsightsCommand(InsightsSpec):
         Execute a command through system shell. First checks to see if
         the requested command is executable. Returns (returncode, stdout, 0)
         '''
+        if self.is_hostname:
+            # short circuit for hostame with internal method
+            return determine_hostname()
+
         # all commands should timeout after a long interval so the client does not hang
         # prepend native nix 'timeout' implementation
         timeout_command = 'timeout -k 5 %s %s' % (
