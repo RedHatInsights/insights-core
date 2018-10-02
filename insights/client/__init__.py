@@ -11,6 +11,7 @@ from .. import package_info
 from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
+from .auto_config import try_auto_configuration
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
@@ -33,9 +34,10 @@ class InsightsClient(object):
                 sys.exit(constants.sig_kill_bad)
         # end hack. in the future, just set self.config=config
 
-        # set up logging
+        # called from phase, not client wrapper
         if setup_logging:
             self.set_up_logging()
+            try_auto_configuration(self.config)
 
         # setup insights connection placeholder
         # used for requests
@@ -328,11 +330,13 @@ class InsightsClient(object):
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
-    def upload(self, path):
+    def upload(self, path=None):
         """
+            Upload the archive at `path`.
             returns (int): upload status code
         """
-        # do the upload
+        # platform - prefer the value of config.payload
+        path = self.config.payload or path
         upload_results = client.upload(self.config, self.connection, path)
 
         # return api response

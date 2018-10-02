@@ -9,7 +9,6 @@ import sys
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
-from insights.client.auto_config import try_auto_configuration
 from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file
 from insights.client.schedule import get_scheduler
@@ -26,10 +25,9 @@ def phase(func):
             sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
         client = InsightsClient(config)
-        client.set_up_logging()
+        # client.set_up_logging()
         if config.debug:
             logger.info("Core path: %s", os.path.dirname(__file__))
-        try_auto_configuration(config)
         try:
             func(client, config)
         except Exception:
@@ -183,7 +181,7 @@ def collect_and_output(client, config):
     else:
         resp = None
         if not config['no_upload']:
-            resp = client.upload(tar_file)
+            resp = client.upload(path=tar_file)
         else:
             logger.info('Archive saved at %s', tar_file)
         if resp:
