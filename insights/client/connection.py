@@ -505,7 +505,9 @@ class InsightsConnection(object):
         with io.open(constants.cached_branch_info,
                      encoding='utf8',
                      mode='w') as f:
-            branch_info = json.dump(branch_info, f)
+            # json.dump is broke in py2 so use dumps
+            bi_str = json.dumps(branch_info, ensure_ascii=False)
+            f.write(bi_str)
         return branch_info
 
     def create_system(self, new_machine_id=False):
