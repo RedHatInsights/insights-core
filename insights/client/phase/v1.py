@@ -145,6 +145,10 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
+    if config.payload:
+        logger.debug('Performing a platform upload. Bypassing registration.')
+        return
+
     reg = client.register()
     if reg is None:
         # API unreachable
