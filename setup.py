@@ -64,7 +64,7 @@ testing = set([
 ])
 
 linting = set([
-    'flake8==3.3.0',
+    'flake8==2.6.2',
 ])
 
 optional = set([
