@@ -11,9 +11,11 @@ $ ../insights-core/insights/tools/specs_to_rules.py > report.html
 
 """
 import datetime
-import logging
 from jinja2 import Environment
 from operator import itemgetter
+import argparse
+import logging
+import os
 
 from insights.core import dr, filters
 from insights.core import spec_factory as sf
@@ -23,7 +25,6 @@ from insights.specs import Specs
 
 
 logging.basicConfig(level=logging.INFO)
-
 
 REPORT = """
 <html><head><title>Spec to Rule Mapping Report ({{ report_date }})</title>
@@ -52,6 +53,32 @@ REPORT = """
 """.strip()
 
 
+def get_args():
+    """
+    Get plugins that have been defined on the command line
+    """
+
+    p = argparse.ArgumentParser(add_help=False)
+    p.add_argument("-p", "--plugins", default="",
+                   help="(Optional) Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+
+    class Args(object):
+        pass
+
+    args = Args()
+    p.parse_known_args(namespace=args)
+
+    plugins = []
+    if args.plugins:
+        for path in args.plugins.split(","):
+            path = path.strip()
+            if path.endswith(".py"):
+                path, _ = os.path.splitext(path)
+            path = path.rstrip("/").replace("/", ".")
+            plugins.append(path)
+    return plugins
+
+
 def get_all(root, method=dr.get_dependencies):
     for d in method(root):
         yield d
@@ -59,13 +86,29 @@ def get_all(root, method=dr.get_dependencies):
             yield c
 
 
-def load_plugins():
-    """ Load the plugins we care about """
-    dr.load_components("insights.specs.default")
-    dr.load_components("insights.parsers")
-    dr.load_components("insights.combiners")
-    dr.load_components("telemetry.rules.plugins")
-    dr.load_components("prodsec")
+def load_plugins(alibs):
+    """ Load the plugins we care about and any that have been defined on the command line """
+
+# Load core components
+    try:
+        dr.load_components("insights.specs.default", continue_on_error=False)
+        dr.load_components("insights.parsers", continue_on_error=False)
+        dr.load_components("insights.combiners", continue_on_error=False)
+
+    except ImportError:
+        print("**** Error encountered loading core components, please confirm that you have ")
+        print("properly installed core into you virtual environment ****")
+        return False
+
+# Load optional components if desired
+    try:
+        for al in alibs:
+            dr.load_components(al, continue_on_error=False)
+    except ImportError:
+        print("**** Error encountered loading plugins, please confirm that you have **** ")
+        print("**** properly defined the components you are using on the command line       ****")
+        return False
+    return True
 
 
 def get_specs():
@@ -88,6 +131,10 @@ def ul(lst):
 
 
 def get_description(spec):
+    """
+    Create descriptions for specs to be added in the report
+    :param spec:
+    """
     if isinstance(spec, sf.simple_file):
         return "Path: %s" % spec.path
     if isinstance(spec, sf.glob_file):
@@ -103,7 +150,7 @@ def get_description(spec):
     if isinstance(spec, sf.first_of):
         return "First of%s" % ul(get_description(d) for d in spec.deps)
     if isinstance(spec, sf.first_file):
-        return "First file of%s" % ul(spec.files)
+        return "First file of%s" % ul(spec.paths)
     return (spec.__doc__ or "").replace("\n", "<br />")
 
 
@@ -122,9 +169,12 @@ def get_infos(specs):
     return sorted((get_info(s) for s in specs), key=itemgetter("name"))
 
 
-def main():
+def main(alibs):
+
     today = datetime.date.today().strftime("%B %d, %Y")
-    load_plugins()
+
+    if not load_plugins(alibs):
+        return
     specs = get_specs()
     infos = get_infos(specs)
 
@@ -134,4 +184,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    alibs = get_args()
+    main(alibs)

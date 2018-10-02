@@ -86,6 +86,12 @@ http {
 
     location / {
       proxy_pass      http://big_server_com;
+      location /inner/ {
+         proxy_pass http://u2;
+         limit_except GET {
+             allow 192.168.2.0/32;
+         }
+      }
     }
   }
 }
@@ -106,3 +112,4 @@ def test_nginxconfiguration():
     assert nginxconf['http']['log_format'] == """main  '$remote_addr - $remote_user [$time_local] "$request" '
 '$status $body_bytes_sent "$http_referer" '
 '"$http_user_agent" "$http_x_forwarded_for"'"""
+    assert nginxconf['http']['server'][2]['location'][0]['location'][0]['limit_except']['allow'] == '192.168.2.0/32'
