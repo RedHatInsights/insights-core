@@ -686,7 +686,13 @@ class InsightsConnection(object):
 
         upload_url = self.upload_url
 
-        if self.config.legacy_upload:
+        if self.config.payload:
+            files = {
+                'upload': (file_name, open(data_collected, 'rb'),
+                           self.config.content_type)}
+            headers = {}
+
+        else:
             files = {
                 'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
@@ -696,11 +702,6 @@ class InsightsConnection(object):
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
             headers = {'x-rh-collection-time': str(duration)}
-        else:
-            files = {
-                'upload': (file_name, open(data_collected, 'rb'),
-                           self.config.content_type)}
-            headers = {}
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
