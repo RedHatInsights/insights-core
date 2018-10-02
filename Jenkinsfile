@@ -26,6 +26,15 @@ pipeline {
                 pip install -e .[testing]
                 pytest
             """
+            echo "Testing with Linter..."
+            sh """
+                virtualenv .lintenv
+                source .lintenv/bin/activate
+                pip install "pycparser<=2.18"
+                pip install "pyOpenSSL<=17.5.0"
+                pip install -e .[linting]
+                flake8
+            """
           }
         }
         stage('Build RHEL7 Python 2.7') {
