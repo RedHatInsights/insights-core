@@ -692,36 +692,40 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
-    def upload_archive(self, data_collected, duration):
+    def upload_archive(self, data_collected, content_type, duration):
         """
         Do an HTTPS Upload of the archive
         """
         file_name = os.path.basename(data_collected)
-        try:
-            from insights.contrib import magic
-            m = magic.open(magic.MAGIC_MIME)
-            m.load()
-            mime_type = m.file(data_collected)
-        except ImportError:
-            magic = None
-            logger.debug('python-magic not installed, using backup function...')
-            from .utilities import magic_plan_b
-            mime_type = magic_plan_b(data_collected)
-
         upload_url = self.upload_url
 
+        # platform upload
         if self.config.payload:
             files = {
                 'upload': (file_name, open(data_collected, 'rb'),
-                           self.config.content_type)}
+                           content_type)}
             headers = {}
 
+        # legacy upload
         else:
+            try:
+                from insights.contrib import magic
+                m = magic.open(magic.MAGIC_MIME)
+                m.load()
+                mime_type = m.file(data_collected)
+            except ImportError:
+                magic = None
+                logger.debug(
+                    'python-magic not installed, using backup function...')
+                from .utilities import magic_plan_b
+                mime_type = magic_plan_b(data_collected)
+
             files = {
                 'file': (file_name, open(data_collected, 'rb'), mime_type)}
 
             if self.config.analyze_container:
-                logger.debug('Uploading container, image, mountpoint or tarfile.')
+                logger.debug(
+                    'Uploading container, image, mountpoint or tarfile.')
             else:
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
@@ -739,7 +743,9 @@ class InsightsConnection(object):
         elif upload.status_code == 202:
             logger.debug(upload.text)
         else:
-            logger.error("Upload archive failed with status code  %s", upload.status_code)
+            logger.error(
+                "Upload archive failed with status code  %s",
+                upload.status_code)
             return upload
         try:
             self.config.account_number = the_json["upload"]["account_number"]

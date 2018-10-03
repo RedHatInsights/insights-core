@@ -25,7 +25,6 @@ def phase(func):
             sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
         client = InsightsClient(config)
-        # client.set_up_logging()
         if config.debug:
             logger.info("Core path: %s", os.path.dirname(__file__))
         try:
@@ -165,11 +164,7 @@ def post_update(client, config):
 @phase
 def collect_and_output(client, config):
     if config.payload:
-        if os.path.exists(config.payload):
-            tar_file = config.payload
-        else:
-            logger.error('File %s does not exist.', config.payload)
-            sys.exit(constants.sig_kill_bad)
+        tar_file = config.payload
     else:
         tar_file = client.collect()
 
@@ -181,7 +176,16 @@ def collect_and_output(client, config):
     else:
         resp = None
         if not config['no_upload']:
-            resp = client.upload(path=tar_file)
+            try:
+                resp = client.upload(
+                    path=tar_file,
+                    content_type=config.content_type)
+            except IOError as e:
+                logger.error(e)
+                sys.exit(constants.sig_kill_bad)
+            except ValueError as e:
+                logger.error(e)
+                sys.exit(constants.sig_kill_bad)
         else:
             logger.info('Archive saved at %s', tar_file)
         if resp:

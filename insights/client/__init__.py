@@ -19,22 +19,27 @@ net_logger = logging.getLogger("network")
 
 class InsightsClient(object):
 
-    def __init__(self, config, setup_logging=True, **kwargs):
+    def __init__(self, config=None, setup_logging=True, **kwargs):
         """
         The Insights client interface
         """
-        #  small hack to maintain compatability with RPM wrapper
-        if isinstance(config, InsightsConfig):
-            self.config = config
+        if config is None:
+            # initialize with default config if not specified with one
+            self.config = InsightsConfig()
         else:
-            try:
-                self.config = InsightsConfig(_print_errors=True).load_all()
-            except ValueError as e:
-                sys.stderr.write('ERROR: ' + str(e) + '\n')
-                sys.exit(constants.sig_kill_bad)
-        # end hack. in the future, just set self.config=config
+            #  small hack to maintain compatability with RPM wrapper
+            if isinstance(config, InsightsConfig):
+                self.config = config
+            else:
+                try:
+                    self.config = InsightsConfig(_print_errors=True).load_all()
+                except ValueError as e:
+                    sys.stderr.write('ERROR: ' + str(e) + '\n')
+                    sys.exit(constants.sig_kill_bad)
+            # end hack. in the future, just set self.config=config
 
-        # called from phase, not client wrapper
+        # setup_logging is True when called from phase, but not from wrapper.
+        #  use this to do any common init (like auto_config)
         if setup_logging:
             self.set_up_logging()
             try_auto_configuration(self.config)
@@ -330,14 +335,23 @@ class InsightsClient(object):
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
-    def upload(self, path=None):
+    def upload(self, path=None, content_type=None):
         """
-            Upload the archive at `path`.
+            Upload the archive at `path` with content type `content_type`
             returns (int): upload status code
         """
-        # platform - prefer the value of config.payload
-        path = self.config.payload or path
-        upload_results = client.upload(self.config, self.connection, path)
+        # platform - prefer the value passed in to func over config
+        path = path or self.config.payload
+        content_type = content_type or self.config.content_type
+
+        if path is None:
+            raise ValueError('Specify a file to upload.')
+
+        if not os.path.exists(path):
+            raise IOError('Cannot upload %s: File does not exist.', path)
+
+        upload_results = client.upload(
+            self.config, self.connection, path, content_type)
 
         # return api response
         return upload_results

@@ -386,11 +386,11 @@ def get_connection(config):
     return InsightsConnection(config)
 
 
-def upload(config, pconn, tar_file, collection_duration=None):
+def upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
     for tries in range(config.retries):
-        upload = pconn.upload_archive(tar_file, collection_duration)
+        upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
