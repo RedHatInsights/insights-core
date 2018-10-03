@@ -50,7 +50,7 @@ class InsightsCommand(InsightsSpec):
 
         # all commands should timeout after a long interval so the client does not hang
         # prepend native nix 'timeout' implementation
-        timeout_command = 'timeout -k 5 %s %s' % (
+        timeout_command = 'timeout -s KILL %s %s' % (
             self.config.cmd_timeout, self.command)
 
         # ensure consistent locale for collected command output
