@@ -335,23 +335,23 @@ class InsightsClient(object):
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
-    def upload(self, path=None, content_type=None):
+    def upload(self, payload=None, content_type=None):
         """
             Upload the archive at `path` with content type `content_type`
             returns (int): upload status code
         """
         # platform - prefer the value passed in to func over config
-        path = path or self.config.payload
+        payload = payload or self.config.payload
         content_type = content_type or self.config.content_type
 
-        if path is None:
+        if payload is None:
             raise ValueError('Specify a file to upload.')
 
-        if not os.path.exists(path):
-            raise IOError('Cannot upload %s: File does not exist.', path)
+        if not os.path.exists(payload):
+            raise IOError('Cannot upload %s: File does not exist.' % payload)
 
         upload_results = client.upload(
-            self.config, self.connection, path, content_type)
+            self.config, self.connection, payload, content_type)
 
         # return api response
         return upload_results

@@ -142,7 +142,7 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if config.payload:
+    if not config.legacy_upload:
         logger.debug('Performing a platform upload. Bypassing registration.')
         return
 
@@ -178,13 +178,13 @@ def collect_and_output(client, config):
         if not config['no_upload']:
             try:
                 resp = client.upload(
-                    path=tar_file,
+                    payload=tar_file,
                     content_type=config.content_type)
             except IOError as e:
-                logger.error(e)
+                logger.error(str(e))
                 sys.exit(constants.sig_kill_bad)
             except ValueError as e:
-                logger.error(e)
+                logger.error(str(e))
                 sys.exit(constants.sig_kill_bad)
         else:
             logger.info('Archive saved at %s', tar_file)

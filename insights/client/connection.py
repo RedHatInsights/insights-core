@@ -82,10 +82,13 @@ class InsightsConnection(object):
         self.base_url = protocol + self.config.base_url
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
-            if self.config.analyze_container:
-                self.upload_url = self.base_url + "/uploads/image"
+            if self.config.legacy_upload:
+                if self.config.analyze_container:
+                    self.upload_url = self.base_url + "/uploads/image"
+                else:
+                    self.upload_url = self.base_url + "/uploads"
             else:
-                self.upload_url = self.base_url + "/uploads"
+                self.upload_url = self.base_url + '/platform/upload/api/v1/upload'
         self.api_url = self.config.api_url
         if self.api_url is None:
             self.api_url = self.base_url
@@ -700,7 +703,7 @@ class InsightsConnection(object):
         upload_url = self.upload_url
 
         # platform upload
-        if self.config.payload:
+        if not self.config.legacy_upload:
             files = {
                 'upload': (file_name, open(data_collected, 'rb'),
                            content_type)}
