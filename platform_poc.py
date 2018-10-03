@@ -6,4 +6,4 @@ config = InsightsConfig(
     content_type='application/vnd.redhat.advisor.test+tgz',
     upload_url='https://cert-api.access.redhat.com/r/insights/platform/upload/api/v1/upload')
 client = InsightsClient(config)
-client.upload()  # or client.upload(path=config.payload)
+client.upload()

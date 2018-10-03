@@ -166,6 +166,8 @@ def collect_and_output(client, config):
     if config.payload:
         tar_file = config.payload
     else:
+        # uploading to legacy insights
+        config.legacy_upload = True
         tar_file = client.collect()
 
     if not tar_file:

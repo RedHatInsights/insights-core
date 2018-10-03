@@ -348,7 +348,7 @@ DEFAULT_OPTS = {
 
     # platform options
     'legacy_upload': {
-        'default': True
+        'default': False
     },
     'payload': {
         'default': None,
