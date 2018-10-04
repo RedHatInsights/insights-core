@@ -1,5 +1,26 @@
 # Change Log
 
+## [insights-core-3.0.49-615](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.49-615) (2018-10-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.48-1...insights-core-3.0.49-615)
+
+**Closed issues:**
+
+- Run Flake8 lint on RHEL6 [\#1262](https://github.com/RedHatInsights/insights-core/issues/1262)
+
+## [3.0.48-1](https://github.com/RedHatInsights/insights-core/tree/3.0.48-1) (2018-10-01)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.47-1...3.0.48-1)
+
+**Fixed bugs:**
+
+- Tar files aren't handled [\#1457](https://github.com/RedHatInsights/insights-core/issues/1457)
+
+**Closed issues:**
+
+- Incorrect configuration file paths for specs related to OpenStack [\#1441](https://github.com/RedHatInsights/insights-core/issues/1441)
+
+## [3.0.47-1](https://github.com/RedHatInsights/insights-core/tree/3.0.47-1) (2018-09-27)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.46-605...3.0.47-1)
+
 ## [insights-core-3.0.46-605](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.46-605) (2018-09-27)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.45-594...insights-core-3.0.46-605)
 
