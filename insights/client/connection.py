@@ -245,7 +245,7 @@ class InsightsConnection(object):
                 else:
                     logger.info("Connection failed")
                     return False
-            except requests.ConnectionError as exc:
+            except (requests.Timeout, requests.ConnectionError) as exc:
                 last_ex = exc
                 logger.error(
                     "Could not successfully connect to: %s", test_url + ext)
@@ -372,7 +372,7 @@ class InsightsConnection(object):
                 logger.info("\nConnectivity tests completed with some errors")
                 logger.info("See %s for more details.", self.config.logging_file)
                 rc = 1
-        except requests.ConnectionError as exc:
+        except (requests.Timeout, requests.ConnectionError) as exc:
             print(exc)
             logger.error('Connectivity test failed! '
                          'Please check your network configuration')
@@ -577,9 +577,16 @@ class InsightsConnection(object):
             url = self.api_url + '/v1/systems/' + machine_id
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
+        except requests.Timeout:
+            # ConnectTimeout is both a Timeout and ConnectionError.
+            # Connection timed out, run connection test.
+            logger.error('Connection timed out. Running connection test...')
+
+            self.test_connection()
+            return False
         except requests.ConnectionError:
             # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
+            logger.error('Connection failed. Running connection test...')
             self.test_connection()
             return False
         # had to do a quick bugfix changing this around,
