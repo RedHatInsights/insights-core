@@ -3,54 +3,54 @@ PCSConfig - command ``pcs config``
 ==================================
 
 This module provides class ``PCSConfig`` for parsing output of ``pcs config`` command.
-Typical ``/usr/sbin/pcs config`` output looks something like:
 
-        Cluster Name: cluster-1
-        Corosync Nodes:
-         node-1 node-2
-        Pacemaker Nodes:
-         node-1 node-2
+Typical ``/usr/sbin/pcs config`` output looks something like::
 
-        Resources:
-         Clone: clone-1
-         Meta Attrs: interleave=true ordered=true
-         Resource: res-1 (class=ocf provider=pacemaker type=controld)
-          Operations: start interval=0s timeout=90 (dlm-start-interval-0s)
-                      stop interval=0s timeout=100 (dlm-stop-interval-0s)
-                      monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)
-         Group: grp-1
-         Resource: res-1 (class=ocf provider=heartbeat type=IPaddr2)
-          Attributes: ip=10.0.0.1 cidr_netmask=32
-          Operations: monitor interval=120s (ip_monitor-interval-120s)
-                      start interval=0s timeout=20s (ip_-start-interval-0s)
-                      stop interval=0s timeout=20s (ip_-stop-interval-0s)
+    Cluster Name: cluster-1
+    Corosync Nodes:
+     node-1 node-2
+    Pacemaker Nodes:
+     node-1 node-2
 
-        Stonith Devices:
-        Fencing Levels:
+    Resources:
+     Clone: clone-1
+     Meta Attrs: interleave=true ordered=true
+     Resource: res-1 (class=ocf provider=pacemaker type=controld)
+      Operations: start interval=0s timeout=90 (dlm-start-interval-0s)
+                  stop interval=0s timeout=100 (dlm-stop-interval-0s)
+                  monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)
+     Group: grp-1
+     Resource: res-1 (class=ocf provider=heartbeat type=IPaddr2)
+      Attributes: ip=10.0.0.1 cidr_netmask=32
+      Operations: monitor interval=120s (ip_monitor-interval-120s)
+                  start interval=0s timeout=20s (ip_-start-interval-0s)
+                  stop interval=0s timeout=20s (ip_-stop-interval-0s)
 
-        Location Constraints:
-        Resource: fence-1
-            Disabled on: res-mgt (score:-INFINITY) (id:location-fence-1--INFINITY)
-        Resource: res-1
-            Enabled on: res-mcast (score:INFINITY) (role: Started) (id:cli-prefer-res)
-        Ordering Constraints:
-        Colocation Constraints:
+    Stonith Devices:
+    Fencing Levels:
 
-        Resources Defaults:
-         resource-stickiness: 100
-         migration-threshold: 3
-        Operations Defaults:
-         No defaults set
+    Location Constraints:
+    Resource: fence-1
+        Disabled on: res-mgt (score:-INFINITY) (id:location-fence-1--INFINITY)
+    Resource: res-1
+        Enabled on: res-mcast (score:INFINITY) (role: Started) (id:cli-prefer-res)
+    Ordering Constraints:
+    Colocation Constraints:
 
-        Cluster Properties:
-         cluster-infrastructure: corosync
-         cluster-name: cluster-1
-         dc-version: 1.1.13-10.el7_2.4-44eb2dd
-         have-watchdog: false
-         no-quorum-policy: ignore
-         stonith-enable: true
-         stonith-enabled: false
+    Resources Defaults:
+     resource-stickiness: 100
+     migration-threshold: 3
+    Operations Defaults:
+     No defaults set
 
+    Cluster Properties:
+     cluster-infrastructure: corosync
+     cluster-name: cluster-1
+     dc-version: 1.1.13-10.el7_2.4-44eb2dd
+     have-watchdog: false
+     no-quorum-policy: ignore
+     stonith-enable: true
+     stonith-enabled: false
 
 The class provides attribute ``data`` as dictionary with lines parsed line by line based on keys, which are
 the key words of the output.
@@ -61,55 +61,17 @@ convenient way. ``Resources`` contains two main subcategories: Clone and Group. 
 dictionary of clones. Each Clone then contains list of associated lines. ``get_resources_groups()`` works the same
 way for the Groups.
 
-
 Examples:
-
-    >>> from insights.parsers.pcs_config import PCSConfig
-    >>> from insights.tests import context_wrap
-    >>>
-    >>> pcs_config_output = '''
-    ... Cluster Name: cluster-1
-    ... Corosync Nodes:
-    ...  node-1 node-2
-    ... Pacemaker Nodes:
-    ...  node-1 node-2
-    ...
-    ... Resources:
-    ...  Clone: clone-1
-    ...  Meta Attrs: interleave=true ordered=true
-    ...  Resource: res-1 (class=ocf provider=pacemaker type=controld)
-    ...  Operations: start interval=0s timeout=90 (dlm-start-interval-0s)
-    ...              stop interval=0s timeout=100 (dlm-stop-interval-0s)
-    ...              monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)
-    ...
-    ... Stonith Devices:
-    ... Fencing Levels:
-    ...
-    ... Location Constraints:
-    ...  Resource: fence-1
-    ...  Resource: res-1
-    ... Ordering Constraints:
-    ... Colocation Constraints:
-    ...
-    ... Resources Defaults:
-    ...  No defaults set
-    ... Operations Defaults:
-    ...  No defaults set
-    ...
-    ... Cluster Properties:
-    ...  cluster-infrastructure: corosync
-    ...  cluster-name: cluster-1
-    ... '''.strip()
-    >>>
-    >>> shared = {PCSConfig: PCSConfig(context_wrap(pcs_config_output))}
-    >>> pcs_config = shared[PCSConfig]
+    >>> pcs_config.get("Cluster Name")
+    'cluster-1'
     >>> pcs_config.get("Corosync Nodes")
     ['node-1', 'node-2']
     >>> pcs_config.get("Cluster Properties")
-    ['cluster-infrastructure: corosync', 'cluster-name: cluster-1']
-    >>> pcs_config.get_resources_clones()
-    {'clone-1': ['Meta Attrs: interleave=true ordered=true', 'Resource: res-1 (class=ocf provider=pacemaker type=controld)', 'Operations: start interval=0s timeout=90 (dlm-start-interval-0s)', 'stop interval=0s timeout=100 (dlm-stop-interval-0s)', 'monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)', '']}
-
+    ['cluster-infrastructure: corosync', 'cluster-name: cluster-1', 'dc-version: 1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog: false', 'no-quorum-policy: ignore', 'stonith-enable: true', 'stonith-enabled: false']
+    >>> pcs_config.get_resources_clones()['clone-2']
+    ['Meta Attrs: interleave=true ordered=true', 'Resource: res-2 (class=ocf provider=pacemaker type=controld)', 'Operations: start interval=0s timeout=90 (dlm-start-interval-0s)', 'stop interval=0s timeout=100 (dlm-stop-interval-0s)', 'monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)']
+    >>> pcs_config.get("Colocation Constraints")
+    ['clone-1 with clone-x (score:INFINITY) (id:clone-INFINITY)', 'clone-2 with clone-x (score:INFINITY) (id:clone-INFINITY)']
 """
 
 
@@ -124,53 +86,57 @@ class PCSConfig(CommandParser):
     Attributes:
         data (dict): A dictionary containing all line. Keys sorted based on keywords of the output.
             the form::
-            {
-                "Cluster Name": "cluster-1",
-                "Corosync Nodes": [
-                    "node-1",
-                    "node-2"
-                ],
-                "Pacemaker Nodes": [
-                    "node-1",
-                    "node-2"
-                ],
-                "Resources": [
-                    "Clone: clone-1",
-                    "Meta Attrs: interleave=true ordered=true",
-                    "Resource: res-1 (class=ocf provider=pacemaker type=controld)",
-                    "Operations: start interval=0s timeout=90 (dlm-start-interval-0s)",
-                    "stop interval=0s timeout=100 (dlm-stop-interval-0s)",
-                    "monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)"
-                ],
-                "Cluster Properties": [
-                    "cluster-infrastructure: corosync",
-                    "cluster-name: cluster-1"
-                ]
-            }
+
+                {
+                    "Cluster Name": "cluster-1",
+                    "Corosync Nodes": [
+                        "node-1",
+                        "node-2"
+                    ],
+                    "Pacemaker Nodes": [
+                        "node-1",
+                        "node-2"
+                    ],
+                    "Resources": [
+                        "Clone: clone-1",
+                        "Meta Attrs: interleave=true ordered=true",
+                        "Resource: res-1 (class=ocf provider=pacemaker type=controld)",
+                        "Operations: start interval=0s timeout=90 (dlm-start-interval-0s)",
+                        "stop interval=0s timeout=100 (dlm-stop-interval-0s)",
+                        "monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)"
+                    ],
+                    "Cluster Properties": [
+                        "cluster-infrastructure: corosync",
+                        "cluster-name: cluster-1"
+                    ]
+                }
+
     Methods:
         get_resources_clones(self) (dict): Returns a dictionary of ``Clones`` in ``Resources`` keyed with their name.
             the form::
-            {
-                "clone-1": [
-                    "Meta Attrs: interleave=true ordered=true",
-                    "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
-                ],
-                "clone-1": [
-                    "Meta Attrs: interleave=true ordered=true",
-                    "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
-                ]
-            }
+
+                {
+                    "clone-1": [
+                        "Meta Attrs: interleave=true ordered=true",
+                        "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
+                    ],
+                    "clone-1": [
+                        "Meta Attrs: interleave=true ordered=true",
+                        "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
+                    ]
+                }
 
         get_resources_groups(self) (dict): Returns a dictionary of ``Gropus`` in ``Resources`` keyed with their name.
             the form::
-            {
-                "svcexzpr": [
-                    "Resource: ip_exzpr (class=ocf provider=heartbeat type=IPaddr2)",
-                    "Attributes: ip=10.198.107.14 cidr_netmask=32",
-                    "Resource: fs_exzpr (class=ocf provider=heartbeat type=Filesystem)",
-                    "Attributes: device=/dev/vg_exzpr/lv_exzpr directory=/exzpr fstype=xfs run_fsck=yes fast_stop=yes"
-                ]
-            }
+
+                {
+                    "svcexzpr": [
+                        "Resource: ip_exzpr (class=ocf provider=heartbeat type=IPaddr2)",
+                        "Attributes: ip=10.198.107.14 cidr_netmask=32",
+                        "Resource: fs_exzpr (class=ocf provider=heartbeat type=Filesystem)",
+                        "Attributes: device=/dev/vg_exzpr/lv_exzpr directory=/exzpr fstype=xfs run_fsck=yes fast_stop=yes"
+                    ]
+                }
     """
 
     def parse_content(self, content):

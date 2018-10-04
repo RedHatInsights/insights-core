@@ -1,5 +1,7 @@
 from insights.parsers.pcs_config import PCSConfig
+from insights.parsers import pcs_config
 from insights.tests import context_wrap
+import doctest
 
 NORMAL_PCS_CONFIG = """
 Cluster Name: cluster-1
@@ -101,3 +103,11 @@ def test_pcs_config_resources_gropus():
                                                     "Operations: start interval=0s timeout=60 (fs_exzpr-start-interval-0s)",
                                                     "stop interval=0s timeout=60 (fs_exzpr-stop-interval-0s)",
                                                     "monitor interval=30s timeout=60 (fs_exzpr-monitor-interval-30s)"]}
+
+
+def test_pcs_config_documentation():
+    env = {
+        'pcs_config': PCSConfig(context_wrap(NORMAL_PCS_CONFIG)),
+    }
+    failed, total = doctest.testmod(pcs_config, globs=env)
+    assert failed == 0
