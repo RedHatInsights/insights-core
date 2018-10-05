@@ -105,7 +105,6 @@ class HumanReadableFormat(Formatter):
             missing_files = set()
             issue_parsers_all = set()
             issue_parsers_not_collect = set()
-
             for item in self.broker.missing_requirements:
                 if self.broker.missing_requirements[item][0] and self.broker.missing_requirements[item][0][0]:
                     missing_value = self.broker.missing_requirements[item][0][0]
@@ -116,7 +115,6 @@ class HumanReadableFormat(Formatter):
                     if isinstance(item, types.FunctionType):
                         if inspect.isclass(missing_value) and not issubclass(missing_value, ExecutionContext):
                             issue_parsers_all.add(missing_value)
-
             print(file=self.stream)
             if missing_files:
                 print("Requested File Not Collected For Following Specs:", file=self.stream)
@@ -127,7 +125,6 @@ class HumanReadableFormat(Formatter):
                 print("File Collected However Content Not Correct For Following Parser:", file=self.stream)
                 for item in (issue_parsers_all - issue_parsers_not_collect):
                     print(item, file=self.stream)
-
 
     def show_tracebacks(self):
         """ Show tracebacks """
