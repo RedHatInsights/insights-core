@@ -8,6 +8,8 @@ from pprint import pprint
 from insights import dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, FormatterAdapter, render
+import types
+
 
 try:
     from colorama import Fore, Style
@@ -100,9 +102,32 @@ class HumanReadableFormat(Formatter):
     def show_missing(self):
         """ Show missing requirements """
         if self.broker.missing_requirements:
+            missing_files = set()
+            issue_parsers_all = set()
+            issue_parsers_not_collect = set()
+
+            for item in self.broker.missing_requirements:
+                if self.broker.missing_requirements[item][0] and self.broker.missing_requirements[item][0][0]:
+                    missing_value = self.broker.missing_requirements[item][0][0]
+                    if isinstance(item, type):
+                        missing_files.add(missing_value)
+                        issue_parsers_not_collect.add(item)
+
+                    if isinstance(item, types.FunctionType):
+                        if inspect.isclass(missing_value) and not issubclass(missing_value, ExecutionContext):
+                            issue_parsers_all.add(missing_value)
+
             print(file=self.stream)
-            print("Missing Requirements:", file=self.stream)
-            print(self.broker.missing_requirements, file=self.stream)
+            if missing_files:
+                print("Requested File Not Collected For Following Specs:", file=self.stream)
+                for item in missing_files:
+                    print (item, file=self.stream)
+            print(file=self.stream)
+            if issue_parsers_all:
+                print("File Collected However Content Not Correct For Following Parser:", file=self.stream)
+                for item in (issue_parsers_all - issue_parsers_not_collect):
+                    print(item, file=self.stream)
+
 
     def show_tracebacks(self):
         """ Show tracebacks """
