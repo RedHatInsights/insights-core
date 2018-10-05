@@ -56,10 +56,14 @@ class CephInsights(CommandParser):
          "\d+-\d+-\d+.+WARNING: all dangerous"
     ]
 
-    bad_lines = CommandParser.bad_lines + [
+    bad_lines = [
         "module 'insights' is not enabled",
         "no valid command found"
     ]
+
+    def __init__(self, *args, **kwargs):
+        kwargs.update(dict(extra_bad_lines=self.bad_lines))
+        super(CephInsights, self).__init__(*args, **kwargs)
 
     def _sanitize_content(self, content):
         """Remove lines matching IGNORE_RE at start of content"""
