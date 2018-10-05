@@ -508,14 +508,15 @@ class CommandParser(Parser):
     included in the `bad_lines` list a `ContentException` is raised
     """
 
-    bad_lines = ["no such file or directory", "command not found"]
+    __bad_lines = ["no such file or directory", "command not found"]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
     When adding a new lin to the list make sure text is all lower case.
     """
 
-    def validate_lines(self, results):
+    @staticmethod
+    def validate_lines(results, bad_lines):
         """
         If `results` contains a single line and that line is included
         in the `bad_lines` list, this function returns `False`. If no bad
@@ -531,18 +532,20 @@ class CommandParser(Parser):
 
         if results and len(results) == 1:
             first = results[0]
-            if any(l in first.lower() for l in self.bad_lines):
+            if any(l in first.lower() for l in bad_lines):
                 return False
         return True
 
-    def __init__(self, context):
+    def __init__(self, context, extra_bad_lines=[]):
         """
             This __init__ calls `validate_lines` function to check for bad lines.
             If `validate_lines` returns False, indicating bad line found, a
             ContentException is thrown.
         """
-
-        if not self.validate_lines(context.content):
+        valid_lines = self.validate_lines(context.content, self.__bad_lines)
+        if valid_lines and extra_bad_lines:
+            valid_lines = self.validate_lines(context.content, extra_bad_lines)
+        if not valid_lines:
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
             raise ContentException(name + ": " + first)
