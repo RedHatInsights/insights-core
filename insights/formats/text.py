@@ -119,7 +119,7 @@ class HumanReadableFormat(Formatter):
             if missing_files:
                 print("Requested File Not Collected For Following Specs:", file=self.stream)
                 for item in missing_files:
-                    print (item, file=self.stream)
+                    print(item, file=self.stream)
             print(file=self.stream)
             if issue_parsers_all:
                 print("File Collected However Content Not Correct For Following Parser:", file=self.stream)
