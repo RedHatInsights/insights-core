@@ -43,3 +43,8 @@ class InsightsConstants(object):
     cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
     sig_kill_ok = 100
     sig_kill_bad = 101
+
+    # upload_strategy values
+    s_auto = 'auto'
+    s_legacy = 'legacy'
+    s_platform = 'platform'

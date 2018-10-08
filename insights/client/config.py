@@ -347,8 +347,9 @@ DEFAULT_OPTS = {
     },
 
     # platform options
-    'legacy_upload': {
-        'default': False
+    'upload_strategy': {
+        'default': constants.s_auto
+        # valid values: auto, legacy, platform
     },
     'payload': {
         'default': None,
@@ -575,6 +576,12 @@ class InsightsConfig(object):
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
+        if self.upload_strategy not in [constants.s_auto,
+                                        constants.s_legacy,
+                                        constants.s_platform]:
+            raise ValueError(
+                'Invalid value for `upload_strategy`: %s' %
+                self.upload_strategy)
 
     def _imply_options(self):
         '''
