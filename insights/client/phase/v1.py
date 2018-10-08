@@ -164,12 +164,8 @@ def post_update(client, config):
 @phase
 def collect_and_output(client, config):
     if config.payload:
-        if config.upload_strategy == constants.s_auto:
-            config.upload_strategy = constants.s_platform
         tar_file = config.payload
     else:
-        if config.upload_strategy == constants.s_auto:
-            config.upload_strategy = constants.s_legacy
         tar_file = client.collect()
         config.content_type = 'application/vnd.redhat.advisor.test+tgz'
 
