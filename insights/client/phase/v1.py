@@ -171,6 +171,7 @@ def collect_and_output(client, config):
         if config.upload_strategy == constants.s_auto:
             config.upload_strategy = constants.s_legacy
         tar_file = client.collect()
+        config.content_type = 'application/vnd.redhat.advisor.test+tgz'
 
     if not tar_file:
         sys.exit(constants.sig_kill_bad)
