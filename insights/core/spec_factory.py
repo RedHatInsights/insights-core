@@ -141,7 +141,7 @@ class FileProvider(ContentProvider):
 
         if os.path.islink(self.path):
             resolved = os.path.realpath(self.path)
-            if not resolved.startswith(self.root):
+            if not resolved.startswith(os.path.realpath(self.root)):
                 msg = "Symbolic link points outside archive: %s -> %s."
                 raise Exception(msg % (self.path, resolved))
 
