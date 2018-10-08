@@ -142,8 +142,8 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if not config.legacy_upload:
-        logger.debug('Performing a platform upload. Bypassing registration.')
+    if config.payload:
+        logger.debug('Uploading a payload. Bypassing registration.')
         return
 
     reg = client.register()
@@ -168,7 +168,6 @@ def collect_and_output(client, config):
             config.upload_strategy = constants.s_platform
         tar_file = config.payload
     else:
-        # uploading to legacy insights
         if config.upload_strategy == constants.s_auto:
             config.upload_strategy = constants.s_legacy
         tar_file = client.collect()
