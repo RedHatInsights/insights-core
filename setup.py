@@ -92,7 +92,7 @@ if __name__ == "__main__":
         package_data={'': ['LICENSE']},
         license='Apache 2.0',
         extras_require={
-            'develop': list(runtime | develop | client | docs | linting | testing),
+            'develop': list(runtime | develop | client | linting | testing),
             'client': list(runtime | client),
             'optional': list(optional),
             'docs': list(docs),
