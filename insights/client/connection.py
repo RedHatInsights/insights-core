@@ -266,8 +266,8 @@ class InsightsConnection(object):
         return True
 
     def _generate_cert_str(self, cert_data, prefix):
-        return prefix + '/'.join(
-                [a[0].decode() + '=' + a[1].decode()
+        return prefix + u'/'.join(
+                [a[0].decode('utf-8') + u'=' + a[1].decode('utf-8')
                     for a in cert_data.get_components()])
 
     def _test_openssl(self):
@@ -324,15 +324,15 @@ class InsightsConnection(object):
             logger.debug('---\nCertificate chain')
             for depth, c in enumerate(certs):
                 logger.debug(self._generate_cert_str(c.get_subject(),
-                                                     str(depth) + ' s :/'))
+                                                     u'{0} s :/'.format(depth)))
                 logger.debug(self._generate_cert_str(c.get_issuer(),
-                                                     '  i :/'))
+                                                     u'  i :/'))
             # print server cert
             server_cert = ssl_conn.get_peer_certificate()
             logger.debug('---\nServer certificate')
             logger.debug(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
-            logger.debug(self._generate_cert_str(server_cert.get_subject(), 'subject=/'))
-            logger.debug(self._generate_cert_str(server_cert.get_issuer(), 'issuer=/'))
+            logger.debug(self._generate_cert_str(server_cert.get_subject(), u'subject=/'))
+            logger.debug(self._generate_cert_str(server_cert.get_issuer(), u'issuer=/'))
             logger.debug('---')
         except SSL.Error as e:
             logger.debug('SSL error: %s', e)
