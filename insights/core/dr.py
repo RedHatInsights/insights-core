@@ -25,6 +25,7 @@ log = logging.getLogger(__name__)
 
 GROUPS = enum("single", "cluster")
 
+COMPONENTS_BY_NAME = {}
 MODULE_NAMES = {}
 BASE_MODULE_NAMES = {}
 
@@ -36,8 +37,12 @@ DEPENDENTS = defaultdict(set)
 COMPONENTS = defaultdict(lambda: defaultdict(set))
 
 DELEGATES = {}
-HIDDEN = set()
 IGNORE = defaultdict(set)
+"""
+This is used in spec_factory to make datasources ignore contexts that have
+been overridden for them.
+"""
+
 ENABLED = defaultdict(lambda: True)
 
 
@@ -57,7 +62,7 @@ def set_enabled(component, enabled=True):
     Returns:
         None
     """
-    ENABLED[get_component(component) or component] = enabled
+    ENABLED[component] = enabled
 
 
 def is_enabled(component):
@@ -79,6 +84,10 @@ def get_delegate(component):
 
 
 def add_ignore(c, i):
+    """
+    This is used in spec_factory to make datasources ignore contexts that have
+    been overridden for them.
+    """
     IGNORE[c].add(i)
 
 
@@ -194,18 +203,6 @@ def get_base_module_name(obj):
         return get_module_name(obj).split(".")[-1]
     except:
         return None
-
-
-def mark_hidden(component):
-    global HIDDEN
-    if isinstance(component, (list, set)):
-        HIDDEN |= set(component)
-    else:
-        HIDDEN.add(component)
-
-
-def is_hidden(component):
-    return component in HIDDEN
 
 
 def walk_tree(root, method=get_dependencies):
@@ -391,6 +388,7 @@ def register_component(delegate):
 
     MODULE_NAMES[component] = get_module_name(component)
     BASE_MODULE_NAMES[component] = get_base_module_name(component)
+    COMPONENTS_BY_NAME[get_name(component)] = component
 
 
 class ComponentType(object):

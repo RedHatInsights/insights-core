@@ -13,17 +13,13 @@ def one():
     return 1
 
 
-def test_enabled_string():
-    assert dr.is_enabled("insights.core.context.HostContext")
-
-
 def test_enabled_object():
     assert dr.is_enabled(Uname)
 
 
 def test_disabled_string():
-    dr.set_enabled("insights.core.context.HostContext", False)
     from insights.core.context import HostContext
+    dr.set_enabled(HostContext, False)
     assert not dr.is_enabled(HostContext)
 
 

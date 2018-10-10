@@ -1,9 +1,12 @@
 import json as ser
 import logging
 import os
+from glob import glob
 
-from insights.core import dr, plugins
-from insights.util import fs
+from insights.core import dr, Parser
+from insights.core.spec_factory import (CommandOutputProvider,
+                                        ContentProvider,
+                                        FileProvider)
 
 log = logging.getLogger(__name__)
 
@@ -49,7 +52,6 @@ def get_deserializer_type(obj):
 
 
 def get_serializer(obj):
-
     """ Get a registered serializer for the given object.
 
         This function walks the mro of obj looking for serializers.
@@ -109,48 +111,37 @@ def unmarshal(data):
     return deserialize(data)
 
 
-def persister(output_dir, ignore_hidden=True):
-    def observer(c, broker):
-        if ignore_hidden and dr.is_hidden(c):
-            return
-
-        if c not in broker and c not in broker.exceptions:
-            return
-
-        ser_name = dr.get_base_module_name(ser)
-        name = dr.get_name(c)
-        c_type = dr.get_component_type(c)
-        doc = {}
-        doc["name"] = name
-        doc["dr_type"] = dr.get_name(c_type) if c_type else None
-        doc["is_rule"] = plugins.is_rule(c)
-        doc["time"] = broker.exec_times.get(c)
-        doc["results"] = marshal(broker.get(c))
-        doc["errors"] = marshal(broker.exceptions.get(c))
-        path = os.path.join(output_dir, name + "." + ser_name)
-        try:
-            with open(path, "wb") as f:
-                ser.dump(doc, f)
-        except Exception as boom:
-            log.error("Could not serialize %s to %s: %s" % (name, ser_name, boom))
-            fs.remove(path)
-
-    return observer
-
-
-def hydrate(payload, broker=None):
+def hydrate(root, broker=None):
     broker = broker or dr.Broker()
-    name = payload["name"]
-    key = dr.get_component(name) or name
+    raw_data = os.path.join(root, "raw_data")
 
-    results = unmarshal(payload["results"])
-    if results:
-        broker[key] = results
+    def localize(comp):
+        def inner(thing):
+            if isinstance(comp, FileProvider):
+                comp.root = raw_data
 
-    errors = unmarshal(payload["errors"])
-    if errors:
-        broker.exceptions[key] = errors
+        if isinstance(comp, list):
+            for c in comp:
+                inner(c)
+        else:
+            inner(comp)
 
+    data = os.path.join(root, "data")
+    for path in glob(os.path.join(data, "*")):
+        with open(path) as f:
+            doc = ser.load(f)
+        name = doc["name"]
+        key = dr.get_component(name)
+        broker.exec_times[key] = doc["time"]
+
+        results = unmarshal(doc["results"])
+        if results:
+            localize(results)
+            broker[key] = results
+
+        errors = unmarshal(doc["errors"])
+        if errors:
+            broker.exceptions[key] = errors
     return broker
 
 
@@ -162,6 +153,58 @@ def serialize_exception(ex):
 @deserializer(BaseException)
 def deserialize_exception(_type, data):
     obj = _type.__new__(_type)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    return obj
+
+
+@serializer(FileProvider)
+def serialize_provider(obj):
+    return {
+        "root": obj.root,
+        "relative_path": obj.relative_path,
+        "file_name": obj.file_name,
+        "loaded": obj.loaded,
+        "filter": False,
+        "_content": obj._content,
+        "_exception": None
+    }
+
+
+@serializer(CommandOutputProvider)
+def serialize_command_provider(obj):
+    return {
+        "rc": obj.rc,
+        "cmd": obj.cmd,
+        "args": obj.args,
+        "root": obj.root,
+        "relative_path": obj.relative_path,
+        "loaded": obj.loaded,
+        "_content": obj.content,
+        "_exception": None
+    }
+
+
+@deserializer(ContentProvider)
+def deserialize_content(_type, data):
+    obj = _type.__new__(_type)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    return obj
+
+
+@serializer(Parser)
+def default_parser_serializer(obj):
+    return vars(obj)
+
+
+@deserializer(Parser)
+def default_parser_deserializer(_type, data):
+    obj = _type.__new__(_type)
+    obj.file_path = None
+    obj.file_name = None
+    obj.last_client_run = None
+    obj.args = None
     for k, v in data.items():
         setattr(obj, k, v)
     return obj

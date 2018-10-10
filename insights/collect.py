@@ -18,7 +18,7 @@ from collections import defaultdict
 from datetime import datetime
 from subprocess import call, Popen, PIPE
 
-from insights import dr, apply_configs, get_filters
+from insights import dr, apply_configs, get_filters, initialize_broker
 from insights.core import blacklist
 from insights.core.serde import marshal, ser
 from insights.core.spec_factory import FileProvider
@@ -376,8 +376,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     fs.ensure_path(output_path)
     fs.touch(os.path.join(output_path, "insights_archive.txt"))
 
-    broker = dr.Broker()
-    broker[ctx.__class__] = ctx
+    broker = initialize_broker(ctx)
     broker.add_observer(make_persister(to_persist, output_path, max_file_size))
     list(dr.run_incremental(broker=broker))
 

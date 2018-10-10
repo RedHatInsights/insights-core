@@ -12,7 +12,6 @@ from insights.core import blacklist, dr
 from insights.core.filters import get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
-from insights.core.serde import deserializer, serializer
 from insights.util import streams, which
 import shlex
 
@@ -433,7 +432,6 @@ def _resolve_registry_points(cls, base, dct):
                 # the RegistryPoint gets the implementation datasource as a
                 # dependency
                 dr.add_dependency(point, v)
-                dr.mark_hidden(v)
 
                 # Datasources override previously defined datasources of the
                 # same name for contexts they all depend on. Here we tell
@@ -807,7 +805,6 @@ class first_of(object):
     def __init__(self, deps):
         self.deps = deps
         self.raw = deps[0].raw
-        dr.mark_hidden(deps)
         self.__name__ = self.__class__.__name__
         datasource(deps)(self)
 
@@ -815,38 +812,3 @@ class first_of(object):
         for c in self.deps:
             if c in broker:
                 return broker[c]
-
-
-@serializer(FileProvider)
-def serialize_provider(obj):
-    return {
-        "root": obj.root,
-        "relative_path": obj.relative_path,
-        "file_name": obj.file_name,
-        "loaded": obj.loaded,
-        "filter": False,
-        "_content": obj._content,
-        "_exception": None
-    }
-
-
-@serializer(CommandOutputProvider)
-def serialize_command_provider(obj):
-    return {
-        "rc": obj.rc,
-        "cmd": obj.cmd,
-        "args": obj.args,
-        "root": obj.root,
-        "relative_path": obj.relative_path,
-        "loaded": obj.loaded,
-        "_content": obj.content,
-        "_exception": None
-    }
-
-
-@deserializer(ContentProvider)
-def deserialize_content(_type, data):
-    obj = _type.__new__(_type)
-    for k, v in data.items():
-        setattr(obj, k, v)
-    return obj

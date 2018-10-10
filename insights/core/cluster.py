@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from insights.core import dr, plugins
 from insights.core.archives import extract
-from insights.core.hydration import create_context
+from insights.core.context import create_context
 from insights.specs import Specs
 
 

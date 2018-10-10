@@ -16,7 +16,6 @@ from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException
 from insights.core.plugins import ContentException
-from insights.core.serde import deserializer, serializer
 from . import ls_parser
 from insights.util import deprecated
 
@@ -100,23 +99,6 @@ class StreamParser(Parser):
 
     def _handle_content(self, context):
         self.parse_content(context.stream())
-
-
-@serializer(Parser)
-def default_parser_serializer(obj):
-    return vars(obj)
-
-
-@deserializer(Parser)
-def default_parser_deserializer(_type, data):
-    obj = _type.__new__(_type)
-    obj.file_path = None
-    obj.file_name = None
-    obj.last_client_run = None
-    obj.args = None
-    for k, v in data.items():
-        setattr(obj, k, v)
-    return obj
 
 
 def find_main(confs, name):

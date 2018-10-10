@@ -8,16 +8,17 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
-from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
+from .core.archives import COMPRESSION_TYPES, extract, get_all_files  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
+from .core.context import JDRContext, SerializedArchiveContext, SosArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
-from .core.hydration import create_context, initialize_broker
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
 from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.plugins import make_pass, make_fail  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
+from .core.serde import hydrate
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
@@ -53,6 +54,47 @@ def add_status(name, nvr, commit):
     register their version information.
     """
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
+
+
+def enumerate_archive(path):
+    all_files = []
+    for f in get_all_files(path):
+        if os.path.isfile(f) and not os.path.islink(f):
+            all_files.append(f)
+    return all_files
+
+
+def determine_context(common_path, files):
+    if any(f.endswith(COMPRESSION_TYPES) for f in os.listdir(common_path)):
+        return ClusterArchiveContext
+
+    for f in files:
+        if "insights_archive.txt" in f:
+            return SerializedArchiveContext
+        if "insights_commands" in f:
+            return HostArchiveContext
+        elif "sos_commands" in f:
+            return SosArchiveContext
+        elif "JBOSS_HOME" in f:
+            return JDRContext
+
+    return HostArchiveContext
+
+
+def create_context(path, context=None):
+    all_files = enumerate_archive(path)
+    common_path = os.path.dirname(os.path.commonprefix(all_files))
+    context = context or determine_context(common_path, all_files)
+    return context(common_path, all_files=all_files)
+
+
+def initialize_broker(ctx, broker=None):
+    broker = broker or dr.Broker()
+    cls = ctx.__class__
+    if cls != SerializedArchiveContext:
+        broker[cls] = ctx
+        return broker
+    return hydrate(ctx.root, broker)
 
 
 def process_dir(broker, root, graph, context, use_pandas=False):
