@@ -140,11 +140,11 @@ class SystemdLogindConf(SystemdConf):
         RemoveIPC=no
 
     Example:
-        >>> logind_conf ["Login"]["ReserveVT"]
+        >>> logind_conf["Login"]["ReserveVT"]
         '6'
-        >>> logind_conf ["Login"]["KillUserProcesses"]  # 'Yes' turns to 'True'
+        >>> logind_conf["Login"]["KillUserProcesses"]  # 'Yes' turns to 'True'
         'True'
-        >>> logind_conf ["Login"]["RemoveIPC"]  # 'no' turns to 'False'
+        >>> logind_conf.get("Login").get("RemoveIPC")  # 'no' turns to 'False'
         'False'
     """
     pass
