@@ -80,30 +80,7 @@ def test_pcs_config_normal():
     assert "cluster-infrastructure: corosync" in pcs.get("Cluster Properties")
     assert "stonith-enabled: false" in pcs.get("Cluster Properties")
     assert pcs.get("Resources Defaults") == ["resource-stickiness: 100", "migration-threshold: 3"]
-
-
-def test_pcs_config_resources_clones():
-    pcs = PCSConfig(context_wrap(NORMAL_PCS_CONFIG))
-    assert pcs.get_resources_clones()["clone-2"] == ["Meta Attrs: interleave=true ordered=true",
-                                                    "Resource: res-2 (class=ocf provider=pacemaker type=controld)",
-                                                    "Operations: start interval=0s timeout=90 (dlm-start-interval-0s)",
-                                                    "stop interval=0s timeout=100 (dlm-stop-interval-0s)",
-                                                    "monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)"]
-
-
-def test_pcs_config_resources_gropus():
-    pcs = PCSConfig(context_wrap(NORMAL_PCS_CONFIG))
-    assert pcs.get_resources_groups() == {"grp-1": ["Resource: res-1 (class=ocf provider=heartbeat type=IPaddr2)",
-                                                    "Attributes: ip=10.0.0.1 cidr_netmask=32",
-                                                    "Operations: monitor interval=120s (ip_monitor-interval-120s)",
-                                                    "start interval=0s timeout=20s (ip_-start-interval-0s)",
-                                                    "stop interval=0s timeout=20s (ip_-stop-interval-0s)",
-                                                    "Resource: res-2 (class=ocf provider=heartbeat type=Filesystem)",
-                                                    "Attributes: device=/dev/lv_exzpr directory= fstype=xfs run_fsck=yes fast_stop=yes",
-                                                    "Operations: start interval=0s timeout=60 (fs_exzpr-start-interval-0s)",
-                                                    "stop interval=0s timeout=60 (fs_exzpr-stop-interval-0s)",
-                                                    "monitor interval=30s timeout=60 (fs_exzpr-monitor-interval-30s)"]}
-
+    
 
 def test_pcs_config_documentation():
     env = {

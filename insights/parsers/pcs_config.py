@@ -56,10 +56,6 @@ The class provides attribute ``data`` as dictionary with lines parsed line by li
 the key words of the output.
 Information in keys ``Corosync Nodes`` and ``Pacemaker Nodes`` is parsed in one line.
 The get method ``get(str)`` provides lines from ``data`` based on given key.
-Methods ``get_resources_clones()`` and ``get_resources_groups()`` parse ``Resources`` part of the output in more
-convenient way. ``Resources`` contains two main subcategories: Clone and Group. ``get_resources_clones()`` provides
-dictionary of clones. Each Clone then contains list of associated lines. ``get_resources_groups()`` works the same
-way for the Groups.
 
 Examples:
     >>> pcs_config.get("Cluster Name")
@@ -68,8 +64,6 @@ Examples:
     ['node-1', 'node-2']
     >>> pcs_config.get("Cluster Properties")
     ['cluster-infrastructure: corosync', 'cluster-name: cluster-1', 'dc-version: 1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog: false', 'no-quorum-policy: ignore', 'stonith-enable: true', 'stonith-enabled: false']
-    >>> pcs_config.get_resources_clones()['clone-2']
-    ['Meta Attrs: interleave=true ordered=true', 'Resource: res-2 (class=ocf provider=pacemaker type=controld)', 'Operations: start interval=0s timeout=90 (dlm-start-interval-0s)', 'stop interval=0s timeout=100 (dlm-stop-interval-0s)', 'monitor interval=30s on-fail=fence (dlm-monitor-interval-30s)']
     >>> pcs_config.get("Colocation Constraints")
     ['clone-1 with clone-x (score:INFINITY) (id:clone-INFINITY)', 'clone-2 with clone-x (score:INFINITY) (id:clone-INFINITY)']
 """
@@ -110,33 +104,6 @@ class PCSConfig(CommandParser):
                         "cluster-name: cluster-1"
                     ]
                 }
-
-    Methods:
-        get_resources_clones(self) (dict): Returns a dictionary of ``Clones`` in ``Resources`` keyed with their name.
-            the form::
-
-                {
-                    "clone-1": [
-                        "Meta Attrs: interleave=true ordered=true",
-                        "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
-                    ],
-                    "clone-1": [
-                        "Meta Attrs: interleave=true ordered=true",
-                        "Resource: res-1 (class=ocf provider=pacemaker type=controld)"
-                    ]
-                }
-
-        get_resources_groups(self) (dict): Returns a dictionary of ``Gropus`` in ``Resources`` keyed with their name.
-            the form::
-
-                {
-                    "svcexzpr": [
-                        "Resource: ip_exzpr (class=ocf provider=heartbeat type=IPaddr2)",
-                        "Attributes: ip=10.198.107.14 cidr_netmask=32",
-                        "Resource: fs_exzpr (class=ocf provider=heartbeat type=Filesystem)",
-                        "Attributes: device=/dev/vg_exzpr/lv_exzpr directory=/exzpr fstype=xfs run_fsck=yes fast_stop=yes"
-                    ]
-                }
     """
 
     def parse_content(self, content):
@@ -169,41 +136,3 @@ class PCSConfig(CommandParser):
 
     def get(self, key):
         return self.data.get(key)
-
-    def get_resources_clones(self):
-        clones = {}
-        name = ""
-        in_clone = 0
-        for line in self.data.get("Resources"):
-            if line.startswith("Clone:"):
-                name = line.split(":")[-1].strip()
-                clones[name] = []
-                in_clone = 1
-                continue
-            if in_clone == 0:
-                continue
-            if line.startswith("Group:"):
-                in_clone = 0
-                name = ""
-                continue
-            clones[name].append(line)
-        return clones
-
-    def get_resources_groups(self):
-        groups = {}
-        name = ""
-        in_group = 0
-        for line in self.data.get("Resources"):
-            if line.startswith("Group:"):
-                name = line.split(":")[-1].strip()
-                groups[name] = []
-                in_group = 1
-                continue
-            if in_group == 0:
-                continue
-            if line.startswith("Clone:"):
-                in_group = 0
-                name = ""
-                continue
-            groups[name].append(line)
-        return groups
