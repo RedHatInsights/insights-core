@@ -1,5 +1,15 @@
 # Change Log
 
+## [insights-core-3.0.51-623](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.51-623) (2018-10-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.50-1...insights-core-3.0.51-623)
+
+## [3.0.50-1](https://github.com/RedHatInsights/insights-core/tree/3.0.50-1) (2018-10-10)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.49-615...3.0.50-1)
+
+**Fixed bugs:**
+
+- Mistake to recognize collected files as missing requirements [\#1466](https://github.com/RedHatInsights/insights-core/issues/1466)
+
 ## [insights-core-3.0.49-615](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.49-615) (2018-10-03)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.48-1...insights-core-3.0.49-615)
 
