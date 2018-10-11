@@ -161,3 +161,27 @@ class MultiOrderedDict(dict):
             self[key].extend(value)
         else:
             super(MultiOrderedDict, self).__setitem__(key, value)
+
+
+def parse_systemd_ini(content):
+    """
+    Function to parse config format file, the result format is dictionary.
+
+    .. note::
+        This function is deprecated, please use :py:class:`SystemdConf` instead.
+    """
+
+    deprecated(parse_systemd_ini, "Use the `SystemdConf` class instead.")
+
+    doc = parse_doc(content)
+
+    dict_all = {}
+    for section in doc:
+        section_dict = {}
+        option_names = set(o.name for o in section)
+        for name in option_names:
+            options = [str(o.value) for o in section[name]]
+            section_dict[name] = options[0] if len(options) == 1 else options
+        dict_all[section.name] = section_dict
+
+    return dict_all
