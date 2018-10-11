@@ -433,6 +433,7 @@ class Specs(SpecSet):
     systemctl_qdrouterd = RegistryPoint()
     systemctl_smartpdc = RegistryPoint()
     systemd_docker = RegistryPoint()
+    systemd_logind_conf = RegistryPoint()
     systemd_openshift_node = RegistryPoint()
     systemd_system_conf = RegistryPoint()
     systemid = RegistryPoint()

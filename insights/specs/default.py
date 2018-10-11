@@ -630,6 +630,7 @@ class DefaultSpecs(Specs):
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_file("/usr/lib/systemd/system/docker.service")
+    systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
     systemid = first_of([
