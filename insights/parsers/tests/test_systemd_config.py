@@ -1,5 +1,6 @@
 from insights.parsers.systemd import config
 from insights.tests import context_wrap
+import doctest
 
 
 SYSTEMD_DOCKER = """
@@ -69,6 +70,42 @@ WantedBy=multi-user.target
 
 """.strip()
 
+SYSTEMD_LOGIND_CONF = """
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+#
+# Entries in this file show the compile time defaults.
+# You can change settings by editing this file.
+# Defaults can be restored by simply deleting this file.
+#
+# See logind.conf(5) for details.
+
+[Login]
+#NAutoVTs=6
+ReserveVT=6
+KillUserProcesses=Yes
+#KillOnlyUsers=
+#KillExcludeUsers=root
+#InhibitDelayMaxSec=5
+#HandlePowerKey=poweroff
+#HandleSuspendKey=suspend
+#HandleHibernateKey=hibernate
+#HandleLidSwitch=suspend
+#HandleLidSwitchDocked=ignore
+#PowerKeyIgnoreInhibited=no
+#SuspendKeyIgnoreInhibited=no
+#HibernateKeyIgnoreInhibited=no
+#LidSwitchIgnoreInhibited=yes
+#IdleAction=ignore
+#IdleActionSec=30min
+RuntimeDirectorySize=10%
+RemoveIPC=no
+#UserTasksMax=
+""".strip()
 
 SYSTEMD_SYSTEM_CONF = """
 #  This file is part of systemd.
@@ -131,7 +168,7 @@ ShutdownWatchdogSec=10min
 """.strip()
 
 
-def test_docker():
+def test_systemd_docker():
     docker_service = config.SystemdDocker(context_wrap(SYSTEMD_DOCKER))
     assert docker_service.data["Unit"]["After"] == "network.target"
     assert docker_service.data["Service"]["NotifyAccess"] == "all"
@@ -141,14 +178,32 @@ def test_docker():
     assert docker_service.data["Service"]["ExecStart"] == "/bin/sh -c '/usr/bin/docker-current daemon --authorization-plugin=rhel-push-plugin --exec-opt native.cgroupdriver=systemd $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS $ADD_REGISTRY $BLOCK_REGISTRY $INSECURE_REGISTRY 2>&1 | /usr/bin/forward-journald -tag docker'"
 
 
-def test_openshift_node():
+def test_systemd_openshift_node():
     openshift_node_service = config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE))
     assert openshift_node_service.data["Unit"]["Wants"] == "docker.service"
     assert openshift_node_service.data["Unit"]["After"] == ['docker.service', 'openvswitch.service']
 
 
-def test_systemd_common_conf():
+def test_systemd_system_conf():
     common_conf_info = config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF))
     assert "Manager" in common_conf_info
     assert common_conf_info["Manager"]["RuntimeWatchdogSec"] == "0"
     assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
+
+
+def test_systemd_logind_conf():
+    logind_conf = config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF))
+    assert "Login" in logind_conf
+    assert logind_conf["Login"]["RemoveIPC"] == "False"
+    assert logind_conf["Login"]["RuntimeDirectorySize"] == "10%"
+
+
+def test_doc_examples():
+    env = {
+            'docker_service': config.SystemdDocker(context_wrap(SYSTEMD_DOCKER)),
+            'system_conf': config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF)),
+            'openshift_node_service': config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE)),
+            'logind_conf': config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF))
+          }
+    failed, total = doctest.testmod(config, globs=env)
+    assert failed == 0

@@ -266,8 +266,8 @@ class InsightsConnection(object):
         return True
 
     def _generate_cert_str(self, cert_data, prefix):
-        return prefix + '/'.join(
-                [a[0].decode() + '=' + a[1].decode()
+        return prefix + u'/'.join(
+                [a[0].decode('utf-8') + u'=' + a[1].decode('utf-8')
                     for a in cert_data.get_components()])
 
     def _test_openssl(self):
@@ -324,15 +324,15 @@ class InsightsConnection(object):
             logger.debug('---\nCertificate chain')
             for depth, c in enumerate(certs):
                 logger.debug(self._generate_cert_str(c.get_subject(),
-                                                     str(depth) + ' s :/'))
+                                                     u'{0} s :/'.format(depth)))
                 logger.debug(self._generate_cert_str(c.get_issuer(),
-                                                     '  i :/'))
+                                                     u'  i :/'))
             # print server cert
             server_cert = ssl_conn.get_peer_certificate()
             logger.debug('---\nServer certificate')
             logger.debug(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
-            logger.debug(self._generate_cert_str(server_cert.get_subject(), 'subject=/'))
-            logger.debug(self._generate_cert_str(server_cert.get_issuer(), 'issuer=/'))
+            logger.debug(self._generate_cert_str(server_cert.get_subject(), u'subject=/'))
+            logger.debug(self._generate_cert_str(server_cert.get_issuer(), u'issuer=/'))
             logger.debug('---')
         except SSL.Error as e:
             logger.debug('SSL error: %s', e)
@@ -718,6 +718,14 @@ class InsightsConnection(object):
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
+
+            net_logger.info("GET %s", url)
+            res = self.session.get(url, timeout=self.config.http_timeout)
+            old_display_name = json.loads(res.content).get('display_name', None)
+            if display_name == old_display_name:
+                logger.debug('Display name unchanged: %s', old_display_name)
+                return True
+
             net_logger.info("PUT %s", url)
             res = self.session.put(url,
                                    timeout=self.config.http_timeout,
@@ -725,7 +733,9 @@ class InsightsConnection(object):
                                    data=json.dumps(
                                         {'display_name': display_name}))
             if res.status_code == 200:
-                logger.info('System display name changed to %s', display_name)
+                logger.info('System display name changed from %s to %s',
+                            old_display_name,
+                            display_name)
                 return True
             elif res.status_code == 404:
                 logger.error('System not found. '

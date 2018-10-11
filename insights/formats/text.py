@@ -1,6 +1,7 @@
 from __future__ import print_function
 import six
 import sys
+import inspect
 from collections import namedtuple
 
 from pprint import pprint
@@ -26,7 +27,7 @@ except ImportError:
 
 def _find_context(broker):
     for k, v in broker.instances.items():
-        if issubclass(k, ExecutionContext):
+        if inspect.isclass(k) and issubclass(k, ExecutionContext):
             return v
 
 

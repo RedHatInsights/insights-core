@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 from insights.util import mangle
 
 from .constants import InsightsConstants as constants
+from .utilities import determine_hostname
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ class InsightsCommand(InsightsSpec):
         self.command = spec['command'].replace(
             '{CONTAINER_MOUNT_POINT}', mountpoint)
         self.archive_path = mangle.mangle_command(self.command)
+        self.is_hostname = spec.get('symbolic_name') == 'hostname'
         if not six.PY3:
             self.command = self.command.encode('utf-8', 'ignore')
 
@@ -42,9 +44,13 @@ class InsightsCommand(InsightsSpec):
         Execute a command through system shell. First checks to see if
         the requested command is executable. Returns (returncode, stdout, 0)
         '''
+        if self.is_hostname:
+            # short circuit for hostame with internal method
+            return determine_hostname()
+
         # all commands should timeout after a long interval so the client does not hang
         # prepend native nix 'timeout' implementation
-        timeout_command = 'timeout -k 5 %s %s' % (
+        timeout_command = 'timeout -s KILL %s %s' % (
             self.config.cmd_timeout, self.command)
 
         # ensure consistent locale for collected command output
@@ -76,8 +82,8 @@ class InsightsCommand(InsightsSpec):
         proc0 = sedcmd
 
         if self.exclude is not None:
-            exclude_file = NamedTemporaryFile(mode='wt')
-            exclude_file.write("\n".join(self.exclude))
+            exclude_file = NamedTemporaryFile()
+            exclude_file.write("\n".join(self.exclude).encode('utf-8'))
             exclude_file.flush()
             cmd = "grep -F -v -f %s" % exclude_file.name
             proc1 = Popen(shlex.split(cmd),
@@ -96,8 +102,8 @@ class InsightsCommand(InsightsSpec):
             dirty = True
 
         if self.pattern is not None and len(self.pattern):
-            pattern_file = NamedTemporaryFile(mode='wt')
-            pattern_file.write("\n".join(self.pattern))
+            pattern_file = NamedTemporaryFile()
+            pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
             cmd = "grep -F -f %s" % pattern_file.name
             proc2 = Popen(shlex.split(cmd),
@@ -153,8 +159,8 @@ class InsightsFile(InsightsSpec):
                        stdout=PIPE)
 
         if self.exclude is not None:
-            exclude_file = NamedTemporaryFile(mode='wt')
-            exclude_file.write("\n".join(self.exclude))
+            exclude_file = NamedTemporaryFile()
+            exclude_file.write("\n".join(self.exclude).encode('utf-8'))
             exclude_file.flush()
 
             cmd = "grep -v -F -f %s" % exclude_file.name
@@ -168,8 +174,8 @@ class InsightsFile(InsightsSpec):
                 sedcmd = proc
 
         if self.pattern is not None:
-            pattern_file = NamedTemporaryFile(mode='wt')
-            pattern_file.write("\n".join(self.pattern))
+            pattern_file = NamedTemporaryFile()
+            pattern_file.write("\n".join(self.pattern).encode('utf-8'))
             pattern_file.flush()
 
             cmd = "grep -F -f %s" % pattern_file.name

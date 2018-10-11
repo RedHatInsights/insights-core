@@ -523,9 +523,12 @@ class Broker(object):
         self.exec_times = {}
 
         self.observers = defaultdict(set)
-        self.observers[ComponentType] = set()
-        for k, v in TYPE_OBSERVERS.items():
-            self.observers[k] = set(v)
+        if seed_broker is not None:
+            self.observers.update(seed_broker.observers)
+        else:
+            self.observers[ComponentType] = set()
+            for k, v in TYPE_OBSERVERS.items():
+                self.observers[k] |= set(v)
 
     def observer(self, component_type=ComponentType):
         def inner(func):
@@ -730,4 +733,4 @@ def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
     seed_broker = broker or Broker()
     for graph in get_subgraphs(components):
         broker = Broker(seed_broker)
-        yield run(graph, broker)
+        yield run(graph, broker=broker)

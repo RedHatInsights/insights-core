@@ -64,7 +64,7 @@ def pre_update(client, config):
 
     # validate the remove file
     if config.validate:
-        if validate_remove_file():
+        if validate_remove_file(config.remove_file):
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)
@@ -139,7 +139,9 @@ def post_update(client, config):
     if config.display_name and not config.register:
         # setting display name independent of registration
         if client.set_display_name(config.display_name):
-            sys.exit(constants.sig_kill_ok)
+            if 'display_name' in config._cli_opts:
+                # only exit on success if it was invoked from command line
+                sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)
 
