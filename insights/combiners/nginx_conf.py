@@ -13,7 +13,7 @@ as using select directly.
 import os
 from insights import combiner, parser, run
 from insights.core import ConfigCombiner, ConfigParser
-from insights.configtree import eq
+from insights.configtree import eq, startswith
 from insights.configtree.dictlike import parse_doc
 from insights.specs import Specs
 
@@ -32,7 +32,8 @@ class NginxConfTree(ConfigCombiner):
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def __init__(self, confs):
-        super(NginxConfTree, self).__init__(confs, "nginx.conf", eq("include"))
+        # super(NginxConfTree, self).__init__(confs, "nginx.conf", eq("include"))
+        super(NginxConfTree, self).__init__(confs, "nginx.conf", startswith("include"))
 
     @property
     def conf_path(self):
