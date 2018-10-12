@@ -59,6 +59,12 @@ class HumanReadableFormat(Formatter):
         self.dropped = dropped
         self.stream = stream
 
+    def print_header(self, header, color):
+        ln = len(header)
+        print(color + '-' * ln, file=self.stream)
+        print(header, file=self.stream)
+        print('-' * ln + Style.RESET_ALL, file=self.stream)
+
     def preprocess(self):
         self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'exception': 0}
         response = namedtuple('response', 'color label intl title')
@@ -73,9 +79,7 @@ class HumanReadableFormat(Formatter):
                           'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Total Exceptions Reported to Broker - ")
                           }
 
-        print(Fore.CYAN + '-' * 9, file=self.stream)
-        print("Progress:", file=self.stream)
-        print('-' * 9 + Style.RESET_ALL, file=self.stream)
+        self.print_header("Progress:", Fore.CYAN)
         self.broker.add_observer(self.progress_bar, rule)
         self.broker.add_observer(self.progress_bar, condition)
         self.broker.add_observer(self.progress_bar, incident)
@@ -129,27 +133,31 @@ class HumanReadableFormat(Formatter):
 
     def show_description(self):
         """ Prints the formatted response for the matching return type """
-        def printit(c, v):
-            name = None
 
-            if v["type"] in self.responses:
-                self.counts[v["type"]] += 1
-                name = self.responses[v["type"]].color + dr.get_name(c) + " - [" + self.responses[v["type"]].label + "]" + Style.RESET_ALL
-            if name:
-                print(name, file=self.stream)
-                print('-' * len(name), file=self.stream)
-                print(render(c, v), file=self.stream)
-                print(file=self.stream)
+        def printit(c, v):
+            _type = v.get("type")
+            if _type:
+                underline = "-" * len(dr.get_name(c))
+                name = self.responses[v["type"]].color + dr.get_name(c) + Style.RESET_ALL
+                if _type == "skip" and self.missing:
+                    print(name, file=self.stream)
+                    print(underline, file=self.stream)
+                    print("Missing requirements")
+                    print("    %s" % v.get("details"))
+                elif _type != "skip":
+                    print(name, file=self.stream)
+                    print(underline, file=self.stream)
+                    print(render(c, v), file=self.stream)
+                    print(file=self.stream)
 
         for c in sorted(self.broker.get_by_type(rule), key=dr.get_name):
             v = self.broker[c]
+            if v["type"] in self.responses:
+                self.counts[v["type"]] += 1
             printit(c, v)
         print(file=self.stream)
 
-        print(Fore.CYAN + '*' * 31 + Style.RESET_ALL, file=self.stream)
-        print(Fore.CYAN + "**** Counts By Return Type ****" + Style.RESET_ALL, file=self.stream)
-        print(Fore.CYAN + '*' * 31 + Style.RESET_ALL, file=self.stream)
-
+        self.print_header("**** Counts By Return Type ****", Fore.CYAN)
         for c in self.counts:
             print(self.responses[c].color + self.responses[c].title + str(self.counts[c]) + Style.RESET_ALL, file=self.stream)
 
@@ -163,10 +171,7 @@ class HumanReadableFormat(Formatter):
 
         print(file=self.stream)
         print(file=self.stream)
-        print(Fore.CYAN + "-" * 15, file=self.stream)
-        print("Rules Executed", file=self.stream)
-        print('-' * 15 + Style.RESET_ALL, file=self.stream)
-
+        self.print_header("Rule Results:", Fore.CYAN)
         self.show_description()
 
 

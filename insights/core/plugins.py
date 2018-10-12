@@ -2,9 +2,13 @@
 The plugins module defines the components used by the rest of Insights and
 specializes their interfaces and execution model where required.
 """
+from __future__ import print_function
 
 import logging
 import traceback
+
+from pprint import pformat
+from six import StringIO
 
 from insights.core import dr
 from insights.util.subproc import CalledProcessError
@@ -261,6 +265,36 @@ class Response(dict):
             extra[self.key_name] = key
         msg = "Length of data in %s is too long." % self.__class__.__name__
         log.error(msg, extra=extra)
+
+    def __str__(self):
+        key_val = self.get_key()
+        keys = sorted(self)
+        keys.remove(self.key_name)
+        keys.remove("type")
+
+        buf = StringIO()
+        if not keys:
+            print(key_val, file=buf)
+            buf.seek(0)
+            return buf.read()
+
+        print("%s:" % key_val, file=buf)
+        indent = len(max(keys, key=len)) + 6
+        hang_indent = "\n" + " " * indent
+        for k in keys:
+            key = ("    %s" % k) + " " * (indent - len(k) - 6) + ": "
+            buf.write(key)
+            lines = pformat(self[k]).splitlines()
+            num_lines = len(lines)
+            if num_lines > 10:
+                lines = lines[:10]
+                lines.append("<...%s more lines...>" % (num_lines - 10))
+            out = hang_indent.join(lines)
+            buf.write(out)
+            buf.write("\n")
+
+        buf.seek(0)
+        return buf.read()
 
 
 class make_response(Response):
