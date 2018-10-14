@@ -7,12 +7,14 @@ import traceback
 
 from collections import defaultdict
 from glob import glob
+from subprocess import call
 
 from insights.core import blacklist, dr
 from insights.core.filters import get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.util import streams, which
+from insights.util.subproc import Pipeline
 import shlex
 
 log = logging.getLogger(__name__)
@@ -166,6 +168,9 @@ class RawFileProvider(FileProvider):
         with open(self.path, 'rb') as f:
             return f.read()
 
+    def write(self, dst):
+        call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
+
 
 class TextFileProvider(FileProvider):
     """
@@ -233,6 +238,14 @@ class TextFileProvider(FileProvider):
             self._exception = ex
             raise ContentException(str(ex))
 
+    def write(self, dst):
+        args = self.create_args()
+        if args:
+            p = Pipeline(*args, env=SAFE_ENV)
+            p.write(dst)
+        else:
+            call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
+
 
 class CommandOutputProvider(ContentProvider):
     """
@@ -245,8 +258,7 @@ class CommandOutputProvider(ContentProvider):
         self.relative_path = mangle_command(cmd)
         self.ctx = ctx
         self.loaded = True
-        # args are already interpolated into cmd. They're stored here for context."
-        self.args = args
+        self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
         self.keep_rc = keep_rc
         self.ds = ds
@@ -262,7 +274,7 @@ class CommandOutputProvider(ContentProvider):
         if not blacklist.allow_command(self.cmd):
             raise dr.SkipComponent()
 
-        if not which(shlex.split(self.cmd)[0]):
+        if not which(shlex.split(self.cmd)[0], env=self.create_env()):
             raise ContentException("Couldn't execute: %s" % self.cmd)
 
     def create_args(self):
@@ -323,6 +335,12 @@ class CommandOutputProvider(ContentProvider):
         except Exception as ex:
             self._exception = ex
             raise ContentException(str(ex))
+
+    def write(self, dst):
+        args = self.create_args()
+        if args:
+            p = Pipeline(*args, timeout=self.timeout, env=self.create_env())
+            return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
         return 'CommandOutputProvider("%s")' % self.cmd
