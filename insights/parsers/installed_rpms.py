@@ -339,7 +339,7 @@ class InstalledRpm(object):
 
         for k, v in data.items():
             setattr(self, k, v)
-        if 'epoch' not in data:
+        if 'epoch' not in data or data['epoch'] == '(none)':
             self.epoch = '0'
 
         """Below is only for version comparison"""
