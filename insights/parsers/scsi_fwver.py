@@ -35,11 +35,10 @@ class SCSIFWver(LegacyItemAccess, CommandParser):
     """
 
     def __init__(self, context):
-        super(SCSIFWver, self).__init__(context)
-        self.data = {}
         self.scsi_host = context.path.rsplit("/")[-2]
 
     def parse_content(self, content):
+        self.data = {}
         for line in get_active_lines(content):
             self.data[self.scsi_host] = line.split(',')
 
