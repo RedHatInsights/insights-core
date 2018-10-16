@@ -13,7 +13,7 @@ from insights.core import blacklist, dr
 from insights.core.filters import get_filters
 from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
-from insights.util import streams, which
+from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline
 import shlex
 
@@ -144,11 +144,10 @@ class FileProvider(ContentProvider):
         if not os.path.exists(self.path):
             raise ContentException("%s does not exist." % self.path)
 
-        if os.path.islink(self.path):
-            resolved = os.path.realpath(self.path)
-            if not resolved.startswith(os.path.realpath(self.root)):
-                msg = "Symbolic link points outside archive: %s -> %s."
-                raise Exception(msg % (self.path, resolved))
+        resolved = os.path.realpath(self.path)
+        if not resolved.startswith(os.path.realpath(self.root)):
+            msg = "Relative path points outside the root: %s -> %s."
+            raise Exception(msg % (self.path, resolved))
 
         if not os.access(self.path, os.R_OK):
             raise ContentException("Cannot access %s" % self.path)
@@ -169,6 +168,7 @@ class RawFileProvider(FileProvider):
             return f.read()
 
     def write(self, dst):
+        fs.ensure_path(os.path.dirname(dst))
         call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
 
 
@@ -239,6 +239,7 @@ class TextFileProvider(FileProvider):
             raise ContentException(str(ex))
 
     def write(self, dst):
+        fs.ensure_path(os.path.dirname(dst))
         args = self.create_args()
         if args:
             p = Pipeline(*args, env=SAFE_ENV)
@@ -257,7 +258,6 @@ class CommandOutputProvider(ContentProvider):
         self.root = "insights_commands"
         self.relative_path = mangle_command(cmd)
         self.ctx = ctx
-        self.loaded = True
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
         self.keep_rc = keep_rc
@@ -338,6 +338,7 @@ class CommandOutputProvider(ContentProvider):
 
     def write(self, dst):
         args = self.create_args()
+        fs.ensure_path(os.path.dirname(dst))
         if args:
             p = Pipeline(*args, timeout=self.timeout, env=self.create_env())
             return p.write(dst, keep_rc=self.keep_rc)
@@ -347,11 +348,11 @@ class CommandOutputProvider(ContentProvider):
 
 
 class RegistryPoint(object):
-    """
-    Marker class for declaring that an element of a `SpecSet` subclass
-    is a registry point against which further subclasses can register
-    datasource implementations by simply declaring them with the same name.
-    """
+    # Marker class for declaring that an element of a `SpecSet` subclass
+    # is a registry point against which further subclasses can register
+    # datasource implementations by simply declaring them with the same name.
+    #
+    # intentionally not a docstring so this doesn't show up in pydoc.
     def __init__(self, metadata=None, multi_output=False, raw=False,
             filterable=False):
         self.metadata = metadata
@@ -373,10 +374,10 @@ class RegistryPoint(object):
 
 
 class SpecDescriptor(object):
-    """
-    Descriptor Protocol handler that returns the literal function from a
-    class during dot (.) access.
-    """
+    # Descriptor Protocol handler that returns the literal function from a
+    # class during dot (.) access.
+    #
+    # intentionally not a docstring so this doesn't show up in pydoc.
     def __init__(self, func):
         self.func = func
 

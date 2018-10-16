@@ -16,14 +16,17 @@ import yaml
 
 from collections import defaultdict
 from datetime import datetime
-from subprocess import call, Popen, PIPE
 
-from insights import dr, apply_configs, get_filters, initialize_broker
+from insights import dr, apply_configs, initialize_broker
 from insights.core import blacklist
 from insights.core.serde import marshal, ser
-from insights.core.spec_factory import FileProvider
+from insights.core.spec_factory import (CommandOutputProvider,
+                                        ContentProvider,
+                                        FileProvider,
+                                        mangle_command,
+                                        TextFileProvider)
 from insights.util import fs
-from insights.util.subproc import CalledProcessError
+from insights.util.subproc import call
 
 SAFE_ENV = {
     "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
@@ -103,61 +106,6 @@ configs:
 '''.strip()
 
 
-def check_output(cmd, env=SAFE_ENV):
-    """ Helper for getting output from external commands. """
-    proc = Popen(cmd, stdout=PIPE, env=env)
-    output, error = proc.communicate()
-    if error:
-        log.warning(error)
-    return output.decode("utf-8")
-
-
-def connect(args, out_stream, bufsize=-1):
-    if len(args) == 1:
-        Popen(args[0], bufsize=bufsize, stdout=out_stream).wait()
-        return
-
-    stdout = Popen(args[0], bufsize=bufsize).stdout
-    last = len(args) - 2
-    for i, arg in enumerate(args[1:]):
-        if i < last:
-            stdout = Popen(arg, bufsize=bufsize, stdin=stdout).stdout
-        else:
-            Popen(arg, bufsize=bufsize, stdin=stdout, stdout=out_stream).wait()
-
-
-def copy(src, dst, filters=None, patterns=None, keywords=None, bufsize=-1):
-    """
-    Helper for copying files outside of python while optionally applying
-    filters.
-    """
-    fs.ensure_path(os.path.dirname(dst), mode=0o770)
-    args = []
-
-    if filters:
-        args.append(["grep", "-F", "\n".join(filters), src])
-
-    if patterns:
-        grep = ["grep", "-v" "-F", "\n".join(patterns)]
-        if not args:
-            grep.append(src)
-        args.append(grep)
-
-    if keywords:
-        sed = ["sed"]
-        for kw in keywords:
-            sed.extend(["-e", "s/%s/keyword/g" % kw.replace("/", "\\/")])
-        if not args:
-            sed.append(src)
-        args.append(sed)
-
-    if args:
-        with open(dst, "wb") as out:
-            connect(args, out, bufsize=bufsize)
-    else:
-        call(["cp", src, dst], env=SAFE_ENV)
-
-
 def load_manifest(data):
     """ Helper for loading a manifest yaml doc. """
     if isinstance(data, dict):
@@ -214,23 +162,40 @@ def create_context(ctx):
     return ctx_cls(**ctx_args)
 
 
-def relocate(results, root, max_size, filters, patterns, keywords):
+# Do NOT return a CommandOutputProvider. That's equivalent to allowing
+# arbitrary code to run wherever this is unboxed.
+def store_command(result, root):
+    rel = os.path.join("insights_commands", mangle_command(result.cmd))
+    dst = os.path.join(root, rel)
+    rc = result.write(dst)
+    f = TextFileProvider(rel, root)
+
+    f.rc = rc
+    f.cmd = result.cmd
+    f.args = result.args
+    return f
+
+
+def relocate(results, root, max_size):
     """
     Copies datasource files into a raw_data directory if they're over a maximum
     size and haven't already been loaded into memory.
     """
     def move_it(result):
-        if not isinstance(result, FileProvider):
+        if not isinstance(result, ContentProvider):
             return result
 
         if not result.loaded:
-            src = result.path
-            if max_size and os.path.getsize(src) > max_size:
-                rel = result.relative_path
-                dst = os.path.join(root, rel)
-                copy(src, dst, filters=filters, patterns=patterns, keywords=keywords)
-            else:
-                result.content
+            if isinstance(result, FileProvider):
+                if max_size and os.path.getsize(result.path) > max_size:
+                    rel = result.relative_path
+                    dst = os.path.join(root, rel)
+                    result.write(dst)
+                else:
+                    result.content
+            elif isinstance(result, CommandOutputProvider):
+                if not result._content:
+                    result = store_command(result, root)
         return result
 
     if isinstance(results, list):
@@ -267,10 +232,7 @@ def make_persister(to_persist, root, max_size=0):
             try:
                 value = broker.get(c)
                 if value:
-                    fil = get_filters(c)
-                    pats = blacklist.get_disallowed_patterns()
-                    kws = blacklist.get_disallowed_keywords()
-                    value = relocate(value, raw_data_dir, max_size, fil, pats, kws)
+                    value = relocate(value, raw_data_dir, max_size)
 
                 doc = {
                     "name": name,
@@ -278,7 +240,7 @@ def make_persister(to_persist, root, max_size=0):
                     "results": marshal(value),
                     "errors": marshal(broker.exceptions.get(c))
                 }
-            except (dr.SkipComponent, CalledProcessError) as sc:
+            except dr.SkipComponent as sc:
                 log.debug(sc)
             except Exception as ex:
                 log.error("Could not serialize %s to %s: %s" % (name, ser_name, ex))
@@ -331,7 +293,7 @@ def create_archive(path, remove_path=True):
     relative_path = os.path.basename(path)
     archive_path = path + ".tar.gz"
 
-    cmd = ["tar", "-C", root_path, "-czf", archive_path, relative_path]
+    cmd = [["tar", "-C", root_path, "-czf", archive_path, relative_path]]
     call(cmd, env=SAFE_ENV)
     if remove_path:
         fs.remove(path)
@@ -369,7 +331,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     to_persist = get_to_persist(manifest.get("persist", []))
     max_file_size = manifest.get("max_serializable_file_size", 0)
 
-    hostname = check_output(["hostname", "-f"]).strip()
+    hostname = call("hostname -f", env=SAFE_ENV).strip()
     suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
     relative_path = "insights-%s-%s" % (hostname, suffix)
     output_path = os.path.join(tmp_path, relative_path)
@@ -412,7 +374,7 @@ def main():
 
     out_path = args.out_path or tempfile.gettempdir()
     archive = collect(manifest, out_path, compress=True)
-    print("Archive: %s" % archive)
+    print(archive)
 
 
 if __name__ == "__main__":
