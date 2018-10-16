@@ -29,20 +29,23 @@ from insights.specs import Specs
 def _make_rpm_formatter(fmt=None):
     if fmt is None:
         fmt = [
-            "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
-            "%{INSTALLTIME:date}",
-            "%{BUILDTIME}",
-            "%{VENDOR}",
-            "%{BUILDHOST}",
-            "DUMMY",
-            "%{SIGPGP:pgpsig}"
+            '"name":"%{NAME}"',
+            '"epoch":"%{EPOCH}"',
+            '"version":"%{VERSION}"',
+            '"release":"%{RELEASE}"',
+            '"arch":"%{ARCH}"',
+            '"installtime":"%{INSTALLTIME:date}"',
+            '"buildtime":"%{BUILDTIME}"',
+            '"vendor":"%{VENDOR}"',
+            '"buildhost":"%{BUILDHOST}"',
+            '"sigpgp":"%{SIGPGP:pgpsig}"'
         ]
 
     def inner(idx=None):
         if idx:
-            return "\t".join(fmt[:idx]) + "\n"
+            return "\{" + ",".join(fmt[:idx]) + "\}\n"
         else:
-            return "\t".join(fmt) + "\n"
+            return "\{" + ",".join(fmt) + "\}\n"
     return inner
 
 
