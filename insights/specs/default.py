@@ -582,6 +582,7 @@ class DefaultSpecs(Specs):
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
+    scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
