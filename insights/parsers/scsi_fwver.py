@@ -31,7 +31,7 @@ class SCSIFWver(LegacyItemAccess, Parser):
     parse from scsi host file name.
 
     Properties:
-        scsi_host (str): scsi host file name driver from file path.
+        scsi_host (str): scsi host file name derived from file path.
     """
 
     def __init__(self, context):
