@@ -1,5 +1,16 @@
 # Change Log
 
+## [3.0.52-1](https://github.com/RedHatInsights/insights-core/tree/3.0.52-1) (2018-10-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.51-623...3.0.52-1)
+
+**Fixed bugs:**
+
+- Issue to collect insights-archive in RHEL6 [\#1461](https://github.com/RedHatInsights/insights-core/issues/1461)
+
+**Closed issues:**
+
+- Add 'to\_serializable\(\)' function to 'InputData' object [\#1421](https://github.com/RedHatInsights/insights-core/issues/1421)
+
 ## [insights-core-3.0.51-623](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.51-623) (2018-10-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.50-1...insights-core-3.0.51-623)
 
