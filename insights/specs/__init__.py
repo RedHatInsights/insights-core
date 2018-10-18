@@ -388,6 +388,7 @@ class Specs(SpecSet):
     scheduler = RegistryPoint(multi_output=True)
     scsi = RegistryPoint()
     scsi_eh_deadline = RegistryPoint(multi_output=True)
+    scsi_fwver = RegistryPoint(multi_output=True)
     secure = RegistryPoint(filterable=True)
     selinux_config = RegistryPoint()
     semid = RegistryPoint()
