@@ -3,7 +3,7 @@ SCSIFWver - file ``/sys/class/scsi_host/host[0-9]*/fwrev``
 ==========================================================
 
 This parser parses the content from fwver file from individual
-SCSI hosts. This parser will return dictionary formated data.
+SCSI hosts. This parser will return data in dictionary format.
 
 Sample Content from ``/sys/class/scsi_host/host0/fwrev``::
 
@@ -31,7 +31,7 @@ class SCSIFWver(LegacyItemAccess, Parser):
     parse from scsi host file name.
 
     Properties:
-        scsi_host (str): scsi host file name deriver from file path.
+        scsi_host (str): scsi host file name driver from file path.
     """
 
     def __init__(self, context):
