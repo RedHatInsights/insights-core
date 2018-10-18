@@ -29,20 +29,23 @@ from insights.specs import Specs
 def _make_rpm_formatter(fmt=None):
     if fmt is None:
         fmt = [
-            "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
-            "%{INSTALLTIME:date}",
-            "%{BUILDTIME}",
-            "%{VENDOR}",
-            "%{BUILDHOST}",
-            "DUMMY",
-            "%{SIGPGP:pgpsig}"
+            '"name":"%{NAME}"',
+            '"epoch":"%{EPOCH}"',
+            '"version":"%{VERSION}"',
+            '"release":"%{RELEASE}"',
+            '"arch":"%{ARCH}"',
+            '"installtime":"%{INSTALLTIME:date}"',
+            '"buildtime":"%{BUILDTIME}"',
+            '"vendor":"%{VENDOR}"',
+            '"buildhost":"%{BUILDHOST}"',
+            '"sigpgp":"%{SIGPGP:pgpsig}"'
         ]
 
     def inner(idx=None):
         if idx:
-            return "\t".join(fmt[:idx]) + "\n"
+            return "\{" + ",".join(fmt[:idx]) + "\}\n"
         else:
-            return "\t".join(fmt) + "\n"
+            return "\{" + ",".join(fmt) + "\}\n"
     return inner
 
 
@@ -579,6 +582,7 @@ class DefaultSpecs(Specs):
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
+    scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
