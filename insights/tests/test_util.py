@@ -109,6 +109,7 @@ def test_nest_tuple():
     unordered_compare(({2: 22}, {3: [33, 333]}, {4: 44}), ({4: 44}, {3: [333, 33]}, {2: 22}))
     unordered_compare(({2: 22}, [33, 333, '3'], {4: 44}), ([333, '3', 33], {4: 44}, {2: 22}))
 
+
 def test_nest_list_dict():
     unordered_compare([{2: 22}, {3: 33}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
     with pytest.raises(AssertionError):
