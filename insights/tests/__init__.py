@@ -69,6 +69,7 @@ def unordered_compare(result, expected):
     arbitrarily nested lists and remove differences based on ordering.
     """
     def sort_key(d):
+        """ To support there are elements in type of dictionary."""
         return sorted(d.items()) if isinstance(d, dict) else d
 
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
@@ -82,7 +83,6 @@ def unordered_compare(result, expected):
 
     if isinstance(result, list):
         assert len(result) == len(expected)
-        # To support there are elements in type of dictionary
         result = sorted(result, key=sort_key)
         expected = sorted(expected, key=sort_key)
         for left_item, right_item in six.moves.zip(result, expected):
