@@ -79,7 +79,11 @@ def unordered_compare(result, expected):
 
     if isinstance(result, list):
         assert len(result) == len(expected)
-        for left_item, right_item in six.moves.zip(sorted(result), sorted(expected)):
+        # To support there are elements in type of dictionary
+        sorted_key = lambda d: sorted(d.items()) if isinstance(d, dict) else d
+        result = sorted(result, key=sorted_key)
+        expected = sorted(expected,  key=sorted_key)
+        for left_item, right_item in six.moves.zip(result, expected):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):
         assert len(result) == len(expected)
