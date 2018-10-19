@@ -102,10 +102,18 @@ def test_dict():
         unordered_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
+def test_nest_tuple():
+    unordered_compare(({2: 22}, {3: 33}, {4: 44}), ({2: 22}, {3: 33}, {4: 44}))
+    with pytest.raises(AssertionError):
+        unordered_compare(({2: 22}, {3: 30}, {4: 44}), ({4: 44}, {3: 33}, {2: 22}))
+    unordered_compare(({2: 22}, {3: [33, 333]}, {4: 44}), ({4: 44}, {3: [333, 33]}, {2: 22}))
+    unordered_compare(({2: 22}, [33, 333, '3'], {4: 44}), ([333, '3', 33], {4: 44}, {2: 22}))
+
 def test_nest_list_dict():
     unordered_compare([{2: 22}, {3: 33}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
     with pytest.raises(AssertionError):
         unordered_compare([{2: 22}, {3: 30}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
+    unordered_compare([{2: 22}, {3: [33, 333]}, {4: 44}], [{4: 44}, {3: [333, 33]}, {2: 22}])
 
 
 def test_nest_list_list():

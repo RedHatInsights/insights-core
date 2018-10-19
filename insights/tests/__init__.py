@@ -94,7 +94,7 @@ def unordered_compare(result, expected):
     if not all(isinstance(o, six.string_types) for o in (result, expected)):
         assert issubclass(type(result), type(expected))
 
-    if isinstance(result, list):
+    if isinstance(result, (list, tuple)):
         assert len(result) == len(expected)
         result = sorted(result, key=_sort_key)
         expected = sorted(expected, key=_sort_key)
