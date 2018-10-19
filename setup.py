@@ -45,6 +45,7 @@ client = set([
 develop = set([
     'futures==3.0.5',
     'requests==2.13.0',
+    'requests_cache',
     'wheel',
 ])
 
