@@ -7,7 +7,7 @@ import logging
 import six
 import six.moves
 from collections import defaultdict
-from functools import wraps
+from functools import wraps, cmp_to_key
 
 try:
     from StringIO import StringIO
@@ -68,9 +68,22 @@ def unordered_compare(result, expected):
     Deep compare rule reducer results when testing.  Developed to find
     arbitrarily nested lists and remove differences based on ordering.
     """
-    def sort_key(d):
-        """ To support there are dictionary elements when comparing two lists."""
-        return sorted(d.items()) if isinstance(d, dict) else d
+    def _sort_key(d):
+        """
+        Deep sort the elements which is in different types when comparing two
+        lists.
+
+        """
+        dt = []
+        if isinstance(d, dict):
+            dt = list(d.items())
+        elif isinstance(d, (set, tuple, range)):
+            dt = sorted(d)
+        elif isinstance(d, list):
+            dt = sorted(d, key=_sort_key)
+        if dt:
+            return '{}'.format(dt[0])
+        return '{}'.format(d)
 
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
@@ -83,8 +96,8 @@ def unordered_compare(result, expected):
 
     if isinstance(result, list):
         assert len(result) == len(expected)
-        result = sorted(result, key=sort_key)
-        expected = sorted(expected, key=sort_key)
+        result = sorted(result, key=_sort_key)
+        expected = sorted(expected, key=_sort_key)
         for left_item, right_item in six.moves.zip(result, expected):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):

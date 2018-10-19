@@ -102,6 +102,44 @@ def test_dict():
         unordered_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
+def test_nest_list_dict():
+    unordered_compare([{2: 22}, {3: 33}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
+    with pytest.raises(AssertionError):
+        unordered_compare([{2: 22}, {3: 30}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
+
+
+def test_nest_list_list():
+    unordered_compare([[2, 22, 3], [33, 4, 44]], [[33, 4, 44], [2, 22, 3]])
+    with pytest.raises(AssertionError):
+        unordered_compare([[2, 22], [33, 44, 4]], [[2, 22, 3], [33, 4, 44]])
+        unordered_compare([[2, 22, [3]], [33, 44, 4]], [[2, 22, 3], [33, 4, 44]])
+    unordered_compare([[2, [22, 3]], [33, 4, 44]], [[33, 4, 44], [2, [22, 3]]])
+    unordered_compare([[2, 22, 3], [], [33, 4, 44], []], [[], [], [33, 4, 44], [2, 22, 3]])
+    unordered_compare([[2, [22], [3, 33]], [], [33, 4, 44], []], [[], [], [33, 4, 44], [[22], 2, [3, 33]]])
+
+
+def test_nest_list_list_str():
+    unordered_compare([[2, 22, 3], 33, 4, 44], [33, 4, 44, [2, 22, 3]])
+    with pytest.raises(AssertionError):
+        unordered_compare([[2, 22], 33, 44, 4], [[2, 22, 3], 33, 4, 44])
+
+
+def test_nest_list_dict_str():
+    unordered_compare([{2: 22}, {3: 33}, 4, 44], [4, 44, {3: 33}, {2: 22}])
+    with pytest.raises(AssertionError):
+        unordered_compare([{2: 20}, {3: 33}, 4, 44], [4, 44, {3: 33}, {2: 22}])
+
+
+def test_nest_dict_list():
+    unordered_compare({2: [22, 222], 3: [33, 333]}, {2: [222, 22], 3: [33, 333]})
+    with pytest.raises(AssertionError):
+        unordered_compare({2: [22, 22], 3: [33, 333]}, {2: [22, 222], 3: [33, 333]})
+    unordered_compare({2: (22, 222), 3: [33, 333]}, {2: (22, 222), 3: [333, 33]})
+    unordered_compare({3: [33, 333], 2: (22, 222)}, {2: (22, 222), 3: [333, 33]})
+    unordered_compare({3: [33, [3, '33', 333]], 2: (22, 222)}, {2: (22, 222), 3: [[3, '33', 333], 33]})
+    unordered_compare({3: [33, [set([4, 3]), '33', 333]], 2: (22, 222)}, {2: (22, 222), 3: [['33', 333, set([3, 4])], 33]})
+
+
 def test_deep_nest():
     a = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
     b = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
