@@ -1632,7 +1632,7 @@ class CachedRemoteResource(RemoteResource):
 
     expire_after = 180
     old_data_on_error = True
-    backend = "sqlite"
+    __backend = "memory"
 
     def set_cache(self):
         """
@@ -1649,7 +1649,7 @@ class CachedRemoteResource(RemoteResource):
 
         try:
             requests_cache.install_cache('core', old_data_on_error=self.old_data_on_error,
-                                         backend=self.backend, expire_after=self.expire_after)
+                                         backend=self.__backend, expire_after=self.expire_after)
         except Exception as ex:
             raise Exception("Error initializing requests_cache", ex)
 
