@@ -68,6 +68,9 @@ def unordered_compare(result, expected):
     Deep compare rule reducer results when testing.  Developed to find
     arbitrarily nested lists and remove differences based on ordering.
     """
+    def sort_key(d):
+        return sorted(d.items()) if isinstance(d, dict) else d
+
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
     if isinstance(result, dict) and expected is None:
@@ -80,9 +83,8 @@ def unordered_compare(result, expected):
     if isinstance(result, list):
         assert len(result) == len(expected)
         # To support there are elements in type of dictionary
-        sorted_key = lambda d: sorted(d.items()) if isinstance(d, dict) else d
-        result = sorted(result, key=sorted_key)
-        expected = sorted(expected,  key=sorted_key)
+        result = sorted(result, key=sort_key)
+        expected = sorted(expected, key=sort_key)
         for left_item, right_item in six.moves.zip(result, expected):
             unordered_compare(left_item, right_item)
     elif isinstance(result, dict):
