@@ -70,16 +70,16 @@ def unordered_compare(result, expected):
     """
     def _sort_key(d):
         """
-        Deep sort the elements which is in different types when comparing two
+        Deep sort the elements which are in different types when comparing two
         lists.
 
         """
         dt = []
         if isinstance(d, dict):
             dt = list(d.items())
-        elif isinstance(d, (set, tuple)):
+        elif isinstance(d, set):
             dt = sorted(d)
-        elif isinstance(d, list):
+        elif isinstance(d, (list, tuple)):
             dt = sorted(d, key=_sort_key)
         if dt:
             return '{}'.format(dt[0])
