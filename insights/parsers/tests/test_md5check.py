@@ -33,8 +33,7 @@ def test_normal_md5():
     assert "/etc/localtime" in md5info.files
     assert "/usr/share/zoneinfo/America/Sao_Paulo" in md5info.files
     assert md5info['/etc/localtime'] == "7d4855248419b8a3ce6616bbc0e58301"
-    assert "ddc716ed2eac2ebfab07db289dd4270d" in md5info.checksums
-    assert md5info['/etc/hostname'] is None
+    assert md5info.get('/etc/hostname') is None
     assert "/etc/hostname" not in md5info.files
 
 
@@ -49,14 +48,12 @@ def test_normal_md5_bad_input():
     md5info = md5check.NormalMD5(context_wrap(BAD_INPUT_SAMPLE))
     assert md5info.data == {}
     assert md5info.files == []
-    assert md5info.checksums == []
 
 
 def test_normal_md5_only_null():
     md5info = md5check.NormalMD5(context_wrap(ONLY_NULL_SAMPLE))
     assert md5info.data == {}
     assert md5info.files == []
-    assert md5info.checksums == []
 
 
 def test_prelink_md5():
