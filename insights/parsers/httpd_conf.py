@@ -80,6 +80,7 @@ import re
 from copy import deepcopy
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
+from insights.util import deprecated
 
 ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
 """namedtuple: Type for storing the parsed httpd configuration's directive information."""
@@ -109,6 +110,7 @@ class HttpdConf(LegacyItemAccess, Parser):
     """
 
     def __init__(self, *args, **kwargs):
+        deprecated(HttpdConf, "Import HttpdConfTree from insights.combiner.httpd_conf instead.")
         self.data = {}
         self.first_half = {}
         self.second_half = {}
