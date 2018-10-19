@@ -83,6 +83,11 @@ class metadata(parser):
 
 
 class combiner(dr.ComponentType):
+    """ ComponentType for a component for remote web resources. """
+    pass
+
+
+class remoteresource(dr.ComponentType):
     """ ComponentType for a component that composes other components. """
     pass
 
