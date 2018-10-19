@@ -69,7 +69,7 @@ def unordered_compare(result, expected):
     arbitrarily nested lists and remove differences based on ordering.
     """
     def sort_key(d):
-        """ To support there are elements in type of dictionary."""
+        """ To support there are dictionary elements when comparing two lists."""
         return sorted(d.items()) if isinstance(d, dict) else d
 
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
