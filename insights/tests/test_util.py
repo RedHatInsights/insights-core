@@ -115,6 +115,7 @@ def test_nest_list_dict():
     with pytest.raises(AssertionError):
         unordered_compare([{2: 22}, {3: 30}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
     unordered_compare([{2: 22}, {3: [33, 333]}, {4: 44}], [{4: 44}, {3: [333, 33]}, {2: 22}])
+    unordered_compare([{2: 22, 6: 66}, {3: [33, 333]}, {4: 44}], [{4: 44}, {3: [333, 33]}, {6: 66, 2: 22}])
 
 
 def test_nest_list_list():

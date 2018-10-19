@@ -76,7 +76,7 @@ def unordered_compare(result, expected):
         """
         dt = []
         if isinstance(d, dict):
-            dt = list(d.items())
+            dt = sorted(d.items())
         elif isinstance(d, set):
             dt = sorted(d)
         elif isinstance(d, (list, tuple)):
