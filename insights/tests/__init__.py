@@ -7,7 +7,7 @@ import logging
 import six
 import six.moves
 from collections import defaultdict
-from functools import wraps, cmp_to_key
+from functools import wraps
 
 try:
     from StringIO import StringIO
@@ -77,7 +77,7 @@ def unordered_compare(result, expected):
         dt = []
         if isinstance(d, dict):
             dt = list(d.items())
-        elif isinstance(d, (set, tuple, range)):
+        elif isinstance(d, (set, tuple)):
             dt = sorted(d)
         elif isinstance(d, list):
             dt = sorted(d, key=_sort_key)
