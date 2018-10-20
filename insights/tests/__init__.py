@@ -82,7 +82,7 @@ def unordered_compare(result, expected):
         elif isinstance(d, (list, tuple)):
             dt = sorted(d, key=_sort_key)
         if dt:
-            return '{0}'.format(dt[0])
+            return '{0}'.format(dt)
         return '{0}'.format(d)
 
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)

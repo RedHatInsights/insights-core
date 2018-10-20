@@ -116,6 +116,20 @@ def test_nest_list_dict():
         unordered_compare([{2: 22}, {3: 30}, {4: 44}], [{4: 44}, {3: 33}, {2: 22}])
     unordered_compare([{2: 22}, {3: [33, 333]}, {4: 44}], [{4: 44}, {3: [333, 33]}, {2: 22}])
     unordered_compare([{2: 22, 6: 66}, {3: [33, 333]}, {4: 44}], [{4: 44}, {3: [333, 33]}, {6: 66, 2: 22}])
+    unordered_compare(
+            [
+                {'ip_addr': '0.0.0.0', 'process_name': 'qpidd', 'port': '5672'},
+                {'ip_addr': '127.0.0.1', 'process_name': 'mongod', 'port': '27017'},
+                {'ip_addr': '127.0.0.1', 'process_name': 'Passenger Rac', 'port': '53644'},
+                {'ip_addr': '0.0.0.0', 'process_name': 'qdrouterd', 'port': '5646'}
+            ],
+            [
+                {'ip_addr': '0.0.0.0', 'port': '5646', 'process_name': 'qdrouterd'},
+                {'ip_addr': '0.0.0.0', 'port': '5672', 'process_name': 'qpidd'},
+                {'ip_addr': '127.0.0.1', 'port': '53644', 'process_name': 'Passenger Rac'},
+                {'ip_addr': '127.0.0.1', 'port': '27017', 'process_name': 'mongod'}
+            ]
+    )
 
 
 def test_nest_list_list():
