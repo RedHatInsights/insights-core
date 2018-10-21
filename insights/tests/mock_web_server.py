@@ -48,7 +48,6 @@ class RequestHandler(BaseHTTPRequestHandler):
             output = ""
             output += '{"data":{"id": "001", "name": "Successful return from Mock Service"}}'
             self.wfile.write(output.encode('utf_8'))
-            self.wfile.write(output)
             print(output)
             return output
         else:
