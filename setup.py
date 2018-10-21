@@ -23,6 +23,7 @@ entry_points = {
 runtime = set([
     'pyyaml>=3.10,<=3.13',
     'six',
+    'requests_cache',
 ])
 
 
