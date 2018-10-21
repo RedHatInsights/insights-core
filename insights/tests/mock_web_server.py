@@ -47,16 +47,17 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             output = ""
             output += '{"data":{"id": "001", "name": "Successful return from Mock Service"}}'
-            self.wfile.write(output.encode(encoding='utf_8'))
+            self.wfile.write(output.encode('utf_8'))
+            self.wfile.write(output)
             print(output)
-            return
+            return output
         else:
             self.send_response(404)
             self.send_header('Content-type', value)
             self.end_headers()
             output = ""
             output += '{"error":{"code": "404", "message": "Not Found"}}'
-            self.wfile.write(output.encode(encoding='utf_8'))
+            self.wfile.write(output.encode('utf_8'))
             print(output)
             return
         return
