@@ -1,4 +1,4 @@
-from insights.core import RemoteResource, CachedRemoteResource
+from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer
 
 GOOD_PAYLOAD = b'{"data":{"id": "001", "name": "Successful return from Mock Service"}}'
