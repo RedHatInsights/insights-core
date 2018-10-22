@@ -265,7 +265,7 @@ def test_complicated_directory():
 
 
 def test_selinux_directory():
-    dirs = FileListing(context_wrap(SELINUX_DIRECTORY), selinux=True)
+    dirs = FileListing(context_wrap(SELINUX_DIRECTORY))
 
     # Test that one entry is exactly what we expect it to be.
     expected = {
