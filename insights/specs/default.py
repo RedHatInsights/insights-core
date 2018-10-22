@@ -29,20 +29,23 @@ from insights.specs import Specs
 def _make_rpm_formatter(fmt=None):
     if fmt is None:
         fmt = [
-            "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
-            "%{INSTALLTIME:date}",
-            "%{BUILDTIME}",
-            "%{VENDOR}",
-            "%{BUILDHOST}",
-            "DUMMY",
-            "%{SIGPGP:pgpsig}"
+            '"name":"%{NAME}"',
+            '"epoch":"%{EPOCH}"',
+            '"version":"%{VERSION}"',
+            '"release":"%{RELEASE}"',
+            '"arch":"%{ARCH}"',
+            '"installtime":"%{INSTALLTIME:date}"',
+            '"buildtime":"%{BUILDTIME}"',
+            '"vendor":"%{VENDOR}"',
+            '"buildhost":"%{BUILDHOST}"',
+            '"sigpgp":"%{SIGPGP:pgpsig}"'
         ]
 
     def inner(idx=None):
         if idx:
-            return "\t".join(fmt[:idx]) + "\n"
+            return "\{" + ",".join(fmt[:idx]) + "\}\n"
         else:
-            return "\t".join(fmt) + "\n"
+            return "\{" + ",".join(fmt) + "\}\n"
     return inner
 
 
@@ -401,6 +404,7 @@ class DefaultSpecs(Specs):
     netstat_s = simple_command("/bin/netstat -s")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
+    neutron_l3_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/l3_agent.ini", "/etc/neutron/l3_agent.ini"])
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
@@ -488,6 +492,7 @@ class DefaultSpecs(Specs):
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
     password_auth = simple_file("/etc/pam.d/password-auth")
+    pcs_config = simple_command("/usr/sbin/pcs config")
     pcs_status = simple_command("/usr/sbin/pcs status")
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     postgresql_conf = first_file([
@@ -577,6 +582,8 @@ class DefaultSpecs(Specs):
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
+    scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
+    scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
@@ -630,6 +637,7 @@ class DefaultSpecs(Specs):
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_file("/usr/lib/systemd/system/docker.service")
+    systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
     systemid = first_of([

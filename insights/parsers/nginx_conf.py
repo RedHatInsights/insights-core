@@ -112,6 +112,7 @@ Examples:
 from .. import parser, LegacyItemAccess, Parser, get_active_lines
 from ..specs import Specs
 from insights.contrib.nginxparser import create_parser, UnspacedList
+from insights.util import deprecated
 
 
 @parser(Specs.nginx_conf)
@@ -123,6 +124,9 @@ class NginxConf(Parser, LegacyItemAccess):
     http, mail, events, etc. They are unique, and subsection server and location in http section could
     be duplicate, so the value of these subsections may be list.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(NginxConf, "Import NginxConfTree from insights.combiners.nginx_conf instead")
+        super(NginxConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         list_result = UnspacedList(create_parser().parseString("\n".join(get_active_lines(content))).asList())

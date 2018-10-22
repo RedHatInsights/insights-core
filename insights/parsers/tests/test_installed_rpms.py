@@ -131,6 +131,7 @@ def test_from_json():
     assert isinstance(rpms.get_max("log4j").source, InstalledRpm)
     assert len(rpms.packages) == len(RPMS_JSON.splitlines())
     assert rpms.get_max("log4j").source.name == "log4j"
+    assert rpms.get_max("util-linux").epoch == '0'
 
 
 def test_garbage():
