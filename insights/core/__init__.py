@@ -1390,7 +1390,7 @@ class FileListing(Parser):
         ``/etc/yum/repos/d``.  Use caution in checking the paths when
         requesting single directories.
 
-    Parses SELinux directory listings if the 'selinux' option is True.
+    Parses the SELinux information if present in the listing.
     SELinux directory listings contain:
 
     * the type of file
@@ -1410,11 +1410,13 @@ class FileListing(Parser):
         | crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
     Examples:
-        >>> '/example_dir' in shared[FileListing]
+        >>> file_listing
+        <insights.core.FileListing at 0x7f5319407450>
+        >>> '/example_dir' in file_listing
         True
-        >>> shared[FileListing].dir_contains('/example_dir', 'menu.lst')
+        >>> file_listing.dir_contains('/example_dir', 'menu.lst')
         True
-        >>> dir = shared[FileListing].listing_of('/example_dir')
+        >>> dir = file_listing.listing_of('/example_dir')
         >>> dir['.']['type']
         'd'
         >>> dir['config-3.10.0-229.14.q.el7.x86_64']['size']
@@ -1425,7 +1427,7 @@ class FileListing(Parser):
         './grub.conf'
     """
 
-    def __init__(self, context, selinux=False):
+    def __init__(self, context):
         # Try to pull out the directory path from the command line, in case
         # we're doing an ls on only one directory (which then doesn't list
         # the directory name in the output).  Obviously if we don't have the
