@@ -167,23 +167,21 @@ def post_update(client, config):
 @phase
 def collect_and_output(client, config):
     if config.payload:
-        tar_file = config.payload
+        insights_archive = config.payload
     else:
-        tar_file = client.collect()
+        insights_archive = client.collect()
         config.content_type = 'application/vnd.redhat.advisor.test+tgz'
 
-    if not tar_file:
+    if not insights_archive:
         sys.exit(constants.sig_kill_bad)
     if config['to_stdout']:
-        with open(tar_file, 'rb') as tar_content:
+        with open(insights_archive, 'rb') as tar_content:
             shutil.copyfileobj(tar_content, sys.stdout)
     else:
         resp = None
         if not config['no_upload']:
             try:
-                resp = client.upload(
-                    payload=tar_file,
-                    content_type=config.content_type)
+                resp = client.upload(payload=insights_archive, content_type=config.content_type)
             except IOError as e:
                 logger.error(str(e))
                 sys.exit(constants.sig_kill_bad)
@@ -191,7 +189,7 @@ def collect_and_output(client, config):
                 logger.error(str(e))
                 sys.exit(constants.sig_kill_bad)
         else:
-            logger.info('Archive saved at %s', tar_file)
+            logger.info('Archive saved at %s', insights_archive)
         if resp:
             if config["to_json"]:
                 print(json.dumps(resp))
@@ -199,9 +197,9 @@ def collect_and_output(client, config):
             if not config.payload:
                 # delete the archive
                 if config.keep_archive:
-                    logger.info('Insights archive retained in ' + tar_file)
+                    logger.info('Insights archive retained in ' + insights_archive)
                 else:
-                    client.delete_archive(tar_file, delete_parent_dir=True)
+                    client.delete_archive(insights_archive, delete_parent_dir=True)
 
             # if we are rotating the eggs and success on upload do rotation
             try:
