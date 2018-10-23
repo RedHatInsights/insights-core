@@ -487,6 +487,14 @@ class InstalledRpm(object):
                                      self.release)
 
     @property
+    def package_with_epoch(self):
+        """str: Package `name-epoch:version-release` string."""
+        return u'{0}-{1}:{2}-{3}'.format(self.name,
+                                         self.epoch,
+                                         self.version,
+                                         self.release)
+
+    @property
     def nvr(self):
         """str: Package `name-version-release` string."""
         return self.package
@@ -495,6 +503,11 @@ class InstalledRpm(object):
     def nvra(self):
         """str: Package `name-version-release.arch` string."""
         return ".".join([self.package, self.arch])
+
+    @property
+    def nevra(self):
+        """str: Package `name-epoch:version-release.arch` string."""
+        return ".".join([self.package_with_epoch, self.arch])
 
     @property
     def source(self):
