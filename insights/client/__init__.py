@@ -27,7 +27,8 @@ class InsightsClient(object):
             # initialize with default config if not specified with one
             self.config = InsightsConfig()
         else:
-            #  small hack to maintain compatability with RPM wrapper
+            # BEGIN small hack to maintain compatibility with RPM wrapper:
+            #   wrapper calls with bool second arg so be smart about it
             if isinstance(config, InsightsConfig):
                 self.config = config
             else:
@@ -36,7 +37,7 @@ class InsightsClient(object):
                 except ValueError as e:
                     sys.stderr.write('ERROR: ' + str(e) + '\n')
                     sys.exit(constants.sig_kill_bad)
-            # end hack. in the future, just set self.config=config
+            # END hack. in the future, just set self.config=config
 
         # setup_logging is True when called from phase, but not from wrapper.
         #  use this to do any common init (like auto_config)

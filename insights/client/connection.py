@@ -11,7 +11,6 @@ import logging
 import xml.etree.ElementTree as ET
 import warnings
 import socket
-import io
 try:
     # python 2
     from urlparse import urlparse
@@ -21,7 +20,6 @@ except ImportError:
     from urllib.parse import urlparse
     from urllib.parse import quote
 from OpenSSL import SSL, crypto
-from datetime import datetime, timedelta
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file)
@@ -471,46 +469,23 @@ class InsightsConnection(object):
         """
         Retrieve branch_info from Satellite Server
         """
-        branch_info = None
-        if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 30 days old
-            logger.debug(u'Reading branch info from cached file.')
-            ctime = datetime.utcfromtimestamp(
-                os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(days=30)):
-                with io.open(constants.cached_branch_info,
-                             encoding='utf8',
-                             mode='r') as f:
-                    branch_info = json.load(f)
-                return branch_info
-            else:
-                logger.debug(u'Cached branch info is older than 30 days.')
-
-        logger.debug(u'Obtaining branch information from %s',
+        logger.debug("Obtaining branch information from %s",
                      self.branch_info_url)
-        net_logger.info(u'GET %s', self.branch_info_url)
-        response = self.session.get(self.branch_info_url,
-                                    timeout=self.config.http_timeout)
-        logger.debug(u'GET branch_info status: %s', response.status_code)
+        net_logger.info("GET %s", self.branch_info_url)
+        response = self.session.get(self.branch_info_url, timeout=self.config.http_timeout)
+        logger.debug("GET branch_info status: %s", response.status_code)
         if response.status_code != 200:
-            logger.error(u'Bad status from server: %s', response.status_code)
+            logger.error("Bad status from server: %s", response.status_code)
             return False
 
         branch_info = response.json()
-        logger.debug(u'Branch information: %s', json.dumps(branch_info))
+        logger.debug("Branch information: %s", json.dumps(branch_info))
 
         # Determine if we are connected to Satellite 5
-        if ((branch_info[u'remote_branch'] is not -1 and
-             branch_info[u'remote_leaf'] is -1)):
+        if ((branch_info['remote_branch'] is not -1 and
+             branch_info['remote_leaf'] is -1)):
             self.get_satellite5_info(branch_info)
 
-        logger.debug(u'Saving branch info to file.')
-        with io.open(constants.cached_branch_info,
-                     encoding='utf8',
-                     mode='w') as f:
-            # json.dump is broke in py2 so use dumps
-            bi_str = json.dumps(branch_info, ensure_ascii=False)
-            f.write(bi_str)
         return branch_info
 
     def create_system(self, new_machine_id=False):

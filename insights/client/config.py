@@ -481,8 +481,6 @@ class InsightsConfig(object):
                 g = platf_grp
             else:
                 g = parser
-            # g = debug_grp if o.pop("group", None) == "debug" else parser
-            # g = platf_grp if o.pop("group", None) == "platform" else parser
             optnames = o.pop('opt')
             g.add_option(*optnames, **o)
 

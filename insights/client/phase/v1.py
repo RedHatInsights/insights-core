@@ -181,9 +181,7 @@ def collect_and_output(client, config):
         resp = None
         if not config['no_upload']:
             try:
-                resp = client.upload(
-                    payload=tar_file,
-                    content_type=config.content_type)
+                resp = client.upload(payload=tar_file, content_type=config.content_type)
             except IOError as e:
                 logger.error(str(e))
                 sys.exit(constants.sig_kill_bad)
