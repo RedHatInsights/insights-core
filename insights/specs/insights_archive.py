@@ -119,7 +119,7 @@ class InsightsArchiveSpecs(Specs):
     lvdisplay = simple_file("insights_commands/lvdisplay")
     lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0")
     lvs_noheadings_all = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0_devices_filter_a")
-    md5chk_files = simple_file("insights_commands/ls_-H_.usr.lib_._libfreeblpriv3.so_libsoftokn3.so_.etc.pki.product_.69.pem_.etc.fonts.fonts.conf_.dev.null_2_.dev.null")
+    md5chk_files = simple_file("insights_commands/md5sum_.dev.null_.etc.localtime_.usr.share.zoneinfo.America._Sao_Paulo_Campo_Grande_Cuiaba_.etc.pki._product_product-default_.69.pem_2_.dev.null")
     mlx4_port = simple_file("insights_commands/find_.sys.bus.pci.devices._.mlx4_port_0-9_-print_-exec_cat")
     mount = simple_file("insights_commands/mount")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
