@@ -61,16 +61,16 @@ class HumanReadableFormat(Formatter):
 
     def preprocess(self):
         self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'exception': 0}
-        response = namedtuple('response', 'color intl title')
-        self.responses = {'skip': response(color=Fore.BLUE, intl='S', title="Total Skipped Due To Rule Dependencies "
+        response = namedtuple('response', 'color label intl title')
+        self.responses = {'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Total Skipped Due To Rule Dependencies "
                                                                             "Not Met - "),
-                          'pass': response(color=Fore.GREEN, intl='P', title="Total Return Type 'make_pass' - "),
-                          'rule': response(color=Fore.RED, intl='R', title="Total Return Type "
+                          'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Total Return Type 'make_pass' - "),
+                          'rule': response(color=Fore.RED, label="FAIL", intl='R', title="Total Return Type "
                                                                            "'make_fail/make_response' - "),
-                          'metadata': response(color=Fore.YELLOW, intl='M', title="Total Return Type 'make_metadata' - "),
-                          'metadata_key': response(color=Fore.MAGENTA, intl='K', title="Total Return Type "
+                          'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Total Return Type 'make_metadata' - "),
+                          'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Total Return Type "
                                                                                        "'make_metadata_key' - "),
-                          'exception': response(color=Fore.RED, intl='E', title="Total Exceptions Reported to Broker - ")
+                          'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Total Exceptions Reported to Broker - ")
                           }
 
         print(Fore.CYAN + '-' * 9, file=self.stream)
@@ -134,7 +134,7 @@ class HumanReadableFormat(Formatter):
 
             if v["type"] in self.responses:
                 self.counts[v["type"]] += 1
-                name = self.responses[v["type"]].color + dr.get_name(c) + Style.RESET_ALL
+                name = self.responses[v["type"]].color + dr.get_name(c) + " - [" + self.responses[v["type"]].label + "]" + Style.RESET_ALL
             if name:
                 print(name, file=self.stream)
                 print('-' * len(name), file=self.stream)
@@ -163,9 +163,9 @@ class HumanReadableFormat(Formatter):
 
         print(file=self.stream)
         print(file=self.stream)
-        print(Fore.CYAN + "-" * 13, file=self.stream)
-        print("Rules Tested:", file=self.stream)
-        print('-' * 13 + Style.RESET_ALL, file=self.stream)
+        print(Fore.CYAN + "-" * 15, file=self.stream)
+        print("Rules Executed", file=self.stream)
+        print('-' * 15 + Style.RESET_ALL, file=self.stream)
 
         self.show_description()
 
