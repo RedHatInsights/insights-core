@@ -221,6 +221,7 @@ class Specs(SpecSet):
     ls_lib_firmware = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     ls_var_lib_mongodb = RegistryPoint()
+    ls_var_lib_nova_instances = RegistryPoint()
     ls_usr_sbin = RegistryPoint(filterable=True)
     ls_var_log = RegistryPoint()
     ls_var_www = RegistryPoint()
