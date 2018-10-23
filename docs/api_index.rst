@@ -57,6 +57,14 @@ insights.core.plugins
     :show-inheritance:
     :undoc-members:
 
+insights.core.remote_resource
+-----------------------------
+
+.. automodule:: insights.core.remote_resource
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.core.spec_factory
 --------------------------
 
