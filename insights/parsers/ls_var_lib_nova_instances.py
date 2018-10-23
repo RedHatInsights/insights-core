@@ -46,6 +46,9 @@ Examples:
     False
     >>> len(ls_var_lib_nova_instances.listings['/var/lib/nova/instances/locks'])
     6
+    >>> ls_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/locks', 'nova-storage-registry-lock')['raw_entry']
+    '-rw-r--r--. nova nova system_u:object_r:nova_var_lib_t:s0 nova-storage-registry-lock'
+
 '''
 
 
@@ -59,9 +62,6 @@ class LsVarLibNovaInstances(CommandParser, FileListing):
     '''
        Parses the output of ``ls -laRZ /var/lib/nova/instances``
        command which provides the SELinux directory listings of
-       the '/var/lib/nova/instances' directory by enabling the
-       ``selinux`` option.
+       the '/var/lib/nova/instances' directory.
     '''
-
-    def __init__(self, context):
-        FileListing.__init__(self, context, selinux=True)
+    pass

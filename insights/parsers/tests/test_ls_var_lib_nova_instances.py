@@ -37,6 +37,8 @@ def test_ls_var_lib_nova_instances():
     ls_var_lib_nova_instances = LsVarLibNovaInstances(context_wrap(LS_VAR_LIB_NOVA_INSTANCES))
     assert ls_var_lib_nova_instances.dirs_of('/var/lib/nova/instances/') == ['.', '..', '11415c6c-a2a5-45f0-a198-724246b96631', '_base', 'locks']
     assert ls_var_lib_nova_instances.listings['/var/lib/nova/instances/11415c6c-a2a5-45f0-a198-724246b96631']['entries']['console.log']['se_type'] == 'nova_var_lib_t'
+    assert ls_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/locks', 'nova-storage-registry-lock') == {'se_type': 'nova_var_lib_t', 'name': 'nova-storage-registry-lock', 'perms': 'rw-r--r--.', 'se_user': 'system_u', 'raw_entry': '-rw-r--r--. nova nova system_u:object_r:nova_var_lib_t:s0 nova-storage-registry-lock', 'se_mls': 's0', 'se_role': 'object_r', 'owner': 'nova', 'group': 'nova', 'type': '-', 'dir': '/var/lib/nova/instances/locks'}
+    assert ls_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/11415c6c-a2a5-45f0-a198-724246b96631', 'console.log')['owner'] == 'root'
 
 
 def test_ls_var_lib_nova_instances_doc_examples():
