@@ -677,15 +677,8 @@ class InsightsConnection(object):
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
 
-        # platform upload
-        if not self.config.legacy_upload:
-            files = {
-                'upload': (file_name, open(data_collected, 'rb'),
-                           content_type)}
-            headers = {}
-
         # legacy upload
-        else:
+        if self.config.legacy_upload:
             try:
                 from insights.contrib import magic
                 m = magic.open(magic.MAGIC_MIME)
@@ -708,6 +701,13 @@ class InsightsConnection(object):
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
             headers = {'x-rh-collection-time': str(duration)}
+
+        # platform upload
+        else:
+            files = {
+                'upload': (file_name, open(data_collected, 'rb'),
+                           content_type)}
+            headers = {}
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
