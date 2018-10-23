@@ -63,28 +63,10 @@ DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
 DEFAULT_HOSTNAME = "hostname.example.com"
 
 
-def unordered_compare(result, expected):
+def deep_compare(result, expected):
     """
-    Deep compare rule reducer results when testing.  Developed to find
-    arbitrarily nested lists and remove differences based on ordering.
+    Deep compare rule reducer results when testing.
     """
-    def _sort_key(d):
-        """
-        Deep sort the elements which are in different types when comparing two
-        lists.
-
-        """
-        dt = []
-        if isinstance(d, dict):
-            dt = sorted(d.items())
-        elif isinstance(d, set):
-            dt = sorted(d)
-        elif isinstance(d, (list, tuple)):
-            dt = sorted(d, key=_sort_key)
-        if dt:
-            return '{0}'.format(dt)
-        return '{0}'.format(d)
-
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
     if isinstance(result, dict) and expected is None:
@@ -96,14 +78,13 @@ def unordered_compare(result, expected):
 
     if isinstance(result, (list, tuple)):
         assert len(result) == len(expected)
-        result = sorted(result, key=_sort_key)
-        expected = sorted(expected, key=_sort_key)
         for left_item, right_item in six.moves.zip(result, expected):
-            unordered_compare(left_item, right_item)
+            deep_compare(left_item, right_item)
     elif isinstance(result, dict):
         assert len(result) == len(expected)
         for item_key in result:
-            unordered_compare(result[item_key], expected[item_key])
+            assert item_key in expected
+            deep_compare(result[item_key], expected[item_key])
     else:
         assert result == expected
 
@@ -134,7 +115,7 @@ def run_test(component, input_data, expected=None):
 
     broker = run_input_data(component, input_data)
     if expected:
-        unordered_compare(broker.get(component), expected)
+        deep_compare(broker.get(component), expected)
     return broker.get(component)
 
 
@@ -326,7 +307,7 @@ def redhat_release(major, minor=""):
         raise Exception("invalid major version: %s" % major)
 
 
-def archive_provider(component, test_func=unordered_compare, stride=1):
+def archive_provider(component, test_func=deep_compare, stride=1):
     """
     Decorator used to register generator functions that yield InputData and
     expected response tuples.  These generators will be consumed by py.test
@@ -347,7 +328,7 @@ def archive_provider(component, test_func=unordered_compare, stride=1):
         yield every `stride` InputData object rather than the full set. This
         is used to provide a faster execution path in some test setups.
 
-    [1] insights.tests.unordered_compare()
+    [1] insights.tests.deep_compare()
     """
     def _wrap(func):
         @six.wraps(func)
