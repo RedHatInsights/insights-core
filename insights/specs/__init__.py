@@ -325,6 +325,7 @@ class Specs(SpecSet):
     package_provides_java = RegistryPoint(multi_output=True)
     pam_conf = RegistryPoint()
     parted__l = RegistryPoint()
+    passenger_status = RegistryPoint()
     password_auth = RegistryPoint()
     pcs_config = RegistryPoint()
     pcs_status = RegistryPoint()

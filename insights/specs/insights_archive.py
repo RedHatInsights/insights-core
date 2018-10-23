@@ -157,6 +157,7 @@ class InsightsArchiveSpecs(Specs):
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_vsctl_show = simple_file("insights_commands/ovs-vsctl_show")
     parted__l = simple_file("insights_commands/parted_-l_-s")
+    passenger_status = simple_file("insights_commands/passenger_status")
     pcs_config = simple_file("insights_commands/pcs_config")
     pcs_status = simple_file("insights_commands/pcs_status")
     ps_aux = simple_file("insights_commands/ps_aux")
