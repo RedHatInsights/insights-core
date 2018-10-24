@@ -233,6 +233,9 @@ def test_class_RHEL6():
         assert item == mp.devices[i]
         assert item == mp[i]
 
+    assert len(mp.raw_info_lines) == 11
+    assert "===== paths list =====" in mp.raw_info_lines
+
 
 def test_get_multipath_v4_ll():
     multipath_v4_ll_list = multipath_v4_ll.get_multipath_v4_ll(context_wrap(MULTIPATH_V4_LL_INFO))
