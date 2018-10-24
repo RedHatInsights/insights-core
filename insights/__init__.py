@@ -1,4 +1,5 @@
 from __future__ import print_function
+import logging
 import pkgutil
 import os
 import yaml
@@ -20,6 +21,8 @@ from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
+
+log = logging.getLogger(__name__)
 
 
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
@@ -54,6 +57,7 @@ def add_status(name, nvr, commit):
 
 def process_dir(broker, root, graph, context, use_pandas=False):
     ctx = create_context(root, context)
+    log.debug("Processing %s with %s" % (root, ctx))
 
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
