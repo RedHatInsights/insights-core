@@ -120,7 +120,7 @@ class PassengerStatus(Statuslist):
         3
 
     Raises:
-        ParseException: When there is no usefull data or the input content is
+        ParseException: When there is no useful data or the input content is
         empty,  or does contain the header line.
     """
 
