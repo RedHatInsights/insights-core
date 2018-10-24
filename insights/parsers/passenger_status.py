@@ -76,10 +76,10 @@ class PassengerStatus(Statuslist):
             'Max pool size': '12',
             'Processes': '2',
             'Requests in top-level queue': '0',
-            'foreman-default': {
+            'foreman_default': {
                 'App root': '/usr/share/foreman',
                 'Requests in queue': '192',
-                'p-list': [
+                'p_list': [
                     {
                         'Uptime': '2h 9m 8s', 'Processed': '991', 'Sessions': '1', 'Memory': '562M',
                         'PID': '30131', 'CPU': '3%', 'Last used': '1h 53m 51s'
@@ -92,10 +92,10 @@ class PassengerStatus(Statuslist):
                     }
                 ]
             },
-            'rack-default': {
+            'rack_default': {
                 'App root': '/etc/puppet/rack',
                 'Requests in queue': '0',
-                'p-list': [
+                'p_list': [
                     {
                         'Uptime': '1h 33m 34s', 'Processed': '380', 'Sessions': '1', 'Memory': '528M',
                         'PID': '21934', 'CPU': '1%', 'Last used': '1h 29m 4'
@@ -114,9 +114,9 @@ class PassengerStatus(Statuslist):
     Examples:
         >>> passenger_status.data["Version"]
         '4.0.18'
-        >>> 'rack-default' in passenger_status.data
+        >>> 'rack_default' in passenger_status.data
         True
-        >>> len(passenger_status.data['foreman-default']['p-list'])
+        >>> len(passenger_status.data['foreman_default']['p_list'])
         3
 
     Raises:
@@ -126,50 +126,36 @@ class PassengerStatus(Statuslist):
 
     def parse_content(self, content):
         content = super(PassengerStatus, self).parse_content(content)
-        if not content[0].startswith('Version'):
+        if not content or not content[0].startswith('Version'):
             raise ParseException("Cannot find the header line.")
         returndic = {}
-        normal_line_l = ['Version', 'Date', 'Instance', 'Max pool size', 'Processes', 'Requests in top-level queue']
-        group_bit = ''
+        group_bit = None
         for line in content:
-            for i in normal_line_l:
-                if line.startswith(i):
-                    returndic[line.split(":")[0].strip()] = line.split(":")[1].strip()
-                    break
+            if not group_bit and ":" in line and not line.endswith(':'):
+                returndic[line.split(":")[0].strip()] = line.split(":")[1].strip()
+                continue
 
-            if line.startswith("/usr/share/foreman#default"):
+            if line.startswith(("/usr/share/foreman#default", "/etc/puppet/rack#default")):
                 # set the group which the following pid will belong to
-                group_bit = "foreman-default"
-                returndic["foreman-default"] = {}
+                group_bit = line.strip(':').split('/')[-1].replace('#', '_')
+                returndic[group_bit] = {}
+                continue
 
-            elif line.startswith("/etc/puppet/rack#default"):
-                # set the group which the following pid will belong to
-                group_bit = "rack-default"
-                returndic["rack-default"] = {}
-
-            elif line.startswith("App root") or line.startswith("Requests in queue"):
-                # set the entry to the current group
-                returndic[group_bit][line.split(":")[0].strip()] = line.split(":")[1].strip()
-
-            elif line.startswith("* PID:") or line.startswith("CPU:"):
-                p_dic = {}
-                linesplit = line.split("   ")
-                for i in linesplit:
-                    if i == '':
-                        continue
-                    elif i.split(":")[0].strip() == '* PID':
-                        p_dic['PID'] = i.split(":")[1].strip()
-                    else:
-                        p_dic[i.split(":")[0].strip()] = i.split(":")[1].strip()
-                # if this is the first process of this group the create the p-lists key
-                if 'p-list' not in returndic[group_bit]:
-                    returndic[group_bit]['p-list'] = [p_dic]
-                else:
-                    # if this is PID line, then create new one in p-lists
-                    if line.startswith("* PID:"):
-                        returndic[group_bit]['p-list'].append(p_dic)
-                    # if this is CPU line, then insert this to the last one's tail in p-list
-                    else:
-                        returndic[group_bit]['p-list'][-1].update(p_dic)
+            if group_bit:
+                if line.strip().startswith(("* PID:", "CPU")):
+                    if line.strip().startswith("* PID:"):
+                        p_dic = {}
+                        # if this is the first process of this group the create the p_lists key
+                        if 'p_list' not in returndic[group_bit]:
+                            returndic[group_bit]['p_list'] = []
+                        returndic[group_bit]['p_list'].append(p_dic)
+                    linesplit = line.split("    ")
+                    for i in linesplit:
+                        if ':' in i:
+                            si1, si2 = i.split(':', 1)
+                            p_dic[si1.strip(' \t*')] = si2.strip()
+                elif ':' in line:
+                    # set the entry to the current group
+                    returndic[group_bit][line.split(":")[0].strip()] = line.split(":")[1].strip()
 
         self.data = returndic

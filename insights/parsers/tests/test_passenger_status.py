@@ -47,8 +47,8 @@ wrong content
 def test_passenger_status():
     passenger_status = PassengerStatus(context_wrap(PASS_STATUS))
     assert passenger_status.data["Version"] == '4.0.18'
-    assert len(passenger_status.data['foreman-default']['p-list']) == 3
-    assert ('rack-default' in passenger_status.data) is True
+    assert len(passenger_status.data['foreman_default']['p_list']) == 3
+    assert ('rack_default' in passenger_status.data) is True
 
 
 def test_passenger_status_ex():
