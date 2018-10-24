@@ -33,7 +33,7 @@ def phase(func):
             logger.exception("Fatal error")
             sys.exit(1)
         else:
-            sys.exit()  # Exit gracefully
+            sys.exit(0)  # Exit gracefully
     return _f
 
 
@@ -174,12 +174,12 @@ def collect_and_output(client, config):
 
     if not insights_archive:
         sys.exit(constants.sig_kill_bad)
-    if config['to_stdout']:
+    if config.to_stdout:
         with open(insights_archive, 'rb') as tar_content:
             shutil.copyfileobj(tar_content, sys.stdout)
     else:
         resp = None
-        if not config['no_upload']:
+        if not config.no_upload:
             try:
                 resp = client.upload(payload=insights_archive, content_type=config.content_type)
             except IOError as e:
@@ -191,7 +191,7 @@ def collect_and_output(client, config):
         else:
             logger.info('Archive saved at %s', insights_archive)
         if resp:
-            if config["to_json"]:
+            if config.to_json:
                 print(json.dumps(resp))
 
             if not config.payload:
@@ -210,4 +210,3 @@ def collect_and_output(client, config):
                             constants.insights_core_last_stable))
                 logger.debug(message)
                 raise IOError(message)
-    sys.exit()
