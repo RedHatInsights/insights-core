@@ -131,6 +131,7 @@ def test_from_json():
     assert isinstance(rpms.get_max("log4j").source, InstalledRpm)
     assert len(rpms.packages) == len(RPMS_JSON.splitlines())
     assert rpms.get_max("log4j").source.name == "log4j"
+    assert rpms.get_max("util-linux").epoch == '0'
 
 
 def test_garbage():
@@ -332,5 +333,26 @@ def test_unicode_char_in_rpms():
 
 
 def test_pad_version_uneven_sections():
-
     assert pad_version('1.el7', '1.el7_4.ngx') == ([1, 'el', 7, 0, ''], [1, 'el', 7, 4, 'ngx'])
+
+
+def test_epoch():
+    rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
+    # no epoch
+    rpm = rpms.get_max('openldap')
+    assert rpm.package_with_epoch == 'openldap-0:2.4.23-31.el6'
+    assert rpm.nevra == 'openldap-0:2.4.23-31.el6.x86_64'
+
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
+    # epoch 0
+    rpm = rpms.get_max('log4j')
+    assert rpm.package_with_epoch == 'log4j-0:1.2.17-15.el7'
+    assert rpm.nevra == 'log4j-0:1.2.17-15.el7.noarch'
+    # epoch (none)
+    rpm = rpms.get_max('kbd-misc')
+    assert rpm.package_with_epoch == 'kbd-misc-0:1.15.5-11.el7'
+    assert rpm.nevra == 'kbd-misc-0:1.15.5-11.el7.noarch'
+    # epoch 1
+    rpm = rpms.get_max('grub2-tools')
+    assert rpm.package_with_epoch == 'grub2-tools-1:2.02-0.34.el7_2'
+    assert rpm.nevra == 'grub2-tools-1:2.02-0.34.el7_2.x86_64'

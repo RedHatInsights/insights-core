@@ -29,20 +29,23 @@ from insights.specs import Specs
 def _make_rpm_formatter(fmt=None):
     if fmt is None:
         fmt = [
-            "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}",
-            "%{INSTALLTIME:date}",
-            "%{BUILDTIME}",
-            "%{VENDOR}",
-            "%{BUILDHOST}",
-            "DUMMY",
-            "%{SIGPGP:pgpsig}"
+            '"name":"%{NAME}"',
+            '"epoch":"%{EPOCH}"',
+            '"version":"%{VERSION}"',
+            '"release":"%{RELEASE}"',
+            '"arch":"%{ARCH}"',
+            '"installtime":"%{INSTALLTIME:date}"',
+            '"buildtime":"%{BUILDTIME}"',
+            '"vendor":"%{VENDOR}"',
+            '"buildhost":"%{BUILDHOST}"',
+            '"sigpgp":"%{SIGPGP:pgpsig}"'
         ]
 
     def inner(idx=None):
         if idx:
-            return "\t".join(fmt[:idx]) + "\n"
+            return "\{" + ",".join(fmt[:idx]) + "\}\n"
         else:
-            return "\t".join(fmt) + "\n"
+            return "\{" + ",".join(fmt) + "\}\n"
     return inner
 
 
@@ -350,6 +353,7 @@ class DefaultSpecs(Specs):
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
+    ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
     ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_spool_clientmq = simple_command("/bin/ls -ln /var/spool/clientmqueue")
@@ -401,6 +405,7 @@ class DefaultSpecs(Specs):
     netstat_s = simple_command("/bin/netstat -s")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
+    neutron_l3_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/l3_agent.ini", "/etc/neutron/l3_agent.ini"])
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
     neutron_metadata_agent_log = first_file(["/var/log/containers/neutron/metadata-agent.log", "/var/log/neutron/metadata-agent.log"])
@@ -488,6 +493,7 @@ class DefaultSpecs(Specs):
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
     password_auth = simple_file("/etc/pam.d/password-auth")
+    pcs_config = simple_command("/usr/sbin/pcs config")
     pcs_status = simple_command("/usr/sbin/pcs status")
     pluginconf_d = glob_file("/etc/yum/pluginconf.d/*.conf")
     postgresql_conf = first_file([
@@ -501,7 +507,7 @@ class DefaultSpecs(Specs):
                               glob_file("/database/postgresql-*.log")
                               ])
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
-    md5chk_files = simple_command("/bin/ls -H /usr/lib*/{libfreeblpriv3.so,libsoftokn3.so} /etc/pki/product*/69.pem /etc/fonts/fonts.conf /dev/null 2>/dev/null")
+    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/localtime /usr/share/zoneinfo/America/{Sao_Paulo,Campo_Grande,Cuiaba} /etc/pki/{product,product-default}/69.pem 2>/dev/null")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
@@ -577,6 +583,8 @@ class DefaultSpecs(Specs):
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")
     scsi = simple_file("/proc/scsi/scsi")
+    scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
+    scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
@@ -630,6 +638,7 @@ class DefaultSpecs(Specs):
     systemctl_qdrouterd = simple_command("/bin/systemctl show qdrouterd")
     systemctl_smartpdc = simple_command("/bin/systemctl show smart_proxy_dynflow_core")
     systemd_docker = simple_file("/usr/lib/systemd/system/docker.service")
+    systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
     systemid = first_of([
