@@ -33,7 +33,7 @@ class PassengerStatus(Statuslist):
     Parse the passenger-status command output.
 
     Produces a simple dictionary of keys and values from the command output
-    contents , stored in the ``data`` attribute.
+    contents, stored in the ``data`` attribute.
 
     Sample command output::
 
@@ -121,7 +121,7 @@ class PassengerStatus(Statuslist):
 
     Raises:
         ParseException: When there is no useful data or the input content is
-        empty,  or does contain the header line.
+            empty, or does contain the header line.
     """
 
     def parse_content(self, content):
