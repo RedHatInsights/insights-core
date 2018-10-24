@@ -134,6 +134,16 @@ class MultipathDevices(CommandParser):
           },...
         ]
 
+        raw_info_lines = [
+            "===== paths list =====",
+            "uuid hcil    dev dev_t pri dm_st chk_st vend/prod/rev       dev_st",
+            "     0:0:0:0 sda 8:0   -1  undef ready  VMware,Virtual disk running",
+            "     3:0:0:1 sdb 8:16  -1  undef ready  IET,VIRTUAL-DISK    running",
+            "     4:0:0:1 sdc 8:32  -1  undef ready  IET,VIRTUAL-DISK    running",
+            "Oct 28 14:02:44 | *word = 0, len = 1",
+            ...
+        ]
+
     Attributes:
         devices (list): List of devices found, in order
         dms (list): Device mapper names of each device, in order found
@@ -142,10 +152,12 @@ class MultipathDevices(CommandParser):
         by_dm (dict): Access to each device by device mapper name
         by_alias (dict): Access to each device by alias
         by_wwid (dict): Access to each device by World Wide ID
+        raw_info_lines(list): List of raw info lines found, in order
     """
 
     def parse_content(self, content):
         self.devices = []
+        self.raw_info_lines = []
 
         mpath_dev_all = []
         mpath_dev = {}
@@ -223,6 +235,8 @@ class MultipathDevices(CommandParser):
                 # spaced out words to combine into the list
                 line = line.replace('[', ' ').replace(']', ' ')
                 path_info.append(line[colon_index - 2:].split())
+            else:
+                self.raw_info_lines.append(line)
 
         # final save of outstanding path and path group data:
         if path_info:
