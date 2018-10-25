@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-3.0.54-643](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.54-643) (2018-10-25)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.52-1...insights-core-3.0.54-643)
+
+**Fixed bugs:**
+
+- configtree include directives only work from top level [\#1477](https://github.com/RedHatInsights/insights-core/issues/1477)
+
+**Closed issues:**
+
+- installed\_rpms missing EPOCH [\#1431](https://github.com/RedHatInsights/insights-core/issues/1431)
+
 ## [3.0.52-1](https://github.com/RedHatInsights/insights-core/tree/3.0.52-1) (2018-10-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.51-623...3.0.52-1)
 
