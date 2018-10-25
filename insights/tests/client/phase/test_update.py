@@ -19,6 +19,7 @@ def test_update_payload_on(insights_config, insights_client):
     insights_client.return_value.update.assert_called_once()
     insights_client.return_value.update_rules.assert_not_called()
 
+
 @patch("insights.client.phase.v1.InsightsClient")
 @patch("insights.client.phase.v1.InsightsConfig")
 def test_update_payload_off(insights_config, insights_client):
@@ -32,6 +33,7 @@ def test_update_payload_off(insights_config, insights_client):
         pass
     insights_client.return_value.update.assert_called_once()
     insights_client.return_value.update_rules.assert_called_once()
+
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch("insights.client.phase.v1.InsightsConfig")

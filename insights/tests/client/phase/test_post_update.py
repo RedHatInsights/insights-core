@@ -4,6 +4,7 @@ from insights.client.phase.v1 import post_update
 from mock.mock import patch
 from pytest import raises
 
+
 def patch_insights_config(old_function):
     patcher = patch("insights.client.phase.v1.InsightsConfig",
                     **{"return_value.load_all.return_value.status": False,
@@ -30,6 +31,7 @@ def test_post_update_payload_on(insights_config, insights_client):
         pass
     insights_client.return_value.register.assert_not_called()
 
+
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
 def test_post_update_payload_off(insights_config, insights_client):
@@ -42,6 +44,7 @@ def test_post_update_payload_off(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.register.assert_called_once()
+
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config

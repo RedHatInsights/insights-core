@@ -4,6 +4,7 @@ from insights.client.phase.v1 import collect_and_output
 from mock.mock import patch
 from pytest import raises
 
+
 def patch_insights_config(old_function):
     patcher = patch("insights.client.phase.v1.InsightsConfig",
                     **{"return_value.load_all.return_value.status": False,
@@ -38,6 +39,7 @@ def test_collect_and_output_payload_on(insights_config, insights_client):
     insights_client.return_value.collect.assert_not_called()
     insights_client.return_value.upload.assert_called_with(payload='testp', content_type='testct')
 
+
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
 def test_collect_and_output_payload_off(insights_config, insights_client):
@@ -55,6 +57,7 @@ def test_collect_and_output_payload_off(insights_config, insights_client):
         payload=insights_client.return_value.collect.return_value,
         content_type='application/vnd.redhat.advisor.test+tgz')
     insights_client.return_value.delete_archive.assert_called_once()
+
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config

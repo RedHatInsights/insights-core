@@ -717,8 +717,10 @@ class InsightsConnection(object):
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
+            # 200/201 from legacy, load the response
             the_json = json.loads(upload.text)
         elif upload.status_code == 202:
+            # 202 from platform, no json response
             logger.debug(upload.text)
         else:
             logger.error(

@@ -1,7 +1,8 @@
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
-from insights.client.phase.v1 import update, post_update, collect_and_output
 from mock.mock import patch, mock_open, ANY
+from pytest import raises
+
 
 class MockSession(object):
     def __init__(self):
@@ -34,16 +35,30 @@ def mock_init_session(obj):
 def mock_get_proxies(obj):
     return
 
+
 def mock_machine_id():
     return 'XXXXXXXX'
+
 
 class MockMagic():
     def __init__(*args):
         pass
+
     def load(self):
         return None
+
     def file(self, *args):
         return 'application/gzip'
+
+
+def test_config_conflicts():
+    '''
+    Ensure --payload requires --content-type
+    '''
+    with raises(ValueError) as v:
+        conf = InsightsConfig(payload='aaa')
+    assert v.value.message == '--payload requires --content-type'
+
 
 @patch('insights.client.connection.InsightsConnection._init_session',
        mock_init_session)
@@ -80,8 +95,9 @@ def test_payload_upload(op, session):
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/platform/upload/api/v1/upload',
-        files={'upload': ('testp', ANY, 'testct')}, # ANY = return call from mocked open(), ambiguous
+        files={'upload': ('testp', ANY, 'testct')},  # ANY = return call from mocked open(), acts as filepointer here
         headers={})
+
 
 @patch('insights.contrib.magic.open', MockMagic)
 @patch('insights.client.connection.generate_machine_id', mock_machine_id)
@@ -96,5 +112,5 @@ def test_legacy_upload(op, session):
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/uploads/XXXXXXXX',
-        files={'file': ('testp', ANY, 'application/gzip')}, # ANY = return call from mocked open(), ambiguous
+        files={'file': ('testp', ANY, 'application/gzip')},  # ANY = return call from mocked open(), acts as filepointer here
         headers={'x-rh-collection-time': 'None'})
