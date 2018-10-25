@@ -57,7 +57,7 @@ def test_config_conflicts():
     '''
     with raises(ValueError) as v:
         InsightsConfig(payload='aaa')
-    assert v.value.message == '--payload requires --content-type'
+    assert str(v.value) == '--payload requires --content-type'
 
 
 @patch('insights.client.connection.InsightsConnection._init_session',
