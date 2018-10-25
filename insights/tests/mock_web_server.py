@@ -97,7 +97,6 @@ class TestMockServer(object):
         cls.mock_server_thread.setDaemon(True)
         cls.mock_server_thread.start()
 
-
     def get_server_port(self):
         """
         Helper function to get the port that was used to start the service.
