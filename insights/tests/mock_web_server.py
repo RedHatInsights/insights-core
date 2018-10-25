@@ -28,10 +28,12 @@ class RequestHandler(BaseHTTPRequestHandler):
     """
     BaseHTTPRequestHandler subclass configured to handle GET requests for the TestMockServer.
 
-    Functions:
-        do_GET(): Handles the get fall from the HTTPServer
     """
     def do_GET(self):
+        """
+        Handles the get call from the HTTPServer
+
+        """
 
         print(self.path)
         value = ''
@@ -66,10 +68,6 @@ class TestMockServer(object):
     """
     TestMockServer subclass for accessing external Web resources using caching.
 
-    Functions:
-        setup_class(): Class mathod that creates the Test Service daemon
-        get_server_port: Helper function to get the port that was used to start the service.
-
     Examples:
 
         >>> from insights.tests.mock_web_server import TestMockServer, RequestHandler
@@ -79,12 +77,16 @@ class TestMockServer(object):
         >>> sv.setup_class()
         >>> sv.get_server_port()
         35917
-        >>> curl -X GET http://localhost:40713/mock/
+        >>> curl -X GET http://localhost:35917/mock/
         {"data":{"id": "001", "name": "Successful return from Mock Service"}}
     """
 
     @classmethod
     def setup_class(cls):
+        """
+        Class mathod that creates the Test Service daemon
+
+        """
         cls.server_port = get_free_port()
         cls.mock_server_port = get_free_port()
         cls.mock_server = HTTPServer(('localhost', cls.server_port), RequestHandler)
@@ -95,6 +97,11 @@ class TestMockServer(object):
         cls.mock_server_thread.setDaemon(True)
         cls.mock_server_thread.start()
 
+
     def get_server_port(self):
+        """
+        Helper function to get the port that was used to start the service.
+
+        """
 
         return self.server_port
