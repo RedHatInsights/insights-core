@@ -6,10 +6,10 @@ class RemoteResource(object):
     """
     RemoteResource class for accessing external Web resources.
 
-    Functions:
-        get(): Calls `get()` function of the RemoteRersource superclass and returns the response payload.
-
-    Each line is parsed into a dictionary with the following keys:
+    Attributes:
+        timeout(float): Time in seconds for the requests.get api call to wait before returning a timeout exception
+        cert_path(str): Path to the cert file if supplied.
+        headers (dict): Dictionary containing HTTP headers needed.
 
     Examples:
         >>> from insights.core.remote_resource import RemoteResource
@@ -19,30 +19,37 @@ class RemoteResource(object):
     """
 
     timeout = 10
+    cert_path = None
+    headers = {}
 
     @classmethod
-    def get(cls, url, params={}, headers={}):
+    def get(cls, url, params={}):
         """
         Returns the response payload from the request to the given URL.
+
         Args:
             url (str): The URL for the WEB API that the request is being made too.
             params (dict): Dictionary containing the query string parameters
-            headers (dict): Dictionary containing anny HTTP headers needed.
+
         Returns:
-            InstalledRpm: Installed RPM with highest version
+            Response:(Response): Response object from requests.get api request
         """
 
-        return requests.get(url, params=params, headers=headers, timeout=cls.timeout, verify=False)
+        cls.cert_path if cls.cert_path else False
+
+        return requests.get(url, params=params, headers=cls.headers, timeout=cls.timeout, verify=cls.cert_path)
 
 
 class CachedRemoteResource(RemoteResource):
     """
-    RemoteResource subclass for accessing external Web resources using caching.
+    RemoteResource subclass that sets up caching for subsequent Web resource requests.
 
-    Functions:
-        get(): Calls `set_cache()` to initialize the cache then calls the `get()` function of the
-        RemoteResource superclass and returns the response payload
-        set_cache(): Called by the `get()` function to initialize the cache for the Web request
+    Attributes:
+        expire_after(float): Amount of time in seconds that the cache will expire
+        old_data_on_error(bool): If True, expired cached data will be used for unsuccessful requests
+
+    Raises:
+        Exception
 
     Examples:
         >>> from insights.core.remote_resource import CachedRemoteResource
@@ -57,11 +64,6 @@ class CachedRemoteResource(RemoteResource):
     __backend = "memory"
 
     def __init__(self):
-        """
-        Initializes the cache for the web requests and supplies a `get()` function which calls the `get()` function in
-        the RemoteResource superclass
-
-        """
 
         try:
             requests_cache.install_cache('core', old_data_on_error=self.old_data_on_error,
