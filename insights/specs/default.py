@@ -492,6 +492,7 @@ class DefaultSpecs(Specs):
     package_provides_java = foreach_execute(package_and_java, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
+    passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_config = simple_command("/usr/sbin/pcs config")
     pcs_status = simple_command("/usr/sbin/pcs status")

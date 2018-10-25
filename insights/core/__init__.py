@@ -126,13 +126,22 @@ def find_main(confs, name):
 
 
 def flatten(docs, pred):
+    seen = set()
+
     def inner(children):
         results = []
         for c in children:
             if select(pred)([c]) and c.children:
+                name = c.value
+                if name in seen:
+                    msg = "Configuration contains recursive includes: %s" % name
+                    raise Exception(msg)
+                seen.add(name)
                 results.extend(inner(c.children))
             else:
                 results.append(c)
+                if c.children:
+                    c.children = inner(c.children)
         return results
     return inner(docs)
 
