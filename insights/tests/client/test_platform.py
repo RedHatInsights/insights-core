@@ -56,7 +56,7 @@ def test_config_conflicts():
     Ensure --payload requires --content-type
     '''
     with raises(ValueError) as v:
-        conf = InsightsConfig(payload='aaa')
+        InsightsConfig(payload='aaa')
     assert v.value.message == '--payload requires --content-type'
 
 

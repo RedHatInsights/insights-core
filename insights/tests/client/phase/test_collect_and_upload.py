@@ -38,6 +38,7 @@ def test_collect_and_output_payload_on(insights_config, insights_client):
         pass
     insights_client.return_value.collect.assert_not_called()
     insights_client.return_value.upload.assert_called_with(payload='testp', content_type='testct')
+    insights_client.return_value.delete_archive.assert_not_called()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
