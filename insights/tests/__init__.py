@@ -8,6 +8,7 @@ import six
 import six.moves
 from collections import defaultdict
 from functools import wraps
+from operator import eq
 
 try:
     from StringIO import StringIO
@@ -73,20 +74,7 @@ def deep_compare(result, expected):
         assert result["type"] == "skip", result
         return
 
-    if not all(isinstance(o, six.string_types) for o in (result, expected)):
-        assert issubclass(type(result), type(expected))
-
-    if isinstance(result, (list, tuple)):
-        assert len(result) == len(expected)
-        for left_item, right_item in six.moves.zip(result, expected):
-            deep_compare(left_item, right_item)
-    elif isinstance(result, dict):
-        assert len(result) == len(expected)
-        for item_key in result:
-            assert item_key in expected
-            deep_compare(result[item_key], expected[item_key])
-    else:
-        assert result == expected
+    assert eq(result, expected)
 
 
 def run_input_data(component, input_data):
