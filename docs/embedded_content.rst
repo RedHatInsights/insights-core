@@ -25,9 +25,10 @@ approach using a simple string or dictionary has been created.
 
 To embedded content with a rule, create a ``CONTENT`` attribute.  This
 attribute can be a string or a dictionary.  When it is a string, it is
-interpreted as a jinja2 string.  The kwargs of the ``make_*`` functions
-are interpolated into the string.   This would take place for all rules
-and all their responses in the module.
+interpreted as a `jinja2 <http://jinja.pocoo.org/docs/2.10/>`_ string.
+The kwargs of the ``make_*`` functions are interpolated into the string.
+This would take place for all rules and all their responses in the
+module.
 
 When the ``CONTENT`` attribute is a dictionary, the keys are interpreted
 as "ERROR_KEYS" with strings as values.   The string values are treated
@@ -72,7 +73,7 @@ ERROR_KEY.
 
 The ``CONTENT`` string will be used for both the ``make_fail`` (line 12) and
 ``make_pass`` (line 14) functions, substituting the value of the ``bash``
-kwarg (that is, ``current_version.nvr``.  In this case the string acts as a
+kwarg (that is, ``current_version.nvr``.) In this case the string acts as a
 label and the pass or fail classification determines if it's an issue or
 not.
 
@@ -102,4 +103,11 @@ the ``CONTENT`` attribute.
 
 In this example, the specific message for each type of response is
 returned, keyed by the first argument (the ERROR_KEY) of the ``make_*``
-function.
+function.  This allows creating a specific message for the key returned
+by the rule.  For example, if the ``make_fail`` function is returned in
+the example, the message ::
+
+    Bash bug found! Version: bash-4.4.17-1.x86
+
+would be output.  In this example, it is assumed the value of the kwarg
+argument ``bash`` was ``bash-4.4.17-1.x86``.
