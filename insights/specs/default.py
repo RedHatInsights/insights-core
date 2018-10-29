@@ -507,7 +507,7 @@ class DefaultSpecs(Specs):
                               glob_file("/database/postgresql-*.log")
                               ])
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
-    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/pki/{product,product-default}/69.pem 2>/dev/null")
+    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/pki/{product,product-default}/69.pem")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
