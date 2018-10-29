@@ -15,6 +15,12 @@ BAD_INPUT_SAMPLE = """
 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  /dev/null
 """.strip()
 
+BAD_INPUT_MIX = """
+d41d8cd98f00b204e9800998ecf8427e  /dev/null
+/usr/bin/md5sum: /etc/pki/product/69.pem: No such file or directory
+/usr/bin/md5sum: /etc/pki/product-default/69.pem: No such file or directory
+""".strip()
+
 BLANK_INPUT_SAMPLE = """
 """.strip()
 
@@ -52,6 +58,12 @@ def test_normal_md5_bad_input():
 
 def test_normal_md5_only_null():
     md5info = md5check.NormalMD5(context_wrap(ONLY_NULL_SAMPLE))
+    assert md5info.data == {}
+    assert md5info.files == []
+
+
+def test_normal_md5_bad_mix():
+    md5info = md5check.NormalMD5(context_wrap(BAD_INPUT_MIX))
     assert md5info.data == {}
     assert md5info.files == []
 
