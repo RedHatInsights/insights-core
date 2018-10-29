@@ -59,8 +59,10 @@ Examples:
     >>> conf.get('client.radosgw.gateway', 'log_file') == '/var/log/ceph/radosgw.log'
     True
 """
-from .. import IniConfigFile, parser
+from .. import IniConfigFile, parser, add_filter
 from insights.specs import Specs
+
+add_filter(Specs.ceph_conf, ["["])
 
 
 @parser(Specs.ceph_conf)
