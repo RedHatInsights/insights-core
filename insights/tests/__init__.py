@@ -8,6 +8,7 @@ import six
 import six.moves
 from collections import defaultdict
 from functools import wraps
+from operator import eq
 
 try:
     from StringIO import StringIO
@@ -63,10 +64,9 @@ DEFAULT_RELEASE = "Red Hat Enterprise Linux Server release 7.2 (Maipo)"
 DEFAULT_HOSTNAME = "hostname.example.com"
 
 
-def unordered_compare(result, expected):
+def deep_compare(result, expected):
     """
-    Deep compare rule reducer results when testing.  Developed to find
-    arbitrarily nested lists and remove differences based on ordering.
+    Deep compare rule reducer results when testing.
     """
     logger.debug("--Comparing-- (%s) %s to (%s) %s", type(result), result, type(expected), expected)
 
@@ -74,19 +74,7 @@ def unordered_compare(result, expected):
         assert result["type"] == "skip", result
         return
 
-    if not all(isinstance(o, six.string_types) for o in (result, expected)):
-        assert issubclass(type(result), type(expected))
-
-    if isinstance(result, list):
-        assert len(result) == len(expected)
-        for left_item, right_item in six.moves.zip(sorted(result), sorted(expected)):
-            unordered_compare(left_item, right_item)
-    elif isinstance(result, dict):
-        assert len(result) == len(expected)
-        for item_key in result:
-            unordered_compare(result[item_key], expected[item_key])
-    else:
-        assert result == expected
+    assert eq(result, expected)
 
 
 def run_input_data(component, input_data):
@@ -115,7 +103,7 @@ def run_test(component, input_data, expected=None):
 
     broker = run_input_data(component, input_data)
     if expected:
-        unordered_compare(broker.get(component), expected)
+        deep_compare(broker.get(component), expected)
     return broker.get(component)
 
 
@@ -307,7 +295,7 @@ def redhat_release(major, minor=""):
         raise Exception("invalid major version: %s" % major)
 
 
-def archive_provider(component, test_func=unordered_compare, stride=1):
+def archive_provider(component, test_func=deep_compare, stride=1):
     """
     Decorator used to register generator functions that yield InputData and
     expected response tuples.  These generators will be consumed by py.test
@@ -328,7 +316,7 @@ def archive_provider(component, test_func=unordered_compare, stride=1):
         yield every `stride` InputData object rather than the full set. This
         is used to provide a faster execution path in some test setups.
 
-    [1] insights.tests.unordered_compare()
+    [1] insights.tests.deep_compare()
     """
     def _wrap(func):
         @six.wraps(func)
