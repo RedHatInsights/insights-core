@@ -1,6 +1,6 @@
 import pytest
 import warnings
-from insights.tests import unordered_compare
+from insights.tests import deep_compare
 from insights.core.dr import split_requirements, stringify_requirements, get_missing_requirements
 from insights.core import context
 from insights.util import case_variants, deprecated
@@ -72,45 +72,126 @@ def test_non_product_member(ctx):
 
 
 def test_str():
-    unordered_compare("foo", "foo")
-    unordered_compare(u"foo", u"foo")
+    deep_compare("foo", "foo")
+    deep_compare(u"foo", u"foo")
     with pytest.raises(AssertionError):
-        unordered_compare("foo", "bar")
+        deep_compare("foo", "bar")
 
 
 def test_num():
-    unordered_compare(1, 1)
-    unordered_compare(1.1, 1.1)
+    deep_compare(1, 1)
+    deep_compare(1.1, 1.1)
     with pytest.raises(AssertionError):
-        unordered_compare(1, 2)
+        deep_compare(1, 2)
 
 
 def test_list():
-    unordered_compare([1, 2, 3], [1, 2, 3])
-    unordered_compare([2, 3, 4], [4, 3, 2])
+    deep_compare([1, 2, 3], [1, 2, 3])
     with pytest.raises(AssertionError):
-        unordered_compare([1, 2, 3], [2, 3, 4])
+        deep_compare([2, 3, 4], [4, 3, 2])
+        deep_compare([1, 2, 3], [2, 3, 4])
 
 
 def test_dict():
-    unordered_compare({"foo": 1}, {"foo": 1})
-    unordered_compare({"foo": 1, "bar": 2}, {"bar": 2, "foo": 1})
+    deep_compare({"foo": 1}, {"foo": 1})
+    deep_compare({"foo": 1, "bar": 2}, {"bar": 2, "foo": 1})
     with pytest.raises(AssertionError):
-        unordered_compare({"foo": 1}, {"foo": 2})
+        deep_compare({"foo": 1}, {"foo": 2})
 
     with pytest.raises(AssertionError):
-        unordered_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
+        deep_compare({"foo": 1, "bar": [1, 2, 3]}, {"foo": 1, "bar": [0, 1, 2]})
 
 
 def test_deep_nest():
     a = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
     b = {"error_key": "test1", "stuff": {"abba": [{"foo": 2}]}}
 
-    unordered_compare(a, b)
+    deep_compare(a, b)
 
     with pytest.raises(AssertionError):
         b["stuff"]["abba"][0]["foo"] = "cake"
-        unordered_compare(a, b)
+        deep_compare(a, b)
+
+
+def test_deep_nest_tuple_dict():
+    a = ({2: 22}, {3: 33}, {4: 44})
+    b = ({2: 22}, {3: 33}, {4: 44})
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b = ({2: 22}, {3: 30}, {4: 44})
+        deep_compare(a, b)
+
+    a = ({2: 22}, {3: [33, 333]}, {4: 44})
+    b = ({2: 22}, {3: [33, 333]}, {4: 44})
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b = ({2: 22}, {3: [333, 33]}, {4: 44})
+        deep_compare(a, b)
+
+    a = ({2: 22, 5: '55'}, [33, 333, '3'], {6: [6], 4: 44})
+    b = ({5: '55', 2: 22}, [33, 333, '3'], {4: 44, 6: [6]})
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b = ({5: '55', 2: 22}, [33, 333, 3], {4: 44, 6: [6]})
+        deep_compare(a, b)
+
+
+def test_deep_nest_list_dict():
+    a = [{2: 22}, {3: 33}, {4: 44}]
+    b = [{2: 22}, {3: 33}, {4: 44}]
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b[1][3] = 30
+        deep_compare(a, b)
+
+    a = [{2: 22}, {3: [33, 333]}, {4: 44}]
+    b = [{2: 22}, {3: [33, 333]}, {4: 44}]
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b[1][3] = [333, 33]
+        deep_compare(a, b)
+
+    a = [{2: 22, 5: '55'}, [33, 333, '3'], {6: [6], 4: 44}]
+    b = [{5: '55', 2: 22}, [33, 333, '3'], {4: 44, 6: [6]}]
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b[1][2] = 3
+        deep_compare(a, b)
+
+    a = [
+           {'ip_addr': '0.0.0.0', 'process_name': 'qpidd', 'port': '5672'},
+           {'ip_addr': '127.0.0.1', 'process_name': 'mongod', 'port': '27017'},
+           {'ip_addr': '127.0.0.1', 'process_name': 'Passenger Rac', 'port': '53644'},
+           {'ip_addr': '0.0.0.0', 'process_name': 'qdrouterd', 'port': '5646'},
+    ]
+    b = [
+           {'ip_addr': '0.0.0.0', 'port': '5672', 'process_name': 'qpidd'},
+           {'ip_addr': '127.0.0.1', 'port': '27017', 'process_name': 'mongod'},
+           {'ip_addr': '127.0.0.1', 'port': '53644', 'process_name': 'Passenger Rac'},
+           {'ip_addr': '0.0.0.0', 'port': '5646', 'process_name': 'qdrouterd'},
+    ]
+    deep_compare(a, b)
+
+
+def test_deep_nest_dict_list():
+    a = {'2': [22, 222], 3: [33, 333]}
+    b = {3: [33, 333], '2': [22, 222]}
+    deep_compare(a, b)
+    with pytest.raises(AssertionError):
+        b['2'] = [222, 22]
+        deep_compare(a, b)
+
+    a = {3: [33, [3, '33', 333]], 2: (22, 222)}
+    b = {2: (22, 222), 3: [33, [3, '33', 333]]}
+    with pytest.raises(AssertionError):
+        b[3] = [33, ['33', 333, 3]]
+        deep_compare(a, b)
+
+    a = {3: [33, [set([4, 3]), '33', 333]], 2: (22, 222)}
+    b = {2: (22, 222), 3: [33, [set([4, 3]), '33', 333]]}
+    with pytest.raises(AssertionError):
+        b[3][1] = set([3, 4])
+        deep_compare(a, b)
 
 
 def test_case_variants():
