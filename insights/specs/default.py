@@ -492,6 +492,7 @@ class DefaultSpecs(Specs):
     package_provides_java = foreach_execute(package_and_java, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
+    passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_config = simple_command("/usr/sbin/pcs config")
     pcs_status = simple_command("/usr/sbin/pcs status")
@@ -507,7 +508,7 @@ class DefaultSpecs(Specs):
                               glob_file("/database/postgresql-*.log")
                               ])
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
-    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/localtime /usr/share/zoneinfo/America/{Sao_Paulo,Campo_Grande,Cuiaba} /etc/pki/{product,product-default}/69.pem 2>/dev/null")
+    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/pki/{product,product-default}/69.pem")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
