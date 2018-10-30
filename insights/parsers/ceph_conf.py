@@ -62,7 +62,8 @@ Examples:
 from .. import IniConfigFile, parser, add_filter
 from insights.specs import Specs
 
-add_filter(Specs.ceph_conf, ["["])
+add_filter(Specs.ceph_conf, ["[",
+                             "rgw_swift_account_in_url"])
 
 
 @parser(Specs.ceph_conf)
