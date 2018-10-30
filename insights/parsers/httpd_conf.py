@@ -89,6 +89,10 @@ ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name
 @parser(Specs.httpd_conf)
 class HttpdConf(LegacyItemAccess, Parser):
     """
+    .. note::
+        This parser is deprecated, please use
+        :py:class:`insights.combiners.httpd_conf.HttpdConfTree` instead.
+
     Get the key value pairs separated on the first space, ignoring leading
     and trailing spaces.
 
