@@ -20,7 +20,6 @@ except ImportError:
     from urllib.parse import urlparse
     from urllib.parse import quote
 from OpenSSL import SSL, crypto
-
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file)
@@ -81,10 +80,13 @@ class InsightsConnection(object):
         self.base_url = protocol + self.config.base_url
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
-            if self.config.analyze_container:
-                self.upload_url = self.base_url + "/uploads/image"
+            if self.config.legacy_upload:
+                if self.config.analyze_container:
+                    self.upload_url = self.base_url + "/uploads/image"
+                else:
+                    self.upload_url = self.base_url + "/uploads"
             else:
-                self.upload_url = self.base_url + "/uploads"
+                self.upload_url = self.base_url + '/platform/upload/api/v1/upload'
         self.api_url = self.config.api_url
         if self.api_url is None:
             self.api_url = self.base_url
@@ -668,44 +670,62 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
-    def upload_archive(self, data_collected, duration):
+    def upload_archive(self, data_collected, content_type, duration):
         """
         Do an HTTPS Upload of the archive
         """
         file_name = os.path.basename(data_collected)
-        try:
-            from insights.contrib import magic
-            m = magic.open(magic.MAGIC_MIME)
-            m.load()
-            mime_type = m.file(data_collected)
-        except ImportError:
-            magic = None
-            logger.debug('python-magic not installed, using backup function...')
-            from .utilities import magic_plan_b
-            mime_type = magic_plan_b(data_collected)
+        upload_url = self.upload_url
 
-        files = {
-            'file': (file_name, open(data_collected, 'rb'), mime_type)}
+        # legacy upload
+        if self.config.legacy_upload:
+            try:
+                from insights.contrib import magic
+                m = magic.open(magic.MAGIC_MIME)
+                m.load()
+                mime_type = m.file(data_collected)
+            except ImportError:
+                magic = None
+                logger.debug(
+                    'python-magic not installed, using backup function...')
+                from .utilities import magic_plan_b
+                mime_type = magic_plan_b(data_collected)
 
-        if self.config.analyze_container:
-            logger.debug('Uploading container, image, mountpoint or tarfile.')
-            upload_url = self.upload_url
+            files = {
+                'file': (file_name, open(data_collected, 'rb'), mime_type)}
+
+            if self.config.analyze_container:
+                logger.debug(
+                    'Uploading container, image, mountpoint or tarfile.')
+            else:
+                logger.debug('Uploading a host.')
+                upload_url = self.upload_url + '/' + generate_machine_id()
+            headers = {'x-rh-collection-time': str(duration)}
+
+        # platform upload
         else:
-            logger.debug('Uploading a host.')
-            upload_url = self.upload_url + '/' + generate_machine_id()
+            files = {
+                'upload': (file_name, open(data_collected, 'rb'),
+                           content_type)}
+            headers = {}
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        headers = {'x-rh-collection-time': str(duration)}
         net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         if upload.status_code in (200, 201):
+            # 200/201 from legacy, load the response
             the_json = json.loads(upload.text)
+        elif upload.status_code == 202:
+            # 202 from platform, no json response
+            logger.debug(upload.text)
         else:
-            logger.error("Upload archive failed with status code  %s", upload.status_code)
+            logger.error(
+                "Upload archive failed with status code  %s",
+                upload.status_code)
             return upload
         try:
             self.config.account_number = the_json["upload"]["account_number"]
