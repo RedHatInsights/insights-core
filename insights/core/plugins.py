@@ -100,9 +100,7 @@ class rule(dr.ComponentType):
             raise dr.SkipComponent()
         missing = self.get_missing_dependencies(broker)
         if missing:
-            details = dr.stringify_requirements(missing)
-            return _make_skip(dr.get_name(self.component),
-                    reason="MISSING_REQUIREMENTS", details=details)
+            return _make_skip(dr.get_name(self.component), missing)
         r = self.invoke(broker)
         if r is None:
             raise dr.SkipComponent()
@@ -269,7 +267,8 @@ class Response(dict):
     def __str__(self):
         key_val = self.get_key()
         keys = sorted(self)
-        keys.remove(self.key_name)
+        if self.key_name in keys:
+            keys.remove(self.key_name)
         keys.remove("type")
 
         buf = StringIO()
@@ -356,8 +355,30 @@ class _make_skip(Response):
     """
     response_type = "skip"
 
-    def __init__(self, rule_fqdn, reason, details=None):
+    def __str__(self):
+        required = self.missing[0]
+        at_least_one = self.missing[1]
+
+        buf = StringIO()
+
+        print("Missing Dependencies:", file=buf)
+
+        if required:
+            print("    Requires:", file=buf)
+            for d in required:
+                print("        %s" % dr.get_name(d), file=buf)
+        if at_least_one:
+            for alo in at_least_one:
+                print("    At Least One Of:", file=buf)
+                for d in alo:
+                    print("        %s" % dr.get_name(d), file=buf)
+        buf.seek(0)
+        return buf.read()
+
+    def __init__(self, rule_fqdn, missing):
+        self.missing = missing
+        details = dr.stringify_requirements(missing)
         super(_make_skip, self).__init__(None,
                                         rule_fqdn=rule_fqdn,
-                                        reason=reason,
+                                        reason="MISSING_REQUIREMENTS",
                                         details=details)
