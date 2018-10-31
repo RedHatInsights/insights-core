@@ -356,3 +356,37 @@ def test_epoch():
     rpm = rpms.get_max('grub2-tools')
     assert rpm.package_with_epoch == 'grub2-tools-1:2.02-0.34.el7_2'
     assert rpm.nevra == 'grub2-tools-1:2.02-0.34.el7_2.x86_64'
+
+
+def test_rpm_object_hashing():
+    # Class InstalledRpm implements for hashing function __hash__().
+    # This allows to use objects InstalledRpm in set() and dict().
+
+    # just NVR
+    rpm_yum1 = InstalledRpm.from_package('yum-3.4.3-132.el7')
+    assert rpm_yum1.arch is None
+    rpm_yum2 = InstalledRpm.from_package('yum-3.4.3-132.el7')
+    assert rpm_yum2.arch is None
+    rpm_kernel = InstalledRpm.from_package('kernel-3.10.0-327')
+    assert rpm_kernel.arch is None
+    assert rpm_yum1.__hash__() == rpm_yum2.__hash__()
+    assert rpm_yum1.__hash__() != rpm_kernel.__hash__()
+    assert rpm_yum2.__hash__() != rpm_kernel.__hash__()
+
+    # NVRA
+    rpm1 = InstalledRpm.from_package('yum-3.4.3-132.el7.i686')
+    assert rpm1.arch == 'i686'
+    rpm2 = InstalledRpm.from_package('yum-3.4.3-132.el7.i686')
+    assert rpm2.arch == 'i686'
+    rpm3 = InstalledRpm.from_package('kernel-3.10.0-327.x86_64')
+    assert rpm3.arch == 'x86_64'
+    assert rpm1.__hash__() == rpm2.__hash__()
+    assert rpm1.__hash__() != rpm3.__hash__()
+    assert rpm2.__hash__() != rpm3.__hash__()
+
+    # NVR and NVRA
+    rpm1 = InstalledRpm.from_package('yum-3.4.3-132.el7')
+    assert rpm1.arch is None
+    rpm2 = InstalledRpm.from_package('yum-3.4.3-132.el7.ppc64le')
+    assert rpm2.arch == 'ppc64le'
+    assert rpm1.__hash__() != rpm2.__hash__()
