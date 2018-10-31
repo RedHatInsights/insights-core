@@ -80,6 +80,7 @@ import re
 from copy import deepcopy
 from .. import Parser, parser, get_active_lines, LegacyItemAccess
 from insights.specs import Specs
+from insights.util import deprecated
 
 ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name', 'file_name', 'file_path'])
 """namedtuple: Type for storing the parsed httpd configuration's directive information."""
@@ -88,6 +89,10 @@ ParsedData = namedtuple('ParsedData', ['value', 'line', 'section', 'section_name
 @parser(Specs.httpd_conf)
 class HttpdConf(LegacyItemAccess, Parser):
     """
+    .. note::
+        This parser is deprecated, please use
+        :py:class:`insights.combiners.httpd_conf.HttpdConfTree` instead.
+
     Get the key value pairs separated on the first space, ignoring leading
     and trailing spaces.
 
@@ -109,6 +114,7 @@ class HttpdConf(LegacyItemAccess, Parser):
     """
 
     def __init__(self, *args, **kwargs):
+        deprecated(HttpdConf, "Import HttpdConfTree from insights.combiner.httpd_conf instead.")
         self.data = {}
         self.first_half = {}
         self.second_half = {}
