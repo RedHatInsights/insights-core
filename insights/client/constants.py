@@ -42,3 +42,4 @@ class InsightsConstants(object):
     insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
     sig_kill_ok = 100
     sig_kill_bad = 101
+    cached_branch_info = os.path.join(default_conf_dir, '.branch_info')
