@@ -212,7 +212,7 @@ def run(component=None, root=None, print_summary=False,
                 plugins.append(path)
 
         for p in plugins:
-            dr.load_components(p)
+            dr.load_components(p, continue_on_error=False)
 
         if args.config:
             with open(args.config) as f:
