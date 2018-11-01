@@ -2,16 +2,18 @@
 Embedded Content
 ################
 
-In ``insights-core``, we separate the return of the results from the rendering of
-the results.  This separation allows applications using ``insights-core``
-to produce output appropriate to their application.  So, for example,
-the Red Hat Insights product uses an approach that utilizes several
-content artifacts (general descriptions, specific descriptions, ansible
-playbooks, tagging, etc.) while an internal diagnostic system has a very
-simple description and tagging approach.
+In ``insights-core``, we separate the return of the results from the
+rendering of the results.  This separation allows applications using
+``insights-core`` to produce output appropriate to their application.
+So, for example, the Red Hat Insights product uses an approach that
+utilizes several content artifacts (general descriptions, specific
+descriptions, ansible playbooks, tagging, etc.) while an internal
+diagnostic system has a very simple description and tagging approach.
 
 Because of this separation, the methods that return results
-(``make_response``, ``make_pass``, and ``make_fail``) should not provide
+(:py:class:`insights.core.plugins.make_response`,
+:py:class:`insights.core.plugins.make_pass`, and
+:py:class:`insights.core.plugins.make_fail`) should not provide
 formatting themselves.  Instead, keyword arguments (kwargs) are used to
 pass back information from the plugin, to be interpolated by the caller.
 
