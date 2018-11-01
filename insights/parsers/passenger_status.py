@@ -10,25 +10,8 @@ from insights.specs import Specs
 from .. import CommandParser, get_active_lines, parser
 
 
-class Statuslist(CommandParser):
-    """Base class implementing shared code."""
-
-    def __len__(self):
-        return len(self.data)
-
-    def __iter__(self):
-        for row in self.data:
-            yield row
-
-    def parse_content(self, content):
-        new_content = get_active_lines(content, '-----------')
-        if len(content) <= 1:
-            raise ParseException("Input content is empty or there is no useful parsed data.")
-        return new_content
-
-
 @parser(Specs.passenger_status)
-class PassengerStatus(Statuslist):
+class PassengerStatus(CommandParser):
     """
     Parse the passenger-status command output.
 
@@ -125,7 +108,10 @@ class PassengerStatus(Statuslist):
     """
 
     def parse_content(self, content):
-        content = super(PassengerStatus, self).parse_content(content)
+        content = get_active_lines(content, '-----------')
+        if len(content) <= 1:
+            raise ParseException("Input content is empty or there is no useful parsed data.")
+
         if not content or not content[0].startswith('Version'):
             raise ParseException("Cannot find the header line.")
         returndic = {}
