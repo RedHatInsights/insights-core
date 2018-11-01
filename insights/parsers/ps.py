@@ -323,7 +323,9 @@ class PsEo(Ps):
 
     def parse_content(self, content):
         super(PsEo, self).parse_content(content)
-        self.pid_info = {row['PID']: row for row in self.data}
+        self.pid_info = {}
+        for row in self.data:
+            self.pid_info[row['PID']] = row
 
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
