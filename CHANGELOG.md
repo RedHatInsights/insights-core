@@ -1,5 +1,33 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.56-653...HEAD)
+
+**Fixed bugs:**
+
+- FileListing class has selinux arg that is not used [\#1492](https://github.com/RedHatInsights/insights-core/issues/1492)
+- render is called even when rule has missing requirements [\#1489](https://github.com/RedHatInsights/insights-core/issues/1489)
+
+## [insights-core-3.0.56-653](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.56-653) (2018-11-01)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.55-1...insights-core-3.0.56-653)
+
+**Implemented enhancements:**
+
+- rules without CONTENT produce hard to interpret reports [\#1480](https://github.com/RedHatInsights/insights-core/issues/1480)
+
+**Fixed bugs:**
+
+- The human readable rule report includes rules with missing requirements [\#1479](https://github.com/RedHatInsights/insights-core/issues/1479)
+
+## [3.0.55-1](https://github.com/RedHatInsights/insights-core/tree/3.0.55-1) (2018-10-31)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.54-643...3.0.55-1)
+
+**Closed issues:**
+
+- fix wrong passenger\_status part in insights/specs/insights\_archive.py  [\#1508](https://github.com/RedHatInsights/insights-core/issues/1508)
+- \[python3\] `unordered\_compare` does support comparing list with dictionaries [\#1494](https://github.com/RedHatInsights/insights-core/issues/1494)
+
 ## [insights-core-3.0.54-643](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.54-643) (2018-10-25)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.52-1...insights-core-3.0.54-643)
 
