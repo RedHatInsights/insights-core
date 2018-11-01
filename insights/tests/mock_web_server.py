@@ -1,6 +1,7 @@
 import sys
 from threading import Thread
 import socket
+import random
 
 if (sys.version_info > (3, 0)):
     from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -47,8 +48,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', value)
             self.end_headers()
+            num = random.randint(1, 100000)
             output = ""
-            output += '{"data":{"id": "001", "name": "Successful return from Mock Service"}}'
+            output += '{"data":{"id": ' + str(num) + ', "name": "Successful return from Mock Service"}}'
             self.wfile.write(output.encode('utf_8'))
             print(output)
             return output

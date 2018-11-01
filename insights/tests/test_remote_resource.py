@@ -1,7 +1,7 @@
 from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer
 
-GOOD_PAYLOAD = b'{"data":{"id": "001", "name": "Successful return from Mock Service"}}'
+GOOD_PAYLOAD = b'Successful return from Mock Service'
 NOT_FOUND = b'{"error":{"code": "404", "message": "Not Found"}}'
 
 
@@ -13,7 +13,7 @@ class TestRemoteResource(TestMockServer):
 
         url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
         rtn = rr.get(url)
-        assert rtn.content == GOOD_PAYLOAD
+        assert GOOD_PAYLOAD in rtn.content
 
     # Test RemoteResource not found
     def test_get_remoteResource_not_found(self):
@@ -29,7 +29,18 @@ class TestRemoteResource(TestMockServer):
 
         url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
         rtn = crr.get(url)
-        assert rtn.content == GOOD_PAYLOAD
+        assert GOOD_PAYLOAD in rtn.content
+
+    # Test CachedRemoteResource returns cached response
+    def test_get_cachedremote_resource_cached(self):
+        crr = CachedRemoteResource()
+
+        url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
+        rtn = crr.get(url)
+        cont_1 = rtn.content
+        rtn = crr.get(url)
+        cont_2 = rtn.content
+        assert cont_1 == cont_2
 
     # Test CachedRemoteResource not found
     def test_get_cachedremoteResource_not_found(self):

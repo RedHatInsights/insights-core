@@ -24,7 +24,9 @@ runtime = set([
     'pyyaml>=3.10,<=3.13',
     'six',
     'requests==2.13.0',
-    'requests_cache',
+    'cachecontrol',
+    'cachecontrol[redis]'
+    'cachecontrol[filecache]'
 ])
 
 
