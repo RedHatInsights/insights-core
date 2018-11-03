@@ -9,8 +9,10 @@ from insights import dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, FormatterAdapter, render
 
+
 try:
-    from colorama import Fore, Style
+    from colorama import Fore, Style, init
+    init()
 except ImportError:
     print("Install colorama if console colors are preferred.")
 
