@@ -24,9 +24,11 @@ runtime = set([
     'pyyaml>=3.10,<=3.13',
     'six',
     'requests==2.13.0',
+    'redis',
     'cachecontrol',
-    'cachecontrol[redis]'
-    'cachecontrol[filecache]'
+    'cachecontrol[redis]',
+    'cachecontrol[filecache]',
+    'lockfile',
 ])
 
 

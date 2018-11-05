@@ -27,12 +27,11 @@ class RemoteResource(object):
 
     timeout = 10
 
-    def __init__(self, sess=None):
+    def __init__(self, session=None):
 
-        if not sess:
-            self.sess = requests.Session()
+        self.session = session or requests.Session()
 
-    def get(cls, url, params={}, headers={}, auth=(), verify=False):
+    def get(self, url, params={}, headers={}, auth=(), verify=False):
         """
         Returns the response payload from the request to the given URL.
 
@@ -48,10 +47,8 @@ class RemoteResource(object):
             Response:(Response): Response object from requests.get api request
         """
 
-        resp = cls.sess.get(url, params=params, headers=headers, verify=verify, auth=auth,
-                            timeout=cls.timeout)
-
-        return resp
+        return self.session.get(url, params=params, headers=headers, verify=verify, auth=auth,
+                            timeout=self.timeout)
 
 
 class CachedRemoteResource(RemoteResource):
@@ -61,7 +58,9 @@ class CachedRemoteResource(RemoteResource):
     Attributes:
         expire_after (float): Amount of time in seconds that the cache will expire
         backend (str): Type of storage for cache `DictCache1, `FileCache" or `RedisCache`
-        __heuristic (str): Heuristic method name to manage HTTP cache headers.
+        redis_host (str): Hpstname of redis instance if `RedisCache` backend is specified
+        redis_port (int): Port used to contact the redis instance if `RedisCache` backend is specified
+        file_cache_path (string): Path to where file cache will be stored if `FileCache` backend is specified
         session (object): Requests session object
 
     Examples:
@@ -72,28 +71,32 @@ class CachedRemoteResource(RemoteResource):
 
     """
 
-    expire_after = 180
+    expire_after = 10
     backend = "DictCache"
+    redis_port = 6379
+    redis_host = 'localhost'
     __heuristic = 'DefaultHeuristic'
-    session = None
+    __cache = None
+    file_cache_path = '.web_cache'
 
     def __init__(self):
 
-        if not self.session:
-            self.session = requests.Session()
+        session = requests.Session()
         hclass = globals()[self.__heuristic]
 
-        if self.backend == "redis":
-            pool = redis.ConnectionPool(host='localhost', port=6379, db=0)
-            r = redis.Redis(connection_pool=pool)
-            self.sess = CacheControl(self.session, heuristic=hclass(self.expire_after), cache=RedisCache(r))
+        if not self.__class__.__cache:
+            if self.backend == "RedisCache":
+                pool = redis.ConnectionPool(host=self.redis_host, port=self.redis_port, db=0)
+                r = redis.Redis(connection_pool=pool)
+                self.__class__.cache = RedisCache(r)
+            elif self.backend == "FileCache":
+                self.__class__.cache = FileCache(self.file_cache_path)
+            else:
+                self.__class__.cache = None
 
-        elif self.backend == "FileCache":
-            self.sess = CacheControl(self.session, heuristic=hclass(self.expire_after), cache=FileCache('.web_cache'))
-        else:
-            self.sess = CacheControl(self.session, heuristic=hclass(self.expire_after))
+        session = CacheControl(session, heuristic=hclass(self.expire_after), cache=self.__class__.cache)
 
-        super(CachedRemoteResource, self).__init__(self.sess)
+        super(CachedRemoteResource, self).__init__(session)
 
 
 class DefaultHeuristic(BaseHeuristic):
@@ -124,21 +127,16 @@ class DefaultHeuristic(BaseHeuristic):
         Returns:
             Response:(HTTPResponse): Http caching headers
         """
-        if 'expires' in response.headers and response.headers['expires'] > 0 and \
-                'cache-control' in response.headers and response.headers['cache-control'] != 'private':
+        if 'expires' in response.headers and 'cache-control' in response.headers:
             self.msg = self.server_cache_headers
-            return {
-                'expires': response.headers['expires'],
-                'cache-control': response.headers['cache-control'],
-            }
+            return response.headers
         else:
             self.msg = self.default_cache_vars
             date = parsedate(response.headers['date'])
             expires = datetime(*date[:6]) + timedelta(0, self.expire_after)
-            return {
-                'expires': formatdate(calendar.timegm(expires.timetuple())),
-                'cache-control': 'public',
-            }
+            response.headers.update({'expires': formatdate(calendar.timegm(expires.timetuple())),
+                                'cache-control': 'public'})
+            return response.headers
 
     def warning(self, response):
         return '110 - "%s"' % self.msg
