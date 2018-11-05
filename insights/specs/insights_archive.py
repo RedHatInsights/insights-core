@@ -168,6 +168,7 @@ class InsightsArchiveSpecs(Specs):
     pvs = simple_file("insights_commands/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_count_--config_global_locking_type_0")
     pvs_noheadings = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0")
     pvs_noheadings_all = simple_file("insights_commands/pvs_--nameprefixes_--noheadings_--separator_-a_-o_pv_all_vg_name_--config_global_locking_type_0_devices_filter_a")
+    qpid_stat_g = simple_file("insights_commands/qpid-stat_-g_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671")
     qpid_stat_q = simple_file("insights_commands/qpid-stat_-q_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671")
     qpid_stat_u = simple_file("insights_commands/qpid-stat_-u_--ssl-certificate_.etc.pki.katello.qpid_client_striped.crt_-b_amqps_..localhost_5671")
     rabbitmq_policies = simple_file("insights_commands/rabbitmqctl_list_policies")

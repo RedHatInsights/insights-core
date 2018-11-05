@@ -13,6 +13,9 @@ QpidStatQ - command ``/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/q
 QpidStatU - command ``/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671``
 ----------------------------------------------------------------------------------------------------------------------------------
 
+QpidStatG - command ``/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671``
+----------------------------------------------------------------------------------------------------------------------------------
+
 """
 from .. import parser, CommandParser
 from insights.parsers import parse_fixed_table, keyword_search
@@ -163,7 +166,6 @@ class QpidStatU(CommandParser):
         >>> event_queues[0] == qpid_stat_u.data[2]  # List contains matching items
         True
     """
-
     def __iter__(self):
         return iter(self.data)
 
@@ -176,6 +178,126 @@ class QpidStatU(CommandParser):
             (q['queue'], q)
             for q in self.data
         )
+
+    def search(self, **kwargs):
+        """
+        Search for rows in the data matching keywords in the search.
+
+        This method uses the :py:func:`insights.parsers.keyword_search`
+        function - see its documentation for a complete description of its
+        keyword recognition capabilities.
+
+        Arguments:
+            **kwargs: Key-value pairs of search parameters.
+
+        Returns:
+            (list): A list of subscriptions that matched the search criteria.
+
+        """
+        return keyword_search(self.data, **kwargs)
+
+
+@parser(Specs.qpid_stat_g)
+class QpidStatG(CommandParser):
+
+    """
+    This parser reads the output of the command ``qpid-stat -g
+    --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b
+    amqps://localhost:5671``
+
+    Sample output::
+
+        Broker Summary:
+          uptime           cluster       connections  sessions  exchanges  queues
+          =========================================================================
+          96d 23h 50m 41s  <standalone>  23           37        14         33
+
+        Aggregate Broker Statistics:
+          Statistic                   Messages    Bytes
+          ========================================================
+          queue-depth                 0           0
+          total-enqueues              1,726,798   42,589,932,236
+          total-dequeues              1,726,798   42,589,932,236
+          persistent-enqueues         28,725      23,889,836
+          persistent-dequeues         28,725      23,889,836
+          transactional-enqueues      0           0
+          transactional-dequeues      0           0
+          flow-to-disk-depth          0           0
+          flow-to-disk-enqueues       0           0
+          flow-to-disk-dequeues       0           0
+          acquires                    1,726,798
+          releases                    0
+          discards-no-route           41,163,896
+
+    Attributes:
+        data (list of dict): A list of dictionaries with the key-value data
+            from the table.
+        by_queue (dict of dict): A dictionary of the same data dictionaries
+            stored by cluster name or queue name.
+
+    Examples:
+        >>> type(qpid_stat_g)
+        <class 'insights.parsers.qpid_stat.QpidStatG'>
+        >>> type(qpid_stat_g.data) == type([])
+        True
+        >>> type(qpid_stat_g.data[0]) == type({}) # Each row is a dictionary formed from the table
+        True
+        >>> qpid_stat_g.data[0]['uptime']
+        '97d 0h 16m 24s'
+        >>> qpid_stat_g.data[0]['cluster']
+        '<standalone>'
+        >>> qpid_stat_g.data[1]['Statistic']
+        'queue-depth'
+        >>> qpid_stat_g.data[1]['Messages']
+        '0'
+        >>> qpid_stat_g.data[11]['Bytes']
+        ''
+        >>> type(qpid_stat_g.by_queue) == type({}) # Dictionary lookup by queue ID
+        True
+        >>> qpid_stat_g.by_queue['queue-depth'] == qpid_stat_g.data[1]
+        True
+        >>> enqueues = qpid_stat_g.search(Statistic__contains='enqueues')  # Keyword search
+        >>> type(enqueues) == type([])
+        True
+        >>> len(enqueues)
+        4
+        >>> enqueues[0] == qpid_stat_g.data[2]  # List contains matching items
+        True
+    """
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def parse_content(self, content):
+        index = 0
+        for i in content:
+            if i.startswith("Aggregate Broker Statistics"):
+                break
+            else:
+                index = index + 1
+        content_before = content[0:index]
+        content_after = content[index:]
+
+        data_before = parse_fixed_table(
+            [line for line in content_before if '========' not in line and len(line) > 0],
+            heading_ignore=['uptime']
+        )
+        data_after = parse_fixed_table(
+            [line for line in content_after if '========' not in line and len(line) > 0],
+            heading_ignore=['Statistic']
+        )
+
+        queue_before = dict(
+            (q['cluster'], q)
+            for q in data_before
+        )
+        queue_after = dict(
+            (q['Statistic'], q)
+            for q in data_after
+        )
+
+        self.data = data_before + data_after
+        self.by_queue = dict(queue_before, **queue_after)
 
     def search(self, **kwargs):
         """
