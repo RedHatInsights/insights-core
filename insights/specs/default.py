@@ -68,6 +68,7 @@ class DefaultSpecs(Specs):
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
+    ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
 
     @datasource(ps_auxww)
     def tomcat_base(broker):
