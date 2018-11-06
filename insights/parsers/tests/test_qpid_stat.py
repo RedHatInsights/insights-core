@@ -1,6 +1,8 @@
+import doctest
+
 from insights.parsers import qpid_stat
 from insights.tests import context_wrap
-import doctest
+
 
 QPID_STAT_Q_DOCS = '''
 Queues

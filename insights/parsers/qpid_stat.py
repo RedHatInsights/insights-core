@@ -17,13 +17,45 @@ QpidStatG - command ``/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/q
 ----------------------------------------------------------------------------------------------------------------------------------
 
 """
-from .. import parser, CommandParser
-from insights.parsers import parse_fixed_table, keyword_search
+
+from insights.parsers import ParseException, keyword_search, parse_fixed_table
 from insights.specs import Specs
+
+from .. import CommandParser, get_active_lines, parser
+
+
+class StatQ(CommandParser):
+    """Base class implementing shared code."""
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def parse_content(self, content):
+        new_content = get_active_lines(content, '=======')
+        if len(content) <= 1:
+            raise ParseException("Input content is empty or there is no useful parsed data.")
+        return new_content
+
+    def search(self, **kwargs):
+        """
+        Search for rows in the data matching keywords in the search.
+
+        This method uses the :py:func:`insights.parsers.keyword_search`
+        function - see its documentation for a complete description of its
+        keyword recognition capabilities.
+
+        Arguments:
+            **kwargs: Key-value pairs of search parameters.
+
+        Returns:
+            (list): A list of subscriptions that matched the search criteria.
+
+        """
+        return keyword_search(self.data, **kwargs)
 
 
 @parser(Specs.qpid_stat_q)
-class QpidStatQ(CommandParser):
+class QpidStatQ(StatQ):
     """
     This parser reads the output of the command ``qpid-stat -q
     --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b
@@ -74,12 +106,11 @@ class QpidStatQ(CommandParser):
         []
     """
 
-    def __iter__(self):
-        return iter(self.data)
-
     def parse_content(self, content):
+        content = super(QpidStatQ, self).parse_content(content)
+
         self.data = parse_fixed_table(
-            [line for line in content if '========' not in line],
+            [line for line in content],
             heading_ignore=['queue']
         )
         self.by_queue = dict(
@@ -87,26 +118,9 @@ class QpidStatQ(CommandParser):
             for q in self.data
         )
 
-    def search(self, **kwargs):
-        """
-        Search for rows in the data matching keywords in the search.
-
-        This method uses the :py:func:`insights.parsers.keyword_search`
-        function - see its documentation for a complete description of its
-        keyword recognition capabilities.
-
-        Arguments:
-            **kwargs: Key-value pairs of search parameters.
-
-        Returns:
-            (list): A list of queues that matched the search criteria.
-
-        """
-        return keyword_search(self.data, **kwargs)
-
 
 @parser(Specs.qpid_stat_u)
-class QpidStatU(CommandParser):
+class QpidStatU(StatQ):
 
     """
     This parser reads the output of the command ``qpid-stat -u
@@ -166,12 +180,12 @@ class QpidStatU(CommandParser):
         >>> event_queues[0] == qpid_stat_u.data[2]  # List contains matching items
         True
     """
-    def __iter__(self):
-        return iter(self.data)
 
     def parse_content(self, content):
+        content = super(QpidStatU, self).parse_content(content)
+
         self.data = parse_fixed_table(
-            [line for line in content if '========' not in line],
+            [line for line in content],
             heading_ignore=['subscr']
         )
         self.by_queue = dict(
@@ -179,26 +193,9 @@ class QpidStatU(CommandParser):
             for q in self.data
         )
 
-    def search(self, **kwargs):
-        """
-        Search for rows in the data matching keywords in the search.
-
-        This method uses the :py:func:`insights.parsers.keyword_search`
-        function - see its documentation for a complete description of its
-        keyword recognition capabilities.
-
-        Arguments:
-            **kwargs: Key-value pairs of search parameters.
-
-        Returns:
-            (list): A list of subscriptions that matched the search criteria.
-
-        """
-        return keyword_search(self.data, **kwargs)
-
 
 @parser(Specs.qpid_stat_g)
-class QpidStatG(CommandParser):
+class QpidStatG(StatQ):
 
     """
     This parser reads the output of the command ``qpid-stat -g
@@ -265,25 +262,23 @@ class QpidStatG(CommandParser):
         True
     """
 
-    def __iter__(self):
-        return iter(self.data)
-
     def parse_content(self, content):
-        index = 0
-        for i in content:
-            if i.startswith("Aggregate Broker Statistics"):
-                break
-            else:
-                index = index + 1
+        content = super(QpidStatG, self).parse_content(content)
+
+        index = [i for i, l in enumerate(content) if l.startswith("Aggregate Broker Statistics")]
+        if not index:
+            raise ParseException("Incorrect Content without \"Aggregate Broker Statistics\" in ")
+        index = index[0]
+
         content_before = content[0:index]
         content_after = content[index:]
 
         data_before = parse_fixed_table(
-            [line for line in content_before if '========' not in line and len(line) > 0],
+            [line for line in content_before if len(line) > 0],
             heading_ignore=['uptime']
         )
         data_after = parse_fixed_table(
-            [line for line in content_after if '========' not in line and len(line) > 0],
+            [line for line in content_after if len(line) > 0],
             heading_ignore=['Statistic']
         )
 
@@ -298,20 +293,3 @@ class QpidStatG(CommandParser):
 
         self.data = data_before + data_after
         self.by_queue = dict(queue_before, **queue_after)
-
-    def search(self, **kwargs):
-        """
-        Search for rows in the data matching keywords in the search.
-
-        This method uses the :py:func:`insights.parsers.keyword_search`
-        function - see its documentation for a complete description of its
-        keyword recognition capabilities.
-
-        Arguments:
-            **kwargs: Key-value pairs of search parameters.
-
-        Returns:
-            (list): A list of subscriptions that matched the search criteria.
-
-        """
-        return keyword_search(self.data, **kwargs)
