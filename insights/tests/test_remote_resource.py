@@ -1,5 +1,7 @@
 from insights.core.remote_resource import RemoteResource, CachedRemoteResource
 from insights.tests.mock_web_server import TestMockServer
+import sys
+import pytest
 
 GOOD_PAYLOAD = b'Successful return from Mock Service'
 NOT_FOUND = b'{"error":{"code": "404", "message": "Not Found"}}'
@@ -24,6 +26,7 @@ class TestRemoteResource(TestMockServer):
         assert rtn.content == NOT_FOUND
 
     # Test CachedRemoteResource
+    @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
     def test_get_cachedremote_resource(self):
         crr = CachedRemoteResource()
 
@@ -32,6 +35,7 @@ class TestRemoteResource(TestMockServer):
         assert GOOD_PAYLOAD in rtn.content
 
     # Test CachedRemoteResource returns cached response
+    @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
     def test_get_cachedremote_resource_cached(self):
         crr = CachedRemoteResource()
 
@@ -43,6 +47,7 @@ class TestRemoteResource(TestMockServer):
         assert cont_1 == cont_2
 
     # Test CachedRemoteResource not found
+    @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
     def test_get_cachedremoteResource_not_found(self):
         crr = CachedRemoteResource()
 

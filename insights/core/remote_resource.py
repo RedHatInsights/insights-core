@@ -3,7 +3,7 @@ import requests
 import redis
 import calendar
 from cachecontrol.heuristics import BaseHeuristic
-from cachecontrol import CacheControl
+from cachecontrol.wrapper import CacheControl
 from cachecontrol.caches.file_cache import FileCache
 
 from datetime import datetime, timedelta
@@ -71,7 +71,7 @@ class CachedRemoteResource(RemoteResource):
 
     """
 
-    expire_after = 10
+    expire_after = 180
     backend = "DictCache"
     redis_port = 6379
     redis_host = 'localhost'
