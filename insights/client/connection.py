@@ -277,41 +277,41 @@ class InsightsConnection(object):
         Run a test with openssl to detect any MITM proxies
         '''
         if not self.cert_verify:
-            logger.info('cert_verify set to False, skipping SSL check...')
+            logger.info(u'cert_verify set to False, skipping SSL check...')
             return False
         success = True
         hostname = urlparse(self.base_url).netloc.split(':')
         sock = socket.socket()
         sock.setblocking(1)
         if self.proxies:
-            connect_str = 'CONNECT {0} HTTP/1.0\r\n'.format(hostname[0])
+            connect_str = u'CONNECT {0} HTTP/1.0\r\n'.format(hostname[0])
             if self.proxy_auth:
-                connect_str += 'Proxy-Authorization: {0}\r\n'.format(self.proxy_auth)
+                connect_str += u'Proxy-Authorization: {0}\r\n'.format(self.proxy_auth)
             connect_str += '\r\n'
-            proxy = urlparse(self.proxies['https']).netloc.split(':')
+            proxy = urlparse(self.proxies[u'https']).netloc.split(':')
             try:
                 sock.connect((proxy[0], int(proxy[1])))
             except Exception as e:
                 logger.debug(e)
-                logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
+                logger.error(u'Failed to connect to proxy %s. Connection refused.', self.proxies[u'https'])
                 return False
             sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
-            if '200 Connection established' not in res:
-                logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
+            if u'200 Connection established' not in res.decode('utf-8'):
+                logger.error(u'Failed to connect to %s. Invalid hostname.', self.base_url)
                 return False
         else:
             try:
                 sock.connect((hostname[0], 443))
             except socket.gaierror:
-                logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error(u'Error: Failed to connect to %s. Invalid hostname.', self.base_url)
                 return False
         ctx = SSL.Context(SSL.TLSv1_METHOD)
         if type(self.cert_verify) is not bool:
             if os.path.isfile(self.cert_verify):
                 ctx.load_verify_locations(self.cert_verify, None)
             else:
-                logger.error('Error: Invalid cert path: %s', self.cert_verify)
+                logger.error(u'Error: Invalid cert path: %s', self.cert_verify)
                 return False
         ctx.set_verify(SSL.VERIFY_PEER, self._verify_check)
         ssl_conn = SSL.Connection(ctx, sock)
@@ -323,7 +323,7 @@ class InsightsConnection(object):
             certs = self.cert_chain[1]
             # put them in the right order
             certs.reverse()
-            logger.debug('---\nCertificate chain')
+            logger.debug(u'---\nCertificate chain')
             for depth, c in enumerate(certs):
                 logger.debug(self._generate_cert_str(c.get_subject(),
                                                      u'{0} s :/'.format(depth)))
@@ -331,19 +331,19 @@ class InsightsConnection(object):
                                                      u'  i :/'))
             # print server cert
             server_cert = ssl_conn.get_peer_certificate()
-            logger.debug('---\nServer certificate')
+            logger.debug(u'---\nServer certificate')
             logger.debug(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
             logger.debug(self._generate_cert_str(server_cert.get_subject(), u'subject=/'))
             logger.debug(self._generate_cert_str(server_cert.get_issuer(), u'issuer=/'))
             logger.debug('---')
         except SSL.Error as e:
-            logger.debug('SSL error: %s', e)
+            logger.debug(u'SSL error: %s', e)
             success = False
-            logger.error('Certificate chain test failed!')
+            logger.error(u'Certificate chain test failed!')
         ssl_conn.shutdown()
         ssl_conn.close()
         if self.cert_chain[0]:
-            logger.error('Certificate chain test failed!  Self '
+            logger.error(u'Certificate chain test failed!  Self '
                          'signed certificate detected in chain')
         return success and not self.cert_chain[0]
 
