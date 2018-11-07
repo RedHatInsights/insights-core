@@ -18,16 +18,15 @@ class TestRemoteResource(TestMockServer):
         assert GOOD_PAYLOAD in rtn.content
 
     # Test RemoteResource not found
-    def test_get_remoteResource_not_found(self):
+    def test_get_remote_resource_not_found(self):
         rr = RemoteResource()
 
         url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
         rtn = rr.get(url)
         assert rtn.content == NOT_FOUND
 
-    # Test CachedRemoteResource
-    @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
-    def test_get_cachedremote_resource(self):
+    # Test CachedRemoteResource not cached
+    def test_get_cached_remote_resource(self):
         crr = CachedRemoteResource()
 
         url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
@@ -36,7 +35,7 @@ class TestRemoteResource(TestMockServer):
 
     # Test CachedRemoteResource returns cached response
     @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
-    def test_get_cachedremote_resource_cached(self):
+    def test_get_cached_remote_resource_cached(self):
         crr = CachedRemoteResource()
 
         url = 'http://localhost:{port}/mock/'.format(port=self.server_port)
@@ -47,8 +46,7 @@ class TestRemoteResource(TestMockServer):
         assert cont_1 == cont_2
 
     # Test CachedRemoteResource not found
-    @pytest.mark.skipif(sys.version_info < (2, 7), reason="CacheControl requires python 2.7 or higher")
-    def test_get_cachedremoteResource_not_found(self):
+    def test_get_cached_remote_resource_not_found(self):
         crr = CachedRemoteResource()
 
         url = 'http://localhost:{port}/moc/'.format(port=self.server_port)
