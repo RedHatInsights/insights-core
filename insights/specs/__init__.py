@@ -341,6 +341,7 @@ class Specs(SpecSet):
     ps_auxcww = RegistryPoint()
     ps_auxww = RegistryPoint(filterable=True)
     ps_ef = RegistryPoint(filterable=True)
+    ps_eo = RegistryPoint()
     pulp_worker_defaults = RegistryPoint()
     puppet_ssl_cert_ca_pem = RegistryPoint()
     puppetserver_config = RegistryPoint(filterable=True)

@@ -2,9 +2,13 @@
 The plugins module defines the components used by the rest of Insights and
 specializes their interfaces and execution model where required.
 """
+from __future__ import print_function
 
 import logging
 import traceback
+
+from pprint import pformat
+from six import StringIO
 
 from insights.core import dr
 from insights.util.subproc import CalledProcessError
@@ -96,9 +100,7 @@ class rule(dr.ComponentType):
             raise dr.SkipComponent()
         missing = self.get_missing_dependencies(broker)
         if missing:
-            details = dr.stringify_requirements(missing)
-            return _make_skip(dr.get_name(self.component),
-                    reason="MISSING_REQUIREMENTS", details=details)
+            return _make_skip(dr.get_name(self.component), missing)
         r = self.invoke(broker)
         if r is None:
             raise dr.SkipComponent()
@@ -262,6 +264,37 @@ class Response(dict):
         msg = "Length of data in %s is too long." % self.__class__.__name__
         log.error(msg, extra=extra)
 
+    def __str__(self):
+        key_val = self.get_key()
+        keys = sorted(self)
+        if self.key_name in keys:
+            keys.remove(self.key_name)
+        keys.remove("type")
+
+        buf = StringIO()
+        if not keys:
+            print(key_val, file=buf)
+            buf.seek(0)
+            return buf.read()
+
+        print("%s:" % key_val, file=buf)
+        indent = len(max(keys, key=len)) + 6
+        hang_indent = "\n" + " " * indent
+        for k in keys:
+            key = ("    %s" % k) + " " * (indent - len(k) - 6) + ": "
+            buf.write(key)
+            lines = pformat(self[k]).splitlines()
+            num_lines = len(lines)
+            if num_lines > 10:
+                lines = lines[:10]
+                lines.append("<...%s more lines...>" % (num_lines - 10))
+            out = hang_indent.join(lines)
+            buf.write(out)
+            buf.write("\n")
+
+        buf.seek(0)
+        return buf.read()
+
 
 class make_response(Response):
     """
@@ -322,8 +355,30 @@ class _make_skip(Response):
     """
     response_type = "skip"
 
-    def __init__(self, rule_fqdn, reason, details=None):
+    def __str__(self):
+        required = self.missing[0]
+        at_least_one = self.missing[1]
+
+        buf = StringIO()
+
+        print("Missing Dependencies:", file=buf)
+
+        if required:
+            print("    Requires:", file=buf)
+            for d in required:
+                print("        %s" % dr.get_name(d), file=buf)
+        if at_least_one:
+            for alo in at_least_one:
+                print("    At Least One Of:", file=buf)
+                for d in alo:
+                    print("        %s" % dr.get_name(d), file=buf)
+        buf.seek(0)
+        return buf.read()
+
+    def __init__(self, rule_fqdn, missing):
+        self.missing = missing
+        details = dr.stringify_requirements(missing)
         super(_make_skip, self).__init__(None,
                                         rule_fqdn=rule_fqdn,
-                                        reason=reason,
+                                        reason="MISSING_REQUIREMENTS",
                                         details=details)
