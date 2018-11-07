@@ -31,23 +31,23 @@ class RemoteResource(object):
 
         self.session = session or requests.Session()
 
-    def get(self, url, params={}, headers={}, auth=(), verify=False):
+    def get(self, url, params={}, headers={}, auth=(), certificate_path=None):
         """
         Returns the response payload from the request to the given URL.
 
         Args:
             url (str): The URL for the WEB API that the request is being made too.
             params (dict): Dictionary containing the query string parameters.
-            headers (dict): HTTP Headers that may be needed forthe request.
+            headers (dict): HTTP Headers that may be needed for the request.
             auth (tuple): User ID and password for Basic Auth
-            verify (str/bool): Value must be path to the Cert Bundle if verifying the SSL certificate
-             or boolean False to ignore verifying the SSL certificate.
+            certificate_path (str): Path to the ssl certificate.
 
         Returns:
-            Response:(Response): Response object from requests.get api request
+            response: (HttpResponse): Response object from requests.get api request
         """
 
-        return self.session.get(url, params=params, headers=headers, verify=verify, auth=auth,
+        certificate_path = certificate_path if certificate_path else False
+        return self.session.get(url, params=params, headers=headers, verify=certificate_path, auth=auth,
                             timeout=self.timeout)
 
 
@@ -57,11 +57,10 @@ class CachedRemoteResource(RemoteResource):
 
     Attributes:
         expire_after (float): Amount of time in seconds that the cache will expire
-        backend (str): Type of storage for cache `DictCache1, `FileCache" or `RedisCache`
-        redis_host (str): Hpstname of redis instance if `RedisCache` backend is specified
+        backend (str): Type of storage for cache `DictCache1`, `FileCache` or `RedisCache`
+        redis_host (str): Hostname of redis instance if `RedisCache` backend is specified
         redis_port (int): Port used to contact the redis instance if `RedisCache` backend is specified
         file_cache_path (string): Path to where file cache will be stored if `FileCache` backend is specified
-        session (object): Requests session object
 
     Examples:
         >>> from insights.core.remote_resource import CachedRemoteResource
@@ -122,10 +121,10 @@ class DefaultHeuristic(BaseHeuristic):
         Returns the updated caching headers.
 
         Args:
-            response (HTTPResponse): The response from the remote service
+            response (HttpResponse): The response from the remote service
 
         Returns:
-            Response:(HTTPResponse): Http caching headers
+            response:(HttpResponse.Headers): Http caching headers
         """
         if 'expires' in response.headers and 'cache-control' in response.headers:
             self.msg = self.server_cache_headers
