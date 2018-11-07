@@ -18,9 +18,9 @@ QpidStatG - command ``/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/q
 
 """
 
+from insights import CommandParser, get_active_lines, parser
 from insights.parsers import ParseException, keyword_search, parse_fixed_table
 from insights.specs import Specs
-from insights import CommandParser, get_active_lines, parser
 
 
 class QpidStat(CommandParser):
@@ -36,10 +36,7 @@ class QpidStat(CommandParser):
             raise ParseException("Input content is empty or there is no useful parsed data.")
 
     def _parse_data(self, heading_ignore):
-        self.data.extend(parse_fixed_table(
-            [line for line in self._content],
-            heading_ignore=heading_ignore
-        ))
+        self.data.extend(parse_fixed_table(self._content, heading_ignore=heading_ignore))
 
     def _parse_by_key(self, key):
         self.by_queue.update(dict(
