@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+import six
 from insights.core.ls_parser import parse
 
 
@@ -32,6 +33,39 @@ lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole
 lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 S10network -> ../init.d/network
 lrwxrwxrwx.  1 0 0   15 Jul  6 23:32 S97rhnsd -> ../init.d/rhnsd
 """
+
+MULTIPLE_DIRECTORIES_WITH_BREAK = """
+/etc:
+total 1652
+drwxr-xr-x. 102   0   0  12288 Nov  6 09:12 .
+dr-xr-xr-x.  21   0   0   4096 Oct 23 10:12 ..
+-rw-------.   1   0   0      0 Oct  2 13:46 .pwd.lock
+-rw-r--r--    1   0   0    163 Oct  2 13:45 .updated
+-rw-r--r--.   1   0   0   1059 Oct  2 13:56 chrony.conf
+-rw-r--r--.   1   0   0   1100 Dec  5  2017 chrony.conf.20180210135613
+
+-rw-r-----.   1   0 993    481 Sep 14  2017 chrony.keys
+drwxr-xr-x.   2   0   0   4096 Nov  1 03:34 cifs-utils
+
+/etc/sysconfig:
+total 96
+drwxr-xr-x.  7 0 0 4096 Jul  6 23:41 .
+drwxr-xr-x. 77 0 0 8192 Jul 13 03:55 ..
+drwxr-xr-x.  2 0 0   41 Jul  6 23:32 cbq
+drwxr-xr-x.  2 0 0    6 Sep 16  2015 console
+-rw-------.  1 0 0 1390 Mar  4  2014 ebtables-config
+-rw-r--r--.  1 0 0   72 Sep 15  2015 firewalld
+lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 grub -> /etc/default/grub
+
+/etc/rc.d/rc3.d:
+total 4
+drwxr-xr-x.  2 0 0   58 Jul  6 23:32 .
+drwxr-xr-x. 10 0 0 4096 Sep 16  2015 ..
+lrwxrwxrwx.  1 0 0   20 Jul  6 23:32 K50netconsole -> ../init.d/netconsole
+lrwxrwxrwx.  1 0 0   17 Jul  6 23:32 S10network -> ../init.d/network
+lrwxrwxrwx.  1 0 0   15 Jul  6 23:32 S97rhnsd -> ../init.d/rhnsd
+"""
+
 
 COMPLICATED_FILES = """
 /tmp:
@@ -178,6 +212,28 @@ def test_parse_multiple_directories():
     assert res["date"] == "Mar  4  2014"
     assert res["name"] == "ebtables-config"
     assert res["dir"] == "/etc/sysconfig"
+
+
+def test_parse_multiple_directories_with_break():
+    results = parse(MULTIPLE_DIRECTORIES_WITH_BREAK.splitlines(), None)
+    assert len(results) == 3
+    assert len(results.values()) == 3
+    assert len(results.items()) == 3
+    assert len(list(six.iteritems(results))) == 3
+    assert results["/etc"]["name"] == "/etc"
+    assert results["/etc"]["total"] == 1652
+    assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
+    assert results["/etc/rc.d/rc3.d"]["total"] == 4
+
+    res = results["/etc"]["entries"]["chrony.conf.20180210135613"]
+    assert res["type"] == "-"
+    assert res["links"] == 1
+    assert res["owner"] == "0"
+    assert res["group"] == "0"
+    assert res["size"] == 1100
+    assert res["date"] == "Dec  5  2017"
+    assert res["name"] == "chrony.conf.20180210135613"
+    assert res["dir"] == "/etc"
 
 
 def test_complicated_files():
