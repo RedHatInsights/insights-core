@@ -20,21 +20,42 @@ QpidStatG - command ``/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/q
 
 from insights.parsers import ParseException, keyword_search, parse_fixed_table
 from insights.specs import Specs
+from insights import CommandParser, get_active_lines, parser
 
-from .. import CommandParser, get_active_lines, parser
 
+class QpidStat(CommandParser):
+    """Base class for parsing QpidStat command."""
+    def __init__(self, context):
+        self.data = []
+        self.by_queue = {}
+        super(QpidStat, self).__init__(context)
 
-class StatQ(CommandParser):
-    """Base class implementing shared code."""
+    def _check_content(self, content):
+        self._content = get_active_lines(content, '=======')
+        if len(self._content) <= 1:
+            raise ParseException("Input content is empty or there is no useful parsed data.")
+
+    def _parse_data(self, heading_ignore):
+        self.data.extend(parse_fixed_table(
+            [line for line in self._content],
+            heading_ignore=heading_ignore
+        ))
+
+    def _parse_by_key(self, key):
+        self.by_queue.update(dict(
+            (q[key], q)
+            for q in self.data
+            if key in q
+        ))
+
+    def parse_content(self, content):
+        self._check_content(content)
+        self._parse_data('queue')
+        self._parse_by_key('queue')
+        del self._content
 
     def __iter__(self):
         return iter(self.data)
-
-    def parse_content(self, content):
-        new_content = get_active_lines(content, '=======')
-        if len(content) <= 1:
-            raise ParseException("Input content is empty or there is no useful parsed data.")
-        return new_content
 
     def search(self, **kwargs):
         """
@@ -55,7 +76,7 @@ class StatQ(CommandParser):
 
 
 @parser(Specs.qpid_stat_q)
-class QpidStatQ(StatQ):
+class QpidStatQ(QpidStat):
     """
     This parser reads the output of the command ``qpid-stat -q
     --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b
@@ -105,22 +126,11 @@ class QpidStatQ(StatQ):
         >>> qpid_stat_q.search(queue__contains=':2.0')  # Keyword search
         []
     """
-
-    def parse_content(self, content):
-        content = super(QpidStatQ, self).parse_content(content)
-
-        self.data = parse_fixed_table(
-            [line for line in content],
-            heading_ignore=['queue']
-        )
-        self.by_queue = dict(
-            (q['queue'], q)
-            for q in self.data
-        )
+    pass
 
 
 @parser(Specs.qpid_stat_u)
-class QpidStatU(StatQ):
+class QpidStatU(QpidStat):
 
     """
     This parser reads the output of the command ``qpid-stat -u
@@ -182,20 +192,14 @@ class QpidStatU(StatQ):
     """
 
     def parse_content(self, content):
-        content = super(QpidStatU, self).parse_content(content)
-
-        self.data = parse_fixed_table(
-            [line for line in content],
-            heading_ignore=['subscr']
-        )
-        self.by_queue = dict(
-            (q['queue'], q)
-            for q in self.data
-        )
+        self._check_content(content)
+        self._parse_data('subscr')
+        self._parse_by_key('queue')
+        del self._content
 
 
 @parser(Specs.qpid_stat_g)
-class QpidStatG(StatQ):
+class QpidStatG(QpidStat):
 
     """
     This parser reads the output of the command ``qpid-stat -g
@@ -261,35 +265,22 @@ class QpidStatG(StatQ):
         >>> enqueues[0] == qpid_stat_g.data[2]  # List contains matching items
         True
     """
-
-    def parse_content(self, content):
-        content = super(QpidStatG, self).parse_content(content)
-
-        index = [i for i, l in enumerate(content) if l.startswith("Aggregate Broker Statistics")]
+    def _split_content(self):
+        index = [i for i, l in enumerate(self._content) if l.startswith("Aggregate Broker Statistics")]
         if not index:
             raise ParseException("Incorrect Content without \"Aggregate Broker Statistics\" in ")
-        index = index[0]
+        self._index = index[0]
 
-        content_before = content[0:index]
-        content_after = content[index:]
-
-        data_before = parse_fixed_table(
-            [line for line in content_before if len(line) > 0],
-            heading_ignore=['uptime']
-        )
-        data_after = parse_fixed_table(
-            [line for line in content_after if len(line) > 0],
-            heading_ignore=['Statistic']
-        )
-
-        queue_before = dict(
-            (q['cluster'], q)
-            for q in data_before
-        )
-        queue_after = dict(
-            (q['Statistic'], q)
-            for q in data_after
-        )
-
-        self.data = data_before + data_after
-        self.by_queue = dict(queue_before, **queue_after)
+    def parse_content(self, content):
+        self._check_content(content)
+        self._split_content()
+        self.__content = self._content
+        self._content = self.__content[0:self._index]
+        self._parse_data('uptime')
+        self._content = self.__content[self._index:]
+        self._parse_data('Statistic')
+        self._parse_by_key('cluster')
+        self._parse_by_key('Statistic')
+        del self._index
+        del self.__content
+        del self._content
