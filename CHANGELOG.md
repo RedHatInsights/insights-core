@@ -1,13 +1,23 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+## [insights-core-3.0.57-663](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.57-663) (2018-11-08)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.56-653...insights-core-3.0.57-663)
 
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.56-653...HEAD)
+**Implemented enhancements:**
+
+- Some sos reports include JBoss Diagnostic Report contents [\#1511](https://github.com/RedHatInsights/insights-core/issues/1511)
 
 **Fixed bugs:**
 
+- FileListing parser does not handle filenames with newlines in the name [\#1527](https://github.com/RedHatInsights/insights-core/issues/1527)
 - FileListing class has selinux arg that is not used [\#1492](https://github.com/RedHatInsights/insights-core/issues/1492)
 - render is called even when rule has missing requirements [\#1489](https://github.com/RedHatInsights/insights-core/issues/1489)
+
+**Closed issues:**
+
+- Ensure current working directory is on the python path with insights-run [\#1523](https://github.com/RedHatInsights/insights-core/issues/1523)
+- \[RFE\] Results to include positive NACK - CVEs to which a system is NOT vulnerable [\#1510](https://github.com/RedHatInsights/insights-core/issues/1510)
+- `list.sort\(\)` doesn't work as expected in python3 [\#1496](https://github.com/RedHatInsights/insights-core/issues/1496)
 
 ## [insights-core-3.0.56-653](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.56-653) (2018-11-01)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.55-1...insights-core-3.0.56-653)
