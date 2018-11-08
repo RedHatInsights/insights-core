@@ -87,6 +87,11 @@ class combiner(dr.ComponentType):
     pass
 
 
+class remoteresource(dr.ComponentType):
+    """ ComponentType for a component for remote web resources. """
+    pass
+
+
 class rule(dr.ComponentType):
     """
     ComponentType for a component that can see all parsers and combiners for a

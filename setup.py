@@ -23,6 +23,12 @@ entry_points = {
 runtime = set([
     'pyyaml>=3.10,<=3.13',
     'six',
+    'requests==2.13.0',
+    'redis',
+    'cachecontrol',
+    'cachecontrol[redis]',
+    'cachecontrol[filecache]',
+    'lockfile',
 ])
 
 
@@ -44,7 +50,6 @@ client = set([
 
 develop = set([
     'futures==3.0.5',
-    'requests==2.13.0',
     'wheel',
 ])
 
