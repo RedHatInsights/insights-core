@@ -64,6 +64,8 @@ class SosSpecs(Specs):
     netstat_s = simple_file("sos_commands/networking/netstat_-s")
     nmcli_dev_show = simple_file("sos_commands/networking/nmcli_dev_show")
     ntptime = simple_file("sos_commands/ntp/ntptime")
+    ose_master_config = simple_file("/etc/origin/master/master-config.yaml")
+    ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
     pcs_config = first_file(["sos_commands/pacemaker/pcs_config", "sos_commands/cluster/pcs_config"])
     pcs_status = first_file(["sos_commands/pacemaker/pcs_status", "sos_commands/cluster/pcs_status"])
     ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
