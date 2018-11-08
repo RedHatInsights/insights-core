@@ -197,7 +197,7 @@ def test_parse_single_directory():
 
 def test_parse_multiple_directories():
     results = parse(MULTIPLE_DIRECTORIES.splitlines(), None)
-    assert len(results) == 2
+    assert len(results) == 2, len(results)
     assert results["/etc/sysconfig"]["name"] == "/etc/sysconfig"
     assert results["/etc/sysconfig"]["total"] == 96
     assert results["/etc/rc.d/rc3.d"]["name"] == "/etc/rc.d/rc3.d"
@@ -216,7 +216,7 @@ def test_parse_multiple_directories():
 
 def test_parse_multiple_directories_with_break():
     results = parse(MULTIPLE_DIRECTORIES_WITH_BREAK.splitlines(), None)
-    assert len(results) == 3
+    assert len(results) == 3, len(results)
     assert len(results.values()) == 3
     assert len(results.items()) == 3
     assert len(list(six.iteritems(results))) == 3

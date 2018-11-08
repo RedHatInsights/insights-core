@@ -137,8 +137,6 @@ class Directory(dict):
         files = []
         specials = []
         for line in self.body:
-            if not line:
-                continue
             parts = line.split(None, 4)
             perms = parts[0]
             typ = perms[0]
@@ -199,9 +197,17 @@ def parse(lines, root=None):
     name = None
     total = None
     for line in lines:
+        line = line.strip()
+        if not line:
+            continue
         if line and line[0] == "/" and line[-1] == ":":
             if name is None:
                 name = line[:-1]
+                if entries:
+                    d = Directory(name, total or len(entries), entries)
+                    doc[root] = d
+                    total = None
+                    entries = []
             else:
                 d = Directory(name, total or len(entries), entries)
                 doc[name or root] = d
