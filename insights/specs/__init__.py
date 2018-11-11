@@ -121,6 +121,7 @@ class Specs(SpecSet):
     glance_api_log = RegistryPoint(filterable=True)
     glance_cache_conf = RegistryPoint()
     glance_registry_conf = RegistryPoint()
+    gluster_v_info = RegistryPoint()
     gnocchi_conf = RegistryPoint(filterable=True)
     gnocchi_metricd_log = RegistryPoint(filterable=True)
     grub1_config_perms = RegistryPoint()
