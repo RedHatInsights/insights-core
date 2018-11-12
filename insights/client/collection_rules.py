@@ -232,12 +232,27 @@ class InsightsUploadConf(object):
             return None
 
         # Convert config object into dict
-        parsedconfig = ConfigParser.RawConfigParser()
+        # use allow_no_value so patterns section doesn't need to be key=val
+        parsedconfig = ConfigParser.RawConfigParser(allow_no_value=True)
         parsedconfig.read(self.remove_file)
         rm_conf = {}
         for item, value in parsedconfig.items('remove'):
-            rm_conf[item] = value.strip().split(',')
-
+            if value:
+                # allow_no_value=True allows blanks, ignore them
+                rm_conf[item] = value.strip().split(',')
+        if parsedconfig.has_section('patterns'):
+            # how many patterns
+            ptrnslen = len(parsedconfig.items('patterns'))
+            if ptrnslen:
+                # python 2 configparser is limited, so reopen
+                #   the file and get these patterns manually
+                with open(self.remove_file) as f_:
+                    lines = [l.strip() for l in f_.readlines()]
+                # remove empty lines so ptrnslen is accurate
+                lines = list(filter(None, lines))
+                start = lines.index('[patterns]') + 1
+                ptrns = lines[start:start + ptrnslen]
+                rm_conf['patterns'] = ptrns
         return rm_conf
 
 
