@@ -225,6 +225,7 @@ class DefaultSpecs(Specs):
     glance_api_log = first_file(["/var/log/containers/glance/api.log", "/var/log/glance/api.log"])
     glance_cache_conf = first_file(["/var/lib/config-data/puppet-generated/glance_api/etc/glance/glance-cache.conf", "/etc/glance/glance-cache.conf"])
     glance_registry_conf = simple_file("/etc/glance/glance-registry.conf")
+    gluster_v_info = simple_command("/usr/sbin/gluster volume info")
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
     grub_conf = simple_file("/boot/grub/grub.conf")
