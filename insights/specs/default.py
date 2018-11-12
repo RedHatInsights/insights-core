@@ -68,6 +68,7 @@ class DefaultSpecs(Specs):
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
     ps_ef = simple_command("/bin/ps -ef")
+    ps_eo = simple_command("/usr/bin/ps -eo pid,ppid,comm")
 
     @datasource(ps_auxww)
     def tomcat_base(broker):
@@ -509,7 +510,7 @@ class DefaultSpecs(Specs):
                               glob_file("/database/postgresql-*.log")
                               ])
     puppetserver_config = simple_file("/etc/sysconfig/puppetserver")
-    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/localtime /usr/share/zoneinfo/America/{Sao_Paulo,Campo_Grande,Cuiaba} /etc/pki/{product,product-default}/69.pem 2>/dev/null")
+    md5chk_files = simple_command("/usr/bin/md5sum /dev/null /etc/pki/{product,product-default}/69.pem")
     prelink_orig_md5 = None
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
@@ -520,6 +521,7 @@ class DefaultSpecs(Specs):
     pvs_noheadings_all = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     qemu_conf = simple_file("/etc/libvirt/qemu.conf")
     qemu_xml = glob_file(r"/etc/libvirt/qemu/*.xml")
+    qpid_stat_g = simple_command("/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpid_stat_q = simple_command("/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpid_stat_u = simple_command("/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671")
     qpidd_conf = simple_file("/etc/qpid/qpidd.conf")

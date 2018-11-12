@@ -595,6 +595,15 @@ class InstalledRpm(object):
     def __le__(self, other):
         return isinstance(other, InstalledRpm) and not other.__lt__(self)
 
+    def __hash__(self):
+        # Python 3 requires hash implementation to have hashable object.
+        try:
+            # Just NVR is not enouch for uniqueness. Try NVRA first.
+            value = self.nvra
+        except TypeError:
+            value = self.nvr
+        return hash(value)
+
 
 # re-exports
 from_package = InstalledRpm.from_package

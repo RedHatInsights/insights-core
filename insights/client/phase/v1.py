@@ -9,7 +9,6 @@ import sys
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
-from insights.client.auto_config import try_auto_configuration
 from insights.client.support import InsightsSupport
 from insights.client.utilities import validate_remove_file
 from insights.client.schedule import get_scheduler
@@ -26,17 +25,15 @@ def phase(func):
             sys.stderr.write('ERROR: ' + str(e) + '\n')
             sys.exit(constants.sig_kill_bad)
         client = InsightsClient(config)
-        client.set_up_logging()
         if config.debug:
             logger.info("Core path: %s", os.path.dirname(__file__))
-        try_auto_configuration(config)
         try:
             func(client, config)
         except Exception:
             logger.exception("Fatal error")
             sys.exit(1)
         else:
-            sys.exit()  # Exit gracefully
+            sys.exit(0)  # Exit gracefully
     return _f
 
 
@@ -108,6 +105,9 @@ def pre_update(client, config):
 @phase
 def update(client, config):
     client.update()
+    if config.payload:
+        logger.debug('Uploading a payload. Bypassing rules update.')
+        return
     client.update_rules()
 
 
@@ -145,6 +145,10 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
+    if config.payload:
+        logger.debug('Uploading a payload. Bypassing registration.')
+        return
+
     reg = client.register()
     if reg is None:
         # API unreachable
@@ -162,27 +166,40 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
-    tar_file = client.collect()
-    if not tar_file:
+    if config.payload:
+        insights_archive = config.payload
+    else:
+        insights_archive = client.collect()
+        config.content_type = 'application/vnd.redhat.advisor.test+tgz'
+
+    if not insights_archive:
         sys.exit(constants.sig_kill_bad)
-    if config['to_stdout']:
-        with open(tar_file, 'rb') as tar_content:
+    if config.to_stdout:
+        with open(insights_archive, 'rb') as tar_content:
             shutil.copyfileobj(tar_content, sys.stdout)
     else:
         resp = None
-        if not config['no_upload']:
-            resp = client.upload(tar_file)
+        if not config.no_upload:
+            try:
+                resp = client.upload(payload=insights_archive, content_type=config.content_type)
+            except IOError as e:
+                logger.error(str(e))
+                sys.exit(constants.sig_kill_bad)
+            except ValueError as e:
+                logger.error(str(e))
+                sys.exit(constants.sig_kill_bad)
         else:
-            logger.info('Archive saved at %s', tar_file)
+            logger.info('Archive saved at %s', insights_archive)
         if resp:
-            if config["to_json"]:
+            if config.to_json:
                 print(json.dumps(resp))
 
-            # delete the archive
-            if config.keep_archive:
-                logger.info('Insights archive retained in ' + tar_file)
-            else:
-                client.delete_archive(tar_file, delete_parent_dir=True)
+            if not config.payload:
+                # delete the archive
+                if config.keep_archive:
+                    logger.info('Insights archive retained in ' + insights_archive)
+                else:
+                    client.delete_archive(insights_archive, delete_parent_dir=True)
 
             # if we are rotating the eggs and success on upload do rotation
             try:
@@ -193,4 +210,3 @@ def collect_and_output(client, config):
                             constants.insights_core_last_stable))
                 logger.debug(message)
                 raise IOError(message)
-    sys.exit()

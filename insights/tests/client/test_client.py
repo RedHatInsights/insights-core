@@ -264,7 +264,8 @@ def test_reg_check_unregistered_unreachable():
 @patch('insights.client.client.constants.sleep_time', 0)
 @patch('insights.client.client.InsightsConnection.upload_archive',
        return_value=Mock(status_code=500))
-def test_upload_500_retry(upload_archive):
+@patch('insights.client.os.path.exists', return_value=True)
+def test_upload_500_retry(_, upload_archive):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -286,7 +287,8 @@ def test_upload_500_retry(upload_archive):
 @patch('insights.client.client.InsightsConnection.handle_fail_rcs')
 @patch('insights.client.client.InsightsConnection.upload_archive',
        return_value=Mock(status_code=412))
-def test_upload_412_no_retry(upload_archive, handle_fail_rcs):
+@patch('insights.client.os.path.exists', return_value=True)
+def test_upload_412_no_retry(_, upload_archive, handle_fail_rcs):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv
@@ -306,7 +308,8 @@ def test_upload_412_no_retry(upload_archive, handle_fail_rcs):
 @patch('insights.client.client.InsightsConnection.upload_archive',
        return_value=Mock(**{"status_code": 412,
                             "json.return_value": {"unregistered_at": "now", "message": "msg"}}))
-def test_upload_412_write_unregistered_file(upload_archive, write_unregistered_file):
+@patch('insights.client.os.path.exists', return_value=True)
+def test_upload_412_write_unregistered_file(_, upload_archive, write_unregistered_file):
 
     # Hack to prevent client from parsing args to py.test
     tmp = sys.argv

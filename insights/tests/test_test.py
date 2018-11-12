@@ -1,9 +1,9 @@
-from insights.tests import unordered_compare
+from insights.tests import deep_compare
 
 
-def test_unordered_compare():
+def test_deep_compare():
     """
-    Tests that unordered_compare() doesn't modify the objects it compares.
+    Tests that deep_compare() doesn't modify the objects it compares.
     """
     x_list = [8, 5, 3, 1, 2, 9, 5]
     x_list_backup = [8, 5, 3, 1, 2, 9, 5]
@@ -27,11 +27,11 @@ def test_unordered_compare():
     assert b_tuple == b_tuple_backup
     noexception = False
     try:
-        unordered_compare(a, b)
+        deep_compare(a, b)
         noexception = True
     except:
         pass
-    # unordered_compare test - the original objects should stay unchanged
+    # deep_compare test - the original objects should stay unchanged
     assert noexception
     assert a == b
     assert a == c

@@ -2,6 +2,7 @@ from __future__ import print_function
 import logging
 import pkgutil
 import os
+import sys
 import yaml
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
@@ -212,7 +213,7 @@ def run(component=None, root=None, print_summary=False,
                 plugins.append(path)
 
         for p in plugins:
-            dr.load_components(p)
+            dr.load_components(p, continue_on_error=False)
 
         if args.config:
             with open(args.config) as f:
@@ -250,6 +251,8 @@ def run(component=None, root=None, print_summary=False,
 
 
 def main():
+    if "" not in sys.path:
+        sys.path.insert(0, "")
     run(print_summary=True)
 
 
