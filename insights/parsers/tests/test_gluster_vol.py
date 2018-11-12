@@ -1,7 +1,7 @@
 import pytest
 from insights.parsers import ParseException
 from insights.tests import context_wrap
-from insights.parsers.gluster_vol_info import GlusterVolInfo
+from insights.parsers.gluster_vol import GlusterVolInfo
 
 
 TRACKING_VALID = """
