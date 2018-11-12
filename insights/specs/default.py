@@ -90,6 +90,7 @@ class DefaultSpecs(Specs):
     ceilometer_collector_log = simple_file("/var/log/ceilometer/collector.log")
     ceilometer_conf = first_file(["/var/lib/config-data/puppet-generated/ceilometer/etc/ceilometer/ceilometer.conf", "/etc/ceilometer/ceilometer.conf"])
     ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
+    ceph_conf = first_file("/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf")
     ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json-pretty")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json-pretty")
