@@ -57,19 +57,18 @@ def extract_facts(brokers):
     return results
 
 
-def process_facts(facts, meta, use_pandas=False):
+def process_facts(facts, meta, broker, use_pandas=False):
     if use_pandas:
         import pandas as pd
 
-    broker = dr.Broker()
     broker[ClusterMeta] = meta
     for k, v in facts.items():
         broker[k] = pd.DataFrame(v) if use_pandas else v
     return dr.run(dr.COMPONENTS[dr.GROUPS.cluster], broker=broker)
 
 
-def process_cluster(archives, use_pandas=False):
+def process_cluster(archives, broker, use_pandas=False):
     brokers = process_archives(archives)
     facts = extract_facts(brokers)
     meta = ClusterMeta(len(archives))
-    return process_facts(facts, meta, use_pandas=use_pandas)
+    return process_facts(facts, meta, broker, use_pandas=use_pandas)
