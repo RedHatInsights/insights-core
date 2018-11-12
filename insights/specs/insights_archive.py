@@ -9,6 +9,7 @@ glob_file = partial(glob_file, context=HostArchiveContext)
 
 class InsightsArchiveSpecs(Specs):
 
+    all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
     ceph_df_detail = simple_file("insights_commands/ceph_df_detail_-f_json-pretty")
@@ -59,11 +60,11 @@ class InsightsArchiveSpecs(Specs):
     grub1_config_perms = simple_file("insights_commands/ls_-l_.boot.grub.grub.conf")
     grub_config_perms = simple_file("insights_commands/ls_-l_.boot.grub2.grub.cfg")
     grubby_default_index = simple_file("insights_commands/grubby_--default-index")
+    gluster_v_info = simple_file("insights_commands/gluster_volume_info")
     hammer_ping = simple_file("insights_commands/hammer_ping")
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
     heat_crontab_container = simple_file("insights_commands/docker_exec_heat_api_cron_.usr.bin.crontab_-l_-u_heat")
-    all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     installed_rpms = head(all_installed_rpms)
     hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
