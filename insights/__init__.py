@@ -63,7 +63,7 @@ def process_dir(broker, root, graph, context, use_pandas=False):
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
-        return process_cluster(archives, use_pandas=use_pandas, broker=broker)
+        return process_cluster(archives, broker=broker, use_pandas=use_pandas)
 
     broker[ctx.__class__] = ctx
     broker = dr.run(graph, broker=broker)
