@@ -48,13 +48,27 @@ Examples:
     6
     >>> ls_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/locks', 'nova-storage-registry-lock')['raw_entry']
     '-rw-r--r--. nova nova system_u:object_r:nova_var_lib_t:s0 nova-storage-registry-lock'
-
+    >>> ls_r_var_lib_nova_instances.dir_entry('/var/lib/nova/instances/e560e649-41fd-46a2-a3d2-5f4750ba2bb4', 'console.log')['size']
+    48957
 '''
 
 
 from insights import CommandParser, parser
 from insights import FileListing
 from insights.specs import Specs
+
+
+@parser(Specs.ls_R_var_lib_nova_instances)
+class LsRVarLibNovaInstances(CommandParser, FileListing):
+    '''The class ``LsVarLibNovaInstances`` don't show file size when the
+    flag `-Z` is used. This class parses the output of ``ls -laR
+    /var/lib/nova/instances`` to output file listing with file size.
+
+    Note: This issue is not see in coreutils-v8.29. When the coreutils
+    package is updated to 8.29 on RHEL7, this parser class can be
+    deprecated.
+    '''
+    pass
 
 
 @parser(Specs.ls_var_lib_nova_instances)
