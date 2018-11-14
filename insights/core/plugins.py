@@ -300,6 +300,13 @@ class Response(dict):
         buf.seek(0)
         return buf.read()
 
+    
+class make_composite(results, exceptions):
+    """ 
+    results is a list of make_response, make_pass, or make_fail instances 
+    and exceptions is a list of any exceptions raised during rule processing
+    """    
+
 
 class make_response(Response):
     """
