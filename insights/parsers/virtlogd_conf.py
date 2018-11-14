@@ -74,7 +74,7 @@ Sample ``/etc/libvirt/virtlogd.conf`` file::
 
     # Maximum number of backup files to keep. Defaults to 3,
     # not including the primary active file
-    #max_backups = 3
+    max_backups = 3
 
 
 Examples:
