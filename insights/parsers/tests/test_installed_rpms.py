@@ -124,6 +124,7 @@ def test_from_package():
     rpm = InstalledRpm.from_package('bash-1:4.1.2-12.el7.x86_64')
     assert rpm.epoch == '1'
 
+
 def test_from_line():
     rpms = InstalledRpms(context_wrap(RPMS_LINE))
     assert rpms.get_max("ConsoleKit").arch == 'x86_64'
