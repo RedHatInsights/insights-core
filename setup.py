@@ -59,6 +59,7 @@ docs = set([
     'sphinx_rtd_theme',
     'ipython<6',
     'colorama',
+    'jinja2',
 ])
 
 testing = set([
@@ -68,12 +69,18 @@ testing = set([
     'mock==2.0.0',
 ])
 
+cluster = set([
+    'ansible',
+    'pandas',
+    'jinja2',
+    'colorama',
+])
+
 linting = set([
     'flake8==2.6.2',
 ])
 
 optional = set([
-    'jinja2',
     'python-cjson',
     'python-logstash',
     'python-statsd',
@@ -97,8 +104,9 @@ if __name__ == "__main__":
         package_data={'': ['LICENSE']},
         license='Apache 2.0',
         extras_require={
-            'develop': list(runtime | develop | client | docs | linting | testing),
+            'develop': list(runtime | develop | client | docs | linting | testing | cluster),
             'client': list(runtime | client),
+            'cluster': list(runtime | cluster),
             'optional': list(optional),
             'docs': list(docs),
             'linting': list(linting | client),
