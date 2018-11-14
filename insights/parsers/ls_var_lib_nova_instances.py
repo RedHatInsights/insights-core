@@ -64,7 +64,7 @@ class LsRVarLibNovaInstances(CommandParser, FileListing):
     flag `-Z` is used. This class parses the output of ``ls -laR
     /var/lib/nova/instances`` to output file listing with file size.
 
-    Note: This issue is not see in coreutils-v8.29. When the coreutils
+    Note: This issue is not seen in coreutils-v8.29. When the coreutils
     package is updated to 8.29 on RHEL7, this parser class can be
     deprecated.
     '''
