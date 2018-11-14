@@ -339,8 +339,7 @@ class InstalledRpm(object):
 
         for k, v in data.items():
             setattr(self, k, v)
-        if 'epoch' not in data or data['epoch'] == '(none)':
-            self.epoch = '0'
+        self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
 
         """Below is only for version comparison"""
         def _start_of_distribution(rest_split):
@@ -444,6 +443,7 @@ class InstalledRpm(object):
             pkg, arch = (package_string, None)
         pkg, release = rsplit(pkg, '-')
         name, version = rsplit(pkg, '-')
+        epoch, version = version.split(':', 1) if ":" in version else ['0', version]
         # oracleasm packages have a dash in their version string, fix that
         if name.startswith('oracleasm') and name.endswith('.el5'):
             name, version2 = name.split('-', 1)
@@ -452,7 +452,8 @@ class InstalledRpm(object):
             'name': name,
             'version': version,
             'release': release,
-            'arch': arch
+            'arch': arch,
+            'epoch': epoch
         }
 
     @classmethod

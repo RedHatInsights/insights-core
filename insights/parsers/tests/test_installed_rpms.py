@@ -112,9 +112,17 @@ openssl-1.0.0-27.el6.x86_64
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
-    assert rpms.packages['openssh-server'][0].package == 'openssh-server-5.3p1-104.el6'
     assert not rpms.is_hypervisor
 
+    pkg_rpm = rpms.packages['openssh-server'][0]
+    rpm = InstalledRpm.from_package(pkg_rpm.package)
+    assert rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert pkg_rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert rpm == pkg_rpm
+    assert rpm.epoch == '0'
+
+    rpm = InstalledRpm.from_package('bash-1:4.1.2-12.el7.x86_64')
+    assert rpm.epoch == '1'
 
 def test_from_line():
     rpms = InstalledRpms(context_wrap(RPMS_LINE))
