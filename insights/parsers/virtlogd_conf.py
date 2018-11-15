@@ -2,9 +2,9 @@
 VirtlogdConf - file ``/etc/libvirt/virtlogd.conf``
 ==================================================
 
-The VirtlogdConf class parses the file ``/etc/libvirt/virtlogd.conf``. The
-virtlogd.conf is in the standard 'ini' format and is read by the base
-parser class `LegacyItemAccess`.
+The VirtlogdConf class parses the file ``/etc/libvirt/virtlogd.conf``.
+The virtlogd.conf is in the standard ``conf`` file format and is read
+by the base parser class ``LegacyItemAccess``.
 
 Sample ``/etc/libvirt/virtlogd.conf`` file::
 
@@ -89,6 +89,12 @@ from insights.specs import Specs
 
 @parser(Specs.virtlogd_conf)
 class VirtlogdConf(LegacyItemAccess, Parser):
-    """Class for virtlogd.conf file content."""
+    """Class for virtlogd.conf file content.
+
+    ``data`` attribute is of type ``dict()`` for example::
+
+        >>> conf.data
+        {'max_backups': '3'}
+    """
     def parse_content(self, content):
         self.data = split_kv_pairs(get_active_lines(content))
