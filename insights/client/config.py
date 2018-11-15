@@ -462,10 +462,7 @@ class InsightsConfig(object):
             if k in insights_env_opts:
                 v = insights_env_opts[k]
                 try:
-                    if k == 'http_timeout':
-                        insights_env_opts[k] = float(v)
-                    else:
-                        insights_env_opts[k] = int(v)
+                    insights_env_opts[k] = float(v) if k == 'http_timeout' else int(v)
                 except ValueError:
                     raise ValueError(
                         'ERROR: Invalid value specified for {0}: {1}.'.format(k, v))
