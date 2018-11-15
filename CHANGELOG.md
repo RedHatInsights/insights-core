@@ -1,5 +1,22 @@
 # Change Log
 
+## [insights-core-3.0.60-680](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.60-680) (2018-11-15)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.59-1...insights-core-3.0.60-680)
+
+## [3.0.59-1](https://github.com/RedHatInsights/insights-core/tree/3.0.59-1) (2018-11-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.58-1...3.0.59-1)
+
+**Closed issues:**
+
+- InstalledRpm.from\_package doesn't support 'epoch' correctly [\#1544](https://github.com/RedHatInsights/insights-core/issues/1544)
+
+## [3.0.58-1](https://github.com/RedHatInsights/insights-core/tree/3.0.58-1) (2018-11-12)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.57-663...3.0.58-1)
+
+**Closed issues:**
+
+- Working without parsers [\#1518](https://github.com/RedHatInsights/insights-core/issues/1518)
+
 ## [insights-core-3.0.57-663](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.57-663) (2018-11-08)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.56-653...insights-core-3.0.57-663)
 
