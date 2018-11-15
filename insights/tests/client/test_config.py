@@ -1,3 +1,4 @@
+import pytest
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS
 from mock.mock import patch
@@ -49,3 +50,34 @@ def test_config_load_value_error(open_):
     c = InsightsConfig()
     c.load_config_file()
     assert c.http_timeout == DEFAULT_OPTS['http_timeout']['default']
+
+
+def test_defaults():
+    c = InsightsConfig()
+    assert isinstance(c.cmd_timeout, int)
+    assert isinstance(c.retries, int)
+    assert isinstance(c.http_timeout, float)
+
+
+@patch('insights.client.config.os.environ', {
+        'INSIGHTS_HTTP_TIMEOUT': '1234',
+        'INSIGHTS_RETRIES':      '1234',
+        'INSIGHTS_CMD_TIMEOUT':  '1234'
+    })
+def test_env_number_parsing():
+    c = InsightsConfig()
+    c.load_env()
+    assert isinstance(c.cmd_timeout, int)
+    assert isinstance(c.retries, int)
+    assert isinstance(c.http_timeout, float)
+
+
+@patch('insights.client.config.os.environ', {
+        'INSIGHTS_HTTP_TIMEOUT': 'STAY AWAY',
+        'INSIGHTS_RETRIES':      'FROM ME',
+        'INSIGHTS_CMD_TIMEOUT':  'BICK HAZARD'
+    })
+def test_env_number_bad_values():
+    c = InsightsConfig()
+    with pytest.raises(ValueError):
+        c.load_env()
