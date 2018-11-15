@@ -10,6 +10,7 @@ glob_file = partial(glob_file, context=HostArchiveContext)
 class InsightsArchiveSpecs(Specs):
 
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
+    bios_uuid = simple_file("insights_commands/dmidecode_-s_system-uuid")
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
     ceph_df_detail = simple_file("insights_commands/ceph_df_detail_-f_json-pretty")
@@ -74,6 +75,7 @@ class InsightsArchiveSpecs(Specs):
     ifconfig = simple_file("insights_commands/ifconfig_-a")
     ip6tables = simple_file("insights_commands/ip6tables-save")
     ip_addr = simple_file("insights_commands/ip_addr")
+    ip_addresses = simple_file("insights_commands/hostname_-I")
     ip_route_show_table_all = simple_file("insights_commands/ip_route_show_table_all")
     ip_s_link = simple_file("insights_commands/ip_-s_link")
     ipcs_m = simple_file("insights_commands/ipcs_-m")
@@ -193,6 +195,7 @@ class InsightsArchiveSpecs(Specs):
     software_collections_list = simple_file('insights_commands/scl_--list')
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
+    subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
     subscription_manager_list_consumed = simple_file('insights_commands/subscription-manager_list_--consumed')
     subscription_manager_list_installed = simple_file('insights_commands/subscription-manager_list_--installed')
     subscription_manager_release_show = simple_file('insights_commands/subscription-manager_release_--show')
