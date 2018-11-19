@@ -478,7 +478,7 @@ class InsightsConnection(object):
             ctime = datetime.utcfromtimestamp(
                 os.path.getctime(constants.cached_branch_info))
             if datetime.utcnow() < (ctime + timedelta(days=30)):
-                with io.open(constants.cached_branch_info, encoding='utf8',mode='r') as f:
+                with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
                     branch_info = json.load(f)
                 return branch_info
             else:
