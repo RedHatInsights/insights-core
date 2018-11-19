@@ -130,6 +130,18 @@ class Ps(CommandParser):
         """
         return any(proc in row[self.command_name] for row in self.data)
 
+    def number_occurences(self, proc):
+        """
+        Returns the number of occurencies of commands that contain given text
+
+        Returns:
+            int: The number of occurencies of commands with given text
+
+        .. note:: 'proc' can match anywhere in the command path, name or
+           arguments.
+        """
+        return len([True for row in self.data if proc in row[self.command_name]])
+
     def search(self, **kwargs):
         """
         Search the process list for matching rows based on key-value pairs.
