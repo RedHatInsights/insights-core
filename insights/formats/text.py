@@ -68,18 +68,20 @@ class HumanReadableFormat(Formatter):
         print('-' * ln + Style.RESET_ALL, file=self.stream)
 
     def preprocess(self):
-        self.counts = {'skip': 0, 'pass': 0, 'fingerprint': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0,
-                       'exception': 0}
         response = namedtuple('response', 'color label intl title')
         self.responses = {'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
                           'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
-                          'fingerprint': response(color=Fore.MAGENTA, label="FINGERPRINT", intl='F',
+                          'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P',
                                                   title="Fingerprint : "),
                           'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
                           'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
                           'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
                           'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : ")
                           }
+
+        self.counts = {}
+        for key in self.responses:
+            self.counts[key] = 0
 
         self.print_header("Progress:", Fore.CYAN)
         self.broker.add_observer(self.progress_bar, rule)
