@@ -1,5 +1,50 @@
 """
-This module implements dependency resolution and execution within Red Hat Insights.
+This module implements an inversion of control framework. It allows
+dependencies among functions and classes to be declared with decorators and the
+resulting dependency graphs to be executed.
+
+A decorator used to declare dependencies is called a :class:`ComponentType`, a
+decorated function or class is called a component, and a collection of
+interdependent components is called a graph.
+
+In the example below, ``needs`` is a :class:`ComponentType`, ``one``, ``two``,
+and ``add`` are components, and the relationship formed by their dependencies
+is a graph.
+
+    .. code-block:: python
+
+       from insights import dr
+
+       class needs(dr.ComponentType):
+           pass
+
+       @needs()
+       def one():
+           return 1
+
+       @needs()
+       def two():
+           return 2
+
+       @needs(one, two)
+       def add(a, b):
+           return a + b
+
+       results = dr.run(add)
+
+Once all components have been imported, the graphs they form can be run. To
+execute a graph, ``dr`` sorts its components into an order that guarantees
+dependencies are tried before dependents. Components that raise exceptions are
+considered invalid, and their dependents will not be executed. If a component
+is skipped because of a missing dependency, its dependents also will not be
+executed.
+
+During evaluation, results are accumulated into an object called a
+:class:`Broker`, which is just a fancy dictionary. Brokers can be inspected
+after a run for results, exceptions, tracebacks, and execution times. You also
+can register callbacks with a broker that get invoked after the attempted
+execution of every component, so you can inspect it during an evaluation
+instead of at the end.
 """
 from __future__ import print_function
 
@@ -152,6 +197,9 @@ def add_dependency(component, dep):
 
 
 class MissingRequirements(Exception):
+    """
+    Raised during evaluation if a component's dependencies aren't met.
+    """
     def __init__(self, requirements):
         self.requirements = requirements
         super(MissingRequirements, self).__init__(requirements)
@@ -166,6 +214,10 @@ class SkipComponent(Exception):
 
 
 def get_name(component):
+    """
+    Attempt to get the string name of component, including module and class if
+    applicable.
+    """
     if six.callable(component):
         name = getattr(component, "__qualname__", component.__name__)
         return '.'.join([component.__module__, name])
@@ -179,7 +231,19 @@ def get_simple_name(component):
 
 
 def get_metadata(component):
+    """
+    Return any metadata dictionary associated with the component. Defaults to
+    an empty dictionary.
+    """
     return get_delegate(component).metadata if component in DELEGATES else {}
+
+
+def get_tags(component):
+    """
+    Return the set of tags associated with the component. Defaults to
+    ``set()``.
+    """
+    return get_delegate(component).tags if component in DELEGATES else set()
 
 
 def get_module_name(obj):
@@ -235,6 +299,10 @@ def walk_dependencies(root, visitor):
 
 
 def get_dependency_graph(component):
+    """
+    Generate a component's graph of dependencies, which can be passed to
+    :func:`run` or :func:`run_incremental`.
+    """
     if component not in DEPENDENCIES:
         raise Exception("%s is not a registered component." % get_name(component))
 
@@ -260,7 +328,13 @@ def get_dependency_graph(component):
     return graph
 
 
-def get_subgraphs(graph=DEPENDENCIES):
+def get_subgraphs(graph=None):
+    """
+    Given a graph of possibly disconnected components, generate all graphs of
+    connected components. graph is a dictionary of dependencies. Keys are
+    components, and values are sets of components on which they depend.
+    """
+    graph = graph or DEPENDENCIES
     keys = set(graph)
     frontier = set()
     seen = set()
@@ -376,7 +450,7 @@ def stringify_requirements(requires):
     return result
 
 
-def register_component(delegate):
+def _register_component(delegate):
     component = delegate.component
 
     dependencies = delegate.get_dependencies()
@@ -396,29 +470,101 @@ def register_component(delegate):
 class ComponentType(object):
     """
     ComponentType is the base class for all component type decorators.
+
+    For Example:
+
+    .. code-block:: python
+
+       class my_component_type(ComponentType):
+           pass
+
+       @my_component_type(SshDConfig, InstalledRpms, [ChkConfig, UnitFiles], optional=[IPTables, IpAddr])
+       def my_func(sshd_config, installed_rpms, chk_config, unit_files, ip_tables, ip_addr):
+           return installed_rpms.newest("bash")
+
+    Notice that the arguments to ``my_func`` correspond to the dependencies in
+    the ``@my_component_type`` and are in the same order.
+
+    When used, a ``my_component_type`` instance is created whose
+    ``__init__`` gets passed dependencies and whose ``__call__`` gets
+    passed the component to run if dependencies are met.
+
+    Parameters to the decorator have these forms:
+
+    ============  ===============================  ==========================
+    Criteria      Example Decorator Arguments      Description
+    ============  ===============================  ==========================
+    Required      ``SshDConfig, InstalledRpms``    A regular argument
+    At Least One  ``[ChkConfig, UnitFiles]``       An argument as a list
+    Optional      ``optional=[IPTables, IpAddr]``  A list following optional=
+    ============  ===============================  ==========================
+
+    If a parameter is required, the value provided for it is guaranteed not to
+    be ``None``. In the example above, ``sshd_config`` and ``installed_rpms``
+    will not be ``None``.
+
+    At least one of the arguments to parameters of an "at least one"
+    list will not be ``None``. In the example, either or both of ``chk_config``
+    and unit_files will not be ``None``.
+
+    Any or all arguments for optional parameters may be ``None``.
+
+    The following keyword arguments may be passed to the decorator:
+
+    Attributes:
+        requires (list): a list of components that all components decorated with
+            this type will implicitly require. Additional components passed to
+            the decorator will be appended to this list.
+        optional (list): a list of components that all components decorated with
+            this type will implicitly depend on optionally. Additional components
+            passed as ``optional`` to the decorator will be appended to this list.
+        metadata (dict): an arbitrary dictionary of information to associate
+            with the component you're decorating. It can be retrieved with
+            ``get_metadata``.
+        tags (list): a list of strings that categorize the component. Useful for
+            formatting output or sifting through results for components you care
+            about.
+        group: ``GROUPS.single`` or ``GROUPS.cluster``. Used to organize
+            components into "groups" that run together with :func:`insights.core.dr.run`.
+        cluster (bool): if ``True`` will put the component into the
+            ``GROUPS.cluster`` group. Defaults to ``False``. Overrides ``group``
+            if ``True``.
+
     """
 
     requires = []
+    """
+    a list of components that all components decorated with this type will
+    implicitly require. Additional components passed to the decorator will be
+    appended to this list.
+    """
     optional = []
+    """
+    a list of components that all components decorated with this type will
+    implicitly depend on optionally. Additional components passed as
+    ``optional`` to the decorator will be appended to this list.
+    """
     metadata = {}
+    """
+    an arbitrary dictionary of information to associate with the component
+    you're decorating. It can be retrieved with ``get_metadata``.
+    """
+    tags = []
+    """
+    a list of strings that categorize the component. Useful for formatting
+    output or sifting through results for components you care about.
+    """
     group = GROUPS.single
+    """
+    group: ``GROUPS.single`` or ``GROUPS.cluster``. Used to organize components
+    into "groups" that run together with :func:`insights.core.dr.run`.
+    """
 
     def __init__(self, *deps, **kwargs):
         """
         This constructor is the parameterized part of a decorator.
-        For Example:
-            class my_component_type(ComponentType):
-                pass
-
-            # A my_component_type instance is created whose __call__ function
-            # gets passed `my_func`.
-            @my_component_type("I need this")
-            def my_func(thing):
-                return "stuff"
-
-        Override it in a subclass if you want a specialized decorator interface,
-        but always remember to invoke the super class constructor.
         """
+
         for k, v in kwargs.items():
             setattr(self, k, v)
 
@@ -457,6 +603,11 @@ class ComponentType(object):
         if kwargs.get("cluster", False):
             self.group = GROUPS.cluster
 
+        tags = []
+        tags.extend(self.__class__.tags)
+        tags.extend(kwargs.get("tags", []) or [])
+        self.tags = set(tags)
+
     def __call__(self, component):
         """
         This function is the part of the decorator that receives the function
@@ -469,7 +620,7 @@ class ComponentType(object):
         self.__qualname__ = getattr(component, "__qualname__", None)
         for d in self.dependencies:
             add_dependent(d, component)
-        register_component(self)
+        _register_component(self)
         return component
 
     def invoke(self, results):
@@ -515,6 +666,36 @@ class ComponentType(object):
 
 
 class Broker(object):
+    """
+    The Broker is a fancy dictionary that keeps up with component instances as
+    a graph is evaluated. It's the state of the evaluation. Once a graph has
+    executed, the broker will contain everything about the evaluation:
+    component instances, timings, exceptions, and tracebacks.
+
+    You can either inspect the broker at the end of an evaluation, or you can
+    register callbacks with it, and they'll get invoked after each component
+    is called.
+
+    Attributes:
+        instances (dict): the component instances with components as keys.
+        missing_requirements (dict): components that didn't have their dependencies
+            met. Values are a two-tuple. The first element is the list of
+            required dependencies that were missing. The second element is the
+            list of "at least one" dependencies that were missing. For more
+            information on dependency types, see the :class:`ComponentType`
+            docs.
+        exceptions (defaultdict(list)): Components that raise any type of
+            exception except :class:`SkipComponent` during evaluation. The key
+            is the component, and the value is a list of exceptions. It's a
+            list because some components produce multiple instances.
+        tracebacks (dict): keys are exceptions and values are their text
+            tracebacks.
+        exec_times (dict): component -> float dictionary where values are the
+            number of seconds the component took to execute. Calculated using
+            :func:`time.time`. For components that produce multiple instances,
+            the execution time here is the sum of their individual execution
+            times.
+    """
     def __init__(self, seed_broker=None):
         self.instances = dict(seed_broker.instances) if seed_broker else {}
         self.missing_requirements = {}
@@ -531,12 +712,37 @@ class Broker(object):
                 self.observers[k] |= set(v)
 
     def observer(self, component_type=ComponentType):
+        """
+        You can use ``@broker.observer()`` as a decorator to your callback
+        instead of :func:`Broker.add_observer`.
+        """
         def inner(func):
             self.add_observer(func, component_type)
             return func
         return inner
 
     def add_observer(self, o, component_type=ComponentType):
+        """
+        Add a callback that will get invoked after each component is called.
+
+        Args:
+            o (func): the callback function
+
+        Keyword Args:
+            component_type (ComponentType): the :class:`ComponentType` to observe.
+                The callback will fire any time an instance of the class or its
+                subclasses is invoked.
+        The callback should look like this:
+
+        .. code-block:: python
+
+            def callback(comp, broker):
+                value = broker.get(comp)
+                # do something with value
+                pass
+
+        """
+
         self.observers[component_type].add(o)
 
     def fire_observers(self, component):
@@ -572,6 +778,9 @@ class Broker(object):
         return self.instances.values()
 
     def get_by_type(self, _type):
+        """
+        Return all of the instances of :class:`ComponentType` ``_type``.
+        """
         r = {}
         for k, v in self.items():
             if get_component_type(k) is _type:
@@ -612,6 +821,9 @@ class Broker(object):
 
 
 def get_missing_requirements(func, requires, d):
+    """
+    .. deprecated:: 1.x
+    """
     if not requires:
         return None
     if any(i in d for i in IGNORE.get(func, [])):
@@ -627,10 +839,36 @@ def get_missing_requirements(func, requires, d):
 
 
 def add_observer(o, component_type=ComponentType):
+    """
+    Add a callback that will get invoked after each component is called.
+
+    Args:
+        o (func): the callback function
+
+    Keyword Arg:
+        component_type (ComponentType): the :class:`ComponentType` to observe.
+            The callback will fire any time an instance of the class or its
+            subclasses is invoked.
+
+    The callback should look like this:
+
+    .. code-block:: python
+
+        def callback(comp, broker):
+            value = broker.get(comp)
+            # do something with value
+            pass
+
+    """
+
     TYPE_OBSERVERS[component_type].add(o)
 
 
 def observer(component_type=ComponentType):
+    """
+    You can use ``@broker.observer()`` as a decorator to your callback
+    instead of :func:`add_observer`.
+    """
     def inner(func):
         add_observer(func, component_type)
         return func
@@ -665,7 +903,7 @@ def _determine_components(components):
         return COMPONENTS[components]
 
 
-def run(components=COMPONENTS[GROUPS.single], broker=None):
+def run(components=None, broker=None):
     """
     Executes components in an order that satisfies their dependency
     relationships.
@@ -681,6 +919,7 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
     Returns:
         Broker: The broker after evaluation.
     """
+    components = components or COMPONENTS[GROUPS.single]
     components = _determine_components(components)
     broker = broker or Broker()
 
@@ -710,7 +949,7 @@ def run(components=COMPONENTS[GROUPS.single], broker=None):
     return broker
 
 
-def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
+def run_incremental(components=None, broker=None):
     """
     Executes components in an order that satisfies their dependency
     relationships. Disjoint subgraphs are executed one at a time and a broker
@@ -729,6 +968,7 @@ def run_incremental(components=COMPONENTS[GROUPS.single], broker=None):
     Yields:
         Broker: the broker used to evaluate each subgraph.
     """
+    components = components or COMPONENTS[GROUPS.single]
     components = _determine_components(components)
     seed_broker = broker or Broker()
     for graph in get_subgraphs(components):

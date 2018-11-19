@@ -8,7 +8,7 @@ CONTENT = {
 }
 
 
-@rule(RedhatRelease)
+@rule(RedhatRelease, content=CONTENT)
 def report(rel):
     """Fires if the machine is running Fedora."""
 

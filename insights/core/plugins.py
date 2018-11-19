@@ -1,6 +1,27 @@
 """
-The plugins module defines the components used by the rest of Insights and
+The plugins module defines the components used by the rest of insights and
 specializes their interfaces and execution model where required.
+
+This module includes the following :class:`CompoentType` subclasses:
+
+    - :class:`datasource`
+    - :class:`parser`
+    - :class:`combiner`
+    - :class:`rule`
+    - :class:`condition`
+    - :class:`incident`
+    - :class:`fact`
+
+It also contains the following :class:`Response` subclasses that :class:`rules`
+may return:
+
+    - :class:`make_pass`
+    - :class:`make_response` (alias for make_fail)
+    - :class:`make_fail`
+    - :class:`make_metadata`
+    - :class:`make_metadata_key`
+    - :class:`make_fingerprint`
+
 """
 from __future__ import print_function
 
@@ -18,7 +39,7 @@ log = logging.getLogger(__name__)
 
 
 class ContentException(dr.SkipComponent):
-    """ Raised whenever a datasource fails to get data. """
+    """ Raised whenever a :class:`datasource` fails to get data. """
     pass
 
 
@@ -26,7 +47,10 @@ component = dr.ComponentType
 
 
 class datasource(dr.ComponentType):
-    """ Decorates a component that one or more Parsers will consume. """
+    """
+    Decorates a component that one or more :class:`insights.core.Parser`
+    subclasses will consume.
+    """
     multi_output = False
     raw = False
     filterable = False
@@ -47,7 +71,15 @@ class datasource(dr.ComponentType):
 class parser(dr.ComponentType):
     """
     Decorates a component responsible for parsing the output of a
-    datasource.
+    :class:`datasource`. ``@parser`` should accept only one argument, which is
+    the datasource the parser component should handle. ``@parser`` should only
+    decorate subclasses of :class:`insights.core.Parser`.
+
+    .. warning::
+        If a Parser component handles a datasource that returns a ``list``, a
+        Parser instance will be created for each element of the list. Combiners
+        or rules that depend on the Parser will be passed the list of instances
+        and **not** a single parser instance.
     """
     def __init__(self, dep, group=dr.GROUPS.single):
         super(parser, self).__init__(dep, group=group)
@@ -77,13 +109,25 @@ class parser(dr.ComponentType):
 
 
 class metadata(parser):
-    """ Used for old cluster uber-archives. """
-    # TODO: Mark deprecated
+    """
+    Used for old cluster uber-archives.
+
+    .. deprecated:: 1.x
+
+    .. warning::
+        Do not use this component type.
+    """
     requires = ["metadata.json"]
 
 
 class combiner(dr.ComponentType):
-    """ ComponentType for a component that composes other components. """
+    """
+    A decorator for a component that composes or "combines" other components.
+
+    A typical use case is hiding slight variations in related parser
+    interfaces. Another use case is to combine several related parsers behind a
+    single, cohesive, higher level interface.
+    """
     pass
 
 
@@ -94,9 +138,84 @@ class remoteresource(dr.ComponentType):
 
 class rule(dr.ComponentType):
     """
-    ComponentType for a component that can see all parsers and combiners for a
-    single host.
+    Decorator for components that encapsulate some logic that depends on the
+    data model of a system. Rules can depend on :class:`datasource` instances,
+    :class:`parser` instances, :class:`combiner` instances, or anything else.
+
+    For example:
+
+    .. code-block:: python
+
+       @rule(SshDConfig, InstalledRpms, [ChkConfig, UnitFiles], optional=[IPTables, IpAddr])
+       def report(sshd_config, installed_rpms, chk_config, unit_files, ip_tables, ip_addr):
+           # ...
+           # ... some complicated logic
+           # ...
+           bash = installed_rpms.newest("bash")
+           return make_pass("BASH", bash=bash)
+
+    Notice that the arguments to ``report`` correspond to the dependencies in
+    the ``@rule`` decorator and are in the same order.
+
+    Parameters to the decorator have these forms:
+
+    ============  ===============================  ==========================
+    Criteria      Example Decorator Arguments      Description
+    ============  ===============================  ==========================
+    Required      ``SshDConfig, InstalledRpms``    Regular arguments
+    At Least One  ``[ChkConfig, UnitFiles]``       An argument as a list
+    Optional      ``optional=[IPTables, IpAddr]``  A list following optional=
+    ============  ===============================  ==========================
+
+    If a parameter is required, the value provided for it is guaranteed not to
+    be ``None``. In the example above, ``sshd_config`` and ``installed_rpms``
+    will not be ``None``.
+
+    At least one of the arguments to parameters of an "at least one"
+    list will not be ``None``. In the example, either or both of ``chk_config``
+    and unit_files will not be ``None``.
+
+    Any or all arguments for optional parameters may be ``None``.
+
+    The following keyword arguments may be passed to the decorator:
+
+    Keyword Args:
+        requires (list) **deprecated**: a list of components that all
+            components decorated with this type will require. Instead of using
+            ``requires=[...]``, just pass dependencies as variable arguments
+            to ``@rule`` as in the example above.
+        optional (list): a list of components that all components decorated with
+            this type will implicitly depend on optionally. Additional components
+            passed as ``optional`` to the decorator will be appended to this list.
+        metadata (dict): an arbitrary dictionary of information to associate
+            with the component you're decorating. It can be retrieved with
+            ``get_metadata``.
+        tags (list): a list of strings that categorize the component. Useful for
+            formatting output or sifting through results for components you care
+            about.
+        group: ``GROUPS.single`` or ``GROUPS.cluster``. Used to organize
+            components into "groups" that run together with :func:`insights.core.dr.run`.
+        cluster (bool): if ``True`` will put the component into the
+            ``GROUPS.cluster`` group. Defaults to ``False``. Overrides ``group``
+            if ``True``.
+        content (str or dict): a jinja2 template or dictionary of jinja2
+            templates. The :class:`Response` subclasses rules can return are
+            dictionaries. :class:`make_pass`, :class:`make_fail`, and
+            :class:`make_response` all accept first a key and then a list of
+            arbitrary keyword arguments. If content is a dictionary, the key is
+            used to look up the template that the rest of the keyword argments
+            will be interpolated into. If content is a string, then it is used
+            for all return values of the rule. If content isn't defined but a
+            ``CONTENT`` variable is declared in the module, it will be used for
+            every rule in the module and also can be a string or list of
+            dictionaries
     """
+    content = None
+
+    def __init__(self, *args, **kwargs):
+        super(rule, self).__init__(*args, **kwargs)
+        self.content = kwargs.get("content")
+
     def process(self, broker):
         """
         Ensures dependencies have been met before delegating to `self.invoke`.
@@ -116,8 +235,10 @@ class rule(dr.ComponentType):
 
 class condition(dr.ComponentType):
     """
-    ComponentType for a component used by rules that allows automated
-    statistical analysis.
+    ComponentType used to encapsulate boolean logic you'd like to have analyzed
+    by a rule analysis system. Conditions should return truthy values. ``None``
+    is also a valid return type for conditions, so ``rules`` that depend on
+    ``conditions`` that might return None should check their validity.
     """
     pass
 
@@ -133,7 +254,8 @@ class incident(dr.ComponentType):
 class fact(dr.ComponentType):
     """
     ComponentType for a component that surfaces a dictionary or list of
-    dictionaries that will be used later by cluster rules.
+    dictionaries that will be used later by cluster rules. The data from a fact
+    is converted to a pandas Dataframe
     """
     pass
 
@@ -303,21 +425,78 @@ class Response(dict):
 
 class make_response(Response):
     """
-    Traditionally used by a rule to signal that its conditions have been met.
+    Returned by a rule to signal that its conditions have been met.
+
+    Example:
+
+    .. code-block:: python
+
+        # completely made up package
+        buggy = InstalledRpms.from_package("bash-3.4.23-1.el7")
+
+        @rule(InstalledRpms)
+        def report(installed_rpms):
+           bash = installed_rpms.newest("bash")
+           if bash == buggy:
+               return make_response("BASH_BUG_123", bash=bash)
+           return make_pass("BASH", bash=bash)
+
+    .. deprecated::
+        Use :class:`make_fail` instead.
     """
+
     response_type = "rule"
     key_name = "error_key"
 
 
 class make_fail(make_response):
-    """ An alias for make_response. """
+    """
+    Returned by a rule to signal that its conditions have been met.
+
+    Example:
+
+    .. code-block:: python
+
+        # completely made up package
+        buggy = InstalledRpms.from_package("bash-3.4.23-1.el7")
+
+        @rule(InstalledRpms)
+        def report(installed_rpms):
+           bash = installed_rpms.newest("bash")
+           if bash == buggy:
+               return make_fail("BASH_BUG_123", bash=bash)
+           return make_pass("BASH", bash=bash)
+    """
     pass
 
 
 class make_pass(Response):
     """
-    Can be used by a rule to explicitly indicate that a system "passed" its
-    checks.
+    Returned by a rule to signal that its conditions explicitly have **not**
+    been met. In other words, the rule has all of the information it needs to
+    determine that the system it's analyzing is not in the state the rule was
+    meant to catch.
+
+    An example rule might check whether a system is vulnerable to a well
+    defined exploit or has a bug in a specific version of a package. If it can
+    say for sure "the system does not have this exploit" or "the system does
+    not have the buggy version of the package installed", then it should return
+    an instance of :class:`make_pass`.
+
+    Example:
+
+    .. code-block:: python
+
+        # completely made up package
+        buggy = InstalledRpms.from_package("bash-3.4.23-1.el7")
+
+        @rule(InstalledRpms)
+        def report(installed_rpms):
+           bash = installed_rpms.newest("bash")
+           if bash == buggy:
+               return make_fail("BASH_BUG_123", bash=bash)
+           return make_pass("BASH", bash=bash)
+
     """
     response_type = "pass"
     key_name = "pass_key"

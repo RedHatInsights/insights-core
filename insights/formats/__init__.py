@@ -95,8 +95,11 @@ try:
     from jinja2 import Template
 
     def get_content(obj, key):
-        mod = sys.modules[obj.__module__]
-        c = getattr(mod, "CONTENT", None)
+        c = dr.get_delegate(obj).content
+        if c is None:
+            mod = sys.modules[obj.__module__]
+            c = getattr(mod, "CONTENT", None)
+
         if c:
             if isinstance(c, dict):
                 if key:

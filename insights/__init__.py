@@ -1,3 +1,21 @@
+"""
+Insights Core is a data collection and analysis framework that is built for
+extensibility and rapid development. It includes a set of reusable components
+for gathering data in myriad ways and providing a reliable object model for it.
+
+.. code-block: python
+
+    >>> from insights import run
+    >>> from insights.parsers import installed_rpms as rpm
+    >>> lower = rpm.Rpm("bash-4.4.11-1.fc26")
+    >>> upper = rpm.Rpm("bash-4.4.22-1.fc26")
+    >>> results = run(rpm.Installed)
+    >>> rpms = results[rpm.Installed]
+    >>> rpms.newest("bash")
+    0:bash-4.4.12-7.fc26
+    >>> lower <= rpms.newest("bash") < upper
+    True
+"""
 from __future__ import print_function
 import logging
 import pkgutil
@@ -135,6 +153,7 @@ def apply_configs(configs):
             if cname.startswith(name):
                 dr.ENABLED[c] = comp_cfg.get("enabled", True)
                 delegate.metadata.update(comp_cfg.get("metadata", {}))
+                delegate.tags = set(comp_cfg.get("tags", delegate.tags))
                 for k, v in delegate.metadata.items():
                     if hasattr(c, k):
                         setattr(c, k, v)

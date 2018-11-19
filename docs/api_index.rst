@@ -41,6 +41,18 @@ insights.core.context
     :show-inheritance:
     :undoc-members:
 
+insights.core.dr
+----------------
+
+.. automodule:: insights.core.dr
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+.. autoclass:: insights.core.dr.ComponentType
+    :members:
+    :exclude-members: requires, optional, metadata, group, tags
+
 insights.core.filters
 ---------------------
 
@@ -87,13 +99,16 @@ insights.specs
 --------------
 .. automodule:: insights.specs
     :members:
+    :exclude-members: context_handlers, registry
     :show-inheritance:
     :undoc-members:
+
 
 insights.specs.default
 ----------------------
 .. automodule:: insights.specs.default
     :members:
+    :exclude-members: context_handlers, registry
     :show-inheritance:
     :undoc-members:
 
@@ -101,6 +116,7 @@ insights.specs.insights_archive
 -------------------------------
 .. automodule:: insights.specs.insights_archive
     :members:
+    :exclude-members: context_handlers, registry
     :show-inheritance:
     :undoc-members:
 
@@ -108,6 +124,7 @@ insights.specs.sos_archive
 --------------------------
 .. automodule:: insights.specs.sos_archive
     :members:
+    :exclude-members: context_handlers, registry
     :show-inheritance:
     :undoc-members:
 
@@ -115,6 +132,7 @@ insights.specs.jdr_archive
 --------------------------
 .. automodule:: insights.specs.jdr_archive
     :members:
+    :exclude-members: context_handlers, registry
     :show-inheritance:
     :undoc-members:
 
