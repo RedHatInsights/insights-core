@@ -61,9 +61,9 @@ def test_defaults():
 
 @patch('insights.client.config.os.environ', {
         'INSIGHTS_HTTP_TIMEOUT': '1234',
-        'INSIGHTS_RETRIES':      '1234',
-        'INSIGHTS_CMD_TIMEOUT':  '1234'
-    })
+        'INSIGHTS_RETRIES': '1234',
+        'INSIGHTS_CMD_TIMEOUT': '1234'
+       })
 def test_env_number_parsing():
     c = InsightsConfig()
     c.load_env()
@@ -74,9 +74,9 @@ def test_env_number_parsing():
 
 @patch('insights.client.config.os.environ', {
         'INSIGHTS_HTTP_TIMEOUT': 'STAY AWAY',
-        'INSIGHTS_RETRIES':      'FROM ME',
-        'INSIGHTS_CMD_TIMEOUT':  'BICK HAZARD'
-    })
+        'INSIGHTS_RETRIES': 'FROM ME',
+        'INSIGHTS_CMD_TIMEOUT': 'BICK HAZARD'
+     })
 def test_env_number_bad_values():
     c = InsightsConfig()
     with pytest.raises(ValueError):
