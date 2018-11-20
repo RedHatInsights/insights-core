@@ -130,6 +130,18 @@ class Ps(CommandParser):
         """
         return any(proc in row[self.command_name] for row in self.data)
 
+    def number_occurences(self, proc):
+        """
+        Returns the number of occurencies of commands that contain given text
+
+        Returns:
+            int: The number of occurencies of commands with given text
+
+        .. note:: 'proc' can match anywhere in the command path, name or
+           arguments.
+        """
+        return len([True for row in self.data if proc in row[self.command_name]])
+
     def search(self, **kwargs):
         """
         Search the process list for matching rows based on key-value pairs.
@@ -278,3 +290,55 @@ add_filter(Specs.ps_aux, "COMMAND")
 @parser(Specs.ps_aux)
 class PsAux(PsAuxww):
     pass
+
+
+@parser(Specs.ps_eo)
+class PsEo(Ps):
+    """
+    Class to parse the command `ps -eo pid,ppid,comm`
+
+    Sample input data::
+
+          PID  PPID COMMAND
+            1     0 systemd
+            2     0 kthreadd
+            3     2 ksoftirqd/0
+         2416     1 auditd
+         2419  2416 audispd
+         2421  2419 sedispatch
+         2892     1 NetworkManager
+         3172  2892 dhclient
+         3871     1 master
+         3886  3871 qmgr
+        13724  3871 pickup
+        15663     2 kworker/0:1
+        16998     2 kworker/0:3
+        17259     2 kworker/0:0
+        18294  3357 sshd
+
+    Attributes:
+        pid_info(dict): Dictionary with PID as key containing ps row as a dict
+
+    Examples:
+        >>> pseo
+        <insights.parsers.ps.PsEo at 0x7fbf61d37d10>
+        >>> pseo.pid_info['1']
+        {'PID': '1', 'PPID': '0', 'COMMAND': 'systemd'}
+        >>> pseo.children('2')
+        [{'PID': '3', 'PPID': '2', 'COMMAND': 'ksoftirqd/0'},
+         {'PID': '16998', 'PPID': '2', 'COMMAND': 'kworker/0:3'},
+         {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0'}]
+    """
+    command_name = 'COMMAND'
+    user_name = 'PID'
+    max_splits = 3
+
+    def parse_content(self, content):
+        super(PsEo, self).parse_content(content)
+        self.pid_info = {}
+        for row in self.data:
+            self.pid_info[row['PID']] = row
+
+    def children(self, ppid):
+        """list: Returns a list of dict for all rows with `ppid` as parent PID"""
+        return [row for row in self.data if row['PPID'] == ppid]

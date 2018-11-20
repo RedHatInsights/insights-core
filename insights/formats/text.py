@@ -9,8 +9,10 @@ from insights import dr, datasource, rule, condition, incident, parser
 from insights.core.context import ExecutionContext
 from insights.formats import Formatter, FormatterAdapter, render
 
+
 try:
-    from colorama import Fore, Style
+    from colorama import Fore, Style, init
+    init()
 except ImportError:
     print("Install colorama if console colors are preferred.")
 
@@ -59,23 +61,29 @@ class HumanReadableFormat(Formatter):
         self.dropped = dropped
         self.stream = stream
 
+    def print_header(self, header, color):
+        ln = len(header)
+        print(color + '-' * ln, file=self.stream)
+        print(header, file=self.stream)
+        print('-' * ln + Style.RESET_ALL, file=self.stream)
+
     def preprocess(self):
-        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'exception': 0}
         response = namedtuple('response', 'color label intl title')
-        self.responses = {'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Total Skipped Due To Rule Dependencies "
-                                                                            "Not Met - "),
-                          'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Total Return Type 'make_pass' - "),
-                          'rule': response(color=Fore.RED, label="FAIL", intl='R', title="Total Return Type "
-                                                                           "'make_fail/make_response' - "),
-                          'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Total Return Type 'make_metadata' - "),
-                          'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Total Return Type "
-                                                                                       "'make_metadata_key' - "),
-                          'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Total Exceptions Reported to Broker - ")
+        self.responses = {'skip': response(color=Fore.BLUE, label="SKIP", intl='S', title="Missing Deps: "),
+                          'pass': response(color=Fore.GREEN, label="PASS", intl='P', title="Passed      : "),
+                          'fingerprint': response(color=Fore.YELLOW, label="FINGERPRINT", intl='P',
+                                                  title="Fingerprint : "),
+                          'rule': response(color=Fore.RED, label="FAIL", intl='F', title="Failed      : "),
+                          'metadata': response(color=Fore.YELLOW, label="META", intl='M', title="Metadata    : "),
+                          'metadata_key': response(color=Fore.MAGENTA, label="META", intl='K', title="Metadata Key: "),
+                          'exception': response(color=Fore.RED, label="EXCEPT", intl='E', title="Exceptions  : ")
                           }
 
-        print(Fore.CYAN + '-' * 9, file=self.stream)
-        print("Progress:", file=self.stream)
-        print('-' * 9 + Style.RESET_ALL, file=self.stream)
+        self.counts = {}
+        for key in self.responses:
+            self.counts[key] = 0
+
+        self.print_header("Progress:", Fore.CYAN)
         self.broker.add_observer(self.progress_bar, rule)
         self.broker.add_observer(self.progress_bar, condition)
         self.broker.add_observer(self.progress_bar, incident)
@@ -96,13 +104,6 @@ class HumanReadableFormat(Formatter):
             self.counts['exception'] += len(broker.exceptions[c])
             print(Fore.RED + "E" + Style.RESET_ALL, end="", file=self.stream)
         return self
-
-    def show_missing(self):
-        """ Show missing requirements """
-        if self.broker.missing_requirements:
-            print(file=self.stream)
-            print("Missing Requirements:", file=self.stream)
-            print(self.broker.missing_requirements, file=self.stream)
 
     def show_tracebacks(self):
         """ Show tracebacks """
@@ -129,33 +130,31 @@ class HumanReadableFormat(Formatter):
 
     def show_description(self):
         """ Prints the formatted response for the matching return type """
-        def printit(c, v):
-            name = None
 
-            if v["type"] in self.responses:
-                self.counts[v["type"]] += 1
-                name = self.responses[v["type"]].color + dr.get_name(c) + " - [" + self.responses[v["type"]].label + "]" + Style.RESET_ALL
-            if name:
-                print(name, file=self.stream)
-                print('-' * len(name), file=self.stream)
-                print(render(c, v), file=self.stream)
-                print(file=self.stream)
+        def printit(c, v):
+            _type = v.get("type")
+            if _type:
+                underline = "-" * len(dr.get_name(c))
+                resp = self.responses[v["type"]]
+                name = "%s[%s] %s%s" % (resp.color, resp.label, dr.get_name(c), Style.RESET_ALL)
+                if _type != "skip" or (_type == "skip" and self.missing):
+                    print(name, file=self.stream)
+                    print(underline, file=self.stream)
+                    print(render(c, v), file=self.stream)
+                    print(file=self.stream)
 
         for c in sorted(self.broker.get_by_type(rule), key=dr.get_name):
             v = self.broker[c]
+            if v["type"] in self.responses:
+                self.counts[v["type"]] += 1
             printit(c, v)
         print(file=self.stream)
 
-        print(Fore.CYAN + '*' * 31 + Style.RESET_ALL, file=self.stream)
-        print(Fore.CYAN + "**** Counts By Return Type ****" + Style.RESET_ALL, file=self.stream)
-        print(Fore.CYAN + '*' * 31 + Style.RESET_ALL, file=self.stream)
-
+        self.print_header("Rule Execution Summary", Fore.CYAN)
         for c in self.counts:
             print(self.responses[c].color + self.responses[c].title + str(self.counts[c]) + Style.RESET_ALL, file=self.stream)
 
     def postprocess(self):
-        if self.missing:
-            self.show_missing()
         if self.tracebacks:
             self.show_tracebacks()
         if self.dropped:
@@ -163,10 +162,7 @@ class HumanReadableFormat(Formatter):
 
         print(file=self.stream)
         print(file=self.stream)
-        print(Fore.CYAN + "-" * 15, file=self.stream)
-        print("Rules Executed", file=self.stream)
-        print('-' * 15 + Style.RESET_ALL, file=self.stream)
-
+        self.print_header("Rules Executed", Fore.CYAN)
         self.show_description()
 
 
