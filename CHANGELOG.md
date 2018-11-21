@@ -1,5 +1,15 @@
 # Change Log
 
+## [insights-core-3.0.62-686](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.62-686) (2018-11-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.61-682...insights-core-3.0.62-686)
+
+**Closed issues:**
+
+- Mention unsupported docs building on Python 2.6 [\#1391](https://github.com/RedHatInsights/insights-core/issues/1391)
+
+## [insights-core-3.0.61-682](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.61-682) (2018-11-15)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.60-680...insights-core-3.0.61-682)
+
 ## [insights-core-3.0.60-680](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.60-680) (2018-11-15)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.59-1...insights-core-3.0.60-680)
 
