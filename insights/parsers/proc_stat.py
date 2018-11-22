@@ -77,7 +77,7 @@ class ProcStat(CommandParser):
     @property
     def cpu_percentage(self):
         if 'cpu' in self.data:
-            cpu_list = map(lambda x: int(x), self.data['cpu'].split())
+            cpu_list = list(map(lambda x: int(x), self.data['cpu'].split()))
             cpu_total = float(sum(cpu_list[:8]))
             cpu_idle = float(sum([cpu_list[3], cpu_list[4]]))
             cpu_pct = (cpu_total - cpu_idle) * 100 / cpu_total
