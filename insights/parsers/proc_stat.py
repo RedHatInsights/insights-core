@@ -17,7 +17,7 @@ class ProcStat(CommandParser):
     Class ``ProcStat`` parses the content of the ``/proc/stat``.
 
     Attributes:
-        cpu_percentage (float):     The CPU usage percentage since boot.
+        cpu_percentage (string):     The CPU usage percentage since boot.
         intr (int):     The total of all interrupts serviced including unnumbered
                         architecture specific interrupts.
         ctxt (int):     The number of context switches that the system under went.
@@ -57,7 +57,7 @@ class ProcStat(CommandParser):
         >>> type(proc_stat)
         <class 'insights.parsers.proc_stat.ProcStat'>
         >>> proc_stat.cpu_percentage
-        6.63
+        '6.63%'
         >>> proc_stat.ctxt
         17852681
         >>> proc_stat.btime
@@ -81,7 +81,7 @@ class ProcStat(CommandParser):
             cpu_total = float(sum(cpu_list[:8]))
             cpu_idle = float(sum([cpu_list[3], cpu_list[4]]))
             cpu_pct = (cpu_total - cpu_idle) * 100 / cpu_total
-            return float("{0:.2f}".format(cpu_pct))
+            return "{0:.2f}".format(cpu_pct) + '%'
         return None
 
     @property
