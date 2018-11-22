@@ -10,7 +10,7 @@ AVC_CACHE_THRESHOLD = """
 
 def test_avc_cache_threshold():
     cache_threshold = avc_cache_threshold.AvcCacheThreshold(context_wrap(AVC_CACHE_THRESHOLD))
-    assert cache_threshold.value == 512
+    assert cache_threshold.cache_threshold == 512
 
 
 def test_avc_cache_threshold_doc_examples():

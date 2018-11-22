@@ -17,7 +17,7 @@ class AvcCacheThreshold(CommandParser):
     Class ``AvcCacheThreshold`` parses the content of the ``/sys/fs/selinux/avc/cache_threshold``.
 
     Attributes:
-        value (int): It is used to show the value of cache threshold.
+        cache_threshold (int): It is used to show the value of cache threshold.
 
     A small sample of the content of this file looks like::
 
@@ -26,15 +26,11 @@ class AvcCacheThreshold(CommandParser):
     Examples:
         >>> type(avc_cache_threshold)
         <class 'insights.parsers.avc_cache_threshold.AvcCacheThreshold'>
-        >>> avc_cache_threshold.value
+        >>> avc_cache_threshold.cache_threshold
         512
     """
 
     def parse_content(self, content):
-        if len(content) == 0 or len(content) > 1 or 'No such file or directory' in content[0]:
+        if len(content) == 0 or len(content) > 1:
             raise ParseException("Error: ", content[0] if content else 'empty file')
-        self.threshold_value = int(content[0].strip())
-
-    @property
-    def value(self):
-        return self.threshold_value
+        self.cache_threshold = int(content[0].strip())
