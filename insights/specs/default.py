@@ -57,6 +57,7 @@ class DefaultSpecs(Specs):
     auditd_conf = simple_file("/etc/audit/auditd.conf")
     audit_log = simple_file("/var/log/audit/audit.log")
     autofs_conf = simple_file("/etc/autofs.conf")
+    avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")

@@ -6,6 +6,7 @@ class Specs(SpecSet):
     auditd_conf = RegistryPoint()
     audit_log = RegistryPoint(filterable=True)
     autofs_conf = RegistryPoint()
+    avc_cache_threshold = RegistryPoint()
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
     bond = RegistryPoint(multi_output=True)
