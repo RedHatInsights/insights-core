@@ -19,7 +19,7 @@ class AvcCacheThreshold(CommandParser):
     Attributes:
         cache_threshold (int): It is used to show the value of cache threshold.
 
-    A small sample of the content of this file looks like::
+    A typical sample of the content of this file looks like::
 
         512
 
