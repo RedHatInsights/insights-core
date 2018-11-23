@@ -26,8 +26,8 @@ softirq 11867930 1 3501158 6 4705528 368244 0 79 2021509 0 1271405
 def test_proc_stat():
     proc_stat = ProcStat(context_wrap(PROC_STAT))
     assert proc_stat.btime == '1542179825'
-    assert proc_stat.softirq == 11867930
-    assert proc_stat.cpu_percentage == '6.63%'
+    assert proc_stat.softirq_total == 11867930
+    assert proc_stat.cpu_percentage == '6.73%'
 
 
 def test_proc_stat_doc_examples():

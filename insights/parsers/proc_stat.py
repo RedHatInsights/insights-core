@@ -1,36 +1,36 @@
 """
 ProcStat - File ``/proc/stat``
-======================================================
+==============================
 
 This parser reads the content of ``/proc/stat``.
 """
 
-from .. import parser, CommandParser
+from .. import parser, CommandParser, LegacyItemAccess
 
-from ..parsers import get_active_lines
+from ..parsers import get_active_lines, ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.proc_stat)
-class ProcStat(CommandParser):
+class ProcStat(CommandParser, LegacyItemAccess):
     """
     Class ``ProcStat`` parses the content of the ``/proc/stat``.
 
     Attributes:
         cpu_percentage (string):     The CPU usage percentage since boot.
-        intr (int):     The total of all interrupts serviced including unnumbered
-                        architecture specific interrupts.
-        ctxt (int):     The number of context switches that the system under went.
-        btime (string): boot time, in seconds since the Epoch, 1970-01-01
-                        00:00:00 +0000 (UTC).
-        processes (int):Number of forks since boot.
-        procs_running (int):  Number of processes in runnable state. (Linux 2.5.45
-                              onward.)
-        procs_blocked (int):  Number of processes blocked waiting for I/O to complete.
-                              (Linux 2.5.45 onward.)
-        softirq (int) : The total of all softirqs and each subsequent column is
-                        the total for particular softirq.
-                        (Linux 2.6.31 onward.)
+        intr_total (int):            The total of all interrupts serviced including unnumbered
+                                     architecture specific interrupts.
+        ctxt (int):                  The number of context switches that the system under went.
+        btime (string):              boot time, in seconds since the Epoch, 1970-01-01
+                                     00:00:00 +0000 (UTC).
+        processes (int):             Number of forks since boot.
+        procs_running (int):         Number of processes in runnable state. (Linux 2.5.45
+                                     onward.)
+        procs_blocked (int):         Number of processes blocked waiting for I/O to complete.
+                                     (Linux 2.5.45 onward.)
+        softirq_total (int) :        The total of all softirqs and each subsequent column is
+                                     the total for particular softirq.
+                                     (Linux 2.6.31 onward.)
 
     A small sample of the content of this file looks like::
 
@@ -57,35 +57,53 @@ class ProcStat(CommandParser):
         >>> type(proc_stat)
         <class 'insights.parsers.proc_stat.ProcStat'>
         >>> proc_stat.cpu_percentage
-        '6.63%'
+        '6.73%'
         >>> proc_stat.ctxt
         17852681
         >>> proc_stat.btime
         '1542179825'
-        >>> proc_stat.softirq
+        >>> proc_stat.softirq_total
         11867930
+        >>> proc_stat.intr_total
+        21359029
     """
 
     def parse_content(self, content):
-        proc_stat_dict = {}
+        self.data = {}
         for line in get_active_lines(content):
             key, value = line.split(None, 1)
-            if key not in proc_stat_dict:
-                proc_stat_dict[key] = value
-        self.data = proc_stat_dict
+            self.data.update({key: value})
 
     @property
     def cpu_percentage(self):
+        """
+        The output of a cpu line could contain the following information according to different kernel version. Earlier
+        versions do not have guest, guestnice for this two are involving for virtual machine in some later version.
+        The cpu usage percentage is calculated by idle divide total.
+        - user:   the number of jiffies (1/100 of a second for x86 systems) that the system has been in user mode
+        - nice:   the number of jiffies that the system has been in user mode with low priority (nice)
+        - system: the number of jiffies that the system has been in system mode
+        - idle:   the number of jiffies that the system has been in idle task
+        - iowait: the number of jiffies that the system has been in I/O wait
+        - irq:    the number of jiffies that the system has been in servicing interrupts
+        - softirq:the number of jiffies that the system has been in servicing softirqs
+        - steal:  the number of jiffies that the system involuntary wait
+        - guest:  the number of jiffies that the system is running a normal guest
+        - guestnice: the number of jiffies that the system is running a niced guest
+        """
+
         if 'cpu' in self.data:
             cpu_list = list(map(lambda x: int(x), self.data['cpu'].split()))
-            cpu_total = float(sum(cpu_list[:8]))
-            cpu_idle = float(sum([cpu_list[3], cpu_list[4]]))
+            if len(cpu_list) < 7:
+                raise ParseException("Error: Invalid cpu length", self.data['cpu'])
+            cpu_total = float(sum(cpu_list))
+            cpu_idle = float(cpu_list[3])
             cpu_pct = (cpu_total - cpu_idle) * 100 / cpu_total
             return "{0:.2f}".format(cpu_pct) + '%'
         return None
 
     @property
-    def intr(self):
+    def intr_total(self):
         return int(self.data['intr'].split(None, 1)[0]) if 'intr' in self.data else None
 
     @property
@@ -109,5 +127,5 @@ class ProcStat(CommandParser):
         return int(self.data['procs_blocked']) if 'procs_blocked' in self.data else None
 
     @property
-    def softirq(self):
+    def softirq_total(self):
         return int(self.data['softirq'].split(None, 1)[0]) if 'softirq' in self.data else None
