@@ -60,7 +60,7 @@ class Lssap(CommandParser):
 
         self.sid = sorted(set(row["SID"] for row in self.data if "SID" in row))
         self.instances = [row["Instance"] for row in self.data if "Instance" in row]
-        self.instance_types = sorted({inst.rstrip('1234567890') for inst in self.instances})
+        self.instance_types = sorted(set(inst.rstrip('1234567890') for inst in self.instances))
 
     def version(self, instance):
         """str: returns the Version column corresponding to the ``instance`` in
