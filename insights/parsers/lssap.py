@@ -37,15 +37,15 @@ from insights.specs import Specs
 class Lssap(CommandParser):
     """Class to parse ``lssap`` command output.
 
+    Raises:
+        ParseException: Raised if any error occurs parsing the content.
+
     Attributes:
         data (list): List of dicts, where the keys in each dict are the column
             headers and each item in the list represents a SID.
         sid (list): List of the SIDs from the SID column.
         instances (list): List of instances running on the system.
         instance_types (list): List of instance types running on the system.
-
-    Raises:
-        ParseException: Raised if any error occurs parsing the content.
     """
     def parse_content(self, content):
         self.data = []
