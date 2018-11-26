@@ -298,8 +298,7 @@ class CommandOutputProvider(ContentProvider):
         return command
 
     def create_env(self):
-        env = {}
-        env.update(SAFE_ENV)
+        env = dict(SAFE_ENV)
         for e in self.inherit_env:
             if e in os.environ:
                 env[e] = os.environ[e]
