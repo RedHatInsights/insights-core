@@ -25,8 +25,6 @@ Examples:
     '749, patch 10, changelist 1698137'
     >>> lssap.is_hana()
     False
-    >>> lssap.data[3]
-    {'SID': 'HA2', 'Nr': '51', 'Instance': 'D51', 'SAPLOCALHOST': 'lu0417', 'Version': '749, patch 10, changelist 1698137', 'DIR_EXECUTABLE': '/usr/sap/HA2/D51/exe'}
     >>> lssap.data[3]['Instance']
     'D51'
 """
