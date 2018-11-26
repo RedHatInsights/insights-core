@@ -12,7 +12,7 @@ for gathering data in myriad ways and providing a reliable object model for it.
     >>> results = run(rpm.Installed)
     >>> rpms = results[rpm.Installed]
     >>> rpms.newest("bash")
-    0:bash-4.4.12-7.fc26
+    "0:bash-4.4.12-7.fc26"
     >>> lower <= rpms.newest("bash") < upper
     True
 """

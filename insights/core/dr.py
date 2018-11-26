@@ -845,7 +845,7 @@ def add_observer(o, component_type=ComponentType):
     Args:
         o (func): the callback function
 
-    Keyword Arg:
+    Keyword Args:
         component_type (ComponentType): the :class:`ComponentType` to observe.
             The callback will fire any time an instance of the class or its
             subclasses is invoked.
