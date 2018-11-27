@@ -54,7 +54,6 @@ Examples:
 #
 #
 from insights import Parser, parser, get_active_lines
-from insights.parsers import ParseException
 from insights.specs import Specs
 
 

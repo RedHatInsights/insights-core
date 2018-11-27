@@ -1,10 +1,7 @@
 import doctest
 from insights.parsers.bond import Bond
 from insights.parsers import bond
-from insights.parsers import ParseException
 from insights.tests import context_wrap
-
-import pytest
 
 CONTEXT_PATH = "proc/net/bonding/bond0"
 
@@ -133,6 +130,7 @@ Permanent HW addr: 00:1f:f3:af:d3:f1
 Slave queue ID: 0
 """.strip()
 
+
 def test_netstat_doc_examples():
     env = {
         'bond_info': Bond(context_wrap(BONDINFO_MODE_4)),
@@ -172,5 +170,5 @@ def test_bond_class():
     bond_obj_2 = Bond(context_wrap(BONDINFO_MODE_6, CONTEXT_PATH))
     assert bond_obj_2.bond_mode == '1'
     assert bond_obj_2.active_slave is None
-    
+
     bond_obj_2 = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
