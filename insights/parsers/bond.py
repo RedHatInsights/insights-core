@@ -50,6 +50,7 @@ Examples:
     ['3', '3', '2']
     >>> bond_info.xmit_hash_policy
     'layer2'
+    >>> bond_info.active_slave
 """
 
 from insights import Parser, parser, get_active_lines

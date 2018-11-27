@@ -155,6 +155,7 @@ def test_bond_class():
     assert bond_obj.partner_mac_address == "00:00:00:00:00:00"
     assert bond_obj.aggregator_id == ['3', '3', '2']
     assert bond_obj.xmit_hash_policy == "layer2"
+    assert bond_obj.active_slave is None
 
     bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
     assert bond_obj.bond_mode is None
