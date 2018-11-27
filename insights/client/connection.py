@@ -27,6 +27,7 @@ from .utilities import (determine_hostname,
                         write_unregistered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -698,6 +699,12 @@ class InsightsConnection(object):
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
 
+        try:
+            c_facts = json.dumps(get_canonical_facts())
+        except Exception as e:
+            logger.debug('Error getting canonical facts: %s', e)
+            c_facts = None
+
         # legacy upload
         if self.config.legacy_upload:
             try:
@@ -729,6 +736,8 @@ class InsightsConnection(object):
                 'upload': (file_name, open(data_collected, 'rb'),
                            content_type)}
             headers = {}
+
+        files['host_facts'] = c_facts
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
