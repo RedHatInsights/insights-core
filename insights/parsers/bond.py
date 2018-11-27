@@ -38,20 +38,21 @@ pattern file specification gathering data from files located in
 ``/proc/net/bonding``.
 
 Examples:
-    >>> bond_info = shared[Bond]
+    >>> type(bond_info)
+    <class 'insights.parsers.bond.Bond'>
     >>> bond_info.bond_mode
-    '0'
+    '4'
     >>> bond_info.partner_mac_address
-    None
+    '00:00:00:00:00:00'
     >>> bond_info.slave_interface
-    ['eno1', 'eno2']
+    ['eth1', 'eth2']
     >>> bond_info.aggregator_id
-    ['3', '2', '3']
+    ['3', '3', '2']
     >>> bond_info.xmit_hash_policy
-    layer2
-    >>> bond_info.active_slave
-    enp17s0f0
+    'layer2'
 """
+#
+#
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException
 from insights.specs import Specs
@@ -92,8 +93,6 @@ class Bond(Parser):
                 self._bond_mode = raw_mode
                 if raw_mode in BOND_PREFIX_MAP:
                     self._bond_mode = BOND_PREFIX_MAP[raw_mode]
-                else:
-                    raise ParseException("Unrecognised bonding mode '{b}'".format(b=raw_mode))
             elif line.startswith("Partner Mac Address: "):
                 self._partner_mac_address = line.split(":", 1)[1].strip()
             elif line.startswith("Slave Interface: "):
