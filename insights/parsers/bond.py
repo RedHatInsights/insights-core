@@ -89,7 +89,7 @@ class Bond(Parser):
             if line.startswith("Bonding Mode: "):
                 raw_mode = line.split(":", 1)[1].strip()
                 if raw_mode in BOND_PREFIX_MAP:
-                    self._bond_mode = BOND_PREFIX_MAP[raw_mode]
+                    self._bond_mode = BOND_PREFIX_MAP.get(raw_mode, raw_mode)
             elif line.startswith("Partner Mac Address: "):
                 self._partner_mac_address = line.split(":", 1)[1].strip()
             elif line.startswith("Slave Interface: "):

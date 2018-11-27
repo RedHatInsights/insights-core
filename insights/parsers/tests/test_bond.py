@@ -131,14 +131,15 @@ Slave queue ID: 0
 """.strip()
 
 
+BONDINFO_MODE_6 = BONDINFO_MODE_5.replace("Currently Active Slave: enp17s0f0", "")
+
+
 def test_netstat_doc_examples():
     env = {
         'bond_info': Bond(context_wrap(BONDINFO_MODE_4)),
     }
     failed, total = doctest.testmod(bond, globs=env)
     assert failed == 0
-
-BONDINFO_MODE_6 = BONDINFO_MODE_5.replace("Currently Active Slave: enp17s0f0", "")
 
 
 def test_bond_class():
