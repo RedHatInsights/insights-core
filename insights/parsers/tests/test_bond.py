@@ -171,4 +171,5 @@ def test_bond_class():
     assert bond_obj_2.bond_mode == '1'
     assert bond_obj_2.active_slave is None
 
-    bond_obj_2 = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
+    bond_obj_3 = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
+    assert bond_obj_3.bond_mode is None

@@ -51,8 +51,7 @@ Examples:
     >>> bond_info.xmit_hash_policy
     'layer2'
 """
-#
-#
+
 from insights import Parser, parser, get_active_lines
 from insights.specs import Specs
 
@@ -89,7 +88,6 @@ class Bond(Parser):
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
                 raw_mode = line.split(":", 1)[1].strip()
-                self._bond_mode = raw_mode
                 if raw_mode in BOND_PREFIX_MAP:
                     self._bond_mode = BOND_PREFIX_MAP[raw_mode]
             elif line.startswith("Partner Mac Address: "):
