@@ -118,6 +118,6 @@ def test_legacy_upload(op, session, c):
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/uploads/XXXXXXXX',
         files={
-            'file': ('testp', ANY, 'application/gzip'), # ANY = return call from mocked open(), acts as filepointer here
+            'file': ('testp', ANY, 'application/gzip'),  # ANY = return call from mocked open(), acts as filepointer here
             'host_facts': json.dumps({'test': 'facts'})},
         headers={'x-rh-collection-time': 'None'})
