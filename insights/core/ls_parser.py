@@ -2,10 +2,7 @@
 This module contains logic for parsing ls output. It attempts to handle
 output when selinux is enabled or disabled and also skip "bad" lines.
 """
-import logging
-
-log = logging.getLogger(__name__)
-PERMBITS = set("-+.dlbcpsrwxtT")
+import six
 
 
 def parse_path(path):
@@ -101,7 +98,87 @@ def parse_selinux(parts):
     return result
 
 
-def parse(lines, root):
+PASS_KEYS = set(["name", "total"])
+DELAYED_KEYS = ["entries", "files", "dirs", "specials"]
+
+
+class Directory(dict):
+    def __init__(self, name, total, body):
+        data = dict.fromkeys(DELAYED_KEYS)
+        data["name"] = name
+        data["total"] = total
+        self.body = body
+        self.loaded = False
+        super(Directory, self).__init__(data)
+
+    def iteritems(self):
+        if not self.loaded:
+            self._load()
+        return six.iteritems(super(Directory, self))
+
+    def items(self):
+        if not self.loaded:
+            self._load()
+        return super(Directory, self).items()
+
+    def values(self):
+        if not self.loaded:
+            self._load()
+        return super(Directory, self).values()
+
+    def get(self, key, default=None):
+        if not self.loaded:
+            self._load()
+        return super(Directory, self).get(key, default)
+
+    def _load(self):
+        dirs = []
+        ents = {}
+        files = []
+        specials = []
+        for line in self.body:
+            parts = line.split(None, 4)
+            perms = parts[0]
+            typ = perms[0]
+            entry = {
+                "type": typ,
+                "perms": perms[1:]
+            }
+            if parts[1][0].isdigit():
+                rest = parse_non_selinux(parts[1:])
+            else:
+                rest = parse_selinux(parts[1:])
+
+            # Update our entry and put it into the correct buckets
+            # based on its type.
+            entry.update(rest)
+            entry["raw_entry"] = line
+            entry["dir"] = self["name"]
+            nm = entry["name"]
+            ents[nm] = entry
+            if typ not in "bcd":
+                files.append(nm)
+            elif typ == "d":
+                dirs.append(nm)
+            elif typ in "bc":
+                specials.append(nm)
+
+        self.update({"entries": ents,
+                     "files": files,
+                     "dirs": dirs,
+                     "specials": specials})
+
+        self.loaded = True
+        del self.body
+
+    def __getitem__(self, key):
+        if self.loaded or key in PASS_KEYS:
+            return super(Directory, self).__getitem__(key)
+        self._load()
+        return super(Directory, self).__getitem__(key)
+
+
+def parse(lines, root=None):
     """
     Parses a list of lines from ls into dictionaries representing their
     components.
@@ -115,117 +192,33 @@ def parse(lines, root):
         A dictionary representing the ls output. It's keyed by the path
         containing each ls stanza.
     """
-    lines = iter(lines)
-    results = {}
-    # we process until StopIteration exception is thrown by the line iterator.
-    while True:
-        try:
-            # get a line and skip blanks
-            line = next(lines)
-            while not(line):
-                line = next(lines)
-            try:
-                # an ls stanza begins with an optional directory name followed
-                # by a total number of entries in the directory and then the
-                # list of entries. Stanzas are separated by blank lines.
-                name = None
+    doc = {}
+    entries = []
+    name = None
+    total = None
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        if line and line[0] == "/" and line[-1] == ":":
+            if name is None:
+                name = line[:-1]
+                if entries:
+                    d = Directory(name, total or len(entries), entries)
+                    doc[root] = d
+                    total = None
+                    entries = []
+            else:
+                d = Directory(name, total or len(entries), entries)
+                doc[name or root] = d
                 total = None
-                if line.endswith(":"):
-                    name = line[:-1]
-                    line = next(lines).strip()
-                if line.startswith("total"):
-                    total = int(line.split()[1])
-                    line = next(lines).strip()
-
-                # If we didn't get a name or a total, it's not a valid stanza
-                # start, so just start over.
-                if not name and not total:
-                    continue
-
-                # handle unnamed ls stanzas
-                name = name or root
-
-                # keep track of directories, files, special entries like block
-                # and character devices, and a master list of all entries
-                # regardless of kind.
-                dirs = []
-                ents = {}
-                files = []
-                specials = []
-
-                # make sure we have a good line and its first character is one
-                # of the valid permission bits.
-                while line and line[0] in PERMBITS:
-                    # break the line into initial parts
-                    parts = line.split(None, 4)
-
-                    # Get the permissions and validate they're all valid bits.
-                    # Otherwise, our single character check in the loop was
-                    # fooled, and we should skip the line as invalid.
-                    perms = parts[0]
-                    if len(perms) < 10:
-                        line = next(lines).strip()
-                        continue
-
-                    # First character of the perms is the type of entry:
-                    # directory, regular file, etc. The rest are the actual
-                    # permission bits.
-                    typ = perms[0]
-                    entry = {
-                        "type": typ,
-                        "perms": perms[1:]
-                    }
-
-                    # If the first character of the second part of the line is
-                    # a digit, then it's a link count and indicates we're not
-                    # dealing with selinux. Otherwise, it's an owner, and we
-                    # are dealing with selinux.
-                    if parts[1][0].isdigit():
-                        rest = parse_non_selinux(parts[1:])
-                    else:
-                        rest = parse_selinux(parts[1:])
-
-                    # Update our entry and put it into the correct buckets
-                    # based on its type.
-                    entry.update(rest)
-                    entry["raw_entry"] = line
-                    entry["dir"] = name
-                    nm = entry["name"]
-                    ents[nm] = entry
-                    if typ not in "bcd":
-                        files.append(nm)
-                    elif typ == "d":
-                        dirs.append(nm)
-                    elif typ in "bc":
-                        specials.append(nm)
-                    try:
-                        line = next(lines).strip()
-                    except StopIteration:
-                        break
-
-                # We're either at the end of input or a blank line, so we wrap
-                # up this stanza and save it.
-                if total is None:
-                    total = len(ents)
-
-                result = {
-                    "name": name,
-                    "total": total,
-                    "entries": ents,
-                    "files": files,
-                    "dirs": dirs,
-                    "specials": specials
-                }
-                results[result["name"]] = result
-
-            # If we're at the end of input, blow all the way out.
-            except StopIteration:
-                raise
-
-            # Something exploded. Just log it and try to move on.
-            except:
-                line = next(lines)
-                log.info("Failed to parse: %s" % line)
-        except StopIteration:
-            break
-    return results
+                entries = []
+                name = line[:-1]
+            continue
+        if line.startswith("total"):
+            total = int(line.split(None, 1)[1])
+            continue
+        entries.append(line)
+    name = name or root
+    doc[name] = Directory(name, total or len(entries), entries)
+    return doc

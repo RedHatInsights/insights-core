@@ -13,14 +13,67 @@ QpidStatQ - command ``/usr/bin/qpid-stat -q --ssl-certificate=/etc/pki/katello/q
 QpidStatU - command ``/usr/bin/qpid-stat -u --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671``
 ----------------------------------------------------------------------------------------------------------------------------------
 
+QpidStatG - command ``/usr/bin/qpid-stat -g --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b amqps://localhost:5671``
+----------------------------------------------------------------------------------------------------------------------------------
+
 """
-from .. import parser, CommandParser
-from insights.parsers import parse_fixed_table, keyword_search
+
+from insights import CommandParser, get_active_lines, parser
+from insights.parsers import ParseException, keyword_search, parse_fixed_table
 from insights.specs import Specs
 
 
+class QpidStat(CommandParser):
+    """Base class for parsing QpidStat command."""
+    def __init__(self, context):
+        self.data = []
+        self.by_queue = {}
+        super(QpidStat, self).__init__(context)
+
+    def _check_content(self, content):
+        self._content = get_active_lines(content, '=======')
+        if len(self._content) <= 1:
+            raise ParseException("Input content is empty or there is no useful parsed data.")
+
+    def _parse_data(self, heading_ignore):
+        self.data.extend(parse_fixed_table(self._content, heading_ignore=heading_ignore))
+
+    def _parse_by_key(self, key):
+        self.by_queue.update(dict(
+            (q[key], q)
+            for q in self.data
+            if key in q
+        ))
+
+    def parse_content(self, content):
+        self._check_content(content)
+        self._parse_data('queue')
+        self._parse_by_key('queue')
+        del self._content
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def search(self, **kwargs):
+        """
+        Search for rows in the data matching keywords in the search.
+
+        This method uses the :py:func:`insights.parsers.keyword_search`
+        function - see its documentation for a complete description of its
+        keyword recognition capabilities.
+
+        Arguments:
+            **kwargs: Key-value pairs of search parameters.
+
+        Returns:
+            (list): A list of subscriptions that matched the search criteria.
+
+        """
+        return keyword_search(self.data, **kwargs)
+
+
 @parser(Specs.qpid_stat_q)
-class QpidStatQ(CommandParser):
+class QpidStatQ(QpidStat):
     """
     This parser reads the output of the command ``qpid-stat -q
     --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b
@@ -70,40 +123,11 @@ class QpidStatQ(CommandParser):
         >>> qpid_stat_q.search(queue__contains=':2.0')  # Keyword search
         []
     """
-
-    def __iter__(self):
-        return iter(self.data)
-
-    def parse_content(self, content):
-        self.data = parse_fixed_table(
-            [line for line in content if '========' not in line],
-            heading_ignore=['queue']
-        )
-        self.by_queue = dict(
-            (q['queue'], q)
-            for q in self.data
-        )
-
-    def search(self, **kwargs):
-        """
-        Search for rows in the data matching keywords in the search.
-
-        This method uses the :py:func:`insights.parsers.keyword_search`
-        function - see its documentation for a complete description of its
-        keyword recognition capabilities.
-
-        Arguments:
-            **kwargs: Key-value pairs of search parameters.
-
-        Returns:
-            (list): A list of queues that matched the search criteria.
-
-        """
-        return keyword_search(self.data, **kwargs)
+    pass
 
 
 @parser(Specs.qpid_stat_u)
-class QpidStatU(CommandParser):
+class QpidStatU(QpidStat):
 
     """
     This parser reads the output of the command ``qpid-stat -u
@@ -164,32 +188,96 @@ class QpidStatU(CommandParser):
         True
     """
 
-    def __iter__(self):
-        return iter(self.data)
+    def parse_content(self, content):
+        self._check_content(content)
+        self._parse_data('subscr')
+        self._parse_by_key('queue')
+        del self._content
+
+
+@parser(Specs.qpid_stat_g)
+class QpidStatG(QpidStat):
+
+    """
+    This parser reads the output of the command ``qpid-stat -g
+    --ssl-certificate=/etc/pki/katello/qpid_client_striped.crt -b
+    amqps://localhost:5671``
+
+    Sample output::
+
+        Broker Summary:
+          uptime           cluster       connections  sessions  exchanges  queues
+          =========================================================================
+          96d 23h 50m 41s  <standalone>  23           37        14         33
+
+        Aggregate Broker Statistics:
+          Statistic                   Messages    Bytes
+          ========================================================
+          queue-depth                 0           0
+          total-enqueues              1,726,798   42,589,932,236
+          total-dequeues              1,726,798   42,589,932,236
+          persistent-enqueues         28,725      23,889,836
+          persistent-dequeues         28,725      23,889,836
+          transactional-enqueues      0           0
+          transactional-dequeues      0           0
+          flow-to-disk-depth          0           0
+          flow-to-disk-enqueues       0           0
+          flow-to-disk-dequeues       0           0
+          acquires                    1,726,798
+          releases                    0
+          discards-no-route           41,163,896
+
+    Attributes:
+        data (list of dict): A list of dictionaries with the key-value data
+            from the table.
+        by_queue (dict of dict): A dictionary of the same data dictionaries
+            stored by cluster name or queue name.
+
+    Examples:
+        >>> type(qpid_stat_g)
+        <class 'insights.parsers.qpid_stat.QpidStatG'>
+        >>> type(qpid_stat_g.data) == type([])
+        True
+        >>> type(qpid_stat_g.data[0]) == type({}) # Each row is a dictionary formed from the table
+        True
+        >>> qpid_stat_g.data[0]['uptime']
+        '97d 0h 16m 24s'
+        >>> qpid_stat_g.data[0]['cluster']
+        '<standalone>'
+        >>> qpid_stat_g.data[1]['Statistic']
+        'queue-depth'
+        >>> qpid_stat_g.data[1]['Messages']
+        '0'
+        >>> qpid_stat_g.data[11]['Bytes']
+        ''
+        >>> type(qpid_stat_g.by_queue) == type({}) # Dictionary lookup by queue ID
+        True
+        >>> qpid_stat_g.by_queue['queue-depth'] == qpid_stat_g.data[1]
+        True
+        >>> enqueues = qpid_stat_g.search(Statistic__contains='enqueues')  # Keyword search
+        >>> type(enqueues) == type([])
+        True
+        >>> len(enqueues)
+        4
+        >>> enqueues[0] == qpid_stat_g.data[2]  # List contains matching items
+        True
+    """
+    def _split_content(self):
+        index = [i for i, l in enumerate(self._content) if l.startswith("Aggregate Broker Statistics")]
+        if not index:
+            raise ParseException("Incorrect Content without \"Aggregate Broker Statistics\" in ")
+        self._index = index[0]
 
     def parse_content(self, content):
-        self.data = parse_fixed_table(
-            [line for line in content if '========' not in line],
-            heading_ignore=['subscr']
-        )
-        self.by_queue = dict(
-            (q['queue'], q)
-            for q in self.data
-        )
-
-    def search(self, **kwargs):
-        """
-        Search for rows in the data matching keywords in the search.
-
-        This method uses the :py:func:`insights.parsers.keyword_search`
-        function - see its documentation for a complete description of its
-        keyword recognition capabilities.
-
-        Arguments:
-            **kwargs: Key-value pairs of search parameters.
-
-        Returns:
-            (list): A list of subscriptions that matched the search criteria.
-
-        """
-        return keyword_search(self.data, **kwargs)
+        self._check_content(content)
+        self._split_content()
+        self.__content = self._content
+        self._content = self.__content[0:self._index]
+        self._parse_data('uptime')
+        self._content = self.__content[self._index:]
+        self._parse_data('Statistic')
+        self._parse_by_key('cluster')
+        self._parse_by_key('Statistic')
+        del self._index
+        del self.__content
+        del self._content

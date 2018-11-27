@@ -8,7 +8,7 @@ class InsightsConstants(object):
     auth_method = 'BASIC'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
-    sleep_time = 300
+    sleep_time = 180
     command_blacklist = ('rm', 'kill', 'reboot', 'shutdown')
     default_conf_dir = '/etc/insights-client'
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
