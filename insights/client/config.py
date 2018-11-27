@@ -516,13 +516,18 @@ class InsightsConfig(object):
                     'using defaults\n')
             return
         try:
-            # Try to add the insights-client section
-            parsedconfig.add_section(constants.app_name)
-            # Try to add the redhat_access_insights section for back compat
-            parsedconfig.add_section('redhat_access_insights')
+            if parsedconfig.has_section(constants.app_name):
+                d = dict(parsedconfig.items(constants.app_name))
+            elif parsedconfig.has_section('redhat-access-insights'):
+                d = dict(parsedconfig.items('redhat-access-insights'))
+            else:
+                raise ConfigParser.Error
         except ConfigParser.Error:
-            pass
-        d = dict(parsedconfig.items(constants.app_name))
+            if self._print_errors:
+                sys.stdout.write(
+                    'ERROR: Could not read configuration file, '
+                    'using defaults\n')
+            return
         for key in d:
             try:
                 if key == 'retries':
