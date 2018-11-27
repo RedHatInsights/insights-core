@@ -1,3 +1,4 @@
+import json
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
 from mock.mock import patch, mock_open, ANY
@@ -84,9 +85,10 @@ def test_upload_urls():
     assert c.upload_url == 'BUNCHANONSENSE'
 
 
+@patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
 @patch('insights.client.connection.requests.Session')
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_payload_upload(op, session):
+def test_payload_upload(op, session, c):
     '''
     Ensure a payload upload occurs with the right URL and params
     '''
@@ -95,15 +97,18 @@ def test_payload_upload(op, session):
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/platform/upload/api/v1/upload',
-        files={'upload': ('testp', ANY, 'testct')},  # ANY = return call from mocked open(), acts as filepointer here
+        files={
+            'upload': ('testp', ANY, 'testct'),  # ANY = return call from mocked open(), acts as filepointer here
+            'host_facts': json.dumps({'test': 'facts'})},
         headers={})
 
 
 @patch('insights.contrib.magic.open', MockMagic)
 @patch('insights.client.connection.generate_machine_id', mock_machine_id)
+@patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
 @patch('insights.client.connection.requests.Session')
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_legacy_upload(op, session):
+def test_legacy_upload(op, session, c):
     '''
     Ensure an Insights collected tar upload to legacy occurs with the right URL and params
     '''
@@ -112,5 +117,7 @@ def test_legacy_upload(op, session):
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/uploads/XXXXXXXX',
-        files={'file': ('testp', ANY, 'application/gzip')},  # ANY = return call from mocked open(), acts as filepointer here
+        files={
+            'file': ('testp', ANY, 'application/gzip'), # ANY = return call from mocked open(), acts as filepointer here
+            'host_facts': json.dumps({'test': 'facts'})},
         headers={'x-rh-collection-time': 'None'})
