@@ -12,6 +12,9 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
+# Note that sphinx is not supported on Python 2.6. That's because the 
+# library used (nbsphinx) doesn’t support this legacy version of Python.
+
 import sys
 import os
 import insights
