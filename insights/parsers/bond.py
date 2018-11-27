@@ -56,6 +56,8 @@ from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException
 from insights.specs import Specs
 
+
+"""dict: bonding mode parameter string linked to bond type index."""
 BOND_PREFIX_MAP = {
     'load balancing (round-robin)': '0',
     'fault-tolerance (active-backup)': '1',
@@ -65,7 +67,6 @@ BOND_PREFIX_MAP = {
     'transmit load balancing': '5',
     'adaptive load balancing': '6'
 }
-"""dict: bonding mode parameter string linked to bond type index."""
 
 
 @parser(Specs.bond)
@@ -75,27 +76,12 @@ class Bond(Parser):
 
     Currently used information from ``/proc/net/bonding`` includes
     the "bond mode" and "partner mac address".
-
-    Attributes:
-        bond_mode (str): Bond mode number as a string, or if there is no
-            known mapping to a number, the raw "Bonding Mode" value. Default is
-            ``None`` if no "Bonding Mode" key is found.
-        partner_mac_address (str): Value of the "Partner Mac Address" in the bond
-            file if the key/value exists. Default is ``None``.
-        slave_interface (list): List of the slave interfaces in the bond file
-            if the key/value exists. Default is ``[]``.
-        aggregator_id (list): List of the "Aggregator ID" in the bond file
-            if the key/value exists. Default is ``[]``.
-        xmit_hash_policy(str): It will return Transmit Hash Policy set for bonding mode
-            if the key/value exists. Default is ``None``
-        active_slave (str): It will return Currently Active Slave interface set for active-backup
-            mode if the key/values exists. Default is ``None``.
     """
 
     def parse_content(self, content):
         self._bond_mode = None
         self._partner_mac_address = None
-        self._active_slaves = None
+        self._active_slave = None
         self.xmit_hash_policy = None
         self._slave_interface = []
         self._aggregator_id = []

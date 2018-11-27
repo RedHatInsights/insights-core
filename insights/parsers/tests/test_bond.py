@@ -131,6 +131,8 @@ Permanent HW addr: 00:1f:f3:af:d3:f1
 Slave queue ID: 0
 """.strip()
 
+BONDINFO_MODE_6 = BONDINFO_MODE_5.replace("Currently Active Slave: enp17s0f0", "")
+
 
 def test_bond_class():
 
@@ -160,5 +162,9 @@ def test_bond_class():
     assert bond_obj.xmit_hash_policy == "layer2+3"
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_5, CONTEXT_PATH))
-    bond_obj.bond_mode == 1
-    bond_obj.active_slave == "enp17s0f0"
+    assert bond_obj.bond_mode == '1'
+    assert bond_obj.active_slave == "enp17s0f0"
+
+    bond_obj_2 = Bond(context_wrap(BONDINFO_MODE_6, CONTEXT_PATH))
+    assert bond_obj_2.bond_mode == '1'
+    assert bond_obj_2.active_slave is None
