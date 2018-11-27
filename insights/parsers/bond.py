@@ -95,7 +95,7 @@ class Bond(Parser):
     def parse_content(self, content):
         self._bond_mode = None
         self._partner_mac_address = None
-        self._active_slaves = None
+        self._active_slave = None
         self.xmit_hash_policy = None
         self._slave_interface = []
         self._aggregator_id = []
@@ -119,7 +119,7 @@ class Bond(Parser):
                 # Integer notification (0), (1), (2) of layer2, layer3+4, layer2+3 resp
                 self.xmit_hash_policy = line.split(":", 1)[1].split()[0]
             elif line.strip().startswith("Currently Active Slave"):
-                self._active_slaves = line.split(":", 1)[1].split()[0]
+                self._active_slave = line.split(":", 1)[1].split()[0]
 
     @property
     def bond_mode(self):
@@ -159,4 +159,4 @@ class Bond(Parser):
         file if key/value exists. If the key is not in the bond file, ``None``
         is returned.
         """
-        return self._active_slaves
+        return self._active_slave
