@@ -120,7 +120,7 @@ class InsightsArchiveSpecs(Specs):
     lssap = simple_file("insights_commands/usr.sap.hostctrl.exe.lssap")
     lsscsi = simple_file("insights_commands/lsscsi")
     lvdisplay = simple_file("insights_commands/lvdisplay")
-    lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0")
+    lvs_noheadings = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_seg_monitor_--config_global_locking_type_0")
     lvs_noheadings_all = simple_file("insights_commands/lvs_--nameprefixes_--noheadings_--separator_-a_-o_lv_name_lv_size_lv_attr_mirror_log_vg_name_devices_region_size_data_percent_metadata_percent_segtype_--config_global_locking_type_0_devices_filter_a")
     md5chk_files = simple_file("insights_commands/md5sum_.dev.null_.etc.pki._product_product-default_.69.pem")
     mlx4_port = simple_file("insights_commands/find_.sys.bus.pci.devices._.mlx4_port_0-9_-print_-exec_cat")
