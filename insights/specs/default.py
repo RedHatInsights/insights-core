@@ -371,7 +371,7 @@ class DefaultSpecs(Specs):
     lvdisplay = simple_command("/sbin/lvdisplay")
     lvm_conf = simple_file("/etc/lvm/lvm.conf")
     lvs = None  # simple_command('/sbin/lvs -a -o +lv_tags,devices --config="global{locking_type=0}"')
-    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype --config=\"global{locking_type=0}\"")
+    lvs_noheadings = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype,seg_monitor --config=\"global{locking_type=0}\"")
     lvs_noheadings_all = simple_command("/sbin/lvs --nameprefixes --noheadings --separator='|' -a -o lv_name,lv_size,lv_attr,mirror_log,vg_name,devices,region_size,data_percent,metadata_percent,segtype --config='global{locking_type=0} devices{filter=[\"a|.*|\"]}'")
     mac_addresses = glob_file("/sys/class/net/*/address")
     machine_id = first_file(["etc/insights-client/machine-id", "etc/redhat-access-insights/machine-id", "etc/redhat_access_proactive/machine-id"])
