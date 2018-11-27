@@ -8,30 +8,35 @@ all the files starteing with "bond." located in the
 
 Typical content of ``bond.*`` file is::
 
-    Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+    Ethernet Channel Bonding Driver: v3.2.4 (January 28, 2008)
 
-    Bonding Mode: load balancing (round-robin)
+    Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+    Transmit Hash Policy: layer2 (0)
     MII Status: up
-    MII Polling Interval (ms): 100
+    MII Polling Interval (ms): 500
     Up Delay (ms): 0
     Down Delay (ms): 0
 
-    Slave Interface: eno1
-    MII Status: up
-    Speed: 1000 Mbps
-    Duplex: full
-    Link Failure Count: 0
-    Permanent HW addr: 2c:44:fd:80:5c:f8
-    Slave queue ID: 0
+    802.3ad info
+    LACP rate: slow
+    Active Aggregator Info:
+            Aggregator ID: 3
+            Number of ports: 1
+            Actor Key: 17
+            Partner Key: 1
+            Partner Mac Address: 00:00:00:00:00:00
 
-    Slave Interface: eno2
-    Transmit Hash Policy: layer2 (0)
+    Slave Interface: eth1
     MII Status: up
-    Speed: 1000 Mbps
-    Duplex: full
     Link Failure Count: 0
-    Permanent HW addr: 2c:44:fd:80:5c:f9
-    Slave queue ID: 0
+    Permanent HW addr: 00:16:35:5e:42:fc
+    Aggregator ID: 3
+
+    Slave Interface: eth2
+    MII Status: up
+    Link Failure Count: 0
+    Permanent HW addr: 00:16:35:5e:02:7e
+    Aggregator ID: 2
 
 Data is modeled as an array of ``Bond`` objects (``bond`` being a
 pattern file specification gathering data from files located in
@@ -51,12 +56,6 @@ Examples:
     >>> bond_info.xmit_hash_policy
     'layer2'
     >>> bond_info.active_slave
-    >>> type(bond_info2)
-    <class 'insights.parsers.bond.Bond'>
-    >>> bond_info2.bond_mode
-    '0'
-    >>> bond_info2.slave_interface
-    ['eno1', 'eno2']
 """
 
 from insights import Parser, parser, get_active_lines
