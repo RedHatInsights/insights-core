@@ -61,6 +61,7 @@ from insights.specs import Specs
 BOND_PREFIX_MAP = {
     'load balancing (round-robin)': '0',
     'fault-tolerance (active-backup)': '1',
+    'fault-tolerance (active-backup) (fail_over_mac active)': '1',
     'load balancing (xor)': '2',
     'fault-tolerance (broadcast)': '3',
     'IEEE 802.3ad Dynamic link aggregation': '4',
@@ -89,8 +90,7 @@ class Bond(Parser):
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
                 raw_mode = line.split(":", 1)[1].strip()
-                if raw_mode in BOND_PREFIX_MAP:
-                    self._bond_mode = BOND_PREFIX_MAP.get(raw_mode, raw_mode)
+                self._bond_mode = BOND_PREFIX_MAP.get(raw_mode, None)
             elif line.startswith("Partner Mac Address: "):
                 self._partner_mac_address = line.split(":", 1)[1].strip()
             elif line.startswith("Slave Interface: "):
