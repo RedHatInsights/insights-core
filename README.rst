@@ -58,9 +58,14 @@ There are several resources for digging into the details of how to use `insights
   the `Insights Core Tutorial
   <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Insights%20Core%20Tutorial.ipynb>`_ jupyter notebook
 - A simple `stand_alone.py
-  <https://github.com/RedHatInsights/insights-core/blob/master/stand_alone.py>`_
+  <https://github.com/RedHatInsights/insights-core/blob/master/examples/stand_alone.py>`_
   script encapsulates creating all the basic components in a single script
   that can be easily executed locally
+- Some `quick-start examples
+  <https://github.com/RedHatInsights/insights-core/blob/master/examples>`_
+  are provided in the `examples` directory. Each subdirectory under examples
+  includes a `README.md` file that provides a description of the contents
+  and usage information.
 
 To Run the Jupyter Notebooks
 ++++++++++++++++++++++++++++
