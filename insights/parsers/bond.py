@@ -51,6 +51,12 @@ Examples:
     >>> bond_info.xmit_hash_policy
     'layer2'
     >>> bond_info.active_slave
+    >>> type(bond_info2)
+    <class 'insights.parsers.bond.Bond'>
+    >>> bond_info2.bond_mode
+    '0'
+    >>> bond_info2.slave_interface
+    ['eno1', 'eno2']
 """
 
 from insights import Parser, parser, get_active_lines
