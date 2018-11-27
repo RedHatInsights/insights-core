@@ -24,7 +24,7 @@ pipeline {
                 pip install "pycparser<=2.18"
                 pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[testing]
-                pytest
+                pytest --html=py26-report.html --self-contained-html
             """
             echo "Testing with Linter..."
             sh """
@@ -49,7 +49,7 @@ pipeline {
                 virtualenv .testenv
                 source .testenv/bin/activate
                 pip install -e .[testing]
-                pytest
+                pytest --html=py27-report.html --self-contained-html
             """
             echo "Testing with Linter..."
             sh """
@@ -72,7 +72,7 @@ pipeline {
                 /bin/python36 -m venv .testenv
                 source .testenv/bin/activate
                 pip install -e .[testing]
-                pytest
+                pytest --html=py3-report.html --self-contained-html
             """
             echo "Testing with Linter..."
             sh """
