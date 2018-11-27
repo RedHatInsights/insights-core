@@ -16,13 +16,11 @@ see the [Ansible hosts file documentation][1] for more detailed information.
   a topology file.
 * [bash_version.py](./bash_version.py) - Example cluster rules that don't
   use a topology file.
-* [__init__.py](./__init__.py) - Make this directory a package that can
+* [\_\_init\_\_.py](./\_\_init\_\_.py) - Make this directory a package that can
   be access using the Python syntax `examples.cluster_rules`.
 * [ntp_compare.py](./ntp_compare.py) - Example cluster rule that doesn't
   use a topology file.
 * [topology_example](./topology_example) - Sample topology file in
   Ansible host file format.
-
-## References
 
 [1]: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#hosts-and-groups
