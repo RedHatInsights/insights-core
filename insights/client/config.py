@@ -152,7 +152,7 @@ DEFAULT_OPTS = {
     },
     'http_timeout': {
         # non-CLI
-        'default': 10
+        'default': 10.0
     },
     'insecure_connection': {
         # non-CLI
@@ -457,6 +457,15 @@ class InsightsConfig(object):
                                  for k, v in os.environ.items()
                                  if k.upper().startswith("INSIGHTS_") and
                                  k.upper() not in ignore)
+
+        for k in ['retries', 'cmd_timeout', 'http_timeout']:
+            if k in insights_env_opts:
+                v = insights_env_opts[k]
+                try:
+                    insights_env_opts[k] = float(v) if k == 'http_timeout' else int(v)
+                except ValueError:
+                    raise ValueError(
+                        'ERROR: Invalid value specified for {0}: {1}.'.format(k, v))
         self._update_dict(insights_env_opts)
 
     def load_command_line(self, conf_only=False):
@@ -530,7 +539,7 @@ class InsightsConfig(object):
             return
         for key in d:
             try:
-                if key == 'retries':
+                if key == 'retries' or key == 'cmd_timeout':
                     d[key] = parsedconfig.getint(constants.app_name, key)
                 if key == 'http_timeout':
                     d[key] = parsedconfig.getfloat(constants.app_name, key)
