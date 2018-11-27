@@ -1,20 +1,24 @@
+# Insights core cluster rules topology file
+# in Ansible host file format
+# See: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#hosts-and-groups
+#
 [master]
-inf152.coe.muc.redhat.com
-inf153.coe.muc.redhat.com
-inf154.coe.muc.redhat.com
+inf152.mydomain.com
+inf153.mydomain.com
+inf154.mydomain.com
 
 [etcd]
 
 [infra]
-inf155.coe.muc.redhat.com
-inf156.coe.muc.redhat.com
-inf157.coe.muc.redhat.com
+inf155.mydomain.com
+inf156.mydomain.com
+inf157.mydomain.com
 
 [nodes]
-inf158.coe.muc.redhat.com
-inf159.coe.muc.redhat.com
-inf160.coe.muc.redhat.com
-inf161.coe.muc.redhat.com
-inf162.coe.muc.redhat.com
-inf163.coe.muc.redhat.com
-inf164.coe.muc.redhat.com
+inf158.mydomain.com
+inf159.mydomain.com
+inf160.mydomain.com
+inf161.mydomain.com
+inf162.mydomain.com
+inf163.mydomain.com
+inf164.mydomain.com
