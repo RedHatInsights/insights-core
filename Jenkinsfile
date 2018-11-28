@@ -25,7 +25,7 @@ pipeline {
                 pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[testing]
                 pip install "pytest-html==1.13.0"
-                pytest --html=py26-report.html --self-contained-html
+                pytest --html=test-reports/py26-report.html --self-contained-html
             """
             echo "Testing with Linter..."
             sh """
@@ -51,7 +51,7 @@ pipeline {
                 source .testenv/bin/activate
                 pip install -e .[testing]
                 pip install "pytest-html==1.19.0"
-                pytest --html=py27-report.html --self-contained-html
+                pytest --html=test-reports/py27-report.html --self-contained-html
             """
             echo "Testing with Linter..."
             sh """
@@ -75,7 +75,7 @@ pipeline {
                 source .testenv/bin/activate
                 pip install -e .[testing]
                 pip install "pytest-html==1.19.0"
-                pytest --html=py3-report.html --self-contained-html
+                pytest --html=test-reports/py3-report.html --self-contained-html
             """
             echo "Testing with Linter..."
             sh """
@@ -112,6 +112,18 @@ pipeline {
     stage('Nofity Github - Docs Check Passed') {
       steps {
         githubNotify description: 'Code Checks and Docs Generation Passed', status: 'SUCCESS'
+      }
+    }
+    stage('Publish Reports') {
+      steps {
+        publishHTML (target: [
+          allowMissing: false,
+          alwaysLinkToLastBuild: false,
+          keepAll: true,
+          reportDir: 'test-reports',
+          reportFiles: 'py26-report.html, py27-report.html, py3-report.html',
+          reportName: 'Test Report'
+        ])
       }
     }
   }
