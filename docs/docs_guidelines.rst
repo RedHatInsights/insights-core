@@ -241,6 +241,13 @@ problems in execution or the differences between expected and actual output.
 Testing Your Docstring
 ======================
 
+.. note::
+
+   The documentation build is not supported for versions of Python older
+   than 2.7.  At least one of the modules needed to render
+   the Jupyter notebooks is not supported.  Please build documents using
+   a version of Python that is at least 2.7 or greater.
+
 Once you have implemented a parser with the recommended documentation style
 you will need to include it in the insights-core documentation.  You can do
 this by creating a file in the directory

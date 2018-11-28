@@ -56,21 +56,21 @@ def add_status(name, nvr, commit):
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
 
 
-def process_dir(broker, root, graph, context, use_pandas=False):
+def process_dir(broker, root, graph, context, inventory=None):
     ctx = create_context(root, context)
     log.debug("Processing %s with %s" % (root, ctx))
 
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
-        return process_cluster(archives, use_pandas=use_pandas, broker=broker)
+        return process_cluster(archives, broker=broker, inventory=inventory)
 
     broker[ctx.__class__] = ctx
     broker = dr.run(graph, broker=broker)
     return broker
 
 
-def _run(broker, graph=None, root=None, context=None, use_pandas=False):
+def _run(broker, graph=None, root=None, context=None, inventory=None):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -95,10 +95,10 @@ def _run(broker, graph=None, root=None, context=None, use_pandas=False):
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        return process_dir(broker, root, graph, context, use_pandas)
+        return process_dir(broker, root, graph, context, inventory=inventory)
     else:
         with extract(root) as ex:
-            return process_dir(broker, ex.tmp_dir, graph, context, use_pandas)
+            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
 
 
 def apply_configs(configs):
@@ -154,8 +154,7 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        context=None, use_pandas=False,
-        print_component=None):
+        context=None, inventory=None, print_component=None):
 
     from .core import dr
     dr.load_components("insights.specs.default")
@@ -172,11 +171,11 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
         p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-c", "--config", help="Configure components.")
+        p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
-        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules.")
 
         class Args(object):
             pass
@@ -197,7 +196,7 @@ def run(component=None, root=None, print_summary=False,
 
         logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
         context = _load_context(args.context) or context
-        use_pandas = args.pandas or use_pandas
+        inventory = args.inventory
 
         root = args.archive or root
         if root:
@@ -239,13 +238,13 @@ def run(component=None, root=None, print_summary=False,
 
     if formatter:
         formatter.preprocess(broker)
-        broker = _run(broker, graph, root, context=context, use_pandas=use_pandas)
+        broker = _run(broker, graph, root, context=context, inventory=inventory)
         formatter.postprocess(broker)
     elif print_component:
-        broker = _run(broker, graph, root, context=context, use_pandas=use_pandas)
+        broker = _run(broker, graph, root, context=context, inventory=inventory)
         broker.print_component(print_component)
     else:
-        broker = _run(broker, graph, root, context=context, use_pandas=use_pandas)
+        broker = _run(broker, graph, root, context=context, inventory=inventory)
 
     return broker
 
