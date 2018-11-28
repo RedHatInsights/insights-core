@@ -2,7 +2,6 @@ import logging
 import os
 from contextlib import contextmanager
 from insights.util import streams, subproc
-from subprocess import STDOUT
 
 log = logging.getLogger(__name__)
 GLOBAL_PRODUCTS = []
@@ -134,7 +133,7 @@ class ExecutionContext(object):
         """ Subclasses can override to provide special
             environment setup, command prefixes, etc.
         """
-        return subproc.call(cmd, timeout=timeout or self.timeout, stderr=STDOUT,
+        return subproc.call(cmd, timeout=timeout or self.timeout,
                 keep_rc=keep_rc, env=env)
 
     def shell_out(self, cmd, split=True, timeout=None, keep_rc=False, env=os.environ):
@@ -185,6 +184,11 @@ class SosArchiveContext(ExecutionContext):
 
 @fs_root
 class ClusterArchiveContext(ExecutionContext):
+    pass
+
+
+@fs_root
+class SerializedArchiveContext(ExecutionContext):
     pass
 
 
