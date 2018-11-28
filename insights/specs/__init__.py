@@ -3,6 +3,7 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 class Specs(SpecSet):
     amq_broker = RegistryPoint(multi_output=True)
+    auditctl_status = RegistryPoint()
     auditd_conf = RegistryPoint()
     audit_log = RegistryPoint(filterable=True)
     autofs_conf = RegistryPoint()
@@ -226,6 +227,7 @@ class Specs(SpecSet):
     ls_lib_firmware = RegistryPoint()
     ls_sys_firmware = RegistryPoint()
     ls_var_lib_mongodb = RegistryPoint()
+    ls_R_var_lib_nova_instances = RegistryPoint()
     ls_var_lib_nova_instances = RegistryPoint()
     ls_usr_sbin = RegistryPoint(filterable=True)
     ls_var_log = RegistryPoint()
