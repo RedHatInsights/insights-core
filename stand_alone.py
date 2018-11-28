@@ -41,7 +41,7 @@ class HostParser(Parser):
         return msg % me
 
 
-@rule(HostParser, RedhatRelease)
+@rule(HostParser, RedhatRelease, content=CONTENT)
 def report(hp, rhr):
     if len(hp.hosts) > 1:
         return make_response("TOO_MANY_HOSTS", num=len(hp.hosts))

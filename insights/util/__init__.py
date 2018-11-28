@@ -29,7 +29,8 @@ def parse_bool(s, default=False):
     return TRUTH.get(s.lower(), default)
 
 
-def which(cmd, env=os.environ):
+def which(cmd, env=None):
+    env = env or os.environ
     if cmd.startswith("/"):
         if os.access(cmd, os.X_OK) and os.path.isfile(cmd):
             return cmd
