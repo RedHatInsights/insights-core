@@ -49,6 +49,7 @@ pipeline {
                 virtualenv .testenv
                 source .testenv/bin/activate
                 pip install -e .[testing]
+                pip install "pytest-html==1.19.0"
                 pytest --html=py27-report.html --self-contained-html
             """
             echo "Testing with Linter..."
@@ -72,6 +73,7 @@ pipeline {
                 /bin/python36 -m venv .testenv
                 source .testenv/bin/activate
                 pip install -e .[testing]
+                pip install "pytest-html==1.19.0"
                 pytest --html=py3-report.html --self-contained-html
             """
             echo "Testing with Linter..."

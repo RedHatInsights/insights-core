@@ -67,7 +67,6 @@ testing = set([
     'pytest==3.0.6',
     'pytest-cov==2.4.0',
     'mock==2.0.0',
-    'pytest-html==1.19.0',
 ])
 
 cluster = set([
