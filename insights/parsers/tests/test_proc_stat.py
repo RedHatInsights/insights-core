@@ -28,6 +28,12 @@ def test_proc_stat():
     assert proc_stat.btime == '1542179825'
     assert proc_stat.softirq_total == 11867930
     assert proc_stat.cpu_percentage == '6.73%'
+    assert proc_stat.btime == '1542179825'
+    assert proc_stat.ctxt == 17852681
+    assert proc_stat.intr_total == 21359029
+    assert proc_stat.processes == 19212
+    assert proc_stat.procs_running == 1
+    assert proc_stat.procs_blocked == 0
 
 
 def test_proc_stat_doc_examples():

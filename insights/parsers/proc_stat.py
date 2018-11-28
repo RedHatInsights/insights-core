@@ -58,14 +58,20 @@ class ProcStat(CommandParser, LegacyItemAccess):
         <class 'insights.parsers.proc_stat.ProcStat'>
         >>> proc_stat.cpu_percentage
         '6.73%'
-        >>> proc_stat.ctxt
-        17852681
         >>> proc_stat.btime
         '1542179825'
+        >>> proc_stat.ctxt
+        17852681
         >>> proc_stat.softirq_total
         11867930
         >>> proc_stat.intr_total
         21359029
+        >>> proc_stat.processes
+        19212
+        >>> proc_stat.procs_running
+        1
+        >>> proc_stat.procs_blocked
+        0
     """
 
     def parse_content(self, content):
@@ -74,9 +80,8 @@ class ProcStat(CommandParser, LegacyItemAccess):
             key, value = line.split(None, 1)
             self.data.update({key: value})
 
-    @property
-    def cpu_percentage(self):
         """
+        The following code is used to calculate the cpu usage percentage.
         The output of a cpu line could contain the following information according to different kernel version. Earlier
         versions do not have guest, guestnice for this two are involving for virtual machine in some later version.
         The cpu usage percentage is calculated by idle divide total.
@@ -91,7 +96,7 @@ class ProcStat(CommandParser, LegacyItemAccess):
         - guest:  the number of jiffies that the system is running a normal guest
         - guestnice: the number of jiffies that the system is running a niced guest
         """
-
+        self.cpu_percentage = None
         if 'cpu' in self.data:
             cpu_list = list(map(lambda x: int(x), self.data['cpu'].split()))
             if len(cpu_list) < 7:
@@ -99,33 +104,20 @@ class ProcStat(CommandParser, LegacyItemAccess):
             cpu_total = float(sum(cpu_list))
             cpu_idle = float(cpu_list[3])
             cpu_pct = (cpu_total - cpu_idle) * 100 / cpu_total
-            return "{0:.2f}".format(cpu_pct) + '%'
-        return None
+            self.cpu_percentage = "{0:.2f}".format(cpu_pct) + '%'
 
-    @property
-    def intr_total(self):
-        return int(self.data['intr'].split(None, 1)[0]) if 'intr' in self.data else None
+        # Get the total number of hard interrupts
+        self.intr_total = int(self.data['intr'].split(None, 1)[0]) if 'intr' in self.data else None
 
-    @property
-    def ctxt(self):
-        return int(self.data['ctxt']) if 'ctxt' in self.data else None
+        # Get the total number of soft interrupts
+        self.softirq_total = int(self.data['softirq'].split(None, 1)[0]) if 'softirq' in self.data else None
 
-    @property
-    def btime(self):
-        return self.data['btime'] if 'btime' in self.data else None
+        self.ctxt = int(self.data['ctxt']) if 'ctxt' in self.data else None
 
-    @property
-    def processes(self):
-        return int(self.data['processes']) if 'processes' in self.data else None
+        self.btime = self.data['btime'] if 'btime' in self.data else None
 
-    @property
-    def procs_running(self):
-        return int(self.data['procs_running']) if 'procs_running' in self.data else None
+        self.processes = int(self.data['processes']) if 'processes' in self.data else None
 
-    @property
-    def procs_blocked(self):
-        return int(self.data['procs_blocked']) if 'procs_blocked' in self.data else None
+        self.procs_running = int(self.data['procs_running']) if 'procs_running' in self.data else None
 
-    @property
-    def softirq_total(self):
-        return int(self.data['softirq'].split(None, 1)[0]) if 'softirq' in self.data else None
+        self.procs_blocked = int(self.data['procs_blocked']) if 'procs_blocked' in self.data else None
