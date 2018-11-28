@@ -36,6 +36,14 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
+            publishHTML (target: [
+              allowMissing: false,
+              alwaysLinkToLastBuild: false,
+              keepAll: true,
+              reportDir: 'test-reports',
+              reportFiles: 'py26-report.html',
+              reportName: 'Python 2.6 Test Report'
+            ])
           }
         }
         stage('Build RHEL7 Python 2.7') {
@@ -60,6 +68,14 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
+            publishHTML (target: [
+              allowMissing: false,
+              alwaysLinkToLastBuild: false,
+              keepAll: true,
+              reportDir: 'test-reports',
+              reportFiles: 'py27-report.html',
+              reportName: 'Python 2.7 Test Report'
+            ])
           }
         }
         stage('Build RHEL7 Python 3.6') {
@@ -84,6 +100,14 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
+            publishHTML (target: [
+              allowMissing: false,
+              alwaysLinkToLastBuild: false,
+              keepAll: true,
+              reportDir: 'test-reports',
+              reportFiles: 'py3-report.html',
+              reportName: 'Python 3 Test Report'
+            ])
           }
         }
       }
@@ -112,18 +136,6 @@ pipeline {
     stage('Nofity Github - Docs Check Passed') {
       steps {
         githubNotify description: 'Code Checks and Docs Generation Passed', status: 'SUCCESS'
-      }
-    }
-    stage('Publish Reports') {
-      steps {
-        publishHTML (target: [
-          allowMissing: false,
-          alwaysLinkToLastBuild: false,
-          keepAll: true,
-          reportDir: 'test-reports',
-          reportFiles: 'py26-report.html, py27-report.html, py3-report.html',
-          reportName: 'Test Report'
-        ])
       }
     }
   }
