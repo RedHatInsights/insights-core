@@ -36,14 +36,15 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
-            publishHTML (target: [
-              allowMissing: false,
-              alwaysLinkToLastBuild: false,
-              keepAll: true,
-              reportDir: 'test-reports',
-              reportFiles: 'py26-report.html',
-              reportName: 'Python 2.6 Test Report'
-            ])
+            s3Upload (
+              consoleLogLevel: 'INFO',
+              dontWaitForConcurrentBuildCompletion: false,
+              entries: [[
+                bucket: 'insights-core-jenkins-reports',
+                managedArtifacts: true,
+                selectedRegion: 'us-east-1',
+                sourceFile: '**/test-reports/*.html']],
+              profileName: 'Report Bucket')
           }
         }
         stage('Build RHEL7 Python 2.7') {
