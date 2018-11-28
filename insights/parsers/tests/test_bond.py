@@ -1,4 +1,6 @@
 import doctest
+import pytest
+from insights.parsers import ParseException
 from insights.parsers.bond import Bond
 from insights.parsers import bond
 from insights.tests import context_wrap
@@ -173,5 +175,7 @@ def test_bond_class():
     assert bond_obj_2.bond_mode == '1'
     assert bond_obj_2.active_slave is None
 
-    bond_obj_3 = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
-    assert bond_obj_3.bond_mode is None
+    with pytest.raises(ParseException) as exc:
+        bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
+        assert not bond_obj.bond_mode
+    assert 'Unrecognised bonding mode' in str(exc)

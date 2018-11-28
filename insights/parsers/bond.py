@@ -60,6 +60,7 @@ Examples:
 
 from insights import Parser, parser, get_active_lines
 from insights.specs import Specs
+from insights.parsers import ParseException
 
 
 """dict: bonding mode parameter string linked to bond type index."""
@@ -95,7 +96,11 @@ class Bond(Parser):
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
                 raw_mode = line.split(":", 1)[1].strip()
-                self._bond_mode = BOND_PREFIX_MAP.get(raw_mode, None)
+                self._bond_mode = raw_mode
+                if raw_mode in BOND_PREFIX_MAP:
+                    self._bond_mode = BOND_PREFIX_MAP[raw_mode]
+                else:
+                    raise ParseException("Unrecognised bonding mode '{b}'".format(b=raw_mode))
             elif line.startswith("Partner Mac Address: "):
                 self._partner_mac_address = line.split(":", 1)[1].strip()
             elif line.startswith("Slave Interface: "):
