@@ -522,6 +522,7 @@ class DefaultSpecs(Specs):
     prev_uploader_log = simple_file("var/log/redhat-access-insights/redhat-access-insights.log.1")
     proc_snmp_ipv4 = simple_file("proc/net/snmp")
     proc_snmp_ipv6 = simple_file("proc/net/snmp6")
+    proc_stat = simple_file("proc/stat")
     pulp_worker_defaults = simple_file("etc/default/pulp_workers")
     pvs = simple_command('/sbin/pvs -a -v -o +pv_mda_free,pv_mda_size,pv_mda_count,pv_mda_used_count,pe_count --config="global{locking_type=0}"')
     pvs_noheadings = simple_command("/sbin/pvs --nameprefixes --noheadings --separator='|' -a -o pv_all,vg_name --config=\"global{locking_type=0}\"")
