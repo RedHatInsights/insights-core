@@ -9,6 +9,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 
 class SosSpecs(Specs):
+    auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     blkid = simple_file("sos_commands/block/blkid_-c_.dev.null")
     candlepin_log = first_of([
         simple_file("/var/log/candlepin/candlepin.log"),
