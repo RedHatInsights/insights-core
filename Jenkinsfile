@@ -72,14 +72,18 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
-            publishHTML (target: [
-              allowMissing: false,
-              alwaysLinkToLastBuild: false,
-              keepAll: true,
-              reportDir: 'test-reports',
-              reportFiles: 'py27-report.html',
-              reportName: 'Python 2.7 Test Report'
-            ])
+            withAWS(credentials:'bucket_access', region:'us-east-1') {
+              s3Upload (
+                bucket:"insights-core-jenkins-reports",
+                path:"${env.BRANCH_NAME}-${BUILD_ID}/",
+                includePathPattern:'**/*.html',
+                workingDir:'test-reports',
+                metadatas:[
+                  "Change_Author:${env.CHANGE_AUTHOR}",
+                  "Change_Author_Email:${env.CHANGE_AUTHOR_EMAIL}"
+               ]
+              )
+            }
           }
         }
         stage('Build RHEL7 Python 3.6') {
@@ -104,14 +108,18 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
-            publishHTML (target: [
-              allowMissing: false,
-              alwaysLinkToLastBuild: false,
-              keepAll: true,
-              reportDir: 'test-reports',
-              reportFiles: 'py3-report.html',
-              reportName: 'Python 3 Test Report'
-            ])
+            withAWS(credentials:'bucket_access', region:'us-east-1') {
+              s3Upload (
+                bucket:"insights-core-jenkins-reports",
+                path:"${env.BRANCH_NAME}-${BUILD_ID}/",
+                includePathPattern:'**/*.html',
+                workingDir:'test-reports',
+                metadatas:[
+                  "Change_Author:${env.CHANGE_AUTHOR}",
+                  "Change_Author_Email:${env.CHANGE_AUTHOR_EMAIL}"
+               ]
+              )
+            }
           }
         }
       }
