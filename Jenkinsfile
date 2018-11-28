@@ -36,15 +36,18 @@ pipeline {
                 pip install -e .[linting]
                 flake8
             """
-            s3Upload (
-              consoleLogLevel: 'INFO',
-              dontWaitForConcurrentBuildCompletion: false,
-              entries: [[
-                bucket: 'insights-core-jenkins-reports',
-                managedArtifacts: true,
-                selectedRegion: 'us-east-1',
-                sourceFile: '**/test-reports/*.html']],
-              profileName: 'Report Bucket')
+            withAWS(credentials:'bucket_access', region:'us-east-1') {
+              s3Upload (
+                bucket:"insights-core-jenkins-reports",
+                path:"${env.BRANCH_NAME}-${BUILD_ID}/",
+                includePathPattern:'**/*.html',
+                workingDir:'test-reports',
+                metadatas:[
+                  "Change_Author:${env.CHANGE_AUTHOR}",
+                  "Change_Author_Email:${env.CHANGE_AUTHOR_EMAIL}"
+               ]
+              )
+            }
           }
         }
         stage('Build RHEL7 Python 2.7') {
