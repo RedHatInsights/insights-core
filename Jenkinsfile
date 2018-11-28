@@ -24,6 +24,7 @@ pipeline {
                 pip install "pycparser<=2.18"
                 pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[testing]
+                pip install "pytest-html==1.13.0"
                 pytest
             """
             echo "Testing with Linter..."
