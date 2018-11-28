@@ -48,6 +48,7 @@ insights.core.dr
     :members:
     :show-inheritance:
     :undoc-members:
+    :exclude-members: ComponentType
 
 .. autoclass:: insights.core.dr.ComponentType
     :members:

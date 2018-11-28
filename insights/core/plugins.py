@@ -198,7 +198,7 @@ class rule(dr.ComponentType):
         cluster (bool): if ``True`` will put the component into the
             ``GROUPS.cluster`` group. Defaults to ``False``. Overrides ``group``
             if ``True``.
-        content (str or dict): a jinja2 template or dictionary of jinja2
+        content (string or dict): a jinja2 template or dictionary of jinja2
             templates. The :class:`Response` subclasses rules can return are
             dictionaries. :class:`make_pass`, :class:`make_fail`, and
             :class:`make_response` all accept first a key and then a list of

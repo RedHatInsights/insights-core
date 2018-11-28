@@ -111,7 +111,7 @@ def is_enabled(component):
 
     Args:
         component (callable): The component to check. The component must
-        already be loaded.
+            already be loaded.
 
     Returns:
         True if the component is enabled. False otherwise.
@@ -162,7 +162,11 @@ def _get_component(name):
 
 
 COMPONENT_NAME_CACHE = KeyPassingDefaultDict(_get_component)
-get_component = COMPONENT_NAME_CACHE.__getitem__
+
+
+def get_component(name):
+    """ Returns the class or function specified, importing it if necessary. """
+    return COMPONENT_NAME_CACHE[name]
 
 
 @defaults(None)
@@ -875,12 +879,12 @@ def observer(component_type=ComponentType):
     return inner
 
 
-def run_order(components):
+def run_order(graph):
     """
     Returns components in an order that satisfies their dependency
     relationships.
     """
-    return toposort_flatten(components, sort=False)
+    return toposort_flatten(graph, sort=False)
 
 
 def _determine_components(components):
