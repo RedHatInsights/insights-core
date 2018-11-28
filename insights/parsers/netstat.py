@@ -697,6 +697,7 @@ class SsTULPN(CommandParser):
         for line in self.data:
             peer_port = line.get('Peer-Address-Port')
             if peer_port and ':*' not in peer_port and\
+                    peer_port.split(':') and\
                     int(port) == int(peer_port.split(':')[-1]):
                 list_conn.append(line)
         return list_conn
