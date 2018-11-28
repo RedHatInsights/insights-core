@@ -101,6 +101,7 @@ class InsightsArchiveSpecs(Specs):
     ls_ocp_cni_openshift_sdn = simple_file("insights_commands/ls_-l_.var.lib.cni.networks.openshift-sdn")
     ls_sys_firmware = simple_file("insights_commands/ls_-lanR_.sys.firmware")
     ls_var_lib_mongodb = simple_file("insights_commands/ls_-la_.var.lib.mongodb")
+    ls_R_var_lib_nova_instances = simple_file("insights_commands/ls_-laR_.var.lib.nova.instances")
     ls_var_lib_nova_instances = simple_file("insights_commands/ls_-laRZ_.var.lib.nova.instances")
     ls_usr_sbin = simple_file("insights_commands/ls_-ln_.usr.sbin")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
