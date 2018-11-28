@@ -27,10 +27,11 @@ to embed content into the rule code.
 
 To embedded content with a rule, create a ``CONTENT`` attribute.  This
 attribute can be a string or a dictionary.  When it is a string, it is
-interpreted as a `jinja2 <http://jinja.pocoo.org/docs/2.10/>`_ string.
-The kwargs of the ``make_*`` functions are interpolated into the string.
+interpreted as a `jinja2 <http://jinja.pocoo.org/docs/2.10/>`_ template,
+and the kwargs of the ``make_*`` functions are interpolated into it.
 This would take place for all rules and all their responses in the
-module.
+module. If you want to scope content to a particular rule, set
+``content=CONTENT`` in the ``@rule`` declaraction.
 
 When the ``CONTENT`` attribute is a dictionary, the keys are interpreted
 as "ERROR_KEYS" with strings as values.   The string values are treated

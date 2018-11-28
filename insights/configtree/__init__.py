@@ -1,6 +1,4 @@
 """
-configtree
-==========
 configtree models configurations that are similar to dictionaries except that
 each option may have a list of un-named attributes, and duplicate options are
 allowed. Compound options containing children in addition to attributes also
