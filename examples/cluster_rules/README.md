@@ -16,7 +16,7 @@ see the [Ansible hosts file documentation][1] for more detailed information.
   a topology file and includes a custom spec and parser.
 * [bash_version.py](./bash_version.py) - Example cluster rules that don't
   use a topology file.
-* [cluster_hosts.tar.gz](./cluster_hosts.tar.gz_ - Example cluster archive
+* [cluster_hosts.tar.gz](./cluster_hosts.tar.gz) - Example cluster archive
   containing four host archives.
 * [\_\_init\_\_.py](./\_\_init\_\_.py) - Make this directory a package that can
   be access using the Python syntax `examples.cluster_rules`.
