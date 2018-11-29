@@ -31,6 +31,6 @@ class AvcCacheThreshold(CommandParser):
     """
 
     def parse_content(self, content):
-        if len(content) == 0 or len(content) > 1:
+        if len(content) != 1:
             raise ParseException("Error: ", content[0] if content else 'empty file')
         self.cache_threshold = int(content[0].strip())
