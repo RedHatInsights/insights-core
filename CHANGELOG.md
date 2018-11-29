@@ -1,5 +1,21 @@
 # Change Log
 
+## [insights-core-3.0.63-708](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.63-708) (2018-11-29)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.62-686...insights-core-3.0.63-708)
+
+**Implemented enhancements:**
+
+- Unnecessary Exception raised [\#1564](https://github.com/RedHatInsights/insights-core/issues/1564)
+
+**Fixed bugs:**
+
+- Invalid datasource for ceph\_conf [\#1570](https://github.com/RedHatInsights/insights-core/issues/1570)
+
+**Closed issues:**
+
+- bond object do not have \_active\_slave attribute exception issue [\#1563](https://github.com/RedHatInsights/insights-core/issues/1563)
+- Unsuitable parse error in `Lssap` [\#1559](https://github.com/RedHatInsights/insights-core/issues/1559)
+
 ## [insights-core-3.0.62-686](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.62-686) (2018-11-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.61-682...insights-core-3.0.62-686)
 
