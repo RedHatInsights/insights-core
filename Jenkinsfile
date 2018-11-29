@@ -153,14 +153,14 @@ pipeline {
   }
   post {
     always {
-      script {
-        if (env.CHANGE_ID) {
-          pullRequest.comment """
-                              Jenkins reports located at:  
-                              https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py26-report.html
-                              https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py27-report.html
-                              https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py3-report.html
-                              """
+        steps {
+          if (env.CHANGE_ID) {
+            pullRequest.comment """
+                                Jenkins reports located at:
+                                https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py26-report.html
+                                https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py27-report.html
+                                https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py3-report.html
+                                """
         }
       }
     }
