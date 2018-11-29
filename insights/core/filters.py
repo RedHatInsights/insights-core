@@ -6,7 +6,7 @@ If a datasource has filters defined, it will return only lines matching at
 least one of them. If a datasource has no filters, it will return all lines.
 
 Filters aren't applicable to "raw" datasources, which are created with
-``kind=RawFileProvider`` and have ``RegistryPoint``s with ``raw=True``.
+``kind=RawFileProvider`` and have ``RegistryPoint`` instances with ``raw=True``.
 
 The addition of a single filter can cause a datasource to change from returning
 all lines to returning just those that match. Therefore, any filtered
