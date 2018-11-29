@@ -47,8 +47,8 @@ class AvcHashStats(CommandParser, LegacyItemAccess):
         for line in get_active_lines(content):
             key, value = map(lambda x: x.strip(), line.split(':'))
             self.data.update({key: value})
-        self.entries = int(self.data['entries']) if self.data.get('entries') else None
+        self.entries = int(self.data['entries']) if 'entries' in self.data else None
         self.buckets_used, self.buckets = map(lambda x: int(x.strip()),
                                               self.data['buckets used'].split('/')) \
-            if self.data.get('buckets used') else [None, None]
-        self.longest_chain = int(self.data['longest chain']) if self.data.get('longest chain') else None
+            if 'buckets used' in self.data else [None, None]
+        self.longest_chain = int(self.data['longest chain']) if 'longest chain' in self.data else None
