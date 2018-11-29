@@ -2,23 +2,10 @@
 # in Ansible host file format
 # See: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#hosts-and-groups
 #
-[master]
-inf152.mydomain.com
-inf153.mydomain.com
-inf154.mydomain.com
-
-[etcd]
-
-[infra]
-inf155.mydomain.com
-inf156.mydomain.com
-inf157.mydomain.com
+[servers]
+devbox1
 
 [nodes]
-inf158.mydomain.com
-inf159.mydomain.com
-inf160.mydomain.com
-inf161.mydomain.com
-inf162.mydomain.com
-inf163.mydomain.com
-inf164.mydomain.com
+devbox2
+devbox3
+devbox4

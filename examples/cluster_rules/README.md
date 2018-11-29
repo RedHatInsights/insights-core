@@ -13,14 +13,16 @@ see the [Ansible hosts file documentation][1] for more detailed information.
 ## Contents of this Directory
 
 * [allnodes_cpu.py](./allnodes_cpu.py) - Example cluster rules that use
-  a topology file.
+  a topology file and includes a custom spec and parser.
 * [bash_version.py](./bash_version.py) - Example cluster rules that don't
   use a topology file.
+* [cluster_hosts.tar.gz](./cluster_hosts.tar.gz_ - Example cluster archive
+  containing four host archives.
 * [\_\_init\_\_.py](./\_\_init\_\_.py) - Make this directory a package that can
   be access using the Python syntax `examples.cluster_rules`.
-* [ntp_compare.py](./ntp_compare.py) - Example cluster rule that doesn't
-  use a topology file.
-* [topology_example](./topology_example) - Sample topology file in
+* [ntp_compare.py](./ntp_compare.py) - Example cluster rule that uses
+  a topology file and formated content.
+* [topology_example](./topology_example) - Sample cluster topology file in
   Ansible host file format.
 
 [1]: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#hosts-and-groups
