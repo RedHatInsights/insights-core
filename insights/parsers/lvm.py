@@ -512,7 +512,8 @@ class Lvs(Lvm):
         "LVM2_CACHE_READ_MISSES": "CacheReadMisses",
         "LVM2_LV_DESCENDANTS": "Descendants",
         "LVM2_REGION_SIZE": "Region",
-        "LVM2_SEGTYPE": "SegType"
+        "LVM2_SEGTYPE": "SegType",
+        "LVM2_SEG_MONITOR": "Monitor"
     }
 
     PRIMARY_KEY = "LV"

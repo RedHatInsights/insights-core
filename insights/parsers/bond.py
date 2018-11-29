@@ -8,64 +8,72 @@ all the files starteing with "bond." located in the
 
 Typical content of ``bond.*`` file is::
 
-    Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+    Ethernet Channel Bonding Driver: v3.2.4 (January 28, 2008)
 
-    Bonding Mode: load balancing (round-robin)
+    Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+    Transmit Hash Policy: layer2 (0)
     MII Status: up
-    MII Polling Interval (ms): 100
+    MII Polling Interval (ms): 500
     Up Delay (ms): 0
     Down Delay (ms): 0
 
-    Slave Interface: eno1
-    MII Status: up
-    Speed: 1000 Mbps
-    Duplex: full
-    Link Failure Count: 0
-    Permanent HW addr: 2c:44:fd:80:5c:f8
-    Slave queue ID: 0
+    802.3ad info
+    LACP rate: slow
+    Active Aggregator Info:
+            Aggregator ID: 3
+            Number of ports: 1
+            Actor Key: 17
+            Partner Key: 1
+            Partner Mac Address: 00:00:00:00:00:00
 
-    Slave Interface: eno2
-    Transmit Hash Policy: layer2 (0)
+    Slave Interface: eth1
     MII Status: up
-    Speed: 1000 Mbps
-    Duplex: full
     Link Failure Count: 0
-    Permanent HW addr: 2c:44:fd:80:5c:f9
-    Slave queue ID: 0
+    Permanent HW addr: 00:16:35:5e:42:fc
+    Aggregator ID: 3
+
+    Slave Interface: eth2
+    MII Status: up
+    Link Failure Count: 0
+    Permanent HW addr: 00:16:35:5e:02:7e
+    Aggregator ID: 2
 
 Data is modeled as an array of ``Bond`` objects (``bond`` being a
 pattern file specification gathering data from files located in
 ``/proc/net/bonding``.
 
 Examples:
-    >>> bond_info = shared[Bond]
+    >>> type(bond_info)
+    <class 'insights.parsers.bond.Bond'>
     >>> bond_info.bond_mode
-    '0'
+    '4'
     >>> bond_info.partner_mac_address
-    None
+    '00:00:00:00:00:00'
     >>> bond_info.slave_interface
-    ['eno1', 'eno2']
+    ['eth1', 'eth2']
     >>> bond_info.aggregator_id
-    ['3', '2', '3']
+    ['3', '3', '2']
     >>> bond_info.xmit_hash_policy
-    layer2
+    'layer2'
     >>> bond_info.active_slave
-    enp17s0f0
 """
-from insights import Parser, parser, get_active_lines
-from insights.parsers import ParseException
-from insights.specs import Specs
 
+from insights import Parser, parser, get_active_lines
+from insights.specs import Specs
+from insights.parsers import ParseException
+
+
+"""dict: bonding mode parameter string linked to bond type index."""
 BOND_PREFIX_MAP = {
     'load balancing (round-robin)': '0',
     'fault-tolerance (active-backup)': '1',
+    'fault-tolerance (active-backup) (fail_over_mac active)': '1',
     'load balancing (xor)': '2',
     'fault-tolerance (broadcast)': '3',
     'IEEE 802.3ad Dynamic link aggregation': '4',
     'transmit load balancing': '5',
     'adaptive load balancing': '6'
 }
-"""dict: bonding mode parameter string linked to bond type index."""
 
 
 @parser(Specs.bond)
@@ -75,27 +83,12 @@ class Bond(Parser):
 
     Currently used information from ``/proc/net/bonding`` includes
     the "bond mode" and "partner mac address".
-
-    Attributes:
-        bond_mode (str): Bond mode number as a string, or if there is no
-            known mapping to a number, the raw "Bonding Mode" value. Default is
-            ``None`` if no "Bonding Mode" key is found.
-        partner_mac_address (str): Value of the "Partner Mac Address" in the bond
-            file if the key/value exists. Default is ``None``.
-        slave_interface (list): List of the slave interfaces in the bond file
-            if the key/value exists. Default is ``[]``.
-        aggregator_id (list): List of the "Aggregator ID" in the bond file
-            if the key/value exists. Default is ``[]``.
-        xmit_hash_policy(str): It will return Transmit Hash Policy set for bonding mode
-            if the key/value exists. Default is ``None``
-        active_slave (str): It will return Currently Active Slave interface set for active-backup
-            mode if the key/values exists. Default is ``None``.
     """
 
     def parse_content(self, content):
         self._bond_mode = None
         self._partner_mac_address = None
-        self._active_slaves = None
+        self._active_slave = None
         self.xmit_hash_policy = None
         self._slave_interface = []
         self._aggregator_id = []

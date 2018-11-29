@@ -9,6 +9,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 
 class SosSpecs(Specs):
+    auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     blkid = simple_file("sos_commands/block/blkid_-c_.dev.null")
     candlepin_log = first_of([
         simple_file("/var/log/candlepin/candlepin.log"),
@@ -26,6 +27,7 @@ class SosSpecs(Specs):
     df__alP = simple_file("sos_commands/filesys/df_-alP")
     df__li = simple_file("sos_commands/filesys/df_-li")
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
+    docker_info = simple_file("sos_commands/docker/docker_info")
     docker_list_containers = first_file(["sos_commands/docker/docker_ps", "sos_commands/docker/docker_ps_-a"])
     dmesg = simple_file("sos_commands/kernel/dmesg")
     dmidecode = simple_file("dmidecode")
