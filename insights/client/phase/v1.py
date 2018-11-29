@@ -211,12 +211,12 @@ def collect_and_output(client, config):
                 else:
                     client.delete_archive(insights_archive, delete_parent_dir=True)
 
-            # if we are rotating the eggs and success on upload do rotation
-            try:
-                client.rotate_eggs()
-            except IOError:
-                message = ("Failed to rotate %s to %s" %
-                           (constants.insights_core_newest,
-                            constants.insights_core_last_stable))
-                logger.debug(message)
-                raise IOError(message)
+    # rotate eggs once client completes all work successfully
+    try:
+        client.rotate_eggs()
+    except IOError:
+        message = ("Failed to rotate %s to %s" %
+                   (constants.insights_core_newest,
+                    constants.insights_core_last_stable))
+        logger.debug(message)
+        raise IOError(message)
