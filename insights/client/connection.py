@@ -286,7 +286,7 @@ class InsightsConnection(object):
         sock = socket.socket()
         sock.setblocking(1)
         if self.proxies:
-            connect_str = 'CONNECT {0} HTTP/1.0\r\n'.format(hostname[0])
+            connect_str = 'CONNECT {0}:443 HTTP/1.0\r\n'.format(hostname[0])
             if self.proxy_auth:
                 connect_str += 'Proxy-Authorization: {0}\r\n'.format(self.proxy_auth)
             connect_str += '\r\n'
@@ -299,7 +299,7 @@ class InsightsConnection(object):
                 return False
             sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
-            if '200 Connection established' not in res:
+            if '200 connection established' not in res.lower():
                 logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
                 return False
         else:
