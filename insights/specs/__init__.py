@@ -485,6 +485,7 @@ class Specs(SpecSet):
     virsh_list_all = RegistryPoint()
     virt_what = RegistryPoint()
     virt_who_conf = RegistryPoint(multi_output=True, filterable=True)
+    virtlogd_conf = RegistryPoint(filterable=True)
     vmcore_dmesg = RegistryPoint(multi_output=True)
     vmware_tools_conf = RegistryPoint()
     vsftpd_conf = RegistryPoint(filterable=True)
