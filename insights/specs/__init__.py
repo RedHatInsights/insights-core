@@ -290,6 +290,8 @@ class Specs(SpecSet):
     nova_conf = RegistryPoint()
     nova_crontab = RegistryPoint()
     nova_crontab_container = RegistryPoint()
+    nova_uid = RegistryPoint()
+    nova_migration_uid = RegistryPoint()
     nscd_conf = RegistryPoint(filterable=True)
     nsswitch_conf = RegistryPoint(filterable=True)
     ntp_conf = RegistryPoint()

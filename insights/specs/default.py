@@ -437,6 +437,8 @@ class DefaultSpecs(Specs):
     nova_conf = first_file(["/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf", "/etc/nova/nova.conf"])
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_crontab_container = simple_command("docker exec nova_api_cron /usr/bin/crontab -l -u nova")
+    nova_uid = simple_command("/usr/bin/id -u nova")
+    nova_migration_uid = simple_command("/usr/bin/id -u nova_migration")
     nscd_conf = simple_file("/etc/nscd.conf")
     nsswitch_conf = simple_file("/etc/nsswitch.conf")
     ntp_conf = simple_file("/etc/ntp.conf")
