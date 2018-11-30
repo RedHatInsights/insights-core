@@ -705,6 +705,7 @@ class DefaultSpecs(Specs):
     virsh_list_all = simple_command("/usr/bin/virsh --readonly list --all")
     virt_what = simple_command("/usr/sbin/virt-what")
     virt_who_conf = glob_file([r"etc/virt-who.conf", r"etc/virt-who.d/*.conf"])
+    virtlogd_conf = simple_file("/etc/libvirt/virtlogd.conf")
     vmcore_dmesg = glob_file("/var/crash/*/vmcore-dmesg.txt")
     vsftpd = simple_file("/etc/pam.d/vsftpd")
     vsftpd_conf = simple_file("/etc/vsftpd/vsftpd.conf")
