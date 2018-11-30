@@ -1,8 +1,9 @@
-from insights.parsers.bond import Bond
-from insights.parsers import ParseException
-from insights.tests import context_wrap
-
+import doctest
 import pytest
+from insights.parsers import ParseException
+from insights.parsers.bond import Bond
+from insights.parsers import bond
+from insights.tests import context_wrap
 
 CONTEXT_PATH = "proc/net/bonding/bond0"
 
@@ -132,6 +133,17 @@ Slave queue ID: 0
 """.strip()
 
 
+BONDINFO_MODE_6 = BONDINFO_MODE_5.replace("Currently Active Slave: enp17s0f0", "")
+
+
+def test_netstat_doc_examples():
+    env = {
+        'bond_info': Bond(context_wrap(BONDINFO_MODE_4)),
+    }
+    failed, total = doctest.testmod(bond, globs=env)
+    assert failed == 0
+
+
 def test_bond_class():
 
     bond_obj = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH))
@@ -145,20 +157,25 @@ def test_bond_class():
     assert bond_obj.partner_mac_address == "00:00:00:00:00:00"
     assert bond_obj.aggregator_id == ['3', '3', '2']
     assert bond_obj.xmit_hash_policy == "layer2"
+    assert bond_obj.active_slave is None
 
     bond_obj = Bond(context_wrap(BONDINFO_CORRUPT, CONTEXT_PATH))
-    assert not bond_obj.bond_mode
+    assert bond_obj.bond_mode is None
     assert bond_obj.slave_interface == []
     assert not bond_obj.xmit_hash_policy
-
-    with pytest.raises(ParseException) as exc:
-        bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
-        assert not bond_obj.bond_mode
-    assert 'Unrecognised bonding mode' in str(exc)
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_2, CONTEXT_PATH))
     assert bond_obj.xmit_hash_policy == "layer2+3"
 
     bond_obj = Bond(context_wrap(BONDINFO_MODE_5, CONTEXT_PATH))
-    bond_obj.bond_mode == 1
-    bond_obj.active_slave == "enp17s0f0"
+    assert bond_obj.bond_mode == '1'
+    assert bond_obj.active_slave == "enp17s0f0"
+
+    bond_obj_2 = Bond(context_wrap(BONDINFO_MODE_6, CONTEXT_PATH))
+    assert bond_obj_2.bond_mode == '1'
+    assert bond_obj_2.active_slave is None
+
+    with pytest.raises(ParseException) as exc:
+        bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))
+        assert not bond_obj.bond_mode
+    assert 'Unrecognised bonding mode' in str(exc)

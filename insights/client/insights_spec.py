@@ -85,7 +85,7 @@ class InsightsCommand(InsightsSpec):
             exclude_file = NamedTemporaryFile()
             exclude_file.write("\n".join(self.exclude).encode('utf-8'))
             exclude_file.flush()
-            cmd = "grep -v -i -f %s" % exclude_file.name
+            cmd = "grep -F -v -f %s" % exclude_file.name
             proc1 = Popen(shlex.split(cmd),
                           stdin=proc0.stdout,
                           stdout=PIPE)
@@ -163,7 +163,7 @@ class InsightsFile(InsightsSpec):
             exclude_file.write("\n".join(self.exclude).encode('utf-8'))
             exclude_file.flush()
 
-            cmd = "grep -v -i -f %s" % exclude_file.name
+            cmd = "grep -v -F -f %s" % exclude_file.name
             args = shlex.split(cmd)
             proc = Popen(args, stdin=sedcmd.stdout, stdout=PIPE)
             sedcmd.stdout.close()

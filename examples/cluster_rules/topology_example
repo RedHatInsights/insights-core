@@ -1,0 +1,11 @@
+# Insights core cluster rules topology file
+# in Ansible host file format
+# See: https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html#hosts-and-groups
+#
+[servers]
+devbox1
+
+[nodes]
+devbox2
+devbox3
+devbox4
