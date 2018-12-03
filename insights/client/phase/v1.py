@@ -145,8 +145,8 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if config.payload:
-        logger.debug('Uploading a payload. Bypassing registration.')
+    if config.payload or config.diagnosis:
+        logger.debug('Platform function. Bypassing registration.')
         return
 
     reg = client.register()
