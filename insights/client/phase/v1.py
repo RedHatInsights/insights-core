@@ -166,6 +166,14 @@ def post_update(client, config):
 
 @phase
 def collect_and_output(client, config):
+    if config.diagnosis:
+        remediation_id = None
+        if config.diagnosis is not True:
+            remediation_id = config.diagnosis
+        resp = client.get_diagnosis(remediation_id)
+        print(json.dumps(resp))
+        return
+
     if config.payload:
         insights_archive = config.payload
     else:

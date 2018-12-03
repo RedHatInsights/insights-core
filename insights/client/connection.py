@@ -791,3 +791,36 @@ class InsightsConnection(object):
             logger.error('Connection timed out. Running connection test...')
             self.test_connection()
             return False
+
+    def get_diagnosis(self, remediation_id):
+        '''
+            Reach out to the platform and fetch a diagnosis.
+            Spirtual successor to --to-json from the old client.
+        '''
+        diag_url = self.base_url + '/platform/remediations/v1/diagnosis/' + generate_machine_id()
+        print(diag_url)
+        params = {}
+        if remediation_id:
+            # validate this?
+            params['remediation'] = remediation_id
+        try:
+            net_logger.info("GET %s", diag_url)
+            res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
+            if res.status_code == 200:
+                return res.json()
+            else:
+                logger.error('Unable to get diagnosis data: %s %s',
+                             res.status_code, res.text)
+                return None
+        except requests.ConnectionError:
+            # can't connect, run connection test
+            logger.error('Connection timed out. Running connection test...')
+            self.test_connection()
+            return None
+
+
+if __name__ == '__main__':
+    from insights.client.config import InsightsConfig
+    c = InsightsConnection(InsightsConfig(base_url='remediations-ci.5a9f.insights-dev.openshiftapps.com/r/insights', insecure_connection=True))
+    print(c.base_url)
+    print(c.get_diagnosis(None))
