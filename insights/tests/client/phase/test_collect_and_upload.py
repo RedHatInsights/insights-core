@@ -18,7 +18,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.no_upload": False,
                        "return_value.load_all.return_value.to_json": False,
                        "return_value.load_all.return_value.keep_archive": False,
-                       "return_value.load_all.return_value.register": False})
+                       "return_value.load_all.return_value.register": False,
+                       "return_value.load_all.return_value.diagnosis": None})
     return patcher(old_function)
 
 
