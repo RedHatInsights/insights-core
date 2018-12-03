@@ -120,9 +120,8 @@ class DefaultSpecs(Specs):
     # are these locations for different rhel versions?
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
-
     corosync = simple_file("/etc/sysconfig/corosync")
-
+    corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
     cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
