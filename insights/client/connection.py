@@ -798,7 +798,6 @@ class InsightsConnection(object):
             Spirtual successor to --to-json from the old client.
         '''
         diag_url = self.base_url + '/platform/remediations/v1/diagnosis/' + generate_machine_id()
-        print(diag_url)
         params = {}
         if remediation_id:
             # validate this?
@@ -817,10 +816,3 @@ class InsightsConnection(object):
             logger.error('Connection timed out. Running connection test...')
             self.test_connection()
             return None
-
-
-if __name__ == '__main__':
-    from insights.client.config import InsightsConfig
-    c = InsightsConnection(InsightsConfig(base_url='remediations-ci.5a9f.insights-dev.openshiftapps.com/r/insights', insecure_connection=True))
-    print(c.base_url)
-    print(c.get_diagnosis(None))

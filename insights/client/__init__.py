@@ -440,6 +440,9 @@ class InsightsClient(object):
             returns JSON of diagnosis data on success, None on failure
             Optional arg remediation_id to get a particular remediation set.
         '''
+        if self.config.offline:
+            logger.error('Cannot get diagnosis in offline mode.')
+            return None
         return self.connection.get_diagnosis(remediation_id)
 
 
