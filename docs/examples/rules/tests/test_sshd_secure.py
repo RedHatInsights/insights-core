@@ -1,9 +1,11 @@
-from rules import sshd_secure
+from .. import sshd_secure
 from insights.tests import InputData, archive_provider, context_wrap
 from insights.core.plugins import make_response
 from insights.specs import Specs
 # The following imports are not necessary for integration tests
-from insights.parsers.secure_shell import SshDConfig
+#from insights.parsers.secure_shell import SshDConfig
+
+from docs.examples.parsers.secure_shell import SshDConfig
 
 OPENSSH_RPM = """
 openssh-6.6.1p1-31.el7.x86_64

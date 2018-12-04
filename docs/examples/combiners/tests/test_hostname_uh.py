@@ -1,4 +1,4 @@
-from insights.combiners.hostname_uh import HostnameUH
+from docs.examples.combiners.hostname_uh import HostnameUH
 from insights.parsers.hostname import Hostname
 from insights.parsers.uname import Uname
 from insights.tests import context_wrap

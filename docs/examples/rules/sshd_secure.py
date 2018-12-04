@@ -1,5 +1,5 @@
 from insights.core.plugins import make_response, rule
-from insights.parsers.secure_shell import SshDConfig
+from docs.examples.parsers.secure_shell import SshDConfig
 from insights.parsers.installed_rpms import InstalledRpms
 
 ERROR_KEY = "SSHD_SECURE"

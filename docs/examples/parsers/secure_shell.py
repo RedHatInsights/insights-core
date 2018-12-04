@@ -39,7 +39,7 @@ Examples:
     '10.110.1.1'
 """
 from collections import namedtuple
-from .. import Parser, parser, get_active_lines
+from insights import Parser, parser, get_active_lines
 from insights.specs import Specs
 
 

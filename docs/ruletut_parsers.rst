@@ -7,28 +7,21 @@ Determine rule logic
 The most effective way to get started in developing a rule is identifying the
 problem you want to address as well as a succinct solution to that problem.
 
-For the purposes of this tutorial we'll identify a fictitious security problem
-with a commonly shared library.  Let's imagine that this is a highly publicized
-CVE, and, therefore, it deserves a catchy name; let's call it Heartburn.
+For the purposes of this tutorial we'll identify a very simple problem with
+the rpm database getting corrupted. The RPM Database is critical for managing
+packages on a system. It's possible for this databse to become corrupt therefore
+making updates and software installs impossible.
 
-For this case let's check three things:
+For this case there is one thing we need to check:
 
-1. the shared library is installed on the system
-2. the shared library is in use by a running process
-3. the running process is accepting possibly external network connections
+1. the rpm database does not contain `rpmdbNextIterator:`
 
-For this problem let's declare that the solution is to upgrade the shared
-library and restart the system.
+For this problem let's declare that the solution is to rebuild rpm database or
+restore from backup.
 
 
 Identify Parsers
 ================
 
-- For RPM-based distributions, we can identify the installed version of the
-  library by using the ``InstalledRpms`` parser.
+- We can check the contents o the rpm database by using the ``InstalledRpms`` parser.
 
-- We can use the ``Lsof`` parser to identify if a running process is using the
-  shared library.
-
-- We can use the ``Netstat`` parser to identify if a running process is
-  possibly listening on an external address.

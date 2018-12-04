@@ -4,27 +4,25 @@ Develop Plugin
 Now that we have identified the required parsers, let's get started on
 developing our plugin.
 
-Create a file called ``heartburn.py`` in a Python package called ``tutorial``.
+Create a file called ``corrupt_rpmdb.py`` in a Python package called ``tutorial``.
 
 .. code-block:: shell
 
     $ mkdir tutorial
     $ touch tutorial/__init__.py
-    $ touch tutorial/heartburn.py
+    $ touch tutorial/corrupt_rpmdb.py
 
-Open ``heartburn.py`` in your text editor of choice and start by stubbing out
+Open ``corrupt_rpmdb.py`` in your text editor of choice and start by stubbing out
 the rule function and imports.
 
 .. code-block:: python
    :linenos:
 
     from insights.parsers.installed_rpms import InstalledRpms
-    from insights.parsers.lsof import Lsof
-    from insights.parsers.netstat import Netstat
     from insights import rule, make_response
 
-    @rule(InstalledRpms, Lsof, Netstat)
-    def heartburn(installed_rpms, lsof, netstat):
+    @rule(InstalledRpms)
+    def report(installed_rpms):
         pass
 
 Let's go over each line and describe the details:
@@ -33,15 +31,13 @@ Let's go over each line and describe the details:
    :lineno-start: 1
 
     from insights.parsers.installed_rpms import InstalledRpms
-    from insights.parsers.lsof import Lsof
-    from insights.parsers.netstat import Netstat
 
 Parsers you want to use must be imported.  You must pass the parser class
 objects directly to the ``@rule`` decorator to declare them as dependencies for
 your rule.
 
 .. code-block:: python
-   :lineno-start: 4
+   :lineno-start: 2
 
     from insights import rule, make_response
 
@@ -53,73 +49,49 @@ Combiners have a set of optional dependencies that are specified via the
 the `return value of a rule </api.html#rule-output>`_ function.
 
 .. code-block:: python
-   :lineno-start: 6
+   :lineno-start: 4
 
-    @rule(InstalledRpms, Lsof, Netstat)
+    @rule(InstalledRpms)
 
 Here we are specifying that this rule requires the output of the
 :py:class:`insights.parsers.installed_rpms.InstalledRpms`,
-:py:class:`insights.parsers.lsof.Lsof`, and
-:py:class:`insights.parsers.netstat.Netstat` parsers.
 
 Now let's add the rule logic
 
 .. code-block:: python
-   :linenos:
+   :lineno-start: 4
 
-    @rule(InstalledRpms, Lsof, Netstat)
-    def heartburn(installed_rpms, lsof, netstat):
 
-        if 'shared-library-1.0.0' not in installed_rpms:
-            return  # not installed, therefore not applicable
+    ERROR_KEY = 'RPMDB_CORRUPT'
 
-        process_list = lsof.using('/usr/lib64/libshared.so.1')
 
-        listening = netstat.listening
-
-        # get the set of processes that are using the library and listening
-        vulnerable_processes = set(process_list) && set(listening)
-
-        if vulnerable_processes:
-            return make_response("YOU_HAVE_HEARTBURN",
-                                 listening_pids=vulnerable_processes)
+    @rule(InstalledRpms)
+    def report(rpms):
+        if rpms.corrupt:
+            for line in rpms.errors:
+                if 'rpmdbNextIterator:' in line.split():
+                    return make_response(ERROR_KEY, rpmdb_error=line)
 
 There's a lot going on here, so lets look at some of the steps in detail.
 
 .. code-block:: python
-   :lineno-start: 4
+   :lineno-start: 6
 
-    if 'shared-library-1.0.0' not in installed_rpms:
-        return  # not installed, therefore not applicable
+    if rpms.corrupt:
 
-The ``InstalledRpms`` parser defines a ``__contains__`` method that allows for simple
-searching of rpms by name.
+The ``InstalledRpms`` parser defines a ``corrupt`` method that allows for
+simple boolean check to determine if the parser has indicated that the rpm
+database is corrupt.
 
 .. code-block:: python
    :lineno-start: 7
 
-    process_list = lsof.using('/usr/lib64/libshared.so.1')
+    for line in rpms.errors:
+        if 'rpmdbNextIterator:' in line.split():
+            return make_response(ERROR_KEY, rpmdb_error=line)
 
-The ``Lsof`` parser provides a ``using`` method that will return a list of pid
-numbers that have the given file open.
-
-.. code-block:: python
-   :lineno-start: 8
-
-    listening = netstat.listening
-
-The ``Netstat`` parser provides a ``listening`` property that returns a list of
-all pid numbers that are bound to a non-internal address.
-
-.. code-block:: python
-   :lineno-start: 13
-
-    if vulnerable_processes:
-        return make_response("YOU_HAVE_HEARTBURN",
-                             listening_pids=vulnerable_processes)
-
-Here we are checking to see if there were any processes that were using the
-library and might be bound to an external address.  If any such processes were
-found we are returning a result with the error key of ``YOU_HAVE_HEARTBURN``.
+Here we iterate through the returned lines searching for line that contained
+the `rpmdbNextIterator:` indicating the corruption. If the line is found it is
+returned in the response along with the error_key.
 This error key can be referenced by other systems for display or tracking
 purposes.
