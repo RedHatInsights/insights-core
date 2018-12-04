@@ -792,7 +792,7 @@ class InsightsConnection(object):
             self.test_connection()
             return False
 
-    def get_diagnosis(self, remediation_id):
+    def get_diagnosis(self, remediation_id=None):
         '''
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
