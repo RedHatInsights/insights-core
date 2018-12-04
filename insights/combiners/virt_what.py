@@ -93,7 +93,7 @@ class VirtWhat(object):
                     self.is_virtual = False
                     self.is_physical = True
 
-        sys_info = dmi.get("system_information", [{}])[0] if "system_information" in dmi.data else None
+        sys_info = dmi.get("system_information", [{}])[0] if dmi else None
 
         self.amended_generic = (RHEV if sys_info['product_name'].lower() == 'rhev hypervisor' else
                                 OVIRT if sys_info['product_name'].lower() == 'ovirt node' else

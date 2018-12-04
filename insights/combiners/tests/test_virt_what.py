@@ -28,6 +28,7 @@ ovirt
 kvm
 """.strip()
 
+
 DMIDECODE = '''
 # dmidecode 2.11
 SMBIOS 2.7 present.
@@ -459,3 +460,12 @@ def test_dmidecode_is_rhev():
     assert ret.is_physical is False
     assert ret.generic == "kvm"
     assert ret.amended_generic == "rhev"
+
+
+def test_virtwhat_only():
+    vw = VWP(context_wrap(T5))
+    ret = VirtWhat(None, vw)
+    assert ret.is_virtual is True
+    assert ret.is_physical is False
+    assert ret.generic == "ovirt"
+    assert ret.amended_generic == "ovirt"
