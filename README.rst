@@ -40,7 +40,7 @@ Releases can be installed via pip
 Documentation
 -------------
 
-There are several resources for digging into the details of how to use `insights-core`:
+There are several resources for digging into the details of how to use ``insights-core``:
 
 - A `detailed walk through of the constructing a rule
   <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Diagnostic%20Walkthrough.ipynb>`_
@@ -54,13 +54,18 @@ There are several resources for digging into the details of how to use `insights
   - `Combiner Development
     <http://insights-core.readthedocs.io/en/latest/combiner_tutorial.html#tutorial-combiner-development>`_
 
-- The basic architectural principles of `insights-core` can be found in
+- The basic architectural principles of ``insights-core`` can be found in
   the `Insights Core Tutorial
   <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Insights%20Core%20Tutorial.ipynb>`_ jupyter notebook
 - A simple `stand_alone.py
-  <https://github.com/RedHatInsights/insights-core/blob/master/stand_alone.py>`_
+  <https://github.com/RedHatInsights/insights-core/blob/master/examples/stand_alone.py>`_
   script encapsulates creating all the basic components in a single script
   that can be easily executed locally
+- Some `quick-start examples
+  <https://github.com/RedHatInsights/insights-core/blob/master/examples>`_
+  are provided in the ``examples`` directory. Each subdirectory under examples
+  includes a ``README.md`` file that provides a description of the contents
+  and usage information.
 
 To Run the Jupyter Notebooks
 ++++++++++++++++++++++++++++
@@ -79,7 +84,7 @@ To start the notebook server:
     jupyter notebook
 
 This should start a web-server and open a tab on your browser.  From
-there, you can navigate to `docs/notebooks` and select a notebook of
+there, you can navigate to ``docs/notebooks`` and select a notebook of
 interest.
 
 Motivation
@@ -121,11 +126,11 @@ A common confusion about this project is how it relates to `Red Hat
 Insights <https://access.redhat.com/insights/>`_.  Red Hat Insights is a
 product produced by `Red Hat <https://www.redhat.com>`_ for automated
 discovery and remediation of issues in Red Hat products.  The
-`insights-core` project is used by Red Hat Insights, but only represents
+``insights-core`` project is used by Red Hat Insights, but only represents
 the data collection and rule analysis infrastructure.  This
 infrastructure is meant to be reusable by other projects.
 
-So, `insights-core` can be used for individuals wanting to perform
+So, ``insights-core`` can be used for individuals wanting to perform
 analysis locally, or integrated into other diagnostics systems.  Parsers
-or rules written using `insights-core` can be executed in Red Hat
+or rules written using ``insights-core`` can be executed in Red Hat
 Insights, but, it is not a requirement.

@@ -32,6 +32,10 @@ from insights.specs import Specs
 @parser(Specs.engine_log)
 class EngineLog(LogFileOutput):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ovirt_engine_log.EngineLog` instead.
+
     Provide access to ovirt engine logs using the LogFileOutput parser class.
     """
     def __init__(self, *args, **kwargs):

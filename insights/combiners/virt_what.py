@@ -14,6 +14,8 @@ Examples:
     False
     >>> vw.generic
     'kvm'
+    >>> vw.amended_generic
+    'rhev'
     >>> 'aws' in vw
     False
 """
@@ -39,6 +41,10 @@ SPECIFIC_MAP = {
 }
 
 
+OVIRT = 'ovirt'
+RHEV = 'rhev'
+
+
 @combiner([DMIDecode, VW])
 class VirtWhat(object):
     """
@@ -52,6 +58,9 @@ class VirtWhat(object):
         is_physical (bool): It's running in a physical machine?
         generic (str): The type of the virtual machine. 'baremetal' if physical machine.
         specifics (list): List of the specific information.
+        amended_generic (str):The type of the virtual machine. 'baremetal' if physical machine.
+            Added to address an issue with virt_what/dmidecode when identifying 'ovirt' vs 'rhev'.
+            Will match the generic attribute in all other cases.
     """
 
     def __init__(self, dmi, vw):
@@ -83,6 +92,12 @@ class VirtWhat(object):
                     self.generic = BAREMETAL
                     self.is_virtual = False
                     self.is_physical = True
+
+        sys_info = dmi.get("system_information", [{}])[0] if dmi else None
+
+        self.amended_generic = (RHEV if sys_info['product_name'].lower() == 'rhev hypervisor' else
+                                OVIRT if sys_info['product_name'].lower() == 'ovirt node' else
+                                 self.generic) if sys_info else self.generic
 
     def __contains__(self, name):
         """bool: Is this ``name`` found in the specific list?"""

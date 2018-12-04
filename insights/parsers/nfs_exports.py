@@ -141,13 +141,14 @@ class NFSExportsBase(Parser):
     @staticmethod
     def reconstitute(path, d):
         """
+        .. warning::
+            This function is deprecated.  Please use the `raw_lines` dictionary
+            property of the parser instance instead, as this contains the actual
+            lines from the exports file.
+
         'Reconstitute' a line from its parsed value.  The original lines are
         not used for this.  The hosts in d are listed in alphabetical order,
         and the options are listed in the order originally given.
-
-        This function is deprecated.  Please use the `raw_lines` dictionary
-        property of the parser instance instead, as this contains the actual
-        lines from the exports file.
 
         Arguments:
             path (str): The exported path
