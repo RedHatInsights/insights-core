@@ -54,12 +54,11 @@ class ChronydSysconfig(SysconfigOptions):
 
     Examples:
 
-        >>> service_opts = shared[ChronydSysconfig]
-        >>> 'OPTIONS' in service_opts
+        >>> 'OPTIONS' in chronyd_syscfg
         True
-        >>> 'HIDE' in service_opts
+        >>> 'HIDE' in chronyd_syscfg
         False
-        >>> service_opts['OPTIONS']
+        >>> chronyd_syscfg['OPTIONS']
         '-d'
 
     """
@@ -79,12 +78,11 @@ class NtpdSysconfig(SysconfigOptions):
 
     Examples:
 
-        >>> service_opts = shared[NtpdSysconfig]
-        >>> 'OPTIONS' in service_opts
+        >>> 'OPTIONS' in ntpd_syscfg
         True
-        >>> 'HIDE' in service_opts
+        >>> 'HIDE' in ntpd_syscfg
         False
-        >>> service_opts['OPTIONS']
+        >>> ntpd_syscfg['OPTIONS']
         '-x -g'
     """
     pass
@@ -97,17 +95,20 @@ class DockerSysconfig(SysconfigOptions):
     ``SysconfigOptions`` parser class.  The 'OPTIONS' variable is also provided
     in the ``options`` property as a convenience.
 
-    Examples:
+    Sample Input::
 
-    >>> conf = shared[DockerSysconfig]
-    >>> 'OPTIONS' in conf
-    True
-    >>> conf['OPTIONS']
-    '--selinux-enabled'
-    >>> conf.options
-    '--selinux-enabled'
-    >>> conf['DOCKER_CERT_PATH']
-    '/etc/docker'
+        OPTIONS="--selinux-enabled"
+        DOCKER_CERT_PATH="/etc/docker"
+
+    Examples:
+        >>> 'OPTIONS' in docker_syscfg
+        True
+        >>> docker_syscfg['OPTIONS']
+        '--selinux-enabled'
+        >>> docker_syscfg.options
+        '--selinux-enabled'
+        >>> docker_syscfg['DOCKER_CERT_PATH']
+        '/etc/docker'
     """
 
     @property
@@ -138,7 +139,6 @@ class HttpdSysconfig(SysconfigOptions):
 
     Examples:
 
-        >>> httpd_syscfg = shared[HttpdSysconfig]
         >>> httpd_syscfg['HTTPD']
         '/usr/sbin/httpd.worker'
         >>> httpd_syscfg.get('OPTIONS')
@@ -172,13 +172,12 @@ class IrqbalanceSysconfig(SysconfigOptions):
 
     Examples:
 
-        >>> irqb_syscfg = shared[IrqbalanceSysconfig]
         >>> irqb_syscfg['IRQBALANCE_BANNED_CPUS']
         'f8'
         >>> irqb_syscfg.get('IRQBALANCE_ARGS')  # quotes will be stripped
         '-d'
-        >>> irqb_syscfg.get('IRQBALANCE_ONESHOT')
-        None
+        >>> irqb_syscfg.get('IRQBALANCE_ONESHOT') is None
+        True
         >>> 'ONESHOT' in irqb_syscfg
         False
 
@@ -240,13 +239,12 @@ class VirtWhoSysconfig(SysconfigOptions):
         TEST_OPT="A TEST"
 
     Examples:
-        >>> vwho_syscfg = shared[VirtWhoSysconfig]
         >>> vwho_syscfg['VIRTWHO_RHEVM']
         '1'
         >>> vwho_syscfg.get('VIRTWHO_RHEVM_OWNER')
         ''
-        >>> vwho_syscfg.get('NO_SUCH_OPTION')
-        None
+        >>> vwho_syscfg.get('NO_SUCH_OPTION') is None
+        True
         >>> 'NOSUCHOPTION' in vwho_syscfg
         False
         >>> vwho_syscfg.get('TEST_OPT')  # Quotes are stripped
@@ -267,11 +265,10 @@ class MongodSysconfig(SysconfigOptions):
         OPTIONS="--quiet -f /etc/mongod.conf"
 
     Examples:
-        >>> mongod_syscfg = shared[MongodSysconfig]
         >>> mongod_syscfg.get('OPTIONS')
         '--quiet -f /etc/mongod.conf'
-        >>> mongod_syscfg.get('NO_SUCH_OPTION')
-        None
+        >>> mongod_syscfg.get('NO_SUCH_OPTION') is None
+        True
         >>> 'NOSUCHOPTION' in mongod_syscfg
         False
     """
@@ -296,8 +293,7 @@ class MemcachedSysconfig(SysconfigOptions):
         OPTIONS="-U 0 -l 127.0.0.1"
 
     Examples:
-        >>> memcached_sysconfig = shared[MemcachedSysconfig]
-        >>> memcached_sysconfig.get('OPTIONS')
+        >>> memcached_syscfg.get('OPTIONS')
         '-U 0 -l 127.0.0.1'
     """
     pass
@@ -323,7 +319,7 @@ class LibvirtGuestsSysconfig(SysconfigOptions):
         ON_BOOT=ignore
 
     Examples:
-        >>> libvirt_guests_sysconfig.get('ON_BOOT')
+        >>> libvirt_guests_syscfg.get('ON_BOOT')
         'ignore'
 
     """
@@ -353,7 +349,7 @@ class PrelinkSysconfig(SysconfigOptions):
         PRELINK_OPTS=-mR
 
     Examples:
-        >>> prelink_sysconfig.get('PRELINKING')
+        >>> prelink_syscfg.get('PRELINKING')
         'no'
 
     """
