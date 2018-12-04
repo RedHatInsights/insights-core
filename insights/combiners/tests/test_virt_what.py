@@ -22,6 +22,13 @@ T4 = """
 virt-what: virt-what-cpuid-helper program not found in $PATH
 """.strip()
 
+# test for ovirt
+T5 = """
+ovirt
+kvm
+""".strip()
+
+
 DMIDECODE = '''
 # dmidecode 2.11
 SMBIOS 2.7 present.
@@ -273,6 +280,70 @@ Chassis Information
 \tContained Elements: 0
 '''
 
+DMIDECODE_OVIRT = """
+# dmidecode 3.1
+Getting SMBIOS data from sysfs.
+SMBIOS 2.8 present.
+10 structures occupying 511 bytes.
+Table at 0x000F6050.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+\tVendor: SeaBIOS
+\tVersion: 1.11.0-2.el7
+\tRelease Date: 04/01/2014
+\tAddress: 0xE8000
+\tRuntime Size: 96 kB
+\tROM Size: 64 kB
+\tCharacteristics:
+\t\tBIOS characteristics not supported
+\t\tTargeted content distribution is supported
+BIOS Revision: 0.0
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+\tManufacturer: oVirt
+\tProduct Name: oVirt Node
+\tVersion: 7-5.1804.4.el7.centos
+\tSerial Number: 30393137-3436-584D-5136-323830304E46
+\tUUID: a35ae32b-ed0a-49a4-9dbb-eecf21f88aab
+\tWake-up Type: Power Switch
+\tSKU Number: Not Specified
+\tFamily: Red Hat Enterprise Linux
+"""
+
+DMIDECODE_BOGUS_OVIRT = """
+# dmidecode 3.1
+Getting SMBIOS data from sysfs.
+SMBIOS 2.8 present.
+10 structures occupying 511 bytes.
+Table at 0x000F6050.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+\tVendor: SeaBIOS
+\tVersion: 1.11.0-2.el7
+\tRelease Date: 04/01/2014
+\tAddress: 0xE8000
+\tRuntime Size: 96 kB
+\tROM Size: 64 kB
+\tCharacteristics:
+\t\tBIOS characteristics not supported
+\t\tTargeted content distribution is supported
+\tBIOS Revision: 0.0
+
+Handle 0x0100, DMI type 1, 27 bytes
+System Information
+\tManufacturer: oVirt
+\tProduct Name: RHEV Hypervisor
+\tVersion: 7-5.1804.4.el7.centos
+\tSerial Number: 30393137-3436-584D-5136-323830304E46
+\tUUID: a35ae32b-ed0a-49a4-9dbb-eecf21f88aab
+\tWake-up Type: Power Switch
+\tSKU Number: Not Specified
+\tFamily: Red Hat Enterprise Linux
+"""
+
 DMIDECODE_FAIL = "# dmidecode 2.11\n# No SMBIOS nor DMI entry point found, sorry.\n"
 
 
@@ -331,6 +402,7 @@ def test_vw_dmidecode_3():
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "vmware"
+    assert ret.amended_generic == "vmware"
 
 
 def test_vw_dmidecode_4():
@@ -340,6 +412,7 @@ def test_vw_dmidecode_4():
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "kvm"
+    assert ret.amended_generic == "rhev"
 
 
 def test_vw_dmidecode_5():
@@ -348,3 +421,51 @@ def test_vw_dmidecode_5():
     assert ret.is_virtual is True
     assert ret.is_physical is False
     assert ret.generic == "kvm"
+    assert ret.amended_generic == "rhev"
+
+
+def test_vw_dmidecode_is_ovirt():
+    vw = VWP(context_wrap(T5))
+    dmi = DMIDecode(context_wrap(DMIDECODE_OVIRT))
+    ret = VirtWhat(dmi, vw)
+    assert ret.is_virtual is True
+    assert ret.is_physical is False
+    assert ret.generic == "ovirt"
+    assert ret.amended_generic == "ovirt"
+
+
+def test_vw_dmidecode_is_rhev():
+    vw = VWP(context_wrap(T5))
+    dmi = DMIDecode(context_wrap(DMIDECODE_BOGUS_OVIRT))
+    ret = VirtWhat(dmi, vw)
+    assert ret.is_virtual is True
+    assert ret.is_physical is False
+    assert ret.generic == "ovirt"
+    assert ret.amended_generic == "rhev"
+
+
+def test_dmidecode_is_ovirt():
+    dmi = DMIDecode(context_wrap(DMIDECODE_OVIRT))
+    ret = VirtWhat(dmi, None)
+    assert ret.is_virtual is True
+    assert ret.is_physical is False
+    assert ret.generic == "kvm"
+    assert ret.amended_generic == "ovirt"
+
+
+def test_dmidecode_is_rhev():
+    dmi = DMIDecode(context_wrap(DMIDECODE_BOGUS_OVIRT))
+    ret = VirtWhat(dmi, None)
+    assert ret.is_virtual is True
+    assert ret.is_physical is False
+    assert ret.generic == "kvm"
+    assert ret.amended_generic == "rhev"
+
+
+def test_virtwhat_only():
+    vw = VWP(context_wrap(T5))
+    ret = VirtWhat(None, vw)
+    assert ret.is_virtual is True
+    assert ret.is_physical is False
+    assert ret.generic == "ovirt"
+    assert ret.amended_generic == "ovirt"
