@@ -4,10 +4,6 @@ Combiner for `httpd -V` command
 
 Combiner to get the valid parsed result of command `httpd -V`.
 
-.. warning::
-    Deprecated combiner in the 3.0 framework, please use the
-    :class:`insights.parsers.httpd_V.HttpdV` parser instead.
-
 Examples:
 
     >>> HTTPDV2 = '''
@@ -57,6 +53,10 @@ from insights.util import deprecated
 @combiner(requires=[redhat_release, PsAuxcww, [HV, HEV, HWV]])
 class HttpdV(LegacyItemAccess):
     """
+    .. warning::
+        Deprecated combiner in the 3.0 framework, please use the
+        :class:`insights.parsers.httpd_V.HttpdV` parser instead.
+
     A combiner to get the valid :class:`insights.parsers.httpd_V.HttpdV` on a
     rhel host.
 
