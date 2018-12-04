@@ -21,6 +21,7 @@ pipeline {
             sh """
                 virtualenv .testenv
                 source .testenv/bin/activate
+                pip install "idna<=2.7"
                 pip install "pycparser<=2.18"
                 pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[testing]
@@ -30,6 +31,7 @@ pipeline {
             sh """
                 virtualenv .lintenv
                 source .lintenv/bin/activate
+                pip install "idna<=2.7"
                 pip install "pycparser<=2.18"
                 pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[linting]
