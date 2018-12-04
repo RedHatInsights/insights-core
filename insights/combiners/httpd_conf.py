@@ -29,8 +29,9 @@ from insights.util import deprecated
 @combiner(HttpdConf)
 class HttpdConfAll(object):
     """
-    .. note::
-        This combiner class is deprecated, please use :py:class:`HttpdConfTree` instead.
+    .. warning::
+        This combiner class is deprecated, please use
+        :py:class:`insights.combiners.httpd_conf.HttpdConfTree` instead.
 
     A combiner for parsing all httpd configurations. It parses all sources and makes a composition
     to store actual loaded values of the settings as well as information about parsed configuration
@@ -60,7 +61,7 @@ class HttpdConfAll(object):
     ConfigData = namedtuple('ConfigData', ['file_name', 'file_path', 'full_data_dict'])
 
     def __init__(self, httpd_conf):
-        deprecated(HttpdConfAll, "Import HttpdConfTree instead.")
+        deprecated(HttpdConfAll, "Import HttpdConfTree from 'insights.combiners.httpd_conf' instead.")
 
         self.data = {}
         self.config_data = []
