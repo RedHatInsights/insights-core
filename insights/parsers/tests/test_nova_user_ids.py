@@ -1,5 +1,5 @@
 from insights.parsers import nova_user_ids
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 from insights.tests import context_wrap
 
 import doctest
@@ -34,9 +34,9 @@ def test_nova_uid():
 
     # Blank input
     ctx = context_wrap(EMPTY_CONTENT)
-    with pytest.raises(ParseException) as ex:
+    with pytest.raises(SkipException) as ex:
         nova_user_ids.NovaUID(ctx)
-    assert "Input content is empty." in str(ex)
+    assert "No such user." in str(ex)
 
 
 def test_nova_migration_uid():
@@ -47,9 +47,9 @@ def test_nova_migration_uid():
 
     # Blank input
     ctx = context_wrap(EMPTY_CONTENT)
-    with pytest.raises(ParseException) as ex:
+    with pytest.raises(SkipException) as ex:
         nova_user_ids.NovaMigrationUID(ctx)
-    assert "Input content is empty." in str(ex)
+    assert "No such user." in str(ex)
 
 
 def test_doc_examples():

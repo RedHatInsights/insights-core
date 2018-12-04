@@ -1,6 +1,6 @@
 """
 Get ``uid`` of user ``nova`` and ``nova_migration``
-=====================================================
+===================================================
 
 The parser class in this module uses base parser class
 ``CommandParser`` to get uids of the user ``nova`` and
@@ -12,10 +12,10 @@ NovaUID - command ``id -u nova``
 --------------------------------
 
 NovaMigrationUID - command ``id -u nova_migration``
-----------------------------------------------------
+---------------------------------------------------
 """
 from insights import CommandParser, parser
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -44,7 +44,7 @@ class NovaUID(CommandParser):
     def parse_content(self, content):
         self.data = None
         if not content:
-            raise ParseException("Input content is empty.")
+            raise SkipException("No such user.")
         if len(content) == 1 and "no such user" not in content[0]:
             self.data = int(content[0])
 
@@ -74,6 +74,6 @@ class NovaMigrationUID(CommandParser):
     def parse_content(self, content):
         self.data = None
         if not content:
-            raise ParseException("Input content is empty.")
+            raise SkipException("No such user.")
         if len(content) == 1 and "no such user" not in content[0]:
             self.data = int(content[0])
