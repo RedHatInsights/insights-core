@@ -347,6 +347,7 @@ DEFAULT_OPTS = {
     },
 
     # platform options
+    # hide help messages with SUPPRESS until we're ready to make them public
     'legacy_upload': {
         # True: upload to insights classic API
         # False: upload to insights platform API
@@ -487,10 +488,7 @@ class InsightsConfig(object):
         if self._cli_opts:
             self._update_dict(self._cli_opts)
             return
-        # parser = optparse.OptionParser()
         parser = argparse.ArgumentParser()
-        # debug_grp = optparse.OptionGroup(parser, "Debug options")
-        # platf_grp = optparse.OptionGroup(parser, "Platform options")
         debug_grp = parser.add_argument_group('Debug options')
         platf_grp = parser.add_argument_group('Platform options')
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
