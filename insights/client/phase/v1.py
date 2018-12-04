@@ -99,6 +99,7 @@ def pre_update(client, config):
     if config.support:
         support = InsightsSupport(config)
         support.collect_support_info()
+        sys.exit(constants.sig_kill_ok)
 
     if config.diagnosis:
         remediation_id = None
