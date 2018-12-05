@@ -63,6 +63,7 @@ class InsightsArchiveSpecs(Specs):
     grub_config_perms = simple_file("insights_commands/ls_-l_.boot.grub2.grub.cfg")
     grubby_default_index = simple_file("insights_commands/grubby_--default-index")
     gluster_v_info = simple_file("insights_commands/gluster_volume_info")
+    gluster_v_status = simple_file("insights_commands/gluster_volume_status")
     hammer_ping = simple_file("insights_commands/hammer_ping")
     hammer_task_list = simple_file("insights_commands/hammer_--csv_task_list")
     heat_crontab = simple_file("insights_commands/crontab_-l_-u_heat")
