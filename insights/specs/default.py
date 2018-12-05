@@ -320,7 +320,6 @@ class DefaultSpecs(Specs):
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     katello_service_status = simple_command("/usr/bin/katello-service status")
-    kdump = simple_file("/etc/sysconfig/kdump")
     kdump_conf = simple_file("/etc/kdump.conf")
     kerberos_kdc_log = simple_file("var/log/krb5kdc.log")
     kexec_crash_loaded = simple_file("/sys/kernel/kexec_crash_loaded")
