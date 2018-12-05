@@ -30,7 +30,7 @@ from insights.specs import Specs
 @parser(Specs.kdump_conf)
 class KDumpConf(Parser, LegacyItemAccess):
     """
-    A dictionary like object for the values of the kdump.conf file.
+    A dictionary like object for the values of the ``/etc/kdump.conf`` file.
 
     Attributes:
 
