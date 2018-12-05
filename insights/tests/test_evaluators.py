@@ -166,6 +166,9 @@ def test_insights_evaluator_make_fail():
     assert result["system"]["system_id"] == "12345"
     assert result["system"]["metadata"]["release"] == "Red Hat Enterprise Linux Server release 7.4 (Maipo)"
     assert len(result["reports"]) == 2
+    assert len([r["component"] for r in result["reports"]]) == 2
+    assert len([r["type"] for r in result["reports"]]) == 2
+    assert len([r["key"] for r in result["reports"]]) == 2
 
 
 def test_insights_evaluator_make_pass():
@@ -180,6 +183,9 @@ def test_insights_evaluator_make_pass():
     assert result["system"]["system_id"] == "12345"
     assert result["system"]["metadata"]["release"] == "Red Hat Enterprise Linux Server release 7.4 (Maipo)"
     assert len(result["pass"]) == 1
+    assert len([r["component"] for r in result["pass"]]) == 1
+    assert len([r["type"] for r in result["pass"]]) == 1
+    assert len([r["key"] for r in result["pass"]]) == 1
 
 
 def test_insights_evaluator_make_fingerprint():
@@ -194,6 +200,9 @@ def test_insights_evaluator_make_fingerprint():
     assert result["system"]["system_id"] == "12345"
     assert result["system"]["metadata"]["release"] == "Red Hat Enterprise Linux Server release 7.4 (Maipo)"
     assert len(result["fingerprints"]) == 1
+    assert len([r["component"] for r in result["fingerprints"]]) == 1
+    assert len([r["type"] for r in result["fingerprints"]]) == 1
+    assert len([r["key"] for r in result["fingerprints"]]) == 1
 
 
 def test_insights_evaluator_make_unsure():
@@ -208,3 +217,6 @@ def test_insights_evaluator_make_unsure():
     assert result["system"]["system_id"] == "12345"
     assert result["system"]["metadata"]["release"] == "Red Hat Enterprise Linux Server release 7.4 (Maipo)"
     assert len(result["unsure"]) == 1
+    assert len([r["component"] for r in result["unsure"]]) == 1
+    assert len([r["type"] for r in result["unsure"]]) == 1
+    assert len([r["key"] for r in result["unsure"]]) == 1
