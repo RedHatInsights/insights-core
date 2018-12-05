@@ -95,7 +95,7 @@ pipeline {
     stage('Test Docs') {
       agent {
         node {
-          label 'python'
+          label 'python3'
         }
       }
       steps {
