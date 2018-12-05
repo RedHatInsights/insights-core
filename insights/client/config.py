@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 import logging
-import optparse
+import argparse
 import copy
 import six
 import sys
@@ -82,7 +82,7 @@ DEFAULT_OPTS = {
     'compressor': {
         'default': 'gz',
         'opt': ['--compressor'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
     'conf': {
@@ -98,7 +98,7 @@ DEFAULT_OPTS = {
     'debug': {
         'default': False,  # Used by client wrapper script
         'opt': ['--debug-phases'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true',
         'dest': 'debug'
     },
@@ -123,19 +123,19 @@ DEFAULT_OPTS = {
     'from_file': {
         'default': False,
         'opt': ['--from-file'],
-        'help': optparse.SUPPRESS_HELP,  # ?
+        'help': argparse.SUPPRESS,  # ?
         'action': 'store'
     },
     'from_stdin': {
         'default': False,
         'opt': ['--from-stdin'],
-        'help': optparse.SUPPRESS_HELP,  # ?
+        'help': argparse.SUPPRESS,  # ?
         'action': 'store_true',
     },
     'gpg': {
         'default': True,
         'opt': ['--no-gpg'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_false',
         'group': 'debug',
         'dest': 'gpg'
@@ -245,13 +245,13 @@ DEFAULT_OPTS = {
         'help': ('Number of times to retry uploading. %s seconds between tries' %
                  constants.sleep_time),
         'action': 'store',
-        'type': 'int',
+        'type': int,
         'dest': 'retries'
     },
     'run_specific_specs': {
         'default': None,
         'opt': ['--run-these'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store',
         'group': 'debug',
         'dest': 'run_specific_specs'
@@ -288,7 +288,7 @@ DEFAULT_OPTS = {
     'to_json': {
         'default': False,
         'opt': ['--to-json'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
     'to_stdout': {
@@ -311,14 +311,14 @@ DEFAULT_OPTS = {
     'use_atomic': {
         'default': None,
         'opt': ['--use-atomic'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true',
         'group': 'debug'
     },
     'use_docker': {
         'default': None,
         'opt': ['--use-docker'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true',
         'group': 'debug'
     },
@@ -347,6 +347,7 @@ DEFAULT_OPTS = {
     },
 
     # platform options
+    # hide help messages with SUPPRESS until we're ready to make them public
     'legacy_upload': {
         # True: upload to insights classic API
         # False: upload to insights platform API
@@ -355,15 +356,25 @@ DEFAULT_OPTS = {
     'payload': {
         'default': None,
         'opt': ['--payload'],
-        'help': 'Use Insights client to upload an archive',
+        # 'help': 'Use Insights client to upload an archive',
+        'help': argparse.SUPPRESS,
         'action': 'store',
         'group': 'platform'
     },
     'content_type': {
         'default': None,
         'opt': ['--content-type'],
-        'help': 'Content type of the archive specified with --payload',
+        # 'help': 'Content type of the archive specified with --payload',
+        'help': argparse.SUPPRESS,
         'action': 'store',
+        'group': 'platform'
+    },
+    'diagnosis': {
+        'default': None,
+        'opt': ['--diagnosis'],
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
         'group': 'platform'
     }
 }
@@ -477,9 +488,9 @@ class InsightsConfig(object):
         if self._cli_opts:
             self._update_dict(self._cli_opts)
             return
-        parser = optparse.OptionParser()
-        debug_grp = optparse.OptionGroup(parser, "Debug options")
-        platf_grp = optparse.OptionGroup(parser, "Platform options")
+        parser = argparse.ArgumentParser()
+        debug_grp = parser.add_argument_group('Debug options')
+        platf_grp = parser.add_argument_group('Platform options')
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
         for _, o in cli_options.items():
@@ -491,17 +502,12 @@ class InsightsConfig(object):
             else:
                 g = parser
             optnames = o.pop('opt')
-            g.add_option(*optnames, **o)
+            # use argparse.SUPPRESS as CLI defaults so it won't parse
+            #  options that weren't specified
+            o['default'] = argparse.SUPPRESS
+            g.add_argument(*optnames, **o)
 
-        parser.add_option_group(debug_grp)
-
-        # To be revealed... one day.
-        # parser.add_option_group(platf_grp)
-
-        # pass in optparse.Values() to get only options that were specified
-        options, args = parser.parse_args(values=optparse.Values())
-        if len(args) > 0:
-            parser.error("Unknown arguments: %s" % args)
+        options = parser.parse_args()
 
         self._cli_opts = vars(options)
         if conf_only and 'conf' in self._cli_opts:
