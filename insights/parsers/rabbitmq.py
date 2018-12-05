@@ -211,7 +211,7 @@ class RabbitMQQueues(CommandParser):
 @parser(Specs.rabbitmq_env)
 class RabbitMQEnv(SysconfigOptions):
     """Parse the content of file ``/etc/rabbitmq/rabbitmq-env.conf`` using
-    the ``Parser`` base class.
+    the ``SysconfigOptions`` base class.
 
 
     Sample content of the file ``/etc/rabbitmq/rabbitmq-env.conf``::
