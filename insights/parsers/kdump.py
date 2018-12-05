@@ -10,8 +10,8 @@ KDumpConf - file ``/etc/kdump.conf``
 KexecCrashLoaded - file ``/sys/kernel/kexec_crash_loaded``
 ----------------------------------------------------------
 
-SysconfigKdump - file ``/etc/sysconfig/kdump``
-----------------------------------------------
+KexecCrashSize - file ``/sys/kernel/kexec_crash_size``
+------------------------------------------------------
 
 """
 
@@ -22,15 +22,15 @@ try:
 except ImportError:
     from urllib.parse import urlparse
 
-from .. import Parser, parser
+from insights import Parser, parser, LegacyItemAccess
 from insights.parsers import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.kdump_conf)
-class KDumpConf(Parser):
+class KDumpConf(Parser, LegacyItemAccess):
     """
-    A dictionary like object for the values of the kdump.conf file.
+    A dictionary like object for the values of the ``/etc/kdump.conf`` file.
 
     Attributes:
 
@@ -70,12 +70,11 @@ class KDumpConf(Parser):
 
     Examples:
 
-        >>> kd = shared[KDumpConf]
         >>> kd.is_local_disk
         True
         >>> kd.is_ssh()
         False
-        >>> 'path' in kd.data
+        >>> 'path' in kd
         True
     """
     NET_COMMANDS = set(['nfs', 'net', 'ssh'])
@@ -256,28 +255,6 @@ class KDumpConf(Parser):
                     target = (k, v)
         return target
 
-    def __getitem__(self, key):
-        """
-        Return the configuration option of this key.  Integer keys are
-        explicitly not supported.
-        """
-        if isinstance(key, int):
-            raise TypeError("Parser does not support integer indexes")
-        return self.data[key]
-
-    def get(self, key, default=None):
-        """
-        Return the configuration option of this key, or the default if the
-        key is not found and the default is defined, otherwise None.
-        """
-        return self[key] if key in self else default
-
-    def __contains__(self, key):
-        """
-        Is the given key a configuration option in the file?
-        """
-        return key in self.data
-
 
 @parser(Specs.kexec_crash_loaded)
 class KexecCrashLoaded(Parser):
@@ -304,9 +281,8 @@ class KexecCrashSize(Parser):
     Parses the `/sys/kernel/kexec_crash_size` file which tells the
     reserved memory size for the crash kernel.
 
-    Attributes
-    ----------
-    size (int): reserved memory size for the crash kernel, or 0 if not found.
+    Attributes:
+        size (int): reserved memory size for the crash kernel, or 0 if not found.
     """
 
     def parse_content(self, content):
