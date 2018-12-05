@@ -434,6 +434,17 @@ class InsightsClient(object):
         '''
         return self.connection.set_display_name(display_name)
 
+    @_net
+    def get_diagnosis(self, remediation_id=None):
+        '''
+            returns JSON of diagnosis data on success, None on failure
+            Optional arg remediation_id to get a particular remediation set.
+        '''
+        if self.config.offline:
+            logger.error('Cannot get diagnosis in offline mode.')
+            return None
+        return self.connection.get_diagnosis(remediation_id)
+
 
 def format_config(config):
     # Log config except the password
