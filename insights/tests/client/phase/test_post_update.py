@@ -14,7 +14,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.disable_schedule": False,
                        "return_value.load_all.return_value.analyze_container": False,
                        "return_value.load_all.return_value.display_name": False,
-                       "return_value.load_all.return_value.register": False})
+                       "return_value.load_all.return_value.register": False,
+                       "return_value.load_all.return_value.diagnosis": None})
     return patcher(old_function)
 
 
