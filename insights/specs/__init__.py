@@ -365,6 +365,7 @@ class Specs(SpecSet):
     qpid_stat_q = RegistryPoint()
     qpid_stat_u = RegistryPoint()
     qpidd_conf = RegistryPoint()
+    rabbitmq_env = RegistryPoint()
     rabbitmq_logs = RegistryPoint(multi_output=True, filterable=True)
     rabbitmq_policies = RegistryPoint()
     rabbitmq_queues = RegistryPoint()
