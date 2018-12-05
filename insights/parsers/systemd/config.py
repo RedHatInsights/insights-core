@@ -151,7 +151,13 @@ class SystemdLogindConf(SystemdConf):
 
 
 class MultiOrderedDict(dict):
-    """Class for condition that duplicate keys exist"""
+    """
+    .. warning::
+        This class is deprecated.
+
+    Class for condition that duplicate keys exist
+    """
+
     def __init__(self, *args, **kwargs):
         deprecated(MultiOrderedDict, "This class is deprecated")
         super(MultiOrderedDict, self).__init__(*args, **kwargs)
@@ -165,10 +171,10 @@ class MultiOrderedDict(dict):
 
 def parse_systemd_ini(content):
     """
-    Function to parse config format file, the result format is dictionary.
-
-    .. note::
+    .. warning::
         This function is deprecated, please use :py:class:`SystemdConf` instead.
+
+    Function to parse config format file, the result format is dictionary.
     """
 
     deprecated(parse_systemd_ini, "Use the `SystemdConf` class instead.")
