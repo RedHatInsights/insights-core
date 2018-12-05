@@ -127,7 +127,7 @@ def test_net():
     assert 'net' in kd.data
     assert 'path' in kd.data
     assert not kd.using_local_disk
-    with pytest.raises(TypeError):
+    with pytest.raises(KeyError):
         assert kd[3]
 
 
