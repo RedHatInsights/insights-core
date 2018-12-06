@@ -1,5 +1,14 @@
 # Change Log
 
+## [insights-core-3.0.67-732](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.67-732) (2018-12-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.66-1...insights-core-3.0.67-732)
+
+## [3.0.66-1](https://github.com/RedHatInsights/insights-core/tree/3.0.66-1) (2018-12-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.64-717...3.0.66-1)
+
+## [insights-core-3.0.64-717](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.64-717) (2018-11-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.63-708...insights-core-3.0.64-717)
+
 ## [insights-core-3.0.63-708](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.63-708) (2018-11-29)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.62-686...insights-core-3.0.63-708)
 
