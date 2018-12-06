@@ -1,7 +1,4 @@
-import doctest
-
-from insights.parsers import puppetserver_config
-from insights.parsers.puppetserver_config import PuppetserverConfig
+from insights.parsers.sysconfig import PuppetserverSysconfig
 from insights.tests import context_wrap
 
 PUPPETSERVER_CONFIG = """
@@ -43,15 +40,7 @@ RELOAD_TIMEOUT=120
 
 
 def test_puppetserver_config():
-    puppetserver_config = PuppetserverConfig(context_wrap(PUPPETSERVER_CONFIG)).data
-    assert puppetserver_config["GROUP"] == '"puppet"'
+    puppetserver_config = PuppetserverSysconfig(context_wrap(PUPPETSERVER_CONFIG))
+    assert puppetserver_config["GROUP"] == 'puppet'
     assert puppetserver_config.get("START_TIMEOUT") == '300'
-    assert len(puppetserver_config) == 10
-
-
-def test_puppetserver_config_doc_examples():
-    env = {
-        'puppetserver_config': PuppetserverConfig(context_wrap(PUPPETSERVER_CONFIG)).data,
-    }
-    failed, total = doctest.testmod(puppetserver_config, globs=env)
-    assert failed == 0
+    assert len(puppetserver_config.keys()) == 10

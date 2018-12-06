@@ -27,7 +27,7 @@ Examples:
     False
 
 """
-
+from insights.util import deprecated
 from .. import parser, SysconfigOptions
 from insights.specs import Specs
 
@@ -35,6 +35,14 @@ from insights.specs import Specs
 @parser(Specs.dirsrv)
 class DirsrvSysconfig(SysconfigOptions):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.sysconfig.DirsrvSysconfig` instead.
+
     Parse the `dirsrv` service's start-up configuration.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(DirsrvSysconfig, "Import DirsrvSysconfig from insights.parsers.sysconfig instead")
+        super(DirsrvSysconfig, self).__init__(*args, **kwargs)
+
     set_properties = True
