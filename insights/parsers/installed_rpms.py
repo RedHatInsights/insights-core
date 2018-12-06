@@ -3,8 +3,8 @@ InstalledRpms - Command ``rpm -qa``
 ===================================
 
 The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.
-Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm
--qa`` command may output data in different formats and each format can be
+Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm -qa``
+command may output data in different formats and each format can be
 handled by the parsing routines of this class. The basic format of command is
 the package and is shown in the Examples.
 
@@ -253,7 +253,7 @@ def vcmp(s):
 
 def pad_version(left, right):
     """Returns two sequences of the same length so that they can be compared.
-    The shorter of the two arguments is lengthed by inserting extra zeros
+    The shorter of the two arguments is lengthened by inserting extra zeros
     before non-integer components.  The algorithm attempts to align character
     components."""
     pair = vcmp(left), vcmp(right)
@@ -287,7 +287,7 @@ class InstalledRpm(object):
          {
             'name': 'package name',
             'version': 'package version',
-            'release': 'package release,
+            'release': 'package release',
             'arch': 'package architecture'
           }
 
@@ -489,7 +489,11 @@ class InstalledRpm(object):
 
     @property
     def package_with_epoch(self):
-        """str: Package `name-epoch:version-release` string."""
+        """
+        str: Package string in the format::
+
+            name-epoch:version-release
+        """
         return u'{0}-{1}:{2}-{3}'.format(self.name,
                                          self.epoch,
                                          self.version,
@@ -507,7 +511,11 @@ class InstalledRpm(object):
 
     @property
     def nevra(self):
-        """str: Package `name-epoch:version-release.arch` string."""
+        """
+        str: Package string in the format::
+
+            name-epoch:version-release.arch
+        """
         return ".".join([self.package_with_epoch, self.arch])
 
     @property
