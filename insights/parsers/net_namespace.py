@@ -39,11 +39,11 @@ class NetworkNamespace(Parser):
     @property
     def get_netns(self):
         """
-        This method returns list of network namespace created 
+        This method returns list of network namespace created
         in process memory.
 
         Returns:
-            
+
             `list` of network namepaces if exists, else
             `empty list` if network namespaces if do not exists
         """
