@@ -55,10 +55,10 @@ develop = set([
 ])
 
 docs = set([
-    'Sphinx==1.7.9',
-    'nbsphinx==0.3.1',
+    'Sphinx',
+    'nbsphinx',
     'sphinx_rtd_theme',
-    'ipython<6',
+    'ipython',
     'colorama',
     'jinja2',
 ])
