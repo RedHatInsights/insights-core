@@ -95,13 +95,13 @@ pipeline {
     stage('Test Docs') {
       agent {
         node {
-          label 'python'
+          label 'python3'
         }
       }
       steps {
         echo "Building Docs..."
         sh """
-            virtualenv .docenv
+            /bin/python36 -m venv .docenv
             source .docenv/bin/activate
             pip install -e .[docs]
             sphinx-build -W -b html -qa -E docs docs/_build/html
