@@ -3,7 +3,7 @@ PuppetserverConfig - file ``/etc/sysconfig/puppetserver``
 =========================================================
 """
 from insights.specs import Specs
-
+from insights.util import deprecated
 from . import split_kv_pairs
 from .. import LegacyItemAccess, Parser, get_active_lines, parser
 
@@ -11,6 +11,10 @@ from .. import LegacyItemAccess, Parser, get_active_lines, parser
 @parser(Specs.puppetserver_config)
 class PuppetserverConfig(Parser, LegacyItemAccess):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.sysconfig.PuppetserverSysconfig` instead.
+
     Parse the puppetserver configuration file.
 
     Produces a simple dictionary of keys and values from the configuration
@@ -50,6 +54,9 @@ class PuppetserverConfig(Parser, LegacyItemAccess):
         >>> 'AUTO' in puppetserver_config
         False
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(PuppetserverConfig, "Import PuppetserverSysconfig from insights.parsers.sysconfig instead")
+        super(PuppetserverConfig, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         self.data = split_kv_pairs(get_active_lines(content))

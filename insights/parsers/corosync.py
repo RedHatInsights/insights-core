@@ -30,6 +30,7 @@ Examples:
 
 """
 
+from insights.util import deprecated
 from .. import SysconfigOptions, parser
 from insights.specs import Specs
 
@@ -37,9 +38,16 @@ from insights.specs import Specs
 @parser(Specs.corosync)
 class CoroSyncConfig(SysconfigOptions):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.sysconfig.CorosyncSysconfig` instead.
+
     Parse the ``/etc/sysconfig/corosync`` file using the SysconfigOptions
     parser class.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(CoroSyncConfig, "Import CorosyncSysconfig from insights.parsers.sysconfig instead")
+        super(CoroSyncConfig, self).__init__(*args, **kwargs)
 
     @property
     def options(self):
