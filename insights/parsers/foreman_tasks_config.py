@@ -3,7 +3,7 @@ ForemanTasksConfig - file ``/etc/sysconfig/foreman-tasks``
 ==========================================================
 """
 from insights.specs import Specs
-
+from insights.util import deprecated
 from . import split_kv_pairs
 from .. import LegacyItemAccess, Parser, get_active_lines, parser
 
@@ -11,6 +11,10 @@ from .. import LegacyItemAccess, Parser, get_active_lines, parser
 @parser(Specs.foreman_tasks_config)
 class ForemanTasksConfig(Parser, LegacyItemAccess):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.sysconfig.ForemanTasksSysconfig` instead.
+
     Parse the foreman-tasks configuration file.
 
     Produces a simple dictionary of keys and values from the configuration
@@ -52,6 +56,9 @@ class ForemanTasksConfig(Parser, LegacyItemAccess):
         >>> 'AUTO' in foreman_tasks_config
         False
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(ForemanTasksConfig, "Import ForemanTasksSysconfig from insights.parsers.sysconfig instead")
+        super(ForemanTasksConfig, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         self.data = split_kv_pairs(get_active_lines(content))
