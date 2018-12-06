@@ -7,7 +7,7 @@ The parsers here provide information about the time sources used by
 """
 from insights.core.plugins import parser
 from insights.core import CommandParser, LegacyItemAccess
-from insights.parsers import ParseException, get_active_lines, parse_fixed_table
+from insights.parsers import ParseException, get_active_lines
 from insights.specs import Specs
 
 
@@ -114,8 +114,8 @@ class GlusterVolStatus(LegacyItemAccess, CommandParser):
 
     Examples:
 
-        >>> parser_result.data["test_vol"][0]
-        {'Gluster_process': 'Brick 172.17.18.42:/home/brick', 'RDMA Port': '0', 'IP': '172.17.18.42', 'TCP Port': '49152', 'Pid': '26685', 'Online': 'Y', 'Directory': '/home/brick'}
+        >>> print parser_result.data["test_vol"][0]
+{'Brick1': {'RDMA Port': '0', 'IP': '172.17.18.42', 'TCP Port': '49152', 'Pid': '26685', 'Online': 'Y', 'Directory': '/home/brick'}}
 
     """
 
@@ -133,29 +133,55 @@ class GlusterVolStatus(LegacyItemAccess, CommandParser):
 
         # Stored data in a dictionary data structure
         self.data = {}
-        content = get_active_lines(content, '----')
-        idxs = [i for i, l in enumerate(content) if l.startswith('Status of volume')]
-        for i, idx in enumerate(idxs):
-            start = idx
-            end = idxs[i+1] if i < len(idxs) - 1 else -1
-            _, val = content[idx].split(":", 1)
-            body = parse_fixed_table(
-                    content[start:end],
-                    header_substitute=[('Gluster process', 'Gluster_process'),
-                                       ('TCP Port', 'TCP_Port'),
-                                       ('RDMA Port', 'RDMA_Port'),
-                                      ],
-                    heading_ignore=['Gluster process'],
-                    trailing_ignore=['Task Status'])
-            for v in body:
-                gluster_process = v['Gluster_process']
-                if gluster_process.startswith("Brick"):
-                    _ip, _dir = gluster_process.split(':', 1)
-                    v['IP'] = _ip.split()[-1].strip()
-                    v['Directory'] = _dir.strip()
-                elif gluster_process.startswith("Self-heal"):
-                    v['Host'] = gluster_process.split()[-1]
-            self.data[val.strip()] = body
+
+        volname = None
+        body = []
+
+        # Input data is available in text file. Reading each line in file and parsing it to a dictionary.
+        for line in get_active_lines(content):
+            collect = {}
+            line = line.strip()
+            if 'Status of volume' in line:
+                key, val = line.strip().split(":", 1)
+                key = key.strip()
+                val = val.strip()
+                brick_count = 1
+                SH_daemon_count = 1
+                if key == "Status of volume":
+                    if volname is None:
+                        volname = val
+                    else:
+                        self.data[volname] = body
+                        volname = val
+                        body = []
+            else:
+                line = line.split()
+                if line[0] == "Brick":
+                    extract_data = {
+                        "IP": line[1].split(":", 1)[0],
+                        "Directory": line[1].split(":", 1)[1],
+                        "TCP Port": line[2],
+                        "RDMA Port": line[3],
+                        "Online": line[4],
+                        "Pid": line[5]
+                    }
+                    collect["Brick" + str(brick_count)] = extract_data
+                    brick_count += 1
+                    body.append(collect)
+                if line[0] == "Self-heal":
+                    extract_data = {
+                        "Host": line[3],
+                        "TCP Port": line[4],
+                        "RDMA Port": line[5],
+                        "Online": line[6],
+                        "Pid": line[7]
+                    }
+                    collect["Self-heal Daemon" + str(SH_daemon_count)] = extract_data
+                    SH_daemon_count += 1
+                    body.append(collect)
+            if volname and body:
+                self.data[volname] = body
+
         if not self.data:
             # If no data is obtained in the command execution then throw an exception instead of returning an empty
             # object.  Rules depending solely on this parser will not be invoked, so they don't have to
