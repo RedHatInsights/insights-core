@@ -1,4 +1,4 @@
-from insights.parsers.corosync import CoroSyncConfig
+from insights.parsers.sysconfig import CorosyncSysconfig
 from insights.tests import context_wrap
 
 corosync_content = """
@@ -16,7 +16,7 @@ COROSYNC_OPTIONS=""
 
 
 def test_corosync_1():
-    result = CoroSyncConfig(context_wrap(corosync_content))
+    result = CorosyncSysconfig(context_wrap(corosync_content))
     assert result.data['COROSYNC_OPTIONS'] == ""
     assert result.data['COROSYNC_INIT_TIMEOUT'] == "60"
 

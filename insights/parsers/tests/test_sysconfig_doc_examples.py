@@ -6,7 +6,7 @@ from insights.parsers.sysconfig import LibvirtGuestsSysconfig, MemcachedSysconfi
 from insights.parsers.sysconfig import MongodSysconfig, NtpdSysconfig
 from insights.parsers.sysconfig import PrelinkSysconfig, VirtWhoSysconfig
 from insights.parsers.sysconfig import Up2DateSysconfig, PuppetserverSysconfig
-from insights.parsers.sysconfig import NetconsoleSysconifg, ForemanTasksSysconfig
+from insights.parsers.sysconfig import NetconsoleSysconfig, ForemanTasksSysconfig
 from insights.parsers.sysconfig import DockerStorageSetupSysconfig, DirsrvSysconfig
 from insights.parsers.sysconfig import CorosyncSysconfig
 import doctest
@@ -134,7 +134,7 @@ def test_sysconfig_doc():
             'libvirt_guests_syscfg': LibvirtGuestsSysconfig(context_wrap(LIBVIRTGUESTSSYSCONFIG)),
             'prelink_syscfg': PrelinkSysconfig(context_wrap(PRELINKSYSCONFIG)),
             'u2d_syscfg': Up2DateSysconfig(context_wrap(UP2DATESYSCONFIG)),
-            'netcs_syscfg': NetconsoleSysconifg(context_wrap(NETCONSOLESYSCONFIG)),
+            'netcs_syscfg': NetconsoleSysconfig(context_wrap(NETCONSOLESYSCONFIG)),
             'pps_syscfg': PuppetserverSysconfig(context_wrap(PUPPETSERVERCONFIG)),
             'ft_syscfg': ForemanTasksSysconfig(context_wrap(FOREMANTASKSYSCONFG)),
             'dss_syscfg': DockerStorageSetupSysconfig(context_wrap(DOCKERSTORAGESETUPSYSCONFG)),

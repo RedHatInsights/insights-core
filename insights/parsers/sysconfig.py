@@ -42,7 +42,7 @@ MemcachedSysconfig - file ``/etc/sysconfig/memcached``
 MongodSysconfig - file ``/etc/sysconfig/mongod``
 ------------------------------------------------
 
-NetconsoleSysconifg -file ``/etc/sysconfig/netconsole``
+NetconsoleSysconfig -file ``/etc/sysconfig/netconsole``
 -------------------------------------------------------
 
 NtpdSysconfig - file ``/etc/sysconfig/ntpd``
@@ -361,7 +361,7 @@ class MongodSysconfig(SysconfigOptions):
 
 
 @parser(Specs.netconsole)
-class NetconsoleSysconifg(SysconfigOptions):
+class NetconsoleSysconfig(SysconfigOptions):
     '''
     Parse the ``/etc/sysconfig/netconsole`` file.
 
@@ -457,6 +457,7 @@ class Up2DateSysconfig(SysconfigOptions):
     Class to parse the ``/etc/sysconfig/rhn/up2date``
 
     Typical content example::
+
         serverURL[comment]=Remote server URL
         #serverURL=https://rhnproxy.glb.tech.markit.partners
         serverURL=https://rhnproxy.glb.tech.markit.partners/XMLRPC

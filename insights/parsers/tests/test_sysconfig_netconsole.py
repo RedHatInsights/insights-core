@@ -1,4 +1,4 @@
-from insights.parsers.sysconfig import NetconsoleSysconifg
+from insights.parsers.sysconfig import NetconsoleSysconfig
 from insights.tests import context_wrap
 
 
@@ -27,7 +27,7 @@ SYSLOGPORT=514
 
 
 def test_netconsole():
-    result = NetconsoleSysconifg(context_wrap(netconsole))
+    result = NetconsoleSysconfig(context_wrap(netconsole))
     assert result["LOCALPORT"] == '6666'
     assert result.get("DEV") is None
     assert result['SYSLOGPORT'] == "514"
