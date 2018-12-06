@@ -5,6 +5,10 @@ from insights.parsers.sysconfig import HttpdSysconfig, IrqbalanceSysconfig
 from insights.parsers.sysconfig import LibvirtGuestsSysconfig, MemcachedSysconfig
 from insights.parsers.sysconfig import MongodSysconfig, NtpdSysconfig
 from insights.parsers.sysconfig import PrelinkSysconfig, VirtWhoSysconfig
+from insights.parsers.sysconfig import Up2DateSysconfig, PuppetserverSysconfig
+from insights.parsers.sysconfig import NetconsoleSysconfig, ForemanTasksSysconfig
+from insights.parsers.sysconfig import DockerStorageSetupSysconfig, DirsrvSysconfig
+from insights.parsers.sysconfig import CorosyncSysconfig
 import doctest
 
 
@@ -66,6 +70,56 @@ PRELINKING=no
 PRELINK_OPTS=-mR
 """.strip()
 
+UP2DATESYSCONFIG = """
+serverURL[comment]=Remote server URL
+#serverURL=https://rhnproxy.glb.tech.markit.partners
+serverURL=https://rhnproxy.glb.tech.markit.partners/XMLRPC
+""".strip()
+
+PUPPETSERVERCONFIG = """
+USER="puppet"
+GROUP="puppet"
+INSTALL_DIR="/opt/puppetlabs/server/apps/puppetserver"
+CONFIG="/etc/puppetlabs/puppetserver/conf.d"
+START_TIMEOUT=300
+""".strip()
+
+NETCONSOLESYSCONFIG = """
+LOCALPORT=6666
+""".strip()
+
+FOREMANTASKSYSCONFG = """
+FOREMAN_USER=foreman
+BUNDLER_EXT_HOME=/usr/share/foreman
+RAILS_ENV=production
+FOREMAN_LOGGING=warn
+""".strip()
+
+DOCKERSTORAGESETUPSYSCONFG = """
+VG=vgtest
+AUTO_EXTEND_POOL=yes
+##name = mydomain
+POOL_AUTOEXTEND_THRESHOLD=60
+POOL_AUTOEXTEND_PERCENT=20
+""".strip()
+
+DIRSRVSYSCONFG = """
+#STARTPID_TIME=10 ; export STARTPID_TIME
+#PID_TIME=600 ; export PID_TIME
+KRB5CCNAME=/tmp/krb5cc_995
+KRB5_KTNAME=/etc/dirsrv/ds.keytab
+""".strip()
+
+COROSYNCSYSCONFIG = """
+# COROSYNC_INIT_TIMEOUT specifies number of seconds to wait for corosync
+# initialization (default is one minute).
+COROSYNC_INIT_TIMEOUT=60
+# COROSYNC_OPTIONS specifies options passed to corosync command
+# (default is no options).
+# See "man corosync" for detailed descriptions of the options.
+COROSYNC_OPTIONS=""
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -79,6 +133,13 @@ def test_sysconfig_doc():
             'memcached_syscfg': MemcachedSysconfig(context_wrap(MEMCACHEDSYSCONFIG)),
             'libvirt_guests_syscfg': LibvirtGuestsSysconfig(context_wrap(LIBVIRTGUESTSSYSCONFIG)),
             'prelink_syscfg': PrelinkSysconfig(context_wrap(PRELINKSYSCONFIG)),
+            'u2d_syscfg': Up2DateSysconfig(context_wrap(UP2DATESYSCONFIG)),
+            'netcs_syscfg': NetconsoleSysconfig(context_wrap(NETCONSOLESYSCONFIG)),
+            'pps_syscfg': PuppetserverSysconfig(context_wrap(PUPPETSERVERCONFIG)),
+            'ft_syscfg': ForemanTasksSysconfig(context_wrap(FOREMANTASKSYSCONFG)),
+            'dss_syscfg': DockerStorageSetupSysconfig(context_wrap(DOCKERSTORAGESETUPSYSCONFG)),
+            'dirsrv_syscfg': DirsrvSysconfig(context_wrap(DIRSRVSYSCONFG)),
+            'cs_syscfg': CorosyncSysconfig(context_wrap(COROSYNCSYSCONFIG)),
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0
