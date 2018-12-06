@@ -43,7 +43,8 @@ class NetworkNamespace(Parser):
         in process memory.
 
         Returns:
+            
             `list` of network namepaces if exists, else
-            `empty list` if network namespaces if exists
+            `empty list` if network namespaces if do not exists
         """
         return self.netns_list
