@@ -29,6 +29,7 @@ Examples:
 
 """
 
+from insights.util import deprecated
 from .. import SysconfigOptions, parser
 from insights.specs import Specs
 
@@ -36,6 +37,12 @@ from insights.specs import Specs
 @parser(Specs.docker_storage_setup)
 class DockerStorageSetup(SysconfigOptions):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.sysconfig.DockerStorageSetupSysconfig` instead.
+
     A parser for accessing /etc/sysconfig/docker-storage-setup.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(DockerStorageSetup, "Import DockerStorageSetupSysconfig from insights.parsers.sysconfig instead")
+        super(DockerStorageSetup, self).__init__(*args, **kwargs)
