@@ -34,11 +34,7 @@ class NetworkNamespace(Parser):
             raise SkipException('Nothing to parse.')
 
         for line in get_active_lines(content):
-            netns = line.split()
-            if netns and len(netns) > 1:
-                self._netns_list = [x for x in netns if x]
-            elif netns:
-                self._netns_list.append(netns[0])
+            self._netns_list.extend(line.split())
 
     @property
     def netns_list(self):
