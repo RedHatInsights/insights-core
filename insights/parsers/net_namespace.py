@@ -29,10 +29,10 @@ from insights.specs import Specs
 @parser(Specs.namespace)
 class NetworkNamespace(Parser):
     def parse_content(self, content):
-        self._netns_list = []
         if not content:
             raise SkipException('Nothing to parse.')
 
+        self._netns_list = []
         for line in get_active_lines(content):
             self._netns_list.extend(line.split())
 
@@ -45,6 +45,5 @@ class NetworkNamespace(Parser):
         Returns:
 
             `list` of network namepaces if exists, else
-            `empty list` if network namespaces if do not exists
         """
         return self._netns_list
