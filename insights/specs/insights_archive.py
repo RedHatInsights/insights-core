@@ -132,6 +132,7 @@ class InsightsArchiveSpecs(Specs):
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
     mysqladmin_vars = simple_file("insights_commands/mysqladmin_variables")
     named_checkconf_p = simple_file("insights_commands/named-checkconf_-p")
+    namespace = simple_file("insights_commands/ls_.var.run.netns")
     netstat = simple_file("insights_commands/netstat_-neopa")
     netstat_agn = simple_file("insights_commands/netstat_-agn")
     netstat_i = simple_file("insights_commands/netstat_-i")
