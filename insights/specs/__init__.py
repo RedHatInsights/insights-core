@@ -266,6 +266,7 @@ class Specs(SpecSet):
     mysql_log = RegistryPoint(multi_output=True, filterable=True)
     mysqld_limits = RegistryPoint()
     named_checkconf_p = RegistryPoint(filterable=True)
+    namespace = RegistryPoint()
     netconsole = RegistryPoint()
     netstat_agn = RegistryPoint()
     netstat_i = RegistryPoint()
