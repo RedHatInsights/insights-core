@@ -44,6 +44,6 @@ class NetworkNamespace(Parser):
 
         Returns:
 
-            `list` of network namepaces if exists, else
+            `list` of network namepaces if exists.
         """
         return self._netns_list
