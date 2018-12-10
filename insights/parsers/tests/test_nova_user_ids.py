@@ -1,5 +1,5 @@
 from insights.parsers import nova_user_ids
-from insights.parsers import SkipException
+from insights.parsers import ParseException, SkipException
 from insights.tests import context_wrap
 
 import doctest
@@ -29,35 +29,45 @@ EMPTY_CONTENT = '''
 def test_nova_uid():
     nova_uid = nova_user_ids.NovaUID(context_wrap(NOVA_UID))
     assert nova_uid.data == 162
-    nova_user_not_found = nova_user_ids.NovaUID(context_wrap(NOVA_USER_NOT_FOUND))
-    assert nova_user_not_found.data is None
+
+    # 'nova' user not found
+    with pytest.raises(ParseException) as ex:
+        nova_user_ids.NovaUID(context_wrap(NOVA_USER_NOT_FOUND))
+    assert "No such user." in str(ex)
 
     # Blank input
-    ctx = context_wrap(EMPTY_CONTENT)
     with pytest.raises(SkipException) as ex:
-        nova_user_ids.NovaUID(ctx)
-    assert "No such user." in str(ex)
+        nova_user_ids.NovaUID(context_wrap(EMPTY_CONTENT))
+    assert '' in str(ex)
+
+    # Any other output. This is not expected
+    nova_uid = nova_user_ids.NovaUID(context_wrap(NOVA_UID + '\n' + NOVA_UID))
+    assert nova_uid.data is None
 
 
 def test_nova_migration_uid():
     nova_migration_uid = nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_UID))
     assert nova_migration_uid.data == 153
-    nova_migration_user_not_found = nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_USER_NOT_FOUND))
-    assert nova_migration_user_not_found.data is None
+
+    # 'nova_migration' user not found
+    with pytest.raises(ParseException) as ex:
+        nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_USER_NOT_FOUND))
+    assert "No such user." in str(ex)
 
     # Blank input
-    ctx = context_wrap(EMPTY_CONTENT)
     with pytest.raises(SkipException) as ex:
-        nova_user_ids.NovaMigrationUID(ctx)
-    assert "No such user." in str(ex)
+        nova_user_ids.NovaMigrationUID(context_wrap(EMPTY_CONTENT))
+    assert '' in str(ex)
+
+    # Any other output. This is not expected
+    nova_migration_uid = nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_UID + '\n' + NOVA_MIGRATION_UID))
+    assert nova_migration_uid.data is None
 
 
 def test_doc_examples():
     failed, total = doctest.testmod(
         nova_user_ids,
         globs={'nova_uid': nova_user_ids.NovaUID(context_wrap(NOVA_UID)),
-               'nova_user_not_found': nova_user_ids.NovaUID(context_wrap(NOVA_USER_NOT_FOUND)),
-               'nova_migration_uid': nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_UID)),
-               'nova_migration_user_not_found': nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_USER_NOT_FOUND))}
+               'nova_migration_uid': nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_UID))}
     )
     assert failed == 0
