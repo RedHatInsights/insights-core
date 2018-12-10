@@ -64,49 +64,40 @@ def test_invalid():
 def test_valid():
     parser_result = GlusterVolStatus(context_wrap(VOL_STATUS_GOOD))
     parser_data = parser_result.data
-    assert list(parser_data.keys() )== ["test_vol"]
+    assert list(parser_data.keys()) == ["test_vol"]
     assert parser_data["test_vol"][0] == {
-            'Gluster_process': 'Brick 172.17.18.42:/home/brick',
-            'RDMA_Port': '0',
-            'IP': '172.17.18.42',
-            'TCP_Port': '49152',
-            'Pid': '26685',
-            'Online': 'Y',
-            'Directory': '/home/brick'
-            }
+        'Gluster_process': 'Brick 172.17.18.42:/home/brick',
+        'RDMA_Port': '0',
+        'TCP_Port': '49152',
+        'Pid': '26685',
+        'Online': 'Y'
+    }
     assert parser_data["test_vol"][1]["Online"] == 'Y'
-    assert parser_data["test_vol"][1]["IP"] == '172.17.18.43'
     assert parser_data["test_vol"][1]["TCP_Port"] == '49152'
     assert parser_data["test_vol"][1]["Pid"] == '27094'
-    assert parser_data["test_vol"][1]["Directory"] == '/home/brick'
     assert parser_data["test_vol"][2] == {
             'Gluster_process': 'Brick 172.17.18.44:/home/brick',
             'RDMA_Port': '0',
-            'IP': '172.17.18.44',
             'TCP_Port': '49152',
             'Pid': '27060',
-            'Online': 'Y',
-            'Directory': '/home/brick'
-            }
+            'Online': 'Y'
+    }
     assert parser_data["test_vol"][3] == {
-            'Gluster_process': 'Self-heal Daemon on localhost',
+            'Online': 'Y',
+            'TCP_Port': 'N/A',
             'RDMA_Port': 'N/A',
-            'Host': 'localhost',
             'Pid': '7805',
-            'TCP_Port': 'N/A',
-            'Online': 'Y'
-            }
+            'Gluster_process': 'Self-heal Daemon on localhost'
+    }
     assert parser_data["test_vol"][4] == {
-            'Gluster_process': 'Self-heal Daemon on 172.17.18.44',
-            'RDMA_Port': 'N/A',
-            'Host': '172.17.18.44',
-            'Pid': '33400',
+            'Online': 'Y',
             'TCP_Port': 'N/A',
-            'Online': 'Y'
-            }
+            'RDMA_Port': 'N/A',
+            'Pid': '33400',
+            'Gluster_process': 'Self-heal Daemon on 172.17.18.44'
+    }
     Self_heal_Daemon3_data = parser_data["test_vol"][5]
     assert Self_heal_Daemon3_data['RDMA_Port'] == 'N/A'
-    assert Self_heal_Daemon3_data["Host"] == '172.17.18.43'
 
 
 def test_multiple_valid():
@@ -116,30 +107,23 @@ def test_multiple_valid():
     assert parser_data["test_vol_2"][0] == {
             'Gluster_process': 'Brick 172.17.18.42:/home/brick',
             'RDMA_Port': '0',
-            'IP': '172.17.18.42',
             'TCP_Port': '49152',
             'Pid': '6685',
-            'Online': 'Y',
-            'Directory': '/home/brick'
-            }
+            'Online': 'Y'
+    }
     assert parser_data["test_vol_2"][1]["Online"] == 'Y'
-    assert parser_data["test_vol_2"][1]["IP"] == '172.17.18.43'
     assert parser_data["test_vol_2"][1]["TCP_Port"] == '49152'
     assert parser_data["test_vol_2"][1]["Pid"] == '33094'
-    assert parser_data["test_vol_2"][1]["Directory"] == '/home/brick'
     assert parser_data["test_vol_2"][2] == {
             'Gluster_process': 'Brick 172.17.18.44:/home/brick',
             'RDMA_Port': '0',
-            'IP': '172.17.18.44',
             'TCP_Port': '49152',
             'Pid': '2060',
-            'Online': 'Y',
-            'Directory': '/home/brick'
-            }
+            'Online': 'Y'
+    }
     assert parser_data["test_vol_2"][3] == {
             'Gluster_process': 'Self-heal Daemon on localhost',
             'RDMA_Port': 'N/A',
-            'Host': 'localhost',
             'Pid': '7805',
             'TCP_Port': 'N/A',
             'Online': 'Y'}

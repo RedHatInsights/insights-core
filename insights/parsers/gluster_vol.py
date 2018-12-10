@@ -115,7 +115,7 @@ class GlusterVolStatus(LegacyItemAccess, CommandParser):
     Examples:
 
         >>> parser_result.data["test_vol"][0]
-        {'Gluster_process': 'Brick 172.17.18.42:/home/brick', 'RDMA Port': '0', 'IP': '172.17.18.42', 'TCP Port': '49152', 'Pid': '26685', 'Online': 'Y', 'Directory': '/home/brick'}
+        {'Gluster_process': 'Brick 172.17.18.42:/home/brick', 'RDMA Port': '0', 'TCP Port': '49152', 'Pid': '26685', 'Online': 'Y'}
 
     """
 
@@ -137,24 +137,16 @@ class GlusterVolStatus(LegacyItemAccess, CommandParser):
         idxs = [i for i, l in enumerate(content) if l.startswith('Status of volume')]
         for i, idx in enumerate(idxs):
             start = idx
-            end = idxs[i+1] if i < len(idxs) - 1 else -1
+            end = idxs[i + 1] if i < len(idxs) - 1 else -1
             _, val = content[idx].split(":", 1)
             body = parse_fixed_table(
                     content[start:end],
                     header_substitute=[('Gluster process', 'Gluster_process'),
                                        ('TCP Port', 'TCP_Port'),
-                                       ('RDMA Port', 'RDMA_Port'),
-                                      ],
+                                       ('RDMA Port', 'RDMA_Port')
+                                       ],
                     heading_ignore=['Gluster process'],
                     trailing_ignore=['Task Status'])
-            for v in body:
-                gluster_process = v['Gluster_process']
-                if gluster_process.startswith("Brick"):
-                    _ip, _dir = gluster_process.split(':', 1)
-                    v['IP'] = _ip.split()[-1].strip()
-                    v['Directory'] = _dir.strip()
-                elif gluster_process.startswith("Self-heal"):
-                    v['Host'] = gluster_process.split()[-1]
             self.data[val.strip()] = body
         if not self.data:
             # If no data is obtained in the command execution then throw an exception instead of returning an empty
