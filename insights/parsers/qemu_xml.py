@@ -146,10 +146,10 @@ class QemuXML(XMLParser):
         else:
             domain = {}
             for child in self.dom:
-                if not child.getchildren():
+                if len(child) == 0:
                     domain[child.tag] = child.text
                 else:
-                    domain[child.tag] = [c.items() for c in child.getchildren()]
+                    domain[child.tag] = [c.items() for c in child]
 
             return domain
 
