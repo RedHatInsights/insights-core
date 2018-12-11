@@ -567,7 +567,7 @@ class DefaultSpecs(Specs):
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
-    rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo")
+    rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")

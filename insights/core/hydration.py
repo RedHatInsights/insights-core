@@ -2,8 +2,11 @@ import logging
 import os
 
 from insights.core import archives
-from insights.core.archives import COMPRESSION_TYPES
-from insights.core.context import ClusterArchiveContext, JDRContext, HostArchiveContext, SosArchiveContext
+from insights.core.context import (ClusterArchiveContext,
+                                   JDRContext,
+                                   HostArchiveContext,
+                                   SosArchiveContext,
+                                   SerializedArchiveContext)
 
 log = logging.getLogger(__name__)
 
@@ -17,11 +20,13 @@ def get_all_files(path):
 
 
 def determine_context(common_path, files):
-    if any(f.endswith(COMPRESSION_TYPES) for f in os.listdir(common_path)):
+    if any(f.endswith(archives.COMPRESSION_TYPES) for f in os.listdir(common_path)):
         return ClusterArchiveContext
 
     for f in files:
-        if "insights_commands" in f:
+        if "insights_archive.txt" in f:
+            return SerializedArchiveContext
+        elif "insights_commands" in f:
             return HostArchiveContext
         elif "sos_commands" in f:
             return SosArchiveContext
