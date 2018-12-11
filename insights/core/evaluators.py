@@ -104,8 +104,12 @@ class SingleEvaluator(Evaluator):
             self.metadata_keys[r.get_key()] = r["value"]
         else:
             response_id = "%s_id" % r.response_type
+            key = r.get_key()
             self.results[type_].append(self.format_result({
-                response_id: "{0}|{1}".format(get_simple_module_name(plugin), r.get_key()),
+                response_id: "{0}|{1}".format(get_simple_module_name(plugin), key),
+                "component": dr.get_name(plugin),
+                "type": type_,
+                "key": key,
                 "details": r
             }))
 
