@@ -36,21 +36,21 @@ class GlusterVolInfo(LegacyItemAccess, CommandParser):
 
     Examples:
 
-        >>> vol_info.data['test_vol']['Type']
+        >>> parser_result_v_info['test_vol']['Type']
         'Replicate'
+
+    Override the base class parse_content to parse the output of the '''gluster vol info'''  command.
+    Information that is stored in the object is made available to the rule plugins.
+
+    Attributes:
+        data (dict): Dictionary containing each of the key:value pairs from the command
+            output.
+
+    Raises:
+        ParseException: raised if data is not parsable.
     """
 
     def parse_content(self, content):
-        """
-        Override the base class parse_content to parse the output of the '''gluster vol info'''  command.
-        Information that is stored in the object is made available to the rule plugins.
-
-        Attributes:
-            data (dict): Dictionary containing each of the key:value pairs from the command
-                output.
-
-        Raises:
-            ParseException: raised if data is not parsable."""
 
         # Stored data in a dictionary data structure
         self.data = {}
@@ -114,23 +114,20 @@ class GlusterVolStatus(LegacyItemAccess, CommandParser):
 
     Examples:
 
-        >>> parser_result.data["test_vol"][0]
-        {'Gluster_process': 'Brick 172.17.18.42:/home/brick', 'RDMA Port': '0', 'TCP Port': '49152', 'Pid': '26685', 'Online': 'Y'}
+        >>> parser_result_v_status['test_vol'][0]["Online"]
+        'Y'
 
+    Override the base class parse_content to parse the output of the '''gluster vol status'''  command.
+    Information that is stored in the object is made available to the rule plugins.
+
+    Attributes:
+        data (dict): Dictionary containing each of the key:value pairs from the command output.
+
+    Raises:
+        ParseException: raised if data is not parsable.
     """
 
     def parse_content(self, content):
-        """
-        Override the base class parse_content to parse the output of the '''gluster vol status'''  command.
-        Information that is stored in the object is made available to the rule plugins.
-
-        Attributes:
-            data (dict): Dictionary containing each of the key:value pairs from the command
-                output.
-
-        Raises:
-            ParseException: raised if data is not parsable."""
-
         # Stored data in a dictionary data structure
         self.data = {}
         content = get_active_lines(content, '----')
