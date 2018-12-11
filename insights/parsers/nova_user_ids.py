@@ -42,7 +42,7 @@ class NovaUID(CommandParser):
     '''
     def parse_content(self, content):
         self.data = None
-        if not content or len(content) == 1 and ("no such user" in content[0]):
+        if not content or (len(content) == 1 and "no such user" in content[0]):
             raise SkipException()
         elif len(content) == 1 and ("no such user" not in content[0]):
             self.data = int(content[0])
