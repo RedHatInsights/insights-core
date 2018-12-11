@@ -202,6 +202,7 @@ class Specs(SpecSet):
     keystone_log = RegistryPoint(filterable=True)
     krb5 = RegistryPoint(multi_output=True)
     ksmstate = RegistryPoint()
+    kubepods_cpu_quota = RegistryPoint(multi_output=True)
     lastupload = RegistryPoint(multi_output=True)
     libkeyutils_objdumps = RegistryPoint()
     libkeyutils = RegistryPoint()
