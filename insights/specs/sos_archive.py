@@ -48,6 +48,7 @@ class SosSpecs(Specs):
     foreman_ssl_access_ssl_log = first_file(["var/log/httpd/foreman-ssl_access_ssl.log", r"sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log"])
     getcert_list = simple_file("sos_commands/ipa/ipa-getcert_list")
     gluster_v_info = simple_file("sos_commands/gluster/gluster_volume_info")
+    gluster_v_status = simple_file("sos_commands/gluster/gluster_volume_status")
     hostname = first_of([simple_file("sos_commands/general/hostname_-f"), simple_file("sos_commands/general/hostname")])
     httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"])
     installed_rpms = simple_file("installed-rpms")
