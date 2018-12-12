@@ -1,22 +1,22 @@
 """
-KubepodsCpuQuota - file ``/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/*.slice/cpu.cfs_quota_us``
-===============================================================================================================
+KubepodsCpuQuota - CPU quota for each Kubernetes pod
+====================================================
 
 This parser reads the content of ``/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/*.slice/cpu.cfs_quota_us``.
 """
 
-from insights import Parser, parser, LegacyItemAccess
+from insights import Parser, parser
 from insights.specs import Specs
 from ..parsers import ParseException
 
 
 @parser(Specs.kubepods_cpu_quota)
-class KubepodsCpuQuota(LegacyItemAccess, Parser):
+class KubepodsCpuQuota(Parser):
     """
-    Class ``KubepodsCpuQuota`` parses the content of the ``/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/*.slice/cpu.cfs_quota_us``.
+    Class ``KubepodsCpuQuota`` parses the content of the ``/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod*.slice/cpu.cfs_quota_us``.
 
     Attributes:
-        cpu_quota (int): It is used to show the value of cpu_quota for a perticular .
+        cpu_quota (int): It is used to show the value of cpu quota for a particular pod in a Kubernetes cluster or an OpenShift cluster.
 
     A typical sample of the content of this file looks like::
 
