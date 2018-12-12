@@ -31,5 +31,5 @@ class KubepodsCpuQuota(Parser):
 
     def parse_content(self, content):
         if len(content) != 1:
-            raise ParseException("Error: ", content[0] if content else 'empty file')
+            raise ParseException("Error: ", content if content else 'empty file')
         self.cpu_quota = int(content[0].strip())
