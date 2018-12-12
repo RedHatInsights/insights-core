@@ -30,6 +30,6 @@ class KubepodsCpuQuota(Parser):
     """
 
     def parse_content(self, content):
-        if len(content) != 1:
+        if len(content) != 1 or not content[0].strip('-').isdigit():
             raise ParseException("Error: ", content if content else 'empty file')
         self.cpu_quota = int(content[0].strip())
