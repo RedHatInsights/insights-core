@@ -40,13 +40,12 @@ Examples:
 """
 from collections import namedtuple
 from insights import Parser, parser, get_active_lines
-# from docs.examples.specs import Specs as LocalSpecs
-
 from insights.core.spec_factory import SpecSet, simple_file
 import os
 
+
 class LocalSpecs(SpecSet):
-    """ Datasources for collection from local host """
+    """ Datasources for collection from test file """
     conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sshd_config')
 
     sshd_config = simple_file(conf_file)

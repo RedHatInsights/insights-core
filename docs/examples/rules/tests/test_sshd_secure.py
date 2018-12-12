@@ -1,11 +1,8 @@
 from docs.examples.rules import sshd_secure
+from docs.examples.parsers.secure_shell import LocalSpecs
 from insights.tests import InputData, archive_provider, context_wrap
 from insights.core.plugins import make_response
 from insights.specs import Specs
-from docs.examples.parsers.secure_shell import LocalSpecs
-# The following imports are not necessary for integration tests
-#from insights.parsers.secure_shell import SshDConfig
-
 from docs.examples.parsers.secure_shell import SshDConfig
 
 OPENSSH_RPM = """

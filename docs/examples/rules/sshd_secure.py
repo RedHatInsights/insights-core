@@ -1,8 +1,6 @@
 from insights.core.plugins import make_response, rule
 from docs.examples.parsers.secure_shell import SshDConfig
 from insights.parsers.installed_rpms import InstalledRpms
-# from insights.core.filters import add_filter
-# from parsers.secure_shell import Specs
 
 from insights import run
 
@@ -46,9 +44,6 @@ def check_protocol(sshd_config, errors):
         if protocol.lower() != '2':
             errors['Protocol'] = protocol
     return errors
-
-
-#add_filter(Specs.sshd_config, ['AuthenticationMethods', 'LogLevel', 'PermitRootLogin', 'Protocol'])
 
 
 @rule(InstalledRpms, SshDConfig)

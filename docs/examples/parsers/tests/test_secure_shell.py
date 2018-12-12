@@ -1,6 +1,5 @@
-from ..secure_shell import SshDConfig
-from .. import secure_shell
-
+from docs.examples.parsers.secure_shell import SshDConfig
+from docs.examples.parsers import secure_shell
 from insights.tests import context_wrap
 import doctest
 
