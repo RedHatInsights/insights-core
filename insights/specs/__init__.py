@@ -417,6 +417,7 @@ class Specs(SpecSet):
     software_collections_list = RegistryPoint()
     spfile_ora = RegistryPoint(multi_output=True)
     ssh_config = RegistryPoint()
+    ssh_foreman_config = RegistryPoint()
     sshd_config_perms = RegistryPoint()
     sshd_config = RegistryPoint(filterable=True)
     ss = RegistryPoint()
