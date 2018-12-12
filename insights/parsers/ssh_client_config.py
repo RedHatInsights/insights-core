@@ -59,7 +59,6 @@ class SshClientConfig(Parser):
 
         del self._global_content
         del self._host_content
-        return
 
 
 @parser(Specs.ssh_config)
