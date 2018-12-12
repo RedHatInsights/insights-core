@@ -50,7 +50,13 @@ Next you need to follow the steps documented in the file ``insights-core/README.
 to create a virtual environment and set it up for development::
 
     [userone@hostone work]$ cd insights-core
-    [userone@hostone insights-core]$ virtualenv .
+    [userone@hostone insights-core]$ virtualenv -p python3.6 .
+    Running virtualenv with interpreter /usr/bin/python3.6
+    Using base prefix '/usr'
+    New python executable in /home/usrerone/insights-core/bin/python3.6
+    Also creating executable in /home/userone/insights-core/bin/python
+    Installing setuptools, pip, wheel...done.
+
     New python executable in ./bin/python
     Installing Setuptools..................................................done.
     Installing Pip....................................................done.
@@ -58,7 +64,7 @@ to create a virtual environment and set it up for development::
 Setup your environment to use the new virtualenv you just created, and upgrade
 ``pip`` to the latest version::
     
-    [userone@hostone insights-core]$ source bin/activate
+    [userone@hostone insights-core]$ source ./bin/activate
     (insights-core)[userone@hostone insights-core]$ pip install --upgrade pip
     
 Now install all of the required packages for ``insights-core`` development::
@@ -67,28 +73,28 @@ Now install all of the required packages for ``insights-core`` development::
 
 Once these steps have been completed you will have a complete development
 environment for parsers and combiners.  You can confirm that everything is setup
-correctly by running the tests, ``py.test``.  Your results should look
+correctly by running the tests, ``pytest``.  Your results should look
 something like this::
 
-    (insights-core)[userone@hostone insights-core]$ py.test
+    (insights-core)[userone@hostone work]$ pytest
     ======================== test session starts =============================
-    platform linux2 -- Python 2.7.5, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
-    rootdir: /home/userone/work/insights-core, inifile: setup.cfg
+    platform linux -- Python 3.6.6, pytest-3.0.6, py-1.7.0, pluggy-0.4.0
+    rootdir: /home/lhuett/github/insights-core, inifile: setup.cfg
     plugins: cov-2.4.0
-    collected 825 items 
+    collected 1218 items
 
-    insights/combiners/tests/test_grub_conf.py .....
+    insights/combiners/tests/test_grub_conf.py ..........
     insights/combiners/tests/test_hostname.py .....
     ...
     insights/tests/core/test_marshalling.py .....
-    insights/tests/core/test_plugins.py .........
+    insights/tests/core/test_plugins.py .....
     ======================= short test summary info ==========================
-    SKIP [1] insights/tests/integration.py:7: got empty parameter set ['component',
-    'compare_func', 'input_data', 'expected'], function test_integration at
-    /home/userone/work/insights-core/insights/tests/integration.py:7
+    SKIP [1] insights/tests/client/test_client.py:53: Mocked paths not working in QE jenkins
+    ...
+    SKIP [1] insights/tests/client/test_net_comm.py:16: Net communication tests take a long time to finish.
 
-    ============= 824 passed, 1 skipped in 3.37 seconds ======================
-    
+    ============= 1210 passed, 8 skipped in 18.60 seconds ====================
+
 If during this step you see a test failure similar to the following make sure
 you have ``unzip`` installed on your system::
     
@@ -98,10 +104,38 @@ you have ``unzip`` installed on your system::
 
     /usr/lib64/python2.7/subprocess.py:1327: CalledProcessError
 
+Next you will need to create ``mycomponents`` directory and directories to develop
+each of the components (parsers, combiners and rules) in.
+You will also need to copy the ``conftest.py`` file from the ``insights-core`` root
+directory in order for your tests to work correctly.
+
+Here are the commands to setup your rule development environment::
+
+    (insights-core)[userone@hostone insights-core]$ cd ~/work
+    (insights-core)[userone@hostone work]$ mkdir mycomponents
+    (insights-core)[userone@hostone work]$ cd mycomponents
+    (insights-core)[userone@hostone mycomponents]$ touch __init__.py
+    (insights-core)[userone@hostone mycomponents]$ mkdir parsers
+    (insights-core)[userone@hostone mycomponents]$ touch ./parsers/__init__.py
+    (insights-core)[userone@hostone mycomponents]$ mkdir ./parsers/tests
+    (insights-core)[userone@hostone mycomponents]$ touch ./parsers/tests/__init__.py
+    (insights-core)[userone@hostone mycomponents]$ mkdir combiners
+    (insights-core)[userone@hostone mycomponents]$ touch ./combiners/__init__.py
+    (insights-core)[userone@hostone mycomponents]$ mkdir ./combiners/tests
+    (insights-core)[userone@hostone mycomponents]$ touch ./combiners/tests/__init__.py
+    (insights-core)[userone@hostone mycomponents]$ mkdir rules
+    (insights-core)[userone@hostone mycomponents]$ touch ./rules/__init__.py
+    (insights-core)[userone@hostone mycomponents]$ mkdir ./rules/tests
+    (insights-core)[userone@hostone mycomponents]$ touch ./rules/tests/__init__.py
+
+    (insights-core)[userone@hostone mycomponents]$ export PYTHONPATH=~/work/mycomponents:$PYTHONPATH
+
+
 Your development environment is now ready to begin development and you may move
 on to the next section.  If you had problems with any of these steps then
 double check that you have completed all of the steps in order and if it still
 doesn't work, open a `GitHub issue <https://github.com/RedHatInsights/insights-core/issues/new>`_.
+
 
 Secure Shell Parser
 ===================
@@ -111,8 +145,8 @@ Overview
 
 Secure Shell or ``ssh`` ("SSH") is a commonly used tool to access and interact
 with remote systems.  SSH server is configured on a system using the
-``/etc/sshd_conf`` file.  Red Hat Enterprise Linux utilizes OpenSSH and the
-documentation for the ``/etc/sshd_conf`` file is located
+``/etc/sshd_config`` file.  Red Hat Enterprise Linux utilizes OpenSSH and the
+documentation for the ``/etc/sshd_config`` file is located
 `here <http://man.openbsd.org/sshd_config>`_.
 
 .. _sample-sshd-input:
@@ -140,17 +174,17 @@ Creating the Initial Parser Files
 First we need to create the parser file.  Parser files are implemented in modules.
 The module should be limited to one type of application.  In this case we are
 working with the ``ssh`` application so we will create an ``secure_shell`` module.
-Create the module file ``insights/parsers/secure_shell.py`` in the parsers
+Create the module file ``~/work/mycomponents/parsers/secure_shell.py`` in the parsers
 directory::
 
-    (insights-core)[userone@hostone insights-core]$ touch insights/parsers/secure_shell.py
+    (insights-core)[userone@hostone work]$ touch ~/work/mycomponents/parsers/secure_shell.py
 
 Now edit the file and create the parser skeleton:
 
 .. code-block:: python
     :linenos:
 
-    from .. import Parser, parser
+    from insights import Parser, parser
     from insights.specs import Specs
 
 
@@ -168,18 +202,13 @@ and store the input data in our class.  The base class ``Parser`` implements a
 constructor that will invoke our ``parse_content`` method when the class
 is created.
 
-.. note:: The ``from .. import`` here is equivalent to
-       ``from insights.parsers import`` and is implemented by some *magic*
-       code elsewhere to help minimize changes to all parsers if the project
-       name changes.
-
-Next we'll create the parser test file ``insights/parsers/tests/test_secure_shell.py``
+Next we'll create the parser test file ``~/work/mycomponents/parsers/tests/test_secure_shell.py``
 as a skeleton that will aid in the parser development process:
 
 .. code-block:: python
     :linenos:
 
-    from insights.parsers.secure_shell import SshDConfig
+    from mycomponents.parsers.secure_shell import SshDConfig
 
 
     def test_sshd_config():
@@ -188,23 +217,19 @@ as a skeleton that will aid in the parser development process:
 Once you have created and saved both of these files and we'll run the test
 to make sure everything is setup correctly::
 
-    (insights-core)[userone@hostone insights-core]$ py.test -k secure_shell
-    ================== test session starts ========================
-    platform linux2 -- Python 2.7.5, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
-    rootdir: /home/userone/work/insights-core, inifile: setup.cfg
+    (insights-core)[userone@hostone work]$ pytest -k secure_shell
+
+    ======================== test session starts =============================
+    platform linux2 -- Python 2.7.15, pytest-3.0.6, py-1.7.0, pluggy-0.4.0
+    rootdir: /home/userone/work/mycomponents, inifile:
     plugins: cov-2.4.0
-    collected 826 items 
+    collected 3 items
 
-    insights/parsers/tests/test_secure_shell.py .
+    mycomponents/parsers/tests/test_secure_shell.py ...
 
-    ================ 825 tests deselected ==========================
-    =========== 1 passed, 825 deselected in 1.26 seconds ===========
+    ===================== 3 passed in 1.26 seconds ===========================
 
-When you invoke ``py.test`` with the ``-k`` option it will only run tests
-which match the filter, in this case tests that match *secure_shell*.  So our
-test passed as expected.
-
-.. hint:: You may sometimes see a message that ``py.test`` cannot be found,
+.. hint:: You may sometimes see a message that ``pytest`` cannot be found,
        or see some other related message that doesn't make sense. The first
        think to check is that you have activated your virtual environment by
        executing the command ``source bin/activate`` from the root directory
@@ -236,7 +261,7 @@ start by creating a test for the output that we want from our parser:
 .. code-block:: python
    :linenos:
 
-   from insights.parsers.secure_shell import SshDConfig
+   from mycomponents.parsers.secure_shell import SshDConfig
    from insights.tests import context_wrap
 
    SSHD_CONFIG_INPUT = """
@@ -278,7 +303,7 @@ constructor:
    :linenos:
    :emphasize-lines: 2
 
-   from insights.parsers.secure_shell import SshDConfig
+   from mycomponents.parsers.secure_shell import SshDConfig
    from insights.tests import context_wrap
 
 Next we include the sample data that will be used for the test.  Use of the
@@ -376,11 +401,19 @@ Now we need to implement the parser that will satisfy our tests.
    :linenos:
 
     from collections import namedtuple
-    from .. import Parser, parser, get_active_lines
-    from insights.specs import Specs
+    from insights import Parser, parser, get_active_lines
+    from insights.core.spec_factory import SpecSet, simple_file
+    import os
 
 
-    @parser(Specs.sshd_config)
+    class LocalSpecs(SpecSet):
+        """ Datasources for collection from local host """
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sshd_config')
+
+        sshd_config = simple_file(conf_file)
+
+
+    @parser(LocalSpecs.sshd_config)
     class SshDConfig(Parser):
 
         KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower'])
@@ -415,8 +448,32 @@ parsing logic.
    :linenos:
 
     from collections import namedtuple
-    from .. import Parser, parser, get_active_lines
-    from insights.specs import Specs
+    from insights import Parser, parser, get_active_lines
+    from insights.core.spec_factory import SpecSet, simple_file
+    import os
+
+Since the ``sshd_config`` spec requires root access to access the
+``/etc/ssh/sshd_config`` file we created a local ``SpecSet`` class called
+``LocalSpecs` that will contain a local ``sshd_config`` spec that uses a local
+``sshd_config`` file that does not require root access to read.
+
+
+.. code-block:: python
+   :linenos:
+   :lineno-start: 6
+
+    class LocalSpecs(SpecSet):
+        """ Datasources for collection from local host """
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sshd_config')
+
+        sshd_config = simple_file(conf_file)
+
+To get the ``ssh_config`` file needed for the local sshd_config spec you can
+copy it from ``/work/insights-core/docs/examples/parsers/sshd_config`` to the
+``~/work/mycomponents/parsers`` directory as shown below.
+
+
+    (insights-core)[userone@hostone work]$ cp ./insights-core/docs/examples/parsers/sshd_config ./mycomponents/parsers/
 
 We can use ``namedtuples`` to help simplify access to the information we
 are storing in our parser by creating a namedtuple with the named attributes
@@ -425,7 +482,7 @@ version of the *keyword*.
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 9
+   :lineno-start: 15
 
         KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'kw_lower'])
 
@@ -438,7 +495,7 @@ unparsed as we don't know how a rule might need to evaluate them.
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 11
+   :lineno-start: 17
 
         def parse_content(self, content):
             self.lines = []
@@ -454,7 +511,7 @@ Finally we implement some "dunder" methods to simplify use of the class.
 
 .. code-block:: python
    :linenos:
-   :lineno-start: 18
+   :lineno-start: 24
 
         def __contains__(self, keyword):
             return keyword.lower() in self.keywords
@@ -529,11 +586,20 @@ The following shows our completed parser including documentation.
         '10.110.1.1'
     """
     from collections import namedtuple
-    from .. import Parser, parser, get_active_lines
+    from insights import Parser, parser, get_active_lines
     from insights.specs import Specs
+    from insights.core.spec_factory import SpecSet, simple_file
+    import os
 
 
-    @parser(Specs.sshd_config)
+    class LocalSpecs(SpecSet):
+        """ Datasources for collection from local host """
+        conf_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sshd_config')
+
+        sshd_config = simple_file(conf_file)
+
+
+    @parser(LocalSpecs.sshd_config)
     class SshDConfig(Parser):
         """Parsing for ``sshd_config`` file.
 
@@ -587,7 +653,7 @@ with adding ``import doctest`` our original code:
 .. code-block:: python
     :linenos:
 
-    from insights.parsers.secure_shell import SshDConfig
+    from mycomponents.parsers.secure_shell import SshDConfig
     from insights.parsers import secure_shell
     from insights.tests import context_wrap
     import doctest
@@ -683,7 +749,7 @@ The final version of our test now looks like this:
 .. code-block:: python
     :linenos:
 
-    from insights.parsers.secure_shell import SshDConfig
+    from mycomponets.parsers.secure_shell import SshDConfig
     from insights.parsers import secure_shell
     from insights.tests import context_wrap
     import doctest
@@ -751,18 +817,9 @@ The final version of our test now looks like this:
         assert len(ports) == 2
         assert ports[0].value == '22'
 
-To run ``pytest`` on just the ``ssh`` parser execute the following command::
+To run ``pytest`` on just the ``secure_shell`` parser execute the following command::
 
-    $ py.test -k secure_shell
-
-You should also run all tests by executing the following command::
-
-    $ py.test
-
-You can also check how well your tests cover all the paths in the code
-using the following command::
-
-    $ py.test insights/parsers --cov=insights/parsers
+    (insights-core)[userone@hostone work]$ pytest -k secure_shell
 
 Once your tests all run successfully your parser is complete.
 

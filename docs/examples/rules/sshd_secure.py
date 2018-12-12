@@ -1,6 +1,10 @@
 from insights.core.plugins import make_response, rule
 from docs.examples.parsers.secure_shell import SshDConfig
 from insights.parsers.installed_rpms import InstalledRpms
+# from insights.core.filters import add_filter
+# from parsers.secure_shell import Specs
+
+from insights import run
 
 ERROR_KEY = "SSHD_SECURE"
 
@@ -44,6 +48,9 @@ def check_protocol(sshd_config, errors):
     return errors
 
 
+#add_filter(Specs.sshd_config, ['AuthenticationMethods', 'LogLevel', 'PermitRootLogin', 'Protocol'])
+
+
 @rule(InstalledRpms, SshDConfig)
 def report(installed_rpms, sshd_config):
     errors = {}
@@ -55,3 +62,6 @@ def report(installed_rpms, sshd_config):
     if errors:
         openssh_version = installed_rpms.get_max('openssh')
         return make_response(ERROR_KEY, errors=errors, openssh=openssh_version.package)
+
+if __name__ == "__main__":
+    run(report, print_summary=True)

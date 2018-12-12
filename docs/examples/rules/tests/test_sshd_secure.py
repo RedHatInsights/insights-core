@@ -1,7 +1,8 @@
-from .. import sshd_secure
+from docs.examples.rules import sshd_secure
 from insights.tests import InputData, archive_provider, context_wrap
 from insights.core.plugins import make_response
 from insights.specs import Specs
+from docs.examples.parsers.secure_shell import LocalSpecs
 # The following imports are not necessary for integration tests
 #from insights.parsers.secure_shell import SshDConfig
 
@@ -65,12 +66,12 @@ def integration_tests():
     test of the component chain.
     """
     input_data = InputData("GOOD_CONFIG")
-    input_data.add(Specs.sshd_config, GOOD_CONFIG)
+    input_data.add(LocalSpecs.sshd_config, GOOD_CONFIG)
     input_data.add(Specs.installed_rpms, OPENSSH_RPM)
     yield input_data, None
 
     input_data = InputData("BAD_CONFIG")
-    input_data.add(Specs.sshd_config, BAD_CONFIG)
+    input_data.add(LocalSpecs.sshd_config, BAD_CONFIG)
     input_data.add(Specs.installed_rpms, OPENSSH_RPM)
     errors = {
         'AuthenticationMethods': 'badkey',
@@ -84,7 +85,7 @@ def integration_tests():
     yield input_data, expected
 
     input_data = InputData("DEFAULT_CONFIG")
-    input_data.add(Specs.sshd_config, DEFAULT_CONFIG)
+    input_data.add(LocalSpecs.sshd_config, DEFAULT_CONFIG)
     input_data.add(Specs.installed_rpms, OPENSSH_RPM)
     errors = {
         'AuthenticationMethods': 'default',

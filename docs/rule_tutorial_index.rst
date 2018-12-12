@@ -17,3 +17,4 @@ We'll cover each step in detail in the sections ahead, so let's get started!
     ruletut_parsers
     ruletut_rule
     ruletut_tests
+    ruletut_run_tests

@@ -52,10 +52,10 @@ First we need to create the combiner file.  Combiner files are implemented in
 modules. The module should be limited to one purpose.  In this case we are
 working with ``hostname`` data so we will create an ``hostname_uh`` module.
 Also there is already a ``hostname`` combiner module so we want to avoid 
-confusion.  Create the module file ``insights/combiners/hostname_uh.py`` in the
-combiners directory::
+confusion.  Create the module file ``mycomponents/combiners/hostname_uh.py`` in the
+``mycomponents/combiners directory``::
 
-    (insights-core)[userone@hostone insights-core]$ touch insights/combiners/hostname_uh.py
+    (insights-core)[userone@hostone mycomponents]$ touch mycomponents/combiners/hostname_uh.py
 
 Now edit the file and create the combiner skeleton:
 
@@ -91,7 +91,7 @@ as a skeleton that will aid in the combiner development process:
 .. code-block:: python
     :linenos:
 
-    from insights.combiners.hostname_uh import HostnameUH
+    from mycomponents.combiners.hostname_uh import HostnameUH
 
 
     def test_hostname_uh():
@@ -100,23 +100,23 @@ as a skeleton that will aid in the combiner development process:
 Once you have created and saved both of these files, you can the test
 to make sure everything is setup correctly::
 
-    (insights-core)[userone@hostone insights-core]$ py.test -k hostname_uh
+    (insights-core)[userone@hostone work]$ pytest -k hostname_uh
     ======================= test session starts ==============================
-    platform linux2 -- Python 2.7.14, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
-    rootdir: /home/bfahr/work/insights/insights-core, inifile: setup.cfg
-    plugins: cov-2.4.0
-    collected 825 items
+       platform linux -- Python 3.6.6, pytest-3.0.6, py-1.7.0, pluggy-0.4.0
+       rootdir: /home/lhuett/core_examples/examples, inifile:
+       plugins: cov-2.4.0
+       collected 6 items
 
-    insights/combiners/tests/test_hostname_uh.py .
+       combiners/tests/test_hostname_uh.py .
 
-    ====================== 824 tests deselected ==============================
-    ============ 1 passed, 824 deselected in 1.02 seconds ====================
+    ====================== 5 tests deselected ==============================
+    ============ 1 passed, 5 deselected in 1.02 seconds ====================
 
-When you invoke ``py.test`` with the ``-k`` option it will only run tests
+When you invoke ``pytest`` with the ``-k`` option it will only run tests
 which match the filter, in this case tests that match *hostname_uh*.  So our
 test passed as expected.
 
-.. hint:: You may sometimes see a message that ``py.test`` cannot be found,
+.. hint:: You may sometimes see a message that ``pytest`` cannot be found,
        or see some other related message that doesn't make sense. The first
        think to check is that you have activated your virtual environment by
        executing the command ``source bin/activate`` from the root directory
@@ -151,7 +151,7 @@ then use the parsers as input to our combiner tests.
 .. code-block:: python
    :linenos:
 
-   from insights.combiners.hostname_uh import HostnameUH
+   from mycomponents.combiners.hostname_uh import HostnameUH
    from insights.parsers.hostname import Hostname
    from insights.parsers.uname import Uname
    from insights.tests import context_wrap
@@ -281,17 +281,18 @@ passed in the ``uname`` attribute.
 Now save this file and run the tests again to confirm that we have successfully
 written our combiner to pass all tests::
     
-    (insights-core)[userone@hostone insights-core]$ py.test -k hostname_uh
+    (insights-core)[userone@hostone work]$ pytest -k hostname_uh
     ======================= test session starts ==============================
-    platform linux2 -- Python 2.7.14, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
-    rootdir: /home/bfahr/work/insights/insights-core, inifile: setup.cfg
-    plugins: cov-2.4.0
-    collected 825 items
+       platform linux -- Python 3.6.6, pytest-3.0.6, py-1.7.0, pluggy-0.4.0
+       rootdir: /home/lhuett/core_examples/examples, inifile:
+       plugins: cov-2.4.0
+       collected 6 items
 
-    insights/combiners/tests/test_hostname_uh.py .
+       combiners/tests/test_hostname_uh.py .
 
-    ====================== 824 tests deselected ==============================
-    ============ 1 passed, 824 deselected in 1.02 seconds ====================
+
+    ====================== 5 tests deselected ==============================
+    ============ 1 passed, 5 deselected in 0.35 seconds ====================
 
 Combiner Documentation and Testing
 ----------------------------------

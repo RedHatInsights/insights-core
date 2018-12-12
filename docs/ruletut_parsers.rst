@@ -4,24 +4,21 @@ Plan out your Rule
 Determine rule logic
 ====================
 
-The most effective way to get started in developing a rule is identifying the
-problem you want to address as well as a succinct solution to that problem.
+The most effective way to get started in developing a rule is first to identify the
+problem you want to address.
 
-For the purposes of this tutorial we'll identify a very simple problem with
-the rpm database getting corrupted. The RPM Database is critical for managing
-packages on a system. It's possible for this databse to become corrupt therefore
-making updates and software installs impossible.
+For the purposes of this tutorial we'll look at a very simple scenario. Sometimes when
+researching an issue one of the things that we might need to know is which Red Hat OS the
+host is running. For simplicity sake, in this example we will concentrate only on
+determining if the red hat release is ``Fedora``.
 
 For this case there is one thing we need to check:
 
-1. the rpm database does not contain `rpmdbNextIterator:`
-
-For this problem let's declare that the solution is to rebuild rpm database or
-restore from backup.
+1. Is the Red Hat release ``Fedora``:
 
 
 Identify Parsers
 ================
 
-- We can check the contents o the rpm database by using the ``InstalledRpms`` parser.
+- We can check Red Hat Release using the ``RedhatRelease`` parser.
 

@@ -26,45 +26,14 @@ guidelines::
 We also want to know what version of OpenSSH we are running if we find any problems.
 
 You can find the complete implementation of the rule and test code in the
-directory ``insights/docs/examples/rules``.
+directory ``insights-core/docs/examples/rules``.
 
 **************************************
 Preparing Your Development Environment
 **************************************
 
-The following instructions assume that you have an insights-core development
-environment setup and working, and that your rules root dir and insights-core
-root dir are subdirs of the same root dir.  First you will need to create
-a ``mycomponents`` directory and then copy the example rules directory into
-``mycomponents``.  You will also need to copy the ``conftest.py`` from the
-``insights-core`` root directory in order for your tests to work correctly.
-Here are the commands to setup your rule development environment::
-
-    [userone@hostone work]$ pwd
-    /home/userone/work
-    [userone@hostone work]$ ls
-    insights-core
-    [userone@hostone work]$ mkdir mycomponents
-    [userone@hostone work]$ cd mycomponents
-    [userone@hostone mycomponents]$ cp -R insights-core/docs/examples/rules ./rules
-    [userone@hostone mycomponents]$ cp ../insights-core/conftest.py .
-    [userone@hostone mycomponents]$ ls
-    conftest.py  rules
-
-Once you have completed this your project directory tree should look like this
-(note the details of the ``insights-core`` directory tree are not being shown)::
-
-    work
-    ├── insights-core
-    └── mycomponents
-        ├── parsers
-        ├── rules
-        │   ├── __init__.py
-        │   └── sshd_secure.py
-        └── tests
-            ├── __init__.py
-            ├── test_integration.py
-            └── test_sshd_secure.py
+We will use the same development environment that is necessary for Parser
+Development which is described in :ref:`parser-development-environment`.
 
 Make sure
 you start with your virtual environment set to the insights-core project::
@@ -87,7 +56,7 @@ at sshd security we will name the file ``mycomponents/rules/sshd_secure.py``.
 Notice that the file is located in the ``rules`` subdirectory
 of your project::
 
-    (myrules) $ touch myrules/plugins/sshd_secure.py
+    (insights-core)[userone@hostone mycomponents]$ touch rules/sshd_secure.py
 
 Here's the basic contents of the rule file:
 
@@ -95,7 +64,7 @@ Here's the basic contents of the rule file:
    :linenos:
 
    from insights.core.plugins import make_response, rule
-   from insights.parsers.secure_shell import SshDConfig
+   from mycomponents.parsers.secure_shell import SshDConfig
 
    ERROR_KEY = "SSHD_SECURE"
 
@@ -117,8 +86,8 @@ Then we import the parsers that provide the facts we need.
 .. code-block:: python
    :linenos:
 
-   from insights.core.plugins import make_response, rule 
-   from insights.parsers.ssh import SshDConfig
+   from insights.core.plugins import make_response, rule
+   from mycomponents.parsers.secure_shell import SshDConfig
 
 Next we define a unique error key string, ``ERROR_KEY`` that will be
 collected by insights-core when our rule is executed, and provided in the results for
@@ -175,13 +144,13 @@ requirement to obtain facts about installed RPMs in the final code.
 
    @rule(SshDConfig)
 
-The name of our
-rule method is ``report``, but the name may be any valid method name.
+The name of our rule method is ``report``, but the name may be any valid
+method name.
 The purpose of the method is to evaluate the parser facts stored
 in the parser object ``sshd_config``.  If any results
 are found in the evaluation then a response is created with the
 ``ERROR_KEY`` and any data that you want to be associated with
-the results are included in the response.  
+the results are included in the response.
 This data can be viewed in the results made available to a customer
 in the Red Hat Insights web interface.
 You may use zero or more named arguments to
@@ -213,7 +182,7 @@ the software version:
    :linenos:
 
    from insights.core.plugins import make_response, rule
-   from insights.parsers.secure_shell import SshDConfig
+   from mycomponents.parsers.secure_shell import SshDConfig
    from insights.parsers.installed_rpms import InstalledRpms
 
    ERROR_KEY = "SSHD_SECURE"
@@ -342,12 +311,12 @@ by viewing the test code:
 .. code-block:: python
    :linenos:
 
-   from rules import sshd_secure
+   from mycomponents.rules import sshd_secure
    from insights.tests import InputData, archive_provider, context_wrap
    from insights.core.plugins import make_response
    from insights.specs import Specs
    # The following imports are not necessary for integration tests
-   from insights.parsers.secure_shell import SshDConfig
+   from mycomponents.parsers.secure_shell import SshDConfig
 
    OPENSSH_RPM = """
    openssh-6.6.1p1-31.el7.x86_64
@@ -484,7 +453,7 @@ Unit Tests
 
 First lets look at a unit test for our rule.  The unit test
 is named ``test_sshd_secure``.  It may be named anything as long
-as the name begins with ``test_`` which is what ``py.test`` looks
+as the name begins with ``test_`` which is what ``pytest`` looks
 for to identify tests.  As with all unit tests, no framework is
 provided so you must create all of the necessary structures for
 your tests.  In this case we need a ``sshd_config`` parameter which
@@ -525,7 +494,7 @@ duplicative of the testing done in integration tests.  However, it does
 provides a more granular level of testing and can be easier to debug than
 when only integration tests are used.
 Because integration tests run in the framework, which is in turn run
-within py.test, it's not as easy to get output for debugging purposes.
+within ``pytest``, it's not as easy to get output for debugging purposes.
 Performing these tests as unit tests removes one layer of complexity
 but requires more setup code.
 
@@ -617,27 +586,68 @@ Running the Tests
 
 We execute these tests by moving to the root directory of our rules
 project, ensuring that our virtual environment is active, and running
-``py.test``::
+``pytest``::
 
-    (insights-core)[userone@hostone mycomponents]$ py.test
+    (insights-core)[userone@hostone mycomponents]$ pytest
     ====================== test session starts ===============================
-    platform linux2 -- Python 2.7.5, pytest-3.0.6, py-1.5.2, pluggy-0.4.0
-    rootdir: /home/userone/work/mycomponents, inifile: 
+    platform linux -- Python 3.6.6, pytest-3.0.6, py-1.7.0, pluggy-0.4.0
+    rootdir: /home/lhuett/core_examples/examples, inifile:
     plugins: cov-2.4.0
-    collected 4 items 
+    collected 8 items
 
+    combiners/tests/test_hostname_uh.py .
+    parsers/tests/test_secure_shell.py ...
     rules/tests/test_integration.py ...
     rules/tests/test_sshd_secure.py .
 
-    =================== 4 passed in 0.07 seconds =============================
-    
-If any tests fail you can use the following ``py.test`` ``-s -v --appdebug``
+    =================== 8 passed in 0.20 seconds =============================
+
+You may also want to run the rule using ``insights-run``. T
+This will give you a better idea of wehat the output would be from the rule.
+We execute this test by moving to the root directory (``work``),
+ensuring that our virtual environment is active, and running
+``insight-run -p rules/sshd_secure.py``::
+
+    (insights-core)[userone@hostone mycomponents]$ insights-run -p rules/sshd_secure.py
+    ---------
+    Progress:
+    ---------
+    F
+
+    --------------
+    Rules Executed
+    --------------
+    [FAIL] rules.sshd_secure.report
+    ------------------------
+    SSHD_SECURE:
+        errors : {'AuthenticationMethods': 'default',
+                  'LogLevel': 'default',
+                  'PermitRootLogin': 'default',
+                  'Protocol': '1'}
+        openssh: 'openssh-7.7p1-6.fc28'
+
+
+
+    ----------------------
+    Rule Execution Summary
+    ----------------------
+    Missing Deps: 0
+    Passed      : 0
+    Fingerprint : 0
+    Failed      : 1
+    Metadata    : 0
+    Metadata Key: 0
+    Exceptions  : 0
+
+
+
+Note: If you have already built your parser in the ``mycomponents/parsers``
+directory then you will see the following, otherwise you would only see
+tests for rules...
+
+If any tests fail you can use the following ``pytest`` ``-s -v --appdebug``
 options to help get additional information.  If you want to limit which
 test run you can also use the ``-k test_filter_string`` option.
-
-Also run ``py.test`` with no options when you have finished to ensure that
-you everything in your environment is working correctly, and once all tests
-pass you are finished.
 
 .. --------------------------------------------------------------------
 .. Put all of the references that are used throughout the document here

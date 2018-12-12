@@ -1,0 +1,12 @@
+#    $OpenBSD: sshd_config,v 1.93 2014/01/10 05:59:19 djm Exp $
+
+Port 22
+#AddressFamily any
+ListenAddress 10.110.0.1
+Port 22
+ListenAddress 10.110.1.1
+#ListenAddress ::
+
+# The default requires explicit activation of protocol 1
+#Protocol 2
+Protocol 1

@@ -4,25 +4,25 @@ Develop Plugin
 Now that we have identified the required parsers, let's get started on
 developing our plugin.
 
-Create a file called ``corrupt_rpmdb.py`` in a Python package called ``tutorial``.
+Create a file called ``is_fedora.py`` in a Python package called ``tutorial``.
 
 .. code-block:: shell
 
     $ mkdir tutorial
     $ touch tutorial/__init__.py
-    $ touch tutorial/corrupt_rpmdb.py
+    $ touch tutorial/is_fedora.py
 
-Open ``corrupt_rpmdb.py`` in your text editor of choice and start by stubbing out
+Open ``is_fedora.py`` in your text editor of choice and start by stubbing out
 the rule function and imports.
 
 .. code-block:: python
    :linenos:
 
-    from insights.parsers.installed_rpms import InstalledRpms
+    from insights.parsers.redhat_release import RedhatRelease
     from insights import rule, make_response
 
-    @rule(InstalledRpms)
-    def report(installed_rpms):
+    @rule(RedhatRelease)
+    def report(rhrel):
         pass
 
 Let's go over each line and describe the details:
@@ -30,7 +30,7 @@ Let's go over each line and describe the details:
 .. code-block:: python
    :lineno-start: 1
 
-    from insights.parsers.installed_rpms import InstalledRpms
+    from insights.parsers.redhat_release import RedhatRelease
 
 Parsers you want to use must be imported.  You must pass the parser class
 objects directly to the ``@rule`` decorator to declare them as dependencies for
@@ -49,49 +49,55 @@ Combiners have a set of optional dependencies that are specified via the
 the `return value of a rule </api.html#rule-output>`_ function.
 
 .. code-block:: python
-   :lineno-start: 4
+   :lineno-start: 6
 
-    @rule(InstalledRpms)
+    CONTENT = {
+        "IS_FEDORA": "This machine runs {{product}}.",
+        "IS_NOT_FEDORA": "This machine runs {{product}}."
+    }
+
+Here we define the ``Jinga`` template for message to be displayed for either
+response tag
+
+
+.. code-block:: python
+   :lineno-start: 12
+
+    @rule(RedhatRelease)
 
 Here we are specifying that this rule requires the output of the
-:py:class:`insights.parsers.installed_rpms.InstalledRpms`,
+:py:class:`insights.parsers.redhat_release.RedhatRelease`,
 
 Now let's add the rule logic
 
 .. code-block:: python
-   :lineno-start: 4
+   :lineno-start: 12
 
+    @rule(RedhatRelease, content=CONTENT)
+    def report(rhrel):
+        """Fires if the machine is running Fedora."""
 
-    ERROR_KEY = 'RPMDB_CORRUPT'
+        if "Fedora" in rel.product:
+            return make_response("IS_FEDORA", product=rhrel.product)
+        else:
+            return make_response("IS_NOT_FEDORA", product=rhrel.product)
 
+Now lets look at what the rule is doing.
 
-    @rule(InstalledRpms)
-    def report(rpms):
-        if rpms.corrupt:
-            for line in rpms.errors:
-                if 'rpmdbNextIterator:' in line.split():
-                    return make_response(ERROR_KEY, rpmdb_error=line)
-
-There's a lot going on here, so lets look at some of the steps in detail.
-
-.. code-block:: python
-   :lineno-start: 6
-
-    if rpms.corrupt:
-
-The ``InstalledRpms`` parser defines a ``corrupt`` method that allows for
-simple boolean check to determine if the parser has indicated that the rpm
-database is corrupt.
+The ``RedhatRelease`` parser parses content from the ``/etc/redhat-release`` file on the
+host it is running on and returns an object containing the Red Hat OS information for the
+host.
 
 .. code-block:: python
-   :lineno-start: 7
+   :lineno-start: 16
 
-    for line in rpms.errors:
-        if 'rpmdbNextIterator:' in line.split():
-            return make_response(ERROR_KEY, rpmdb_error=line)
+        if "Fedora" in rhrel.product:
+            return make_response("IS_FEDORA", product=rhrel.product)
+        else:
+            return make_response("IS_NOT_FEDORA", product=rhrel.product)
 
-Here we iterate through the returned lines searching for line that contained
-the `rpmdbNextIterator:` indicating the corruption. If the line is found it is
-returned in the response along with the error_key.
-This error key can be referenced by other systems for display or tracking
-purposes.
+Here we check to see if the value ``Fedora`` is in the "product" property of the
+"rhrel" object. If true then the rule returns a response telling us that the host
+is indeed running ``Fedora``, along with the product information returned by the
+parser. If false then the rule returns a response telling us that the host is
+not running ``Fedora``, along with the product information returned by the parser.
