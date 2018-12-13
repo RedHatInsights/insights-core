@@ -31,7 +31,7 @@ class SshClientConfig(Parser):
 
         _content = get_active_lines(content)
         index_list = [i for i, l in enumerate(_content) if l.startswith('Host ')]
-        index = index_list[0] if index_list else len(_content) 
+        index = index_list[0] if index_list else len(_content)
 
         for line in _content[:index]:
             line_splits = [s.strip() for s in line.split(None, 1)]
@@ -81,8 +81,8 @@ class EtcSshConfig(SshClientConfig):
 
     Attributes:
 
-        global_lines (list): The list of site-wide configuration, as 
-            namedtuple('KeyValue', ['keyword', 'value', 'line']). 
+        global_lines (list): The list of site-wide configuration, as
+            namedtuple('KeyValue', ['keyword', 'value', 'line']).
         host_lines (dict): The dict of all host-specific definitions, as
             {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
 
@@ -143,8 +143,8 @@ class ForemanSshConfig(SshClientConfig):
 
     Attributes:
 
-        global_lines (list): The list of site-wide configuration, as 
-            namedtuple('KeyValue', ['keyword', 'value', 'line']). 
+        global_lines (list): The list of site-wide configuration, as
+            namedtuple('KeyValue', ['keyword', 'value', 'line']).
         host_lines (dict): The dict of all host-specific definitions, as
             {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
 
