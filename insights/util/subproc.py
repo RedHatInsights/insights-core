@@ -44,7 +44,7 @@ class CalledProcessError(Exception):
         rc = self.returncode
         cmd = self.cmd
         output = self.output
-        return '<{c}({r}, {cmd}, {o})>'.format(c=name, r=rc, cmd=cmd, o=output)
+        return '<{}({}, {!r}, {!r})>'.format(name, rc, cmd, output)
 
 
 class Pipeline(object):
