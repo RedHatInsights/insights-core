@@ -141,6 +141,8 @@ class InsightsArchiveSpecs(Specs):
     nmcli_dev_show = simple_file("insights_commands/nmcli_dev_show")
     nova_crontab = simple_file("insights_commands/crontab_-l_-u_nova")
     nova_crontab_container = simple_file("insights_commands/docker_exec_nova_api_cron_.usr.bin.crontab_-l_-u_nova")
+    nova_uid = simple_file("insights_commands/id_-u_nova")
+    nova_migration_uid = simple_file("insights_commands/id_-u_nova_migration")
     ntpq_leap = simple_file("insights_commands/ntpq_-c_rv_0_leap")
     ntpq_pn = simple_file("insights_commands/ntpq_-pn")
     ntptime = simple_file("insights_commands/ntptime")
