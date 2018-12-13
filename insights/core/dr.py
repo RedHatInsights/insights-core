@@ -148,7 +148,7 @@ def _get_from_class(name):
     return getattr(cls, n)
 
 
-def _get_component(name):
+def _import_component(name):
     """
     Returns a class, function, or class method specified by the fully qualified
     name.
@@ -161,12 +161,29 @@ def _get_component(name):
     log.debug("Couldn't load %s" % name)
 
 
-COMPONENT_NAME_CACHE = KeyPassingDefaultDict(_get_component)
+COMPONENT_IMPORT_CACHE = KeyPassingDefaultDict(_import_component)
 
 
 def get_component(name):
     """ Returns the class or function specified, importing it if necessary. """
-    return COMPONENT_NAME_CACHE[name]
+    return COMPONENT_IMPORT_CACHE[name]
+
+
+def _find_component(name):
+    for d in DELEGATES:
+        if get_name(d) == name:
+            return d
+
+
+COMPONENTS_BY_NAME = KeyPassingDefaultDict(_find_component)
+
+
+def get_component_by_name(name):
+    """
+    Look up a component by its fully qualified name. Return None if the
+    component hasn't been loaded.
+    """
+    return COMPONENTS_BY_NAME[name]
 
 
 @defaults(None)
