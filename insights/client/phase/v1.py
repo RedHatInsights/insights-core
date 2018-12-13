@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import sys
+import six
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
@@ -186,7 +187,10 @@ def collect_and_output(client, config):
         sys.exit(constants.sig_kill_bad)
     if config.to_stdout:
         with open(insights_archive, 'rb') as tar_content:
-            shutil.copyfileobj(tar_content, sys.stdout)
+            if six.PY3:
+                sys.stdout.buffer.write(tar_content.read())
+            else:
+                shutil.copyfileobj(tar_content, sys.stdout)
     else:
         resp = None
         if not config.no_upload:
