@@ -76,13 +76,13 @@ def parse_doc(f, ctx=None, line_end="\n"):
 @parser(Specs.corosync_conf)
 class CorosyncConf(ConfigParser):
     """Parse the output of the file ``/etc/corosync/corosync.conf`` using
-    the ``ConfigParser`` base class. The parameters in the directives are
-    referred from the manpage of ``corosync.conf``. See ``man 8
-    corosync.conf`` for more info.
+    the ``ConfigParser`` base class. It exposes the corosync
+    configuration through the configtree interface.
 
+    The parameters in the directives are referred from the manpage of
+    ``corosync.conf``. See ``man 8 corosync.conf`` for more info.
 
     Sample content of the file ``/etc/corosync/corosync.conf`` ::
-
 
         totem {
             version: 2
@@ -129,6 +129,7 @@ class CorosyncConf(ConfigParser):
         10000
         >>> corosync_conf['nodelist']['node']['nodeid'][last].value
         3
+
     """
     def parse_doc(self, content):
         return parse_doc("\n".join(content), ctx=self)
