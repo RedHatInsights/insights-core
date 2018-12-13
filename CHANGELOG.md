@@ -1,5 +1,15 @@
 # Change Log
 
+## [insights-core-3.0.69-744](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.69-744) (2018-12-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.68-1...insights-core-3.0.69-744)
+
+**Closed issues:**
+
+- DeprecationWarning from qemu\_xml [\#1594](https://github.com/RedHatInsights/insights-core/issues/1594)
+
+## [3.0.68-1](https://github.com/RedHatInsights/insights-core/tree/3.0.68-1) (2018-12-11)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.67-732...3.0.68-1)
+
 ## [insights-core-3.0.67-732](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.67-732) (2018-12-06)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.66-1...insights-core-3.0.67-732)
 
