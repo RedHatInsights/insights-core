@@ -31,13 +31,13 @@ Hostname = namedtuple("Hostname", field_names=["fqdn", "hostname", "domain"])
 
 
 @serializer(Hostname)
-def serialize(obj):
+def serialize(obj, root=None):
     return {"fqdn": obj.fqdn, "hostname": obj.hostname, "domain": obj.domain}
 
 
 @deserializer(Hostname)
-def deserialize(_type, data):
-    return _type(**data)
+def deserialize(_type, data, root=None):
+    return Hostname(**data)
 
 
 @combiner([hname, facter, systemid])
