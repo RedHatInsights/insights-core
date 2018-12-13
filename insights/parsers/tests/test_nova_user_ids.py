@@ -1,5 +1,5 @@
 from insights.parsers import nova_user_ids
-from insights.parsers import SkipException
+from insights.parsers import ParseException, SkipException
 from insights.tests import context_wrap
 
 import doctest
@@ -22,7 +22,10 @@ NOVA_MIGRATION_USER_NOT_FOUND = '''
 id: nova_migration: no such user
 '''.strip()
 
-EMPTY_CONTENT = '''
+UNEXPECTED_OUTPUT = '''
+foo
+bar
+9
 '''.strip()
 
 
@@ -37,12 +40,13 @@ def test_nova_uid():
 
     # Blank input
     with pytest.raises(SkipException) as ex:
-        nova_user_ids.NovaUID(context_wrap(EMPTY_CONTENT))
+        nova_user_ids.NovaUID(context_wrap(''))
     assert '' in str(ex)
 
     # Any other output. This is not expected
-    nova_uid = nova_user_ids.NovaUID(context_wrap(NOVA_UID + '\n' + NOVA_UID))
-    assert nova_uid.data is None
+    with pytest.raises(ParseException) as ex:
+        nova_user_ids.NovaUID(context_wrap(UNEXPECTED_OUTPUT))
+    assert 'Unable to parse user ID' in str(ex)
 
 
 def test_nova_migration_uid():
@@ -56,12 +60,13 @@ def test_nova_migration_uid():
 
     # Blank input
     with pytest.raises(SkipException) as ex:
-        nova_user_ids.NovaMigrationUID(context_wrap(EMPTY_CONTENT))
+        nova_user_ids.NovaMigrationUID(context_wrap(''))
     assert '' in str(ex)
 
     # Any other output. This is not expected
-    nova_migration_uid = nova_user_ids.NovaMigrationUID(context_wrap(NOVA_MIGRATION_UID + '\n' + NOVA_MIGRATION_UID))
-    assert nova_migration_uid.data is None
+    with pytest.raises(ParseException) as ex:
+        nova_user_ids.NovaMigrationUID(context_wrap(UNEXPECTED_OUTPUT))
+    assert 'Unable to parse user ID' in str(ex)
 
 
 def test_doc_examples():
