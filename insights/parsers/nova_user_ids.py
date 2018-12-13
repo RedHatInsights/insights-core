@@ -39,14 +39,14 @@ class NovaUID(CommandParser):
 
     Raises:
         SkipException: If 'nova' user not found or output is empty.
-        ParseException: If multi-line output. Output of such kind is not yet expected from the command `id`.
+        ParseException: For any other output which is not a number or multi-line. Outputs of such kind are not yet expected from the command `id`.
     '''
     def parse_content(self, content):
         if not content or (len(content) == 1 and "no such user" in content[0]):
             raise SkipException()
         elif len(content) == 1 and ("no such user" not in content[0]) and content[0].isdigit():
             self.data = int(content[0])
-        elif len(content) > 1:
+        else:
             raise ParseException("Unable to parse user ID")
 
 
@@ -70,6 +70,6 @@ class NovaMigrationUID(NovaUID):
 
     Raises:
         SkipException: If 'nova_migration' user not found or output is empty.
-        ParseException: If multi-line output. Output of such kind is not yet expected from the command `id`.
+        ParseException: For any other output which is not a number or multi-line. Output of such kind are not yet expected from the command `id`.
     '''
     pass
