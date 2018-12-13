@@ -79,6 +79,13 @@ class EtcSshConfig(SshClientConfig):
         Host proxytest
             HostName 192.168.122.2
 
+    Attributes:
+
+        global_lines (list): The list of site-wide configuration, as 
+            namedtuple('KeyValue', ['keyword', 'value', 'line']). 
+        host_lines (dict): The dict of all host-specific definitions, as
+            {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
+
     Examples:
         >>> len(etcsshconfig.global_lines)
         1
@@ -133,6 +140,13 @@ class ForemanSshConfig(SshClientConfig):
 
         Host proxytest
             HostName 192.168.122.2
+
+    Attributes:
+
+        global_lines (list): The list of site-wide configuration, as 
+            namedtuple('KeyValue', ['keyword', 'value', 'line']). 
+        host_lines (dict): The dict of all host-specific definitions, as
+            {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
 
     Examples:
         >>> len(foremansshconfig.global_lines)
