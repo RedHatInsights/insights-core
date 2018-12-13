@@ -289,7 +289,10 @@ def load_obj(spec):
 def get_source(spec):
     obj = load_obj(spec)
     if obj:
-        return inspect.getsource(obj)
+        try:
+            return inspect.getsource(obj)
+        except:
+            pass
 
 
 def get_pydoc(spec):
