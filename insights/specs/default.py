@@ -284,6 +284,7 @@ class DefaultSpecs(Specs):
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
+    ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     ifconfig = simple_command("/sbin/ifconfig -a")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     init_ora = simple_file("${ORACLE_HOME}/dbs/init.ora")
@@ -435,7 +436,6 @@ class DefaultSpecs(Specs):
                            "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
                            ])
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
-    nmcli_conn_status = simple_command("/usr/bin/nmcli connection show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
     nova_conf = first_file(["/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf", "/etc/nova/nova.conf"])
