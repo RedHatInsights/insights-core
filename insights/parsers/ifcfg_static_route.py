@@ -26,9 +26,9 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
 
     Sample configuration from a static connection in file ``/etc/sysconfig/network-scripts/rute-test-net``::
 
-    ADDRESS0=10.65.223.0
-    NETMASK0=255.255.254.0
-    GATEWAY0=10.65.223.1
+        ADDRESS0=10.65.223.0
+        NETMASK0=255.255.254.0
+        GATEWAY0=10.65.223.1
 
     Examples:
 
@@ -42,7 +42,6 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
 
     """
-    
     def __init__(self, context):
         self.data = {}
         self.static_route = context.path.split("network-scripts/route-", 1)[1]
@@ -56,5 +55,5 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
 
     @property
     def static_route_connection(self):
-        """(list): The list of static route devices"""
+        """(list): List of all static route devices"""
         return self.data[self.static_route]
