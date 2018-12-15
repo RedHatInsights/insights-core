@@ -27,5 +27,4 @@ def test_static_connection():
     #assert static_conn[2]['DEVICE'] == "--"
     #assert static_conn[2]['NAME'] == "test-net"
     assert static_conn.get_disconnected_connection == ["test-net-1", "test-net-2"]
-
-    
+   
