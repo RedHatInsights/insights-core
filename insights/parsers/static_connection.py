@@ -37,7 +37,8 @@ class StaticConnectionShow(CommandParser):
     @property
     def get_disconnected_connection(self):
         for all_connection in self.data:
-            if all_connection['NAME'] != all_connection['DEVICE']:
+            #import pdb; pdb.set_trace()
+            if all_connection['DEVICE'] == "--":
                 self.disconnected_connection.append(all_connection['NAME'])
 
         return self.disconnected_connection

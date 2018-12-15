@@ -16,3 +16,4 @@ def test_static_route_connection():
     r = IfCFGStaticRoute(context)
     assert r.static_route == 'test-net'
     assert r.data == {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
+    #assert context.static_route_connection == 'test-net'
