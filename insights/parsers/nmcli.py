@@ -9,13 +9,15 @@ Parsers provided by this module include:
 
 NmcliDevShow - command ``/usr/bin/nmcli dev show``
 --------------------------------------------------
-
+NmcliConnShow - command ''/usr/bin/nmcli conn show``
+----------------------------------------------------
 """
 
 
 import re
 from .. import parser, LegacyItemAccess, get_active_lines, CommandParser
 from insights.specs import Specs
+from insights.parsers import parse_delimited_table
 
 
 @parser(Specs.nmcli_dev_show)
@@ -153,3 +155,45 @@ class NmcliDevShow(CommandParser, LegacyItemAccess):
             if 'STATE' in self.data[key] and self.data[key]['STATE'] == 'connected':
                 con_dev.append(key)
         return con_dev
+
+
+@parser(Specs.nmcli_conn_show)
+class NmcliConnShow(CommandParser):
+    """
+    This file will parse the output of all the nmcli connections.
+
+    Sample configuration from a teamed interface in file ``/usr/bin/nmcli conn show``::
+
+    NAME      UUID                                  TYPE      DEVICE
+    enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+    virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+    test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+
+    Examples:
+
+        >>> STATIC_CONNECTION_SHOW = '''
+        ... NAME      UUID                                  TYPE      DEVICE
+        ... enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+        ... virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+        ... test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+        ... '''.strip()
+        >>> static_conn = StaticConnectionShow(context_wrap(STATIC_CONNECTION_SHOW))
+        >>> assert static_conn.get_disconnected_connection == ["test-net"]
+        >>> assert static_conn[2]['NAME'] == "test-net"
+    """
+
+    def parse_content(self, content):
+        self.data = parse_delimited_table(content)
+        self.disconnected_connection = []
+
+    @property
+    def get_disconnected_connection(self):
+        for all_connection in self.data:
+            #import pdb; pdb.set_trace()
+            if all_connection['DEVICE'] == "--":
+                self.disconnected_connection.append(all_connection['NAME'])
+
+        return self.disconnected_connection
+
+    def __getitem__(self, idx):
+        return self.data[idx]

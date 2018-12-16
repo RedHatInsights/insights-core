@@ -1,5 +1,6 @@
 from insights.tests import context_wrap
 from insights.parsers.nmcli import NmcliDevShow
+from insights.parsers.nmcli import NmcliConnShow
 
 NMCLI_SHOW = """
 GENERAL.DEVICE:                         em3
@@ -44,6 +45,14 @@ NMCLI_SHOW_ERROR = """
 Error: Option '-l' is unknown, try 'nmcli -help'.
 """
 
+STATIC_CONNECTION_SHOW="""
+NAME      UUID                                  TYPE      DEVICE
+enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+test-net-1  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+test-net-2 f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+""".strip()
+
 
 def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
@@ -59,3 +68,12 @@ def test_nmcli():
     assert nmcli_obj.data['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
     assert len(nmcli_obj.data['em3']) == 17
     assert len(nmcli_obj.data['em1']) == 7
+
+def test_static_connection():
+    static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW))
+    #disconnected_connection = static_conn.get_disconnected_connection
+
+    #assert static_conn[2]['DEVICE'] == "--"
+    #assert static_conn[2]['NAME'] == "test-net"
+    #assert static_conn.disconnected_connection == ["test-net"]
+    assert static_conn.get_disconnected_connection == ["test-net-1", "test-net-2"]

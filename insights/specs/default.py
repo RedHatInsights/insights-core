@@ -435,7 +435,7 @@ class DefaultSpecs(Specs):
                            "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
                            ])
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
-    nmcli_conn_status = simple_command("/usr/bin/nmcli connection show")
+    nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
     nova_conf = first_file(["/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf", "/etc/nova/nova.conf"])

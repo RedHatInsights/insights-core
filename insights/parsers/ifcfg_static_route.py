@@ -47,9 +47,9 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         self.static_route = context.path.split("network-scripts/route-", 1)[1]
         super(IfCFGStaticRoute, self).__init__(context)
         def parse_content(self, content):
-        for line in content:
-            key, value = line.split("=", 1)
-            self.data[key] = value
+            for line in content:
+                key, value = line.split("=", 1)
+                self.data[key] = value
 
     @property
     def static_route_connection(self):
