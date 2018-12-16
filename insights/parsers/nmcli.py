@@ -170,16 +170,8 @@ class NmcliConnShow(CommandParser):
     test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
 
     Examples:
-
-        >>> STATIC_CONNECTION_SHOW = '''
-        ... NAME      UUID                                  TYPE      DEVICE
-        ... enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
-        ... virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
-        ... test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
-        ... '''.strip()
-        >>> static_conn = StaticConnectionShow(context_wrap(STATIC_CONNECTION_SHOW))
-        >>> assert static_conn.get_disconnected_connection == ["test-net"]
-        >>> assert static_conn[2]['NAME'] == "test-net"
+        >>>  type(conn_info)
+        <class 'insights.parsers.nmcli.NmcliConnShow'> 
     """
 
     def parse_content(self, content):

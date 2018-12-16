@@ -1,6 +1,8 @@
 from insights.tests import context_wrap
 from insights.parsers.nmcli import NmcliDevShow
 from insights.parsers.nmcli import NmcliConnShow
+from insights.parsers import nmcli
+import doctest
 
 NMCLI_SHOW = """
 GENERAL.DEVICE:                         em3
@@ -83,3 +85,10 @@ def test_static_connection_test_1():
 def test_static_connection_test_2():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_2))
     assert static_conn.get_disconnected_connection == ["test-net-1", "test-net-2"]
+
+def test_static_connection_doc_examples():
+    env = {
+        'conn_info': NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1)),
+    }
+    failed, total = doctest.testmod(nmcli, globs=env)
+    assert failed == 0
