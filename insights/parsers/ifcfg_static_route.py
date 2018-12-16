@@ -48,7 +48,6 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         super(IfCFGStaticRoute, self).__init__(context)
 
     def parse_content(self, content):
-        self.data = {}
         for line in content:
             key, value = line.split("=", 1)
             self.data[key] = value
