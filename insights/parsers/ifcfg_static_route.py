@@ -31,7 +31,6 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         GATEWAY0=10.65.223.1
 
     Examples:
-
         >>> type(conn_info)
         <class 'insights.parsers.ifcfg_static_route.IfCFGStaticRoute'>
         >>> conn_info.static_route
@@ -46,10 +45,11 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         self.data = {}
         self.static_route = context.path.split("network-scripts/route-", 1)[1]
         super(IfCFGStaticRoute, self).__init__(context)
-        def parse_content(self, content):
-            for line in content:
-                key, value = line.split("=", 1)
-                self.data[key] = value
+
+    def parse_content(self, content):
+        for line in content:
+            key, value = line.split("=", 1)
+            self.data[key] = value
 
     @property
     def static_route_connection(self):
