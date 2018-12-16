@@ -78,16 +78,8 @@ def test_nmcli():
 
 def test_static_connection_test_1():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1))
-
-    #assert static_conn[2]['DEVICE'] == "--"
-    #assert static_conn[2]['NAME'] == "test-net"
-    #assert static_conn.disconnected_connection == ["test-net"]
     assert static_conn.get_disconnected_connection == ["test-net-1"]
 
-def test_static_connection_test_1():
+def test_static_connection_test_2():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_2))
-
-    #assert static_conn[2]['DEVICE'] == "--"
-    #assert static_conn[2]['NAME'] == "test-net"
-    #assert static_conn.disconnected_connection == ["test-net"]
     assert static_conn.get_disconnected_connection == ["test-net-1", "test-net-2"]
