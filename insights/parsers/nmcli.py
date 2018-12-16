@@ -170,22 +170,21 @@ class NmcliConnShow(CommandParser):
     test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
 
     Examples:
-        >>>  type(conn_info)
-        <class 'insights.parsers.nmcli.NmcliConnShow'> 
+
+        >>> static_conn = StaticConnectionShow(context_wrap(STATIC_CONNECTION_SHOW))
+        >>> static_conn.data[0] == {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
+        >>> static_conn.get_disconnected_connection == ["test-net"]
     """
 
     def parse_content(self, content):
         self.data = parse_delimited_table(content)
         self.disconnected_connection = []
 
-    @property
+    @property    
     def get_disconnected_connection(self):
+        """(list): It will return the disconnected static route connections when set else `None`."""
         for all_connection in self.data:
-            #import pdb; pdb.set_trace()
             if all_connection['DEVICE'] == "--":
                 self.disconnected_connection.append(all_connection['NAME'])
 
         return self.disconnected_connection
-
-    def __getitem__(self, idx):
-        return self.data[idx]
