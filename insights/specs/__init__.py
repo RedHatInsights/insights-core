@@ -138,6 +138,8 @@ class Specs(SpecSet):
     grub_conf = RegistryPoint()
     grub_efi_conf = RegistryPoint()
     grubby_default_index = RegistryPoint()
+    grubby_default_kernel = RegistryPoint()
+    grubby_info_all = RegistryPoint()
     hammer_ping = RegistryPoint()
     hammer_task_list = RegistryPoint()
     haproxy_cfg = RegistryPoint()
