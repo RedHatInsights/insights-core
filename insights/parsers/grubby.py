@@ -77,7 +77,7 @@ class GrubbyDefaultKernel(CommandParser):
 @parser(Specs.grubby_info_all)
 class GrubbyInfoALL(CommandParser, LegacyItemAccess):
     """
-    This parser parses the output of command ``grubby --default-index``.
+    This parser parses the output of command ``grubby --info=ALL``.
 
     The typical output of this command is::
 
@@ -99,9 +99,13 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
         2
         >>> grubby_info_all[0]['kernel']
         '/vmlinuz-2.6.32-754.9.1.el6.x86_64'
-        >>> grubby_info_all['/vmlinuz-2.6.32-754.9.1.el6.x86_64']['root']
+        >>> '/vmlinuz-2.6.32-754.9.1.el6.x86_64' in grubby_info_all
+        True
+        >>> grubby_info_all.get('/vmlinuz-2.6.32-754.9.1.el6.x86_64')['root']
         'UUID=1b46779e-4fae-442d-a2ac-dd6d8563ff3e'
         >>> grubby_info_all[0] == grubby_info_all['/vmlinuz-2.6.32-754.9.1.el6.x86_64']
+        True
+        >>> grubby_info_all[2] is None
         True
 
     Raises:
@@ -133,7 +137,7 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             entry = split_kv_pairs(content[start:end])
             self.data.update({entry['kernel']: entry}) if entry else None
 
-    def __getitem__(self, item, default={}):
+    def __getitem__(self, item, default=None):
         """
         (dict): The required kernel entry dictionary.
             - When ``item`` is string, returns the kernel entry with ``kernel`` is ``item``
@@ -142,5 +146,6 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
         """
         if isinstance(item, str):
             return self.data.get(item, default)
-        if isinstance(item, int):
+        if isinstance(item, int) and 0 <= item < len(self.data):
             return [v for e, v in self.data.items() if int(v['index']) == item][0]
+        return default
