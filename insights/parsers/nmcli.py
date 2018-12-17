@@ -109,13 +109,14 @@ class NmcliDevShow(CommandParser, LegacyItemAccess):
         }
 
     Examples:
-        >>> nmcli_obj = shared[NmcliDevShow]
+        >>> type(nmcli_obj)
+        <class 'insights.parsers.nmcli.NmcliDevShow'>
         >>> nmcli_obj.data['em3']['STATE']
-        connected
+        'connected'
         >>> nmcli_obj.data['em2']['HWADDR']
-        B8:2A:72:DE:F8:BC
+        'B8:2A:72:DE:F8:BC'
         >>> nmcli_obj.connected_devices
-        ['em3', 'em2']
+        ['em3', 'em1', 'em2']
 
     """
 
@@ -170,12 +171,13 @@ class NmcliConnShow(CommandParser):
        test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
 
     Examples:
-
-        >>> static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW))
-        >>> static_conn.data[0] == {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
-        >>> static_conn.get_disconnected_connection == ["test-net"]
+        >>> type(static_conn)
+        <class 'insights.parsers.nmcli.NmcliConnShow'>
+        >>> static_conn.data[0]
+        {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
+        >>> static_conn.get_disconnected_connection
+        ['test-net-1']
     """
-
     def parse_content(self, content):
         self.data = parse_delimited_table(content)
         self.disconnected_connection = []
