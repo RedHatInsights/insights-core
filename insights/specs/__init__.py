@@ -164,7 +164,6 @@ class Specs(SpecSet):
     virt_uuid_facts = RegistryPoint()
     ifcfg = RegistryPoint(multi_output=True)
     ifcfg_route = RegistryPoint(multi_output=True)
-    ifcfg_static_route = RegistryPoint(multi_output=True)
     ifconfig = RegistryPoint()
     imagemagick_policy = RegistryPoint(multi_output=True, filterable=True)
     init_ora = RegistryPoint()

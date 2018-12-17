@@ -284,7 +284,6 @@ class DefaultSpecs(Specs):
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
-    ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     ifconfig = simple_command("/sbin/ifconfig -a")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     init_ora = simple_file("${ORACLE_HOME}/dbs/init.ora")
