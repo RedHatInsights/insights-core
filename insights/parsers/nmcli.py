@@ -175,8 +175,10 @@ class NmcliConnShow(CommandParser):
     Examples:
         >>> type(static_conn)
         <class 'insights.parsers.nmcli.NmcliConnShow'>
-        >>> static_conn.data[0]
-        {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
+        >>> a = static_conn.data[0]
+        >>> a.sort()
+        >>> a
+        {'DEVICE': 'enp0s3', 'TYPE': 'ethernet', 'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc'}
         >>> static_conn.get_disconnected_connection
         ['test-net-1']
     """
