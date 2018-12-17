@@ -105,8 +105,6 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
         'UUID=1b46779e-4fae-442d-a2ac-dd6d8563ff3e'
         >>> grubby_info_all[0] == grubby_info_all['/vmlinuz-2.6.32-754.9.1.el6.x86_64']
         True
-        >>> grubby_info_all[2] is None
-        True
 
     Raises:
         SkipException: When output is invalid or empty
@@ -130,22 +128,26 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             self.boot = content[idxs.pop(0)].split('=', 1)[-1].strip()
         # For RHEL7, the last line is 'non linux entry'
         if idxs and content[idxs[-1]].startswith('non linux entry'):
-            del idxs[-2:]
+            # Remove the last empty entry and the last two indexs
+            del content[idxs[-2]:], idxs[-2:]
         for i, idx in enumerate(idxs):
             start = idx
             end = idxs[i + 1] if i < len(idxs) - 1 else -1
             entry = split_kv_pairs(content[start:end])
             self.data.update({entry['kernel']: entry}) if entry else None
 
-    def __getitem__(self, item, default=None):
+    def __getitem__(self, item):
         """
-        (dict): The required kernel entry dictionary.
+        Returns (dict): The required kernel entry dictionary.
             - When ``item`` is string, returns the kernel entry with ``kernel`` is ``item``
             - When ``item`` is int, returns the kernel entry with ``index`` is ``item``
-            - Returns ``default`` when ``item`` is not present
+        Raises:
+            KeyError: When ``item`` is a ``str`` but not such ``kernel``
+            IndexError: When ``item`` is a ``int`` but no such ``index``
         """
         if isinstance(item, str):
-            return self.data.get(item, default)
-        if isinstance(item, int) and 0 <= item < len(self.data):
+            return self.data[item]
+        if isinstance(item, int):
+            if item < 0:
+                raise IndexError('list index out of range: {}'.format(item))
             return [v for e, v in self.data.items() if int(v['index']) == item][0]
-        return default

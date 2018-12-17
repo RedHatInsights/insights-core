@@ -106,6 +106,19 @@ def test_grubby_info_all_rhel_7():
     assert res[0]['root'] == '/dev/mapper/rhel-root'
 
 
+def test_grubby_info_all_ab():
+    res = GrubbyInfoALL(context_wrap(INFO_ALL_RHEL7))
+    with pytest.raises(KeyError) as excinfo:
+        res['Test']
+    assert 'KeyError: \'Test\'' in str(excinfo)
+    with pytest.raises(IndexError) as excinfo:
+        res[-1]
+    assert 'list index out of range' in str(excinfo)
+    with pytest.raises(IndexError) as excinfo:
+        res[4]
+    assert 'list index out of range' in str(excinfo)
+
+
 def test_doc_examples():
     env = {
             'grubby_default_index': GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_1)),
