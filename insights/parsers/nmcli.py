@@ -180,7 +180,7 @@ class NmcliConnShow(CommandParser):
         self.data = parse_delimited_table(content)
         self.disconnected_connection = []
 
-    @property    
+    @property
     def get_disconnected_connection(self):
         """(list): It will return the disconnected static route connections."""
         for all_connection in self.data:
