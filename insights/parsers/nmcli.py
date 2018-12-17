@@ -171,7 +171,7 @@ class NmcliConnShow(CommandParser):
 
     Examples:
 
-        >>> static_conn = StaticConnectionShow(context_wrap(STATIC_CONNECTION_SHOW))
+        >>> static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW))
         >>> static_conn.data[0] == {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
         >>> static_conn.get_disconnected_connection == ["test-net"]
     """
