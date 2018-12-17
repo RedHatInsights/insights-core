@@ -38,7 +38,9 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         'test-net'
         >>> conn_info.data['ADDRESS0']
         '10.65.223.0'
-        >>> conn_info.data
+        >>> import pprint
+        >>> conn_details = pprint.pprint(conn_info.data)
+        >>> conn_details
         {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
 
     """
