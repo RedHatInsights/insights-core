@@ -121,20 +121,16 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
         idxs = [
             i
             for i, l in enumerate(content)
-            if l.startswith(('index=', 'boot=', 'non linux entry'))
+            if l.startswith(('index=', 'boot='))
         ]
         # For RHEL6, the first line is 'boot=xxxx'
         if idxs and content[idxs[0]].startswith('boot='):
             self.boot = content[idxs.pop(0)].split('=', 1)[-1].strip()
-        # For RHEL7, the last line is 'non linux entry'
-        if idxs and content[idxs[-1]].startswith('non linux entry'):
-            # Remove the last empty entry and the last two indexs
-            del content[idxs[-2]:], idxs[-2:]
         for i, idx in enumerate(idxs):
             start = idx
             end = idxs[i + 1] if i < len(idxs) - 1 else -1
             entry = split_kv_pairs(content[start:end])
-            self.data.update({entry['kernel']: entry}) if entry else None
+            self.data.update({entry['kernel']: entry}) if entry and 'kernel' in entry else None
 
     def __getitem__(self, item):
         """
