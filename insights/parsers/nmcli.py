@@ -182,7 +182,7 @@ class NmcliConnShow(CommandParser):
 
     @property    
     def get_disconnected_connection(self):
-        """(list): It will return the disconnected static route connections when set else `None`."""
+        """(list): It will return the disconnected static route connections."""
         for all_connection in self.data:
             if all_connection['DEVICE'] == "--":
                 self.disconnected_connection.append(all_connection['NAME'])
