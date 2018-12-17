@@ -38,9 +38,8 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         'test-net'
         >>> conn_info.data['ADDRESS0']
         '10.65.223.0'
-        >>> import pprint
-        >>> pprint.pprint(conn_info.data)
-        {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
+        >>> sorted(conn_info.data.items())
+        [('ADDRESS0', '10.65.223.0'), ('GATEWAY0', '10.65.223.1'), ('NETMASK0', '255.255.254.0')]
 
     """
     def __init__(self, context):
