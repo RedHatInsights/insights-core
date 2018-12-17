@@ -89,6 +89,7 @@ def test_static_connection_test_2():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_2))
     assert static_conn.get_disconnected_connection == ["test-net-1", "test-net-2"]
 
+
 def test_nmcli_doc_examples():
     env = {
         'nmcli_obj': NmcliDevShow(context_wrap(NMCLI_SHOW)),
