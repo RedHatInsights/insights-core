@@ -44,7 +44,7 @@ class GrubbyDefaultIndex(CommandParser):
         if content and len(content) == 1 and content[0].isdigit():
             self.default_index = int(content[0])
         else:
-            raise SkipException('Invalid output: {}', content)
+            raise SkipException('Invalid output: {0}', content)
 
 
 @parser(Specs.grubby_default_kernel)
@@ -71,7 +71,7 @@ class GrubbyDefaultKernel(CommandParser):
         if content and len(content) == 1:
             self.default_kernel = content[0].strip()
         else:
-            raise SkipException('Invalid output: {}', content)
+            raise SkipException('Invalid output: {0}', content)
 
 
 @parser(Specs.grubby_info_all)
@@ -115,7 +115,7 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
     """
     def parse_content(self, content):
         if not content or len(content) <= 5:
-            raise SkipException('Invalid output: {}', content)
+            raise SkipException('Invalid output: {0}', content)
         self.data = self.kernel_entries = {}
         self.boot = None
         idxs = [
@@ -145,5 +145,5 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             return self.data[item]
         if isinstance(item, int):
             if item < 0:
-                raise IndexError('list index out of range: {}'.format(item))
+                raise IndexError('list index out of range: {0}'.format(item))
             return [v for e, v in self.data.items() if int(v['index']) == item][0]
