@@ -175,9 +175,8 @@ class NmcliConnShow(CommandParser):
     Examples:
         >>> type(static_conn)
         <class 'insights.parsers.nmcli.NmcliConnShow'>
-        >>> a = static_conn.data[0]
-        >>> a.sort()
-        >>> a
+        >>> from collections import OrderedDict
+        >>> a = OrderedDict(sorted(static_conn.items()))
         {'DEVICE': 'enp0s3', 'TYPE': 'ethernet', 'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc'}
         >>> static_conn.get_disconnected_connection
         ['test-net-1']
