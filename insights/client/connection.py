@@ -300,7 +300,7 @@ class InsightsConnection(object):
             sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
             if u'200 connection established' not in res.decode('utf-8').lower():
-                logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error('Failed to connect to %s. HTTP message:\n%s', self.base_url, res)
                 return False
         else:
             try:
