@@ -109,8 +109,8 @@ def test_grubby_info_all_rhel_7():
 def test_grubby_info_all_ab():
     res = GrubbyInfoALL(context_wrap(INFO_ALL_RHEL7))
     with pytest.raises(KeyError) as excinfo:
-        res['Test']
-    assert 'KeyError: \'Test\'' in str(excinfo)
+        res['Just_Test']
+    assert 'Just_Test'  in str(excinfo)
     with pytest.raises(IndexError) as excinfo:
         res[-1]
     assert 'list index out of range' in str(excinfo)
