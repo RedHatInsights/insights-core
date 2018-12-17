@@ -101,6 +101,8 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
         '/vmlinuz-2.6.32-754.9.1.el6.x86_64'
         >>> grubby_info_all['/vmlinuz-2.6.32-754.9.1.el6.x86_64']['root']
         'UUID=1b46779e-4fae-442d-a2ac-dd6d8563ff3e'
+        >>> grubby_info_all[0] == grubby_info_all['/vmlinuz-2.6.32-754.9.1.el6.x86_64']
+        True
 
     Raises:
         SkipException: When output is invalid or empty
