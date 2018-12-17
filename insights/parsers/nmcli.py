@@ -164,10 +164,10 @@ class NmcliConnShow(CommandParser):
 
     Sample configuration from a teamed interface in file ``/usr/bin/nmcli conn show``::
 
-    NAME      UUID                                  TYPE      DEVICE
-    enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
-    virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
-    test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+       NAME      UUID                                  TYPE      DEVICE
+       enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+       virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+       test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
 
     Examples:
 
