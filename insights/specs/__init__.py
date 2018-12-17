@@ -12,6 +12,7 @@ class Specs(SpecSet):
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
     bond = RegistryPoint(multi_output=True)
+    bond_dynamic_lb = RegistryPoint(multi_output=True)
     branch_info = RegistryPoint()
     brctl_show = RegistryPoint()
     candlepin_error_log = RegistryPoint(filterable=True)

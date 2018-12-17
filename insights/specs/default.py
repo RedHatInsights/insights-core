@@ -63,6 +63,7 @@ class DefaultSpecs(Specs):
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
+    bond_dynamic_lb = glob_file("/sys/class/net/bond[0-9]*/bonding/tlb_dynamic_lb")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
