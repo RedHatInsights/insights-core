@@ -705,6 +705,7 @@ class InsightsConnection(object):
             logger.debug('Error getting canonical facts: %s', e)
             c_facts = None
 
+        files = {}
         # legacy upload
         if self.config.legacy_upload:
             try:
@@ -726,14 +727,11 @@ class InsightsConnection(object):
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
             headers = {'x-rh-collection-time': str(duration)}
-
+            files['metadata'] = c_facts
         else:
             headers = {}
 
-        files = {
-            'file': (file_name, open(data_collected, 'rb'), content_type),
-            'metadata': c_facts
-        }
+        files['file'] = (file_name, open(data_collected, 'rb'), content_type)
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
