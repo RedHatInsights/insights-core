@@ -131,7 +131,6 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             start = idx
             end = idxs[i + 1] if i < len(idxs) - 1 else -1
             entry = split_kv_pairs(content[start:end])
-            # entry['index'] = int(entry['index'])
             self.data.update({entry['kernel']: entry}) if entry else None
 
     def __getitem__(self, item, default={}):
