@@ -115,8 +115,10 @@ class NmcliDevShow(CommandParser, LegacyItemAccess):
         'connected'
         >>> nmcli_obj.data['em2']['HWADDR']
         'B8:2A:72:DE:F8:BC'
-        >>> nmcli_obj.connected_devices
-        ['em3', 'em1', 'em2']
+        >>> a = nmcli_obj.connected_devices
+        >>> a.sort()
+        >>> a
+        ['em1', 'em2', 'em3']
 
     """
 
