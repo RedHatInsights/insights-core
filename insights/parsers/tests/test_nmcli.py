@@ -82,12 +82,12 @@ def test_nmcli():
 def test_static_connection_test_1():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1))
     assert static_conn.data[0] == {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
-    assert static_conn.get_disconnected_connection == ["test-net-1"]
+    assert static_conn.disconnected_connection == ["test-net-1"]
 
 
 def test_static_connection_test_2():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_2))
-    assert static_conn.get_disconnected_connection == ["test-net-1", "test-net-2"]
+    assert static_conn.disconnected_connection == ["test-net-1", "test-net-2"]
 
 
 def test_nmcli_doc_examples():

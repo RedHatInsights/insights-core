@@ -115,9 +115,7 @@ class NmcliDevShow(CommandParser, LegacyItemAccess):
         'connected'
         >>> nmcli_obj.data['em2']['HWADDR']
         'B8:2A:72:DE:F8:BC'
-        >>> a = nmcli_obj.connected_devices
-        >>> a.sort()
-        >>> a
+        >>> sorted(nmcli_obj.connected_devices)
         ['em1', 'em2', 'em3']
 
     """
@@ -175,18 +173,18 @@ class NmcliConnShow(CommandParser):
     Examples:
         >>> type(static_conn)
         <class 'insights.parsers.nmcli.NmcliConnShow'>
-        >>> static_conn.get_disconnected_connection
+        >>> static_conn.disconnected_connection
         ['test-net-1']
     """
     def parse_content(self, content):
+        """(list): It will return the all connection details"""
         self.data = parse_delimited_table(content)
-        self.disconnected_connection = []
-
-    @property
-    def get_disconnected_connection(self):
-        """(list): It will return the disconnected static route connections."""
+        self._disconnected_connection = []
         for all_connection in self.data:
             if all_connection['DEVICE'] == "--":
-                self.disconnected_connection.append(all_connection['NAME'])
+                self._disconnected_connection.append(all_connection['NAME'])
 
-        return self.disconnected_connection
+    @property
+    def disconnected_connection(self):
+        """(list): It will return all the disconnected static route connections."""
+        return self._disconnected_connection
