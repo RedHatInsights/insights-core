@@ -542,6 +542,9 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
         >>> sorted(conn_info.data.items())
         [('ADDRESS0', '10.65.223.0'), ('GATEWAY0', '10.65.223.1'), ('NETMASK0', '255.255.254.0')]
 
+    Properties:
+        static_route (str): static route file name derived from file path
+        data (dict): all static route connection details
     """
     def __init__(self, context):
         self.data = {}
