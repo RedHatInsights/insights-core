@@ -134,3 +134,11 @@ class MysqldLimits(ProcLimits):
     Class for parsing the ``limits`` file of the ``mysqld`` process.
     """
     pass
+
+
+@parser(Specs.ovs_vswitchd_limits)
+class OvsVswitchdLimits(ProcLimits):
+    """
+    Class for parsing the ``limits`` file of the ``ovs-vswitchd`` process.
+    """
+    pass

@@ -486,6 +486,8 @@ class DefaultSpecs(Specs):
     ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
     ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
+    ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
+    ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
 
     @datasource(ps_auxww, context=HostContext)
