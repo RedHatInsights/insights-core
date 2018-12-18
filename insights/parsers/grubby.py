@@ -159,14 +159,9 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             - When ``item`` is string, returns the kernel entry with ``kernel`` is ``item``
             - When ``item`` is int, returns the kernel entry with ``index`` is ``item``
         Raises:
-            KeyError: When ``item`` is ``str`` but not such ``kernel`` or
-                ``item`` is not ``str`` or ``int``
+            KeyError: When no such ``kernel``
             IndexError: When ``item`` is ``int`` but no such ``index``
         """
-        if isinstance(item, str):
-            return self.data[item]
         if isinstance(item, int):
-            if item < 0:
-                raise IndexError('list index out of range: {0}'.format(item))
             return [v for e, v in self.data.items() if int(v['index']) == item][0]
-        raise KeyError('KeyError: {0}'.format(item))
+        return self.data[item]
