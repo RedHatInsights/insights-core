@@ -16,7 +16,7 @@ GrubbyInfoAll - command ``grubby --info=ALL``
 """
 
 from insights.specs import Specs
-from insights.parsers import SkipException, split_kv_pairs
+from insights.parsers import SkipException, ParseException
 from insights import CommandParser, LegacyItemAccess
 from insights import parser
 
@@ -107,30 +107,47 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
         True
 
     Raises:
-        SkipException: When output is invalid or empty
+        SkipException: When output is empty
+        ParseException: When output is invalid
 
     Attributes:
         kernel_entries(list): List of dictionary for each kernel entry.
         boot(str): The `boot` value for RHEL6 only. None for RHEL7
     """
     def parse_content(self, content):
-        if not content or len(content) <= 5:
-            raise SkipException('Invalid output: {0}', content)
-        self.data = self.kernel_entries = {}
-        self.boot = None
-        idxs = [
-            i
-            for i, l in enumerate(content)
-            if l.startswith(('index=', 'boot='))
-        ]
+
+        def _add_entry(data, entry):
+            # Skip the last empty index for RHEL7
+            if entry and not(len(entry) == 1 and 'index' in entry):
+                if (not entry.get('index') or
+                        not entry.get('kernel') or
+                        not entry.get('args') or
+                        not entry.get('root') or
+                        not entry.get('initrd')):
+                    raise ParseException('Miss key parameters in {0}', entry)
+                data.update({entry['kernel']: entry})
+
+        if not content:
+            raise SkipException('Empty output')
+
         # For RHEL6, the first line is 'boot=xxxx'
-        if idxs and content[idxs[0]].startswith('boot='):
-            self.boot = content[idxs.pop(0)].split('=', 1)[-1].strip()
-        for i, idx in enumerate(idxs):
-            start = idx
-            end = idxs[i + 1] if i < len(idxs) - 1 else -1
-            entry = split_kv_pairs(content[start:end])
-            self.data.update({entry['kernel']: entry}) if entry and 'kernel' in entry else None
+        self.boot = content.pop(0).split('=', 1)[-1].strip() if content[0].startswith('boot=') else None
+        # For RHEL7, the last line is 'non linux entry'
+        if content[-1] == 'non linux entry':
+            del content[-1]
+
+        self.data = self.kernel_entries = {}
+        entry = {}
+        for line in content:
+            if '=' not in line:
+                raise ParseException('Invalid line: {0}', line)
+            line = line.strip()
+            k, v = [v.strip() for v in line.split('=', 1)]
+            if k == 'index':
+                _add_entry(self.data, entry)
+                entry = {}
+            entry[k] = v.strip('"\'')
+        _add_entry(self.data, entry)
 
     def __getitem__(self, item):
         """
@@ -138,8 +155,9 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             - When ``item`` is string, returns the kernel entry with ``kernel`` is ``item``
             - When ``item`` is int, returns the kernel entry with ``index`` is ``item``
         Raises:
-            KeyError: When ``item`` is a ``str`` but not such ``kernel``
-            IndexError: When ``item`` is a ``int`` but no such ``index``
+            KeyError: When ``item`` is ``str`` but not such ``kernel`` or
+                ``item`` is not ``str`` or ``int``
+            IndexError: When ``item`` is ``int`` but no such ``index``
         """
         if isinstance(item, str):
             return self.data[item]
@@ -147,3 +165,4 @@ class GrubbyInfoALL(CommandParser, LegacyItemAccess):
             if item < 0:
                 raise IndexError('list index out of range: {0}'.format(item))
             return [v for e, v in self.data.items() if int(v['index']) == item][0]
+        raise KeyError('KeyError: {0}'.format(item))

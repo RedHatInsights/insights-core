@@ -4,7 +4,7 @@ from insights.parsers import grubby
 from insights.parsers.grubby import GrubbyDefaultIndex, GrubbyDefaultKernel
 from insights.parsers.grubby import GrubbyInfoALL
 from insights.tests import context_wrap
-from insights.parsers import SkipException
+from insights.parsers import SkipException, ParseException
 
 DEFAULT_INDEX_1 = '0'
 DEFAULT_INDEX_2 = '1'
@@ -56,6 +56,26 @@ root=/dev/mapper/rhel-root
 initrd=/boot/initramfs-0-rescue-40924d06236c45fba188c471ccc6f9ee.img
 title=Red Hat Enterprise Linux Server (0-rescue-40924d06236c45fba188c471ccc6f9ee) 7.5 (Maipo)
 index=4
+non linux entry
+""".strip()
+
+INFO_ALL_AB_1 = """
+index=0
+kernel=/boot/vmlinuz-3.10.0-957.1.3.el7.x86_64
+args="ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8"
+root=/dev/mapper/rhel-root
+title=Red Hat Enterprise Linux Server (3.10.0-957.1.3.el7.x86_64) 7.5 (Maipo)
+index=1
+non linux entry
+""".strip()
+
+INFO_ALL_AB_2 = """
+index=0
+/boot/vmlinuz-3.10.0-957.1.3.el7.x86_64
+args="ro crashkernel=auto rd.lvm.lv=rhel/root rd.lvm.lv=rhel/swap rhgb quiet LANG=en_US.UTF-8"
+root=/dev/mapper/rhel-root
+title=Red Hat Enterprise Linux Server (3.10.0-957.1.3.el7.x86_64) 7.5 (Maipo)
+index=1
 non linux entry
 """.strip()
 
@@ -111,12 +131,30 @@ def test_grubby_info_all_ab():
     with pytest.raises(KeyError) as excinfo:
         res['Just_Test']
     assert 'Just_Test' in str(excinfo)
+
+    with pytest.raises(KeyError) as excinfo:
+        res[('Just_Test',)]
+    assert 'Just_Test' in str(excinfo)
+
     with pytest.raises(IndexError) as excinfo:
         res[-1]
     assert 'list index out of range' in str(excinfo)
+
     with pytest.raises(IndexError) as excinfo:
         res[4]
     assert 'list index out of range' in str(excinfo)
+
+    with pytest.raises(ParseException) as excinfo:
+        GrubbyInfoALL(context_wrap(INFO_ALL_AB_1))
+    assert 'Miss key parameters' in str(excinfo)
+
+    with pytest.raises(ParseException) as excinfo:
+        GrubbyInfoALL(context_wrap(INFO_ALL_AB_2))
+    assert 'Invalid line:' in str(excinfo)
+
+    with pytest.raises(SkipException) as excinfo:
+        GrubbyInfoALL(context_wrap(''))
+    assert 'Empty output' in str(excinfo)
 
 
 def test_doc_examples():
