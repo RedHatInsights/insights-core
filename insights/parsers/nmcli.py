@@ -175,9 +175,11 @@ class NmcliConnShow(CommandParser):
         <class 'insights.parsers.nmcli.NmcliConnShow'>
         >>> static_conn.disconnected_connection
         ['test-net-1']
+    Attributes:
+        data (list): list of connections wrapped in dictionaries
+        disconnected_connection (list): list of all the disconnected static route connections
     """
     def parse_content(self, content):
-        """(list): It will return the all connection details"""
         self.data = parse_delimited_table(content)
         self._disconnected_connection = []
         for all_connection in self.data:
