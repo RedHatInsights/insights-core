@@ -175,6 +175,7 @@ class NmcliConnShow(CommandParser):
         <class 'insights.parsers.nmcli.NmcliConnShow'>
         >>> static_conn.disconnected_connection
         ['test-net-1']
+
     Attributes:
         data (list): list of connections wrapped in dictionaries
         disconnected_connection (list): list of all the disconnected static route connections
