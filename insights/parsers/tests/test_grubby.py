@@ -8,11 +8,14 @@ from insights.parsers import SkipException, ParseException
 
 DEFAULT_INDEX_1 = '0'
 DEFAULT_INDEX_2 = '1'
-DEFAULT_INDEX_3 = ''
-DEFAULT_INDEX_4 = '-2'
+ABDEFAULT_INDEX_EMPTY = ''
+DEFAULT_INDEX_AB = '-2'
 
-DEFAULT_KERNEL = """
-/boot/vmlinuz-2.6.32-573.el6.x86_64
+DEFAULT_KERNEL = "/boot/vmlinuz-2.6.32-573.el6.x86_64"
+DEFAULT_KERNEL_EMPTY = ""
+DEFAULT_KERNEL_AB = """
+/boot/vmlinuz-2.6.32-573.el6.x86_64"
+/boot/vmlinuz-2.6.32-573.el6.x86_64"
 """.strip()
 
 INFO_ALL_RHEL6 = """
@@ -90,17 +93,21 @@ def test_grubby_default_index():
 
 def test_grubby_default_index_ab():
     with pytest.raises(SkipException) as excinfo:
-        GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_3))
-    assert 'Invalid output:' in str(excinfo.value)
+        GrubbyDefaultIndex(context_wrap(ABDEFAULT_INDEX_EMPTY))
+    assert 'Empty output' in str(excinfo.value)
 
-    with pytest.raises(SkipException) as excinfo:
-        GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_4))
+    with pytest.raises(ParseException) as excinfo:
+        GrubbyDefaultIndex(context_wrap(DEFAULT_INDEX_AB))
     assert 'Invalid output:' in str(excinfo.value)
 
 
 def test_grubby_default_kernel_ab():
     with pytest.raises(SkipException) as excinfo:
-        GrubbyDefaultKernel(context_wrap(''))
+        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_EMPTY))
+    assert 'Empty output' in str(excinfo.value)
+
+    with pytest.raises(ParseException) as excinfo:
+        GrubbyDefaultKernel(context_wrap(DEFAULT_KERNEL_AB))
     assert 'Invalid output:' in str(excinfo.value)
 
 
