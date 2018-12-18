@@ -1,6 +1,4 @@
-import doctest
-from insights.parsers import ifcfg_static_route
-from insights.parsers.ifcfg_static_route import IfCFGStaticRoute
+from insights.parsers.sysconfig import IfCFGStaticRoute
 from insights.tests import context_wrap
 import pytest
 
@@ -50,11 +48,3 @@ def test_missing_index():
         context = context_wrap(STATIC_ROUTE_2, CONTEXT_PATH_DEVICE_3)
         r = IfCFGStaticRoute(context)
         assert r.static_route == 'eth0'
-
-
-def test_ifcfg_static_route_doc_examples():
-    env = {
-        'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
-    }
-    failed, total = doctest.testmod(ifcfg_static_route, globs=env)
-    assert failed == 0
