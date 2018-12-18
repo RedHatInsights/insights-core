@@ -119,5 +119,4 @@ def test_legacy_upload(op, session, c):
         'https://' + c.config.base_url + '/uploads/XXXXXXXX',
         files={
             'file': ('testp', ANY, 'application/gzip')},  # ANY = return call from mocked open(), acts as filepointer here
-            # 'metadata': json.dumps({'test': 'facts'})},
         headers={'x-rh-collection-time': 'None'})
