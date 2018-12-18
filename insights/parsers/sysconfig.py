@@ -533,8 +533,6 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
 
     Examples:
 
-        >>> type(conn_info)
-        <class 'insights.parsers.sysconfig.IfCFGStaticRoute'>
         >>> conn_info.static_route
         'test-net'
         >>> conn_info.data['ADDRESS0']
