@@ -533,11 +533,13 @@ class IfCFGStaticRoute(SysconfigOptions):
 
     Examples:
 
-        >>> conn_info.static_route
-        'test-net'
+        >>> conn_info.data
+        {'route-test-net': ['ADDRESS0=10.65.223.0', 'NETMASK0=255.255.254.0', 'GATEWAY0=10.65.223.1']}
+
+    Attributes:
+        data (dict): all the static route cofiguration details
 
     """
-    @property
-    def static_route(self):
-        """(str): static route file name derived from file path"""
-        return self.file_name.split("route-", 1)[1]
+    def parse_content(self, content):
+        self.data = dict()
+        self.data[self.file_name] = content if content else None
