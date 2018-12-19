@@ -15,6 +15,7 @@ from insights.core.context import ExecutionContext, FSRoots, HostContext
 from insights.core.plugins import datasource, ContentException, is_datasource
 from insights.util import fs, streams, which
 from insights.util.subproc import Pipeline
+from insights.core.serde import deserializer, serializer
 import shlex
 
 log = logging.getLogger(__name__)
@@ -115,7 +116,7 @@ class ContentProvider(object):
         return self._content
 
     def __repr__(self):
-        msg = "<%s(path=%s, cmd=%s)>"
+        msg = "<%s(path=%r, cmd=%r)>"
         return msg % (self.__class__.__name__, self.path or "", self.cmd or "")
 
     def __unicode__(self):
@@ -133,7 +134,6 @@ class FileProvider(ContentProvider):
         self.file_name = os.path.basename(self.path)
 
         self.ds = ds
-        self.filter = True
         self.ctx = ctx
         self.validate()
 
@@ -153,7 +153,7 @@ class FileProvider(ContentProvider):
             raise ContentException("Cannot access %s" % self.path)
 
     def __repr__(self):
-        return '%s("%s")' % (self.__class__.__name__, self.path)
+        return '%s("%r")' % (self.__class__.__name__, self.path)
 
 
 class RawFileProvider(FileProvider):
@@ -180,9 +180,6 @@ class TextFileProvider(FileProvider):
 
     def create_args(self):
         args = []
-        if not self.filter:
-            return args
-
         filters = "\n".join(get_filters(self.ds)) if self.ds else None
         if filters:
             args.append(["grep", "-F", filters, self.path])
@@ -248,6 +245,15 @@ class TextFileProvider(FileProvider):
             call([which("cp", env=SAFE_ENV), self.path, dst], env=SAFE_ENV)
 
 
+class SerializedOutputProvider(TextFileProvider):
+    def create_args(self):
+        pass
+
+
+class SerializedRawOutputProvider(RawFileProvider):
+    pass
+
+
 class CommandOutputProvider(ContentProvider):
     """
     Class used in datasources to return output from commands.
@@ -256,7 +262,7 @@ class CommandOutputProvider(ContentProvider):
         super(CommandOutputProvider, self).__init__()
         self.cmd = cmd
         self.root = "insights_commands"
-        self.relative_path = mangle_command(cmd)
+        self.relative_path = os.path.join("insights_commands", mangle_command(cmd))
         self.ctx = ctx
         self.args = args  # already interpolated into cmd - stored here for context.
         self.split = split
@@ -343,7 +349,7 @@ class CommandOutputProvider(ContentProvider):
             return p.write(dst, keep_rc=self.keep_rc)
 
     def __repr__(self):
-        return 'CommandOutputProvider("%s")' % self.cmd
+        return 'CommandOutputProvider("%r")' % self.cmd
 
 
 class RegistryPoint(object):
@@ -830,3 +836,64 @@ class first_of(object):
         for c in self.deps:
             if c in broker:
                 return broker[c]
+
+
+@serializer(CommandOutputProvider)
+def serialize_command_output(obj, root):
+    rel = os.path.join("insights_commands", mangle_command(obj.cmd))
+    dst = os.path.join(root, rel)
+    rc = obj.write(dst)
+    return {
+        "rc": rc,
+        "cmd": obj.cmd,
+        "args": obj.args,
+        "relative_path": rel
+    }
+
+
+@deserializer(CommandOutputProvider)
+def deserialize_command_output(_type, data, root):
+    rel = data["relative_path"]
+
+    res = SerializedOutputProvider(rel, root)
+
+    res.rc = data["rc"]
+    res.cmd = data["cmd"]
+    res.args = data["args"]
+    return res
+
+
+@serializer(TextFileProvider)
+def serialize_text_file_provider(obj, root):
+    dst = os.path.join(root, obj.relative_path)
+    rc = obj.write(dst)
+    return {
+        "relative_path": obj.relative_path,
+        "rc": rc,
+    }
+
+
+@deserializer(TextFileProvider)
+def deserialize_text_provider(_type, data, root):
+    rel = data["relative_path"]
+    res = SerializedOutputProvider(rel, root)
+    res.rc = data["rc"]
+    return res
+
+
+@serializer(RawFileProvider)
+def serialize_raw_file_provider(obj, root):
+    dst = os.path.join(root, obj.relative_path)
+    rc = obj.write(dst)
+    return {
+        "relative_path": obj.relative_path,
+        "rc": rc,
+    }
+
+
+@deserializer(RawFileProvider)
+def deserialize_raw_file_provider(_type, data, root):
+    rel = data["relative_path"]
+    res = SerializedRawOutputProvider(rel, root)
+    res.rc = data["rc"]
+    return res

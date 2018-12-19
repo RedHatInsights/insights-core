@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import sys
+import six
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
@@ -186,7 +187,10 @@ def collect_and_output(client, config):
         sys.exit(constants.sig_kill_bad)
     if config.to_stdout:
         with open(insights_archive, 'rb') as tar_content:
-            shutil.copyfileobj(tar_content, sys.stdout)
+            if six.PY3:
+                sys.stdout.buffer.write(tar_content.read())
+            else:
+                shutil.copyfileobj(tar_content, sys.stdout)
     else:
         resp = None
         if not config.no_upload:
@@ -211,12 +215,12 @@ def collect_and_output(client, config):
                 else:
                     client.delete_archive(insights_archive, delete_parent_dir=True)
 
-            # if we are rotating the eggs and success on upload do rotation
-            try:
-                client.rotate_eggs()
-            except IOError:
-                message = ("Failed to rotate %s to %s" %
-                           (constants.insights_core_newest,
-                            constants.insights_core_last_stable))
-                logger.debug(message)
-                raise IOError(message)
+    # rotate eggs once client completes all work successfully
+    try:
+        client.rotate_eggs()
+    except IOError:
+        message = ("Failed to rotate %s to %s" %
+                   (constants.insights_core_newest,
+                    constants.insights_core_last_stable))
+        logger.debug(message)
+        raise IOError(message)
