@@ -25,22 +25,12 @@ def test_static_route_connection_1():
     context = context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)
     r = IfCFGStaticRoute(context)
     assert r.static_route == 'test-net'
-    assert r.data == {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
-    assert r.data['ADDRESS0'] == '10.65.223.0'
 
 
 def test_static_route_connection_2():
     context = context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_2)
     r = IfCFGStaticRoute(context)
     assert r.static_route == 'test-net-11'
-    assert r.data == {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
-
-
-def test_missing_columns():
-    with pytest.raises(AssertionError):
-        context = context_wrap(STATIC_ROUTE_2, CONTEXT_PATH_DEVICE_1)
-        r = IfCFGStaticRoute(context)
-        assert r.data['ADDRESS0'] == '10.65.223.0'
 
 
 def test_missing_index():

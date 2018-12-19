@@ -64,7 +64,7 @@ IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
 -------------------------------------------------------------------
 """
 
-from insights import parser, SysconfigOptions, get_active_lines, LegacyItemAccess, Parser
+from insights import parser, SysconfigOptions, get_active_lines
 from insights.specs import Specs
 
 
@@ -512,7 +512,7 @@ class VirtWhoSysconfig(SysconfigOptions):
 
 
 @parser(Specs.ifcfg_static_route)
-class IfCFGStaticRoute(LegacyItemAccess, Parser):
+class IfCFGStaticRoute(SysconfigOptions):
     """
     IfCFGStaticRoute is a parser for the static route network interface
     definition files in ``/etc/sysconfig/network-scripts``.  These are
@@ -535,26 +535,9 @@ class IfCFGStaticRoute(LegacyItemAccess, Parser):
 
         >>> conn_info.static_route
         'test-net'
-        >>> conn_info.data['ADDRESS0']
-        '10.65.223.0'
-        >>> sorted(conn_info.data.items())
-        [('ADDRESS0', '10.65.223.0'), ('GATEWAY0', '10.65.223.1'), ('NETMASK0', '255.255.254.0')]
 
-    Properties:
-        static_route (str): static route file name derived from file path
-        data (dict): all static route connection details
     """
-    def __init__(self, context):
-        self.data = {}
-        self.static_route = context.path.split("network-scripts/route-", 1)[1]
-        super(IfCFGStaticRoute, self).__init__(context)
-
-    def parse_content(self, content):
-        for line in content:
-            key, value = line.split("=", 1)
-            self.data[key] = value
-
     @property
-    def static_route_connection(self):
-        """(list): List of all static route devices"""
-        return self.data[self.static_route]
+    def static_route(self):
+        """(str): static route file name derived from file path"""
+        return self.file_name.split("route-", 1)[1]
