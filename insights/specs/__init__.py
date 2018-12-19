@@ -341,6 +341,7 @@ class Specs(SpecSet):
     ovirt_engine_server_log = RegistryPoint(filterable=True)
     ovirt_engine_ui_log = RegistryPoint(filterable=True)
     ovs_vsctl_show = RegistryPoint()
+    ovs_vswitchd_limits = RegistryPoint()
     pacemaker_log = RegistryPoint(filterable=True)
     package_provides_java = RegistryPoint(multi_output=True)
     pam_conf = RegistryPoint()
