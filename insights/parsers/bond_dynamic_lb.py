@@ -42,10 +42,10 @@ class BondDynamicLB(Parser):
     """
 
     def parse_content(self, content):
-        self._dynamic_lb_status = None
-        self._bond_name = self.file_path.rsplit("/")[-3]
         if not content:
             raise SkipException("No Contents")
+        self._dynamic_lb_status = None
+        self._bond_name = self.file_path.rsplit("/")[-3]
 
         for line in content:
             if line in ['0', '1']:
