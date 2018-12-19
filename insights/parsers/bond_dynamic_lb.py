@@ -49,14 +49,14 @@ class BondDynamicLB(Parser):
     def parse_content(self, content):
         if not content:
             raise SkipException("No Contents")
+        line = content[0].strip()
         self._dynamic_lb_status = None
         self._bond_name = self.file_path.rsplit("/")[-3]
 
-        for line in content:
-            if line in ['0', '1']:
-                self._dynamic_lb_status = int(line)
-            else:
-                raise ParseException("Unrecognised Values '{b}'".format(b=line))
+        if line in ['0', '1']:
+            self._dynamic_lb_status = int(line)
+        else:
+            raise ParseException("Unrecognised Values '{b}'".format(b=line))
 
     @property
     def dynamic_lb_status(self):
