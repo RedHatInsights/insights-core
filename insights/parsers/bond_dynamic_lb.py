@@ -26,8 +26,9 @@ Examples:
     'bond0'
 """
 
-from insights import Parser, parser, get_active_lines
+from insights import Parser, parser
 from insights.specs import Specs
+from insights.parsers import ParseException, SkipException
 
 
 @parser(Specs.bond_dynamic_lb)
@@ -40,15 +41,17 @@ class BondDynamicLB(Parser):
     1 - Load based load balancing.
     """
 
-    def __init__(self, context):
-        super(BondDynamicLB, self).__init__(context)
-        self._bond_name = context.path.rsplit("/")[-3]
-
     def parse_content(self, content):
         self._dynamic_lb_status = None
-        for line in get_active_lines(content):
+        self._bond_name = self.file_path.rsplit("/")[-3]
+        if not content:
+            raise SkipException("No Contents")
+
+        for line in content:
             if line in ['0', '1']:
                 self._dynamic_lb_status = int(line)
+            else:
+                raise ParseException("Unrecognised Values '{b}'".format(b=line))
 
     @property
     def dynamic_lb_status(self):

@@ -1,4 +1,6 @@
 import doctest
+import pytest
+from insights.parsers import ParseException, SkipException
 from insights.parsers.bond_dynamic_lb import BondDynamicLB
 from insights.parsers import bond_dynamic_lb
 from insights.tests import context_wrap
@@ -43,10 +45,12 @@ def test_bond_dynamic_lb_class():
     assert tlb_bond.bond_name == 'bond1'
     assert tlb_bond.dynamic_lb_status == 1
 
-    tlb_bond = BondDynamicLB(context_wrap(BOND_LD_BALANCE_2, CONTEXT_PATH_2))
-    assert tlb_bond.bond_name == 'bond2'
-    assert tlb_bond.dynamic_lb_status is None
+    with pytest.raises(ParseException) as exc:
+        bond_obj = BondDynamicLB(context_wrap(BOND_LD_BALANCE_2, CONTEXT_PATH))
+        assert not bond_obj.bond_name
+    assert 'Unrecognised Values' in str(exc)
 
-    tlb_bond = BondDynamicLB(context_wrap(BOND_LD_BALANCE_NO, CONTEXT_PATH_2))
-    assert tlb_bond.bond_name == 'bond2'
-    assert tlb_bond.dynamic_lb_status is None
+    with pytest.raises(SkipException) as exc:
+        bond_obj = BondDynamicLB(context_wrap(BOND_LD_BALANCE_NO, CONTEXT_PATH))
+        assert not bond_obj.bond_name
+    assert 'No Contents' in str(exc)
