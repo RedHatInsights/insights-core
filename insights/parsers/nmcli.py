@@ -178,7 +178,7 @@ class NmcliConnShow(CommandParser):
 
     Attributes:
         data (list): list of connections wrapped in dictionaries
-        disconnected_connection (list): list of all the disconnected static route connections
+
     """
     def parse_content(self, content):
         self.data = parse_delimited_table(content)
