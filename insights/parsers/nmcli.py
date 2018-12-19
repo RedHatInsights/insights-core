@@ -191,3 +191,4 @@ class NmcliConnShow(CommandParser):
     def disconnected_connection(self):
         """(list): It will return all the disconnected static route connections."""
         return self._disconnected_connection
+
