@@ -240,6 +240,7 @@ class DefaultSpecs(Specs):
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
+    grubby_default_kernel = simple_command("/usr/sbin/grubby --default-kernel")  # RHEL6 and updwards
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
@@ -487,6 +488,8 @@ class DefaultSpecs(Specs):
     ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
     ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
+    ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
+    ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
     pacemaker_log = simple_file("/var/log/pacemaker.log")
 
     @datasource(ps_auxww, context=HostContext)
