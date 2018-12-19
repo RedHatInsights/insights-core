@@ -24,6 +24,7 @@ Examples:
     1
     >>> tlb_bond.bond_name
     'bond0'
+
 """
 
 from insights import Parser, parser
@@ -40,9 +41,9 @@ class BondDynamicLB(Parser):
 
     1 - Load based load balancing.
 
-    SkipException - Exception will be raised when the file is empty.
-
-    ParseException - Exception Will be raised when the content is other than `0` or `1`.
+    Raises:
+        SkipException: When contents are empty
+        ParseException: When contents are invalid
     """
 
     def parse_content(self, content):
