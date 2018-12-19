@@ -39,6 +39,10 @@ class BondDynamicLB(Parser):
     0 - Hash based load balancing.
 
     1 - Load based load balancing.
+
+    SkipException - Exception will be raised when the file is empty.
+
+    ParseException - Exception Will be raised when the content is other than `0` or `1`.
     """
 
     def parse_content(self, content):
