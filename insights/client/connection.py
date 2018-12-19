@@ -473,16 +473,16 @@ class InsightsConnection(object):
         """
         branch_info = None
         if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 30 days old
+            # use cached branch info file if less than 2 hours old (failsafe)
             logger.debug(u'Reading branch info from cached file.')
             ctime = datetime.utcfromtimestamp(
                 os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(days=30)):
+            if datetime.utcnow() < (ctime + timedelta(hours=2)):
                 with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
                     branch_info = json.load(f)
                 return branch_info
             else:
-                logger.debug(u'Cached branch info is older than 30 days.')
+                logger.debug(u'Cached branch info is older than 2 hours.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
@@ -508,6 +508,10 @@ class InsightsConnection(object):
             bi_str = json.dumps(branch_info, ensure_ascii=False)
             f.write(bi_str)
         return branch_info
+
+    def delete_branch_info():
+        if os.path.exists(constants.cached_branch_info):
+            os.remove(constants.cached_branch_info)
 
     def create_system(self, new_machine_id=False):
         """
@@ -655,7 +659,7 @@ class InsightsConnection(object):
         # This will undo a blacklist
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
-        if not system:
+        if system is False:
             return ('Could not reach the Insights service to register.', '', '', '')
 
         # If we get a 409, we know we need to generate a new machine-id
