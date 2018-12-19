@@ -121,9 +121,8 @@ class DefaultSpecs(Specs):
     # are these locations for different rhel versions?
     cobbler_settings = first_file(["/etc/cobbler/settings", "/conf/cobbler/settings"])
     cobbler_modules_conf = first_file(["/etc/cobbler/modules.conf", "/conf/cobbler/modules.conf"])
-
     corosync = simple_file("/etc/sysconfig/corosync")
-
+    corosync_conf = simple_file("/etc/corosync/corosync.conf")
     cpu_cores = glob_file("sys/devices/system/cpu/cpu[0-9]*/online")
     cpu_siblings = glob_file("sys/devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list")
     cpu_smt_active = simple_file("sys/devices/system/cpu/smt/active")
@@ -242,6 +241,7 @@ class DefaultSpecs(Specs):
     grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
+    grubby_default_kernel = simple_command("/usr/sbin/grubby --default-kernel")  # RHEL6 and updwards
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
