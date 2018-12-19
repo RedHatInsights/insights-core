@@ -1,4 +1,4 @@
-from insights.parsers.proc_limits import HttpdLimits, MysqldLimits
+from insights.parsers.proc_limits import HttpdLimits, MysqldLimits, OvsVswitchdLimits
 from insights.tests import context_wrap
 from ...parsers import ParseException
 import pytest
@@ -60,3 +60,10 @@ def test_mysqld_limits():
     assert results.max_open_files.hard_limit == '4096'
     assert results.max_open_files.soft_limit == '1024'
     assert len(results) == 16
+
+
+def test_ovs_vswitchd_limits():
+    results = OvsVswitchdLimits(context_wrap(PROC_LIMITS))
+    assert "max_open_files" in results
+    assert results.max_open_files.units == 'files'
+    assert results.max_open_files.hard_limit == '4096'
