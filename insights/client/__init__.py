@@ -445,9 +445,6 @@ class InsightsClient(object):
             return None
         return self.connection.get_diagnosis(remediation_id)
 
-    def delete_branch_info(self):
-        return self.connection.delete_branch_info()
-
 
 def format_config(config):
     # Log config except the password
