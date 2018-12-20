@@ -79,7 +79,6 @@ class IfCFG(LegacyItemAccess, CommandParser):
 
     def __init__(self, context):
         super(IfCFG, self).__init__(context)
-        self.context = context
         self.data["iface"] = context.path.rsplit("-", 1)[1]
         self.ifname = self.data['iface']
         self._has_empty_line = any(l.strip() == '' for l in context.content)
