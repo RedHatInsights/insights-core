@@ -533,13 +533,12 @@ class IfCFGStaticRoute(SysconfigOptions):
 
     Examples:
 
-        >>> conn_info.data
-        {'ADDRESS0': '10.65.223.0', 'NETMASK0': '255.255.254.0', 'GATEWAY0': '10.65.223.1'}
+        >>> conn_info['ADDRESS0']
+        '10.65.223.0'
         >>> conn_info.static_route_name
         'test-net'
 
     Attributes:
-        data (dict): all the static route cofiguration details
         static_route_name (str): static route name
 
     """
