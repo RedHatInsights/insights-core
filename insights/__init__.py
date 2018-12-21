@@ -22,6 +22,7 @@ import pkgutil
 import os
 import sys
 import yaml
+
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
@@ -29,7 +30,7 @@ from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
 from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
+from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
@@ -37,6 +38,7 @@ from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.plugins import make_pass, make_fail  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
+from .core.serde import Hydration
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
@@ -84,6 +86,9 @@ def process_dir(broker, root, graph, context, inventory=None):
         return process_cluster(archives, broker=broker, inventory=inventory)
 
     broker[ctx.__class__] = ctx
+    if isinstance(ctx, SerializedArchiveContext):
+        h = Hydration(ctx.root)
+        broker = h.hydrate(broker=broker)
     broker = dr.run(graph, broker=broker)
     return broker
 

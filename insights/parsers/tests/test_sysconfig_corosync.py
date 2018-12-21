@@ -15,7 +15,7 @@ COROSYNC_OPTIONS=""
 """
 
 
-def test_corosync_1():
+def test_corosync_sysconfig():
     result = CorosyncSysconfig(context_wrap(corosync_content))
     assert result.data['COROSYNC_OPTIONS'] == ""
     assert result.data['COROSYNC_INIT_TIMEOUT'] == "60"
