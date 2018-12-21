@@ -142,6 +142,7 @@ class DefaultSpecs(Specs):
     df__al = simple_command("/bin/df -al")
     df__alP = simple_command("/bin/df -alP")
     df__li = simple_command("/bin/df -li")
+    df__lP = simple_command("/bin/df -lP")
     dig = simple_command("/usr/bin/dig +dnssec . DNSKEY")
     dig_dnssec = simple_command("/usr/bin/dig +dnssec . SOA")
     dig_edns = simple_command("/usr/bin/dig +edns=0 . SOA")

@@ -32,6 +32,7 @@ class InsightsArchiveSpecs(Specs):
     df__al = simple_file("insights_commands/df_-al")
     df__alP = simple_file("insights_commands/df_-alP")
     df__li = simple_file("insights_commands/df_-li")
+    df__lP = simple_file("insights_commands/df_-lP")
     dig = simple_file("insights_commands/dig_dnssec_._DNSKEY")
     dig_dnssec = simple_file("insights_commands/dig_dnssec_._SOA")
     dig_edns = simple_file("insights_commands/dig_edns_0_._SOA")

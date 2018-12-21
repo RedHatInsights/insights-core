@@ -208,3 +208,59 @@ def test_df_al_bad():
         df_list = df.DiskFree_AL(context_wrap(DF_AL_BAD))
         assert len(df_list) == 2
     assert 'Could not parse line' in str(exc)
+
+
+DF_LP = """
+Filesystem            1024-blocks    Used Available Capacity Mounted on
+/dev/mapper/rhel-root     6486016 1193184   5292832      19% /
+devtmpfs                   497472       0    497472       0% /dev
+tmpfs                      508240       0    508240       0% /dev/shm
+tmpfs                      508240    6716    501524       2% /run
+tmpfs                      508240       0    508240       0% /sys/fs/cgroup
+/dev/sda1                 1038336  124912    913424      13% /boot
+tmpfs                      101648       0    101648       0% /run/user/0
+""".strip()
+
+
+def test_df_lP():
+    df_list = df.DiskFree_LP(context_wrap(DF_LP))
+    assert len(df_list) == 7
+    assert len(df_list.mounts) == 7
+    assert len(df_list.filesystems) == 4
+    assert '/' in df_list.mounts
+    r = df.Record(
+        filesystem='/dev/mapper/rhel-root',
+        total='6486016',
+        used='1193184',
+        available='5292832',
+        capacity='19%',
+        mounted_on='/'
+    )
+    assert df_list.get_mount('/') == r
+    assert '/dev/mapper/rhel-root' in df_list.filesystems
+    assert len(df_list.get_filesystem('/dev/mapper/rhel-root')) == 1
+    assert df_list.get_filesystem('/dev/mapper/rhel-root')[0] == r
+    assert len(df_list.get_filesystem('tmpfs')) == 4
+    assert df_list.get_mount('/boot').filesystem == '/dev/sda1'
+    assert df_list.get_mount('/boot').total == '1038336'
+    assert df_list.get_mount('/dev').used == '0'
+    assert df_list.get_mount('/run/user/0').available == '101648'
+    assert df_list.get_mount('/sys/fs/cgroup').capacity == '0%'
+    assert df_list.get_mount('/').filesystem == '/dev/mapper/rhel-root'
+    assert df_list.get_mount('/').capacity == '19%'
+
+    # Test get_path
+    # Root mount point works:
+    assert df_list.get_dir('/') == df_list.get_mount('/')
+    # Mount point underneath root works:
+    assert df_list.get_dir('/dev') == df_list.get_mount('/dev')
+    # Directory underneath sub-mount:
+    assert df_list.get_dir('/dev/v4l') == df_list.get_mount('/dev')
+    # Directory with / suffix:
+    assert df_list.get_dir('/dev/v4l/') == df_list.get_mount('/dev')
+    # File path also works:
+    assert df_list.get_dir('/dev/v4l/adapter0/control0.cfg') == df_list.get_mount('/dev')
+    # Relative path returns None
+    assert df_list.get_dir('dev/sys') is None
+    # Invalid path returns None
+    assert df_list.get_dir('"') is None

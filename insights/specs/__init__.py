@@ -71,6 +71,7 @@ class Specs(SpecSet):
     df__alP = RegistryPoint()
     df__al = RegistryPoint()
     df__li = RegistryPoint()
+    df__lP = RegistryPoint()
     dig_dnssec = RegistryPoint()
     dig_edns = RegistryPoint()
     dig_noedns = RegistryPoint()

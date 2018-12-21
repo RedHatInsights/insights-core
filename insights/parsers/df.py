@@ -22,7 +22,7 @@ Sample input data for the ``df -li`` command looks like::
     tmpfs            1499684      6   1499678    1% /V M T o o l s
     tmpfs            1499684     15   1499669    1% /VM Tools
 
-This module provides two parsers:
+This module provides the following parsers:
 
 DiskFree_LI - command ``df -li``
 --------------------------------
@@ -31,6 +31,9 @@ DiskFree_ALP - command ``df -alP``
 ----------------------------------
 
 DiskFree_AL - command ``df -al``
+--------------------------------
+
+DiskFree_LP - command ``df -lP``
 --------------------------------
 
 This example demonstrates the ``DiskFree_LI`` class but all classes will provide
@@ -286,6 +289,38 @@ class DiskFree_AL(DiskFree):
                 Used           used
                 Available      available
                 Use%           capacity
+                Mounted on     mounted_on
+    """
+    pass
+
+
+@parser(Specs.df__lP)
+class DiskFree_LP(DiskFree):
+    """Parse lines from the output of the ``df -lP`` command.
+
+    Typical content of the ``df -lP`` command looks like::
+
+        Filesystem            1024-blocks    Used Available Capacity Mounted on
+        /dev/mapper/rhel-root     6486016 1193184   5292832      19% /
+        devtmpfs                   497472       0    497472       0% /dev
+        tmpfs                      508240       0    508240       0% /dev/shm
+        tmpfs                      508240    6716    501524       2% /run
+        tmpfs                      508240       0    508240       0% /sys/fs/cgroup
+        /dev/sda1                 1038336  124912    913424      13% /boot
+        tmpfs                      101648       0    101648       0% /run/user/0
+
+    Attributes:
+        data (list): A list of the ``df`` information with one ``Record`` object for
+            each line of command output. Mapping of input columns to output
+            fields is::
+
+                Input column   Output Field
+                ------------   ------------
+                Filesystem     filesystem
+                1024-blocks    total
+                Used           used
+                Available      available
+                Capacity       capacity
                 Mounted on     mounted_on
     """
     pass
