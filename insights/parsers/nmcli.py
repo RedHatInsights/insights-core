@@ -9,13 +9,15 @@ Parsers provided by this module include:
 
 NmcliDevShow - command ``/usr/bin/nmcli dev show``
 --------------------------------------------------
-
+NmcliConnShow - command ''/usr/bin/nmcli conn show``
+----------------------------------------------------
 """
 
 
 import re
 from .. import parser, LegacyItemAccess, get_active_lines, CommandParser
 from insights.specs import Specs
+from insights.parsers import parse_delimited_table
 
 
 @parser(Specs.nmcli_dev_show)
@@ -107,13 +109,14 @@ class NmcliDevShow(CommandParser, LegacyItemAccess):
         }
 
     Examples:
-        >>> nmcli_obj = shared[NmcliDevShow]
+        >>> type(nmcli_obj)
+        <class 'insights.parsers.nmcli.NmcliDevShow'>
         >>> nmcli_obj.data['em3']['STATE']
-        connected
+        'connected'
         >>> nmcli_obj.data['em2']['HWADDR']
-        B8:2A:72:DE:F8:BC
-        >>> nmcli_obj.connected_devices
-        ['em3', 'em2']
+        'B8:2A:72:DE:F8:BC'
+        >>> sorted(nmcli_obj.connected_devices)
+        ['em1', 'em2', 'em3']
 
     """
 
@@ -153,3 +156,38 @@ class NmcliDevShow(CommandParser, LegacyItemAccess):
             if 'STATE' in self.data[key] and self.data[key]['STATE'] == 'connected':
                 con_dev.append(key)
         return con_dev
+
+
+@parser(Specs.nmcli_conn_show)
+class NmcliConnShow(CommandParser):
+    """
+    This file will parse the output of all the nmcli connections.
+
+    Sample configuration from a teamed interface in file ``/usr/bin/nmcli conn show``::
+
+       NAME      UUID                                  TYPE      DEVICE
+       enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+       virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+       test-net  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+
+    Examples:
+        >>> type(static_conn)
+        <class 'insights.parsers.nmcli.NmcliConnShow'>
+        >>> static_conn.disconnected_connection
+        ['test-net-1']
+
+    Attributes:
+        data (list): list of connections wrapped in dictionaries
+
+    """
+    def parse_content(self, content):
+        self.data = parse_delimited_table(content)
+        self._disconnected_connection = []
+        for all_connection in self.data:
+            if all_connection['DEVICE'] == "--":
+                self._disconnected_connection.append(all_connection['NAME'])
+
+    @property
+    def disconnected_connection(self):
+        """(list): It will return all the disconnected static route connections."""
+        return self._disconnected_connection
