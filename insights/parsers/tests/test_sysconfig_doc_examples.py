@@ -9,6 +9,7 @@ from insights.parsers.sysconfig import Up2DateSysconfig, PuppetserverSysconfig
 from insights.parsers.sysconfig import NetconsoleSysconfig, ForemanTasksSysconfig
 from insights.parsers.sysconfig import DockerStorageSetupSysconfig, DirsrvSysconfig
 from insights.parsers.sysconfig import CorosyncSysconfig
+from insights.parsers.sysconfig import IfCFGStaticRoute
 import doctest
 
 
@@ -119,6 +120,13 @@ COROSYNC_INIT_TIMEOUT=60
 # See "man corosync" for detailed descriptions of the options.
 COROSYNC_OPTIONS=""
 """.strip()
+CONTEXT_PATH_DEVICE_1 = "etc/sysconfig/network-scripts/route-test-net"
+
+STATIC_ROUTE_1 = """
+ADDRESS0=10.65.223.0
+NETMASK0=255.255.254.0
+GATEWAY0=10.65.223.1
+""".strip()
 
 
 def test_sysconfig_doc():
@@ -140,6 +148,7 @@ def test_sysconfig_doc():
             'dss_syscfg': DockerStorageSetupSysconfig(context_wrap(DOCKERSTORAGESETUPSYSCONFG)),
             'dirsrv_syscfg': DirsrvSysconfig(context_wrap(DIRSRVSYSCONFG)),
             'cs_syscfg': CorosyncSysconfig(context_wrap(COROSYNCSYSCONFIG)),
+            'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0
