@@ -81,6 +81,7 @@ class IfCFG(LegacyItemAccess, CommandParser):
         super(IfCFG, self).__init__(context)
         self.data["iface"] = context.path.rsplit("-", 1)[1]
         self.ifname = self.data['iface']
+        self._has_empty_line = any(l.strip() == '' for l in context.content)
 
     def parse_content(self, content):
         self.data = {}
@@ -126,3 +127,10 @@ class IfCFG(LegacyItemAccess, CommandParser):
         if m in bond_mode_map:
             return bond_mode_map[m]
         return None
+
+    @property
+    def has_empty_line(self):
+        """
+        (bool) `True` if the file has empty line else `False`.
+        """
+        return self._has_empty_line
