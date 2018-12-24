@@ -59,6 +59,9 @@ Up2DateSysconfig - file ``/etc/sysconfig/rhn/up2date``
 
 VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 ---------------------------------------------------
+
+IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
+-------------------------------------------------------------------
 """
 
 from insights import parser, SysconfigOptions, get_active_lines
@@ -506,3 +509,39 @@ class VirtWhoSysconfig(SysconfigOptions):
         'A TEST'
     """
     pass
+
+
+@parser(Specs.ifcfg_static_route)
+class IfCFGStaticRoute(SysconfigOptions):
+    """
+    IfCFGStaticRoute is a parser for the static route network interface
+    definition files in ``/etc/sysconfig/network-scripts``.  These are
+    pulled into the network scripts using ``source``, so they are mainly
+    ``bash`` environment declarations of the form **KEY=value**.  These
+    are stored in the ``data`` property as a dictionary.  Quotes surrounding
+    the value
+
+    Because this parser reads multiple files, the interfaces are stored as a
+    list within the parser and need to be iterated through in order to find
+    specific interfaces.
+
+    Sample configuration from a static connection in file ``/etc/sysconfig/network-scripts/rute-test-net``::
+
+        ADDRESS0=10.65.223.0
+        NETMASK0=255.255.254.0
+        GATEWAY0=10.65.223.1
+
+    Examples:
+
+        >>> conn_info['ADDRESS0']
+        '10.65.223.0'
+        >>> conn_info.static_route_name
+        'test-net'
+
+    Attributes:
+        static_route_name (str): static route name
+
+    """
+    def parse_content(self, content):
+        self.static_route_name = self.file_name.split("route-", 1)[1]
+        super(IfCFGStaticRoute, self).parse_content(content)
