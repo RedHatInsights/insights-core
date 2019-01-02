@@ -123,12 +123,12 @@ Create a sample rule called ``hostname_rel.py`` in the ``MyRules`` directory:
 
 Install your rule repository into your virtualenv::
 
-    (insights-core)[userone@hostone project_dir]$ cd myrule
-    (insights-core)[userone@hostone project_dir/myrule]$ pip install -e .
+    (insights-core)[userone@hostone project_dir]$ cd myrules
+    (insights-core)[userone@hostone project_dir/myrules]$ pip install -e .
     
 Now you can use Insights to evaluate your rule by running your rule script::
     
-    (insights-core)[userone@hostone project_dir/myrule]$ python MyRules/hostname_rel.py
+    (insights-core)[userone@hostone project_dir/myrules]$ python MyRules/hostname_rel.py
     
 Depending upon the computer you are using you will see several lines of
 output ending with a your rule results that should look something like this::
