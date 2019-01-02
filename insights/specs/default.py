@@ -63,6 +63,7 @@ class DefaultSpecs(Specs):
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
+    bond_dynamic_lb = glob_file("/sys/class/net/bond[0-9]*/bonding/tlb_dynamic_lb")
     branch_info = simple_file("/branch_info", kind=RawFileProvider)
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
@@ -284,6 +285,7 @@ class DefaultSpecs(Specs):
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
     httpd_V = foreach_execute(httpd_cmd, "%s -V")
     ifcfg = glob_file("/etc/sysconfig/network-scripts/ifcfg-*")
+    ifcfg_static_route = glob_file("/etc/sysconfig/network-scripts/route-*")
     ifconfig = simple_command("/sbin/ifconfig -a")
     imagemagick_policy = glob_file(["/etc/ImageMagick/policy.xml", "/usr/lib*/ImageMagick-6.5.4/config/policy.xml"])
     init_ora = simple_file("${ORACLE_HOME}/dbs/init.ora")
@@ -434,6 +436,7 @@ class DefaultSpecs(Specs):
                            "/opt/rh/nginx*/root/etc/nginx/nginx.conf",
                            "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
                            ])
+    nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
