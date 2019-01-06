@@ -64,8 +64,8 @@ Then we import the parsers that provide the facts we need.
 .. code-block:: python
    :linenos:
 
-   from insights.core.plugins import make_response, rule 
-   from insights.parsers.ssh import SshDConfig
+   from insights.core.plugins import make_response, rule
+   from insights.parsers.secure_shell import SshDConfig
 
 Next we define a unique error key string, ``ERROR_KEY`` that will be
 collected by insights-core when our rule is executed, and provided in the results for
