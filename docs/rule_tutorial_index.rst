@@ -1,7 +1,12 @@
-Tutorial - Rule Using Existing Parsers and Combiners
-====================================================
+.. _tutorial-rule-development:
 
-In this tutorial we'll walk through authoring a new insights-core rule. 
+###########################
+Tutorial - Rule Development
+###########################
+
+In this tutorial we'll walk through authoring a new insights-core rule.  The
+purpose of a rule is to evaluate various facts and determine one or more
+results about a system.
 
 There are three primary phases to developing a rule:
 
@@ -14,6 +19,6 @@ We'll cover each step in detail in the sections ahead, so let's get started!
 .. toctree::
     :hidden:
 
-    ruletut_parsers
-    ruletut_rule
-    ruletut_tests
+    ruletut_env
+    ruletut_exp_1
+    ruletut_exp_2

@@ -14,9 +14,9 @@ Contents:
     parsers_index
     combiners_index
     docs_guidelines
-    rule_tutorial_index
-    custom_tutorial_index
+    parser_tutorial
     combiner_tutorial
+    rule_tutorial_index
     components
     embedded_content
     notebook_index

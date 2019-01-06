@@ -1,12 +1,9 @@
 .. _tutorial-combiner-development:
 
-###############################
+*******************************
 Tutorial - Combiner Development
-###############################
+*******************************
 
-********************
-Combiner Development
-********************
 In the Map-Reduce model, Parsers are responsible for mapping the data from a
 datasource and Combiners are responsible for reducing the data from multiple
 Parsers into a reduced dataset.  Combiners help to consolidate information from

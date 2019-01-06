@@ -1,11 +1,8 @@
-.. _tutorial-rule-development:
+****************************************
+Example Rule-1: Secure Shell Server Rule
+****************************************
 
-###########################
-Tutorial - Rule Development
-###########################
-
-The purpose of a rule is to evaluate various facts and determine one or more
-results about a system.  For our example rule we are interested in knowing
+For the example rule-1 we are interested in knowing
 whether a system with ``sshd`` is configured according to the following
 guidelines::
 
@@ -28,56 +25,6 @@ We also want to know what version of OpenSSH we are running if we find any probl
 You can find the complete implementation of the rule and test code in the
 directory ``insights/docs/examples/rules``.
 
-**************************************
-Preparing Your Development Environment
-**************************************
-
-The following instructions assume that you have an insights-core development
-environment setup and working, and that your rules root dir and insights-core
-root dir are subdirs of the same root dir.  First you will need to create
-a ``mycomponents`` directory and then copy the example rules directory into
-``mycomponents``.  You will also need to copy the ``conftest.py`` from the
-``insights-core`` root directory in order for your tests to work correctly.
-Here are the commands to setup your rule development environment::
-
-    [userone@hostone work]$ pwd
-    /home/userone/work
-    [userone@hostone work]$ ls
-    insights-core
-    [userone@hostone work]$ mkdir mycomponents
-    [userone@hostone work]$ cd mycomponents
-    [userone@hostone mycomponents]$ cp -R insights-core/docs/examples/rules ./rules
-    [userone@hostone mycomponents]$ cp ../insights-core/conftest.py .
-    [userone@hostone mycomponents]$ ls
-    conftest.py  rules
-
-Once you have completed this your project directory tree should look like this
-(note the details of the ``insights-core`` directory tree are not being shown)::
-
-    work
-    ├── insights-core
-    └── mycomponents
-        ├── parsers
-        ├── rules
-        │   ├── __init__.py
-        │   └── sshd_secure.py
-        └── tests
-            ├── __init__.py
-            ├── test_integration.py
-            └── test_sshd_secure.py
-
-Make sure
-you start with your virtual environment set to the insights-core project::
-
-    [userone@hostone mycomponents]$ source ../insights-core/bin/activate
-    (insights-core)[userone@hostone mycomponents]$ 
-
-You are now ready to begin writing your rule.
-
-************************
-Secure Shell Server Rule
-************************
-
 Rule Code
 =========
 
@@ -87,7 +34,7 @@ at sshd security we will name the file ``mycomponents/rules/sshd_secure.py``.
 Notice that the file is located in the ``rules`` subdirectory
 of your project::
 
-    (myrules) $ touch myrules/plugins/sshd_secure.py
+    (mycomponents) $ touch mycomponents/rules/sshd_secure.py
 
 Here's the basic contents of the rule file:
 
@@ -158,7 +105,7 @@ Optional      ``optional=[IPTables, IpAddr]``
 The decorator for the rule and the rule signature will look like this:
 
 .. code-block:: python
-    
+
     @rule(SshDConfig, InstalledRpms, [ChkConfig, UnitFiles], optional=[IPTables, IpAddr])
     def report(sshd_config, installed_rpms, chk_config, unit_files, ip_tables, ip_addr):
         # sshd_config and installed_rpms will always be present
@@ -181,7 +128,7 @@ The purpose of the method is to evaluate the parser facts stored
 in the parser object ``sshd_config``.  If any results
 are found in the evaluation then a response is created with the
 ``ERROR_KEY`` and any data that you want to be associated with
-the results are included in the response.  
+the results are included in the response.
 This data can be viewed in the results made available to a customer
 in the Red Hat Insights web interface.
 You may use zero or more named arguments to
@@ -439,7 +386,7 @@ by viewing the test code:
        yield input_data, expected
 
 Test Data
----------
+=========
 
 Data utilized for all tests is defined in the test module.  In this
 case we will use an OpenSSH RPM version that is present in RHEL 7.2,
@@ -480,7 +427,7 @@ except ``Protocol`` which defaults to the correct value.
    """.strip()
 
 Unit Tests
-----------
+==========
 
 First lets look at a unit test for our rule.  The unit test
 is named ``test_sshd_secure``.  It may be named anything as long
@@ -530,7 +477,7 @@ Performing these tests as unit tests removes one layer of complexity
 but requires more setup code.
 
 Integration Tests
------------------
+=================
 
 Integration tests are performed within the insights-core framework.  The
 ``InputData`` class is used to define the raw data that we want to be
@@ -630,7 +577,7 @@ project, ensuring that our virtual environment is active, and running
     rules/tests/test_sshd_secure.py .
 
     =================== 4 passed in 0.07 seconds =============================
-    
+
 If any tests fail you can use the following ``py.test`` ``-s -v --appdebug``
 options to help get additional information.  If you want to limit which
 test run you can also use the ``-k test_filter_string`` option.

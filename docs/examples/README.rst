@@ -5,9 +5,9 @@ Insights Core Examples
 The files contained in the ``insights/docs/examples`` directory are described
 in detail in the tutorials:
 
-* :doc:`../customtut_parsers`
-* :doc:`../customtut_rule`
+* :doc:`../parser_tutorial`
 * :doc:`../combiner_tutorial`
+* :doc:`../rule_tutorial_index`
 
 The examples directory includes these files::
     
