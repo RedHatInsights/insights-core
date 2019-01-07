@@ -70,7 +70,9 @@ class SosSpecs(Specs):
     ntptime = simple_file("sos_commands/ntp/ntptime")
     pcs_config = first_file(["sos_commands/pacemaker/pcs_config", "sos_commands/cluster/pcs_config"])
     pcs_status = first_file(["sos_commands/pacemaker/pcs_status", "sos_commands/cluster/pcs_status"])
-    ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
+    ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
+    ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
+    ps_auxww = first_file(["sos_commands/process/ps_auxww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
     pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")
     qpid_stat_q = first_of([
