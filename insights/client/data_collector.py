@@ -184,7 +184,7 @@ class DataCollector(object):
             try:
                 exclude = rm_conf['patterns']
             except LookupError:
-                logger.debug('Could not parse remove.conf. Ignoring...')
+                logger.debug('Patterns section of remove.conf is empty.')
 
         if self.config.run_specific_specs is not None:
             logger.debug('Running specific specs %s', self.config.run_specific_specs)
