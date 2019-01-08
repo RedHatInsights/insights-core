@@ -156,8 +156,8 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if config.payload:
-        logger.debug('Uploading a payload. Bypassing registration.')
+    if not config.legacy_upload:
+        logger.debug('Platform upload. Bypassing registration.')
         return
 
     reg = client.register()
@@ -214,6 +214,7 @@ def collect_and_output(client, config):
                     logger.info('Insights archive retained in ' + insights_archive)
                 else:
                     client.delete_archive(insights_archive, delete_parent_dir=True)
+    client.delete_cached_branch_info()
 
     # rotate eggs once client completes all work successfully
     try:
