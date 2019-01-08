@@ -300,13 +300,15 @@ class InsightsConnection(object):
             sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
             if u'200 connection established' not in res.decode('utf-8').lower():
-                logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error('Failed to connect to %s.', self.base_url)
+                logger.error('HTTP message:\n%s', res)
                 return False
         else:
             try:
                 sock.connect((hostname[0], 443))
-            except socket.gaierror:
+            except socket.gaierror as e:
                 logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error(e)
                 return False
         ctx = SSL.Context(SSL.TLSv1_METHOD)
         if type(self.cert_verify) is not bool:
@@ -655,7 +657,7 @@ class InsightsConnection(object):
         # This will undo a blacklist
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
-        if not system:
+        if system is False:
             return ('Could not reach the Insights service to register.', '', '', '')
 
         # If we get a 409, we know we need to generate a new machine-id
