@@ -445,6 +445,16 @@ class InsightsClient(object):
             return None
         return self.connection.get_diagnosis(remediation_id)
 
+    def delete_cached_branch_info(self):
+        '''
+            Deletes cached branch_info file
+        '''
+        if os.path.isfile(constants.cached_branch_info):
+            logger.debug('Deleting cached branch_info file...')
+            os.remove(constants.cached_branch_info)
+        else:
+            logger.debug('Cached branch_info file does not exist.')
+
 
 def format_config(config):
     # Log config except the password
