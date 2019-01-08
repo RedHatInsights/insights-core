@@ -475,11 +475,12 @@ class InsightsConnection(object):
         """
         branch_info = None
         if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 30 days old
+            # use cached branch info file if less than 10 minutes old
+            #  (failsafe, should be deleted at end of client run normally)
             logger.debug(u'Reading branch info from cached file.')
             ctime = datetime.utcfromtimestamp(
                 os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(days=30)):
+            if datetime.utcnow() < (ctime + timedelta(minutes=10)):
                 with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
                     branch_info = json.load(f)
                 return branch_info
