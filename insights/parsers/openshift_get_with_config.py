@@ -10,7 +10,10 @@ This command will also not include the commands which display large size outputs
 Parsers included in this module are:
 
 OcGetClusterRoleWithConfig - command ``oc get clusterrole --config /etc/origin/master/admin.kubeconfig``
---------------------------------------------------------
+--------------------------------------------------------------------------------------------------------
+
+OcGetClusterRoleBindingWithConfig - command ``oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig``
+----------------------------------------------------------------------------------------------------------------------
 
 Examples:
     >>> type(oc_get_cluster_role_with_config)
@@ -40,7 +43,7 @@ class OcGetClusterRoleWithConfig(CommandParser):
 
 @parser(Specs.oc_get_clusterrolebinding_with_config)
 class OcGetClusterRoleBindingWithConfig(CommandParser):
-    """Class to parse ``insights_commands/oc_get_clusterrolebinding_--config_.etc.origin.master.admin.kubeconfig``"""
+    """Class to parse ``oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig``"""
 
     def parse_content(self, content):
         self.rolebinding = {}
