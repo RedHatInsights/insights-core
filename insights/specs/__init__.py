@@ -310,6 +310,8 @@ class Specs(SpecSet):
     numeric_user_group_name = RegistryPoint()
     oc_get_bc = RegistryPoint()
     oc_get_build = RegistryPoint()
+    oc_get_cluster_role_with_config = RegistryPoint()
+    oc_get_clusterrolebinding_with_config = RegistryPoint()
     oc_get_dc = RegistryPoint()
     oc_get_egressnetworkpolicy = RegistryPoint()
     oc_get_endpoints = RegistryPoint()
