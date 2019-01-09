@@ -40,6 +40,7 @@ def test_collect_and_output_payload_on(insights_config, insights_client):
     insights_client.return_value.collect.assert_not_called()
     insights_client.return_value.upload.assert_called_with(payload='testp', content_type='testct')
     insights_client.return_value.delete_archive.assert_not_called()
+    insights_client.return_value.delete_cached_branch_info.assert_called_once()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
@@ -59,6 +60,7 @@ def test_collect_and_output_payload_off(insights_config, insights_client):
         payload=insights_client.return_value.collect.return_value,
         content_type='application/vnd.redhat.advisor.test+tgz')
     insights_client.return_value.delete_archive.assert_called_once()
+    insights_client.return_value.delete_cached_branch_info.assert_called_once()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
