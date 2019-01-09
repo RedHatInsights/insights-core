@@ -16,8 +16,8 @@ OcGetClusterRoleBindingWithConfig - command ``oc get clusterrolebinding --config
 ----------------------------------------------------------------------------------------------------------------------
 """
 
-from .. import parser, CommandParser
-from . import ParseException, parse_fixed_table
+from insights import parser, CommandParser
+from insights.parsers import ParseException, parse_fixed_table
 from insights.specs import Specs
 
 
@@ -46,7 +46,7 @@ class OcGetClusterRoleWithConfig(CommandParser):
     Examples:
         >>> type(oc_get_cluster_role_with_config)
         <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleWithConfig'>
-        >>> oc_get_cluster_role_with_config.data[0]
+        >>> oc_get_cluster_role_with_config[0]
         'admin'
     """
 
@@ -54,6 +54,9 @@ class OcGetClusterRoleWithConfig(CommandParser):
         if len(content) < 2 or content[0].strip() != "NAME":
             raise ParseException("invalid content" if content else 'empty file')
         self.data = list(map(lambda x: x.strip(), content[1:]))
+
+    def __getitem__(self, item):
+        return self.data[item]
 
     def __contains__(self, item):
         return item in self.data
@@ -65,6 +68,7 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
     Class to parse ``oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig``
 
     Attributes:
+        data (list): List of dicts, each dict containing one row of the table
         rolebinding (dict): It is a dictionary in which the key is rolebinding name and the value is the role.
 
     A typical sample of the content of this file looks like::
@@ -83,7 +87,7 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
     Examples:
         >>> type(oc_get_clusterrolebinding_with_config)
         <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleBindingWithConfig'>
-        >>> oc_get_clusterrolebinding_with_config.rolebinding["admin"]
+        >>> oc_get_clusterrolebinding_with_config["admin"]
         '/admin'
     """
 
@@ -91,7 +95,7 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
         if len(content) < 2 or "NAME" not in content[0]:
             raise ParseException("invalid content" if content else 'empty file')
 
-        self.data = parse_fixed_table(content)
+        self.data = parse_fixed_table(content, header_substitute=[('SERVICE ACCOUNTS', 'SERVICE_ACCOUNTS')])
         self.rolebinding = {}
 
         for rolebinding in self.data:
@@ -99,8 +103,9 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
             rolebinding_role = rolebinding["ROLE"].strip()
             if rolebinding_name and rolebinding_role:
                 self.rolebinding[rolebinding_name] = rolebinding_role
-            else:
-                raise ParseException("invalid ROLE format" if content else 'empty file')
+
+    def __getitem__(self, item):
+        return self.rolebinding[item]
 
     def __contains__(self, item):
         return item in self.rolebinding

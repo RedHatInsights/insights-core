@@ -185,6 +185,8 @@ admin
 def test_oc_get_cluster_role_with_config():
     result = openshift_get_with_config.OcGetClusterRoleWithConfig(context_wrap(OC_GET_CLUSTER_ROLE))
     assert result.data[0] == "admin"
+    assert "admin" in result
+    assert result[0] == "admin"
 
 
 def test_oc_get_cluster_role_with_config_2():
@@ -195,13 +197,30 @@ def test_oc_get_cluster_role_with_config_2():
 
 def test_oc_get_clusterrolebinding_with_config():
     result = openshift_get_with_config.OcGetClusterRoleBindingWithConfig(context_wrap(OC_GET_CLUSTERROLEBINDING))
+    assert result["admin"] == '/admin'
+    assert "admin" in result
     assert result.rolebinding["admin"] == "/admin"
-
-
-def test_oc_get_clusterrolebinding_with_config_2():
-    with pytest.raises(ParseException) as e:
-        openshift_get_with_config.OcGetClusterRoleBindingWithConfig(context_wrap(OC_GET_CLUSTERROLEBINDING_INVALID))
-    assert "invalid ROLE format" in str(e)
+    assert result.data == [{'NAME': 'admin', 'ROLE': '/admin', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'openshift-infra/template-instance-controller', 'SUBJECTS': ''},
+                           {'NAME': 'admin-0', 'ROLE': '/admin', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'kube-service-catalog/default', 'SUBJECTS': ''},
+                           {'NAME': 'admin-1', 'ROLE': '/admin', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'openshift-ansible-service-broker/asb', 'SUBJECTS': ''},
+                           {'NAME': 'asb-access', 'ROLE': '/asb-access', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'openshift-ansible-service-broker/asb-client', 'SUBJECTS': ''},
+                           {'NAME': 'asb-auth', 'ROLE': '/asb-auth', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'openshift-ansible-service-broker/asb', 'SUBJECTS': ''},
+                           {'NAME': 'auth-delegator-openshift-template-service-broker',
+                            'ROLE': '/system:auth-delegator', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'openshift-template-service-broker/apiserver', 'SUBJECTS': ''},
+                           {'NAME': 'basic-users', 'ROLE': '/basic-user', 'USERS': '', 'GROUPS': 'system:authenticated',
+                            'SERVICE_ACCOUNTS': '', 'SUBJECTS': ''},
+                           {'NAME': 'cluster-admin', 'ROLE': '/cluster-admin', 'USERS': '', 'GROUPS': 'system:masters',
+                            'SERVICE_ACCOUNTS': '', 'SUBJECTS': ''},
+                           {'NAME': 'cluster-admin-0', 'ROLE': '/cluster-admin', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': 'insights-scan/insights-scan', 'SUBJECTS': ''},
+                           {'NAME': 'cluster-admins', 'ROLE': '/cluster-admin', 'USERS': '', 'GROUPS': '',
+                            'SERVICE_ACCOUNTS': '', 'SUBJECTS': ''}]
 
 
 def test_oc_get_clusterrolebinding_with_config_3():
