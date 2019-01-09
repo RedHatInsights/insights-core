@@ -19,6 +19,8 @@ git rev-parse --short HEAD > insights/COMMIT
 # in core/__init__.py
 rm -rf insights/parsers/*
 cp ../insights/parsers/__init__.py insights/parsers
+cp ../insights/parsers/mount.py insights/parsers
+
 rm -rf insights/combiners/*
 cp ../insights/combiners/__init__.py insights/combiners
 
