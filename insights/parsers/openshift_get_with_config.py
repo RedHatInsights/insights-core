@@ -14,44 +14,93 @@ OcGetClusterRoleWithConfig - command ``oc get clusterrole --config /etc/origin/m
 
 OcGetClusterRoleBindingWithConfig - command ``oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig``
 ----------------------------------------------------------------------------------------------------------------------
-
-Examples:
-    >>> type(oc_get_cluster_role_with_config)
-    <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleWithConfig'>
-    >>> oc_get_cluster_role_with_config.role[0]
-    'admin'
-    >>> type(oc_get_clusterrolebinding_with_config)
-    <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleBindingWithConfig'>
-    >>> oc_get_clusterrolebinding_with_config.rolebinding["admin"]
-    '/admin'
 """
 
 from .. import parser, CommandParser
-from . import ParseException
+from . import ParseException, parse_fixed_table
 from insights.specs import Specs
 
 
-@parser(Specs.oc_get_cluster_role_with_config)
+@parser(Specs.oc_get_clusterrole_with_config)
 class OcGetClusterRoleWithConfig(CommandParser):
-    """Class to parse ``oc get clusterrole --config /etc/origin/master/admin.kubeconfig``"""
+    """
+    Class to parse ``oc get clusterrole --config /etc/origin/master/admin.kubeconfig``
+
+    A typical sample of the content of this file looks like::
+
+        NAME
+        admin
+        asb-access
+        asb-auth
+        basic-user
+        cluster-admin
+        cluster-debugger
+        cluster-reader
+        cluster-status
+        edit
+        hawkular-metrics-admin
+        management-infra-admin
+        namespace-viewer
+        registry-admin
+
+    Examples:
+        >>> type(oc_get_cluster_role_with_config)
+        <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleWithConfig'>
+        >>> oc_get_cluster_role_with_config.data[0]
+        'admin'
+    """
 
     def parse_content(self, content):
         if len(content) < 2 or content[0].strip() != "NAME":
-            raise ParseException("Error: ", content if content else 'empty file')
-        self.role = list(map(lambda x: x.strip(), content[1:]))
+            raise ParseException("invalid content" if content else 'empty file')
+        self.data = list(map(lambda x: x.strip(), content[1:]))
+
+    def __contains__(self, item):
+        return item in self.data
 
 
 @parser(Specs.oc_get_clusterrolebinding_with_config)
 class OcGetClusterRoleBindingWithConfig(CommandParser):
-    """Class to parse ``oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig``"""
+    """
+    Class to parse ``oc get clusterrolebinding --config /etc/origin/master/admin.kubeconfig``
+
+    Attributes:
+        rolebinding (dict): It is a dictionary in which the key is rolebinding name and the value is the role.
+
+    A typical sample of the content of this file looks like::
+
+        NAME                                                                  ROLE                                                                   USERS                            GROUPS                                         SERVICE ACCOUNTS                                                                   SUBJECTS
+        admin                                                                 /admin                                                                                                                                                 openshift-infra/template-instance-controller
+        admin-0                                                               /admin                                                                                                                                                 kube-service-catalog/default
+        admin-1                                                               /admin                                                                                                                                                 openshift-ansible-service-broker/asb
+        asb-access                                                            /asb-access                                                                                                                                            openshift-ansible-service-broker/asb-client
+        asb-auth                                                              /asb-auth                                                                                                                                              openshift-ansible-service-broker/asb
+        auth-delegator-openshift-template-service-broker                      /system:auth-delegator                                                                                                                                 openshift-template-service-broker/apiserver
+        basic-users                                                           /basic-user                                                                                             system:authenticated
+        cluster-admin                                                         /cluster-admin                                                                                          system:masters
+        cluster-admin-0                                                       /cluster-admin                                                                                                                                         insights-scan/insights-scan
+
+    Examples:
+        >>> type(oc_get_clusterrolebinding_with_config)
+        <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleBindingWithConfig'>
+        >>> oc_get_clusterrolebinding_with_config.rolebinding["admin"]
+        '/admin'
+    """
 
     def parse_content(self, content):
-        self.rolebinding = {}
         if len(content) < 2 or "NAME" not in content[0]:
-            raise ParseException("{0}: invalid content".format(self.__class__.__name__))
+            raise ParseException("invalid content" if content else 'empty file')
 
-        for line in content[1:]:
-            item_list = line.split()
-            if '/' not in line or len(item_list) < 2:
-                raise ParseException("{0}: invalid ROLE format".format(self.__class__.__name__))
-            self.rolebinding[item_list[0]] = item_list[1]
+        self.data = parse_fixed_table(content)
+        self.rolebinding = {}
+
+        for rolebinding in self.data:
+            rolebinding_name = rolebinding["NAME"].strip()
+            rolebinding_role = rolebinding["ROLE"].strip()
+            if rolebinding_name and rolebinding_role:
+                self.rolebinding[rolebinding_name] = rolebinding_role
+            else:
+                raise ParseException("invalid ROLE format" if content else 'empty file')
+
+    def __contains__(self, item):
+        return item in self.rolebinding

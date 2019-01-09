@@ -184,13 +184,13 @@ admin
 
 def test_oc_get_cluster_role_with_config():
     result = openshift_get_with_config.OcGetClusterRoleWithConfig(context_wrap(OC_GET_CLUSTER_ROLE))
-    assert result.role[0] == "admin"
+    assert result.data[0] == "admin"
 
 
 def test_oc_get_cluster_role_with_config_2():
     with pytest.raises(ParseException) as e:
         openshift_get_with_config.OcGetClusterRoleWithConfig(context_wrap(OC_GET_CLUSTER_ROLE_INVALID))
-    assert "name" in str(e)
+    assert "invalid" in str(e)
 
 
 def test_oc_get_clusterrolebinding_with_config():
