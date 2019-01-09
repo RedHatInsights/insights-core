@@ -87,7 +87,7 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
     Examples:
         >>> type(oc_get_clusterrolebinding_with_config)
         <class 'insights.parsers.openshift_get_with_config.OcGetClusterRoleBindingWithConfig'>
-        >>> oc_get_clusterrolebinding_with_config["admin"]
+        >>> oc_get_clusterrolebinding_with_config.rolebinding["admin"]
         '/admin'
     """
 
@@ -103,9 +103,3 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
             rolebinding_role = rolebinding["ROLE"].strip()
             if rolebinding_name and rolebinding_role:
                 self.rolebinding[rolebinding_name] = rolebinding_role
-
-    def __getitem__(self, item):
-        return self.rolebinding[item]
-
-    def __contains__(self, item):
-        return item in self.rolebinding

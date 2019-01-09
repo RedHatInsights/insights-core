@@ -197,8 +197,6 @@ def test_oc_get_cluster_role_with_config_2():
 
 def test_oc_get_clusterrolebinding_with_config():
     result = openshift_get_with_config.OcGetClusterRoleBindingWithConfig(context_wrap(OC_GET_CLUSTERROLEBINDING))
-    assert result["admin"] == '/admin'
-    assert "admin" in result
     assert result.rolebinding["admin"] == "/admin"
     assert result.data == [{'NAME': 'admin', 'ROLE': '/admin', 'USERS': '', 'GROUPS': '',
                             'SERVICE_ACCOUNTS': 'openshift-infra/template-instance-controller', 'SUBJECTS': ''},
