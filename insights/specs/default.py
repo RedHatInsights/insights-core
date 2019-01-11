@@ -699,6 +699,7 @@ class DefaultSpecs(Specs):
     tomcat_vdc_fallback = simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +")
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
+    ulimit_hard = simple_command("/usr/bin/ulimit -a -H")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")

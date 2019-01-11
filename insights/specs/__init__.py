@@ -482,6 +482,7 @@ class Specs(SpecSet):
     tomcat_web_xml = RegistryPoint(multi_output=True)
     tuned_adm = RegistryPoint()
     udev_persistent_net_rules = RegistryPoint()
+    ulimit_hard = RegistryPoint()
     uname = RegistryPoint()
     up2date = RegistryPoint()
     up2date_log = RegistryPoint(filterable=True)
