@@ -250,6 +250,7 @@ class DefaultSpecs(Specs):
     heat_crontab = simple_command("/usr/bin/crontab -l -u heat")
     heat_crontab_container = simple_command("docker exec heat_api_cron /usr/bin/crontab -l -u heat")
     heat_engine_log = first_file(["/var/log/containers/heat/heat-engine.log", "/var/log/heat/heat-engine.log"])
+    horizon_local_settings_conf = first_file(["/var/lib/config-data/puppet-generated/horizon/etc/openstack-dashboard/local_settings", "/etc/openstack-dashboard/local_settings"])
     hostname = simple_command("/usr/bin/hostname -f")
     hosts = simple_file("/etc/hosts")
     hponcfg_g = simple_command("/sbin/hponcfg -g")

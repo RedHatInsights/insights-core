@@ -149,6 +149,7 @@ class Specs(SpecSet):
     heat_crontab = RegistryPoint()
     heat_crontab_container = RegistryPoint()
     heat_engine_log = RegistryPoint(filterable=True)
+    horizon_local_settings_conf = RegistryPoint(filterable=True)
     hostname = RegistryPoint()
     hosts = RegistryPoint()
     hponcfg_g = RegistryPoint()
