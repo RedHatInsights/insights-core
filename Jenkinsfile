@@ -155,12 +155,14 @@ pipeline {
   }
   post {
     always {
-      pullRequest.comment """
-                          Jenkins reports located at:
-                          https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py26-report.html
-                          https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py27-report.html
-                          https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py3-report.html
-                          """
+      script {
+        pullRequest.comment """
+                            Jenkins reports located at:
+                            https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py26-report.html
+                            https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py27-report.html
+                            https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py3-report.html
+                            """
+      }
     }
   }
 }
