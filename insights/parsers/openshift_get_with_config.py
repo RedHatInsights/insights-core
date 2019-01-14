@@ -52,7 +52,7 @@ class OcGetClusterRoleWithConfig(CommandParser):
 
     def parse_content(self, content):
         if len(content) < 2 or content[0].strip() != "NAME":
-            raise ParseException("invalid content" if content else 'empty file')
+            raise ParseException("invalid content", content if content else 'empty file')
         self.data = list(map(lambda x: x.strip(), content[1:]))
 
     def __getitem__(self, item):
@@ -93,7 +93,7 @@ class OcGetClusterRoleBindingWithConfig(CommandParser):
 
     def parse_content(self, content):
         if len(content) < 2 or "NAME" not in content[0]:
-            raise ParseException("invalid content" if content else 'empty file')
+            raise ParseException("invalid content", content if content else 'empty file')
 
         self.data = parse_fixed_table(content, header_substitute=[('SERVICE ACCOUNTS', 'SERVICE_ACCOUNTS')])
         self.rolebinding = {}
