@@ -19,6 +19,13 @@ IPV4_FAILURE_FATAL = no  #this is a comment
 ONBOOT=yes
 """.strip()
 
+IFCFG_TEST_MASTER = """
+DEVICE="eth0"
+BOOTPROTO=dhcp
+MASTER="bond0"
+ONBOOT=yes
+""".strip()
+
 CONTEXT_PATH = "etc/sysconfig/network-scripts/ifcfg-enp0s25"
 
 IFCFG_TEST = """
@@ -162,6 +169,16 @@ def test_ifcfg_space_v2():
     assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
                     "IPV4_FAILURE_FATAL"], r)
     assert r["DEVICE"] == '\"\"badName2\"  \"'
+
+
+def test_ifcfg_master():
+    context = context_wrap(IFCFG_TEST_MASTER)
+    context.path = CONTEXT_PATH_DEVICE
+
+    r = IfCFG(context)
+    assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
+                    "MASTER"], r)
+    assert r["MASTER"] == '\"bond0\"'
 
 
 def test_ifcfg():
