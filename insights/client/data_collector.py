@@ -213,8 +213,12 @@ class DataCollector(object):
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
-                    file_spec = InsightsFile(s, exclude, self.mountpoint)
-                    self.archive.add_to_archive(file_spec)
+                    # filter files post-wildcard parsing
+                    if s['file'] in rm_conf.get('files', []):
+                        logger.warn("WARNING: Skipping file %s", s['file'])
+                    else:
+                        file_spec = InsightsFile(s, exclude, self.mountpoint)
+                        self.archive.add_to_archive(file_spec)
         if 'globs' in conf:
             for g in conf['globs']:
                 glob_specs = self._parse_glob_spec(g)
