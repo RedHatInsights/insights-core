@@ -152,10 +152,11 @@ pipeline {
         githubNotify description: 'Code Checks and Docs Generation Passed', status: 'SUCCESS'
       }
     }
-  }
-  post {
-    always {
-      script {
+    stage('Post Comment to Github') {
+      when {
+        changeRequest
+      }
+      steps {
         pullRequest.comment """
                             Jenkins reports located at:
                             https://insights-core-jenkins-reports.s3.amazonaws.com/${env.BRANCH_NAME}-${env.BUILD_ID}/py26-report.html
