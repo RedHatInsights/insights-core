@@ -129,6 +129,20 @@ BONDING_OPTS="mode=failover primary=eth1 arp_interval=1000 arp_ip_target=+10.11.
 
 IFCFG_PATH_BADLY_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
 
+IFCFG_BLANK_LINE = """
+
+DEVICE==eno2
+
+ONBOOT=no
+BOOTPROTO=none
+USERCTL=no
+DEVICETYPE=TeamPort
+TEAM_MASTER=team1
+TEAM_PORT_CONFIG='{"prio": 100}'
+"""
+
+IFCFG_PATH_BLANK_LINE = "etc/sysconfig/network-scripts/ifcfg-=eno2"
+
 
 def test_ifcfg_space_v1():
     context = context_wrap(IFCFG_TEST_SPACE_V1)
@@ -258,4 +272,12 @@ def test_ifcfg_bonding_opts():
     assert r["BONDING_OPTS"]["mode"] == "balance-xor"
     assert r["BONDING_OPTS"]["arp_ip_target"] == "+10.11.96.1"
     assert r["BONDING_OPTS"]["downdelay"] == "0"
+    assert r.has_empty_line is False
     assert r.bonding_mode == 2
+
+
+def test_ifcfg_blankline():
+    context = context_wrap(IFCFG_BLANK_LINE)
+    context.path = IFCFG_PATH_BLANK_LINE
+    r = IfCFG(context)
+    assert r.has_empty_line is True

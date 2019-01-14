@@ -11,7 +11,9 @@ for name in package_info:
 
 entry_points = {
     'console_scripts': [
+        'insights-collect = insights.collect:main',
         'insights-run = insights:main',
+        'insights-cat = insights.tools.cat:main',
         'insights-info = insights.tools.query:main',
         'gen_api = insights.tools.generate_api_config:main',
         'insights-perf = insights.tools.perf:main',
@@ -54,10 +56,10 @@ develop = set([
 ])
 
 docs = set([
-    'Sphinx==1.7.9',
-    'nbsphinx==0.3.1',
+    'Sphinx',
+    'nbsphinx',
     'sphinx_rtd_theme',
-    'ipython<6',
+    'ipython',
     'colorama',
     'jinja2',
 ])

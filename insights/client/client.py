@@ -77,6 +77,8 @@ def configure_level(config):
 
     net_debug_level = logging.INFO if config.net_debug else logging.ERROR
     logging.getLogger('network').setLevel(net_debug_level)
+    if not config.verbose:
+        logging.getLogger('insights.core.dr').setLevel(logging.WARNING)
 
 
 def set_up_logging(config):

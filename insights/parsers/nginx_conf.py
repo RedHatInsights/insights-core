@@ -118,6 +118,10 @@ from insights.util import deprecated
 @parser(Specs.nginx_conf)
 class NginxConf(Parser, LegacyItemAccess):
     """
+    .. warning::
+        This parser is deprecated, please import
+        :py:class:`insights.combiners.nginx_conf.NginxConfTree` instead.
+
     Class for ``nginx.conf`` and ``conf.d`` configuration files.
 
     Gerenally nginx.conf is writed as key-value format. It has a mail section and several sections,

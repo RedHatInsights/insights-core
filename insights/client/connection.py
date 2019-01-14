@@ -11,6 +11,8 @@ import logging
 import xml.etree.ElementTree as ET
 import warnings
 import socket
+import io
+from datetime import datetime, timedelta
 try:
     # python 2
     from urlparse import urlparse
@@ -25,6 +27,7 @@ from .utilities import (determine_hostname,
                         write_unregistered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -284,7 +287,7 @@ class InsightsConnection(object):
         sock = socket.socket()
         sock.setblocking(1)
         if self.proxies:
-            connect_str = 'CONNECT {0} HTTP/1.0\r\n'.format(hostname[0])
+            connect_str = 'CONNECT {0}:443 HTTP/1.0\r\n'.format(hostname[0])
             if self.proxy_auth:
                 connect_str += 'Proxy-Authorization: {0}\r\n'.format(self.proxy_auth)
             connect_str += '\r\n'
@@ -297,14 +300,16 @@ class InsightsConnection(object):
                 return False
             sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
-            if '200 Connection established' not in res:
-                logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
+            if u'200 connection established' not in res.decode('utf-8').lower():
+                logger.error('Failed to connect to %s.', self.base_url)
+                logger.error('HTTP message:\n%s', res)
                 return False
         else:
             try:
                 sock.connect((hostname[0], 443))
-            except socket.gaierror:
+            except socket.gaierror as e:
                 logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error(e)
                 return False
         ctx = SSL.Context(SSL.TLSv1_METHOD)
         if type(self.cert_verify) is not bool:
@@ -469,23 +474,43 @@ class InsightsConnection(object):
         """
         Retrieve branch_info from Satellite Server
         """
-        logger.debug("Obtaining branch information from %s",
+        branch_info = None
+        if os.path.exists(constants.cached_branch_info):
+            # use cached branch info file if less than 10 minutes old
+            #  (failsafe, should be deleted at end of client run normally)
+            logger.debug(u'Reading branch info from cached file.')
+            ctime = datetime.utcfromtimestamp(
+                os.path.getctime(constants.cached_branch_info))
+            if datetime.utcnow() < (ctime + timedelta(minutes=10)):
+                with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
+                    branch_info = json.load(f)
+                return branch_info
+            else:
+                logger.debug(u'Cached branch info is older than 30 days.')
+
+        logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
-        net_logger.info("GET %s", self.branch_info_url)
-        response = self.session.get(self.branch_info_url, timeout=self.config.http_timeout)
-        logger.debug("GET branch_info status: %s", response.status_code)
+        net_logger.info(u'GET %s', self.branch_info_url)
+        response = self.session.get(self.branch_info_url,
+                                    timeout=self.config.http_timeout)
+        logger.debug(u'GET branch_info status: %s', response.status_code)
         if response.status_code != 200:
-            logger.error("Bad status from server: %s", response.status_code)
+            logger.error(u'Bad status from server: %s', response.status_code)
             return False
 
         branch_info = response.json()
-        logger.debug("Branch information: %s", json.dumps(branch_info))
+        logger.debug(u'Branch information: %s', json.dumps(branch_info))
 
         # Determine if we are connected to Satellite 5
-        if ((branch_info['remote_branch'] is not -1 and
-             branch_info['remote_leaf'] is -1)):
+        if ((branch_info[u'remote_branch'] is not -1 and
+             branch_info[u'remote_leaf'] is -1)):
             self.get_satellite5_info(branch_info)
 
+        logger.debug(u'Saving branch info to file.')
+        with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
+            # json.dump is broke in py2 so use dumps
+            bi_str = json.dumps(branch_info, ensure_ascii=False)
+            f.write(bi_str)
         return branch_info
 
     def create_system(self, new_machine_id=False):
@@ -634,7 +659,7 @@ class InsightsConnection(object):
         # This will undo a blacklist
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
-        if not system:
+        if system is False:
             return ('Could not reach the Insights service to register.', '', '', '')
 
         # If we get a 409, we know we need to generate a new machine-id
@@ -677,22 +702,26 @@ class InsightsConnection(object):
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
 
+        try:
+            c_facts = json.dumps(get_canonical_facts())
+        except Exception as e:
+            logger.debug('Error getting canonical facts: %s', e)
+            c_facts = None
+
+        files = {}
         # legacy upload
         if self.config.legacy_upload:
             try:
                 from insights.contrib import magic
                 m = magic.open(magic.MAGIC_MIME)
                 m.load()
-                mime_type = m.file(data_collected)
+                content_type = m.file(data_collected)
             except ImportError:
                 magic = None
                 logger.debug(
                     'python-magic not installed, using backup function...')
                 from .utilities import magic_plan_b
-                mime_type = magic_plan_b(data_collected)
-
-            files = {
-                'file': (file_name, open(data_collected, 'rb'), mime_type)}
+                content_type = magic_plan_b(data_collected)
 
             if self.config.analyze_container:
                 logger.debug(
@@ -701,13 +730,11 @@ class InsightsConnection(object):
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
             headers = {'x-rh-collection-time': str(duration)}
-
-        # platform upload
         else:
-            files = {
-                'upload': (file_name, open(data_collected, 'rb'),
-                           content_type)}
             headers = {}
+            files['metadata'] = c_facts
+
+        files['file'] = (file_name, open(data_collected, 'rb'), content_type)
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
@@ -770,3 +797,28 @@ class InsightsConnection(object):
             logger.error('Connection timed out. Running connection test...')
             self.test_connection()
             return False
+
+    def get_diagnosis(self, remediation_id=None):
+        '''
+            Reach out to the platform and fetch a diagnosis.
+            Spirtual successor to --to-json from the old client.
+        '''
+        diag_url = self.base_url + '/platform/remediations/v1/diagnosis/' + generate_machine_id()
+        params = {}
+        if remediation_id:
+            # validate this?
+            params['remediation'] = remediation_id
+        try:
+            net_logger.info("GET %s", diag_url)
+            res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
+            if res.status_code == 200:
+                return res.json()
+            else:
+                logger.error('Unable to get diagnosis data: %s %s',
+                             res.status_code, res.text)
+                return None
+        except requests.ConnectionError:
+            # can't connect, run connection test
+            logger.error('Connection timed out. Running connection test...')
+            self.test_connection()
+            return None

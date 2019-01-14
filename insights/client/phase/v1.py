@@ -5,6 +5,7 @@ import logging
 import os
 import shutil
 import sys
+import six
 
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
@@ -101,6 +102,16 @@ def pre_update(client, config):
         support.collect_support_info()
         sys.exit(constants.sig_kill_ok)
 
+    if config.diagnosis:
+        remediation_id = None
+        if config.diagnosis is not True:
+            remediation_id = config.diagnosis
+        resp = client.get_diagnosis(remediation_id)
+        if not resp:
+            sys.exit(constants.sig_kill_bad)
+        print(json.dumps(resp))
+        sys.exit(constants.sig_kill_ok)
+
 
 @phase
 def update(client, config):
@@ -145,8 +156,8 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if config.payload:
-        logger.debug('Uploading a payload. Bypassing registration.')
+    if not config.legacy_upload:
+        logger.debug('Platform upload. Bypassing registration.')
         return
 
     reg = client.register()
@@ -176,7 +187,10 @@ def collect_and_output(client, config):
         sys.exit(constants.sig_kill_bad)
     if config.to_stdout:
         with open(insights_archive, 'rb') as tar_content:
-            shutil.copyfileobj(tar_content, sys.stdout)
+            if six.PY3:
+                sys.stdout.buffer.write(tar_content.read())
+            else:
+                shutil.copyfileobj(tar_content, sys.stdout)
     else:
         resp = None
         if not config.no_upload:
@@ -200,13 +214,14 @@ def collect_and_output(client, config):
                     logger.info('Insights archive retained in ' + insights_archive)
                 else:
                     client.delete_archive(insights_archive, delete_parent_dir=True)
+    client.delete_cached_branch_info()
 
-            # if we are rotating the eggs and success on upload do rotation
-            try:
-                client.rotate_eggs()
-            except IOError:
-                message = ("Failed to rotate %s to %s" %
-                           (constants.insights_core_newest,
-                            constants.insights_core_last_stable))
-                logger.debug(message)
-                raise IOError(message)
+    # rotate eggs once client completes all work successfully
+    try:
+        client.rotate_eggs()
+    except IOError:
+        message = ("Failed to rotate %s to %s" %
+                   (constants.insights_core_newest,
+                    constants.insights_core_last_stable))
+        logger.debug(message)
+        raise IOError(message)

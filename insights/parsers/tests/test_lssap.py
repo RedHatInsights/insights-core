@@ -1,6 +1,7 @@
 from ...parsers import lssap, ParseException
 from ...tests import context_wrap
 from ...util import keys_in
+import doctest
 import pytest
 
 Lssap_BAD = """
@@ -25,7 +26,6 @@ Lssap_nw_TEST = """
   HA2|  22|       D22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe
   HA2|  50|       D50|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D50/exe
   HA2|  51|       D51|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D51/exe
-  HA2|  52|       D52|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D52/exe
 ==========================================
 """.strip()
 
@@ -45,24 +45,19 @@ Lssap_ascs_TEST = """
 ==========================================
 """.strip()
 
-Lssap_bad_instance_TEST = """
- - lssap version 1.0 -
-==========================================
-  SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE
-  HA2|  16|       B16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe
-  HA2|  22|       QR22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe
-  HA2|  50|       DS0|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D50/exe
-==========================================
-""".strip()
-
 Lssap_runAll_Test = """
  - lssap version 1.0 -
 ==========================================
   SID   Nr   Instance    SAPLOCALHOST                        Version                 DIR_EXECUTABLE
   HA2|  16|       D16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D16/exe
   HA2|  22|       D22|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/D22/exe
-  HA2|  16|       HDB16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/HDB16/exe
-  HA2|  16|       ASCS16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/ASCS16/exe
+  HA2|  16|     HDB16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/HDB16/exe
+  HA2|  16|    ASCS16|         lu0417|749, patch 10, changelist 1698137|          /usr/sap/HA2/ASCS16/exe
+  DA1|  97|    SMDA97|         l0116a|745, patch 100, changelist 1652052|         /usr/sap/DA1/SMDA97/exe
+  DAA|  98|    SMDA98|         l0116a|745, patch 100, changelist 1652052|         /usr/sap/DAA/SMDA98/exe
+  MHP|  00|     HDB00|         l0116a|749, patch 315, changelist 1787247|         /usr/sap/MHP/HDB00/exe
+  MEP|  02|    ASCS02|         l0116a|745, patch 600, changelist 1791210|         /usr/sap/MEP/ASCS02/exe
+  MEP|  01| DVEBMGS01|         l0116a|745, patch 600, changelist 1791210|         /usr/sap/MEP/DVEBMGS01/exe
 ==========================================
 """.strip()
 
@@ -80,11 +75,10 @@ HB2 | foo | bar
 """.strip()
 
 
-def test_lists():
-    sap = lssap.Lssap(context_wrap(Lssap_runAll_Test))
-    assert sap.instances == ["D16", "D22", "HDB16", "ASCS16"]
-    assert sap.sid == ["HA2"]
-    assert sap.version("D16") == "749, patch 10, changelist 1698137"
+def test_doc_examples():
+    env = {'lssap': lssap.Lssap(context_wrap(Lssap_nw_TEST))}
+    failed, total = doctest.testmod(lssap, globs=env)
+    assert failed == 0
 
 
 def test_lssap_netweaver():
@@ -122,13 +116,18 @@ def test_lssap_ascs():
 
 def test_all():
     sap = lssap.Lssap(context_wrap(Lssap_runAll_Test))
-    data = sap.data
-    assert data[1] == {"SID": "HA2", "Nr": "22", "Instance": "D22", "SAPLOCALHOST": "lu0417",
-                       "Version": "749, patch 10, changelist 1698137",
-                       "DIR_EXECUTABLE": "/usr/sap/HA2/D22/exe"}
+    assert sap.sid == ['DA1', 'DAA', 'HA2', 'MEP', 'MHP']
+    assert sap.instances == ['D16', 'D22', 'HDB16', 'ASCS16', 'SMDA97', 'SMDA98', 'HDB00', 'ASCS02', 'DVEBMGS01']
+    assert sap.data[1] == {"SID": "HA2", "Nr": "22", "Instance": "D22", "SAPLOCALHOST": "lu0417",
+                           "Version": "749, patch 10, changelist 1698137",
+                           "DIR_EXECUTABLE": "/usr/sap/HA2/D22/exe"}
     assert sap.is_netweaver() is True
     assert sap.is_hana() is True
     assert sap.is_ascs() is True
+    assert 'SMDA' in sap.instance_types
+    assert 'DVEBMGS01' in sap.instances
+    assert sap.version("D16") == "749, patch 10, changelist 1698137"
+    assert sap.version("D06") is None
 
 
 def test_fail():
@@ -147,7 +146,3 @@ def test_fail():
     with pytest.raises(ParseException) as excinfo:
         lssap.Lssap(context_wrap(Lssap_BAD_3))
     assert "Lssap: Unable to parse 2 line(s) of content: (['HA2 | N16 | D16', 'HB2 | foo | bar'])" in str(excinfo)
-
-    with pytest.raises(ParseException) as excinfo:
-        lssap.Lssap(context_wrap(Lssap_bad_instance_TEST))
-    assert "Lssap: Invalid instance parsed in content: ['B', 'QR', 'DS']" in str(excinfo)

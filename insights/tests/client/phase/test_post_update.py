@@ -14,17 +14,18 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.disable_schedule": False,
                        "return_value.load_all.return_value.analyze_container": False,
                        "return_value.load_all.return_value.display_name": False,
-                       "return_value.load_all.return_value.register": False})
+                       "return_value.load_all.return_value.register": False,
+                       "return_value.load_all.return_value.diagnosis": None})
     return patcher(old_function)
 
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-def test_post_update_payload_on(insights_config, insights_client):
+def test_post_update_legacy_upload_off(insights_config, insights_client):
     """
-    Registration is not processed when a payload is uploaded
+    Registration is not processed when platform upload
     """
-    insights_config.return_value.load_all.return_value.payload = True
+    insights_config.return_value.load_all.return_value.legacy_upload = False
     try:
         post_update()
     except SystemExit:
@@ -34,11 +35,11 @@ def test_post_update_payload_on(insights_config, insights_client):
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
-def test_post_update_payload_off(insights_config, insights_client):
+def test_post_update_legacy_upload_on(insights_config, insights_client):
     """
-    Registration is processed in normal operation (no payload)
+    Registration is processed in legacy_upload=True
     """
-    insights_config.return_value.load_all.return_value.payload = False
+    insights_config.return_value.load_all.return_value.legacy_upload = True
     try:
         post_update()
     except SystemExit:

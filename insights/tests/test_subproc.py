@@ -22,8 +22,3 @@ def test_call_timeout():
     if sys.platform != "darwin":
         with pytest.raises(subproc.CalledProcessError):
             subproc.call('sleep 3', timeout=1)
-
-
-def test_call_invalid_args():
-    with pytest.raises(subproc.CalledProcessError):
-        subproc.call([1, 2, 3])

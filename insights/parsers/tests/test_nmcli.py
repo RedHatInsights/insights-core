@@ -1,5 +1,8 @@
 from insights.tests import context_wrap
 from insights.parsers.nmcli import NmcliDevShow
+from insights.parsers.nmcli import NmcliConnShow
+from insights.parsers import nmcli
+import doctest
 
 NMCLI_SHOW = """
 GENERAL.DEVICE:                         em3
@@ -44,6 +47,21 @@ NMCLI_SHOW_ERROR = """
 Error: Option '-l' is unknown, try 'nmcli -help'.
 """
 
+STATIC_CONNECTION_SHOW_1 = """
+NAME      UUID                                  TYPE      DEVICE
+enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+test-net-1  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+""".strip()
+
+STATIC_CONNECTION_SHOW_2 = """
+NAME      UUID                                  TYPE      DEVICE
+enp0s3    320d4923-c410-4b22-b7e9-afc5f794eecc  ethernet  enp0s3
+virbr0    7c7dec66-4a8c-4b49-834a-889194b3b83c  bridge    virbr0
+test-net-1  f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+test-net-2 f858b1cc-d149-4de0-93bc-b1826256847a  ethernet  --
+""".strip()
+
 
 def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
@@ -59,3 +77,23 @@ def test_nmcli():
     assert nmcli_obj.data['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
     assert len(nmcli_obj.data['em3']) == 17
     assert len(nmcli_obj.data['em1']) == 7
+
+
+def test_static_connection_test_1():
+    static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1))
+    assert static_conn.data[0] == {'NAME': 'enp0s3', 'UUID': '320d4923-c410-4b22-b7e9-afc5f794eecc', 'TYPE': 'ethernet', 'DEVICE': 'enp0s3'}
+    assert static_conn.disconnected_connection == ["test-net-1"]
+
+
+def test_static_connection_test_2():
+    static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_2))
+    assert static_conn.disconnected_connection == ["test-net-1", "test-net-2"]
+
+
+def test_nmcli_doc_examples():
+    env = {
+        'nmcli_obj': NmcliDevShow(context_wrap(NMCLI_SHOW)),
+        'static_conn': NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_1)),
+    }
+    failed, total = doctest.testmod(nmcli, globs=env)
+    assert failed == 0

@@ -434,6 +434,27 @@ class InsightsClient(object):
         '''
         return self.connection.set_display_name(display_name)
 
+    @_net
+    def get_diagnosis(self, remediation_id=None):
+        '''
+            returns JSON of diagnosis data on success, None on failure
+            Optional arg remediation_id to get a particular remediation set.
+        '''
+        if self.config.offline:
+            logger.error('Cannot get diagnosis in offline mode.')
+            return None
+        return self.connection.get_diagnosis(remediation_id)
+
+    def delete_cached_branch_info(self):
+        '''
+            Deletes cached branch_info file
+        '''
+        if os.path.isfile(constants.cached_branch_info):
+            logger.debug('Deleting cached branch_info file...')
+            os.remove(constants.cached_branch_info)
+        else:
+            logger.debug('Cached branch_info file does not exist.')
+
 
 def format_config(config):
     # Log config except the password

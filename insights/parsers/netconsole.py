@@ -25,7 +25,7 @@ Examples:
     False
 
 '''
-
+from insights.util import deprecated
 from .. import parser, SysconfigOptions, LegacyItemAccess
 from insights.specs import Specs
 
@@ -33,7 +33,13 @@ from insights.specs import Specs
 @parser(Specs.netconsole)
 class NetConsole(SysconfigOptions, LegacyItemAccess):
     '''
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.sysconfig.NetconsoleSysconfig` instead.
+
     Contents of the ``/etc/sysconfig/netconsole`` file.  Uses the
     ``SysconfigOptions`` shared parser class.
     '''
-    pass
+    def __init__(self, *args, **kwargs):
+        deprecated(NetConsole, "Import NetconsoleSysconfig from insights.parsers.sysconfig instead")
+        super(NetConsole, self).__init__(*args, **kwargs)
