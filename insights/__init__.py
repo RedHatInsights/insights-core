@@ -240,7 +240,7 @@ def run(component=None, root=None, print_summary=False,
 
         if args.config:
             with open(args.config) as f:
-                apply_configs(yaml.load(f))
+                apply_configs(yaml.safe_load(f))
 
         if component is None:
             component = []
