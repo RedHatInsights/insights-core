@@ -97,7 +97,7 @@ class IfCFG(LegacyItemAccess, CommandParser):
             # of the key is before dequoting and stripping.
             if key == "BONDING_OPTS":
                 self.data["raw_bonding_value"] = value
-            if key != "DEVICE":
+            if key not in ["DEVICE", "MASTER"]:
                 value = value.strip().strip(QUOTES)
             if key in JSON_FIELDS:
                 value = json.loads(value.replace("\\", ""))
