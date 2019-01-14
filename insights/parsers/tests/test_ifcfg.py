@@ -178,7 +178,7 @@ def test_ifcfg_master():
     r = IfCFG(context)
     assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
                     "MASTER"], r)
-    assert r["MASTER"] == '\"bond0\"'
+    assert r["MASTER"] == 'bond0'
 
 
 def test_ifcfg():
@@ -219,7 +219,7 @@ def test_ifcfg_3():
 
     r = IfCFG(context)
 
-    assert len(r.data) == 7
+    assert len(r.data) == 8
     assert r["DEVICE"] == "team1"
     assert r["DEVICETYPE"] == "Team"
     assert r["ONBOOT"] == "yes"
