@@ -7,37 +7,124 @@ import pytest
 
 
 LOCAL_SETTINGS_CONF_FILTERED = """
-# service API. For example, The identity service APIs have inconsistent
 OPENSTACK_API_VERSIONS = {
-    "identity": 3,
-OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = False
-OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
-# federation protocols and identity provider/federation protocol
-# Note: The last two tuples are sample mapping keys to a identity provider
-# A dictionary of specific identity provider and federation protocol
-# it will redirect the user to a identity provider and federation protocol
-# Enables redirection on login to the identity provider defined on
-# Enables redirection on logout to the method specified on the identity provider.
-# Please insure that your identity policy file matches the one being used on
-    'identity': 'keystone_policy.json',
-                              'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN',
-    'identity.users': False,
-    'identity.projects': False,
-    'identity.groups': False,
-    'identity.roles': False
-""".strip()
-
-LOCAL_SETTINGS_CONF_FILTERED_1 = """
-OPENSTACK_API_VERSIONS = {
-    "identity": 2.0,
-    'identity': 'keystone_policy.json',
-    'identity.users': False,
-    'identity.projects': False,
-    'identity.groups': False,
-    'identity.roles': False
+  'identity': 3,
+}
 OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
 OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
-                              'OPENSTACK_KEYSTONE_DEFAULT_DOMAIN',
+HORIZON_CONFIG = {
+    'auto_fade_alerts': {
+    },
+    'exceptions': {'recoverable': exceptions.RECOVERABLE,
+                   'unauthorized': exceptions.UNAUTHORIZED},
+}
+CACHES = {
+    'default': {
+    }
+}
+OPENSTACK_KEYSTONE_BACKEND = {
+}
+OPENSTACK_HYPERVISOR_FEATURES = {
+}
+OPENSTACK_CINDER_FEATURES = {
+}
+OPENSTACK_NEUTRON_NETWORK = {
+}
+POLICY_FILES = {
+    'identity': 'keystone_policy.json',
+    'identity.users': False,
+    'identity.projects': False,
+    'identity.groups': False,
+    'identity.roles': False
+}
+LOGGING = {
+    'formatters': {
+        'verbose': {
+        },
+        'normal': {
+        },
+    },
+    'handlers': {
+        'null': {
+        },
+        'console': {
+        },
+        'file': {
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+        },
+        'requests': {
+        },
+        'horizon': {
+        },
+        'openstack_dashboard': {
+        },
+        'novaclient': {
+        },
+        'cinderclient': {
+        },
+        'keystoneclient': {
+        },
+        'glanceclient': {
+        },
+        'neutronclient': {
+        },
+        'heatclient': {
+        },
+        'ceilometerclient': {
+        },
+        'troveclient': {
+        },
+        'swiftclient': {
+        },
+        'openstack_auth': {
+        },
+        'nose.plugins.manager': {
+        },
+        'django': {
+        },
+    }
+}
+SECURITY_GROUP_RULES = {
+    'all_tcp': {
+    },
+    'all_udp': {
+    },
+    'all_icmp': {
+    },
+    'ssh': {
+    },
+    'smtp': {
+    },
+    'dns': {
+    },
+    'http': {
+    },
+    'pop3': {
+    },
+    'imap': {
+    },
+    'ldap': {
+    },
+    'https': {
+    },
+    'smtps': {
+    },
+    'imaps': {
+    },
+    'pop3s': {
+    },
+    'ms_sql': {
+    },
+    'mysql': {
+    },
+    'rdp': {
+    },
+}
+LAUNCH_INSTANCE_DEFAULTS = {
+}
 """.strip()
 
 EXCEPTION1 = """
@@ -57,14 +144,21 @@ EXCEPTION2 = """
 
 EXCEPTION3 = """
 OPENSTACK_API_VERSIONS = {
-    "identity": 2.0,
+    'identity': 3,
+}
+POLICY_FILES = {
     'identity': 'keystone_policy.json',
     'identity.users': False,
     'identity.projects': False,
     'identity.groups': False,
     'identity.roles': False
+}
 OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT =
 OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'Default'
+CACHES = {
+    'default': {
+    }
+}
 """.strip()
 
 
@@ -81,19 +175,11 @@ def test_horizon_local_settings_conf_filtered():
     assert settings["OPENSTACK_API_VERSIONS"]["identity"] == "3"
     assert settings.has_option("DISALLOW_IFRAME_EMBED ") is False
     assert settings["OPENSTACK_KEYSTONE_DEFAULT_DOMAIN"] == "Default"
-    assert settings["OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT"] == "False"
-
-
-def test_horizon_local_settings_conf_filtered_1():
-    settings = HorizonLocalSettingsConf(context_wrap(LOCAL_SETTINGS_CONF_FILTERED_1))
-    assert settings.has_option("OPENSTACK_API_VERSIONS") is True
     assert settings["OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT"] == "True"
-    assert settings["OPENSTACK_API_VERSIONS"]["identity"] == "2.0"
-    assert settings["OPENSTACK_KEYSTONE_DEFAULT_DOMAIN"] == "Default"
 
 
 def test_horizon_local_settings_conf_exception1():
-    with pytest.raises(ParseException) as e:
+    with pytest.raises(SkipException) as e:
         HorizonLocalSettingsConf(context_wrap(EXCEPTION1))
     assert "Empty file" in str(e)
 
