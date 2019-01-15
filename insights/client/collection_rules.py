@@ -235,11 +235,12 @@ class InsightsUploadConf(object):
         parsedconfig = ConfigParser.RawConfigParser()
         parsedconfig.read(self.remove_file)
         rm_conf = {}
+
         for item, value in parsedconfig.items('remove'):
             if six.PY3:
-                rm_conf[item] = value.strip().decode('string-escape').split(',')
+                rm_conf[item] = value.strip().encode('utf-8').decode('unicode-escape').split(',')
             else:
-                rm_conf[item] = value.strip().decode('unicode-escape').split(',')
+                rm_conf[item] = value.strip().decode('string-escape').split(',')
 
         return rm_conf
 
