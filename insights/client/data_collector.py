@@ -104,6 +104,14 @@ class DataCollector(object):
             el_globs.append(_spec)
         return el_globs
 
+    def _blacklist_check(self, cmd):
+        cmd_parts = shlex.split(cmd)
+        for p in cmd_parts:
+            if len(shlex.split(p)) > 1:
+                return self._blacklist_check(p)
+        return len(set.intersection(set(cmd_parts),
+            constants.command_blacklist)) > 1
+
     def _parse_command_spec(self, spec, precmds):
         '''
         Run pre_commands
@@ -113,8 +121,7 @@ class DataCollector(object):
             try:
                 precmd = precmds[precmd_alias]
 
-                if set.intersection(set(shlex.split(precmd)),
-                                    constants.command_blacklist):
+                if self._blacklist_check(precmd):
                     raise RuntimeError("Command Blacklist: " + precmd)
 
                 args = self._run_pre_command(precmd)
