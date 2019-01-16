@@ -60,6 +60,7 @@ class SosSpecs(Specs):
     lsmod = simple_file("lsmod")
     lspci = simple_file("lspci")
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
+    ls_dev = simple_file("sos_commands/block/ls_-lanR_.dev")
     lvs = simple_file("sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0")
     mount = simple_file("mount")
     multipath__v4__ll = simple_file("sos_commands/multipath/multipath_-v4_-ll")
