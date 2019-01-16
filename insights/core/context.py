@@ -171,7 +171,7 @@ class ExecutionContext(object):
 @fs_root
 class HostContext(ExecutionContext):
     def __init__(self, root='/', timeout=30, all_files=None):
-        super(HostContext, self).__init__(root, timeout, all_files)
+        super(HostContext, self).__init__(root=root, timeout=timeout, all_files=all_files)
 
 
 @fs_root
