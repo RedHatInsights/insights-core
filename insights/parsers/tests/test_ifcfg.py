@@ -154,9 +154,9 @@ BONDING_OPTS="mode=balance-xor primary = eth1 arp_interval= 1000 arp_ip_target=+
 
 IFCFG_PATH_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
 
-IFCFG_PATH_NAMED_BOND_MASTER = "etc/sysconfig/network-scripts/ifcfg-eth2"
+IFCFG_PATH_ETH1 = "etc/sysconfig/network-scripts/ifcfg-eth1"
 
-IFCFG_PATH_1 = "etc/sysconfig/network-scripts/ifcfg-eth1"
+IFCFG_PATH_ETH2 = "etc/sysconfig/network-scripts/ifcfg-eth2"
 
 IFCFG_TEST_BADLY_NAMED_BOND_MODE = """
 DEVICE=bond0
@@ -337,7 +337,7 @@ def test_ifcfg_blankline():
 
 def test_ifcfg_raw_bonding_master_value():
     context = context_wrap(IFCFG_TEST_RAW_MASTER_VALUE)
-    context.path = IFCFG_PATH_NAMED_BOND_MASTER
+    context.path = IFCFG_PATH_ETH2
 
     r = IfCFG(context)
 
@@ -357,7 +357,7 @@ def test_ifcfg_raw_bonding_value():
 
 def test_ifcfg_raw_team_master_value():
     context = context_wrap(IFCFG_TEST_RAW_TEAM_MASTER_VALUE)
-    context.path = IFCFG_PATH_1
+    context.path = IFCFG_PATH_ETH1
 
     r = IfCFG(context)
 
