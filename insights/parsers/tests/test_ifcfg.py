@@ -123,7 +123,7 @@ MASTER="bond0"
 
 IFCFG_TEST_RAW_TEAM_MASTER_VALUE = """
 TYPE=Ethernet
-DEVICE="eth0"
+DEVICE="eth1"
 BOOTPROTO=none
 ONBOOT=yes
 TEAM_MASTER="team0"
@@ -157,6 +157,8 @@ IFCFG_PATH_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
 IFCFG_PATH_NAMED_BOND_MASTER = "etc/sysconfig/network-scripts/ifcfg-eth0"
 
 IFCFG_PATH_NAMED_TEAM_MASTER = "etc/sysconfig/network-scripts/ifcfg-eth0"
+
+IFCFG_PATH_1 = "etc/sysconfig/network-scripts/ifcfg-eth1"
 
 IFCFG_TEST_BADLY_NAMED_BOND_MODE = """
 DEVICE=bond0
@@ -357,9 +359,9 @@ def test_ifcfg_raw_bonding_value():
 
 def test_ifcfg_raw_team_master_value():
     context = context_wrap(IFCFG_TEST_RAW_TEAM_MASTER_VALUE)
-    context.path = IFCFG_PATH_NAMED_TEAM_MASTER
+    context.path = IFCFG_PATH_1
 
     r = IfCFG(context)
 
-    assert r["raw_device_value"] == '"eth0"'
+    assert r["raw_device_value"] == '"eth1"'
     assert r["raw_team_value"] == '"team0"'
