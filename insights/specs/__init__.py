@@ -491,6 +491,7 @@ class Specs(SpecSet):
     uptime = RegistryPoint()
     usr_journald_conf_d = RegistryPoint(multi_output=True)
     vdsm_conf = RegistryPoint()
+    tuned_conf = RegistryPoint()
     vdsm_id = RegistryPoint()
     vdsm_log = RegistryPoint(filterable=True)
     vdsm_logger_conf = RegistryPoint()
