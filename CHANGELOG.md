@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-3.0.73-767](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.73-767) (2019-01-17)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.72-1...insights-core-3.0.73-767)
+
+**Closed issues:**
+
+- ifcfg parser to support for MASTER and TEAM\_MASTER keys slave type [\#1626](https://github.com/RedHatInsights/insights-core/issues/1626)
+
+## [3.0.72-1](https://github.com/RedHatInsights/insights-core/tree/3.0.72-1) (2019-01-09)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.71-1...3.0.72-1)
+
+## [3.0.71-1](https://github.com/RedHatInsights/insights-core/tree/3.0.71-1) (2019-01-07)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.70-754...3.0.71-1)
+
 ## [insights-core-3.0.70-754](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.70-754) (2018-12-24)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.69-744...insights-core-3.0.70-754)
 
