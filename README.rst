@@ -48,13 +48,13 @@ There are several resources for digging into the details of how to use ``insight
   have three tutorials plus instructions on how to setup the tutorial environment
 
   - `Preparing Your Development Environment
-    <http://insights-core-tutorials.readthedocs.io/en/latest/prep_tutorial_env.html>`_
+    <https://insights-core-tutorials.readthedocs.io/en/latest/prep_tutorial_env.html>`_
   - `Custom Parser Development
-    <http://insights-core-tutorials.readthedocs.io/en/latest/customtut_parsers.html>`_
+    <https://insights-core-tutorials.readthedocs.io/en/latest/customtut_parsers.html>`_
   - `Custom Combiner Development
-    <http://insights-core-tutorials.readthedocs.io/en/latest/combiner_tutorial.html>`_
+    <https://insights-core-tutorials.readthedocs.io/en/latest/combiner_tutorial.html>`_
   - `Rule Development
-    <http://insights-core-tutorials.readthedocs.io/en/latest/rule_tutorial_index.html>`_
+    <https://insights-core-tutorials.readthedocs.io/en/latest/rule_tutorial_index.html>`_
 
 
 - The basic architectural principles of ``insights-core`` can be found in
