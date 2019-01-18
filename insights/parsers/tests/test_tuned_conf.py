@@ -73,7 +73,7 @@ TUNED_CONF_DOCS = """
 [NetTuning]
 # Enabled or disable the plugin. Default is True. Any other value
 # disables it.
-enabled=False
+ enabled=False
 
 #
 # CPU monitoring section
