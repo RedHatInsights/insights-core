@@ -2,15 +2,16 @@
 This module contains following parser:
 
 TunedConfIni - file ``/etc/tuned.conf``
-------------------------------------
+---------------------------------------
 """
 
-from .. import IniConfigFile, parser
+from .. import parser, Parser, get_active_lines
 from insights.specs import Specs
+from insights.contrib.ConfigParser import NoSectionError, NoOptionError
 
 
 @parser(Specs.tuned_conf)
-class TunedConfIni(IniConfigFile):
+class TunedConfIni(Parser):
     """This class parses the ``/etc/tuned.conf`` file using the
     ``IniConfigFile`` base parser.
 
@@ -34,11 +35,58 @@ class TunedConfIni(IniConfigFile):
 
 
     Examples:
-        >>> 'NetTuning' in tuned_obj
+        >>> 'NetTuning' in tuned_obj.sections
         True
         >>> tuned_obj.get('NetTuning', 'enabled') == "False"
         True
         >>> tuned_obj.getboolean('NetTuning', 'enabled') == False
         True
+        >>> sorted(tuned_obj.sections)
+        ['CPUMonitor', 'NetTuning']
     """
-    pass
+
+    _boolean_states = {'true': True, 'false': False}
+
+    def parse_content(self, content):
+        self.data = {}
+        self._sections = []
+        for line in get_active_lines(content):
+            if line.startswith('['):
+                _section = line.split(']')[0].strip("[")
+                self._sections.append(_section)
+                self.data[_section] = {}
+            else:
+                key, val = line.split('=')
+                self.data[_section][key] = val
+
+    @property
+    def sections(self):
+        """
+        (list): Returns a list of **sections** present in the file
+        """
+        return self._sections
+
+    def get(self, section, opt):
+        """
+        get(section, option)
+        (str): Returns a string value for the named **section** and
+            corresponding **option**.
+        """
+        if section and section not in self._sections:
+            raise NoSectionError(section)
+        elif opt not in self.data[section]:
+            raise NoOptionError(opt, section)
+        elif self.data[section][opt]:
+            return self.data[section][opt]
+        else:
+            return None
+
+    def getboolean(self, section, option):
+        """
+        getboolean(section, options)
+        (bool): like get(), but it will convert value to a boolean
+        """
+        v = self.get(section, option)
+        if v.lower() not in self._boolean_states:
+            raise ValueError('Not a boolean: %s' % v)
+        return self._boolean_states[v.lower()]
