@@ -40,8 +40,8 @@ class TunedConfIni(IniConfigFile):
         True
         >>> tuned_obj.getboolean('NetTuning', 'enabled') == False
         True
-        >>> sorted(tuned_obj.sections())
-        ['CPUMonitor', 'NetTuning']
+        >>> sorted(tuned_obj.sections())==sorted(['CPUMonitor', 'NetTuning'])
+        True
     """
 
     def parse_content(self, content, allow_no_value=True):
