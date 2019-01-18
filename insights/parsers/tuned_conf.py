@@ -44,7 +44,7 @@ class TunedConfIni(IniConfigFile):
         ['CPUMonitor', 'NetTuning']
     """
 
-    def parse_content(self, content, allow_no_value=False):
+    def parse_content(self, content, allow_no_value=True):
         content = get_active_lines(content)
 
         super(IniConfigFile, self).parse_content(content)
