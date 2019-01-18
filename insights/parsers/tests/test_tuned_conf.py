@@ -93,7 +93,7 @@ def test_documentation():
 
 def test_tuned_conf():
     result = tuned_conf.TunedConfIni(context_wrap(TUNED_CONF))
-    assert sorted(result.sections) == sorted(['CPUMonitor', 'CPUTuning', 'DiskMonitor', 'DiskTuning', 'NetMonitor', 'NetTuning', 'main'])
+    assert sorted(result.sections()) == sorted(['CPUMonitor', 'CPUTuning', 'DiskMonitor', 'DiskTuning', 'NetMonitor', 'NetTuning', 'main'])
 
     with pytest.raises(NoSectionError) as exc:
         tuned_obj = TunedConfIni(context_wrap(TUNED_CONF))
@@ -112,4 +112,4 @@ def test_tuned_conf():
     assert "Not a boolean: 10" in str(exc)
     assert tuned_obj.get('CPUMonitor', 'enabled') == "False"
     assert tuned_obj.getboolean('CPUMonitor', 'enabled') is False
-    assert tuned_obj.get('NetMonitor', 'enabled') is None
+    assert tuned_obj.get('NetMonitor', 'enabled') == ""
