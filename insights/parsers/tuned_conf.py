@@ -1,11 +1,9 @@
 """
-This module contains following parser:
-
 TunedConfIni - file ``/etc/tuned.conf``
----------------------------------------
+=======================================
 """
 
-from .. import parser, Parser, get_active_lines
+from insights import Parser, parser, get_active_lines
 from insights.specs import Specs
 from insights.contrib.ConfigParser import NoSectionError, NoOptionError
 
