@@ -23,6 +23,7 @@ class Specs(SpecSet):
     cciss = RegistryPoint(multi_output=True)
     ceilometer_central_log = RegistryPoint(filterable=True)
     ceilometer_collector_log = RegistryPoint(filterable=True)
+    ceilometer_compute_log = RegistryPoint(filterable=True)
     ceilometer_conf = RegistryPoint()
     ceph_conf = RegistryPoint(filterable=True)
     ceph_config_show = RegistryPoint(multi_output=True)

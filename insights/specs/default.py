@@ -93,6 +93,7 @@ class DefaultSpecs(Specs):
     cciss = glob_file("/proc/driver/cciss/cciss*")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
     ceilometer_collector_log = simple_file("/var/log/ceilometer/collector.log")
+    ceilometer_compute_log = first_file(["/var/log/containers/ceilometer/compute.log", "/var/log/ceilometer/compute.log"])
     ceilometer_conf = first_file(["/var/lib/config-data/puppet-generated/ceilometer/etc/ceilometer/ceilometer.conf", "/etc/ceilometer/ceilometer.conf"])
     ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
