@@ -3,10 +3,8 @@ TunedConfIni - file ``/etc/tuned.conf``
 =======================================
 """
 
-import io
 from insights import IniConfigFile, parser, get_active_lines
 from insights.specs import Specs
-from insights.contrib.ConfigParser import RawConfigParser
 
 
 @parser(Specs.tuned_conf)
@@ -46,7 +44,4 @@ class TunedConfIni(IniConfigFile):
 
     def parse_content(self, content, allow_no_value=True):
         content = get_active_lines(content)
-        config = RawConfigParser(allow_no_value=allow_no_value)
-        fp = io.StringIO(u"\n".join(content))
-        config.readfp(fp, filename=self.file_name)
-        self.data = config
+        super(TunedConfIni, self).parse_content(content, allow_no_value)
