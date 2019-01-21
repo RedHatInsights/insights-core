@@ -46,10 +46,7 @@ class TunedConfIni(IniConfigFile):
 
     def parse_content(self, content, allow_no_value=True):
         content = get_active_lines(content)
-
-        super(IniConfigFile, self).parse_content(content)
         config = RawConfigParser(allow_no_value=allow_no_value)
         fp = io.StringIO(u"\n".join(content))
         config.readfp(fp, filename=self.file_name)
         self.data = config
-    pass
