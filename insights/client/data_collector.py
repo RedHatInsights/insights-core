@@ -105,12 +105,16 @@ class DataCollector(object):
         return el_globs
 
     def _blacklist_check(self, cmd):
-        cmd_parts = shlex.split(cmd)
-        for p in cmd_parts:
-            if len(shlex.split(p)) > 1:
-                return self._blacklist_check(p)
+        def _get_nested_parts(cmd):
+            parts = shlex.split(cmd.replace(';', ' '))
+            for p in parts:
+                if len(shlex.split(p)) > 1:
+                    parts = parts + _get_nested_parts(p)
+            return parts
+
+        cmd_parts = _get_nested_parts(cmd)
         return len(set.intersection(set(cmd_parts),
-            constants.command_blacklist)) > 1
+                   constants.command_blacklist)) > 0
 
     def _parse_command_spec(self, spec, precmds):
         '''
