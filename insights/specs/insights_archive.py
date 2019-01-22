@@ -226,6 +226,7 @@ class InsightsArchiveSpecs(Specs):
     systool_b_scsi_v = simple_file("insights_commands/systool_-b_scsi_-v")
     tomcat_vdc_fallback = simple_file("insights_commands/find_.usr.share_-maxdepth_1_-name_tomcat_-exec_.bin.grep_-R_-s_VirtualDirContext_--include_.xml")
     tuned_adm = simple_file("insights_commands/tuned-adm_list")
+    ulimit_hard = simple_file("insights_commands/ulimit_-a_-H")
     uname = simple_file("insights_commands/uname_-a")
     uptime = simple_file("insights_commands/uptime")
     vgdisplay = simple_file("insights_commands/vgdisplay")
