@@ -19,6 +19,13 @@ IPV4_FAILURE_FATAL = no  #this is a comment
 ONBOOT=yes
 """.strip()
 
+IFCFG_TEST_MASTER = """
+DEVICE="eth0"
+BOOTPROTO=dhcp
+MASTER="bond0"
+ONBOOT=yes
+""".strip()
+
 CONTEXT_PATH = "etc/sysconfig/network-scripts/ifcfg-enp0s25"
 
 IFCFG_TEST = """
@@ -103,6 +110,37 @@ IPV6INIT=no
 BONDING_OPTS="mode=balance-xor primary=eth1 arp_interval=1000 arp_ip_target=+10.11.96.1 downdelay =0"
 """.strip()
 
+IFCFG_TEST_RAW_MASTER_VALUE = """
+DEVICE="eth2"
+IPADDR=10.11.96.172
+NETMASK=255.255.252.0
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+IPV6INIT=no
+MASTER="bond0"
+""".strip()
+
+IFCFG_TEST_RAW_TEAM_MASTER_VALUE = """
+TYPE=Ethernet
+DEVICE="eth1"
+BOOTPROTO=none
+ONBOOT=yes
+TEAM_MASTER="team0"
+MTU=9000
+""".strip()
+
+IFCFG_TEST_RAW_BONDING_VALUE = """
+DEVICE="bond0"
+IPADDR=10.11.96.172
+NETMASK=255.255.252.0
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+IPV6INIT=no
+BONDING_OPTS="mode=balance-xor primary=eth1 arp_interval=1000 arp_ip_target=+10.11.96.1 downdelay =0"
+""".strip()
+
 IFCFG_CONFIG_STR_ERROR = """
 DEVICE=bond0
 IPADDR=10.11.96.172
@@ -115,6 +153,10 @@ BONDING_OPTS="mode=balance-xor primary = eth1 arp_interval= 1000 arp_ip_target=+
 """.strip()
 
 IFCFG_PATH_NAMED_BOND_MODE = "etc/sysconfig/network-scripts/ifcfg-en0"
+
+IFCFG_PATH_ETH1 = "etc/sysconfig/network-scripts/ifcfg-eth1"
+
+IFCFG_PATH_ETH2 = "etc/sysconfig/network-scripts/ifcfg-eth2"
 
 IFCFG_TEST_BADLY_NAMED_BOND_MODE = """
 DEVICE=bond0
@@ -164,6 +206,16 @@ def test_ifcfg_space_v2():
     assert r["DEVICE"] == '\"\"badName2\"  \"'
 
 
+def test_ifcfg_master():
+    context = context_wrap(IFCFG_TEST_MASTER)
+    context.path = CONTEXT_PATH_DEVICE
+
+    r = IfCFG(context)
+    assert keys_in(["DEVICE", "iface", "ONBOOT", "BOOTPROTO",
+                    "MASTER"], r)
+    assert r["MASTER"] == 'bond0'
+
+
 def test_ifcfg():
     context = context_wrap(IFCFG_TEST)
     context.path = CONTEXT_PATH
@@ -202,7 +254,7 @@ def test_ifcfg_3():
 
     r = IfCFG(context)
 
-    assert len(r.data) == 7
+    assert len(r.data) == 8
     assert r["DEVICE"] == "team1"
     assert r["DEVICETYPE"] == "Team"
     assert r["ONBOOT"] == "yes"
@@ -281,3 +333,33 @@ def test_ifcfg_blankline():
     context.path = IFCFG_PATH_BLANK_LINE
     r = IfCFG(context)
     assert r.has_empty_line is True
+
+
+def test_ifcfg_raw_bonding_master_value():
+    context = context_wrap(IFCFG_TEST_RAW_MASTER_VALUE)
+    context.path = IFCFG_PATH_ETH2
+
+    r = IfCFG(context)
+
+    assert r["raw_device_value"] == '"eth2"'
+    assert r["raw_master_value"] == '"bond0"'
+
+
+def test_ifcfg_raw_bonding_value():
+    context = context_wrap(IFCFG_TEST_RAW_BONDING_VALUE)
+    context.path = IFCFG_PATH_NAMED_BOND_MODE
+
+    r = IfCFG(context)
+
+    assert r["raw_device_value"] == '"bond0"'
+    assert r["raw_bonding_value"] == '"mode=balance-xor primary=eth1 arp_interval=1000 arp_ip_target=+10.11.96.1 downdelay =0"'
+
+
+def test_ifcfg_raw_team_master_value():
+    context = context_wrap(IFCFG_TEST_RAW_TEAM_MASTER_VALUE)
+    context.path = IFCFG_PATH_ETH1
+
+    r = IfCFG(context)
+
+    assert r["raw_device_value"] == '"eth1"'
+    assert r["raw_team_value"] == '"team0"'
