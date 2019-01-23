@@ -85,6 +85,7 @@ def parse_args():
 def load_default_components():
     default_packages = [
         "insights.specs.default",
+        "insights.specs.insights_archive",
         "insights.specs.sos_archive",
         "insights.specs.jdr_archive",
         "insights.parsers",
@@ -129,20 +130,22 @@ def get_datasources():
 
 
 def matches(d, path):
+    def _simple_file(src):
+        if src.startswith(('insights_commands', 'sos_commands')):
+            src = src.split('/')[-1].split('_')[0]
+        return src
+
     if isinstance(d, sf.simple_file):
-        source = d.path.strip('/').split()[0]
-        if source.startswith('sos_commands'):
-            source = source.split('/')[-1]
-        return path.strip("/") in source
+        return path.strip("/") in _simple_file(d.path.strip('/').split()[0])
 
     if isinstance(d, sf.glob_file):
-        return any(re.match(path, glob2re(pat)) and not d.ignore_func(path) for pat in d.patterns)
+        return any(re.match(path, glob2re(_simple_file(pat))) and not d.ignore_func(path) for pat in d.patterns)
 
     if isinstance(d, sf.simple_command):
         return path.strip("/") in d.cmd.split()[0]
 
     if isinstance(d, sf.first_file):
-        return any(path.strip("/") in p for p in d.paths)
+        return any(path.strip("/") in _simple_file(p) for p in d.paths)
 
     if isinstance(d, sf.foreach_execute):
         return path.strip("/") in d.cmd.split()[0]
