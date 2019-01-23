@@ -308,7 +308,7 @@ class Specs(SpecSet):
     ntpq_leap = RegistryPoint()
     ntpq_pn = RegistryPoint()
     ntptime = RegistryPoint()
-    numa_cpus = RegistryPoint()
+    numa_cpus = RegistryPoint(multi_output=True)
     numeric_user_group_name = RegistryPoint()
     oc_get_bc = RegistryPoint()
     oc_get_build = RegistryPoint()

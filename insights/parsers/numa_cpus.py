@@ -22,25 +22,26 @@ Examples:
     14
 """
 
-from insights import Parser, parser
+from insights import Parser, parser, LegacyItemAccess
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 
 @parser(Specs.numa_cpus)
-class NUMACpus(Parser):
+class NUMACpus(LegacyItemAccess, Parser):
     """
     Parse `/sys/devices/system/node/node[0-9]*/cpulist` file, return a dict
     which contains total number of CPUs per numa node.
     """
 
-    def __init__(self, context):
+    def parse_content(self, content):
+        if (not content) or (not self.file_path):
+            raise SkipException("No Contents")
+
         self.data = {}
         self._cpu_ranges = []
-        self.numa_node = context.path.rsplit("/")[-2] if context.path else None
-        super(NUMACpus, self).__init__(context)
+        self.numa_node = self.file_path.rsplit("/")[-2] if self.file_path else None
 
-    def parse_content(self, content):
-        self.data = {}
         for line in content:
             total_cpus = 0
             self._cpu_ranges = line.split(',')

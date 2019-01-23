@@ -1,4 +1,6 @@
 import doctest
+import pytest
+from insights.parsers import SkipException
 from insights.parsers import numa_cpus
 from insights.parsers.numa_cpus import NUMACpus
 from insights.tests import context_wrap
@@ -52,14 +54,11 @@ def test_cpulist_node0():
     assert cpu_obj.numa_node_cpus == ['4-7']
     assert cpu_obj.total_numa_node_cpus == 4
 
-    context = context_wrap(NODE1_CPULIST_RANGE, NODE1_PATH)
-    cpu_obj = NUMACpus(context)
-    assert cpu_obj.numa_node_name == 'node1'
-    assert cpu_obj.total_numa_node_cpus is None
-
-    context = context_wrap(NODE0_CPULIST_RANGE_1, NODE0_PATH_NO)
-    cpu_obj = NUMACpus(context)
-    assert cpu_obj.numa_node_name is None
+    with pytest.raises(SkipException) as exc:
+        cpu_obj = NUMACpus(context_wrap(NODE1_CPULIST_RANGE, NODE1_PATH))
+        assert cpu_obj.numa_node_name == 'node1'
+        assert not cpu_obj.total_numa_node_cpus
+    assert 'No Contents' in str(exc)
 
 
 def test_numa_node_doc_examples():
