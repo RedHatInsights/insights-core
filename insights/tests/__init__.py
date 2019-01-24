@@ -246,6 +246,7 @@ RHEL4 = "Red Hat Enterprise Linux AS release 4 (Nahant Update 9)"
 RHEL5 = "Red Hat Enterprise Linux Server release 5.11 (Tikanga)"
 RHEL6 = "Red Hat Enterprise Linux Server release 6.5 (Santiago)"
 RHEL7 = "Red Hat Enterprise Linux Server release 7.0 (Maipo)"
+RHEL8 = "Red Hat Enterprise Linux release 8.0 Beta (Ootpa)"
 
 
 def redhat_release(major, minor=""):
