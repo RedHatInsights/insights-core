@@ -54,7 +54,7 @@ class RedhatRelease(Parser):
     @property
     def minor(self):
         """int: the minor version of this OS."""
-        s = self.parsed["version"].split(".")
+        s = self.parsed["version"].split("-", 1)[0].split(".")
         if len(s) > 1:
             return int(s[1])
 
