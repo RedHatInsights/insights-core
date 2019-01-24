@@ -10,6 +10,10 @@ REDHAT_RELEASE2 = """
 Red Hat Enterprise Linux Server release 7.2 (Maipo)
 """.strip()
 
+REDHAT_RELEASE3 = """
+Red Hat Enterprise Linux release 7.5-0.14
+""".strip()
+
 RHVH_RHV40 = """
 Red Hat Enterprise Linux release 7.3
 """.strip()
@@ -41,6 +45,16 @@ def test_rhe7():
     assert release.version == "7.2"
     assert release.is_rhel
     assert release.product == "Red Hat Enterprise Linux Server"
+
+
+def test_rhe75_0_14():
+    release = RedhatRelease(context_wrap(REDHAT_RELEASE3))
+    assert release.raw == REDHAT_RELEASE3
+    assert release.major == 7
+    assert release.minor == 5
+    assert release.version == "7.5-0.14"
+    assert release.is_rhel
+    assert release.product == "Red Hat Enterprise Linux"
 
 
 def test_rhevh35():
