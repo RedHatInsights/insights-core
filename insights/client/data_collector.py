@@ -107,10 +107,11 @@ class DataCollector(object):
     def _blacklist_check(self, cmd):
         def _get_nested_parts(cmd):
             parts = shlex.split(cmd.replace(';', ' '))
+            all_parts = parts[:]
             for p in parts:
                 if len(shlex.split(p)) > 1:
-                    parts = parts + _get_nested_parts(p)
-            return parts
+                    all_parts += _get_nested_parts(p)
+            return all_parts
 
         cmd_parts = _get_nested_parts(cmd)
         return len(set.intersection(set(cmd_parts),
