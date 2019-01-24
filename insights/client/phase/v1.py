@@ -133,6 +133,8 @@ def post_update(client, config):
 
     # put this first to avoid conflicts with register
     if config.unregister:
+        if not config.legacy_upload:
+            logger.info('Registration is not applicable to the platform.')
         if client.unregister():
             sys.exit(constants.sig_kill_ok)
         else:
@@ -158,6 +160,9 @@ def post_update(client, config):
 
     if not config.legacy_upload:
         logger.debug('Platform upload. Bypassing registration.')
+        # TODO: temporary message for when someone tries to reg to platform.
+        if config.register:
+            logger.info('Registration is not applicable to the platform.')
         return
 
     reg = client.register()

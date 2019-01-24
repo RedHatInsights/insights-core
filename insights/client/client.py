@@ -103,6 +103,7 @@ def register(config, pconn):
     return pconn.register()
 
 
+# TODO: eventually remove this function. Only valid for legacy stuff
 def handle_registration(config, pconn):
     '''
         Handle the registration process

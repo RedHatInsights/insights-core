@@ -326,6 +326,8 @@ class InsightsClient(object):
                 False - machine is unregistered
                 None - could not reach the API
         """
+        if not self.config.legacy_upload:
+            return True
         return client.handle_registration(self.config, self.connection)
 
     @_net
@@ -333,6 +335,8 @@ class InsightsClient(object):
         """
             returns (bool): True success, False failure
         """
+        if not self.config.legacy_upload:
+            return True
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
@@ -425,6 +429,12 @@ class InsightsClient(object):
                  'unreg_date': Date the machine was unregistered | None,
                  'unreachable': API could not be reached}
         """
+        if not self.config.legacy_upload:
+            return {
+                'messages': ['Registration is not applicable for platform uploads.'],
+                'unreachable': False,
+                'status': True
+            }
         return client.get_registration_status(self.config, self.connection)
 
     @_net
