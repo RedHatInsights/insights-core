@@ -1,5 +1,18 @@
 # Change Log
 
+## [insights-core-3.0.74-778](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.74-778) (2019-01-24)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.73-767...insights-core-3.0.74-778)
+
+**Fixed bugs:**
+
+- RedhatRelease parser failed to parse minor release version in some scenarios [\#1590](https://github.com/RedHatInsights/insights-core/issues/1590)
+- Exceptions on the command line with invalid arguments in the archive position [\#1486](https://github.com/RedHatInsights/insights-core/issues/1486)
+
+**Closed issues:**
+
+- Parse\_error TOP1: mysqladmin.py: Empty or wrong content in table [\#1637](https://github.com/RedHatInsights/insights-core/issues/1637)
+- Typo in quickstart documentation [\#1635](https://github.com/RedHatInsights/insights-core/issues/1635)
+
 ## [insights-core-3.0.73-767](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.73-767) (2019-01-17)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.72-1...insights-core-3.0.73-767)
 
