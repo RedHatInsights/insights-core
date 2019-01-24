@@ -100,7 +100,7 @@ Create a sample rule called ``hostname_rel.py`` in the ``MyRules`` directory:
 
     ERROR_KEY_1 = "RELEASE_IS_RHEL"
     ERROR_KEY_2 = "RELEASE_IS_NOT_RECOGNIZED"
-    ERROR_KEY_2 = "RELEASE_CANNOT_BE_DETERMINED"
+    ERROR_KEY_3 = "RELEASE_CANNOT_BE_DETERMINED"
 
 
     @rule(Hostname, [RedhatRelease])

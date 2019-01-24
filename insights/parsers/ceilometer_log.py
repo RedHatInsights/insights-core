@@ -10,6 +10,9 @@ CeilometerCentralLog - file ``/var/log/ceilometer/central.log``
 CeilometerCollectorLog - file ``/var/log/ceilometer/collector.log``
 -------------------------------------------------------------------
 
+CeilometerComputeLog - file ``/var/log/ceilometer/compute.log``
+---------------------------------------------------------------
+
 .. note::
     Please refer to the super-class :class:`insights.core.LogFileOutput`
 
@@ -54,5 +57,27 @@ class CeilometerCollectorLog(LogFileOutput):
         2016-11-09 14:36:35.464 4204 INFO cotyledon [-] Caught SIGTERM signal, graceful exiting of master process
         2016-11-09 14:36:35.465 4259 INFO cotyledon [-] Caught signal (15) during service initialisation, delaying it
         2016-11-09 14:38:07.280 31638 WARNING oslo_reports.guru_meditation_report [-] Guru meditation now registers SIGUSR1 and SIGUSR2 by default for backward compatibility. SIGUSR1 will no longer be registered in a future release, so please use SIGUSR2 to generate reports.
+    """
+    pass
+
+
+@parser(Specs.ceilometer_compute_log)
+class CeilometerComputeLog(LogFileOutput):
+    """Class for parsing ``/var/log/ceilometer/compute.log`` file.
+
+    Typical content of ``compute.log`` file is::
+
+        2018-01-12 21:00:02.939 49455 INFO ceilometer.agent.manager [-] Polling pollster network.outgoing.packets in the context of some_pollsters
+        2018-01-12 21:00:02.950 49455 INFO ceilometer.agent.manager [-] Polling pollster memory.usage in the context of some_pollsters
+        2018-01-12 21:00:02.953 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name1, id=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx>, can not get info from libvirt.
+        2018-01-12 21:00:02.957 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name2, id=yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy>, can not get info from libvirt.
+        2018-01-12 21:00:02.963 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name3, id=zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz>, can not get info from libvirt.
+        2018-01-12 21:00:02.970 49455 INFO ceilometer.agent.manager [-] Polling pollster disk.write.requests in the context of some_pollsters
+        2018-01-12 21:00:02.976 49455 INFO ceilometer.agent.manager [-] Polling pollster network.incoming.packets in the context of some_pollsters
+        2018-01-12 21:00:02.981 49455 INFO ceilometer.agent.manager [-] Polling pollster cpu in the context of some_pollsters
+        2018-01-12 21:00:03.014 49455 INFO ceilometer.agent.manager [-] Polling pollster network.incoming.bytes in the context of some_pollsters
+        2018-01-12 21:00:03.020 49455 INFO ceilometer.agent.manager [-] Polling pollster disk.read.requests in the context of some_pollsters
+        2018-01-12 21:00:03.041 49455 INFO ceilometer.agent.manager [-] Polling pollster network.outgoing.bytes in the context of some_pollsters
+        2018-01-12 21:00:03.062 49455 INFO ceilometer.agent.manager [-] Polling pollster disk.write.bytes in the context of some_pollsters
     """
     pass
