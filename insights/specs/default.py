@@ -20,7 +20,7 @@ from insights.core.context import OpenShiftContext
 
 from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import CommandOutputProvider, ContentException, RawFileProvider
+from insights.core.spec_factory import CommandOutputProvider, ContentException, DatasourceProvider, RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
@@ -594,7 +594,8 @@ class DefaultSpecs(Specs):
     def rhev_data_center(broker):
         import json
         root = broker[HostContext].root
-        path = os.path.join(root, "rhev/data-center")
+        relative_path = "rhev/data-center"
+        path = os.path.join(root, relative_path)
         bad_apples = []
         for dirpath, dirnames, filenames in os.walk(path):
             for p in dirnames + filenames:
@@ -607,7 +608,7 @@ class DefaultSpecs(Specs):
                 except:
                     logger.error(tmp)
         if bad_apples:
-            return json.dumps(bad_apples)
+            return DatasourceProvider(content=json.dumps(bad_apples), relative_path=relative_path)
         raise SkipComponent()
 
     rhv_log_collector_analyzer = simple_command("rhv-log-collector-analyzer --json")

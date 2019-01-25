@@ -125,6 +125,16 @@ class ContentProvider(object):
         return self.__unicode__()
 
 
+class DatasourceProvider(ContentProvider):
+    def __init__(self, content, relative_path, root='/', ds=None, ctx=None):
+        super(DatasourceProvider, self).__init__()
+        self.relative_path = relative_path
+        self._content = content
+        self.root = root
+        self.ds = ds
+        self.ctx = ctx
+
+
 class FileProvider(ContentProvider):
     def __init__(self, relative_path, root="/", ds=None, ctx=None):
         super(FileProvider, self).__init__()
