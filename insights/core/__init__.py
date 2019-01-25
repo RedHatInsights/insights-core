@@ -1542,3 +1542,150 @@ class AttributeDict(dict):
         deprecated(AttributeDict, "Please set attributes explicitly.")
         super(AttributeDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+class ModInfo(Parser):
+    """
+    This will parase the inforamtion about a kernel module, the module
+    info will be stored in dictionary format.
+
+    Sample output:
+        filename:       /lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz
+        version:        2.3.2-k
+        license:        GPL
+        description:    Intel(R) Ethernet Connection XL710 Network Driver
+        author:         Intel Corporation, <e1000-devel@lists.sourceforge.net>
+        retpoline:      Y
+        rhelversion:    7.7
+        srcversion:     DC5C250666ADD8603966656
+        alias:          pci:v00008086d0000158Bsv*sd*bc*sc*i*
+        alias:          pci:v00008086d0000158Asv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001588sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001587sv*sd*bc*sc*i*
+        alias:          pci:v00008086d000037D3sv*sd*bc*sc*i*
+        alias:          pci:v00008086d000037D2sv*sd*bc*sc*i*
+        alias:          pci:v00008086d000037D1sv*sd*bc*sc*i*
+        alias:          pci:v00008086d000037D0sv*sd*bc*sc*i*
+        alias:          pci:v00008086d000037CFsv*sd*bc*sc*i*
+        alias:          pci:v00008086d000037CEsv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001589sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001586sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001585sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001584sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001583sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001581sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001580sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001574sv*sd*bc*sc*i*
+        alias:          pci:v00008086d00001572sv*sd*bc*sc*i*
+        depends:        ptp
+        intree:         Y
+        vermagic:       3.10.0-993.el7.x86_64 SMP mod_unload modversions
+        signer:         Red Hat Enterprise Linux kernel signing key
+        sig_key:        81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59
+        sig_hashalgo:   sha256
+        parm:           debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)
+
+    Examples:
+        >>> modinfo_obj
+        <insights.parsers.modinfo_i40e.ModInfo_i40e object at 0x7f722d92ff28>
+        >>> modinfo_obj.module_name
+        'i40e'
+        >>> modinfo_obj.module_version
+        '2.3.2-k'
+        >>> modinfo_obj.module_path
+        "/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz"
+    """
+    def parse_content(self, content):
+        self.data = {}
+        self._module_deps = ''
+        self._module_name = ''
+        self._module_path = ''
+        self._firmware_path = ''
+        alias_key = ''
+        fw_key = ''
+        parm_key = ''
+
+        for line in content:
+            line = line.strip()
+            key = line.split(':')[0]
+            value = line.split()[1]
+            if key and value and key == 'filename':
+                self._module_path = value
+                self._module_name = value.rsplit("/")[-1].split('.')[0]
+            elif key and value and key == 'sig_key':
+                self.data[key] = value
+            elif key and value and key == 'depends':
+                self._module_deps = [mod for mod in value.split(',')]
+                self.data[key] = self._module_deps
+            elif key and value and key == 'parm' and parm_key == key:
+                value = ' '.join(line.split()[1:])
+                self.data[key].append(value)
+            elif key and value and key == 'alias' and alias_key == key:
+                self.data[key].append(value)
+            elif key and value and key == 'firmware' and fw_key == key:
+                self.data[key].append(value)
+            elif key and value and key == 'alias':
+                self.data[key] = []
+                self.data[key].append(value)
+                alias_key = key
+            elif key and value and key == 'firmware':
+                self.data[key] = []
+                value = ' '.join(line.split()[1:])
+                self.data[key].append(value)
+                fw_key = key
+            elif key and value and key == 'parm':
+                self.data[key] = []
+                value = ' '.join(line.split()[1:])
+                self.data[key].append(value)
+                parm_key = key
+            else:
+                value = ' '.join(line.split()[1:])
+                self.data[key] = value
+
+    def __contains__(self, option):
+        """
+        (bool): This will return True if `option` is present kernel info when set, else False
+        """
+        return option in self.data.keys() if self.data else False
+
+    @property
+    def module_name(self):
+        """
+        (str): This will return kernel module name when set, else `None`.
+        """
+        return self._module_name if self._module_name else None
+
+    @property
+    def module_path(self):
+        """
+        (str): This will return kernel module path when set, else `None`.
+        """
+        return self._module_path if self._module_path else None
+
+    @property
+    def module_deps(self):
+        """
+        (list): This will return the list of kernel modules depend on the kernel
+                module when set, else `None`.
+        """
+        return self._module_deps if self._module_deps else None
+
+    @property
+    def module_version(self):
+        """
+        (str): This will return the kernel module version when set, else `None`.
+        """
+        return self.data['version'] if 'version' in self.data else None
+
+    @property
+    def module_signer(self):
+        """
+        (str): This will return the signer of kernel module when set, else None.
+        """
+        return self.data['signer'] if 'signer' in self.data else None
+
+    def module_details(self):
+        """
+        (dict): This will return the kernel module details when set, else None.
+        """
+        return self.data if self.data else None
