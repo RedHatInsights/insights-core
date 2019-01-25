@@ -21,10 +21,21 @@ pipeline {
             sh """
                 virtualenv .testenv
                 source .testenv/bin/activate
+                pip install "idna<=2.7"
                 pip install "pycparser<=2.18"
                 pip install "pyOpenSSL<=17.5.0"
                 pip install -e .[testing]
                 pytest
+            """
+            echo "Testing with Linter..."
+            sh """
+                virtualenv .lintenv
+                source .lintenv/bin/activate
+                pip install "idna<=2.7"
+                pip install "pycparser<=2.18"
+                pip install "pyOpenSSL<=17.5.0"
+                pip install -e .[linting]
+                flake8
             """
           }
         }
@@ -84,13 +95,13 @@ pipeline {
     stage('Test Docs') {
       agent {
         node {
-          label 'python'
+          label 'python3'
         }
       }
       steps {
         echo "Building Docs..."
         sh """
-            virtualenv .docenv
+            /bin/python36 -m venv .docenv
             source .docenv/bin/activate
             pip install -e .[docs]
             sphinx-build -W -b html -qa -E docs docs/_build/html

@@ -3,8 +3,8 @@ InstalledRpms - Command ``rpm -qa``
 ===================================
 
 The ``InstalledRpms`` class parses the output of the ``rpm -qa`` command.
-Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm
--qa`` command may output data in different formats and each format can be
+Each line is parsed and stored in an ``InstalledRpm`` object.  The ``rpm -qa``
+command may output data in different formats and each format can be
 handled by the parsing routines of this class. The basic format of command is
 the package and is shown in the Examples.
 
@@ -253,7 +253,7 @@ def vcmp(s):
 
 def pad_version(left, right):
     """Returns two sequences of the same length so that they can be compared.
-    The shorter of the two arguments is lengthed by inserting extra zeros
+    The shorter of the two arguments is lengthened by inserting extra zeros
     before non-integer components.  The algorithm attempts to align character
     components."""
     pair = vcmp(left), vcmp(right)
@@ -287,7 +287,7 @@ class InstalledRpm(object):
          {
             'name': 'package name',
             'version': 'package version',
-            'release': 'package release,
+            'release': 'package release',
             'arch': 'package architecture'
           }
 
@@ -339,8 +339,7 @@ class InstalledRpm(object):
 
         for k, v in data.items():
             setattr(self, k, v)
-        if 'epoch' not in data:
-            self.epoch = '0'
+        self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
 
         """Below is only for version comparison"""
         def _start_of_distribution(rest_split):
@@ -444,6 +443,7 @@ class InstalledRpm(object):
             pkg, arch = (package_string, None)
         pkg, release = rsplit(pkg, '-')
         name, version = rsplit(pkg, '-')
+        epoch, version = version.split(':', 1) if ":" in version else ['0', version]
         # oracleasm packages have a dash in their version string, fix that
         if name.startswith('oracleasm') and name.endswith('.el5'):
             name, version2 = name.split('-', 1)
@@ -452,7 +452,8 @@ class InstalledRpm(object):
             'name': name,
             'version': version,
             'release': release,
-            'arch': arch
+            'arch': arch,
+            'epoch': epoch
         }
 
     @classmethod
@@ -487,6 +488,18 @@ class InstalledRpm(object):
                                      self.release)
 
     @property
+    def package_with_epoch(self):
+        """
+        str: Package string in the format::
+
+            name-epoch:version-release
+        """
+        return u'{0}-{1}:{2}-{3}'.format(self.name,
+                                         self.epoch,
+                                         self.version,
+                                         self.release)
+
+    @property
     def nvr(self):
         """str: Package `name-version-release` string."""
         return self.package
@@ -495,6 +508,15 @@ class InstalledRpm(object):
     def nvra(self):
         """str: Package `name-version-release.arch` string."""
         return ".".join([self.package, self.arch])
+
+    @property
+    def nevra(self):
+        """
+        str: Package string in the format::
+
+            name-epoch:version-release.arch
+        """
+        return ".".join([self.package_with_epoch, self.arch])
 
     @property
     def source(self):
@@ -581,6 +603,15 @@ class InstalledRpm(object):
 
     def __le__(self, other):
         return isinstance(other, InstalledRpm) and not other.__lt__(self)
+
+    def __hash__(self):
+        # Python 3 requires hash implementation to have hashable object.
+        try:
+            # Just NVR is not enouch for uniqueness. Try NVRA first.
+            value = self.nvra
+        except TypeError:
+            value = self.nvr
+        return hash(value)
 
 
 # re-exports

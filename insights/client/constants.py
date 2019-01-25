@@ -8,7 +8,7 @@ class InsightsConstants(object):
     auth_method = 'BASIC'
     package_path = os.path.dirname(
         os.path.dirname(os.path.abspath(__file__)))
-    sleep_time = 300
+    sleep_time = 180
     command_blacklist = ('rm', 'kill', 'reboot', 'shutdown')
     default_conf_dir = '/etc/insights-client'
     default_conf_file = os.path.join(default_conf_dir, 'insights-client.conf')
@@ -42,3 +42,4 @@ class InsightsConstants(object):
     insights_core_gpg_sig_newest = os.path.join(insights_core_lib_dir, 'newest.egg.asc')
     sig_kill_ok = 100
     sig_kill_bad = 101
+    cached_branch_info = os.path.join(default_conf_dir, '.branch_info')

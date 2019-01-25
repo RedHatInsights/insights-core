@@ -80,6 +80,8 @@ def test_ps_auxww_from_auxww():
     assert '[kthreadd]' in p
     assert 'sshd' not in p
     assert not p.fuzzy_match("sshd")
+    assert p.number_occurences("systemd") == 2
+    assert p.number_occurences("openshift") != 2
     assert p.cpu_usage('/usr/lib64/firefox/firefox') == '2.4'
     assert p.cpu_usage('firefox') is None
     assert p.cpu_usage('dhclient') is None
@@ -126,6 +128,8 @@ def test_ps_ef_from_ef():
         'PPID': '1', 'COMMAND_NAME': 'rhel-push-plugin'
     }
     assert p.fuzzy_match('kthreadd')
+    assert p.number_occurences("systemd") != 2
+    assert p.number_occurences("openshift") == 2
     assert p.parent_pid("111435") == ["111434", "nginx: master process /usr/sbin/nginx -c /etc/nginx/nginx.conf"]
     assert '[kthreadd]' in p
     assert 'sshd' not in p
@@ -176,6 +180,8 @@ def test_ps_auxww_from_auxcww():
     assert d[2]["COMMAND"] == 'irqbalance'
     assert d[-2]["COMMAND"] == 'qemu-kvm'
     assert p.fuzzy_match('irqbal')
+    assert p.number_occurences("bash") == 3
+    assert p.number_occurences("qemu-kvm") != 2
     assert 'dhclient' in p
     assert 'sshd' not in p
     assert not p.fuzzy_match("sshd")
@@ -220,6 +226,8 @@ def test_ps_auxww_from_auxwww():
     assert 'sshd' not in p
     assert 'kthread' not in p
     assert not p.fuzzy_match("sshd")
+    assert p.number_occurences("python") == 1
+    assert p.number_occurences("sshd") != 2
     assert p.fuzzy_match('python')
 
     assert p.search() == []
@@ -261,6 +269,8 @@ def test_ps_auxww_from_aux():
     assert 'sshd' not in p
     assert 'kondemand' not in p
     assert not p.fuzzy_match("sshd")
+    assert p.number_occurences("systemd") != 2
+    assert p.number_occurences("bash") == 1
     assert p.fuzzy_match('kondemand')
 
     assert p.search() == []
@@ -301,3 +311,48 @@ def test_ps_auxww_with_bad_input():
         d2 = ps.PsAuxww(context_wrap(Ps_BAD))
         assert d2 is None
     assert 'PsAuxww: Cannot find ps header line in output' in str(exc)
+
+
+PS_EO_NORMAL = """
+  PID  PPID COMMAND
+    1     0 systemd
+    2     0 kthreadd
+    3     2 ksoftirqd/0
+    5     2 kworker/0:0H
+    6     2 kworker/u2:0
+ 2416     1 auditd
+ 2419  2416 audispd
+ 2421  2419 sedispatch
+ 2892     1 NetworkManager
+ 3172  2892 dhclient
+ 3871     1 master
+ 3886  3871 qmgr
+13724  3871 pickup
+15663     2 kworker/0:1
+16998     2 kworker/0:3
+17259     2 kworker/0:0
+18294  3357 sshd
+18302 18294 sshd
+18303 18302 bash
+18338 18303 sudo
+18346 18338 su
+18347 18346 bash
+18379 18347 ps
+"""
+
+
+def test_ps_eo():
+    p = ps.PsEo(context_wrap(PS_EO_NORMAL))
+    assert p is not None
+    assert len(p.pid_info) == 23
+    assert '15663' in p.pid_info
+    assert p.pid_info['2416'] == {
+        'PID': '2416', 'PPID': '1', 'COMMAND': 'auditd', 'COMMAND_NAME': 'auditd', 'ARGS': ''
+    }
+    assert p.pid_info['18379'] == {
+        'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''
+    }
+    assert p.children('18347') == [
+        {'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''}
+    ]
+    assert len(p.children('2')) == 6

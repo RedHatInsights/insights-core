@@ -21,6 +21,10 @@ from insights.specs import Specs
 @parser(Specs.ipcs_s)
 class IpcsS(CommandParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ipcs.IpcsS` instead.
+
     Class for parsing the output of `ipcs -s` command.
 
     Typical output of the command is::
@@ -92,6 +96,10 @@ class IpcsS(CommandParser):
 @parser(Specs.ipcs_s_i)
 class IpcsSI(CommandParser):
     """
+    .. warning::
+        This parser is deprecated, please use
+        :py:class:`insights.parsers.ipcs.IpcsSI` instead.
+
     Class for parsing the output of `ipcs -s -i ##` command. ``##`` will be
     replaced with specific semid
 

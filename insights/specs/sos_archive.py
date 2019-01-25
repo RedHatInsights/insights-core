@@ -9,6 +9,7 @@ simple_file = partial(simple_file, context=SosArchiveContext)
 
 
 class SosSpecs(Specs):
+    auditctl_status = simple_file("sos_commands/auditd/auditctl_-s")
     blkid = simple_file("sos_commands/block/blkid_-c_.dev.null")
     candlepin_log = first_of([
         simple_file("/var/log/candlepin/candlepin.log"),
@@ -26,6 +27,7 @@ class SosSpecs(Specs):
     df__alP = simple_file("sos_commands/filesys/df_-alP")
     df__li = simple_file("sos_commands/filesys/df_-li")
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
+    docker_info = simple_file("sos_commands/docker/docker_info")
     docker_list_containers = first_file(["sos_commands/docker/docker_ps", "sos_commands/docker/docker_ps_-a"])
     dmesg = simple_file("sos_commands/kernel/dmesg")
     dmidecode = simple_file("dmidecode")
@@ -45,9 +47,12 @@ class SosSpecs(Specs):
     foreman_satellite_log = first_of([simple_file("/var/log/foreman-installer/satellite.log"), simple_file("sos_commands/foreman/foreman-debug/var/log/foreman-installer/satellite.log")])
     foreman_ssl_access_ssl_log = first_file(["var/log/httpd/foreman-ssl_access_ssl.log", r"sos_commands/foreman/foreman-debug/var/log/httpd/foreman-ssl_access_ssl.log"])
     getcert_list = simple_file("sos_commands/ipa/ipa-getcert_list")
+    gluster_v_info = simple_file("sos_commands/gluster/gluster_volume_info")
+    gluster_v_status = simple_file("sos_commands/gluster/gluster_volume_status")
     hostname = first_of([simple_file("sos_commands/general/hostname_-f"), simple_file("sos_commands/general/hostname")])
     httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"])
     installed_rpms = simple_file("installed-rpms")
+    ip_route_show_table_all = simple_file("sos_commands/networking/ip_route_show_table_all")
     journal_since_boot = simple_file("sos_commands/logs/journalctl_--no-pager_--boot")
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = simple_file("sos_commands/block/lsblk")
@@ -55,6 +60,7 @@ class SosSpecs(Specs):
     lsmod = simple_file("lsmod")
     lspci = simple_file("lspci")
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
+    ls_dev = simple_file("sos_commands/block/ls_-lanR_.dev")
     lvs = simple_file("sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0")
     mount = simple_file("mount")
     multipath__v4__ll = simple_file("sos_commands/multipath/multipath_-v4_-ll")
@@ -64,8 +70,11 @@ class SosSpecs(Specs):
     netstat_s = simple_file("sos_commands/networking/netstat_-s")
     nmcli_dev_show = simple_file("sos_commands/networking/nmcli_dev_show")
     ntptime = simple_file("sos_commands/ntp/ntptime")
+    pcs_config = first_file(["sos_commands/pacemaker/pcs_config", "sos_commands/cluster/pcs_config"])
     pcs_status = first_file(["sos_commands/pacemaker/pcs_status", "sos_commands/cluster/pcs_status"])
-    ps_auxww = first_file(["sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
+    ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
+    ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
+    ps_auxww = first_file(["sos_commands/process/ps_auxww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
     pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")
     qpid_stat_q = first_of([

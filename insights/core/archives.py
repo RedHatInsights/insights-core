@@ -58,7 +58,7 @@ class TarExtractor(object):
 
     def _tar_flag_for_content_type(self, content_type):
         flag = self.TAR_FLAGS.get(content_type)
-        if not flag:
+        if flag is None:
             raise InvalidContentType(content_type)
         return flag
 

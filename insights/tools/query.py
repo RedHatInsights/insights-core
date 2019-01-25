@@ -11,8 +11,14 @@ the script. ``insights-info -h`` for more info.
 """
 from __future__ import print_function
 import argparse
+import importlib
+import inspect
 import logging
+import pydoc
 import re
+import sys
+
+from six.moves import StringIO
 
 from insights import dr, get_filters
 from insights.core.plugins import datasource, is_type
@@ -65,10 +71,12 @@ def glob2re(pat):
 
 def parse_args():
     p = argparse.ArgumentParser(__doc__.strip())
-    p.add_argument("paths", nargs="*", help="Archive or directory to analyze.")
+    p.add_argument("paths", nargs="*", help="Files or commands to use for component activation.")
     p.add_argument("-c", "--components", help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.")
     p.add_argument("-i", "--info", help="Comma separated list of components to get dependency info about.", action="store_true")
     p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
+    p.add_argument("-d", "--pydoc", help="Show pydoc for the given object. E.g.: insights-info -d insights.rule")
+    p.add_argument("-s", "--source", help="Show source for the given object. E.g.: insights-info -s insights.core.plugins.rule")
     p.add_argument("-t", "--types", help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.")
     p.add_argument("-v", "--verbose", help="Print component dependencies.", action="store_true")
     return p.parse_args()
@@ -271,8 +279,47 @@ def dump_info(comps):
             print_component(comp, verbose=True)
 
 
+def load_obj(spec):
+    try:
+        return dr.get_component(spec) or importlib.import_module(spec)
+    except:
+        pass
+
+
+def get_source(spec):
+    obj = load_obj(spec)
+    if obj:
+        try:
+            return inspect.getsource(obj)
+        except:
+            pass
+
+
+def get_pydoc(spec):
+    obj = load_obj(spec)
+    if obj:
+        output = StringIO()
+        pydoc.Helper(output=output).help(obj)
+        output.seek(0)
+        return output.read()
+
+
 def main():
+    if "" not in sys.path:
+        sys.path.insert(0, "")
+
     args = parse_args()
+
+    if args.source:
+        src = get_source(args.source)
+        print(src or "{} has no python source.".format(args.source))
+        return
+
+    if args.pydoc:
+        doc = get_pydoc(args.pydoc)
+        print(doc or "{} has no pydoc.".format(args.pydoc))
+        return
+
     load_default_components()
     preload_components(args.preload)
 

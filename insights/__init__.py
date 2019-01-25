@@ -1,15 +1,36 @@
+"""
+Insights Core is a data collection and analysis framework that is built for
+extensibility and rapid development. It includes a set of reusable components
+for gathering data in myriad ways and providing a reliable object model for it.
+
+.. code-block: python
+
+    >>> from insights import run
+    >>> from insights.parsers import installed_rpms as rpm
+    >>> lower = rpm.Rpm("bash-4.4.11-1.fc26")
+    >>> upper = rpm.Rpm("bash-4.4.22-1.fc26")
+    >>> results = run(rpm.Installed)
+    >>> rpms = results[rpm.Installed]
+    >>> rpms.newest("bash")
+    "0:bash-4.4.12-7.fc26"
+    >>> lower <= rpms.newest("bash") < upper
+    True
+"""
 from __future__ import print_function
+import logging
 import pkgutil
 import os
+import sys
 import yaml
+
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
-from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
+from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
 from .core import dr  # noqa: F401
-from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext  # noqa: F401
+from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
 from .core.hydration import create_context
 from .core.plugins import combiner, fact, metadata, parser, rule  # noqa: F401
@@ -17,9 +38,12 @@ from .core.plugins import datasource, condition, incident  # noqa: F401
 from .core.plugins import make_response, make_metadata, make_fingerprint  # noqa: F401
 from .core.plugins import make_pass, make_fail  # noqa: F401
 from .core.filters import add_filter, apply_filters, get_filters  # noqa: F401
+from .core.serde import Hydration
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
+
+log = logging.getLogger(__name__)
 
 
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
@@ -52,20 +76,24 @@ def add_status(name, nvr, commit):
     RULES_STATUS[name] = {"version": nvr, "commit": commit}
 
 
-def process_dir(broker, root, graph, context, use_pandas=False):
+def process_dir(broker, root, graph, context, inventory=None):
     ctx = create_context(root, context)
+    log.debug("Processing %s with %s" % (root, ctx))
 
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
-        return process_cluster(archives, use_pandas=use_pandas, broker=broker)
+        return process_cluster(archives, broker=broker, inventory=inventory)
 
     broker[ctx.__class__] = ctx
+    if isinstance(ctx, SerializedArchiveContext):
+        h = Hydration(ctx.root)
+        broker = h.hydrate(broker=broker)
     broker = dr.run(graph, broker=broker)
     return broker
 
 
-def _run(broker, graph=None, root=None, context=None, use_pandas=False):
+def _run(broker, graph=None, root=None, context=None, inventory=None):
     """
     run is a general interface that is meant for stand alone scripts to use
     when executing insights components.
@@ -90,10 +118,10 @@ def _run(broker, graph=None, root=None, context=None, use_pandas=False):
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
-        return process_dir(broker, root, graph, context, use_pandas)
+        return process_dir(broker, root, graph, context, inventory=inventory)
     else:
         with extract(root) as ex:
-            return process_dir(broker, ex.tmp_dir, graph, context, use_pandas)
+            return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
 
 
 def apply_configs(configs):
@@ -130,6 +158,7 @@ def apply_configs(configs):
             if cname.startswith(name):
                 dr.ENABLED[c] = comp_cfg.get("enabled", True)
                 delegate.metadata.update(comp_cfg.get("metadata", {}))
+                delegate.tags = set(comp_cfg.get("tags", delegate.tags))
                 for k, v in delegate.metadata.items():
                     if hasattr(c, k):
                         setattr(c, k, v)
@@ -149,8 +178,7 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        context=None, use_pandas=False,
-        print_component=None):
+        context=None, inventory=None, print_component=None):
 
     from .core import dr
     dr.load_components("insights.specs.default")
@@ -167,11 +195,11 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
         p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-c", "--config", help="Configure components.")
+        p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
-        p.add_argument("--pandas", action="store_true", help="Use pandas dataframes with cluster rules.")
 
         class Args(object):
             pass
@@ -192,7 +220,7 @@ def run(component=None, root=None, print_summary=False,
 
         logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
         context = _load_context(args.context) or context
-        use_pandas = args.pandas or use_pandas
+        inventory = args.inventory
 
         root = args.archive or root
         if root:
@@ -208,11 +236,11 @@ def run(component=None, root=None, print_summary=False,
                 plugins.append(path)
 
         for p in plugins:
-            dr.load_components(p)
+            dr.load_components(p, continue_on_error=False)
 
         if args.config:
             with open(args.config) as f:
-                apply_configs(yaml.load(f))
+                apply_configs(yaml.safe_load(f))
 
         if component is None:
             component = []
@@ -232,20 +260,30 @@ def run(component=None, root=None, print_summary=False,
 
     broker = dr.Broker()
 
-    if formatter:
-        formatter.preprocess(broker)
-        broker = _run(broker, graph, root, context=context, use_pandas=use_pandas)
-        formatter.postprocess(broker)
-    elif print_component:
-        broker = _run(broker, graph, root, context=context, use_pandas=use_pandas)
-        broker.print_component(print_component)
-    else:
-        broker = _run(broker, graph, root, context=context, use_pandas=use_pandas)
+    try:
+        if formatter:
+            formatter.preprocess(broker)
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            formatter.postprocess(broker)
+        elif print_component:
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            broker.print_component(print_component)
+        else:
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
 
-    return broker
+        return broker
+    except (InvalidContentType, InvalidArchive):
+        if args and args.archive:
+            path = args.archive
+            msg = "Invalid directory or archive. Did you mean to pass -p {p}?"
+            log.error(msg.format(p=path))
+        else:
+            raise
 
 
 def main():
+    if "" not in sys.path:
+        sys.path.insert(0, "")
     run(print_summary=True)
 
 

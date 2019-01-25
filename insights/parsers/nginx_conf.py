@@ -112,17 +112,25 @@ Examples:
 from .. import parser, LegacyItemAccess, Parser, get_active_lines
 from ..specs import Specs
 from insights.contrib.nginxparser import create_parser, UnspacedList
+from insights.util import deprecated
 
 
 @parser(Specs.nginx_conf)
 class NginxConf(Parser, LegacyItemAccess):
     """
+    .. warning::
+        This parser is deprecated, please import
+        :py:class:`insights.combiners.nginx_conf.NginxConfTree` instead.
+
     Class for ``nginx.conf`` and ``conf.d`` configuration files.
 
     Gerenally nginx.conf is writed as key-value format. It has a mail section and several sections,
     http, mail, events, etc. They are unique, and subsection server and location in http section could
     be duplicate, so the value of these subsections may be list.
     """
+    def __init__(self, *args, **kwargs):
+        deprecated(NginxConf, "Import NginxConfTree from insights.combiners.nginx_conf instead")
+        super(NginxConf, self).__init__(*args, **kwargs)
 
     def parse_content(self, content):
         list_result = UnspacedList(create_parser().parseString("\n".join(get_active_lines(content))).asList())
@@ -133,61 +141,29 @@ class NginxConf(Parser, LegacyItemAccess):
         After parsed by create_parser(), the result is a list, it is better to convert to dict for convenience.
         """
 
-        def _listdepth_three(self, li):
+        def _list_depth_to_dict(self, li):
             """
             Function to convert list whose depth is tree to dict. Generally, the section name would be a dict key, and content
             embraced by brace would be value. In some sections, the first item is like ['location', '/'], in this case, the
             convert rule is that 'location' would be the key, and add {"name":'/'} key-value to the dict value.
             """
-            dict_result = {}
-            for sub_item in li[1]:
-                dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
-            if len(li[0]) > 1:
-                dict_result["name"] = ' '.join(li[0][1:])
-            return {li[0][0]: dict_result}
-
-        def _listdepth_five(self, li):
-            """
-            Function to convert list whose depth is five to dict.
-            """
-            dict_result = {}
-            for sub_item in li[1]:
-                if self._depth(sub_item) == 1:
-                    dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
-                if self._depth(sub_item) == 3:
-                    tmp_dict = _listdepth_three(self, sub_item)
+            dict_ret = {}
+            if self._depth(li) == 1:
+                return self._handle_key_value(dict_ret, li[0], li[1])
+            else:
+                for sub_item in li[1]:
+                    tmp_dict = _list_depth_to_dict(self, sub_item)
                     tmp_key = list(tmp_dict.keys())[0]
-                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
-            return {li[0][0]: dict_result}
-
-        def _listdepth_seven(self, li):
-            """
-            Function to convert list whose depth is seven to dict.
-            """
-            dict_result = {}
-            for sub_item in li[1]:
-                if self._depth(sub_item) == 1:
-                    dict_result[sub_item[0]] = self._handle_key_value(dict_result, sub_item[0], sub_item[1])
-                if self._depth(sub_item) == 3:
-                    tmp_dict = _listdepth_three(self, sub_item)
-                    tmp_key = list(tmp_dict.keys())[0]
-                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
-                if self._depth(sub_item) == 5:
-                    tmp_dict = _listdepth_five(self, sub_item)
-                    tmp_key = list(tmp_dict.keys())[0]
-                    dict_result[tmp_key] = self._handle_key_value(dict_result, tmp_key, tmp_dict[tmp_key])
-            return {li[0][0]: dict_result}
+                    tmp_val = tmp_dict[tmp_key]
+                    tmp_val = tmp_val[0] if isinstance(tmp_val, list) else tmp_val
+                    dict_ret.update(self._handle_key_value(dict_ret, tmp_key, tmp_val))
+                if len(li[0]) > 1:
+                    dict_ret["name"] = ' '.join(li[0][1:])
+                return {li[0][0]: dict_ret}
 
         dict_all = {}
         for item in li:
-            if self._depth(item) == 1:
-                dict_all[item[0]] = self._handle_key_value(dict_all, item[0], item[1])
-            if self._depth(item) == 3:
-                dict_all.update(_listdepth_three(self, item))
-            if self._depth(item) == 5:
-                dict_all.update(_listdepth_five(self, item))
-            if self._depth(item) == 7:
-                dict_all.update(_listdepth_seven(self, item))
+            dict_all.update(_list_depth_to_dict(self, item))
         return dict_all
 
     def _handle_key_value(self, t_dict, key, value):
@@ -195,14 +171,14 @@ class NginxConf(Parser, LegacyItemAccess):
         Function to handle dict key has multi value, and return the values as list.
         """
         # As it is possible that key "server", "location", "include" and "upstream" have multi value, set the value of dict as list.
-        if "server" in key or "location" in key or "include" in key or "upstream" in key:
+        if key in ("server", "location", "include", "upstream"):
             if key in t_dict:
                 val = t_dict[key]
                 val.append(value)
-                return val
-            return [value]
+                return {key: val}
+            return {key: [value]}
         else:
-            return value
+            return {key: value}
 
     def _depth(self, l):
         """

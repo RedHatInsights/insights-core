@@ -1,5 +1,8 @@
 import logging
+import six
 import sys
+
+from collections import defaultdict
 
 from ..formats import Formatter
 from ..specs import Specs
@@ -17,9 +20,8 @@ def get_simple_module_name(obj):
 class Evaluator(Formatter):
     def __init__(self, broker=None, stream=sys.stdout, incremental=False):
         super(Evaluator, self).__init__(broker or dr.Broker(), stream)
+        self.results = defaultdict(list)
         self.rule_skips = []
-        self.rule_results = []
-        self.fingerprint_results = []
         self.hostname = None
         self.metadata = {}
         self.metadata_keys = {}
@@ -80,30 +82,36 @@ class SingleEvaluator(Evaluator):
                 "metadata": self.metadata,
                 "hostname": self.hostname
             },
-            "reports": self.rule_results,
-            "fingerprints": self.fingerprint_results,
+            "reports": self.results["rule"],
+            "fingerprints": self.results["fingerprint"],
             "skips": self.rule_skips,
         })
+
+        for k, v in six.iteritems(self.results):
+            if k not in ("rule", "fingerprint"):
+                r[k] = v
+
         return self.format_response(r)
 
     def handle_result(self, plugin, r):
         type_ = r["type"]
-        if type_ == "metadata":
-            self.append_metadata(r)
-        elif type_ == "rule":
-            self.rule_results.append(self.format_result({
-                "rule_id": "{0}|{1}".format(get_simple_module_name(plugin), r["error_key"]),
-                "details": r
-            }))
-        elif type_ == "fingerprint":
-            self.fingerprint_results.append(self.format_result({
-                "fingerprint_id": "{0}|{1}".format(get_simple_module_name(plugin), r["fingerprint_key"]),
-                "details": r
-            }))
-        elif type_ == "skip":
+
+        if type_ == "skip":
             self.rule_skips.append(r)
+        elif type_ == "metadata":
+            self.append_metadata(r)
         elif type_ == "metadata_key":
-            self.metadata_keys[r["key"]] = r["value"]
+            self.metadata_keys[r.get_key()] = r["value"]
+        else:
+            response_id = "%s_id" % r.response_type
+            key = r.get_key()
+            self.results[type_].append(self.format_result({
+                response_id: "{0}|{1}".format(get_simple_module_name(plugin), key),
+                "component": dr.get_name(plugin),
+                "type": type_,
+                "key": key,
+                "details": r
+            }))
 
 
 class InsightsEvaluator(SingleEvaluator):

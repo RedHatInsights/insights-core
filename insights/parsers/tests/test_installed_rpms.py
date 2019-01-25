@@ -112,8 +112,17 @@ openssl-1.0.0-27.el6.x86_64
 
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
-    assert rpms.packages['openssh-server'][0].package == 'openssh-server-5.3p1-104.el6'
     assert not rpms.is_hypervisor
+
+    pkg_rpm = rpms.packages['openssh-server'][0]
+    rpm = InstalledRpm.from_package(pkg_rpm.package)
+    assert rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert pkg_rpm.package == 'openssh-server-5.3p1-104.el6'
+    assert rpm == pkg_rpm
+    assert rpm.epoch == '0'
+
+    rpm = InstalledRpm.from_package('bash-1:4.1.2-12.el7.x86_64')
+    assert rpm.epoch == '1'
 
 
 def test_from_line():
@@ -131,6 +140,7 @@ def test_from_json():
     assert isinstance(rpms.get_max("log4j").source, InstalledRpm)
     assert len(rpms.packages) == len(RPMS_JSON.splitlines())
     assert rpms.get_max("log4j").source.name == "log4j"
+    assert rpms.get_max("util-linux").epoch == '0'
 
 
 def test_garbage():
@@ -332,5 +342,60 @@ def test_unicode_char_in_rpms():
 
 
 def test_pad_version_uneven_sections():
-
     assert pad_version('1.el7', '1.el7_4.ngx') == ([1, 'el', 7, 0, ''], [1, 'el', 7, 4, 'ngx'])
+
+
+def test_epoch():
+    rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
+    # no epoch
+    rpm = rpms.get_max('openldap')
+    assert rpm.package_with_epoch == 'openldap-0:2.4.23-31.el6'
+    assert rpm.nevra == 'openldap-0:2.4.23-31.el6.x86_64'
+
+    rpms = InstalledRpms(context_wrap(RPMS_JSON))
+    # epoch 0
+    rpm = rpms.get_max('log4j')
+    assert rpm.package_with_epoch == 'log4j-0:1.2.17-15.el7'
+    assert rpm.nevra == 'log4j-0:1.2.17-15.el7.noarch'
+    # epoch (none)
+    rpm = rpms.get_max('kbd-misc')
+    assert rpm.package_with_epoch == 'kbd-misc-0:1.15.5-11.el7'
+    assert rpm.nevra == 'kbd-misc-0:1.15.5-11.el7.noarch'
+    # epoch 1
+    rpm = rpms.get_max('grub2-tools')
+    assert rpm.package_with_epoch == 'grub2-tools-1:2.02-0.34.el7_2'
+    assert rpm.nevra == 'grub2-tools-1:2.02-0.34.el7_2.x86_64'
+
+
+def test_rpm_object_hashing():
+    # Class InstalledRpm implements for hashing function __hash__().
+    # This allows to use objects InstalledRpm in set() and dict().
+
+    # just NVR
+    rpm_yum1 = InstalledRpm.from_package('yum-3.4.3-132.el7')
+    assert rpm_yum1.arch is None
+    rpm_yum2 = InstalledRpm.from_package('yum-3.4.3-132.el7')
+    assert rpm_yum2.arch is None
+    rpm_kernel = InstalledRpm.from_package('kernel-3.10.0-327')
+    assert rpm_kernel.arch is None
+    assert rpm_yum1.__hash__() == rpm_yum2.__hash__()
+    assert rpm_yum1.__hash__() != rpm_kernel.__hash__()
+    assert rpm_yum2.__hash__() != rpm_kernel.__hash__()
+
+    # NVRA
+    rpm1 = InstalledRpm.from_package('yum-3.4.3-132.el7.i686')
+    assert rpm1.arch == 'i686'
+    rpm2 = InstalledRpm.from_package('yum-3.4.3-132.el7.i686')
+    assert rpm2.arch == 'i686'
+    rpm3 = InstalledRpm.from_package('kernel-3.10.0-327.x86_64')
+    assert rpm3.arch == 'x86_64'
+    assert rpm1.__hash__() == rpm2.__hash__()
+    assert rpm1.__hash__() != rpm3.__hash__()
+    assert rpm2.__hash__() != rpm3.__hash__()
+
+    # NVR and NVRA
+    rpm1 = InstalledRpm.from_package('yum-3.4.3-132.el7')
+    assert rpm1.arch is None
+    rpm2 = InstalledRpm.from_package('yum-3.4.3-132.el7.ppc64le')
+    assert rpm2.arch == 'ppc64le'
+    assert rpm1.__hash__() != rpm2.__hash__()

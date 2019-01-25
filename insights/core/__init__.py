@@ -126,13 +126,22 @@ def find_main(confs, name):
 
 
 def flatten(docs, pred):
+    seen = set()
+
     def inner(children):
         results = []
         for c in children:
             if select(pred)([c]) and c.children:
+                name = c.value
+                if name in seen:
+                    msg = "Configuration contains recursive includes: %s" % name
+                    raise Exception(msg)
+                seen.add(name)
                 results.extend(inner(c.children))
             else:
                 results.append(c)
+                if c.children:
+                    c.children = inner(c.children)
         return results
     return inner(docs)
 
@@ -371,92 +380,6 @@ class ConfigCombiner(ConfigComponent):
         return sorted(results, key=operator.attrgetter("file_name"))
 
 
-class SysconfigOptions(Parser):
-    """
-    A parser to handle the standard 'keyword=value' format of files in the
-    ``/etc/sysconfig`` directory.  These are provided in the standard 'data'
-    dictionary.
-
-    Examples:
-
-        >>> ntpconf = shared[NtpConf]
-        >>> 'OPTIONS' in ntpconf.data
-        True
-        >>> 'NOT_SET' in ntpconf.data
-        False
-        >>> 'COMMENTED_OUT' in ntpconf.data
-        False
-        >>> ntpconf.data['OPTIONS']
-        '-x -g'
-
-    For common variables such as OPTIONS, it is recommended to set a specific
-    property in the subclass that fetches this option with a fallback to a
-    default value.
-
-    Example subclass::
-
-        class DirsrvSysconfig(SysconfigOptions):
-
-            @property
-            def options(self):
-                return self.data.get('OPTIONS', '')
-    """
-
-    def parse_content(self, content):
-        result = {}
-        unparsed_lines = []
-
-        # Do not use get_active_lines, it strips comments within quotes
-        for line in content:
-            if not line or line.startswith('#'):
-                continue
-
-            try:
-                words = shlex.split(line)
-            except ValueError:
-                # Handle foo=bar # unpaired ' or " here
-                line, comment = line.split(' #', 1)
-                words = shlex.split(line)
-
-            # Either only one thing or line or rest starts with comment
-            # but either way we need to have an equals in the first word.
-            if (len(words) == 1 or (len(words) > 1 and words[1][0] == '#')) \
-                    and '=' in words[0]:
-                key, value = words[0].split('=', 1)
-                result[key] = value
-            # Only store lines if they aren't comments or blank
-            elif len(words) > 0 and words[0][0] != '#':
-                unparsed_lines.append(line)
-        self.data = result
-        self.unparsed_lines = unparsed_lines
-
-    def __getitem__(self, option):
-        """ Retrieves an item from the underlying data dictionary."""
-        return self.data[option]
-
-    def __contains__(self, option):
-        """ Does the underlying dictionary contain this option?"""
-        return option in self.data
-
-    def keys(self):
-        """ Return the list of keys (in no order) in the underlying dictionary."""
-        return self.data.keys()
-
-    def get(self, item, default=None):
-        """
-        Returns value of key ``item`` in self.data or ``default``
-        if key is not present.
-
-        Parameters:
-            item (str): Key to get from ``self.data``.
-            default (str): Default value to return if key is not present.
-
-        Returns:
-            (str): String value of the stored item, or the default if not found.
-        """
-        return self.data.get(item, default)
-
-
 class LegacyItemAccess(object):
     """
     Mixin class to provide legacy access to ``self.data`` attribute.
@@ -513,6 +436,69 @@ class LegacyItemAccess(object):
             (str): String value of the stored item, or the default if not found.
         """
         return self.data.get(item, default)
+
+
+class SysconfigOptions(Parser, LegacyItemAccess):
+    """
+    A parser to handle the standard 'keyword=value' format of files in the
+    ``/etc/sysconfig`` directory.  These are provided in the standard 'data'
+    dictionary.
+
+    Examples:
+
+        >>> 'OPTIONS' in ntpconf
+        True
+        >>> 'NOT_SET' in ntpconf
+        False
+        >>> 'COMMENTED_OUT' in ntpconf
+        False
+        >>> ntpconf['OPTIONS']
+        '-x -g'
+
+    For common variables such as OPTIONS, it is recommended to set a specific
+    property in the subclass that fetches this option with a fallback to a
+    default value.
+
+    Example subclass::
+
+        class DirsrvSysconfig(SysconfigOptions):
+
+            @property
+            def options(self):
+                return self.data.get('OPTIONS', '')
+    """
+
+    def parse_content(self, content):
+        result = {}
+        unparsed_lines = []
+
+        # Do not use get_active_lines, it strips comments within quotes
+        for line in content:
+            if not line or line.startswith('#'):
+                continue
+
+            try:
+                words = shlex.split(line)
+            except ValueError:
+                # Handle foo=bar # unpaired ' or " here
+                line, comment = line.split(' #', 1)
+                words = shlex.split(line)
+
+            # Either only one thing or line or rest starts with comment
+            # but either way we need to have an equals in the first word.
+            if (len(words) == 1 or (len(words) > 1 and words[1][0] == '#')) \
+                    and '=' in words[0]:
+                key, value = words[0].split('=', 1)
+                result[key] = value
+            # Only store lines if they aren't comments or blank
+            elif len(words) > 0 and words[0][0] != '#':
+                unparsed_lines.append(line)
+        self.data = result
+        self.unparsed_lines = unparsed_lines
+
+    def keys(self):
+        """ Return the list of keys (in no order) in the underlying dictionary."""
+        return self.data.keys()
 
 
 class CommandParser(Parser):
@@ -1390,7 +1376,7 @@ class FileListing(Parser):
         ``/etc/yum/repos/d``.  Use caution in checking the paths when
         requesting single directories.
 
-    Parses SELinux directory listings if the 'selinux' option is True.
+    Parses the SELinux information if present in the listing.
     SELinux directory listings contain:
 
     * the type of file
@@ -1410,11 +1396,13 @@ class FileListing(Parser):
         | crw-------.  1 0 0 10,  236 Jul 25 10:00 control
 
     Examples:
-        >>> '/example_dir' in shared[FileListing]
+        >>> file_listing
+        <insights.core.FileListing at 0x7f5319407450>
+        >>> '/example_dir' in file_listing
         True
-        >>> shared[FileListing].dir_contains('/example_dir', 'menu.lst')
+        >>> file_listing.dir_contains('/example_dir', 'menu.lst')
         True
-        >>> dir = shared[FileListing].listing_of('/example_dir')
+        >>> dir = file_listing.listing_of('/example_dir')
         >>> dir['.']['type']
         'd'
         >>> dir['config-3.10.0-229.14.q.el7.x86_64']['size']
@@ -1425,7 +1413,7 @@ class FileListing(Parser):
         './grub.conf'
     """
 
-    def __init__(self, context, selinux=False):
+    def __init__(self, context):
         # Try to pull out the directory path from the command line, in case
         # we're doing an ls on only one directory (which then doesn't list
         # the directory name in the output).  Obviously if we don't have the

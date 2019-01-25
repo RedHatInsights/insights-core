@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 import logging
-import optparse
+import argparse
 import copy
 import six
 import sys
@@ -22,7 +22,8 @@ DEFAULT_OPTS = {
         'default': None,
         'opt': ['--analyze-image-id'],
         'help': 'Analyze a docker image with the specified ID.',
-        'action': 'store'
+        'action': 'store',
+        'metavar': 'ID'
     },
     'analyze_file': {
         'default': None,
@@ -81,7 +82,7 @@ DEFAULT_OPTS = {
     'compressor': {
         'default': 'gz',
         'opt': ['--compressor'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
     'conf': {
@@ -97,7 +98,7 @@ DEFAULT_OPTS = {
     'debug': {
         'default': False,  # Used by client wrapper script
         'opt': ['--debug-phases'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true',
         'dest': 'debug'
     },
@@ -122,19 +123,19 @@ DEFAULT_OPTS = {
     'from_file': {
         'default': False,
         'opt': ['--from-file'],
-        'help': optparse.SUPPRESS_HELP,  # ?
+        'help': argparse.SUPPRESS,  # ?
         'action': 'store'
     },
     'from_stdin': {
         'default': False,
         'opt': ['--from-stdin'],
-        'help': optparse.SUPPRESS_HELP,  # ?
+        'help': argparse.SUPPRESS,  # ?
         'action': 'store_true',
     },
     'gpg': {
         'default': True,
         'opt': ['--no-gpg'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_false',
         'group': 'debug',
         'dest': 'gpg'
@@ -151,7 +152,7 @@ DEFAULT_OPTS = {
     },
     'http_timeout': {
         # non-CLI
-        'default': 10
+        'default': 10.0
     },
     'insecure_connection': {
         # non-CLI
@@ -244,13 +245,13 @@ DEFAULT_OPTS = {
         'help': ('Number of times to retry uploading. %s seconds between tries' %
                  constants.sleep_time),
         'action': 'store',
-        'type': 'int',
+        'type': int,
         'dest': 'retries'
     },
     'run_specific_specs': {
         'default': None,
         'opt': ['--run-these'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store',
         'group': 'debug',
         'dest': 'run_specific_specs'
@@ -287,7 +288,7 @@ DEFAULT_OPTS = {
     'to_json': {
         'default': False,
         'opt': ['--to-json'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
     'to_stdout': {
@@ -310,14 +311,14 @@ DEFAULT_OPTS = {
     'use_atomic': {
         'default': None,
         'opt': ['--use-atomic'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true',
         'group': 'debug'
     },
     'use_docker': {
         'default': None,
         'opt': ['--use-docker'],
-        'help': optparse.SUPPRESS_HELP,
+        'help': argparse.SUPPRESS,
         'action': 'store_true',
         'group': 'debug'
     },
@@ -343,6 +344,38 @@ DEFAULT_OPTS = {
         'opt': ['--version'],
         'help': "Display version",
         'action': "store_true"
+    },
+
+    # platform options
+    # hide help messages with SUPPRESS until we're ready to make them public
+    'legacy_upload': {
+        # True: upload to insights classic API
+        # False: upload to insights platform API
+        'default': True
+    },
+    'payload': {
+        'default': None,
+        'opt': ['--payload'],
+        # 'help': 'Use Insights client to upload an archive',
+        'help': argparse.SUPPRESS,
+        'action': 'store',
+        'group': 'platform'
+    },
+    'content_type': {
+        'default': None,
+        'opt': ['--content-type'],
+        # 'help': 'Content type of the archive specified with --payload',
+        'help': argparse.SUPPRESS,
+        'action': 'store',
+        'group': 'platform'
+    },
+    'diagnosis': {
+        'default': None,
+        'opt': ['--diagnosis'],
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
+        'group': 'platform'
     }
 }
 
@@ -435,6 +468,15 @@ class InsightsConfig(object):
                                  for k, v in os.environ.items()
                                  if k.upper().startswith("INSIGHTS_") and
                                  k.upper() not in ignore)
+
+        for k in ['retries', 'cmd_timeout', 'http_timeout']:
+            if k in insights_env_opts:
+                v = insights_env_opts[k]
+                try:
+                    insights_env_opts[k] = float(v) if k == 'http_timeout' else int(v)
+                except ValueError:
+                    raise ValueError(
+                        'ERROR: Invalid value specified for {0}: {1}.'.format(k, v))
         self._update_dict(insights_env_opts)
 
     def load_command_line(self, conf_only=False):
@@ -446,21 +488,26 @@ class InsightsConfig(object):
         if self._cli_opts:
             self._update_dict(self._cli_opts)
             return
-        parser = optparse.OptionParser()
-        debug_grp = optparse.OptionGroup(parser, "Debug options")
+        parser = argparse.ArgumentParser()
+        debug_grp = parser.add_argument_group('Debug options')
+        platf_grp = parser.add_argument_group('Platform options')
         cli_options = dict((k, v) for k, v in DEFAULT_OPTS.items() if (
                        'opt' in v))
         for _, o in cli_options.items():
-            g = debug_grp if o.pop("group", None) == "debug" else parser
+            group = o.pop('group', None)
+            if group == 'debug':
+                g = debug_grp
+            elif group == 'platform':
+                g = platf_grp
+            else:
+                g = parser
             optnames = o.pop('opt')
-            g.add_option(*optnames, **o)
+            # use argparse.SUPPRESS as CLI defaults so it won't parse
+            #  options that weren't specified
+            o['default'] = argparse.SUPPRESS
+            g.add_argument(*optnames, **o)
 
-        parser.add_option_group(debug_grp)
-
-        # pass in optparse.Values() to get only options that were specified
-        options, args = parser.parse_args(values=optparse.Values())
-        if len(args) > 0:
-            parser.error("Unknown arguments: %s" % args)
+        options = parser.parse_args()
 
         self._cli_opts = vars(options)
         if conf_only and 'conf' in self._cli_opts:
@@ -484,16 +531,21 @@ class InsightsConfig(object):
                     'using defaults\n')
             return
         try:
-            # Try to add the insights-client section
-            parsedconfig.add_section(constants.app_name)
-            # Try to add the redhat_access_insights section for back compat
-            parsedconfig.add_section('redhat_access_insights')
+            if parsedconfig.has_section(constants.app_name):
+                d = dict(parsedconfig.items(constants.app_name))
+            elif parsedconfig.has_section('redhat-access-insights'):
+                d = dict(parsedconfig.items('redhat-access-insights'))
+            else:
+                raise ConfigParser.Error
         except ConfigParser.Error:
-            pass
-        d = dict(parsedconfig.items(constants.app_name))
+            if self._print_errors:
+                sys.stdout.write(
+                    'ERROR: Could not read configuration file, '
+                    'using defaults\n')
+            return
         for key in d:
             try:
-                if key == 'retries':
+                if key == 'retries' or key == 'cmd_timeout':
                     d[key] = parsedconfig.getint(constants.app_name, key)
                 if key == 'http_timeout':
                     d[key] = parsedconfig.getfloat(constants.app_name, key)
@@ -540,6 +592,9 @@ class InsightsConfig(object):
         if self.to_json and self.to_stdout:
             raise ValueError(
                 'Conflicting options: --to-stdout and --to-json')
+        if self.payload and not self.content_type:
+            raise ValueError(
+                '--payload requires --content-type')
 
     def _imply_options(self):
         '''
@@ -559,6 +614,8 @@ class InsightsConfig(object):
                         not self.to_stdout)
         self.register = (self.register or self.reregister) and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
+        if self.payload:
+            self.legacy_upload = False
 
 
 if __name__ == '__main__':

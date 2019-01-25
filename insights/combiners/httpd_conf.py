@@ -6,58 +6,9 @@ Combiner for parsing part of httpd configurations. It collects all HttpdConf
 generated from each configuration file and combines them to expose a
 consolidated configuration tree.
 
-Note: at this point in time, you should **NOT** filter the httpd configurations
-to avoid finding directives in incorrect sections.
-
-Examples:
-    >>> HTTPD_CONF_1 = '''
-    ... # prefork MPM
-    ... DocumentRoot "/var/www/html_cgi"
-    ... <IfModule prefork.c>
-    ... ServerLimit 256
-    ... ThreadsPerChild 16
-    ... MaxClients  256
-    ... </IfModule>
-    ... '''.strip()
-    >>> HTTPD_CONF_2 = '''
-    ... DocumentRoot "/var/www/html"
-    ... # prefork MPM
-    ... <IfModule prefork.c>
-    ... ServerLimit 512
-    ... MaxClients  512
-    ... </IfModule>
-    ... <VirtualHost 192.0.2.1>
-    ... <IfModule !php5_module>
-    ...     <IfModule !php4_module>
-    ...         <FilesMatch ".php[45]?$">
-    ...             Deny from all
-    ...         </FilesMatch>
-    ...     </IfModule>
-    ... </IfModule>
-    ... <IfModule mod_rewrite.c>
-    ...     RewriteEngine On
-    ... </IfModule>
-    ... <IfModule mod_rewrite.c>
-    ...     RewriteEngine Off
-    ... </IfModule>
-    ... </VirtualHost>
-    ... '''.strip()
-    >>> httpd1 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf/httpd.conf'))
-    >>> httpd2 = HttpdConf(context_wrap(HTTPD_CONF, path='/etc/httpd/conf.d/00-z.conf'))
-    >>> shared = [{HttpdConf: [httpd1, httpd2]}]
-    >>> htd_conf = shared[HttpdConfAll]
-    >>> htd_conf.get_active_setting("ThreadsPerChild", ("IfModule", "prefork.c"))[0].value
-    '16'
-    >>> htd_conf.get_active_setting("MaxClients", ("IfModule", "prefork"))[0]
-    ParsedData(value='512', line='MaxClients  512', section='IfModule', section_name='prefork.c', file_name='00-z.conf', file_path='/etc/httpd/conf.d/00-z.conf')
-    >>> htd_conf.get_active_setting("DocumentRoot").value
-    '/var/www/html'
-    >>> htd_conf.get_active_setting("RewriteEngine", ('IfModule', 'mod_rewrite.c'))[-1].value
-    'Off'
-    >>> htd_conf.get_active_setting('Deny', section=('FilesMatch','".php[45]?$"'))[-1].value
-    'from all'
-    >>> htd_conf.get_section_list("VirtualHost")
-    [(('VirtualHost', '192.0.2.1'), '00-z.conf', '/etc/httpd/conf.d/00-z.conf')]
+.. note::
+    At this point in time, you should **NOT** filter the httpd configurations
+    to avoid finding directives in incorrect sections.
 """
 import six
 from insights.contrib.ipaddress import ip_address, ip_network
@@ -72,11 +23,16 @@ from insights.configtree import DocParser, LineGetter, parse_name_attrs, startsw
 from insights.configtree import caseless
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
 from insights.specs import Specs
+from insights.util import deprecated
 
 
 @combiner(HttpdConf)
 class HttpdConfAll(object):
     """
+    .. warning::
+        This combiner class is deprecated, please use
+        :py:class:`insights.combiners.httpd_conf.HttpdConfTree` instead.
+
     A combiner for parsing all httpd configurations. It parses all sources and makes a composition
     to store actual loaded values of the settings as well as information about parsed configuration
     files and raw values.
@@ -105,6 +61,8 @@ class HttpdConfAll(object):
     ConfigData = namedtuple('ConfigData', ['file_name', 'file_path', 'full_data_dict'])
 
     def __init__(self, httpd_conf):
+        deprecated(HttpdConfAll, "Import HttpdConfTree from 'insights.combiners.httpd_conf' instead.")
+
         self.data = {}
         self.config_data = []
 
