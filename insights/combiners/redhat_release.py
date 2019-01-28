@@ -17,8 +17,14 @@ from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
 from insights.core.serde import serializer, deserializer
 from insights.parsers import ParseException
+import sys
 
-Release = namedtuple("Release", field_names=["major", "minor", "rhel"])
+fields = ["major", "minor", "rhel"]
+if sys.version_info < (3, 7):
+    Release = namedtuple("Release", fields)
+    Release.__new__.__defaults__ = (None,) * len(Release._fields)
+else:
+    Release = namedtuple('Release', fields, defaults=(None,) * len(fields))
 """namedtuple: Type for storing the release information."""
 
 
