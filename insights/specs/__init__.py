@@ -84,6 +84,7 @@ class Specs(SpecSet):
     dmesg = RegistryPoint(filterable=True)
     dmidecode = RegistryPoint()
     dmsetup_info = RegistryPoint()
+    dnf_modules = RegistryPoint()
     docker_container_inspect = RegistryPoint(multi_output=True)
     docker_host_machine_id = RegistryPoint()
     docker_image_inspect = RegistryPoint(multi_output=True)
