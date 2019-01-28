@@ -1,5 +1,5 @@
 """
-ModInfo_i40e - command ``/sbin/modinfo i40e``
+ModInfoI40e - command ``/sbin/modinfo i40e``
 =============================================
 
 The ``/sbin/modinfo i40e`` command provides information about the ``i40e``
@@ -17,23 +17,6 @@ Sample ``/sbin/modinfo i40e`` output::
     srcversion:     DC5C250666ADD8603966656
     alias:          pci:v00008086d0000158Bsv*sd*bc*sc*i*
     alias:          pci:v00008086d0000158Asv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001588sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001587sv*sd*bc*sc*i*
-    alias:          pci:v00008086d000037D3sv*sd*bc*sc*i*
-    alias:          pci:v00008086d000037D2sv*sd*bc*sc*i*
-    alias:          pci:v00008086d000037D1sv*sd*bc*sc*i*
-    alias:          pci:v00008086d000037D0sv*sd*bc*sc*i*
-    alias:          pci:v00008086d000037CFsv*sd*bc*sc*i*
-    alias:          pci:v00008086d000037CEsv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001589sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001586sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001585sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001584sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001583sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001581sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001580sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001574sv*sd*bc*sc*i*
-    alias:          pci:v00008086d00001572sv*sd*bc*sc*i*
     depends:        ptp
     intree:         Y
     vermagic:       3.10.0-993.el7.x86_64 SMP mod_unload modversions
@@ -45,7 +28,7 @@ Sample ``/sbin/modinfo i40e`` output::
 Examples:
 
     >>> type(modinfo_obj)
-    <class 'insights.parsers.modinfo_i40e.ModInfo_i40e'>
+    <class 'insights.parsers.modinfo.ModInfoI40e'>
     >>> modinfo_obj.module_name
     'i40e'
     >>> modinfo_obj.module_version
@@ -56,12 +39,12 @@ Examples:
     False
 """
 
-from .. import parser, CommandParser
+from .. import parser
 from .. import ModInfo
 from insights.specs import Specs
 
 
 @parser(Specs.modinfo_i40e)
-class ModInfo_i40e(CommandParser, ModInfo):
+class ModInfoI40e(ModInfo):
     """Parses output of ``/sbin/modinfo i40e`` command."""
     pass

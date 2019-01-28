@@ -1,6 +1,7 @@
 import doctest
-from insights.parsers import modinfo_i40e
-from insights.parsers.modinfo_i40e import ModInfo_i40e
+import pytest
+from insights.parsers import modinfo, ParseException, SkipException
+from insights.parsers.modinfo import ModInfoI40e
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -110,9 +111,16 @@ parm:           mrrs: Force Max Read Req Size (0..3) (for debug) (int)
 parm:           debug: Default debug msglevel (int)
 """.strip()
 
+MODINFO_NO = """
+""".strip()
 
-def test_modinfo_i40e():
-    modinfo_obj = ModInfo_i40e(context_wrap(MODINFO_I40E))
+MODINFO_NO_1 = """
+modinfo ERROR Module i40e not found.
+""".strip()
+
+
+def test_modinfo():
+    modinfo_obj = ModInfoI40e(context_wrap(MODINFO_I40E))
     assert modinfo_obj.module_name == 'i40e'
     assert modinfo_obj.module_version == '2.3.2-k'
     assert modinfo_obj.module_deps == ['ptp']
@@ -120,12 +128,12 @@ def test_modinfo_i40e():
     assert len(modinfo_obj.data['alias']) == 19
     assert modinfo_obj.data['sig_key'] == '81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59'
     assert modinfo_obj.data['vermagic'] == '3.10.0-993.el7.x86_64 SMP mod_unload modversions'
-    assert modinfo_obj.data['parm'] == ['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)']
+    assert modinfo_obj.data['parm'] == 'debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)'
     assert modinfo_obj.data['description'] == 'Intel(R) Ethernet Connection XL710 Network Driver'
     assert ('signer' in modinfo_obj) is True
     assert modinfo_obj.module_path == "/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz"
 
-    modinfo_obj = ModInfo_i40e(context_wrap(MODINFO_INTEL))
+    modinfo_obj = ModInfoI40e(context_wrap(MODINFO_INTEL))
     assert len(modinfo_obj.data['alias']) == 5
     assert sorted(modinfo_obj.data['alias']) == sorted(['aes', 'crypto-aes', 'crypto-fpu', 'fpu', 'x86cpu:vendor:*:family:*:model:*:feature:*0099*'])
     assert ('parm' in modinfo_obj) is False
@@ -136,7 +144,7 @@ def test_modinfo_i40e():
     assert modinfo_obj.module_deps == ['glue_helper', 'lrw', 'cryptd', 'ablk_helper']
     assert modinfo_obj.data['sig_key'] == '81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59'
 
-    modinfo_obj = ModInfo_i40e(context_wrap(MODINFO_BNX2X))
+    modinfo_obj = ModInfoI40e(context_wrap(MODINFO_BNX2X))
     assert len(modinfo_obj.data['alias']) == 24
     assert len(modinfo_obj.data['parm']) == 6
     assert len(modinfo_obj.data['firmware']) == 3
@@ -146,8 +154,16 @@ def test_modinfo_i40e():
     assert modinfo_obj.module_signer == 'Red Hat Enterprise Linux kernel signing key'
     assert sorted(modinfo_obj.module_deps) == sorted(['mdio', 'libcrc32c', 'ptp'])
 
+    with pytest.raises(SkipException) as exc:
+        modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO))
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO_1))
+    assert 'No Parsed Contents' in str(exc)
+
 
 def test_modinfo_doc_examples():
-    env = {'modinfo_obj': ModInfo_i40e(context_wrap(MODINFO_I40E))}
-    failed, total = doctest.testmod(modinfo_i40e, globs=env)
+    env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E))}
+    failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0
