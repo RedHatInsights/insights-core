@@ -27,6 +27,7 @@ from .utilities import (determine_hostname,
                         write_unregistered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
+from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
@@ -300,13 +301,15 @@ class InsightsConnection(object):
             sock.send(connect_str.encode('utf-8'))
             res = sock.recv(4096)
             if u'200 connection established' not in res.decode('utf-8').lower():
-                logger.error('Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error('Failed to connect to %s.', self.base_url)
+                logger.error('HTTP message:\n%s', res)
                 return False
         else:
             try:
                 sock.connect((hostname[0], 443))
-            except socket.gaierror:
+            except socket.gaierror as e:
                 logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
+                logger.error(e)
                 return False
         ctx = SSL.Context(SSL.TLSv1_METHOD)
         if type(self.cert_verify) is not bool:
@@ -473,11 +476,12 @@ class InsightsConnection(object):
         """
         branch_info = None
         if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 30 days old
+            # use cached branch info file if less than 10 minutes old
+            #  (failsafe, should be deleted at end of client run normally)
             logger.debug(u'Reading branch info from cached file.')
             ctime = datetime.utcfromtimestamp(
                 os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(days=30)):
+            if datetime.utcnow() < (ctime + timedelta(minutes=10)):
                 with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
                     branch_info = json.load(f)
                 return branch_info
@@ -655,7 +659,7 @@ class InsightsConnection(object):
         # This will undo a blacklist
         logger.debug("API: Create system")
         system = self.create_system(new_machine_id=False)
-        if not system:
+        if system is False:
             return ('Could not reach the Insights service to register.', '', '', '')
 
         # If we get a 409, we know we need to generate a new machine-id
@@ -698,22 +702,26 @@ class InsightsConnection(object):
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
 
+        try:
+            c_facts = json.dumps(get_canonical_facts())
+        except Exception as e:
+            logger.debug('Error getting canonical facts: %s', e)
+            c_facts = None
+
+        files = {}
         # legacy upload
         if self.config.legacy_upload:
             try:
                 from insights.contrib import magic
                 m = magic.open(magic.MAGIC_MIME)
                 m.load()
-                mime_type = m.file(data_collected)
+                content_type = m.file(data_collected)
             except ImportError:
                 magic = None
                 logger.debug(
                     'python-magic not installed, using backup function...')
                 from .utilities import magic_plan_b
-                mime_type = magic_plan_b(data_collected)
-
-            files = {
-                'file': (file_name, open(data_collected, 'rb'), mime_type)}
+                content_type = magic_plan_b(data_collected)
 
             if self.config.analyze_container:
                 logger.debug(
@@ -722,13 +730,11 @@ class InsightsConnection(object):
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
             headers = {'x-rh-collection-time': str(duration)}
-
-        # platform upload
         else:
-            files = {
-                'upload': (file_name, open(data_collected, 'rb'),
-                           content_type)}
             headers = {}
+            files['metadata'] = c_facts
+
+        files['file'] = (file_name, open(data_collected, 'rb'), content_type)
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 

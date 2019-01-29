@@ -1,8 +1,0 @@
-argparse
-pyyaml>=3.10,<=3.12
-six
-requests
-pyOpenSSL
-importlib
-Jinja2==2.9.6
-nbsphinx==0.3.1

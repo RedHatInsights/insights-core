@@ -100,7 +100,7 @@ Create a sample rule called ``hostname_rel.py`` in the ``MyRules`` directory:
 
     ERROR_KEY_1 = "RELEASE_IS_RHEL"
     ERROR_KEY_2 = "RELEASE_IS_NOT_RECOGNIZED"
-    ERROR_KEY_2 = "RELEASE_CANNOT_BE_DETERMINED"
+    ERROR_KEY_3 = "RELEASE_CANNOT_BE_DETERMINED"
 
 
     @rule(Hostname, [RedhatRelease])
@@ -142,7 +142,9 @@ output ending with a your rule results that should look something like this::
      
 By default Insights will collect information from your computer for evaluation
 of your rules.  For a more detailed description of how to develop your own
-rules see the Tutorial section :ref:`tutorial-rule-development`.
+rules see the
+`Rule tutorial section <https://insights-core-tutorials.readthedocs.io/en/latest/rule_tutorial_index.html>`_
+in insights-rule-tutorials.
 
 *****************
 Contributor Setup
@@ -183,8 +185,10 @@ And they can be found under `docs/_build/html`.
 You will need to initialize the project per the
 `README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
 file.  For more detailed information about writing parsers and combiners see the
-tutorial sections :ref:`tutorial-parser-development` and
-:ref:`tutorial-combiner-development`.
+insights-core-tutorials tutorial sections
+`tutorial-parser-development <https://insights-core-tutorials.readthedocs.io/en/latest/customtut_parsers.html>`_
+and
+`tutorial-combiner-development <https://insights-core-tutorials.readthedocs.io/en/latest/combiner_tutorial.html>`_.
 
 ***********************
 Contributor Submissions
