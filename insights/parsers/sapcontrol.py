@@ -1,6 +1,10 @@
 """
 sapcontrol - Commands ``sapcontrol``
 ====================================
+Shared parsers for parsing output of the ``sapcontrol [option]`` commands.
+
+SAPControlSystemUpdateList- command ``sapcontrol -nr <NR> -function GetSystemUpdateList``
+-----------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
 from insights.parsers import SkipException, parse_delimited_table
@@ -34,7 +38,7 @@ class SAPControlSystemUpdateList(CommandParser):
 
     Attributes:
         status (str): The status of GetSystemUpdateList
-        data (list): List of dicts where keys are the lead name of each line and
+        data (list): List of dicts where keys are the lead name of header line and
             values are the string value.
     """
     def parse_content(self, content):
