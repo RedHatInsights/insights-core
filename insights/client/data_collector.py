@@ -200,7 +200,8 @@ class DataCollector(object):
                 self.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
 
-            if c['command'] in rm_conf.get('commands', []):
+            if (c['command'] in rm_conf.get('commands', []) or
+               c.get('symbolic_name') in rm_conf.get('commands', [])):
                 logger.warn("WARNING: Skipping command %s", c['command'])
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
@@ -208,7 +209,8 @@ class DataCollector(object):
                     cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
-            if f['file'] in rm_conf.get('files', []):
+            if (f['file'] in rm_conf.get('files', []) or
+               f.get('symbolic_name') in rm_conf.get('files', [])):
                 logger.warn("WARNING: Skipping file %s", f['file'])
             else:
                 file_specs = self._parse_file_spec(f)
