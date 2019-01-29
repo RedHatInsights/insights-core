@@ -129,6 +129,7 @@ class InsightsArchiveSpecs(Specs):
     md5chk_files = simple_file("insights_commands/md5sum_.dev.null_.etc.pki._product_product-default_.69.pem")
     mlx4_port = simple_file("insights_commands/find_.sys.bus.pci.devices._.mlx4_port_0-9_-print_-exec_cat")
     mount = simple_file("insights_commands/mount")
+    modinfo_i40e = simple_file("insights_commands/modinfo_i40e")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
     multipath__v4__ll = simple_file("insights_commands/multipath_-v4_-ll")
