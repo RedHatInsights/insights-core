@@ -37,6 +37,12 @@ Examples:
     '/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz'
     >>> 'firmware' in modinfo_obj
     True
+    >>> sorted(modinfo_obj.module_firmware) == sorted(['i40e/i40e-e2-7.13.1.0.fw', 'i40e/i40e-e1h-7.13.1.0.fw'])
+    True
+    >>> sorted(modinfo_obj.module_alias) == sorted(['pci:v00008086d0000158Asv*sd*bc*sc*i*', 'pci:v00008086d0000158Bsv*sd*bc*sc*i*'])
+    True
+    >>> sorted(modinfo_obj.module_parm) == sorted(['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)', 'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)'])
+    True
 """
 
 from .. import parser
