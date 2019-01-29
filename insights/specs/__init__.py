@@ -417,6 +417,7 @@ class Specs(SpecSet):
     samba = RegistryPoint(filterable=True)
     sap_hdb_version = RegistryPoint(multi_output=True)
     sap_host_profile = RegistryPoint(filterable=True)
+    sapcontrol_getsystemupdatelist = RegistryPoint(multi_output=True)
     saphostctl_getcimobject_sapinstance = RegistryPoint(filterable=True)
     saphostexec_status = RegistryPoint()
     saphostexec_version = RegistryPoint()
