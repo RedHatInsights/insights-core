@@ -1656,7 +1656,7 @@ class ModInfo(CommandParser):
     @property
     def module_parm(self):
         """
-        (list): This will return the list of alias to this kernel  module
+        (list): This will return the list of parms for this kernel module
                 when set, else `None`.
         """
         return self.data.get('parm')
@@ -1679,4 +1679,4 @@ class ModInfo(CommandParser):
         """
         (dict): This will return the kernel module details when set, else None.
         """
-        return self.data if self.data else None
+        return self.data
