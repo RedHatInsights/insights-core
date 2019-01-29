@@ -6,6 +6,8 @@ from insights.tests import context_wrap
 
 MODINFO_I40E = """
 filename:       /lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz
+firmware:       i40e/i40e-e2-7.13.1.0.fw
+firmware:       i40e/i40e-e1h-7.13.1.0.fw
 version:        2.3.2-k
 license:        GPL
 description:    Intel(R) Ethernet Connection XL710 Network Driver
@@ -15,23 +17,6 @@ rhelversion:    7.7
 srcversion:     DC5C250666ADD8603966656
 alias:          pci:v00008086d0000158Bsv*sd*bc*sc*i*
 alias:          pci:v00008086d0000158Asv*sd*bc*sc*i*
-alias:          pci:v00008086d00001588sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001587sv*sd*bc*sc*i*
-alias:          pci:v00008086d000037D3sv*sd*bc*sc*i*
-alias:          pci:v00008086d000037D2sv*sd*bc*sc*i*
-alias:          pci:v00008086d000037D1sv*sd*bc*sc*i*
-alias:          pci:v00008086d000037D0sv*sd*bc*sc*i*
-alias:          pci:v00008086d000037CFsv*sd*bc*sc*i*
-alias:          pci:v00008086d000037CEsv*sd*bc*sc*i*
-alias:          pci:v00008086d00001589sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001586sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001585sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001584sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001583sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001581sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001580sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001574sv*sd*bc*sc*i*
-alias:          pci:v00008086d00001572sv*sd*bc*sc*i*
 depends:        ptp
 intree:         Y
 vermagic:       3.10.0-993.el7.x86_64 SMP mod_unload modversions
@@ -39,6 +24,7 @@ signer:         Red Hat Enterprise Linux kernel signing key
 sig_key:        81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59
 sig_hashalgo:   sha256
 parm:           debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)
+parm:           int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)
 """.strip()
 
 
@@ -125,10 +111,11 @@ def test_modinfo():
     assert modinfo_obj.module_version == '2.3.2-k'
     assert modinfo_obj.module_deps == ['ptp']
     assert modinfo_obj.module_signer == 'Red Hat Enterprise Linux kernel signing key'
-    assert len(modinfo_obj.data['alias']) == 19
+    assert len(modinfo_obj.data['alias']) == 2
     assert modinfo_obj.data['sig_key'] == '81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59'
     assert modinfo_obj.data['vermagic'] == '3.10.0-993.el7.x86_64 SMP mod_unload modversions'
-    assert modinfo_obj.data['parm'] == 'debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)'
+    assert sorted(modinfo_obj.data['parm']) == sorted(['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)',
+                                                'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)'])
     assert modinfo_obj.data['description'] == 'Intel(R) Ethernet Connection XL710 Network Driver'
     assert ('signer' in modinfo_obj) is True
     assert modinfo_obj.module_path == "/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz"

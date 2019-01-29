@@ -36,7 +36,7 @@ Examples:
     >>> modinfo_obj.module_path
     '/lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz'
     >>> 'firmware' in modinfo_obj
-    False
+    True
 """
 
 from .. import parser
