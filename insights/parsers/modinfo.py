@@ -8,6 +8,8 @@ kernel module.
 Sample ``/sbin/modinfo i40e`` output::
 
     filename:       /lib/modules/3.10.0-993.el7.x86_64/kernel/drivers/net/ethernet/intel/i40e/i40e.ko.xz
+    firmware:       i40e/i40e-e2-7.13.1.0.fw
+    firmware:       i40e/i40e-e1h-7.13.1.0.fw
     version:        2.3.2-k
     license:        GPL
     description:    Intel(R) Ethernet Connection XL710 Network Driver
@@ -24,6 +26,7 @@ Sample ``/sbin/modinfo i40e`` output::
     sig_key:        81:7C:CB:07:72:4E:7F:B8:15:24:10:F9:27:2D:AA:CF:80:3E:CE:59
     sig_hashalgo:   sha256
     parm:           debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)
+    parm:           int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)
 
 Examples:
 
