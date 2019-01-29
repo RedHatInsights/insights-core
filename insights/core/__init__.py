@@ -1618,22 +1618,22 @@ class ModInfo(CommandParser):
     @property
     def module_name(self):
         """
-        (str): This will return kernel module name when set, else `None`.
+        (str): This will return kernel module name when set, else empty str.
         """
-        return self._module_name if self._module_name else None
+        return self._module_name
 
     @property
     def module_path(self):
         """
         (str): This will return kernel module path when set, else `None`.
         """
-        return self.data.get('filename')
+        return self.data.get('filename', '')
 
     @property
     def module_deps(self):
         """
         (list): This will return the list of kernel modules depend on the kernel
-                module when set, else `None`.
+                module when set, else `[]`.
         """
         return self._module_deps
 
@@ -1641,42 +1641,42 @@ class ModInfo(CommandParser):
     def module_firmware(self):
         """
         (list): This will return the list of firmwares used by this module
-                when set, else `None`.
+                when set, else `[]`.
         """
-        return self.data.get('firmware')
+        return self.data.get('firmware', [])
 
     @property
     def module_alias(self):
         """
         (list): This will return the list of alias to this kernel  module
-                when set, else `None`.
+                when set, else `[]`.
         """
-        return self.data.get('alias')
+        return self.data.get('alias', [])
 
     @property
     def module_parm(self):
         """
         (list): This will return the list of parms for this kernel module
-                when set, else `None`.
+                when set, else `[]`.
         """
-        return self.data.get('parm')
+        return self.data.get('parm', [])
 
     @property
     def module_version(self):
         """
-        (str): This will return the kernel module version when set, else `None`.
+        (str): This will return the kernel module version when set, else empty string.
         """
-        return self.data.get('version', None)
+        return self.data.get('version', '')
 
     @property
     def module_signer(self):
         """
-        (str): This will return the signer of kernel module when set, else None.
+        (str): This will return the signer of kernel module when set, else empty string.
         """
-        return self.data.get('signer', None)
+        return self.data.get('signer', '')
 
     def module_details(self):
         """
-        (dict): This will return the kernel module details when set, else None.
+        (dict): This will return the kernel module details when set.
         """
         return self.data
