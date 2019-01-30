@@ -23,14 +23,14 @@ def patch_insights_config(old_function):
 @patch_insights_config
 def test_post_update_legacy_upload_off(insights_config, insights_client):
     """
-    Registration is not processed when platform upload
+    Registration is still called when platform upload
     """
     insights_config.return_value.load_all.return_value.legacy_upload = False
     try:
         post_update()
     except SystemExit:
         pass
-    insights_client.return_value.register.assert_not_called()
+    insights_client.return_value.register.assert_called_once()
 
 
 @patch("insights.client.phase.v1.InsightsClient")

@@ -89,10 +89,11 @@ class InsightsSupport(object):
         pconn = InsightsConnection(self.config)
         logger.info('Insights version: %s', get_nvr())
 
-        reg_check = registration_check(pconn)
-        cfg_block.append('Registration check:')
-        for key in reg_check:
-            cfg_block.append(key + ': ' + str(reg_check[key]))
+        if self.config.legacy_upload:
+            reg_check = registration_check(pconn)
+            cfg_block.append('Registration check:')
+            for key in reg_check:
+                cfg_block.append(key + ': ' + str(reg_check[key]))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):

@@ -156,10 +156,6 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if not config.legacy_upload:
-        logger.debug('Platform upload. Bypassing registration.')
-        return
-
     reg = client.register()
     if reg is None:
         # API unreachable
