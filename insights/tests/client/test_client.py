@@ -364,7 +364,7 @@ def test_platform_unregister_skip(handle_unregistration):
 @patch('insights.client.client.handle_registration')
 def test_legacy_register(handle_registration):
     '''
-    handle_registration called when legacy upload
+    handle_unregistration called when legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
@@ -373,9 +373,9 @@ def test_legacy_register(handle_registration):
 
 
 @patch('insights.client.client.handle_unregistration')
-def test_platform_unregister_skip(handle_unregistration):
+def test_legacy_unregister(handle_unregistration):
     '''
-    handle_registration called when legacy upload
+    handle_unregistration called when legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
