@@ -11,6 +11,7 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import os
 import re
+from subprocess import check_output, STDOUT
 
 from insights.core.context import ClusterArchiveContext
 from insights.core.context import DockerImageContext
@@ -671,7 +672,23 @@ class DefaultSpecs(Specs):
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
+
+    # sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
+    @datasource(sap_sid_nr)
+    def sapcontrol_getsystemupdatelist(broker):
+        sid_nr = broker[DefaultSpecs.sap_sid_nr]
+        # sap_rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList; exit 0"
+        sap_rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList; exit 0"
+        results = []
+        for sid, nr in sid_nr:
+            results.append(check_output(sap_rks_cmd.format(sid, nr),
+                                        shell=True,
+                                        universal_newlines=True,
+                                        stderr=STDOUT
+                                        ).splitlines()
+                           )
+        return results
+
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
