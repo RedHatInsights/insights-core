@@ -93,6 +93,7 @@ class DefaultSpecs(Specs):
     cciss = glob_file("/proc/driver/cciss/cciss*")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
     ceilometer_collector_log = simple_file("/var/log/ceilometer/collector.log")
+    ceilometer_compute_log = first_file(["/var/log/containers/ceilometer/compute.log", "/var/log/ceilometer/compute.log"])
     ceilometer_conf = first_file(["/var/lib/config-data/puppet-generated/ceilometer/etc/ceilometer/ceilometer.conf", "/etc/ceilometer/ceilometer.conf"])
     ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
     ceph_conf = first_file(["/var/lib/config-data/puppet-generated/ceph/etc/ceph/ceph.conf", "/etc/ceph/ceph.conf"])
@@ -390,6 +391,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
+    modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
@@ -451,6 +453,7 @@ class DefaultSpecs(Specs):
     ntpq_leap = simple_command("/usr/sbin/ntpq -c 'rv 0 leap'")
     ntpq_pn = simple_command("/usr/sbin/ntpq -pn")
     ntptime = simple_command("/usr/sbin/ntptime")
+    numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)
@@ -700,7 +703,9 @@ class DefaultSpecs(Specs):
     tomcat_vdc_targeted = foreach_execute(tomcat_home_base, "/bin/grep -R -s 'VirtualDirContext' --include '*.xml' %s")
     tomcat_vdc_fallback = simple_command("/usr/bin/find /usr/share -maxdepth 1 -name 'tomcat*' -exec /bin/grep -R -s 'VirtualDirContext' --include '*.xml' '{}' +")
     tuned_adm = simple_command("/usr/sbin/tuned-adm list")
+    tuned_conf = simple_file("/etc/tuned.conf")
     udev_persistent_net_rules = simple_file("/etc/udev/rules.d/70-persistent-net.rules")
+    ulimit_hard = simple_command("/usr/bin/ulimit -a -H")
     uname = simple_command("/usr/bin/uname -a")
     up2date = simple_file("/etc/sysconfig/rhn/up2date")
     up2date_log = simple_file("/var/log/up2date")

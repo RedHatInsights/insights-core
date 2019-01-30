@@ -24,11 +24,11 @@ import sys
 import yaml
 
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
-from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
+from .core import FileListing, LegacyItemAccess, ModInfo, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
-from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
+from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
@@ -260,17 +260,25 @@ def run(component=None, root=None, print_summary=False,
 
     broker = dr.Broker()
 
-    if formatter:
-        formatter.preprocess(broker)
-        broker = _run(broker, graph, root, context=context, inventory=inventory)
-        formatter.postprocess(broker)
-    elif print_component:
-        broker = _run(broker, graph, root, context=context, inventory=inventory)
-        broker.print_component(print_component)
-    else:
-        broker = _run(broker, graph, root, context=context, inventory=inventory)
+    try:
+        if formatter:
+            formatter.preprocess(broker)
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            formatter.postprocess(broker)
+        elif print_component:
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            broker.print_component(print_component)
+        else:
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
 
-    return broker
+        return broker
+    except (InvalidContentType, InvalidArchive):
+        if args and args.archive:
+            path = args.archive
+            msg = "Invalid directory or archive. Did you mean to pass -p {p}?"
+            log.error(msg.format(p=path))
+        else:
+            raise
 
 
 def main():

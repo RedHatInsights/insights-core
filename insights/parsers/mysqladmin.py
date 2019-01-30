@@ -10,13 +10,13 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 
 """
 
-from .. import Parser, parser, LegacyItemAccess
+from insights import CommandParser, parser, LegacyItemAccess
 from insights.parsers import ParseException
 from insights.specs import Specs
 
 
 @parser(Specs.mysqladmin_vars)
-class MysqladminVars(LegacyItemAccess, Parser):
+class MysqladminVars(LegacyItemAccess, CommandParser):
     """
     The output of command ``/bin/mysqladmin variables`` is in mysql table format,
     contains 'Variable_name' and 'Value' two columns.

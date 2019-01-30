@@ -5,9 +5,9 @@ from insights.client.client import collect
 from insights.client.config import InsightsConfig
 from insights.client.data_collector import DataCollector
 from json import dump as json_dump, dumps as json_dumps
-from mock.mock import Mock, patch, PropertyMock
+from mock.mock import Mock, patch
 from pytest import mark, raises
-from tempfile import NamedTemporaryFile, TemporaryFile
+from tempfile import NamedTemporaryFile
 
 
 stdin_uploader_json = {"some key": "some value"}
@@ -55,30 +55,6 @@ def patch_get_branch_info():
     """
     def decorator(old_function):
         patcher = patch("insights.client.client.get_branch_info")
-        return patcher(old_function)
-    return decorator
-
-
-def patch_stdin():
-    """
-    Sets a static JSON data to stdin.
-    """
-    def decorator(old_function):
-        stdin = TemporaryFile("w+t")
-        json_dump(stdin_payload, stdin)
-        stdin.seek(0)
-
-        patcher = patch("insights.client.client.sys.stdin", new_callable=PropertyMock(return_value=stdin))
-        return patcher(old_function)
-    return decorator
-
-
-def patch_get_conf_stdin():
-    """
-    Mocks InsightsUploadConf.get_conf_stdin.
-    """
-    def decorator(old_function):
-        patcher = patch("insights.client.client.InsightsUploadConf.get_conf_stdin")
         return patcher(old_function)
     return decorator
 
@@ -169,48 +145,16 @@ def patch_try_disk(return_value):
 
 @patch_data_collector()
 @patch_get_conf_file()
-@patch_get_conf_stdin()
+# @patch_get_conf_stdin()
 @patch_get_branch_info()
-def test_get_conf_file(get_branch_info, get_conf_stdin, get_conf_file, data_collector):
+def test_get_conf_file(get_branch_info, get_conf_file, data_collector):
     """
     If there is no config passed via stdin, it is loaded from a file instead.
     """
     config, pconn = collect_args()
     collect(config, pconn)
 
-    get_conf_stdin.assert_not_called()
     get_conf_file.assert_called_once_with()
-
-
-@patch_data_collector()
-@patch_get_conf_file()
-@patch_get_conf_stdin()
-@patch_stdin()
-@patch_get_branch_info()
-def test_get_conf_stdin(get_branch_info, stdin, get_conf_stdin, get_conf_file, data_collector):
-    """
-    If there is config passed via stdin, use it and do not look for it in files.
-    """
-    config, pconn = collect_args(from_stdin=True)
-    collect(config, pconn)
-
-    get_conf_stdin.assert_called_once_with(stdin_payload)
-    get_conf_file.assert_not_called()
-
-
-@patch_data_collector()
-@patch_get_rm_conf()
-@patch_get_conf_stdin()
-@patch_stdin()
-@patch_get_branch_info()
-def test_get_rm_conf_stdin(get_branch_info, stdin, get_conf_stdin, get_rm_conf, data_collector):
-    """
-    Load configuration of files removed from collection when collection rules are loaded from stdin.
-    """
-    config, pconn = collect_args(from_stdin=True)
-    collect(config, pconn)
-
-    get_rm_conf.assert_called_once_with()
 
 
 @patch_data_collector()
@@ -221,29 +165,10 @@ def test_get_rm_conf_file(get_branch_info, get_conf_file, get_rm_conf, data_coll
     """
     Load configuration of files removed from collection when collection rules are loaded from a file.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     collect(config, pconn)
 
     get_rm_conf.assert_called_once_with()
-
-
-@patch_data_collector()
-@patch_get_rm_conf()
-@patch_get_conf_stdin()
-@patch_stdin()
-@patch_get_branch_info()
-def test_data_collector_stdin(get_branch_info, stdin, get_conf_stdin, get_rm_conf, data_collector):
-    """
-    Configuration from stdin is passed to the DataCollector along with removed files configuration.
-    """
-    config, pconn = collect_args(from_stdin=True)
-    collect(config, pconn)
-
-    collection_rules = get_conf_stdin.return_value
-    rm_conf = get_rm_conf.return_value
-    branch_info = get_branch_info.return_value
-    data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)
-    data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
 
 
 @patch_data_collector()
@@ -254,7 +179,7 @@ def test_data_collector_file(get_branch_info, get_conf_file, get_rm_conf, data_c
     """
     Configuration from a file is passed to the DataCollector along with removed files configuration.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     collect(config, pconn)
 
     collection_rules = get_conf_file.return_value
@@ -264,77 +189,6 @@ def test_data_collector_file(get_branch_info, get_conf_file, get_rm_conf, data_c
     data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
 
 
-@mark.regression
-@patch_data_collector()
-@patch_validate_gpg_sig(False)
-@patch_isfile(False)
-@patch_stdin()
-@patch_get_branch_info()
-def test_stdin_signature_ignored(get_branch_info, stdin, validate_gpg_sig, data_collector):
-    """
-    Signature of configuration from stdin is not validated if validation is disabled.
-    """
-    config, pconn = collect_args(from_stdin=True, gpg=False)
-    collect(config, pconn)
-
-    validate_gpg_sig.assert_not_called()
-
-
-@mark.regression
-@patch_data_collector()
-@patch_validate_gpg_sig(True)
-@patch_isfile(False)
-@patch_stdin()
-@patch_get_branch_info()
-def test_stdin_signature_valid(get_branch_info, stdin, validate_gpg_sig, data_collector):
-    """
-    Correct signature of configuration from stdin is recognized.
-    """
-    config, pconn = collect_args(from_stdin=True)
-    collect(config, pconn)
-
-    validate_gpg_sig.assert_called_once()
-
-
-@mark.regression
-@patch_data_collector()
-@patch_validate_gpg_sig(False)
-@patch_isfile(False)
-@patch_stdin()
-@patch_get_branch_info()
-def test_stdin_signature_invalid(get_branch_info, stdin, validate_gpg_sig, data_collector):
-    """
-    Incorrect signature of configuration from stdin causes failure.
-    """
-    config, pconn = collect_args(from_stdin=True)
-    with raises(Exception):
-        collect(config, pconn)
-
-    validate_gpg_sig.assert_called_once()
-
-
-@mark.regression
-@patch_data_collector()
-@patch_validate_gpg_sig(True)
-@patch_raw_config_parser()
-@patch_isfile(True)
-@patch_stdin()
-@patch_get_branch_info()
-def test_stdin_result(get_branch_info, stdin, raw_config_parser, validate_gpg_sig, data_collector):
-    """
-    Configuration from stdin is loaded from the "uploader.json" key.
-    """
-    config, pconn = collect_args(from_stdin=True)
-    collect(config, pconn)
-
-    collection_rules = stdin_uploader_json
-    rm_conf = {"files": removed_files}
-    branch_info = get_branch_info.return_value
-    data_collector.return_value.run_collection.assert_called_once_with(collection_rules, rm_conf, branch_info)
-    data_collector.return_value.done.assert_called_once_with(collection_rules, rm_conf)
-
-
-@mark.regression
 @patch_data_collector()
 @patch_validate_gpg_sig(False)
 @patch_isfile(False)
@@ -344,7 +198,7 @@ def test_file_signature_ignored(get_branch_info, validate_gpg_sig, data_collecto
     Signature of configuration from a file is not validated if validation is disabled.
     """
 
-    config, pconn = collect_args(from_stdin=False, gpg=False)
+    config, pconn = collect_args(gpg=False)
     with patch_temp_conf_file():
         collect(config, pconn)
 
@@ -355,13 +209,13 @@ def test_file_signature_ignored(get_branch_info, validate_gpg_sig, data_collecto
 @patch_data_collector()
 @patch_validate_gpg_sig(True)
 @patch_isfile(False)
-@patch_stdin()
+# @patch_stdin()
 @patch_get_branch_info()
-def test_file_signature_valid(get_branch_info, stdin, validate_gpg_sig, data_collector):
+def test_file_signature_valid(get_branch_info, validate_gpg_sig, data_collector):
     """
     Correct signature of configuration from a file is recognized.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     with patch_temp_conf_file():
         collect(config, pconn)
 
@@ -372,13 +226,12 @@ def test_file_signature_valid(get_branch_info, stdin, validate_gpg_sig, data_col
 @patch_data_collector()
 @patch_validate_gpg_sig(False)
 @patch_isfile(False)
-@patch_stdin()
 @patch_get_branch_info()
-def test_file_signature_invalid(get_branch_info, stdin, validate_gpg_sig, data_collector):
+def test_file_signature_invalid(get_branch_info, validate_gpg_sig, data_collector):
     """
     Incorrect signature of configuration from a file skips that file.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     with patch_temp_conf_file():
         with raises(ValueError):
             collect(config, pconn)
@@ -396,7 +249,7 @@ def test_file_result(get_branch_info, try_disk, raw_config_parser, data_collecto
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     collect(config, pconn)
 
     name, args, kwargs = try_disk.mock_calls[0]
@@ -418,7 +271,7 @@ def test_file_no_version(get_branch_info, try_disk, data_collector):
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     with raises(ValueError):
         collect(config, pconn)
 
@@ -434,7 +287,7 @@ def test_file_no_data(get_branch_info, try_disk, data_collector):
     """
     Configuration from file is loaded from the "uploader.json" key.
     """
-    config, pconn = collect_args(from_stdin=False)
+    config, pconn = collect_args()
     with raises(ValueError):
         collect(config, pconn)
 

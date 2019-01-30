@@ -95,7 +95,7 @@ class IfCFG(LegacyItemAccess, CommandParser):
 
             # In some cases we want to know what the actual value-side
             # of the key is before dequoting and stripping.
-            if key in ["DEVICE", "MASTER", "BONDING_OPTS"]:
+            if key in ["DEVICE", "MASTER", "TEAM_MASTER", "BONDING_OPTS"]:
                 self.data["raw_{0}_value".format(key.split('_')[0].lower())] = value
             if key != "DEVICE":
                 value = value.strip().strip(QUOTES)
