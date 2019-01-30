@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+import os
 import json
 from .helpers import insights_upload_conf
 from mock.mock import patch
@@ -9,6 +10,12 @@ from insights.client.config import InsightsConfig
 
 conf_remove_file = '/tmp/remove.conf'
 removed_files = ["/etc/some_file", "/tmp/another_file"]
+
+
+def teardown_function(func):
+    if func is test_raw_config_parser:
+        if os.path.isfile(conf_remove_file):
+            os.remove(conf_remove_file)
 
 
 def patch_isfile(isfile):
