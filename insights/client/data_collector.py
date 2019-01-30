@@ -164,8 +164,8 @@ class DataCollector(object):
             if c.get('symbolic_name') == 'hostname':
                 self.hostname_path = os.path.join(
                     'insights_commands', mangle.mangle_command(c['command']))
-
-            if c['command'] in rm_conf.get('commands', []):
+            rm_commands = rm_conf.get('commands', [])
+            if c['command'] in rm_commands or c.get('symbolic_name') in rm_commands:
                 logger.warn("WARNING: Skipping command %s", c['command'])
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
@@ -173,13 +173,18 @@ class DataCollector(object):
                     cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
-            if f['file'] in rm_conf.get('files', []):
+            rm_files = rm_conf.get('files', [])
+            if f['file'] in rm_files or f.get('symbolic_name') in rm_files:
                 logger.warn("WARNING: Skipping file %s", f['file'])
             else:
                 file_specs = self._parse_file_spec(f)
                 for s in file_specs:
-                    file_spec = InsightsFile(s, exclude, self.mountpoint)
-                    self.archive.add_to_archive(file_spec)
+                    # filter files post-wildcard parsing
+                    if s['file'] in rm_conf.get('files', []):
+                        logger.warn("WARNING: Skipping file %s", s['file'])
+                    else:
+                        file_spec = InsightsFile(s, exclude, self.mountpoint)
+                        self.archive.add_to_archive(file_spec)
         if 'globs' in conf:
             for g in conf['globs']:
                 glob_specs = self._parse_glob_spec(g)
