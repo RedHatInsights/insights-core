@@ -38,6 +38,12 @@ def determine_context(common_path, files):
 
 def create_context(path, context=None):
     all_files = get_all_files(path)
+    if not all_files:
+        raise archives.InvalidArchive("No files in archive")
+
     common_path = os.path.dirname(os.path.commonprefix(all_files))
+    if not common_path:
+        raise archives.InvalidArchive("Unable to determine common path")
+
     context = context or determine_context(common_path, all_files)
     return context(common_path, all_files=all_files)
