@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 from insights.client.client import collect
 from insights.client.config import InsightsConfig
+from insights.client.data_collector import DataCollector
 from json import dump as json_dump, dumps as json_dumps
 from mock.mock import Mock, patch
 from pytest import mark, raises
@@ -292,3 +293,15 @@ def test_file_no_data(get_branch_info, try_disk, data_collector):
 
     data_collector.return_value.run_collection.assert_not_called()
     data_collector.return_value.done.assert_not_called()
+
+
+def test_cmd_blacklist():
+    config, pconn = collect_args()
+    dc = DataCollector(config)
+    assert dc._blacklist_check('rm')
+    assert dc._blacklist_check('reboot')
+    assert dc._blacklist_check('kill')
+    assert dc._blacklist_check('shutdown')
+    assert dc._blacklist_check('echo ""; shutdown')
+    assert dc._blacklist_check('/bin/bash -c "rm -rf /"')
+    assert dc._blacklist_check('echo ""; /bin/bash -c "rm -rf /"; reboot')
