@@ -633,14 +633,14 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
-    saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
+    saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
-    @datasource(saphostctl_listinstances, hostname)
+    @datasource(saphostctrl_listinstances, hostname)
     def sap_sid_nr(broker):
         """
         Get the SID and Instance Number
 
-        Typical output of saphostctl_listinstances::
+        Typical output of saphostctrl_listinstances::
         # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
         Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
 
@@ -648,7 +648,7 @@ class DefaultSpecs(Specs):
             (list): List of tuple of SID and Instance Number.
 
         """
-        insts = broker[DefaultSpecs.saphostctl_listinstances].content
+        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
         hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
         results = set()
         for ins in insts:
@@ -656,7 +656,7 @@ class DefaultSpecs(Specs):
             # Local Instance
             if ins_splits[2].strip() == hn:
                 # (sid, nr)
-                results.add((ins_splits[0].split()[-1].lower()), ins_splits[2].strip())
+                results.add((ins_splits[0].split()[-1].lower(), ins_splits[1].strip()))
         return list(results)
 
     @datasource(sap_sid_nr)
@@ -673,21 +673,29 @@ class DefaultSpecs(Specs):
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
 
-    # sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
-    @datasource(sap_sid_nr)
-    def sapcontrol_getsystemupdatelist(broker):
-        sid_nr = broker[DefaultSpecs.sap_sid_nr]
-        # sap_rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList; exit 0"
+    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
+
+    @datasource(saphostctrl_listinstances, hostname)
+    def sapcontrol_getsystemupdatelist_test(broker):
+        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
+        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
         sap_rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList; exit 0"
         results = []
-        for sid, nr in sid_nr:
-            results.append(check_output(sap_rks_cmd.format(sid, nr),
-                                        shell=True,
-                                        universal_newlines=True,
-                                        stderr=STDOUT
-                                        ).splitlines()
-                           )
-        return results
+        for ins in insts:
+            ins_splits = ins.split(' - ')
+            # Local Instance
+            if ins_splits[2].strip() == hn:
+                sid = ins_splits[0].split()[-1].lower()
+                nr = ins_splits[1].strip()
+                results.append(check_output(sap_rks_cmd.format(sid, nr),
+                                            shell=True,
+                                            universal_newlines=True,
+                                            stderr=STDOUT
+                                            ).splitlines()
+                               )
+        if results:
+            return DatasourceProvider(content=results, relative_path='sapcontrol_nr_xx')
+        raise SkipComponent()
 
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")

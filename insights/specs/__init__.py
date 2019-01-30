@@ -418,6 +418,7 @@ class Specs(SpecSet):
     sap_hdb_version = RegistryPoint(multi_output=True)
     sap_host_profile = RegistryPoint(filterable=True)
     sapcontrol_getsystemupdatelist = RegistryPoint(multi_output=True)
+    sapcontrol_getsystemupdatelist_test = RegistryPoint()
     saphostctl_getcimobject_sapinstance = RegistryPoint(filterable=True)
     saphostexec_status = RegistryPoint()
     saphostexec_version = RegistryPoint()
