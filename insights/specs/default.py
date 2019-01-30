@@ -675,26 +675,31 @@ class DefaultSpecs(Specs):
 
     sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
 
-    @datasource(saphostctrl_listinstances, hostname)
+    @datasource(sap_sid_nr)
     def sapcontrol_getsystemupdatelist_test(broker):
-        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
-        hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
+        import json
         sap_rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList; exit 0"
-        results = []
-        for ins in insts:
-            ins_splits = ins.split(' - ')
-            # Local Instance
-            if ins_splits[2].strip() == hn:
-                sid = ins_splits[0].split()[-1].lower()
-                nr = ins_splits[1].strip()
-                results.append(check_output(sap_rks_cmd.format(sid, nr),
-                                            shell=True,
-                                            universal_newlines=True,
-                                            stderr=STDOUT
-                                            ).splitlines()
-                               )
+        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
+        line_set = set()
+        results = list()
+        for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
+            ret = check_output(sap_rks_cmd.format(sid, nr),
+                               shell=True,
+                               universal_newlines=True,
+                               stderr=STDOUT)
+            body = []
+            if header in ret:
+                # Remove the header, just keep the body list
+                body = ret[ret.index(header):].splitlines()[1:]
+            if not body:
+                raise SkipComponent()
+            line_set.update(body)
+        header_sp = [i.strip() for i in header.split(',')]
+        for l in line_set:
+            l_sp = [i.strip() for i in l.split(',')]
+            results.append(dict(zip(header_sp, l_sp)))
         if results:
-            return DatasourceProvider(content=results, relative_path='sapcontrol_nr_xx')
+            return DatasourceProvider(content=json.dumps(results), relative_path='sapcontrol_nr_xx')
         raise SkipComponent()
 
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
