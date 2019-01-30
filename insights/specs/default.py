@@ -391,6 +391,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
+    modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
@@ -452,6 +453,7 @@ class DefaultSpecs(Specs):
     ntpq_leap = simple_command("/usr/sbin/ntpq -c 'rv 0 leap'")
     ntpq_pn = simple_command("/usr/sbin/ntpq -pn")
     ntptime = simple_command("/usr/sbin/ntptime")
+    numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)

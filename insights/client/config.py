@@ -37,13 +37,10 @@ DEFAULT_OPTS = {
         'help': 'Analyze a filesystem at the specified mountpoint.',
         'action': 'store'
     },
+    # MARKED FOR DELETION
     'api_url': {
         # non-CLI
         'default': None
-    },
-    'app_name': {
-        # non-CLI
-        'default': 'insights-client'
     },
     'authmethod': {
         # non-CLI
@@ -118,18 +115,6 @@ DEFAULT_OPTS = {
         'default': False,
         'opt': ['--enable-schedule'],
         'help': 'Enable automatic scheduling for collection to run',
-        'action': 'store_true',
-    },
-    'from_file': {
-        'default': False,
-        'opt': ['--from-file'],
-        'help': argparse.SUPPRESS,  # ?
-        'action': 'store'
-    },
-    'from_stdin': {
-        'default': False,
-        'opt': ['--from-stdin'],
-        'help': argparse.SUPPRESS,  # ?
         'action': 'store_true',
     },
     'gpg': {
@@ -247,14 +232,6 @@ DEFAULT_OPTS = {
         'action': 'store',
         'type': int,
         'dest': 'retries'
-    },
-    'run_specific_specs': {
-        'default': None,
-        'opt': ['--run-these'],
-        'help': argparse.SUPPRESS,
-        'action': 'store',
-        'group': 'debug',
-        'dest': 'run_specific_specs'
     },
     'silent': {
         'default': False,
@@ -581,8 +558,6 @@ class InsightsConfig(object):
         if self.analyze_image_id is not None and len(self.analyze_image_id) < 12:
             raise ValueError(
                 'Image/Container ID must be at least twelve characters long.')
-        if self.from_stdin and self.from_file:
-            raise ValueError('Can\'t use both --from-stdin and --from-file.')
         if self.enable_schedule and self.disable_schedule:
             raise ValueError(
                 'Conflicting options: --enable-schedule and --disable-schedule')
@@ -607,9 +582,6 @@ class InsightsConfig(object):
            self.analyze_mountpoint or
            self.analyze_image_id):
             self.analyze_container = True
-        self.to_stdout = (self.to_stdout or
-                          self.from_stdin or
-                          self.from_file)
         self.to_json = ((self.to_json or self.analyze_container) and
                         not self.to_stdout)
         self.register = (self.register or self.reregister) and not self.offline
