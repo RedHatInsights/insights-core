@@ -278,30 +278,7 @@ def collect(config, pconn):
     pc = InsightsUploadConf(config)
     tar_file = None
 
-    # load config from stdin/file if specified
-    try:
-        stdin_config = {}
-        if config.from_file:
-            with open(config.from_file, 'r') as f:
-                stdin_config = json.load(f)
-        elif config.from_stdin:
-            stdin_config = json.load(sys.stdin)
-        if ((config.from_file or config.from_stdin) and
-            ('uploader.json' not in stdin_config or
-             'sig' not in stdin_config)):
-            raise ValueError
-        if ((config.from_file or config.from_stdin) and
-                'branch_info' in stdin_config and stdin_config['branch_info'] is not None):
-            branch_info = stdin_config['branch_info']
-    except:
-        logger.error('ERROR: Invalid config for %s! Exiting...',
-                     ('--from-file' if config.from_file else '--from-stdin'))
-        return False
-
-    if stdin_config:
-        collection_rules = pc.get_conf_stdin(stdin_config)
-    else:
-        collection_rules = pc.get_conf_file()
+    collection_rules = pc.get_conf_file()
     rm_conf = pc.get_rm_conf()
     if rm_conf:
         logger.warn("WARNING: Excluding data from files")

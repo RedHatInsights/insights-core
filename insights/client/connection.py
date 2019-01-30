@@ -704,6 +704,7 @@ class InsightsConnection(object):
 
         try:
             c_facts = json.dumps(get_canonical_facts())
+            logger.debug('Canonical facts collected:\n%s', c_facts)
         except Exception as e:
             logger.debug('Error getting canonical facts: %s', e)
             c_facts = None
@@ -743,6 +744,7 @@ class InsightsConnection(object):
 
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
+        logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
         if upload.status_code in (200, 201):
             # 200/201 from legacy, load the response
             the_json = json.loads(upload.text)

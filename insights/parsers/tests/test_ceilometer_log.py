@@ -1,5 +1,6 @@
 from insights.parsers.ceilometer_log import CeilometerCentralLog
 from insights.parsers.ceilometer_log import CeilometerCollectorLog
+from insights.parsers.ceilometer_log import CeilometerComputeLog
 from insights.tests import context_wrap
 
 from datetime import datetime
@@ -21,6 +22,22 @@ COLLECTOR_LOG = """
 """
 
 
+COMPUTE_LOG = """
+2018-01-12 21:00:02.939 49455 INFO ceilometer.agent.manager [-] Polling pollster network.outgoing.packets in the context of some_pollsters
+2018-01-12 21:00:02.950 49455 INFO ceilometer.agent.manager [-] Polling pollster memory.usage in the context of some_pollsters
+2018-01-12 21:00:02.953 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name1, id=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx>, can not get info from libvirt.
+2018-01-12 21:00:02.957 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name2, id=yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy>, can not get info from libvirt.
+2018-01-12 21:00:02.963 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name3, id=zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz>, can not get info from libvirt.
+2018-01-12 21:00:02.970 49455 INFO ceilometer.agent.manager [-] Polling pollster disk.write.requests in the context of some_pollsters
+2018-01-12 21:00:02.976 49455 INFO ceilometer.agent.manager [-] Polling pollster network.incoming.packets in the context of some_pollsters
+2018-01-12 21:00:02.981 49455 INFO ceilometer.agent.manager [-] Polling pollster cpu in the context of some_pollsters
+2018-01-12 21:00:03.014 49455 INFO ceilometer.agent.manager [-] Polling pollster network.incoming.bytes in the context of some_pollsters
+2018-01-12 21:00:03.020 49455 INFO ceilometer.agent.manager [-] Polling pollster disk.read.requests in the context of some_pollsters
+2018-01-12 21:00:03.041 49455 INFO ceilometer.agent.manager [-] Polling pollster network.outgoing.bytes in the context of some_pollsters
+2018-01-12 21:00:03.062 49455 INFO ceilometer.agent.manager [-] Polling pollster disk.write.bytes in the context of some_pollsters
+""".strip()
+
+
 def test_ceilometer_central_log():
     log = CeilometerCentralLog(context_wrap(CENTRAL_LOG))
     assert len(log.get('INFO')) == 3
@@ -34,3 +51,10 @@ def test_ceilometer_collector_log():
     log = CeilometerCollectorLog(context_wrap(COLLECTOR_LOG))
     assert len(log.get('INFO')) == 2
     assert list(log.get_after(datetime(2016, 11, 9, 14, 38, 0)))[0]['raw_message'] == '2016-11-09 14:38:07.280 31638 WARNING oslo_reports.guru_meditation_report [-] Guru meditation now registers SIGUSR1 and SIGUSR2 by default for backward compatibility. SIGUSR1 will no longer be registered in a future release, so please use SIGUSR2 to generate reports.'
+
+
+def test_ceilometer_compute_log():
+    log = CeilometerComputeLog(context_wrap(COMPUTE_LOG))
+    assert len(log.get('WARNING')) == 3
+    assert len(list(log.get_after(datetime(2018, 1, 12, 21, 0, 3)))) == 4
+    assert [line for line in log.lines if 'Cannot inspect data of MemoryUsagePollster' in line][0] == '2018-01-12 21:00:02.953 49455 WARNING ceilometer.compute.pollsters.memory [-] Cannot inspect data of MemoryUsagePollster for xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, non-fatal reason: Failed to inspect memory usage of instance <name=instance-name1, id=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx>, can not get info from libvirt.'

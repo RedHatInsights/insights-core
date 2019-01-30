@@ -208,22 +208,6 @@ class InsightsUploadConf(object):
         logger.debug('sha1 of config: %s', config_hash)
         return dyn_conf
 
-    def get_conf_stdin(self, stdin_config):
-        """
-        Get config from STDIN.
-        """
-        rules_fp = NamedTemporaryFile(delete=False)
-        rules_fp.write(stdin_config["uploader.json"].encode('utf-8'))
-        rules_fp.flush()
-        sig_fp = NamedTemporaryFile(delete=False)
-        sig_fp.write(stdin_config["sig"].encode('utf-8'))
-        sig_fp.flush()
-        if not self.gpg or self.validate_gpg_sig(rules_fp.name, sig_fp.name):
-            return json.loads(stdin_config["uploader.json"])
-        else:
-            logger.error("Unable to validate GPG signature in from_stdin mode.")
-            raise Exception("from_stdin mode failed to validate GPG sig")
-
     def get_rm_conf(self):
         """
         Get excluded files config from remove_file.

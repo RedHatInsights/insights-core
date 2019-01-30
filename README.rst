@@ -44,19 +44,22 @@ There are several resources for digging into the details of how to use ``insight
 
 - A `detailed walk through of the constructing a rule
   <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Diagnostic%20Walkthrough.ipynb>`_
-- The `core api docs <http://insights-core.readthedocs.io/en/latest/>`_
-  have three tutorials
+- The `insights-core-tutorials project docs <https://insights-core-tutorials.readthedocs.io/en/latest/>`_
+  have three tutorials plus instructions on how to setup the tutorial environment
 
-  - `Rule Using Existing Parsers and Combiners
-    <http://insights-core.readthedocs.io/en/latest/rule_tutorial_index.html#tutorial-rule-using-existing-parsers-and-combiners>`_
-  - `Custom Parser and Rule
-    <http://insights-core.readthedocs.io/en/latest/custom_tutorial_index.html#tutorial-custom-parser-and-rule>`_
-  - `Combiner Development
-    <http://insights-core.readthedocs.io/en/latest/combiner_tutorial.html#tutorial-combiner-development>`_
+  - `Preparing Your Development Environment
+    <https://insights-core-tutorials.readthedocs.io/en/latest/prep_tutorial_env.html>`_
+  - `Custom Parser Development
+    <https://insights-core-tutorials.readthedocs.io/en/latest/customtut_parsers.html>`_
+  - `Custom Combiner Development
+    <https://insights-core-tutorials.readthedocs.io/en/latest/combiner_tutorial.html>`_
+  - `Rule Development
+    <https://insights-core-tutorials.readthedocs.io/en/latest/rule_tutorial_index.html>`_
+
 
 - The basic architectural principles of ``insights-core`` can be found in
-  the `Insights Core Tutorial
-  <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Insights%20Core%20Tutorial.ipynb>`_ jupyter notebook
+  the `Insights Core
+  <https://github.com/RedHatInsights/insights-core/blob/master/docs/notebooks/Insights%20Core%20Tutorial.ipynb>`_ tutorial jupyter notebook
 - A simple `stand_alone.py
   <https://github.com/RedHatInsights/insights-core/blob/master/examples/stand_alone.py>`_
   script encapsulates creating all the basic components in a single script
