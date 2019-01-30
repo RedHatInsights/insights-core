@@ -691,8 +691,6 @@ class DefaultSpecs(Specs):
             if header in ret:
                 # Remove the header, just keep the body list
                 body = ret[ret.index(header):].splitlines()[1:]
-            if not body:
-                raise SkipComponent()
             line_set.update(body)
         header_sp = [i.strip() for i in header.split(',')]
         for l in line_set:
