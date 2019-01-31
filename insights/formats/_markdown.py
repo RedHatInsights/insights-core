@@ -54,6 +54,7 @@ class MarkdownFormat(Formatter):
             'rule': self.response(label="FAIL", title="Failed      : "),
             'metadata': self.response(label="META", title="Metadata    : "),
             'metadata_key': self.response(label="META", title="Metadata Key: "),
+            'fingerprint': self.response(label="FINGERPRINT", title="Fingerprint : "),
             'exception': self.response(label="EXCEPT", title="Exceptions  : ")
         }
 
