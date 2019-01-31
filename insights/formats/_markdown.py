@@ -47,7 +47,7 @@ class MarkdownFormat(Formatter):
         self.tracebacks = tracebacks
         self.dropped = dropped
         self.stream = stream
-        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'exception': 0}
+        self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
         self.responses = {
             'skip': self.response(label="SKIP", title="Missing Deps: "),
             'pass': self.response(label="PASS", title="Passed      : "),
