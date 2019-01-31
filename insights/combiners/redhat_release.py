@@ -19,18 +19,14 @@ from insights.core.serde import serializer, deserializer
 from insights.parsers import ParseException
 import sys
 
-fields = ["major", "minor", "rhel"]
-if sys.version_info < (3, 7):
-    Release = namedtuple("Release", fields)
-    Release.__new__.__defaults__ = (None,) * len(Release._fields)
-else:
-    Release = namedtuple('Release', fields, defaults=(None,) * len(fields))
+
+Release = namedtuple("Release", field_names=["major", "minor"])
 """namedtuple: Type for storing the release information."""
 
 
 @serializer(Release)
 def serialize(obj, root=None):
-    return {"major": obj.major, "minor": obj.minor, "rhel": obj.rhel}
+    return {"major": obj.major, "minor": obj.minor}
 
 
 @deserializer(Release)
@@ -50,7 +46,6 @@ def redhat_release(rh_release, un):
         Release: A named tuple with the following items:
             - major: integer
             - minor: integer
-            - rhel: string
 
     Raises:
         ParseException: If the version can't be determined even though a Uname
@@ -61,21 +56,16 @@ def redhat_release(rh_release, un):
         7
         >>> rh_release.minor
         2
-        >>> rh_release.rhel
-        '7.2'
         >>> rh_release
-        Release(major=7, minor=2, rhel='7.2')
+        Release(major=7, minor=2)
 
     """
 
     if un and un.release_tuple[0] != -1:
-        return Release(
-                un.redhat_release.major,
-                un.redhat_release.minor,
-                '{0}.{1}'.format(un.redhat_release.major, un.redhat_release.minor))
+        return Release(*un.release_tuple)
 
     if rh_release:
-        return Release(rh_release.major, rh_release.minor, rh_release.version)
+        return Release(rh_release.major, rh_release.minor)
 
     raise ParseException("Unabled to determine release.")
 
@@ -131,3 +121,18 @@ class RedHatRelease(object):
         self.rhel6 = self.rhel if self.major == 6 else None
         self.rhel7 = self.rhel if self.major == 7 else None
         self.rhel8 = self.rhel if self.major == 8 else None
+
+
+# No need to serialize/deserialize the `rhel#` attributes
+@serializer(RedHatRelease)
+def serialize(obj, root=None):
+    return {"major": obj.major, "minor": obj.minor, "rhel": obj.rhel}
+
+
+@deserializer(RedHatRelease)
+def deserialize(_type, obj, root=None):
+    foo = _type.__new__(_type)
+    foo.major = obj.get("major")
+    foo.minor = obj.get("minor")
+    foo.rhel = obj.get("rhel")
+    return foo
