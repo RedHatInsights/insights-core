@@ -11,7 +11,6 @@ data sources that standard Insights `Parsers` resolve against.
 import logging
 import os
 import re
-from subprocess import check_output, STDOUT
 
 from insights.core.context import ClusterArchiveContext
 from insights.core.context import DockerImageContext
