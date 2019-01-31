@@ -17,7 +17,6 @@ from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
 from insights.core.serde import serializer, deserializer
 from insights.parsers import ParseException
-import sys
 
 
 Release = namedtuple("Release", field_names=["major", "minor"])
@@ -125,12 +124,12 @@ class RedHatRelease(object):
 
 # No need to serialize/deserialize the `rhel#` attributes
 @serializer(RedHatRelease)
-def serialize(obj, root=None):
+def serialize_RedHatRelease(obj, root=None):
     return {"major": obj.major, "minor": obj.minor, "rhel": obj.rhel}
 
 
 @deserializer(RedHatRelease)
-def deserialize(_type, obj, root=None):
+def deserialize_RedHatRelease(_type, obj, root=None):
     foo = _type.__new__(_type)
     foo.major = obj.get("major")
     foo.minor = obj.get("minor")
