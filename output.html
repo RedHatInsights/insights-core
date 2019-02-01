@@ -1,0 +1,68 @@
+<h1 id="insights-core-run">Insights Core Run</h1>
+<h2 id="arguments">Arguments</h2>
+<h2 id="rules-executed">Rules Executed</h2>
+<h3 id="meta-telemetry.rules.plugins.container.docker_container_metadata.report">[META] telemetry.rules.plugins.container.docker_container_metadata.report</h3>
+<pre><code>None
+</code></pre>
+<h3 id="meta-telemetry.rules.plugins.container.docker_host_metadata.report">[META] telemetry.rules.plugins.container.docker_host_metadata.report</h3>
+<pre><code>None:
+    docker_container_count: u&#39;1&#39;
+    docker_containers     : {u&#39;a0cc530e34772e7254ed1c90f0dda428b8a227f8feb57255188366dd70014b5e&#39;: u&#39;dbb0a&#39;}
+    docker_image_count    : u&#39;13&#39;
+    docker_images         : {u&#39;sha256:074cb770042a0c09547d80a279e1549890796b5e57d3e22722c7b4abee772d8d&#39;: [u&#39;docker.io/jenkinsci/blueocean:latest&#39;],
+                             u&#39;sha256:31a8ca8e9063a1ee527141959c9cd00f6cc496b4467206a7dfbe211201b55a4a&#39;: [],
+                             u&#39;sha256:5182e96772bf11f4b912658e265dfe0db8bd314475443b6434ea708784192892&#39;: [u&#39;docker.io/centos:latest&#39;],
+                             u&#39;sha256:5cf75c4cd4cb4e8f0224efc5b45fc68443988a66f5ade00f688940333154190e&#39;: [u&#39;bfahr/centos:latest&#39;],
+                             u&#39;sha256:60b509e2d71414ad8760aa503380bd165ec22242d0bd83342938fd1ea562c116&#39;: [u&#39;docker.io/cdrx/pyinstaller-linux:python2&#39;],
+                             u&#39;sha256:7c306adf1b3d63769c93ac0b3b90e1dacd1ab4312d90f47872f4c55a97d8056c&#39;: [u&#39;docker.io/python:2-alpine&#39;],
+                             u&#39;sha256:a60d7041669c086ecde92d190fe7d7b4343485c6d06ae18ebf083dd3fc5443b1&#39;: [],
+                             u&#39;sha256:ae5c51b9a8c5c56e46411f7df20e663990dc06e3941131bb9fa23db97309b6f3&#39;: [u&#39;docker.io/qnib/pytest:latest&#39;],
+                             u&#39;sha256:b90d3f1fb616a83e800e9c20201bc52069fe413581c8c05e9ba9fd0e7f4c405e&#39;: [],
+                             u&#39;sha256:cd14cecfdb3a657ba7d05bea026e7ac8b9abafc6e5c66253ab327c7211fa6281&#39;: [u&#39;docker.io/jenkins:latest&#39;],
+                            &lt;...3 more lines...&gt;
+</code></pre>
+<h3 id="meta-telemetry.rules.plugins.container.docker_image_metadata.report">[META] telemetry.rules.plugins.container.docker_image_metadata.report</h3>
+<pre><code>None:
+    docker_image_id: u&#39;sha256:a60d7041669c086ecde92d190fe7d7b4343485c6d06ae18ebf083dd3fc5443b1&#39;
+</code></pre>
+<h3 id="meta-telemetry.rules.plugins.networking.listening_processes_on_ports_metadata.report">[META] telemetry.rules.plugins.networking.listening_processes_on_ports_metadata.report</h3>
+<pre><code>None:
+    listening_processes: [{&#39;ip_addr&#39;: u&#39;127.0.0.1&#39;, &#39;port&#39;: u&#39;6942&#39;, &#39;process_name&#39;: u&#39;java&#39;},
+                          {&#39;ip_addr&#39;: u&#39;&#39;, &#39;port&#39;: u&#39;::39355&#39;, &#39;process_name&#39;: u&#39;java&#39;}]
+</code></pre>
+<h3 id="meta-telemetry.rules.plugins.non_kernel.timezone_metadata.report">[META] telemetry.rules.plugins.non_kernel.timezone_metadata.report</h3>
+<pre><code>None:
+    timezone_information: {&#39;timezone&#39;: u&#39;CST&#39;, &#39;utcoffset&#39;: -21600}
+</code></pre>
+<h3 id="meta-telemetry.rules.plugins.release_metadata.report">[META] telemetry.rules.plugins.release_metadata.report</h3>
+<pre><code>None:
+    rhel_version: &#39;-1.-1&#39;
+</code></pre>
+<h3 id="meta-telemetry.rules.plugins.non_kernel.rpm_listing.report">[META] telemetry.rules.plugins.non_kernel.rpm_listing.report</h3>
+<pre><code>Number of packages installed: 5362</code></pre>
+<h3 id="fail-telemetry.rules.plugins.container.docker_loopback_convert.report">[FAIL] telemetry.rules.plugins.container.docker_loopback_convert.report</h3>
+<pre><code>LOOPBACK_USED:
+    Data_loop_file: u&#39;/var/lib/docker/devicemapper/devicemapper/data&#39;
+</code></pre>
+<h3 id="fail-telemetry.rules.plugins.kernel.other_linux_system.report">[FAIL] telemetry.rules.plugins.kernel.other_linux_system.report</h3>
+<pre><code>OTHER_LINUX_SYSTEM:
+    build_info : u&#39;[    0.000000] Linux version 4.18.17-200.fc28.x86_64 (mockbuild@bkernel03.phx2.fedoraproject.org) (gcc version 8.2.1 20181011 (Red Hat 8.2.1-4) (GCC)) #1 SMP Mon Nov 5 18:04:28 UTC 2018&#39;
+    kernel     : u&#39;4.18.17-200.fc28.x86_64&#39;
+    other_linux: &#39;Fedora&#39;
+    release    : u&#39;fedora-release-28-3.noarch&#39;
+</code></pre>
+<h3 id="fail-telemetry.rules.plugins.service.ntp_peers.report">[FAIL] telemetry.rules.plugins.service.ntp_peers.report</h3>
+<pre><code>NTP_TWO_CLOCKS_CONFIGURED:
+    clock_source: &#39;Chrony&#39;
+    clocks      : [&#39;clock01.util.phx2.redhat.com iburst&#39;, &#39;clock02.util.phx2.redhat.com iburst&#39;]
+    daemon      : &#39;chronyd&#39;
+    kcs         : &#39;https://access.redhat.com/solutions/58025&#39;
+    message     : &#39;Two clocks configured - impossible to tell which source is correct&#39;
+</code></pre>
+<h2 id="rule-execution-summary">Rule Execution Summary</h2>
+<pre><code> Exceptions  : 0
+ Missing Deps: 318
+ Metadata Key: 1
+ Failed      : 3
+ Passed      : 0
+ Metadata    : 6</code></pre>
