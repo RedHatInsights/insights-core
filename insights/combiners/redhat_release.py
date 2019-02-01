@@ -125,7 +125,14 @@ class RedHatRelease(object):
 # No need to serialize/deserialize the `rhel#` attributes
 @serializer(RedHatRelease)
 def serialize_RedHatRelease(obj, root=None):
-    return {"major": obj.major, "minor": obj.minor, "rhel": obj.rhel}
+    return {
+            "major": obj.major,
+            "minor": obj.minor,
+            "rhel": obj.rhel,
+            "rhel6": obj.rhel6,
+            "rhel7": obj.rhel7,
+            "rhel8": obj.rhel8,
+            }
 
 
 @deserializer(RedHatRelease)
@@ -134,4 +141,7 @@ def deserialize_RedHatRelease(_type, obj, root=None):
     foo.major = obj.get("major")
     foo.minor = obj.get("minor")
     foo.rhel = obj.get("rhel")
+    foo.rhel6 = obj.get("rhel6")
+    foo.rhel7 = obj.get("rhel7")
+    foo.rhel8 = obj.get("rhel8")
     return foo
