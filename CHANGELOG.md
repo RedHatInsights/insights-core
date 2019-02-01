@@ -1,5 +1,20 @@
 # Change Log
 
+## [insights-core-3.0.76-795](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.76-795) (2019-01-31)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.75-1...insights-core-3.0.76-795)
+
+## [3.0.75-1](https://github.com/RedHatInsights/insights-core/tree/3.0.75-1) (2019-01-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.74-778...3.0.75-1)
+
+**Fixed bugs:**
+
+- streaming bug with python3.7 [\#1652](https://github.com/RedHatInsights/insights-core/issues/1652)
+
+**Closed issues:**
+
+- Modinfo Parser class should be in Parsers instead of the Package spec [\#1659](https://github.com/RedHatInsights/insights-core/issues/1659)
+- Output of "insights-info" is not so accurate [\#1645](https://github.com/RedHatInsights/insights-core/issues/1645)
+
 ## [insights-core-3.0.74-778](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.74-778) (2019-01-24)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.73-767...insights-core-3.0.74-778)
 
