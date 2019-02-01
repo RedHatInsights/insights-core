@@ -24,6 +24,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
 from insights.specs import Specs
+from insights import SkipComponent
 
 
 def _make_rpm_formatter(fmt=None):

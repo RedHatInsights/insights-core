@@ -1,6 +1,7 @@
 from insights.parsers.ceph_insights import CephInsights
 from insights.parsers import ceph_insights
 from insights.tests import context_wrap
+import six
 import doctest
 
 TEST_DATA = """
@@ -1623,7 +1624,7 @@ def test_ceph_insights():
         assert ceph is not None
 
         assert isinstance(ceph.version, dict)
-        assert isinstance(ceph.version["full"], basestring)
+        assert isinstance(ceph.version["full"], six.string_types)
         for key in ("release", "major", "minor"):
             assert isinstance(ceph.version[key], int)
 
