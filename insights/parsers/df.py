@@ -154,6 +154,8 @@ class DiskFree(CommandParser):
             yield row
 
     def parse_content(self, content):
+        bad_lines = ["no such file or directory"]
+        content = [l for l in content if bad_lines[0] not in l.lower()]
         self.data = parse_df_lines(content)
 
     @property

@@ -6,6 +6,9 @@ This module provides plugins access to the Ceph version information gathered fro
 the ``ceph -v`` command. This module parses the community version to the Red Hat
 release version.
 
+The Red Hat Ceph Storage releases and corresponding Ceph package releases are
+documented in https://access.redhat.com/solutions/2045583
+
 Typical output of the ``ceph -v`` command is::
 
     ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)
@@ -21,7 +24,6 @@ Example:
     '1.3'
     >>> ceph_ver.minor
     '3'
-
 """
 
 from .. import parser, CommandParser
@@ -36,7 +38,11 @@ community_to_release_map = {
     "10.2.2": {'release': "2.0", 'major': '2', 'minor': '0'},
     "10.2.3": {'release': "2.1", 'major': '2', 'minor': '1'},
     "10.2.5": {'release': "2.2", 'major': '2', 'minor': '2'},
-    "10.2.7": {'release': "2.3", 'major': '2', 'minor': '3'}
+    "10.2.7": {'release': "2.3", 'major': '2', 'minor': '3'},
+    "10.2.10": {'release': "2.5", 'major': '2', 'minor': '5'},
+    "12.2.4": {'release': "3.0", 'major': '3', 'minor': '0'},
+    "12.2.5": {'release': "3.1", 'major': '3', 'minor': '1'},
+    "12.2.8": {'release': "3.2", 'major': '3', 'minor': '2'}
 }
 
 
