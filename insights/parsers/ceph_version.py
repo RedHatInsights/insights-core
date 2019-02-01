@@ -18,7 +18,7 @@ Note:
 
 Example:
     >>> ceph_ver = shared[CephVersion]
-    >>> ceph_ver.release
+    >>> ceph_ver.version
     '1.3.3'
     >>> ceph_ver.major
     '1.3'
@@ -31,18 +31,18 @@ import re
 from insights.specs import Specs
 
 community_to_release_map = {
-    "0.94.1": {'release': "1.3.0", 'major': '1.3', 'minor': '0'},
-    "0.94.3": {'release': "1.3.1", 'major': '1.3', 'minor': '1'},
-    "0.94.5": {'release': "1.3.2", 'major': '1.3', 'minor': '2'},
-    "0.94.9": {'release': "1.3.3", 'major': '1.3', 'minor': '3'},
-    "10.2.2": {'release': "2.0", 'major': '2', 'minor': '0'},
-    "10.2.3": {'release': "2.1", 'major': '2', 'minor': '1'},
-    "10.2.5": {'release': "2.2", 'major': '2', 'minor': '2'},
-    "10.2.7": {'release': "2.3", 'major': '2', 'minor': '3'},
-    "10.2.10": {'release': "2.5", 'major': '2', 'minor': '5'},
-    "12.2.4": {'release': "3.0", 'major': '3', 'minor': '0'},
-    "12.2.5": {'release': "3.1", 'major': '3', 'minor': '1'},
-    "12.2.8": {'release': "3.2", 'major': '3', 'minor': '2'}
+    "0.94.1": {'version': "1.3.0", 'major': '1.3', 'minor': '0'},
+    "0.94.3": {'version': "1.3.1", 'major': '1.3', 'minor': '1'},
+    "0.94.5": {'version': "1.3.2", 'major': '1.3', 'minor': '2'},
+    "0.94.9": {'version': "1.3.3", 'major': '1.3', 'minor': '3'},
+    "10.2.2": {'version': "2.0", 'major': '2', 'minor': '0'},
+    "10.2.3": {'version': "2.1", 'major': '2', 'minor': '1'},
+    "10.2.5": {'version': "2.2", 'major': '2', 'minor': '2'},
+    "10.2.7": {'version': "2.3", 'major': '2', 'minor': '3'},
+    "10.2.10": {'version': "2.5", 'major': '2', 'minor': '5'},
+    "12.2.4": {'version': "3.0", 'major': '3', 'minor': '0'},
+    "12.2.5": {'version': "3.1", 'major': '3', 'minor': '1'},
+    "12.2.8": {'version': "3.2", 'major': '3', 'minor': '2'}
 }
 
 
@@ -86,6 +86,6 @@ class CephVersion(CommandParser):
         if not release_data:
             raise CephVersionError("No Mapping Release Version. Ceph Release Number is Null", content)
 
-        self.release = release_data['release']
+        self.version = release_data['version']
         self.major = release_data['major']
         self.minor = release_data['minor']

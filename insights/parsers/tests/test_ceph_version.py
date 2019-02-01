@@ -28,20 +28,20 @@ def test_ceph_version():
     assert 'No Mapping Release Version' in str(error_context6)
 
     ceph_version1 = CephVersion(context_wrap(CV1))
-    assert ceph_version1.release == "1.3.3"
+    assert ceph_version1.version == "1.3.3"
     assert ceph_version1.major == '1.3'
     assert ceph_version1.minor == "3"
     ceph_version4 = CephVersion(context_wrap(CV4))
-    assert ceph_version4.release == "2.0"
+    assert ceph_version4.version == "2.0"
     assert ceph_version4.major == '2'
     assert ceph_version4.minor == "0"
 
     ceph_version7 = CephVersion(context_wrap(CV7))
-    assert ceph_version7.release == "2.2"
+    assert ceph_version7.version == "2.2"
     assert ceph_version7.major == '2'
     assert ceph_version7.minor == "2"
 
     ceph_version8 = CephVersion(context_wrap(CV8))
-    assert ceph_version8.release == "2.3"
+    assert ceph_version8.version == "2.3"
     assert ceph_version8.major == '2'
     assert ceph_version8.minor == "3"
