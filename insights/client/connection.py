@@ -3,85 +3,38 @@ Module handling HTTP Requests and Connection Diagnostics
 """
 from __future__ import print_function
 from __future__ import absolute_import
-import requests
-import os
-import six
+import io
 import json
 import logging
-import xml.etree.ElementTree as ET
+import os
+import requests
 import warnings
-import socket
-import io
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
-try:
-    # python 2
-    from urlparse import urlparse
-    from urllib import quote
-except ImportError:
-    # python 3
-    from urllib.parse import urlparse
-    from urllib.parse import quote
-from OpenSSL import SSL, crypto
+from six.moves.urllib_parse import quote, urlparse
+from .constants import InsightsConstants as constants
+from .session import InsightsSession
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file)
-from .cert_auth import rhsmCertificate
-from .constants import InsightsConstants as constants
 from insights.util.canonical_facts import get_canonical_facts
 
 warnings.simplefilter('ignore')
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
-net_logger = logging.getLogger("network")
-
-"""
-urllib3's logging is chatty
-"""
-URLLIB3_LOGGER = logging.getLogger('urllib3.connectionpool')
-URLLIB3_LOGGER.setLevel(logging.WARNING)
-URLLIB3_LOGGER = logging.getLogger('requests.packages.urllib3.connectionpool')
-URLLIB3_LOGGER.setLevel(logging.WARNING)
-
-# TODO: Document this, or turn it into a real option
-if os.environ.get('INSIGHTS_DEBUG_HTTP'):
-    import httplib
-    httplib.HTTPConnection.debuglevel = 1
-    logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
-    requests_log = logging.getLogger("urllib3")
-    requests_log.setLevel(logging.DEBUG)
-    requests_log.propagate = True
 
 
 class InsightsConnection(object):
-
     """
     Helper class to manage details about the connection
     """
 
     def __init__(self, config):
-        self.user_agent = constants.user_agent
         self.config = config
-        self.username = self.config.username
-        self.password = self.config.password
-
-        self.cert_verify = self.config.cert_verify
-        if isinstance(self.cert_verify, six.string_types):
-            if self.cert_verify.lower() == 'false':
-                self.cert_verify = False
-            elif self.cert_verify.lower() == 'true':
-                self.cert_verify = True
-
-        protocol = "https://"
-        insecure_connection = self.config.insecure_connection
-        if insecure_connection:
-            # This really should not be used.
-            protocol = "http://"
-            self.cert_verify = False
-
+        self.session = self.new_session(config)
         self.auto_config = self.config.auto_config
-        self.base_url = protocol + self.config.base_url
         self.upload_url = self.config.upload_url
+        self.base_url = self.session.base_url
         if self.upload_url is None:
             if self.config.legacy_upload:
                 if self.config.analyze_container:
@@ -96,261 +49,9 @@ class InsightsConnection(object):
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:
             self.branch_info_url = self.base_url + "/v1/branch_info"
-        self.authmethod = self.config.authmethod
-        self.systemid = self.config.systemid or None
-        self.get_proxies()
-        self.session = self._init_session()
-        # need this global -- [barfing intensifies]
-        # tuple of self-signed cert flag & cert chain list
-        self.cert_chain = [False, []]
 
-    def _init_session(self):
-        """
-        Set up the session, auth is handled here
-        """
-        session = requests.Session()
-        session.headers = {'User-Agent': self.user_agent,
-                           'Accept': 'application/json'}
-        if self.systemid is not None:
-            session.headers.update({'systemid': self.systemid})
-        if self.authmethod == "BASIC":
-            session.auth = (self.username, self.password)
-        elif self.authmethod == "CERT":
-            cert = rhsmCertificate.certpath()
-            key = rhsmCertificate.keypath()
-            if rhsmCertificate.exists():
-                session.cert = (cert, key)
-            else:
-                logger.error('ERROR: Certificates not found.')
-        session.verify = self.cert_verify
-        session.proxies = self.proxies
-        session.trust_env = False
-        if self.proxy_auth:
-            # HACKY
-            try:
-                # Need to make a request that will fail to get proxies set up
-                net_logger.info("GET https://cert-api.access.redhat.com/r/insights")
-                session.request(
-                    "GET", "https://cert-api.access.redhat.com/r/insights", timeout=self.config.http_timeout)
-            except requests.ConnectionError:
-                pass
-            # Major hack, requests/urllib3 does not make access to
-            # proxy_headers easy
-            proxy_mgr = session.adapters['https://'].proxy_manager[self.proxies['https']]
-            auth_map = {'Proxy-Authorization': self.proxy_auth}
-            proxy_mgr.proxy_headers = auth_map
-            proxy_mgr.connection_pool_kw['_proxy_headers'] = auth_map
-            conns = proxy_mgr.pools._container
-            for conn in conns:
-                connection = conns[conn]
-                connection.proxy_headers = auth_map
-        return session
-
-    def get_proxies(self):
-        """
-        Determine proxy configuration
-        """
-        # Get proxy from ENV or Config
-        proxies = None
-        proxy_auth = None
-        no_proxy = os.environ.get('NO_PROXY')
-        logger.debug("NO PROXY: %s", no_proxy)
-
-        # CONF PROXY TAKES PRECEDENCE OVER ENV PROXY
-        conf_proxy = self.config.proxy
-        if ((conf_proxy is not None and
-             conf_proxy.lower() != 'None'.lower() and
-             conf_proxy != "")):
-            if '@' in conf_proxy:
-                scheme = conf_proxy.split(':')[0] + '://'
-                logger.debug("Proxy Scheme: %s", scheme)
-                location = conf_proxy.split('@')[1]
-                logger.debug("Proxy Location: %s", location)
-                username = conf_proxy.split(
-                    '@')[0].split(':')[1].replace('/', '')
-                logger.debug("Proxy User: %s", username)
-                password = conf_proxy.split('@')[0].split(':')[2]
-                proxy_auth = requests.auth._basic_auth_str(username, password)
-                conf_proxy = scheme + location
-            logger.debug("CONF Proxy: %s", conf_proxy)
-            proxies = {"https": conf_proxy}
-
-        # HANDLE NO PROXY CONF PROXY EXCEPTION VERBIAGE
-        if no_proxy and conf_proxy:
-            logger.debug("You have environment variable NO_PROXY set "
-                         "as well as 'proxy' set in your configuration file. "
-                         "NO_PROXY environment variable will be ignored.")
-
-        # IF NO CONF PROXY, GET ENV PROXY AND NO PROXY
-        if proxies is None:
-            env_proxy = os.environ.get('HTTPS_PROXY')
-            if env_proxy:
-                if '@' in env_proxy:
-                    scheme = env_proxy.split(':')[0] + '://'
-                    logger.debug("Proxy Scheme: %s", scheme)
-                    location = env_proxy.split('@')[1]
-                    logger.debug("Proxy Location: %s", location)
-                    username = env_proxy.split('@')[0].split(':')[1].replace('/', '')
-                    logger.debug("Proxy User: %s", username)
-                    password = env_proxy.split('@')[0].split(':')[2]
-                    proxy_auth = requests.auth._basic_auth_str(username, password)
-                    env_proxy = scheme + location
-                logger.debug("ENV Proxy: %s", env_proxy)
-                proxies = {"https": env_proxy}
-            if no_proxy:
-                insights_service_host = urlparse(self.base_url).hostname
-                logger.debug('Found NO_PROXY set. Checking NO_PROXY %s against base URL %s.', no_proxy, insights_service_host)
-                for no_proxy_host in no_proxy.split(','):
-                    logger.debug('Checking %s against %s', no_proxy_host, insights_service_host)
-                    if no_proxy_host == '*':
-                        proxies = None
-                        proxy_auth = None
-                        logger.debug('Found NO_PROXY asterisk(*) wildcard, disabling all proxies.')
-                        break
-                    elif no_proxy_host.startswith('.') or no_proxy_host.startswith('*'):
-                        if insights_service_host.endswith(no_proxy_host.replace('*', '')):
-                            proxies = None
-                            proxy_auth = None
-                            logger.debug('Found NO_PROXY range %s matching %s', no_proxy_host, insights_service_host)
-                            break
-                    elif no_proxy_host == insights_service_host:
-                        proxies = None
-                        proxy_auth = None
-                        logger.debug('Found NO_PROXY %s exactly matching %s', no_proxy_host, insights_service_host)
-                        break
-
-        self.proxies = proxies
-        self.proxy_auth = proxy_auth
-
-    def _test_urls(self, url, method):
-        """
-        Actually test the url
-        """
-        # tell the api we're just testing the URL
-        test_flag = {'test': 'test'}
-        url = urlparse(url)
-        test_url = url.scheme + "://" + url.netloc
-        last_ex = None
-        for ext in (url.path + '/', '', '/r', '/r/insights'):
-            try:
-                logger.debug("Testing: %s", test_url + ext)
-                if method is "POST":
-                    test_req = self.session.post(
-                        test_url + ext, timeout=self.config.http_timeout, data=test_flag)
-                elif method is "GET":
-                    test_req = self.session.get(test_url + ext, timeout=self.config.http_timeout)
-                logger.info("HTTP Status Code: %d", test_req.status_code)
-                logger.info("HTTP Status Text: %s", test_req.reason)
-                logger.info("HTTP Response Text: %s", test_req.text)
-                # Strata returns 405 on a GET sometimes, this isn't a big deal
-                if test_req.status_code in (200, 201):
-                    logger.info(
-                        "Successfully connected to: %s", test_url + ext)
-                    return True
-                else:
-                    logger.info("Connection failed")
-                    return False
-            except requests.ConnectionError as exc:
-                last_ex = exc
-                logger.error(
-                    "Could not successfully connect to: %s", test_url + ext)
-                print(exc)
-        if last_ex:
-            raise last_ex
-
-    def _verify_check(self, conn, cert, err, depth, ret):
-        del conn
-        # add cert to chain
-        self.cert_chain[1].append(cert)
-        logger.info('depth=' + str(depth))
-        logger.info('verify error:num=' + str(err))
-        logger.info('verify return:' + str(ret))
-        if err == 19:
-            # self-signed cert
-            self.cert_chain[0] = True
-        return True
-
-    def _generate_cert_str(self, cert_data, prefix):
-        return prefix + u'/'.join(
-                [a[0].decode('utf-8') + u'=' + a[1].decode('utf-8')
-                    for a in cert_data.get_components()])
-
-    def _test_openssl(self):
-        '''
-        Run a test with openssl to detect any MITM proxies
-        '''
-        if not self.cert_verify:
-            logger.info('cert_verify set to False, skipping SSL check...')
-            return False
-        success = True
-        hostname = urlparse(self.base_url).netloc.split(':')
-        sock = socket.socket()
-        sock.setblocking(1)
-        if self.proxies:
-            connect_str = 'CONNECT {0}:443 HTTP/1.0\r\n'.format(hostname[0])
-            if self.proxy_auth:
-                connect_str += 'Proxy-Authorization: {0}\r\n'.format(self.proxy_auth)
-            connect_str += '\r\n'
-            proxy = urlparse(self.proxies['https']).netloc.split(':')
-            try:
-                sock.connect((proxy[0], int(proxy[1])))
-            except Exception as e:
-                logger.debug(e)
-                logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
-                return False
-            sock.send(connect_str.encode('utf-8'))
-            res = sock.recv(4096)
-            if u'200 connection established' not in res.decode('utf-8').lower():
-                logger.error('Failed to connect to %s.', self.base_url)
-                logger.error('HTTP message:\n%s', res)
-                return False
-        else:
-            try:
-                sock.connect((hostname[0], 443))
-            except socket.gaierror as e:
-                logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
-                logger.error(e)
-                return False
-        ctx = SSL.Context(SSL.TLSv1_METHOD)
-        if type(self.cert_verify) is not bool:
-            if os.path.isfile(self.cert_verify):
-                ctx.load_verify_locations(self.cert_verify, None)
-            else:
-                logger.error('Error: Invalid cert path: %s', self.cert_verify)
-                return False
-        ctx.set_verify(SSL.VERIFY_PEER, self._verify_check)
-        ssl_conn = SSL.Connection(ctx, sock)
-        ssl_conn.set_connect_state()
-        try:
-            # output from verify generated here
-            ssl_conn.do_handshake()
-            # print cert chain
-            certs = self.cert_chain[1]
-            # put them in the right order
-            certs.reverse()
-            logger.debug('---\nCertificate chain')
-            for depth, c in enumerate(certs):
-                logger.debug(self._generate_cert_str(c.get_subject(),
-                                                     u'{0} s :/'.format(depth)))
-                logger.debug(self._generate_cert_str(c.get_issuer(),
-                                                     u'  i :/'))
-            # print server cert
-            server_cert = ssl_conn.get_peer_certificate()
-            logger.debug('---\nServer certificate')
-            logger.debug(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
-            logger.debug(self._generate_cert_str(server_cert.get_subject(), u'subject=/'))
-            logger.debug(self._generate_cert_str(server_cert.get_issuer(), u'issuer=/'))
-            logger.debug('---')
-        except SSL.Error as e:
-            logger.debug('SSL error: %s', e)
-            success = False
-            logger.error('Certificate chain test failed!')
-        ssl_conn.shutdown()
-        ssl_conn.close()
-        if self.cert_chain[0]:
-            logger.error('Certificate chain test failed!  Self '
-                         'signed certificate detected in chain')
-        return success and not self.cert_chain[0]
+    def new_session(self, config):
+        return InsightsSession.from_config(config)
 
     def test_connection(self, rc=0):
         """
@@ -361,15 +62,15 @@ class InsightsConnection(object):
         logger.debug("Certificate Verification: %s", self.cert_verify)
         try:
             logger.info("=== Begin Certificate Chain Test ===")
-            cert_success = self._test_openssl()
+            cert_success = self.session.test_openssl()
             logger.info("=== End Certificate Chain Test: %s ===\n",
                         "SUCCESS" if cert_success else "FAILURE")
             logger.info("=== Begin Upload URL Connection Test ===")
-            upload_success = self._test_urls(self.upload_url, "POST")
+            upload_success = self.session.test_url(self.upload_url, "POST")
             logger.info("=== End Upload URL Connection Test: %s ===\n",
                         "SUCCESS" if upload_success else "FAILURE")
             logger.info("=== Begin API URL Connection Test ===")
-            api_success = self._test_urls(self.api_url, "GET")
+            api_success = self.session.test_url(self.api_url, "GET")
             logger.info("=== End API URL Connection Test: %s ===\n",
                         "SUCCESS" if api_success else "FAILURE")
             if cert_success and upload_success and api_success:
@@ -490,9 +191,7 @@ class InsightsConnection(object):
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
-        net_logger.info(u'GET %s', self.branch_info_url)
-        response = self.session.get(self.branch_info_url,
-                                    timeout=self.config.http_timeout)
+        response = self.session.get(self.branch_info_url)
         logger.debug(u'GET branch_info status: %s', response.status_code)
         if response.status_code != 200:
             logger.error(u'Bad status from server: %s', response.status_code)
@@ -537,7 +236,6 @@ class InsightsConnection(object):
         post_system_url = self.api_url + '/v1/systems'
         logger.debug("POST System: %s", post_system_url)
         logger.debug(data)
-        net_logger.info("POST %s", post_system_url)
         return self.session.post(post_system_url,
                                  headers={'Content-Type': 'application/json'},
                                  data=data)
@@ -556,7 +254,6 @@ class InsightsConnection(object):
         group_get_path = group_path + ('?display_name=%s' % quote(group_name))
 
         logger.debug("GET group: %s", group_get_path)
-        net_logger.info("GET %s", group_get_path)
         get_group = self.session.get(group_get_path)
         logger.debug("GET group status: %s", get_group.status_code)
         if get_group.status_code == 200:
@@ -566,7 +263,6 @@ class InsightsConnection(object):
             # Group does not exist, POST to create
             logger.debug("POST group")
             data = json.dumps({'display_name': group_name})
-            net_logger.info("POST", group_path)
             post_group = self.session.post(group_path,
                                            headers=headers,
                                            data=data)
@@ -577,7 +273,6 @@ class InsightsConnection(object):
 
         logger.debug("PUT group")
         data = json.dumps(systems)
-        net_logger.info("PUT %s", group_path + ('/%s/systems' % api_group_id))
         put_group = self.session.put(group_path +
                                      ('/%s/systems' % api_group_id),
                                      headers=headers,
@@ -595,15 +290,14 @@ class InsightsConnection(object):
         self.group_systems(group_id, systems)
 
     def api_registration_check(self):
-        '''
+        """
         Check registration status through API
-        '''
+        """
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
-            net_logger.info("GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.session.get(url)
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
@@ -641,7 +335,6 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering %s", machine_id)
             url = self.api_url + "/v1/systems/" + machine_id
-            net_logger.info("DELETE %s", url)
             self.session.delete(url)
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
@@ -739,7 +432,6 @@ class InsightsConnection(object):
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
-        net_logger.info("POST %s", upload_url)
         upload = self.session.post(upload_url, files=files, headers=headers)
 
         logger.debug("Upload status: %s %s %s",
@@ -768,16 +460,13 @@ class InsightsConnection(object):
         try:
             url = self.api_url + '/v1/systems/' + machine_id
 
-            net_logger.info("GET %s", url)
-            res = self.session.get(url, timeout=self.config.http_timeout)
+            res = self.session.get(url)
             old_display_name = json.loads(res.content).get('display_name', None)
             if display_name == old_display_name:
                 logger.debug('Display name unchanged: %s', old_display_name)
                 return True
 
-            net_logger.info("PUT %s", url)
             res = self.session.put(url,
-                                   timeout=self.config.http_timeout,
                                    headers={'Content-Type': 'application/json'},
                                    data=json.dumps(
                                         {'display_name': display_name}))
@@ -801,26 +490,23 @@ class InsightsConnection(object):
             return False
 
     def get_diagnosis(self, remediation_id=None):
-        '''
-            Reach out to the platform and fetch a diagnosis.
-            Spirtual successor to --to-json from the old client.
-        '''
+        """
+        Reach out to the platform and fetch a diagnosis.
+        Spirtual successor to --to-json from the old client.
+        """
         diag_url = self.base_url + '/platform/remediations/v1/diagnosis/' + generate_machine_id()
         params = {}
         if remediation_id:
             # validate this?
             params['remediation'] = remediation_id
         try:
-            net_logger.info("GET %s", diag_url)
-            res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
+            res = self.session.get(diag_url, params=params)
             if res.status_code == 200:
                 return res.json()
             else:
                 logger.error('Unable to get diagnosis data: %s %s',
                              res.status_code, res.text)
-                return None
         except requests.ConnectionError:
             # can't connect, run connection test
             logger.error('Connection timed out. Running connection test...')
             self.test_connection()
-            return None

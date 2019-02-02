@@ -8,6 +8,7 @@ class MockSession(object):
         self.status_code = None
         self.text = None
         self.content = '{"display_name": "test"}'
+        self.base_url = "https://www.example.com"
 
     def get(self, url=None, timeout=None, headers=None, data=None):
         return MockResponse(self.status_code, self.text, self.content)
@@ -23,7 +24,7 @@ class MockResponse(object):
         self.content = expected_content
 
 
-def mock_init_session(obj):
+def mock_init_session(ignore, obj):
     return MockSession()
 
 
@@ -31,10 +32,8 @@ def mock_get_proxies(obj):
     return
 
 
-@patch('insights.client.connection.InsightsConnection._init_session',
-       mock_init_session)
-@patch('insights.client.connection.InsightsConnection.get_proxies',
-       mock_get_proxies)
+@patch('insights.client.connection.InsightsConnection.new_session',
+        mock_init_session)
 @patch('insights.client.utilities.constants.machine_id_file',
        '/tmp/machine-id')
 def test_set_display_name():

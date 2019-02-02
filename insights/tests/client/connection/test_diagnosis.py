@@ -12,6 +12,7 @@ class MockSession(object):
         self.status_code = None
         self.text = None
         self.content = '{"big_dumb_error": "you_done_goofed"}'
+        self.base_url = "https://www.example.com"
 
     def get(self, url=None, timeout=None, headers=None, data=None, params=None):
         if params and params['remediation'] == TEST_REMEDIATION_ID:
@@ -32,18 +33,16 @@ class MockResponse(object):
         return json.loads(self.content)
 
 
-def mock_init_session(obj):
+def mock_init_session(ignore, obj):
     return MockSession()
 
 
 def mock_get_proxies(obj):
-    return
+    pass
 
 
-@patch('insights.client.connection.InsightsConnection._init_session',
+@patch('insights.client.connection.InsightsConnection.new_session',
        mock_init_session)
-@patch('insights.client.connection.InsightsConnection.get_proxies',
-       mock_get_proxies)
 @patch('insights.client.utilities.constants.machine_id_file',
        '/tmp/machine-id')
 def test_get_diagnosis():
@@ -58,10 +57,8 @@ def test_get_diagnosis():
     assert c.get_diagnosis() is None
 
 
-@patch('insights.client.connection.InsightsConnection._init_session',
+@patch('insights.client.connection.InsightsConnection.new_session',
        mock_init_session)
-@patch('insights.client.connection.InsightsConnection.get_proxies',
-       mock_get_proxies)
 @patch('insights.client.utilities.constants.machine_id_file',
        '/tmp/machine-id')
 def test_get_diagnosis_with_id():
