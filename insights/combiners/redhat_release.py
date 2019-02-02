@@ -103,8 +103,7 @@ class RedHatRelease(object):
         True
     """
     def __init__(self, uname, rh_rel):
-        self.major = self.minor = None
-        self.rhel = self.rhel6 = self.rhel7 = self.rhel8 = None
+        self.major = self.minor = self.rhel = None
         if uname and uname.redhat_release.major != -1:
             self.major = uname.redhat_release.major
             self.minor = uname.redhat_release.minor
@@ -122,7 +121,6 @@ class RedHatRelease(object):
         self.rhel8 = self.rhel if self.major == 8 else None
 
 
-# No need to serialize/deserialize the `rhel#` attributes
 @serializer(RedHatRelease)
 def serialize_RedHatRelease(obj, root=None):
     return {
@@ -132,7 +130,7 @@ def serialize_RedHatRelease(obj, root=None):
             "rhel6": obj.rhel6,
             "rhel7": obj.rhel7,
             "rhel8": obj.rhel8,
-            }
+    }
 
 
 @deserializer(RedHatRelease)
