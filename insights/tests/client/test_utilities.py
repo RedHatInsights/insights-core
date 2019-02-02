@@ -79,6 +79,7 @@ def test_validate_remove_file():
     assert util.validate_remove_file(remove_file=tf) is False
     os.chmod(tf, 0o600)
     assert util.validate_remove_file(remove_file=tf) is not False
+    os.remove(tf)
 
 # TODO: DRY
 

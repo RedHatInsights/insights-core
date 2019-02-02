@@ -63,7 +63,8 @@ def test_ensure_path_mode(mode, mode_dir):
 
 
 def test_touch_times():
-    path = os.path.join('/tmp/insights-test-touch-times')
+    path = '/tmp/insights-test-touch-times'
     fs.touch(path, (1259798405, 1259798400))
     assert os.stat(path).st_atime == 1259798405
     assert os.stat(path).st_mtime == 1259798400
+    fs.remove(path)
