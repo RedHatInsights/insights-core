@@ -25,7 +25,7 @@ and framework code necessary for development and execution are
 stored in Git repositories.  Before you begin make sure you have
 the following installed:
 
-* Python 2.7
+* Python 3 (recommended Python 3.6)
 * Git
 * Python Virtualenv
 * Python PIP
@@ -33,6 +33,11 @@ the following installed:
 Further requirements can be found in the
 `README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
 file associated with the insights-core project.
+
+.. HINT::
+   You many also need to install ``gcc`` to be able to build some python modules,
+   ``unzip`` to be able to run `pytest` on the ``insights-core`` repo,
+   and ``pandoc`` to build Insights Core documentation.
 
 **********************
 Rule Development Setup
@@ -47,11 +52,15 @@ for rule development::
     project_dir
     ├── insights-core
     └── myrules
-        ├── setup.py
-        └── MyRules
-            └── hostname_rel.py
+        ├── hostname_rel.py
+        └── bash_version.py
 
-    
+
+.. _insights_dev_setup:
+
+Insights Core Setup
+===================
+
 Clone the project::
 
     [userone@hostone project_dir]$ git clone git@github.com:RedHatInsights/insights-core.git
@@ -60,97 +69,223 @@ Or, alternatively, using HTTPS::
 
     [userone@hostone project_dir]$ git clone https://github.com/RedHatInsights/insights-core.git
 
-Initialize a virtualenv::
+Initialize a virtualenv (depending on your python installation you may need to specify a specific
+version of python using the `-p` option and the name or path of the python you want to use.  For
+example `-p python3` or `-p /usr/bin/python3.6`)::
 
     [userone@hostone project_dir]$ cd insights-core
-    [userone@hostone project_dir/insights-core]$ virtualenv .
+    [userone@hostone project_dir/insights-core]$ virtualenv -p python3.6 .
 
-Install the insights-core project and its dependencies into your virtualenv::
+Verify that you have the desired version of python by enabling the virtualenv::
 
     [userone@hostone project_dir/insights-core]$ source bin/activate
-    (insights-core)[userone@hostone project_dir/insights-core]$ bin/pip install -e .
+    (insights-core)[userone@hostone project_dir/insights-core]$ python --version
+
+You can also ensure that your virtualenv is set by checking which python is being used::
+
+    (insights-core)[userone@hostone project_dir/insights-core]$ which python
+    project_dir/insights-core/bin/python
+
+Depending upon your environment, your prompt may also indicate you are using a virtualenv.
+In the example above it is indicated by *(insights-core)*.
+
+Next install the insights-core project and its dependencies into your virtualenv::
+
+    (insights-core)[userone@hostone project_dir/insights-core]$ bin/pip install -e .[develop]
+
+Now check to make sure your environment is setup correctly by invoking the `insights-run` command.
+You should see the help information for insights-run::
+
+    (insights-core)[userone@hostone project_dir/insights-core]$ insights-run --help
+
+When you are finished working on this project you can deactivate your virtualenv using the `deactivate`
+command.
+
+.. TIP::
+   If you don't plan on digging into the Insights Core code you can skip cloning the ``insights-core``
+   repo and follow these steps:
+
+   1. Create a virtualenv in your ``myrules`` directory.
+   2. Activate and check your virtualenv as specified above
+   3. Install ``insights-core`` using the command `pip install insights-core`
+   4. Check insights installation with `insights-run --help`
+
+   If you use this method make sure you periodically update insights core in your virtualenv
+   with the command `pip install --upgrade insights-core`.
+
+Rule Development
+================
 
 From your project root directory create a directory for your rules::
     
     (insights-core)[userone@hostone project_dir/insights-core]$ cd ..
-    (insights-core)[userone@hostone project_dir]$ mkdir -p myrules/MyRules
+    (insights-core)[userone@hostone project_dir]$ mkdir myrules
+    (insights-core)[userone@hostone project_dir]$ cd myrules
+    (insights-core)[userone@hostone project_dir/myrules]$
 
-Create a basic setup file named ``setup.py`` in the ``myrules`` directory:
+Create an empty file named ``__init__.py`` that will enable your rules directory
+as a python package. This makes the ``myrules`` directory a python package allowing
+you to use `insights-run` to run multiple components in the package.
+If you create subdirectories create an empty
+``__init__.py`` in each subdir that contains any components you want to run.
 
-.. code-block:: python
-   :linenos:
+    (insights-core)[userone@hostone project_dir/myrules]$ touch __init__.py
 
-    from setuptools import setup, find_packages
-    setup(
-
-        name="MyRules",
-        version="0.0.1",
-        packages=find_packages()
-    )
-
-Create a sample rule called ``hostname_rel.py`` in the ``MyRules`` directory:
+Create a sample rule called ``hostname_rel.py`` in the ``myrules`` directory:
 
 .. code-block:: python
    :linenos:
 
-    #!/usr/bin/env python
-    from insights.core.plugins import make_response, rule
-    from insights.parsers.hostname import Hostname
-    from insights.parsers.redhat_release import RedhatRelease
+   #!/usr/bin/env python
+   from insights.core.plugins import make_fail, make_pass, rule
+   from insights.parsers.hostname import Hostname
+   from insights.parsers.redhat_release import RedhatRelease
 
-    ERROR_KEY_1 = "RELEASE_IS_RHEL"
-    ERROR_KEY_2 = "RELEASE_IS_NOT_RECOGNIZED"
-    ERROR_KEY_3 = "RELEASE_CANNOT_BE_DETERMINED"
+   ERROR_KEY_1 = "RELEASE_IS_RHEL"
+   ERROR_KEY_2 = "RELEASE_IS_NOT_RECOGNIZED"
+   ERROR_KEY_3 = "RELEASE_CANNOT_BE_DETERMINED"
 
-
-    @rule(Hostname, [RedhatRelease])
-    def report(hostname, release):
-        if release and release.is_rhel:
-            return make_response(ERROR_KEY_1,
-                                 hostname=hostname.fqdn,
-                                 release=release.version)
-        elif release:
-            return make_response(ERROR_KEY_2,
-                                 hostname=hostname.fqdn,
-                                 release=release.raw)
-        else:
-            return make_response(ERROR_KEY_3, hostname=hostname.fqdn)
+   CONTENT = {
+       ERROR_KEY_1: "This release is RHEL\nHostname: {{ hostname }}\nRelease: {{ release }}",
+       ERROR_KEY_2: "This release is not RHEL\nHostname: {{ hostname }}\nRelease: {{ release }}",
+       ERROR_KEY_3: "This release is not RHEL\nHostname: {{ hostname }}\nRelease: not present"
+   }
 
 
-    if __name__ == "__main__":
-        from insights import run
-        run(report, print_summary=True)
+   @rule(Hostname, [RedhatRelease])
+   def report(hostname, release):
+       if release and release.is_rhel:
+           return make_pass(ERROR_KEY_1,
+                            hostname=hostname.fqdn,
+                            release=release.version)
+       elif release:
+           return make_fail(ERROR_KEY_2,
+                            hostname=hostname.fqdn,
+                            release=release.raw)
+       else:
+           return make_fail(ERROR_KEY_3, hostname=hostname.fqdn)
 
-Install your rule repository into your virtualenv::
 
-    (insights-core)[userone@hostone project_dir]$ cd myrule
-    (insights-core)[userone@hostone project_dir/myrule]$ pip install -e .
-    
+   if __name__ == "__main__":
+       from insights import run
+       run(report, print_summary=True)
+
+.. HINT::
+   You can download the
+   `code for hostname_rel.py <https://github.com/RedHatInsights/insights-core/blob/master/examples/rules/hostname_rel.py>`_
+
 Now you can use Insights to evaluate your rule by running your rule script::
     
-    (insights-core)[userone@hostone project_dir/myrule]$ python MyRules/hostname_rel.py
+    (insights-core)[userone@hostone project_dir/myrules]$ python hostname_rel.py
     
-Depending upon the computer you are using you will see several lines of
+Depending upon the system you are using you will see several lines of
 output ending with a your rule results that should look something like this::
-    
-    rule instances:
-    '__main__.report:'
-    {'error_key': 'RELEASE_IS_RHEL',
-     'hostname': 'myhost.mydomain.com',
-     'release': '7.4',
-     'type': 'rule'}
-     
-By default Insights will collect information from your computer for evaluation
-of your rules.  For a more detailed description of how to develop your own
-rules see the
-`Rule tutorial section <https://insights-core-tutorials.readthedocs.io/en/latest/rule_tutorial_index.html>`_
-in insights-rule-tutorials.
 
-*****************
-Contributor Setup
-*****************
+   ---------
+   Progress:
+   ---------
+   F
+
+   --------------
+   Rules Executed
+   --------------
+   [FAIL] __main__.report
+   ---------------
+   This release is not RHEL
+   Hostname: hostone
+   Release: Fedora release 29 (Twenty Nine)
+
+
+   ----------------------
+   Rule Execution Summary
+   ----------------------
+   Missing Deps: 0
+   Passed      : 0
+   Fingerprint : 0
+   Failed      : 1
+   Metadata    : 0
+   Metadata Key: 0
+   Exceptions  : 0
+
+Depending on your system you may also be able to make this file executable (chmod +x hostname_rel.py)
+and run like this: `./hostname_rel.py`.
+
+Now create a second rule named ``bash_version.py``` and include the following code
+
+.. code-block:: python
+   :linenos:
+
+   from insights.core.plugins import make_pass, rule
+   from insights.parsers.installed_rpms import InstalledRpms
+
+   KEY = "BASH_VERSION"
+
+   CONTENT = "Bash RPM Version: {{ bash_version }}"
+
+
+   @rule(InstalledRpms)
+   def report(rpms):
+       bash_ver = rpms.get_max('bash')
+       return make_pass(KEY, bash_version=bash_ver)
+
+.. HINT::
+   You can download the
+   `code for bash_version.py <https://github.com/RedHatInsights/insights-core/blob/master/examples/rules/bash_version.py>`_
+
+You'll notice that this file does not include the `#!/usr/bin/env python` and the `run(report...)`
+lines.  You can still run this rule easily from the command line using `insights-run`.  Here's how
+you can run each rule individually with `insights-run`::
+
+    (insights-core)[userone@hostone project_dir/myrules]$ insights-run -p bash_version
+    (insights-core)[userone@hostone project_dir/myrules]$ insights-run -p hostname_rel
+
+Finally you can run multiple rules at once.  First you can specify a comma separate list of all rules
+as the argument to `-p`::
+
+    (insights-core)[userone@hostone project_dir/myrules]$ insights-run -p bash_version,hostname_rel
+
+The second way to do this is by taking advantage of the fact that all of your rules are in one package
+(remember the empty ``__init__.py`` file we created in the ``myrules`` dir to make it a python package).
+Just provide the name of the package to run all rules in the package::
+
+    (insights-core)[userone@hostone project_dir/myrules]$ cd ..
+    (insights-core)[userone@hostone project_dir]$ insights-run -p myrules
+
+You can run one module in the package using either dot notation, ``myrules.bash_version``, or simply
+using bash tab completion to specify the path name ``myrules/bash_version.py``::
+
+    (insights-core)[userone@hostone project_dir]$ insights-run -p myrules.bash_version
+    (insights-core)[userone@hostone project_dir]$ insights-run -p myrules/bash_version.py
+
+.. TIP::
+   If you don't see the results you expect when using `insights-run`, try adding the `-t` flag
+   to show python exception tracebacks and look for exceptions in your rule code.  You can
+   expect to see some exceptions from parsers if the data is not accessible due to permissions
+   or is missing from your system or the data source.
+
+Evaluating Archive Files and Directories
+========================================
+
+By default Insights will collect information from your computer for evaluation
+of your rules.  You can also evaluate a sosreport or insights archive or directory by
+specifying it as the last argument on the command line::
+
+    (insights-core)[userone@hostone project_dir/myrules]$ insights-run -p bash_version sosreport.tar.xz
+    (insights-core)[userone@hostone project_dir/myrules]$ insights-run -p bash_version sosreport_dir
+
+For a more detailed description of how to develop your own rules see the
+`Rule tutorial section <https://insights-core-tutorials.readthedocs.io/en/latest/rule_tutorial_index.html>`_
+in the
+`Insights Core Tutorials <https://insights-core-tutorials.readthedocs.io/en/latest/index.html>`_.
+
+*******************************
+Insights Core Contributor Setup
+*******************************
 
 If you wish to contribute to the insights-core project you'll need to create a fork in GitHub.
+See `Fork a repo <https://help.github.com/articles/fork-a-repo/>`_ on Github for help on forking
+a repo.  After you have created your fork continue with these steps to setup your development
+environment.
 
 1. Clone your fork::
 
@@ -167,177 +302,8 @@ using the following commands::
     [userone@hostone project_dir/insights-core]$ git pull upstream master
     [userone@hostone project_dir/insights-core]$ git push origin master
 
+You should synchronize your fork with the upstream project regularly to ensure you have the most
+recent Insights Core code.
 
-After setup
-===========
-
-You can validate the setup by running the unit tests::
-    
-    [userone@hostone project_dir/insights-core]$ py.test
-
-To generate docs::
-    
-    [userone@hostone project_dir/insights-core]$ cd docs/
-    [userone@hostone project_dir/insights-core/docs]$ make html
-
-And they can be found under `docs/_build/html`.
-
-You will need to initialize the project per the
-`README.rst <https://github.com/RedHatInsights/insights-core/blob/master/README.rst>`_
-file.  For more detailed information about writing parsers and combiners see the
-insights-core-tutorials tutorial sections
-`tutorial-parser-development <https://insights-core-tutorials.readthedocs.io/en/latest/customtut_parsers.html>`_
-and
-`tutorial-combiner-development <https://insights-core-tutorials.readthedocs.io/en/latest/combiner_tutorial.html>`_.
-
-***********************
-Contributor Submissions
-***********************
-
-Contributors should submit changes to the code via GitHub "Pull
-Requests."  One would normally start a new contribution with a branch
-from the current master branch of the upstream project.
-
-1. Synchronize your fork as described in the Contributor Setup above
-
-2. Make a branch on the fork.  Use a branch name that would be
-   meaningful as it will be part of a default commit message when the
-   topic branch is merged into the upstream project::
-
-    git checkout -b your-topic
-
-3. Make contributions on the topic branch.  Push them to your fork
-   (creating a remote topic branch on your fork)::
-
-    git push
-
-4. If you need to make updates after pushing, it is useful to rebase
-   with master.  This will change history, so you will need to force the
-   push (this is fine on a topic branch when other developers are not
-   working from the remote branch.) ::
-
-    git checkout master
-    git pull --rebase upstream master
-    git push
-    git checkout your-topic
-    git rebase master
-    git push
-
-    You may have to use the `git push --force` command depending upon
-    the changes you have made since the initial commit of your pull
-    request.
-
-5. Generally, keep the number of commits on the topic branch small.
-   Usually a single commit, perhaps a few in some cases.  Use the
-   ``amend`` and ``rebase -i`` git commands to manage the commit history
-   of the topic branch.  Again, such manipulations change history and
-   require a ``--force`` push.
-
-6. When ready, use the GitHub UI to submit a pull request (PR).
-
-7. Repeat steps 4 and 5 as necessary.  Once you have submitted your
-   PR it is not necessary to squash commits, that will be done
-   when the PR is merged.  Also it is not necessary to rebase against the
-   master branch unless the PR status indicates that there
-   are merge issues.  Any subsequent pushes to the existing PR branch
-   will be reflected in the PR on GitHub.
-
-*****************
-Style Conventions
-*****************
-
-
-Code Style
-==========
-
-Code style mostly follows `PEP8 <https://www.python.org/dev/peps/pep-0008/>`_.
-The style followed is essentially encoded in the
-`flake8 <http://flake8.pycqa.org/en/latest/>`_ configuration file in the
-repo's root directory.  The current configuration specifies the
-following rules as exceptions
-
-- E501: Line too long
-- E126: Continuation line over-indented for hanging indent
-- E127: Continuation line over-indented for visual indent
-- E128: Continuation line under-indented for visual indent
-- E722: Do not use bare except, specify exception instead
-- E741: Do not use variables named ‘l’, ‘O’, or ‘I’
-
-In some cases, a particular bit of code may require formatting that
-violates flake8 rules.  In such cases, one can, for example, annotate
-the line with ``# noqa`` to ignore all errors/warnings or ``# noqa: E501,W291``
-to ignore only **E501** errors and **W291** warnings.
-Override flake8 checking sparingly.
-
-Code that does not pass the project's current flake8 tests
-will not be accepted.
-
-
-Commit Message Style
-====================
-
-Commit messages are an important description of changes taking place in
-the code base. So, they should be effective at providing useful
-descriptions of the changes for someone browsing the git log.
-
-Generally, they should follow the usual
-`git conventions <http://chris.beams.io/posts/git-commit/>`_.
-
-1. Separate subject from body with a blank line
-2. Limit the subject line to 50 characters
-3. Capitalize the subject line
-4. Do not end the subject line with a period
-5. Use the imperative mood in the subject line
-6. Wrap the body at 72 characters
-7. Use the body to explain the *what* and *why* vs. *how*
-
-
-Documentation
-=============
-
-Code should generally be clear enough to self-document the *how* of the
-implementation.  Of course, when a bit of code isn't clear, comments may
-be needed.
-
-Documentation in the form of pydoc should be considered to document
-usage of code as necessary.  In particular, code used by rule developers
-should be carefully documented.  They should be able to use generated
-documentation to understand, for example, the data models exposed by
-parser classes.  For further details, see the
-:ref:`documentation_guidelines` included in this guide.
-
-****************
-Review Checklist
-****************
-
-The following checklist is used when reviewing pull requests
-
-
-General (all submissions)
-=========================
-
-- Commit messages are useful and properly formatted
-- Unit tests validate the code submission
-- One commit, or at most only a handful.  More than five commits should
-  be heavily questioned
-
-
-Parsers
-=======
-
-- Parser is properly documented per the :ref:`documentation_guidelines`
-  and should include
-
-   - Example input 
-   - The resulting data structure represented by the parser
-   - Parser usage is clear to a user with some knowledge of the domain
-     without needing to examine the code itself
-   - Meaning and usage of an "empty" (falsy data object) is clear
-
-- Unit tests cover both positive and negative cases and utilizes
-  reasonable examples of input data. Test data should be usable in the
-  generation in archives used for integration testing and product
-  demonstrations.
-
-- Parsers do not expose a ``defaultdict`` or any other data structure that
-  would mutate as a side effect of accessing the object.
+For more details steps on contributing to Insights Core see
+`CONTRIBUTING.md <https://github.com/RedHatInsights/insights-core/blob/master/CONTRIBUTING.md>`_.
