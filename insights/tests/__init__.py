@@ -282,6 +282,11 @@ def redhat_release(major, minor=""):
             minor = "" if minor == "0" else " Update %s" % minor
         return "Red Hat Enterprise Linux AS release %s (Nahant%s)" % (major, minor)
 
+    if major == "8":
+        if not minor:
+            minor = "0"
+        return "Red Hat Enterprise Linux release %s.%s Beta (Ootpa)" % (major, minor)
+
     template = "Red Hat Enterprise Linux Server release %s%s (%s)"
     if major == "5":
         if minor:
