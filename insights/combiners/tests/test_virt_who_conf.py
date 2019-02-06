@@ -18,7 +18,7 @@ VWHO_D_CONF_ESX = """
 ## Terse version of the config template:
 [esx_1]
 type=esx
-server=10.72.32.219
+server=10.0.0.219
 #encrypted_password=
 owner=Satellite
 env=Satellite
@@ -39,7 +39,7 @@ VWHO_D_CONF_HYPER = """
 ## Terse version of the config template:
 [hyperv_1]
 type=hyperv
-server=10.72.32.209
+server=10.0.0.209
 #encrypted_password=
 owner=Satellite
 env=Satellite
@@ -105,9 +105,9 @@ def test_virt_who_conf_1():
     assert result.sm_type == 'sat6'
     assert sorted(result.hypervisor_types) == sorted(['esx', 'hyperv'])
 
-    expected = [{'name': 'esx_1', 'server': '10.72.32.219', 'env': 'Satellite',
+    expected = [{'name': 'esx_1', 'server': '10.0.0.219', 'env': 'Satellite',
                  'owner': 'Satellite', 'type': 'esx'},
-                {'name': 'hyperv_1', 'server': '10.72.32.209', 'env': 'Satellite',
+                {'name': 'hyperv_1', 'server': '10.0.0.209', 'env': 'Satellite',
                  'owner': 'Satellite', 'type': 'hyperv'}]
     for d in result.hypervisors:
         assert d in expected
