@@ -16,6 +16,7 @@ class InsightsArchiveSpecs(Specs):
     brctl_show = simple_file("insights_commands/brctl_show")
     ceph_df_detail = simple_file("insights_commands/ceph_df_detail_-f_json-pretty")
     ceph_health_detail = simple_file("insights_commands/ceph_health_detail_-f_json-pretty")
+    ceph_insights = simple_file("insights_commands/python_-m_insights.tools.cat_ceph_insights")
     ceph_osd_df = simple_file("insights_commands/ceph_osd_df_-f_json-pretty")
     ceph_osd_dump = simple_file("insights_commands/ceph_osd_dump_-f_json-pretty")
     ceph_osd_ec_profile_ls = simple_file("insights_commands/ceph_osd_erasure-code-profile_ls")

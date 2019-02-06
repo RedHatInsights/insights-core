@@ -24,6 +24,7 @@ from insights.core.spec_factory import first_of, foreach_collect, foreach_execut
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
 from insights.specs import Specs
+from insights import SkipComponent
 
 
 def _make_rpm_formatter(fmt=None):
@@ -100,6 +101,16 @@ class DefaultSpecs(Specs):
     ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json-pretty")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json-pretty")
+
+    @datasource(ps_auxww)
+    def is_ceph_monitor(broker):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        findall = re.compile(r"ceph\-mon").findall
+        if any(findall(p) for p in ps):
+            return True
+        raise SkipComponent()
+
+    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
     ceph_log = simple_file("/var/log/ceph/ceph.log")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json-pretty")
     ceph_osd_df = simple_command("/usr/bin/ceph osd df -f json-pretty")
