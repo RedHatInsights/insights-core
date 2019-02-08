@@ -422,6 +422,7 @@ class Specs(SpecSet):
     satellite_version_rb = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
     scsi = RegistryPoint()
+    sctp_eps = RegistryPoint()
     scsi_eh_deadline = RegistryPoint(multi_output=True)
     scsi_fwver = RegistryPoint(multi_output=True)
     secure = RegistryPoint(filterable=True)
