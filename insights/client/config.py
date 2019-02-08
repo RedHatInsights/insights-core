@@ -438,6 +438,10 @@ class InsightsConfig(object):
             else:
                 return v
 
+        # put this warning here so the error msg only prints once
+        if os.environ.get('HTTP_PROXY') and self._print_errors:
+            sys.stdout.write('WARNING: HTTP_PROXY is unused by insights-client. Please use HTTPS_PROXY.\n')
+
         # ignore these env as they are not config vars
         ignore = ['INSIGHTS_PHASE']
 
