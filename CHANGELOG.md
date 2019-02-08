@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.77-804](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.77-804) (2019-02-07)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.76-795...insights-core-3.0.77-804)
+
+**Closed issues:**
+
+- password blanking broken on RHEL8 [\#1670](https://github.com/RedHatInsights/insights-core/issues/1670)
+
 ## [insights-core-3.0.76-795](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.76-795) (2019-01-31)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.75-1...insights-core-3.0.76-795)
 
