@@ -34,61 +34,62 @@ default_manifest = """
 # version is for the format of this file, not its contents.
 version: 0
 
-context:
-    class: insights.core.context.HostContext
-    args:
-        timeout: 10 # timeout in seconds for commands. Doesn't apply to files.
+client:
+    context:
+        class: insights.core.context.HostContext
+        args:
+            timeout: 10 # timeout in seconds for commands. Doesn't apply to files.
 
-# disable everything by default
-# defaults to false if not specified.
-default_component_enabled: false
+    # commands and files to ignore
+    blacklist:
+        files: []
+        commands: []
+        patterns: []
+        keywords: []
 
-# commands and files to ignore
-blacklist:
-    files: []
-    commands: []
-    patterns: []
-    keywords: []
+    # Can be a list of dictionaries with name/enabled fields or a list of strings
+    # where the string is the name and enabled is assumed to be true. Matching is
+    # by prefix, and later entries override previous ones. Persistence for a
+    # component is disabled by default.
+    persist:
+        - name: insights.specs.Specs
+          enabled: true
+plugins:
+    # disable everything by default
+    # defaults to false if not specified.
+    default_component_enabled: false
 
-# packages and modules to load
-packages:
-    - insights.specs.default
+    # packages and modules to load
+    packages:
+        - insights.specs.default
 
-# Can be a list of dictionaries with name/enabled fields or a list of strings
-# where the string is the name and enabled is assumed to be true. Matching is
-# by prefix, and later entries override previous ones. Persistence for a
-# component is disabled by default.
-persist:
-    - name: insights.specs.Specs
-      enabled: true
+    # configuration of loaded components. names are prefixes, so any component with
+    # a fully qualified name that starts with a key will get the associated
+    # configuration applied. Can specify timeout, which will apply to command
+    # datasources. Can specify metadata, which must be a dictionary and will be
+    # merged with the components' default metadata.
+    configs:
+        - name: insights.specs.Specs
+          enabled: true
 
-# configuration of loaded components. names are prefixes, so any component with
-# a fully qualified name that starts with a key will get the associated
-# configuration applied. Can specify timeout, which will apply to command
-# datasources. Can specify metadata, which must be a dictionary and will be
-# merged with the components' default metadata.
-configs:
-    - name: insights.specs.Specs
-      enabled: true
+        - name: insights.specs.default.DefaultSpecs
+          enabled: true
 
-    - name: insights.specs.default.DefaultSpecs
-      enabled: true
+        - name: insights.parsers.hostname
+          enabled: true
 
-    - name: insights.parsers.hostname
-      enabled: true
+        - name: insights.parsers.facter
+          enabled: true
 
-    - name: insights.parsers.facter
-      enabled: true
+        - name: insights.parsers.systemid
+          enabled: true
 
-    - name: insights.parsers.systemid
-      enabled: true
+        - name: insights.combiners.hostname
+          enabled: true
 
-    - name: insights.combiners.hostname
-      enabled: true
-
-# needed because some specs aren't given names before they're used in DefaultSpecs
-    - name: insights.core.spec_factory
-      enabled: true
+    # needed because some specs aren't given names before they're used in DefaultSpecs
+        - name: insights.core.spec_factory
+          enabled: true
 """.strip()
 
 
@@ -212,11 +213,14 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
 
     manifest = load_manifest(manifest)
 
-    apply_default_enabled(manifest.get("default_component_enabled", False))
-    load_packages(manifest.get("packages", []))
-    apply_blacklist(manifest.get("blacklist", {}))
-    apply_configs(manifest.get("configs", []))
-    to_persist = get_to_persist(manifest.get("persist", set()))
+    client = manifest.get("client")
+    plugins = manifest.get("plugins")
+
+    apply_default_enabled(plugins.get("default_component_enabled", False))
+    load_packages(plugins.get("packages", []))
+    apply_blacklist(client.get("blacklist", {}))
+    apply_configs(plugins)
+    to_persist = get_to_persist(client.get("persist", set()))
 
     hostname = call("hostname -f", env=SAFE_ENV).strip()
     suffix = datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -227,7 +231,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     fs.touch(os.path.join(output_path, "insights_archive.txt"))
 
     broker = dr.Broker()
-    ctx = create_context(manifest.get("context", {}))
+    ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
 
     h = Hydration(output_path)

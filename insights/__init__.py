@@ -45,9 +45,7 @@ from .util import defaults  # noqa: F401
 
 log = logging.getLogger(__name__)
 
-
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
-
 
 for name in package_info:
     package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
@@ -124,39 +122,57 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
             return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
 
 
-def apply_configs(configs):
+def load_packages(packages):
+    plugins = []
+    for name in packages:
+        if name not in sys.modules:
+            plugins.append(name)
+            dr.load_components(name, continue_on_error=False)
+
+    return plugins
+
+
+def apply_configs(config):
     """
     Configures components. They can be enabled or disabled, have timeouts set
     if applicable, and have metadata customized. Valid keys are name, enabled,
     metadata, and timeout.
 
     Args:
-        configs (list): a list of dictionaries with the following keys:
-            name, enabled, metadata, and timeout. All keys are optional except
-            name.
+        config (list): a list of dictionaries with the following keys:
+            default_component_enabled (bool): default value for whether compoments
+                are enable if not specifically declared in the config section
 
-            name is the prefix or exact name of any loaded component. Any
-            component starting with name will have the associated configuration
-            applied.
+            packages (list): a list of packages to be loaded. These will be in
+                addition to any packages previosly loaded for the `-p` option
 
-            enabled is whether the matching components will execute even if
-            their dependencies are met. Defaults to True.
+            configs:
+                name, enabled, metadata, and timeout. All keys are optional except
+                name.
 
-            timeout sets the class level timeout attribute of any component so
-            long as the attribute already exists.
+                name is the prefix or exact name of any loaded component. Any
+                component starting with name will have the associated configuration
+                applied.
 
-            metadata is any dictionary that you want to attach to the
-            component. The dictionary can be retrieved by the component at
-            runtime.
+                enabled is whether the matching components will execute even if
+                their dependencies are met. Defaults to True.
+
+                timeout sets the class level timeout attribute of any component so
+                long as the attribute already exists.
+
+                metadata is any dictionary that you want to attach to the
+                component. The dictionary can be retrieved by the component at
+                runtime.
     """
+    default_enabled = config.get('default_component_enabled', False)
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
-    for comp_cfg in configs:
+    for comp_cfg in config.get('configs'):
         name = comp_cfg["name"]
         for c in delegate_keys:
             delegate = dr.DELEGATES[c]
             cname = dr.get_name(c)
             if cname.startswith(name):
-                dr.ENABLED[c] = comp_cfg.get("enabled", True)
+                dr.ENABLED[c] = comp_cfg.get("enabled", default_enabled)
                 delegate.metadata.update(comp_cfg.get("metadata", {}))
                 delegate.tags = set(comp_cfg.get("tags", delegate.tags))
                 for k, v in delegate.metadata.items():
@@ -179,7 +195,6 @@ def _load_context(path):
 
 def run(component=None, root=None, print_summary=False,
         context=None, inventory=None, print_component=None):
-
     from .core import dr
     dr.load_components("insights.specs.default")
     dr.load_components("insights.specs.insights_archive")
@@ -193,7 +208,8 @@ def run(component=None, root=None, print_summary=False,
         import logging
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-p", "--plugins", default="",
+                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
@@ -240,7 +256,10 @@ def run(component=None, root=None, print_summary=False,
 
         if args.config:
             with open(args.config) as f:
-                apply_configs(yaml.safe_load(f))
+                config = (yaml.safe_load(f))
+                packages_loaded = load_packages(config['packages'])
+                plugins.extend(packages_loaded)
+                apply_configs(config)
 
         if component is None:
             component = []
