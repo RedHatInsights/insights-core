@@ -212,9 +212,8 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     """
 
     manifest = load_manifest(manifest)
-
-    client = manifest.get("client")
-    plugins = manifest.get("plugins")
+    client = manifest.get("client", {})
+    plugins = manifest.get("plugins", {})
 
     apply_default_enabled(plugins.get("default_component_enabled", False))
     load_packages(plugins.get("packages", []))

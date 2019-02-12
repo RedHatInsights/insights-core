@@ -45,7 +45,9 @@ from .util import defaults  # noqa: F401
 
 log = logging.getLogger(__name__)
 
+
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
+
 
 for name in package_info:
     package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
@@ -166,8 +168,8 @@ def apply_configs(config):
     """
     default_enabled = config.get('default_component_enabled', False)
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
-    for comp_cfg in config.get('configs'):
-        name = comp_cfg["name"]
+    for comp_cfg in config.get('configs', []):
+        name = comp_cfg.get("name")
         for c in delegate_keys:
             delegate = dr.DELEGATES[c]
             cname = dr.get_name(c)
@@ -195,6 +197,7 @@ def _load_context(path):
 
 def run(component=None, root=None, print_summary=False,
         context=None, inventory=None, print_component=None):
+
     from .core import dr
     dr.load_components("insights.specs.default")
     dr.load_components("insights.specs.insights_archive")
@@ -208,8 +211,7 @@ def run(component=None, root=None, print_summary=False,
         import logging
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-p", "--plugins", default="",
-                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
@@ -257,7 +259,7 @@ def run(component=None, root=None, print_summary=False,
         if args.config:
             with open(args.config) as f:
                 config = (yaml.safe_load(f))
-                packages_loaded = load_packages(config['packages'])
+                packages_loaded = load_packages(config.get('packages', []))
                 plugins.extend(packages_loaded)
                 apply_configs(config)
 
