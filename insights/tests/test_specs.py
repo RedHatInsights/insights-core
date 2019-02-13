@@ -1,9 +1,11 @@
 import os
 
 from insights import add_filter, dr
+from insights.core import Parser
 from insights.core.context import HostContext
 from insights.core.plugins import ContentException
-from insights.core.spec_factory import simple_file, simple_command, glob_file, SpecSet
+from insights.core.spec_factory import (DatasourceProvider, simple_file,
+                                        simple_command, glob_file, SpecSet)
 import tempfile
 import pytest
 import glob
@@ -87,3 +89,16 @@ def test_glob_max(max_globs):
     broker[HostContext] = hn
     with pytest.raises(ContentException):
         too_many(broker)
+
+
+def test_datasource_provider():
+    data = "blahblah\nblahblah2"
+
+    class MyParser(Parser):
+        def parse_content(self, content):
+            self.content = content
+
+    ds = DatasourceProvider(data, relative_path="things")
+    p = MyParser(ds)
+    assert p.content == data.splitlines()
+    assert list(ds.stream()) == data.splitlines()
