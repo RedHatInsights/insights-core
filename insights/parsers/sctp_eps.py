@@ -22,8 +22,8 @@ Examples:
     True
     >>> sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2'])
     True
-    >>> sctp_info.search(local_port="11165")
-    [{'endpoints': 'ffff88017e0a0200', 'socket': 'ffff880299f7fa00', 'sk_type': '2', 'sk_state': '10', 'hash_bkt': '29', 'local_port': '11165', 'uid': '200', 'inode': '299689357', 'local_addr': ['10.0.0.102', '10.0.0.70']}]
+    >>> sorted(sctp_info.search(local_port="11165")) == sorted([{'endpoints': 'ffff88017e0a0200', 'socket': 'ffff880299f7fa00', 'sk_type': '2', 'sk_state': '10', 'hash_bkt': '29', 'local_port': '11165', 'uid': '200', 'inode': '299689357', 'local_addr': ['10.0.0.102', '10.0.0.70']}])
+    True
     >>> len(sctp_info.search(local_port="11165")) == 1
     True
     >>> len(sctp_info.search(endpoints="ffff88017e0a0200")) == 1
