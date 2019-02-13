@@ -34,21 +34,22 @@ SCTP_EPS_DETAILS_NO_2 = """
 
 def test_sctp_eps():
     sctp_info = SCTPEps(context_wrap(SCTP_EPS_DETAILS))
-    assert sorted(sctp_info.get_ports()) == sorted(['11165', '11166', '11167', '11168'])
-    assert sorted(sctp_info.get_local_ips()) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2', '192.168.11.2'])
-    assert sctp_info.get_eps_ips() == {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'],
+    assert sorted(sctp_info.sctp_ports) == sorted(['11165', '11166', '11167', '11168'])
+    assert sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2', '192.168.11.2'])
+    assert sctp_info.get_eps_ips == {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'],
                                        'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2'],
                                        'ffff88061fba9800': ['10.0.0.102', '10.0.0.70'],
                                        'ffff88031e6f1a00': ['10.0.0.102', '10.0.0.70', '192.168.11.2']}
+    assert len(sctp_info.search(local_port='11165')) == 1
 
     with pytest.raises(ParseException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO))
-        assert not sctp_obj.get_local_ips()
+        assert not sctp_obj.sctp_local_ips
     assert 'Contents are not compatible to this parser' in str(exc)
 
     with pytest.raises(SkipException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO_2))
-        assert not sctp_obj.get_local_ips()
+        assert not sctp_obj.sctp_local_ips
     assert 'No Contents' in str(exc)
 
 

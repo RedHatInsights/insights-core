@@ -18,14 +18,21 @@ Output data is stored in the dictionary format
 Examples:
     >>> type(sctp_info)
     <class 'insights.parsers.sctp_eps.SCTPEps'>
-    >>> sorted(sctp_info.get_ports()) == sorted(['11165', '11166'])
+    >>> sorted(sctp_info.sctp_ports) == sorted(['11165', '11166'])
     True
-    >>> sorted(sctp_info.get_local_ips()) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2'])
+    >>> sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2'])
+    True
+    >>> sctp_info.search(local_port="11165")
+    [{'endpoints': 'ffff88017e0a0200', 'socket': 'ffff880299f7fa00', 'sk_type': '2', 'sk_state': '10', 'hash_bkt': '29', 'local_port': '11165', 'uid': '200', 'inode': '299689357', 'local_addr': ['10.0.0.102', '10.0.0.70']}]
+    >>> len(sctp_info.search(local_port="11165")) == 1
+    True
+    >>> len(sctp_info.search(endpoints="ffff88017e0a0200")) == 1
     True
 """
 
 from insights import Parser, parser
 from insights.parsers import SkipException, ParseException
+from . import keyword_search
 from insights.specs import Specs
 
 
@@ -55,6 +62,9 @@ class SCTPEps(Parser):
 
         self.data = []
         exp_column = COLUMN_IDX.keys()
+        self._sctp_ports = []
+        self._sctp_local_ips = set([])
+        self._sctp_eps_ips = {}
         for line in content:
             row = {}
             line = line.strip()
@@ -66,44 +76,55 @@ class SCTPEps(Parser):
                     raise ParseException("Contents are not compatible to this parser".format(row))
             else:
                 for idx, val in enumerate(columns):
+                    if val == "ENDPT":
+                        # Save endpoint
+                        _eps = line[idx]
+                        self._sctp_eps_ips[_eps] = []
                     if val == "LADDRS":
+                        # Append multihomed ip address
                         key = COLUMN_IDX[val]
                         row[key] = []
                         while (idx != len(line)):
-                            row[key].append(line[idx])
+                            ip_addr = line[idx]
+                            row[key].append(ip_addr)
+                            self._sctp_local_ips.add(ip_addr)
+                            self._sctp_eps_ips[_eps].append(ip_addr)
                             idx = idx + 1
                     else:
                         key = COLUMN_IDX[val]
                         row[key] = line[idx]
+                        if key == 'local_port':
+                            self._sctp_ports.append(line[idx])
                 self.data.append(row)
 
-    def get_ports(self):
+    @property
+    def sctp_ports(self):
         """
         (list): This function returns a list of SCTP ports if SCTP
                 endpoints are created, else `[]`.
         """
-        sctp_ports = []
-        for eps in self.data:
-            sctp_ports.append(eps['local_port'])
-        return sctp_ports
+        return self._sctp_ports
 
-    def get_local_ips(self):
+    @property
+    def sctp_local_ips(self):
         """
         (list): This function returns a list of all local ip addresses
                 if SCTP endpoints are created, else `[]`.
         """
-        sctp_ips = set([])
-        for eps in self.data:
-            sctp_ips = set.union(sctp_ips, set(eps['local_addr']))
-        return list(sctp_ips)
+        return list(self._sctp_local_ips)
 
+    @property
     def get_eps_ips(self):
         """
         (dict): This function returns a dict of all endpoints and corresponding
                 local ip addresses used by SCTP endpoints if SCTP endpoints are
                 created, else `None`.
         """
-        sctp_eps = {}
-        for eps in self.data:
-            sctp_eps[eps['endpoints']] = eps['local_addr']
-        return sctp_eps
+        return self._sctp_eps_ips if self._sctp_eps_ips else None
+
+    def search(self, **args):
+        """
+        (list): This function return a list of all endpoints when args search
+                matches, when args search do not match then it returns `[]` list.
+        """
+        return keyword_search(self.data, **args)
