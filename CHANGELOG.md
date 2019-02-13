@@ -1,5 +1,8 @@
 # Change Log
 
+## [insights-core-3.0.78-807](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.78-807) (2019-02-08)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.77-804...insights-core-3.0.78-807)
+
 ## [insights-core-3.0.77-804](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.77-804) (2019-02-07)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.76-795...insights-core-3.0.77-804)
 
