@@ -44,12 +44,12 @@ def test_sctp():
 
     with pytest.raises(ParseException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO))
-        sctp_obj.sctp_eps_ips   # Just added ro remove flake8 warnings
+        assert sctp_obj.sctp_eps_ips is None   # Just added ro remove flake8 warnings
     assert 'Contents are not compatible to this parser' in str(exc)
 
     with pytest.raises(SkipException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO_2))
-        sctp_obj.sctp_eps_ips   # Just added to remove flake8 warnings
+        assert sctp_obj.sctp_eps_ips is None   # Just added to remove flake8 warnings
     assert 'No Contents' in str(exc)
 
 
