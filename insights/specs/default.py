@@ -8,6 +8,7 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
+import logging
 import os
 import re
 
@@ -17,13 +18,28 @@ from insights.core.context import HostContext
 from insights.core.context import HostArchiveContext
 from insights.core.context import OpenShiftContext
 
+from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import CommandOutputProvider, ContentException, RawFileProvider
+from insights.core.spec_factory import CommandOutputProvider, ContentException, DatasourceProvider, RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
 from insights.specs import Specs
+
+from grp import getgrgid
+from os import stat
+from pwd import getpwuid
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_owner(filename):
+    st = stat(filename)
+    name = getpwuid(st.st_uid).pw_name
+    group = getgrgid(st.st_gid).gr_name
+    return (name, group)
 
 
 def _make_rpm_formatter(fmt=None):
@@ -100,6 +116,16 @@ class DefaultSpecs(Specs):
     ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json-pretty")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json-pretty")
+
+    @datasource(ps_auxww)
+    def is_ceph_monitor(broker):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        findall = re.compile(r"ceph\-mon").findall
+        if any(findall(p) for p in ps):
+            return True
+        raise SkipComponent()
+
+    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
     ceph_log = simple_file("/var/log/ceph/ceph.log")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json-pretty")
     ceph_osd_df = simple_command("/usr/bin/ceph osd df -f json-pretty")
@@ -155,6 +181,7 @@ class DefaultSpecs(Specs):
     dmesg = simple_command("/bin/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
+    dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -391,6 +418,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
+    modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
@@ -560,6 +588,28 @@ class DefaultSpecs(Specs):
     rc_local = simple_file("/etc/rc.d/rc.local")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
+
+    @datasource(HostContext)
+    def rhev_data_center(broker):
+        import json
+        root = broker[HostContext].root
+        relative_path = "rhev/data-center"
+        path = os.path.join(root, relative_path)
+        bad_apples = []
+        for dirpath, dirnames, filenames in os.walk(path):
+            for p in dirnames + filenames:
+                tmp = os.path.join(dirpath, p)
+                try:
+                    name, group = get_owner(tmp)
+                    good = ("vdsm", "kvm")
+                    if (name, group) != good:
+                        bad_apples.append({"name": name, "group": group, "path": tmp})
+                except:
+                    logger.error(tmp)
+        if bad_apples:
+            return DatasourceProvider(content=json.dumps(bad_apples), relative_path=relative_path)
+        raise SkipComponent()
+
     rhv_log_collector_analyzer = simple_command("rhv-log-collector-analyzer --json")
     rhn_charsets = simple_command("/usr/bin/rhn-charsets")
     rhn_conf = first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"])

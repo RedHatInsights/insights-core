@@ -6,6 +6,9 @@ This module provides plugins access to the Ceph version information gathered fro
 the ``ceph -v`` command. This module parses the community version to the Red Hat
 release version.
 
+The Red Hat Ceph Storage releases and corresponding Ceph package releases are
+documented in https://access.redhat.com/solutions/2045583
+
 Typical output of the ``ceph -v`` command is::
 
     ceph version 0.94.9-9.el7cp (b83334e01379f267fb2f9ce729d74a0a8fa1e92c)
@@ -15,13 +18,12 @@ Note:
 
 Example:
     >>> ceph_ver = shared[CephVersion]
-    >>> ceph_ver.release
+    >>> ceph_ver.version
     '1.3.3'
     >>> ceph_ver.major
     '1.3'
     >>> ceph_ver.minor
     '3'
-
 """
 
 from .. import parser, CommandParser
@@ -29,14 +31,29 @@ import re
 from insights.specs import Specs
 
 community_to_release_map = {
-    "0.94.1": {'release': "1.3.0", 'major': '1.3', 'minor': '0'},
-    "0.94.3": {'release': "1.3.1", 'major': '1.3', 'minor': '1'},
-    "0.94.5": {'release': "1.3.2", 'major': '1.3', 'minor': '2'},
-    "0.94.9": {'release': "1.3.3", 'major': '1.3', 'minor': '3'},
-    "10.2.2": {'release': "2.0", 'major': '2', 'minor': '0'},
-    "10.2.3": {'release': "2.1", 'major': '2', 'minor': '1'},
-    "10.2.5": {'release': "2.2", 'major': '2', 'minor': '2'},
-    "10.2.7": {'release': "2.3", 'major': '2', 'minor': '3'}
+    "0.94.1-15": {'version': "1.3.0", 'major': '1.3', 'minor': '0', 'downstream_release': 'NA'},
+    "0.94.3-3": {'version': "1.3.1", 'major': '1.3', 'minor': '1', 'downstream_release': 'NA'},
+    "0.94.5-9": {'version': "1.3.2", 'major': '1.3', 'minor': '2', 'downstream_release': 'NA'},
+    "0.94.9-3": {'version': "1.3.3", 'major': '1.3', 'minor': '3', 'downstream_release': 'NA'},
+    "0.94.9-9": {'version': "1.3.3", 'major': '1.3', 'minor': '3', 'downstream_release': 'async 2'},
+    "0.94.10-2": {'version': "1.3.4", 'major': '1.3', 'minor': '4', 'downstream_release': 'NA'},
+    "10.2.2-38": {'version': "2.0", 'major': '2', 'minor': '0', 'downstream_release': '0'},
+    "10.2.3-13": {'version': "2.1", 'major': '2', 'minor': '1', 'downstream_release': '0'},
+    "10.2.5-37": {'version': "2.2", 'major': '2', 'minor': '2', 'downstream_release': '0'},
+    "10.2.7-27": {'version': "2.3", 'major': '2', 'minor': '3', 'downstream_release': '0'},
+    "10.2.7-28": {'version': "2.3", 'major': '2', 'minor': '3', 'downstream_release': 'async'},
+    "10.2.7-48": {'version': "2.4", 'major': '2', 'minor': '4', 'downstream_release': 'async'},
+    "10.2.10-16": {'version': "2.5", 'major': '2', 'minor': '5', 'downstream_release': '0'},
+    "10.2.10-28": {'version': "2.5.1", 'major': '2', 'minor': '5', 'downstream_release': '1'},
+    "10.2.10-40": {'version': "2.5.2", 'major': '2', 'minor': '5', 'downstream_release': '2'},
+    "10.2.10-43": {'version': "2.5.3", 'major': '2', 'minor': '5', 'downstream_release': '3'},
+    "12.2.4-6": {'version': "3.0.2", 'major': '3', 'minor': '0', 'downstream_release': '2'},
+    "12.2.4-10": {'version': "3.0.3", 'major': '3', 'minor': '0', 'downstream_release': '3'},
+    "12.2.4-30": {'version': "3.0.4", 'major': '3', 'minor': '0', 'downstream_release': '4'},
+    "12.2.4-42": {'version': "3.0.5", 'major': '3', 'minor': '0', 'downstream_release': '5'},
+    "12.2.5-42": {'version': "3.1", 'major': '3', 'minor': '1', 'downstream_release': '0'},
+    "12.2.5-59": {'version': "3.1.1", 'major': '3', 'minor': '1', 'downstream_release': '1'},
+    "12.2.8-52": {'version': "3.2", 'major': '3', 'minor': '2', 'downstream_release': '0'}
 }
 
 
@@ -75,11 +92,12 @@ class CephVersion(CommandParser):
         if not community_version_mo:
             raise CephVersionError("Wrong Format Ceph Version", content)
 
-        community_version = community_version_mo.group(1)
+        community_version = community_version_mo.group(0)
         release_data = community_to_release_map.get(community_version, None)
         if not release_data:
             raise CephVersionError("No Mapping Release Version. Ceph Release Number is Null", content)
 
-        self.release = release_data['release']
+        self.version = release_data['version']
         self.major = release_data['major']
         self.minor = release_data['minor']
+        self.downstream_release = release_data['downstream_release']
