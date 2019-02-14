@@ -17,6 +17,7 @@ from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
 from insights.core.serde import serializer, deserializer
 from insights.parsers import ParseException
+from insights.util import deprecated
 
 
 Release = namedtuple("Release", field_names=["major", "minor"])
@@ -36,6 +37,10 @@ def deserialize(_type, obj, root=None):
 @combiner([rht_release, Uname])
 def redhat_release(rh_release, un):
     """
+    .. warning::
+        This combiner methode is deprecated, please use
+        :py:class:`insights.combiners.redhat_release.RedHatRelease` instead.
+
     Combiner method to check uname and redhat-release for rhel major/minor
     version.
 
@@ -59,6 +64,8 @@ def redhat_release(rh_release, un):
         Release(major=7, minor=2)
 
     """
+
+    deprecated(redhat_release, "Use the `RedHatRelease` class instead.")
 
     if un and un.release_tuple[0] != -1:
         return Release(*un.release_tuple)
