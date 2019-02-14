@@ -54,12 +54,12 @@ class SAPControlSystemUpdateList(CommandParser):
         True
         >>> rks.is_green
         True
-        >>> rks.data[-1]['status']
-        'Running'
-        >>> rks.data[-1]['dispstatus']
-        'GREEN'
-        >>> rks.data[0]['instanceNr']
-        '00'
+        >>> rks.data[-1]['status'] == 'Running'
+        True
+        >>> rks.data[-1]['dispstatus'] ==  'GREEN'
+        True
+        >>> rks.data[0]['instanceNr'] == '00'
+        True
 
     Attributes:
         is_running (Boolean): The status of GetSystemUpdateList
