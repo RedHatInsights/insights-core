@@ -5,6 +5,7 @@ LsPci - Command ``lspci -k``
 To parse the PCI device information gathered from the ``/sbin/lspci -k`` command.
 
 """
+import re
 
 from .. import LogFileOutput, parser, CommandParser, get_active_lines
 from insights.specs import Specs
@@ -68,15 +69,19 @@ class LsPci(CommandParser, LogFileOutput):
             scanner(self)
         # Parse kernel driver lines
         self.data = {}
-        bus_device_function = ""
+        bus_device_function = None
+        bus_device_function_re = re.compile(r'[0-9a-f]+:[0-9a-f]+.[0-9a-f]+')
+
+        fields = ["Subsystem", "Kernel driver in use", "Kernel modules"]
+
         for line in get_active_lines(content):
-            parts = line.split(None)
-            if parts[0] and parts[0] not in ['Subsystem:', 'Kernel'] \
-                    and len(parts[0].split(':')) == 2 and len(parts[0].split('.')) == 2:
+            parts = line.split()
+
+            if bus_device_function_re.match(parts[0]):
                 bus_device_function = parts[0]
                 device_details = ' '.join(map(str, parts[1:]))
                 self.data[bus_device_function] = {'Dev_Details': device_details.lstrip()}
-            elif bus_device_function:
+            elif bus_device_function and (line.split(":")[0].strip() in fields):
                 parts = line.split(':')
                 self.data[bus_device_function][parts[0]] = parts[1].lstrip()
 
