@@ -19,6 +19,7 @@ class SAPControlSystemUpdateList(CommandParser):
     ``sapcontrol -nr <NR> -function GetSystemUpdateList`` command on SAP system.
 
     Sample output of the command::
+
         29.01.2019 01:20:36
         GetSystemUpdateList
         OK
@@ -28,25 +29,26 @@ class SAPControlSystemUpdateList(CommandParser):
         vm37-39, 03, Running, 29.01.2019 00:00:05, 29.01.2019 01:12:36, GREEN
 
     The content collected by insights-client::
+
         [
-            {
+          {
             "hostname": "vm37-39", "instanceNr": "00", "status": "Running",
             "starttime": "29.01.2019 00:00:02",
             "endtime": "29.01.2019 01:10:11",
             "dispstatus": "GREEN"
-            },
-            {
+          },
+          {
             "hostname": "vm37-39", "instanceNr": "02", "status": "Running",
             "starttime": "29.01.2019 00:00:05",
             "endtime": "29.01.2019 01:11:11",
             "dispstatus": "GREEN"
-            },
-            {
+          },
+          {
             "hostname": "vm37-39", "instanceNr": "03", "status": "Running",
             "starttime": "29.01.2019 00:00:05",
             "endtime": "29.01.2019 01:12:36",
             "dispstatus": "GREEN"
-            },
+          }
         ]
 
     Examples:
@@ -56,7 +58,7 @@ class SAPControlSystemUpdateList(CommandParser):
         True
         >>> rks.data[-1]['status'] == 'Running'
         True
-        >>> rks.data[-1]['dispstatus'] ==  'GREEN'
+        >>> rks.data[-1]['dispstatus'] == 'GREEN'
         True
         >>> rks.data[0]['instanceNr'] == '00'
         True
