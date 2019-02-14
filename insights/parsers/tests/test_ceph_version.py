@@ -51,9 +51,12 @@ def test_ceph_version():
     assert ceph_version8.major == '2'
     assert ceph_version8.minor == "3"
     assert ceph_version8.downstream_release == "0"
+    assert ceph_version8.latest_release == "This is not the latest released version"
+    assert ceph_version8.latest_update == "This is not the latest released update"
 
     ceph_version9 = CephVersion(context_wrap(CV9))
     assert ceph_version9.version == "3.1.1"
     assert ceph_version9.major == '3'
     assert ceph_version9.minor == "1"
-    assert ceph_version9.downstream_release == "1"
+    assert ceph_version9.latest_release == "This is not the latest released version"
+    assert ceph_version9.latest_update == "yes"
