@@ -671,7 +671,27 @@ class DefaultSpecs(Specs):
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
+
+    def sapcontrol_getsystemupdatelist_test(broker):
+        import json
+        rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
+        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
+        line_set = set()
+        results = list()
+        for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
+            cmd = rks_cmd.format(sid, nr).split()
+            ret = Popen(cmd, stdout=PIPE, stderr=PIPE)
+            out, err = ret.communicate()
+            body = out[out.index(header):].splitlines()[0:]
+            line_set.update(body)
+        header_sp = [i.strip() for i in header.split(',')]
+        for l in line_set:
+            l_sp = [i.strip() for i in l.split(',')]
+            results.append(dict(zip(header_sp, l_sp)))
+        if results:
+            return DatasourceProvider(content=json.dumps(results), relative_path='sapcontrol_nr_xx')
+        raise SkipComponent()
+
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
