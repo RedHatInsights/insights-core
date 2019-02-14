@@ -2,8 +2,8 @@ import doctest
 
 import pytest
 from insights.parsers import ParseException, SkipException
-from insights.parsers import sctp_eps
-from insights.parsers.sctp_eps import SCTPEps
+from insights.parsers import sctp
+from insights.parsers.sctp import SCTPEps
 from insights.tests import context_wrap
 
 SCTP_EPS_DETAILS = """
@@ -32,11 +32,11 @@ SCTP_EPS_DETAILS_NO_2 = """
 """.strip()
 
 
-def test_sctp_eps():
+def test_sctp():
     sctp_info = SCTPEps(context_wrap(SCTP_EPS_DETAILS))
     assert sorted(sctp_info.sctp_ports) == sorted(['11165', '11166', '11167', '11168'])
     assert sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2', '192.168.11.2'])
-    assert sctp_info.get_eps_ips == {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'],
+    assert sctp_info.sctp_eps_ips == {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'],
                                        'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2'],
                                        'ffff88061fba9800': ['10.0.0.102', '10.0.0.70'],
                                        'ffff88031e6f1a00': ['10.0.0.102', '10.0.0.70', '192.168.11.2']}
@@ -44,18 +44,18 @@ def test_sctp_eps():
 
     with pytest.raises(ParseException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO))
-        assert not sctp_obj.sctp_local_ips
+        sctp_obj.sctp_eps_ips
     assert 'Contents are not compatible to this parser' in str(exc)
 
     with pytest.raises(SkipException) as exc:
         sctp_obj = SCTPEps(context_wrap(SCTP_EPS_DETAILS_NO_2))
-        assert not sctp_obj.sctp_local_ips
+        sctp_obj.sctp_eps_ips
     assert 'No Contents' in str(exc)
 
 
-def test_sctp_eps_doc_examples():
+def test_sctp_doc_examples():
     env = {
         'sctp_info': SCTPEps(context_wrap(SCTP_EPS_DETAILS_DOC)),
     }
-    failed, total = doctest.testmod(sctp_eps, globs=env)
+    failed, total = doctest.testmod(sctp, globs=env)
     assert failed == 0

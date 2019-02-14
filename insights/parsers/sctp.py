@@ -17,7 +17,7 @@ Output data is stored in the dictionary format
 
 Examples:
     >>> type(sctp_info)
-    <class 'insights.parsers.sctp_eps.SCTPEps'>
+    <class 'insights.parsers.sctp.SCTPEps'>
     >>> sorted(sctp_info.sctp_ports) == sorted(['11165', '11166'])
     True
     >>> sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2'])
@@ -28,6 +28,8 @@ Examples:
     True
     >>> len(sctp_info.search(endpoints="ffff88017e0a0200")) == 1
     True
+    >>> sctp_info.sctp_eps_ips
+    {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'], 'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2']}
 """
 
 from insights import Parser, parser
@@ -43,7 +45,6 @@ class SCTPEps(Parser):
     And returns a list of dictionaries. The dictionary contains details
     of individual SCTP endpoint"
     """
-
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
@@ -114,17 +115,17 @@ class SCTPEps(Parser):
         return list(self._sctp_local_ips)
 
     @property
-    def get_eps_ips(self):
+    def sctp_eps_ips(self):
         """
         (dict): This function returns a dict of all endpoints and corresponding
                 local ip addresses used by SCTP endpoints if SCTP endpoints are
-                created, else `None`.
+                created, else `{}`.
         """
-        return self._sctp_eps_ips if self._sctp_eps_ips else None
+        return self._sctp_eps_ips
 
     def search(self, **args):
         """
-        (list): This function return a list of all endpoints when args search
-                matches, when args search do not match then it returns `[]` list.
+        (list): This function return a list of all endpoints when args search matches,
+                when args search do not match then it returns `[]`.
         """
         return keyword_search(self.data, **args)
