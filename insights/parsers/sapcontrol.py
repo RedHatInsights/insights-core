@@ -7,8 +7,9 @@ SAPControlSystemUpdateList- command ``sapcontrol -nr <NR> -function GetSystemUpd
 -----------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
-from insights.parsers import SkipException, parse_delimited_table
+from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
+import json
 
 
 @parser(Specs.sapcontrol_getsystemupdatelist)
@@ -26,9 +27,33 @@ class SAPControlSystemUpdateList(CommandParser):
         vm37-39, 02, Running, 29.01.2019 00:00:05, 29.01.2019 01:11:11, GREEN
         vm37-39, 03, Running, 29.01.2019 00:00:05, 29.01.2019 01:12:36, GREEN
 
+    The content collected by insights-client::
+        [
+            {
+            "hostname": "vm37-39", "instanceNr": "00", "status": "Running",
+            "starttime": "29.01.2019 00:00:02",
+            "endtime": "29.01.2019 01:10:11",
+            "dispstatus": "GREEN"
+            },
+            {
+            "hostname": "vm37-39", "instanceNr": "02", "status": "Running",
+            "starttime": "29.01.2019 00:00:05",
+            "endtime": "29.01.2019 01:11:11",
+            "dispstatus": "GREEN"
+            },
+            {
+            "hostname": "vm37-39", "instanceNr": "03", "status": "Running",
+            "starttime": "29.01.2019 00:00:05",
+            "endtime": "29.01.2019 01:12:36",
+            "dispstatus": "GREEN"
+            },
+        ]
+
     Examples:
-        >>> rks.status
-        'OK'
+        >>> rks.is_running
+        True
+        >>> rks.is_green
+        True
         >>> rks.data[-1]['status']
         'Running'
         >>> rks.data[-1]['dispstatus']
@@ -37,20 +62,22 @@ class SAPControlSystemUpdateList(CommandParser):
         '00'
 
     Attributes:
-        status (str): The status of GetSystemUpdateList
+        is_running (Boolean): The status of GetSystemUpdateList
+        is_green (Boolean): The display status of GetSystemUpdateList
         data (list): List of dicts where keys are the lead name of header line and
             values are the string value.
     """
     def parse_content(self, content):
-        if not content or len(content) <= 4:
+        if not content:
+            raise SkipException("Empty output.")
+        content = ''.join(content)
+        try:
+            self.data = json.loads(content)
+        except Exception:
+            raise ParseException("Incorrect content: '{0}'".format(content))
+
+        if not self.data:
             raise SkipException("Empty or useless output.")
-        self.status = ''
-        self.data = []
-        for l in content:
-            if l.startswith(('OK', 'FAIL')):
-                self.status = l.strip()
-                break
-        self.data = parse_delimited_table(content,
-                heading_ignore=['hostname,'],
-                delim=',',
-                strip=True)
+
+        self.is_running = all(l['status'] == 'Running' for l in self.data)
+        self.is_green = all(l['dispstatus'] == 'GREEN' for l in self.data)

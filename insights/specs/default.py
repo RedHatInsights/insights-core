@@ -30,6 +30,7 @@ from insights.specs import Specs
 from grp import getgrgid
 from os import stat
 from pwd import getpwuid
+from subprocerss import Popen, PIPE
 
 
 logger = logging.getLogger(__name__)
@@ -672,9 +673,10 @@ class DefaultSpecs(Specs):
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
 
-    def sapcontrol_getsystemupdatelist_test(broker):
+    def sapcontrol_getsystemupdatelist(broker):
         import json
         rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
+        relative_path = "sudo_-iu_*adm_sapcontrol_-nr_*_-function_GetSystemUpdateList"
         header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
         line_set = set()
         results = list()
@@ -689,7 +691,7 @@ class DefaultSpecs(Specs):
             l_sp = [i.strip() for i in l.split(',')]
             results.append(dict(zip(header_sp, l_sp)))
         if results:
-            return DatasourceProvider(content=json.dumps(results), relative_path='sapcontrol_nr_xx')
+            return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
         raise SkipComponent()
 
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
