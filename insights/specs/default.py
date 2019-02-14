@@ -30,7 +30,7 @@ from insights.specs import Specs
 from grp import getgrgid
 from os import stat
 from pwd import getpwuid
-from subprocerss import Popen, PIPE
+from subprocess import Popen, PIPE
 
 
 logger = logging.getLogger(__name__)
