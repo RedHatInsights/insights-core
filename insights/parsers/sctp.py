@@ -1,35 +1,11 @@
 """
+SCTP Socket State Parser
+========================
+
+Parsers provided by this module include:
+
 SCTPEps - file ``/proc/net/sctp/eps``
-=====================================
-
-This provides detail information about SCTP endpoints.
-Which includes Endpoints, Socket, Socket type, Socket State,
-hash bucket, bind port, UID, socket inodes, Local IP
-address.
-
-Typical content of ``eps`` file is::
-
-    ENDPT            SOCK             STY SST HBKT LPORT   UID INODE     LADDRS
-    ffff88017e0a0200 ffff880300f7fa00 2   10  29   11165   200 299689357 10.0.0.102 10.0.0.70
-    ffff880612e81c00 ffff8803c28a1b00 2   10  30   11166   200 273361203 10.0.0.102 10.0.0.70 172.31.1.2
-
-Output data is stored in the dictionary format
-
-Examples:
-    >>> type(sctp_info)
-    <class 'insights.parsers.sctp.SCTPEps'>
-    >>> sorted(sctp_info.sctp_ports) == sorted(['11165', '11166'])
-    True
-    >>> sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2'])
-    True
-    >>> sorted(sctp_info.search(local_port="11165")) == sorted([{'endpoints': 'ffff88017e0a0200', 'socket': 'ffff880299f7fa00', 'sk_type': '2', 'sk_state': '10', 'hash_bkt': '29', 'local_port': '11165', 'uid': '200', 'inode': '299689357', 'local_addr': ['10.0.0.102', '10.0.0.70']}])
-    True
-    >>> len(sctp_info.search(local_port="11165")) == 1
-    True
-    >>> len(sctp_info.search(endpoints="ffff88017e0a0200")) == 1
-    True
-    >>> sctp_info.sctp_eps_ips
-    {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'], 'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2']}
+-------------------------------------
 """
 
 from insights import Parser, parser
@@ -42,9 +18,36 @@ from insights.specs import Specs
 class SCTPEps(Parser):
     """
     This parser parses the content of ``/proc/net/sctp/eps`` file.
-    And returns a list of dictionaries. The dictionary contains details
-    of individual SCTP endpoint"
+    It returns a list of dictionaries. The dictionary contains detail
+    information of individual SCTP endpoint, which includes Endpoints, Socket,
+    Socket type, Socket State, hash bucket, bind port, UID, socket inodes,
+    Local IP address.
+
+    Typical contents of ``/proc/net/sctp/eps`` file are::
+
+        ENDPT            SOCK             STY SST HBKT LPORT   UID INODE     LADDRS
+        ffff88017e0a0200 ffff880300f7fa00 2   10  29   11165   200 299689357 10.0.0.102 10.0.0.70
+        ffff880612e81c00 ffff8803c28a1b00 2   10  30   11166   200 273361203 10.0.0.102 10.0.0.70 172.31.1.2
+
+    Output data is stored in the dictionary format
+
+    Examples:
+        >>> type(sctp_info)
+        <class 'insights.parsers.sctp.SCTPEps'>
+        >>> sorted(sctp_info.sctp_local_ports) == sorted(['11165', '11166'])
+        True
+        >>> sorted(sctp_info.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '172.31.1.2'])
+        True
+        >>> sorted(sctp_info.search(local_port="11165")) == sorted([{'endpoints': 'ffff88017e0a0200', 'socket': 'ffff880299f7fa00', 'sk_type': '2', 'sk_state': '10', 'hash_bkt': '29', 'local_port': '11165', 'uid': '200', 'inode': '299689357', 'local_addr': ['10.0.0.102', '10.0.0.70']}])
+        True
+        >>> len(sctp_info.search(local_port="11165")) == 1
+        True
+        >>> len(sctp_info.search(endpoints="ffff88017e0a0200")) == 1
+        True
+        >>> sctp_info.sctp_eps_ips
+        {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'], 'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2']}
     """
+
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
@@ -63,7 +66,7 @@ class SCTPEps(Parser):
 
         self.data = []
         exp_column = COLUMN_IDX.keys()
-        self._sctp_ports = []
+        self._sctp_local_ports = []
         self._sctp_local_ips = set([])
         self._sctp_eps_ips = {}
         for line in content:
@@ -95,16 +98,16 @@ class SCTPEps(Parser):
                         key = COLUMN_IDX[val]
                         row[key] = line[idx]
                         if key == 'local_port':
-                            self._sctp_ports.append(line[idx])
+                            self._sctp_local_ports.append(line[idx])
                 self.data.append(row)
 
     @property
-    def sctp_ports(self):
+    def sctp_local_ports(self):
         """
         (list): This function returns a list of SCTP ports if SCTP
                 endpoints are created, else `[]`.
         """
-        return self._sctp_ports
+        return self._sctp_local_ports
 
     @property
     def sctp_local_ips(self):
