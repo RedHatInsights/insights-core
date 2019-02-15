@@ -78,7 +78,7 @@ def test_sctp_asc():
     sctp_asc = SCTPAsc(context_wrap(SCTP_ASSOC))
     assert sorted(sctp_asc.sctp_local_ports) == sorted(['11567', '11566', '11565', '12067', '12065', '12066'])
     assert sorted(sctp_asc.search(local_port='11565')) == sorted([{'init_chunks_send': '0', 'uid': '200', 'shutdown_chunks_send': '0', 'max_outstream': '2', 'tx_que': '0', 'inode': '273361369', 'hrtbt_intrvl': '1000', 'sk_type': '2', 'remote_addr': ['*10.0.0.109', '10.0.0.77'], 'data_chunks_retrans': '0', 'local_addr': ['10.0.0.102', '10.0.0.70', '192.168.11.2'], 'asc_id': '977', 'max_instream': '2', 'remote_port': '11168', 'asc_state': '4', 'max_retrans_atmpt': '10', 'sk_state': '1', 'socket': 'ffff8801c6321580', 'asc_struct': 'ffff8803217b9000', 'local_port': '11565', 'hash_bkt': '1675', 'rx_que': '0'}])
-    assert len(sorted(sctp_asc.search(local_port='11567'))) == 2
+    assert len(sctp_asc.search(local_port='11567')) == 2
     assert sorted(sctp_asc.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70', '192.168.11.2'])
     assert sorted(sctp_asc.sctp_remote_ips) == sorted(['*10.0.0.109', '10.0.0.77', '*10.0.0.110', '10.0.0.78', '*10.0.0.103', '10.0.0.71', '*10.0.0.112', '10.0.0.80', '*10.0.0.111', '10.0.0.79'])
 
