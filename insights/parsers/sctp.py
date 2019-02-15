@@ -8,7 +8,7 @@ SCTPEps - file ``/proc/net/sctp/eps``
 -------------------------------------
 
 SCTPAsc - file ``/proc/net/sctp/assocs``
--------------------------------------
+----------------------------------------
 """
 
 from insights import Parser, parser
