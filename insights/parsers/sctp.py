@@ -149,7 +149,7 @@ class SCTPAsc(Parser):
     retransmission attempt, number of init chunks send, number of shutdown
     chunks send, data chunks retransmitted'
 
-    Typical contents of ``/proc/net/sctp/eps`` file are::
+    Typical contents of ``/proc/net/sctp/assocs`` file are::
 
         ASSOC     SOCK   STY SST ST HBKT ASSOC-ID TX_QUEUE RX_QUEUE UID INODE LPORT RPORT LADDRS <-> RADDRS HBINT INS OUTS MAXRT T1X T2X RTXC
         ffff88045ac7e000 ffff88062077aa00 2   1   4  1205  963        0        0     200 273361167 11567 11166  10.0.0.102 10.0.0.70 <-> *10.0.0.109 10.0.0.77      1000     2     2   10    0    0        0
@@ -208,7 +208,6 @@ class SCTPAsc(Parser):
         self._sctp_remote_ports = set([])
         self._sctp_local_ips = set([])
         self._sctp_remote_ips = set([])
-        self._sctp_eps_ips = {}
 
         def remove_ip_addr(ip_list, line):
             for ip_addr in ip_list:
