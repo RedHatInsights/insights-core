@@ -136,6 +136,7 @@ class SCTPEps(Parser):
         """
         return keyword_search(self.data, **args)
 
+
 @parser(Specs.sctp_asc)
 class SCTPAsc(Parser):
     """
@@ -144,7 +145,7 @@ class SCTPAsc(Parser):
     of individual SCTP endpoint, which includes Association Struct, Socket,
     Socket type, Socket State, Association state, hash bucket, association id,
     tx queue, rx queue, uid, inode, local port, remote port, 'local addr,
-    remote addr, heartbeat interval, max in-stream, max out-stream, max 
+    remote addr, heartbeat interval, max in-stream, max out-stream, max
     retransmission attempt, number of init chunks send, number of shutdown
     chunks send, data chunks retransmitted'
 
@@ -153,14 +154,23 @@ class SCTPAsc(Parser):
         ASSOC     SOCK   STY SST ST HBKT ASSOC-ID TX_QUEUE RX_QUEUE UID INODE LPORT RPORT LADDRS <-> RADDRS HBINT INS OUTS MAXRT T1X T2X RTXC
         ffff88045ac7e000 ffff88062077aa00 2   1   4  1205  963        0        0     200 273361167 11567 11166  10.0.0.102 10.0.0.70 <-> *10.0.0.109 10.0.0.77      1000     2     2   10    0    0        0
         ffff88061fbf2000 ffff88060ff92500 2   1   4  1460  942        0        0     200 273360669 11566 11167  10.0.0.102 10.0.0.70 <-> *10.0.0.109 10.0.0.77      1000     2     2   10    0    0        0
-    
+
     Output data is stored in the list of dictionaries
 
     Examples:
         >>> type(sctp_asc)
         <class 'insights.parsers.sctp.SCTPAsc'>
+        >>> sorted(sctp_asc.sctp_local_ports) == sorted(['11567','11566'])
+        True
+        >>> sorted(sctp_asc.sctp_remote_ports) == sorted(['11166','11167'])
+        True
+        >>> sorted(sctp_asc.sctp_local_ips) == sorted(['10.0.0.102', '10.0.0.70'])
+        True
+        >>> sorted(sctp_asc.sctp_remote_ips) == sorted(['*10.0.0.109', '10.0.0.77'])
+        True
+        >>> sorted(sctp_asc.search(local_port='11566')) == sorted([{'init_chunks_send': '0', 'uid': '200', 'shutdown_chunks_send': '0', 'max_outstream': '2', 'tx_que': '0', 'inode': '273360669', 'hrtbt_intrvl': '1000', 'sk_type': '2', 'remote_addr': ['*10.0.0.109', '10.0.0.77'], 'data_chunks_retrans': '0', 'local_addr': ['10.0.0.102', '10.0.0.70'], 'asc_id': '942', 'max_instream': '2', 'remote_port': '11167', 'asc_state': '4', 'max_retrans_atmpt': '10', 'sk_state': '1', 'socket': 'ffff88060ff92500', 'asc_struct': 'ffff88061fbf2000', 'local_port': '11566', 'hash_bkt': '1460', 'rx_que': '0'}])
+        True
     """
-
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
@@ -193,7 +203,6 @@ class SCTPAsc(Parser):
         }
 
         self.data = []
-        remote = False
         exp_column = ASC_COLUMN_IDX.keys()
         self._sctp_local_ports = set([])
         self._sctp_remote_ports = set([])
@@ -205,15 +214,19 @@ class SCTPAsc(Parser):
             for ip_addr in ip_list:
                 if ip_addr in line:
                     line.remove(ip_addr)
-            return line 
-        
+            return line
+
         for line in content:
             row = {}
+            remote = False
             line = line.strip()
             line = line.split()
             if ("LPORT" in line):
+                # Making sure that the columns supported by parser are not depricated.
                 if len(line) == len(exp_column):
                     columns = line
+                    # Remove column names which create inconsistency in the number of columns and
+                    # number of data items in the row.
                     for key, val in enumerate(['LADDRS', '<->', 'RADDRS']):
                         columns.remove(val)
                 else:
@@ -223,6 +236,7 @@ class SCTPAsc(Parser):
                 row['local_addr'] = []
                 for idx, val in enumerate(line):
                     if val == '<->':
+                        # Remote ip addresses starts here.
                         remote = True
                     # Get IPv4 or IPv6 Ip addrs
                     if '.' in val or ':' in val:
@@ -233,11 +247,10 @@ class SCTPAsc(Parser):
                             row['local_addr'].append(val)
                             self._sctp_local_ips.add(val)
 
-                # Removed inconsistent entries from the table
+                # Remove inconsistent entries from the row
                 line = remove_ip_addr(self._sctp_local_ips, line)
                 line = remove_ip_addr(self._sctp_remote_ips, line)
                 line.remove('<->')
-                remote = False
                 for idx, val in enumerate(columns):
                     key = ASC_COLUMN_IDX[val]
                     row[key] = line[idx]
@@ -250,7 +263,7 @@ class SCTPAsc(Parser):
     @property
     def sctp_local_ports(self):
         """
-        (list): This function returns a list of SCTP local peer ports 
+        (list): This function returns a list of SCTP local peer ports
                 if SCTP endpoints are created, else `[]`.
         """
         return list(self._sctp_local_ports)
@@ -258,27 +271,27 @@ class SCTPAsc(Parser):
     @property
     def sctp_remote_ports(self):
         """
-        (list): This function returns a list of SCTP remote peer ports 
+        (list): This function returns a list of SCTP remote peer ports
                 if SCTP endpoints are created, else `[]`.
         """
         return list(self._sctp_remote_ports)
-    
+
     @property
     def sctp_local_ips(self):
         """
-        (list): This function returns a list of all local peer ip addresses
+        (list): This function returns a list of all local peer's ip addresses
                 if SCTP endpoints are created, else `[]`.
         """
         return list(self._sctp_local_ips)
 
     @property
-    def sctp_local_ips(self):
+    def sctp_remote_ips(self):
         """
-        (list): This function returns a list of all remote peer ip addresses
+        (list): This function returns a list of all remote peer's ip addresses
                 if SCTP endpoints are created, else `[]`.
         """
         return list(self._sctp_remote_ips)
-    
+
     def search(self, **args):
         """
         (list): This function return a list of all SCTP associations when args search matches,
