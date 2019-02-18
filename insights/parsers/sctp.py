@@ -51,58 +51,42 @@ class SCTPEps(Parser):
         {'ffff88017e0a0200': ['10.0.0.102', '10.0.0.70'], 'ffff880612e81c00': ['10.0.0.102', '10.0.0.70', '172.31.1.2']}
     """
 
+    COLUMN_IDX = [
+        'endpoints',
+        'socket',
+        'sk_type',
+        'sk_state',
+        'hash_bkt',
+        'local_port',
+        'uid',
+        'inode',
+        'local_addr'
+    ]
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
 
-        COLUMN_IDX = {
-            'ENDPT': 'endpoints',
-            'SOCK': 'socket',
-            'STY': 'sk_type',
-            'SST': 'sk_state',
-            'HBKT': 'hash_bkt',
-            'LPORT': 'local_port',
-            'UID': 'uid',
-            'INODE': 'inode',
-            'LADDRS': 'local_addr'
-        }
+        line = content[0].strip().split()
+        keys_cnt = len(self.COLUMN_IDX)
+        if "LPORT" not in line or len(line) != keys_cnt:
+            raise ParseException("Contents are not compatible to this parser".format(line))
 
         self.data = []
-        exp_column = COLUMN_IDX.keys()
-        self._sctp_local_ports = []
-        self._sctp_local_ips = set([])
+        for line in content[1:]:
+            line = line.strip().split(None, keys_cnt - 1)
+            line[-1] = line[-1].split()
+            self.data.append(dict(zip(self.COLUMN_IDX, line)))
+
+        self._sctp_local_ports = set()
+        self._sctp_local_ips = set()
         self._sctp_eps_ips = {}
-        for line in content:
-            row = {}
-            line = line.strip()
-            line = line.split()
-            if ("LPORT" in line):
-                if len(line) == len(exp_column):
-                    columns = line
-                else:
-                    raise ParseException("Contents are not compatible to this parser".format(row))
-            else:
-                for idx, val in enumerate(columns):
-                    if val == "ENDPT":
-                        # Save endpoint
-                        _eps = line[idx]
-                        self._sctp_eps_ips[_eps] = []
-                    if val == "LADDRS":
-                        # Append multihomed ip address
-                        key = COLUMN_IDX[val]
-                        row[key] = []
-                        while (idx != len(line)):
-                            ip_addr = line[idx]
-                            row[key].append(ip_addr)
-                            self._sctp_local_ips.add(ip_addr)
-                            self._sctp_eps_ips[_eps].append(ip_addr)
-                            idx = idx + 1
-                    else:
-                        key = COLUMN_IDX[val]
-                        row[key] = line[idx]
-                        if key == 'local_port':
-                            self._sctp_local_ports.append(line[idx])
-                self.data.append(row)
+        for line in self.data:
+            self._sctp_local_ports.add(line['local_port'])
+            local_addr = line['local_addr']
+            self._sctp_local_ips.update(local_addr)
+            if line['endpoints'] not in self._sctp_eps_ips:
+                self._sctp_eps_ips[line['endpoints']] = []
+            self._sctp_eps_ips[line['endpoints']].extend(local_addr)
 
     @property
     def sctp_local_ports(self):
@@ -110,7 +94,7 @@ class SCTPEps(Parser):
         (list): This function returns a list of SCTP ports if SCTP
                 endpoints are created, else `[]`.
         """
-        return self._sctp_local_ports
+        return sorted(self._sctp_local_ports)
 
     @property
     def sctp_local_ips(self):
@@ -118,7 +102,7 @@ class SCTPEps(Parser):
         (list): This function returns a list of all local ip addresses
                 if SCTP endpoints are created, else `[]`.
         """
-        return list(self._sctp_local_ips)
+        return sorted(self._sctp_local_ips)
 
     @property
     def sctp_eps_ips(self):
@@ -171,93 +155,65 @@ class SCTPAsc(Parser):
         >>> sorted(sctp_asc.search(local_port='11566')) == sorted([{'init_chunks_send': '0', 'uid': '200', 'shutdown_chunks_send': '0', 'max_outstream': '2', 'tx_que': '0', 'inode': '273360669', 'hrtbt_intrvl': '1000', 'sk_type': '2', 'remote_addr': ['*10.0.0.109', '10.0.0.77'], 'data_chunks_retrans': '0', 'local_addr': ['10.0.0.102', '10.0.0.70'], 'asc_id': '942', 'max_instream': '2', 'remote_port': '11167', 'asc_state': '4', 'max_retrans_atmpt': '10', 'sk_state': '1', 'socket': 'ffff88060ff92500', 'asc_struct': 'ffff88061fbf2000', 'local_port': '11566', 'hash_bkt': '1460', 'rx_que': '0'}])
         True
     """
+    COLUMN_IDX = [
+        'asc_struct',
+        'socket',
+        'sk_type',
+        'sk_state',
+        'asc_state',
+        'hash_bkt',
+        'asc_id',
+        'tx_que',
+        'rx_que',
+        'uid',
+        'inode',
+        'local_port',
+        'remote_port',
+        'local_addr',
+        'remote_addr',
+        'hrtbt_intrvl',
+        'max_instream',
+        'max_outstream',
+        'max_retrans_atmpt',
+        'init_chunks_send',
+        'shutdown_chunks_send',
+        'data_chunks_retrans',
+        'relation',   # should be ignore
+    ]
 
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
 
-        ASC_COLUMN_IDX = {
-            'ASSOC': 'asc_struct',
-            'SOCK': 'socket',
-            'STY': 'sk_type',
-            'SST': 'sk_state',
-            'ST': 'asc_state',
-            'HBKT': 'hash_bkt',
-            'ASSOC-ID': 'asc_id',
-            'TX_QUEUE': 'tx_que',
-            'RX_QUEUE': 'rx_que',
-            'UID': 'uid',
-            'INODE': 'inode',
-            'LPORT': 'local_port',
-            'RPORT': 'remote_port',
-            'LADDRS': 'local_addr',
-            'RADDRS': 'remote_addr',
-            'HBINT': 'hrtbt_intrvl',
-            'INS': 'max_instream',
-            'OUTS': 'max_outstream',
-            'MAXRT': 'max_retrans_atmpt',
-            'T1X': 'init_chunks_send',
-            'T2X': 'shutdown_chunks_send',
-            'RTXC': 'data_chunks_retrans',
-            '<->': 'relation'
-        }
+        line = content[0].strip().split()
+        keys_cnt = len(self.COLUMN_IDX)
+        if "LPORT" not in line or len(line) != keys_cnt:
+            raise ParseException("Contents are not compatible to this parser".format(line))
 
         self.data = []
-        exp_column = ASC_COLUMN_IDX.keys()
-        self._sctp_local_ports = set([])
-        self._sctp_remote_ports = set([])
-        self._sctp_local_ips = set([])
-        self._sctp_remote_ips = set([])
+        laddr_idx = line.index('LADDRS')
+        raddr_ridx = len(line) - line.index('RADDRS')
+        for line in content[1:]:
+            line_1 = line.strip().split(None, laddr_idx)
+            line_end  = line_1.pop()
+            idx = line_end.index('<->')
+            laddrs = line_end[:idx].strip().split()
+            line_end = line_end[idx+3:].strip().rsplit(None, raddr_ridx - 1)
+            raddrs =line_end.pop(0).split()
+            line_1.append(laddrs)
+            line_1.append(raddrs)
+            line_1.extend(line_end)
+            self.data.append(dict(zip(self.COLUMN_IDX[:-1], line_1)))
 
-        def remove_ip_addr(ip_list, line):
-            for ip_addr in ip_list:
-                if ip_addr in line:
-                    line.remove(ip_addr)
-            return line
-
-        for line in content:
-            row = {}
-            remote = False
-            line = line.strip()
-            line = line.split()
-            if ("LPORT" in line):
-                # Making sure that the columns supported by parser are not depricated.
-                if len(line) == len(exp_column):
-                    columns = line
-                    # Remove column names which create inconsistency in the number of columns and
-                    # number of data items in the row.
-                    for key, val in enumerate(['LADDRS', '<->', 'RADDRS']):
-                        columns.remove(val)
-                else:
-                    raise ParseException("Contents are not compatible to this parser".format(row))
-            else:
-                row['remote_addr'] = []
-                row['local_addr'] = []
-                for idx, val in enumerate(line):
-                    if val == '<->':
-                        # Remote ip addresses starts here.
-                        remote = True
-                    # Get IPv4 or IPv6 Ip addrs
-                    if '.' in val or ':' in val:
-                        if remote:
-                            row['remote_addr'].append(val)
-                            self._sctp_remote_ips.add(val)
-                        else:
-                            row['local_addr'].append(val)
-                            self._sctp_local_ips.add(val)
-
-                # Remove inconsistent entries from the row
-                line = remove_ip_addr(self._sctp_local_ips, line)
-                line = remove_ip_addr(self._sctp_remote_ips, line)
-                line.remove('<->')
-                for idx, val in enumerate(columns):
-                    key = ASC_COLUMN_IDX[val]
-                    row[key] = line[idx]
-                    if key == 'local_port':
-                        self._sctp_local_ports.add(line[idx])
-                    if key == 'remote_port':
-                        self._sctp_remote_ports.add(line[idx])
-                self.data.append(row)
+        self._sctp_local_ports = set()
+        self._sctp_remote_ports = set()
+        self._sctp_local_ips = set()
+        self._sctp_remote_ips = set()
+        for line in self.data:
+            self._sctp_local_ports.add(line['local_port'])
+            self._sctp_remote_ports.add(line['remote_port'])
+            self._sctp_local_ips.update(line['local_addr'])
+            self._sctp_remote_ips.update(line['remote_addr'])
 
     @property
     def sctp_local_ports(self):
@@ -265,7 +221,7 @@ class SCTPAsc(Parser):
         (list): This function returns a list of SCTP local peer ports
                 if SCTP endpoints are created, else `[]`.
         """
-        return list(self._sctp_local_ports)
+        return sorted(self._sctp_local_ports)
 
     @property
     def sctp_remote_ports(self):
@@ -273,7 +229,7 @@ class SCTPAsc(Parser):
         (list): This function returns a list of SCTP remote peer ports
                 if SCTP endpoints are created, else `[]`.
         """
-        return list(self._sctp_remote_ports)
+        return sorted(self._sctp_remote_ports)
 
     @property
     def sctp_local_ips(self):
@@ -281,7 +237,7 @@ class SCTPAsc(Parser):
         (list): This function returns a list of all local peer's ip addresses
                 if SCTP endpoints are created, else `[]`.
         """
-        return list(self._sctp_local_ips)
+        return sorted(self._sctp_local_ips)
 
     @property
     def sctp_remote_ips(self):
@@ -289,7 +245,7 @@ class SCTPAsc(Parser):
         (list): This function returns a list of all remote peer's ip addresses
                 if SCTP endpoints are created, else `[]`.
         """
-        return list(self._sctp_remote_ips)
+        return sorted(self._sctp_remote_ips)
 
     def search(self, **args):
         """
