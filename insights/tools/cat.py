@@ -40,6 +40,7 @@ def parse_args():
     p.add_argument("-c", "--config", help="Configure components.")
     p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
     p.add_argument("-q", "--quiet", action="store_true", help="Only show commands or paths.")
+    p.add_argument("--no-header", action="store_true", help="Don't print command or path headers.")
     p.add_argument("-D", "--debug", action="store_true", help="Show debug level information.")
     p.add_argument("spec", nargs=1, help="Spec to dump.")
     p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
@@ -103,17 +104,21 @@ def create_broker(root=None):
                 yield from_dir(ex.tmp_dir)
 
 
-def dump_spec(value, quiet=False):
+def dump_spec(value, quiet=False, no_header=False):
     if not value:
         return
 
     value = value if isinstance(value, list) else [value]
     for v in value:
-        print(C.Fore.BLUE + str(v) + C.Style.RESET_ALL, file=sys.stderr)
+        if not no_header:
+            vname = str(v) if isinstance(v, ContentProvider) else "Raw Data"
+            print(C.Fore.BLUE + vname + C.Style.RESET_ALL, file=sys.stderr)
         if not quiet:
             if isinstance(v, ContentProvider):
                 for d in v.stream():
                     print(d)
+            else:
+                print(v)
 
 
 def dump_error(spec, broker):
@@ -140,13 +145,14 @@ def dump_error(spec, broker):
                     print("        %s" % dr.get_name(d), file=buf)
 
 
-def run(spec, archive=None, quiet=False):
+def run(spec, archive=None, quiet=False, no_header=False):
     with create_broker(archive) as broker:
         value = dr.run(spec, broker=broker).get(spec)
         if value:
-            dump_spec(value, quiet=quiet)
+            dump_spec(value, quiet=quiet, no_header=no_header)
         else:
             dump_error(spec, broker)
+            return sys.exit(1)
 
 
 def main():
@@ -159,7 +165,7 @@ def main():
     if not spec:
         print("Spec not found: %s" % args.spec[0], file=sys.stderr)
         sys.exit(1)
-    run(spec, archive=args.archive, quiet=args.quiet)
+    run(spec, archive=args.archive, quiet=args.quiet, no_header=args.no_header)
 
 
 if __name__ == "__main__":

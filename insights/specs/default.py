@@ -8,6 +8,7 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
+import logging
 import os
 import re
 
@@ -17,14 +18,28 @@ from insights.core.context import HostContext
 from insights.core.context import HostArchiveContext
 from insights.core.context import OpenShiftContext
 
+from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import CommandOutputProvider, ContentException, RawFileProvider
+from insights.core.spec_factory import CommandOutputProvider, ContentException, DatasourceProvider, RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
 from insights.specs import Specs
-from insights import SkipComponent
+
+from grp import getgrgid
+from os import stat
+from pwd import getpwuid
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_owner(filename):
+    st = stat(filename)
+    name = getpwuid(st.st_uid).pw_name
+    group = getgrgid(st.st_gid).gr_name
+    return (name, group)
 
 
 def _make_rpm_formatter(fmt=None):
@@ -573,6 +588,28 @@ class DefaultSpecs(Specs):
     rc_local = simple_file("/etc/rc.d/rc.local")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
+
+    @datasource(HostContext)
+    def rhev_data_center(broker):
+        import json
+        root = broker[HostContext].root
+        relative_path = "rhev/data-center"
+        path = os.path.join(root, relative_path)
+        bad_apples = []
+        for dirpath, dirnames, filenames in os.walk(path):
+            for p in dirnames + filenames:
+                tmp = os.path.join(dirpath, p)
+                try:
+                    name, group = get_owner(tmp)
+                    good = ("vdsm", "kvm")
+                    if (name, group) != good:
+                        bad_apples.append({"name": name, "group": group, "path": tmp})
+                except:
+                    logger.error(tmp)
+        if bad_apples:
+            return DatasourceProvider(content=json.dumps(bad_apples), relative_path=relative_path)
+        raise SkipComponent()
+
     rhv_log_collector_analyzer = simple_command("rhv-log-collector-analyzer --json")
     rhn_charsets = simple_command("/usr/bin/rhn-charsets")
     rhn_conf = first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"])
@@ -627,6 +664,8 @@ class DefaultSpecs(Specs):
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
+    sctp_asc = simple_file('/proc/net/sctp/assocs')
+    sctp_eps = simple_file('/proc/net/sctp/eps')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
