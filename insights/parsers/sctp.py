@@ -62,6 +62,7 @@ class SCTPEps(Parser):
         'inode',
         'local_addr'
     ]
+
     def parse_content(self, content):
         if (not content) or (not self.file_path):
             raise SkipException("No Contents")
@@ -195,11 +196,11 @@ class SCTPAsc(Parser):
         raddr_ridx = len(line) - line.index('RADDRS')
         for line in content[1:]:
             line_1 = line.strip().split(None, laddr_idx)
-            line_end  = line_1.pop()
+            line_end = line_1.pop()
             idx = line_end.index('<->')
             laddrs = line_end[:idx].strip().split()
-            line_end = line_end[idx+3:].strip().rsplit(None, raddr_ridx - 1)
-            raddrs =line_end.pop(0).split()
+            line_end = line_end[idx + 3:].strip().rsplit(None, raddr_ridx - 1)
+            raddrs = line_end.pop(0).split()
             line_1.append(laddrs)
             line_1.append(raddrs)
             line_1.extend(line_end)
