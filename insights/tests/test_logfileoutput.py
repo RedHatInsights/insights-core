@@ -112,8 +112,8 @@ def test_messages_scanners():
 
 def test_messages_scanners_list():
     # Messages that are present can be kept
-    FakeMessagesClass.keep_scan('puppet_master_manifest_logs', ['puppet-master','manifest'])
-    FakeMessagesClass.keep_scan('puppet_master_first', ['puppet-master','first'])
+    FakeMessagesClass.keep_scan('puppet_master_manifest_logs', ['puppet-master', 'manifest'])
+    FakeMessagesClass.keep_scan('puppet_master_first', ['puppet-master', 'first'])
     # Token scan of something that's absent
     FakeMessagesClass.token_scan('error_missing', ['ERROR', 'Missing'])
     FakeMessagesClass.token_scan('error_info', ['ERROR', 'info'])
