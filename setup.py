@@ -107,6 +107,7 @@ if __name__ == "__main__":
         license='Apache 2.0',
         extras_require={
             'develop': list(runtime | develop | client | docs | linting | testing | cluster),
+            'develop26': list(runtime | develop | client | linting | testing | cluster),
             'client': list(runtime | client),
             'cluster': list(runtime | cluster),
             'optional': list(optional),
