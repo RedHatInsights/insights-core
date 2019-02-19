@@ -110,6 +110,28 @@ def test_messages_scanners():
     assert log.lost_messages == 'lost 451 messages in 3 lines'
 
 
+def test_messages_scanners_list():
+    # Messages that are present can be kept
+    FakeMessagesClass.keep_scan('puppet_master_manifest_logs', ['puppet-master','manifest'])
+    FakeMessagesClass.keep_scan('puppet_master_first', ['puppet-master','first'])
+    # Token scan of something that's absent
+    FakeMessagesClass.token_scan('error_missing', ['ERROR', 'Missing'])
+    FakeMessagesClass.token_scan('error_info', ['ERROR', 'info'])
+
+    ctx = context_wrap(MESSAGES, path='/var/log/messages')
+    log = FakeMessagesClass(ctx)
+
+    assert hasattr(log, 'puppet_master_manifest_logs')
+    assert len(log.puppet_master_manifest_logs) == 1
+    assert hasattr(log, 'error_missing')
+    assert log.error_missing
+
+    assert hasattr(log, 'puppet_master_first')
+    assert len(log.puppet_master_first) == 0
+    assert hasattr(log, 'error_info')
+    assert log.error_info is False
+
+
 def test_messages_get_after():
     ctx = context_wrap(MESSAGES, path='/var/log/messages')
     log = FakeMessagesClass(ctx)
