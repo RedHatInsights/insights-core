@@ -681,7 +681,7 @@ class DefaultSpecs(Specs):
         line_set = set()
         results = list()
         for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
-            out = broker[HostContext].shell_out(s_cmd.format(sid, nr).split())
+            out = broker[HostContext].shell_out(s_cmd.format(sid, nr))
             if header in out:
                 body = out[out.index(header) + 1:].splitlines()[0:]
                 line_set.update(body)
