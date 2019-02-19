@@ -30,7 +30,6 @@ from insights.specs import Specs
 from grp import getgrgid
 from os import stat
 from pwd import getpwuid
-from subprocess import Popen, PIPE
 
 
 logger = logging.getLogger(__name__)
@@ -673,19 +672,19 @@ class DefaultSpecs(Specs):
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
 
+    @datasource(sap_sid_nr)
     def sapcontrol_getsystemupdatelist(broker):
         import json
-        rks_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
-        relative_path = "sudo_-iu_*adm_sapcontrol_-nr_*_-function_GetSystemUpdateList"
+        s_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
+        relative_path = "sudo_-iu_sidadm_sapcontrol_-nr__-function_GetSystemUpdateList"
         header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
         line_set = set()
         results = list()
         for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
-            cmd = rks_cmd.format(sid, nr).split()
-            ret = Popen(cmd, stdout=PIPE, stderr=PIPE)
-            out, err = ret.communicate()
-            body = out[out.index(header):].splitlines()[0:]
-            line_set.update(body)
+            out = broker[HostContext].shell_out(s_cmd.format(sid, nr).split())
+            if header in out:
+                body = out[out.index(header) + 1:].splitlines()[0:]
+                line_set.update(body)
         header_sp = [i.strip() for i in header.split(',')]
         for l in line_set:
             l_sp = [i.strip() for i in l.split(',')]
