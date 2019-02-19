@@ -1,4 +1,5 @@
 import os
+import sys
 from getpass import getuser
 
 from insights.core.evaluators import Formatter
@@ -75,6 +76,9 @@ class SysLogFormat(Formatter):
         self.broker.add_observer(self.log_exceptions, parser)
 
     def postprocess(self, broker):
+
+        cmd = "Command Line - {}".format(" ".join(sys.argv))
+        self.logit(cmd, self.pid, self.user, "insights-run", "info")
 
         self.log_rule_info(broker)
 
