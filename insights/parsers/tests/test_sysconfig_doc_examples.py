@@ -1,6 +1,6 @@
 from insights.tests import context_wrap
 from insights.parsers import sysconfig
-from insights.parsers.sysconfig import ChronydSysconfig, DockerSysconfig
+from insights.parsers.sysconfig import ChronydSysconfig, DockerSysconfig, DockerSysconfigStorage
 from insights.parsers.sysconfig import HttpdSysconfig, IrqbalanceSysconfig
 from insights.parsers.sysconfig import LibvirtGuestsSysconfig, MemcachedSysconfig
 from insights.parsers.sysconfig import MongodSysconfig, NtpdSysconfig
@@ -128,12 +128,17 @@ NETMASK0=255.255.254.0
 GATEWAY0=10.65.223.1
 """.strip()
 
+DOCKER_CONFIG_STORAGE = """
+DOCKER_STORAGE_OPTIONS="--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/dockervg-docker--pool --storage-opt dm.use_deferred_removal=true --storage-opt dm.use_deferred_deletion=true"
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
             'chronyd_syscfg': ChronydSysconfig(context_wrap(CHRONYDSYSCONFIG)),
             'ntpd_syscfg': NtpdSysconfig(context_wrap(NTPDSYSCONFIG)),
             'docker_syscfg': DockerSysconfig(context_wrap(DOCKERSYSCONFIG)),
+            'docker_syscfg_storage': DockerSysconfigStorage(context_wrap(DOCKER_CONFIG_STORAGE)),
             'httpd_syscfg': HttpdSysconfig(context_wrap(HTTPDSYSCONFIG)),
             'irqb_syscfg': IrqbalanceSysconfig(context_wrap(IRQBALANCESYSCONFIG)),
             'vwho_syscfg': VirtWhoSysconfig(context_wrap(VIRTWHOSYSCONFIG)),
