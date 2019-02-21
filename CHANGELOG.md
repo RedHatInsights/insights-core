@@ -1,5 +1,13 @@
 # Change Log
 
+## [insights-core-3.0.79-822](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.79-822) (2019-02-21)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.78-807...insights-core-3.0.79-822)
+
+**Closed issues:**
+
+- LogFileOutput.token\_scan does not support `list` [\#1688](https://github.com/RedHatInsights/insights-core/issues/1688)
+- TarExtractor doesn’t work on macOS [\#1686](https://github.com/RedHatInsights/insights-core/issues/1686)
+
 ## [insights-core-3.0.78-807](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.78-807) (2019-02-08)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.77-804...insights-core-3.0.78-807)
 
