@@ -632,29 +632,67 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
-    saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
+    saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
-    @datasource(saphostctl_listinstances, hostname, context=HostContext)
-    def sap_hana_sid(broker):
+    @datasource(saphostctrl_listinstances, hostname)
+    def sap_sid_nr(broker):
         """
-        Command: Get the SID for running "HDB version".
+        Get the SID and Instance Number
 
-        Typical output of saphostctl_listinstances::
+        Typical output of saphostctrl_listinstances::
         # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
         Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
 
+        Returns:
+            (list): List of tuple of SID and Instance Number.
+
         """
-        hana_ins = broker[DefaultSpecs.saphostctl_listinstances].content
+        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
         hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
         results = set()
-        for ins in hana_ins:
+        for ins in insts:
             ins_splits = ins.split(' - ')
+            # Local Instance
             if ins_splits[2].strip() == hn:
-                results.add(ins_splits[0].split()[-1].lower())
+                # (sid, nr)
+                results.add((ins_splits[0].split()[-1].lower(), ins_splits[1].strip()))
         return list(results)
 
-    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
+    @datasource(sap_sid_nr)
+    def sap_sid(broker):
+        """
+        Get the SID
+
+        Returns:
+            (list): List of SID.
+
+        """
+        return list(set(sn[0] for sn in broker[DefaultSpecs.sap_sid_nr]))
+
+    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
+
+    @datasource(sap_sid_nr)
+    def sapcontrol_getsystemupdatelist(broker):
+        import json
+        s_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
+        relative_path = "sudo_-iu_sidadm_sapcontrol_-nr__-function_GetSystemUpdateList"
+        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
+        line_set = set()
+        results = list()
+        for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
+            out = broker[HostContext].shell_out(s_cmd.format(sid, nr))
+            if header in out:
+                body = out[out.index(header) + 1:]  # remove the header
+                line_set.update(body)
+        header_sp = [i.strip() for i in header.split(',')]
+        for l in line_set:
+            l_sp = [i.strip() for i in l.split(',')]
+            results.append(dict(zip(header_sp, l_sp)))
+        if results:
+            return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
+        raise SkipComponent()
+
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
