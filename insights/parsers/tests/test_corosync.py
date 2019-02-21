@@ -86,7 +86,7 @@ def test_corosync_conf():
 
 def test_corosync_conf_empty():
     with pytest.raises(SkipException):
-        corosync.CorosyncConf(context_wrap(''))
+        assert corosync.CorosyncConf(context_wrap('')) is None
 
 
 def test_doc_examples():

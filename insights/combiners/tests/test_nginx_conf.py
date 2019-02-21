@@ -217,4 +217,4 @@ def test_nginx_recursive_includes():
 def test_nginx_empty():
     nginx_conf = context_wrap('', path="/etc/nginx/nginx.conf")
     with pytest.raises(SkipException):
-        _NginxConf(nginx_conf)
+        assert _NginxConf(nginx_conf) is None

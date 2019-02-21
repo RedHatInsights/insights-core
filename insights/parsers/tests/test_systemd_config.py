@@ -202,7 +202,7 @@ def test_systemd_logind_conf():
 
 def test_systemd_empty():
     with pytest.raises(SkipException):
-        config.SystemdLogindConf(context_wrap(''))
+        assert config.SystemdLogindConf(context_wrap('')) is None
 
 
 def test_doc_examples():

@@ -465,4 +465,4 @@ def test_httpd_one_file_overwrites():
 
 def test_httpd_conf_empty():
     with pytest.raises(SkipException):
-        _HttpdConf(context_wrap('', path='/etc/httpd/conf/httpd.conf'))
+        assert _HttpdConf(context_wrap('', path='/etc/httpd/httpd.conf')) is None
