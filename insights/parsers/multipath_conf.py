@@ -18,7 +18,7 @@ from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
 from insights.core import ConfigParser
 from insights.configtree.dictlike import parse_doc
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -131,7 +131,7 @@ class MultipathConfParser(Parser, LegacyItemAccess):
 
     def parse_content(self, content):
         if not content:
-            raise ParseException("Empty content.")
+            raise SkipException("Empty content.")
         self.data = MultipathConfParser._create_parser().parseString("\n".join(content))[0].asDict()
 
 
@@ -179,9 +179,14 @@ class MultipathConfTree(ConfigParser):
     """
     Exposes multipath configuration through the configtree interface.
 
+    Raises:
+        SkipException: When input content is empty.
+
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def parse_doc(self, content):
+        if not content:
+            raise SkipException("Empty content.")
         return parse_doc("\n".join(content), ctx=self, line_end="\n")
 
 
@@ -200,9 +205,14 @@ class MultipathConfTreeInitramfs(ConfigParser):
     Exposes the multipath configuration from initramfs image through the
     configtree interface.
 
+    Raises:
+        SkipException: When input content is empty.
+
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def parse_doc(self, content):
+        if not content:
+            raise SkipException("Empty content.")
         return parse_doc("\n".join(content), ctx=self, line_end="\n")
 
 
