@@ -54,6 +54,9 @@ NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 PrelinkSysconfig - file ``/etc/sysconfig/prelink``
 --------------------------------------------------
 
+SshdSysconfig - file ``/etc/sysconfig/sshd``
+--------------------------------------------
+
 PuppetserverSysconfig - file ``/etc/sysconfig/puppetserver``
 ------------------------------------------------------------
 
@@ -454,6 +457,36 @@ class PrelinkSysconfig(SysconfigOptions):
     Examples:
         >>> prelink_syscfg.get('PRELINKING')
         'no'
+    """
+    pass
+
+
+@parser(Specs.sysconfig_sshd)
+class SshdSysconfig(SysconfigOptions):
+    """
+    A parser for analyzing the ``/etc/sysconfig/sshd`` configuration file.
+
+    Sample Input::
+        # Configuration file for the sshd service.
+
+        # The server keys are automatically generated if they are missing.
+        # To change the automatic creation, adjust sshd.service options for
+        # example using  systemctl enable sshd-keygen@dsa.service  to allow creation
+        # of DSA key or  systemctl mask sshd-keygen@rsa.service  to disable RSA key
+        # creation.
+
+        # System-wide crypto policy:
+        # To opt-out, uncomment the following line
+        # CRYPTO_POLICY=
+        CRYPTO_POLICY=
+
+    Examples:
+        >>> sshd_syscfg.get('CRYPTO_POLICY')
+        ''
+        >>> 'NONEXISTENT_VAR' in sshd_syscfg
+        False
+        >>> 'CRYPTO_POLICY' in sshd_syscfg
+        True
     """
     pass
 
