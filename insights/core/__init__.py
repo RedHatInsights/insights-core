@@ -888,7 +888,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         Returns true if any line contains the given text string.
         """
-        return any(s in l for l in self.lines)
+        search_by_expression = self._valid_search(s)
+        return any(search_by_expression(l) for l in self.lines)
 
     def _parse_line(self, line):
         """
