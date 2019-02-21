@@ -1,6 +1,8 @@
 from insights.configtree import first, last  # noqa: F401
 from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
 from insights.tests import context_wrap
+from insights.parsers import SkipException
+import pytest
 
 
 HTTPD_CONF_MIXED = '''
@@ -459,3 +461,8 @@ def test_httpd_one_file_overwrites():
     assert setting_list[1].file_path == '/etc/httpd/conf/httpd.conf'
     assert setting_list[1].file_name == 'httpd.conf'
     assert setting_list[1].section_name is None
+
+
+def test_httpd_conf_empty():
+    with pytest.raises(SkipException):
+        _HttpdConf(context_wrap('', path='/etc/httpd/conf/httpd.conf'))

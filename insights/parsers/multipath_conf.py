@@ -179,14 +179,9 @@ class MultipathConfTree(ConfigParser):
     """
     Exposes multipath configuration through the configtree interface.
 
-    Raises:
-        SkipException: When input content is empty.
-
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def parse_doc(self, content):
-        if not content:
-            raise SkipException("Empty content.")
         return parse_doc("\n".join(content), ctx=self, line_end="\n")
 
 
@@ -205,14 +200,9 @@ class MultipathConfTreeInitramfs(ConfigParser):
     Exposes the multipath configuration from initramfs image through the
     configtree interface.
 
-    Raises:
-        SkipException: When input content is empty.
-
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """
     def parse_doc(self, content):
-        if not content:
-            raise SkipException("Empty content.")
         return parse_doc("\n".join(content), ctx=self, line_end="\n")
 
 

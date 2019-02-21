@@ -1,6 +1,8 @@
 from insights.parsers.systemd import config
+from insights.parsers import SkipException
 from insights.tests import context_wrap
 import doctest
+import pytest
 
 
 SYSTEMD_DOCKER = """
@@ -196,6 +198,11 @@ def test_systemd_logind_conf():
     assert "Login" in logind_conf
     assert logind_conf["Login"]["RemoveIPC"] == "False"
     assert logind_conf["Login"]["RuntimeDirectorySize"] == "10%"
+
+
+def test_systemd_empty():
+    with pytest.raises(SkipException):
+        config.SystemdLogindConf(context_wrap(''))
 
 
 def test_doc_examples():
