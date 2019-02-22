@@ -513,7 +513,11 @@ class CommandParser(Parser):
     included in the `bad_lines` list a `ContentException` is raised
     """
 
-    __bad_lines = ["no such file or directory", "command not found"]
+    __bad_lines = [
+            "no such file or directory",
+            "command not found",
+            "python: No module named",
+    ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
@@ -893,7 +897,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         Returns true if any line contains the given text string.
         """
-        return any(s in l for l in self.lines)
+        search_by_expression = self._valid_search(s)
+        return any(search_by_expression(l) for l in self.lines)
 
     def _parse_line(self, line):
         """
