@@ -18,7 +18,7 @@ from insights.contrib import pyparsing as p
 from insights import parser, Parser, LegacyItemAccess
 from insights.core import ConfigParser
 from insights.configtree.dictlike import parse_doc
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -131,7 +131,7 @@ class MultipathConfParser(Parser, LegacyItemAccess):
 
     def parse_content(self, content):
         if not content:
-            raise ParseException("Empty content.")
+            raise SkipException("Empty content.")
         self.data = MultipathConfParser._create_parser().parseString("\n".join(content))[0].asDict()
 
 
