@@ -22,25 +22,24 @@ SystemdSystemConf - file ``/etc/systemd/system.conf``
 """
 
 from insights.configtree.iniconfig import parse_doc
-from insights.core import Parser, LegacyItemAccess
+from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 
 
-class SystemdConf(LegacyItemAccess, Parser):
+class SystemdConf(LegacyItemAccess, ConfigParser):
     """
     Base class for parsing systemd INI like configuration files
 
-    The parsing target should be recorded in INI format, ``ConfigParser`` could
-    be used to parse the content.
-
     """
+    def parse_doc(self, content):
+        return parse_doc(content)
 
     def parse_content(self, content):
-        doc = parse_doc(content)
+        super(SystemdConf, self).parse_content(content)
         dict_all = {}
-        for section in doc:
+        for section in self.doc:
             section_dict = {}
             option_names = set(o.name for o in section)
             for name in option_names:
