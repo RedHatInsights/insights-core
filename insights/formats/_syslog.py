@@ -5,17 +5,8 @@ from getpass import getuser
 from insights.core.evaluators import Formatter
 from insights.formats import FormatterAdapter
 from insights import dr, rule, condition, incident, parser
-import syslog
-
-PRIO = {
-           "alert": syslog.LOG_ALERT,
-           "critical": syslog.LOG_CRIT,
-           "debug": syslog.LOG_DEBUG,
-           "emergency": syslog.LOG_EMERG,
-           "error": syslog.LOG_ERR,
-           "info": syslog.LOG_INFO,
-           "notice": syslog.LOG_NOTICE,
-           "warn": syslog.LOG_WARNING}
+import logging
+from logging import handlers
 
 
 class SysLogFormat(Formatter):
@@ -29,22 +20,31 @@ class SysLogFormat(Formatter):
         broker (Broker): the broker to watch and provide a summary about.
     """
 
-    def __init__(self, broker):
+    def __init__(self, broker, stream=None):
         self.broker = broker
         self.exceptions = []
         self.rules = []
         self.user = getuser()
         self.pid = str(os.getpid())
+        self.stream = stream
+
+        self.logger = logging.getLogger('sysLogLogger')
+        self.logger.propagate = False
+        self.logger.setLevel(logging.INFO)
+        self.handler = handlers.SysLogHandler('/dev/log') if not self.stream else \
+            logging.StreamHandler(stream=self.stream)
+        self.handler.formatter = logging.Formatter('%(message)s')
+        self.logger.addHandler(self.handler)
 
     def logit(self, msg, pid, user, cname, priority=None):
-        """syslog utility function for formatting content and logging to syslog"""
+        """Function for formatting content and logging to syslog"""
 
-        prio = syslog.LOG_INFO if not priority or priority not in PRIO else PRIO[priority]
-
-        syslog.openlog("{0}[pid:{1}] user:{2}".format(cname, pid, user))
-        syslog.syslog(prio, msg)
-
-        syslog.closelog()
+        if priority == logging.WARNING:
+            self.logger.warning("{0}[pid:{1}] user:{2}: WARNING - {3}".format(cname, pid, user, msg))
+        elif priority == logging.ERROR:
+            self.logger.error("{0}[pid:{1}] user:{2}: ERROR - {3}".format(cname, pid, user, msg))
+        else:
+            self.logger.info("{0}[pid:{1}] user:{2}: INFO - {3}".format(cname, pid, user, msg))
 
     def log_rule_info(self, broker):
         """Collects rule information and send to logit function to log to syslog"""
@@ -55,10 +55,10 @@ class SysLogFormat(Formatter):
             if _type:
                 if _type != "skip":
                     msg = "Running {0} ".format(dr.get_name(c))
-                    self.logit(msg, self.pid, self.user, "insights-run", "info")
+                    self.logit(msg, self.pid, self.user, "insights-run", logging.INFO)
                 else:
                     msg = "Rule skipped {0} ".format(dr.get_name(c))
-                    self.logit(msg, self.pid, self.user, "insights-run", "warn")
+                    self.logit(msg, self.pid, self.user, "insights-run", logging.WARNING)
 
     def log_exceptions(self, c, broker):
         """Gets exceptions to be logged and sends to logit function to be logged to syslog"""
@@ -66,7 +66,7 @@ class SysLogFormat(Formatter):
         if c in broker.exceptions:
             ex = broker.exceptions.get(c)
             ex = "Exception running {0} - {1}".format(dr.get_name(c), str(ex))
-            self.logit(ex, self.pid, self.user, "insights-run", "error")
+            self.logit(ex, self.pid, self.user, "insights-run", logging.ERROR)
 
     def preprocess(self):
 
@@ -75,12 +75,12 @@ class SysLogFormat(Formatter):
         self.broker.add_observer(self.log_exceptions, incident)
         self.broker.add_observer(self.log_exceptions, parser)
 
-    def postprocess(self, broker):
+    def postprocess(self):
 
         cmd = "Command Line - {}".format(" ".join(sys.argv))
-        self.logit(cmd, self.pid, self.user, "insights-run", "info")
+        self.logit(cmd, self.pid, self.user, "insights-run", logging.INFO)
 
-        self.log_rule_info(broker)
+        self.log_rule_info(self.broker)
 
 
 class SysLogFormatterAdapter(FormatterAdapter):
@@ -94,4 +94,4 @@ class SysLogFormatterAdapter(FormatterAdapter):
         self.formatter.preprocess()
 
     def postprocess(self, broker):
-        self.formatter.postprocess(broker)
+        self.formatter.postprocess()
