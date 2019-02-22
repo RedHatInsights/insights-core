@@ -21,6 +21,9 @@ DockerStorageSetupSysconfig - file ``/etc/sysconfig/docker-storage-setup``
 DockerSysconfig - file ``/etc/sysconfig/docker``
 ------------------------------------------------
 
+DockerSysconfigStorage - file ``/etc/sysconfig/docker-storage``
+---------------------------------------------------------------
+
 ForemanTasksSysconfig - file ``/etc/sysconfig/foreman-tasks``
 -------------------------------------------------------------
 
@@ -63,6 +66,7 @@ VirtWhoSysconfig - file ``/etc/sysconfig/virt-who``
 IfCFGStaticRoute - files ``/etc/sysconfig/network-scripts/route-*``
 -------------------------------------------------------------------
 """
+
 
 from insights import parser, SysconfigOptions, get_active_lines
 from insights.specs import Specs
@@ -193,6 +197,28 @@ class DockerSysconfig(SysconfigOptions):
     def options(self):
         """ Return the value of the 'OPTIONS' variable, or '' if not defined. """
         return self.data.get('OPTIONS', '')
+
+
+@parser(Specs.docker_storage)
+class DockerSysconfigStorage(SysconfigOptions):
+    """
+    A Parser for /etc/sysconfig/docker-storage.
+
+    Sample input::
+        DOCKER_STORAGE_OPTIONS="--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/dockervg-docker--pool --storage-opt dm.use_deferred_removal=true --storage-opt dm.use_deferred_deletion=true"
+
+    Examples:
+        >>> 'DOCKER_STORAGE_OPTIONS' in docker_syscfg_storage
+        True
+        >>> docker_syscfg_storage["DOCKER_STORAGE_OPTIONS"]
+        '--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/dockervg-docker--pool --storage-opt dm.use_deferred_removal=true --storage-opt dm.use_deferred_deletion=true'
+        >>> docker_syscfg_storage.storage_options
+        '--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/dockervg-docker--pool --storage-opt dm.use_deferred_removal=true --storage-opt dm.use_deferred_deletion=true'
+    """
+    @property
+    def storage_options(self):
+        """ Return the value of the 'DOCKER_STORAGE_OPTIONS' variable, or '' if not defined. """
+        return self.data.get('DOCKER_STORAGE_OPTIONS', '')
 
 
 @parser(Specs.foreman_tasks_config)
