@@ -43,6 +43,7 @@ VMCORE_DMESG_CRASH = """
 TOKEN_KEYS = ['wp', 'conf', 'pg']
 INDICATORS = ['write-protect', 'PAT configuration', 'BRK']
 
+
 for key, indicator in zip(TOKEN_KEYS, INDICATORS):
     VMCoreDmesg.token_scan(key, indicator)
 
@@ -50,8 +51,6 @@ for key, indicator in zip(TOKEN_KEYS, INDICATORS):
 def test_vmcore_dmesg_lines():
     vm_core = VMCoreDmesg(context_wrap(VMCORE_DMESG_TXT))
     assert vm_core.lines == VMCORE_DMESG_TXT.splitlines()
-    for key in TOKEN_KEYS:
-        assert getattr(vm_core, key)
 
 
 def test_vmcore_dmesg_tokens():
