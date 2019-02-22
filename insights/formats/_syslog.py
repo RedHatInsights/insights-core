@@ -31,8 +31,7 @@ class SysLogFormat(Formatter):
         self.logger = logging.getLogger('sysLogLogger')
         self.logger.propagate = False
         self.logger.setLevel(logging.INFO)
-        self.handler = handlers.SysLogHandler('/dev/log') if not self.stream else \
-            logging.StreamHandler(stream=self.stream)
+        self.handler = handlers.SysLogHandler('/dev/log')
         self.handler.formatter = logging.Formatter('%(message)s')
         self.logger.addHandler(self.handler)
 
@@ -45,6 +44,9 @@ class SysLogFormat(Formatter):
             self.logger.error("{0}[pid:{1}] user:{2}: ERROR - {3}".format(cname, pid, user, msg))
         else:
             self.logger.info("{0}[pid:{1}] user:{2}: INFO - {3}".format(cname, pid, user, msg))
+
+        if self.stream:
+            print(msg, file=self.stream)
 
     def log_rule_info(self, broker):
         """Collects rule information and send to logit function to log to syslog"""
