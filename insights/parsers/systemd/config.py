@@ -19,6 +19,8 @@ SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.serv
 SystemdSystemConf - file ``/etc/systemd/system.conf``
 -----------------------------------------------------
 
+SystemdOriginAccounting - file ``/etc/systemd/system.conf.d/origin-accounting.conf``
+------------------------------------------------------------------------------------
 """
 
 from insights.configtree.iniconfig import parse_doc
@@ -99,6 +101,26 @@ class SystemdSystemConf(SystemdConf):
     Example:
         >>> system_conf["Manager"]["RuntimeWatchdogSec"]
         '0'
+    """
+    pass
+
+
+@parser(Specs.systemd_system_origin_accounting)
+class SystemdOriginAccounting(SystemdConf):
+    """
+    Class for systemd master configuration in the ``/etc/systemd/system.conf.d/origin-accounting.conf``
+    file.
+
+    Typical content of the ``/etc/systemd/system.conf.d/origin-accounting.conf`` file is::
+
+        [Manager]
+        DefaultCPUAccounting=yes
+        DefaultMemoryAccounting=yes
+        DefaultBlockIOAccounting=yes
+
+    Example:
+        >>> system_origin_accounting["Manager"]["DefaultCPUAccounting"]
+        'True'
     """
     pass
 
