@@ -14,7 +14,7 @@ from insights.configtree import from_dict, iniconfig, Root, select, first
 from insights.configtree import Directive, SearchResult, Section
 from insights.contrib.ConfigParser import RawConfigParser
 
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from . import ls_parser
@@ -338,8 +338,13 @@ class ConfigComponent(object):
 class ConfigParser(Parser, ConfigComponent):
     """
     Base Insights component class for Parsers of configuration files.
+
+    Raises:
+        SkipException: When input content is empty.
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException('Empty content.')
         self.content = content
         self.doc = self.parse_doc(content)
 
@@ -508,7 +513,11 @@ class CommandParser(Parser):
     included in the `bad_lines` list a `ContentException` is raised
     """
 
-    __bad_lines = ["no such file or directory", "command not found"]
+    __bad_lines = [
+            "no such file or directory",
+            "command not found",
+            "python: No module named",
+    ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.

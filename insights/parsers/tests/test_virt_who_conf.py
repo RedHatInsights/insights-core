@@ -1,5 +1,7 @@
 from insights.parsers.virt_who_conf import VirtWhoConf
+from insights.parsers import SkipException
 from insights.tests import context_wrap
+import pytest
 
 VWHO_CONF = """
 ## This is a template for virt-who global configuration files. Please see
@@ -29,6 +31,11 @@ owner=Satellite
 env=Satellite
 hypervisor_id=ID1
 """
+
+
+def test_virt_who_conf_empty():
+    with pytest.raises(SkipException):
+        assert VirtWhoConf(context_wrap('')) is None
 
 
 def test_virt_who_conf():
