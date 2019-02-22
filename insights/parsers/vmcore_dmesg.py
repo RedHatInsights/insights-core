@@ -20,7 +20,7 @@ Exemplary ``vmcore-dmesg.txt`` looks like::
     [  345.739334] task: ffff9f888d030fd0 ti: ffff9f86b76b4000 task.ti: ffff9f86b76b4000
 
 The class inherites LogFileOutput and doesn't implement new methods/attributes.
-vmcore_dmesg defined in Specs allowes multioutput parsing and doesn't allow filtering.
+vmcore_dmesg defined in Specs allowes multioutput parsing. Filtering is allowed.
 
 Examples:
     >>> vmcore_dmesg.get("Modules linked in:")
@@ -38,6 +38,6 @@ class VMCoreDmesg(LogFileOutput):
     """
     This class parses data in ``/var/crash/[host]-YYYY-MM-DD-HH:MM:SS/vmcore-dmesg.txt``.
     Inherited from LogFileOutput. See LogFileOutput for details. No new methods or attributes.
-    MultiOutput is allowed. Filtering is not allowed.
+    MultiOutput is allowed. Filtering is allowed.
     """
     pass
