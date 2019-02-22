@@ -511,7 +511,7 @@ class CommandParser(Parser):
     __bad_lines = [
             "no such file or directory",
             "command not found",
-            "/bin/python: No module named",
+            "python: No module named",
     ]
     """
     This variable contains filters for bad responses from commands defined
