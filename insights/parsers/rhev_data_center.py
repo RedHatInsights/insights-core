@@ -5,6 +5,7 @@ rhev_data_center - datasource ``rhev_data_center``
 import json
 from re import compile as re_compile
 from insights import Parser, parser
+from insights.parsers import SkipException
 from insights.specs import Specs
 
 
@@ -19,6 +20,9 @@ class RhevDataCenter(Parser):
 
         incorrect_volume_ownership(list): Volumes attached to the RHEV VMs in
           the Data Center having incorrect file ownership.
+
+    Raises:
+        SkipException: If no files are found with incorrect ownership.
 
     The following are available in ``data`` and ``incorrect_volume_ownership``:
 
@@ -35,6 +39,8 @@ class RhevDataCenter(Parser):
 
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException('No files found with incorrect ownership.')
         self.data = json.loads(''.join(content))
 
         # Full path of volumes attached to the RHEV VMs in the Data Center not having correct file ownership.
