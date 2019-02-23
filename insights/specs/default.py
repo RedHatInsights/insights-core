@@ -762,6 +762,7 @@ class DefaultSpecs(Specs):
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
+    systemd_system_origin_accounting = simple_file("/etc/systemd/system.conf.d/origin-accounting.conf")
     systemid = first_of([
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
