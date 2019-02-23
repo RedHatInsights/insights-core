@@ -481,6 +481,7 @@ class Specs(SpecSet):
     systemd_logind_conf = RegistryPoint()
     systemd_openshift_node = RegistryPoint()
     systemd_system_conf = RegistryPoint()
+    systemd_system_origin_accounting = RegistryPoint()
     systemid = RegistryPoint()
     systool_b_scsi_v = RegistryPoint()
     teamdctl_state_dump = RegistryPoint(multi_output=True)
