@@ -60,11 +60,8 @@ class HumanReadableFormat(Formatter):
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
-        self.stream = stream
         self.fail_only = fail_only
-        if self.missing and fail_only:
-            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
-            self.fail_only = False
+        self.stream = stream
 
     def print_header(self, header, color):
         ln = len(header)
@@ -188,6 +185,9 @@ class HumanReadableFormatAdapter(FormatterAdapter):
         self.dropped = args.dropped
         self.fail_only = args.fail_only
         self.formatter = None
+        if self.missing and self.fail_only:
+            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
+            self.fail_only = False
 
     def preprocess(self, broker):
         self.formatter = HumanReadableFormat(broker,
