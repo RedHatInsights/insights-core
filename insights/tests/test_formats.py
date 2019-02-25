@@ -32,7 +32,7 @@ def test_json_format():
     assert "bar" in data
 
 
-def test_json_format():
+def test_yaml_format():
     broker = dr.Broker()
     output = StringIO()
     with YamlFormat(broker, stream=output):
