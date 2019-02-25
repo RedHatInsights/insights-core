@@ -60,10 +60,10 @@ class HumanReadableFormat(Formatter):
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
-        self.fail_only = fail_only
         self.stream = stream
-        if self.missing and self.fail_only:
-            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=self.stream)
+        self.fail_only = fail_only
+        if self.missing and fail_only:
+            print(Fore.YELLOW + 'Options conflict: -m and -F, drops -F', file=sys.stderr)
             self.fail_only = False
 
     def print_header(self, header, color):
@@ -180,7 +180,7 @@ class HumanReadableFormatAdapter(FormatterAdapter):
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
-        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m', will be dropped when using them together", action="store_true")
+        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m' or '-f', will be dropped when using them together", action="store_true")
 
     def __init__(self, args):
         self.missing = args.missing

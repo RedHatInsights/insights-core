@@ -47,10 +47,10 @@ class MarkdownFormat(Formatter):
         self.missing = missing
         self.tracebacks = tracebacks
         self.dropped = dropped
-        self.fail_only = fail_only
         self.stream = stream
-        if self.missing and self.fail_only:
-            print('Options conflict: -m and -F, drops -F', file=self.stream)
+        self.fail_only = fail_only
+        if self.missing and fail_only:
+            print('Options conflict: -m and -F, drops -F', file=sys.stderr)
             self.fail_only = False
 
         self.counts = {'skip': 0, 'pass': 0, 'rule': 0, 'metadata': 0, 'metadata_key': 0, 'fingerprint': 0, 'exception': 0}
@@ -184,7 +184,7 @@ class MarkdownFormatAdapter(FormatterAdapter):
         p.add_argument("-m", "--missing", help="Show missing requirements.", action="store_true")
         p.add_argument("-t", "--tracebacks", help="Show stack traces.", action="store_true")
         p.add_argument("-d", "--dropped", help="Show collected files that weren't processed.", action="store_true")
-        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m', will be dropped when using them together", action="store_true")
+        p.add_argument("-F", "--fail-only", help="Show FAIL results only. Conflict with '-m' or '-f', will be dropped when using them together", action="store_true")
 
     def __init__(self, args):
         self.missing = args.missing
@@ -195,7 +195,7 @@ class MarkdownFormatAdapter(FormatterAdapter):
 
     def preprocess(self, broker):
         self.formatter = MarkdownFormat(broker,
-                self.missing, self.tracebacks, self.dropped, self.fail_onle)
+                self.missing, self.tracebacks, self.dropped, self.fail_only)
         self.formatter.preprocess()
 
     def postprocess(self, broker):
