@@ -1,3 +1,4 @@
+from __future__ import print_function
 import six
 import sys
 from insights import dr, rule
