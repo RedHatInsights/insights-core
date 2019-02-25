@@ -390,6 +390,7 @@ class Specs(SpecSet):
     rc_local = RegistryPoint()
     redhat_release = RegistryPoint()
     resolv_conf = RegistryPoint()
+    rdma_conf = RegistryPoint()
     rhv_log_collector_analyzer = RegistryPoint()
     rhn_charsets = RegistryPoint()
     rhn_conf = RegistryPoint()
