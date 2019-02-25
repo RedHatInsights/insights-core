@@ -467,6 +467,7 @@ class SshdSysconfig(SysconfigOptions):
     A parser for analyzing the ``/etc/sysconfig/sshd`` configuration file.
 
     Sample Input::
+
         # Configuration file for the sshd service.
 
         # The server keys are automatically generated if they are missing.

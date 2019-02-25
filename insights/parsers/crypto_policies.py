@@ -24,10 +24,9 @@ from insights.parsers import SkipException
 @parser(Specs.crypto_policies_config)
 class CryptoPoliciesConfig(Parser):
     """
-    This parser reads the ``/etc/crypto-policies/config`` file.  It uses the
-    ``SysconfigOptions`` parser class to convert the file into
-    a dictionary of options. It also provides the ``options`` property as a helper
-    to retrieve the ``CRYPTO_POLICY`` variable.
+    This parser reads the ``/etc/crypto-policies/config`` file.
+    The contents of the file is a single-line value, available
+    in the ``value`` property.
 
     Sample Input::
 
@@ -46,10 +45,9 @@ class CryptoPoliciesConfig(Parser):
 @parser(Specs.crypto_policies_state_current)
 class CryptoPoliciesStateCurrent(Parser):
     """
-    This parser reads the ``/etc/crypto-policies/state/current`` file.  It uses the
-    ``SysconfigOptions`` parser class to convert the file into
-    a dictionary of options. It also provides the ``options`` property as a helper
-    to retrieve the ``CRYPTO_POLICY`` variable.
+    This parser reads the ``/etc/crypto-policies/state/current`` file.
+    The contents of the file is a single-line value, available
+    in the ``value`` property.
 
     Sample Input::
 
