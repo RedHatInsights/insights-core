@@ -1,5 +1,4 @@
 from __future__ import print_function
-import six
 import os
 import sys
 from getpass import getuser
@@ -40,15 +39,14 @@ class SysLogFormat(Formatter):
     def logit(self, msg, pid, user, cname, priority=None):
         """Function for formatting content and logging to syslog"""
 
-        if priority == logging.WARNING:
+        if self.stream:
+            print(msg, file=self.stream)
+        elif priority == logging.WARNING:
             self.logger.warning("{0}[pid:{1}] user:{2}: WARNING - {3}".format(cname, pid, user, msg))
         elif priority == logging.ERROR:
             self.logger.error("{0}[pid:{1}] user:{2}: ERROR - {3}".format(cname, pid, user, msg))
         else:
             self.logger.info("{0}[pid:{1}] user:{2}: INFO - {3}".format(cname, pid, user, msg))
-
-        if self.stream:
-            print(msg, file=self.stream)
 
     def log_rule_info(self, broker):
         """Collects rule information and send to logit function to log to syslog"""
