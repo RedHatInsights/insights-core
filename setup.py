@@ -78,6 +78,10 @@ cluster = set([
     'colorama',
 ])
 
+openshift = set([
+    'openshift'
+])
+
 linting = set([
     'flake8==2.6.2',
 ])
@@ -110,6 +114,7 @@ if __name__ == "__main__":
             'develop26': list(runtime | develop | client | linting | testing | cluster),
             'client': list(runtime | client),
             'cluster': list(runtime | cluster),
+            'openshift': list(runtime | openshift),
             'optional': list(optional),
             'docs': list(docs),
             'linting': list(linting | client),
