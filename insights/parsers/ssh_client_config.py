@@ -12,8 +12,8 @@ EtcSshConfig - file ``/etc/ssh/ssh_config``
 ForemanSshConfig - file ``/usr/share/foreman/.ssh/ssh_config``
 --------------------------------------------------------------
 
-ForemanProxySshConfig - file ``/usr/share/foremanProxy/.ssh/ssh_config``
-------------------------------------------------------------------------
+ForemanProxySshConfig - file ``/usr/share/foreman-proxy/.ssh/ssh_config``
+-------------------------------------------------------------------------
 
 """
 from collections import namedtuple
