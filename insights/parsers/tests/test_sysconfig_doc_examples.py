@@ -5,6 +5,7 @@ from insights.parsers.sysconfig import HttpdSysconfig, IrqbalanceSysconfig
 from insights.parsers.sysconfig import LibvirtGuestsSysconfig, MemcachedSysconfig
 from insights.parsers.sysconfig import MongodSysconfig, NtpdSysconfig
 from insights.parsers.sysconfig import PrelinkSysconfig, VirtWhoSysconfig
+from insights.parsers.sysconfig import SshdSysconfig
 from insights.parsers.sysconfig import Up2DateSysconfig, PuppetserverSysconfig
 from insights.parsers.sysconfig import NetconsoleSysconfig, ForemanTasksSysconfig
 from insights.parsers.sysconfig import DockerStorageSetupSysconfig, DirsrvSysconfig
@@ -75,6 +76,21 @@ UP2DATESYSCONFIG = """
 serverURL[comment]=Remote server URL
 #serverURL=https://rhnproxy.glb.tech.markit.partners
 serverURL=https://rhnproxy.glb.tech.markit.partners/XMLRPC
+""".strip()
+
+SSHDSYSCONFIG = """
+# Configuration file for the sshd service.
+
+# The server keys are automatically generated if they are missing.
+# To change the automatic creation, adjust sshd.service options for
+# example using  systemctl enable sshd-keygen@dsa.service  to allow creation
+# of DSA key or  systemctl mask sshd-keygen@rsa.service  to disable RSA key
+# creation.
+
+# System-wide crypto policy:
+# To opt-out, uncomment the following line
+# CRYPTO_POLICY=
+CRYPTO_POLICY=
 """.strip()
 
 PUPPETSERVERCONFIG = """
@@ -148,6 +164,7 @@ def test_sysconfig_doc():
             'prelink_syscfg': PrelinkSysconfig(context_wrap(PRELINKSYSCONFIG)),
             'u2d_syscfg': Up2DateSysconfig(context_wrap(UP2DATESYSCONFIG)),
             'netcs_syscfg': NetconsoleSysconfig(context_wrap(NETCONSOLESYSCONFIG)),
+            'sshd_syscfg': SshdSysconfig(context_wrap(SSHDSYSCONFIG)),
             'pps_syscfg': PuppetserverSysconfig(context_wrap(PUPPETSERVERCONFIG)),
             'ft_syscfg': ForemanTasksSysconfig(context_wrap(FOREMANTASKSYSCONFG)),
             'dss_syscfg': DockerStorageSetupSysconfig(context_wrap(DOCKERSTORAGESETUPSYSCONFG)),

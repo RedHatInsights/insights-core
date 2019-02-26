@@ -163,6 +163,9 @@ class DefaultSpecs(Specs):
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
+    crypto_policies_config = simple_file("/etc/crypto-policies/config")
+    crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
+    crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
@@ -725,6 +728,7 @@ class DefaultSpecs(Specs):
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
+    ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
@@ -743,6 +747,7 @@ class DefaultSpecs(Specs):
     sysconfig_memcached = first_file(["/var/lib/config-data/puppet-generated/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
+    sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
@@ -762,6 +767,7 @@ class DefaultSpecs(Specs):
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
+    systemd_system_origin_accounting = simple_file("/etc/systemd/system.conf.d/origin-accounting.conf")
     systemid = first_of([
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")
