@@ -29,12 +29,13 @@ class SysLogFormat(Formatter):
         self.pid = str(os.getpid())
         self.stream = stream
 
-        self.logger = logging.getLogger('sysLogLogger')
-        self.logger.propagate = False
-        self.logger.setLevel(logging.INFO)
-        self.handler = handlers.SysLogHandler('/dev/log')
-        self.handler.formatter = logging.Formatter('%(message)s')
-        self.logger.addHandler(self.handler)
+        if not self.stream:
+            self.logger = logging.getLogger('sysLogLogger')
+            self.logger.propagate = False
+            self.logger.setLevel(logging.INFO)
+            self.handler = handlers.SysLogHandler('/dev/log')
+            self.handler.formatter = logging.Formatter('%(message)s')
+            self.logger.addHandler(self.handler)
 
     def logit(self, msg, pid, user, cname, priority=None):
         """Function for formatting content and logging to syslog"""
@@ -79,7 +80,7 @@ class SysLogFormat(Formatter):
 
     def postprocess(self):
 
-        cmd = "Command Line - {}".format(" ".join(sys.argv))
+        cmd = "Command Line - %s" % " ".join(sys.argv)
         self.logit(cmd, self.pid, self.user, "insights-run", logging.INFO)
 
         self.log_rule_info(self.broker)
