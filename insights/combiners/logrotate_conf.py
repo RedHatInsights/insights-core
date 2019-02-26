@@ -207,7 +207,7 @@ class _LogRotateConf(ConfigParser):
 @combiner(_LogRotateConf)
 class LogRotateConfTree(ConfigCombiner):
     """
-    Exposes logrotate configuration through the configtree interface.
+    Exposes logrotate configuration through the parsr query interface.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
     """

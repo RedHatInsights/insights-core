@@ -265,10 +265,11 @@ class ConfigComponent(object):
         """
         return self.doc.select(*queries, **kwargs)
 
-    def find(self, *queries, roots=False):
+    def find(self, *queries, **kwargs):
         """
         Finds matching results anywhere in the configuration
         """
+        roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
 
     def _children_of_type(self, t):

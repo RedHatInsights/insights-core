@@ -96,10 +96,11 @@ class Entry(object):
         query = compile_queries(*queries)
         return select(query, self.children, **kwargs)
 
-    def find(self, *queries, roots=False):
+    def find(self, *queries, **kwargs):
         """
         Finds matching results anywhere in the configuration
         """
+        roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
 
     @property

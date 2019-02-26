@@ -350,7 +350,7 @@ class _HttpdConf(ConfigParser):
 @combiner(_HttpdConf)
 class HttpdConfTree(ConfigCombiner):
     """
-    Exposes httpd configuration through the configtree interface. Correctly
+    Exposes httpd configuration through the parsr query interface. Correctly
     handles all include directives.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
@@ -375,7 +375,7 @@ class _HttpdConfSclHttpd24(ConfigParser):
 @combiner(_HttpdConfSclHttpd24)
 class HttpdConfSclHttpd24Tree(ConfigCombiner):
     """
-    Exposes httpd configuration Software Collection httpd24 through the configtree
+    Exposes httpd configuration Software Collection httpd24 through the parsr query
     interface. Correctly handles all include directives.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.
@@ -400,7 +400,7 @@ class _HttpdConfSclJbcsHttpd24(ConfigParser):
 @combiner(_HttpdConfSclJbcsHttpd24)
 class HttpdConfSclJbcsHttpd24Tree(ConfigCombiner):
     """
-    Exposes httpd configuration Software Collection jbcs-httpd24 through the configtree
+    Exposes httpd configuration Software Collection jbcs-httpd24 through the parsr query
     interface. Correctly handles all include directives.
 
     See the :py:class:`insights.core.ConfigComponent` class for example usage.

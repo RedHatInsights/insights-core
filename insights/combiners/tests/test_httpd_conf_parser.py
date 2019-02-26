@@ -1,4 +1,4 @@
-from insights.configtree import first, last  # noqa: F401
+from insights.parsr.query import first, last  # noqa: F401
 from insights.combiners.httpd_conf import _HttpdConf
 from insights.tests import context_wrap
 

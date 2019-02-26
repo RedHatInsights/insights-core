@@ -112,8 +112,8 @@ class Lift(Boolean):
 class CaselessLift(Lift):
     def test(self, lhs):
         if isinstance(lhs, str):
-            return super().test(lhs.lower())
-        return super().test(lhs)
+            return super(CaselessLift, self).test(lhs.lower())
+        return super(CaselessLift, self).test(lhs)
 
 
 def lift(func, ignore_case=False):

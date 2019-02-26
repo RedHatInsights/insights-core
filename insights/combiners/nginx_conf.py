@@ -24,7 +24,7 @@ from insights.specs import Specs
 
 class EmptyQuotedString(Parser):
     def __init__(self, chars):
-        super().__init__()
+        super(EmptyQuotedString, self).__init__()
         parser = Char("'") >> String(set(chars) - set("'"), "'", 0) << Char("'")
         self.add_child(parser)
 
