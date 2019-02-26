@@ -12,9 +12,9 @@ from insights.core.spec_factory import ContentProvider, SerializedRawOutputProvi
 from insights.util import fs
 
 
-class KubeOutputProvider(ContentProvider):
+class OpenshiftOutputProvider(ContentProvider):
     def __init__(self, client, **client_kwargs):
-        super(KubeOutputProvider, self).__init__()
+        super(OpenshiftOutputProvider, self).__init__()
         name = "%s/%s" % (client_kwargs["api_version"], client_kwargs["kind"])
         self.gvk = name.split("/")
         self.relative_path = name
@@ -37,8 +37,8 @@ class KubeOutputProvider(ContentProvider):
         self._content = None
 
 
-@serializer(KubeOutputProvider)
-def serialize_kube_output(obj, root):
+@serializer(OpenshiftOutputProvider)
+def serialize_openshift_output(obj, root):
     rel = os.path.join("k8s", *obj.gvk)
     dst = os.path.join(root, rel)
     fs.ensure_path(os.path.dirname(dst))
@@ -46,19 +46,19 @@ def serialize_kube_output(obj, root):
     return {"relative_path": rel}
 
 
-@deserializer(KubeOutputProvider)
-def deserialize_kube_output(_type, data, root):
+@deserializer(OpenshiftOutputProvider)
+def deserialize_openshift_output(_type, data, root):
     rel = data["relative_path"]
     res = SerializedRawOutputProvider(rel, root)
     return res
 
 
-class KubeContext(ExecutionContext):
+class OpenshiftContext(ExecutionContext):
     pass
 
 
-@component(KubeContext)
-class KubeClient(object):
+@component(OpenshiftContext)
+class OpenshiftClient(object):
     def __init__(self, ctx=None, cfg=None):
         cfg = cfg or os.environ.get("KUBECONFIG")
         if cfg:
@@ -72,15 +72,15 @@ class KubeClient(object):
         self.k8s = DynamicClient(k8s_client)  # stole this from config.new_client_from_config
 
 
-class kube_resource(object):
+class openshift_resource(object):
     def __init__(self, kind, api_version="v1", **kwargs):
         # encode group into the api_version string if necessary
         self.client_kwargs = kwargs
         self.client_kwargs["kind"] = kind
         self.client_kwargs["api_version"] = api_version
         self.__name__ = self.__class__.__name__
-        datasource(KubeClient)(self)
+        datasource(OpenshiftClient)(self)
 
     def __call__(self, broker):
-        client = broker[KubeClient]
-        return KubeOutputProvider(client, **self.client_kwargs)
+        client = broker[OpenshiftClient]
+        return OpenshiftOutputProvider(client, **self.client_kwargs)
