@@ -1,6 +1,6 @@
 import doctest
-
-from insights.parsers import virsh_list_all
+import pytest
+from insights.parsers import virsh_list_all, SkipException
 from insights.tests import context_wrap
 
 
@@ -30,6 +30,10 @@ OUTPUT = """
  -     RHOSP10                        shut off
 """.strip()
 
+VIRSH_LIST_CURRUPT_DATA = """
+foo bar
+""".strip()
+
 
 def test_virsh_output():
     output = virsh_list_all.VirshListAll(context_wrap(OUTPUT))
@@ -57,6 +61,12 @@ def test_virsh_output_blank():
     assert output.cols == []
     assert output.keywords == []
     assert output.get_vm_state('NORHEL') is None
+
+
+def test_virsh_output_currupt_data():
+    with pytest.raises(SkipException) as ex:
+        virsh_list_all.VirshListAll(context_wrap(VIRSH_LIST_CURRUPT_DATA))
+    assert "Line containing 'Id,Name,State' was not found in table" in str(ex)
 
 
 def test_virsh_list_all_documentation():

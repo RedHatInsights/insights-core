@@ -4,7 +4,7 @@
 This module provides VM status using output of command ``virsh --readonly list --all``.
 """
 from collections import namedtuple
-
+from insights.parsers import SkipException
 from insights.specs import Specs
 from .. import CommandParser, parser
 from . import parse_fixed_table, keyword_search
@@ -79,14 +79,17 @@ class VirshListAll(CommandParser):
         if not content:
             return
 
-        self.cols = parse_fixed_table(content,
-                                      heading_ignore=['Id', 'Name', 'State'],
-                                      header_substitute=[('Id', 'id'), ('Name', 'name'), ('State', 'state')])[1:]  # noqa
-        self._cleanup()
+        try:
+            self.cols = parse_fixed_table(content,
+                                          heading_ignore=['Id', 'Name', 'State'],
+                                          header_substitute=[('Id', 'id'), ('Name', 'name'), ('State', 'state')])[1:]  # noqa
+            self._cleanup()
 
-        for item in self.cols:
-            self.fields.append(self.keyvalue(item['name'], item['state'], item['id'], item['name'].lower()))  # noqa
-        self.keywords = [name.name_lower for name in self.fields]
+            for item in self.cols:
+                self.fields.append(self.keyvalue(item['name'], item['state'], item['id'], item['name'].lower()))  # noqa
+            self.keywords = [name.name_lower for name in self.fields]
+        except ValueError as err:
+            raise SkipException(err)
 
     def __contains__(self, keyword):
         return keyword.lower() in self.keywords
