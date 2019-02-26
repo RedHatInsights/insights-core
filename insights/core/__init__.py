@@ -10,8 +10,9 @@ import yaml
 import six
 from fnmatch import fnmatch
 
-from insights.configtree import from_dict, iniconfig, Root, select, first
-from insights.configtree import Directive, SearchResult, Section
+from insights.configtree import iniconfig
+from insights.parsr.query import (Directive, Entry, from_dict, Result, Section,
+                                  compile_queries)
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException, SkipException
@@ -131,12 +132,13 @@ def find_main(confs, name):
 
 def flatten(docs, pred):
     seen = set()
+    pred = compile_queries(pred)
 
     def inner(children):
         results = []
         for c in children:
-            if select(pred)([c]) and c.children:
-                name = c.value
+            if pred([c]) and c.children:
+                name = c.string_value
                 if name in seen:
                     msg = "Configuration contains recursive includes: %s" % name
                     raise Exception(msg)
@@ -263,34 +265,22 @@ class ConfigComponent(object):
         """
         return self.doc.select(*queries, **kwargs)
 
-    def find(self, *queries, **kwargs):
+    def find(self, *queries, roots=False):
         """
-        Finds the first result found anywhere in the configuration. Pass
-        `one=last` for the last result. Returns `None` if no results are found.
+        Finds matching results anywhere in the configuration
         """
-        kwargs["deep"] = True
-        kwargs["roots"] = False
-        if "one" not in kwargs:
-            kwargs["one"] = first
-        return self.select(*queries, **kwargs)
-
-    def find_all(self, *queries):
-        """
-        Find all results matching the query anywhere in the configuration.
-        Returns an empty `SearchResult` if no results are found.
-        """
-        return self.select(*queries, deep=True, roots=False)
+        return self.select(*queries, deep=True, roots=roots)
 
     def _children_of_type(self, t):
         return [c for c in self.doc.children if isinstance(c, t)]
 
     @property
     def sections(self):
-        return SearchResult(children=self._children_of_type(Section))
+        return Result(children=self._children_of_type(Section))
 
     @property
     def directives(self):
-        return SearchResult(children=self._children_of_type(Directive))
+        return Result(children=self._children_of_type(Directive))
 
     def __getitem__(self, query):
         """
@@ -333,7 +323,7 @@ class ConfigComponent(object):
         return iter(self.doc)
 
     def __repr__(self):
-        return str(self.doc)
+        return repr(self.doc)
 
     def __str__(self):
         return self.__repr__()
@@ -353,7 +343,7 @@ class ConfigParser(Parser, ConfigComponent):
         self.doc = self.parse_doc(content)
 
     def parse_doc(self, content):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def lineat(self, pos):
         return self.content[pos] if pos is not None else None
@@ -373,8 +363,8 @@ class ConfigCombiner(ConfigComponent):
         # Set the children of all include directives to the contents of the
         # included configs
         for conf in confs:
-            for node in conf.doc.select(include_finder, deep=True, roots=False):
-                pattern = node.value
+            for node in conf.find(include_finder):
+                pattern = node.string_value
                 if not pattern.startswith("/"):
                     pattern = os.path.join(server_root, pattern)
                 includes = self.find_matches(confs, pattern)
@@ -382,7 +372,7 @@ class ConfigCombiner(ConfigComponent):
                     node.children.extend(inc.doc.children)
 
         # flatten all content from nested includes into a main doc
-        self.doc = Root(children=flatten(self.main.doc.children, include_finder))
+        self.doc = Entry(children=flatten(self.main.doc.children, include_finder))
 
     def find_matches(self, confs, pattern):
         results = [c for c in confs if fnmatch(c.file_path, pattern)]

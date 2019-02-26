@@ -1,12 +1,5 @@
-import pytest
+from parsr.examples.nginx_conf import loads
 
-from insights.parsr.query import startswith
-from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
-from insights.tests import context_wrap
-from insights.parsers import SkipException
-
-# test files from
-# https://www.nginx.com/resources/wiki/start/topics/examples/full/
 
 NGINX_CONF = r"""
 user       www www;  ## Default: nobody
@@ -78,8 +71,47 @@ http {
       proxy_pass      http://big_server_com;
     }
   }
-}
-""".strip()
+}"""
+
+
+PROXY_CONF = """
+proxy_redirect          off;
+proxy_set_header        Host            $host;
+proxy_set_header        X-Real-IP       $remote_addr;
+proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+client_max_body_size    10m;
+client_body_buffer_size 128k;
+proxy_connect_timeout   90;
+proxy_send_timeout      90;
+proxy_read_timeout      90;
+proxy_buffers           32 4k;
+"""
+
+
+FAST_CGI = """
+fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
+fastcgi_param  QUERY_STRING       $query_string;
+fastcgi_param  REQUEST_METHOD     $request_method;
+fastcgi_param  CONTENT_TYPE       $content_type;
+fastcgi_param  CONTENT_LENGTH     $content_length;
+fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
+fastcgi_param  REQUEST_URI        $request_uri;
+fastcgi_param  DOCUMENT_URI       $document_uri;
+fastcgi_param  DOCUMENT_ROOT      $document_root;
+fastcgi_param  SERVER_PROTOCOL    $server_protocol;
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
+fastcgi_param  REMOTE_ADDR        $remote_addr;
+fastcgi_param  REMOTE_PORT        $remote_port;
+fastcgi_param  SERVER_ADDR        $server_addr;
+fastcgi_param  SERVER_PORT        $server_port;
+fastcgi_param  SERVER_NAME        $server_name;
+
+fastcgi_index  index.php;
+
+fastcgi_param  REDIRECT_STATUS    200;
+"""
+
 
 MIME_TYPES = """
 types {
@@ -130,91 +162,22 @@ types {
   video/x-ms-asf                        asx asf;
   video/x-mng                           mng;
 }
-""".strip()
-
-PROXY_CONF = """
-proxy_redirect          off;
-proxy_set_header        Host            $host;
-proxy_set_header        X-Real-IP       $remote_addr;
-proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-client_max_body_size    10m;
-client_body_buffer_size 128k;
-proxy_connect_timeout   90;
-proxy_send_timeout      90;
-proxy_read_timeout      90;
-proxy_buffers           32 4k;
-""".strip()
-
-FASTCGI_CONF = """
-fastcgi_param  SCRIPT_FILENAME    $document_root$fastcgi_script_name;
-fastcgi_param  QUERY_STRING       $query_string;
-fastcgi_param  REQUEST_METHOD     $request_method;
-fastcgi_param  CONTENT_TYPE       $content_type;
-fastcgi_param  CONTENT_LENGTH     $content_length;
-fastcgi_param  SCRIPT_NAME        $fastcgi_script_name;
-fastcgi_param  REQUEST_URI        $request_uri;
-fastcgi_param  DOCUMENT_URI       $document_uri;
-fastcgi_param  DOCUMENT_ROOT      $document_root;
-fastcgi_param  SERVER_PROTOCOL    $server_protocol;
-fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
-fastcgi_param  SERVER_SOFTWARE    nginx/$nginx_version;
-fastcgi_param  REMOTE_ADDR        $remote_addr;
-fastcgi_param  REMOTE_PORT        $remote_port;
-fastcgi_param  SERVER_ADDR        $server_addr;
-fastcgi_param  SERVER_PORT        $server_port;
-fastcgi_param  SERVER_NAME        $server_name;
-
-fastcgi_index  index.php;
-
-fastcgi_param  REDIRECT_STATUS    200;
-""".strip()
+"""
 
 
-def test_nginx_includes():
-    nginx_conf = context_wrap(NGINX_CONF, path="/etc/nginx/nginx.conf")
-    mime_types_conf = context_wrap(MIME_TYPES, path="/etc/nginx/conf/mime.types")
-    proxy_conf = context_wrap(PROXY_CONF, path="/etc/nginx/proxy.conf")
-    fastcgi_conf = context_wrap(FASTCGI_CONF, path="/etc/nginx/fastcgi.conf")
-
-    # individual parsers
-    main = _NginxConf(nginx_conf)
-    mime_types = _NginxConf(mime_types_conf)
-    proxy = _NginxConf(proxy_conf)
-    fastcgi = _NginxConf(fastcgi_conf)
-
-    # combine them
-    nginx = NginxConfTree([main, mime_types, proxy, fastcgi])
-
-    # test /etc/nginx/nginx.conf
-    assert nginx["events"]["worker_connections"][0].value == 4096
-
-    # test inclusion of conf/mime.types (note relative path)
-    text = nginx["http"]["types"][startswith("text/")]
-    assert len(text) == 6
-
-    # test inclusion of /etc/nginx/proxy.conf
-    assert nginx.find("proxy_send_timeout").value == 90
-
-    # test inclusion of /etc/nginx/fastcgi.conf
-    assert nginx.find("fastcgi_pass").value == "127.0.0.1:1025"
-    actual = nginx.find(("fastcgi_param", "GATEWAY_INTERFACE"))[0].attrs
-    expected = ["GATEWAY_INTERFACE", "CGI/1.1"]
-    assert actual == expected
+def test_nginx_conf():
+    assert len(loads(NGINX_CONF)) == 7
 
 
-def test_nginx_recursive_includes():
-    # the content for both of these is the same to cause recursive include
-    nginx_conf = context_wrap(NGINX_CONF, path="/etc/nginx/nginx.conf")
-    mime_types_conf = context_wrap(NGINX_CONF, path="/etc/nginx/conf/mime.types")
-
-    main = _NginxConf(nginx_conf)
-    mime_types = _NginxConf(mime_types_conf)
-
-    with pytest.raises(Exception):
-        NginxConfTree([main, mime_types])
+def test_nginx_proxy():
+    assert len(loads(PROXY_CONF)) == 10
 
 
-def test_nginx_empty():
-    nginx_conf = context_wrap('', path="/etc/nginx/nginx.conf")
-    with pytest.raises(SkipException):
-        assert _NginxConf(nginx_conf) is None
+def test_nginx_fastcgi():
+    assert len(loads(FAST_CGI)) == 19
+
+
+def test_nginx_mime_types():
+    res = loads(MIME_TYPES)
+    assert len(res) == 1
+    assert len(res[0]) == 46
