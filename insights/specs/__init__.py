@@ -444,6 +444,7 @@ class Specs(SpecSet):
     spfile_ora = RegistryPoint(multi_output=True)
     ssh_config = RegistryPoint(filterable=True)
     ssh_foreman_config = RegistryPoint(filterable=True)
+    ssh_foreman_proxy_config = RegistryPoint(filterable=True)
     sshd_config_perms = RegistryPoint()
     sshd_config = RegistryPoint(filterable=True)
     ss = RegistryPoint()
