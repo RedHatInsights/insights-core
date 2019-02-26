@@ -1,6 +1,6 @@
 """
-VDSMLog - file ``/var/log/vdsm/vdsm.log``
-=========================================
+VDSMLog - file ``/var/log/vdsm/vdsm.log`` and ``/var/log/vdsm/import/import-*.log``
+===================================================================================
 """
 
 from insights import LogFileOutput, parser
@@ -156,3 +156,59 @@ class VDSMLog(LogFileOutput):
                     except:
                         pass
                 yield fields
+
+
+@parser(Specs.vdsm_import_log)
+class VDSMImportLog(LogFileOutput):
+    """Parser for the log file detailing virtual machine imports.
+
+    Sample log file::
+
+        [    0.2] preparing for copy
+        [    0.2] Copying disk 1/1 to /rhev/data-center/958ca292-9126/f524d2ba-155a/images/502f5598-335d-/d4b140c8-9cd5
+        [    0.0] >>> source, dest, and storage-type have different lengths
+
+    Examples::
+
+        >>> log = vdsm_import_logs.get('preparing for copy')
+        >>> len(log)
+        1
+        >>> log[0].get('raw_message', None)
+        '[    0.2] preparing for copy'
+        >>> log[0].get('vm_uuid', None)              # file: import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log
+        '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+        >>> log[0].get('timestamp', None)
+        datetime.datetime(2018, 1, 30, 15, 48, 07)
+    """
+    time_format = '%Y%m%dT%H%M%S'
+
+    def parse_content(self, content):
+        """Parse ``import-@UUID-@datetime.log`` log file.
+
+        Attributes:
+            vm_uuid (str): UUID of imported VM
+
+            datetime (datetime): Date and time that import began.
+        """
+        super(VDSMImportLog, self).parse_content(content)
+        splited_file_name = self.file_name.split('-')
+        self.vm_uuid = '-'.join(splited_file_name[1:-1])
+        self.datetime = splited_file_name[-1].replace('.log', '')
+
+    def _parse_line(self, line):
+        """Parse line into fields.
+
+        Dictionary with following keys:
+
+           raw_message (str): line
+           vm_uuid (str): UUID of imported VM.
+           timestamp (datetime): Timestamp that import began.
+        """
+        line_info = {'raw_message': line, 'vm_uuid': self.vm_uuid}
+
+        try:
+            line_info['timestamp'] = datetime.strptime(self.datetime, self.time_format)
+        except:
+            pass
+
+        return line_info

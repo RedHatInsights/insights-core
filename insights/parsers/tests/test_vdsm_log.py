@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from insights.parsers.vdsm_log import VDSMLog
+from insights.parsers.vdsm_log import VDSMLog, VDSMImportLog
 from insights.tests import context_wrap
 
 
@@ -282,3 +282,30 @@ def test_vdsm_version_4_log():
         'logname': 'storage.check',
         'thread': 'check/loop'
     }
+
+
+VDSM_IMPORT_LOGS = """
+[    0.2] preparing for copy
+[    0.2] Copying disk 1/1 to /rhev/data-center/958ca292-9126-41f1-b7eb-2f9931fea2fb/f524d2ba-155a-45c8-b3ab-9e18539d3ef2/images/502f5598-335d-4023-8c01-635d86d129a3/d4b140c8-9cd5-4ad4-bb04-63aebeda808b
+    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (1/100%)    (1/100%)    (1/100%)    (1/100%)    (1/100%)    (2/100%)    (2/100%)    (2/100%)    (2/100%)
+[  546.9] Finishing off
+""".strip()
+
+VDSM_IMPORT_FAILURE_LOGS = """
+[    0.0] >>> source, dest, and storage-type have different lengths
+""".strip()
+
+
+def test_vdsm_import_log():
+    vdsm_import1 = context_wrap(VDSM_IMPORT_LOGS, path='var/log/vdsm/import/import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log')
+    result = VDSMImportLog(vdsm_import1)
+    log = result.get('preparing for copy')
+    assert len(log) == 1
+    assert log[0].get('raw_message') == '[    0.2] preparing for copy'
+    assert log[0].get('vm_uuid') == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+
+    vdsm_import2 = context_wrap(VDSM_IMPORT_FAILURE_LOGS, path='var/log/vdsm/import/import-3a51988d-579b-42d5-9af5-d48decc85fe4-20180201T082836.log')
+    output = VDSMImportLog(vdsm_import2)
+    log = output.get('storage-type have different lengths')
+    assert log[0].get('vm_uuid') == '3a51988d-579b-42d5-9af5-d48decc85fe4'
+    assert log[0].get('timestamp') == datetime(2018, 2, 1, 8, 28, 36)
