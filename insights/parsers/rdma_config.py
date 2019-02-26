@@ -2,13 +2,14 @@
 RdmaConfig - file ``/etc/rdma/rdma.conf``
 =========================================
 """
-from .. import get_active_lines, Parser, parser, LegacyItemAccess
+from .. import get_active_lines, Parser, parser
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
+from insights.parsers import SkipException
 
 
 @parser(Specs.rdma_conf)
-class RdmaConfig(Parser, LegacyItemAccess):
+class RdmaConfig(Parser):
     """
     This class will parse the output of file ``/etc/rdma/rdma.conf``.
 
@@ -47,15 +48,17 @@ class RdmaConfig(Parser, LegacyItemAccess):
         FIXUP_MTRR_REGS=no
 
     Examples:
-        >>> rdma_conf = shared[RdmaConfig]
         >>> rdma_conf['IPOIB_LOAD']
         'yes'
         >>> rdma_conf["SRP_LOAD"]
         'yes'
         >>> rdma_conf["SVCRDMA_LOAD"]
         'no'
-
     """
 
     def parse_content(self, content):
         self.data = split_kv_pairs(get_active_lines(content))
+
+        _content = get_active_lines(content)
+        if not _content:
+            raise SkipException("Empty content.")
