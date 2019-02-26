@@ -1,6 +1,6 @@
 import doctest
-
-from insights.parsers import ceph_conf
+import pytest
+from insights.parsers import ceph_conf, SkipException
 from insights.tests import context_wrap
 
 
@@ -40,6 +40,11 @@ rgw_keystone_admin_467fE = Xqzta6dYhPHGHGEFaGnctoken
 rgw_keystone_accepted_roles = admin,_member_,Member
 rgw_swift_account_in_url = true
 '''
+
+
+def test_ceph_conf_empty():
+    with pytest.raises(SkipException):
+        assert ceph_conf.CephConf(context_wrap('')) is None
 
 
 def test_ceph_conf():

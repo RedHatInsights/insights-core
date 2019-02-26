@@ -3,6 +3,7 @@ import pytest
 from insights.configtree import startswith
 from insights.combiners.nginx_conf import _NginxConf, NginxConfTree
 from insights.tests import context_wrap
+from insights.parsers import SkipException
 
 # test files from
 # https://www.nginx.com/resources/wiki/start/topics/examples/full/
@@ -211,3 +212,9 @@ def test_nginx_recursive_includes():
 
     with pytest.raises(Exception):
         NginxConfTree([main, mime_types])
+
+
+def test_nginx_empty():
+    nginx_conf = context_wrap('', path="/etc/nginx/nginx.conf")
+    with pytest.raises(SkipException):
+        assert _NginxConf(nginx_conf) is None
