@@ -44,8 +44,8 @@ def test_syslog_format():
     output.seek(0)
     data = output.read()
     assert SL_MSG in data
-    
-    
+
+
 def test_yaml_format():
     broker = dr.Broker()
     output = StringIO()
@@ -55,4 +55,3 @@ def test_yaml_format():
     data = output.read()
     assert "foo" in data
     assert "bar" in data
-    
