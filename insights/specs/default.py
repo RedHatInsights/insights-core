@@ -341,7 +341,7 @@ class DefaultSpecs(Specs):
                 httpd_open_files = broker[HostContext].shell_out(lsof_cmds)
                 for line in httpd_open_files.split("\n"):
                     items = line.split()
-                    if len(items) > 8 and item[8].startswith(tuple(nfs_mounts)):
+                    if len(items) > 8 and items[8].startswith(tuple(nfs_mounts)):
                         open_nfs_files += 1
                 return {"http_ids": httpd_pids, "nfs_mounts": nfs_mounts, "open_nfs_files": open_nfs_files}
 
