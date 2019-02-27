@@ -2,14 +2,14 @@
 RdmaConfig - file ``/etc/rdma/rdma.conf``
 =========================================
 """
-from .. import get_active_lines, Parser, parser
+from .. import get_active_lines, Parser, parser, LegacyItemAccess
 from insights.parsers import split_kv_pairs
 from insights.specs import Specs
 from insights.parsers import SkipException
 
 
 @parser(Specs.rdma_conf)
-class RdmaConfig(Parser):
+class RdmaConfig(Parser, LegacyItemAccess):
     """
     This class will parse the output of file ``/etc/rdma/rdma.conf``.
 

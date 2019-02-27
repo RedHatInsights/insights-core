@@ -61,7 +61,7 @@ RDMA_CONFIG_INPUT_EMPTY = """
 
 
 def test_rdma_config():
-    rdma_config = scc.RdmaConfig(context_wrap(RDMA_CONFIG)).data
+    rdma_config = scc.RdmaConfig(context_wrap(RDMA_CONFIG))
     assert rdma_config["IPOIB_LOAD"] == 'yes'
     assert rdma_config["SRP_LOAD"] == 'yes'
     assert rdma_config["SVCRDMA_LOAD"] == 'no'
@@ -74,7 +74,7 @@ def test_rdma_config_empty():
 
 def test_rdma_config_doc():
     env = {
-            'rdma_conf': scc.RdmaConfig(context_wrap(RDMA_CONFIG)).data,
+            'rdma_conf': scc.RdmaConfig(context_wrap(RDMA_CONFIG)),
           }
     failed, total = doctest.testmod(scc, globs=env)
     assert failed == 0
