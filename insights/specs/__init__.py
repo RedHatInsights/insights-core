@@ -396,6 +396,7 @@ class Specs(SpecSet):
     rabbitmq_startup_log = RegistryPoint(filterable=True)
     rabbitmq_users = RegistryPoint()
     rc_local = RegistryPoint()
+    rdma_conf = RegistryPoint()
     redhat_release = RegistryPoint()
     resolv_conf = RegistryPoint()
     rhev_data_center = RegistryPoint()
