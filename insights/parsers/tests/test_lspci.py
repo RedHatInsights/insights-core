@@ -204,8 +204,18 @@ LSPCI_DRIVER_DOC = """
         Kernel modules: ixgbe
 """.strip()
 
+LSPCI_OUTPUT_WITH_BAD_LINES = """
+03:00.0 Network controller: Intel Corporation Wireless 7260 (rev bb)
+        Subsystem: Intel Corporation Dual Band Wireless-AC 7260
+
+        Kernel driver in use: iwlwifi
+# a comment
+        Kernel modules: iwlwifi
+""".strip()
+
 
 def test_lspci():
+    LsPci.token_scan('centrino', 'Centrino')
     lspci_0 = LsPci(context_wrap(LSPCI_0))
     assert [i['raw_message'] for i in lspci_0.get("Intel Corporation")] == INTEL.splitlines()
     assert len(lspci_0.get("Network controller")) == 1
@@ -236,6 +246,10 @@ def test_lspci_driver():
     lspci_obj = LsPci(context_wrap(LSPCI_DRIVER_DETAILS_3))
     assert len(lspci_obj.data) == 0
     assert len(lspci_obj.pci_dev_list) == 0
+
+    output = LsPci(context_wrap(LSPCI_OUTPUT_WITH_BAD_LINES))
+    assert len(output.data) == 1
+    assert len(output.pci_dev_list) == 1
 
 
 def test_doc_examples():

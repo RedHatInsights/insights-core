@@ -1,6 +1,6 @@
 import pytest
 from insights.configtree import first, last
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 from insights.parsers import multipath_conf
 from insights.tests import context_wrap
 
@@ -92,7 +92,17 @@ def test_multipath_conf_trees():
         assert conf["blacklist"]["device"]["product"][last].value == "*"
 
 
+def test_empty_multipath_conf_tree():
+    with pytest.raises(SkipException) as e_info:
+        multipath_conf.MultipathConfTree(context_wrap(INPUT_EMPTY))
+    assert "Empty content." in str(e_info.value)
+
+    with pytest.raises(SkipException) as e_info:
+        multipath_conf.MultipathConfTreeInitramfs(context_wrap(INPUT_EMPTY))
+    assert "Empty content." in str(e_info.value)
+
+
 def test_empty_multipath_conf():
-    with pytest.raises(ParseException) as e_info:
+    with pytest.raises(SkipException) as e_info:
         multipath_conf.MultipathConfParser(context_wrap(INPUT_EMPTY))
     assert "Empty content." in str(e_info.value)

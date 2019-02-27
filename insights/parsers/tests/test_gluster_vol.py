@@ -133,6 +133,7 @@ def test_gluster_multiple_volume_options():
     assert data['nfs.disable'] == 'on'
 # --------------------------------------END------------------------------------
 
+
 # ---------------------------Gluster Vol Status Tests-----------------------------
 VOL_STATUS_BAD = """
 """.strip()

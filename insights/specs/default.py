@@ -8,6 +8,7 @@ this file with the same `name` keyword argument. This allows overriding the
 data sources that standard Insights `Parsers` resolve against.
 """
 
+import logging
 import os
 import re
 
@@ -17,13 +18,28 @@ from insights.core.context import HostContext
 from insights.core.context import HostArchiveContext
 from insights.core.context import OpenShiftContext
 
+from insights.core.dr import SkipComponent
 from insights.core.plugins import datasource
-from insights.core.spec_factory import CommandOutputProvider, ContentException, RawFileProvider
+from insights.core.spec_factory import CommandOutputProvider, ContentException, DatasourceProvider, RawFileProvider
 from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
 from insights.specs import Specs
+
+from grp import getgrgid
+from os import stat
+from pwd import getpwuid
+
+
+logger = logging.getLogger(__name__)
+
+
+def get_owner(filename):
+    st = stat(filename)
+    name = getpwuid(st.st_uid).pw_name
+    group = getgrgid(st.st_gid).gr_name
+    return (name, group)
 
 
 def _make_rpm_formatter(fmt=None):
@@ -100,6 +116,16 @@ class DefaultSpecs(Specs):
     ceph_config_show = foreach_execute(ceph_socket_files, "/usr/bin/ceph daemon %s config show")
     ceph_df_detail = simple_command("/usr/bin/ceph df detail -f json-pretty")
     ceph_health_detail = simple_command("/usr/bin/ceph health detail -f json-pretty")
+
+    @datasource(ps_auxww)
+    def is_ceph_monitor(broker):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        findall = re.compile(r"ceph\-mon").findall
+        if any(findall(p) for p in ps):
+            return True
+        raise SkipComponent()
+
+    ceph_insights = simple_command("/usr/bin/ceph insights", deps=[is_ceph_monitor])
     ceph_log = simple_file("/var/log/ceph/ceph.log")
     ceph_osd_dump = simple_command("/usr/bin/ceph osd dump -f json-pretty")
     ceph_osd_df = simple_command("/usr/bin/ceph osd df -f json-pretty")
@@ -137,6 +163,9 @@ class DefaultSpecs(Specs):
     cpuinfo = first_file(["/proc/cpuinfo", "/cpuinfo"])
     cpuinfo_max_freq = simple_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq")
     cpuset_cpus = simple_file("/sys/fs/cgroup/cpuset/cpuset.cpus")
+    crypto_policies_config = simple_file("/etc/crypto-policies/config")
+    crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
+    crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
@@ -155,6 +184,7 @@ class DefaultSpecs(Specs):
     dmesg = simple_command("/bin/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
+    dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -561,6 +591,28 @@ class DefaultSpecs(Specs):
     rc_local = simple_file("/etc/rc.d/rc.local")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
+
+    @datasource(HostContext)
+    def rhev_data_center(broker):
+        import json
+        root = broker[HostContext].root
+        relative_path = "rhev/data-center"
+        path = os.path.join(root, relative_path)
+        bad_apples = []
+        for dirpath, dirnames, filenames in os.walk(path):
+            for p in dirnames + filenames:
+                tmp = os.path.join(dirpath, p)
+                try:
+                    name, group = get_owner(tmp)
+                    good = ("vdsm", "kvm")
+                    if (name, group) != good:
+                        bad_apples.append({"name": name, "group": group, "path": tmp})
+                except:
+                    logger.error(tmp)
+        if bad_apples:
+            return DatasourceProvider(content=json.dumps(bad_apples), relative_path=relative_path)
+        raise SkipComponent()
+
     rhv_log_collector_analyzer = simple_command("rhv-log-collector-analyzer --json")
     rhn_charsets = simple_command("/usr/bin/rhn-charsets")
     rhn_conf = first_file(["/etc/rhn/rhn.conf", "/conf/rhn/rhn/rhn.conf"])
@@ -583,29 +635,67 @@ class DefaultSpecs(Specs):
     rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
-    saphostctl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
+    saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
 
-    @datasource(saphostctl_listinstances, hostname, context=HostContext)
-    def sap_hana_sid(broker):
+    @datasource(saphostctrl_listinstances, hostname)
+    def sap_sid_nr(broker):
         """
-        Command: Get the SID for running "HDB version".
+        Get the SID and Instance Number
 
-        Typical output of saphostctl_listinstances::
+        Typical output of saphostctrl_listinstances::
         # /usr/sap/hostctrl/exe/saphostctrl -function ListInstances
         Inst Info : SR1 - 01 - liuxc-rhel7-hana-ent - 749, patch 418, changelist 1816226
 
+        Returns:
+            (list): List of tuple of SID and Instance Number.
+
         """
-        hana_ins = broker[DefaultSpecs.saphostctl_listinstances].content
+        insts = broker[DefaultSpecs.saphostctrl_listinstances].content
         hn = broker[DefaultSpecs.hostname].content[0].split('.')[0].strip()
         results = set()
-        for ins in hana_ins:
+        for ins in insts:
             ins_splits = ins.split(' - ')
+            # Local Instance
             if ins_splits[2].strip() == hn:
-                results.add(ins_splits[0].split()[-1].lower())
+                # (sid, nr)
+                results.add((ins_splits[0].split()[-1].lower(), ins_splits[1].strip()))
         return list(results)
 
-    sap_hdb_version = foreach_execute(sap_hana_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
+    @datasource(sap_sid_nr)
+    def sap_sid(broker):
+        """
+        Get the SID
+
+        Returns:
+            (list): List of SID.
+
+        """
+        return list(set(sn[0] for sn in broker[DefaultSpecs.sap_sid_nr]))
+
+    sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
+
+    @datasource(sap_sid_nr)
+    def sapcontrol_getsystemupdatelist(broker):
+        import json
+        s_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
+        relative_path = "sudo_-iu_sidadm_sapcontrol_-nr__-function_GetSystemUpdateList"
+        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
+        line_set = set()
+        results = list()
+        for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
+            out = broker[HostContext].shell_out(s_cmd.format(sid, nr))
+            if header in out:
+                body = out[out.index(header) + 1:]  # remove the header
+                line_set.update(body)
+        header_sp = [i.strip() for i in header.split(',')]
+        for l in line_set:
+            l_sp = [i.strip() for i in l.split(',')]
+            results.append(dict(zip(header_sp, l_sp)))
+        if results:
+            return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
+        raise SkipComponent()
+
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
@@ -615,6 +705,8 @@ class DefaultSpecs(Specs):
     scsi = simple_file("/proc/scsi/scsi")
     scsi_eh_deadline = glob_file('/sys/class/scsi_host/host[0-9]*/eh_deadline')
     scsi_fwver = glob_file('/sys/class/scsi_host/host[0-9]*/fwrev')
+    sctp_asc = simple_file('/proc/net/sctp/assocs')
+    sctp_eps = simple_file('/proc/net/sctp/eps')
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
@@ -636,6 +728,7 @@ class DefaultSpecs(Specs):
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
+    ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
@@ -654,6 +747,7 @@ class DefaultSpecs(Specs):
     sysconfig_memcached = first_file(["/var/lib/config-data/puppet-generated/memcached/etc/sysconfig/memcached", "/etc/sysconfig/memcached"])
     sysconfig_ntpd = simple_file("/etc/sysconfig/ntpd")
     sysconfig_prelink = simple_file("/etc/sysconfig/prelink")
+    sysconfig_sshd = simple_file("/etc/sysconfig/sshd")
     sysconfig_virt_who = simple_file("/etc/sysconfig/virt-who")
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
@@ -673,6 +767,7 @@ class DefaultSpecs(Specs):
     systemd_logind_conf = simple_file("/etc/systemd/logind.conf")
     systemd_openshift_node = simple_file("/usr/lib/systemd/system/atomic-openshift-node.service")
     systemd_system_conf = simple_file("/etc/systemd/system.conf")
+    systemd_system_origin_accounting = simple_file("/etc/systemd/system.conf.d/origin-accounting.conf")
     systemid = first_of([
         simple_file("/etc/sysconfig/rhn/systemid"),
         simple_file("/conf/rhn/sysconfig/rhn/systemid")

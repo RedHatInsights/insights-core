@@ -79,6 +79,8 @@ def test_df_li():
 
 
 DF_ALP = """
+/bin/df: '/vobs/GEMS': No such file or directory
+/bin/df: '/vobs/NT/TFax': No such file or directory
 Filesystem                           1024-blocks      Used Available Capacity Mounted on
 /dev/mapper/vg_lxcrhel6sat56-lv_root    98571884   4244032  89313940       5% /
 sysfs                                          0         0         0        - /sys
