@@ -8,13 +8,12 @@ http_nfs = """
 """.strip()
 
 
-class TestHttpOpenNFS():
-    def test_http_nfs(self):
-        httpd_nfs_counting = HttpdOnNFSFilesCount(context_wrap(http_nfs))
-        assert len(httpd_nfs_counting.data) == 3
-        assert httpd_nfs_counting.data.get("http_ids") == [1787, 2399]
-        assert httpd_nfs_counting.data.get("nfs_mounts") == ["/data", "/www"]
-        assert httpd_nfs_counting.data.get("open_nfs_files") == 1000
+def test_http_nfs():
+    httpd_nfs_counting = HttpdOnNFSFilesCount(context_wrap(http_nfs))
+    assert len(httpd_nfs_counting.data) == 3
+    assert httpd_nfs_counting.http_ids == [1787, 2399]
+    assert httpd_nfs_counting.nfs_mounts == ["/data", "/www"]
+    assert httpd_nfs_counting.data.get("open_nfs_files") == 1000
 
 
 def test_http_nfs_documentation():

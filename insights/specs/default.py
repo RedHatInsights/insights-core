@@ -319,14 +319,13 @@ class DefaultSpecs(Specs):
         nfs_mounts = [m.mount_point for m in mps if m['mount_options'].get("vers") == "4.0"]
         if nfs_mounts:
             # get all httpd ps
-            out = broker[HostContext].shell_out("pgrep httpd")
-            httpd_pids = out.splits("\n")
+            httpd_pids = broker[HostContext].shell_out("pgrep httpd")
             if httpd_pids:
                 open_nfs_files = 0
                 lsof_cmds = ["lsof -p {}".format(pid) for pid in httpd_pids if pid]
                 # maybe there are thousands open files
                 httpd_open_files = broker[HostContext].shell_out(lsof_cmds)
-                for line in httpd_open_files.split("\n"):
+                for line in httpd_open_files:
                     items = line.split()
                     if len(items) > 8 and items[8].startswith(tuple(nfs_mounts)):
                         open_nfs_files += 1
