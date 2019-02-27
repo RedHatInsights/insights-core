@@ -289,6 +289,19 @@ class VarQemuXML(QemuXML):
           </domain>
         </domstatus>
     """
+    def parse_dom(self):
+        if self.dom is None:
+            return
+        else:
+            domstatus = {}
+            for child in self.dom:
+                if len(child) == 0:
+                    domstatus[child.tag] = child.text
+                else:
+                    domstatus[child.tag] = [c.items() for c in child]
+
+            return domstatus
+
     @property
     def vm_name(self):
         if self.get_elements("./domain/name"):
