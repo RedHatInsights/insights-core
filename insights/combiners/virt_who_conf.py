@@ -55,7 +55,7 @@ class AllVirtWhoConf(object):
 
         [esx_satellite]
         type=esx
-        server=10.72.32.209
+        server=10.0.0.1
         owner=Satellite
         env=Satellite
 
@@ -71,7 +71,7 @@ class AllVirtWhoConf(object):
         >>> all_vw_conf.sm_type
         'sat6'
         >>> all_vw_conf.hypervisors
-        [{'name': 'esx_satellite', 'server': '10.72.32.209',
+        [{'name': 'esx_satellite', 'server': '10.0.0.1',
           'owner': 'Satellite', 'env': 'Satellite', type: 'esx'}]
         >>> all_vw_conf.hypervisor_types
         ['esx']

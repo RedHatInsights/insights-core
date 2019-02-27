@@ -14,7 +14,7 @@ from insights.configtree import from_dict, iniconfig, Root, select, first
 from insights.configtree import Directive, SearchResult, Section
 from insights.contrib.ConfigParser import RawConfigParser
 
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from . import ls_parser
@@ -338,8 +338,13 @@ class ConfigComponent(object):
 class ConfigParser(Parser, ConfigComponent):
     """
     Base Insights component class for Parsers of configuration files.
+
+    Raises:
+        SkipException: When input content is empty.
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException('Empty content.')
         self.content = content
         self.doc = self.parse_doc(content)
 
@@ -508,14 +513,19 @@ class CommandParser(Parser):
     included in the `bad_lines` list a `ContentException` is raised
     """
 
-    bad_lines = ["no such file or directory", "command not found"]
+    __bad_lines = [
+            "no such file or directory",
+            "command not found",
+            "python: No module named",
+    ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
     When adding a new lin to the list make sure text is all lower case.
     """
 
-    def validate_lines(self, results):
+    @staticmethod
+    def validate_lines(results, bad_lines):
         """
         If `results` contains a single line and that line is included
         in the `bad_lines` list, this function returns `False`. If no bad
@@ -531,18 +541,20 @@ class CommandParser(Parser):
 
         if results and len(results) == 1:
             first = results[0]
-            if any(l in first.lower() for l in self.bad_lines):
+            if any(l in first.lower() for l in bad_lines):
                 return False
         return True
 
-    def __init__(self, context):
+    def __init__(self, context, extra_bad_lines=[]):
         """
             This __init__ calls `validate_lines` function to check for bad lines.
             If `validate_lines` returns False, indicating bad line found, a
             ContentException is thrown.
         """
-
-        if not self.validate_lines(context.content):
+        valid_lines = self.validate_lines(context.content, self.__bad_lines)
+        if valid_lines and extra_bad_lines:
+            valid_lines = self.validate_lines(context.content, extra_bad_lines)
+        if not valid_lines:
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
             raise ContentException(name + ": " + first)
@@ -885,7 +897,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         Returns true if any line contains the given text string.
         """
-        return any(s in l for l in self.lines)
+        search_by_expression = self._valid_search(s)
+        return any(search_by_expression(l) for l in self.lines)
 
     def _parse_line(self, line):
         """

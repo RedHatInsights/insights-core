@@ -246,6 +246,7 @@ RHEL4 = "Red Hat Enterprise Linux AS release 4 (Nahant Update 9)"
 RHEL5 = "Red Hat Enterprise Linux Server release 5.11 (Tikanga)"
 RHEL6 = "Red Hat Enterprise Linux Server release 6.5 (Santiago)"
 RHEL7 = "Red Hat Enterprise Linux Server release 7.0 (Maipo)"
+RHEL8 = "Red Hat Enterprise Linux release 8.0 Beta (Ootpa)"
 
 
 def redhat_release(major, minor=""):
@@ -280,6 +281,11 @@ def redhat_release(major, minor=""):
         if minor:
             minor = "" if minor == "0" else " Update %s" % minor
         return "Red Hat Enterprise Linux AS release %s (Nahant%s)" % (major, minor)
+
+    if major == "8":
+        if not minor:
+            minor = "0"
+        return "Red Hat Enterprise Linux release %s.%s Beta (Ootpa)" % (major, minor)
 
     template = "Red Hat Enterprise Linux Server release %s%s (%s)"
     if major == "5":

@@ -58,8 +58,13 @@ class SosSpecs(Specs):
     lsblk = simple_file("sos_commands/block/lsblk")
     lsof = simple_file("lsof")
     lsmod = simple_file("lsmod")
-    lspci = simple_file("lspci")
+    lspci = first_of([
+        simple_file("sos_commands/pci/lspci_-nnvv"),
+        simple_file("sos_commands/pci/lspci_-nvv"),
+        simple_file("sos_commands/pci/lspci")
+    ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
+    ls_dev = simple_file("sos_commands/block/ls_-lanR_.dev")
     lvs = simple_file("sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0")
     mount = simple_file("mount")
     multipath__v4__ll = simple_file("sos_commands/multipath/multipath_-v4_-ll")

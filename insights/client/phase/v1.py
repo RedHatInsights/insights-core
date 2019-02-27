@@ -156,10 +156,6 @@ def post_update(client, config):
         else:
             sys.exit(constants.sig_kill_bad)
 
-    if not config.legacy_upload:
-        logger.debug('Platform upload. Bypassing registration.')
-        return
-
     reg = client.register()
     if reg is None:
         # API unreachable
@@ -180,7 +176,11 @@ def collect_and_output(client, config):
     if config.payload:
         insights_archive = config.payload
     else:
-        insights_archive = client.collect()
+        try:
+            insights_archive = client.collect()
+        except RuntimeError as e:
+            logger.error(e)
+            sys.exit(constants.sig_kill_bad)
         config.content_type = 'application/vnd.redhat.advisor.test+tgz'
 
     if not insights_archive:

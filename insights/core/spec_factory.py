@@ -92,10 +92,9 @@ class ContentProvider(object):
         st = self._stream()
         for l in next(st):
             yield l.rstrip("\n")
-        st.send(None)
 
     def _stream(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     @property
     def path(self):
@@ -124,6 +123,22 @@ class ContentProvider(object):
 
     def __str__(self):
         return self.__unicode__()
+
+
+class DatasourceProvider(ContentProvider):
+    def __init__(self, content, relative_path, root='/', ds=None, ctx=None):
+        super(DatasourceProvider, self).__init__()
+        self.relative_path = relative_path
+        self._content = content if isinstance(content, list) else content.splitlines()
+        self.root = root
+        self.ds = ds
+        self.ctx = ctx
+
+    def _stream(self):
+        """
+        Returns a generator of lines instead of a list of lines.
+        """
+        yield self._content
 
 
 class FileProvider(ContentProvider):
@@ -220,15 +235,14 @@ class TextFileProvider(FileProvider):
         try:
             if self._content:
                 yield self._content
-                raise StopIteration
-
-            args = self.create_args()
-            if args:
-                with streams.connect(*args, env=SAFE_ENV) as s:
-                    yield s
             else:
-                with open(self.path, "rU") as f:  # universal newlines
-                    yield f
+                args = self.create_args()
+                if args:
+                    with streams.connect(*args, env=SAFE_ENV) as s:
+                        yield s
+                else:
+                    with open(self.path, "rU") as f:  # universal newlines
+                        yield f
         except StopIteration:
             raise
         except Exception as ex:
@@ -330,11 +344,10 @@ class CommandOutputProvider(ContentProvider):
         try:
             if self._content:
                 yield self._content
-                raise StopIteration
-
-            args = self.create_args()
-            with self.ctx.connect(*args, env=self.create_env(), timeout=self.timeout) as s:
-                yield s
+            else:
+                args = self.create_args()
+                with self.ctx.connect(*args, env=self.create_env(), timeout=self.timeout) as s:
+                    yield s
         except StopIteration:
             raise
         except Exception as ex:

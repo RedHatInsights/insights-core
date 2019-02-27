@@ -28,7 +28,7 @@ from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
 from .core import YAMLParser, JSONParser, XMLParser, CommandParser  # noqa: F401
 from .core import AttributeDict  # noqa: F401
 from .core import Syslog  # noqa: F401
-from .core.archives import COMPRESSION_TYPES, extract  # noqa: F401
+from .core.archives import COMPRESSION_TYPES, extract, InvalidArchive, InvalidContentType  # noqa: F401
 from .core import dr  # noqa: F401
 from .core.context import ClusterArchiveContext, HostContext, HostArchiveContext, SerializedArchiveContext  # noqa: F401
 from .core.dr import SkipComponent  # noqa: F401
@@ -124,39 +124,57 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
             return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
 
 
-def apply_configs(configs):
+def load_packages(packages):
+    plugins = []
+    for name in packages:
+        if name not in sys.modules:
+            plugins.append(name)
+            dr.load_components(name, continue_on_error=False)
+
+    return plugins
+
+
+def apply_configs(config):
     """
     Configures components. They can be enabled or disabled, have timeouts set
     if applicable, and have metadata customized. Valid keys are name, enabled,
     metadata, and timeout.
 
     Args:
-        configs (list): a list of dictionaries with the following keys:
-            name, enabled, metadata, and timeout. All keys are optional except
-            name.
+        config (list): a list of dictionaries with the following keys:
+            default_component_enabled (bool): default value for whether compoments
+                are enable if not specifically declared in the config section
 
-            name is the prefix or exact name of any loaded component. Any
-            component starting with name will have the associated configuration
-            applied.
+            packages (list): a list of packages to be loaded. These will be in
+                addition to any packages previosly loaded for the `-p` option
 
-            enabled is whether the matching components will execute even if
-            their dependencies are met. Defaults to True.
+            configs:
+                name, enabled, metadata, and timeout. All keys are optional except
+                name.
 
-            timeout sets the class level timeout attribute of any component so
-            long as the attribute already exists.
+                name is the prefix or exact name of any loaded component. Any
+                component starting with name will have the associated configuration
+                applied.
 
-            metadata is any dictionary that you want to attach to the
-            component. The dictionary can be retrieved by the component at
-            runtime.
+                enabled is whether the matching components will execute even if
+                their dependencies are met. Defaults to True.
+
+                timeout sets the class level timeout attribute of any component so
+                long as the attribute already exists.
+
+                metadata is any dictionary that you want to attach to the
+                component. The dictionary can be retrieved by the component at
+                runtime.
     """
+    default_enabled = config.get('default_component_enabled', False)
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
-    for comp_cfg in configs:
-        name = comp_cfg["name"]
+    for comp_cfg in config.get('configs', []):
+        name = comp_cfg.get("name")
         for c in delegate_keys:
             delegate = dr.DELEGATES[c]
             cname = dr.get_name(c)
             if cname.startswith(name):
-                dr.ENABLED[c] = comp_cfg.get("enabled", True)
+                dr.ENABLED[c] = comp_cfg.get("enabled", default_enabled)
                 delegate.metadata.update(comp_cfg.get("metadata", {}))
                 delegate.tags = set(comp_cfg.get("tags", delegate.tags))
                 for k, v in delegate.metadata.items():
@@ -240,7 +258,10 @@ def run(component=None, root=None, print_summary=False,
 
         if args.config:
             with open(args.config) as f:
-                apply_configs(yaml.safe_load(f))
+                config = (yaml.safe_load(f))
+                packages_loaded = load_packages(config.get('packages', []))
+                plugins.extend(packages_loaded)
+                apply_configs(config)
 
         if component is None:
             component = []
@@ -260,17 +281,25 @@ def run(component=None, root=None, print_summary=False,
 
     broker = dr.Broker()
 
-    if formatter:
-        formatter.preprocess(broker)
-        broker = _run(broker, graph, root, context=context, inventory=inventory)
-        formatter.postprocess(broker)
-    elif print_component:
-        broker = _run(broker, graph, root, context=context, inventory=inventory)
-        broker.print_component(print_component)
-    else:
-        broker = _run(broker, graph, root, context=context, inventory=inventory)
+    try:
+        if formatter:
+            formatter.preprocess(broker)
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            formatter.postprocess(broker)
+        elif print_component:
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
+            broker.print_component(print_component)
+        else:
+            broker = _run(broker, graph, root, context=context, inventory=inventory)
 
-    return broker
+        return broker
+    except (InvalidContentType, InvalidArchive):
+        if args and args.archive:
+            path = args.archive
+            msg = "Invalid directory or archive. Did you mean to pass -p {p}?"
+            log.error(msg.format(p=path))
+        else:
+            raise
 
 
 def main():

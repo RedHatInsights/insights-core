@@ -1,4 +1,4 @@
-from ...parsers import saphostctrl, ParseException
+from ...parsers import saphostctrl, ParseException, SkipException
 from ...parsers.saphostctrl import SAPHostCtrlInstances
 from ...tests import context_wrap
 import doctest
@@ -160,9 +160,9 @@ def test_saphostctrl_bad():
         SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD))
     assert "Incorrect line: 'CreationClassName , String'" in str(pe)
 
-    with pytest.raises(ParseException) as pe:
+    with pytest.raises(SkipException) as pe:
         SAPHostCtrlInstances(context_wrap(''))
-    assert "Incorrect content: '[]'" in str(pe)
+    assert "Empty content" in str(pe)
 
     with pytest.raises(ParseException) as pe:
         SAPHostCtrlInstances(context_wrap(SAPHOSTCTRL_HOSTINSTANCES_BAD1))

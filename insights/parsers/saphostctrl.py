@@ -2,8 +2,8 @@
 saphostctrl - Commands ``saphostctrl``
 ======================================
 """
-from .. import parser, CommandParser
-from ..parsers import ParseException
+from insights import parser, CommandParser
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 from insights.core.filters import add_filter
 
@@ -66,8 +66,16 @@ class SAPHostCtrlInstances(CommandParser):
         instances (list): The list of instances found in the cluster output.
         sids (list): The list of SID found in the cluster output.
         types (list): The list of instance types found in the cluster output.
+    Raises:
+        SkipException: When input is empty.
+        ParseException: When input cannot be parsed.
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException("Empty content")
+        if len(content) == 1:
+            raise ParseException("Incorrect content: '{0}'".format(content))
+
         self.data = []
         self.instances = []
         _current_instance = {}
@@ -95,9 +103,6 @@ class SAPHostCtrlInstances(CommandParser):
             # Now save the complete instance
             self.data.append(inst)
             self.instances.append(inst['InstanceName'])
-
-        if len(content) <= 1:
-            raise ParseException("Incorrect content: '{0}'".format(content))
 
         for line in (l.strip() for l in content):
             if line.startswith('******'):
