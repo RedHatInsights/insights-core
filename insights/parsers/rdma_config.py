@@ -57,8 +57,8 @@ class RdmaConfig(Parser):
     """
 
     def parse_content(self, content):
-        self.data = split_kv_pairs(get_active_lines(content))
-
         _content = get_active_lines(content)
         if not _content:
             raise SkipException("Empty content.")
+
+        self.data = split_kv_pairs(_content)
