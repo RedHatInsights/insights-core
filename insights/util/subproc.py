@@ -97,7 +97,7 @@ class Pipeline(object):
         last = len(self.cmds) - 2
         for i, arg in enumerate(self.cmds[1:]):
             if i < last:
-                stdout = Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, STDOUT=PIPE, env=self.env).stdout
+                stdout = Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=PIPE, env=self.env).stdout
             else:
                 return Popen(arg, bufsize=self.bufsize, stdin=stdout, stderr=STDOUT, stdout=out_stream, env=self.env)
 
