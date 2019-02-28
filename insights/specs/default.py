@@ -589,6 +589,7 @@ class DefaultSpecs(Specs):
     rabbitmq_startup_log = simple_file("/var/log/rabbitmq/startup_log")
     rabbitmq_users = simple_command("/usr/sbin/rabbitmqctl list_users")
     rc_local = simple_file("/etc/rc.d/rc.local")
+    rdma_conf = simple_file("/etc/rdma/rdma.conf")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
 
@@ -728,6 +729,7 @@ class DefaultSpecs(Specs):
     ss = simple_command("/usr/sbin/ss -tupna")
     ssh_config = simple_file("/etc/ssh/ssh_config")
     ssh_foreman_config = simple_file("/usr/share/foreman/.ssh/ssh_config")
+    ssh_foreman_proxy_config = simple_file("/usr/share/foreman-proxy/.ssh/ssh_config")
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
