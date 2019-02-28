@@ -1,5 +1,12 @@
 # Change Log
 
+## [insights-core-3.0.80-833](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.80-833) (2019-02-28)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.79-822...insights-core-3.0.80-833)
+
+**Closed issues:**
+
+- insights/util/subproc.py", line 100: An unexpected keyword argument 'STDOUT' [\#1712](https://github.com/RedHatInsights/insights-core/issues/1712)
+
 ## [insights-core-3.0.79-822](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.79-822) (2019-02-21)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.78-807...insights-core-3.0.79-822)
 
@@ -31,7 +38,6 @@
 **Closed issues:**
 
 - Modinfo Parser class should be in Parsers instead of the Package spec [\#1659](https://github.com/RedHatInsights/insights-core/issues/1659)
-- Output of "insights-info" is not so accurate [\#1645](https://github.com/RedHatInsights/insights-core/issues/1645)
 
 ## [insights-core-3.0.74-778](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.74-778) (2019-01-24)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.73-767...insights-core-3.0.74-778)
