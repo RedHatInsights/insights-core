@@ -6,9 +6,7 @@ Shared parsers for parsing output of the datasource `httpd_on_nfs`.
 ----------------------------------------------------------------------------------------
 """
 from insights import parser, JSONParser
-from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
-import json
 
 
 @parser(Specs.httpd_on_nfs)
@@ -40,6 +38,7 @@ class HttpdOnNFSFilesCount(JSONParser):
         open_nfs_files (number): counting number of all httpd open files on nfs v4 mount points
 
     """
+
     def parse_content(self, content):
         super(HttpdOnNFSFilesCount, self).parse_content(content)
         self.http_ids = self.data.get("http_ids")
