@@ -35,6 +35,10 @@ class HttpdOnNFSFilesCount(Parser):
 
     Attributes:
         data (dict): dict with keys "http_ids", "nfs_mounts" and "open_nfs_files"
+        http_ids (list): contains all httpd process ids
+        nfs_mounts (list): contains all nfs v4 mount points
+        open_nfs_files (number): counting number of all httpd open files on nfs v4 mount points
+
     """
 
     def parse_content(self, content):
