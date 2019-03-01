@@ -85,7 +85,7 @@ def test_statuslist_empty_exp():
 def test_statuslist_exp():
     with pytest.raises(ParseException) as pe:
         Statuslist(context_wrap("Can't open sessionid.tdb"))
-        assert "There is no useful parsed data." in str(pe)
+        assert "Can't open sessionid.tdb" in str(pe)
 
 
 def test_smbstatusS_exp():
@@ -99,9 +99,9 @@ def test_smbstatusp_exp():
         Smbstatusp(context_wrap(SMBSTATUSP_EXP1))
         assert "Cannot find the header line." in str(pe)
 
-    with pytest.raises(ParseException) as pe:
+    with pytest.raises(SkipException) as pe:
         Smbstatusp(context_wrap(SMBSTATUSP_EXP2))
-        assert "Input content is empty or there is no useful parsed data." in str(pe)
+        assert "Empty content." in str(pe)
 
 
 def test_smbstatus_doc():

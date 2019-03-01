@@ -46,6 +46,7 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
         >>> output.getint('aria_block_size', '4096')
         8192
     """
+
     def parse_content(self, content):
         """
         Parse output content table of command ``/bin/mysqladmin variables``.
@@ -55,7 +56,7 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
         if not content:
             raise SkipException("Empty content.")
         if len(content) < 5:
-            raise ParseException("Wrong content in table.")
+            raise ParseException("Wrong content in table: '{0}'.".format(content))
 
         data = {}
         for _l in content[3:-1]:

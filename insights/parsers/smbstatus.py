@@ -33,7 +33,7 @@ class Statuslist(CommandParser):
         if not content:
             raise SkipException("Empty content.")
         if len(content) == 1:
-            raise ParseException("There is no useful parsed data.")
+            raise ParseException("There is no useful parsed data in the content: '{0}'".format(content))
         return new_content
 
 

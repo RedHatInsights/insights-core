@@ -75,7 +75,7 @@ def test_empty_mysqladmin_var():
 def test_wrong_mysqladmin_var():
     with pytest.raises(ParseException) as e_info:
         MysqladminVars(context_wrap(INPUT_EMPTY))
-    assert "Wrong content in table." in str(e_info.value)
+    assert "Variable_name" in str(e_info.value)
 
 
 INPUT_STILL_PARSABLE_1 = """
