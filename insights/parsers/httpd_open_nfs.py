@@ -5,14 +5,14 @@ Shared parsers for parsing output of the datasource `httpd_on_nfs`.
 
 ----------------------------------------------------------------------------------------
 """
-from insights import parser, Parser
+from insights import parser, JSONParser
 from insights.parsers import SkipException, ParseException
 from insights.specs import Specs
 import json
 
 
 @parser(Specs.httpd_on_nfs)
-class HttpdOnNFSFilesCount(Parser):
+class HttpdOnNFSFilesCount(JSONParser):
     """
     This class provides processing for the output of the datasource of `httpd_on_nfs`
 
@@ -40,14 +40,8 @@ class HttpdOnNFSFilesCount(Parser):
         open_nfs_files (number): counting number of all httpd open files on nfs v4 mount points
 
     """
-
     def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty output from httpd_on_nfs datasource.")
-        try:
-            self.data = json.loads("".join(content))
-            self.http_ids = self.data.get("http_ids")
-            self.nfs_mounts = self.data.get("nfs_mounts")
-            self.open_nfs_files = self.data.get("open_nfs_files")
-        except Exception:
-            raise ParseException("Incorrect content: '{0}'".format(content))
+        super(HttpdOnNFSFilesCount, self).parse_content(content)
+        self.http_ids = self.data.get("http_ids")
+        self.nfs_mounts = self.data.get("nfs_mounts")
+        self.open_nfs_files = self.data.get("open_nfs_files")
