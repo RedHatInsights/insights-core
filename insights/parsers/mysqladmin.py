@@ -11,7 +11,7 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 """
 
 from insights import CommandParser, parser, LegacyItemAccess
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
@@ -52,8 +52,10 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
         Set each variable as an class attribute.
         """
         bad_lines = []
+        if not content:
+            raise SkipException("Empty content.")
         if len(content) < 5:
-            raise ParseException("Empty or wrong content in table.")
+            raise ParseException("Wrong content in table.")
 
         data = {}
         for _l in content[3:-1]:

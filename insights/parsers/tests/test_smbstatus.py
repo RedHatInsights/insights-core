@@ -1,7 +1,7 @@
 from insights.parsers import smbstatus
 from insights.parsers.smbstatus import SmbstatusS, Smbstatusp, Statuslist
 from insights.tests import context_wrap
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 import pytest
 import doctest
 
@@ -76,10 +76,16 @@ def test_smbstatusp():
             assert result["Username"] == "testsmb"
 
 
+def test_statuslist_empty_exp():
+    with pytest.raises(SkipException) as pe:
+        Statuslist(context_wrap(''))
+        assert "Empty content." in str(pe)
+
+
 def test_statuslist_exp():
     with pytest.raises(ParseException) as pe:
-        Statuslist(context_wrap('---------------------------'))
-        assert "Input content is empty or there is no useful parsed data." in str(pe)
+        Statuslist(context_wrap("Can't open sessionid.tdb"))
+        assert "There is no useful parsed data." in str(pe)
 
 
 def test_smbstatusS_exp():
@@ -100,10 +106,10 @@ def test_smbstatusp_exp():
 
 def test_smbstatus_doc():
     env = {
-            'SmbstatusS': SmbstatusS,
-            'smbstatuss_info': SmbstatusS(context_wrap(SMBSTATUSS_DOC)),
-            'Smbstatusp': Smbstatusp,
-            'smbstatusp_info': Smbstatusp(context_wrap(SMBSTATUSP_DOC))
-          }
+        'SmbstatusS': SmbstatusS,
+        'smbstatuss_info': SmbstatusS(context_wrap(SMBSTATUSS_DOC)),
+        'Smbstatusp': Smbstatusp,
+        'smbstatusp_info': Smbstatusp(context_wrap(SMBSTATUSP_DOC))
+    }
     failed, total = doctest.testmod(smbstatus, globs=env)
     assert failed == 0
