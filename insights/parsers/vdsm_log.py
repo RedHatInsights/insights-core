@@ -175,40 +175,25 @@ class VDSMImportLog(LogFileOutput):
         1
         >>> log[0].get('raw_message', None)
         '[    0.2] preparing for copy'
-        >>> log[0].get('vm_uuid', None)              # file: import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log
+        >>> vdsm_import_logs.vm_uuid              # file: import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log
         '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
-        >>> log[0].get('timestamp', None)
+        >>> vdsm_import_logs.timestamp
         datetime.datetime(2018, 1, 30, 15, 48, 07)
     """
-    time_format = '%Y%m%dT%H%M%S'
-
     def parse_content(self, content):
         """Parse ``import-@UUID-@datetime.log`` log file.
 
         Attributes:
             vm_uuid (str): UUID of imported VM
 
-            datetime (datetime): Date and time that import began.
+            timestamp (datetime): Date and time that import began.
         """
         super(VDSMImportLog, self).parse_content(content)
         splited_file_name = self.file_name.split('-')
         self.vm_uuid = '-'.join(splited_file_name[1:-1])
-        self.datetime = splited_file_name[-1].replace('.log', '')
-
-    def _parse_line(self, line):
-        """Parse line into fields.
-
-        Dictionary with following keys:
-
-           raw_message (str): line
-           vm_uuid (str): UUID of imported VM.
-           timestamp (datetime): Timestamp that import began.
-        """
-        line_info = {'raw_message': line, 'vm_uuid': self.vm_uuid}
+        _datetime = splited_file_name[-1].replace('.log', '')
 
         try:
-            line_info['timestamp'] = datetime.strptime(self.datetime, self.time_format)
+            self.timestamp = datetime.strptime(_datetime, '%Y%m%dT%H%M%S')
         except:
             pass
-
-        return line_info
