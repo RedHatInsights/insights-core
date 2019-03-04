@@ -1,4 +1,5 @@
 from datetime import datetime
+import pytest
 
 from insights.parsers.vdsm_log import VDSMLog, VDSMImportLog
 from insights.tests import context_wrap
@@ -293,6 +294,8 @@ VDSM_IMPORT_LOGS = """
 
 VDSM_IMPORT_FAILURE_LOGS = """
 [    0.0] >>> source, dest, and storage-type have different lengths
+[    0.2] preparing for copy
+[  546.9] Finishing off
 """.strip()
 
 
@@ -303,9 +306,16 @@ def test_vdsm_import_log():
     assert len(log) == 1
     assert log[0].get('raw_message') == '[    0.2] preparing for copy'
     assert result.vm_uuid == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+    assert len(list(result.get_after(546.9))) == 1
 
     vdsm_import2 = context_wrap(VDSM_IMPORT_FAILURE_LOGS, path='var/log/vdsm/import/import-3a51988d-579b-42d5-9af5-d48decc85fe4-20180201T082836.log')
     output = VDSMImportLog(vdsm_import2)
     log = output.get('storage-type have different lengths')
     assert output.vm_uuid == '3a51988d-579b-42d5-9af5-d48decc85fe4'
-    assert output.timestamp == datetime(2018, 2, 1, 8, 28, 36)
+    assert output.file_datetime == datetime(2018, 2, 1, 8, 28, 36)
+    assert len(list(output.get_after(0.2))) == 2
+    assert len(list(output.get_after(0.2, s='Finishing'))) == 1
+
+    with pytest.raises(TypeError) as excinfo:
+        list(output.get_after('0.2'))
+    assert "get_after needs a float type timestamp, but get '0.2'" in str(excinfo)
