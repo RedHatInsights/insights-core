@@ -4,13 +4,13 @@ rhev_data_center - datasource ``rhev_data_center``
 """
 import json
 from re import compile as re_compile
-from insights import Parser, parser
+from insights import JSONParser, parser
 from insights.parsers import SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.rhev_data_center)
-class RhevDataCenter(Parser):
+class RhevDataCenter(JSONParser):
     """Walk through the `/rhev/data-center` directory of RHEV host and return the
     full path of files not having correct file ownership i.e vdsm:kvm. See the
     `rhev_data_center` Datasource for more info.
