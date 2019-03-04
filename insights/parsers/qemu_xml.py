@@ -13,9 +13,27 @@ VarQemuXML - file ``/var/run/libvirt/qemu/*.xml``
 from .. import XMLParser, parser
 from insights.specs import Specs
 
+class BaseQemuXML(XMLParser):
+    """Base class for parsing Qemu XML files. It uses ``XMLParser`` mixin
+    class.
+
+    """
+    def parse_dom(self):
+        if self.dom is None:
+            return {}
+        else:
+            domain = {}
+            for child in self.dom:
+                if len(child) == 0:
+                    domain[child.tag] = child.text
+                else:
+                    domain[child.tag] = [c.items() for c in child]
+
+            return domain
+
 
 @parser(Specs.qemu_xml)
-class QemuXML(XMLParser):
+class QemuXML(BaseQemuXML):
     """This class parses xml files under ``/etc/libvirt/qemu/`` using
     ``XMLParser`` base parser.
 
@@ -148,26 +166,13 @@ class QemuXML(XMLParser):
         >>> memnode[1].get('mode') == 'strict'
         True
     """
-    def parse_dom(self):
-        if self.dom is None:
-            return
-        else:
-            domain = {}
-            for child in self.dom:
-                if len(child) == 0:
-                    domain[child.tag] = child.text
-                else:
-                    domain[child.tag] = [c.items() for c in child]
-
-            return domain
-
     @property
     def vm_name(self):
         return self.data.get('name', None)
 
 
 @parser(Specs.var_qemu_xml)
-class VarQemuXML(QemuXML):
+class VarQemuXML(BaseQemuXML):
     """This class parses xml files under ``/var/run/libvirt/qemu/`` using
     ``QemuXML`` base parser.
 
@@ -289,19 +294,6 @@ class VarQemuXML(QemuXML):
           </domain>
         </domstatus>
     """
-    def parse_dom(self):
-        if self.dom is None:
-            return
-        else:
-            domstatus = {}
-            for child in self.dom:
-                if len(child) == 0:
-                    domstatus[child.tag] = child.text
-                else:
-                    domstatus[child.tag] = [c.items() for c in child]
-
-            return domstatus
-
     @property
     def vm_name(self):
         if self.get_elements("./domain/name"):

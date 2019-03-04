@@ -425,7 +425,7 @@ def test_blank_xml():
     xml = qemu_xml.QemuXML(context_wrap(BLANK_XML, path='/etc/libvirt/qemu/blank.xml'))
     assert xml.file_name == 'blank.xml'
     assert xml.vm_name is None
-    assert xml.parse_dom() is None
+    assert xml.parse_dom() == {}
 
 
 def test_documentation():
