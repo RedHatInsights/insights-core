@@ -22,6 +22,7 @@ import pkgutil
 import os
 import sys
 import yaml
+from collections import defaultdict
 
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
@@ -124,6 +125,13 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
             return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
 
 
+def load_default_plugins():
+    dr.load_components("insights.specs.default")
+    dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.sos_archive")
+    dr.load_components("insights.specs.jdr_archive")
+
+
 def load_packages(packages):
     plugins = []
     for name in packages:
@@ -132,6 +140,31 @@ def load_packages(packages):
             dr.load_components(name, continue_on_error=False)
 
     return plugins
+
+
+def parse_plugins(p):
+    plugins = []
+    if p:
+        for path in p.split(","):
+            path = path.strip()
+            if path.endswith(".py"):
+                path, _ = os.path.splitext(path)
+            path = path.rstrip("/").replace("/", ".")
+            plugins.append(path)
+    return plugins
+
+
+def apply_default_enabled(default_enabled):
+    """
+    Configures dr and already loaded components with a default enabled
+    value.
+    """
+    for k in dr.ENABLED:
+        dr.ENABLED[k] = default_enabled
+
+    enabled = defaultdict(lambda: default_enabled)
+    enabled.update(dr.ENABLED)
+    dr.ENABLED = enabled
 
 
 def apply_configs(config):
@@ -198,11 +231,7 @@ def _load_context(path):
 def run(component=None, root=None, print_summary=False,
         context=None, inventory=None, print_component=None):
 
-    from .core import dr
-    dr.load_components("insights.specs.default")
-    dr.load_components("insights.specs.insights_archive")
-    dr.load_components("insights.specs.sos_archive")
-    dr.load_components("insights.specs.jdr_archive")
+    load_default_plugins()
 
     args = None
     formatter = None
@@ -244,15 +273,7 @@ def run(component=None, root=None, print_summary=False,
         if root:
             root = os.path.realpath(root)
 
-        plugins = []
-        if args.plugins:
-            for path in args.plugins.split(","):
-                path = path.strip()
-                if path.endswith(".py"):
-                    path, _ = os.path.splitext(path)
-                path = path.rstrip("/").replace("/", ".")
-                plugins.append(path)
-
+        plugins = parse_plugins(args.plugins)
         for p in plugins:
             dr.load_components(p, continue_on_error=False)
 
