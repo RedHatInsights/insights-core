@@ -118,7 +118,7 @@ try:
 
     def format_rule(comp, val):
         content = get_content(comp, val.get_key())
-        if content:
+        if content and val.get("type") != "skip":
             return Template(content).render(val)
         return str(val)
 
