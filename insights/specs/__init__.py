@@ -195,6 +195,7 @@ class Specs(SpecSet):
     iptables = RegistryPoint()
     ipv4_neigh = RegistryPoint()
     ipv6_neigh = RegistryPoint()
+    ironic_inspector_log = RegistryPoint()
     iscsiadm_m_session = RegistryPoint()
     jboss_domain_server_log = RegistryPoint(multi_output=True, filterable=True)
     jboss_standalone_server_log = RegistryPoint(multi_output=True, filterable=True)
