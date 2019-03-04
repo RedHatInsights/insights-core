@@ -24,8 +24,18 @@ from insights.util import fs
 from insights.util.subproc import call
 
 SAFE_ENV = {
-    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
+    "PATH": os.path.pathsep.join([
+        "/bin",
+        "/usr/bin",
+        "/sbin",
+        "/usr/sbin",
+        "/usr/share/Modules/bin",
+    ]),
+    "LC_ALL": "C",
 }
+
+if "LANG" in os.environ:
+    SAFE_ENV["LANG"] = os.environ["LANG"]
 
 log = logging.getLogger(__name__)
 

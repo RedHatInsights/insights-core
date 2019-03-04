@@ -22,11 +22,20 @@ log = logging.getLogger(__name__)
 
 
 SAFE_ENV = {
-    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"]),
+    "PATH": os.path.pathsep.join([
+        "/bin",
+        "/usr/bin",
+        "/sbin",
+        "/usr/sbin",
+        "/usr/share/Modules/bin",
+    ]),
+    "LC_ALL": "C",
 }
 """
 A minimal set of environment variables for use in subprocess calls
 """
+if "LANG" in os.environ:
+    SAFE_ENV["LANG"] = os.environ["LANG"]
 
 
 def enc(s):
