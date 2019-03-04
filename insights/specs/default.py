@@ -352,6 +352,7 @@ class DefaultSpecs(Specs):
     ip6tables_permanent = simple_file("etc/sysconfig/ip6tables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
+    ironic_inspector_log = simple_file("/var/log/ironic-inspector/ironic-inspector.log")
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     katello_service_status = simple_command("/usr/bin/katello-service status")
     kdump_conf = simple_file("/etc/kdump.conf")
