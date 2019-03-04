@@ -3,7 +3,7 @@ HttpdOnNFSFilesCount - datasource `httpd_on_nfs`
 ================================================
 Shared parsers for parsing output of the datasource `httpd_on_nfs`.
 
-----------------------------------------------------------------------------------------
+
 """
 from insights import parser, JSONParser
 from insights.specs import Specs
@@ -13,10 +13,6 @@ from insights.specs import Specs
 class HttpdOnNFSFilesCount(JSONParser):
     """
     This class provides processing for the output of the datasource of `httpd_on_nfs`
-
-    Sample output of the datasource::
-        {"http_ids": [1787,2399], "nfs_mounts": ["/data", "/www"], "open_nfs_files": 1000}
-
 
     The content collected by insights-client::
 
