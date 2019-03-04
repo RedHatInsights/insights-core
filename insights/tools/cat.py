@@ -28,11 +28,20 @@ import yaml
 
 from contextlib import contextmanager
 
-import colorama as C
 from insights import apply_configs, create_context, dr, extract, HostContext
 from insights.core.spec_factory import ContentProvider
 
-C.init()
+try:
+    import colorama as C
+    C.init()
+except:
+    class Pass(object):
+        def __getattr__(self, name):
+            return ""
+
+    class C(object):
+        Fore = Pass()
+        Style = Pass()
 
 
 def parse_args():
