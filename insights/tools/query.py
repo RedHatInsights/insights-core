@@ -77,6 +77,7 @@ def parse_args():
     p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
     p.add_argument("-d", "--pydoc", help="Show pydoc for the given object. E.g.: insights-info -d insights.rule")
     p.add_argument("-s", "--source", help="Show source for the given object. E.g.: insights-info -s insights.core.plugins.rule")
+    p.add_argument("-S", "--specs", help="Show specs for the given name.  E.g.: insights-info -S uname", action="store_true")
     p.add_argument("-t", "--types", help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.")
     p.add_argument("-v", "--verbose", help="Print component dependencies.", action="store_true")
     return p.parse_args()
@@ -228,8 +229,9 @@ def dump_ds(d, space=""):
             print(dbl_space + f)
 
 
-def print_component(comp, verbose=False):
-    print(dr.get_name(comp))
+def print_component(comp, verbose=False, specs=False):
+    if (specs or (not specs and not is_type(comp, datasource))):
+        print(dr.get_name(comp))
 
     if not verbose:
         return
@@ -269,10 +271,10 @@ def print_component(comp, verbose=False):
     print()
 
 
-def print_results(results, types, verbose):
+def print_results(results, types, verbose, specs):
     for r in results:
         if not types or is_type(r, types):
-            print_component(r, verbose=verbose)
+            print_component(r, verbose=verbose, specs=specs)
 
 
 def dump_info(comps):
@@ -281,7 +283,7 @@ def dump_info(comps):
         if not comp:
             print("Unknown component: %s" % c)
         else:
-            print_component(comp, verbose=True)
+            print_component(comp, verbose=True, specs=True)
 
 
 def load_obj(spec):
@@ -340,7 +342,7 @@ def main():
     broker = create_broker(components + ds)
     results = dry_run(broker=broker)
 
-    print_results(results, tuple(types), args.verbose)
+    print_results(results, tuple(types), args.verbose, args.specs)
 
 
 if __name__ == "__main__":
