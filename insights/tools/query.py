@@ -131,28 +131,41 @@ def get_datasources():
 
 
 def matches(d, path):
-    def _simple_file(src):
-        if src.startswith(('insights_commands', 'sos_commands')):
-            src = src.split('/')[-1].split('_')[0]
-        return src
+    path = path.strip('/')
 
     if isinstance(d, sf.simple_file):
-        return path.strip("/") in _simple_file(d.path.strip('/').split()[0])
+        search_tgt = d.path.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path)
 
     if isinstance(d, sf.glob_file):
-        return any(re.match(path, glob2re(_simple_file(pat))) and not d.ignore_func(path) for pat in d.patterns)
+        for pat in d.patterns:
+            pat_sp = pat.split('/')
+            search_tgt = pat_sp[-1]
+            if search_tgt.startswith("*") and len(pat_sp) >= 2:
+                search_tgt = pat_sp[-2]
+                return search_tgt.startswith(path)
+            if (re.match(glob2re(search_tgt), path) and not d.ignore_func(path)):
+                return True
+        return False
 
     if isinstance(d, sf.simple_command):
-        return path.strip("/") in d.cmd.split()[0]
+        search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path)
 
     if isinstance(d, sf.first_file):
-        return any(path.strip("/") in _simple_file(p) for p in d.paths)
+        for p in d.paths:
+            search_tgt = p.strip('/').split()[0].split('/')[-1]
+            if search_tgt.startswith(path):
+                return True
+        return False
 
     if isinstance(d, sf.foreach_execute):
-        return path.strip("/") in d.cmd.split()[0]
+        search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path)
 
     if isinstance(d, sf.foreach_collect):
-        return path.strip("/") in d.path and not d.ignore_func(path)
+        search_tgt = d.path.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path) and not d.ignore_func(path)
 
 
 def get_matching_datasources(paths):
