@@ -43,10 +43,39 @@ class ContentException(dr.SkipComponent):
     pass
 
 
-component = dr.ComponentType
+class PluginType(dr.ComponentType):
+    """
+    PluginType is the base class of plugin types like datasource, rule, etc.
+    It provides a default invoke method that catches exceptions we don't
+    want bubbling to the top of the evaluation loop. These exceptions are
+    commonly raised by datasource components but could be in the context of any
+    component since most datasource runtime errors are lazy.
+
+    It's possible for a datasource to "succeed" and return an object but for an
+    exception to be raised when the parser tries to access the content of that
+    object. For example, when a command datasource is evaluated, it only checks
+    that the command exists and is executable. Invocation of the command itself
+    is delayed until the parser asks for its value. This helps with performance
+    and memory consumption.
+    """
+    def invoke(self, broker):
+        try:
+            return super(PluginType, self).invoke(broker)
+        except ContentException as ce:
+            log.debug(ce)
+            broker.add_exception(self.component, ce, traceback.format_exc())
+            raise dr.SkipComponent()
+        except CalledProcessError as cpe:
+            log.debug(cpe)
+            broker.add_exception(self.component, cpe, traceback.format_exc())
+            raise dr.SkipComponent()
 
 
-class datasource(dr.ComponentType):
+class component(PluginType):
+    pass
+
+
+class datasource(PluginType):
     """
     Decorates a component that one or more :class:`insights.core.Parser`
     subclasses will consume.
@@ -68,7 +97,7 @@ class datasource(dr.ComponentType):
             raise dr.SkipComponent()
 
 
-class parser(dr.ComponentType):
+class parser(PluginType):
     """
     Decorates a component responsible for parsing the output of a
     :class:`datasource`. ``@parser`` should accept only one argument, which is
@@ -97,6 +126,12 @@ class parser(dr.ComponentType):
                     results.append(r)
             except dr.SkipComponent:
                 pass
+            except ContentException as ce:
+                log.debug(ce)
+                broker.add_exception(self.component, ce, traceback.format_exc())
+            except CalledProcessError as cpe:
+                log.debug(cpe)
+                broker.add_exception(self.component, cpe, traceback.format_exc())
             except Exception as ex:
                 tb = traceback.format_exc()
                 log.warn(tb)
@@ -120,7 +155,7 @@ class metadata(parser):
     requires = ["metadata.json"]
 
 
-class combiner(dr.ComponentType):
+class combiner(PluginType):
     """
     A decorator for a component that composes or "combines" other components.
 
@@ -131,12 +166,12 @@ class combiner(dr.ComponentType):
     pass
 
 
-class remoteresource(dr.ComponentType):
+class remoteresource(PluginType):
     """ ComponentType for a component for remote web resources. """
     pass
 
 
-class rule(dr.ComponentType):
+class rule(PluginType):
     """
     Decorator for components that encapsulate some logic that depends on the
     data model of a system. Rules can depend on :class:`datasource` instances,
@@ -233,7 +268,7 @@ class rule(dr.ComponentType):
         return r
 
 
-class condition(dr.ComponentType):
+class condition(PluginType):
     """
     ComponentType used to encapsulate boolean logic you'd like to have analyzed
     by a rule analysis system. Conditions should return truthy values. ``None``
@@ -243,7 +278,7 @@ class condition(dr.ComponentType):
     pass
 
 
-class incident(dr.ComponentType):
+class incident(PluginType):
     """
     ComponentType for a component used by rules that allows automated
     statistical analysis.
@@ -251,7 +286,7 @@ class incident(dr.ComponentType):
     pass
 
 
-class fact(dr.ComponentType):
+class fact(PluginType):
     """
     ComponentType for a component that surfaces a dictionary or list of
     dictionaries that will be used later by cluster rules. The data from a fact
