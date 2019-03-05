@@ -709,7 +709,6 @@ class InsightsConnection(object):
             logger.debug('Error getting canonical facts: %s', e)
             c_facts = None
 
-        files = {}
         # legacy upload
         if self.config.legacy_upload:
             try:
@@ -730,17 +729,18 @@ class InsightsConnection(object):
             else:
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
+            data = {}
             headers = {'x-rh-collection-time': str(duration)}
         else:
             headers = {}
-            files['metadata'] = c_facts
+            data = {'metadata': c_facts}
 
-        files['file'] = (file_name, open(data_collected, 'rb'), content_type)
+        files = {'file': (file_name, open(data_collected, 'rb'), content_type)}
 
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         net_logger.info("POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers=headers)
+        upload = self.session.post(upload_url, files=files, headers=headers, data=data)
 
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
