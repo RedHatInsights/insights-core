@@ -313,6 +313,7 @@ class DefaultSpecs(Specs):
 
     @datasource(Mount)
     def httpd_on_nfs(broker):
+        import json
         mnt = broker[Mount]
         mps = mnt.search(mount_type='nfs4')
         # get nfs 4.0 mount points
@@ -329,7 +330,9 @@ class DefaultSpecs(Specs):
                     items = line.split()
                     if len(items) > 8 and items[8].startswith(tuple(nfs_mounts)):
                         open_nfs_files += 1
-                return {"http_ids": httpd_pids, "nfs_mounts": nfs_mounts, "open_nfs_files": open_nfs_files}
+                result_dict = {"http_ids": httpd_pids, "nfs_mounts": nfs_mounts, "open_nfs_files": open_nfs_files}
+                return DatasourceProvider(content=json.dumps(result_dict), relative_path="httpd_open_nfsV4_files")
+        raise SkipComponent()
 
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
     httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
