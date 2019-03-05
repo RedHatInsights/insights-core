@@ -13,11 +13,23 @@ VarQemuXML - file ``/var/run/libvirt/qemu/*.xml``
 from .. import XMLParser, parser
 from insights.specs import Specs
 
+
 class BaseQemuXML(XMLParser):
     """Base class for parsing Qemu XML files. It uses ``XMLParser`` mixin
     class.
 
     """
+    def parse_content(self, content):
+        super(BaseQemuXML, self).parse_content(content)
+
+        # Setting vm_name attribute
+        self.vm_name = None
+        ret = self.get_elements('./domain/name') if self.dom else None
+        if ret:
+            self.vm_name = ret[0].text
+        else:
+            self.vm_name = self.data.get('name')
+
     def parse_dom(self):
         if self.dom is None:
             return {}
@@ -166,9 +178,7 @@ class QemuXML(BaseQemuXML):
         >>> memnode[1].get('mode') == 'strict'
         True
     """
-    @property
-    def vm_name(self):
-        return self.data.get('name', None)
+    pass
 
 
 @parser(Specs.var_qemu_xml)
@@ -294,7 +304,4 @@ class VarQemuXML(BaseQemuXML):
           </domain>
         </domstatus>
     """
-    @property
-    def vm_name(self):
-        if self.get_elements("./domain/name"):
-            return self.get_elements("./domain/name")[0].text
+    pass
