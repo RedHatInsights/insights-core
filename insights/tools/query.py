@@ -134,36 +134,46 @@ def matches(d, path):
     path = path.strip('/')
 
     if isinstance(d, sf.simple_file):
+        # Set the filename from the simple_file string as search target
         search_tgt = d.path.strip('/').split()[0].split('/')[-1]
         return search_tgt.startswith(path)
 
     if isinstance(d, sf.glob_file):
         for pat in d.patterns:
+            # Set the last part of the glob_file as the search target
             pat_sp = pat.split('/')
             search_tgt = pat_sp[-1]
             if search_tgt.startswith("*") and len(pat_sp) >= 2:
+                # if the last part is "*" or "*XXX", set the parent dir as search target
+                # e.g: xinetd_conf: "/etc/xinet.d/*.conf"
+                #      logrotate_conf: "/etc/logrotate.d/*"
                 search_tgt = pat_sp[-2]
-                return search_tgt.startswith(path)
+                return search_tgt.startswith(path) and not d.ignore_func(path)
+            # Glob check the last part
             if (re.match(glob2re(search_tgt), path) and not d.ignore_func(path)):
                 return True
         return False
 
     if isinstance(d, sf.simple_command):
+        # Get the command name from the simple_command string
         search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
         return search_tgt.startswith(path)
 
     if isinstance(d, sf.first_file):
         for p in d.paths:
+            # Get the filename as the search target
             search_tgt = p.strip('/').split()[0].split('/')[-1]
             if search_tgt.startswith(path):
                 return True
         return False
 
     if isinstance(d, sf.foreach_execute):
+        # Get the command name from the simple_command string
         search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
         return search_tgt.startswith(path)
 
     if isinstance(d, sf.foreach_collect):
+        # Get the filename from the "glob_file" like string
         search_tgt = d.path.strip('/').split()[0].split('/')[-1]
         return search_tgt.startswith(path) and not d.ignore_func(path)
 
