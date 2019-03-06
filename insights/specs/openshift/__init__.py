@@ -6,7 +6,7 @@ from kubernetes.client import ApiClient, Configuration
 from openshift.dynamic import DynamicClient
 
 from insights.core.context import ExecutionContext
-from insights.core.plugins import component, datasource
+from insights.core.plugins import datasource
 from insights.core.serde import deserializer, serializer
 from insights.core.spec_factory import ContentProvider, SerializedRawOutputProvider
 from insights.util import fs
@@ -57,7 +57,6 @@ class OpenshiftContext(ExecutionContext):
     pass
 
 
-@component(OpenshiftContext)
 class OpenshiftClient(object):
     def __init__(self, ctx=None, cfg=None):
         cfg = cfg or os.environ.get("KUBECONFIG")
@@ -79,8 +78,8 @@ class resource(object):
         self.client_kwargs["kind"] = kind
         self.client_kwargs["api_version"] = api_version
         self.__name__ = self.__class__.__name__
-        datasource(OpenshiftClient)(self)
+        datasource(OpenshiftContext)(self)
 
     def __call__(self, broker):
-        client = broker[OpenshiftClient]
+        client = OpenshiftClient()
         return OpenshiftOutputProvider(client, **self.client_kwargs)

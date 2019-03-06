@@ -14,9 +14,9 @@ class OpenshiftSpecsImpl(specs.Openshift):
     machine_configs = resource(kind="MachineConfig", api_version="machineconfiguration.openshift.io/v1")
     crds = resource(kind="CustomResourceDefinition", api_version="apiextensions.k8s.io/v1beta1")
 
-    @datasource(crds, OpenshiftClient)
+    @datasource(crds)
     def crs(broker):
-        client = broker[OpenshiftClient]
+        client = OpenshiftClient()
         cr_list = []
         for crd in json.loads(broker[OpenshiftSpecsImpl.crds].content)["items"]:
             group = crd["spec"]["group"]
