@@ -245,12 +245,14 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
+        p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
 
         class Args(object):
             pass
 
+        formatters = []
         args = Args()
         p.parse_known_args(namespace=args)
         p = argparse.ArgumentParser(parents=[p])
@@ -264,6 +266,17 @@ def run(component=None, root=None, print_summary=False,
         Formatter.configure(p)
         p.parse_args(namespace=args)
         formatter = Formatter(args)
+        formatters.append(formatter)
+
+        if args.syslog:
+            fmt = "insights.formats._syslog"
+            Formatter = dr.get_component(fmt)
+            if not Formatter:
+                dr.load_components(fmt, continue_on_error=False)
+                Formatter = get_formatter(fmt)
+            p.parse_args(namespace=args)
+            formatter = Formatter(args)
+            formatters.append(formatter)
 
         logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
         context = _load_context(args.context) or context
@@ -303,10 +316,12 @@ def run(component=None, root=None, print_summary=False,
     broker = dr.Broker()
 
     try:
-        if formatter:
-            formatter.preprocess(broker)
+        if formatters:
+            for formatter in formatters:
+                formatter.preprocess(broker)
             broker = _run(broker, graph, root, context=context, inventory=inventory)
-            formatter.postprocess(broker)
+            for formatter in formatters:
+                formatter.postprocess(broker)
         elif print_component:
             broker = _run(broker, graph, root, context=context, inventory=inventory)
             broker.print_component(print_component)
