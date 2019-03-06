@@ -1,5 +1,5 @@
 import os
-import yaml
+import json
 
 from kubernetes import config
 from kubernetes.client import ApiClient, Configuration
@@ -24,7 +24,7 @@ class OpenshiftOutputProvider(ContentProvider):
 
     def load(self):
         doc = self.k8s.resources.get(**self.client_kwargs).get().to_dict()
-        return yaml.dump(doc, default_flow_style=False)
+        return json.dumps(doc)
 
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
@@ -72,7 +72,7 @@ class OpenshiftClient(object):
         self.k8s = DynamicClient(k8s_client)  # stole this from config.new_client_from_config
 
 
-class openshift_resource(object):
+class resource(object):
     def __init__(self, kind, api_version="v1", **kwargs):
         # encode group into the api_version string if necessary
         self.client_kwargs = kwargs
