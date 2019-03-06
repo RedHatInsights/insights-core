@@ -116,7 +116,16 @@ class parser(PluginType):
     def invoke(self, broker):
         dep_value = broker[self.requires[0]]
         if not isinstance(dep_value, list):
-            return self.component(dep_value)
+            try:
+                return self.component(dep_value)
+            except ContentException as ce:
+                log.debug(ce)
+                broker.add_exception(self.component, ce, traceback.format_exc())
+                raise dr.SkipComponent()
+            except CalledProcessError as cpe:
+                log.debug(cpe)
+                broker.add_exception(self.component, cpe, traceback.format_exc())
+                raise dr.SkipComponent()
 
         results = []
         for d in dep_value:
