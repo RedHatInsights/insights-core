@@ -93,12 +93,24 @@ def deserialize(data, root=None):
         raise Exception("Unrecognized type: %s" % data["type"])
 
 
-def marshal(v, root=None):
-    if v is None:
-        return
-    if isinstance(v, list):
-        return [serialize(t, root=root) for t in v]
-    return serialize(v, root=root)
+try:
+    from concurrent.futures import ThreadPoolExecutor
+    from functools import partial
+    def marshal(v, root=None):
+        if v is None:
+            return
+        if isinstance(v, list):
+            f = partial(serialize, root=root)
+            with ThreadPoolExecutor() as tp:
+                return list(tp.map(f, v))
+        return serialize(v, root=root)
+except ImportError:
+    def marshal(v, root=None):
+        if v is None:
+            return
+        if isinstance(v, list):
+            return [serialize(t, root=root) for t in v]
+        return serialize(v, root=root)
 
 
 def unmarshal(data, root=None):
@@ -185,6 +197,7 @@ class Hydration(object):
                 doc["results"] = marshal(value, root=self.data)
             except Exception:
                 errors.append(traceback.format_exc())
+                log.debug(traceback.format_exc())
                 doc["results"] = None
             finally:
                 doc["ser_time"] = time.time() - start

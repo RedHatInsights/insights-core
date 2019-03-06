@@ -970,6 +970,15 @@ def run(components=None, broker=None):
     return broker
 
 
+def generate_incremental(components=None, broker=None):
+    components = components or COMPONENTS[GROUPS.single]
+    components = _determine_components(components)
+    seed_broker = broker or Broker()
+    for graph in get_subgraphs(components):
+        broker = Broker(seed_broker)
+        yield (graph, broker)
+
+
 def run_incremental(components=None, broker=None):
     """
     Executes components in an order that satisfies their dependency
@@ -989,9 +998,19 @@ def run_incremental(components=None, broker=None):
     Yields:
         Broker: the broker used to evaluate each subgraph.
     """
-    components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
-    seed_broker = broker or Broker()
-    for graph in get_subgraphs(components):
-        broker = Broker(seed_broker)
-        yield run(graph, broker=broker)
+    for graph, _broker in generate_incremental(components, broker):
+        yield run(graph, broker=_broker)
+
+
+def run_parallel(components=None, broker=None, max_workers=None):
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = []
+            for graph, _broker in generate_incremental(components, broker):
+                futures.append(executor.submit(run, graph, _broker))
+            return [f.result() for f in futures]
+
+    except ImportError:
+        log.warn("concurrent.futures is not installed. Falling back to run_incremental.")
+        return list(run_incremental(components, broker))
