@@ -13,7 +13,7 @@ Smbstatusp - command ``/usr/bin/smbstatus -p``
 """
 
 from .. import parser, get_active_lines, CommandParser
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from . import parse_fixed_table
 from insights.specs import Specs
 
@@ -30,8 +30,10 @@ class Statuslist(CommandParser):
 
     def parse_content(self, content):
         new_content = get_active_lines(content, '-----------')
-        if len(content) <= 1:
-            raise ParseException("Input content is empty or there is no useful parsed data.")
+        if not content:
+            raise SkipException("Empty content.")
+        if len(content) == 1:
+            raise ParseException("There is no useful parsed data in the content: '{0}'".format(content))
         return new_content
 
 
@@ -105,4 +107,5 @@ class Smbstatusp(Statuslist):
         content = super(Smbstatusp, self).parse_content(content)
         if not any(l.startswith('PID ') for l in content):
             raise ParseException("Cannot find the header line.")
-        self.data = parse_fixed_table(content, heading_ignore=["PID     Username"], header_substitute=[('Protocol Version', 'Protocol_Version')])
+        self.data = parse_fixed_table(content, heading_ignore=["PID     Username"],
+                                      header_substitute=[('Protocol Version', 'Protocol_Version')])

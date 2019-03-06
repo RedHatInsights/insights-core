@@ -28,11 +28,21 @@ import yaml
 
 from contextlib import contextmanager
 
-import colorama as C
-from insights import apply_configs, create_context, dr, extract, HostContext
+from insights import (apply_configs, create_context, dr, extract, HostContext,
+        load_default_plugins)
 from insights.core.spec_factory import ContentProvider
 
-C.init()
+try:
+    import colorama as C
+    C.init()
+except:
+    class Pass(object):
+        def __getattr__(self, name):
+            return ""
+
+    class C(object):
+        Fore = Pass()
+        Style = Pass()
 
 
 def parse_args():
@@ -59,11 +69,6 @@ def parse_plugins(raw):
             path, _ = os.path.splitext(path)
         path = path.rstrip("/").replace("/", ".")
         yield path
-
-
-def load_default_plugins():
-    for f in ["default", "insights_archive", "sos_archive", "jdr_archive"]:
-        dr.load_components("insights.specs.%s" % f, continue_on_error=False)
 
 
 def load_plugins(raw):

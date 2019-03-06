@@ -1,5 +1,5 @@
 import pytest
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.parsers.mysqladmin import MysqladminVars
 from insights.tests import context_wrap
 
@@ -67,10 +67,15 @@ INPUT_FORAMT_WRONG = """
 
 
 def test_empty_mysqladmin_var():
+    with pytest.raises(SkipException) as e_info:
+        MysqladminVars(context_wrap(""))
+    assert "Empty content." in str(e_info.value)
 
+
+def test_wrong_mysqladmin_var():
     with pytest.raises(ParseException) as e_info:
         MysqladminVars(context_wrap(INPUT_EMPTY))
-    assert "Empty or wrong content in table." in str(e_info.value)
+    assert "Variable_name" in str(e_info.value)
 
 
 INPUT_STILL_PARSABLE_1 = """
@@ -108,7 +113,6 @@ INPUT_FORAMT_WRONG = """
 
 
 def test_mysqladmin_still_parsable():
-
     res = MysqladminVars(context_wrap(INPUT_STILL_PARSABLE_1))
     d = res.data
     assert d['aria_checkpoint_interval'] == '30   |    23'
