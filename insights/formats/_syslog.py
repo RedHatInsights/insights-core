@@ -33,7 +33,12 @@ class SysLogFormat(Formatter):
             self.logger = logging.getLogger('sysLogLogger')
             self.logger.propagate = False
             self.logger.setLevel(logging.INFO)
-            self.handler = handlers.SysLogHandler('/dev/log')
+
+            address = '/dev/log'
+            if not os.path.exists(address):
+                address = 'localhost', 514
+
+            self.handler = handlers.SysLogHandler(address)
             self.handler.formatter = logging.Formatter('%(message)s')
             self.logger.addHandler(self.handler)
 
@@ -49,7 +54,22 @@ class SysLogFormat(Formatter):
         else:
             self.logger.info("{0}[pid:{1}] user:{2}: INFO - {3}".format(cname, pid, user, msg))
 
-    def log_rule_info(self, broker):
+    def log_exceptions(self, c, broker):
+        """Gets exceptions to be logged and sends to logit function to be logged to syslog"""
+
+        if c in broker.exceptions:
+            ex = broker.exceptions.get(c)
+            ex = "Exception in {0} - {1}".format(dr.get_name(c), str(ex))
+            self.logit(ex, self.pid, self.user, "insights-run", logging.ERROR)
+
+    def show_tracebacks(self):
+        """ Show tracebacks """
+        if self.broker.tracebacks:
+            for tb in self.broker.tracebacks.values():
+                # tb = "Traceback {0}".format(str(tb))
+                self.logit(str(tb), self.pid, self.user, "insights-run", logging.ERROR)
+
+    def log_rule_info(self):
         """Collects rule information and send to logit function to log to syslog"""
 
         for c in sorted(self.broker.get_by_type(rule), key=dr.get_name):
@@ -63,15 +83,10 @@ class SysLogFormat(Formatter):
                     msg = "Rule skipped {0} ".format(dr.get_name(c))
                     self.logit(msg, self.pid, self.user, "insights-run", logging.WARNING)
 
-    def log_exceptions(self, c, broker):
-        """Gets exceptions to be logged and sends to logit function to be logged to syslog"""
-
-        if c in broker.exceptions:
-            ex = broker.exceptions.get(c)
-            ex = "Exception running {0} - {1}".format(dr.get_name(c), str(ex))
-            self.logit(ex, self.pid, self.user, "insights-run", logging.ERROR)
-
     def preprocess(self):
+
+        cmd = "Command Line - %s" % " ".join(sys.argv)
+        self.logit(cmd, self.pid, self.user, "insights-run", logging.INFO)
 
         self.broker.add_observer(self.log_exceptions, rule)
         self.broker.add_observer(self.log_exceptions, condition)
@@ -80,14 +95,12 @@ class SysLogFormat(Formatter):
 
     def postprocess(self):
 
-        cmd = "Command Line - %s" % " ".join(sys.argv)
-        self.logit(cmd, self.pid, self.user, "insights-run", logging.INFO)
-
-        self.log_rule_info(self.broker)
+        self.log_rule_info()
+        self.show_tracebacks()
 
 
 class SysLogFormatterAdapter(FormatterAdapter):
-    """Logs Rules run and exceptions to syslog."""
+    """Logs Rules run, exceptions and tracebacks to syslog."""
 
     def __init__(self, args):
         self.formatter = None
