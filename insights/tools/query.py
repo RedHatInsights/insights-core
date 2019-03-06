@@ -6,8 +6,14 @@ foo, bar, or baz files or commands along with all components that could be
 activated if they were present and valid.
 
 ``insights-info -i insights.specs.Specs.hosts`` will display dependency
-information about the hosts datasource. There are several other options to
-the script. ``insights-info -h`` for more info.
+information about the hosts datasource.
+
+``insights-info -d insights.parsers.hosts.Hosts`` will display the pydoc
+information about the Hosts parser.
+
+There are several other options to the script. ``insights-info -h`` for more
+info.
+
 """
 from __future__ import print_function
 import argparse
@@ -71,7 +77,7 @@ def glob2re(pat):
 
 def parse_args():
     p = argparse.ArgumentParser(__doc__.strip())
-    p.add_argument("paths", nargs="*", help="Files or commands to use for component activation.")
+    p.add_argument("paths", nargs="*", help="Files or commands to use for component activation. It should be the prefix part of the file or command")
     p.add_argument("-c", "--components", help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.")
     p.add_argument("-i", "--info", help="Comma separated list of components to get dependency info about.", action="store_true")
     p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
