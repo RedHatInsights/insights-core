@@ -166,6 +166,7 @@ class Specs(SpecSet):
     httpd_error_log = RegistryPoint(filterable=True)
     httpd_limits = RegistryPoint(multi_output=True)
     httpd_M = RegistryPoint(multi_output=True)
+    httpd_on_nfs = RegistryPoint()
     httpd_pid = RegistryPoint()
     httpd_ssl_access_log = RegistryPoint(filterable=True)
     httpd_ssl_error_log = RegistryPoint(filterable=True)
