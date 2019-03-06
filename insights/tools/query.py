@@ -155,8 +155,10 @@ def matches(d, path):
                 #      logrotate_conf: "/etc/logrotate.d/*"
                 search_tgt = pat_sp[-2]
                 return search_tgt.startswith(path) and not d.ignore_func(path)
-            # Glob check the last part
-            if (re.match(glob2re(search_tgt), path) and not d.ignore_func(path)):
+            # Glob check the last part: `startswith` or glob match
+            if ((search_tgt.startswith(path) or
+                 re.match(glob2re(search_tgt), path)) and
+                    not d.ignore_func(path)):
                 return True
         return False
 
