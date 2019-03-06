@@ -77,7 +77,7 @@ def glob2re(pat):
 
 def parse_args():
     p = argparse.ArgumentParser(__doc__.strip())
-    p.add_argument("paths", nargs="*", help="Files or commands to use for component activation. It should be the prefix part of the file or command")
+    p.add_argument("paths", nargs="*", help="Files or commands to use for component activation.")
     p.add_argument("-c", "--components", help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.")
     p.add_argument("-i", "--info", help="Comma separated list of components to get dependency info about.", action="store_true")
     p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
