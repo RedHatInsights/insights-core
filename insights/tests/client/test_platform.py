@@ -98,8 +98,8 @@ def test_payload_upload(op, session, c):
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/platform/upload/api/v1/upload',
         files={
-            'file': ('testp', ANY, 'testct'),  # ANY = return call from mocked open(), acts as filepointer here
-            'metadata': json.dumps({'test': 'facts'})},
+            'file': ('testp', ANY, 'testct')},  # ANY = return call from mocked open(), acts as filepointer here
+        data={'metadata': json.dumps({'test': 'facts'})},
         headers={})
 
 
@@ -119,4 +119,5 @@ def test_legacy_upload(op, session, c):
         'https://' + c.config.base_url + '/uploads/XXXXXXXX',
         files={
             'file': ('testp', ANY, 'application/gzip')},  # ANY = return call from mocked open(), acts as filepointer here
+        data={},
         headers={'x-rh-collection-time': 'None'})
