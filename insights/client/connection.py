@@ -701,6 +701,8 @@ class InsightsConnection(object):
         """
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
+        data = {}
+        headers = {}
 
         try:
             c_facts = json.dumps(get_canonical_facts())
@@ -729,10 +731,8 @@ class InsightsConnection(object):
             else:
                 logger.debug('Uploading a host.')
                 upload_url = self.upload_url + '/' + generate_machine_id()
-            data = {}
             headers = {'x-rh-collection-time': str(duration)}
         else:
-            headers = {}
             data = {'metadata': c_facts}
 
         files = {'file': (file_name, open(data_collected, 'rb'), content_type)}
