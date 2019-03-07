@@ -6,8 +6,14 @@ foo, bar, or baz files or commands along with all components that could be
 activated if they were present and valid.
 
 ``insights-info -i insights.specs.Specs.hosts`` will display dependency
-information about the hosts datasource. There are several other options to
-the script. ``insights-info -h`` for more info.
+information about the hosts datasource.
+
+``insights-info -d insights.parsers.hosts.Hosts`` will display the pydoc
+information about the Hosts parser.
+
+There are several other options to the script. ``insights-info -h`` for more
+info.
+
 """
 from __future__ import print_function
 import argparse
@@ -77,6 +83,7 @@ def parse_args():
     p.add_argument("-p", "--preload", help="Comma separated list of packages or modules to preload.")
     p.add_argument("-d", "--pydoc", help="Show pydoc for the given object. E.g.: insights-info -d insights.rule")
     p.add_argument("-s", "--source", help="Show source for the given object. E.g.: insights-info -s insights.core.plugins.rule")
+    p.add_argument("-S", "--specs", help="Show specs for the given name.  E.g.: insights-info -S uname", action="store_true")
     p.add_argument("-t", "--types", help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.")
     p.add_argument("-v", "--verbose", help="Print component dependencies.", action="store_true")
     return p.parse_args()
@@ -130,28 +137,53 @@ def get_datasources():
 
 
 def matches(d, path):
-    def _simple_file(src):
-        if src.startswith(('insights_commands', 'sos_commands')):
-            src = src.split('/')[-1].split('_')[0]
-        return src
+    path = path.strip('/')
 
     if isinstance(d, sf.simple_file):
-        return path.strip("/") in _simple_file(d.path.strip('/').split()[0])
+        # Set the filename from the simple_file string as search target
+        search_tgt = d.path.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path)
 
     if isinstance(d, sf.glob_file):
-        return any(re.match(path, glob2re(_simple_file(pat))) and not d.ignore_func(path) for pat in d.patterns)
+        for pat in d.patterns:
+            # Set the last part of the glob_file as the search target
+            pat_sp = pat.split('/')
+            search_tgt = pat_sp[-1]
+            if search_tgt.startswith("*") and len(pat_sp) >= 2:
+                # if the last part is "*" or "*XXX", set the parent dir as search target
+                # e.g: xinetd_conf: "/etc/xinet.d/*.conf"
+                #      logrotate_conf: "/etc/logrotate.d/*"
+                search_tgt = pat_sp[-2]
+                return search_tgt.startswith(path) and not d.ignore_func(path)
+            # Glob check the last part: `startswith` or glob match
+            if ((search_tgt.startswith(path) or
+                 re.match(glob2re(search_tgt), path)) and
+                    not d.ignore_func(path)):
+                return True
+        return False
 
     if isinstance(d, sf.simple_command):
-        return path.strip("/") in d.cmd.split()[0]
+        # Get the command name from the simple_command string
+        search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path)
 
     if isinstance(d, sf.first_file):
-        return any(path.strip("/") in _simple_file(p) for p in d.paths)
+        for p in d.paths:
+            # Get the filename as the search target
+            search_tgt = p.strip('/').split()[0].split('/')[-1]
+            if search_tgt.startswith(path):
+                return True
+        return False
 
     if isinstance(d, sf.foreach_execute):
-        return path.strip("/") in d.cmd.split()[0]
+        # Get the command name from the simple_command string
+        search_tgt = d.cmd.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path)
 
     if isinstance(d, sf.foreach_collect):
-        return path.strip("/") in d.path and not d.ignore_func(path)
+        # Get the filename from the "glob_file" like string
+        search_tgt = d.path.strip('/').split()[0].split('/')[-1]
+        return search_tgt.startswith(path) and not d.ignore_func(path)
 
 
 def get_matching_datasources(paths):
@@ -228,8 +260,9 @@ def dump_ds(d, space=""):
             print(dbl_space + f)
 
 
-def print_component(comp, verbose=False):
-    print(dr.get_name(comp))
+def print_component(comp, verbose=False, specs=False):
+    if (specs or (not specs and not is_type(comp, datasource))):
+        print(dr.get_name(comp))
 
     if not verbose:
         return
@@ -269,10 +302,10 @@ def print_component(comp, verbose=False):
     print()
 
 
-def print_results(results, types, verbose):
+def print_results(results, types, verbose, specs):
     for r in results:
         if not types or is_type(r, types):
-            print_component(r, verbose=verbose)
+            print_component(r, verbose=verbose, specs=specs)
 
 
 def dump_info(comps):
@@ -281,7 +314,7 @@ def dump_info(comps):
         if not comp:
             print("Unknown component: %s" % c)
         else:
-            print_component(comp, verbose=True)
+            print_component(comp, verbose=True, specs=True)
 
 
 def load_obj(spec):
@@ -340,7 +373,7 @@ def main():
     broker = create_broker(components + ds)
     results = dry_run(broker=broker)
 
-    print_results(results, tuple(types), args.verbose)
+    print_results(results, tuple(types), args.verbose, args.specs)
 
 
 if __name__ == "__main__":

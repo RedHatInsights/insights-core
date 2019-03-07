@@ -74,6 +74,7 @@ class InsightsArchiveSpecs(Specs):
     hostname = first_of([simple_file("insights_commands/hostname_-f"), simple_file("insights_commands/hostname")])
     hponcfg_g = simple_file("insights_commands/hponcfg_-g")
     httpd_M = glob_file("insights_commands/httpd*_-M")
+    httpd_on_nfs = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_httpd_on_nfs")
     httpd_pid = simple_file("insights_commands/pgrep_-o_httpd")
     httpd_V = glob_file("insights_commands/httpd*_-V")
     ifconfig = simple_file("insights_commands/ifconfig_-a")
