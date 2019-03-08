@@ -548,6 +548,37 @@ class DefaultSpecs(Specs):
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
     ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
+    ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
+
+    @datasource(ovs_vsctl_list_br)
+    def ovs_bridge_mac_table_entry_count(broker):
+        """
+        Get the count of MAC entries present in the table.
+
+        Typical output of command ovs-appctl fdb/show <bridge-name>::
+
+            # ovs-appctl fdb/show br-int
+            port VLAN  MAC Age
+            6       1 MAC1 118
+            3       0 MAC2 24
+
+        Returns:
+            (list): List of bridge-name and corresponding MAC entries count
+        """
+        bridge_names = broker[DefaultSpecs.ovs_vsctl_list_br].content
+        details_cmd = "/usr/bin/ovs-appctl fdb/show {0}"
+        relative_path = "ovs-appctl_fdb-show_bridge_name"
+        results = []
+        for bridge in bridge_names:
+            try:
+                out = broker[HostContext].shell_out(details_cmd.format(bridge))
+                results.append(str(bridge) + ":" + str(len(out) - 1))
+            except:
+                results.append(str(bridge) + ":0")
+        if results:
+            return DatasourceProvider(content=results, relative_path=relative_path)
+        raise SkipComponent()
+
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
