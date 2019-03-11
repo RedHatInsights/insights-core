@@ -28,14 +28,24 @@ import yaml
 
 from contextlib import contextmanager
 
-import colorama as C
-from insights import apply_configs, create_context, dr, extract, HostContext
+from insights import (apply_configs, create_context, dr, extract, HostContext,
+        load_default_plugins)
 from insights.core.spec_factory import ContentProvider
 
-C.init()
+try:
+    import colorama as C
+    C.init()
+except:
+    class Pass(object):
+        def __getattr__(self, name):
+            return ""
+
+    class C(object):
+        Fore = Pass()
+        Style = Pass()
 
 
-def parse_args():
+def parse_args(argv):
     p = argparse.ArgumentParser("Insights spec runner.")
     p.add_argument("-c", "--config", help="Configure components.")
     p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
@@ -44,7 +54,7 @@ def parse_args():
     p.add_argument("-D", "--debug", action="store_true", help="Show debug level information.")
     p.add_argument("spec", nargs=1, help="Spec to dump.")
     p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
 def configure_logging(debug):
@@ -59,11 +69,6 @@ def parse_plugins(raw):
             path, _ = os.path.splitext(path)
         path = path.rstrip("/").replace("/", ".")
         yield path
-
-
-def load_default_plugins():
-    for f in ["default", "insights_archive", "sos_archive", "jdr_archive"]:
-        dr.load_components("insights.specs.%s" % f, continue_on_error=False)
 
 
 def load_plugins(raw):
@@ -155,8 +160,8 @@ def run(spec, archive=None, quiet=False, no_header=False):
             return sys.exit(1)
 
 
-def main():
-    args = parse_args()
+def main(argv=sys.argv[1:]):
+    args = parse_args(argv)
     configure_logging(args.debug)
     load_default_plugins()
     load_plugins(args.plugins)

@@ -12,16 +12,23 @@ EtcSshConfig - file ``/etc/ssh/ssh_config``
 ForemanSshConfig - file ``/usr/share/foreman/.ssh/ssh_config``
 --------------------------------------------------------------
 
+ForemanProxySshConfig - file ``/usr/share/foreman-proxy/.ssh/ssh_config``
+-------------------------------------------------------------------------
+
 """
 from collections import namedtuple
-
+from insights import Parser, get_active_lines, parser
 from insights.specs import Specs
-
-from .. import Parser, get_active_lines, parser
+from insights.parsers import SkipException
 
 
 class SshClientConfig(Parser):
-    """Base class for sshclient config file."""
+    """
+    Base class for ssh client configuration file.
+
+    Raises:
+        SkipException: When input content is empty. Not found any parse results.
+    """
 
     KeyValue = namedtuple('KeyValue', ['keyword', 'value', 'line'])
 
@@ -30,6 +37,9 @@ class SshClientConfig(Parser):
         self.host_lines = {}
 
         _content = get_active_lines(content)
+        if not _content:
+            raise SkipException("Empty content.")
+
         index_list = [i for i, l in enumerate(_content) if l.startswith('Host ')]
         index = index_list[0] if index_list else len(_content)
 
@@ -47,6 +57,9 @@ class SshClientConfig(Parser):
                 self.host_lines[hostbit] = []
             else:
                 self.host_lines[hostbit].append(self.KeyValue(kw, val, line))
+
+        if not (self.host_lines or self.global_lines):
+            raise SkipException("Nothing parsed.")
 
 
 @parser(Specs.ssh_config)
@@ -168,6 +181,68 @@ class ForemanSshConfig(SshClientConfig):
         >>> foremansshconfig.host_lines['Host_proxytest'][0].keyword
         'HostName'
         >>> foremansshconfig.host_lines['Host_proxytest'][0].value
+        '192.168.122.2'
+    """
+    pass
+
+
+@parser(Specs.ssh_foreman_proxy_config)
+class ForemanProxySshConfig(SshClientConfig):
+    """
+    This parser reads the file ``/usr/share/foreman-proxy/.ssh/ssh_config``
+
+    Sample output::
+
+        #   ProxyCommand ssh -q -W %h:%p gateway.example.com
+        #   RekeyLimit 1G 1h
+        #
+        # Uncomment this if you want to use .local domain
+        # Host *.local
+        #   CheckHostIP no
+        ProxyCommand ssh -q -W %h:%p gateway.example.com
+
+        Host *
+            GSSAPIAuthentication yes
+        # If this option is set to yes then remote X11 clients will have full access
+        # to the original X11 display. As virtually no X11 client supports the untrusted
+        # mode correctly we set this to yes.
+            ForwardX11Trusted yes
+        # Send locale-related environment variables
+            SendEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+            SendEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+            SendEnv LC_IDENTIFICATION LC_ALL LANGUAGE
+            SendEnv XMODIFIERS
+
+        Host proxytest
+            HostName 192.168.122.2
+
+    Attributes:
+
+        global_lines (list): The list of site-wide configuration, as
+            namedtuple('KeyValue', ['keyword', 'value', 'line']).
+        host_lines (dict): The dict of all host-specific definitions, as
+            {'Host_name': [namedtuple('KeyValue', ['keyword', 'value', 'line'])]}
+
+    Examples:
+        >>> len(foreman_proxy_ssh_config.global_lines)
+        1
+        >>> foreman_proxy_ssh_config.global_lines[0].keyword
+        'ProxyCommand'
+        >>> foreman_proxy_ssh_config.global_lines[0].value
+        'ssh -q -W %h:%p gateway.example.com'
+        >>> 'Host_*' in foreman_proxy_ssh_config.host_lines
+        True
+        >>> foreman_proxy_ssh_config.host_lines['Host_*'][0].keyword
+        'GSSAPIAuthentication'
+        >>> foreman_proxy_ssh_config.host_lines['Host_*'][0].value
+        'yes'
+        >>> foreman_proxy_ssh_config.host_lines['Host_*'][1].keyword
+        'ForwardX11Trusted'
+        >>> foreman_proxy_ssh_config.host_lines['Host_*'][1].value
+        'yes'
+        >>> foreman_proxy_ssh_config.host_lines['Host_proxytest'][0].keyword
+        'HostName'
+        >>> foreman_proxy_ssh_config.host_lines['Host_proxytest'][0].value
         '192.168.122.2'
     """
     pass
