@@ -7,7 +7,7 @@ import pytest
 
 
 BRIDGE_NAME_MAC_COUNT = """
-['br-int:6', 'br-int1:21', 'br-tun:1', 'br0:0']
+{"br-int": 6, "br-int1": 21, "br-tun": 1, "br0": 0}
 """.strip()
 
 EXCEPTION1 = """
@@ -28,7 +28,7 @@ def test_ovs_bridge_mac_table_entry_count_documentation():
 
 def test_ovs_bridge_mac_table_entry_count():
     data = OVSappctlFdbShowBridgeCount(context_wrap(BRIDGE_NAME_MAC_COUNT))
-    assert data["br-int1"] == "21"
+    assert data["br-int1"] == 21
     assert ("bridge0" in data) is False
     assert int(data.get("br-tun")) == 1
 
@@ -42,4 +42,4 @@ def test_ovs_bridge_mac_table_entry_count_exception1():
 def test_ovs_bridge_mac_table_entry_count_exception2():
     with pytest.raises(ParseException) as e:
         OVSappctlFdbShowBridgeCount(context_wrap(EXCEPTION2))
-    assert "Incorrect input data format" in str(e)
+    assert "Incorrect content: 'br-int:\"1\"'" in str(e)

@@ -563,20 +563,22 @@ class DefaultSpecs(Specs):
             3       0 MAC2 24
 
         Returns:
-            (list): List of bridge-name and corresponding MAC entries count
+            (dict): Dictionary of bridge-name and corresponding MAC entries count
+                    where key=bridge-name and value=mac-count
         """
+        import json
         bridge_names = broker[DefaultSpecs.ovs_vsctl_list_br].content
         details_cmd = "/usr/bin/ovs-appctl fdb/show {0}"
         relative_path = "ovs-appctl_fdb-show_bridge_name"
-        results = []
+        results = {}
         for bridge in bridge_names:
             try:
                 out = broker[HostContext].shell_out(details_cmd.format(bridge))
-                results.append(str(bridge) + ":" + str(len(out) - 1))
+                results[bridge] = len(out)-1
             except:
-                results.append(str(bridge) + ":0")
+                results[bridge] = 0
         if results:
-            return DatasourceProvider(content=results, relative_path=relative_path)
+            return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
         raise SkipComponent()
 
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
