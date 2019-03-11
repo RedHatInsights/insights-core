@@ -3,10 +3,10 @@ VDSMLog - file ``/var/log/vdsm/vdsm.log`` and ``/var/log/vdsm/import/import-*.lo
 ===================================================================================
 """
 
+import re
 from insights import LogFileOutput, parser
 from datetime import datetime
 from insights.specs import Specs
-import re
 
 
 @parser(Specs.vdsm_log)
@@ -168,7 +168,7 @@ class VDSMImportLog(LogFileOutput):
         [    0.2] Copying disk 1/1 to /rhev/data-center/958ca292-9126/f524d2ba-155a/images/502f5598-335d-/d4b140c8-9cd5
         [    0.0] >>> source, dest, and storage-type have different lengths
 
-    Examples::
+    Example:
 
         >>> log = vdsm_import_logs.get('preparing for copy')
         >>> len(log)
@@ -179,17 +179,15 @@ class VDSMImportLog(LogFileOutput):
         '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
         >>> vdsm_import_logs.file_datetime
         datetime.datetime(2018, 1, 30, 15, 48, 07)
+
+    Attributes:
+        vm_uuid (str): UUID of imported VM
+        file_datetime (datetime): Date and time that import began.
     """
     _line_re = re.compile(r'^(?:\[\s+(?P<timestamp>\d+\.\d+)\]\s+)?(?P<message>.*)$')
 
     def parse_content(self, content):
-        """Parse ``import-@UUID-@datetime.log`` log file.
-
-        Attributes:
-            vm_uuid (str): UUID of imported VM
-
-            file_datetime (datetime): Date and time that import began.
-        """
+        """Parse ``import-@UUID-@datetime.log`` log file."""
         super(VDSMImportLog, self).parse_content(content)
         splited_file_name = self.file_name.split('-')
         self.vm_uuid = '-'.join(splited_file_name[1:-1])
@@ -198,7 +196,7 @@ class VDSMImportLog(LogFileOutput):
         try:
             self.file_datetime = datetime.strptime(_datetime, '%Y%m%dT%H%M%S')
         except:
-            pass
+            self.file_datetime = None
 
     def get_after(self, timestamp, s=None):
         """Find all the (available) logs that are after the given time stamp.

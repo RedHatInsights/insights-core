@@ -301,16 +301,25 @@ VDSM_IMPORT_FAILURE_LOGS = """
 
 def test_vdsm_import_log():
     vdsm_import1 = context_wrap(VDSM_IMPORT_LOGS, path='var/log/vdsm/import/import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log')
-    result = VDSMImportLog(vdsm_import1)
-    log = result.get('preparing for copy')
-    assert len(log) == 1
-    assert log[0].get('raw_message') == '[    0.2] preparing for copy'
-    assert result.vm_uuid == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
-    assert len(list(result.get_after(546.9))) == 1
+    result1 = VDSMImportLog(vdsm_import1)
+    log1 = result1.get('preparing for copy')
+    assert len(log1) == 1
+    assert log1[0].get('raw_message') == '[    0.2] preparing for copy'
+    assert result1.vm_uuid == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+    assert len(list(result1.get_after(546.9))) == 1
 
-    vdsm_import2 = context_wrap(VDSM_IMPORT_FAILURE_LOGS, path='var/log/vdsm/import/import-3a51988d-579b-42d5-9af5-d48decc85fe4-20180201T082836.log')
-    output = VDSMImportLog(vdsm_import2)
-    log = output.get('storage-type have different lengths')
+    # Invalid datetime in file name
+    vdsm_import2 = context_wrap(VDSM_IMPORT_LOGS, path='var/log/vdsm/import/import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-201801304807.log')
+    result2 = VDSMImportLog(vdsm_import2)
+    assert result2.file_datetime is None
+    assert result2.vm_uuid == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+    log2 = result2.get('Finishing off')
+    assert len(log2) == 1
+
+
+def test_vdsm_import_log2():
+    vdsm_import = context_wrap(VDSM_IMPORT_FAILURE_LOGS, path='var/log/vdsm/import/import-3a51988d-579b-42d5-9af5-d48decc85fe4-20180201T082836.log')
+    output = VDSMImportLog(vdsm_import)
     assert output.vm_uuid == '3a51988d-579b-42d5-9af5-d48decc85fe4'
     assert output.file_datetime == datetime(2018, 2, 1, 8, 28, 36)
     assert len(list(output.get_after(0.2))) == 2
