@@ -1,6 +1,6 @@
 """
 QemuXML file ``/etc/libvirt/qemu/*.xml`` and ``/var/run/libvirt/qemu/*.xml``
-----------------------------------------------------------------------------
+============================================================================
 
 Parsers provided by this module are:
 
@@ -18,6 +18,9 @@ class BaseQemuXML(XMLParser):
     """Base class for parsing Qemu XML files. It uses ``XMLParser`` mixin
     class.
 
+    Attributes:
+        vm_name(str): Name of VM
+
     """
     def parse_content(self, content):
         super(BaseQemuXML, self).parse_content(content)
@@ -31,6 +34,11 @@ class BaseQemuXML(XMLParser):
             self.vm_name = self.data.get('name')
 
     def parse_dom(self):
+        """Parse xml information in :attr:`data` and return.
+
+        Returns:
+            dict: Parsed xml data. An empty dictionary when content is blank.
+        """
         if self.dom is None:
             return {}
         else:
@@ -47,7 +55,7 @@ class BaseQemuXML(XMLParser):
 @parser(Specs.qemu_xml)
 class QemuXML(BaseQemuXML):
     """This class parses xml files under ``/etc/libvirt/qemu/`` using
-    ``XMLParser`` base parser.
+    ``BaseQemuXML`` base parser.
 
     Sample file::
 
@@ -184,7 +192,7 @@ class QemuXML(BaseQemuXML):
 @parser(Specs.var_qemu_xml)
 class VarQemuXML(BaseQemuXML):
     """This class parses xml files under ``/var/run/libvirt/qemu/`` using
-    ``QemuXML`` base parser.
+    ``BaseQemuXML`` base parser.
 
     Sample file::
 
@@ -199,20 +207,15 @@ class VarQemuXML(BaseQemuXML):
           <monitor path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve/monitor.sock' json='1' type='unix'/>
           <vcpus>
             <vcpu id='0' pid='17156'/>
-            <vcpu id='1' pid='17157'/>
           </vcpus>
           <qemuCaps>
             <flag name='kvm'/>
             <flag name='mem-path'/>
-            <flag name='ivshmem-doorbell'/>
           </qemuCaps>
           <devices>
             <device alias='balloon0'/>
-            <device alias='virtio-disk0'/>
-            <device alias='ide0-1-0'/>
           </devices>
           <libDir path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve'/>
-          <channelTargetDir path='/var/lib/libvirt/qemu/channel/target/domain-59-test-idm-client-ccve'/>
           <domain type='kvm' id='59'>
             <name>test-idm-client-ccveu-net</name>
             <uuid>78177d07-ac0e-4057-b1de-9ccd66cbc3d7</uuid>
@@ -221,86 +224,18 @@ class VarQemuXML(BaseQemuXML):
             </metadata>
             <maxMemory slots='16' unit='KiB'>4294967296</maxMemory>
             <memory unit='KiB'>2097152</memory>
-            <currentMemory unit='KiB'>2097152</currentMemory>
-            <vcpu placement='static' current='2'>32</vcpu>
-            <cputune>
-              <shares>1020</shares>
-            </cputune>
-            <resource>
-              <partition>/machine</partition>
-            </resource>
-            <sysinfo type='smbios'>
-              <system>
-                <entry name='manufacturer'>Red Hat</entry>
-                <entry name='product'>RHEV Hypervisor</entry>
-                <entry name='version'>7.3-1.1.el7</entry>
-                <entry name='serial'>49c1e6bb-adbb-44ac-8d12-5ba4119cf110</entry>
-                <entry name='uuid'>78177d07-ac0e-4057-b1de-9ccd66cbc3d7</entry>
-              </system>
-            </sysinfo>
             <os>
               <type arch='x86_64' machine='pc-i440fx-rhel7.2.0'>hvm</type>
               <bootmenu enable='yes' timeout='10000'/>
               <smbios mode='sysinfo'/>
             </os>
-            <features>
-              <acpi/>
-            </features>
-            <cpu mode='custom' match='exact'>
-              <model fallback='allow'>Broadwell</model>
-              <topology sockets='16' cores='2' threads='1'/>
-              <numa>
-                <cell id='0' cpus='0-1' memory='2097152' unit='KiB'/>
-              </numa>
-            </cpu>
-            <clock offset='variable' adjustment='1' basis='utc'>
-              <timer name='rtc' tickpolicy='catchup'/>
-              <timer name='pit' tickpolicy='delay'/>
-              <timer name='hpet' present='no'/>
-            </clock>
-            <on_poweroff>destroy</on_poweroff>
-            <on_reboot>restart</on_reboot>
-            <on_crash>destroy</on_crash>
             <devices>
               <emulator>/usr/libexec/qemu-kvm</emulator>
               <disk type='file' device='cdrom'>
                 <driver name='qemu' type='raw'/>
                 <source startupPolicy='optional'/>
-                <backingStore/>
-                <target dev='hdc' bus='ide'/>
-                <readonly/>
-                <alias name='ide0-1-0'/>
-                <address type='drive' controller='0' bus='1' target='0' unit='0'/>
               </disk>
-              <controller type='usb' index='0' model='piix3-uhci'>
-                <alias name='usb'/>
-                <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'/>
-              </controller>
-              <interface type='bridge'>
-                <mac address='00:1a:4a:16:03:72'/>
-                <source bridge='vlan2593'/>
-                <target dev='vnet20'/>
-                <model type='virtio'/>
-                <filterref filter='vdsm-no-mac-spoofing'/>
-                <link state='up'/>
-                <boot order='2'/>
-                <alias name='net0'/>
-                <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
-              </interface>
-              <channel type='unix'>
-                <source mode='bind' path='/var/lib/libvirt/qemu/channels/78177d07-ac0e-4057-b1de-9ccd66cbc3d7.com.redhat.rhevm.vdsm'/>
-                <target type='virtio' name='com.redhat.rhevm.vdsm' state='connected'/>
-                <alias name='channel0'/>
-                <address type='virtio-serial' controller='0' bus='0' port='1'/>
-              </channel>
-              <input type='mouse' bus='ps2'>
-                <alias name='input0'/>
-              </input>
             </devices>
-            <seclabel type='dynamic' model='dac' relabel='yes'>
-              <label>+107:+107</label>
-              <imagelabel>+107:+107</imagelabel>
-            </seclabel>
           </domain>
         </domstatus>
     """
