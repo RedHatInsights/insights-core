@@ -843,21 +843,24 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
 
 
 class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
-    """Class for parsing log file content.
+    """
+    Class for parsing log file content.
 
     Log file content is stored in raw format in the ``lines`` attribute.
 
-    Attributes:
-        lines (list): List of the lines from the log file content.
+    Assume the log file content is::
+
+        Log file line one
+        Log file line two
+        Log file line three, and more
 
     Examples:
         >>> class MyLogger(LogFileOutput):
         ...     pass
-        >>> contents = '''
-        Log file line one
-        Log file line two
-        Log file line three, and more
-        '''.strip()
+        >>> MyLogger.keep_scan('get_one', 'one')
+        >>> MyLogger.keep_scan('get_three_and_more', ['three', 'more'])
+        >>> MyLogger.token_scan('is_more', 'more')
+        >>> MyLogger.token_scan('is_more_and_more', ['four', 'more'])
         >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
         >>> my_logger.file_path
         '/var/log/mylog'
@@ -871,6 +874,18 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         [{'raw_message': 'Log file line three, and more'}]
         >>> my_logger.lines[0]
         'Log file line one'
+        >>> my_logger.get_one
+        [{'raw_message': 'Log file line one'}]
+        >>> my_logger.get_three_and_more == my_logger.get(['three', 'more'])
+        True
+        >>> my_logger.is_more
+        True
+        >>> my_logger.is_more_and_more
+        False
+
+    Attributes:
+        lines (list): List of the lines from the log file content.
+
     """
 
     time_format = '%Y-%m-%d %H:%M:%S'
@@ -1183,21 +1198,6 @@ class Syslog(LogFileOutput):
     It is best to use filters and/or scanners with the messages log, to speed up
     parsing.  These work on the raw message, before being parsed.
 
-    Examples:
-
-        >>> Syslog.filters.append('wrapper')
-        >>> Syslog.token_scan('daemon_start', 'Wrapper Started as Daemon')
-        >>> msgs = shared[Syslog]
-        >>> len(msgs.lines)
-        >>> wrapper_msgs = msgs.get('wrapper') # Can only rely on lines filtered being present
-        >>> wrapper_msgs[0]
-        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
-         'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
-         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
-        }
-        >>> msgs.daemon_start # Token set if matching lines present in logs
-        True
-
     Sample log lines::
 
         May 18 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
@@ -1205,6 +1205,25 @@ class Syslog(LogFileOutput):
         May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
         May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
         May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
+
+    Examples:
+        >>> Syslog.token_scan('daemon_start', 'Wrapper Started as Daemon')
+        >>> Syslog.token_scan('yum_updated', ['yum', 'Updated'])
+        >>> Syslog.keep_scan('yum_lines', 'yum')
+        >>> Syslog.keep_scan('yum_installed_lines', ['yum', 'Installed'])
+        >>> syslog.get('wrapper')[0]
+        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
+         'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
+         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
+        }
+        >>> syslog.daemon_start
+        True
+        >>> syslog.yum_updated
+        True
+        >>> len(syslog.yum_lines)
+        2
+        >>> len(syslog.yum_updated_lines)
+        1
 
     .. note::
         Because syslog timestamps by default have no year,
