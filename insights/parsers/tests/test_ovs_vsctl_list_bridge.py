@@ -29,6 +29,7 @@ rstp_status         : {rstp_bridge_id="8.000.a61fd19ea54f",     rstp_bridge_port
 sflow               : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 status              : {"0"="1"}
 stp_enable          : true
+
 _uuid               : xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 auto_attach         : []
 controller          : []
@@ -91,7 +92,7 @@ def test_ovs_vsctl_list_bridge_all():
     assert data[0]["name"] == "br-int"
     assert data[0]["external_ids"] == {"a": "0"}
     assert data[0]["flow_tables"] == {"1": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"}
-    assert data[0]["flood_vlans"] == ['1000']
+    assert data[0].get("flood_vlans") == ["1000"]
     assert data[0]["protocols"][-1] == "OpenFlow13"
     assert data[0]["other_config"]["mac-table-size"] == "2048"
     assert data[0]["rstp_status"]["rstp_root_path_cost"] == "0"
@@ -99,12 +100,12 @@ def test_ovs_vsctl_list_bridge_all():
     assert data[1]["mirrors"] == []
     assert data[1]["datapath_type"] == ""
     assert data[1]["status"] == {}
-    assert data[1]["stp_enable"] == "false"
+    assert data[1].get("stp_enable") == "false"
 
 
 def test_ovs_vsctl_list_bridge():
     data = OVSvsctlListBridge(context_wrap(OVS_VSCTL_LIST_BRIDGES_FILTERED2))
-    assert data[0]["name"] == "br-int"
+    assert data[0].get("name") == "br-int"
     assert data[0]["other_config"]["mac-table-size"] == "2048"
     assert data[1]["name"] == "br-tun"
 

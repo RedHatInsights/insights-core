@@ -4,22 +4,15 @@ OVSvsctlListBridge - command ``/usr/bin/ovs-vsctl list bridge``
 
 This module provides class ``OVSvsctlListBridge`` for parsing the
 output of command ``ovs-vsctl list bridge``.
-Filters have been added so that sensitive information can be filtered out.
-This results in the modification of the original structure of data.
 """
 
-import re
-from insights import LegacyItemAccess, CommandParser, parser
-from insights.core.filters import add_filter
+from insights import CommandParser, get_active_lines, parser
 from insights.parsers import SkipException, optlist_to_dict
 from insights.specs import Specs
 
-FILTERS = ["name", "other_config", "mac-table-size"]
-add_filter(Specs.ovs_vsctl_list_bridge, FILTERS)
-
 
 @parser(Specs.ovs_vsctl_list_bridge)
-class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
+class OVSvsctlListBridge(CommandParser):
     """
     Class to parse output of command ``ovs-vsctl list bridge``.
     Generally, the data is in key:value format with values having
@@ -41,7 +34,7 @@ class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
         '2048'
         >>> bridge_lists[0]["other_config"]["disable-in-band"]
         'true'
-        >>> bridge_lists[1]["name"]
+        >>> bridge_lists[1].get("name")
         'br-tun'
         >>> len(bridge_lists[1]["other_config"]) == 0
         True
@@ -62,9 +55,9 @@ class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
 
     def parse_content(self, content):
         """
-           Input content is split on the basis of key 'name' as details for multiple
-           bridges will be present and then the extracted data for each bridge
-           is stored in a dictionary.
+           Details of all the bridges are extracted and stored in a list as dictionary
+           elements. Each dictionary element contains the information of a specific
+           bridge.
         """
         # No content found or file is empty
         if not content:
@@ -72,7 +65,7 @@ class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
 
         self.data = []
         bridge_details = {}
-        for line in content:
+        for line in get_active_lines(content):
             key, value = [i.strip() for i in line.split(":", 1)]
             parsed_value = value.strip('"')
             if value.startswith("{") and value.endswith("}"):
@@ -88,9 +81,12 @@ class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
 
             if key not in bridge_details:
                 bridge_details[key] = parsed_value
-            elif key in bridge_details:
+            else:
                 # A new bridge comes
                 self.data.append(bridge_details)
-                bridge_details= {key: parsed_value}
+                bridge_details = {key: parsed_value}
         # Add the last bridge
         self.data.append(bridge_details)
+
+    def __getitem__(self, line):
+        return self.data[line]
