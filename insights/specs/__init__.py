@@ -1,6 +1,13 @@
 from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
+class Openshift(SpecSet):
+    namespaces = RegistryPoint(raw=True)
+    nodes = RegistryPoint(raw=True)
+    crds = RegistryPoint(raw=True)
+    crs = RegistryPoint(raw=True, multi_output=True)
+
+
 class Specs(SpecSet):
     amq_broker = RegistryPoint(multi_output=True)
     auditctl_status = RegistryPoint()
@@ -203,10 +210,6 @@ class Specs(SpecSet):
     jboss_standalone_main_config = RegistryPoint(multi_output=True)
     jboss_version = RegistryPoint(multi_output=True)
     journal_since_boot = RegistryPoint(filterable=True)
-    k8s_namespaces = RegistryPoint(raw=True)
-    k8s_nodes = RegistryPoint(raw=True)
-    k8s_crds = RegistryPoint(raw=True)
-    k8s_crs = RegistryPoint(raw=True, multi_output=True)
     katello_service_status = RegistryPoint(filterable=True)
     kdump_conf = RegistryPoint()
     kdump = RegistryPoint()
