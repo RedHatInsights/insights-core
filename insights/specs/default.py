@@ -574,7 +574,7 @@ class DefaultSpecs(Specs):
         for bridge in bridge_names:
             try:
                 out = broker[HostContext].shell_out(details_cmd.format(bridge))
-                results[bridge] = len(out)-1
+                results[bridge] = len(out) - 1
             except:
                 results[bridge] = 0
         if results:
