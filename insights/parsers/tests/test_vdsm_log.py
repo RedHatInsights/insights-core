@@ -1,6 +1,7 @@
 from datetime import datetime
+import pytest
 
-from insights.parsers.vdsm_log import VDSMLog
+from insights.parsers.vdsm_log import VDSMLog, VDSMImportLog
 from insights.tests import context_wrap
 
 
@@ -282,3 +283,48 @@ def test_vdsm_version_4_log():
         'logname': 'storage.check',
         'thread': 'check/loop'
     }
+
+
+VDSM_IMPORT_LOGS = """
+[    0.2] preparing for copy
+[    0.2] Copying disk 1/1 to /rhev/data-center/958ca292-9126-41f1-b7eb-2f9931fea2fb/f524d2ba-155a-45c8-b3ab-9e18539d3ef2/images/502f5598-335d-4023-8c01-635d86d129a3/d4b140c8-9cd5-4ad4-bb04-63aebeda808b
+    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (1/100%)    (1/100%)    (1/100%)    (1/100%)    (1/100%)    (2/100%)    (2/100%)    (2/100%)    (2/100%)
+[  546.9] Finishing off
+""".strip()
+
+VDSM_IMPORT_FAILURE_LOGS = """
+[    0.0] >>> source, dest, and storage-type have different lengths
+[    0.2] preparing for copy
+[  546.9] Finishing off
+""".strip()
+
+
+def test_vdsm_import_log():
+    vdsm_import1 = context_wrap(VDSM_IMPORT_LOGS, path='var/log/vdsm/import/import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log')
+    result1 = VDSMImportLog(vdsm_import1)
+    log1 = result1.get('preparing for copy')
+    assert len(log1) == 1
+    assert log1[0].get('raw_message') == '[    0.2] preparing for copy'
+    assert result1.vm_uuid == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+    assert len(list(result1.get_after(546.9))) == 1
+
+    # Invalid datetime in file name
+    vdsm_import2 = context_wrap(VDSM_IMPORT_LOGS, path='var/log/vdsm/import/import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-201801304807.log')
+    result2 = VDSMImportLog(vdsm_import2)
+    assert result2.file_datetime is None
+    assert result2.vm_uuid == '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+    log2 = result2.get('Finishing off')
+    assert len(log2) == 1
+
+
+def test_vdsm_import_log2():
+    vdsm_import = context_wrap(VDSM_IMPORT_FAILURE_LOGS, path='var/log/vdsm/import/import-3a51988d-579b-42d5-9af5-d48decc85fe4-20180201T082836.log')
+    output = VDSMImportLog(vdsm_import)
+    assert output.vm_uuid == '3a51988d-579b-42d5-9af5-d48decc85fe4'
+    assert output.file_datetime == datetime(2018, 2, 1, 8, 28, 36)
+    assert len(list(output.get_after(0.2))) == 2
+    assert len(list(output.get_after(0.2, s='Finishing'))) == 1
+
+    with pytest.raises(TypeError) as excinfo:
+        list(output.get_after('0.2'))
+    assert "get_after needs a float type timestamp, but get '0.2'" in str(excinfo)
