@@ -237,7 +237,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
 
-    h = Hydration(output_path)
+    h = Hydration(output_path, parallel=run_strategy.get("name") == "parallel")
     broker.add_observer(h.make_persister(to_persist))
     if run_strategy.get("name") == "parallel":
         kwargs = run_strategy.get("args", {})
