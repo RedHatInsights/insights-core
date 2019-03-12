@@ -1,15 +1,61 @@
 """
-QemuXML file ``/etc/libvirt/qemu/*.xml``
-----------------------------------------
+QemuXML file ``/etc/libvirt/qemu/*.xml`` and ``/var/run/libvirt/qemu/*.xml``
+============================================================================
+
+Parsers provided by this module are:
+
+QemuXML - file ``/etc/libvirt/qemu/*.xml``
+------------------------------------------
+
+VarQemuXML - file ``/var/run/libvirt/qemu/*.xml``
+-------------------------------------------------
 """
 from .. import XMLParser, parser
 from insights.specs import Specs
 
 
+class BaseQemuXML(XMLParser):
+    """Base class for parsing Qemu XML files. It uses ``XMLParser`` mixin
+    class.
+
+    Attributes:
+        vm_name(str): Name of VM
+
+    """
+    def parse_content(self, content):
+        super(BaseQemuXML, self).parse_content(content)
+
+        # Setting vm_name attribute
+        self.vm_name = None
+        ret = self.get_elements('./domain/name') if self.dom else None
+        if ret:
+            self.vm_name = ret[0].text
+        else:
+            self.vm_name = self.data.get('name')
+
+    def parse_dom(self):
+        """Parse xml information in :attr:`data` and return.
+
+        Returns:
+            dict: Parsed xml data. An empty dictionary when content is blank.
+        """
+        if self.dom is None:
+            return {}
+        else:
+            domain = {}
+            for child in self.dom:
+                if len(child) == 0:
+                    domain[child.tag] = child.text
+                else:
+                    domain[child.tag] = [c.items() for c in child]
+
+            return domain
+
+
 @parser(Specs.qemu_xml)
-class QemuXML(XMLParser):
+class QemuXML(BaseQemuXML):
     """This class parses xml files under ``/etc/libvirt/qemu/`` using
-    ``XMLParser`` base parser.
+    ``BaseQemuXML`` base parser.
 
     Sample file::
 
@@ -140,19 +186,57 @@ class QemuXML(XMLParser):
         >>> memnode[1].get('mode') == 'strict'
         True
     """
-    def parse_dom(self):
-        if self.dom is None:
-            return
-        else:
-            domain = {}
-            for child in self.dom:
-                if len(child) == 0:
-                    domain[child.tag] = child.text
-                else:
-                    domain[child.tag] = [c.items() for c in child]
+    pass
 
-            return domain
 
-    @property
-    def vm_name(self):
-        return self.data.get('name', None)
+@parser(Specs.var_qemu_xml)
+class VarQemuXML(BaseQemuXML):
+    """This class parses xml files under ``/var/run/libvirt/qemu/`` using
+    ``BaseQemuXML`` base parser.
+
+    Sample file::
+
+        <!--
+        WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+        OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+          virsh edit test-idm-client-ccveu-net
+        or other application using the libvirt API.
+        -->
+
+        <domstatus state='running' reason='unpaused' pid='17150'>
+          <monitor path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve/monitor.sock' json='1' type='unix'/>
+          <vcpus>
+            <vcpu id='0' pid='17156'/>
+          </vcpus>
+          <qemuCaps>
+            <flag name='kvm'/>
+            <flag name='mem-path'/>
+          </qemuCaps>
+          <devices>
+            <device alias='balloon0'/>
+          </devices>
+          <libDir path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve'/>
+          <domain type='kvm' id='59'>
+            <name>test-idm-client-ccveu-net</name>
+            <uuid>78177d07-ac0e-4057-b1de-9ccd66cbc3d7</uuid>
+            <metadata xmlns:ovirt="http://ovirt.org/vm/tune/1.0">
+              <ovirt:qos/>
+            </metadata>
+            <maxMemory slots='16' unit='KiB'>4294967296</maxMemory>
+            <memory unit='KiB'>2097152</memory>
+            <os>
+              <type arch='x86_64' machine='pc-i440fx-rhel7.2.0'>hvm</type>
+              <bootmenu enable='yes' timeout='10000'/>
+              <smbios mode='sysinfo'/>
+            </os>
+            <devices>
+              <emulator>/usr/libexec/qemu-kvm</emulator>
+              <disk type='file' device='cdrom'>
+                <driver name='qemu' type='raw'/>
+                <source startupPolicy='optional'/>
+              </disk>
+            </devices>
+          </domain>
+        </domstatus>
+    """
+    pass

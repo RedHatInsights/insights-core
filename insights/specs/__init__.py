@@ -514,6 +514,7 @@ class Specs(SpecSet):
     uploader_log = RegistryPoint()
     uptime = RegistryPoint()
     usr_journald_conf_d = RegistryPoint(multi_output=True)
+    var_qemu_xml = RegistryPoint(multi_output=True)
     vdsm_conf = RegistryPoint()
     vdsm_id = RegistryPoint()
     vdsm_import_log = RegistryPoint(multi_output=True, filterable=True)
