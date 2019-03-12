@@ -74,19 +74,18 @@ class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
         bridge_details = {}
         for line in content:
             key, value = [i.strip() for i in line.split(":", 1)]
-            parsed_value = value
+            parsed_value = value.strip('"')
             if value.startswith("{") and value.endswith("}"):
-                value = value.strip("{}")
                 parsed_value = {}
+                value = value.strip("{}")
                 if value:
                     parsed_value = optlist_to_dict(value, opt_sep=", ", strip_quotes=True)
             elif value.startswith("[") and value.endswith("]"):
-                value = value.strip("[]")
                 parsed_value = []
+                value = value.strip("[]")
                 if value:
-                    parsed_value = [i.strip(' \t\r\n\"\'') for i in value.split(",")]
-            elif value.startswith("\"") and value.endswith("\""):
-                parsed_value = value.strip('"')
+                    parsed_value = [i.strip(' \t\"\'') for i in value.split(",")]
+
             if key not in bridge_details:
                 bridge_details[key] = parsed_value
             elif key in bridge_details:
