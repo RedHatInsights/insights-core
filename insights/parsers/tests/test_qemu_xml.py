@@ -248,6 +248,146 @@ or other application using the libvirt API.
 </domain>
 """
 
+XML_IDM_CLIENT = """
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh edit test-idm-client-ccveu-net
+or other application using the libvirt API.
+-->
+
+<domstatus state='running' reason='unpaused' pid='17150'>
+  <monitor path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve/monitor.sock' json='1' type='unix'/>
+  <vcpus>
+    <vcpu id='0' pid='17156'/>
+    <vcpu id='1' pid='17157'/>
+  </vcpus>
+  <qemuCaps>
+    <flag name='kvm'/>
+    <flag name='mem-path'/>
+    <flag name='ivshmem-doorbell'/>
+  </qemuCaps>
+  <devices>
+    <device alias='balloon0'/>
+    <device alias='virtio-disk0'/>
+    <device alias='ide0-1-0'/>
+  </devices>
+  <libDir path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve'/>
+  <channelTargetDir path='/var/lib/libvirt/qemu/channel/target/domain-59-test-idm-client-ccve'/>
+  <domain type='kvm' id='59'>
+    <name>test-idm-client-ccveu-net</name>
+    <uuid>78177d07-ac0e-4057-b1de-9ccd66cbc3d7</uuid>
+    <metadata xmlns:ovirt="http://ovirt.org/vm/tune/1.0">
+      <ovirt:qos/>
+    </metadata>
+    <maxMemory slots='16' unit='KiB'>4294967296</maxMemory>
+    <memory unit='KiB'>2097152</memory>
+    <currentMemory unit='KiB'>2097152</currentMemory>
+    <vcpu placement='static' current='2'>32</vcpu>
+    <cputune>
+      <shares>1020</shares>
+    </cputune>
+    <resource>
+      <partition>/machine</partition>
+    </resource>
+    <sysinfo type='smbios'>
+      <system>
+        <entry name='manufacturer'>Red Hat</entry>
+        <entry name='product'>RHEV Hypervisor</entry>
+        <entry name='version'>7.3-1.1.el7</entry>
+        <entry name='serial'>49c1e6bb-adbb-44ac-8d12-5ba4119cf110</entry>
+        <entry name='uuid'>78177d07-ac0e-4057-b1de-9ccd66cbc3d7</entry>
+      </system>
+    </sysinfo>
+    <os>
+      <type arch='x86_64' machine='pc-i440fx-rhel7.2.0'>hvm</type>
+      <bootmenu enable='yes' timeout='10000'/>
+      <smbios mode='sysinfo'/>
+    </os>
+    <features>
+      <acpi/>
+    </features>
+    <cpu mode='custom' match='exact'>
+      <model fallback='allow'>Broadwell</model>
+      <topology sockets='16' cores='2' threads='1'/>
+      <numa>
+        <cell id='0' cpus='0-1' memory='2097152' unit='KiB'/>
+      </numa>
+    </cpu>
+    <clock offset='variable' adjustment='1' basis='utc'>
+      <timer name='rtc' tickpolicy='catchup'/>
+      <timer name='pit' tickpolicy='delay'/>
+      <timer name='hpet' present='no'/>
+    </clock>
+    <on_poweroff>destroy</on_poweroff>
+    <on_reboot>restart</on_reboot>
+    <on_crash>destroy</on_crash>
+    <devices>
+      <emulator>/usr/libexec/qemu-kvm</emulator>
+      <disk type='file' device='cdrom'>
+        <driver name='qemu' type='raw'/>
+        <source startupPolicy='optional'/>
+        <backingStore/>
+        <target dev='hdc' bus='ide'/>
+        <readonly/>
+        <alias name='ide0-1-0'/>
+        <address type='drive' controller='0' bus='1' target='0' unit='0'/>
+      </disk>
+      <controller type='usb' index='0' model='piix3-uhci'>
+        <alias name='usb'/>
+        <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x2'/>
+      </controller>
+      <interface type='bridge'>
+        <mac address='00:1a:4a:16:03:72'/>
+        <source bridge='vlan2593'/>
+        <target dev='vnet20'/>
+        <model type='virtio'/>
+        <filterref filter='vdsm-no-mac-spoofing'/>
+        <link state='up'/>
+        <boot order='2'/>
+        <alias name='net0'/>
+        <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+      </interface>
+      <channel type='unix'>
+        <source mode='bind' path='/var/lib/libvirt/qemu/channels/78177d07-ac0e-4057-b1de-9ccd66cbc3d7.com.redhat.rhevm.vdsm'/>
+        <target type='virtio' name='com.redhat.rhevm.vdsm' state='connected'/>
+        <alias name='channel0'/>
+        <address type='virtio-serial' controller='0' bus='0' port='1'/>
+      </channel>
+      <input type='mouse' bus='ps2'>
+        <alias name='input0'/>
+      </input>
+    </devices>
+    <seclabel type='dynamic' model='dac' relabel='yes'>
+      <label>+107:+107</label>
+      <imagelabel>+107:+107</imagelabel>
+    </seclabel>
+  </domain>
+</domstatus>
+""".strip()
+
+XML_IDM_CLIENT_NO_NAME = """
+<!--
+WARNING: THIS IS AN AUTO-GENERATED FILE. CHANGES TO IT ARE LIKELY TO BE
+OVERWRITTEN AND LOST. Changes to this xml configuration should be made using:
+  virsh edit test-idm-client-ccveu-net
+or other application using the libvirt API.
+-->
+
+<domstatus state='running' reason='unpaused' pid='17150'>
+  <monitor path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve/monitor.sock' json='1' type='unix'/>
+  <vcpus>
+    <vcpu id='0' pid='17156'/>
+    <vcpu id='1' pid='17157'/>
+  </vcpus>
+  <libDir path='/var/lib/libvirt/qemu/domain-59-test-idm-client-ccve'/>
+  <channelTargetDir path='/var/lib/libvirt/qemu/channel/target/domain-59-test-idm-client-ccve'/>
+  <domain type='kvm' id='59'>
+    <uuid>78177d07-ac0e-4057-b1de-9ccd66cbc3d7</uuid>
+  </domain>
+</domstatus>
+""".strip()
+
 
 def test_vm_xml():
     xml = qemu_xml.QemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml'))
@@ -285,10 +425,24 @@ def test_blank_xml():
     xml = qemu_xml.QemuXML(context_wrap(BLANK_XML, path='/etc/libvirt/qemu/blank.xml'))
     assert xml.file_name == 'blank.xml'
     assert xml.vm_name is None
-    assert xml.parse_dom() is None
+    assert xml.parse_dom() == {}
 
 
 def test_documentation():
     env = {'xml_numa': qemu_xml.QemuXML(context_wrap(XML_NUMA, path='/etc/libvirt/qemu/vm.xml'))}
     failed_count, tests = doctest.testmod(qemu_xml, globs=env)
     assert failed_count == 0
+
+
+def test_var_qemu_xml():
+    xml = qemu_xml.VarQemuXML(context_wrap(XML_IDM_CLIENT, path='/var/run/libvirt/qemu/test-idm-client-ccveu-net.xml'))
+    assert xml.file_name == 'test-idm-client-ccveu-net.xml'
+    assert xml.vm_name == 'test-idm-client-ccveu-net'
+    assert len(xml.get("qemuCaps")) == 3
+    disks = xml.get_elements('./domain/devices/disk')
+    assert len(disks) == 1
+    assert disks[0].get('device', None) == 'cdrom'
+
+    # No 'name' found
+    xml = qemu_xml.VarQemuXML(context_wrap(XML_IDM_CLIENT_NO_NAME, path='/var/run/libvirt/qemu/no_name.xml'))
+    assert xml.vm_name is None
