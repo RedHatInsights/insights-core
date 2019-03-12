@@ -516,6 +516,7 @@ class Specs(SpecSet):
     usr_journald_conf_d = RegistryPoint(multi_output=True)
     vdsm_conf = RegistryPoint()
     vdsm_id = RegistryPoint()
+    vdsm_import_log = RegistryPoint(multi_output=True, filterable=True)
     vdsm_log = RegistryPoint(filterable=True)
     vdsm_logger_conf = RegistryPoint()
     vgdisplay = RegistryPoint()

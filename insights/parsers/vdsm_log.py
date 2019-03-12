@@ -1,12 +1,12 @@
 """
-VDSMLog - file ``/var/log/vdsm/vdsm.log``
-=========================================
+VDSMLog - file ``/var/log/vdsm/vdsm.log`` and ``/var/log/vdsm/import/import-*.log``
+===================================================================================
 """
 
+import re
 from insights import LogFileOutput, parser
 from datetime import datetime
 from insights.specs import Specs
-import re
 
 
 @parser(Specs.vdsm_log)
@@ -156,3 +156,89 @@ class VDSMLog(LogFileOutput):
                     except:
                         pass
                 yield fields
+
+
+@parser(Specs.vdsm_import_log)
+class VDSMImportLog(LogFileOutput):
+    """Parser for the log file detailing virtual machine imports.
+
+    Sample log file::
+
+        [    0.2] preparing for copy
+        [    0.2] Copying disk 1/1 to /rhev/data-center/958ca292-9126/f524d2ba-155a/images/502f5598-335d-/d4b140c8-9cd5
+        [    0.0] >>> source, dest, and storage-type have different lengths
+
+    Example:
+
+        >>> log = vdsm_import_logs.get('preparing for copy')
+        >>> len(log)
+        1
+        >>> log[0].get('raw_message', None)
+        '[    0.2] preparing for copy'
+        >>> vdsm_import_logs.vm_uuid              # file: import-1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0-20180130T154807.log
+        '1f9efdf5-2584-4a2a-8f85-c3b6f5dac4e0'
+        >>> vdsm_import_logs.file_datetime
+        datetime.datetime(2018, 1, 30, 15, 48, 07)
+
+    Attributes:
+        vm_uuid (str): UUID of imported VM
+        file_datetime (datetime): Date and time that import began.
+    """
+    _line_re = re.compile(r'^(?:\[\s+(?P<timestamp>\d+\.\d+)\]\s+)?(?P<message>.*)$')
+
+    def parse_content(self, content):
+        """Parse ``import-@UUID-@datetime.log`` log file."""
+        super(VDSMImportLog, self).parse_content(content)
+        splited_file_name = self.file_name.split('-')
+        self.vm_uuid = '-'.join(splited_file_name[1:-1])
+        _datetime = splited_file_name[-1].replace('.log', '')
+
+        try:
+            self.file_datetime = datetime.strptime(_datetime, '%Y%m%dT%H%M%S')
+        except:
+            self.file_datetime = None
+
+    def get_after(self, timestamp, s=None):
+        """Find all the (available) logs that are after the given time stamp.
+
+        If `s` is not supplied, then all lines are used.  Otherwise, only the
+        lines contain the `s` are used.  `s` can be either a single string or a
+        strings list. For list, all keywords in the list must be found in the
+        line.
+
+        Parameters:
+            timestamp(float): log lines after this time are returned.
+            s(str or list): one or more strings to search for.
+                If not supplied, all available lines are searched.
+        Yields:
+            Log lines with time stamps after the given time.
+        Raises:
+            TypeError: The ``timestamp`` should be in `float` type, otherwise a
+                `TypeError` will be raised.
+        """
+        if not isinstance(timestamp, float):
+            raise TypeError(
+                        "get_after needs a float type timestamp, but get '{c}'".format(
+                            c=timestamp)
+            )
+
+        including_lines = False
+        search_by_expression = self._valid_search(s)
+        for line in self.lines:
+            # If `s` is not None, keywords must be found in the line
+            if s and not search_by_expression(line):
+                continue
+            # Otherwise, search all lines
+            match = self._line_re.search(line)
+            if match and match.group('timestamp'):
+                # Get logtimestamp and compare to given timestamp
+                logstamp = float(match.group('timestamp'))
+                if logstamp >= timestamp:
+                    including_lines = True
+                    yield self._parse_line(line)
+                else:
+                    including_lines = False
+            else:
+                # If we're including lines, add this continuation line
+                if including_lines:
+                    yield self._parse_line(line)
