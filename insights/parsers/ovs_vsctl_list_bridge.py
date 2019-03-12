@@ -6,25 +6,6 @@ This module provides class ``OVSvsctlListBridge`` for parsing the
 output of command ``ovs-vsctl list bridge``.
 Filters have been added so that sensitive information can be filtered out.
 This results in the modification of the original structure of data.
-
-Sample filtered command output::
-
-    name                : br-int
-    other_config        : {disable-in-band="true", mac-table-size="2048"}
-    name                : br-tun
-    other_config        : {}
-
-Examples:
-    >>> data[0]["name"]
-    'br-int'
-    >>> data[0]["other_config"]["mac-table-size"]
-    '2048'
-    >>> data[0]["other_config"]["disable-in-band"]
-    'true'
-    >>> data[1]["name"]
-    'br-tun'
-    >>> len(data[1]["other_config"]) == 0
-    True
 """
 
 import re
@@ -40,19 +21,44 @@ add_filter(Specs.ovs_vsctl_list_bridge, FILTERS)
 @parser(Specs.ovs_vsctl_list_bridge)
 class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
     """
-       Class to parse output of command ``ovs-vsctl list bridge``.
-       Generally, the data is in key:value format with values having
-       data types as string, numbers, list or dictionary.
-       The class provides attribute ``data`` as list with lines parsed
-       line by line based on keys for each bridge.
+    Class to parse output of command ``ovs-vsctl list bridge``.
+    Generally, the data is in key:value format with values having
+    data types as string, numbers, list or dictionary.
+    The class provides attribute ``data`` as list with lines parsed
+    line by line based on keys for each bridge.
 
-       Attributes:
-           data (list): A list containing dictionary elements where each
-                        element contains the details of a bridge.
+    Sample command output::
 
-       Raises:
-        SkipException: When file is empty or value is not present for a key.
+        name                : br-int
+        other_config        : {disable-in-band="true", mac-table-size="2048"}
+        name                : br-tun
+        other_config        : {}
+
+    Examples:
+        >>> bridge_lists[0]["name"]
+        'br-int'
+        >>> bridge_lists[0]["other_config"]["mac-table-size"]
+        '2048'
+        >>> bridge_lists[0]["other_config"]["disable-in-band"]
+        'true'
+        >>> bridge_lists[1]["name"]
+        'br-tun'
+        >>> len(bridge_lists[1]["other_config"]) == 0
+        True
+
+    Attributes:
+        data (list): A list containing dictionary elements where each
+                     element contains the details of a bridge.
+
+    Raises:
+        SkipException: When file is empty.
     """
+
+    bridge_keys = ("_uuid", "auto_attach", "controller", "datapath_id",
+            "datapath_type", "datapath_version", "external_ids", "fail_mode",
+            "flood_vlans", "flow_tables", "ipfix", "mcast_snooping_enable:",
+            "mirrors", "name", "netflow", "other_config", "ports", "protocols",
+            "rstp_enable", "rstp_status", "sflow", "status", "stp_enable")
 
     def parse_content(self, content):
         """
@@ -61,36 +67,30 @@ class OVSvsctlListBridge(LegacyItemAccess, CommandParser):
            is stored in a dictionary.
         """
         # No content found or file is empty
-        if len(content) == 0:
+        if not content:
             raise SkipException("Empty file")
 
         self.data = []
-        content = ",".join(content).strip()
+        bridge_details = {}
+        for line in content:
+            key, value = [i.strip() for i in line.split(":", 1)]
+            parsed_value = value.strip('"')
+            if value.startswith("{") and value.endswith("}"):
+                parsed_value = {}
+                value = value.strip("{}")
+                if value:
+                    parsed_value = optlist_to_dict(value, opt_sep=", ", strip_quotes=True)
+            elif value.startswith("[") and value.endswith("]"):
+                parsed_value = []
+                value = value.strip("[]")
+                if value:
+                    parsed_value = [i.strip(' \t\"\'') for i in value.split(",")]
 
-        # Split the content on the basis of key 'name' and extract bridge details
-        key_list = [key.start() for key in re.finditer("name", content)]
-        bridge_details = []
-        for start in range(len(key_list)):
-            if start != len(key_list) - 1:
-                info = content[key_list[start]:key_list[start + 1] - 1]
-            else:
-                info = content[key_list[start]:]
-            bridge_details.append(info.split(",", 1))
-
-        # Extract and store the data for each bridge
-        for line in bridge_details:
-            details = {}
-            for parameters in line:
-                try:
-                    key, value = parameters.split(": ")
-                except Exception:
-                    key = parameters[:-1].strip()
-                    raise SkipException("Value not present for the key {0}".format(key))
-
-                if value[0].startswith("{"):
-                    if not re.match(r"(\{\s*\})+", value):
-                        value = optlist_to_dict(value.strip("{}"), opt_sep=", ", strip_quotes=True)
-                    else:
-                        value = {}
-                details[key.strip()] = value
-            self.data.append(details)
+            if key not in bridge_details:
+                bridge_details[key] = parsed_value
+            elif key in bridge_details:
+                # A new bridge comes
+                self.data.append(bridge_details)
+                bridge_details= {key: parsed_value}
+        # Add the last bridge
+        self.data.append(bridge_details)
