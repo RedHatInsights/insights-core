@@ -12,6 +12,7 @@ import os
 import time
 import traceback
 from glob import glob
+from functools import partial
 
 from insights.core import dr
 from insights.util import fs
@@ -95,22 +96,22 @@ def deserialize(data, root=None):
 
 try:
     from concurrent.futures import ThreadPoolExecutor
-    from functools import partial
-    def marshal(v, root=None):
-        if v is None:
-            return
-        if isinstance(v, list):
-            f = partial(serialize, root=root)
+    CONCURRENT = True
+except ImportError:
+    CONCURRENT = False
+
+
+def marshal(v, root=None, parallel=False):
+    if v is None:
+        return
+    f = partial(serialize, root=root)
+    if isinstance(v, list):
+        if CONCURRENT and parallel:
             with ThreadPoolExecutor() as tp:
                 return list(tp.map(f, v))
-        return serialize(v, root=root)
-except ImportError:
-    def marshal(v, root=None):
-        if v is None:
-            return
-        if isinstance(v, list):
-            return [serialize(t, root=root) for t in v]
-        return serialize(v, root=root)
+        else:
+            return [f(t) for t in v]
+    return f(v)
 
 
 def unmarshal(data, root=None):
@@ -128,12 +129,13 @@ class Hydration(object):
     file for the component and allows the serializer for a component to put raw
     data beneath a working directory.
     """
-    def __init__(self, root=None, meta_data="meta_data", data="data"):
+    def __init__(self, root=None, meta_data="meta_data", data="data", parallel=False):
         self.root = root
         self.meta_data = os.path.join(root, meta_data) if root else None
         self.data = os.path.join(root, data) if root else None
         self.ser_name = dr.get_base_module_name(ser)
         self.created = False
+        self.parallel = parallel
 
     def _hydrate_one(self, doc):
         """ Returns (component, results, errors, duration) """
@@ -194,7 +196,7 @@ class Hydration(object):
 
             try:
                 start = time.time()
-                doc["results"] = marshal(value, root=self.data)
+                doc["results"] = marshal(value, root=self.data, parallel=self.parallel)
             except Exception:
                 errors.append(traceback.format_exc())
                 log.debug(traceback.format_exc())
