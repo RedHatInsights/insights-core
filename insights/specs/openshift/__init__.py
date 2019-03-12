@@ -1,5 +1,4 @@
 import os
-import json
 
 from kubernetes import config
 from kubernetes.client import ApiClient, Configuration
@@ -23,12 +22,11 @@ class OpenshiftOutputProvider(ContentProvider):
         self.k8s = client.k8s
 
     def load(self):
-        doc = self.k8s.resources.get(**self.client_kwargs).get().to_dict()
-        return json.dumps(doc)
+        return self.k8s.resources.get(**self.client_kwargs).get(serialize=False).data
 
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
-        with open(dst, "w") as f:
+        with open(dst, "wb") as f:
             f.write(self.content)
 
         # we're done with it if we're writing it down.
