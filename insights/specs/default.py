@@ -311,6 +311,29 @@ class DefaultSpecs(Specs):
         # https://access.redhat.com/solutions/21680
         return list(ps_httpds)
 
+    @datasource(Mount)
+    def httpd_on_nfs(broker):
+        import json
+        mnt = broker[Mount]
+        mps = mnt.search(mount_type='nfs4')
+        # get nfs 4.0 mount points
+        nfs_mounts = [m.mount_point for m in mps if m['mount_options'].get("vers") == "4.0"]
+        if nfs_mounts:
+            # get all httpd ps
+            httpd_pids = broker[HostContext].shell_out("pgrep httpd")
+            if httpd_pids:
+                open_nfs_files = 0
+                lsof_cmds = ["lsof -p {}".format(pid) for pid in httpd_pids if pid]
+                # maybe there are thousands open files
+                httpd_open_files = broker[HostContext].shell_out(lsof_cmds)
+                for line in httpd_open_files:
+                    items = line.split()
+                    if len(items) > 8 and items[8].startswith(tuple(nfs_mounts)):
+                        open_nfs_files += 1
+                result_dict = {"http_ids": httpd_pids, "nfs_mounts": nfs_mounts, "open_nfs_files": open_nfs_files}
+                return DatasourceProvider(content=json.dumps(result_dict), relative_path="httpd_open_nfsV4_files")
+        raise SkipComponent()
+
     httpd_M = foreach_execute(httpd_cmd, "%s -M")
     httpd_ssl_access_log = simple_file("/var/log/httpd/ssl_access_log")
     httpd_ssl_error_log = simple_file("/var/log/httpd/ssl_error_log")
@@ -352,6 +375,7 @@ class DefaultSpecs(Specs):
     ip6tables_permanent = simple_file("etc/sysconfig/ip6tables")
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
+    ironic_inspector_log = simple_file("/var/log/ironic-inspector/ironic-inspector.log")
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     katello_service_status = simple_command("/usr/bin/katello-service status")
     kdump_conf = simple_file("/etc/kdump.conf")
@@ -589,6 +613,7 @@ class DefaultSpecs(Specs):
     rabbitmq_startup_log = simple_file("/var/log/rabbitmq/startup_log")
     rabbitmq_users = simple_command("/usr/sbin/rabbitmqctl list_users")
     rc_local = simple_file("/etc/rc.d/rc.local")
+    rdma_conf = simple_file("/etc/rdma/rdma.conf")
     redhat_release = simple_file("/etc/redhat-release")
     resolv_conf = simple_file("/etc/resolv.conf")
 

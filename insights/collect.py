@@ -11,21 +11,31 @@ from __future__ import print_function
 import argparse
 import logging
 import os
+import sys
 import tempfile
 import yaml
 
-from collections import defaultdict
 from datetime import datetime
 
-from insights import apply_configs, dr
+from insights import apply_configs, apply_default_enabled, dr
 from insights.core import blacklist
 from insights.core.serde import Hydration
 from insights.util import fs
 from insights.util.subproc import call
 
 SAFE_ENV = {
-    "PATH": os.path.pathsep.join(["/bin", "/usr/bin", "/sbin", "/usr/sbin"])
+    "PATH": os.path.pathsep.join([
+        "/bin",
+        "/usr/bin",
+        "/sbin",
+        "/usr/sbin",
+        "/usr/share/Modules/bin",
+    ]),
+    "LC_ALL": "C",
 }
+
+if "LANG" in os.environ:
+    SAFE_ENV["LANG"] = os.environ["LANG"]
 
 log = logging.getLogger(__name__)
 
@@ -101,19 +111,6 @@ def load_manifest(data):
     if not isinstance(doc, dict):
         raise Exception("Manifest didn't result in dict.")
     return doc
-
-
-def apply_default_enabled(default_enabled):
-    """
-    Configures dr and already loaded components with a default enabled
-    value.
-    """
-    for k in dr.ENABLED:
-        dr.ENABLED[k] = default_enabled
-
-    enabled = defaultdict(lambda: default_enabled)
-    enabled.update(dr.ENABLED)
-    dr.ENABLED = enabled
 
 
 def load_packages(pkgs):
@@ -242,14 +239,14 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     return output_path
 
 
-def main():
+def main(argv=sys.argv):
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
     p.add_argument("-o", "--out_path", help="Path to write output data.")
     p.add_argument("-q", "--quiet", help="Error output only.", action="store_true")
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
-    args = p.parse_args()
+    args = p.parse_args(argv)
 
     level = logging.WARNING
     if args.verbose:

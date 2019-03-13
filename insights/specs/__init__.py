@@ -1,6 +1,13 @@
 from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
+class Openshift(SpecSet):
+    namespaces = RegistryPoint(raw=True)
+    nodes = RegistryPoint(raw=True)
+    crds = RegistryPoint(raw=True)
+    crs = RegistryPoint(raw=True, multi_output=True)
+
+
 class Specs(SpecSet):
     amq_broker = RegistryPoint(multi_output=True)
     auditctl_status = RegistryPoint()
@@ -166,6 +173,7 @@ class Specs(SpecSet):
     httpd_error_log = RegistryPoint(filterable=True)
     httpd_limits = RegistryPoint(multi_output=True)
     httpd_M = RegistryPoint(multi_output=True)
+    httpd_on_nfs = RegistryPoint()
     httpd_pid = RegistryPoint()
     httpd_ssl_access_log = RegistryPoint(filterable=True)
     httpd_ssl_error_log = RegistryPoint(filterable=True)
@@ -195,6 +203,7 @@ class Specs(SpecSet):
     iptables = RegistryPoint()
     ipv4_neigh = RegistryPoint()
     ipv6_neigh = RegistryPoint()
+    ironic_inspector_log = RegistryPoint(filterable=True)
     iscsiadm_m_session = RegistryPoint()
     jboss_domain_server_log = RegistryPoint(multi_output=True, filterable=True)
     jboss_standalone_server_log = RegistryPoint(multi_output=True, filterable=True)
@@ -396,6 +405,7 @@ class Specs(SpecSet):
     rabbitmq_startup_log = RegistryPoint(filterable=True)
     rabbitmq_users = RegistryPoint()
     rc_local = RegistryPoint()
+    rdma_conf = RegistryPoint()
     redhat_release = RegistryPoint()
     resolv_conf = RegistryPoint()
     rhev_data_center = RegistryPoint()
@@ -507,8 +517,10 @@ class Specs(SpecSet):
     uploader_log = RegistryPoint()
     uptime = RegistryPoint()
     usr_journald_conf_d = RegistryPoint(multi_output=True)
+    var_qemu_xml = RegistryPoint(multi_output=True)
     vdsm_conf = RegistryPoint()
     vdsm_id = RegistryPoint()
+    vdsm_import_log = RegistryPoint(multi_output=True, filterable=True)
     vdsm_log = RegistryPoint(filterable=True)
     vdsm_logger_conf = RegistryPoint()
     vgdisplay = RegistryPoint()
@@ -519,7 +531,7 @@ class Specs(SpecSet):
     virt_what = RegistryPoint()
     virt_who_conf = RegistryPoint(multi_output=True, filterable=True)
     virtlogd_conf = RegistryPoint(filterable=True)
-    vmcore_dmesg = RegistryPoint(multi_output=True)
+    vmcore_dmesg = RegistryPoint(multi_output=True, filterable=True)
     vmware_tools_conf = RegistryPoint()
     vsftpd_conf = RegistryPoint(filterable=True)
     vsftpd = RegistryPoint()
