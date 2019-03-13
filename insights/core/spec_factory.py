@@ -598,10 +598,10 @@ class head(object):
     """
     Return the first element of any datasource that produces a list.
     """
-    def __init__(self, dep):
+    def __init__(self, dep, **kwargs):
         self.dep = dep
         self.__name__ = self.__class__.__name__
-        datasource(dep)(self)
+        datasource(dep, **kwargs)(self)
 
     def __call__(self, lst):
         c = lst[self.dep]
