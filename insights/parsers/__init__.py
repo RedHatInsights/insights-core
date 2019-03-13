@@ -346,8 +346,6 @@ def parse_fixed_table(table_lines,
             header = header.replace(old_val, new_val)
     col_headers = header.strip().split()
     col_index = calc_column_indices(header, col_headers)
-    print(col_headers)
-    print(col_index)
 
     table_data = []
     for line in table_lines[first_line + 1:last_line]:
