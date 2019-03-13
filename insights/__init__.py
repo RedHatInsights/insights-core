@@ -212,6 +212,7 @@ def apply_configs(config):
                 delegate.tags = set(comp_cfg.get("tags", delegate.tags))
                 for k, v in delegate.metadata.items():
                     if hasattr(c, k):
+                        log.debug("Setting %s.%s to %s", cname, k, v)
                         setattr(c, k, v)
                 if hasattr(c, "timeout"):
                     c.timeout = comp_cfg.get("timeout", c.timeout)
