@@ -338,6 +338,13 @@ def run(component=None, root=None, print_summary=False,
         else:
             raise
 
+    except UnicodeEncodeError as e:
+        if "codec can't encode character" in str(e):
+            msg = "Invalid character provided in command option/argument: {}"
+            log.error(msg.format(e))
+        else:
+            raise
+
 
 def main(argv=sys.argv[1:]):
     if "" not in sys.path:
