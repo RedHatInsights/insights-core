@@ -94,21 +94,13 @@ def deserialize(data, root=None):
         raise Exception("Unrecognized type: %s" % data["type"])
 
 
-try:
-    from concurrent.futures import ThreadPoolExecutor
-    CONCURRENT = True
-except ImportError:
-    CONCURRENT = False
-
-
-def marshal(v, root=None, parallel=False):
+def marshal(v, root=None, pool=None):
     if v is None:
         return
     f = partial(serialize, root=root)
     if isinstance(v, list):
-        if CONCURRENT and parallel:
-            with ThreadPoolExecutor() as tp:
-                return list(tp.map(f, v))
+        if pool:
+            return list(pool.map(f, v))
         else:
             return [f(t) for t in v]
     return f(v)
@@ -129,13 +121,13 @@ class Hydration(object):
     file for the component and allows the serializer for a component to put raw
     data beneath a working directory.
     """
-    def __init__(self, root=None, meta_data="meta_data", data="data", parallel=False):
+    def __init__(self, root=None, meta_data="meta_data", data="data", pool=None):
         self.root = root
         self.meta_data = os.path.join(root, meta_data) if root else None
         self.data = os.path.join(root, data) if root else None
         self.ser_name = dr.get_base_module_name(ser)
         self.created = False
-        self.parallel = parallel
+        self.pool = pool
 
     def _hydrate_one(self, doc):
         """ Returns (component, results, errors, duration) """
@@ -196,7 +188,7 @@ class Hydration(object):
 
             try:
                 start = time.time()
-                doc["results"] = marshal(value, root=self.data, parallel=self.parallel)
+                doc["results"] = marshal(value, root=self.data, pool=self.pool)
             except Exception:
                 errors.append(traceback.format_exc())
                 log.debug(traceback.format_exc())
