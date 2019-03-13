@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 
 from kubernetes import config
@@ -10,19 +12,30 @@ from insights.core.serde import deserializer, serializer
 from insights.core.spec_factory import ContentProvider, SerializedRawOutputProvider
 from insights.util import fs
 
+log = logging.getLogger(__name__)
+
+
+class GVK(object):
+    def __init__(self, kind, api_version="v1", kwargs=None):
+        self.kind = kind
+        self.api_version = api_version
+        self.kwargs = kwargs or {}
+
 
 class OpenshiftOutputProvider(ContentProvider):
-    def __init__(self, client, **client_kwargs):
+    def __init__(self, client, kind=None, api_version=None, **kwargs):
         super(OpenshiftOutputProvider, self).__init__()
-        name = "%s/%s" % (client_kwargs["api_version"], client_kwargs["kind"])
+        self.kind = kind
+        self.api_version = api_version
+        name = "%s/%s" % (self.api_version, self.kind)
         self.gvk = name.split("/")
         self.relative_path = name
         self.root = "/"
-        self.client_kwargs = client_kwargs
+        self.kwargs = kwargs
         self.k8s = client.k8s
 
     def load(self):
-        return self.k8s.resources.get(**self.client_kwargs).get(serialize=False).data
+        return self.k8s.resources.get(kind=self.kind, api_version=self.api_version).get(serialize=False, **self.kwargs).data
 
     def write(self, dst):
         fs.ensure_path(os.path.dirname(dst))
@@ -69,15 +82,51 @@ class OpenshiftClient(object):
         self.k8s = DynamicClient(k8s_client)  # stole this from config.new_client_from_config
 
 
+client = OpenshiftClient()
+
+
 class resource(object):
+    client_kwargs = None
+    timeout = None
+
     def __init__(self, kind, api_version="v1", **kwargs):
         # encode group into the api_version string if necessary
-        self.client_kwargs = kwargs
-        self.client_kwargs["kind"] = kind
-        self.client_kwargs["api_version"] = api_version
+        self.static_kwargs = kwargs
+        self.kind = kind
+        self.api_version = api_version
         self.__name__ = self.__class__.__name__
         datasource(OpenshiftContext)(self)
 
     def __call__(self, broker):
-        client = OpenshiftClient()
-        return OpenshiftOutputProvider(client, **self.client_kwargs)
+        # allow manifest to override what's in the resource definition
+        ctx = broker[OpenshiftContext]
+        timeout = self.timeout or ctx.timeout
+        kwargs = dict(self.client_kwargs if self.client_kwargs is not None else self.static_kwargs)
+        if timeout:
+            kwargs["timeout_seconds"] = timeout
+        return OpenshiftOutputProvider(client, kind=self.kind, api_version=self.api_version, **kwargs)
+
+
+class foreach_resource(object):
+    client_kwargs = None
+    timeout = None
+
+    def __init__(self, dep, func):
+        self.dep = dep
+        self.func = func
+        self.__name__ = self.__class__.__name__
+        datasource(OpenshiftContext, dep)(self)
+
+    def __call__(self, broker):
+        # allow manifest to override what's in the resource definition
+        ctx = broker[OpenshiftContext]
+        timeout = self.timeout or ctx.timeout
+        crds = broker[self.dep]
+        _lst = []
+        for crd in json.loads(crds.content)["items"]:
+            gvk = self.func(crd)
+            kwargs = dict(self.client_kwargs if self.client_kwargs is not None else gvk.kwargs)
+            if timeout:
+                kwargs["timeout_seconds"] = timeout
+            _lst.append(OpenshiftOutputProvider(client, kind=gvk.kind, api_version=gvk.api_version, **kwargs))
+        return _lst
