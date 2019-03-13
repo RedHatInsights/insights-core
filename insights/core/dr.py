@@ -1002,15 +1002,11 @@ def run_incremental(components=None, broker=None):
         yield run(graph, broker=_broker)
 
 
-def run_parallel(components=None, broker=None, max_workers=None):
-    try:
-        from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = []
-            for graph, _broker in generate_incremental(components, broker):
-                futures.append(executor.submit(run, graph, _broker))
-            return [f.result() for f in futures]
-
-    except ImportError:
-        log.warn("concurrent.futures is not installed. Falling back to run_incremental.")
-        return list(run_incremental(components, broker))
+def run_all(components=None, broker=None, pool=None):
+    if pool:
+        futures = []
+        for graph, _broker in generate_incremental(components, broker):
+            futures.append(pool.submit(run, graph, _broker))
+        return [f.result() for f in futures]
+    else:
+        return list(run_incremental(components=components, broker=broker))
