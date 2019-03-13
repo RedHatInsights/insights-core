@@ -22,6 +22,7 @@ import pkgutil
 import os
 import sys
 import yaml
+from collections import defaultdict
 
 from .core import Scannable, LogFileOutput, Parser, IniConfigFile  # noqa: F401
 from .core import FileListing, LegacyItemAccess, SysconfigOptions  # noqa: F401
@@ -124,6 +125,13 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
             return process_dir(broker, ex.tmp_dir, graph, context, inventory=inventory)
 
 
+def load_default_plugins():
+    dr.load_components("insights.specs.default")
+    dr.load_components("insights.specs.insights_archive")
+    dr.load_components("insights.specs.sos_archive")
+    dr.load_components("insights.specs.jdr_archive")
+
+
 def load_packages(packages):
     plugins = []
     for name in packages:
@@ -132,6 +140,31 @@ def load_packages(packages):
             dr.load_components(name, continue_on_error=False)
 
     return plugins
+
+
+def parse_plugins(p):
+    plugins = []
+    if p:
+        for path in p.split(","):
+            path = path.strip()
+            if path.endswith(".py"):
+                path, _ = os.path.splitext(path)
+            path = path.rstrip("/").replace("/", ".")
+            plugins.append(path)
+    return plugins
+
+
+def apply_default_enabled(default_enabled):
+    """
+    Configures dr and already loaded components with a default enabled
+    value.
+    """
+    for k in dr.ENABLED:
+        dr.ENABLED[k] = default_enabled
+
+    enabled = defaultdict(lambda: default_enabled)
+    enabled.update(dr.ENABLED)
+    dr.ENABLED = enabled
 
 
 def apply_configs(config):
@@ -196,13 +229,10 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        context=None, inventory=None, print_component=None):
+        context=None, inventory=None, print_component=None,
+        argv=sys.argv):
 
-    from .core import dr
-    dr.load_components("insights.specs.default")
-    dr.load_components("insights.specs.insights_archive")
-    dr.load_components("insights.specs.sos_archive")
-    dr.load_components("insights.specs.jdr_archive")
+    load_default_plugins()
 
     args = None
     formatter = None
@@ -216,14 +246,16 @@ def run(component=None, root=None, print_summary=False,
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
         p.add_argument("-f", "--format", help="Output format.", default="insights.formats.text")
+        p.add_argument("-s", "--syslog", help="Log results to syslog.", action="store_true")
         p.add_argument("-D", "--debug", help="Verbose debug output.", action="store_true")
         p.add_argument("--context", help="Execution Context. Defaults to HostContext if an archive isn't passed.")
 
         class Args(object):
             pass
 
+        formatters = []
         args = Args()
-        p.parse_known_args(namespace=args)
+        p.parse_known_args(argv, namespace=args)
         p = argparse.ArgumentParser(parents=[p])
         args.format = "insights.formats._json" if args.format == "json" else args.format
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format
@@ -233,8 +265,19 @@ def run(component=None, root=None, print_summary=False,
             dr.load_components(fmt, continue_on_error=False)
             Formatter = get_formatter(fmt)
         Formatter.configure(p)
-        p.parse_args(namespace=args)
+        p.parse_args(argv, namespace=args)
         formatter = Formatter(args)
+        formatters.append(formatter)
+
+        if args.syslog:
+            fmt = "insights.formats._syslog"
+            Formatter = dr.get_component(fmt)
+            if not Formatter:
+                dr.load_components(fmt, continue_on_error=False)
+                Formatter = get_formatter(fmt)
+            p.parse_args(namespace=args)
+            formatter = Formatter(args)
+            formatters.append(formatter)
 
         logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO if args.verbose else logging.ERROR)
         context = _load_context(args.context) or context
@@ -244,15 +287,7 @@ def run(component=None, root=None, print_summary=False,
         if root:
             root = os.path.realpath(root)
 
-        plugins = []
-        if args.plugins:
-            for path in args.plugins.split(","):
-                path = path.strip()
-                if path.endswith(".py"):
-                    path, _ = os.path.splitext(path)
-                path = path.rstrip("/").replace("/", ".")
-                plugins.append(path)
-
+        plugins = parse_plugins(args.plugins)
         for p in plugins:
             dr.load_components(p, continue_on_error=False)
 
@@ -282,10 +317,12 @@ def run(component=None, root=None, print_summary=False,
     broker = dr.Broker()
 
     try:
-        if formatter:
-            formatter.preprocess(broker)
+        if formatters:
+            for formatter in formatters:
+                formatter.preprocess(broker)
             broker = _run(broker, graph, root, context=context, inventory=inventory)
-            formatter.postprocess(broker)
+            for formatter in formatters:
+                formatter.postprocess(broker)
         elif print_component:
             broker = _run(broker, graph, root, context=context, inventory=inventory)
             broker.print_component(print_component)
@@ -302,10 +339,10 @@ def run(component=None, root=None, print_summary=False,
             raise
 
 
-def main():
+def main(argv=sys.argv[1:]):
     if "" not in sys.path:
         sys.path.insert(0, "")
-    run(print_summary=True)
+    run(print_summary=True, argv=argv)
 
 
 if __name__ == "__main__":

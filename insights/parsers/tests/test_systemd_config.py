@@ -1,6 +1,8 @@
 from insights.parsers.systemd import config
+from insights.parsers import SkipException
 from insights.tests import context_wrap
 import doctest
+import pytest
 
 
 SYSTEMD_DOCKER = """
@@ -167,6 +169,16 @@ ShutdownWatchdogSec=10min
 #DefaultLimitRTTIME=
 """.strip()
 
+SYSTEMD_SYSTEM_ORIGIN_ACCOUNTING = """
+[Manager]
+DefaultCPUAccounting=yes
+DefaultMemoryAccounting=yes
+# systemd v230 or newer
+DefaultIOAccounting=yes
+# Deprecated, remove in future
+DefaultBlockIOAccounting=no
+""".strip()
+
 
 def test_systemd_docker():
     docker_service = config.SystemdDocker(context_wrap(SYSTEMD_DOCKER))
@@ -191,6 +203,13 @@ def test_systemd_system_conf():
     assert common_conf_info["Manager"]["ShutdownWatchdogSec"] == "10min"
 
 
+def test_systemd_system_origin_accounting():
+    common_system_origin_accounting = config.SystemdOriginAccounting(context_wrap(SYSTEMD_SYSTEM_ORIGIN_ACCOUNTING))
+    assert "Manager" in common_system_origin_accounting
+    assert common_system_origin_accounting["Manager"]["DefaultCPUAccounting"] == 'True'
+    assert common_system_origin_accounting["Manager"]["DefaultBlockIOAccounting"] == 'False'
+
+
 def test_systemd_logind_conf():
     logind_conf = config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF))
     assert "Login" in logind_conf
@@ -198,10 +217,16 @@ def test_systemd_logind_conf():
     assert logind_conf["Login"]["RuntimeDirectorySize"] == "10%"
 
 
+def test_systemd_empty():
+    with pytest.raises(SkipException):
+        assert config.SystemdLogindConf(context_wrap('')) is None
+
+
 def test_doc_examples():
     env = {
             'docker_service': config.SystemdDocker(context_wrap(SYSTEMD_DOCKER)),
             'system_conf': config.SystemdSystemConf(context_wrap(SYSTEMD_SYSTEM_CONF)),
+            'system_origin_accounting': config.SystemdOriginAccounting(context_wrap(SYSTEMD_SYSTEM_ORIGIN_ACCOUNTING)),
             'openshift_node_service': config.SystemdOpenshiftNode(context_wrap(SYSTEMD_OPENSHIFT_NODE)),
             'logind_conf': config.SystemdLogindConf(context_wrap(SYSTEMD_LOGIND_CONF))
           }
