@@ -11,6 +11,7 @@ from __future__ import print_function
 import argparse
 import logging
 import os
+import sys
 import tempfile
 import yaml
 
@@ -238,14 +239,14 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     return output_path
 
 
-def main():
+def main(argv=sys.argv):
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
     p.add_argument("-o", "--out_path", help="Path to write output data.")
     p.add_argument("-q", "--quiet", help="Error output only.", action="store_true")
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
-    args = p.parse_args()
+    args = p.parse_args(argv)
 
     level = logging.WARNING
     if args.verbose:
