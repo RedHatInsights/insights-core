@@ -107,7 +107,6 @@ class Sap(LegacyItemAccess):
         else:
             raise SkipException('No SAP instance.')
 
-
         FUNC_INSTS = ('SMDA')
         for i in self.local_instances:
             (self.function_instances if i.startswith(FUNC_INSTS) else self.business_instances).append(i)
