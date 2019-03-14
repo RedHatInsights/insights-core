@@ -359,7 +359,7 @@ class Specs(SpecSet):
     ovirt_engine_server_log = RegistryPoint(filterable=True)
     ovirt_engine_ui_log = RegistryPoint(filterable=True)
     ovs_vsctl_list_br = RegistryPoint()
-    ovs_bridge_mac_table_entry_count = RegistryPoint()
+    ovs_appctl_fdb_show_bridge = RegistryPoint(multi_output=True)
     ovs_vsctl_show = RegistryPoint()
     ovs_vswitchd_limits = RegistryPoint()
     pacemaker_log = RegistryPoint(filterable=True)
