@@ -59,7 +59,7 @@ class TeamdctlConfigDump(CommandParser, JSONParser):
         """
         str: Return the type of the teaming device name
         """
-        return self.data['device']
+        return self.data.get('device')
 
     @property
     @defaults()
@@ -67,7 +67,7 @@ class TeamdctlConfigDump(CommandParser, JSONParser):
         """
         str: Return the type of the teaming runner name
         """
-        return self.data['runner']['name']
+        return self.data.get('runner', {}).get('name')
 
     @property
     @defaults()
@@ -75,4 +75,4 @@ class TeamdctlConfigDump(CommandParser, JSONParser):
         """
         str: Return the type of the teaming runner hwaddr policy
         """
-        return self.data['runner']['hwaddr_policy']
+        return self.data.get('runner', {}).get('hwaddr_policy')
