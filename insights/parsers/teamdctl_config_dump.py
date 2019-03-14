@@ -36,11 +36,11 @@ Sample configuration file::
     }
 
 Examples:
-    >>> teamdctl_config_dump.device_name
+    >>> str(teamdctl_config_dump.device_name)
     'team0'
-    >>> teamdctl_config_dump.runner_name
+    >>> str(teamdctl_config_dump.runner_name)
     'activebackup'
-    >>> teamdctl_config_dump.runner_hwaddr_policy
+    >>> str(teamdctl_config_dump.runner_hwaddr_policy)
     'only_active'
 """
 
