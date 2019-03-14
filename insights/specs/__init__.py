@@ -434,6 +434,7 @@ class Specs(SpecSet):
     saphostctl_getcimobject_sapinstance = RegistryPoint(filterable=True)
     saphostexec_status = RegistryPoint()
     saphostexec_version = RegistryPoint()
+    sat5_insights_properties = RegistryPoint()
     satellite_version_rb = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
     scsi = RegistryPoint()
