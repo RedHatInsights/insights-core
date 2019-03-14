@@ -52,6 +52,8 @@ class Sap(LegacyItemAccess):
         'lu0417'
         >>> 'D22' in saps.local_instances
         False
+        >>> len(saps.business_instances)
+        2
         >>> saps.is_hana
         True
         >>> saps.is_netweaver
@@ -60,14 +62,19 @@ class Sap(LegacyItemAccess):
         False
 
     Attributes:
-        all_instances (list): List all the SAP instances listed by the command.
-        local_instances (list): List SAP instances which are running on the system.
+        all_instances (list): List of all the SAP instances listed by the command.
+        local_instances (list): List of SAP instances which are running on the system.
+        function_instances (list): List of function SAP instances running on the system.
+                                   E.g. Diagnostics Agents SMDA97/SMDA98
+        business_instances (list): List of business SAP instances running on the system.
+                                   E.g. HANA, NetWeaver, ASCS, or others
     """
-
     def __init__(self, hostname, insts, lssap):
         hn = hostname.hostname
         self.data = {}
         self.local_instances = []
+        self.business_instances = []
+        self.function_instances = []
         self.all_instances = []
         self._types = set()
         if insts:
@@ -100,6 +107,11 @@ class Sap(LegacyItemAccess):
         else:
             raise SkipException('No SAP instance.')
 
+
+        FUNC_INSTS = ('SMDA')
+        for i in self.local_instances:
+            (self.function_instances if i.startswith(FUNC_INSTS) else self.business_instances).append(i)
+
     def version(self, instance):
         """str: Returns the version of the ``instance``."""
         return self.data[instance].version if instance in self.data else None
@@ -122,7 +134,7 @@ class Sap(LegacyItemAccess):
 
     @property
     def is_netweaver(self):
-        """bool: SAP Netweaver is running on the system."""
+        """bool: SAP NetWeaver is running on the system."""
         return 'D' in self._types
 
     @property
