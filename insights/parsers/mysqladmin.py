@@ -10,13 +10,13 @@ MysqladminVars - command ``/bin/mysqladmin variables``
 
 """
 
-from .. import Parser, parser, LegacyItemAccess
-from insights.parsers import ParseException
+from insights import CommandParser, parser, LegacyItemAccess
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
 @parser(Specs.mysqladmin_vars)
-class MysqladminVars(LegacyItemAccess, Parser):
+class MysqladminVars(LegacyItemAccess, CommandParser):
     """
     The output of command ``/bin/mysqladmin variables`` is in mysql table format,
     contains 'Variable_name' and 'Value' two columns.
@@ -46,14 +46,17 @@ class MysqladminVars(LegacyItemAccess, Parser):
         >>> output.getint('aria_block_size', '4096')
         8192
     """
+
     def parse_content(self, content):
         """
         Parse output content table of command ``/bin/mysqladmin variables``.
         Set each variable as an class attribute.
         """
         bad_lines = []
+        if not content:
+            raise SkipException("Empty content.")
         if len(content) < 5:
-            raise ParseException("Empty or wrong content in table.")
+            raise ParseException("Wrong content in table: '{0}'.".format(content))
 
         data = {}
         for _l in content[3:-1]:

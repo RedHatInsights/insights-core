@@ -58,8 +58,13 @@ class SosSpecs(Specs):
     lsblk = simple_file("sos_commands/block/lsblk")
     lsof = simple_file("lsof")
     lsmod = simple_file("lsmod")
-    lspci = simple_file("lspci")
+    lspci = first_of([
+        simple_file("sos_commands/pci/lspci_-nnvv"),
+        simple_file("sos_commands/pci/lspci_-nvv"),
+        simple_file("sos_commands/pci/lspci")
+    ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
+    ls_dev = simple_file("sos_commands/block/ls_-lanR_.dev")
     lvs = simple_file("sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0")
     mount = simple_file("mount")
     multipath__v4__ll = simple_file("sos_commands/multipath/multipath_-v4_-ll")
@@ -107,6 +112,8 @@ class SosSpecs(Specs):
     systemctl_list_units = simple_file("sos_commands/systemd/systemctl_list-units")
     uname = simple_file("sos_commands/kernel/uname_-a")
     uptime = simple_file("sos_commands/general/uptime")
+    var_qemu_xml = glob_file(r"var/run/libvirt/qemu/*.xml")
+    vdsm_import_log = glob_file("var/log/vdsm/import/import-*.log")
     vgdisplay = simple_file("vgdisplay")
     vgs = simple_file("sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0")
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")

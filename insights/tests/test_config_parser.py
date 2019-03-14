@@ -1,6 +1,7 @@
-from insights.core import IniConfigFile
+from insights.core import IniConfigFile, ConfigParser
 from insights.tests import context_wrap
 from insights.contrib.ConfigParser import NoOptionError
+from insights.parsers import SkipException
 import pytest
 
 # An example config file with a few tricks and traps for the parser
@@ -95,3 +96,11 @@ def test_ini_config_file_parser():
     # __contains__ tests
     assert 'global' in ini
     assert 'value checks' in ini
+
+
+def test_config_parser_empty():
+    with pytest.raises(SkipException):
+        assert ConfigParser(context_wrap('')) is None
+
+    with pytest.raises(SkipException):
+        assert IniConfigFile(context_wrap('')) is None

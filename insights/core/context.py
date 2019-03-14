@@ -170,7 +170,8 @@ class ExecutionContext(object):
 
 @fs_root
 class HostContext(ExecutionContext):
-    pass
+    def __init__(self, root='/', timeout=30, all_files=None):
+        super(HostContext, self).__init__(root=root, timeout=timeout, all_files=all_files)
 
 
 @fs_root

@@ -14,7 +14,7 @@ from insights.configtree import from_dict, iniconfig, Root, select, first
 from insights.configtree import Directive, SearchResult, Section
 from insights.contrib.ConfigParser import RawConfigParser
 
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from . import ls_parser
@@ -338,8 +338,13 @@ class ConfigComponent(object):
 class ConfigParser(Parser, ConfigComponent):
     """
     Base Insights component class for Parsers of configuration files.
+
+    Raises:
+        SkipException: When input content is empty.
     """
     def parse_content(self, content):
+        if not content:
+            raise SkipException('Empty content.')
         self.content = content
         self.doc = self.parse_doc(content)
 
@@ -508,14 +513,19 @@ class CommandParser(Parser):
     included in the `bad_lines` list a `ContentException` is raised
     """
 
-    bad_lines = ["no such file or directory", "command not found"]
+    __bad_lines = [
+            "no such file or directory",
+            "command not found",
+            "python: No module named",
+    ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
     When adding a new lin to the list make sure text is all lower case.
     """
 
-    def validate_lines(self, results):
+    @staticmethod
+    def validate_lines(results, bad_lines):
         """
         If `results` contains a single line and that line is included
         in the `bad_lines` list, this function returns `False`. If no bad
@@ -531,18 +541,20 @@ class CommandParser(Parser):
 
         if results and len(results) == 1:
             first = results[0]
-            if any(l in first.lower() for l in self.bad_lines):
+            if any(l in first.lower() for l in bad_lines):
                 return False
         return True
 
-    def __init__(self, context):
+    def __init__(self, context, extra_bad_lines=[]):
         """
             This __init__ calls `validate_lines` function to check for bad lines.
             If `validate_lines` returns False, indicating bad line found, a
             ContentException is thrown.
         """
-
-        if not self.validate_lines(context.content):
+        valid_lines = self.validate_lines(context.content, self.__bad_lines)
+        if valid_lines and extra_bad_lines:
+            valid_lines = self.validate_lines(context.content, extra_bad_lines)
+        if not valid_lines:
             first = context.content[0] if context.content else "<no content>"
             name = self.__class__.__name__
             raise ContentException(name + ": " + first)
@@ -831,21 +843,24 @@ class Scannable(six.with_metaclass(ScanMeta, Parser)):
 
 
 class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
-    """Class for parsing log file content.
+    """
+    Class for parsing log file content.
 
     Log file content is stored in raw format in the ``lines`` attribute.
 
-    Attributes:
-        lines (list): List of the lines from the log file content.
+    Assume the log file content is::
+
+        Log file line one
+        Log file line two
+        Log file line three, and more
 
     Examples:
         >>> class MyLogger(LogFileOutput):
         ...     pass
-        >>> contents = '''
-        Log file line one
-        Log file line two
-        Log file line three, and more
-        '''.strip()
+        >>> MyLogger.keep_scan('get_one', 'one')
+        >>> MyLogger.keep_scan('get_three_and_more', ['three', 'more'])
+        >>> MyLogger.token_scan('is_more', 'more')
+        >>> MyLogger.token_scan('is_more_and_more', ['four', 'more'])
         >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
         >>> my_logger.file_path
         '/var/log/mylog'
@@ -859,6 +874,18 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         [{'raw_message': 'Log file line three, and more'}]
         >>> my_logger.lines[0]
         'Log file line one'
+        >>> my_logger.get_one
+        [{'raw_message': 'Log file line one'}]
+        >>> my_logger.get_three_and_more == my_logger.get(['three', 'more'])
+        True
+        >>> my_logger.is_more
+        True
+        >>> my_logger.is_more_and_more
+        False
+
+    Attributes:
+        lines (list): List of the lines from the log file content.
+
     """
 
     time_format = '%Y-%m-%d %H:%M:%S'
@@ -885,7 +912,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         Returns true if any line contains the given text string.
         """
-        return any(s in l for l in self.lines)
+        search_by_expression = self._valid_search(s)
+        return any(search_by_expression(l) for l in self.lines)
 
     def _parse_line(self, line):
         """
@@ -1170,21 +1198,6 @@ class Syslog(LogFileOutput):
     It is best to use filters and/or scanners with the messages log, to speed up
     parsing.  These work on the raw message, before being parsed.
 
-    Examples:
-
-        >>> Syslog.filters.append('wrapper')
-        >>> Syslog.token_scan('daemon_start', 'Wrapper Started as Daemon')
-        >>> msgs = shared[Syslog]
-        >>> len(msgs.lines)
-        >>> wrapper_msgs = msgs.get('wrapper') # Can only rely on lines filtered being present
-        >>> wrapper_msgs[0]
-        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
-         'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
-         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
-        }
-        >>> msgs.daemon_start # Token set if matching lines present in logs
-        True
-
     Sample log lines::
 
         May 18 15:13:34 lxc-rhel68-sat56 jabberd/sm[11057]: session started: jid=rhn-dispatcher-sat@lxc-rhel6-sat56.redhat.com/superclient
@@ -1192,6 +1205,25 @@ class Syslog(LogFileOutput):
         May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: Launching a JVM...
         May 18 15:24:28 lxc-rhel68-sat56 yum[11597]: Installed: lynx-2.8.6-27.el6.x86_64
         May 18 15:36:19 lxc-rhel68-sat56 yum[11954]: Updated: sos-3.2-40.el6.noarch
+
+    Examples:
+        >>> Syslog.token_scan('daemon_start', 'Wrapper Started as Daemon')
+        >>> Syslog.token_scan('yum_updated', ['yum', 'Updated'])
+        >>> Syslog.keep_scan('yum_lines', 'yum')
+        >>> Syslog.keep_scan('yum_installed_lines', ['yum', 'Installed'])
+        >>> syslog.get('wrapper')[0]
+        {'timestamp': 'May 18 15:13:36', 'hostname': 'lxc-rhel68-sat56',
+         'procname': wrapper[11375]', 'message': '--> Wrapper Started as Daemon',
+         'raw_message': 'May 18 15:13:36 lxc-rhel68-sat56 wrapper[11375]: --> Wrapper Started as Daemon'
+        }
+        >>> syslog.daemon_start
+        True
+        >>> syslog.yum_updated
+        True
+        >>> len(syslog.yum_lines)
+        2
+        >>> len(syslog.yum_updated_lines)
+        1
 
     .. note::
         Because syslog timestamps by default have no year,

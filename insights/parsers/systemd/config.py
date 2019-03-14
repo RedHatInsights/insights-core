@@ -19,28 +19,29 @@ SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.serv
 SystemdSystemConf - file ``/etc/systemd/system.conf``
 -----------------------------------------------------
 
+SystemdOriginAccounting - file ``/etc/systemd/system.conf.d/origin-accounting.conf``
+------------------------------------------------------------------------------------
 """
 
 from insights.configtree.iniconfig import parse_doc
-from insights.core import Parser, LegacyItemAccess
+from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
 
 
-class SystemdConf(LegacyItemAccess, Parser):
+class SystemdConf(LegacyItemAccess, ConfigParser):
     """
     Base class for parsing systemd INI like configuration files
 
-    The parsing target should be recorded in INI format, ``ConfigParser`` could
-    be used to parse the content.
-
     """
+    def parse_doc(self, content):
+        return parse_doc(content)
 
     def parse_content(self, content):
-        doc = parse_doc(content)
+        super(SystemdConf, self).parse_content(content)
         dict_all = {}
-        for section in doc:
+        for section in self.doc:
             section_dict = {}
             option_names = set(o.name for o in section)
             for name in option_names:
@@ -99,6 +100,26 @@ class SystemdSystemConf(SystemdConf):
     Example:
         >>> system_conf["Manager"]["RuntimeWatchdogSec"]
         '0'
+    """
+    pass
+
+
+@parser(Specs.systemd_system_origin_accounting)
+class SystemdOriginAccounting(SystemdConf):
+    """
+    Class for systemd master configuration in the ``/etc/systemd/system.conf.d/origin-accounting.conf``
+    file.
+
+    Typical content of the ``/etc/systemd/system.conf.d/origin-accounting.conf`` file is::
+
+        [Manager]
+        DefaultCPUAccounting=yes
+        DefaultMemoryAccounting=yes
+        DefaultBlockIOAccounting=yes
+
+    Example:
+        >>> system_origin_accounting["Manager"]["DefaultCPUAccounting"]
+        'True'
     """
     pass
 
