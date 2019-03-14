@@ -1,11 +1,11 @@
-from ...parsers.hostname import Hostname
-from ...parsers import SkipException
-from ...parsers.lssap import Lssap
-from ...parsers.saphostctrl import SAPHostCtrlInstances
-from ...combiners import sap
-from ...combiners.sap import Sap
-from ...combiners.hostname import hostname
-from ...tests import context_wrap
+from insights.parsers.hostname import Hostname
+from insights.parsers import SkipException
+from insights.parsers.lssap import Lssap
+from insights.parsers.saphostctrl import SAPHostCtrlInstances
+from insights.combiners import sap
+from insights.combiners.sap import Sap
+from insights.combiners.hostname import hostname
+from insights.tests import context_wrap
 import pytest
 import doctest
 
@@ -214,6 +214,8 @@ def test_saphostcrtl_hana_2():
     sap = Sap(hn, inst, lssap)
     assert 'D50' not in sap
     assert sorted(sap.local_instances) == sorted(['HDB88', 'HDB90', 'SMDA91'])
+    assert sorted(sap.business_instances) == sorted(['HDB88', 'HDB90'])
+    assert sorted(sap.function_instances) == sorted(['SMDA91'])
     assert 'ASCS52' in sap.all_instances
     assert sap['HDB88'].number == '88'
     assert sap['HDB90'].hostname == 'li-ld-1810'
