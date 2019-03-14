@@ -31,6 +31,7 @@ def test_post_update_legacy_upload_off(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.register.assert_called_once()
+    insights_client.return_value.get_machine_id.assert_called_once()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
@@ -45,6 +46,7 @@ def test_post_update_legacy_upload_on(insights_config, insights_client):
     except SystemExit:
         pass
     insights_client.return_value.register.assert_called_once()
+    insights_client.return_value.get_machine_id.assert_called_once()
 
 
 @patch("insights.client.phase.v1.InsightsClient")
