@@ -970,6 +970,15 @@ def run(components=None, broker=None):
     return broker
 
 
+def generate_incremental(components=None, broker=None):
+    components = components or COMPONENTS[GROUPS.single]
+    components = _determine_components(components)
+    seed_broker = broker or Broker()
+    for graph in get_subgraphs(components):
+        broker = Broker(seed_broker)
+        yield (graph, broker)
+
+
 def run_incremental(components=None, broker=None):
     """
     Executes components in an order that satisfies their dependency
@@ -989,9 +998,15 @@ def run_incremental(components=None, broker=None):
     Yields:
         Broker: the broker used to evaluate each subgraph.
     """
-    components = components or COMPONENTS[GROUPS.single]
-    components = _determine_components(components)
-    seed_broker = broker or Broker()
-    for graph in get_subgraphs(components):
-        broker = Broker(seed_broker)
-        yield run(graph, broker=broker)
+    for graph, _broker in generate_incremental(components, broker):
+        yield run(graph, broker=_broker)
+
+
+def run_all(components=None, broker=None, pool=None):
+    if pool:
+        futures = []
+        for graph, _broker in generate_incremental(components, broker):
+            futures.append(pool.submit(run, graph, _broker))
+        return [f.result() for f in futures]
+    else:
+        return list(run_incremental(components=components, broker=broker))

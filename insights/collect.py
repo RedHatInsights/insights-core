@@ -8,6 +8,7 @@ runs all datasources in ``insights.specs.Specs`` and
 ``insights.specs.Specs``.
 """
 from __future__ import print_function
+from contextlib import contextmanager
 import argparse
 import logging
 import os
@@ -64,6 +65,12 @@ client:
     persist:
         - name: insights.specs.Specs
           enabled: true
+
+    run_strategy:
+        name: parallel
+        args:
+            max_workers: null
+
 plugins:
     # disable everything by default
     # defaults to false if not specified.
@@ -189,6 +196,25 @@ def create_archive(path, remove_path=True):
     return archive_path
 
 
+@contextmanager
+def get_pool(parallel, kwargs):
+    """
+    Yields:
+        a ThreadPoolExecutor if parallel is True and `concurrent.futures` exists.
+        `None` otherwise.
+    """
+
+    if parallel:
+        try:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(thread_name_prefix="insights-collector-pool", **kwargs) as pool:
+                yield pool
+        except ImportError:
+            yield None
+    else:
+        yield None
+
+
 def collect(manifest=default_manifest, tmp_path=None, compress=False):
     """
     This is the collection entry point. It accepts a manifest, a temporary
@@ -211,11 +237,13 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     manifest = load_manifest(manifest)
     client = manifest.get("client", {})
     plugins = manifest.get("plugins", {})
+    run_strategy = client.get("run_strategy", {"name": "parallel"})
 
     apply_default_enabled(plugins.get("default_component_enabled", False))
     load_packages(plugins.get("packages", []))
     apply_blacklist(client.get("blacklist", {}))
     apply_configs(plugins)
+
     to_persist = get_to_persist(client.get("persist", set()))
 
     hostname = call("hostname -f", env=SAFE_ENV).strip()
@@ -230,9 +258,12 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     ctx = create_context(client.get("context", {}))
     broker[ctx.__class__] = ctx
 
-    h = Hydration(output_path)
-    broker.add_observer(h.make_persister(to_persist))
-    list(dr.run_incremental(broker=broker))
+    parallel = run_strategy.get("name") == "parallel"
+    pool_args = run_strategy.get("args", {})
+    with get_pool(parallel, pool_args) as pool:
+        h = Hydration(output_path, pool=pool)
+        broker.add_observer(h.make_persister(to_persist))
+        dr.run_all(broker=broker, pool=pool)
 
     if compress:
         return create_archive(output_path)
@@ -246,7 +277,8 @@ def main(argv=sys.argv):
     p.add_argument("-q", "--quiet", help="Error output only.", action="store_true")
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
-    args = p.parse_args(argv)
+    p.add_argument("-c", "--compress", help="Compress", action="store_true")
+    args = p.parse_args(argv[1:])
 
     level = logging.WARNING
     if args.verbose:
@@ -265,7 +297,7 @@ def main(argv=sys.argv):
         manifest = default_manifest
 
     out_path = args.out_path or tempfile.gettempdir()
-    archive = collect(manifest, out_path, compress=True)
+    archive = collect(manifest, out_path, compress=args.compress)
     print(archive)
 
 
