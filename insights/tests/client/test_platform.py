@@ -10,26 +10,28 @@ class MockSession(object):
         self.status_code = None
         self.text = None
         self.content = '{"display_name": "test"}'
+        self.base_url = "https://cert-api.access.redhat.com/r/insights"
 
     def get(self, url=None, timeout=None, headers=None, data=None):
-        return MockResponse(self.status_code, self.text, self.content, None)
+        return MockResponse(self.status_code, self.text, self.content, None, headers or {})
 
     def post(self, url=None, timeout=None, headers=None, data=None, files=None):
-        return MockResponse(self.status_code, self.text, self.content, None)
+        return MockResponse(self.status_code, self.text, self.content, None, headers or {})
 
     def put(self, url=None, timeout=None, headers=None, data=None):
-        return MockResponse(self.status_code, self.text, None, None)
+        return MockResponse(self.status_code, self.text, None, None, headers or {})
 
 
 class MockResponse(object):
-    def __init__(self, expected_status, expected_text, expected_content, expected_reason):
+    def __init__(self, expected_status, expected_text, expected_content, expected_reason, headers):
         self.status_code = expected_status
         self.text = expected_text
         self.content = expected_content
         self.reason = expected_reason
+        self.headers = headers
 
 
-def mock_init_session(obj):
+def mock_init_session(ignore, obj):
     return MockSession()
 
 
@@ -61,10 +63,8 @@ def test_config_conflicts():
     assert str(v.value) == '--payload requires --content-type'
 
 
-@patch('insights.client.connection.InsightsConnection._init_session',
+@patch('insights.client.connection.InsightsConnection.new_session',
        mock_init_session)
-@patch('insights.client.connection.InsightsConnection.get_proxies',
-       mock_get_proxies)
 def test_upload_urls():
     '''
     Ensure upload urls are defined correctly
@@ -85,15 +85,18 @@ def test_upload_urls():
     assert c.upload_url == 'BUNCHANONSENSE'
 
 
-@patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
-@patch('insights.client.connection.requests.Session')
+@patch("insights.client.connection.get_canonical_facts",
+        return_value={'test': 'facts'})
+@patch('insights.client.connection.InsightsConnection.new_session',
+        mock_init_session)
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_payload_upload(op, session, c):
+def test_payload_upload(op, new_session):
     '''
     Ensure a payload upload occurs with the right URL and params
     '''
     conf = InsightsConfig(legacy_upload=False)
     c = InsightsConnection(conf)
+    c.session = new_session
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/platform/upload/api/v1/upload',
@@ -105,15 +108,18 @@ def test_payload_upload(op, session, c):
 
 @patch('insights.contrib.magic.open', MockMagic)
 @patch('insights.client.connection.generate_machine_id', mock_machine_id)
-@patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
-@patch('insights.client.connection.requests.Session')
+@patch("insights.client.connection.get_canonical_facts",
+        return_value={'test': 'facts'})
+@patch('insights.client.connection.InsightsConnection.new_session',
+        mock_init_session)
 @patch("insights.client.connection.open", new_callable=mock_open)
-def test_legacy_upload(op, session, c):
+def test_legacy_upload(op, new_session):
     '''
     Ensure an Insights collected tar upload to legacy occurs with the right URL and params
     '''
     conf = InsightsConfig()
     c = InsightsConnection(conf)
+    c.session = new_session
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
         'https://' + c.config.base_url + '/uploads/XXXXXXXX',
