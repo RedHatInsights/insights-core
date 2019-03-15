@@ -12,7 +12,6 @@ from contextlib import contextmanager
 import argparse
 import logging
 import os
-import sys
 import tempfile
 import yaml
 
@@ -270,7 +269,7 @@ def collect(manifest=default_manifest, tmp_path=None, compress=False):
     return output_path
 
 
-def main(argv=sys.argv):
+def main():
     p = argparse.ArgumentParser()
     p.add_argument("-m", "--manifest", help="Manifest yaml.")
     p.add_argument("-o", "--out_path", help="Path to write output data.")
@@ -278,7 +277,7 @@ def main(argv=sys.argv):
     p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
     p.add_argument("-d", "--debug", help="Debug output.", action="store_true")
     p.add_argument("-c", "--compress", help="Compress", action="store_true")
-    args = p.parse_args(argv[1:])
+    args = p.parse_args()
 
     level = logging.WARNING
     if args.verbose:
