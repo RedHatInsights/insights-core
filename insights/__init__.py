@@ -230,8 +230,7 @@ def _load_context(path):
 
 
 def run(component=None, root=None, print_summary=False,
-        context=None, inventory=None, print_component=None,
-        argv=sys.argv):
+        context=None, inventory=None, print_component=None):
 
     load_default_plugins()
 
@@ -256,7 +255,7 @@ def run(component=None, root=None, print_summary=False,
 
         formatters = []
         args = Args()
-        p.parse_known_args(argv, namespace=args)
+        p.parse_known_args(namespace=args)
         p = argparse.ArgumentParser(parents=[p])
         args.format = "insights.formats._json" if args.format == "json" else args.format
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format
@@ -266,7 +265,7 @@ def run(component=None, root=None, print_summary=False,
             dr.load_components(fmt, continue_on_error=False)
             Formatter = get_formatter(fmt)
         Formatter.configure(p)
-        p.parse_args(argv, namespace=args)
+        p.parse_args(namespace=args)
         formatter = Formatter(args)
         formatters.append(formatter)
 
@@ -340,10 +339,10 @@ def run(component=None, root=None, print_summary=False,
             raise
 
 
-def main(argv=sys.argv[1:]):
+def main():
     if "" not in sys.path:
         sys.path.insert(0, "")
-    run(print_summary=True, argv=argv)
+    run(print_summary=True)
 
 
 if __name__ == "__main__":
