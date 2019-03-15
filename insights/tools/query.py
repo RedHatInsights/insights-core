@@ -75,7 +75,7 @@ def glob2re(pat):
     return res + '\Z(?ms)'
 
 
-def parse_args(argv):
+def parse_args():
     p = argparse.ArgumentParser(__doc__.strip())
     p.add_argument("paths", nargs="*", help="Files or commands to use for component activation.")
     p.add_argument("-c", "--components", help="Comma separated list of components that have already executed. Names without '.' are assumed to be in insights.specs.Specs.")
@@ -86,7 +86,7 @@ def parse_args(argv):
     p.add_argument("-S", "--specs", help="Show specs for the given name.  E.g.: insights-info -S uname", action="store_true")
     p.add_argument("-t", "--types", help="Filter results based on component type; e.g. 'rule,parser'. Names without '.' are assumed to be in insights.core.plugins.")
     p.add_argument("-v", "--verbose", help="Print component dependencies.", action="store_true")
-    return p.parse_args(argv)
+    return p.parse_args()
 
 
 def load_default_components():
@@ -342,11 +342,11 @@ def get_pydoc(spec):
         return output.read()
 
 
-def main(argv=sys.argv[1:]):
+def main():
     if "" not in sys.path:
         sys.path.insert(0, "")
 
-    args = parse_args(argv)
+    args = parse_args()
 
     if args.source:
         src = get_source(args.source)
