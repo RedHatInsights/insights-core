@@ -500,6 +500,7 @@ class Specs(SpecSet):
     systemd_system_origin_accounting = RegistryPoint()
     systemid = RegistryPoint()
     systool_b_scsi_v = RegistryPoint()
+    teamdctl_config_dump = RegistryPoint(multi_output=True)
     teamdctl_state_dump = RegistryPoint(multi_output=True)
     thp_enabled = RegistryPoint()
     thp_use_zero_page = RegistryPoint()
