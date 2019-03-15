@@ -241,6 +241,7 @@ class Specs(SpecSet):
     ls_docker_volumes = RegistryPoint()
     ls_etc = RegistryPoint()
     ls_ocp_cni_openshift_sdn = RegistryPoint()
+    ls_origin_local_volumes_pods = RegistryPoint()
     lsinitrd_lvm_conf = RegistryPoint()
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
