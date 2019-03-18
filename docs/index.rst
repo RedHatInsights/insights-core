@@ -17,6 +17,7 @@ Contents:
     components
     embedded_content
     notebook_index
+    manpages_index
 
 Indices and tables
 ==================
