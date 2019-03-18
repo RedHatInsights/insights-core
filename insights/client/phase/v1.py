@@ -188,11 +188,15 @@ def collect_and_output(client, config):
     if not insights_archive:
         sys.exit(constants.sig_kill_bad)
     if config.to_stdout:
-        with open(insights_archive, 'rb') as tar_content:
-            if six.PY3:
-                sys.stdout.buffer.write(tar_content.read())
-            else:
-                shutil.copyfileobj(tar_content, sys.stdout)
+        try:
+            with open(insights_archive, 'rb') as tar_content:
+                if six.PY3:
+                    sys.stdout.buffer.write(tar_content.read())
+                else:
+                    shutil.copyfileobj(tar_content, sys.stdout)
+        except IOError as e:
+            logger.error(e)
+            sys.exit(constants.sig_kill_bad)
     else:
         resp = None
         if not config.no_upload:
