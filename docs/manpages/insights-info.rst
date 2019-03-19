@@ -28,22 +28,22 @@ OPTIONS
         executed. Names without '.' are assumed to be in
         insights.specs.Specs.
 
-    -d --pydoc
+    -d COMPONENT --pydoc COMPONENT
         Show pydoc for the given object. E.g.: insights-info -d insights.rule.
 
     -h --help
         Show the command line help and exit.
 
-    -i --info
+    -i COMPONENT --info COMPONENT
         Comma separated list of components to get dependency info about.
 
     -p PLUGINS --preload PLUGINS
         Comma separated list of packages or modules to preload.
 
-    -s --source
-        Show source for the given object. E.g.: insights-info -s insights.core.plugins.rule
+    -s COMPONENT --source COMPONENT
+        Show source for the given component. E.g.: insights-info -s insights.parsers.redhat_release
 
-    -S --specs
+    -S NAME --specs NAME
         Show specs for the given name. E.g.: insights-info -S uname
 
     -t TYPES --types TYPES
