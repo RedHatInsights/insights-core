@@ -32,6 +32,12 @@ OPTIONS
     -D --debug
         Show debug level information.
 
+    -d --dropped
+        Show collected files that weren't processed.
+
+    -F --fail-only
+        Show FAIL results only. Conflict with '-m' or '-f', will be dropped when using them together.
+
     -f FORMAT --format FORMAT
         Output format to an alternative format.  The default format is 'text'.  Alternative
         formats are '_json', '_yaml' and '_markdown'.
@@ -43,12 +49,18 @@ OPTIONS
         Ansible inventory file for cluster analysis.  See INVENTORY(5) for more information
         about the options for format of the inventory file.
 
+    -m --missing
+        Show missing requirements.
+
     -p PLUGINS --plugins PLUGINS
         Comma-separated list without spaces of package(s) or module(s) containing plugins.
 
     -s --syslog
         Sends all log results to syslog.  This is normally used when insights-core is run
         in other applications, or in a non-interactive process.
+
+    -t --tracebacks
+        Show stack traces when there are errors in components.
 
     -v --verbose
         Verbose output.
