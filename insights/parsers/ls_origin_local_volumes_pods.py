@@ -24,28 +24,29 @@ class LsOriginLocalVolumePods(JSONParser):
 
     The content collected by insights-client::
 
+
         [
-          '15dad82b-b70f-11e8-a370-001a4a1602ba',
-          '18b6e8aa-b70f-11e8-a370-001a4a1602ba',
-          '3cc402a6-b70f-11e8-a370-001a4a1602ba',
-          '168a59bb-e199-11e8-b381-001a4a1602ba',
-          '16975616-e199-11e8-b381-001a4a1602ba',
-          '2cd57827-ec9c-11e8-b381-001a4a1602ba',
-          '3ca7d1cd-ec9c-11e8-b381-001a4a1602ba',
-          '2d5b18ea-01a1-11e9-ab6d-001a4a1602ba',
-          '0c4c3dd9-29be-11e9-9856-001a4a1602ba',
-          '0c623ca7-29be-11e9-9856-001a4a1602ba',
-          '0c6998b9-29be-11e9-9856-001a4a1602ba',
-          'b8d8fb89-2de0-11e9-9856-001a4a1602ba',
-          'f1f0948c-3a31-11e9-9856-001a4a1602ba',
-          'd538a202-3ff3-11e9-9856-001a4a1602ba'
+          "15dad82b-b70f-11e8-a370-001a4a1602ba",
+          "18b6e8aa-b70f-11e8-a370-001a4a1602ba",
+          "3cc402a6-b70f-11e8-a370-001a4a1602ba",
+          "168a59bb-e199-11e8-b381-001a4a1602ba",
+          "16975616-e199-11e8-b381-001a4a1602ba",
+          "2cd57827-ec9c-11e8-b381-001a4a1602ba",
+          "3ca7d1cd-ec9c-11e8-b381-001a4a1602ba",
+          "2d5b18ea-01a1-11e9-ab6d-001a4a1602ba",
+          "0c4c3dd9-29be-11e9-9856-001a4a1602ba",
+          "0c623ca7-29be-11e9-9856-001a4a1602ba",
+          "0c6998b9-29be-11e9-9856-001a4a1602ba",
+          "b8d8fb89-2de0-11e9-9856-001a4a1602ba",
+          "f1f0948c-3a31-11e9-9856-001a4a1602ba",
+          "d538a202-3ff3-11e9-9856-001a4a1602ba"
         ]
 
 
     Examples:
 
-        >>> ls_origin_local_volumes_pods.pods
-        ['15dad82b-b70f-11e8-a370-001a4a1602ba', '18b6e8aa-b70f-11e8-a370-001a4a1602ba', '3cc402a6-b70f-11e8-a370-001a4a1602ba', '168a59bb-e199-11e8-b381-001a4a1602ba', '16975616-e199-11e8-b381-001a4a1602ba', '2cd57827-ec9c-11e8-b381-001a4a1602ba', '3ca7d1cd-ec9c-11e8-b381-001a4a1602ba', '2d5b18ea-01a1-11e9-ab6d-001a4a1602ba', '0c4c3dd9-29be-11e9-9856-001a4a1602ba', '0c623ca7-29be-11e9-9856-001a4a1602ba', '0c6998b9-29be-11e9-9856-001a4a1602ba', 'b8d8fb89-2de0-11e9-9856-001a4a1602ba', 'f1f0948c-3a31-11e9-9856-001a4a1602ba', 'd538a202-3ff3-11e9-9856-001a4a1602ba']
+        >>> str(ls_origin_local_volumes_pods.pods[1])
+        '18b6e8aa-b70f-11e8-a370-001a4a1602ba'
 
     Attributes:
         pods (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods

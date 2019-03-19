@@ -418,7 +418,7 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
-    ls_origin_local_volumes_pods_base = listdir("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
+    ls_origin_local_volumes_pods_base = listdir("/var/lib/origin/openshift.local.volumes/pods")
 
     @datasource(ls_origin_local_volumes_pods_base)
     def ls_origin_local_volumes_pods(broker):
