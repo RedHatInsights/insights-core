@@ -1,31 +1,66 @@
 """
-LsOriginLocalVolumePods - command ``ls -l /var/lib/origin/openshift.local.volumes/pods``
-==========================================================================================
+LsOriginLocalVolumePods - command ``ls /var/lib/origin/openshift.local.volumes/pods``
+========================================================================================
+Shared parsers for parsing output of the command ``ls /var/lib/origin/openshift.local.volumes/pods``.
 """
 
 from insights.specs import Specs
-from insights import FileListing, parser, CommandParser
+from insights import parser, JSONParser
+from insights.parsers import SkipException, ParseException
+import json
 
 
 @parser(Specs.ls_origin_local_volumes_pods)
-class LsOriginLocalVolumePods(CommandParser, FileListing):
+class LsOriginLocalVolumePods(JSONParser):
     """
-    Class to parse the output of command ``ls -l /var/lib/origin/openshift.local.volumes/pods``.
-    See ``FileListing`` class for additional information.
+    Class to parse the output of command ``ls /var/lib/origin/openshift.local.volumes/pods``.
 
-    The typical content is::
+    Sample output of the command::
 
-        total 0
-        drwxr-x---. 5 root root 71 Oct 18 23:20 5946c1f644096161a1242b3de0ee5875
-        drwxr-x---. 5 root root 71 Oct 18 23:24 6ea3d5cd-d34e-11e8-a142-001a4a160152
-        drwxr-x---. 5 root root 71 Oct 18 23:31 77d6d959-d34f-11e8-a142-001a4a160152
-        drwxr-x---. 5 root root 71 Oct 18 23:24 7ad952a0-d34e-11e8-a142-001a4a160152
-        drwxr-x---. 5 root root 71 Oct 18 23:24 7b63e8aa-d34e-11e8-a142-001a4a160152
+
+        0c4c3dd9-29be-11e9-9856-001a4a1602ba  15dad82b-b70f-11e8-a370-001a4a1602ba  18b6e8aa-b70f-11e8-a370-001a4a1602ba  3ca7d1cd-ec9c-11e8-b381-001a4a1602ba  d538a202-3ff3-11e9-9856-001a4a1602ba
+        0c623ca7-29be-11e9-9856-001a4a1602ba  168a59bb-e199-11e8-b381-001a4a1602ba  2cd57827-ec9c-11e8-b381-001a4a1602ba  3cc402a6-b70f-11e8-a370-001a4a1602ba  f1f0948c-3a31-11e9-9856-001a4a1602ba
+        0c6998b9-29be-11e9-9856-001a4a1602ba  16975616-e199-11e8-b381-001a4a1602ba  2d5b18ea-01a1-11e9-ab6d-001a4a1602ba  b8d8fb89-2de0-11e9-9856-001a4a1602ba
+
+    The content collected by insights-client::
+
+        [
+          '15dad82b-b70f-11e8-a370-001a4a1602ba',
+          '18b6e8aa-b70f-11e8-a370-001a4a1602ba',
+          '3cc402a6-b70f-11e8-a370-001a4a1602ba',
+          '168a59bb-e199-11e8-b381-001a4a1602ba',
+          '16975616-e199-11e8-b381-001a4a1602ba',
+          '2cd57827-ec9c-11e8-b381-001a4a1602ba',
+          '3ca7d1cd-ec9c-11e8-b381-001a4a1602ba',
+          '2d5b18ea-01a1-11e9-ab6d-001a4a1602ba',
+          '0c4c3dd9-29be-11e9-9856-001a4a1602ba',
+          '0c623ca7-29be-11e9-9856-001a4a1602ba',
+          '0c6998b9-29be-11e9-9856-001a4a1602ba',
+          'b8d8fb89-2de0-11e9-9856-001a4a1602ba',
+          'f1f0948c-3a31-11e9-9856-001a4a1602ba',
+          'd538a202-3ff3-11e9-9856-001a4a1602ba'
+        ]
 
 
     Examples:
 
-        >>> ls_origin_local_volumes_pods.dirs_of("/var/lib/origin/openshift/local/volumes/pods")
-        ['5946c1f644096161a1242b3de0ee5875', '6ea3d5cd-d34e-11e8-a142-001a4a160152', '77d6d959-d34f-11e8-a142-001a4a160152', '7ad952a0-d34e-11e8-a142-001a4a160152', '7b63e8aa-d34e-11e8-a142-001a4a160152']
+        >>> ls_origin_local_volumes_pods.pods
+        ['15dad82b-b70f-11e8-a370-001a4a1602ba', '18b6e8aa-b70f-11e8-a370-001a4a1602ba', '3cc402a6-b70f-11e8-a370-001a4a1602ba', '168a59bb-e199-11e8-b381-001a4a1602ba', '16975616-e199-11e8-b381-001a4a1602ba', '2cd57827-ec9c-11e8-b381-001a4a1602ba', '3ca7d1cd-ec9c-11e8-b381-001a4a1602ba', '2d5b18ea-01a1-11e9-ab6d-001a4a1602ba', '0c4c3dd9-29be-11e9-9856-001a4a1602ba', '0c623ca7-29be-11e9-9856-001a4a1602ba', '0c6998b9-29be-11e9-9856-001a4a1602ba', 'b8d8fb89-2de0-11e9-9856-001a4a1602ba', 'f1f0948c-3a31-11e9-9856-001a4a1602ba', 'd538a202-3ff3-11e9-9856-001a4a1602ba']
+
+    Attributes:
+        pods (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods
     """
-    pass
+
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("Empty output.")
+        content = ''.join(content)
+        try:
+            self.data = json.loads(content)
+        except Exception:
+            raise ParseException("Incorrect content: '{0}'".format(content))
+
+        if not self.data:
+            raise SkipException("Empty or useless output.")
+
+        self.pods = self.data
