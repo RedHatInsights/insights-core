@@ -16,6 +16,7 @@ class OpenshiftSpecsImpl(specs.Openshift):
     cluster_operators = resource(kind="ClusterOperator", api_version="config.openshift.io/v1")
     machines = resource(kind="Machine", api_version="machine.openshift.io/v1beta1")
     machine_configs = resource(kind="MachineConfig", api_version="machineconfiguration.openshift.io/v1")
+    storage_classes = resource(kind="StorageClass")
+    pvcs = resource(kind="PersistentVolumeClaim")
     crds = resource(kind="CustomResourceDefinition", api_version="apiextensions.k8s.io/v1beta1")
-
     crs = foreach_resource(crds, cr_gvk)
