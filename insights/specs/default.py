@@ -418,16 +418,7 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
-    ls_origin_local_volumes_pods_base = listdir("/var/lib/origin/openshift.local.volumes/pods")
-
-    @datasource(ls_origin_local_volumes_pods_base)
-    def ls_origin_local_volumes_pods(broker):
-        import json
-        pods = broker[DefaultSpecs.ls_origin_local_volumes_pods_base]
-        if len(pods) > 0:
-            return DatasourceProvider(content=json.dumps(pods), relative_path="var_lib_origin_openshift_pods")
-        raise SkipComponent()
-
+    ls_origin_local_volumes_pods = listdir("/var/lib/origin/openshift.local.volumes/pods")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")

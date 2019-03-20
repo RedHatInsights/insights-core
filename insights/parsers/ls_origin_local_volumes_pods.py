@@ -7,7 +7,7 @@ Shared parsers for parsing output of the command ``ls /var/lib/origin/openshift.
 from insights.specs import Specs
 from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
-import json
+import re
 
 
 @parser(Specs.ls_origin_local_volumes_pods)
@@ -18,50 +18,40 @@ class LsOriginLocalVolumePods(CommandParser):
     Sample output of the command::
 
 
-        0c4c3dd9-29be-11e9-9856-001a4a1602ba  15dad82b-b70f-11e8-a370-001a4a1602ba  18b6e8aa-b70f-11e8-a370-001a4a1602ba  3ca7d1cd-ec9c-11e8-b381-001a4a1602ba  d538a202-3ff3-11e9-9856-001a4a1602ba
-        0c623ca7-29be-11e9-9856-001a4a1602ba  168a59bb-e199-11e8-b381-001a4a1602ba  2cd57827-ec9c-11e8-b381-001a4a1602ba  3cc402a6-b70f-11e8-a370-001a4a1602ba  f1f0948c-3a31-11e9-9856-001a4a1602ba
-        0c6998b9-29be-11e9-9856-001a4a1602ba  16975616-e199-11e8-b381-001a4a1602ba  2d5b18ea-01a1-11e9-ab6d-001a4a1602ba  b8d8fb89-2de0-11e9-9856-001a4a1602ba
+        5946c1f644096161a1242b3de0ee5875      7ad952a0-d34e-11e8-a142-001a4a160152  8e879171c85e221fb0a023e3f10ca276      dcf2fe412f6a174b0e1f360c2e0eb0a7
+        6ea3d5cd-d34e-11e8-a142-001a4a160152  7b63e8aa-d34e-11e8-a142-001a4a160152  b6b60cca-d34f-11e8-a142-001a4a160152  ef66562d-d34f-11e8-a142-001a4a160152
+        77d6d959-d34f-11e8-a142-001a4a160152  7d1f9443-d34f-11e8-a142-001a4a160152  bc70730f-d34f-11e8-a142-001a4a160152
 
     The content collected by insights-client::
 
 
-        [
-          "15dad82b-b70f-11e8-a370-001a4a1602ba",
-          "18b6e8aa-b70f-11e8-a370-001a4a1602ba",
-          "3cc402a6-b70f-11e8-a370-001a4a1602ba",
-          "168a59bb-e199-11e8-b381-001a4a1602ba",
-          "16975616-e199-11e8-b381-001a4a1602ba",
-          "2cd57827-ec9c-11e8-b381-001a4a1602ba",
-          "3ca7d1cd-ec9c-11e8-b381-001a4a1602ba",
-          "2d5b18ea-01a1-11e9-ab6d-001a4a1602ba",
-          "0c4c3dd9-29be-11e9-9856-001a4a1602ba",
-          "0c623ca7-29be-11e9-9856-001a4a1602ba",
-          "0c6998b9-29be-11e9-9856-001a4a1602ba",
-          "b8d8fb89-2de0-11e9-9856-001a4a1602ba",
-          "f1f0948c-3a31-11e9-9856-001a4a1602ba",
-          "d538a202-3ff3-11e9-9856-001a4a1602ba"
-        ]
+        5946c1f644096161a1242b3de0ee5875
+        6ea3d5cd-d34e-11e8-a142-001a4a160152
+        77d6d959-d34f-11e8-a142-001a4a160152
+        7ad952a0-d34e-11e8-a142-001a4a160152
+        7b63e8aa-d34e-11e8-a142-001a4a160152
+        7d1f9443-d34f-11e8-a142-001a4a160152
+        8e879171c85e221fb0a023e3f10ca276
+        b6b60cca-d34f-11e8-a142-001a4a160152
+        bc70730f-d34f-11e8-a142-001a4a160152
+        dcf2fe412f6a174b0e1f360c2e0eb0a7
+        ef66562d-d34f-11e8-a142-001a4a160152
 
 
     Examples:
 
-        >>> str(ls_origin_local_volumes_pods.pods[1])
-        '18b6e8aa-b70f-11e8-a370-001a4a1602ba'
+        >>> str(ls_origin_local_volumes_pods.data[1])
+        '6ea3d5cd-d34e-11e8-a142-001a4a160152'
 
     Attributes:
-        pods (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods
+        data (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods
     """
 
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty output.")
-        content = ''.join(content)
-        try:
-            self.data = json.loads(content)
-        except Exception:
-            raise ParseException("Incorrect content: '{0}'".format(content))
+        for row in content:
+            if not re.match('[0-9|a-e|\-]+', row):
+                raise ParseException("Incorrect content: '{0}'".format(content))
 
-        if not self.data:
-            raise SkipException("Empty or useless output.")
-
-        self.pods = self.data
+        self.data = content
