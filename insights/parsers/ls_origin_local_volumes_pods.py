@@ -5,13 +5,13 @@ Shared parsers for parsing output of the command ``ls /var/lib/origin/openshift.
 """
 
 from insights.specs import Specs
-from insights import parser, JSONParser
+from insights import parser, CommandParser
 from insights.parsers import SkipException, ParseException
 import json
 
 
 @parser(Specs.ls_origin_local_volumes_pods)
-class LsOriginLocalVolumePods(JSONParser):
+class LsOriginLocalVolumePods(CommandParser):
     """
     Class to parse the output of command ``ls /var/lib/origin/openshift.local.volumes/pods``.
 

@@ -423,7 +423,7 @@ class DefaultSpecs(Specs):
     @datasource(ls_origin_local_volumes_pods_base)
     def ls_origin_local_volumes_pods(broker):
         import json
-        pods = broker(DefaultSpecs.ls_origin_local_volumes_pods_base)
+        pods = broker[DefaultSpecs.ls_origin_local_volumes_pods_base]
         if len(pods) > 0:
             return DatasourceProvider(content=json.dumps(pods), relative_path="var_lib_origin_openshift_pods")
         raise SkipComponent()
