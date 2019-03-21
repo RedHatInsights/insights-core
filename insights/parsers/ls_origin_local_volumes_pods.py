@@ -1,6 +1,6 @@
 """
 LsOriginLocalVolumePods - command ``ls -l /var/lib/origin/openshift.local.volumes/pods``
-==========================================================================================
+========================================================================================
 """
 
 from insights.specs import Specs
@@ -29,7 +29,7 @@ class LsOriginLocalVolumePods(CommandParser, FileListing):
         ['5946c1f644096161a1242b3de0ee5875', '6ea3d5cd-d34e-11e8-a142-001a4a160152', '77d6d959-d34f-11e8-a142-001a4a160152', '7ad952a0-d34e-11e8-a142-001a4a160152', '7b63e8aa-d34e-11e8-a142-001a4a160152']
 
     Attributes:
-        data (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods
+        pods (List): The list of pods uid under the directory /var/lib/origin/openshift.local.volumes/pods
     """
 
     @property
