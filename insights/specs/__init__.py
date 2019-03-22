@@ -285,6 +285,7 @@ class Specs(SpecSet):
     metadata_json = RegistryPoint(raw=True)
     mlx4_port = RegistryPoint()
     modinfo_i40e = RegistryPoint()
+    modinfo_vmxnet3 = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     module = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
