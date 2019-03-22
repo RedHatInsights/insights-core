@@ -2,10 +2,17 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Openshift(SpecSet):
-    namespaces = RegistryPoint(raw=True)
-    nodes = RegistryPoint(raw=True)
+    cluster_operators = RegistryPoint(raw=True)
     crds = RegistryPoint(raw=True)
     crs = RegistryPoint(raw=True, multi_output=True)
+    machine_configs = RegistryPoint(raw=True)
+    machines = RegistryPoint(raw=True)
+    machine_id = RegistryPoint(raw=True)  # stand in for system id
+    namespaces = RegistryPoint(raw=True)
+    nodes = RegistryPoint(raw=True)
+    pods = RegistryPoint(raw=True)
+    pvcs = RegistryPoint(raw=True)
+    storage_classes = RegistryPoint(raw=True)
 
 
 class Specs(SpecSet):
