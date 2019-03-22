@@ -418,6 +418,7 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
+    ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
@@ -700,31 +701,11 @@ class DefaultSpecs(Specs):
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-
-    @datasource(sap_sid_nr)
-    def sapcontrol_getsystemupdatelist(broker):
-        import json
-        s_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
-        relative_path = "sudo_-iu_sidadm_sapcontrol_-nr__-function_GetSystemUpdateList"
-        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
-        line_set = set()
-        results = list()
-        for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
-            out = broker[HostContext].shell_out(s_cmd.format(sid, nr))
-            if header in out:
-                body = out[out.index(header) + 1:]  # remove the header
-                line_set.update(body)
-        header_sp = [i.strip() for i in header.split(',')]
-        for l in line_set:
-            l_sp = [i.strip() for i in l.split(',')]
-            results.append(dict(zip(header_sp, l_sp)))
-        if results:
-            return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
-        raise SkipComponent()
-
+    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
+    sat5_insights_properties = simple_file("/etc/redhat-access/redhat-access-insights.properties")
     satellite_version_rb = simple_file("/usr/share/foreman/lib/satellite/version.rb")
     block_devices = listdir("/sys/block")
     scheduler = foreach_collect(block_devices, "/sys/block/%s/queue/scheduler")

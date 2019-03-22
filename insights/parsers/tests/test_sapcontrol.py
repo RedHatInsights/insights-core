@@ -5,21 +5,29 @@ import pytest
 import doctest
 
 RKS_STATUS = """
-[
- {"hostname":"vm37-39","instanceNr":"00","status":"Running","starttime":"29.01.201900:00:02","endtime":"29.01.201901:10:11","dispstatus":"GREEN"},
- {"hostname":"vm37-39","instanceNr":"02","status":"Running","starttime":"29.01.201900:00:05","endtime":"29.01.201901:11:11","dispstatus":"GREEN"},
- {"hostname":"vm37-39","instanceNr":"03","status":"Running","starttime":"29.01.201900:00:05","endtime":"29.01.201901:12:36","dispstatus":"GREEN"}
-]
+29.01.2019 01:20:36
+GetSystemUpdateList
+OK
+hostname, instanceNr, status, starttime, endtime, dispstatus
+vm37-39, 00, Running, 29.01.2019 00:00:02, 29.01.2019 01:10:11, GREEN
+vm37-39, 02, Running, 29.01.2019 00:00:05, 29.01.2019 01:11:11, GREEN
+vm37-39, 03, Running, 29.01.2019 00:00:05, 29.01.2019 01:12:36, GREEN
 """.strip()
 
 RKS_STATUS_AB1 = """
 """.strip()
 
-
 RKS_STATUS_AB2 = """
 29.01.2019 01:20:26
 GetSystemUpdateList
 FAIL: NIECONN_REFUSED (Connection refused), NiRawConnect failed in plugin_fopen()
+""".strip()
+
+RKS_STATUS_AB3 = """
+29.01.2019 01:20:36
+GetSystemUpdateList
+OK
+hostname, instanceNr, status, starttime, endtime, dispstatus
 """.strip()
 
 
@@ -28,6 +36,8 @@ def test_sapcontrol_rks_abnormal():
         SAPControlSystemUpdateList(context_wrap(RKS_STATUS_AB1))
     with pytest.raises(ParseException):
         SAPControlSystemUpdateList(context_wrap(RKS_STATUS_AB2))
+    with pytest.raises(SkipException):
+        SAPControlSystemUpdateList(context_wrap(RKS_STATUS_AB3))
 
 
 def test_sapcontrol_status():
