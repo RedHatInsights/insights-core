@@ -204,6 +204,7 @@ class Specs(SpecSet):
     ipcs_m_p = RegistryPoint()
     ipcs_s = RegistryPoint()
     ipcs_s_i = RegistryPoint(multi_output=True)
+    ip_netns_exec_namespace_lsof = RegistryPoint(multi_output=True, filterable=True)
     ip_route_show_table_all = RegistryPoint()
     ip_s_link = RegistryPoint()
     iptables_permanent = RegistryPoint()
