@@ -20,7 +20,7 @@ APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def registration_check(pconn):
+def _legacy_registration_check(pconn):
     # check local registration record
     unreg_date = None
     unreachable = False
@@ -54,6 +54,27 @@ def registration_check(pconn):
             'status': api_reg_status,
             'unreg_date': unreg_date,
             'unreachable': unreachable}
+
+
+def registration_check(pconn, legacy_upload=True):
+    if legacy_upload:
+        return _legacy_registration_check(pconn)
+    unreachable = False
+    reg_status, reg_date = pconn.api_registration_check()
+    logger.debug('Registration status: %s', reg_status)
+    if reg_status is None:
+        msg = 'Insights API could not be reached to confirm status.'
+        unreachable = True
+    elif reg_status is False:
+        msg = 'This system is not registered.'
+    else:
+        msg = 'System was registered at ' + reg_date
+    return {
+        'message': msg,
+        'status': reg_status,
+        'unreg_date': None,
+        'unreachable': unreachable
+    }
 
 
 class InsightsSupport(object):

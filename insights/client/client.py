@@ -104,7 +104,7 @@ def register(config, pconn):
 
 
 # TODO: eventually remove this function. Only valid for legacy stuff
-def handle_registration(config, pconn):
+def _legacy_handle_registration(config, pconn):
     '''
         Handle the registration process
         Returns:
@@ -175,6 +175,52 @@ def handle_registration(config, pconn):
         return False
 
 
+def handle_registration(config, pconn):
+    '''
+        Handle the registration process
+        Returns:
+            True - machine is registered
+            False - machine is unregistered
+            None - could not reach the API
+    '''
+    if config.legacy_upload:
+        return _legacy_handle_registration(config, pconn)
+    logger.debug('Trying registration.')
+    # force-reregister -- remove machine-id files and registration files
+    # before trying to register again
+    if config.reregister:
+        delete_registered_file()
+        delete_unregistered_file()
+        write_to_disk(constants.machine_id_file, delete=True)
+        logger.debug('Re-register set, forcing registration.')
+
+    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
+
+    # check registration with API
+    check = get_registration_status(config, pconn)
+    logger.debug(check['message'])
+
+    if check['unreachable']:
+        # Run connection test and exit
+        return None
+
+    if check['status']:
+        # registered in API, resync files
+        if config.register:
+            logger.info('This host has already been registered.')
+        write_registered_file()
+        return True
+
+    if config.register:
+        # register if specified
+        return True
+    else:
+        write_unregistered_file()
+        logger.info('This machine has not been registered.'
+                    'Use --register to register this machine.')
+        return False
+
+
 def get_registration_status(config, pconn):
     '''
         Handle the registration process
@@ -183,7 +229,7 @@ def get_registration_status(config, pconn):
             False - machine is unregistered
             None - could not reach the API
     '''
-    return registration_check(pconn)
+    return registration_check(pconn, config.legacy_upload)
 
 
 def handle_unregistration(config, pconn):

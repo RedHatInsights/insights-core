@@ -89,10 +89,8 @@ class InsightsConnection(object):
                 else:
                     self.upload_url = self.base_url + "/uploads"
             else:
-                self.upload_url = self.base_url + '/platform/upload/api/v1/upload'
-        self.api_url = self.config.api_url
-        if self.api_url is None:
-            self.api_url = self.base_url
+                self.upload_url = self.base_url + '/upload/v1/upload'
+        self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:
             self.branch_info_url = self.base_url + "/v1/branch_info"
@@ -129,9 +127,9 @@ class InsightsConnection(object):
             # HACKY
             try:
                 # Need to make a request that will fail to get proxies set up
-                net_logger.info("GET https://cert-api.access.redhat.com/r/insights")
+                net_logger.info("GET %s", self.base_url)
                 session.request(
-                    "GET", "https://cert-api.access.redhat.com/r/insights", timeout=self.config.http_timeout)
+                    "GET", self.base_url, timeout=self.config.http_timeout)
             except requests.ConnectionError:
                 pass
             # Major hack, requests/urllib3 does not make access to
@@ -231,6 +229,7 @@ class InsightsConnection(object):
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
+        # TODO: fix this for platform
         for ext in (url.path + '/', '', '/r', '/r/insights'):
             try:
                 logger.debug("Testing: %s", test_url + ext)
@@ -513,6 +512,7 @@ class InsightsConnection(object):
             f.write(bi_str)
         return branch_info
 
+    # -LEGACY-
     def create_system(self, new_machine_id=False):
         """
         Create the machine via the API
@@ -542,6 +542,7 @@ class InsightsConnection(object):
                                  headers={'Content-Type': 'application/json'},
                                  data=data)
 
+    # -LEGACY-
     def group_systems(self, group_name, systems):
         """
         Adds an array of systems to specified group
@@ -585,6 +586,7 @@ class InsightsConnection(object):
         logger.debug("PUT group status: %d", put_group.status_code)
         logger.debug("PUT Group: %s", put_group.json())
 
+    # -LEGACY-
     # Keeping this function around because it's not private and I don't know if anything else uses it
     def do_group(self):
         """
@@ -594,7 +596,8 @@ class InsightsConnection(object):
         systems = {'machine_id': generate_machine_id()}
         self.group_systems(group_id, systems)
 
-    def api_registration_check(self):
+    # -LEGACY-
+    def _legacy_api_registration_check(self):
         '''
         Check registration status through API
         '''
@@ -633,6 +636,43 @@ class InsightsConnection(object):
             # machine has been unregistered, this is a timestamp
             return unreg_status
 
+    def api_registration_check(self):
+        '''
+            Reach out to the inventory API to check
+            whether a machine exists.
+            Returns:
+                (True, String <creation date>) on system existence
+                (False, None) on no system found
+                (None, None) on API unreachable
+        '''
+        if self.config.legacy_upload:
+            return self._legacy_api_registration_check()
+        logger.debug('Checking registration status...')
+        machine_id = generate_machine_id()
+        try:
+            url = self.api_url + '/platform/inventory/api/v1/hosts?insights_id=' + machine_id
+            net_logger.info("GET %s", url)
+            res = self.session.get(url, timeout=self.config.http_timeout)
+        except requests.ConnectionError:
+            # can't connect, run connection test
+            logger.error('Connection timed out. Running connection test...')
+            self.test_connection()
+            return None, None
+        try:
+            res_json = json.loads(res.content)
+        except ValueError as e:
+            logger.error(e)
+            return False, None
+        if res_json['total'] == 0:
+            logger.debug('No systems found with machine ID: %s', machine_id)
+            return False, None
+        results = res_json['results']
+        logger.debug('System found.')
+        logger.debug('Machine ID: %s', results[0]['insights_id'])
+        logger.debug('Inventory ID: %s', results[0]['id'])
+        return True, results[0]['created']
+
+    # -LEGACY-
     def unregister(self):
         """
         Unregister this system from the insights service
@@ -651,6 +691,7 @@ class InsightsConnection(object):
             logger.error("Could not unregister this system")
             return False
 
+    # -LEGACY-
     def register(self):
         """
         Register this machine
@@ -763,6 +804,7 @@ class InsightsConnection(object):
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
 
+    # -LEGACY-
     def set_display_name(self, display_name):
         machine_id = generate_machine_id()
         try:
@@ -805,7 +847,7 @@ class InsightsConnection(object):
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
         '''
-        diag_url = self.base_url + '/platform/remediations/v1/diagnosis/' + generate_machine_id()
+        diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
         params = {}
         if remediation_id:
             # validate this?

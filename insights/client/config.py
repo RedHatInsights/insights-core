@@ -37,11 +37,6 @@ DEFAULT_OPTS = {
         'help': 'Analyze a filesystem at the specified mountpoint.',
         'action': 'store'
     },
-    # MARKED FOR DELETION
-    'api_url': {
-        # non-CLI
-        'default': None
-    },
     'authmethod': {
         # non-CLI
         'default': 'BASIC'
@@ -56,7 +51,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': 'cert-api.access.redhat.com/r/insights'
+        'default': 'cloud.redhat.com/api'
     },
     'branch_info_url': {
         # non-CLI
@@ -592,6 +587,8 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.payload:
             self.legacy_upload = False
+        if self.legacy_upload:
+            self.base_url = 'cert-api.access.redhat.com/r/insights'
 
 
 if __name__ == '__main__':
