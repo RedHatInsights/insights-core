@@ -20,7 +20,7 @@ add_filter(Specs.ip_netns_exec_namespace_lsof, "COMMAND")
 @parser(Specs.ip_netns_exec_namespace_lsof)
 class IpNetnsExecNamespaceLsofI(CommandParser):
     """
-       This class provides processing for the output of the command
+       This class provides processing for the output of command
        ``/sbin/ip netns exec [network-namespace] lsof -i``.
 
        Sample command output::
