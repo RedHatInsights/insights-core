@@ -17,7 +17,7 @@ port  VLAN  MAC                Age
 FDB_SHOW_BR_TUN = """
 port  VLAN  MAC                Age
    7    29  aa:bb:cc:dd:ee:ff  27
-   9    29  bb:cc:dd:ee:ff:gg  26
+   3    27  gg:hh:ii:jj:kk:ll  266
 """.strip()
 
 PATH_BR_INT = "insights_commands/ovs-appctl_fdb.show_br-int".strip()
