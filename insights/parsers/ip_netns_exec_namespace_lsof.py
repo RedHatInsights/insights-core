@@ -14,8 +14,7 @@ from insights.core.filters import add_filter
 from insights.parsers import SkipException, keyword_search, parse_fixed_table
 from insights.specs import Specs
 
-FILTERS = ["COMMAND", "neutron-n"]
-add_filter(Specs.ip_netns_exec_namespace_lsof, FILTERS)
+add_filter(Specs.ip_netns_exec_namespace_lsof, "COMMAND")
 
 
 @parser(Specs.ip_netns_exec_namespace_lsof)
@@ -30,9 +29,9 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
            neutron-n 975   root    5u  IPv4  6482691    0t0        TCP *:http (LISTEN)
 
        Examples:
-           >>> len(data.search(command="neutron-n"))
+           >>> len(ns_lsof.search(command="neutron-n"))
            1
-           >>> data.data[0]["command"] == "neutron-n"
+           >>> ns_lsof.data[0]["command"] == "neutron-n"
            True
 
        Attributes:
@@ -58,13 +57,12 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
                                       header_substitute=[("COMMAND", "command"), ("PID", "pid"), ("USER", "user"), ("FD", "fd"),
                                                          ("TYPE", "type"), ("DEVICE", "device"), ("SIZE/OFF", "size_off"),
                                                          ("NODE", "node"), ("NAME", "name")])
+        if not self.data:
+            raise SkipException("Useless data")
 
         for item in self.data:
             self.fields.append(self.keyvalue(item["command"], item["pid"], item["user"], item["fd"], item["type"], item["device"],
                                item["size_off"], item["node"], item["name"]))
-
-        if not self.data:
-            raise SkipException("Useless data")
 
     def __iter__(self):
         return iter(self.fields)
@@ -74,9 +72,9 @@ class IpNetnsExecNamespaceLsofI(CommandParser):
 
         Example:
 
-            >>> len(data.search(command="neutron-n")) == 1
+            >>> len(ns_lsof.search(command="neutron-n")) == 1
             True
-            >>> len(data.search(user="nobody")) == 0
+            >>> len(ns_lsof.search(user="nobody")) == 0
             True
         """
         return keyword_search(self.data, **kw)

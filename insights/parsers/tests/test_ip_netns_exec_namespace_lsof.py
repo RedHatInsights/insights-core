@@ -31,7 +31,7 @@ def test_ip_netns_exec_namespace_lsof():
 
 def test_ip_netns_exec_namespace_lsof_documentation():
     env = {
-        "data": IpNetnsExecNamespaceLsofI(context_wrap(IP_NETNS_EXEC_NAMESPACE_LSOF_I)),
+        "ns_lsof": IpNetnsExecNamespaceLsofI(context_wrap(IP_NETNS_EXEC_NAMESPACE_LSOF_I)),
     }
     failed, total = doctest.testmod(ip_netns_exec_namespace_lsof, globs=env)
     assert failed == 0
