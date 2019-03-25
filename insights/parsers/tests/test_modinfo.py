@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import modinfo, ParseException, SkipException
-from insights.parsers.modinfo import ModInfoI40e
+from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -97,6 +97,24 @@ parm:           mrrs: Force Max Read Req Size (0..3) (for debug) (int)
 parm:           debug: Default debug msglevel (int)
 """.strip()
 
+MODINFO_VMXNET3 = """
+filename:       /lib/modules/3.10.0-957.10.1.el7.x86_64/kernel/drivers/net/vmxnet3/vmxnet3.ko.xz
+version:        1.4.14.0-k
+license:        GPL v2
+description:    VMware vmxnet3 virtual NIC driver
+author:         VMware, Inc.
+retpoline:      Y
+rhelversion:    7.6
+srcversion:     7E672688ACACBDD2E363B63
+alias:          pci:v000015ADd000007B0sv*sd*bc*sc*i*
+depends:
+intree:         Y
+vermagic:       3.10.0-957.10.1.el7.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        A5:70:18:DF:B6:C9:D6:1F:CF:CE:0A:3D:02:8B:B3:69:BD:76:CA:ED
+sig_hashalgo:   sha256
+""".strip()
+
 MODINFO_NO = """
 """.strip()
 
@@ -141,6 +159,15 @@ def test_modinfo():
     assert modinfo_obj.module_signer == 'Red Hat Enterprise Linux kernel signing key'
     assert sorted(modinfo_obj.module_deps) == sorted(['mdio', 'libcrc32c', 'ptp'])
 
+    modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))
+    assert modinfo_drv.data.get('alias') == 'pci:v000015ADd000007B0sv*sd*bc*sc*i*'
+    assert len(modinfo_drv.module_parm) == 0
+    assert len(modinfo_drv.module_firmware) == 0
+    assert modinfo_drv.module_name == 'vmxnet3'
+    assert modinfo_drv.module_path == '/lib/modules/3.10.0-957.10.1.el7.x86_64/kernel/drivers/net/vmxnet3/vmxnet3.ko.xz'
+
+    assert sorted(modinfo_obj.data['firmware']) == sorted(['bnx2x/bnx2x-e2-7.13.1.0.fw', 'bnx2x/bnx2x-e1h-7.13.1.0.fw', 'bnx2x/bnx2x-e1-7.13.1.0.fw'])
+
     with pytest.raises(SkipException) as exc:
         modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO))
     assert 'No Contents' in str(exc)
@@ -149,8 +176,17 @@ def test_modinfo():
         modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
 
+    with pytest.raises(SkipException) as exc:
+        modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_NO))
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_NO_1))
+    assert 'No Parsed Contents' in str(exc)
+
 
 def test_modinfo_doc_examples():
-    env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E))}
+    env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E)),
+           'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))}
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0

@@ -149,6 +149,17 @@ class DatasourceProvider(ContentProvider):
         """
         yield self._content
 
+    def write(self, dst):
+        fs.ensure_path(os.path.dirname(dst))
+        with open(dst, "wb") as f:
+            f.write("\n".join(self.content).encode("utf-8"))
+
+        self.loaded = False
+        self._content = None
+
+    def load(self):
+        return self.content
+
 
 class FileProvider(ContentProvider):
     def __init__(self, relative_path, root="/", ds=None, ctx=None):
@@ -919,3 +930,16 @@ def deserialize_raw_file_provider(_type, data, root):
     res = SerializedRawOutputProvider(rel, root)
     res.rc = data["rc"]
     return res
+
+
+@serializer(DatasourceProvider)
+def serialize_datasource_provider(obj, root):
+    dst = os.path.join(root, obj.relative_path.lstrip("/"))
+    fs.ensure_path(os.path.dirname(dst))
+    obj.write(dst)
+    return {"relative_path": obj.relative_path}
+
+
+@deserializer(DatasourceProvider)
+def deserialize_datasource_provider(_type, data, root):
+    return SerializedRawOutputProvider(data["relative_path"], root)

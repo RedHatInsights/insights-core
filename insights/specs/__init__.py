@@ -2,10 +2,17 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Openshift(SpecSet):
-    namespaces = RegistryPoint(raw=True)
-    nodes = RegistryPoint(raw=True)
+    cluster_operators = RegistryPoint(raw=True)
     crds = RegistryPoint(raw=True)
     crs = RegistryPoint(raw=True, multi_output=True)
+    machine_configs = RegistryPoint(raw=True)
+    machines = RegistryPoint(raw=True)
+    machine_id = RegistryPoint(raw=True)  # stand in for system id
+    namespaces = RegistryPoint(raw=True)
+    nodes = RegistryPoint(raw=True)
+    pods = RegistryPoint(raw=True)
+    pvcs = RegistryPoint(raw=True)
+    storage_classes = RegistryPoint(raw=True)
 
 
 class Specs(SpecSet):
@@ -241,6 +248,7 @@ class Specs(SpecSet):
     ls_docker_volumes = RegistryPoint()
     ls_etc = RegistryPoint()
     ls_ocp_cni_openshift_sdn = RegistryPoint()
+    ls_origin_local_volumes_pods = RegistryPoint()
     lsinitrd_lvm_conf = RegistryPoint()
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
@@ -277,6 +285,7 @@ class Specs(SpecSet):
     metadata_json = RegistryPoint(raw=True)
     mlx4_port = RegistryPoint()
     modinfo_i40e = RegistryPoint()
+    modinfo_vmxnet3 = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     module = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
@@ -435,6 +444,7 @@ class Specs(SpecSet):
     saphostctl_getcimobject_sapinstance = RegistryPoint(filterable=True)
     saphostexec_status = RegistryPoint()
     saphostexec_version = RegistryPoint()
+    sat5_insights_properties = RegistryPoint()
     satellite_version_rb = RegistryPoint()
     scheduler = RegistryPoint(multi_output=True)
     scsi = RegistryPoint()
@@ -500,6 +510,7 @@ class Specs(SpecSet):
     systemd_system_origin_accounting = RegistryPoint()
     systemid = RegistryPoint()
     systool_b_scsi_v = RegistryPoint()
+    teamdctl_config_dump = RegistryPoint(multi_output=True)
     teamdctl_state_dump = RegistryPoint(multi_output=True)
     thp_enabled = RegistryPoint()
     thp_use_zero_page = RegistryPoint()
