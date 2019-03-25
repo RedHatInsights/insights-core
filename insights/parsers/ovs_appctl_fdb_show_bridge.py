@@ -48,11 +48,11 @@ class OVSappctlFdbShowBridge(CommandParser, LegacyItemAccess):
        Raises:
            SkipException: When the file is empty or data is not present for a bridge.
 
-       Examples::
+       Examples:
 
             >>> len(data["br_tun"])
             2
-            >>> data.get("br_tun")[1]["MAC"] == "bb:cc:dd:ee:ff:gg"
+            >>> data.get("br_tun")[1]["MAC"] == "gg:hh:ii:jj:kk:ll"
             True
             >>> int(data["br_tun"][0]["port"])
             7
@@ -67,7 +67,6 @@ class OVSappctlFdbShowBridge(CommandParser, LegacyItemAccess):
         bridge_name = self.file_path.split("ovs-appctl_fdb.show_")[-1]
 
         header = content[0].split()
-        info = [dict(zip(header, entry.split(None, len(header)))) for entry in content[1:]]
-        self.data[bridge_name] = info
+        self.data[bridge_name] = [dict(zip(header, entry.split(None, len(header)))) for entry in content[1:]]
         if not self.data[bridge_name]:
             raise SkipException("No data present for {0}".format(bridge_name))

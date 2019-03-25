@@ -9,8 +9,8 @@ import pytest
 FDB_SHOW_BR_INT = """
 port  VLAN  MAC                Age
    6    29  aa:bb:cc:dd:ee:ff  270
-   1    29  bb:cc:dd:ee:ff:gg  266
-   3   100  cc:dd:ee:ff:gg:hh  263
+   3    27  gg:hh:ii:jj:kk:ll  266
+   3   100  mm:nn:oo:pp:qq:rr  263
    1    29  dd:ee:ff:gg:hh:ii  234
 """.strip()
 
