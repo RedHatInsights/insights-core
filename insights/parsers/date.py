@@ -13,8 +13,8 @@ this command looks like::
 
     Fri Jun 24 09:13:34 CST 2016
 
-DateUTC - command ``dateutc``
------------------------------
+DateUTC - command ``date --utc``
+--------------------------------
 
 Class ``DateUTC`` parses the output of the ``date --utc`` command.  Output is
 similar to the ``date`` command except that the `Timezone` column uses UTC.

@@ -5,6 +5,8 @@ Parsers to parse the output of ``/sbin/modinfo <module_name>`` commands.
 
 ModInfoI40e - Command ``/sbin/modinfo i40e``
 --------------------------------------------
+ModInfoVmxnet3 - Command ``/sbin/modinfo vmxnet3``
+--------------------------------------------------
 """
 
 from insights import parser, CommandParser
@@ -200,5 +202,42 @@ class ModInfoI40e(ModInfo):
         True
         >>> sorted(modinfo_obj.module_parm) == sorted(['debug:Debug level (0=none,...,16=all), Debug mask (0x8XXXXXXX) (uint)', 'int_mode: Force interrupt mode other than MSI-X (1 INT#x; 2 MSI) (int)'])
         True
+    """
+    pass
+
+
+@parser(Specs.modinfo_vmxnet3)
+class ModInfoVmxnet3(ModInfo):
+    """
+    Parses output of ``/sbin/modinfo vmxnet3`` command.
+    Sample ``/sbin/modinfo vmxnet3`` output::
+
+        filename:       /lib/modules/3.10.0-957.10.1.el7.x86_64/kernel/drivers/net/vmxnet3/vmxnet3.ko.xz
+        version:        1.4.14.0-k
+        license:        GPL v2
+        description:    VMware vmxnet3 virtual NIC driver
+        author:         VMware, Inc.
+        retpoline:      Y
+        rhelversion:    7.6
+        srcversion:     7E672688ACACBDD2E363B63
+        alias:          pci:v000015ADd000007B0sv*sd*bc*sc*i*
+        depends:
+        intree:         Y
+        vermagic:       3.10.0-957.10.1.el7.x86_64 SMP mod_unload modversions
+        signer:         Red Hat Enterprise Linux kernel signing key
+        sig_key:        A5:70:18:DF:B6:C9:D6:1F:CF:CE:0A:3D:02:8B:B3:69:BD:76:CA:ED
+        sig_hashalgo:   sha256
+
+    Examples:
+        >>> type(modinfo_drv)
+        <class 'insights.parsers.modinfo.ModInfoVmxnet3'>
+        >>> modinfo_drv.module_name
+        'vmxnet3'
+        >>> modinfo_drv.module_version
+        '1.4.14.0-k'
+        >>> modinfo_drv.module_signer
+        'Red Hat Enterprise Linux kernel signing key'
+        >>> modinfo_drv.module_alias
+        'pci:v000015ADd000007B0sv*sd*bc*sc*i*'
     """
     pass

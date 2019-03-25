@@ -470,6 +470,9 @@ class InsightsClient(object):
         else:
             logger.debug('Cached branch_info file does not exist.')
 
+    def get_machine_id(self):
+        return client.get_machine_id()
+
 
 def format_config(config):
     # Log config except the password
