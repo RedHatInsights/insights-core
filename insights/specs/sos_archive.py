@@ -52,6 +52,7 @@ class SosSpecs(Specs):
     hostname = first_of([simple_file("sos_commands/general/hostname_-f"), simple_file("sos_commands/general/hostname")])
     httpd_conf_sos = glob_file(["/conf/httpd/conf/httpd.conf", "/conf/httpd/conf.d/*.conf"])
     installed_rpms = simple_file("installed-rpms")
+    ip_addr = simple_file("sos_commands/networking/ip_-d_address")
     ip_route_show_table_all = simple_file("sos_commands/networking/ip_route_show_table_all")
     journal_since_boot = simple_file("sos_commands/logs/journalctl_--no-pager_--boot")
     locale = simple_file("sos_commands/i18n/locale")
