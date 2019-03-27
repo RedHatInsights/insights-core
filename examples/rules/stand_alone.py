@@ -16,16 +16,18 @@ from __future__ import print_function
 from collections import namedtuple
 
 from insights import get_active_lines, parser, Parser
-from insights import make_response, rule, run
+from insights import make_fail, make_pass, rule, run
 from insights.core.spec_factory import SpecSet, simple_file
 from insights.parsers.redhat_release import RedhatRelease
 
-# Error key used in make_response
+# Error key used in make_fail
 ERROR_KEY = "TOO_MANY_HOSTS"
 
-# Jinga template displayed for make_response results
+# jinga2 template displayed for rule responses
+
 CONTENT = {
-    ERROR_KEY: """Too many hosts in /etc/hosts: {{num}}"""
+    make_fail: """Too many hosts in /etc/hosts: {{num}}""",
+    make_pass: """Just right"""
 }
 
 
@@ -88,7 +90,8 @@ def report(hp, rhr):
             file.
     """
     if len(hp.hosts) > 1:
-        return make_response("TOO_MANY_HOSTS", num=len(hp.hosts))
+        return make_fail("TOO_MANY_HOSTS", num=len(hp.hosts))
+    return make_pass("TOO_MANY_HOSTS", num=len(hp.hosts))
 
 
 if __name__ == "__main__":
