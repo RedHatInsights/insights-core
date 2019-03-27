@@ -2,10 +2,17 @@ from insights.core.spec_factory import SpecSet, RegistryPoint
 
 
 class Openshift(SpecSet):
-    namespaces = RegistryPoint(raw=True)
-    nodes = RegistryPoint(raw=True)
+    cluster_operators = RegistryPoint(raw=True)
     crds = RegistryPoint(raw=True)
     crs = RegistryPoint(raw=True, multi_output=True)
+    machine_configs = RegistryPoint(raw=True)
+    machines = RegistryPoint(raw=True)
+    machine_id = RegistryPoint(raw=True)  # stand in for system id
+    namespaces = RegistryPoint(raw=True)
+    nodes = RegistryPoint(raw=True)
+    pods = RegistryPoint(raw=True)
+    pvcs = RegistryPoint(raw=True)
+    storage_classes = RegistryPoint(raw=True)
 
 
 class Specs(SpecSet):
@@ -96,6 +103,7 @@ class Specs(SpecSet):
     dmidecode = RegistryPoint()
     dmsetup_info = RegistryPoint()
     dnf_modules = RegistryPoint()
+    dnsmasq_config = RegistryPoint(multi_output=True)
     docker_container_inspect = RegistryPoint(multi_output=True)
     docker_host_machine_id = RegistryPoint()
     docker_image_inspect = RegistryPoint(multi_output=True)
@@ -197,6 +205,7 @@ class Specs(SpecSet):
     ipcs_m_p = RegistryPoint()
     ipcs_s = RegistryPoint()
     ipcs_s_i = RegistryPoint(multi_output=True)
+    ip_netns_exec_namespace_lsof = RegistryPoint(multi_output=True, filterable=True)
     ip_route_show_table_all = RegistryPoint()
     ip_s_link = RegistryPoint()
     iptables_permanent = RegistryPoint()
@@ -241,6 +250,7 @@ class Specs(SpecSet):
     ls_docker_volumes = RegistryPoint()
     ls_etc = RegistryPoint()
     ls_ocp_cni_openshift_sdn = RegistryPoint()
+    ls_origin_local_volumes_pods = RegistryPoint()
     lsinitrd_lvm_conf = RegistryPoint()
     lsmod = RegistryPoint()
     lsof = RegistryPoint(filterable=True)
@@ -277,6 +287,7 @@ class Specs(SpecSet):
     metadata_json = RegistryPoint(raw=True)
     mlx4_port = RegistryPoint()
     modinfo_i40e = RegistryPoint()
+    modinfo_vmxnet3 = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     module = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
@@ -297,6 +308,7 @@ class Specs(SpecSet):
     netstat_s = RegistryPoint()
     networkmanager_dispatcher_d = RegistryPoint(multi_output=True)
     neutron_conf = RegistryPoint(filterable=True)
+    neutron_dhcp_agent_ini = RegistryPoint(filterable=True)
     neutron_l3_agent_ini = RegistryPoint(filterable=True)
     neutron_l3_agent_log = RegistryPoint(filterable=True)
     neutron_metadata_agent_ini = RegistryPoint(filterable=True)
@@ -361,6 +373,7 @@ class Specs(SpecSet):
     ovirt_engine_console_log = RegistryPoint(filterable=True)
     ovirt_engine_server_log = RegistryPoint(filterable=True)
     ovirt_engine_ui_log = RegistryPoint(filterable=True)
+    ovs_appctl_fdb_show_bridge = RegistryPoint(multi_output=True)
     ovs_vsctl_list_bridge = RegistryPoint()
     ovs_vsctl_show = RegistryPoint()
     ovs_vswitchd_limits = RegistryPoint()
