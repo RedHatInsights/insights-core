@@ -60,6 +60,10 @@ def _safe_parse(ds):
         return None
 
 
+def _filter_falsy(dict_):
+    return dict((k, v) for k, v in dict_.items() if v)
+
+
 @rule(
     optional=[
         Specs.machine_id,
@@ -74,7 +78,8 @@ def _safe_parse(ds):
 def canonical_facts(
     insights_id, machine_id, bios_uuid, submanid, ips, fqdn, mac_addresses
 ):
-    return make_metadata(
+
+    facts = dict(
         insights_id=_safe_parse(insights_id),
         machine_id=_safe_parse(machine_id),
         bios_uuid=_safe_parse(bios_uuid),
@@ -85,6 +90,8 @@ def canonical_facts(
         ) if mac_addresses else [],
         fqdn=_safe_parse(fqdn),
     )
+
+    return make_metadata(**_filter_falsy(facts))
 
 
 def get_canonical_facts(path=None):
