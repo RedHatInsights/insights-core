@@ -183,8 +183,10 @@ def post_update(client, config):
     if config.status:
         reg_check = client.get_registration_status()
         if reg_check['registered']:
+            logger.info(reg_check['message'])
             sys.exit(constants.sig_kill_ok)
         else:
+            logger.error(reg_check['message'])
             sys.exit(constants.sig_kill_bad)
 
     # put this first to avoid conflicts with register
