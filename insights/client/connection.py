@@ -84,12 +84,13 @@ class InsightsConnection(object):
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
             if self.config.legacy_upload:
+                # this is going bye-bye
                 if self.config.analyze_container:
                     self.upload_url = self.base_url + "/uploads/image"
                 else:
                     self.upload_url = self.base_url + "/uploads"
             else:
-                self.upload_url = self.base_url + '/upload/v1/upload'
+                self.upload_url = self.base_url + '/ingress/v1/upload'
         self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:
@@ -229,8 +230,11 @@ class InsightsConnection(object):
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
-        # TODO: fix this for platform
-        for ext in (url.path + '/', '', '/r', '/r/insights'):
+        if self.legacy_upload:
+            paths = (url.path + '/', '', '/r', '/r/insights')
+        else:
+            paths = (url.path + '/', '', '/api')
+        for ext in paths:
             try:
                 logger.debug("Testing: %s", test_url + ext)
                 if method is "POST":
