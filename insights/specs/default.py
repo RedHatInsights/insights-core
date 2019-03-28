@@ -180,6 +180,7 @@ class DefaultSpecs(Specs):
     dirsrv = simple_file("/etc/sysconfig/dirsrv")
     dirsrv_access = glob_file("var/log/dirsrv/*/access")
     dirsrv_errors = glob_file("var/log/dirsrv/*/errors")
+    disk_type = glob_file("/sys/block/*/queue/rotational")
     display_java = simple_command("/usr/sbin/alternatives --display java")
     dmesg = simple_command("/bin/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")

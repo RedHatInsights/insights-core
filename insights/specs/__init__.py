@@ -99,6 +99,7 @@ class Specs(SpecSet):
     dirsrv_access = RegistryPoint(multi_output=True, filterable=True)
     dirsrv_errors = RegistryPoint(multi_output=True, filterable=True)
     display_java = RegistryPoint()
+    disk_type = RegistryPoint(multi_output=True)
     dmesg = RegistryPoint(filterable=True)
     dmidecode = RegistryPoint()
     dmsetup_info = RegistryPoint()
