@@ -660,7 +660,7 @@ class InsightsConnection(object):
             return self._legacy_api_registration_check()
 
         reg = {
-            'registered':       None,
+            'registered':   None,
             'message':      None,
             'http_status':  None,
             'unreachable':  False,
@@ -688,7 +688,7 @@ class InsightsConnection(object):
             res_json = json.loads(res.content)
         except ValueError as e:
             logger.error(e)
-            reg['message']: 'Could not parse response body.'
+            reg['message'] = 'Could not parse response body.'
             reg['http_status'] = res.status_code
             reg['err'] = True
             return reg

@@ -198,16 +198,18 @@ def handle_registration(config, pconn):
 
     # check registration with API
     check = get_registration_status(config, pconn)
-    logger.debug(check['message'])
 
     if check['unreachable']:
         # Run connection test and exit
+        logger.error(check['message'])
         return None
 
     if check['err']:
         # some other error
+        logger.error(check['message'])
         return False
 
+    logger.debug(check['message'])
     if check['registered']:
         # registered in API, resync files
         if config.register:
