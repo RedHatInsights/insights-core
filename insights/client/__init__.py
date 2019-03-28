@@ -326,22 +326,13 @@ class InsightsClient(object):
                 False - machine is unregistered
                 None - could not reach the API
         """
-        # if self.config.legacy_upload:
         return client.handle_registration(self.config, self.connection)
-        # else:
-        #     if self.config.register:
-        #         logger.info('Registration is not applicable to the platform.')
-        #     logger.debug('Platform upload. Bypassing registration.')
-        #     return True
 
     @_net
     def unregister(self):
         """
             returns (bool): True success, False failure
         """
-        # if not self.config.legacy_upload:
-        #     logger.info('Registration is not applicable to the platform.')
-        #     return True
         return client.handle_unregistration(self.config, self.connection)
 
     @_net

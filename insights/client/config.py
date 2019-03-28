@@ -569,6 +569,9 @@ class InsightsConfig(object):
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
+        if self.group and not self.legacy_upload:
+            raise ValueError(
+                '--group is not supported at this time.')
 
     def _imply_options(self):
         '''

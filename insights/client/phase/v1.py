@@ -127,15 +127,63 @@ def post_update(client, config):
     # create a machine id first thing. we'll need it for all uploads
     logger.debug('Machine ID: %s', client.get_machine_id())
     logger.debug("CONFIG: %s", config)
-    if config.status:
-        reg_check = client.get_registration_status()
-        if legacy_upload:
+
+    # -------delete everything below this line-------
+    if legacy_upload:
+        if config.status:
+            reg_check = client.get_registration_status()
             for msg in reg_check['messages']:
                 logger.info(msg)
             if reg_check['status']:
                 sys.exit(constants.sig_kill_ok)
             else:
                 sys.exit(constants.sig_kill_bad)
+
+        # put this first to avoid conflicts with register
+        if config.unregister:
+            if client.unregister():
+                sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
+
+        if config.offline:
+            logger.debug('Running client in offline mode. Bypassing registration.')
+            return
+
+        if config.analyze_container:
+            logger.debug(
+                'Running client in container mode. Bypassing registration.')
+            return
+
+        if config.display_name and not config.register:
+            # setting display name independent of registration
+            if client.set_display_name(config.display_name):
+                if 'display_name' in config._cli_opts:
+                    # only exit on success if it was invoked from command line
+                    sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
+
+        reg = client.register()
+        if reg is None:
+            # API unreachable
+            logger.info('Running connection test...')
+            client.test_connection()
+            sys.exit(constants.sig_kill_bad)
+        elif reg is False:
+            # unregistered
+            sys.exit(constants.sig_kill_bad)
+        if config.register:
+            if (not config.disable_schedule and
+               get_scheduler(config).set_daily()):
+                logger.info('Automatic scheduling for Insights has been enabled.')
+        return
+    # -------delete everything above this line-------
+
+    if config.status:
+        reg_check = client.get_registration_status()
+        sys.exit(constants.sig_kill_ok)
+>>>>>>> disable --group, isolate codepaths
 
     # put this first to avoid conflicts with register
     if config.unregister:
@@ -146,11 +194,6 @@ def post_update(client, config):
 
     if config.offline:
         logger.debug('Running client in offline mode. Bypassing registration.')
-        return
-
-    if config.analyze_container:
-        logger.debug(
-            'Running client in container mode. Bypassing registration.')
         return
 
     if config.display_name and not config.register:
@@ -169,7 +212,7 @@ def post_update(client, config):
         client.test_connection()
         sys.exit(constants.sig_kill_bad)
     elif reg is False:
-        # unregistered
+        # unregistered or error in response
         sys.exit(constants.sig_kill_bad)
     if config.register:
         if (not config.disable_schedule and
