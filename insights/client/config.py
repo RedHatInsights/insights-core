@@ -51,7 +51,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': constants.base_url
+        'default': constants.legacy_base_url
     },
     'branch_info_url': {
         # non-CLI
@@ -603,10 +603,6 @@ class InsightsConfig(object):
         self.keep_archive = self.keep_archive or self.no_upload
         if self.payload:
             self.legacy_upload = False
-        if self.legacy_upload:
-            self.base_url = constants.legacy_base_url
-        else:
-            self.base_url = constants.base_url
 
 
 if __name__ == '__main__':

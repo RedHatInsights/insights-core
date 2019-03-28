@@ -673,8 +673,9 @@ class InsightsConnection(object):
             url = self.api_url + '/inventory/v1/hosts?insights_id=' + machine_id
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout) as e:
             logger.error('Connection timed out.')
+            logger.error(e)
             reg['message'] = 'Insights API could not be reached.'
             reg['unreachable'] = True
             reg['err'] = True
@@ -695,6 +696,7 @@ class InsightsConnection(object):
         if res_json['total'] == 0:
             logger.debug('No systems found with machine ID: %s', machine_id)
             reg['registered'] = False
+            reg['message'] = 'System is unregistered.'
             return reg
         results = res_json['results']
         logger.debug('System found.')
