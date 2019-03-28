@@ -569,9 +569,22 @@ class InsightsConfig(object):
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
-        if self.group and not self.legacy_upload:
-            raise ValueError(
-                '--group is not supported at this time.')
+        if not self.legacy_upload:
+            if self.group:
+                raise ValueError(
+                    '--group is not supported at this time.')
+            if self.analyze_image_id:
+                raise ValueError(
+                    '--analyze-image-id is not supported at this time.')
+            if self.analyze_file:
+                raise ValueError(
+                    '--analyze-file is not supported at this time.')
+            if self.analyze_mountpoint:
+                raise ValueError(
+                    '--analyze-mountpoint is not supported at this time.')
+            if self.analyze_container:
+                raise ValueError(
+                    '--analyze-container is not supported at this time.')
 
     def _imply_options(self):
         '''
