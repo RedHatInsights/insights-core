@@ -340,25 +340,25 @@ def test_delete_archive_internal():
 
 
 @patch('insights.client.client.handle_registration')
-def test_platform_register_skip(handle_registration):
+def test_platform_register(handle_registration):
     '''
     handle_registration not called when platform upload
     '''
     config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     assert client.register()  # short circuits to True
-    handle_registration.assert_not_called()
+    handle_registration.assert_called_once()
 
 
 @patch('insights.client.client.handle_unregistration')
-def test_platform_unregister_skip(handle_unregistration):
+def test_platform_unregister(handle_unregistration):
     '''
     handle_registration not called when platform upload
     '''
     config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     assert client.unregister()  # short circuits to True
-    handle_unregistration.assert_not_called()
+    handle_unregistration.assert_called_once()
 
 
 @patch('insights.client.client.handle_registration')

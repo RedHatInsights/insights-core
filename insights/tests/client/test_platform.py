@@ -77,7 +77,7 @@ def test_upload_urls():
     # plaform implied
     conf = InsightsConfig(legacy_upload=False)
     c = InsightsConnection(conf)
-    assert c.upload_url == 'https://' + conf.base_url + '/platform/upload/api/v1/upload'
+    assert c.upload_url == 'https://' + conf.base_url + '/ingress/v1/upload'
 
     # explicitly configured
     conf = InsightsConfig(upload_url='BUNCHANONSENSE')
@@ -96,7 +96,7 @@ def test_payload_upload(op, session, c):
     c = InsightsConnection(conf)
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
-        'https://' + c.config.base_url + '/platform/upload/api/v1/upload',
+        'https://' + c.config.base_url + '/ingress/v1/upload',
         files={
             'file': ('testp', ANY, 'testct'),  # ANY = return call from mocked open(), acts as filepointer here
             'metadata': json.dumps({'test': 'facts'})},
