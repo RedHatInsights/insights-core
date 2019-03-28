@@ -204,7 +204,11 @@ def handle_registration(config, pconn):
         # Run connection test and exit
         return None
 
-    if check['status']:
+    if check['err']:
+        # some other error
+        return False
+
+    if check['registered']:
         # registered in API, resync files
         if config.register:
             logger.info('This host has already been registered.')
@@ -216,7 +220,7 @@ def handle_registration(config, pconn):
         return True
     else:
         write_unregistered_file()
-        logger.info('This machine has not been registered.'
+        logger.info('This machine has not been registered. '
                     'Use --register to register this machine.')
         return False
 

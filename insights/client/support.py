@@ -59,22 +59,7 @@ def _legacy_registration_check(pconn):
 def registration_check(pconn, legacy_upload=True):
     if legacy_upload:
         return _legacy_registration_check(pconn)
-    unreachable = False
-    reg_status, reg_date = pconn.api_registration_check()
-    logger.debug('Registration status: %s', reg_status)
-    if reg_status is None:
-        msg = 'Insights API could not be reached to confirm status.'
-        unreachable = True
-    elif reg_status is False:
-        msg = 'This system is not registered.'
-    else:
-        msg = 'System was registered at ' + reg_date
-    return {
-        'message': msg,
-        'status': reg_status,
-        'unreg_date': None,
-        'unreachable': unreachable
-    }
+    return pconn.api_registration_check()
 
 
 class InsightsSupport(object):

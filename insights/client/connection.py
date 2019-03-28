@@ -412,7 +412,6 @@ class InsightsConnection(object):
 
         # handle specific status codes
         if req.status_code >= 400:
-            logger.error("ERROR: Upload failed!")
             logger.info("Debug Information:\nHTTP Status Code: %s",
                         req.status_code)
             logger.info("HTTP Status Text: %s", req.reason)
@@ -450,7 +449,8 @@ class InsightsConnection(object):
                 except:
                     unreg_date = "412, but no unreg_date or message"
                     logger.debug("HTTP Response Text: %s", req.text)
-            return False
+            return True
+        return False
 
     def get_satellite5_info(self, branch_info):
         """
@@ -644,37 +644,66 @@ class InsightsConnection(object):
         '''
             Reach out to the inventory API to check
             whether a machine exists.
-            Returns:
-                (True, String <creation date>) on system existence
-                (False, None) on no system found
-                (None, None) on API unreachable
+            Returns object:
+                registered (bool)
+                    whether system exists in inventory
+                message (string)
+                    log message
+                http_status (int)
+                    HTTP status code
+                unreachable (bool)
+                    whether the API was unable to reached
+                err (bool)
+                    whether there was an error
         '''
         if self.config.legacy_upload:
             return self._legacy_api_registration_check()
+
+        reg = {
+            'registered':       None,
+            'message':      None,
+            'http_status':  None,
+            'unreachable':  False,
+            'err':          False
+        }
+
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
         try:
-            url = self.api_url + '/platform/inventory/api/v1/hosts?insights_id=' + machine_id
+            url = self.api_url + '/inventory/v1/hosts?insights_id=' + machine_id
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except requests.ConnectionError:
-            # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
-            return None, None
+            logger.error('Connection timed out.')
+            reg['message'] = 'Insights API could not be reached.'
+            reg['unreachable'] = True
+            reg['err'] = True
+            return reg
         try:
+            if (self.handle_fail_rcs(res)):
+                reg['message'] = res.text
+                reg['http_status'] = res.status_code
+                reg['err'] = True
+                return reg
             res_json = json.loads(res.content)
         except ValueError as e:
             logger.error(e)
-            return False, None
+            reg['message']: 'Could not parse response body.'
+            reg['http_status'] = res.status_code
+            reg['err'] = True
+            return reg
         if res_json['total'] == 0:
             logger.debug('No systems found with machine ID: %s', machine_id)
-            return False, None
+            reg['registered'] = False
+            return reg
         results = res_json['results']
         logger.debug('System found.')
         logger.debug('Machine ID: %s', results[0]['insights_id'])
         logger.debug('Inventory ID: %s', results[0]['id'])
-        return True, results[0]['created']
+        reg['registered'] = True
+        reg['message'] = 'System was registered at ' + results[0]['created']
+        reg['http_status'] = res.status_code
+        return reg
 
     # -LEGACY-
     def unregister(self):

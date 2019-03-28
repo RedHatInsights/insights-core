@@ -129,12 +129,13 @@ def post_update(client, config):
     logger.debug("CONFIG: %s", config)
     if config.status:
         reg_check = client.get_registration_status()
-        for msg in reg_check['messages']:
-            logger.info(msg)
-        if reg_check['status']:
-            sys.exit(constants.sig_kill_ok)
-        else:
-            sys.exit(constants.sig_kill_bad)
+        if legacy_upload:
+            for msg in reg_check['messages']:
+                logger.info(msg)
+            if reg_check['status']:
+                sys.exit(constants.sig_kill_ok)
+            else:
+                sys.exit(constants.sig_kill_bad)
 
     # put this first to avoid conflicts with register
     if config.unregister:
