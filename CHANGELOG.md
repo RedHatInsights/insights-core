@@ -1,5 +1,40 @@
 # Change Log
 
+## [insights-core-3.0.86-877](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.86-877) (2019-03-27)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.85-868...insights-core-3.0.86-877)
+
+## [insights-core-3.0.85-868](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.85-868) (2019-03-21)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.84-864...insights-core-3.0.85-868)
+
+**Fixed bugs:**
+
+- FileListing parser does not correctly handle directory path with dot [\#1748](https://github.com/RedHatInsights/insights-core/issues/1748)
+
+## [insights-core-3.0.84-864](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.84-864) (2019-03-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.83-1...insights-core-3.0.84-864)
+
+## [3.0.83-1](https://github.com/RedHatInsights/insights-core/tree/3.0.83-1) (2019-03-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.82-858...3.0.83-1)
+
+**Fixed bugs:**
+
+- Enhance multipath conf parser to parse multiple entries [\#1722](https://github.com/RedHatInsights/insights-core/issues/1722)
+
+## [insights-core-3.0.82-858](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.82-858) (2019-03-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.81-848...insights-core-3.0.82-858)
+
+**Implemented enhancements:**
+
+- Set LC\_ALL=C for all commands [\#1623](https://github.com/RedHatInsights/insights-core/issues/1623)
+
+**Fixed bugs:**
+
+- parse\_fixed\_table header prefix bug [\#1737](https://github.com/RedHatInsights/insights-core/issues/1737)
+
+**Closed issues:**
+
+- SMDA\* is not business SAP instances [\#1740](https://github.com/RedHatInsights/insights-core/issues/1740)
+
 ## [insights-core-3.0.81-848](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.81-848) (2019-03-07)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.80-833...insights-core-3.0.81-848)
 
@@ -190,20 +225,12 @@
 
 - configtree include directives only work from top level [\#1477](https://github.com/RedHatInsights/insights-core/issues/1477)
 
-**Closed issues:**
-
-- installed\_rpms missing EPOCH [\#1431](https://github.com/RedHatInsights/insights-core/issues/1431)
-
 ## [3.0.52-1](https://github.com/RedHatInsights/insights-core/tree/3.0.52-1) (2018-10-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.51-623...3.0.52-1)
 
 **Fixed bugs:**
 
 - Issue to collect insights-archive in RHEL6 [\#1461](https://github.com/RedHatInsights/insights-core/issues/1461)
-
-**Closed issues:**
-
-- Add 'to\_serializable\(\)' function to 'InputData' object [\#1421](https://github.com/RedHatInsights/insights-core/issues/1421)
 
 ## [insights-core-3.0.51-623](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.51-623) (2018-10-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.50-1...insights-core-3.0.51-623)
@@ -225,10 +252,6 @@
 
 - Tar files aren't handled [\#1457](https://github.com/RedHatInsights/insights-core/issues/1457)
 
-**Closed issues:**
-
-- Incorrect configuration file paths for specs related to OpenStack [\#1441](https://github.com/RedHatInsights/insights-core/issues/1441)
-
 ## [3.0.47-1](https://github.com/RedHatInsights/insights-core/tree/3.0.47-1) (2018-09-27)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.46-605...3.0.47-1)
 
@@ -238,26 +261,14 @@
 ## [insights-core-3.0.45-594](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.45-594) (2018-09-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.44-586...insights-core-3.0.45-594)
 
-**Closed issues:**
-
-- utf-8 UnicodeDecodeError in 'var/log/messages' parsing [\#1432](https://github.com/RedHatInsights/insights-core/issues/1432)
-
 ## [insights-core-3.0.44-586](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.44-586) (2018-09-13)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.43-576...insights-core-3.0.44-586)
-
-**Closed issues:**
-
-- No parser for getting number of cpu cores [\#1422](https://github.com/RedHatInsights/insights-core/issues/1422)
 
 ## [insights-core-3.0.43-576](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.43-576) (2018-09-05)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.42-564...insights-core-3.0.43-576)
 
 ## [insights-core-3.0.42-564](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.42-564) (2018-08-30)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.41-1...insights-core-3.0.42-564)
-
-**Closed issues:**
-
-- Need to patch machine-id in the test\_set\_display\_name [\#1407](https://github.com/RedHatInsights/insights-core/issues/1407)
 
 ## [3.0.41-1](https://github.com/RedHatInsights/insights-core/tree/3.0.41-1) (2018-08-29)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.40-1...3.0.41-1)
