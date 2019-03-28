@@ -230,7 +230,7 @@ class InsightsConnection(object):
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
-        if self.legacy_upload:
+        if self.config.legacy_upload:
             paths = (url.path + '/', '', '/r', '/r/insights')
         else:
             paths = (url.path + '/', '', '/api')

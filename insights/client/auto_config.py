@@ -66,7 +66,7 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
         saved_proxy = config.proxy
         config.proxy = proxy
     # URL changes. my favorite
-    if _is_rhn_or_rhsm(rhsm_hostname):
+    if _is_rhn_or_rhsm(hostname):
         # connected directly to RHSM
         if config.legacy_upload:
             config.base_url = hostname + '/r/insights'
@@ -138,7 +138,7 @@ def _try_satellite6_configuration(config):
         # Directly connected to Red Hat, use cert auth directly with the api
         if _is_rhn_or_rhsm(rhsm_hostname):
             # URL changes. my favorite
-            if legacy_upload:
+            if config.legacy_upload:
                 logger.debug("Connected to Red Hat Directly, using cert-api")
                 rhsm_hostname = 'cert-api.access.redhat.com'
             else:
