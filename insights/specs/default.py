@@ -546,8 +546,8 @@ class DefaultSpecs(Specs):
                                     "/var/log/rhn/osa-dispatcher.log",
                                     "/rhn-logs/rhn/osa-dispatcher.log"
                                     ])
-    ose_master_config = simple_file("/etc/origin/master/master-config.yaml")
-    ose_node_config = simple_file("/etc/origin/node/node-config.yaml")
+    ose_master_config = first_file(["/etc/origin/master/master-config.yaml", "/pssa_files/etc/origin/master/master-config.yaml", "/pssa_files/master-config.yaml"])
+    ose_node_config = first_file(["/etc/origin/node/node-config.yaml", "/pssa_files/etc/origin/node/node-config.yaml", "/pssa_files/node-config.yaml"])
     ovirt_engine_confd = glob_file("/etc/ovirt-engine/engine.conf.d/*")
     ovirt_engine_server_log = simple_file("/var/log/ovirt-engine/server.log")
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
