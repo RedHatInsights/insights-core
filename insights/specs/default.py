@@ -108,7 +108,7 @@ class DefaultSpecs(Specs):
     catalina_server_log = foreach_collect(tomcat_base, "%s/catalina*.log")
     cciss = glob_file("/proc/driver/cciss/cciss*")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
-    ceilometer_collector_log = simple_file("/var/log/ceilometer/collector.log")
+    ceilometer_collector_log = first_file(["/var/log/containers/ceilometer/collector.log", "/var/log/ceilometer/collector.log"])
     ceilometer_compute_log = first_file(["/var/log/containers/ceilometer/compute.log", "/var/log/ceilometer/compute.log"])
     ceilometer_conf = first_file(["/var/lib/config-data/puppet-generated/ceilometer/etc/ceilometer/ceilometer.conf", "/etc/ceilometer/ceilometer.conf"])
     ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
