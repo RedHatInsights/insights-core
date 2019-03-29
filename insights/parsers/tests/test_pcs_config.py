@@ -80,6 +80,9 @@ def test_pcs_config_normal():
     assert "cluster-infrastructure: corosync" in pcs.get("Cluster Properties")
     assert "stonith-enabled: false" in pcs.get("Cluster Properties")
     assert pcs.get("Resources Defaults") == ["resource-stickiness: 100", "migration-threshold: 3"]
+    assert "cluster-infrastructure" in pcs.cluster_props_dict
+    assert "have-watchdog" in pcs.cluster_props_dict
+    assert pcs.cluster_props_dict.get("have-watchdog") == "false"
 
 
 def test_pcs_config_documentation():

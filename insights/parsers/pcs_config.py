@@ -66,6 +66,8 @@ Examples:
     ['cluster-infrastructure: corosync', 'cluster-name: cluster-1', 'dc-version: 1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog: false', 'no-quorum-policy: ignore', 'stonith-enable: true', 'stonith-enabled: false']
     >>> pcs_config.get("Colocation Constraints")
     ['clone-1 with clone-x (score:INFINITY) (id:clone-INFINITY)', 'clone-2 with clone-x (score:INFINITY) (id:clone-INFINITY)']
+    >>> 'have-watchdog' in pcs_config.cluster_props_dict
+    True
 """
 
 
@@ -136,3 +138,15 @@ class PCSConfig(CommandParser):
 
     def get(self, key):
         return self.data.get(key)
+
+    @property
+    def cluster_props_dict(self):
+        """
+        (dict): This function returns a dict of all cluster property and value
+        """
+        prop_result = {}
+        if "Cluster Properties" in self.data and self.data.get("Cluster Properties"):
+            for property_line in self.data.get("Cluster Properties"):
+                key, _, value = property_line.partition(":")
+                prop_result[key.strip()] = value.strip()
+        return prop_result
