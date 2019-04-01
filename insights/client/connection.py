@@ -660,11 +660,11 @@ class InsightsConnection(object):
             return self._legacy_api_registration_check()
 
         reg = {
-            'registered':   None,
-            'message':      None,
-            'http_status':  None,
-            'unreachable':  False,
-            'err':          False
+            'registered': None,
+            'message': None,
+            'http_status': None,
+            'unreachable': False,
+            'err': False
         }
 
         logger.debug('Checking registration status...')
