@@ -1,5 +1,5 @@
 from six import StringIO
-from insights import dr, make_response, rule
+from insights import dr, make_fail, rule
 from insights.formats.text import HumanReadableFormat
 from insights.formats._yaml import YamlFormat
 from insights.formats._json import JsonFormat
@@ -11,7 +11,7 @@ SL_MSG = "Running insights.tests.test_formats.report"
 
 @rule()
 def report():
-    return make_response("ERROR", foo="bar")
+    return make_fail("ERROR", foo="bar")
 
 
 def test_human_readable():
