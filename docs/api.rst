@@ -363,9 +363,9 @@ Rule Output
 Rules can return two types of responses:  a rule "hit" or "action", or
 system metadata.
 
-To return a rule "hit", return the result of ``make_response``:
+To return a rule "hit", return the result of ``make_fail``:
 
-.. autoclass:: insights.core.plugins.make_response
+.. autoclass:: insights.core.plugins.make_fail
    :noindex:
 
 To return system metadata, return the result of ``make_metadata``:
