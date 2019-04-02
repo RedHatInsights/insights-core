@@ -96,7 +96,7 @@ def test_payload_upload(op, session, c):
     c = InsightsConnection(conf)
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
-        'https://' + c.config.base_url + '/ingress/v1/upload',
+        'https://' + c.base_url + '/ingress/v1/upload',
         files={
             'file': ('testp', ANY, 'testct'),  # ANY = return call from mocked open(), acts as filepointer here
             'metadata': json.dumps({'test': 'facts'})},
@@ -116,7 +116,7 @@ def test_legacy_upload(op, session, c):
     c = InsightsConnection(conf)
     c.upload_archive('testp', 'testct', None)
     c.session.post.assert_called_with(
-        'https://' + c.config.base_url + '/uploads/XXXXXXXX',
+        'https://' + c.base_url + '/uploads/XXXXXXXX',
         files={
             'file': ('testp', ANY, 'application/gzip')},  # ANY = return call from mocked open(), acts as filepointer here
         headers={'x-rh-collection-time': 'None'})

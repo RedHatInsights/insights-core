@@ -25,7 +25,7 @@ class InsightsUploadConf(object):
     Insights spec configuration from uploader.json
     """
 
-    def __init__(self, config, conn=None):
+    def __init__(self, config, conn):
         """
         Load config from parent
         """
@@ -33,25 +33,9 @@ class InsightsUploadConf(object):
         self.fallback_file = constants.collection_fallback_file
         self.remove_file = config.remove_file
         self.collection_rules_file = constants.collection_rules_file
-        protocol = "https://"
-        if self.config.insecure_connection:
-            # This really should not be used.
-            protocol = "http://"
-
-        # hack to "guess" the correct base URL if autoconfig off +
-        #   no base_url in config
-        if self.config.base_url is None:
-            if self.config.legacy_upload:
-                self.base_url = protocol + constants.legacy_base_url
-            else:
-                self.base_url = protocol + constants.base_url
-        else:
-            self.base_url = protocol + self.config.base_url
-        # end hack. in the future, make cloud.redhat.com the default
-
         self.collection_rules_url = self.config.collection_rules_url
         if self.collection_rules_url is None:
-            self.collection_rules_url = self.base_url + '/v1/static/uploader.v2.json'
+            self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
         self.gpg = self.config.gpg
         self.conn = conn
 
@@ -242,4 +226,5 @@ class InsightsUploadConf(object):
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    print(InsightsUploadConf(InsightsConfig().load_all()))
+    from .connection import InsightsConnection
+    print(InsightsUploadConf(InsightsConfig().load_all(), InsightsConnection()))
