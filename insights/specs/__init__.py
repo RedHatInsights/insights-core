@@ -195,6 +195,7 @@ class Specs(SpecSet):
     initscript = RegistryPoint(multi_output=True)
     init_process_cgroup = RegistryPoint()
     installed_rpms = RegistryPoint()
+    installed_rpms_osp_containers = RegistryPoint()
     interrupts = RegistryPoint()
     ip6tables_permanent = RegistryPoint()
     ip6tables = RegistryPoint()

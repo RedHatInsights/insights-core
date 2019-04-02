@@ -874,6 +874,21 @@ class DefaultSpecs(Specs):
     # unify the different installed rpm provider types
     installed_rpms = first_of([host_installed_rpms, docker_installed_rpms])
 
+    @datasource(context=HostContext)
+    def osp_containers(broker):
+        # check podman command existing
+        which_podman = broker[HostContext].shell_out("which podman")
+        container_command = 'docker' if '/which:' in which_podman[0] else which_podman[0]
+        container_names = broker[HostContext].shell_out(container_command + " ps --format {{.Names}}")
+        if container_names:
+            # check osp or ceph environment
+            if 'nova_compute' in container_names or 'nova_conductor' in container_names or any(
+                    name.startswith('ceph-osd') for name in container_names):
+                # return list of podman or docker command and container name tuple
+                return list(map(lambda x: (container_command, x), container_names))
+
+    installed_rpms_osp_containers = foreach_execute(osp_containers, "%s exec -it %s /usr/bin/rpm -qa --qf '{}'".format(rpm_format))
+
     @datasource(ps_auxww, context=HostContext)
     def jboss_home(broker):
         """Command: JBoss home progress command content paths"""
