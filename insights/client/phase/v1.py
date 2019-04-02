@@ -131,7 +131,10 @@ def post_update(client, config):
         reg_check = client.get_registration_status()
         for msg in reg_check['messages']:
             logger.info(msg)
-        sys.exit(constants.sig_kill_ok)
+        if reg_check['status']:
+            sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
 
     # put this first to avoid conflicts with register
     if config.unregister:
