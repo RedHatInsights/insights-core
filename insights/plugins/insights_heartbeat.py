@@ -1,4 +1,4 @@
-from insights.core.plugins import rule, make_response
+from insights import rule, make_fail
 from insights.parsers.hostname import Hostname
 
 ERROR_KEY = "INSIGHTS_HEARTBEAT"
@@ -10,4 +10,4 @@ HOST = "insights-heartbeat-" + HEARTBEAT_UUID
 def is_insights_heartbeat(hostname):
     hostname = hostname.hostname
     if hostname == HOST:
-        return make_response(ERROR_KEY)
+        return make_fail(ERROR_KEY)

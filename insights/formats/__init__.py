@@ -103,21 +103,41 @@ RENDERERS = {}
 try:
     from jinja2 import Template
 
-    def get_content(obj, key):
+    def get_content(obj, val):
+        """
+        Attempts to determine a jinja2 content template for a rule's response.
+        """
+        # does the rule define a content= kwarg?
         c = dr.get_delegate(obj).content
+
+        # otherwise, does the rule module have a CONTENT attribute?
         if c is None:
             mod = sys.modules[obj.__module__]
             c = getattr(mod, "CONTENT", None)
 
         if c:
+            # is the content a dictionary?
             if isinstance(c, dict):
+
+                # does it contain a make_* class as a key?
+                v = c.get(val.__class__)
+                if v is not None:
+                    return v
+
+                # does it contain an error key?
+                key = val.get_key()
                 if key:
-                    return c.get(key)
+                    v = c.get(key)
+
+                    # is the value a dict that contains make_* classes?
+                    if isinstance(v, dict):
+                        return v.get(val.__class__)
+                    return v
             else:
                 return c
 
     def format_rule(comp, val):
-        content = get_content(comp, val.get_key())
+        content = get_content(comp, val)
         if content and val.get("type") != "skip":
             return Template(content).render(val)
         return str(val)
