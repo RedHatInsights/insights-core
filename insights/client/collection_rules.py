@@ -25,7 +25,7 @@ class InsightsUploadConf(object):
     Insights spec configuration from uploader.json
     """
 
-    def __init__(self, config, conn):
+    def __init__(self, config, conn=None):
         """
         Load config from parent
         """
@@ -34,10 +34,11 @@ class InsightsUploadConf(object):
         self.remove_file = config.remove_file
         self.collection_rules_file = constants.collection_rules_file
         self.collection_rules_url = self.config.collection_rules_url
-        if self.collection_rules_url is None:
-            self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
         self.gpg = self.config.gpg
-        self.conn = conn
+        if conn:
+            if self.collection_rules_url is None:
+                self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
+            self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):
         """
@@ -226,5 +227,4 @@ class InsightsUploadConf(object):
 
 if __name__ == '__main__':
     from .config import InsightsConfig
-    from .connection import InsightsConnection
-    print(InsightsUploadConf(InsightsConfig().load_all(), InsightsConnection()))
+    print(InsightsUploadConf(InsightsConfig().load_all()))
