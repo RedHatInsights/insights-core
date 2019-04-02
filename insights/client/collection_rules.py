@@ -37,7 +37,18 @@ class InsightsUploadConf(object):
         if self.config.insecure_connection:
             # This really should not be used.
             protocol = "http://"
-        self.base_url = protocol + self.config.base_url
+
+        # hack to "guess" the correct base URL if autoconfig off +
+        #   no base_url in config
+        if self.config.base_url is None:
+            if self.config.legacy_upload:
+                self.base_url = protocol + constants.legacy_base_url
+            else:
+                self.base_url = protocol + constants.base_url
+        else:
+            self.base_url = protocol + self.config.base_url
+        # end hack. in the future, make cloud.redhat.com the default
+
         self.collection_rules_url = self.config.collection_rules_url
         if self.collection_rules_url is None:
             self.collection_rules_url = self.base_url + '/v1/static/uploader.v2.json'
