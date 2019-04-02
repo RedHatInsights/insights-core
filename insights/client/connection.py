@@ -80,15 +80,27 @@ class InsightsConnection(object):
             self.cert_verify = False
 
         self.auto_config = self.config.auto_config
-        self.base_url = protocol + self.config.base_url
+
+        # hack to "guess" the correct base URL if autoconfig off +
+        #   no base_url in config
+        if self.config.base_url is None:
+            if self.config.legacy_upload:
+                self.base_url = protocol + constants.legacy_base_url
+            else:
+                self.base_url = protocol + constants.base_url
+        else:
+            self.base_url = protocol + self.config.base_url
+        # end hack. in the future, make cloud.redhat.com the default
+
         self.upload_url = self.config.upload_url
         if self.upload_url is None:
             if self.config.legacy_upload:
-                # this is going bye-bye
+                # vv this is going bye-bye
                 if self.config.analyze_container:
                     self.upload_url = self.base_url + "/uploads/image"
                 else:
                     self.upload_url = self.base_url + "/uploads"
+                # ^^ that is going bye-bye
             else:
                 self.upload_url = self.base_url + '/ingress/v1/upload'
         self.api_url = self.base_url

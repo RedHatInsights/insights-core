@@ -106,11 +106,11 @@ def register(config, pconn):
 # TODO: eventually remove this function. Only valid for legacy stuff
 def _legacy_handle_registration(config, pconn):
     '''
-        Handle the registration process
-        Returns:
-            True - machine is registered
-            False - machine is unregistered
-            None - could not reach the API
+    Handle the registration process
+    Returns:
+        True - machine is registered
+        False - machine is unregistered
+        None - could not reach the API
     '''
     logger.debug('Trying registration.')
     # force-reregister -- remove machine-id files and registration files
@@ -177,11 +177,11 @@ def _legacy_handle_registration(config, pconn):
 
 def handle_registration(config, pconn):
     '''
-        Handle the registration process
-        Returns:
-            True - machine is registered
-            False - machine is unregistered
-            None - could not reach the API
+    Handle the registration process
+    Returns:
+        True - machine is registered
+        False - machine is unregistered, or response error
+        None - could not reach the API
     '''
     if config.legacy_upload:
         return _legacy_handle_registration(config, pconn)
