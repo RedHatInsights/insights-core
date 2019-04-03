@@ -56,8 +56,8 @@ def _legacy_registration_check(pconn):
             'unreachable': unreachable}
 
 
-def registration_check(pconn, legacy_upload=True):
-    if legacy_upload:
+def registration_check(pconn):
+    if pconn.config.legacy_upload:
         return _legacy_registration_check(pconn)
     return pconn.api_registration_check()
 
@@ -95,11 +95,10 @@ class InsightsSupport(object):
         pconn = InsightsConnection(self.config)
         logger.info('Insights version: %s', get_nvr())
 
-        if self.config.legacy_upload:
-            reg_check = registration_check(pconn)
-            cfg_block.append('Registration check:')
-            for key in reg_check:
-                cfg_block.append(key + ': ' + str(reg_check[key]))
+        reg_check = registration_check(pconn)
+        cfg_block.append('Registration check:')
+        for key in reg_check:
+            cfg_block.append(key + ': ' + str(reg_check[key]))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):

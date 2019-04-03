@@ -235,7 +235,7 @@ def get_registration_status(config, pconn):
             False - machine is unregistered
             None - could not reach the API
     '''
-    return registration_check(pconn, config.legacy_upload)
+    return registration_check(pconn)
 
 
 def _legacy_handle_unregistration(config, pconn):
@@ -285,6 +285,9 @@ def handle_unregistration(config, pconn):
 
     logger.debug(check['message'])
     if check['registered']:
+        # inventory items are currently undeletable
+        logger.info('Unregistration not supported yet.')
+        return False
         # only unregister if we're already registered
         unreg = pconn.unregister()
     else:
