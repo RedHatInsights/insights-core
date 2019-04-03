@@ -49,12 +49,12 @@ def test_registration_check_legacy_upload_on(registration_check, InsightsConnect
 
 @patch('insights.client.support.InsightsConnection')
 @patch('insights.client.support.registration_check')
-def test_skip_registration_check_legacy_upload_off(registration_check, InsightsConnection):
+def test_registration_check_legacy_upload_off(registration_check, InsightsConnection):
     '''
-        Don't check registration when legacy_upload=False
+        DO check registration when legacy_upload=False
     '''
     config = InsightsConfig(legacy_upload=False)
     support = InsightsSupport(config)
     support.collect_support_info()
 
-    registration_check.assert_not_called()
+    registration_check.assert_called_once()
