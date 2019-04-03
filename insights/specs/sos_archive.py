@@ -69,7 +69,7 @@ class SosSpecs(Specs):
     lvs = simple_file("sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0")
     mount = simple_file("mount")
     multipath__v4__ll = simple_file("sos_commands/multipath/multipath_-v4_-ll")
-    netstat = simple_file("netstat")
+    netstat = simple_file("sos_commands/networking/netstat_-neopa")
     netstat_agn = first_of([simple_file("sos_commands/networking/netstat_-agn"), simple_file("sos_commands/networking/netstat_-W_-agn"), simple_file("sos_commands/networking/netstat_-T_-agn")])
     netstat_i = simple_file("sos_commands/networking/netstat_-i")
     netstat_s = simple_file("sos_commands/networking/netstat_-s")
