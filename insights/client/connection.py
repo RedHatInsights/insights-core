@@ -893,7 +893,7 @@ class InsightsConnection(object):
         if self.config.legacy_upload:
             return self._legacy_set_display_name(display_name)
         logger.info('Setting display name is not yet supported.')
-        return True
+        return False
 
     def get_diagnosis(self, remediation_id=None):
         '''
