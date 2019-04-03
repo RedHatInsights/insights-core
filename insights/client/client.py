@@ -222,8 +222,8 @@ def handle_registration(config, pconn):
         return True
     else:
         write_unregistered_file()
-        logger.info('This machine has not been registered. '
-                    'Use --register to register this machine.')
+        logger.info('This system has not been registered. '
+                    'Use --register to register this system.')
         return False
 
 
@@ -238,11 +238,58 @@ def get_registration_status(config, pconn):
     return registration_check(pconn, config.legacy_upload)
 
 
-def handle_unregistration(config, pconn):
+def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
-    unreg = pconn.unregister()
+    check = get_registration_status(config, pconn)
+
+    for m in check['messages']:
+        logger.debug(m)
+
+    if check['unreachable']:
+        # Run connection test and exit
+        return None
+
+    if check['status']:
+        unreg = pconn.unregister()
+    else:
+        unreg = True
+        logger.info('This system is already unregistered.')
+    if unreg:
+        # only set if unreg was successful
+        write_unregistered_file()
+        get_scheduler(config).remove_scheduling()
+    return unreg
+
+
+def handle_unregistration(config, pconn):
+    """
+    Returns:
+        True - machine was successfully unregistered
+        False - machine could not be unregistered
+        None - could not reach the API
+    """
+    if config.legacy_upload:
+        return _legacy_handle_unregistration(config, pconn)
+    check = get_registration_status(config, pconn)
+    if check['unreachable']:
+        # Run connection test and exit
+        logger.error(check['message'])
+        return None
+
+    if check['err']:
+        # some other error
+        logger.error(check['message'])
+        return False
+
+    logger.debug(check['message'])
+    if check['registered']:
+        # only unregister if we're already registered
+        unreg = pconn.unregister()
+    else:
+        logger.info('This system is not registered, unregistration not applicable.')
+        unreg = True
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()

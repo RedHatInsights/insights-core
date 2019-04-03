@@ -68,22 +68,25 @@ def pre_update(client, config):
             sys.exit(constants.sig_kill_bad)
 
     # handle cron stuff
-    if config.enable_schedule:
-        # enable automatic scheduling
-        logger.debug('Updating config...')
-        updated = get_scheduler(config).set_daily()
-        if updated:
-            logger.info('Automatic scheduling for Insights has been enabled.')
-        sys.exit(constants.sig_kill_ok)
-
-    if config.disable_schedule:
-        # disable automatic schedling
-        updated = get_scheduler(config).remove_scheduling()
-        if updated:
-            logger.info('Automatic scheduling for Insights has been disabled.')
-        if not config.register:
+    # delete someday
+    if config.legacy_upload:
+        if config.enable_schedule:
+            # enable automatic scheduling
+            logger.debug('Updating config...')
+            updated = get_scheduler(config).set_daily()
+            if updated:
+                logger.info('Automatic scheduling for Insights has been enabled.')
             sys.exit(constants.sig_kill_ok)
 
+        if config.disable_schedule:
+            # disable automatic schedling
+            updated = get_scheduler(config).remove_scheduling()
+            if updated:
+                logger.info('Automatic scheduling for Insights has been disabled.')
+            if not config.register:
+                sys.exit(constants.sig_kill_ok)
+
+    # delete someday
     if config.analyze_container:
         logger.debug('Not scanning host.')
         logger.debug('Scanning image ID, tar file, or mountpoint.')
@@ -226,6 +229,24 @@ def post_update(client, config):
         if (not config.disable_schedule and
            get_scheduler(config).set_daily()):
             logger.info('Automatic scheduling for Insights has been enabled.')
+
+    # enable/disable schedule ONLY if registration is active.
+    #   so it's here now. previously in pre_update
+    if config.enable_schedule:
+        # enable automatic scheduling
+        logger.debug('Updating config...')
+        updated = get_scheduler(config).set_daily()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been enabled.')
+        sys.exit(constants.sig_kill_ok)
+
+    if config.disable_schedule:
+        # disable automatic schedling
+        updated = get_scheduler(config).remove_scheduling()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been disabled.')
+        if not config.register:
+            sys.exit(constants.sig_kill_ok)
 
 
 @phase

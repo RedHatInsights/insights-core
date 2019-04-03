@@ -852,7 +852,7 @@ class InsightsConnection(object):
         return upload
 
     # -LEGACY-
-    def set_display_name(self, display_name):
+    def _legacy_set_display_name(self, display_name):
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/v1/systems/' + machine_id
@@ -888,6 +888,12 @@ class InsightsConnection(object):
             logger.error('Connection timed out. Running connection test...')
             self.test_connection()
             return False
+
+    def set_display_name(self, display_name):
+        if self.config.legacy_upload:
+            return self._legacy_set_display_name(display_name)
+        logger.info('Setting display name is not yet supported.')
+        return True
 
     def get_diagnosis(self, remediation_id=None):
         '''
