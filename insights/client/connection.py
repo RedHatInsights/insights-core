@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 import warnings
 import socket
 import io
+from tempfile import TemporaryFile
 from datetime import datetime, timedelta
 try:
     # python 2
@@ -89,7 +90,7 @@ class InsightsConnection(object):
                 else:
                     self.upload_url = self.base_url + "/uploads"
             else:
-                self.upload_url = self.base_url + '/platform/upload/api/v1/upload'
+                self.upload_url = self.base_url + '/ingress/v1/upload'
         self.api_url = self.config.api_url
         if self.api_url is None:
             self.api_url = self.base_url
@@ -222,7 +223,7 @@ class InsightsConnection(object):
         self.proxies = proxies
         self.proxy_auth = proxy_auth
 
-    def _test_urls(self, url, method):
+    def _legacy_test_urls(self, url, method):
         """
         Actually test the url
         """
@@ -232,6 +233,7 @@ class InsightsConnection(object):
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
         for ext in (url.path + '/', '', '/r', '/r/insights'):
+            print(ext)
             try:
                 logger.debug("Testing: %s", test_url + ext)
                 if method is "POST":
@@ -257,6 +259,51 @@ class InsightsConnection(object):
                 print(exc)
         if last_ex:
             raise last_ex
+
+    def _test_urls(self, url, method):
+        '''
+        Test a URL
+        '''
+        if self.config.legacy_upload:
+            return self._legacy_test_urls(url, method)
+        try:
+            logger.debug('Testing %s', url)
+            if method is 'POST':
+                test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
+                test_files = {
+                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.test+tgz'),
+                    'metadata': '{\"test\": \"test\"}'
+                }
+                test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
+            elif method is "GET":
+                    test_req = self.session.get(url, timeout=self.config.http_timeout)
+            logger.info("HTTP Status Code: %d", test_req.status_code)
+            logger.info("HTTP Status Text: %s", test_req.reason)
+            logger.info("HTTP Response Text: %s", test_req.text)
+            if test_req.status_code in (200, 201, 202):
+                logger.info(
+                    "Successfully connected to: %s", url)
+                return True
+            else:
+                logger.info("Connection failed")
+                return False
+        except requests.ConnectionError as exc:
+            last_ex = exc
+            logger.error(
+                "Could not successfully connect to: %s", url)
+            print(exc)
+        if last_ex:
+            raise last_ex
+
+        # files['file'] = (file_name, open(data_collected, 'rb'), content_type)
+
+        # logger.debug("Uploading %s to %s", data_collected, upload_url)
+
+        # # net_logger.info("POST %s", upload_url)
+        # # upload = self.session.post(upload_url, files=files, headers=headers)
+
+        #     elif method is 'GET':
+        #         pass
 
     def _verify_check(self, conn, cert, err, depth, ret):
         del conn
@@ -369,7 +416,10 @@ class InsightsConnection(object):
             logger.info("=== End Upload URL Connection Test: %s ===\n",
                         "SUCCESS" if upload_success else "FAILURE")
             logger.info("=== Begin API URL Connection Test ===")
-            api_success = self._test_urls(self.api_url, "GET")
+            if self.config.legacy_upload:
+                api_success = self._test_urls(self.base_url, "GET")
+            else:
+                api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
             logger.info("=== End API URL Connection Test: %s ===\n",
                         "SUCCESS" if api_success else "FAILURE")
             if cert_success and upload_success and api_success:
