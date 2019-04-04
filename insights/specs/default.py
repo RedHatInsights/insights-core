@@ -887,7 +887,7 @@ class DefaultSpecs(Specs):
                 # return list of podman or docker command and container name tuple
                 return list(map(lambda x: (container_command, x), container_names))
 
-    installed_rpms_osp_containers = foreach_execute(osp_containers, "%s exec -it %s /usr/bin/rpm -qa --qf '{}'".format(rpm_format))
+    installed_rpms_osp_containers = foreach_execute(osp_containers, "%s exec -it %s /usr/bin/rpm -qa --qf '{}'".format(format_rpm()))
 
     @datasource(ps_auxww, context=HostContext)
     def jboss_home(broker):
