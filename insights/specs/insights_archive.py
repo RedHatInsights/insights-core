@@ -89,6 +89,7 @@ class InsightsArchiveSpecs(Specs):
     iptables = simple_file("insights_commands/iptables-save")
     ipv4_neigh = simple_file("insights_commands/ip_-4_neighbor_show_nud_all")
     ipv6_neigh = simple_file("insights_commands/ip_-6_neighbor_show_nud_all")
+    ip_netns_exec_namespace_lsof = glob_file("insights_commands/ip_netns_exec_*_lsof_-i")
     iscsiadm_m_session = simple_file("insights_commands/iscsiadm_-m_session")
     katello_service_status = simple_file("insights_commands/katello-service_status")
     keystone_crontab = simple_file("insights_commands/crontab_-l_-u_keystone")
