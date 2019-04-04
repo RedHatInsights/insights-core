@@ -387,7 +387,7 @@ class DefaultSpecs(Specs):
     keystone_crontab = simple_command("/usr/bin/crontab -l -u keystone")
     keystone_crontab_container = simple_command("docker exec keystone_cron /usr/bin/crontab -l -u keystone")
     keystone_log = first_file(["/var/log/containers/keystone/keystone.log", "/var/log/keystone/keystone.log"])
-    krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*.conf"])
+    krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
