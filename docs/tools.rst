@@ -172,4 +172,4 @@ Creates an ipython session to explore the bash_version rule
 
    insights-inspect examples.rules.bash_version.report
 
-More insights-inspect examples can be found here :py:mod:`insights.tools.inspect`
+More insights-inspect examples can be found here :py:mod:`insights.tools.insights_inspect`

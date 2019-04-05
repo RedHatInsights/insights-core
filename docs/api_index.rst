@@ -153,7 +153,7 @@ insights.tools
     :show-inheritance:
     :undoc-members:
 
-.. automodule:: insights.tools.inspect
+.. automodule:: insights.tools.insights_inspect
     :members:
     :show-inheritance:
     :undoc-members:
