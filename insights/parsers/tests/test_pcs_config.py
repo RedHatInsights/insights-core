@@ -79,6 +79,7 @@ def test_pcs_config_normal():
     pcs = PCSConfig(context_wrap(NORMAL_PCS_CONFIG))
     assert "cluster-infrastructure: corosync" in pcs.get("Cluster Properties")
     assert "stonith-enabled: false" in pcs.get("Cluster Properties")
+    assert "false" in pcs.cluster_properties['stonith-enabled']
     assert pcs.get("Resources Defaults") == ["resource-stickiness: 100", "migration-threshold: 3"]
 
 

@@ -64,6 +64,8 @@ Examples:
     ['node-1', 'node-2']
     >>> pcs_config.get("Cluster Properties")
     ['cluster-infrastructure: corosync', 'cluster-name: cluster-1', 'dc-version: 1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog: false', 'no-quorum-policy: ignore', 'stonith-enable: true', 'stonith-enabled: false']
+    >>> pcs_config.cluster_properties
+    {'cluster-infrastructure': 'corosync', 'cluster-name': 'cluster-1', 'dc-version': '1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog': 'false', 'no-quorum-policy': 'ignore', 'stonith-enable': 'true', 'stonith-enabled': 'false'}
     >>> pcs_config.get("Colocation Constraints")
     ['clone-1 with clone-x (score:INFINITY) (id:clone-INFINITY)', 'clone-2 with clone-x (score:INFINITY) (id:clone-INFINITY)']
 """
@@ -136,3 +138,16 @@ class PCSConfig(CommandParser):
 
     def get(self, key):
         return self.data.get(key)
+
+    @property
+    def cluster_properties(self):
+
+        cp_dict = {}
+        lst = self.data.get("Cluster Properties")
+        for l in lst:
+            key, val = l.split(':')
+            cp_dict[key] = val.strip()
+        return cp_dict
+
+    def __repr__(self):
+        return "<%s '%s'>" % (self.__class__.__name__, str(self))
