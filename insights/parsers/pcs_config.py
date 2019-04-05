@@ -64,8 +64,8 @@ Examples:
     ['node-1', 'node-2']
     >>> pcs_config.get("Cluster Properties")
     ['cluster-infrastructure: corosync', 'cluster-name: cluster-1', 'dc-version: 1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog: false', 'no-quorum-policy: ignore', 'stonith-enable: true', 'stonith-enabled: false']
-    >>> pcs_config.cluster_properties
-    {'cluster-infrastructure': 'corosync', 'cluster-name': 'cluster-1', 'dc-version': '1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog': 'false', 'no-quorum-policy': 'ignore', 'stonith-enable': 'true', 'stonith-enabled': 'false'}
+    >>> pcs_config.cluster_properties['cluster-name']
+    'cluster-1'
     >>> pcs_config.get("Colocation Constraints")
     ['clone-1 with clone-x (score:INFINITY) (id:clone-INFINITY)', 'clone-2 with clone-x (score:INFINITY) (id:clone-INFINITY)']
 """
