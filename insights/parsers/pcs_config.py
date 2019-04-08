@@ -80,6 +80,7 @@ class PCSConfig(CommandParser):
     """Class to process the output of ``pcs config`` command.
 
     Attributes:
+        cluster_props_dict (dict): A dictionary containing all cluster properties key, value
         data (dict): A dictionary containing all line. Keys sorted based on keywords of the output.
             the form::
 
@@ -110,6 +111,7 @@ class PCSConfig(CommandParser):
 
     def parse_content(self, content):
         self.data = {}
+        self.cluster_props_dict = {}
         dc_key = ""
         list_data = []
         in_line_tuple = ("Corosync Nodes", "Pacemaker Nodes")
@@ -130,6 +132,10 @@ class PCSConfig(CommandParser):
                 dc_key = line.split(":")[0]
                 continue
             list_data.append(line.lstrip())
+            # build cluster properties dict
+            if dc_key == 'Cluster Properties':
+                cp_key, _, cp_value = line.partition(":")
+                self.cluster_props_dict[cp_key.strip()] = cp_value.strip()
         if not dc_key == "" and dc_key not in self.data.keys():
             self.data[dc_key] = list_data
         for in_line in in_line_tuple:
@@ -138,15 +144,3 @@ class PCSConfig(CommandParser):
 
     def get(self, key):
         return self.data.get(key)
-
-    @property
-    def cluster_props_dict(self):
-        """
-        (dict): This function returns a dict of all cluster property and value
-        """
-        prop_result = {}
-        if "Cluster Properties" in self.data and self.data.get("Cluster Properties"):
-            for property_line in self.data.get("Cluster Properties"):
-                key, _, value = property_line.partition(":")
-                prop_result[key.strip()] = value.strip()
-        return prop_result
