@@ -325,7 +325,6 @@ class RouteDevices(CommandParser):
     # Why have types we ignore?
     IGNORE_TYPES = set(["broadcast",
                         "throw",
-                        "local",
                         "unreachable",
                         "prohibit",
                         "blackhole",
@@ -405,6 +404,8 @@ class RouteDevices(CommandParser):
         table_type = None
         if parts[0] in self.IGNORE_TYPES:
             return None
+        if parts[0] == 'local':
+            parts.remove('local')
         if parts[0] in self.SAVED_TYPES:
             table_type = parts.popleft()
         route['type'] = table_type
