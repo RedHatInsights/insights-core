@@ -24,7 +24,8 @@ except ImportError:
 from OpenSSL import SSL, crypto
 from .utilities import (determine_hostname,
                         generate_machine_id,
-                        write_unregistered_file)
+                        write_unregistered_file,
+                        write_registered_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from insights.util.canonical_facts import get_canonical_facts
@@ -843,6 +844,8 @@ class InsightsConnection(object):
         elif upload.status_code == 202:
             # 202 from platform, no json response
             logger.debug(upload.text)
+            # upload = registration on platform
+            write_registered_file()
         else:
             logger.error(
                 "Upload archive failed with status code  %s",

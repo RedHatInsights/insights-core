@@ -177,11 +177,7 @@ def _legacy_handle_registration(config, pconn):
 
 def handle_registration(config, pconn):
     '''
-    Handle the registration process
-    Returns:
-        True - machine is registered
-        False - machine is unregistered, or response error
-        None - could not reach the API
+    Does nothing on the platform. Will be deleted eventually.
     '''
     if config.legacy_upload:
         return _legacy_handle_registration(config, pconn)
