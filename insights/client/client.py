@@ -185,46 +185,6 @@ def handle_registration(config, pconn):
     '''
     if config.legacy_upload:
         return _legacy_handle_registration(config, pconn)
-    logger.debug('Trying registration.')
-    # force-reregister -- remove machine-id files and registration files
-    # before trying to register again
-    if config.reregister:
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-
-    logger.debug('Machine-id: %s', generate_machine_id(new=config.reregister))
-
-    # check registration with API
-    check = get_registration_status(config, pconn)
-
-    if check['unreachable']:
-        # Run connection test and exit
-        logger.error(check['message'])
-        return None
-
-    if check['err']:
-        # some other error
-        logger.error(check['message'])
-        return False
-
-    logger.debug(check['message'])
-    if check['registered']:
-        # registered in API, resync files
-        if config.register:
-            logger.info('This host has already been registered.')
-        write_registered_file()
-        return True
-
-    if config.register:
-        # register if specified
-        return True
-    else:
-        write_unregistered_file()
-        logger.info('This system has not been registered. '
-                    'Use --register to register this system.')
-        return False
 
 
 def get_registration_status(config, pconn):
@@ -272,27 +232,7 @@ def handle_unregistration(config, pconn):
     """
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
-    check = get_registration_status(config, pconn)
-    if check['unreachable']:
-        # Run connection test and exit
-        logger.error(check['message'])
-        return None
-
-    if check['err']:
-        # some other error
-        logger.error(check['message'])
-        return False
-
-    logger.debug(check['message'])
-    if check['registered']:
-        # inventory items are currently undeletable
-        logger.info('Unregistration not supported yet.')
-        return False
-        # only unregister if we're already registered
-        unreg = pconn.unregister()
-    else:
-        logger.info('This system is not registered, unregistration not applicable.')
-        unreg = True
+    unreg = pconn.unregister()
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()

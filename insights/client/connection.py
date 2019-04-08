@@ -510,7 +510,7 @@ class InsightsConnection(object):
                                     timeout=self.config.http_timeout)
         logger.debug(u'GET branch_info status: %s', response.status_code)
         if response.status_code != 200:
-            logger.error(u'Bad status from server: %s', response.status_code)
+            logger.error(u'Bad status from server while fetching branch_info: %s', response.status_code)
             return False
 
         branch_info = response.json()
@@ -688,7 +688,7 @@ class InsightsConnection(object):
         except (requests.ConnectionError, requests.Timeout) as e:
             logger.error('Connection timed out.')
             logger.error(e)
-            reg['message'] = 'Insights API could not be reached.'
+            reg['message'] = 'The Insights API could not be reached.'
             reg['unreachable'] = True
             reg['err'] = True
             return reg
@@ -706,16 +706,16 @@ class InsightsConnection(object):
             reg['err'] = True
             return reg
         if res_json['total'] == 0:
-            logger.debug('No systems found with machine ID: %s', machine_id)
+            logger.debug('No hosts found with machine ID: %s', machine_id)
             reg['registered'] = False
-            reg['message'] = 'System is unregistered.'
+            reg['message'] = 'This host is unregistered.'
             return reg
         results = res_json['results']
         logger.debug('System found.')
         logger.debug('Machine ID: %s', results[0]['insights_id'])
         logger.debug('Inventory ID: %s', results[0]['id'])
         reg['registered'] = True
-        reg['message'] = 'System was registered at ' + results[0]['created']
+        reg['message'] = 'This host was registered at ' + results[0]['created']
         reg['http_status'] = res.status_code
         return reg
 
@@ -789,13 +789,17 @@ class InsightsConnection(object):
         """
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
+        c_facts = {}
 
         try:
-            c_facts = json.dumps(get_canonical_facts())
-            logger.debug('Canonical facts collected:\n%s', c_facts)
+            c_facts = get_canonical_facts()
         except Exception as e:
             logger.debug('Error getting canonical facts: %s', e)
-            c_facts = None
+        if self.config.display_name:
+            # add display_name to canonical facts
+            c_facts['display_name'] = self.config.display_name
+        c_facts = json.dumps(c_facts)
+        logger.debug('Canonical facts collected:\n%s', c_facts)
 
         files = {}
         # legacy upload

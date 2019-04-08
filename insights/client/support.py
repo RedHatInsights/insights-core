@@ -15,6 +15,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 from .constants import InsightsConstants as constants
 from .connection import InsightsConnection
+from .utilities import write_registered_file, write_unregistered_file
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -59,7 +60,12 @@ def _legacy_registration_check(pconn):
 def registration_check(pconn):
     if pconn.config.legacy_upload:
         return _legacy_registration_check(pconn)
-    return pconn.api_registration_check()
+    status = pconn.api_registration_check()
+    if status['registered']:
+        write_registered_file()
+    else:
+        write_unregistered_file()
+    return status
 
 
 class InsightsSupport(object):

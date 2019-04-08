@@ -115,6 +115,22 @@ def pre_update(client, config):
         print(json.dumps(resp))
         sys.exit(constants.sig_kill_ok)
 
+    if config.enable_schedule:
+        # enable automatic scheduling
+        logger.debug('Updating config...')
+        updated = get_scheduler(config).set_daily()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been enabled.')
+        sys.exit(constants.sig_kill_ok)
+
+    if config.disable_schedule:
+        # disable automatic schedling
+        updated = get_scheduler(config).remove_scheduling()
+        if updated:
+            logger.info('Automatic scheduling for Insights has been disabled.')
+        if not config.register:
+            sys.exit(constants.sig_kill_ok)
+
 
 @phase
 def update(client, config):
@@ -183,70 +199,70 @@ def post_update(client, config):
         return
     # -------delete everything above this line-------
 
-    if config.status:
-        reg_check = client.get_registration_status()
-        if reg_check['err']:
-            # error getting status
-            logger.error(reg_check['message'])
-            sys.exit(constants.sig_kill_bad)
+    if config.offline:
+        logger.debug('Running client in offline mode. Bypassing registration.')
+        return
 
+    # check registration status before anything else
+    reg_check = client.get_registration_status()
+    if reg_check['err']:
+        logger.error(reg_check['message'])
+        if reg_check['unreachable']:
+            logger.info('Running connection test...')
+            client.test_connection()
+        sys.exit(constants.sig_kill_bad)
+
+    # --status
+    if config.status:
         logger.info(reg_check['message'])
         if reg_check['registered']:
             sys.exit(constants.sig_kill_ok)
         else:
             sys.exit(constants.sig_kill_bad)
 
+    logger.debug(reg_check['message'])
+
     # put this first to avoid conflicts with register
     if config.unregister:
-        if client.unregister():
+        if reg_check['registered']:
+            logger.info('Unregistration not supported yet.')
             sys.exit(constants.sig_kill_ok)
         else:
-            sys.exit(constants.sig_kill_bad)
+            logger.info('This host is not registered, unregistration is not applicable.')
+            sys.exit(constants.sig_kill_ok)
 
-    if config.offline:
-        logger.debug('Running client in offline mode. Bypassing registration.')
-        return
+    # halt here if unregistered
+    if not reg_check['registered'] and not config.register:
+        logger.info('This host has not been registered. '
+                    'Use --register to register this host.')
+        sys.exit(constants.sig_kill_ok)
 
-    if config.display_name and not config.register:
-        # setting display name independent of registration
-        if client.set_display_name(config.display_name):
-            if 'display_name' in config._cli_opts:
-                # only exit on success if it was invoked from command line
-                sys.exit(constants.sig_kill_ok)
-        else:
-            sys.exit(constants.sig_kill_bad)
+    # --force-reregister, clear machine-id
+    if config.reregister:
+        reg_check['registered'] = None
+        delete_registered_file()
+        delete_unregistered_file()
+        write_to_disk(constants.machine_id_file, delete=True)
+        logger.debug('Re-register set, forcing registration.')
+        logger.debug('New machine-id: %s', generate_machine_id(new=config.reregister))
 
-    reg = client.register()
-    if reg is None:
-        # API unreachable
-        logger.info('Running connection test...')
-        client.test_connection()
-        sys.exit(constants.sig_kill_bad)
-    elif reg is False:
-        # unregistered or error in response
-        sys.exit(constants.sig_kill_bad)
+    # --register was called
     if config.register:
+        # don't actually need to make a call to register() since
+        #   system creation and upload are a single event on the platform
+        if reg_check['registered']:
+            logger.info('This host has already been registered.')
         if (not config.disable_schedule and
            get_scheduler(config).set_daily()):
             logger.info('Automatic scheduling for Insights has been enabled.')
 
-    # enable/disable schedule ONLY if registration is active.
-    #   so it's here now. previously in pre_update
-    if config.enable_schedule:
-        # enable automatic scheduling
-        logger.debug('Updating config...')
-        updated = get_scheduler(config).set_daily()
-        if updated:
-            logger.info('Automatic scheduling for Insights has been enabled.')
-        sys.exit(constants.sig_kill_ok)
-
-    if config.disable_schedule:
-        # disable automatic schedling
-        updated = get_scheduler(config).remove_scheduling()
-        if updated:
-            logger.info('Automatic scheduling for Insights has been disabled.')
-        if not config.register:
+    # set --display-name independent of register
+    # only do this if set from the CLI. normally display_name is sent on upload
+    if 'display_name' in config._cli_opts and not config.register:
+        if client.set_display_name(config.display_name):
             sys.exit(constants.sig_kill_ok)
+        else:
+            sys.exit(constants.sig_kill_bad)
 
 
 @phase
