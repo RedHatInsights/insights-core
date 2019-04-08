@@ -340,44 +340,70 @@ def test_delete_archive_internal():
 
 
 @patch('insights.client.client.handle_registration')
-def test_platform_register(handle_registration):
+@patch('insights.client.client._legacy_handle_registration')
+def test_platform_register(_legacy_handle_registration, handle_registration):
     '''
-    handle_registration not called when platform upload
+    handle_registration called when platform upload
     '''
     config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     assert client.register()  # short circuits to True
     handle_registration.assert_called_once()
+    _legacy_handle_registration.assert_not_called()
 
 
 @patch('insights.client.client.handle_unregistration')
-def test_platform_unregister(handle_unregistration):
+@patch('insights.client.client._legacy_handle_unregistration')
+def test_platform_unregister(_legacy_handle_unregistration, handle_unregistration):
     '''
-    handle_registration not called when platform upload
+    handle_unregistration called when platform upload
     '''
     config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
     assert client.unregister()  # short circuits to True
     handle_unregistration.assert_called_once()
+    _legacy_handle_unregistration.assert_not_called()
 
 
-@patch('insights.client.client.handle_registration')
-def test_legacy_register(handle_registration):
+@patch('insights.client.client._legacy_handle_registration')
+def test_legacy_register(_legacy_handle_registration):
     '''
-    handle_unregistration called when legacy upload
+    _legacy_handle_registration called when legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
     client.register()
-    handle_registration.assert_called_once()
+    _legacy_handle_registration.assert_called_once()
 
 
-@patch('insights.client.client.handle_unregistration')
-def test_legacy_unregister(handle_unregistration):
+@patch('insights.client.client._legacy_handle_unregistration')
+def test_legacy_unregister(_legacy_handle_unregistration):
     '''
-    handle_unregistration called when legacy upload
+    _legacy_handle_unregistration called when legacy upload
     '''
     config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
     client.unregister()
-    handle_unregistration.assert_called_once()
+    _legacy_handle_unregistration.assert_called_once()
+
+
+@patch('insights.client.client.InsightsConnection.api_registration_check')
+def test_platform_unregister(api_registration_check):
+    '''
+    handle_registration called when platform upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    assert client.register()
+    api_registration_check.assert_called_once()
+
+
+# @patch('insights.client.client._legacy_handle_registration')
+# def test_legacy_register(_legacy_handle_registration):
+#     '''
+#     handle_unregistration called when legacy upload
+#     '''
+#     config = InsightsConfig(legacy_upload=True)
+#     client = InsightsClient(config)
+#     client.register()
+#     _legacy_handle_registration.assert_called_once()
