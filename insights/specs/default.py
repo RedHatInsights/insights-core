@@ -493,9 +493,9 @@ class DefaultSpecs(Specs):
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
     nginx_conf = glob_file([
-                           "/etc/nginx/nginx.conf",
-                           "/opt/rh/nginx*/root/etc/nginx/nginx.conf",
-                           "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
+                           "/etc/nginx/*.conf", "/etc/nginx/conf.d/*", "/etc/nginx/default.d/*",
+                           "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*", "/opt/rh/nginx*/root/etc/nginx/default.d/*",
+                           "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*", "/etc/opt/rh/rh-nginx*/nginx/default.d/*"
                            ])
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
