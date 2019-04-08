@@ -26,7 +26,7 @@ CONFIG_COMMENTED = """
 # for the changes to propagate.
 #
 DEFAULT
-""".strip()
+""".strip()  # noqa
 
 
 def test_crypto_policies_config():
