@@ -216,23 +216,13 @@ def get_branch_info(config, pconn):
     Get branch info for a system
     returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
     """
-    branch_info = constants.default_branch_info
-
     # in the case we are running on offline mode
     # or we are analyzing a running container/image
     # or tar file, mountpoint, simply return the default branch info
     if (config.offline or
             config.analyze_container):
-        return branch_info
-
-    # otherwise continue reaching out to obtain branch info
-    try:
-        branch_info = pconn.branch_info()
-    except LookupError:
-        logger.debug("There was an error obtaining branch information.")
-        logger.debug("Assuming default branch information %s" % branch_info)
-    logger.debug("Obtained branch information: %s" % branch_info)
-    return branch_info
+        return constants.default_branch_info
+    return pconn.branch_info
 
 
 def collect(config, pconn):

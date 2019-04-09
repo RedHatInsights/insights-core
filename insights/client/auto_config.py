@@ -66,6 +66,10 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
         saved_proxy = config.proxy
         config.proxy = proxy
     config.base_url = hostname + '/r/insights'
+    if ca_cert is None:
+        # direct connection to RHSM, skip verify_connectivity
+        # (see _try_satellite6_configuration line 133)
+        return
 
     if not verify_connectivity(config):
         logger.warn("Could not auto configure, falling back to static config")
