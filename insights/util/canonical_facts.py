@@ -6,6 +6,19 @@ from insights import rule, make_metadata, run
 from insights.specs import Specs
 from insights.core import Parser
 from insights.core.plugins import parser
+import uuid
+
+
+def valid_uuid_or_None(s):
+    """
+    Returns  if `s` is a valid UUID string.
+    """
+    if not s:
+        return None
+    try:
+        return uuid.UUID(s)
+    except Exception:
+        return None
 
 
 @parser(Specs.ip_addresses)
@@ -80,10 +93,10 @@ def canonical_facts(
 ):
 
     facts = dict(
-        insights_id=_safe_parse(insights_id),
-        machine_id=_safe_parse(machine_id),
-        bios_uuid=_safe_parse(bios_uuid),
-        subscription_manager_id=submanid.data if submanid else None,
+        insights_id=valid_uuid_or_None(_safe_parse(insights_id)),
+        machine_id=valid_uuid_or_None(_safe_parse(machine_id)),
+        bios_uuid=valid_uuid_or_None(_safe_parse(bios_uuid)),
+        subscription_manager_id=valid_uuid_or_None(submanid.data if submanid else None),
         ip_addresses=ips.data if ips else [],
         mac_addresses=list(
             filter(None, (_safe_parse(c) for c in mac_addresses))
