@@ -89,6 +89,7 @@ def set_up_logging(config):
         logger.debug("Logging initialized")
 
 
+# -LEGACY-
 def register(config, pconn):
     """
     Do registration using basic auth
@@ -103,7 +104,7 @@ def register(config, pconn):
     return pconn.register()
 
 
-# TODO: eventually remove this function. Only valid for legacy stuff
+# -LEGACY-
 def _legacy_handle_registration(config, pconn):
     '''
     Handle the registration process
@@ -194,6 +195,7 @@ def get_registration_status(config, pconn):
     return registration_check(pconn)
 
 
+# -LEGACY-
 def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
@@ -404,11 +406,11 @@ def get_connection(config):
     return InsightsConnection(config)
 
 
-def upload(config, pconn, tar_file, content_type, collection_duration=None):
+def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
     for tries in range(config.retries):
-        upload = pconn.upload_archive(tar_file, content_type, collection_duration)
+        upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
@@ -429,9 +431,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             else:
                 logger.info("Successfully uploaded report for %s." % (machine_id))
             break
-        elif upload.status_code == 202:
-            machine_id = generate_machine_id()
-            logger.info("Successfully uploaded report for %s." % (machine_id))
+
         elif upload.status_code == 412:
             pconn.handle_fail_rcs(upload)
             break
@@ -446,6 +446,29 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
     return api_response
+
+
+def upload(config, pconn, tar_file, content_type, collection_duration=None):
+    if config.legacy_upload:
+        return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
+    logger.info('Uploading Insights data.')
+
+    for tries in range(config.retries):
+        upload = pconn.upload_archive(tar_file, content_type, collection_duration)
+
+        if upload.status_code == 202:
+            machine_id = generate_machine_id()
+            logger.info("Successfully uploaded report for %s." % (machine_id))
+        else:
+            logger.error("Upload attempt %d of %d failed!",
+                         tries + 1, config.retries, upload.status_code)
+            if tries + 1 != config.retries:
+                logger.info("Waiting %d seconds then retrying",
+                            constants.sleep_time)
+                time.sleep(constants.sleep_time)
+            else:
+                logger.error("All attempts to upload have failed!")
+                logger.error("Please see %s for additional information", config.logging_file)
 
 
 def _delete_archive_internal(config, archive):
