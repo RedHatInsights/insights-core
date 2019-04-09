@@ -16,7 +16,7 @@ def valid_uuid_or_None(s):
     if not s:
         return None
     try:
-        return uuid.UUID(s)
+        return str(uuid.UUID(s))
     except Exception:
         return None
 
