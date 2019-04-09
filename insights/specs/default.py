@@ -298,7 +298,7 @@ class DefaultSpecs(Specs):
         [
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
             "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
-            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
         ]
     )
     httpd_error_log = simple_file("var/log/httpd/error_log")
