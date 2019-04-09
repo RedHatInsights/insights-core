@@ -66,6 +66,10 @@ Examples:
     ['cluster-infrastructure: corosync', 'cluster-name: cluster-1', 'dc-version: 1.1.13-10.el7_2.4-44eb2dd', 'have-watchdog: false', 'no-quorum-policy: ignore', 'stonith-enable: true', 'stonith-enabled: false']
     >>> pcs_config.get("Colocation Constraints")
     ['clone-1 with clone-x (score:INFINITY) (id:clone-INFINITY)', 'clone-2 with clone-x (score:INFINITY) (id:clone-INFINITY)']
+    >>> 'have-watchdog' in pcs_config.cluster_properties
+    True
+    >>> pcs_config.cluster_properties.get('have-watchdog')
+    'false'
 """
 
 
@@ -78,6 +82,7 @@ class PCSConfig(CommandParser):
     """Class to process the output of ``pcs config`` command.
 
     Attributes:
+        cluster_properties (dict): A dictionary containing all cluster properties key, value
         data (dict): A dictionary containing all line. Keys sorted based on keywords of the output.
             the form::
 
@@ -108,6 +113,7 @@ class PCSConfig(CommandParser):
 
     def parse_content(self, content):
         self.data = {}
+        self.cluster_properties = {}
         dc_key = ""
         list_data = []
         in_line_tuple = ("Corosync Nodes", "Pacemaker Nodes")
@@ -128,6 +134,10 @@ class PCSConfig(CommandParser):
                 dc_key = line.split(":")[0]
                 continue
             list_data.append(line.lstrip())
+            # build cluster properties dict
+            if dc_key == 'Cluster Properties':
+                cp_key, _, cp_value = line.partition(":")
+                self.cluster_properties[cp_key.strip()] = cp_value.strip()
         if not dc_key == "" and dc_key not in self.data.keys():
             self.data[dc_key] = list_data
         for in_line in in_line_tuple:

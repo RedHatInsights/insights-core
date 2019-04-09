@@ -12,15 +12,12 @@ or from the examples/rules directory::
 
     $ ./sample_rules.py
 """
-from insights.core.plugins import make_response, rule
+from insights.core.plugins import make_fail, make_pass, rule
 from insights.parsers.redhat_release import RedhatRelease
 
 # Jinga template for message to be displayed for either
 # response tag
-CONTENT = {
-    "IS_FEDORA": "This machine runs {{product}}.",
-    "IS_NOT_FEDORA": "This machine runs {{product}}."
-}
+CONTENT = "This machine runs {{product}}."
 
 
 @rule(RedhatRelease, content=CONTENT)
@@ -28,9 +25,9 @@ def report(rel):
     """Fires if the machine is running Fedora."""
 
     if "Fedora" in rel.product:
-        return make_response("IS_FEDORA", product=rel.product)
+        return make_pass("IS_FEDORA", product=rel.product)
     else:
-        return make_response("IS_NOT_FEDORA", product=rel.product)
+        return make_fail("IS_NOT_FEDORA", product=rel.product)
 
 
 if __name__ == "__main__":
