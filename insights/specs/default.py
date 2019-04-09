@@ -287,9 +287,23 @@ class DefaultSpecs(Specs):
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
     httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
-    httpd_conf_scl_httpd24 = glob_file(["/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf", "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf"])
-    httpd_conf_scl_jbcs_httpd24 = glob_file(["/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf", "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf"])
+    httpd_conf_scl_httpd24 = glob_file(
+        [
+            "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
+    httpd_conf_scl_jbcs_httpd24 = glob_file(
+        [
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf",
+        ]
+    )
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
+    jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
