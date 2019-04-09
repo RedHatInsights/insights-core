@@ -87,12 +87,14 @@ def test_error_log():
     # Includes continuation line
     assert len(list(log.get_after(datetime(2017, 3, 28, 3, 56, 39)))) == 6
 
+
 def test_httpd24_error_log():
     log = HttpdErrorLog(context_wrap(HTTPD24_ERROR_LOG))
     assert 1 == len(log.get("suexec:notice"))
     assert "ModSecurity" in log
     # Includes continuation line
     assert len(list(log.get_after(datetime(2019, 3, 29, 1, 45, 23)))) == 5
+
 
 def test_jbcs_httpd24_error_log():
     log = HttpdErrorLog(context_wrap(JBCS_HTTPD24_ERROR_LOG))
