@@ -18,7 +18,7 @@ CryptoPoliciesOpensshserver - file ``/etc/crypto-policies/back-ends/opensshserve
 
 from insights import Parser, parser, SysconfigOptions
 from insights.specs import Specs
-from insights.parsers import SkipException
+from insights.parsers import SkipException, get_active_lines
 
 
 @parser(Specs.crypto_policies_config)
@@ -39,7 +39,7 @@ class CryptoPoliciesConfig(Parser):
     def parse_content(self, content):
         if not content:
             raise SkipException("/etc/crypto-policies/config is empty")
-        self.value = content[0]
+        self.value = get_active_lines(content)[0]
 
 
 @parser(Specs.crypto_policies_state_current)
@@ -60,7 +60,7 @@ class CryptoPoliciesStateCurrent(Parser):
     def parse_content(self, content):
         if not content:
             raise SkipException("/etc/crypto-policies/state/current is empty")
-        self.value = content[0]
+        self.value = get_active_lines(content)[0]
 
 
 @parser(Specs.crypto_policies_opensshserver)
