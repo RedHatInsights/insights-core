@@ -80,11 +80,15 @@ class SshDConfig(Parser):
     # `parse_content()` doesn't split the individual values because some
     # keywords don't have a list of values (just one string).
     # See the docstring in `line_uses_plus()` for more details.
+    # Re: BZ#1697477
+    # Config lines may also be delimited by `=`, and values may be quoted
+    # with `"`. Here it is assumed that config lines are well-formed.
     def parse_content(self, content):
         self.lines = []
         for line in get_active_lines(content):
-            line_splits = [s.strip() for s in line.split(None, 1)]
-            kw, val = line_splits[0], line_splits[1] if len(line_splits) == 2 else ''
+            line_splits = [s.strip() for s in re.split(r"[\s=]+", line, 1)]
+            kw, val = line_splits[0], line_splits[1].strip('"') if \
+                len(line_splits) == 2 else ''
             self.lines.append(self.KeyValue(
                 kw, val, kw.lower(), line
             ))
