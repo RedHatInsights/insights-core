@@ -63,7 +63,7 @@ def test_skip_content():
     assert "Empty content." in str(e)
 
 
-def test_skip_content():
+def test_error_content():
     with pytest.raises(ParseException) as e:
         CephOsdTreeText(context_wrap(OSD_TREE_INVALID))
     assert "Wrong content in table" in str(e)
