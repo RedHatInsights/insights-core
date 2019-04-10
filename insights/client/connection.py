@@ -306,12 +306,15 @@ class InsightsConnection(object):
                 return False
         else:
             try:
-                sock.connect((hostname[0], 443))
+                if len(hostname) > 1:
+                    sock.connect((hostname[0], int(hostname[1])))
+                else:
+                    sock.connect((hostname[0], 443))
             except socket.gaierror as e:
                 logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
                 logger.error(e)
                 return False
-        ctx = SSL.Context(SSL.TLSv1_METHOD)
+        ctx = SSL.Context(SSL.SSLv23_METHOD)
         if type(self.cert_verify) is not bool:
             if os.path.isfile(self.cert_verify):
                 ctx.load_verify_locations(self.cert_verify, None)
