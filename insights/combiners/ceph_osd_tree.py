@@ -9,7 +9,7 @@ The order from most preferred to least preferred is ``CephOsdTree``, ``CephInsig
 Examples:
     >>> cot = shared[CephOsdTree]
     >>> cot['nodes'][0]
-    {'id': '-1', 'device_class': '', 'crush_weight': '0.08752', 'name': 'default', 'status': '', 'reweight': '', 'primary_affinity': '', 'type': 'root', 'children': ['-9', '-5', '-3', '-7']}
+    {'id': '-1', 'device_class': '', 'crush_weight': '0.08752', 'name': 'default', 'status': '', 'reweight': '', 'primary_affinity': '', 'type': 'root', 'children': [-7, -3, -5, -9]}}
 """
 
 from insights.core.plugins import combiner
