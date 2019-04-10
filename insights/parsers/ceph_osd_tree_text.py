@@ -66,7 +66,7 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
         header = header.replace('TYPE NAME', 'TYPE_NAME')
 
         col_headers = header.strip().split()
-        json_headers = [text_to_json_header_map[header] for h in col_headers]
+        json_headers = [text_to_json_header_map[h] for h in col_headers]
         col_index = calc_column_indices(header, col_headers)
 
         name_header_index = header.index("TYPE_NAME")
