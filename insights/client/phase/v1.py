@@ -212,7 +212,7 @@ def post_update(client, config):
     if not reg_check and not config.register:
         logger.info('This host has not been registered. '
                     'Use --register to register this host.')
-        sys.exit(constants.sig_kill_ok)
+        sys.exit(constants.sig_kill_bad)
 
     # --force-reregister, clear machine-id
     if config.reregister:
