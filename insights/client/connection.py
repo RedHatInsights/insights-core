@@ -657,28 +657,14 @@ class InsightsConnection(object):
         '''
             Reach out to the inventory API to check
             whether a machine exists.
-            Returns object:
-                registered (bool)
-                    whether system exists in inventory
-                message (string)
-                    log message
-                http_status (int)
-                    HTTP status code
-                unreachable (bool)
-                    whether the API was unable to reached
-                err (bool)
-                    whether there was an error
+
+            Returns
+                True    system exists in inventory
+                False   system does not exist in inventory
+                None    error connection or parsing response
         '''
         if self.config.legacy_upload:
             return self._legacy_api_registration_check()
-
-        reg = {
-            'registered': None,
-            'message': None,
-            'http_status': None,
-            'unreachable': False,
-            'err': False
-        }
 
         logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
@@ -689,36 +675,24 @@ class InsightsConnection(object):
         except (requests.ConnectionError, requests.Timeout) as e:
             logger.error('Connection timed out.')
             logger.error(e)
-            reg['message'] = 'The Insights API could not be reached.'
-            reg['unreachable'] = True
-            reg['err'] = True
-            return reg
+            logger.error('The Insights API could not be reached.')
+            return None
         try:
             if (self.handle_fail_rcs(res)):
-                reg['message'] = res.text
-                reg['http_status'] = res.status_code
-                reg['err'] = True
-                return reg
+                return None
             res_json = json.loads(res.content)
         except ValueError as e:
             logger.error(e)
-            reg['message'] = 'Could not parse response body.'
-            reg['http_status'] = res.status_code
-            reg['err'] = True
-            return reg
+            logger.error('Could not parse response body.')
+            return None
         if res_json['total'] == 0:
             logger.debug('No hosts found with machine ID: %s', machine_id)
-            reg['registered'] = False
-            reg['message'] = 'This host is unregistered.'
-            return reg
+            return False
         results = res_json['results']
         logger.debug('System found.')
         logger.debug('Machine ID: %s', results[0]['insights_id'])
         logger.debug('Inventory ID: %s', results[0]['id'])
-        reg['registered'] = True
-        reg['message'] = 'This host was registered at ' + results[0]['created']
-        reg['http_status'] = res.status_code
-        return reg
+        return True
 
     # -LEGACY-
     def unregister(self):

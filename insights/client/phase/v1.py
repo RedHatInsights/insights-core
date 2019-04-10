@@ -205,26 +205,21 @@ def post_update(client, config):
 
     # check registration status before anything else
     reg_check = client.get_registration_status()
-    if reg_check['err']:
-        logger.error(reg_check['message'])
-        if reg_check['unreachable']:
-            logger.info('Running connection test...')
-            client.test_connection()
+    if reg_check is None:
         sys.exit(constants.sig_kill_bad)
 
     # --status
     if config.status:
-        logger.info(reg_check['message'])
-        if reg_check['registered']:
+        if reg_check:
+            logger.info('This host is registered.')
             sys.exit(constants.sig_kill_ok)
         else:
+            logger.info('This host is unregistered.')
             sys.exit(constants.sig_kill_bad)
-
-    logger.debug(reg_check['message'])
 
     # put this first to avoid conflicts with register
     if config.unregister:
-        if reg_check['registered']:
+        if reg_check:
             logger.info('Unregistration not supported yet.')
             sys.exit(constants.sig_kill_ok)
         else:
@@ -232,25 +227,21 @@ def post_update(client, config):
             sys.exit(constants.sig_kill_ok)
 
     # halt here if unregistered
-    if not reg_check['registered'] and not config.register:
+    if not reg_check and not config.register:
         logger.info('This host has not been registered. '
                     'Use --register to register this host.')
         sys.exit(constants.sig_kill_ok)
 
     # --force-reregister, clear machine-id
     if config.reregister:
-        reg_check['registered'] = None
-        delete_registered_file()
-        delete_unregistered_file()
-        write_to_disk(constants.machine_id_file, delete=True)
-        logger.debug('Re-register set, forcing registration.')
-        logger.debug('New machine-id: %s', generate_machine_id(new=config.reregister))
+        reg_check = False
+        client.clear_local_registration()
 
     # --register was called
     if config.register:
         # don't actually need to make a call to register() since
         #   system creation and upload are a single event on the platform
-        if reg_check['registered']:
+        if reg_check:
             logger.info('This host has already been registered.')
         if (not config.disable_schedule and
            get_scheduler(config).set_daily()):

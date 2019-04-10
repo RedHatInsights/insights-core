@@ -61,7 +61,7 @@ def registration_check(pconn):
     if pconn.config.legacy_upload:
         return _legacy_registration_check(pconn)
     status = pconn.api_registration_check()
-    if status['registered']:
+    if status:
         write_registered_file()
     else:
         write_unregistered_file()

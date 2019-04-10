@@ -12,6 +12,10 @@ from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
 from .auto_config import try_auto_configuration
+from .utilities import (delete_registered_file,
+                        delete_unregistered_file,
+                        write_to_disk,
+                        generate_machine_id)
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
@@ -457,6 +461,16 @@ class InsightsClient(object):
 
     def get_machine_id(self):
         return client.get_machine_id()
+
+    def clear_local_registration(self):
+        '''
+        Deletes dotfiles and machine-id for fresh registration
+        '''
+        delete_registered_file()
+        delete_unregistered_file()
+        write_to_disk(constants.machine_id_file, delete=True)
+        logger.debug('Re-register set, forcing registration.')
+        logger.debug('New machine-id: %s', generate_machine_id(new=True))
 
 
 def format_config(config):
