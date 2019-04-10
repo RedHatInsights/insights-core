@@ -156,6 +156,7 @@ class DataCollector(object):
         if rm_conf:
             try:
                 exclude = rm_conf['patterns']
+                logger.warn("WARNING: Skipping patterns found in remove.conf")
             except LookupError:
                 logger.debug('Patterns section of remove.conf is empty.')
 
@@ -212,6 +213,7 @@ class DataCollector(object):
             fresh = cleaner.clean_report(clean_opts, self.archive.archive_dir)
             if clean_opts.keyword_file is not None:
                 os.remove(clean_opts.keyword_file.name)
+                logger.warn("WARNING: Skipping keywords found in remove.conf")
             return fresh[0]
         return self.archive.create_tar_file()
 
