@@ -42,12 +42,12 @@ HostKey /etc/ssh/ssh_host_ecdsa_key
 HostKey /etc/ssh/ssh_host_ed25519_key
 SyslogFacility AUTHPRIV
 AuthorizedKeysFile	.ssh/authorized_keys
-PasswordAuthentication yes
+PasswordAuthentication=yes
 ChallengeResponseAuthentication no
 GSSAPIAuthentication yes
 GSSAPICleanupCredentials no
 UsePAM yes
-X11Forwarding yes
+X11Forwarding = "yes"
 UsePrivilegeSeparation sandbox		# Default for new installations.
 AcceptEnv LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
 AcceptEnv LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
@@ -83,6 +83,8 @@ def test_sshd_config_complete():
     assert config.last('ClientAliveInterval') is None
     assert config.last('ClientAliveCountMax', '0') == '0'
     assert config.get_line('UsePAM') == 'UsePAM yes'
+    assert config['PasswordAuthentication'] == ['yes']
+    assert config['X11Forwarding'] == ['yes']
     assert config.get_line('ClientAliveInterval') == 'ClientAliveInterval   # Implicit default'
     assert config.get_line('ClientAliveCountMax', '0') == 'ClientAliveCountMax 0  # Implicit default'
     assert config.get_values('SyslogFacility') == ['AUTHPRIV']
