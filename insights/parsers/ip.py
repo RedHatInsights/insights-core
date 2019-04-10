@@ -320,7 +320,7 @@ class RouteDevices(CommandParser):
         True
 
     """
-    SAVED_TYPES = set(["unicast", "multicast"])
+    SAVED_TYPES = set(["unicast", "multicast", 'local'])
 
     # Why have types we ignore?
     IGNORE_TYPES = set(["broadcast",
@@ -404,8 +404,6 @@ class RouteDevices(CommandParser):
         table_type = None
         if parts[0] in self.IGNORE_TYPES:
             return None
-        if parts[0] == 'local':
-            parts.remove('local')
         if parts[0] in self.SAVED_TYPES:
             table_type = parts.popleft()
         route['type'] = table_type

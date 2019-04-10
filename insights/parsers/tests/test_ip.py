@@ -442,8 +442,10 @@ def test_ip_route_2():
 
     # by_type checks
     types = tbl.by_type
-    assert sorted(types.keys()) == sorted(['None', 'multicast'])
-    assert len(types['None']) == 26
+    assert sorted(types.keys()) == sorted(['None', 'multicast', 'local'])
+    # As we have added `local` in the SAVED_TYPES number of local rules which was
+    # treaded as None now treating as a local so this number is changed
+    assert len(types['None']) == 18
     for entry in types['None']:
         assert entry in tbl[entry.prefix]
 
@@ -467,7 +469,7 @@ def test_ip_route_2():
             assert local.via is None
             assert local.metric == '0'
             assert local.table == 'local'
-            assert local.type is None
+            assert local.type == 'local'
             assert local.dev == 'lo'
 
 
