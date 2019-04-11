@@ -1,5 +1,6 @@
 from insights.configtree import first, last  # noqa: F401
-from insights.combiners.httpd_conf import _HttpdConf, HttpdConfTree
+from insights.combiners.httpd_conf import (_HttpdConf, HttpdConfTree, _HttpdConfSclHttpd24,
+    HttpdConfSclHttpd24Tree, _HttpdConfSclJbcsHttpd24, HttpdConfSclJbcsHttpd24Tree)
 from insights.tests import context_wrap
 from insights.parsers import SkipException
 import pytest
@@ -133,6 +134,13 @@ IncludeOptional conf.d/*.conf
 Listen 80
 '''.strip()
 
+HTTPD_CONF_MAIN_4 = '''
+# Load config files in the "/opt/rh/httpd24/root/etc/httpd/conf.d" directory, if any.
+IncludeOptional conf.d/*.conf
+IncludeOptional conf.modules.d/*.conf
+Listen 80
+'''.strip()
+
 HTTPD_CONF_FILE_1 = '''
 ServerRoot "/home/skontar/httpd"
 Listen 8080
@@ -140,6 +148,13 @@ Listen 8080
 
 HTTPD_CONF_FILE_2 = '''
 ServerRoot "/home/skontar/www"
+'''.strip()
+
+HTTPD_CONF_FILE_3 = '''
+LoadModule access_compat_module modules/mod_access_compat.so
+LoadModule actions_module modules/mod_actions.so
+LoadModule alias_module modules/mod_alias.so
+LoadModule mpm_prefork_module modules/mod_mpm_prefork.so
 '''.strip()
 
 HTTPD_CONF_MORE = '''
@@ -466,3 +481,31 @@ def test_httpd_one_file_overwrites():
 def test_httpd_conf_empty():
     with pytest.raises(SkipException):
         assert _HttpdConf(context_wrap('', path='/etc/httpd/httpd.conf')) is None
+
+
+def test_httpd_conf_scl_httpd24_tree():
+    httpd1 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MORE, path='/opt/rh/httpd24/root/etc/httpd/conf.d/01-b.conf'))
+    httpd3 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/opt/rh/httpd24/root/etc/httpd/conf.modules.d/02-c.conf'))
+    result = HttpdConfSclHttpd24Tree([httpd1, httpd2, httpd3])
+    userdirs = result['UserDir']
+    assert len(userdirs) == 2
+    assert userdirs[last].value == 'enable bob'
+    load_module_list = result['LoadModule']
+    assert len(load_module_list) == 4
+    assert result['LoadModule'][3].value == 'mpm_prefork_module modules/mod_mpm_prefork.so'
+    assert result['LoadModule'][3].file_path == '/opt/rh/httpd24/root/etc/httpd/conf.modules.d/02-c.conf'
+
+
+def test_httpd_conf_jbcs_httpd24_tree():
+    httpd1 = _HttpdConfSclJbcsHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConfSclJbcsHttpd24(context_wrap(HTTPD_CONF_MORE, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/01-b.conf'))
+    httpd3 = _HttpdConfSclJbcsHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/02-c.conf'))
+    result = HttpdConfSclJbcsHttpd24Tree([httpd1, httpd2, httpd3])
+    userdirs = result['UserDir']
+    assert len(userdirs) == 2
+    assert userdirs[last].value == 'enable bob'
+    load_module_list = result['LoadModule']
+    assert len(load_module_list) == 4
+    assert result['LoadModule'][3].value == 'mpm_prefork_module modules/mod_mpm_prefork.so'
+    assert result['LoadModule'][3].file_path == '/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/02-c.conf'
