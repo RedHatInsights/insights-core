@@ -1,6 +1,6 @@
 from insights.core import CommandParser
 from insights.tests import context_wrap
-from insights.core.plugins import ContentException
+from insights.parsers import SkipException
 import pytest
 
 CMF = "blah: Command not found"
@@ -15,15 +15,13 @@ class MockParser(CommandParser):
 
 
 def test_command_not_found():
-    with pytest.raises(ContentException) as e:
+    with pytest.raises(SkipException) as e:
         MockParser(context_wrap(CMF))
-    assert "Command not found" in str(e.value)
 
 
 def test_no_such_file_or_directory():
-    with pytest.raises(ContentException) as e:
+    with pytest.raises(SkipException) as e:
         MockParser(context_wrap(NO_SUCH_FILE))
-    assert "No such file or directory" in str(e.value)
 
 
 def test_multi_line():

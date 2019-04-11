@@ -15,7 +15,6 @@ from insights.configtree import Directive, SearchResult, Section
 from insights.contrib.ConfigParser import RawConfigParser
 
 from insights.parsers import ParseException, SkipException
-from insights.core.plugins import ContentException
 from insights.core.serde import deserializer, serializer
 from . import ls_parser
 from insights.util import deprecated
@@ -510,18 +509,22 @@ class CommandParser(Parser):
     """
     This class checks output from the command defined in the spec.
     If `context.content` contains a single line and that line is
-    included in the `bad_lines` list a `ContentException` is raised
+    included in the `bad_lines` list, this command context will be
+    skipped by a `SkipException`.
+
+    Raises:
+        SkipException: When input content is one of the `bad_lines`.
     """
 
     __bad_lines = [
             "no such file or directory",
             "command not found",
-            "python: No module named",
+            "python: no module named",
     ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
-    When adding a new lin to the list make sure text is all lower case.
+    When adding a new line to the list make sure text is all lower case.
     """
 
     @staticmethod
@@ -549,15 +552,13 @@ class CommandParser(Parser):
         """
             This __init__ calls `validate_lines` function to check for bad lines.
             If `validate_lines` returns False, indicating bad line found, a
-            ContentException is thrown.
+            `SkipException` is thrown.
         """
         valid_lines = self.validate_lines(context.content, self.__bad_lines)
         if valid_lines and extra_bad_lines:
             valid_lines = self.validate_lines(context.content, extra_bad_lines)
         if not valid_lines:
-            first = context.content[0] if context.content else "<no content>"
-            name = self.__class__.__name__
-            raise ContentException(name + ": " + first)
+            raise SkipException
         super(CommandParser, self).__init__(context)
 
 
