@@ -84,6 +84,7 @@ def test_upload_urls():
     c = InsightsConnection(conf)
     assert c.upload_url == 'BUNCHANONSENSE'
 
+
 @patch("insights.client.connection.InsightsConnection._legacy_upload_archive")
 @patch("insights.client.connection.get_canonical_facts", return_value={'test': 'facts'})
 @patch('insights.client.connection.requests.Session')

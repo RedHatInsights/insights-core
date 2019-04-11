@@ -361,7 +361,7 @@ def test_legacy_unregister(_legacy_handle_unregistration):
     _legacy_handle_unregistration.assert_called_once()
 
 
-@patch('insights.client.os.path.exists')
+@patch('insights.client.os.path.exists', return_value=True)
 @patch('insights.client.client._legacy_upload')
 def test_legacy_upload(_legacy_upload, path_exists):
     '''
@@ -369,12 +369,11 @@ def test_legacy_upload(_legacy_upload, path_exists):
     '''
     config = InsightsConfig(legacy_upload=True)
     client = InsightsClient(config)
-    path_exists = MagicMock(return_value=True)
     client.upload('test.gar.gz', 'test.content.type')
     _legacy_upload.assert_called_once()
 
 
-@patch('insights.client.os.path.exists')
+@patch('insights.client.os.path.exists', return_value=True)
 @patch('insights.client.connection.InsightsConnection.upload_archive')
 @patch('insights.client.client._legacy_upload')
 def test_platform_upload(_legacy_upload, _, path_exists):
@@ -383,6 +382,5 @@ def test_platform_upload(_legacy_upload, _, path_exists):
     '''
     config = InsightsConfig(legacy_upload=False)
     client = InsightsClient(config)
-    path_exists = MagicMock(return_value=True)
     client.upload('test.gar.gz', 'test.content.type')
     _legacy_upload.assert_not_called()
