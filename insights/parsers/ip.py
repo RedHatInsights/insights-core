@@ -283,7 +283,7 @@ class RouteDevices(CommandParser):
     Destinations given as **broadcast**, **throw**, **unreachable**,
     **prohibit**, **blackhole** and **nat** are discarded.
 
-    Destinations given as **unicast**, **multicast**
+    Destinations given as **unicast**, **multicast** and **local** are considered.
 
     Properties::
 
