@@ -11,7 +11,7 @@ from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
 from mock.mock import patch
-from mock.mock import Mock, MagicMock
+from mock.mock import Mock
 
 
 class FakeConnection(object):

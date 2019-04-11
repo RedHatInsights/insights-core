@@ -67,7 +67,7 @@ def test_registration_check_unregistered(write_unregistered_file, write_register
 @patch("insights.client.connection.InsightsConnection.get_proxies")
 @patch('insights.client.support.write_registered_file')
 @patch('insights.client.support.write_unregistered_file')
-def test_registration_check_unregistered(write_unregistered_file, write_registered_file, _, __):
+def test_registration_check_registered(write_unregistered_file, write_registered_file, _, __):
     '''
     Ensure that connection function is called and files are written.
     '''
@@ -93,6 +93,7 @@ def test_registration_check_legacy_unregistered(_, __):
     check = registration_check(conn)
     assert isinstance(check, dict)
     assert check['status'] is False
+
 
 @patch("insights.client.connection.InsightsConnection._init_session")
 @patch("insights.client.connection.InsightsConnection.get_proxies")
