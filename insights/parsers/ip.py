@@ -280,8 +280,8 @@ class RouteDevices(CommandParser):
     * ``netmask`` - the CIDR notation of the network as a string (e.g. '24')
     * ``table`` - the routing table, or None if not given.
 
-    Destinations given as **broadcast**, **throw**,
-    **unreachable**, **prohibit**, **blackhole** and **nat** are discarded.
+    Destinations given as **broadcast**, **throw**, **unreachable**,
+    **prohibit**, **blackhole** and **nat** are discarded.
 
     Destinations given as **unicast**, **multicast**
 
