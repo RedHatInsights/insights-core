@@ -23,6 +23,7 @@ class Specs(SpecSet):
     autofs_conf = RegistryPoint()
     avc_hash_stats = RegistryPoint()
     avc_cache_threshold = RegistryPoint()
+    aws_instance_type = RegistryPoint()
     bios_uuid = RegistryPoint()
     blkid = RegistryPoint()
     bond = RegistryPoint(multi_output=True)

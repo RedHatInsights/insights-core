@@ -76,6 +76,7 @@ class DefaultSpecs(Specs):
     autofs_conf = simple_file("/etc/autofs.conf")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
+    aws_instance_type = simple_command("curl -v -H 'Accept: application/json' http://169.254.169.254/latest/meta-data/instance-type")
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
