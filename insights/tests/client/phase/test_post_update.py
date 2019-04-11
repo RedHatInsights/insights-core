@@ -23,6 +23,7 @@ def patch_insights_config(old_function):
 
 # DRY this at some point... for the love of god
 
+
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
 def test_post_update_no_options_registered(insights_config, insights_client):

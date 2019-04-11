@@ -1,6 +1,5 @@
 import requests
 import json
-from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
 from mock.mock import MagicMock, Mock, patch
 

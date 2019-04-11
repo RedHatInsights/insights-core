@@ -1,6 +1,5 @@
 import requests
 import json
-import pytest
 from insights.client.connection import InsightsConnection
 from mock.mock import MagicMock, Mock, patch
 
@@ -50,11 +49,11 @@ def test_registration_check_ok_unreg(get_proxies, _init_session, _):
     res = requests.Response()
     res._content = json.dumps(
         {
-          "count": 0,
-          "page": 1,
-          "per_page": 50,
-          "results": [],
-          "total": 0
+            "count": 0,
+            "page": 1,
+            "per_page": 50,
+            "results": [],
+            "total": 0
         })
     res.status_code = 200
 
