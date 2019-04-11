@@ -1,6 +1,5 @@
 import requests
 import json
-import pytest
 from insights.client.config import InsightsConfig
 from insights.client.connection import InsightsConnection
 from mock.mock import MagicMock, Mock, patch

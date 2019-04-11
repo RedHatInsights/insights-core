@@ -203,10 +203,10 @@ def post_update(client, config):
     if config.unregister:
         if reg_check:
             logger.info('Unregistration not supported yet.')
-            sys.exit(constants.sig_kill_ok)
+            sys.exit(constants.sig_kill_bad)
         else:
             logger.info('This host is not registered, unregistration is not applicable.')
-            sys.exit(constants.sig_kill_ok)
+            sys.exit(constants.sig_kill_bad)
 
     # halt here if unregistered
     if not reg_check and not config.register:

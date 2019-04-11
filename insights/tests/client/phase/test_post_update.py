@@ -21,6 +21,7 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.reregister": False})
     return patcher(old_function)
 
+# DRY this at some point... for the love of god
 
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
@@ -209,6 +210,68 @@ def test_post_update_force_register_unregistered(insights_config, insights_clien
     insights_config.return_value.load_all.return_value.register = True
     insights_config.return_value.load_all.return_value.reregister = True
     insights_client.return_value.get_registration_status = MagicMock(return_value=False)
+    with raises(SystemExit) as exc_info:
+        post_update()
+    assert exc_info.value.code == 0
+    insights_client.return_value.get_machine_id.assert_called_once()
+    insights_client.return_value.get_registration_status.assert_called_once()
+    insights_client.return_value.clear_local_registration.assert_called_once()
+    insights_client.return_value.set_display_name.assert_not_called()
+    get_scheduler.return_value.set_daily.assert_called_once()
+
+
+@patch("insights.client.phase.v1.get_scheduler")
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_post_update_set_display_name_cli_no_register_unreg(insights_config, insights_client, get_scheduler):
+    """
+    Client is unregistered, and run with --display-name but not --register
+        Should exit with code 101 after registration check
+    """
+    insights_config.return_value.load_all.return_value.display_name = True
+    insights_config.return_value.load_all.return_value._cli_opts = ['display_name']
+    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
+    with raises(SystemExit) as exc_info:
+        post_update()
+    assert exc_info.value.code == 101
+    insights_client.return_value.get_machine_id.assert_called_once()
+    insights_client.return_value.get_registration_status.assert_called_once()
+    insights_client.return_value.set_display_name.assert_not_called()
+    get_scheduler.return_value.set_daily.assert_not_called()
+
+
+@patch("insights.client.phase.v1.get_scheduler")
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_post_update_set_display_name_cli_no_register_reg(insights_config, insights_client, get_scheduler):
+    """
+    Client is registered, and run with --display-name but not --register
+        Should exit with code 100 after setting display name
+    """
+    insights_config.return_value.load_all.return_value.display_name = True
+    insights_config.return_value.load_all.return_value._cli_opts = ['display_name']
+    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
+    with raises(SystemExit) as exc_info:
+        post_update()
+    assert exc_info.value.code == 100
+    insights_client.return_value.get_machine_id.assert_called_once()
+    insights_client.return_value.get_registration_status.assert_called_once()
+    insights_client.return_value.set_display_name.assert_called_once()
+    get_scheduler.return_value.set_daily.assert_not_called()
+
+
+@patch("insights.client.phase.v1.get_scheduler")
+@patch("insights.client.phase.v1.InsightsClient")
+@patch_insights_config
+def test_post_update_set_display_name_cli_register(insights_config, insights_client, get_scheduler):
+    """
+    Client is and run with --display-name and --register
+        Should set schedule and exit with code 0
+        Display name is not explicitly set here
+    """
+    insights_config.return_value.load_all.return_value.register = True
+    insights_config.return_value.load_all.return_value.reregister = True
+    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
     with raises(SystemExit) as exc_info:
         post_update()
     assert exc_info.value.code == 0
