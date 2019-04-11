@@ -3,7 +3,7 @@ AWSInstanceType
 ===============
 
 This parser simply reads the output of command
-``curl -v -H 'Accept: application/json' http://169.254.169.254/latest/meta-data/instance-type``,
+``curl http://169.254.169.254/latest/meta-data/instance-type``,
 which is used to check the type of the AWS instance on the host.
 
 """
@@ -17,7 +17,7 @@ from insights.specs import Specs
 class AWSInstanceType(CommandParser):
     """
     Class for parsing the AWS Instance type returned by command
-    ``curl -v -H 'Accept: application/json' http://169.254.169.254/latest/meta-data/instance-type``
+    ``curl http://169.254.169.254/latest/meta-data/instance-type``
 
     Typical output of this command is::
 
@@ -28,7 +28,7 @@ class AWSInstanceType(CommandParser):
 
     Attributes:
         type: The name of AWS instance type in all uppercase lettes. E.g. R3, R4, R5, or X1.
-        raw: The fully string returned by the ``curl`` command.
+        raw: The fully type string returned by the ``curl`` command.
 
     Examples:
         >>> aws_inst.type
