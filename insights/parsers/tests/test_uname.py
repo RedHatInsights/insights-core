@@ -46,6 +46,7 @@ UNAME_ERROR_TOO_SHORT2 = "Linux 2.6.32-279.el6.x86_64"
 UNAME_ERROR_TOO_SHORT3 = "2.6.32-279.el6.x86_64"
 UNAME_ERROR_ABBR_BAD_NVR = 'Linux bad-nvr 2'
 UNAME_ERROR_TOO_MANY_REL_PARTS = 'Linux bad-parts 3.10.1.4.16-327.204.108.59.11.el7.x86_64'
+UNAME_RHEL_8_0 = "Linux foo.bar.example.com 4.18.0-80.el8.x86_64 #1 SMP Wed Mar 13 12:02:46 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux"
 
 
 def test_uname():
@@ -128,6 +129,11 @@ def test_uname():
     assert uname7.hw_platform == 'x86_64'
     assert uname7.kernel == '2.6.32-279.el6.x86_64'
     assert uname7.kernel_date == 'Wed Jun 13 18:24:36 EDT 2012'
+
+    # RHEL 8
+    uname8 = uname.Uname(context_wrap(UNAME_RHEL_8_0))
+    assert uname8.redhat_release.major == 8
+    assert uname8.redhat_release.minor == 0
 
     # RT kernel tests
     uname_rt_1 = uname.Uname(context_wrap(UNAME_RT_1))
