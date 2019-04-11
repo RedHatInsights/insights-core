@@ -43,8 +43,12 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
 
     Examples:
 
-        >>> ceph_osd_tree_text['nodes'][0]
-        {'id': '-1', 'device_class': '', 'crush_weight': '0.08752', 'name': 'default', 'status': '', 'reweight': '', 'primary_affinity': '', 'type': 'root', 'children': [-7, -3, -5, -9]}
+        >>> ceph_osd_tree_text['nodes'][0]['id']
+        '-1'
+        >>> ceph_osd_tree_text['nodes'][0]['name']
+        'default'
+        >>> ceph_osd_tree_text['nodes'][0]['type']
+        'root'
     """
 
     def parse_content(self, content):
