@@ -10,6 +10,12 @@ HttpdSSLErrorLog - file ``ssl_error_log``
 HttpdErrorLog - file ``error_log``
 ----------------------------------
 
+Httpd24HTTPDErrorLog - file ``httpd24_httpd_error_log``
+--------------------------------------------------------
+
+JBCSHTTPD24HttpdErrorLog - file ``jbcs_httpd24_httpd_error_log``
+-----------------------------------------------------------------
+
 HttpdSSLAccessLog - file ``ssl_access_log``
 -------------------------------------------
 
@@ -34,6 +40,18 @@ class HttpdSSLErrorLog(LogFileOutput):
 
 @parser(Specs.httpd_error_log)
 class HttpdErrorLog(LogFileOutput):
+    """Class for parsing httpd ``error_log`` file."""
+    time_format = '%b %d %H:%M:%S.%f %Y'
+
+
+@parser(Specs.httpd24_httpd_error_log)
+class Httpd24HttpdErrorLog(LogFileOutput):
+    """Class for parsing httpd ``error_log`` file."""
+    time_format = '%b %d %H:%M:%S.%f %Y'
+
+
+@parser(Specs.jbcs_httpd24_httpd_error_log)
+class JBCSHttpd24HttpdErrorLog(LogFileOutput):
     """Class for parsing httpd ``error_log`` file."""
     time_format = '%b %d %H:%M:%S.%f %Y'
 
