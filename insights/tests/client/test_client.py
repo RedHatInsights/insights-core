@@ -11,7 +11,7 @@ from insights import package_info
 from insights.client.constants import InsightsConstants as constants
 from insights.client.utilities import generate_machine_id
 from mock.mock import patch
-from mock.mock import Mock
+from mock.mock import Mock, MagicMock
 
 
 class FakeConnection(object):
@@ -359,3 +359,30 @@ def test_legacy_unregister(_legacy_handle_unregistration):
     client = InsightsClient(config)
     client.unregister()
     _legacy_handle_unregistration.assert_called_once()
+
+
+@patch('insights.client.os.path.exists')
+@patch('insights.client.client._legacy_upload')
+def test_legacy_upload(_legacy_upload, path_exists):
+    '''
+    _legacy_upload called when legacy upload
+    '''
+    config = InsightsConfig(legacy_upload=True)
+    client = InsightsClient(config)
+    path_exists = MagicMock(return_value=True)
+    client.upload('test.gar.gz', 'test.content.type')
+    _legacy_upload.assert_called_once()
+
+
+@patch('insights.client.os.path.exists')
+@patch('insights.client.connection.InsightsConnection.upload_archive')
+@patch('insights.client.client._legacy_upload')
+def test_platform_upload(_legacy_upload, _, path_exists):
+    '''
+    _legacy_upload not called when legacy upload
+    '''
+    config = InsightsConfig(legacy_upload=False)
+    client = InsightsClient(config)
+    path_exists = MagicMock(return_value=True)
+    client.upload('test.gar.gz', 'test.content.type')
+    _legacy_upload.assert_not_called()
