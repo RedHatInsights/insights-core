@@ -6,6 +6,11 @@ from insights.tests import context_wrap
 from insights.parsers import SkipException
 
 AWS_TYPE = "r3.xlarge"
+AWS_TYPE_LINES = """
+*   Trying 169.254.169.254...
+* TCP_NODELAY set
+t2.xlarge
+""".strip()
 AWS_TYPE_AB = """
 *   Trying 169.254.169.254...
 * TCP_NODELAY set
@@ -31,6 +36,12 @@ def test_aws_instance_type():
     aws = AWSInstanceType(context_wrap(AWS_TYPE))
     assert aws.type == "R3"
     assert aws.raw == "r3.xlarge"
+
+
+def test_aws_instance_type_multi_lines():
+    aws = AWSInstanceType(context_wrap(AWS_TYPE_LINES))
+    assert aws.type == "T2"
+    assert aws.raw == "t2.xlarge"
 
 
 def test_doc_examples():
