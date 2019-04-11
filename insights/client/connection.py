@@ -758,10 +758,59 @@ class InsightsConnection(object):
         else:
             return (message, client_hostname, "None", "")
 
+    # -LEGACY-
+    def _legacy_upload_archive(self, data_collected, duration):
+        '''
+        Do an HTTPS upload of the archive
+        '''
+        file_name = os.path.basename(data_collected)
+        try:
+            from insights.contrib import magic
+            m = magic.open(magic.MAGIC_MIME)
+            m.load()
+            mime_type = m.file(data_collected)
+        except ImportError:
+            magic = None
+            logger.debug('python-magic not installed, using backup function...')
+            from .utilities import magic_plan_b
+            mime_type = magic_plan_b(data_collected)
+
+        files = {
+            'file': (file_name, open(data_collected, 'rb'), mime_type)}
+
+        if self.config.analyze_container:
+            logger.debug('Uploading container, image, mountpoint or tarfile.')
+            upload_url = self.upload_url
+        else:
+            logger.debug('Uploading a host.')
+            upload_url = self.upload_url + '/' + generate_machine_id()
+
+        logger.debug("Uploading %s to %s", data_collected, upload_url)
+
+        headers = {'x-rh-collection-time': str(duration)}
+        net_logger.info("POST %s", upload_url)
+        upload = self.session.post(upload_url, files=files, headers=headers)
+
+        logger.debug("Upload status: %s %s %s",
+                     upload.status_code, upload.reason, upload.text)
+        if upload.status_code in (200, 201):
+            the_json = json.loads(upload.text)
+        else:
+            logger.error("Upload archive failed with status code  %s", upload.status_code)
+            return upload
+        try:
+            self.config.account_number = the_json["upload"]["account_number"]
+        except:
+            self.config.account_number = None
+        logger.debug("Upload duration: %s", upload.elapsed)
+        return upload
+
     def upload_archive(self, data_collected, content_type, duration):
         """
         Do an HTTPS Upload of the archive
         """
+        if self.config.legacy_upload:
+            return self._legacy_upload_archive(data_collected, duration)
         file_name = os.path.basename(data_collected)
         upload_url = self.upload_url
         c_facts = {}
@@ -776,46 +825,19 @@ class InsightsConnection(object):
         c_facts = json.dumps(c_facts)
         logger.debug('Canonical facts collected:\n%s', c_facts)
 
-        files = {}
-        # legacy upload
-        if self.config.legacy_upload:
-            try:
-                from insights.contrib import magic
-                m = magic.open(magic.MAGIC_MIME)
-                m.load()
-                content_type = m.file(data_collected)
-            except ImportError:
-                magic = None
-                logger.debug(
-                    'python-magic not installed, using backup function...')
-                from .utilities import magic_plan_b
-                content_type = magic_plan_b(data_collected)
-
-            if self.config.analyze_container:
-                logger.debug(
-                    'Uploading container, image, mountpoint or tarfile.')
-            else:
-                logger.debug('Uploading a host.')
-                upload_url = self.upload_url + '/' + generate_machine_id()
-            headers = {'x-rh-collection-time': str(duration)}
-        else:
-            headers = {}
-            files['metadata'] = c_facts
-
-        files['file'] = (file_name, open(data_collected, 'rb'), content_type)
-
+        files = {
+            'file': (file_name, open(data_collected, 'rb'), content_type),
+            'metadata': c_facts
+        }
         logger.debug("Uploading %s to %s", data_collected, upload_url)
 
         net_logger.info("POST %s", upload_url)
-        upload = self.session.post(upload_url, files=files, headers=headers)
+        upload = self.session.post(upload_url, files=files, headers={})
 
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
-        if upload.status_code in (200, 201):
-            # 200/201 from legacy, load the response
-            the_json = json.loads(upload.text)
-        elif upload.status_code == 202:
+        if upload.status_code == 202:
             # 202 from platform, no json response
             logger.debug(upload.text)
             # upload = registration on platform
@@ -825,10 +847,6 @@ class InsightsConnection(object):
                 "Upload archive failed with status code  %s",
                 upload.status_code)
             return upload
-        try:
-            self.config.account_number = the_json["upload"]["account_number"]
-        except:
-            self.config.account_number = None
         logger.debug("Upload duration: %s", upload.elapsed)
         return upload
 
