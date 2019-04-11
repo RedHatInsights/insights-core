@@ -44,7 +44,7 @@ HTTPD24_ERROR_LOG = """
 """
 
 JBCS_HTTPD24_ERROR_LOG = """
-Wed Apr 03 03:52:39.014686 2019] [core:notice] [pid 4499] SELinux policy enabled; httpd running as context system_u:system_r:httpd_t:s0
+[Wed Apr 03 03:52:39.014686 2019] [core:notice] [pid 4499] SELinux policy enabled; httpd running as context system_u:system_r:httpd_t:s0
 [Wed Apr 03 03:54:39.016900 2019] [suexec:notice] [pid 4499] AH01232: suEXEC mechanism enabled (wrapper: /opt/rh/httpd24/root/usr/sbin/suexec)
 [Wed Apr 03 03:55:39.038125 2019] [http2:warn] [pid 4499] AH10034: The mpm module (prefork.c) is not supported by mod_http2. The mpm determines how things are processed in your server. HTTP/2 has more demands in this regard and the currently selected mpm will just not do. This is an advisory warning. Your server will continue to work, but the HTTP/2 protocol will be inactive.
 [Wed Apr 03 03:56:39.038140 2019] [http2:warn] [pid 4499] AH02951: mod_ssl does not seem to be enabled
