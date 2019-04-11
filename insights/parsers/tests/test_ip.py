@@ -296,8 +296,7 @@ ff02::/16 dev enp0s25 metric
 def test_ip_route():
     context = context_wrap(IP_ROUTE_SHOW_TABLE_ALL_TEST)
     d = ip.RouteDevices(context)
-
-    assert len(d.data) == 5
+    assert len(d.data) == 6
     assert d["30.142.34.0/26"][0].dev == "bond0.300"
     assert d["30.142.64.0/26"][0].dev == "bond0.400"
     assert d["169.254.0.0/16"][0].dev == "bond0"
@@ -308,10 +307,18 @@ def test_ip_route():
     assert d.ifaces("30.0.0.1")[0] == "notExist"
     assert d.ifaces("192.168.0.1")[0] == "bond0.400"
     assert len(d.data["default"]) == 1
-    assert getattr(d.by_device['bond0.300'][0], 'src') == '30.142.34.5'
-    assert getattr(d.by_prefix['default'][0], 'via') == '30.142.64.1'
-    assert getattr(d.by_prefix['30.142.34.0/26'][0], 'scope') == 'link'
-    assert getattr(d.by_table['None'][1], 'proto') == 'kernel'
+    d_devices = d.by_device['bond0.300']
+    for idx in d_devices:
+        if idx and getattr(idx, 'prefix') and getattr(idx, 'prefix') == '30.142.34.0/26':
+            assert getattr(idx, 'src') == '30.142.34.5'
+    d_prefix = d.by_prefix['default']
+    assert getattr(d_prefix[0], 'via') == '30.142.64.1'
+    d_prefix = d.by_prefix['30.142.34.0/26']
+    assert getattr(d_prefix[0], 'scope') == 'link'
+    d_table = d.by_table['None']
+    for idx in d_table:
+        if idx and getattr(idx, 'prefix') and getattr(idx, 'prefix') == "30.0.0.0/8":
+            assert getattr(idx, 'proto') == 'kernel'
     # order is not deterministic
     # assert getattr(d.by_type['None'][3], 'netmask') == 8
 
@@ -321,7 +328,7 @@ def test_ip_route_2():
     context.path = "sos_commands/networking/ip_route_show_all"
     tbl = ip.RouteDevices(context)
 
-    assert len(tbl.data) == 18
+    assert len(tbl.data) == 26
 
     # Ignored route types:
     assert 'broadcast' not in tbl
@@ -410,8 +417,8 @@ def test_ip_route_2():
     assert 'tun0' in devices
     assert 'enp0s25' in devices
     assert 'virbr0' in devices
-    assert len(devices) == 3
-    assert len(devices['enp0s25']) == 16
+    assert len(devices) == 4
+    assert len(devices['enp0s25']) == 17
 
     # The order of these data structures is non-deterministic
     # Should be in order of reading, so find them in order by name
@@ -435,7 +442,9 @@ def test_ip_route_2():
 
     # by_type checks
     types = tbl.by_type
-    assert sorted(types.keys()) == sorted(['None', 'multicast'])
+    assert sorted(types.keys()) == sorted(['None', 'multicast', 'local'])
+    # As we have added `local` in the SAVED_TYPES number of local rules which was
+    # treaded as None now treating as a local so this number is changed
     assert len(types['None']) == 18
     for entry in types['None']:
         assert entry in tbl[entry.prefix]
@@ -445,16 +454,23 @@ def test_ip_route_2():
     assert sorted(tables.keys()) == sorted(['None', 'local'])
     assert len(tables['None']) == 18
     # Something tells me that out of
-    assert len(tables['local']) == 1
-    local = tables['local'][0]
-    assert local.via is None
-    assert local.metric == '256'
-    assert local.prefix == 'ff00::/8'
-    assert local.dev == 'enp0s25'
-    assert local.mtu == '1492'
-    assert local.netmask == 8
-    assert local.table == 'local'
-    assert local.type is None
+    assert len(tables['local']) == 9
+    for local in tables['local']:
+        if local.dev == 'enp0s25' and local.prefix == 'ff00::/8':
+            assert local.via is None
+            assert local.metric == '256'
+            assert local.prefix == 'ff00::/8'
+            assert local.dev == 'enp0s25'
+            assert local.mtu == '1492'
+            assert local.netmask == 8
+            assert local.table == 'local'
+            assert local.type is None
+        if local.dev == 'lo' and local.prefix == '2001:44b8:1110:f800:56ee:75ff:fe1c:5901':
+            assert local.via is None
+            assert local.metric == '0'
+            assert local.table == 'local'
+            assert local.type == 'local'
+            assert local.dev == 'lo'
 
 
 def test_bad_ip_routes():
