@@ -15,12 +15,12 @@ class MockParser(CommandParser):
 
 
 def test_command_not_found():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipException):
         MockParser(context_wrap(CMF))
 
 
 def test_no_such_file_or_directory():
-    with pytest.raises(SkipException) as e:
+    with pytest.raises(SkipException):
         MockParser(context_wrap(NO_SUCH_FILE))
 
 
