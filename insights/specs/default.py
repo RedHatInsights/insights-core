@@ -528,6 +528,7 @@ class DefaultSpecs(Specs):
     ntptime = simple_command("/usr/sbin/ntptime")
     numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
+    nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_clusterrole_with_config = simple_command("/usr/bin/oc get clusterrole --config /etc/origin/master/admin.kubeconfig")
