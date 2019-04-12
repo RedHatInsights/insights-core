@@ -223,7 +223,6 @@ class Specs(SpecSet):
     journal_since_boot = RegistryPoint(filterable=True)
     katello_service_status = RegistryPoint(filterable=True)
     kdump_conf = RegistryPoint()
-    kdump = RegistryPoint()
     kerberos_kdc_log = RegistryPoint(filterable=True)
     kexec_crash_loaded = RegistryPoint()
     kexec_crash_size = RegistryPoint()
