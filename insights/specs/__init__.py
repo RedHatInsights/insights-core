@@ -338,6 +338,7 @@ class Specs(SpecSet):
     ntptime = RegistryPoint()
     numa_cpus = RegistryPoint(multi_output=True)
     numeric_user_group_name = RegistryPoint()
+    nvme_core_io_timeout = RegistryPoint()
     oc_get_bc = RegistryPoint()
     oc_get_build = RegistryPoint()
     oc_get_clusterrole_with_config = RegistryPoint()
