@@ -20,7 +20,6 @@ AWS_TYPE_AB_4 = """
 """.strip()
 
 
-
 def test_aws_instance_type_ab_other():
     with pytest.raises(SkipException):
         AWSInstanceType(context_wrap(AWS_TYPE_AB_1))
