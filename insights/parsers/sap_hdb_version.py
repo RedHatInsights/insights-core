@@ -18,6 +18,7 @@ class HDBVersion(CommandParser, LegacyItemAccess):
 
     Typical output of the command is::
 
+        # sudo -iu sr1adm HDB version
         HDB version info:
           version:             2.00.030.00.1522210459
           branch:              hanaws
@@ -36,10 +37,13 @@ class HDBVersion(CommandParser, LegacyItemAccess):
         minor (str): the minor version
         revision (str): the SAP HANA SPS revision number
         patchlevel (str): the patchlevel number of this revision
+        sid (str): the SID of this SAP HANA
 
     Examples:
         >>> type(hdb_ver)
         <class 'insights.parsers.sap_hdb_version.HDBVersion'>
+        >>> hdb_ver.sid
+        'sr1'
         >>> hdb_ver.version
         '2.00.030.00.1522210459'
         >>> hdb_ver.major
@@ -55,10 +59,14 @@ class HDBVersion(CommandParser, LegacyItemAccess):
     """
 
     def parse_content(self, content):
-        self.data = {}
-        self.version = self.revision = self.major = self.minor = self.patchlevel = None
         if len(content) <= 1:
             raise SkipException("Incorrect content.")
+        self.data = {}
+        self.sid = self.version = self.revision = None
+        self.major = self.minor = self.patchlevel = None
+        # get the "sid" from the file_name: "sudo_-iu_<sid>adm_HDB_version"
+        if self.file_name and 'adm' in self.file_name:
+            self.sid = [i for i in self.file_name.split('_') if i.endswith('adm')][0][:-3]
         for line in content[1:]:
             key, val = [i.strip() for i in line.split(':', 1)]
             self.data[key] = val
@@ -71,3 +79,5 @@ class HDBVersion(CommandParser, LegacyItemAccess):
                 self.minor = val_splits[1]
                 self.revision = val_splits[2]
                 self.patchlevel = val_splits[3]
+        if not self.version:
+            raise SkipException("Incorrect content.")
