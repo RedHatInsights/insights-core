@@ -47,6 +47,7 @@ HDB version info:
 
 CMD_PATH = "insights_commands/sudo_-iu_sr1adm_HDB_version"
 
+
 def test_HDBVersion_doc():
     env = {
             'hdb_ver': HDBVersion(context_wrap(HDB_VER_1, path=CMD_PATH)),
