@@ -45,10 +45,12 @@ HDB version info:
   compile host:        ld4551
 """.strip()
 
+CMD_PATH = "insights_commands/sudo_-iu_sr1adm_HDB_version"
+
 
 def test_HDBVersion_doc():
     env = {
-            'hdb_ver': HDBVersion(context_wrap(HDB_VER_1)),
+            'hdb_ver': HDBVersion(context_wrap(HDB_VER_1, path=CMD_PATH)),
           }
     failed, total = doctest.testmod(sap_hdb_version, globs=env)
     assert failed == 0
@@ -65,17 +67,18 @@ def test_HDBVersion_ng():
 
 
 def test_HDBVersion_1():
-    hdb_ver = HDBVersion(context_wrap(HDB_VER_1))
+    hdb_ver = HDBVersion(context_wrap(HDB_VER_1, path=CMD_PATH))
     assert hdb_ver['branch'] == 'hanaws'
     assert hdb_ver['compile type'] == 'rel'
     assert hdb_ver['weekstone'] == '2018.13.0'
 
 
 def test_HDBVersion_2():
-    hdb_ver = HDBVersion(context_wrap(HDB_VER_2))
+    hdb_ver = HDBVersion(context_wrap(HDB_VER_2, path=CMD_PATH))
     assert hdb_ver['branch'] == 'fa/hana2sp02'
     assert hdb_ver['compile host'] == 'ld4551'
     assert 'compile_type' not in hdb_ver
     assert hdb_ver['weekstone'] == '0000.00.0'
     assert hdb_ver.major == '2'
     assert hdb_ver.revision == '020'
+    assert hdb_ver.sid == 'sr1'
