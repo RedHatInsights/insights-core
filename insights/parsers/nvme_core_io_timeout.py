@@ -17,7 +17,7 @@ class NVMeCoreIOTimeout(Parser):
 
     A typical sample of the content of this file looks like::
 
-        30
+        4294967295
 
     Raises:
         SkipException: When content is empty or no parse-able content.
