@@ -482,12 +482,12 @@ class InsightsConnection(object):
             logger.debug(u'Reading branch info from cached file.')
             ctime = datetime.utcfromtimestamp(
                 os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(minutes=10)):
+            if datetime.utcnow() < (ctime + timedelta(minutes=5)):
                 with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
                     branch_info = json.load(f)
                 return branch_info
             else:
-                logger.debug(u'Cached branch info is older than 30 days.')
+                logger.debug(u'Cached branch info is older than 5 minutes.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
