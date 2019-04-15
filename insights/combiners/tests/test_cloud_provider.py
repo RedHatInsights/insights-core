@@ -355,7 +355,7 @@ def test_rpm_google():
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'google'
+    assert ret.cloud_provider == 'google'
     assert ret.cp_rpms.get('google')[0] == 'google-rhui-client-5.1.100-1.el7'
 
 
@@ -364,7 +364,7 @@ def test_rpm_aws():
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'aws'
+    assert ret.cloud_provider == 'aws'
     assert ret.cp_rpms.get('aws')[0] == 'rh-amazon-rhui-client-2.2.124-1.el7'
 
 
@@ -373,7 +373,7 @@ def test_rpm_azure():
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'azure'
+    assert ret.cloud_provider == 'azure'
     assert ret.cp_rpms.get('azure')[0] == 'WALinuxAgent-2.2.18-1.el7'
 
 
@@ -382,7 +382,7 @@ def test__yum_azure():
     dmi = DMIDecode(context_wrap(DMIDECODE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'azure'
+    assert ret.cloud_provider == 'azure'
     assert 'rhui-microsoft-azure-rhel7-2.2-74' in ret.cp_yum.get('azure')
 
 
@@ -391,7 +391,7 @@ def test__bios_version_aws():
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'aws'
+    assert ret.cloud_provider == 'aws'
     assert ret.cp_bios_version['aws'] == '4.2.amazon'
 
 
@@ -400,7 +400,7 @@ def test__bios_vendor_google():
     dmi = DMIDecode(context_wrap(DMIDECODE_GOOGLE))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'google'
+    assert ret.cloud_provider == 'google'
     assert ret.cp_bios_vendor['google'] == 'Google'
 
 
@@ -409,7 +409,7 @@ def test__asset_tag_azure():
     dmi = DMIDecode(context_wrap(DMIDECODE_AZURE_ASSET_TAG))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'azure'
+    assert ret.cloud_provider == 'azure'
     assert ret.cp_asset_tag['azure'] == '7783-7084-3265-9085-8269-3286-77'
 
 
@@ -418,5 +418,5 @@ def test__uuid():
     dmi = DMIDecode(context_wrap(DMIDECODE_AWS_UUID))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
-    assert ret.cloud_provider is 'aws'
+    assert ret.cloud_provider == 'aws'
     assert ret.cp_uuid['aws'] == 'EC2F58AF-2DAD-C57E-88C0-A81CB6084290'

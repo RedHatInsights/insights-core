@@ -34,7 +34,7 @@ from collections import namedtuple
 @combiner(optional=[InstalledRpms, DMIDecode, YumRepoList])
 class CloudProvider(object):
     """
-    Combiner class to provide cloud vedor facts
+    Combiner class to provide cloud vendor facts
 
     Attributes:
         cp_bios_vendor (dict): Dictionary containing a value , for each provider,
@@ -63,6 +63,15 @@ class CloudProvider(object):
     __AWS = __CP(name='aws', rpm='rh-amazon-rhui-client', yum='', vv='amazon')
     __AZURE = __CP(name='azure', rpm='walinuxagent', yum='rhui-microsoft-azure', vv='')
     __PROVIDERS = [__GOOGLE, __AWS, __AZURE]
+
+    AWS = __AWS.name
+    """AWS Cloud Provider Constant"""
+
+    AZURE = __AZURE.name
+    """AZURE Cloud Provider Constant"""
+
+    GOOGLE = __GOOGLE.name
+    """GOOGLE Cloud Provider Constant"""
 
     def __init__(self, rpms, dmidcd, yrl):
 
