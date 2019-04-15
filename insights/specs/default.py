@@ -480,6 +480,7 @@ class DefaultSpecs(Specs):
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
     mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
+                          "/var/log/mysql/mysqld.log",
                           "/var/log/mysql.log",
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
                           ])
