@@ -67,12 +67,21 @@ class InsightsConnection(object):
         self.username = self.config.username
         self.password = self.config.password
 
+        # workaround while we support both legacy and plat APIs
         self.cert_verify = self.config.cert_verify
-        if isinstance(self.cert_verify, six.string_types):
-            if self.cert_verify.lower() == 'false':
-                self.cert_verify = False
-            elif self.cert_verify.lower() == 'true':
+        if self.cert_verify is None:
+            if self.config.legacy_upload:
+                self.cert_verify = os.path.join(
+                    constants.default_conf_dir,
+                    'cert-api.access.redhat.com.pem')
+            else:
                 self.cert_verify = True
+        else:
+            if isinstance(self.cert_verify, six.string_types):
+                if self.cert_verify.lower() == 'false':
+                    self.cert_verify = False
+                elif self.cert_verify.lower() == 'true':
+                    self.cert_verify = True
 
         protocol = "https://"
         insecure_connection = self.config.insecure_connection
@@ -83,6 +92,7 @@ class InsightsConnection(object):
 
         self.auto_config = self.config.auto_config
 
+        # workaround while we support both legacy and plat APIs
         # hack to "guess" the correct base URL if autoconfig off +
         #   no base_url in config
         if self.config.base_url is None:
@@ -105,6 +115,7 @@ class InsightsConnection(object):
                 # ^^ that is going bye-bye
             else:
                 self.upload_url = self.base_url + '/ingress/v1/upload'
+
         self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:

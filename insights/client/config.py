@@ -59,9 +59,7 @@ DEFAULT_OPTS = {
     },
     'cert_verify': {
         # non-CLI
-        'default': os.path.join(
-            constants.default_conf_dir,
-            'cert-api.access.redhat.com.pem'),
+        'default': None,
     },
     'cmd_timeout': {
         # non-CLI
