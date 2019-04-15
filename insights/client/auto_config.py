@@ -67,6 +67,7 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
         config.proxy = proxy
     config.base_url = hostname + '/r/insights'
     if ca_cert is None:
+        logger.debug('Not connected to Satellite, skipping branch_info')
         # direct connection to RHSM, skip verify_connectivity
         # (see _try_satellite6_configuration line 133)
         return
