@@ -21,6 +21,7 @@ else:
 # libmagic is not thread safe so we must lock access to file
 magic_lock = Lock()
 
+
 def from_file(name):
     if magic_loaded:
         with magic_lock:
