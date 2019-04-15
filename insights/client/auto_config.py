@@ -93,13 +93,17 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
             config.cert_verify = saved_cert_verify
 
 
+def _importInitConfig():
+    from rhsm.config import initConfig
+    return initConfig()
+
+
 def _try_satellite6_configuration(config):
     """
     Try to autoconfigure for Satellite 6
     """
     try:
-        from rhsm.config import initConfig
-        rhsm_config = initConfig()
+        rhsm_config = _importInitConfig()
 
         logger.debug('Trying to autoconfigure...')
         cert = open(rhsmCertificate.certpath(), 'r').read()
@@ -117,7 +121,9 @@ def _try_satellite6_configuration(config):
         rhsm_proxy_port = rhsm_config.get('server', 'proxy_port').strip()
         rhsm_proxy_user = rhsm_config.get('server', 'proxy_user').strip()
         rhsm_proxy_pass = rhsm_config.get('server', 'proxy_password').strip()
+
         proxy = None
+
         if rhsm_proxy_hostname != "":
             logger.debug("Found rhsm_proxy_hostname %s", rhsm_proxy_hostname)
             proxy = "http://"
