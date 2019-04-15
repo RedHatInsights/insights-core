@@ -2,6 +2,7 @@ import shlex
 import subprocess
 from subprocess import PIPE
 import six
+from threading import Lock
 
 try:
     from insights.contrib import magic
@@ -17,9 +18,14 @@ else:
     magic_loaded = True
 
 
+# libmagic is not thread safe so we must lock access to file
+magic_lock = Lock()
+
+
 def from_file(name):
     if magic_loaded:
-        return six.b(_magic.file(name)).decode("unicode-escape").splitlines()[0].strip()
+        with magic_lock:
+            return six.b(_magic.file(name)).decode("unicode-escape").splitlines()[0].strip()
     else:
         cmd = "file --mime-type -b %s"
         p = subprocess.Popen(shlex.split(cmd % name), stdout=subprocess.PIPE)
@@ -29,7 +35,8 @@ def from_file(name):
 
 def from_buffer(b):
     if magic_loaded:
-        return _magic.buffer(b)
+        with magic_lock:
+            return _magic.buffer(b)
     else:
         cmd = "file --mime-type -b -"
         p = subprocess.Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE)
