@@ -2,8 +2,8 @@
 MysqlLog - File ``/var/log/mysqld.log``
 =======================================
 
-Module for parsing the log file for Mysql, including ``/var/log/mysqld.log`` and
-``/var/opt/rh/rh-mysql*/log/mysql/mysqld.log``.
+Module for parsing the log file for Mysql, including ``/var/log/mysql/mysqld.log``,
+``/var/log/mysqld.log`` and ``/var/opt/rh/rh-mysql*/log/mysql/mysqld.log``.
 
 .. note::
     By default, logrotate of mysql.log is set to daily.
