@@ -66,7 +66,7 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
         saved_proxy = config.proxy
         config.proxy = proxy
     # URL changes. my favorite
-    if _is_rhn_or_rhsm(hostname):
+    if ca_cert is None:
         # connected directly to RHSM
         if config.legacy_upload:
             config.base_url = hostname + '/r/insights'
