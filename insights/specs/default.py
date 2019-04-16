@@ -25,7 +25,6 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
-from insights.combiners.virt_what import VirtWhat
 from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
@@ -79,11 +78,8 @@ class DefaultSpecs(Specs):
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
 
-    @datasource([VirtWhat, CloudProvider])
+    @datasource(CloudProvider)
     def is_aws(broker):
-        vw = broker[VirtWhat]
-        if vw and 'aws' in vw:
-            return True
         cp = broker[CloudProvider]
         if cp and cp.cloud_provider == CloudProvider.AWS:
             return True
