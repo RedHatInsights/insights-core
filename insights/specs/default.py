@@ -25,6 +25,8 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
+from insights.combiners.virt_what import VirtWhat
+from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
 from grp import getgrgid
@@ -76,6 +78,18 @@ class DefaultSpecs(Specs):
     autofs_conf = simple_file("/etc/autofs.conf")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
+
+    @datasource([VirtWhat, CloudProvider])
+    def is_aws(broker):
+        vw = broker[VirtWhat]
+        if vw and 'aws' in vw:
+            return True
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.AWS:
+            return True
+        raise SkipComponent()
+
+    aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
