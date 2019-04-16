@@ -119,9 +119,10 @@ class CloudProvider(object):
 
         prov = {'aws': [], 'google': [], 'azure': []}
 
-        for p in self.__PROVIDERS:
-            for key, val in rpms.packages.items():
-                prov[p.name].append(val[0].package) if p.rpm in val[0].package.lower() else prov
+        if rpms:
+            for p in self.__PROVIDERS:
+                for key, val in rpms.packages.items():
+                    prov[p.name].append(val[0].package) if p.rpm in val[0].package.lower() else prov
 
         return prov
 
