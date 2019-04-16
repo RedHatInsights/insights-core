@@ -6,7 +6,7 @@ The ``ls -laR /var/opt/mssql`` command provides information for the listing of
 the ``/var/opt/mssql`` directory. See ``FileListing`` class for addtional information.
 
 
-Sample ``ls -laR /var/opt/`` output::
+Sample ``ls -laR /var/opt/mssql`` output::
 
     /var/opt/mssql:
     total 0
