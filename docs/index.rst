@@ -16,6 +16,7 @@ Contents:
     docs_guidelines
     components
     embedded_content
+    tools
     notebook_index
 
 Indices and tables

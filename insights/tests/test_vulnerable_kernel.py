@@ -1,6 +1,6 @@
 from __future__ import print_function
 from insights.parsers.uname import Uname
-from insights.core.plugins import make_response
+from insights.core.plugins import make_fail
 from insights.tests import context_wrap, InputData, run_test
 from insights.specs import Specs
 
@@ -40,7 +40,7 @@ def test_vulnerable_kernel():
     for kernel in VULNERABLE:
         uname_line = UNAME_TEMPLATE % kernel
         result = vulnerable_kernel.report(Uname(context_wrap(uname_line)))
-        expected = make_response(ERROR_KEY, kernel=kernel)
+        expected = make_fail(ERROR_KEY, kernel=kernel)
         if not (result == expected):
             print(result)
             print(expected)
@@ -59,7 +59,7 @@ def generate_inputs(things):
 def test_vulnerable_kernel_integration():
     comp = vulnerable_kernel.report
     for kernel, i in generate_inputs(VULNERABLE):
-        expected = make_response(ERROR_KEY, kernel=kernel)
+        expected = make_fail(ERROR_KEY, kernel=kernel)
         run_test(comp, i, expected)
 
     for _, i in generate_inputs(NOT_VULNERABLE):
