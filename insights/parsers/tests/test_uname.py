@@ -46,7 +46,8 @@ UNAME_ERROR_TOO_SHORT2 = "Linux 2.6.32-279.el6.x86_64"
 UNAME_ERROR_TOO_SHORT3 = "2.6.32-279.el6.x86_64"
 UNAME_ERROR_ABBR_BAD_NVR = 'Linux bad-nvr 2'
 UNAME_ERROR_TOO_MANY_REL_PARTS = 'Linux bad-parts 3.10.1.4.16-327.204.108.59.11.el7.x86_64'
-UNAME8_OUT = 'Linux dhcp223-29.pnq.redhat.com 4.18.0-32.el8.x86_64 #1 SMP Sat Oct 27 19:26:37 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux'
+UNAME8_OUT = 'Linux dhcp223-29.pnq.redhat.com 4.18.0-70.el8.x86_64 #1 SMP Sat Oct 27 19:26:37 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux'
+
 
 def test_uname():
     uname1 = uname.Uname(context_wrap(UNAME1))
@@ -174,24 +175,23 @@ def test_uname():
     assert uname_rt_3 < UNAME_RT_3post
     assert uname_rt_3 < UNAME_RT_3post2
     assert uname_rt_3.rhel_release == ['7', '2']
-    
+
     uname8 = uname.Uname(context_wrap(UNAME8_OUT))
-    import pdb; pdb.set_trace()
-    assert uname1.arch == 'x86_64'
-    assert uname1.hw_platform == 'x86_64'
-    assert uname1.kernel == '4.18.0-32.el8.x86_64'
-    assert uname1.kernel_date == 'Sat Oct 27 19:26:37 UTC 2018'
-    assert uname1.kernel_type == 'SMP'
-    assert uname1.machine == 'x86_64'
-    assert uname1.name == 'Linux'
-    assert uname1.nodename == 'dhcp223-29.pnq.redhat.com'
-    assert uname1.os == 'GNU/Linux'
-    assert uname1.processor == 'x86_64'
-    assert uname1.redhat_release == uname.RedhatRelease(major=8, minor=0)
-    assert uname1.release == '32.el8'
-    assert uname1.release_arch == '32.el8.x86_64'
-    assert uname1.release_tuple == (8, 0,)
-    assert uname1.rhel_release == ['8', '0']
+    assert uname8.arch == 'x86_64'
+    assert uname8.hw_platform == 'x86_64'
+    assert uname8.kernel == '4.18.0-70.el8.x86_64'
+    assert uname8.kernel_date == 'Sat Oct 27 19:26:37 UTC 2018'
+    assert uname8.kernel_type == 'SMP'
+    assert uname8.machine == 'x86_64'
+    assert uname8.name == 'Linux'
+    assert uname8.nodename == 'dhcp223-29.pnq.redhat.com'
+    assert uname8.os == 'GNU/Linux'
+    assert uname8.processor == 'x86_64'
+    assert uname8.redhat_release == uname.RedhatRelease(major=8, minor=0)
+    assert uname8.release == '70.el8'
+    assert uname8.release_arch == '70.el8.x86_64'
+    assert uname8.release_tuple == (8, 0,)
+    assert uname8.rhel_release == ['8', '0']
 
 
 def test_uname_errors():
