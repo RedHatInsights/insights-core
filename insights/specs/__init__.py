@@ -83,6 +83,7 @@ class Specs(SpecSet):
     crypto_policies_config = RegistryPoint()
     crypto_policies_state_current = RegistryPoint()
     crypto_policies_opensshserver = RegistryPoint()
+    crypto_policies_bind = RegistryPoint()
     crt = RegistryPoint()
     current_clocksource = RegistryPoint()
     date_iso = RegistryPoint()
