@@ -281,6 +281,7 @@ class Specs(SpecSet):
     mac_addresses = RegistryPoint(multi_output=True)
     machine_id = RegistryPoint()
     manila_conf = RegistryPoint()
+    mssql_conf = RegistryPoint()
     mariadb_log = RegistryPoint(filterable=True)
     max_uid = RegistryPoint()
     md5chk_files = RegistryPoint()
