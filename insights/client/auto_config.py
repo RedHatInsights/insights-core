@@ -31,7 +31,7 @@ def verify_connectivity(config):
     logger.debug("Verifying Connectivity")
     ic = InsightsConnection(config)
     try:
-        branch_info = ic.branch_info()
+        branch_info = ic.get_branch_info()
     except requests.ConnectionError as e:
         logger.debug(e)
         logger.debug("Failed to connect to satellite")
@@ -50,7 +50,7 @@ def verify_connectivity(config):
         return False
 
 
-def set_auto_configuration(config, hostname, ca_cert, proxy):
+def set_auto_configuration(config, hostname, ca_cert, proxy, is_satellite):
     """
     Set config based on discovered data
     """
@@ -66,6 +66,11 @@ def set_auto_configuration(config, hostname, ca_cert, proxy):
         saved_proxy = config.proxy
         config.proxy = proxy
     config.base_url = hostname + '/r/insights'
+    if not is_satellite:
+        logger.debug('Not connected to Satellite, skipping branch_info')
+        # direct connection to RHSM, skip verify_connectivity
+        # (see _try_satellite6_configuration line 133)
+        return
 
     if not verify_connectivity(config):
         logger.warn("Could not auto configure, falling back to static config")
@@ -92,6 +97,7 @@ def _try_satellite6_configuration(config):
         cert = open(rhsmCertificate.certpath(), 'r').read()
         key = open(rhsmCertificate.keypath(), 'r').read()
         rhsm = rhsmCertificate(key, cert)
+        is_satellite = False
 
         # This will throw an exception if we are not registered
         logger.debug('Checking if system is subscription-manager registered')
@@ -131,9 +137,10 @@ def _try_satellite6_configuration(config):
             # Set the host path
             # 'rhsm_hostname' should really be named ~ 'rhsm_host_base_url'
             rhsm_hostname = rhsm_hostname + ':' + rhsm_hostport + '/redhat_access'
+            is_satellite = True
 
         logger.debug("Trying to set auto_configuration")
-        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy)
+        set_auto_configuration(config, rhsm_hostname, rhsm_ca, proxy, is_satellite)
         return True
     except Exception as e:
         logger.debug(e)
