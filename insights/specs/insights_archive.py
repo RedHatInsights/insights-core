@@ -111,7 +111,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_lib_mongodb = simple_file("insights_commands/ls_-la_.var.lib.mongodb")
     ls_R_var_lib_nova_instances = simple_file("insights_commands/ls_-laR_.var.lib.nova.instances")
     ls_var_lib_nova_instances = simple_file("insights_commands/ls_-laRZ_.var.lib.nova.instances")
-    ownership_of_var_opt_mssql = simple_file("insights_commands/python_-m_insights.tools.cat_--no-header_ownership_of_var_opt_mssql")
+    ls_var_opt_mssql = simple_file("insights_commands/ls_-ld_.var.opt.mssql")
     ls_usr_sbin = simple_file("insights_commands/ls_-ln_.usr.sbin")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")

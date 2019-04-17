@@ -264,7 +264,7 @@ class Specs(SpecSet):
     ls_var_lib_mongodb = RegistryPoint()
     ls_R_var_lib_nova_instances = RegistryPoint()
     ls_var_lib_nova_instances = RegistryPoint()
-    ownership_of_var_opt_mssql = RegistryPoint()
+    ls_var_opt_mssql = RegistryPoint()
     ls_usr_sbin = RegistryPoint(filterable=True)
     ls_var_log = RegistryPoint()
     ls_var_www = RegistryPoint()
