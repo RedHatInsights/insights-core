@@ -7,9 +7,8 @@ SAPControlSystemUpdateList- command ``sapcontrol -nr <NR> -function GetSystemUpd
 -----------------------------------------------------------------------------------------
 """
 from insights import parser, CommandParser
-from insights.parsers import SkipException, ParseException
+from insights.parsers import SkipException, ParseException, parse_delimited_table
 from insights.specs import Specs
-import json
 
 
 @parser(Specs.sapcontrol_getsystemupdatelist)
@@ -27,29 +26,6 @@ class SAPControlSystemUpdateList(CommandParser):
         vm37-39, 00, Running, 29.01.2019 00:00:02, 29.01.2019 01:10:11, GREEN
         vm37-39, 02, Running, 29.01.2019 00:00:05, 29.01.2019 01:11:11, GREEN
         vm37-39, 03, Running, 29.01.2019 00:00:05, 29.01.2019 01:12:36, GREEN
-
-    The content collected by insights-client::
-
-        [
-          {
-            "hostname": "vm37-39", "instanceNr": "00", "status": "Running",
-            "starttime": "29.01.2019 00:00:02",
-            "endtime": "29.01.2019 01:10:11",
-            "dispstatus": "GREEN"
-          },
-          {
-            "hostname": "vm37-39", "instanceNr": "02", "status": "Running",
-            "starttime": "29.01.2019 00:00:05",
-            "endtime": "29.01.2019 01:11:11",
-            "dispstatus": "GREEN"
-          },
-          {
-            "hostname": "vm37-39", "instanceNr": "03", "status": "Running",
-            "starttime": "29.01.2019 00:00:05",
-            "endtime": "29.01.2019 01:12:36",
-            "dispstatus": "GREEN"
-          }
-        ]
 
     Examples:
         >>> rks.is_running
@@ -72,11 +48,18 @@ class SAPControlSystemUpdateList(CommandParser):
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty output.")
-        content = ''.join(content)
-        try:
-            self.data = json.loads(content)
-        except Exception:
-            raise ParseException("Incorrect content: '{0}'".format(content))
+
+        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
+        if len(content) <= 3 or header not in content:
+            raise ParseException("Incorrect content: '{0}'".format(content[-1]))
+
+        header_sp = [i.strip() for i in header.split(',')]
+        self.data = parse_delimited_table(
+                content,
+                delim=',',
+                max_splits=5,
+                strip=True,
+                heading_ignore=header_sp)
 
         if not self.data:
             raise SkipException("Empty or useless output.")

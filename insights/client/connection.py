@@ -103,6 +103,7 @@ class InsightsConnection(object):
         # need this global -- [barfing intensifies]
         # tuple of self-signed cert flag & cert chain list
         self.cert_chain = [False, []]
+        self.branch_info = constants.default_branch_info
 
     def _init_session(self):
         """
@@ -470,7 +471,7 @@ class InsightsConnection(object):
                 logger.error("Could not determine leaf_id!  Exiting!")
                 return False
 
-    def branch_info(self):
+    def get_branch_info(self):
         """
         Retrieve branch_info from Satellite Server
         """
@@ -481,12 +482,12 @@ class InsightsConnection(object):
             logger.debug(u'Reading branch info from cached file.')
             ctime = datetime.utcfromtimestamp(
                 os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(minutes=10)):
+            if datetime.utcnow() < (ctime + timedelta(minutes=5)):
                 with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
                     branch_info = json.load(f)
                 return branch_info
             else:
-                logger.debug(u'Cached branch info is older than 30 days.')
+                logger.debug(u'Cached branch info is older than 5 minutes.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
@@ -495,7 +496,9 @@ class InsightsConnection(object):
                                     timeout=self.config.http_timeout)
         logger.debug(u'GET branch_info status: %s', response.status_code)
         if response.status_code != 200:
-            logger.error(u'Bad status from server: %s', response.status_code)
+            logger.debug("There was an error obtaining branch information.")
+            logger.debug(u'Bad status from server: %s', response.status_code)
+            logger.debug("Assuming default branch information %s" % self.branch_info)
             return False
 
         branch_info = response.json()
@@ -511,6 +514,7 @@ class InsightsConnection(object):
             # json.dump is broke in py2 so use dumps
             bi_str = json.dumps(branch_info, ensure_ascii=False)
             f.write(bi_str)
+        self.branch_info = branch_info
         return branch_info
 
     def create_system(self, new_machine_id=False):
@@ -520,7 +524,7 @@ class InsightsConnection(object):
         client_hostname = determine_hostname()
         machine_id = generate_machine_id(new_machine_id)
 
-        branch_info = self.branch_info()
+        branch_info = self.branch_info
         if not branch_info:
             return False
 

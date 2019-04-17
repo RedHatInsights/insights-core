@@ -25,6 +25,7 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
+from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
 from grp import getgrgid
@@ -76,6 +77,15 @@ class DefaultSpecs(Specs):
     autofs_conf = simple_file("/etc/autofs.conf")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
+
+    @datasource(CloudProvider)
+    def is_aws(broker):
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.AWS:
+            return True
+        raise SkipComponent()
+
+    aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -108,7 +118,7 @@ class DefaultSpecs(Specs):
     catalina_server_log = foreach_collect(tomcat_base, "%s/catalina*.log")
     cciss = glob_file("/proc/driver/cciss/cciss*")
     ceilometer_central_log = simple_file("/var/log/ceilometer/central.log")
-    ceilometer_collector_log = simple_file("/var/log/ceilometer/collector.log")
+    ceilometer_collector_log = first_file(["/var/log/containers/ceilometer/collector.log", "/var/log/ceilometer/collector.log"])
     ceilometer_compute_log = first_file(["/var/log/containers/ceilometer/compute.log", "/var/log/ceilometer/compute.log"])
     ceilometer_conf = first_file(["/var/lib/config-data/puppet-generated/ceilometer/etc/ceilometer/ceilometer.conf", "/etc/ceilometer/ceilometer.conf"])
     ceph_socket_files = listdir("/var/run/ceph/ceph-*.*.asok", context=HostContext)
@@ -185,6 +195,7 @@ class DefaultSpecs(Specs):
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
     dnf_modules = glob_file("/etc/dnf/modules.d/*.module")
+    dnsmasq_config = glob_file(["/etc/dnsmasq.conf", "/etc/dnsmasq.d/*.conf"])
     docker_info = simple_command("/usr/bin/docker info")
     docker_list_containers = simple_command("/usr/bin/docker ps --all --no-trunc")
     docker_list_images = simple_command("/usr/bin/docker images --all --no-trunc --digests")
@@ -286,9 +297,23 @@ class DefaultSpecs(Specs):
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
     httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
-    httpd_conf_scl_httpd24 = glob_file(["/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf", "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf"])
-    httpd_conf_scl_jbcs_httpd24 = glob_file(["/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf", "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf"])
+    httpd_conf_scl_httpd24 = glob_file(
+        [
+            "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
+    httpd_conf_scl_jbcs_httpd24 = glob_file(
+        [
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
+    jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
@@ -386,7 +411,7 @@ class DefaultSpecs(Specs):
     keystone_crontab = simple_command("/usr/bin/crontab -l -u keystone")
     keystone_crontab_container = simple_command("docker exec keystone_cron /usr/bin/crontab -l -u keystone")
     keystone_log = first_file(["/var/log/containers/keystone/keystone.log", "/var/log/keystone/keystone.log"])
-    krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*.conf"])
+    krb5 = glob_file([r"etc/krb5.conf", r"etc/krb5.conf.d/*"])
     ksmstate = simple_file("/sys/kernel/mm/ksm/run")
     kubepods_cpu_quota = glob_file("/sys/fs/cgroup/cpu/kubepods.slice/kubepods-burstable.slice/kubepods-burstable-pod[a-f0-9_]*.slice/cpu.cfs_quota_us")
     last_upload_globs = ["/etc/redhat-access-insights/.lastupload", "/etc/insights-client/.lastupload"]
@@ -418,12 +443,14 @@ class DefaultSpecs(Specs):
     ls_etc = simple_command("/bin/ls -lanR /etc")
     ls_lib_firmware = simple_command("/bin/ls -lanR /lib/firmware")
     ls_ocp_cni_openshift_sdn = simple_command("/bin/ls -l /var/lib/cni/networks/openshift-sdn")
+    ls_origin_local_volumes_pods = simple_command("/bin/ls -l /var/lib/origin/openshift.local.volumes/pods")
     ls_sys_firmware = simple_command("/bin/ls -lanR /sys/firmware")
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
     ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
+    ls_var_opt_mssql_log = simple_command("/bin/ls -la /var/opt/mssql/log")
     ls_var_spool_clientmq = simple_command("/bin/ls -ln /var/spool/clientmqueue")
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
     ls_var_run = simple_command("/bin/ls -lnL /var/run")
@@ -446,6 +473,7 @@ class DefaultSpecs(Specs):
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
+    modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
                                  "etc/sysconfig/mongod",
@@ -463,6 +491,7 @@ class DefaultSpecs(Specs):
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
     mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
+                          "/var/log/mysql/mysqld.log",
                           "/var/log/mysql.log",
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
                           ])
@@ -470,6 +499,7 @@ class DefaultSpecs(Specs):
     mysqld_limits = foreach_collect(mysqld_pid, "/proc/%s/limits")
     named_checkconf_p = simple_command("/usr/sbin/named-checkconf -p")
     namespace = simple_command("/bin/ls /var/run/netns")
+    ip_netns_exec_namespace_lsof = foreach_execute(namespace, "/sbin/ip netns exec %s lsof -i")
     netconsole = simple_file("/etc/sysconfig/netconsole")
     netstat = simple_command("/bin/netstat -neopa")
     netstat_agn = simple_command("/bin/netstat -agn")
@@ -477,6 +507,7 @@ class DefaultSpecs(Specs):
     netstat_s = simple_command("/bin/netstat -s")
     networkmanager_dispatcher_d = glob_file("/etc/NetworkManager/dispatcher.d/*-dhclient")
     neutron_conf = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/neutron.conf", "/etc/neutron/neutron.conf"])
+    neutron_dhcp_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/dhcp_agent.ini", "/etc/neutron/dhcp_agent.ini"])
     neutron_l3_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/l3_agent.ini", "/etc/neutron/l3_agent.ini"])
     neutron_l3_agent_log = simple_file("/var/log/neutron/l3-agent.log")
     neutron_metadata_agent_ini = first_file(["/var/lib/config-data/puppet-generated/neutron/etc/neutron/metadata_agent.ini", "/etc/neutron/metadata_agent.ini"])
@@ -488,9 +519,9 @@ class DefaultSpecs(Specs):
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
     nginx_conf = glob_file([
-                           "/etc/nginx/nginx.conf",
-                           "/opt/rh/nginx*/root/etc/nginx/nginx.conf",
-                           "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
+                           "/etc/nginx/*.conf", "/etc/nginx/conf.d/*", "/etc/nginx/default.d/*",
+                           "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*", "/opt/rh/nginx*/root/etc/nginx/default.d/*",
+                           "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*", "/etc/opt/rh/rh-nginx*/nginx/default.d/*"
                            ])
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
@@ -509,6 +540,7 @@ class DefaultSpecs(Specs):
     ntptime = simple_command("/usr/sbin/ntptime")
     numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
+    nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_clusterrole_with_config = simple_command("/usr/bin/oc get clusterrole --config /etc/origin/master/admin.kubeconfig")
@@ -548,6 +580,8 @@ class DefaultSpecs(Specs):
     ovirt_engine_ui_log = simple_file("/var/log/ovirt-engine/ui.log")
     ovirt_engine_boot_log = simple_file("/var/log/ovirt-engine/boot.log")
     ovirt_engine_console_log = simple_file("/var/log/ovirt-engine/console.log")
+    ovs_vsctl_list_br = simple_command("/usr/bin/ovs-vsctl list-br")
+    ovs_appctl_fdb_show_bridge = foreach_execute(ovs_vsctl_list_br, "/usr/bin/ovs-appctl fdb/show %s")
     ovs_vsctl_list_bridge = simple_command("/usr/bin/ovs-vsctl list bridge")
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
@@ -700,28 +734,7 @@ class DefaultSpecs(Specs):
 
     sap_hdb_version = foreach_execute(sap_sid, "/usr/bin/sudo -iu %sadm HDB version", keep_rc=True)
     sap_host_profile = simple_file("/usr/sap/hostctrl/exe/host_profile")
-
-    @datasource(sap_sid_nr)
-    def sapcontrol_getsystemupdatelist(broker):
-        import json
-        s_cmd = "/usr/bin/sudo -iu {0}adm sapcontrol -nr {1} -function GetSystemUpdateList"
-        relative_path = "sudo_-iu_sidadm_sapcontrol_-nr__-function_GetSystemUpdateList"
-        header = "hostname, instanceNr, status, starttime, endtime, dispstatus"
-        line_set = set()
-        results = list()
-        for sid, nr in broker[DefaultSpecs.sap_sid_nr]:
-            out = broker[HostContext].shell_out(s_cmd.format(sid, nr))
-            if header in out:
-                body = out[out.index(header) + 1:]  # remove the header
-                line_set.update(body)
-        header_sp = [i.strip() for i in header.split(',')]
-        for l in line_set:
-            l_sp = [i.strip() for i in l.split(',')]
-            results.append(dict(zip(header_sp, l_sp)))
-        if results:
-            return DatasourceProvider(content=json.dumps(results), relative_path=relative_path)
-        raise SkipComponent()
-
+    sapcontrol_getsystemupdatelist = foreach_execute(sap_sid_nr, "/usr/bin/sudo -iu %sadm sapcontrol -nr %s -function GetSystemUpdateList", keep_rc=True)
     saphostctl_getcimobject_sapinstance = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function GetCIMObject -enuminstances SAPInstance")
     saphostexec_status = simple_command("/usr/sap/hostctrl/exe/saphostexec -status")
     saphostexec_version = simple_command("/usr/sap/hostctrl/exe/saphostexec -version")
