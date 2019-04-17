@@ -305,7 +305,7 @@ class DefaultSpecs(Specs):
             "/etc/httpd/conf/httpd.conf",
             "/etc/httpd/conf.d/*.conf",
             "/etc/httpd/conf.modules.d/*.conf"
-            ]
+        ]
     )
     httpd_conf_scl_httpd24 = glob_file(
         [
