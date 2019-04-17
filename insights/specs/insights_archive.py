@@ -11,6 +11,7 @@ class InsightsArchiveSpecs(Specs):
 
     all_installed_rpms = glob_file("insights_commands/rpm_-qa*")
     auditctl_status = simple_file("insights_commands/auditctl_-s")
+    aws_instance_type = simple_file("insights_commands/curl_http_..169.254.169.254.latest.meta-data.instance-type_--connect-timeout_5")
     bios_uuid = simple_file("insights_commands/dmidecode_-s_system-uuid")
     blkid = simple_file("insights_commands/blkid_-c_.dev.null")
     brctl_show = simple_file("insights_commands/brctl_show")
@@ -112,6 +113,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_lib_nova_instances = simple_file("insights_commands/ls_-laRZ_.var.lib.nova.instances")
     ls_usr_sbin = simple_file("insights_commands/ls_-ln_.usr.sbin")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
+    ls_var_opt_mssql_log = simple_file("insights_commands/ls_-la_.var.opt.mssql.log")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
     ls_var_spool_clientmq = simple_file("insights_commands/ls_-ln_.var.spool.clientmqueue")
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")
