@@ -8,10 +8,15 @@ import pytest
 import doctest
 
 UNAME = "Linux localhost.localdomain 3.10.0-327.rt56.204.el7.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
+UNAME_8 = "Linux dhcp223-29.pnq.redhat.com 4.18.0-70.el8.x86_64 #1 SMP Sat Oct 27 19:26:37 UTC 2018 x86_64 x86_64 x86_64 GNU/Linux"
 BAD_UNAME = "Linux localhost.localdomain 2.6.24.7-101.el5rt.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
 
 REDHAT_RELEASE = """
 Red Hat Enterprise Linux Server release 7.2 (Maipo)
+""".strip()
+
+REDHAT_RELEASE_8 = """
+Red Hat Enterprise Linux release 8.0 Beta (Ootpa)
 """.strip()
 
 FEDORA = """
@@ -26,10 +31,22 @@ def test_uname():
     assert result.major == expected[0]
     assert result.minor == expected[1]
 
+    un = Uname(context_wrap(UNAME_8))
+    expected = (8, 0)
+    result = redhat_release(None, un)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+
 
 def test_redhat_release():
     rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
     expected = (7, 2)
+    result = redhat_release(rel, None)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+
+    rel = RedhatRelease(context_wrap(REDHAT_RELEASE_8))
+    expected = (8, 0)
     result = redhat_release(rel, None)
     assert result.major == expected[0]
     assert result.minor == expected[1]
@@ -39,6 +56,13 @@ def test_both():
     un = Uname(context_wrap(UNAME))
     rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
     expected = (7, 2)
+    result = redhat_release(rel, un)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+
+    un = Uname(context_wrap(UNAME_8))
+    rel = RedhatRelease(context_wrap(REDHAT_RELEASE_8))
+    expected = (8, 0)
     result = redhat_release(rel, un)
     assert result.major == expected[0]
     assert result.minor == expected[1]
@@ -53,6 +77,14 @@ def test_RedHatRelease_uname():
     assert result.rhel == result.rhel7 == '7.2'
     assert result.rhel6 is None
 
+    un = Uname(context_wrap(UNAME_8))
+    expected = (8, 0)
+    result = RedHatRelease(un, None)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+    assert result.rhel == result.rhel8 == '8.0'
+    assert result.rhel6 is None
+
 
 def test_RedHatRelease_redhat_release():
     rel = RedhatRelease(context_wrap(REDHAT_RELEASE))
@@ -62,6 +94,14 @@ def test_RedHatRelease_redhat_release():
     assert result.minor == expected[1]
     assert result.rhel == result.rhel7 == '7.2'
     assert result.rhel8 is None
+
+    rel = RedhatRelease(context_wrap(REDHAT_RELEASE_8))
+    expected = (8, 0)
+    result = RedHatRelease(None, rel)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+    assert result.rhel == result.rhel8 == '8.0'
+    assert result.rhel7 is None
 
 
 def test_RedHatRelease_both():
@@ -74,6 +114,16 @@ def test_RedHatRelease_both():
     assert result.rhel == result.rhel7 == '7.2'
     assert result.rhel6 is None
     assert result.rhel8 is None
+
+    un = Uname(context_wrap(UNAME_8))
+    rel = RedhatRelease(context_wrap(REDHAT_RELEASE_8))
+    expected = (8, 0)
+    result = RedHatRelease(un, rel)
+    assert result.major == expected[0]
+    assert result.minor == expected[1]
+    assert result.rhel == result.rhel8 == '8.0'
+    assert result.rhel6 is None
+    assert result.rhel7 is None
 
 
 def test_raise():
