@@ -137,7 +137,7 @@ DEFAULT_OPTS = {
     },
     'http_timeout': {
         # non-CLI
-        'default': 10.0
+        'default': 20.0
     },
     'insecure_connection': {
         # non-CLI
