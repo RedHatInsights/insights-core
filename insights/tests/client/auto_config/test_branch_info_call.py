@@ -15,7 +15,7 @@ def test_sat_branch_info_called(connection):
 @patch("insights.client.auto_config.InsightsConnection")
 def test_rhsm_branch_info_not_called(connection):
     '''
-    When ca cert is None, means we're on direct RHSM. get_bgranch_info should not be called.
+    When ca cert is None, means we're on direct RHSM. get_branch_info should not be called.
     '''
     config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False)
     set_auto_configuration(config, 'test.com', None, None)
