@@ -91,4 +91,5 @@ EXAMPLES
 SEE ALSO
 ========
 
-    :doc:`insights-info(1) <./insights-info>`, :doc:`insights-run(1) <./insights-run>`, :doc:`config(5) <./config>`
+    :doc:`insights-info(1) <./insights-info>`, :doc:`insights-inspect(1) <./insights-inspect>`,
+    :doc:`insights-run(1) <./insights-run>`, :doc:`config(5) <./config>`

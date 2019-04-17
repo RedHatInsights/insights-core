@@ -83,5 +83,5 @@ EXAMPLES
 SEE ALSO
 ========
 
-    :doc:`insights-cat(1) <./insights-cat>`, :doc:`insights-info(1) <./insights-info>`, :doc:`config(5) <./config>`,
-    :doc:`inventory(5) <./inventory>`
+    :doc:`insights-cat(1) <./insights-cat>`, :doc:`insights-info(1) <./insights-info>`, :doc:`insights-inspect(1) <./insights-inspect>`,
+    :doc:`config(5) <./config>`, :doc:`inventory(5) <./inventory>`

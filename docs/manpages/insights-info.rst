@@ -18,7 +18,7 @@ DESCRIPTION
 The *insights-info* command provides a tool to interrogate insights-core components
 and any components added using the command options.  *Insights-info* can be used to
 display embedded documentation and source code for components as well as showing
-the a component'd dependency information.
+the a component's dependency information.
 
 OPTIONS
 =======
@@ -70,4 +70,5 @@ EXAMPLES
 SEE ALSO
 ========
 
-    :doc:`insights-cat(1) <./insights-cat>`, :doc:`insights-run(1) <./insights-run>`, :doc:`config(5) <./config>`
+    :doc:`insights-cat(1) <./insights-cat>`, :doc:`insights-inspect(1) <./insights-inspect>`,
+    :doc:`insights-run(1) <./insights-run>`, :doc:`config(5) <./config>`
