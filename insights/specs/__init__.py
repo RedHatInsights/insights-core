@@ -383,6 +383,7 @@ class Specs(SpecSet):
     ovs_vswitchd_limits = RegistryPoint()
     pacemaker_log = RegistryPoint(filterable=True)
     package_provides_java = RegistryPoint(multi_output=True)
+    package_provides_httpd = RegistryPoint(multi_output=True)
     pam_conf = RegistryPoint()
     parted__l = RegistryPoint()
     passenger_status = RegistryPoint()
