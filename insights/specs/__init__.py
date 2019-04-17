@@ -267,6 +267,7 @@ class Specs(SpecSet):
     ls_usr_sbin = RegistryPoint(filterable=True)
     ls_var_log = RegistryPoint()
     ls_var_www = RegistryPoint()
+    ls_var_opt_mssql_log = RegistryPoint()
     ls_var_spool_clientmq = RegistryPoint()
     ls_var_tmp = RegistryPoint(filterable=True)
     ls_var_run = RegistryPoint()
