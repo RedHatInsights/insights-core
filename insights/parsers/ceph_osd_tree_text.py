@@ -75,17 +75,15 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
         name_header_index = header.index("TYPE_NAME")
         parents = []
         nodes = []
-        row_num = 0
         for row_num, line in enumerate(content[1:]):
             node = dict(
                 (json_headers[c], line[col_index[c]:col_index[c + 1]].strip())
                 for c in range(len(col_index) - 1)
             )
             node[json_headers[-1]] = line[col_index[-1]:].strip()
-            node['children'] = []
 
             # update parent's children list
-            name_index = line.index(node['name'])
+            name_index = line.index(node['type_name'])
             shift = (name_index - name_header_index) / 4
             if shift == 0:
                 pass
@@ -103,4 +101,7 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
             node['type'] = type_name[0] if len(type_name) > 1 else type_name[0].split('.')[0]
             node['name'] = type_name[-1]
             nodes.append(node)
+            # update children list for the none leave node
+            if len(type_name) > 1:
+                node['children'] = []
         self.data = {'nodes': nodes}
