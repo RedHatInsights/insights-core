@@ -159,6 +159,9 @@ html_theme = 'sphinx_rtd_theme'
 # typographically correct entities.
 #html_use_smartypants = True
 
+# Don't convert characters to em-dash (---) and en-dash (--) chars
+smartquotes_action = 'qe'
+
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
 
