@@ -465,7 +465,6 @@ class DefaultSpecs(Specs):
     mac_addresses = glob_file("/sys/class/net/*/address")
     machine_id = first_file(["etc/insights-client/machine-id", "etc/redhat-access-insights/machine-id", "etc/redhat_access_proactive/machine-id"])
     manila_conf = first_file(["/var/lib/config-data/puppet-generated/manila/etc/manila/manila.conf", "/etc/manila/manila.conf"])
-    mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     mariadb_log = simple_file("/var/log/mariadb/mariadb.log")
     max_uid = simple_command("/bin/awk -F':' '{ if($3 > max) max = $3 } END { print max }' /etc/passwd")
     mdstat = simple_file("/proc/mdstat")
@@ -486,6 +485,7 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
