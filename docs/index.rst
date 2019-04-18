@@ -19,6 +19,7 @@ Contents:
     tools
     notebook_index
     manpages_index
+    cheatsheets_index
 
 Indices and tables
 ==================

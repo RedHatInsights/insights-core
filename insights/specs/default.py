@@ -296,7 +296,13 @@ class DefaultSpecs(Specs):
     hosts = simple_file("/etc/hosts")
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
-    httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
+    httpd_conf = glob_file(
+        [
+            "/etc/httpd/conf/httpd.conf",
+            "/etc/httpd/conf.d/*.conf",
+            "/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
     httpd_conf_scl_httpd24 = glob_file(
         [
             "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
@@ -448,6 +454,7 @@ class DefaultSpecs(Specs):
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
+    ls_var_opt_mssql = simple_command("/bin/ls -ld /var/opt/mssql")
     ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
     ls_var_opt_mssql_log = simple_command("/bin/ls -la /var/opt/mssql/log")
@@ -485,6 +492,7 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
@@ -586,7 +594,7 @@ class DefaultSpecs(Specs):
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
-    pacemaker_log = simple_file("/var/log/pacemaker.log")
+    pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
