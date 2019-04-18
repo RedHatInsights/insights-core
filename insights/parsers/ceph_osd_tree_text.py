@@ -11,8 +11,8 @@ text_to_json_header_map = {
     "ID": "id",
     "CLASS": "device_class",
     "WEIGHT": "crush_weight",
-    "TYPE NAME": "name",
-    "TYPE_NAME": "name",
+    "TYPE NAME": "type_name",
+    "TYPE_NAME": "type_name",
     "STATUS": "status",
     "UP/DOWN": "status",
     "REWEIGHT": "reweight",
@@ -49,6 +49,8 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
         'default'
         >>> ceph_osd_tree_text['nodes'][0]['type']
         'root'
+        >>> ceph_osd_tree_text['nodes'][3]['type']
+        'osd'
     """
 
     def parse_content(self, content):
@@ -64,10 +66,7 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
         if len(content) == 1 or "TYPE NAME" not in content[0]:
             raise ParseException("Wrong content in table: '{0}'.".format(content))
 
-        first_line = 0
-        table_lines = content
-        header = table_lines[first_line]
-        header = header.replace('TYPE NAME', 'TYPE_NAME')
+        header = content[0].replace('TYPE NAME', 'TYPE_NAME')
 
         col_headers = header.strip().split()
         json_headers = [text_to_json_header_map[h] for h in col_headers]
@@ -77,12 +76,13 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
         parents = []
         nodes = []
         row_num = 0
-        for line in table_lines[1:]:
+        for row_num, line in enumerate(content[1:]):
             node = dict(
                 (json_headers[c], line[col_index[c]:col_index[c + 1]].strip())
                 for c in range(len(col_index) - 1)
             )
             node[json_headers[-1]] = line[col_index[-1]:].strip()
+            node['children'] = []
 
             # update parent's children list
             name_index = line.index(node['name'])
@@ -99,16 +99,8 @@ class CephOsdTreeText(CommandParser, LegacyItemAccess):
                 parents.pop()
                 nodes[parents[-1]]['children'].insert(0, int(node['id']))
             # update type name
-            if node['name'].startswith('osd.'):
-                node['type'] = 'osd'
-                # leave node, no children
-            else:
-                type_name = node['name'].split()
-                node['type'] = type_name[0].strip()
-                node['name'] = type_name[1].strip()
-                # update children
-                node['children'] = []
-
+            type_name = node.pop('type_name').split()
+            node['type'] = type_name[0] if len(type_name) > 1 else type_name[0].split('.')[0]
+            node['name'] = type_name[-1]
             nodes.append(node)
-            row_num += 1
         self.data = {'nodes': nodes}
