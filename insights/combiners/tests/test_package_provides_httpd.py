@@ -2,9 +2,11 @@ from insights.parsers.package_provides_httpd import PackageProvidesHttpd
 from insights.combiners.package_provides_httpd import PackageProvidesHttpdAll
 from insights.tests import context_wrap
 
+
 PACKAGE_COMMAND_MATCH_1 = """
 /opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64
 """
+
 PACKAGE_COMMAND_MATCH_2 = """
 /usr/sbin/httpd httpd-2.4.6-88.el7.x86_64
 """

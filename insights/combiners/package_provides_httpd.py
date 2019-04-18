@@ -7,9 +7,9 @@ which is parsed by the PackageProvidesHttpd parser.
 
 """
 
-from .. import LegacyItemAccess
 from insights.core.plugins import combiner
 from insights.parsers.package_provides_httpd import PackageProvidesHttpd
+from .. import LegacyItemAccess
 
 
 @combiner(PackageProvidesHttpd)
@@ -25,8 +25,7 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
         >>> PACKAGE_COMMAND_MATCH_2 = '''/opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64'''
         >>> pack1 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_1))
         >>> pack2 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_2))
-        >>> shared = [{PackageProvidesHttpdAll: [pack1, pack2]}]
-        >>> packages = shared[PackageProvidesHttpdAll]
+        >>> packages = PackageProvidesHttpdAll([pack1, pack2])
         >>> packages.running_httpd
         ['/usr/sbin/httpd',
          '/opt/rh/httpd24/root/usr/sbin/httpd']

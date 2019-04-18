@@ -1,6 +1,6 @@
 """
-PackageProvidesHttpd= - command ``/bin/echo {httpd_command_package}``
-==================================================================
+PackageProvidesHttpd - command ``/bin/echo {httpd_command_package}``
+====================================================================
 
 This command reads the output of the pre-command:
 
@@ -22,12 +22,12 @@ Typical contents of the pre_command::
 
 Parsed result::
 
-    [ {'command': "/usr/sbin/httpd"
-       'package': "httpd-2.4.6-88.el7.x86_64"}]
+    self.command = '/usr/sbin/httpd'
+    self.package = 'httpd-2.4.6-88.el7.x86_64'
 
 Examples:
-
-    >>> command_package = shared[PackageProvidesHttpd]
+    >>> PACKAGE_COMMAND_MATCH = "/usr/sbin/httpd httpd-2.4.6-88.el7.x86_64"
+    >>> command_package = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH))
     >>> command_package.command
     '/usr/sbin/httpd'
     >>> command_package.package
@@ -35,8 +35,8 @@ Examples:
 """
 
 from insights import parser, CommandParser
-from ..parsers import SkipException, ParseException
 from insights.specs import Specs
+from ..parsers import SkipException
 
 
 @parser(Specs.package_provides_httpd)
@@ -53,7 +53,7 @@ class PackageProvidesHttpd(CommandParser):
 
     def parse_content(self, content):
         if len(content) == 0:
-            raise ParseException("Error: ", 'there is not httpd application running')
+            raise SkipException("Error: ", 'there is not httpd application running')
         l = content[0].split()
         if len(l) != 2:
             raise SkipException("Error: ",

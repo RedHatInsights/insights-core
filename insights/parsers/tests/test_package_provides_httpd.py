@@ -1,7 +1,9 @@
+import pytest
+
 from insights.parsers.package_provides_httpd import PackageProvidesHttpd
 from insights.tests import context_wrap
-from ...parsers import ParseException, SkipException
-import pytest
+from ...parsers import SkipException
+
 
 PACKAGE_COMMAND_MATCH = """
 /opt/rh/httpd24/root/usr/sbin/httpd httpd24-httpd-2.4.34-7.el7.x86_64
@@ -22,7 +24,7 @@ def test_package_provides_httpd_match():
 
 
 def test_package_provides_httpd_err():
-    with pytest.raises(ParseException) as pe:
+    with pytest.raises(SkipException) as pe:
         PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_ERROR))
         assert "there is not httpd application running" in str(pe)
 
