@@ -342,3 +342,42 @@ class PsEo(Ps):
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
         return [row for row in self.data if row['PPID'] == ppid]
+
+
+add_filter(Specs.ps_auxww, "COMMAND")
+
+
+@parser(Specs.ps_aexww)
+class PsAexww(Ps):
+    """
+    Class to parse the output of ``ps aexww`` command
+
+    Sample input data::
+
+          PID TTY      STAT   TIME COMMAND
+            1 ?        Ss     0:08 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+            2 ?        S      0:00 [kthreadd]
+            3 ?        S      0:00 [ksoftirqd/0]
+            5 ?        S<     0:00 [kworker/0:0H]
+            7 ?        S      0:01 [migration/0]
+        24477 ?        Ssl    6:56 /usr/bin/openshift-router PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOSTNAME=node1 RELOAD_INTERVAL=10s
+
+    Examples:
+        >>> type(ps_aexww)
+        <class 'insights.parsers.ps.PsAexww'>
+        >>> ps_aexww.data[5]['ENVIRON']['RELOAD_INTERVAL']
+        '10s'
+    """
+    command_name = 'COMMAND'
+    user_name = 'PID'
+    max_splits = 4
+
+    def parse_content(self, content):
+        super(PsAexww, self).parse_content(content)
+        for row in self.data:
+            row['ENVIRON'] = {}
+            if '=' in row['ARGS']:
+                for arg in row['ARGS'].split(' '):
+                    if '=' in arg:
+                        environ = arg.split('=')
+                        row['ENVIRON'][environ[0]] = environ[1]
