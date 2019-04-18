@@ -296,7 +296,13 @@ class DefaultSpecs(Specs):
     hosts = simple_file("/etc/hosts")
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
-    httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
+    httpd_conf = glob_file(
+        [
+            "/etc/httpd/conf/httpd.conf",
+            "/etc/httpd/conf.d/*.conf",
+            "/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
     httpd_conf_scl_httpd24 = glob_file(
         [
             "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
