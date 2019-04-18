@@ -163,6 +163,71 @@ Handle 0x0037, DMI type 127, 4 bytes.
 End Of Table
 '''
 
+DMIDECODE_BARE_METAL = '''
+# dmidecode 3.0
+Getting SMBIOS data from sysfs.
+SMBIOS 2.7 present.
+56 structures occupying 2407 bytes.
+Table at 0x000EB4C0.
+
+Handle 0x0000, DMI type 0, 24 bytes
+BIOS Information
+\tVendor: American Megatrends Inc.
+\tVersion: 2.0a
+\tRelease Date: 06/08/2012
+\tAddress: 0xF0000
+\tRuntime Size: 64 kB
+\tROM Size: 8192 kB
+\tCharacteristics:
+\t\tPCI is supported
+\t\tBIOS is upgradeable
+\t\tBIOS shadowing is allowed
+\t\tBoot from CD is supported
+\t\tSelectable boot is supported
+\t\tBIOS ROM is socketed
+\t\tEDD is supported
+\t\t5.25"/1.2 MB floppy services are supported (int 13h)
+\t\t3.5"/720 kB floppy services are supported (int 13h)
+\t\t3.5"/2.88 MB floppy services are supported (int 13h)
+\t\tPrint screen service is supported (int 5h)
+\t\t8042 keyboard services are supported (int 9h)
+\t\tSerial services are supported (int 14h)
+\t\tPrinter services are supported (int 17h)
+\t\tACPI is supported
+\t\tUSB legacy is supported
+\t\tBIOS boot specification is supported
+\t\tFunction key-initiated network boot is supported
+\t\tTargeted content distribution is supported
+\t\tUEFI is supported
+\tBIOS Revision: 2.10
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+\tManufacturer: Supermicro
+\tProduct Name: X9SCL/X9SCM
+\tVersion: 0123456789
+\tSerial Number: 0123456789
+\tUUID: 12345678-1234-1234-1234-123456681234
+\tWake-up Type: Power Switch
+\tSKU Number: To be filled by O.E.M.
+\tFamily: To be filled by O.E.M.
+
+Handle 0x0002, DMI type 2, 15 bytes
+Base Board Information
+\tManufacturer: Supermicro
+\tProduct Name: X9SCL/X9SCM
+\tVersion: 0123456789
+\tSerial Number: 1234567812
+\tAsset Tag: To be filled by O.E.M.
+\tFeatures:
+\t\tBoard is a hosting board
+\t\tBoard is replaceable
+\tLocation In Chassis: To be filled by O.E.M.
+\tChassis Handle: 0x0003
+\tType: Motherboard
+\tContained Object Handles: 0
+'''.strip()
+
 DMIDECODE_AWS = '''
 # dmidecode 2.12-dmifs
 SMBIOS 2.4 present.
@@ -370,7 +435,7 @@ def test_rpm_aws():
 
 def test_rpm_azure():
     irpms = IRPMS(context_wrap(RPMS_AZURE))
-    dmi = DMIDecode(context_wrap(DMIDECODE))
+    dmi = DMIDecode(context_wrap(DMIDECODE_BARE_METAL))
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
     assert ret.cloud_provider == 'azure'

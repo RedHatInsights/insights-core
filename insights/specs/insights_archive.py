@@ -114,6 +114,7 @@ class InsightsArchiveSpecs(Specs):
     ls_var_opt_mssql = simple_file("insights_commands/ls_-ld_.var.opt.mssql")
     ls_usr_sbin = simple_file("insights_commands/ls_-ln_.usr.sbin")
     ls_var_log = simple_file("insights_commands/ls_-la_.var.log_.var.log.audit")
+    ls_var_opt_mssql_log = simple_file("insights_commands/ls_-la_.var.opt.mssql.log")
     ls_var_www = simple_file("insights_commands/ls_-la_.dev.null_.var.www")
     ls_var_spool_clientmq = simple_file("insights_commands/ls_-ln_.var.spool.clientmqueue")
     ls_var_tmp = simple_file("insights_commands/ls_-ln_.var.tmp")

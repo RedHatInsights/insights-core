@@ -119,9 +119,10 @@ class CloudProvider(object):
 
         prov = {'aws': [], 'google': [], 'azure': []}
 
-        for p in self.__PROVIDERS:
-            for key, val in rpms.packages.items():
-                prov[p.name].append(val[0].package) if p.rpm in val[0].package.lower() else prov
+        if rpms:
+            for p in self.__PROVIDERS:
+                for key, val in rpms.packages.items():
+                    prov[p.name].append(val[0].package) if p.rpm in val[0].package.lower() else prov
 
         return prov
 
@@ -153,9 +154,9 @@ class CloudProvider(object):
 
         prov = {'aws': '', 'google': '', 'azure': ''}
 
-        for p in self.__PROVIDERS:
-            if dmidcd and dmidcd.bios and p.vv:
-                prov[p.name] = dmidcd.bios.get('vendor') if p.vv in dmidcd.bios.get('vendor').lower() \
+        if dmidcd and dmidcd.bios:
+            for p in self.__PROVIDERS:
+                prov[p.name] = dmidcd.bios.get('vendor') if p.vv and p.vv in dmidcd.bios.get('vendor').lower() \
                     else ''
         return prov
 
@@ -163,9 +164,9 @@ class CloudProvider(object):
 
         prov = {'aws': '', 'google': '', 'azure': ''}
 
-        for p in self.__PROVIDERS:
-            if dmidcd and dmidcd.bios and p.vv:
-                prov[p.name] = dmidcd.bios.get('version') if p.vv in dmidcd.bios.get('version').lower() \
+        if dmidcd and dmidcd.bios:
+            for p in self.__PROVIDERS:
+                prov[p.name] = dmidcd.bios.get('version') if p.vv and p.vv in dmidcd.bios.get('version').lower() \
                     else ''
         return prov
 
