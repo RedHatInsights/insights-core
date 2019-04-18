@@ -64,7 +64,9 @@ is executed against each rule.  At a high level:
 - The outputs of all rules is returned, along with other various bits
   of metadata, to the client, depending on what invoked the rules
   framework.
-  
+
+.. _context-label:
+
 Contexts
 ========
 
