@@ -296,6 +296,7 @@ class Specs(SpecSet):
     module = RegistryPoint()
     mongod_conf = RegistryPoint(multi_output=True, filterable=True)
     mount = RegistryPoint()
+    mssql_conf = RegistryPoint()
     multicast_querier = RegistryPoint()
     multipath_conf = RegistryPoint()
     multipath_conf_initramfs = RegistryPoint()
