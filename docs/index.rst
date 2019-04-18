@@ -18,6 +18,7 @@ Contents:
     embedded_content
     tools
     notebook_index
+    manpages_index
     cheatsheets_index
 
 Indices and tables
