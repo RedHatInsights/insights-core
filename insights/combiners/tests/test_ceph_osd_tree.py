@@ -1,8 +1,10 @@
 from insights.parsers.ceph_osd_tree_text import CephOsdTreeText
 from insights.parsers.ceph_insights import CephInsights
 from insights.parsers.ceph_cmd_json_parsing import CephOsdTree as CephOsdTreeParser
+from insights.combiners import ceph_osd_tree
 from insights.combiners.ceph_osd_tree import CephOsdTree
 from insights.tests import context_wrap
+import doctest
 
 CEPH_INSIGHTS = """
 {
@@ -279,3 +281,13 @@ def test_ceph_osd_tree_text():
     assert ret["nodes"][0] == {'id': '-1', 'device_class': '', 'crush_weight': '0.08752', 'name': 'default',
                                'status': '', 'reweight': '', 'primary_affinity': '', 'type': 'root',
                                'children': [-7, -3, -5, -9]}
+
+
+def test_ceph_osd_tree_doc_examples():
+    env = {
+        'cot': CephOsdTree(None, None, CephOsdTreeText(
+            context_wrap(CEPH_OSD_TREE_TEXT)))
+
+    }
+    failed, total = doctest.testmod(ceph_osd_tree, globs=env)
+    assert failed == 0

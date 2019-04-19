@@ -7,9 +7,10 @@ uses the results of the ``CephOsdTree``, ``CephInsights`` and ``CephOsdTreeText`
 The order from most preferred to least preferred is ``CephOsdTree``, ``CephInsights``, ``CephOsdTreeText``.
 
 Examples:
-    >>> cot = shared[CephOsdTree]
-    >>> cot['nodes'][0]
-    {'id': '-1', 'device_class': '', 'crush_weight': '0.08752', 'name': 'default', 'status': '', 'reweight': '', 'primary_affinity': '', 'type': 'root', 'children': [-7, -3, -5, -9]}}
+    >>> type(cot)
+    <class 'insights.combiners.ceph_osd_tree.CephOsdTree'>
+    >>> cot['nodes'][0]['children']
+    [-7, -3, -5, -9]
 """
 
 from insights.core.plugins import combiner
