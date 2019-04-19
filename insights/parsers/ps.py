@@ -344,7 +344,7 @@ class PsEo(Ps):
         return [row for row in self.data if row['PPID'] == ppid]
 
 
-add_filter(Specs.ps_auxww, "COMMAND")
+add_filter(Specs.ps_aexww, "COMMAND")
 
 
 @parser(Specs.ps_aexww)
@@ -379,5 +379,5 @@ class PsAexww(Ps):
             if '=' in row['ARGS']:
                 for arg in row['ARGS'].split(' '):
                     if '=' in arg:
-                        environ = arg.split('=')
+                        environ = arg.split('=', 1)
                         row['ENVIRON'][environ[0]] = environ[1]
