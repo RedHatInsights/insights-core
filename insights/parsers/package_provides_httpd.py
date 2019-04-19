@@ -26,6 +26,7 @@ Parsed result::
     self.package = 'httpd-2.4.6-88.el7.x86_64'
 
 Examples:
+    >>> from insights.tests import context_wrap
     >>> PACKAGE_COMMAND_MATCH = "/usr/sbin/httpd httpd-2.4.6-88.el7.x86_64"
     >>> command_package = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH))
     >>> command_package.command

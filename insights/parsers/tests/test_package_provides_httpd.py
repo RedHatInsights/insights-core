@@ -1,5 +1,7 @@
 import pytest
+import doctest
 
+from insights.parsers import package_provides_httpd
 from insights.parsers.package_provides_httpd import PackageProvidesHttpd
 from insights.tests import context_wrap
 from ...parsers import SkipException
@@ -33,3 +35,8 @@ def test_package_provides_httpd_not_match():
     with pytest.raises(SkipException) as pe:
         PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_NOT_MATCH))
         assert "current running httpd command is not provided by package installed through yum or rpm" in str(pe)
+
+
+def test_doc_examples():
+    failed, _ = doctest.testmod(package_provides_httpd)
+    assert failed == 0

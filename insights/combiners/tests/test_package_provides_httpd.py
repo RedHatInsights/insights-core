@@ -1,3 +1,6 @@
+import doctest
+
+from insights.combiners import package_provides_httpd
 from insights.parsers.package_provides_httpd import PackageProvidesHttpd
 from insights.combiners.package_provides_httpd import PackageProvidesHttpdAll
 from insights.tests import context_wrap
@@ -16,7 +19,7 @@ PACKAGE_COMMAND_MATCH_3 = """
 """
 
 
-def test_packages_provide_java():
+def test_packages_provide_httpd():
     pack1 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_1))
     pack2 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_2))
     pack3 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_3))
@@ -29,3 +32,8 @@ def test_packages_provide_java():
     assert result.get("/opt/rh/httpd24/root/usr/sbin/httpd") == "httpd24-httpd-2.4.34-7.el7.x86_64"
     assert result.get_package("/usr/lib/httpd") is None
     assert result.get("/usr/lib/httpd") is None
+
+
+def test_doc_examples():
+    failed, _ = doctest.testmod(package_provides_httpd)
+    assert failed == 0
