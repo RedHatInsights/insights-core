@@ -382,5 +382,5 @@ PS_AEXWW = """
 
 def test_ps_aexww():
     p = ps.PsAexww(context_wrap(PS_AEXWW))
-    assert 'ROUTER_METRICS_TLS_CERT_FILE' in p.data[5]['ENVIRON']
-    assert 'RELOAD_INTERVAL' in p.data[5]['ENVIRON']
+    assert 'ROUTER_METRICS_TLS_CERT_FILE' in p.get_environ('/usr/bin/openshift-router')
+    assert 'RELOAD_INTERVAL' in p.get_environ('/usr/bin/openshift-router')

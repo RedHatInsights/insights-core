@@ -35,9 +35,9 @@ class Ps(CommandParser):
     ``command_name`` is the name of the last column from the header of ps output,
     the subclass must override it correspondingly
     '''
-    user_name = "USER_TEMPLATE"
+    first_column = "FIRST_COLUMN_TEMPLATE"
     '''
-    ``user_name`` is the name of the first column from the header of ps output,
+    ``first_column`` is the name of the first column from the header of ps output,
     the subclass must override it correspondingly
     '''
     max_splits = 0
@@ -55,13 +55,14 @@ class Ps(CommandParser):
 
     def parse_content(self, content):
         raw_line_key = "_line"
-        if any(line.lstrip().startswith(self.user_name) and line.rstrip().endswith(self.command_name) for line in content):
+        if any(line.lstrip().startswith(self.first_column) and line.rstrip().endswith(self.command_name) for line in
+               content):
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
                 row
                 for row in parse_delimited_table(
-                    content, heading_ignore=[self.user_name], max_splits=self.max_splits,
+                    content, heading_ignore=[self.first_column], max_splits=self.max_splits,
                     raw_line_key=raw_line_key
                 )
                 if self.command_name in row
@@ -76,7 +77,7 @@ class Ps(CommandParser):
                 proc["COMMAND_NAME"] = cmd_name
                 self.cmd_names.add(cmd_name)
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
-                self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
+                self.services.append((cmd_name, proc.get('USER') or proc.get('UID', 'unknow'), proc[raw_line_key]))
                 del proc[raw_line_key]
         else:
             raise ParseException(
@@ -107,15 +108,17 @@ class Ps(CommandParser):
         Returns:
             dict: each username as a key to a list of PIDs (as strings) that
             are running the given process.
+            ``{}`` if ``USER`` or ``UID`` is not found in the output of the given command.
 
         .. note:: 'proc' must match the entire command and arguments.
         """
         ret = {}
-        for row in self.data:
-            if proc == row[self.command_name]:
-                if row[self.user_name] not in ret:
-                    ret[row[self.user_name]] = []
-                ret[row[self.user_name]].append(row["PID"])
+        if self.first_column in ['USER', 'UID']:
+            for row in self.data:
+                if proc == row[self.command_name]:
+                    if row[self.first_column] not in ret:
+                        ret[row[self.first_column]] = []
+                    ret[row[self.first_column]].append(row["PID"])
         return ret
 
     def fuzzy_match(self, proc):
@@ -204,7 +207,7 @@ class PsAuxww(Ps):
         333252
     """
     command_name = "COMMAND"
-    user_name = "USER"
+    first_column = "USER"
     max_splits = 10
 
     def cpu_usage(self, proc):
@@ -221,8 +224,6 @@ class PsAuxww(Ps):
         for row in self.data:
             if proc == row[self.command_name]:
                 return row["%CPU"]
-
-    pass
 
 
 add_filter(Specs.ps_ef, "CMD")
@@ -258,7 +259,7 @@ class PsEf(Ps):
         True
     """
     command_name = "CMD"
-    user_name = "UID"
+    first_column = "UID"
     max_splits = 7
 
     def parent_pid(self, pid):
@@ -275,8 +276,6 @@ class PsEf(Ps):
                 for sub_row in self.data:
                     if sub_row["PID"] == row["PPID"]:
                         return [row["PPID"], sub_row[self.command_name]]
-
-    pass
 
 
 @parser(Specs.ps_auxcww)
@@ -330,7 +329,7 @@ class PsEo(Ps):
          {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0'}]
     """
     command_name = 'COMMAND'
-    user_name = 'PID'
+    first_column = 'PID'
     max_splits = 3
 
     def parse_content(self, content):
@@ -365,19 +364,30 @@ class PsAexww(Ps):
     Examples:
         >>> type(ps_aexww)
         <class 'insights.parsers.ps.PsAexww'>
-        >>> ps_aexww.data[5]['ENVIRON']['RELOAD_INTERVAL']
+        >>> ps_aexww.get_environ('/usr/bin/openshift-router')['RELOAD_INTERVAL']
         '10s'
     """
     command_name = 'COMMAND'
-    user_name = 'PID'
+    first_column = 'PID'
     max_splits = 4
 
-    def parse_content(self, content):
-        super(PsAexww, self).parse_content(content)
+    def get_environ(self, proc):
+        """
+        Searches for the first command matching ``proc`` and returns its
+        environment variable as a dict.
+
+        Returns:
+            dict: Dictionary with environment variable name as key and containing  environment variable value
+            ``{}`` if ``proc`` is not found.
+
+        .. note:: 'proc' must contain the command
+        """
+        env = {}
         for row in self.data:
-            row['ENVIRON'] = {}
-            if '=' in row['ARGS']:
-                for arg in row['ARGS'].split(' '):
-                    if '=' in arg:
-                        environ = arg.split('=', 1)
-                        row['ENVIRON'][environ[0]] = environ[1]
+            if row[self.command_name].startswith(proc.strip() + ' '):
+                if '=' in row['ARGS']:
+                    for arg in row['ARGS'].split(' '):
+                        if '=' in arg:
+                            env_var = arg.split('=', 1)
+                            env[env_var[0]] = env_var[1]
+        return env
