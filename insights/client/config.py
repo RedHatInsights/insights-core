@@ -83,7 +83,7 @@ DEFAULT_OPTS = {
     },
     'egg_path': {
         # non-CLI
-        'default': '/v1/static/core/insights-core.egg'
+        'default': None
     },
     'debug': {
         'default': False,  # Used by client wrapper script
@@ -120,7 +120,7 @@ DEFAULT_OPTS = {
     },
     'egg_gpg_path': {
         # non-CLI
-        'default': '/v1/static/core/insights-core.egg.asc'
+        'default': None
     },
     'group': {
         'default': None,

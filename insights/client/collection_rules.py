@@ -37,7 +37,10 @@ class InsightsUploadConf(object):
         self.gpg = self.config.gpg
         if conn:
             if self.collection_rules_url is None:
-                self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
+                if config.legacy_upload:
+                    self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
+                else:
+                    self.collection_rules_url = conn.base_url + '/static/uploader.v2.json'
             self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):
