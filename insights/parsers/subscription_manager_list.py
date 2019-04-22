@@ -14,14 +14,16 @@ SubscriptionManagerListInstalled - command ``subscription-manager list --install
 
 SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
 -------------------------------------------------------------------------------------------
-"""
 
-from .. import parser, CommandParser
-from . import keyword_search
-from insights.specs import Specs
-from datetime import datetime
+SubscriptionManagerFactsList - command ``subscription-manager facts --list``
+----------------------------------------------------------------------------
+"""
 import re
+from datetime import datetime
 import six
+from insights.specs import Specs
+from .. import parser, CommandParser, LegacyItemAccess
+from . import keyword_search
 
 
 class SubscriptionManagerList(CommandParser):
@@ -254,3 +256,33 @@ class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
         'rhel-7-server-ansible-2-rpms'
     """
     pass
+
+
+@parser(Specs.subscription_manager_facts_list)
+class SubscriptionManagerFactsList(CommandParser, LegacyItemAccess):
+    """Read the output of ``subscription-manager facts --list``.
+
+    Sample output::
+
+        uname.machine: x86_64
+        uname.nodename: rhel7-box
+        uname.release: 3.10.0-327.el7.x86_64
+        uname.sysname: Linux
+        uname.version: #1 SMP Thu Oct 29 17:29:29 EDT 2015
+        virt.host_type: virtualbox, kvm
+        virt.is_guest: True
+        virt.uuid: 81897b5e-4df9-9794-8e2a-b496756b5cbc
+
+    Examples::
+
+        >>> facts = shared[SubscriptionManagerFactsList]
+        >>> facts['virt.uuid'] == "81897b5e-4df9-9794-8e2a-b496756b5cbc"
+        True
+        >>> facts['uname.sysname'] == "Linux"
+        True
+    """
+    def parse_content(self, content):
+        self.data = {}
+        for line in content:
+            k, v = line.split(':', 1)
+            self.data[k.strip()] = v.strip()
