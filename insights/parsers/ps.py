@@ -5,7 +5,7 @@ Ps - command ``ps auxww`` and others
 This module provides processing for the various outputs of the ``ps`` command.
 """
 from .. import parser, CommandParser
-from . import ParseException, parse_delimited_table, keyword_search
+from . import ParseException, parse_delimited_table, keyword_search, optlist_to_dict
 from insights.specs import Specs
 from insights.core.filters import add_filter
 
@@ -388,10 +388,6 @@ class PsAexww(Ps):
         env = {}
         for row in self.data:
             if row[self.command_name].startswith(proc.strip() + ' '):
-                if '=' in row['ARGS']:
-                    for arg in row['ARGS'].split(' '):
-                        if '=' in arg:
-                            env_var = arg.split('=', 1)
-                            env[env_var[0]] = env_var[1]
+                env = optlist_to_dict(row['ARGS'], opt_sep=' ')
                 break
         return env
