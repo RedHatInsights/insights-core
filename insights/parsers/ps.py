@@ -26,7 +26,7 @@ class Ps(CommandParser):
             `ps` output.
         cmd_names (set): Set of just the command names, minus any path or
             arguments.
-        services (list): List of sets in format (cmd names, user/uid, raw_line) for
+        services (list): List of sets in format (cmd names, user/uid/pid, raw_line) for
             each command.
 
     """
@@ -77,7 +77,7 @@ class Ps(CommandParser):
                 proc["COMMAND_NAME"] = cmd_name
                 self.cmd_names.add(cmd_name)
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
-                self.services.append((cmd_name, proc.get('USER') or proc.get('UID', 'unknow'), proc[raw_line_key]))
+                self.services.append((cmd_name, proc[self.first_column], proc[raw_line_key]))
                 del proc[raw_line_key]
         else:
             raise ParseException(
@@ -108,9 +108,10 @@ class Ps(CommandParser):
         Returns:
             dict: each username as a key to a list of PIDs (as strings) that
             are running the given process.
-            ``{}`` if ``USER`` or ``UID`` is not found in the output of the given command.
+            ``{}`` if  neither ``USER`` nor ``UID`` is found or ``proc`` is not found.
 
-        .. note:: 'proc' must match the entire command and arguments.
+        .. note::
+           'proc' must match the entire command and arguments.
         """
         ret = {}
         if self.first_column in ['USER', 'UID']:
@@ -128,8 +129,8 @@ class Ps(CommandParser):
         Returns:
             boolean: ``True`` if the word ``proc`` appears in the command column.
 
-        .. note:: 'proc' can match anywhere in the command path, name or
-            arguments.
+        .. note::
+           'proc' can match anywhere in the command path, name or arguments.
         """
         return any(proc in row[self.command_name] for row in self.data)
 
@@ -140,8 +141,8 @@ class Ps(CommandParser):
         Returns:
             int: The number of occurencies of commands with given text
 
-        .. note:: 'proc' can match anywhere in the command path, name or
-           arguments.
+        .. note::
+           'proc' can match anywhere in the command path, name or arguments.
         """
         return len([True for row in self.data if proc in row[self.command_name]])
 
@@ -219,7 +220,8 @@ class PsAuxww(Ps):
             str: the %CPU column corresponding to ``proc`` in command or
             ``None`` if ``proc`` is not found.
 
-        .. note:: 'proc' must match the entire command and arguments.
+        .. note::
+           'proc' must match the entire command and arguments.
         """
         for row in self.data:
             if proc == row[self.command_name]:
@@ -380,7 +382,8 @@ class PsAexww(Ps):
             dict: Dictionary with environment variable name as key and containing  environment variable value
             ``{}`` if ``proc`` is not found.
 
-        .. note:: 'proc' must contain the command
+        .. note::
+           'proc' must contain the command
         """
         env = {}
         for row in self.data:
@@ -390,4 +393,5 @@ class PsAexww(Ps):
                         if '=' in arg:
                             env_var = arg.split('=', 1)
                             env[env_var[0]] = env_var[1]
+                break
         return env
