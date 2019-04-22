@@ -81,4 +81,3 @@ def test_env_number_bad_values():
     c = InsightsConfig()
     with pytest.raises(ValueError):
         c._load_env()
-        c._load_env()
