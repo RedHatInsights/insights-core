@@ -376,6 +376,8 @@ class InsightsConfig(object):
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
+        self._imply_options()
+        self._validate_options()
         self._cli_opts = None
 
     def __str__(self):
@@ -420,10 +422,8 @@ class InsightsConfig(object):
         for u in unknown_opts:
             dict_.pop(u, None)
         self.__dict__.update(dict_)
-        self._imply_options()
-        self._validate_options()
 
-    def load_env(self):
+    def _load_env(self):
         '''
         Options can be set as environment variables
         The formula for the key is `"INSIGHTS_%s" % key.upper()`
@@ -460,7 +460,7 @@ class InsightsConfig(object):
                         'ERROR: Invalid value specified for {0}: {1}.'.format(k, v))
         self._update_dict(insights_env_opts)
 
-    def load_command_line(self, conf_only=False):
+    def _load_command_line(self, conf_only=False):
         '''
         Load config from command line switches.
         NOTE: Not all config is available on the command line.
@@ -497,7 +497,7 @@ class InsightsConfig(object):
 
         self._update_dict(self._cli_opts)
 
-    def load_config_file(self, fname=None):
+    def _load_config_file(self, fname=None):
         '''
         Load config from config file. If fname is not specified,
         config is loaded from the file named by InsightsConfig.conf
@@ -546,10 +546,12 @@ class InsightsConfig(object):
         Helper function for actual Insights client use
         '''
         # check for custom conf file before loading conf
-        self.load_command_line(conf_only=True)
-        self.load_config_file()
-        self.load_env()
-        self.load_command_line()
+        self._load_command_line(conf_only=True)
+        self._load_config_file()
+        self._load_env()
+        self._load_command_line()
+        self._imply_options()
+        self._validate_options()
         return self
 
     def _validate_options(self):
@@ -586,8 +588,7 @@ class InsightsConfig(object):
            self.analyze_mountpoint or
            self.analyze_image_id):
             self.analyze_container = True
-        self.to_json = ((self.to_json or self.analyze_container) and
-                        not self.to_stdout)
+        self.to_json = self.to_json or self.analyze_container
         self.register = (self.register or self.reregister) and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
         if self.payload:
