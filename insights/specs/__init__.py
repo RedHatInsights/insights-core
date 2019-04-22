@@ -365,6 +365,7 @@ class Specs(SpecSet):
     openvswitch_server_log = RegistryPoint(filterable=True)
     openshift_certificates = RegistryPoint(multi_output=True)
     openshift_hosts = RegistryPoint(filterable=True)
+    openstack_server_list_all = RegistryPoint()
     openvswitch_daemon_log = RegistryPoint(filterable=True)
     openvswitch_server_log = RegistryPoint(filterable=True)
     osa_dispatcher_log = RegistryPoint(filterable=True)

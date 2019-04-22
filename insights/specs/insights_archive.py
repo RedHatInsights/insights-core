@@ -176,6 +176,7 @@ class InsightsArchiveSpecs(Specs):
     oc_get_route = simple_file("insights_commands/oc_get_route_-o_yaml_--all-namespaces")
     oc_get_service = simple_file("insights_commands/oc_get_service_-o_yaml_--all-namespaces")
     oc_get_configmap = simple_file("insights_commands/oc_get_configmap_-o_yaml_--all-namespaces")
+    openstack_server_list_all = simple_file("insights_commands/openstack_server_list_ --all")
     openvswitch_other_config = simple_file("insights_commands/ovs-vsctl_-t_5_get_Open_vSwitch_._other_config")
     ovs_appctl_fdb_show_bridge = glob_file("insights_commands/ovs-appctl_fdb.show_*")
     ovs_vsctl_list_bridge = simple_file("insights_commands/ovs-vsctl_list_bridge")
