@@ -73,7 +73,7 @@ DEFAULT_OPTS = {
         'default': 'gz',
         'opt': ['--compressor'],
         'help': argparse.SUPPRESS,
-        'action': 'store_true'
+        'action': 'store'
     },
     'conf': {
         'default': constants.default_conf_file,
