@@ -21,6 +21,7 @@ class SosSpecs(Specs):
     ])
     catalina_out = glob_file("tomcat-logs/tomcat*/catalina.out")
     catalina_server_log = glob_file("tomcat-logs/tomcat*/catalina*.log")
+    ceph_osd_tree_text = simple_file("sos_commands/ceph/ceph_osd_tree")
     chkconfig = simple_file("sos_commands/startup/chkconfig_--list")
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
     df__al = first_file(["sos_commands/filesys/df_-al", "sos_commands/filesys/df_-al_-x_autofs"])
