@@ -588,8 +588,7 @@ class InsightsConfig(object):
            self.analyze_mountpoint or
            self.analyze_image_id):
             self.analyze_container = True
-        self.to_json = ((self.to_json or self.analyze_container) and
-                        not self.to_stdout)
+        self.to_json = self.to_json or self.analyze_container
         self.register = (self.register or self.reregister) and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
         if self.payload:
