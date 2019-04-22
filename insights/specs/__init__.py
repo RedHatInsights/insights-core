@@ -150,6 +150,7 @@ class Specs(SpecSet):
     fstab = RegistryPoint()
     galera_cnf = RegistryPoint()
     getcert_list = RegistryPoint()
+    getconf_page_size = RegistryPoint()
     getenforce = RegistryPoint()
     getsebool = RegistryPoint()
     glance_api_conf = RegistryPoint()

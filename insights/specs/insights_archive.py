@@ -60,7 +60,7 @@ class InsightsArchiveSpecs(Specs):
     fdisk_l = simple_file("insights_commands/fdisk_-l")
     foreman_rake_db_migrate_status = simple_file('insights_commands/foreman-rake_db_migrate_status')
     getcert_list = simple_file("insights_commands/getcert_list")
-    getconf = simple_file("insights_commands/getconf_pagesize")
+    getconf_page_size = simple_file("insights_commands/getconf_PAGE_SIZE")
     getenforce = simple_file("insights_commands/getenforce")
     getsebool = simple_file("insights_commands/getsebool_-a")
     grub1_config_perms = simple_file("insights_commands/ls_-l_.boot.grub.grub.conf")
