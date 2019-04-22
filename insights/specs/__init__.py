@@ -60,6 +60,7 @@ class Specs(SpecSet):
     chrony_conf = RegistryPoint()
     chronyc_sources = RegistryPoint()
     cib_xml = RegistryPoint()
+    cinder_api_log = RegistryPoint(filterable=True)
     cinder_conf = RegistryPoint()
     cinder_volume_log = RegistryPoint(filterable=True)
     cluster_conf = RegistryPoint(filterable=True)

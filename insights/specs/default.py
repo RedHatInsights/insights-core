@@ -150,6 +150,7 @@ class DefaultSpecs(Specs):
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
     cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
+    cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = simple_file("/var/log/cinder/volume.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
