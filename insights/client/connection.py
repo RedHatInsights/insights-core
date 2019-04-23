@@ -733,7 +733,6 @@ class InsightsConnection(object):
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error('Connection timed out.')
             logger.error(e)
             logger.error('The Insights API could not be reached.')
             return None
@@ -977,13 +976,12 @@ class InsightsConnection(object):
         system = self._fetch_system_by_machine_id()
         if not system:
             return system
-        inventory_id = system['id']
+        inventory_id = system[0]['id']
         req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
-            res = requests.patch(req_url, data={'display_name': display_name})
+            res = self.session.patch(req_url, data={'display_name': display_name})
         except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error('Connection timed out.')
             logger.error(e)
             logger.error('The Insights API could not be reached.')
             return False
@@ -1006,7 +1004,6 @@ class InsightsConnection(object):
             net_logger.info("GET %s", diag_url)
             res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
-            logger.error('Connection timed out.')
             logger.error(e)
             logger.error('The Insights API could not be reached.')
             return False
