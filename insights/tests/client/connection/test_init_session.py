@@ -21,6 +21,7 @@ def test_proxy_request(init, session):
     connection.cert_verify = None
     connection.proxies = {"https": "some proxy"}
     connection.proxy_auth = True
+    connection.base_url = 'https://cert-api.access.redhat.com/r/insights'
 
     connection._init_session()
 
