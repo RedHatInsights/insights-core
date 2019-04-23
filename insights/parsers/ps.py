@@ -366,7 +366,7 @@ class PsAexww(Ps):
     Examples:
         >>> type(ps_aexww)
         <class 'insights.parsers.ps.PsAexww'>
-        >>> ps_aexww.get_environ('/usr/bin/openshift-router')['RELOAD_INTERVAL']
+        >>> ps_aexww.get_environ('/usr/bin/openshift-router')[0]['RELOAD_INTERVAL']
         '10s'
     """
     command_name = 'COMMAND'
@@ -375,19 +375,17 @@ class PsAexww(Ps):
 
     def get_environ(self, proc):
         """
-        Searches for the first command matching ``proc`` and returns its
-        environment variable as a dict.
+        Searches for all the commands matching ``proc`` and returns their
+        environment variables as a list of dict.
 
         Returns:
-            dict: Dictionary with environment variable name as key and containing  environment variable value
-            ``{}`` if ``proc`` is not found.
-
+            list: List of dictionary with environment variable name as key and containing  environment variable value
+            ``[]`` if ``proc`` is not found.
         .. note::
            'proc' must contain the command
         """
-        env = {}
+        env = []
         for row in self.data:
             if row[self.command_name].startswith(proc.strip() + ' '):
-                env = optlist_to_dict(row['ARGS'], opt_sep=' ')
-                break
+                env.append(optlist_to_dict(row['ARGS'], opt_sep=' '))
         return env
