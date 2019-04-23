@@ -247,7 +247,7 @@ class InsightsConnection(object):
         self.proxies = proxies
         self.proxy_auth = proxy_auth
 
-    def _legacy__test_urls(self, url, method):
+    def _legacy_test_urls(self, url, method):
         """
         Actually test the url
         """
