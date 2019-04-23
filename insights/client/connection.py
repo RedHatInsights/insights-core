@@ -119,7 +119,9 @@ class InsightsConnection(object):
         self.api_url = self.base_url
         self.branch_info_url = self.config.branch_info_url
         if self.branch_info_url is None:
-            self.branch_info_url = self.base_url + "/v1/branch_info"
+            # workaround for a workaround for a workaround
+            base_url_base = self.base_url.split('/platform')[0]
+            self.branch_info_url = base_url_base + '/v1/branch_info'
         self.authmethod = self.config.authmethod
         self.systemid = self.config.systemid or None
         self.get_proxies()
