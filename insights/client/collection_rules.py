@@ -33,16 +33,15 @@ class InsightsUploadConf(object):
         self.fallback_file = constants.collection_fallback_file
         self.remove_file = config.remove_file
         self.collection_rules_file = constants.collection_rules_file
-        protocol = "https://"
-        if self.config.insecure_connection:
-            # This really should not be used.
-            protocol = "http://"
-        self.base_url = protocol + self.config.base_url
         self.collection_rules_url = self.config.collection_rules_url
-        if self.collection_rules_url is None:
-            self.collection_rules_url = self.base_url + '/v1/static/uploader.v2.json'
         self.gpg = self.config.gpg
-        self.conn = conn
+        if conn:
+            if self.collection_rules_url is None:
+                if config.legacy_upload:
+                    self.collection_rules_url = conn.base_url + '/v1/static/uploader.v2.json'
+                else:
+                    self.collection_rules_url = conn.base_url + '/static/uploader.v2.json'
+            self.conn = conn
 
     def validate_gpg_sig(self, path, sig=None):
         """

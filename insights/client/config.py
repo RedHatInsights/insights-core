@@ -37,11 +37,6 @@ DEFAULT_OPTS = {
         'help': 'Analyze a filesystem at the specified mountpoint.',
         'action': 'store'
     },
-    # MARKED FOR DELETION
-    'api_url': {
-        # non-CLI
-        'default': None
-    },
     'authmethod': {
         # non-CLI
         'default': 'BASIC'
@@ -56,7 +51,7 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': 'cert-api.access.redhat.com/r/insights'
+        'default': None
     },
     'branch_info_url': {
         # non-CLI
@@ -64,9 +59,7 @@ DEFAULT_OPTS = {
     },
     'cert_verify': {
         # non-CLI
-        'default': os.path.join(
-            constants.default_conf_dir,
-            'cert-api.access.redhat.com.pem'),
+        'default': None,
     },
     'cmd_timeout': {
         # non-CLI
@@ -90,7 +83,7 @@ DEFAULT_OPTS = {
     },
     'egg_path': {
         # non-CLI
-        'default': '/v1/static/core/insights-core.egg'
+        'default': None
     },
     'debug': {
         'default': False,  # Used by client wrapper script
@@ -127,7 +120,7 @@ DEFAULT_OPTS = {
     },
     'egg_gpg_path': {
         # non-CLI
-        'default': '/v1/static/core/insights-core.egg.asc'
+        'default': None
     },
     'group': {
         'default': None,
@@ -576,6 +569,22 @@ class InsightsConfig(object):
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
+        if not self.legacy_upload:
+            if self.group:
+                raise ValueError(
+                    '--group is not supported at this time.')
+            if self.analyze_image_id:
+                raise ValueError(
+                    '--analyze-image-id is not supported at this time.')
+            if self.analyze_file:
+                raise ValueError(
+                    '--analyze-file is not supported at this time.')
+            if self.analyze_mountpoint:
+                raise ValueError(
+                    '--analyze-mountpoint is not supported at this time.')
+            if self.analyze_container:
+                raise ValueError(
+                    '--analyze-container is not supported at this time.')
 
     def _imply_options(self):
         '''

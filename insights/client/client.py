@@ -89,6 +89,7 @@ def set_up_logging(config):
         logger.debug("Logging initialized")
 
 
+# -LEGACY-
 def register(config, pconn):
     """
     Do registration using basic auth
@@ -103,14 +104,14 @@ def register(config, pconn):
     return pconn.register()
 
 
-# TODO: eventually remove this function. Only valid for legacy stuff
-def handle_registration(config, pconn):
+# -LEGACY-
+def _legacy_handle_registration(config, pconn):
     '''
-        Handle the registration process
-        Returns:
-            True - machine is registered
-            False - machine is unregistered
-            None - could not reach the API
+    Handle the registration process
+    Returns:
+        True - machine is registered
+        False - machine is unregistered
+        None - could not reach the API
     '''
     logger.debug('Trying registration.')
     # force-reregister -- remove machine-id files and registration files
@@ -175,6 +176,14 @@ def handle_registration(config, pconn):
         return False
 
 
+def handle_registration(config, pconn):
+    '''
+    Does nothing on the platform. Will be deleted eventually.
+    '''
+    if config.legacy_upload:
+        return _legacy_handle_registration(config, pconn)
+
+
 def get_registration_status(config, pconn):
     '''
         Handle the registration process
@@ -186,10 +195,41 @@ def get_registration_status(config, pconn):
     return registration_check(pconn)
 
 
-def handle_unregistration(config, pconn):
+# -LEGACY-
+def _legacy_handle_unregistration(config, pconn):
     """
         returns (bool): True success, False failure
     """
+    check = get_registration_status(config, pconn)
+
+    for m in check['messages']:
+        logger.debug(m)
+
+    if check['unreachable']:
+        # Run connection test and exit
+        return None
+
+    if check['status']:
+        unreg = pconn.unregister()
+    else:
+        unreg = True
+        logger.info('This system is already unregistered.')
+    if unreg:
+        # only set if unreg was successful
+        write_unregistered_file()
+        get_scheduler(config).remove_scheduling()
+    return unreg
+
+
+def handle_unregistration(config, pconn):
+    """
+    Returns:
+        True - machine was successfully unregistered
+        False - machine could not be unregistered
+        None - could not reach the API
+    """
+    if config.legacy_upload:
+        return _legacy_handle_unregistration(config, pconn)
     unreg = pconn.unregister()
     if unreg:
         # only set if unreg was successful
@@ -356,11 +396,11 @@ def get_connection(config):
     return InsightsConnection(config)
 
 
-def upload(config, pconn, tar_file, content_type, collection_duration=None):
+def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=None):
     logger.info('Uploading Insights data.')
     api_response = None
     for tries in range(config.retries):
-        upload = pconn.upload_archive(tar_file, content_type, collection_duration)
+        upload = pconn.upload_archive(tar_file, '', collection_duration)
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
@@ -381,9 +421,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             else:
                 logger.info("Successfully uploaded report for %s." % (machine_id))
             break
-        elif upload.status_code == 202:
-            machine_id = generate_machine_id()
-            logger.info("Successfully uploaded report for %s." % (machine_id))
+
         elif upload.status_code == 412:
             pconn.handle_fail_rcs(upload)
             break
@@ -398,6 +436,29 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
                 logger.error("All attempts to upload have failed!")
                 logger.error("Please see %s for additional information", config.logging_file)
     return api_response
+
+
+def upload(config, pconn, tar_file, content_type, collection_duration=None):
+    if config.legacy_upload:
+        return _legacy_upload(config, pconn, tar_file, content_type, collection_duration)
+    logger.info('Uploading Insights data.')
+
+    for tries in range(config.retries):
+        upload = pconn.upload_archive(tar_file, content_type, collection_duration)
+
+        if upload.status_code == 202:
+            machine_id = generate_machine_id()
+            logger.info("Successfully uploaded report for %s." % (machine_id))
+        else:
+            logger.error("Upload attempt %d of %d failed!",
+                         tries + 1, config.retries, upload.status_code)
+            if tries + 1 != config.retries:
+                logger.info("Waiting %d seconds then retrying",
+                            constants.sleep_time)
+                time.sleep(constants.sleep_time)
+            else:
+                logger.error("All attempts to upload have failed!")
+                logger.error("Please see %s for additional information", config.logging_file)
 
 
 def _delete_archive_internal(config, archive):
