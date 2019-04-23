@@ -980,13 +980,15 @@ class InsightsConnection(object):
         req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
-            res = self.session.patch(req_url, data={'display_name': display_name})
+            res = self.session.patch(req_url, json={'display_name': display_name})
         except (requests.ConnectionError, requests.Timeout) as e:
             logger.error(e)
             logger.error('The Insights API could not be reached.')
             return False
         if (self.handle_fail_rcs(res)):
+            logger.error('Could not update display name.')
             return False
+        logger.info('Display name updated to ' + display_name + '.')
         return True
 
     def get_diagnosis(self, remediation_id=None):
