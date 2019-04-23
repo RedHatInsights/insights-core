@@ -1,6 +1,6 @@
 """
-Modprobe configuration - files ``/etc/modprobe.conf`` and ``/etc/modprobe.d/*``
-===============================================================================
+Modprobe configuration - files ``/etc/modprobe.conf`` and ``/etc/modprobe.d/*.conf``
+====================================================================================
 
 This parser collects command information from the Modprobe configuration
 files and stores information about each module mentioned. Lines such as
