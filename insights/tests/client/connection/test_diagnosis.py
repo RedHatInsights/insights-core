@@ -27,6 +27,7 @@ class MockResponse(object):
         self.status_code = expected_status
         self.text = expected_text
         self.content = expected_content
+        self.reason = ''
 
     def json(self):
         return json.loads(self.content)

@@ -1,7 +1,8 @@
 # -*- coding: UTF-8 -*-
 
 from insights.client.config import InsightsConfig
-from insights.client.support import InsightsSupport
+from insights.client.connection import InsightsConnection
+from insights.client.support import InsightsSupport, registration_check
 from mock.mock import Mock, patch
 
 
@@ -36,25 +37,88 @@ def test_support_diag_dump_insights_connection(insights_connection, registration
 
 @patch('insights.client.support.InsightsConnection')
 @patch('insights.client.support.registration_check')
-def test_registration_check_legacy_upload_on(registration_check, InsightsConnection):
+def test_registration_check_called_for_support(registration_check, InsightsConnection):
     '''
-        Check registration when legacy_upload=True
+        Check registration when doing --support
     '''
-    config = InsightsConfig(legacy_upload=True)
-    support = InsightsSupport(config)
+    support = InsightsSupport(InsightsConfig())
     support.collect_support_info()
-
     registration_check.assert_called_once()
 
 
-@patch('insights.client.support.InsightsConnection')
-@patch('insights.client.support.registration_check')
-def test_skip_registration_check_legacy_upload_off(registration_check, InsightsConnection):
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch('insights.client.support.write_registered_file')
+@patch('insights.client.support.write_unregistered_file')
+def test_registration_check_unregistered(write_unregistered_file, write_registered_file, _, __):
     '''
-        Don't check registration when legacy_upload=False
+    Ensure that connection function is called and files are written.
     '''
-    config = InsightsConfig(legacy_upload=False)
-    support = InsightsSupport(config)
-    support.collect_support_info()
+    config = Mock(base_url=None, legacy_upload=False)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value=False)
+    assert registration_check(conn) is False
+    conn.api_registration_check.assert_called_once()
+    write_registered_file.assert_not_called()
+    write_unregistered_file.assert_called_once()
 
-    registration_check.assert_not_called()
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+@patch('insights.client.support.write_registered_file')
+@patch('insights.client.support.write_unregistered_file')
+def test_registration_check_registered(write_unregistered_file, write_registered_file, _, __):
+    '''
+    Ensure that connection function is called and files are written.
+    '''
+    config = Mock(base_url=None, legacy_upload=False)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value=True)
+    assert registration_check(conn) is True
+    conn.api_registration_check.assert_called_once()
+    write_registered_file.assert_called_once()
+    write_unregistered_file.assert_not_called()
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_registration_check_legacy_unregistered(_, __):
+    '''
+    Ensure that connection function is called and data processed.
+    '''
+    config = Mock(base_url=None, legacy_upload=True)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value=None)
+    assert isinstance(registration_check(conn), dict)
+    check = registration_check(conn)
+    assert isinstance(check, dict)
+    assert check['status'] is False
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_registration_check_legacy_registered_then_unregistered(_, __):
+    '''
+    Ensure that connection function is called and data processed.
+    '''
+    config = Mock(base_url=None, legacy_upload=True)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value='datestring')
+    assert isinstance(registration_check(conn), dict)
+    check = registration_check(conn)
+    assert isinstance(check, dict)
+    assert check['status'] is False
+
+
+@patch("insights.client.connection.InsightsConnection._init_session")
+@patch("insights.client.connection.InsightsConnection.get_proxies")
+def test_registration_check_legacy_registered(_, __):
+    '''
+    Ensure that connection function is called and data processed.
+    '''
+    config = Mock(base_url=None, legacy_upload=True)
+    conn = InsightsConnection(config)
+    conn.api_registration_check = Mock(return_value=True)
+    check = registration_check(conn)
+    assert isinstance(check, dict)
+    assert check['status'] is True
