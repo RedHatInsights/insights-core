@@ -10,7 +10,6 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
-import socket
 import io
 from tempfile import TemporaryFile
 from datetime import datetime, timedelta
@@ -22,7 +21,6 @@ except ImportError:
     # python 3
     from urllib.parse import urlparse
     from urllib.parse import quote
-from OpenSSL import SSL, crypto
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
