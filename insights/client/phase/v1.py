@@ -11,7 +11,7 @@ from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from insights.client.constants import InsightsConstants as constants
 from insights.client.support import InsightsSupport
-from insights.client.utilities import validate_remove_file, cgroup_available
+from insights.client.utilities import validate_remove_file, cgroup_available, print_egg_versions
 from insights.client.schedule import get_scheduler
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,7 @@ def get_phases():
 
 @phase
 def pre_update(client, config):
+    print_egg_versions()
     if config.version:
         logger.info(constants.version)
         sys.exit(constants.sig_kill_ok)
