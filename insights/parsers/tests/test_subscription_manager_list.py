@@ -1,4 +1,6 @@
 import doctest
+import pytest
+from insights.parsers import SkipException
 from ...parsers import subscription_manager_list
 from ...tests import context_wrap
 
@@ -152,31 +154,6 @@ virt.uuid: 81897b5e-4df9-9794-8e2a-b496756b5cbc
 """.strip()
 
 
-def test_subscription_manager_list_docs():
-    env = {
-        'SubscriptionManagerListConsumed': subscription_manager_list.SubscriptionManagerListConsumed,
-        'SubscriptionManagerListInstalled': subscription_manager_list.SubscriptionManagerListInstalled,
-        'SubscriptionManagerReposListEnabled': subscription_manager_list.SubscriptionManagerReposListEnabled,
-        'SubscriptionManagerFactsList': subscription_manager_list.SubscriptionManagerFactsList,
-        'shared': {
-            subscription_manager_list.SubscriptionManagerListConsumed: subscription_manager_list.SubscriptionManagerListConsumed(
-                context_wrap(subscription_manager_list_consumed_in_docs)
-            ),
-            subscription_manager_list.SubscriptionManagerListInstalled: subscription_manager_list.SubscriptionManagerListInstalled(
-                context_wrap(subscription_manager_list_installed_in_docs)
-            ),
-            subscription_manager_list.SubscriptionManagerReposListEnabled: subscription_manager_list.SubscriptionManagerReposListEnabled(
-                context_wrap(subscription_manager_repos_list_enabled_test_data)
-            ),
-            subscription_manager_list.SubscriptionManagerFactsList: subscription_manager_list.SubscriptionManagerFactsList(
-                context_wrap(FACTS_LIST)
-            ),
-        },
-    }
-    failed, total = doctest.testmod(subscription_manager_list, globs=env)
-    assert failed == 0
-
-
 subscription_manager_list_test_data = '''
 +-------------------------------------------+
    Consumed Subscriptions
@@ -216,3 +193,20 @@ def test_all_facts():
     assert output['net.interface.enp0s9.mac_address'] == "AA:BB:CC:DD:EE:FF"
     assert output['net.interface.enp0s3.ipv6_address.link'] == "e80f::00:27ff:fe4a:c5efa"
     assert output['virt.host_type'] == "virtualbox, kvm"
+
+
+def test_no_facts():
+    with pytest.raises(SkipException) as ex:
+        subscription_manager_list.SubscriptionManagerFactsList(context_wrap(''))
+    assert "Empty content." in str(ex)
+
+
+def test_subscription_manager_list_docs():
+    env = {
+        'repolist': subscription_manager_list.SubscriptionManagerReposListEnabled(context_wrap(subscription_manager_repos_list_enabled_test_data)),
+        'installed': subscription_manager_list.SubscriptionManagerListInstalled(context_wrap(subscription_manager_list_installed_in_docs)),
+        'consumed': subscription_manager_list.SubscriptionManagerListConsumed(context_wrap(subscription_manager_list_consumed_in_docs)),
+        'facts': subscription_manager_list.SubscriptionManagerFactsList(context_wrap(FACTS_LIST))
+    }
+    failed, total = doctest.testmod(subscription_manager_list, globs=env)
+    assert failed == 0

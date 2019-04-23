@@ -22,6 +22,7 @@ import re
 from datetime import datetime
 import six
 from insights.specs import Specs
+from insights.parsers import split_kv_pairs, SkipException
 from .. import parser, CommandParser, LegacyItemAccess
 from . import keyword_search
 
@@ -101,11 +102,11 @@ class SubscriptionManagerList(CommandParser):
         Returns:
             (list): A list of records that matched the search criteria.
 
-        >>> consumed = shared[SubscriptionManagerListConsumed]
-        >>> len(consumed.search(Service_Level='PREMIUM'))
-        1
-        >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
-        []
+        Examples:
+            >>> len(consumed.search(Service_Level='PREMIUM'))
+            1
+            >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
+            []
         """
         return keyword_search(self.records, **kwargs)
 
@@ -141,7 +142,6 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         System Type:       Physical
 
     Examples:
-        >>> consumed = shared[SubscriptionManagerListConsumed]
         >>> type(consumed)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerListConsumed'>
         >>> len(consumed.records)
@@ -203,7 +203,6 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
         Ends:           04/27/16
 
     Examples:
-        >>> installed = shared[SubscriptionManagerListInstalled]
         >>> type(installed)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerListInstalled'>
         >>> len(installed.records)
@@ -247,7 +246,6 @@ class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
         Enabled:   1
 
     Examples:
-        >>> repolist = shared[SubscriptionManagerReposListEnabled]
         >>> type(repolist)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerReposListEnabled'>
         >>> len(repolist.records)
@@ -273,16 +271,19 @@ class SubscriptionManagerFactsList(CommandParser, LegacyItemAccess):
         virt.is_guest: True
         virt.uuid: 81897b5e-4df9-9794-8e2a-b496756b5cbc
 
-    Examples::
-
-        >>> facts = shared[SubscriptionManagerFactsList]
+    Examples:
         >>> facts['virt.uuid'] == "81897b5e-4df9-9794-8e2a-b496756b5cbc"
         True
         >>> facts['uname.sysname'] == "Linux"
         True
+
+    Returns:
+        data(dict): All the facts that matches the filter criteria.
+
+    Raises:
+        SkipException: When the content is empty.
     """
     def parse_content(self, content):
-        self.data = {}
-        for line in content:
-            k, v = line.split(':', 1)
-            self.data[k.strip()] = v.strip()
+        if not content:
+            raise SkipException("Empty content.")
+        self.data = split_kv_pairs(content, split_on=":", use_partition=True)
