@@ -719,20 +719,14 @@ class InsightsConnection(object):
             # machine has been unregistered, this is a timestamp
             return unreg_status
 
-    def api_registration_check(self):
+    def _fetch_system_by_machine_id(self):
         '''
-            Reach out to the inventory API to check
-            whether a machine exists.
-
-            Returns
-                True    system exists in inventory
-                False   system does not exist in inventory
-                None    error connection or parsing response
+        Get a system by machine ID
+        Returns
+            dict    system exists in inventory
+            False   system does not exist in inventory
+            None    error connection or parsing response
         '''
-        if self.config.legacy_upload:
-            return self._legacy_api_registration_check()
-
-        logger.debug('Checking registration status...')
         machine_id = generate_machine_id()
         try:
             url = self.api_url + '/inventory/v1/hosts?insights_id=' + machine_id
@@ -754,7 +748,26 @@ class InsightsConnection(object):
         if res_json['total'] == 0:
             logger.debug('No hosts found with machine ID: %s', machine_id)
             return False
-        results = res_json['results']
+        return res_json['results']
+
+    def api_registration_check(self):
+        '''
+            Reach out to the inventory API to check
+            whether a machine exists.
+
+            Returns
+                True    system exists in inventory
+                False   system does not exist in inventory
+                None    error connection or parsing response
+        '''
+        if self.config.legacy_upload:
+            return self._legacy_api_registration_check()
+
+        logger.debug('Checking registration status...')
+        results = self._fetch_system_by_machine_id()
+        if not results:
+            return results
+
         logger.debug('System found.')
         logger.debug('Machine ID: %s', results[0]['insights_id'])
         logger.debug('Inventory ID: %s', results[0]['id'])
@@ -955,16 +968,35 @@ class InsightsConnection(object):
             return False
 
     def set_display_name(self, display_name):
+        '''
+        Set display name of a system independently of upload.
+        '''
         if self.config.legacy_upload:
             return self._legacy_set_display_name(display_name)
-        logger.error('Setting display name is supported at this time.')
-        return False
+
+        system = self._fetch_system_by_machine_id()
+        if not system:
+            return system
+        inventory_id = system['id']
+        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        try:
+            net_logger.info("PATCH %s", req_url)
+            res = requests.patch(req_url, data={'display_name': display_name})
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.error('Connection timed out.')
+            logger.error(e)
+            logger.error('The Insights API could not be reached.')
+            return False
+        if (self.handle_fail_rcs(res)):
+            return False
+        return True
 
     def get_diagnosis(self, remediation_id=None):
         '''
             Reach out to the platform and fetch a diagnosis.
             Spirtual successor to --to-json from the old client.
         '''
+        # this uses machine id as identifier instead of inventory id
         diag_url = self.base_url + '/remediations/v1/diagnosis/' + generate_machine_id()
         params = {}
         if remediation_id:
@@ -973,14 +1005,13 @@ class InsightsConnection(object):
         try:
             net_logger.info("GET %s", diag_url)
             res = self.session.get(diag_url, params=params, timeout=self.config.http_timeout)
-            if res.status_code == 200:
-                return res.json()
-            else:
-                logger.error('Unable to get diagnosis data: %s %s',
-                             res.status_code, res.text)
-                return None
-        except requests.ConnectionError:
-            # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.error('Connection timed out.')
+            logger.error(e)
+            logger.error('The Insights API could not be reached.')
+            return False
+        if (self.handle_fail_rcs(res)):
+            logger.error('Unable to get diagnosis data: %s %s',
+                         res.status_code, res.text)
             return None
+        return res.json()
