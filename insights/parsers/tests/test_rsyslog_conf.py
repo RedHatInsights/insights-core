@@ -181,13 +181,13 @@ uucp,news.crit                                          /var/log/spooler
 local7.*                                                /var/log/boot.log
 """.strip()
 
-RSYSLOG_CONF_RHEL="""
+RSYSLOG_CONF_RHEL = """
 :fromhost-ip, regex, "10.0.0.[0-9]" /tmp/my_syslog.log
 $ModLoad imtcp
 $InputTCPServerRun 10514"
 """.strip()
 
-CONTEXT_PATH="/etc/rsyslog.conf"
+CONTEXT_PATH = "/etc/rsyslog.conf"
 
 
 def test_rsyslog_conf_0():
@@ -217,16 +217,16 @@ def test_rsyslog_conf_0():
     assert rsys.config_items['InputTCPServerRun'] == '514'
     d = list(rsys)
     assert len(rsys) == 15
-    
+
     ctx = context_wrap(RSYSLOG_CONF_RHEL8)
     rsys = RsyslogConf8(ctx)
     d = list(rsys)
     assert rsys.module_details == {'imuxsock': {'SysSock.Use': 'off'},
                                    'imjournal': {'StateFile': 'imjournal.state'},
                                    'imudp': {},
-                                   'builtin:omfile': {'Template': 'RSYSLOG_TraditionalFileFormat'}
-                                  }
+                                   'builtin:omfile': {'Template': 'RSYSLOG_TraditionalFileFormat'}}
     assert len(rsys.module_details) == 4
+    assert len(rsys.log_details) == 8
     assert rsys.global_details == {'workDirectory': '/var/lib/rsyslog'}
     assert rsys.input_details == {'imudp': '514'}
     assert rsys.include_details == {'/etc/rsyslog.d/*.conf': {'mode': 'optional'}}
@@ -241,6 +241,7 @@ def test_rsyslog_conf_1():
     # Test that commented-out config items are not detected
     assert 'ModLoad' not in m.config_items
     assert 'InputTCPServerRun' not in m.config_items
+
 
 def test_rsyslog_rhel8_doc_examples():
     env = {
