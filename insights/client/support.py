@@ -15,12 +15,13 @@ from subprocess import Popen, PIPE, STDOUT
 
 from .constants import InsightsConstants as constants
 from .connection import InsightsConnection
+from .utilities import write_registered_file, write_unregistered_file
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
 
 
-def registration_check(pconn):
+def _legacy_registration_check(pconn):
     # check local registration record
     unreg_date = None
     unreachable = False
@@ -56,6 +57,17 @@ def registration_check(pconn):
             'unreachable': unreachable}
 
 
+def registration_check(pconn):
+    if pconn.config.legacy_upload:
+        return _legacy_registration_check(pconn)
+    status = pconn.api_registration_check()
+    if status:
+        write_registered_file()
+    else:
+        write_unregistered_file()
+    return status
+
+
 class InsightsSupport(object):
     '''
     Build the support logfile
@@ -89,11 +101,10 @@ class InsightsSupport(object):
         pconn = InsightsConnection(self.config)
         logger.info('Insights version: %s', get_nvr())
 
-        if self.config.legacy_upload:
-            reg_check = registration_check(pconn)
-            cfg_block.append('Registration check:')
-            for key in reg_check:
-                cfg_block.append(key + ': ' + str(reg_check[key]))
+        reg_check = registration_check(pconn)
+        cfg_block.append('Registration check:')
+        for key in reg_check:
+            cfg_block.append(key + ': ' + str(reg_check[key]))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):
