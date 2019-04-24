@@ -5,9 +5,10 @@ Ps - command ``ps auxww`` and others
 This module provides processing for the various outputs of the ``ps`` command.
 """
 from .. import parser, CommandParser
-from . import ParseException, parse_delimited_table, keyword_search, optlist_to_dict
+from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
 from insights.core.filters import add_filter
+import re
 
 
 class Ps(CommandParser):
@@ -384,8 +385,20 @@ class PsAexww(Ps):
         .. note::
            'proc' must contain the command
         """
-        env = []
+        ENV_RE_PATTEN_1 = r'[a-zA-Z_]+[a-zA-Z0-9_]*?=[\S]*'
+        ENV_RE_PATTEN_2 = r'[a-zA-Z_]+[a-zA-Z0-9_]*?\(\)=\(\) \{.*?\}'
+        procs_env = []
         for row in self.data:
             if row[self.command_name].startswith(proc.strip() + ' '):
-                env.append(optlist_to_dict(row['ARGS'], opt_sep=' '))
-        return env
+                env_str = row['ARGS']
+                env_list = re.findall(ENV_RE_PATTEN_2, env_str)
+                for item in env_list:
+                    env_str = env_str.replace(item, '')
+                env_list += re.findall(ENV_RE_PATTEN_1, env_str)
+                env = {}
+                for item in env_list:
+                    if '=' in item:
+                        k, v = item.split('=', 1)
+                        env[k] = v
+                procs_env.append(env)
+        return procs_env
