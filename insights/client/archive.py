@@ -157,12 +157,13 @@ class InsightsArchive(object):
         Add files and commands to archive
         Use InsightsSpec.get_output() to get data
         '''
+        cmd_not_found_marker = "timeout: failed to run command"
         if isinstance(spec, InsightsCommand):
             archive_path = os.path.join(self.cmd_dir, spec.archive_path.lstrip('/'))
         if isinstance(spec, InsightsFile):
             archive_path = self.get_full_archive_path(spec.archive_path.lstrip('/'))
         output = spec.get_output()
-        if output:
+        if output and cmd_not_found_marker not in output:
             write_data_to_file(output, archive_path)
 
     def add_metadata_to_archive(self, metadata, meta_path):
