@@ -403,7 +403,6 @@ class Specs(SpecSet):
     proc_snmp_ipv4 = RegistryPoint()
     proc_snmp_ipv6 = RegistryPoint()
     proc_stat = RegistryPoint()
-    ps_aexww = RegistryPoint(filterable=True)
     ps_aux = RegistryPoint(filterable=True)
     ps_auxcww = RegistryPoint()
     ps_auxww = RegistryPoint(filterable=True)
