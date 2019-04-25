@@ -43,7 +43,7 @@ def get_owner(filename):
     return (name, group)
 
 
-def get_cmd_and_pacakge_in_ps(broker, target_command):
+def get_cmd_and_package_in_ps(broker, target_command):
         ps = broker[DefaultSpecs.ps_auxww].content
         ctx = broker[HostContext]
         results = set()
@@ -53,7 +53,7 @@ def get_cmd_and_pacakge_in_ps(broker, target_command):
             which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
             resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
             pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
-            if cmd and pkg:
+            if cmd and pkg is not None:
                 results.add("{0} {1}".format(cmd, pkg[0]))
         return results
 
@@ -606,14 +606,14 @@ class DefaultSpecs(Specs):
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
         """Command: package_and_java"""
-        return get_cmd_and_pacakge_in_ps(broker, 'java')
+        return get_cmd_and_package_in_ps(broker, 'java')
 
     package_provides_java = foreach_execute(package_and_java, "echo %s")
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_httpd(broker):
         """Command: package_and_httpd"""
-        return get_cmd_and_pacakge_in_ps(broker, 'httpd')
+        return get_cmd_and_package_in_ps(broker, 'httpd')
 
     package_provides_httpd = foreach_execute(package_and_httpd, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")

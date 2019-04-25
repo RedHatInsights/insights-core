@@ -2,37 +2,21 @@
 PackageProvidesHttpd - command ``/bin/echo {httpd_command_package}``
 ====================================================================
 
-This command reads the output of the pre-command:
+This module parses the content that contains running instances of 'httpd' and
+its corresponding RPM package which provide them. The running command and its
+package name are stored as properties ``command`` and ``package`` of the object.
 
-``for jp in `/bin/ps auxwww | grep httpd | grep -v grep| awk '{print $11}' | sort -u`; do echo $jp | xargs rpm -qf`; done``
-
-This command looks for all versions of 'httpd' running and tries to find the
-RPM packages which provide them.  The running command and its package name
-are stored as properties ``command`` and ``package`` of the object.
-
-The reason why using above pre_command is that we need to record the links
+The reason why using above datasource is that we need to record the links
 between running_httpd_command and package which provides the httpd command. In
 ``ps aux`` output, we can only get what httpd command starts a httpd
 application, instead of httpd package. Through this way, when there is httpd
 bug, we can detect whether a running httpd application will be affected.
 
-Typical contents of the pre_command::
-
-    /usr/sbin/httpd httpd-2.4.6-88.el7.x86_64
-
-Parsed result::
-
-    self.command = '/usr/sbin/httpd'
-    self.package = 'httpd-2.4.6-88.el7.x86_64'
-
 Examples:
-    >>> from insights.tests import context_wrap
-    >>> PACKAGE_COMMAND_MATCH = "/usr/sbin/httpd httpd-2.4.6-88.el7.x86_64"
-    >>> command_package = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH))
-    >>> command_package.command
-    '/usr/sbin/httpd'
-    >>> command_package.package
-    'httpd-2.4.6-88.el7.x86_64'
+    >>> package.command
+    '/opt/rh/httpd24/root/usr/sbin/httpd'
+    >>> package.package
+    'httpd24-httpd-2.4.34-7.el7.x86_64'
 """
 
 from insights import parser, CommandParser
@@ -43,9 +27,7 @@ from ..parsers import SkipException
 @parser(Specs.package_provides_httpd)
 class PackageProvidesHttpd(CommandParser):
     """
-    Parse the output of pre_command::
-
-        ``for jp in `/bin/ps auxwww | grep httpd | grep -v grep| awk '{print $11}' | sort -u`; do echo "$jp `readlink -e $jp | xargs rpm -qf`"; done``.
+    Parse the content like '/opt/rh/httpd24/root/usr/sbin/httpd /usr/sbin/httpd'
 
     Attributes:
         command (str): The httpd command that starts application.

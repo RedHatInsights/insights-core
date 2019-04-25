@@ -38,5 +38,8 @@ def test_package_provides_httpd_not_match():
 
 
 def test_doc_examples():
-    failed, _ = doctest.testmod(package_provides_httpd)
+    env = {
+        'package': package_provides_httpd.PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH)),
+    }
+    failed, _ = doctest.testmod(package_provides_httpd, globs=env)
     assert failed == 0

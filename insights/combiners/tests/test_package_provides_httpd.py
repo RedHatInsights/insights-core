@@ -35,5 +35,10 @@ def test_packages_provide_httpd():
 
 
 def test_doc_examples():
-    failed, _ = doctest.testmod(package_provides_httpd)
+    pack1 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_1))
+    pack2 = PackageProvidesHttpd(context_wrap(PACKAGE_COMMAND_MATCH_2))
+    env = {
+        'packages': package_provides_httpd.PackageProvidesHttpdAll([pack1, pack2]),
+    }
+    failed, _ = doctest.testmod(package_provides_httpd, globs=env)
     assert failed == 0
