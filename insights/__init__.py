@@ -43,6 +43,7 @@ from .core.serde import Hydration
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
+from .formats import Formatter as FormatterClass
 
 log = logging.getLogger(__name__)
 
@@ -262,7 +263,7 @@ def run(component=None, root=None, print_summary=False,
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format
         fmt = args.format if "." in args.format else "insights.formats." + args.format
         Formatter = dr.get_component(fmt)
-        if not Formatter:
+        if not Formatter or not isinstance(Formatter, FormatterClass):
             dr.load_components(fmt, continue_on_error=False)
             Formatter = get_formatter(fmt)
         Formatter.configure(p)
