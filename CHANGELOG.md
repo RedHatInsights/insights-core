@@ -1,5 +1,23 @@
 # Change Log
 
+## [insights-core-3.0.91-930](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.91-930) (2019-04-25)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.90-917...insights-core-3.0.91-930)
+
+**Implemented enhancements:**
+
+- No parser for /sos\_commands/ceph/ceph\_osd\_tree in sosreport  [\#1776](https://github.com/RedHatInsights/insights-core/issues/1776)
+
+**Fixed bugs:**
+
+- Insights Archive spec is Incorrect [\#1856](https://github.com/RedHatInsights/insights-core/issues/1856)
+
+## [insights-core-3.0.90-917](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.90-917) (2019-04-18)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.89-899...insights-core-3.0.90-917)
+
+**Closed issues:**
+
+- Check of the IGNORE\_TYPES is not correct [\#1818](https://github.com/RedHatInsights/insights-core/issues/1818)
+
 ## [insights-core-3.0.89-899](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.89-899) (2019-04-11)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.88-889...insights-core-3.0.89-899)
 
@@ -130,7 +148,6 @@
 **Fixed bugs:**
 
 - RedhatRelease parser failed to parse minor release version in some scenarios [\#1590](https://github.com/RedHatInsights/insights-core/issues/1590)
-- Exceptions on the command line with invalid arguments in the archive position [\#1486](https://github.com/RedHatInsights/insights-core/issues/1486)
 
 **Closed issues:**
 
@@ -207,54 +224,25 @@
 ## [3.0.58-1](https://github.com/RedHatInsights/insights-core/tree/3.0.58-1) (2018-11-12)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.57-663...3.0.58-1)
 
-**Closed issues:**
-
-- Working without parsers [\#1518](https://github.com/RedHatInsights/insights-core/issues/1518)
-
 ## [insights-core-3.0.57-663](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.57-663) (2018-11-08)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.56-653...insights-core-3.0.57-663)
-
-**Implemented enhancements:**
-
-- Some sos reports include JBoss Diagnostic Report contents [\#1511](https://github.com/RedHatInsights/insights-core/issues/1511)
 
 **Fixed bugs:**
 
 - FileListing parser does not handle filenames with newlines in the name [\#1527](https://github.com/RedHatInsights/insights-core/issues/1527)
-- FileListing class has selinux arg that is not used [\#1492](https://github.com/RedHatInsights/insights-core/issues/1492)
-- render is called even when rule has missing requirements [\#1489](https://github.com/RedHatInsights/insights-core/issues/1489)
 
 **Closed issues:**
 
 - Ensure current working directory is on the python path with insights-run [\#1523](https://github.com/RedHatInsights/insights-core/issues/1523)
-- \[RFE\] Results to include positive NACK - CVEs to which a system is NOT vulnerable [\#1510](https://github.com/RedHatInsights/insights-core/issues/1510)
-- `list.sort\(\)` doesn't work as expected in python3 [\#1496](https://github.com/RedHatInsights/insights-core/issues/1496)
 
 ## [insights-core-3.0.56-653](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.56-653) (2018-11-01)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.55-1...insights-core-3.0.56-653)
 
-**Implemented enhancements:**
-
-- rules without CONTENT produce hard to interpret reports [\#1480](https://github.com/RedHatInsights/insights-core/issues/1480)
-
-**Fixed bugs:**
-
-- The human readable rule report includes rules with missing requirements [\#1479](https://github.com/RedHatInsights/insights-core/issues/1479)
-
 ## [3.0.55-1](https://github.com/RedHatInsights/insights-core/tree/3.0.55-1) (2018-10-31)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.54-643...3.0.55-1)
 
-**Closed issues:**
-
-- fix wrong passenger\_status part in insights/specs/insights\_archive.py  [\#1508](https://github.com/RedHatInsights/insights-core/issues/1508)
-- \[python3\] `unordered\_compare` does support comparing list with dictionaries [\#1494](https://github.com/RedHatInsights/insights-core/issues/1494)
-
 ## [insights-core-3.0.54-643](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.54-643) (2018-10-25)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.52-1...insights-core-3.0.54-643)
-
-**Fixed bugs:**
-
-- configtree include directives only work from top level [\#1477](https://github.com/RedHatInsights/insights-core/issues/1477)
 
 ## [3.0.52-1](https://github.com/RedHatInsights/insights-core/tree/3.0.52-1) (2018-10-18)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.51-623...3.0.52-1)
