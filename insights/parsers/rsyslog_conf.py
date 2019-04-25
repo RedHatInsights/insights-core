@@ -194,11 +194,11 @@ class RsyslogConf8(Parser):
         Returns (dict): included configuration details.
         """
         return self._global_details
-    
+
     @property
     def log_details(self):
         """
-        This will return the dict of all log confiburation details on success else it 
+        This will return the dict of all log confiburation details on success else it
         will return empty dict `{}` on failure.
 
         Returns (dict): included configuration details.
