@@ -1,13 +1,14 @@
 """
-Software Collections list output - command ``scl --list``
-=========================================================================
+Software Collections list output - command ``scl --list`` RHEL-6
+================================================================
 
-This module provides parser for list output of ``scl``.
+This module provides parser for list output of ``scl``. This spec
+is valid for ``RHEL-6`` only, ``-l|--list`` is ``depricated`` in RHEL-7/8.
 
 Parser provided by this module is:
 
 SoftwareCollectionsListInstalled - command ``scl --list``
-------------------------------------------------------------------------------------
+---------------------------------------------------------
 
 """
 
