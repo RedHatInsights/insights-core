@@ -99,6 +99,8 @@ KRB5CONFIG3 = """
 [domain_realm]
 # .example.com = EXAMPLE.COM
 # example.com = EXAMPLE.COM
+[]
+xyz = abc
 """.strip()
 
 KRB5_CONF_PATH = "etc/krb5.conf"
