@@ -52,5 +52,5 @@ class InitProcessCgroup(CommandParser, LegacyItemAccess):
         for line in content:
             values = line.split(":")
             self.data[values[1]] = [values[0], values[2]]
-            if "system.slice/docker-" in values[2] and not self.is_container:
+            if "system.slice/docker-" in values[2] or 'machine.slice/libpod-' in values[2]:
                 self.is_container = True
