@@ -50,5 +50,7 @@ class OpenstackServerListAll(LegacyItemAccess, CommandParser):
 
             # Parses header line and each row using the "|" separator
             servers = parse_delimited_table(table, delim='|')
-            server_list = [{k: v for k, v in d.items() if k != ''} for d in servers]
-            self.data = server_list
+            for server in servers:
+                if '' in server:
+                    del server['']
+            self.data = servers
