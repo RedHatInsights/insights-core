@@ -84,15 +84,6 @@ def test_env_number_bad_values():
         c._load_env()
 
 
-def test_diagnosis_implies_legacy():
-    '''
-    --diagnosis should always imply legacy_upload=False
-    '''
-    c = InsightsConfig(diagnosis=True)
-    c.load_all()
-    assert c.legacy_upload is False
-
-
 # empty argv so parse_args isn't polluted with pytest arguments
 @patch('insights.client.config.sys.argv', [sys.argv[0]])
 def test_diagnosis_implies_legacy():
