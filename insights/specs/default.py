@@ -94,6 +94,7 @@ class DefaultSpecs(Specs):
     brctl_show = simple_command("/usr/sbin/brctl show")
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     candlepin_error_log = simple_file("/var/log/candlepin/error.log")
+    cgroups = simple_file("/proc/cgroups")
     checkin_conf = simple_file("/etc/splice/checkin.conf")
     ps_aexww = simple_command("/bin/ps aexww")
     ps_aux = simple_command("/bin/ps aux")
