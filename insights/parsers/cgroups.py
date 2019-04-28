@@ -77,7 +77,7 @@ class Cgroups(CommandParser):
             if subsys_item["subsys_name"] == i_subsys_name:
                 return int(subsys_item["num_cgroups"])
         # raise exception if give the wrong subsys_name
-        raise ParseException("Wrong subsys_name: {}".format(i_subsys_name))
+        raise ParseException("Wrong subsys_name: {0}".format(i_subsys_name))
 
     def is_subsys_enabled(self, i_subsys_name):
         """
@@ -102,4 +102,4 @@ class Cgroups(CommandParser):
             if subsys_item["subsys_name"] == i_subsys_name:
                 return subsys_item["enabled"] == "1"
         # raise exception if give the wrong subsys_name
-        raise ParseException("Wrong subsys_name: {}".format(i_subsys_name))
+        raise ParseException("Wrong subsys_name: {0}".format(i_subsys_name))
