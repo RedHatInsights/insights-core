@@ -149,7 +149,7 @@ global(workDirectory="/var/lib/rsyslog")
 module(load="builtin:omfile" Template="RSYSLOG_TraditionalFileFormat")
 
 # Include all config files in /etc/rsyslog.d/
-include(file="/etc/rsyslog.d/*.conf" mode="optional")
+incluRSYSLOGDCONF_PATHc/rsyslog.d/*.conf" mode="optional")
 
 #### RULES ####
 
@@ -187,11 +187,13 @@ $ModLoad imtcp
 $InputTCPServerRun 10514"
 """.strip()
 
-CONTEXT_PATH = "/etc/rsyslog.conf"
+RSYSLOGCONF_PATH = "/etc/rsyslog.conf"
+RSYSLOGDCONF_PATH = "/etc/rsyslog.d/rsyslog.conf"
+RSYSLOGDCONF_PATH = "/etc/rsyslog.d/listen.conf"
 
 
 def test_rsyslog_conf_0():
-    ctx = context_wrap(RSYSLOG_CONF_0)
+    ctx = context_wrap(RSYSLOG_CONF_0, path=RSYSLOGCONF_PATH)
     m = RsyslogConf(ctx)
     d = list(m)
     assert len(m) == 5
@@ -219,12 +221,16 @@ def test_rsyslog_conf_0():
     assert len(rsys) == 15
 
     ctx = context_wrap(RSYSLOG_CONF_RHEL8)
+    ctx.path = RSYSLOGCONF_PATH
+
     rsys = RsyslogConf8(ctx)
     d = list(rsys)
+    import pdb; pdb.set_trace()
     assert rsys.module_details == {'imuxsock': {'SysSock.Use': 'off'},
                                    'imjournal': {'StateFile': 'imjournal.state'},
                                    'imudp': {},
                                    'builtin:omfile': {'Template': 'RSYSLOG_TraditionalFileFormat'}}
+                                    # 'builtin:omfile': {'Template': 'RSYSLOG_TraditionalFileFormat', 'incluRSYSLOGDCONF_PATHc/rsyslog.d/*.conf': 'mode'}}
     assert len(rsys.module_details) == 4
     assert len(rsys.log_details) == 8
     assert rsys.global_details == {'workDirectory': '/var/lib/rsyslog'}

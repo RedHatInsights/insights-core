@@ -48,7 +48,6 @@ class RsyslogConf(Parser):
 
     def parse_content(self, content):
         self.data = get_active_lines(content)
-
         self.config_items = {}
         # Config items are e.g. "$Word value #optional comment"
         config_re = re.compile(r'^\s*\$(?P<name>\S+)\s+(?P<value>.*?)(?:\s+#.*)?$')
