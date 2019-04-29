@@ -52,6 +52,14 @@ major minor  #blocks  name
  253       17 1069531136 dm-17
 """.strip()
 
+INVALID_PARTITIONS_CONTENT = """
+major minor  #blocks  name
+
+   8       16 1384120320
+   8        0    3701760 sda
+   8       32 2621440000 sdc
+""".strip()
+
 EMPTY_CONTENT = """
 """.strip()
 
@@ -75,11 +83,17 @@ def test_partitions():
     assert dm_2.get('minor') == '2'
     assert dm_2.get('blocks') == '2726297600'
     assert 'dm-18' not in info
-    p_list = []
-    for partition in info:
-        p_list.append(partition)
+    p_list = [i for i in info]
+    assert p_list[2] in info
     assert len(p_list) == 39
     assert info['dm-17'] == {'major': '253', 'minor': '17', 'blocks': '1069531136', 'name': 'dm-17'}
+
+
+def test_partitions_invalid_data():
+    output = Partitions(context_wrap(INVALID_PARTITIONS_CONTENT))
+    assert len(output) == 2
+    assert 'sda' in output
+    assert 'sdc' in output
 
 
 def test_empty_content():
