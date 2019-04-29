@@ -38,6 +38,9 @@ def test_openstack_server_list_options():
     assert parser_data[1]["Image"] == 'overcloud-full'
     assert parser_data[1]["Flavor"] == 'compute'
     assert parser_data[0]["Networks"] == 'ctlplane=192.168.24.20'
+    assert parser_result.get_list('Name') == ['compute-0', 'compute-1', 'controller-0']
+    assert parser_result.get_startwith('Name', 'controller') == ['controller-0']
+    assert parser_result.get_startwith('Name', 'compute') == ['compute-0', 'compute-1']
 
 
 def test_doc():

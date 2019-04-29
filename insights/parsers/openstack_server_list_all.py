@@ -32,7 +32,10 @@ class OpenstackServerListAll(LegacyItemAccess, CommandParser):
         'compute-0'
         >>> parser_result_server_list[1]["Name"]
         'compute-1'
-
+        >>> parser_result_server_list.get_list('ID')
+        ['410b05bb-59b7-4b4c-88e9-975c811d68da', 'f891e98b-4df6-4c90-9bf1-39cf8ac900b0', '3d62cd7e-41d2-43dd-a5bf-5935bc319fae']
+        >>> parser_result_server_list.get_startwith('Name','compute')
+        ['compute-0', 'compute-1']
     """
 
     def parse_content(self, content):
@@ -54,3 +57,28 @@ class OpenstackServerListAll(LegacyItemAccess, CommandParser):
                 if '' in server:
                     del server['']
             self.data = servers
+
+    def get_list(self, key):
+        '''
+        returns the list of values for the specified key if the key exists
+        returns ['', '', ''] if the key doesn't exist
+
+        Example:
+            >>> parser_result_server_list.get_list('Name')
+            ['compute-0', 'compute-1', 'controller-0']
+        '''
+        list_ = [i.get(key, '') for i in self.data]
+        self.list_ = list_
+        return list_
+
+    def get_startwith(self, key, startswith):
+        '''
+        returns the list of values that contains startswith
+
+        Example:
+            >>> parser_result_server_list.get_startwith('Name','compute')
+            ['compute-0', 'compute-1']
+        '''
+        list_values = [i.get(key, '') for i in self.data]
+        list_starts_with = [value for value in list_values if startswith in value]
+        return list_starts_with
