@@ -392,6 +392,7 @@ class Specs(SpecSet):
     package_provides_httpd = RegistryPoint(multi_output=True)
     pam_conf = RegistryPoint()
     parted__l = RegistryPoint()
+    partitions = RegistryPoint()
     passenger_status = RegistryPoint()
     password_auth = RegistryPoint()
     pcs_config = RegistryPoint()

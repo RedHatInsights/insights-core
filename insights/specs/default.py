@@ -630,6 +630,7 @@ class DefaultSpecs(Specs):
     package_provides_httpd = foreach_execute(package_and_httpd, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
+    partitions = simple_file("/proc/partitions")
     passenger_status = simple_command("/usr/bin/passenger-status")
     password_auth = simple_file("/etc/pam.d/password-auth")
     pcs_config = simple_command("/usr/sbin/pcs config")
