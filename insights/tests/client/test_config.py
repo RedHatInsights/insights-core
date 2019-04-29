@@ -9,7 +9,7 @@ def test_config_load(open_):
     open_.return_value = TextIOWrapper(
         BytesIO(b'[insights-client]\nusername=AMURO'))
     c = InsightsConfig()
-    c.load_config_file()
+    c._load_config_file()
     assert c.username == 'AMURO'
 
 
@@ -18,7 +18,7 @@ def test_config_load_legacy(open_):
     open_.return_value = TextIOWrapper(
         BytesIO(b'[redhat-access-insights]\nusername=BRIGHT'))
     c = InsightsConfig()
-    c.load_config_file()
+    c._load_config_file()
     assert c.username == 'BRIGHT'
 
 
@@ -28,7 +28,7 @@ def test_config_load_legacy_ignored(open_):
         BytesIO(b'[insights-client]\nusername=CASVAL\n'
                 b'[redhat-access-insights]\nusername=SAYLA'))
     c = InsightsConfig()
-    c.load_config_file()
+    c._load_config_file()
     assert c.username == 'CASVAL'
 
 
@@ -38,7 +38,7 @@ def test_config_load_section_error(open_):
     open_.return_value = TextIOWrapper(
         BytesIO(b'aFUHAEFJhFhlAFJKhnfjeaf\nusername=RAMBA'))
     c = InsightsConfig()
-    c.load_config_file()
+    c._load_config_file()
     assert c.username == DEFAULT_OPTS['username']['default']
 
 
@@ -48,7 +48,7 @@ def test_config_load_value_error(open_):
     open_.return_value = TextIOWrapper(
         BytesIO(b'[insights-client]\nhttp_timeout=ZGOK'))
     c = InsightsConfig()
-    c.load_config_file()
+    c._load_config_file()
     assert c.http_timeout == DEFAULT_OPTS['http_timeout']['default']
 
 
@@ -66,7 +66,7 @@ def test_defaults():
        })
 def test_env_number_parsing():
     c = InsightsConfig()
-    c.load_env()
+    c._load_env()
     assert isinstance(c.cmd_timeout, int)
     assert isinstance(c.retries, int)
     assert isinstance(c.http_timeout, float)
@@ -80,4 +80,4 @@ def test_env_number_parsing():
 def test_env_number_bad_values():
     c = InsightsConfig()
     with pytest.raises(ValueError):
-        c.load_env()
+        c._load_env()

@@ -1,4 +1,7 @@
 """
+CinderApiLog - file ``/var/log/cinder/cinder-api.log``
+======================================================
+
 CinderVolumeLog - file ``/var/log/cinder/volume.log``
 =====================================================
 
@@ -26,6 +29,16 @@ Examples:
 
 from .. import LogFileOutput, parser
 from insights.specs import Specs
+
+
+@parser(Specs.cinder_api_log)
+class CinderApiLog(LogFileOutput):
+    """Class for parsing the ``/var/log/cinder/cinder-api.log`` file.
+
+    .. note::
+        Please refer to its super-class :class:`insights.core.LogFileOutput`
+    """
+    pass
 
 
 @parser(Specs.cinder_volume_log)

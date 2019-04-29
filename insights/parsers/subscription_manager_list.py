@@ -14,14 +14,17 @@ SubscriptionManagerListInstalled - command ``subscription-manager list --install
 
 SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
 -------------------------------------------------------------------------------------------
-"""
 
-from .. import parser, CommandParser
-from . import keyword_search
-from insights.specs import Specs
-from datetime import datetime
+SubscriptionManagerFactsList - command ``subscription-manager facts --list``
+----------------------------------------------------------------------------
+"""
 import re
+from datetime import datetime
 import six
+from insights.specs import Specs
+from insights.parsers import split_kv_pairs, SkipException
+from .. import parser, CommandParser, LegacyItemAccess
+from . import keyword_search
 
 
 class SubscriptionManagerList(CommandParser):
@@ -99,11 +102,11 @@ class SubscriptionManagerList(CommandParser):
         Returns:
             (list): A list of records that matched the search criteria.
 
-        >>> consumed = shared[SubscriptionManagerListConsumed]
-        >>> len(consumed.search(Service_Level='PREMIUM'))
-        1
-        >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
-        []
+        Examples:
+            >>> len(consumed.search(Service_Level='PREMIUM'))
+            1
+            >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
+            []
         """
         return keyword_search(self.records, **kwargs)
 
@@ -139,7 +142,6 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         System Type:       Physical
 
     Examples:
-        >>> consumed = shared[SubscriptionManagerListConsumed]
         >>> type(consumed)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerListConsumed'>
         >>> len(consumed.records)
@@ -201,7 +203,6 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
         Ends:           04/27/16
 
     Examples:
-        >>> installed = shared[SubscriptionManagerListInstalled]
         >>> type(installed)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerListInstalled'>
         >>> len(installed.records)
@@ -245,7 +246,6 @@ class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
         Enabled:   1
 
     Examples:
-        >>> repolist = shared[SubscriptionManagerReposListEnabled]
         >>> type(repolist)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerReposListEnabled'>
         >>> len(repolist.records)
@@ -254,3 +254,36 @@ class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
         'rhel-7-server-ansible-2-rpms'
     """
     pass
+
+
+@parser(Specs.subscription_manager_facts_list)
+class SubscriptionManagerFactsList(CommandParser, LegacyItemAccess):
+    """Read the output of ``subscription-manager facts --list``.
+
+    Sample output::
+
+        uname.machine: x86_64
+        uname.nodename: rhel7-box
+        uname.release: 3.10.0-327.el7.x86_64
+        uname.sysname: Linux
+        uname.version: #1 SMP Thu Oct 29 17:29:29 EDT 2015
+        virt.host_type: virtualbox, kvm
+        virt.is_guest: True
+        virt.uuid: 81897b5e-4df9-9794-8e2a-b496756b5cbc
+
+    Examples:
+        >>> facts['virt.uuid'] == "81897b5e-4df9-9794-8e2a-b496756b5cbc"
+        True
+        >>> facts['uname.sysname'] == "Linux"
+        True
+
+    Returns:
+        data(dict): All the facts that matches the filter criteria.
+
+    Raises:
+        SkipException: When the content is empty.
+    """
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("Empty content.")
+        self.data = split_kv_pairs(content, split_on=":", use_partition=True)
