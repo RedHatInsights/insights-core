@@ -43,6 +43,21 @@ def get_owner(filename):
     return (name, group)
 
 
+def get_cmd_and_package_in_ps(broker, target_command):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        ctx = broker[HostContext]
+        results = set()
+        for p in ps:
+            p_splits = p.split(None, 10)
+            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
+            which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
+            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
+            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
+            if cmd and pkg is not None:
+                results.add("{0} {1}".format(cmd, pkg[0]))
+        return results
+
+
 def _make_rpm_formatter(fmt=None):
     if fmt is None:
         fmt = [
@@ -178,6 +193,7 @@ class DefaultSpecs(Specs):
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
+    crypto_policies_bind = simple_file("/etc/crypto-policies/back-ends/bind.config")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
@@ -409,6 +425,7 @@ class DefaultSpecs(Specs):
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     ironic_inspector_log = simple_file("/var/log/ironic-inspector/ironic-inspector.log")
+    ironic_conf = first_file(["/var/lib/config-data/puppet-generated/ironic/etc/ironic/ironic.conf", "/etc/ironic/ironic.conf"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     katello_service_status = simple_command("/usr/bin/katello-service status")
     kdump_conf = simple_file("/etc/kdump.conf")
@@ -601,20 +618,16 @@ class DefaultSpecs(Specs):
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
         """Command: package_and_java"""
-        ps = broker[DefaultSpecs.ps_auxww].content
-        ctx = broker[HostContext]
-        results = set()
-        for p in ps:
-            p_splits = p.split(None, 10)
-            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
-            which = ctx.shell_out("which {0}".format(cmd)) if 'java' in os.path.basename(cmd) else None
-            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
-            if cmd and pkg:
-                results.add("{0} {1}".format(cmd, pkg[0]))
-        return results
+        return get_cmd_and_package_in_ps(broker, 'java')
 
     package_provides_java = foreach_execute(package_and_java, "echo %s")
+
+    @datasource(ps_auxww, context=HostContext)
+    def package_and_httpd(broker):
+        """Command: package_and_httpd"""
+        return get_cmd_and_package_in_ps(broker, 'httpd')
+
+    package_provides_httpd = foreach_execute(package_and_httpd, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
     passenger_status = simple_command("/usr/bin/passenger-status")
