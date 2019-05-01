@@ -93,7 +93,7 @@ def test_dont_archive_when_command_not_found(write_data_to_file):
     arch.add_to_archive(cmd)
     write_data_to_file.assert_not_called()
 
-    cmd.get_output.return_value = 'command finished'
+    cmd.get_output.return_value = '/usr/bin/command -a'
     
     arch.add_to_archive(cmd)
     write_data_to_file.assert_called_once()
