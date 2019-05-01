@@ -145,6 +145,24 @@ insights.tests
     :show-inheritance:
     :undoc-members:
 
+insights.tools
+--------------
+
+.. automodule:: insights.tools.cat
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+.. automodule:: insights.tools.insights_inspect
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
+.. automodule:: insights.tools.query
+    :members:
+    :show-inheritance:
+    :undoc-members:
+
 insights.util
 -------------
 

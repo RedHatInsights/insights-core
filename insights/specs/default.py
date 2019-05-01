@@ -25,6 +25,7 @@ from insights.core.spec_factory import simple_file, simple_command, glob_file
 from insights.core.spec_factory import first_of, foreach_collect, foreach_execute
 from insights.core.spec_factory import first_file, listdir
 from insights.parsers.mount import Mount
+from insights.combiners.cloud_provider import CloudProvider
 from insights.specs import Specs
 
 from grp import getgrgid
@@ -40,6 +41,21 @@ def get_owner(filename):
     name = getpwuid(st.st_uid).pw_name
     group = getgrgid(st.st_gid).gr_name
     return (name, group)
+
+
+def get_cmd_and_package_in_ps(broker, target_command):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        ctx = broker[HostContext]
+        results = set()
+        for p in ps:
+            p_splits = p.split(None, 10)
+            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
+            which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
+            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
+            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
+            if cmd and pkg is not None:
+                results.add("{0} {1}".format(cmd, pkg[0]))
+        return results
 
 
 def _make_rpm_formatter(fmt=None):
@@ -76,6 +92,15 @@ class DefaultSpecs(Specs):
     autofs_conf = simple_file("/etc/autofs.conf")
     avc_hash_stats = simple_file("/sys/fs/selinux/avc/hash_stats")
     avc_cache_threshold = simple_file("/sys/fs/selinux/avc/cache_threshold")
+
+    @datasource(CloudProvider)
+    def is_aws(broker):
+        cp = broker[CloudProvider]
+        if cp and cp.cloud_provider == CloudProvider.AWS:
+            return True
+        raise SkipComponent()
+
+    aws_instance_type = simple_command("/usr/bin/curl http://169.254.169.254/latest/meta-data/instance-type --connect-timeout 5", deps=[is_aws])
     bios_uuid = simple_command("/usr/sbin/dmidecode -s system-uuid")
     blkid = simple_command("/sbin/blkid -c /dev/null")
     bond = glob_file("/proc/net/bonding/bond*")
@@ -85,6 +110,7 @@ class DefaultSpecs(Specs):
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     candlepin_error_log = simple_file("/var/log/candlepin/error.log")
     checkin_conf = simple_file("/etc/splice/checkin.conf")
+    ps_aexww = simple_command("/bin/ps aexww")
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
@@ -140,6 +166,7 @@ class DefaultSpecs(Specs):
     chrony_conf = simple_file("/etc/chrony.conf")
     chronyc_sources = simple_command("/usr/bin/chronyc sources")
     cib_xml = simple_file("/var/lib/pacemaker/cib/cib.xml")
+    cinder_api_log = first_file(["/var/log/containers/cinder/cinder-api.log", "/var/log/cinder/cinder-api.log"])
     cinder_conf = first_file(["/var/lib/config-data/puppet-generated/cinder/etc/cinder/cinder.conf", "/etc/cinder/cinder.conf"])
     cinder_volume_log = simple_file("/var/log/cinder/volume.log")
     cluster_conf = simple_file("/etc/cluster/cluster.conf")
@@ -166,6 +193,7 @@ class DefaultSpecs(Specs):
     crypto_policies_config = simple_file("/etc/crypto-policies/config")
     crypto_policies_state_current = simple_file("/etc/crypto-policies/state/current")
     crypto_policies_opensshserver = simple_file("/etc/crypto-policies/back-ends/opensshserver.config")
+    crypto_policies_bind = simple_file("/etc/crypto-policies/back-ends/bind.config")
     current_clocksource = simple_file("/sys/devices/system/clocksource/clocksource0/current_clocksource")
     date = simple_command("/bin/date")
     date_iso = simple_command("/bin/date --iso-8601=seconds")
@@ -286,10 +314,30 @@ class DefaultSpecs(Specs):
     hosts = simple_file("/etc/hosts")
     hponcfg_g = simple_command("/sbin/hponcfg -g")
     httpd_access_log = simple_file("/var/log/httpd/access_log")
-    httpd_conf = glob_file(["/etc/httpd/conf/httpd.conf", "/etc/httpd/conf.d/*.conf"])
-    httpd_conf_scl_httpd24 = glob_file(["/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf", "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf"])
-    httpd_conf_scl_jbcs_httpd24 = glob_file(["/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf", "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf"])
+    httpd_conf = glob_file(
+        [
+            "/etc/httpd/conf/httpd.conf",
+            "/etc/httpd/conf.d/*.conf",
+            "/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
+    httpd_conf_scl_httpd24 = glob_file(
+        [
+            "/opt/rh/httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
+    httpd_conf_scl_jbcs_httpd24 = glob_file(
+        [
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf/httpd.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.d/*.conf",
+            "/opt/rh/jbcs-httpd24/root/etc/httpd/conf.modules.d/*.conf"
+        ]
+    )
     httpd_error_log = simple_file("var/log/httpd/error_log")
+    httpd24_httpd_error_log = simple_file("/opt/rh/httpd24/root/etc/httpd/logs/error_log")
+    jbcs_httpd24_httpd_error_log = simple_file("/opt/rh/jbcs-httpd24/root/etc/httpd/logs/error_log")
     httpd_pid = simple_command("/usr/bin/pgrep -o httpd")
     httpd_limits = foreach_collect(httpd_pid, "/proc/%s/limits")
     virt_uuid_facts = simple_file("/etc/rhsm/facts/virt_uuid.facts")
@@ -377,6 +425,7 @@ class DefaultSpecs(Specs):
     ipv4_neigh = simple_command("/sbin/ip -4 neighbor show nud all")
     ipv6_neigh = simple_command("/sbin/ip -6 neighbor show nud all")
     ironic_inspector_log = simple_file("/var/log/ironic-inspector/ironic-inspector.log")
+    ironic_conf = first_file(["/var/lib/config-data/puppet-generated/ironic/etc/ironic/ironic.conf", "/etc/ironic/ironic.conf"])
     iscsiadm_m_session = simple_command("/usr/sbin/iscsiadm -m session")
     katello_service_status = simple_command("/usr/bin/katello-service status")
     kdump_conf = simple_file("/etc/kdump.conf")
@@ -424,8 +473,10 @@ class DefaultSpecs(Specs):
     ls_var_lib_mongodb = simple_command("/bin/ls -la /var/lib/mongodb")
     ls_R_var_lib_nova_instances = simple_command("/bin/ls -laR /var/lib/nova/instances")
     ls_var_lib_nova_instances = simple_command("/bin/ls -laRZ /var/lib/nova/instances")
+    ls_var_opt_mssql = simple_command("/bin/ls -ld /var/opt/mssql")
     ls_usr_sbin = simple_command("/bin/ls -ln /usr/sbin")
     ls_var_log = simple_command("/bin/ls -la /var/log /var/log/audit")
+    ls_var_opt_mssql_log = simple_command("/bin/ls -la /var/opt/mssql/log")
     ls_var_spool_clientmq = simple_command("/bin/ls -ln /var/spool/clientmqueue")
     ls_var_tmp = simple_command("/bin/ls -ln /var/tmp")
     ls_var_run = simple_command("/bin/ls -lnL /var/run")
@@ -460,12 +511,14 @@ class DefaultSpecs(Specs):
                             "/etc/opt/rh/rh-mongodb26/mongod.conf"
                             ])
     mount = simple_command("/bin/mount")
+    mssql_conf = simple_file("/var/opt/mssql/mssql.conf")
     multicast_querier = simple_command("/usr/bin/find /sys/devices/virtual/net/ -name multicast_querier -print -exec cat {} \;")
     multipath_conf = simple_file("/etc/multipath.conf")
     multipath_conf_initramfs = simple_command("/bin/lsinitrd -f /etc/multipath.conf")
     multipath__v4__ll = simple_command("/sbin/multipath -v4 -ll")
     mysqladmin_vars = simple_command("/bin/mysqladmin variables")
     mysql_log = glob_file([
+                          "/var/log/mysql/mysqld.log",
                           "/var/log/mysql.log",
                           "/var/opt/rh/rh-mysql*/log/mysql/mysqld.log"
                           ])
@@ -493,9 +546,9 @@ class DefaultSpecs(Specs):
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
     nginx_conf = glob_file([
-                           "/etc/nginx/nginx.conf",
-                           "/opt/rh/nginx*/root/etc/nginx/nginx.conf",
-                           "/etc/opt/rh/rh-nginx*/nginx/nginx.conf"
+                           "/etc/nginx/*.conf", "/etc/nginx/conf.d/*", "/etc/nginx/default.d/*",
+                           "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*", "/opt/rh/nginx*/root/etc/nginx/default.d/*",
+                           "/etc/opt/rh/rh-nginx*/nginx/*.conf", "/etc/opt/rh/rh-nginx*/nginx/conf.d/*", "/etc/opt/rh/rh-nginx*/nginx/default.d/*"
                            ])
     nmcli_conn_show = simple_command("/usr/bin/nmcli conn show")
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
@@ -518,6 +571,7 @@ class DefaultSpecs(Specs):
     ntptime = simple_command("/usr/sbin/ntptime")
     numa_cpus = glob_file("/sys/devices/system/node/node[0-9]*/cpulist")
     numeric_user_group_name = simple_command("/bin/grep -c '^[[:digit:]]' /etc/passwd /etc/group")
+    nvme_core_io_timeout = simple_file("/sys/module/nvme_core/parameters/io_timeout")
     oc_get_bc = simple_command("/usr/bin/oc get bc -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_build = simple_command("/usr/bin/oc get build -o yaml --all-namespaces", context=OpenShiftContext)
     oc_get_clusterrole_with_config = simple_command("/usr/bin/oc get clusterrole --config /etc/origin/master/admin.kubeconfig")
@@ -563,25 +617,21 @@ class DefaultSpecs(Specs):
     ovs_vsctl_show = simple_command("/usr/bin/ovs-vsctl show")
     ovs_vswitchd_pid = simple_command("/usr/bin/pgrep -o ovs-vswitchd")
     ovs_vswitchd_limits = foreach_collect(ovs_vswitchd_pid, "/proc/%s/limits")
-    pacemaker_log = simple_file("/var/log/pacemaker.log")
+    pacemaker_log = first_file(["/var/log/pacemaker.log", "/var/log/pacemaker/pacemaker.log"])
 
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
         """Command: package_and_java"""
-        ps = broker[DefaultSpecs.ps_auxww].content
-        ctx = broker[HostContext]
-        results = set()
-        for p in ps:
-            p_splits = p.split(None, 10)
-            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
-            which = ctx.shell_out("which {0}".format(cmd)) if 'java' in os.path.basename(cmd) else None
-            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
-            if cmd and pkg:
-                results.add("{0} {1}".format(cmd, pkg[0]))
-        return results
+        return get_cmd_and_package_in_ps(broker, 'java')
 
     package_provides_java = foreach_execute(package_and_java, "echo %s")
+
+    @datasource(ps_auxww, context=HostContext)
+    def package_and_httpd(broker):
+        """Command: package_and_httpd"""
+        return get_cmd_and_package_in_ps(broker, 'httpd')
+
+    package_provides_httpd = foreach_execute(package_and_httpd, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
     passenger_status = simple_command("/usr/bin/passenger-status")
@@ -749,6 +799,7 @@ class DefaultSpecs(Specs):
     sshd_config = simple_file("/etc/ssh/sshd_config")
     sshd_config_perms = simple_command("/bin/ls -l /etc/ssh/sshd_config")
     sssd_config = simple_file("/etc/sssd/sssd.conf")
+    subscription_manager_facts_list = simple_command("/usr/bin/subscription-manager facts --list")
     subscription_manager_id = simple_command("/usr/bin/subscription-manager identity")
     subscription_manager_list_consumed = simple_command('/usr/bin/subscription-manager list --consumed')
     subscription_manager_list_installed = simple_command('/usr/bin/subscription-manager list --installed')
