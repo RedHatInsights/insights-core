@@ -9,7 +9,7 @@ all the files starteing with "bond." located in the
 Typical content of ``bond.*`` file is::
 
     Ethernet Channel Bonding Driver: v3.2.4 (January 28, 2008)
-    
+
     Bonding Mode: IEEE 802.3ad Dynamic link aggregation
     Transmit Hash Policy: layer2 (0)
     MII Status: up
@@ -84,7 +84,7 @@ BOND_PREFIX_MAP = {
 class Bond(Parser):
     """
     Models the ``/proc/net/bonding`` file.
-    
+
     Currently used information from ``/proc/net/bonding`` includes
     the "bond mode" and "partner mac address".
     """
