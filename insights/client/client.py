@@ -446,7 +446,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
     for tries in range(config.retries):
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
-        if upload.status_code == 202:
+        if upload.status_code in (200, 202):
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
         else:
