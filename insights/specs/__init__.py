@@ -493,6 +493,7 @@ class Specs(SpecSet):
     subscription_manager_list_installed = RegistryPoint()
     subscription_manager_release_show = RegistryPoint()
     subscription_manager_repos_list_enabled = RegistryPoint()
+    swift_conf = RegistryPoint()
     swift_object_expirer_conf = RegistryPoint()
     swift_proxy_server_conf = RegistryPoint()
     sysconfig_chronyd = RegistryPoint()
