@@ -172,7 +172,7 @@ def test_reg_check_registered():
     client.session = True
 
     # test function and integration in .register()
-    assert client.get_registation_status()['status'] is True
+    assert client.get_registration_status()['status'] is True
     assert client.register() is True
     for r in constants.registered_files:
         assert os.path.isfile(r) is True
@@ -197,7 +197,7 @@ def test_reg_check_unregistered():
     client.session = True
 
     # test function and integration in .register()
-    assert client.get_registation_status()['status'] is False
+    assert client.get_registration_status()['status'] is False
     assert client.register() is False
     for r in constants.registered_files:
         assert os.path.isfile(r) is False
@@ -225,7 +225,7 @@ def test_reg_check_registered_unreachable():
     # reset config and try to check registration
     config.register = False
     client.connection = FakeConnection(registered=False)
-    assert client.get_registation_status()['unreachable'] is True
+    assert client.get_registration_status()['unreachable'] is True
     assert client.register() is None
     for r in constants.registered_files:
         assert os.path.isfile(r) is True
@@ -253,7 +253,7 @@ def test_reg_check_unregistered_unreachable():
     # reset config and try to check registration
     config.unregister = False
     client.connection = FakeConnection(registered=False)
-    assert client.get_registation_status()['unreachable'] is True
+    assert client.get_registration_status()['unreachable'] is True
     assert client.register() is None
     for r in constants.registered_files:
         assert os.path.isfile(r) is False
