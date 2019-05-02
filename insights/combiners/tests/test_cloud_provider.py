@@ -24,6 +24,7 @@ gnome-terminal-3.28.2-2.fc28.x86_64
 python3-IPy-0.81-21.fc28.noarch
 gnu-free-serif-fonts-20120503-17.fc28.noarch
 google-rhui-client-5.1.100-1.el7
+google-rhui-client-5.1.100-1.el6
 """.strip()
 
 RPMS_AZURE = """
@@ -421,7 +422,8 @@ def test_rpm_google():
     yrl = YumRepoList(context_wrap(YUM_REPOLIST_NOT_AZURE))
     ret = CloudProvider(irpms, dmi, yrl)
     assert ret.cloud_provider == 'google'
-    assert ret.cp_rpms.get('google')[0] == 'google-rhui-client-5.1.100-1.el7'
+    assert 'google-rhui-client-5.1.100-1.el7' in ret.cp_rpms.get('google')
+    assert 'google-rhui-client-5.1.100-1.el6' in ret.cp_rpms.get('google')
 
 
 def test_rpm_aws():
