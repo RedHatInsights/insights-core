@@ -1,22 +1,17 @@
 """
 Bond - file ``/proc/net/bonding``
 =================================
-
 Provides plugins access to the network bonding information gathered from
 all the files starteing with "bond." located in the
 ``/proc/net/bonding`` directory.
-
 Typical content of ``bond.*`` file is::
-
     Ethernet Channel Bonding Driver: v3.2.4 (January 28, 2008)
-
     Bonding Mode: IEEE 802.3ad Dynamic link aggregation
     Transmit Hash Policy: layer2 (0)
     MII Status: up
     MII Polling Interval (ms): 500
     Up Delay (ms): 0
     Down Delay (ms): 0
-
     802.3ad info
     LACP rate: slow
     Active Aggregator Info:
@@ -25,23 +20,19 @@ Typical content of ``bond.*`` file is::
             Actor Key: 17
             Partner Key: 1
             Partner Mac Address: 00:00:00:00:00:00
-
     Slave Interface: eth1
     MII Status: up
     Link Failure Count: 0
     Permanent HW addr: 00:16:35:5e:42:fc
     Aggregator ID: 3
-
     Slave Interface: eth2
     MII Status: up
     Link Failure Count: 0
     Permanent HW addr: 00:16:35:5e:02:7e
     Aggregator ID: 2
-
 Data is modeled as an array of ``Bond`` objects (``bond`` being a
 pattern file specification gathering data from files located in
 ``/proc/net/bonding``.
-
 Examples:
     >>> type(bond_info)
     <class 'insights.parsers.bond.Bond'>
@@ -84,7 +75,6 @@ BOND_PREFIX_MAP = {
 class Bond(Parser):
     """
     Models the ``/proc/net/bonding`` file.
-
     Currently used information from ``/proc/net/bonding`` includes
     the "bond mode" and "partner mac address".
     """
@@ -172,7 +162,7 @@ class Bond(Parser):
 
     @property
     def mii_status(self):
-        """Returns all the "MII Status" in the bond file wrapped
+        """Returns the master and all the slaves "MII Status" value in the bond file wrapped
         a list if the key/value exists.  If the key is not in the
         bond file, ``[]`` is returned.
         """
@@ -180,7 +170,7 @@ class Bond(Parser):
 
     @property
     def slave_link_failure_count(self):
-        """Returns all the "Link Failure Count" in the bond file wrapped
+        """Returns all the slaves "Link Failure Count" value in the bond file wrapped
         a list if the key/value exists.  If the key is not in the
         bond file, ``[]`` is returned.
         """
@@ -188,7 +178,7 @@ class Bond(Parser):
 
     @property
     def slave_speed(self):
-        """Returns all the slave "Speed" in the bond file wrapped
+        """Returns all the slaves "Speed" value in the bond file wrapped
         a list if the key/value exists.  If the key is not in the
         bond file, ``[]`` is returned.
         """
@@ -196,7 +186,7 @@ class Bond(Parser):
 
     @property
     def slave_duplex(self):
-        """Returns all the slave "Duplex" in the bond file wrapped
+        """Returns all the slave "Duplex" value in the bond file wrapped
         a list if the key/value exists.  If the key is not in the
         bond file, ``[]`` is returned.
         """
