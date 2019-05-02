@@ -797,7 +797,7 @@ class InsightsConnection(object):
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
-        if upload.status_code == 202:
+        if upload.status_code in (200, 202):
             # 202 from platform, no json response
             logger.debug(upload.text)
             # upload = registration on platform
