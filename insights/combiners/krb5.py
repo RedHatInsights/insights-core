@@ -8,6 +8,7 @@ Krb5Configuration objects.
 from .. import LegacyItemAccess
 from insights.core.plugins import combiner
 from insights.parsers.krb5 import Krb5Configuration
+from insights.parsers.httpd_conf import dict_deep_merge
 
 
 @combiner(Krb5Configuration)
@@ -81,7 +82,7 @@ class AllKrb5Conf(LegacyItemAccess):
                 self.include = krb5_parser.include
                 self.module = krb5_parser.module
             else:
-                self.data.update(krb5_parser.data)
+                dict_deep_merge(self.data, krb5_parser.data)
         # Same options in same section from other configuration files will be covered by the option
         # from main configuration, but different options in same section will be kept.
         for key, value in main_data.items():
