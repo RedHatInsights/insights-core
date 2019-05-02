@@ -81,8 +81,6 @@ KRB5CONFIG3 = """
 """.strip()
 
 
-
-
 def test_active_krb5_nest():
     krb51 = Krb5Configuration(context_wrap(KRB5CONFIG, path='/etc/krb5.conf'))
     krb52 = Krb5Configuration(context_wrap(KRB5CONFIG2, path='/etc/krb5.conf.d/test.conf'))
