@@ -15,27 +15,29 @@ DEFAULT_OPTS = {
     'analyze_container': {
         'default': False,
         'opt': ['--analyze-container'],
-        'help': 'Treat the current filesystem as a container and upload to the /images endpoint.',
+        'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
     'analyze_image_id': {
-        'default': None,
+        'default': False,
         'opt': ['--analyze-image-id'],
-        'help': 'Analyze a docker image with the specified ID.',
-        'action': 'store',
-        'metavar': 'ID'
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
     },
     'analyze_file': {
-        'default': None,
+        'default': False,
         'opt': ['--analyze-file'],
-        'help': 'Analyze an archived filesystem at the specified path.',
-        'action': 'store'
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
     },
     'analyze_mountpoint': {
-        'default': None,
+        'default': False,
         'opt': ['--analyze-mountpoint'],
-        'help': 'Analyze a filesystem at the specified mountpoint.',
-        'action': 'store'
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
     },
     'authmethod': {
         # non-CLI
@@ -551,18 +553,30 @@ class InsightsConfig(object):
         '''
         Make sure there are no conflicting or invalid options
         '''
+        if self.analyze_image_id:
+            raise ValueError(
+                '--analyze-image-id is no longer supported.')
+        if self.analyze_file:
+            raise ValueError(
+                '--analyze-file is no longer supported.')
+        if self.analyze_mountpoint:
+            raise ValueError(
+                '--analyze-mountpoint is no longer supported.')
+        if self.analyze_container:
+            raise ValueError(
+                '--analyze-container is no longer supported.')
+        if self.use_atomic:
+            raise ValueError(
+                '--use-atomic is no longer supported.')
+        if self.use_docker:
+            raise ValueError(
+                '--use-docker is no longer supported.')
         if self.obfuscate_hostname and not self.obfuscate:
             raise ValueError(
                 'Option `obfuscate_hostname` requires `obfuscate`')
-        if self.analyze_image_id is not None and len(self.analyze_image_id) < 12:
-            raise ValueError(
-                'Image/Container ID must be at least twelve characters long.')
         if self.enable_schedule and self.disable_schedule:
             raise ValueError(
                 'Conflicting options: --enable-schedule and --disable-schedule')
-        if self.analyze_container and (self.register or self.unregister):
-            raise ValueError('Registration not supported with '
-                             'image or container analysis.')
         if self.to_json and self.to_stdout:
             raise ValueError(
                 'Conflicting options: --to-stdout and --to-json')
@@ -573,18 +587,6 @@ class InsightsConfig(object):
             if self.group:
                 raise ValueError(
                     '--group is not supported at this time.')
-            if self.analyze_image_id:
-                raise ValueError(
-                    '--analyze-image-id is not supported at this time.')
-            if self.analyze_file:
-                raise ValueError(
-                    '--analyze-file is not supported at this time.')
-            if self.analyze_mountpoint:
-                raise ValueError(
-                    '--analyze-mountpoint is not supported at this time.')
-            if self.analyze_container:
-                raise ValueError(
-                    '--analyze-container is not supported at this time.')
 
     def _imply_options(self):
         '''
