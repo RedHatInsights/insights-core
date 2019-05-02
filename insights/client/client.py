@@ -404,7 +404,6 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
-            machine_id = generate_machine_id()
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
@@ -414,12 +413,13 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                     handler.write(upload.text.encode('utf-8'))
             write_to_disk(constants.lastupload_file)
 
+            msg_name = determine_hostname(config.display_name)
             account_number = config.account_number
             if account_number:
-                logger.info("Successfully uploaded report from %s to account %s." % (
-                            machine_id, account_number))
+                logger.info("Successfully uploaded report from %s to account %s.",
+                            msg_name, account_number)
             else:
-                logger.info("Successfully uploaded report for %s." % (machine_id))
+                logger.info("Successfully uploaded report for %s.", msg_name)
             break
 
         elif upload.status_code == 412:
@@ -447,8 +447,8 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
         if upload.status_code == 202:
-            machine_id = generate_machine_id()
-            logger.info("Successfully uploaded report for %s." % (machine_id))
+            msg_name = determine_hostname(config.display_name)
+            logger.info("Successfully uploaded report for %s.", msg_name)
         else:
             logger.error("Upload attempt %d of %d failed!",
                          tries + 1, config.retries, upload.status_code)
