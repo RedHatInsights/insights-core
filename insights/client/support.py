@@ -103,8 +103,11 @@ class InsightsSupport(object):
 
         reg_check = registration_check(pconn)
         cfg_block.append('Registration check:')
-        for key in reg_check:
-            cfg_block.append(key + ': ' + str(reg_check[key]))
+        if pconn.config.legacy_upload:
+            for key in reg_check:
+                cfg_block.append(key + ': ' + str(reg_check[key]))
+        else:
+            cfg_block.append("status: " + str(reg_check))
 
         lastupload = 'never'
         if os.path.isfile(constants.lastupload_file):
