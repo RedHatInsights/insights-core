@@ -554,7 +554,11 @@ class DefaultSpecs(Specs):
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
-    nova_conf = first_file(["/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf", "/etc/nova/nova.conf"])
+    nova_conf = first_file([
+                           "/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf",
+                           "/var/lib/config-data/puppet-generated/nova_libvirt/etc/nova/nova.conf",
+                           "/etc/nova/nova.conf"
+                           ])
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_crontab_container = simple_command("docker exec nova_api_cron /usr/bin/crontab -l -u nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
