@@ -73,7 +73,7 @@ class InsightsConnection(object):
                 constants.default_conf_dir,
                 'cert-api.access.redhat.com.pem')
             # else:
-                # self.cert_verify = True
+            # self.cert_verify = True
         else:
             if isinstance(self.cert_verify, six.string_types):
                 if self.cert_verify.lower() == 'false':
