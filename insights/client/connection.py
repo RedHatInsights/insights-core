@@ -613,7 +613,7 @@ class InsightsConnection(object):
         try:
             # [circus music]
             if self.config.legacy_upload:
-                url = self.base_url + '/platform/inventory/api/v1/hosts?insights_id=' + machine_id
+                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
             else:
                 url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
             net_logger.info("GET %s", url)
@@ -867,7 +867,7 @@ class InsightsConnection(object):
 
         # [circus music]
         if self.config.legacy_upload:
-            req_url = self.base_url + '/platform/inventory/api/v1/hosts/' + inventory_id
+            req_url = self.base_url + '/platform/inventory/v1/hosts/' + inventory_id
         else:
             req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
