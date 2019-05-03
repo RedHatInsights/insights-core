@@ -68,12 +68,12 @@ class InsightsConnection(object):
         # workaround while we support both legacy and plat APIs
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
-            if self.config.legacy_upload:
-                self.cert_verify = os.path.join(
-                    constants.default_conf_dir,
-                    'cert-api.access.redhat.com.pem')
-            else:
-                self.cert_verify = True
+            # if self.config.legacy_upload:
+            self.cert_verify = os.path.join(
+                constants.default_conf_dir,
+                'cert-api.access.redhat.com.pem')
+            # else:
+            # self.cert_verify = True
         else:
             if isinstance(self.cert_verify, six.string_types):
                 if self.cert_verify.lower() == 'false':
