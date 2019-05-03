@@ -135,13 +135,20 @@ class InsightsClient(object):
         """
             returns (str): path to new egg. None if no update.
         """
-        url = self.connection.base_url + path
         # Searched for cached etag information
         current_etag = None
         if os.path.isfile(etag_file):
             with open(etag_file, 'r') as fp:
                 current_etag = fp.read().strip()
                 logger.debug('Found etag %s', current_etag)
+
+        # it's only temporary. I promise. this is the worst timeline
+        # all for a phone popup
+        url = self.connection.base_url + path
+        verify = self.config.cert_verify
+        if not self.config.legacy_upload:
+            url = 'https://cloud.redhat.com/api' + path
+            verify = True
 
         # Setup the new request for core retrieval
         logger.debug('Making request to %s for new core', url)
@@ -152,10 +159,10 @@ class InsightsClient(object):
         if current_etag and not force:
             logger.debug('Requesting new file with etag %s', current_etag)
             etag_headers = {'If-None-Match': current_etag}
-            response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
+            response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout, verify=verify)
         else:
             logger.debug('Found no etag or forcing fetch')
-            response = self.session.get(url, timeout=self.config.http_timeout)
+            response = self.session.get(url, timeout=self.config.http_timeout, verify=verify)
 
         # Debug information
         logger.debug('Status code: %d', response.status_code)
