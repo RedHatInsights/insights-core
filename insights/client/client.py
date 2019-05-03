@@ -142,6 +142,8 @@ def _legacy_handle_registration(config, pconn):
         return True
 
     if config.register:
+        if config.group:
+            logger.info('Registering with a group is currently unavailable.')
         # register if specified
         message, hostname, group, display_name = register(config, pconn)
         if not hostname:
@@ -228,6 +230,7 @@ def handle_unregistration(config, pconn):
         False - machine could not be unregistered
         None - could not reach the API
     """
+    logger.info('Unregistration is not currently available.')
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
     unreg = pconn.unregister()
