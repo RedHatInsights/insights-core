@@ -185,6 +185,11 @@ def post_update(client, config):
         logger.debug('Running client in offline mode. Bypassing registration.')
         return
 
+    # --payload short circuits registration check
+    if config.payload:
+        logger.debug('Uploading a specified archive. Bypassing registration.')
+        return
+
     # check registration status before anything else
     reg_check = client.get_registration_status()
     if reg_check is None:
