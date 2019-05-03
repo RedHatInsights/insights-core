@@ -803,8 +803,8 @@ class InsightsConnection(object):
             # upload = registration on platform
             write_registered_file()
         else:
-            logger.error(
-                "Upload archive failed with status code  %s",
+            logger.debug(
+                "Upload archive failed with status code %s",
                 upload.status_code)
             return upload
         logger.debug("Upload duration: %s", upload.elapsed)
