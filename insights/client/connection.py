@@ -611,7 +611,11 @@ class InsightsConnection(object):
         '''
         machine_id = generate_machine_id()
         try:
-            url = self.api_url + '/inventory/v1/hosts?insights_id=' + machine_id
+            # [circus music]
+            if self.config.legacy_upload:
+                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
+            else:
+                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
@@ -844,22 +848,28 @@ class InsightsConnection(object):
                 return False
         except requests.ConnectionError:
             # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
             return False
 
     def set_display_name(self, display_name):
         '''
         Set display name of a system independently of upload.
         '''
+        legacy_set = False
         if self.config.legacy_upload:
-            return self._legacy_set_display_name(display_name)
+            # [circus music plays]
+            # while we have to support legacy, set name in both APIs
+            legacy_set = self._legacy_set_display_name(display_name)
 
         system = self._fetch_system_by_machine_id()
         if not system:
-            return system
+            return legacy_set or system
         inventory_id = system[0]['id']
-        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+
+        # [circus music]
+        if self.config.legacy_upload:
+            req_url = self.base_url + '/platform/inventory/v1/hosts/' + inventory_id
+        else:
+            req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
