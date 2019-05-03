@@ -248,7 +248,7 @@ def collect_and_output(client, config):
         except RuntimeError as e:
             logger.error(e)
             sys.exit(constants.sig_kill_bad)
-        config.content_type = 'application/vnd.redhat.advisor.test+tgz'
+        config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
 
     if not insights_archive:
         sys.exit(constants.sig_kill_bad)

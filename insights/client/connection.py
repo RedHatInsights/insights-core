@@ -292,7 +292,7 @@ class InsightsConnection(object):
             if method is 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
-                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.test+tgz'),
+                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
@@ -669,8 +669,8 @@ class InsightsConnection(object):
             url = self.api_url + "/v1/systems/" + machine_id
             net_logger.info("DELETE %s", url)
             self.session.delete(url)
-            logger.info(
-                "Successfully unregistered from the Red Hat Insights Service")
+            # logger.info(
+            #     "Successfully unregistered from the Red Hat Insights Service")
             return True
         except requests.ConnectionError as e:
             logger.debug(e)
