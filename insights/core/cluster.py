@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import itertools
-import pandas as pd
+import os
 from collections import defaultdict
+
+import pandas as pd
 
 from ansible.parsing.dataloader import DataLoader
 from ansible.inventory.manager import InventoryManager
@@ -46,8 +48,14 @@ def attach_machine_id(result, mid):
 
 def process_archives(archives):
     for archive in archives:
-        with extract(archive) as ex:
-            ctx = create_context(ex.tmp_dir)
+        if os.path.isfile(archive):
+            with extract(archive) as ex:
+                ctx = create_context(ex.tmp_dir)
+                broker = dr.Broker()
+                broker[ctx.__class__] = ctx
+                yield dr.run(broker=broker)
+        else:
+            ctx = create_context(archive)
             broker = dr.Broker()
             broker[ctx.__class__] = ctx
             yield dr.run(broker=broker)

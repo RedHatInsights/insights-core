@@ -37,13 +37,15 @@ def identify(files):
     if not common_path:
         raise archives.InvalidArchive("Unable to determine common path")
 
-    if any(f.endswith(archives.COMPRESSION_TYPES) for f in os.listdir(common_path)):
-        return common_path, ClusterArchiveContext
-
     return common_path, HostArchiveContext
 
 
 def create_context(path, context=None):
+    top = os.listdir(path)
+    arc = [os.path.join(path, f) for f in top if f.endswith(archives.COMPRESSION_TYPES)]
+    if arc:
+        return ClusterArchiveContext(path, all_files=arc)
+
     all_files = get_all_files(path)
     if not all_files:
         raise archives.InvalidArchive("No files in archive")
