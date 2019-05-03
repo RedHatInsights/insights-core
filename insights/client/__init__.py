@@ -104,15 +104,17 @@ class InsightsClient(object):
         egg_url = self.config.egg_path
         egg_gpg_url = self.config.egg_gpg_path
         if egg_url is None:
-            if self.config.legacy_upload:
-                egg_url = '/v1/static/core/insights-core.egg'
-            else:
-                egg_url = '/static/insights-core.egg'
+            egg_url = '/v1/static/core/insights-core.egg'
+            # if self.config.legacy_upload:
+            #     egg_url = '/v1/static/core/insights-core.egg'
+            # else:
+            #     egg_url = '/static/insights-core.egg'
         if egg_gpg_url is None:
-            if self.config.legacy_upload:
-                egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
-            else:
-                egg_gpg_url = '/static/insights-core.egg.asc'
+            egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
+            # if self.config.legacy_upload:
+            #     egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
+            # else:
+            #     egg_gpg_url = '/static/insights-core.egg.asc'
         # run fetch for egg
         updated = self._fetch(egg_url,
                               constants.core_etag_file,
@@ -144,11 +146,17 @@ class InsightsClient(object):
 
         # it's only temporary. I promise. this is the worst timeline
         # all for a phone popup
-        url = self.connection.base_url + path
-        verify = self.config.cert_verify
-        if not self.config.legacy_upload:
-            url = 'https://cloud.redhat.com/api' + path
-            verify = True
+        if self.config.legacy_upload:
+            url = self.connection.base_url + path
+            # verify = self.config.cert_verify
+        else:
+            url = self.connection.base_url.split('/platform')[0] + path
+            # if self.config.cert_verify is True:
+            #     # dont overwrite satellite cert
+            #     self.cert_verify = os.path.join(
+            #         constants.default_conf_dir,
+            #         'cert-api.access.redhat.com.pem')
+
 
         # Setup the new request for core retrieval
         logger.debug('Making request to %s for new core', url)
@@ -159,10 +167,10 @@ class InsightsClient(object):
         if current_etag and not force:
             logger.debug('Requesting new file with etag %s', current_etag)
             etag_headers = {'If-None-Match': current_etag}
-            response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout, verify=verify)
+            response = self.session.get(url, headers=etag_headers, timeout=self.config.http_timeout)
         else:
             logger.debug('Found no etag or forcing fetch')
-            response = self.session.get(url, timeout=self.config.http_timeout, verify=verify)
+            response = self.session.get(url, timeout=self.config.http_timeout)
 
         # Debug information
         logger.debug('Status code: %d', response.status_code)
