@@ -45,11 +45,10 @@ class SwiftProxyServerConf(IniConfigFile):
         use = egg:swift  # catch_errors
 
     Examples:
-        >>> proxy_server_conf = shared[SwiftProxyServerConf]
         >>> 'app:proxy-server' in proxy_server_conf
         True
-        >>> proxy_server_conf.get('filter:catch_errors', 'use')
-        'egg:swift#catch_errors'
+        >>> proxy_server_conf.get('filter:catch_errors', 'use') == 'egg:swift#catch_errors'
+        True
         >>> proxy_server_conf.getint('DEFAULT', 'bind_port')
         8080
     """
@@ -94,12 +93,11 @@ class SwiftObjectExpirerConf(IniConfigFile):
         use = egg:swift#catch_errors
 
     Examples:
-        >>> object_expirer_conf = shared[SwiftObjectExpirerConf]
-        >>> 'filter:cache' in proxy_server_conf
+        >>> 'filter:cache' in object_expirer_conf
         True
-        >>> proxy_server_conf.get('filter:cache', 'memcache_servers')
-        '172.16.64.60:11211'
-        >>> proxy_server_conf.getint('object-expirer', 'report_interval')
+        >>> object_expirer_conf.get('filter:cache', 'memcache_servers') == '172.16.64.60:11211'
+        True
+        >>> object_expirer_conf.getint('object-expirer', 'report_interval')
         300
     """
     pass
