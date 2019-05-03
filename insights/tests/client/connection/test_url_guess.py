@@ -24,8 +24,10 @@ def test_url_guess_platform(get_proxies, init_session):
     config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False)
 
     connection = InsightsConnection(config)
-    assert connection.base_url == 'https://cloud.redhat.com/api'
-    assert connection.upload_url == 'https://cloud.redhat.com/api/ingress/v1/upload'
+    # assert connection.base_url == 'https://cloud.redhat.com/api'
+    assert connection.base_url == 'https://cert-api.access.redhat.com/r/insights/platform'
+    # assert connection.upload_url == 'https://cloud.redhat.com/api/ingress/v1/upload'
+    assert connection.upload_url == 'https://cert-api.access.redhat.com/r/insights/platform/ingress/v1/upload'
 
 
 @patch("insights.client.connection.InsightsConnection._init_session")
