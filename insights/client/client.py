@@ -450,7 +450,7 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
             msg_name = determine_hostname(config.display_name)
             logger.info("Successfully uploaded report for %s.", msg_name)
         else:
-            logger.error("Upload attempt %d of %d failed!",
+            logger.error("Upload attempt %d of %d failed! Status code: %s",
                          tries + 1, config.retries, upload.status_code)
             if tries + 1 != config.retries:
                 logger.info("Waiting %d seconds then retrying",
