@@ -292,7 +292,7 @@ class InsightsConnection(object):
             if method is 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
-                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.test+tgz'),
+                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
