@@ -1,3 +1,4 @@
+import pytest
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from mock.mock import Mock
