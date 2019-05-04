@@ -81,6 +81,7 @@ def test_rhsm_platform_base_url_configured():
     set_auto_configuration(config, 'cert-api.access.redhat.com', None, None, False)
     assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
 
+
 @patch("insights.client.auto_config.verify_connectivity", Mock())
 def test_sat_legacy_base_url_configured():
     '''
