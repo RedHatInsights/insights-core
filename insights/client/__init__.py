@@ -157,7 +157,6 @@ class InsightsClient(object):
             #         constants.default_conf_dir,
             #         'cert-api.access.redhat.com.pem')
 
-
         # Setup the new request for core retrieval
         logger.debug('Making request to %s for new core', url)
 
