@@ -27,7 +27,8 @@ def test_rhsm_platform_url(set_auto_configuration, initConfig):
     initConfig().get.side_effect = ['subscription.rhsm.redhat.com', '443', '', '', '', '', '']
     config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False)
     _try_satellite6_configuration(config)
-    set_auto_configuration.assert_called_with(config, 'cloud.redhat.com', None, None, False)
+    # set_auto_configuration.assert_called_with(config, 'cloud.redhat.com', None, None, False)
+    set_auto_configuration.assert_called_with(config, 'cert-api.access.redhat.com', None, None, False)
 
 
 @patch("insights.client.auto_config.rhsmCertificate", Mock())
@@ -74,8 +75,11 @@ def test_rhsm_platform_base_url_configured():
     Ensure the correct base URL is assembled for a platform RHSM upload
     '''
     config = Mock(base_url=None, upload_url=None, legacy_upload=False, insecure_connection=False, proxy=None)
-    set_auto_configuration(config, 'cloud.redhat.com', None, None, False)
-    assert config.base_url == 'cloud.redhat.com/api'
+    # set_auto_configuration(config, 'cloud.redhat.com', None, None, False)
+    # assert config.base_url == 'cloud.redhat.com/api'
+    # [CIRCUS MUSIC]
+    set_auto_configuration(config, 'cert-api.access.redhat.com', None, None, False)
+    assert config.base_url == 'cert-api.access.redhat.com/r/insights/platform'
 
 
 @patch("insights.client.auto_config.verify_connectivity", Mock())
