@@ -55,7 +55,9 @@ class Cgroups(Parser):
         self.data = parse_delimited_table(content,
                                           heading_ignore=['#subsys_name', 'hierarchy'],
                                           header_substitute=[('#subsys_name', 'subsys_name')])
-        self.subsystems = {subsys.pop("subsys_name"): subsys for subsys in self.data}
+        self.subsystems = {}
+        for subsys in self.data:
+            self.subsystems[subsys.pop("subsys_name")] = subsys
 
     def get_num_cgroups(self, i_subsys_name):
         """
