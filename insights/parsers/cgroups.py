@@ -30,29 +30,32 @@ Examples:
     True
     >>> i_cgroups.data[0].get('hierarchy')
     '10'
+    >>> i_cgroups.subsystems["memory"]["enabled"]
+    '1'
 
 """
 
-from .. import parser, CommandParser
+from .. import parser, Parser
 from insights.specs import Specs
 from . import ParseException, parse_delimited_table
 
 
 @parser(Specs.cgroups)
-class Cgroups(CommandParser):
+class Cgroups(Parser):
     """
     Class ``Cgroups`` parses the content of the ``/proc/cgroups``.
 
     Attributes:
         data (list): A list of the subsystem cgroup information
-
+        subsystems (dict): A dict of all subsystems, key is subsystem name and value is dict with keys: hierarchy, num_cgroups, enabled
     """
 
     def parse_content(self, content):
         # replace #subsys_name to subsys_name
-        content[0] = content[0].replace("#", '')
-        table = parse_delimited_table(content)
-        self.data = [dict((k.lower(), v) for (k, v) in item.items()) for item in table]
+        self.data = parse_delimited_table(content,
+                                          heading_ignore=['#subsys_name', 'hierarchy'],
+                                          header_substitute=[('#subsys_name', 'subsys_name')])
+        self.subsystems = {subsys.pop("subsys_name"): subsys for subsys in self.data}
 
     def get_num_cgroups(self, i_subsys_name):
         """
@@ -73,11 +76,10 @@ class Cgroups(CommandParser):
 
             value (int): Int value of the specified subsystem cgroups
         """
-        for subsys_item in self.data:
-            if subsys_item["subsys_name"] == i_subsys_name:
-                return int(subsys_item["num_cgroups"])
-        # raise exception if give the wrong subsys_name
-        raise ParseException("Wrong subsys_name: {0}".format(i_subsys_name))
+        if i_subsys_name in self.subsystems:
+            return int(self.subsystems[i_subsys_name]["num_cgroups"])
+        # raise keyerror exception if give the wrong subsys_name
+        raise KeyError("Gave wrong subsys_name: {0}".format(i_subsys_name))
 
     def is_subsys_enabled(self, i_subsys_name):
         """
@@ -98,8 +100,7 @@ class Cgroups(CommandParser):
 
             value (boolean): Return True if the cgroup of specified subsystem is enabled, else return False
         """
-        for subsys_item in self.data:
-            if subsys_item["subsys_name"] == i_subsys_name:
-                return subsys_item["enabled"] == "1"
-        # raise exception if give the wrong subsys_name
-        raise ParseException("Wrong subsys_name: {0}".format(i_subsys_name))
+        if i_subsys_name in self.subsystems:
+            return self.subsystems[i_subsys_name]["enabled"] == "1"
+        # raise keyerror exception if give the wrong subsys_name
+        raise KeyError("Gave wrong subsys_name: {0}".format(i_subsys_name))

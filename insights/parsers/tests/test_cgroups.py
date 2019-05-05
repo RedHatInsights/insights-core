@@ -1,4 +1,5 @@
 import doctest
+import pytest
 from insights.parsers import cgroups
 from insights.parsers.cgroups import Cgroups
 from insights.tests import context_wrap
@@ -26,15 +27,14 @@ def test_cgroups():
     i_cgroups = Cgroups(context)
     assert i_cgroups.get_num_cgroups("memory") == 232
     assert i_cgroups.is_subsys_enabled("memory") is True
-    try:
-        assert i_cgroups.get_num_cgroups("Wrong_memory") == 232
-    except ParseException:
-        assert True
+    assert i_cgroups.subsystems["memory"]["enabled"] == "1"
+    with pytest.raises(KeyError) as pe:
+        i_cgroups.get_num_cgroups("Wrong_memory")
 
 
 def test_cgroup_documentation():
     env = {
-            'i_cgroups': Cgroups(context_wrap(cgroups_content))
-          }
+        'i_cgroups': Cgroups(context_wrap(cgroups_content))
+    }
     failed, total = doctest.testmod(cgroups, globs=env)
     assert failed == 0
