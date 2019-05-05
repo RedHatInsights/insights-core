@@ -77,6 +77,10 @@ class Cgroups(Parser):
         Returns:
 
             value (int): Int value of the specified subsystem cgroups
+
+        Raises：
+            KeyError: Exception is raised if given subsystem name is wrong
+
         """
         if i_subsys_name in self.subsystems:
             return int(self.subsystems[i_subsys_name]["num_cgroups"])
@@ -101,6 +105,10 @@ class Cgroups(Parser):
         Returns:
 
             value (boolean): Return True if the cgroup of specified subsystem is enabled, else return False
+
+        Raises：
+            KeyError: Exception is raised if given subsystem name is wrong
+
         """
         if i_subsys_name in self.subsystems:
             return self.subsystems[i_subsys_name]["enabled"] == "1"
