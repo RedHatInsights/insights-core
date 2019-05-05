@@ -78,7 +78,7 @@ class Cgroups(Parser):
 
             value (int): Int value of the specified subsystem cgroups
 
-        Raises：
+        Raises:
             KeyError: Exception is raised if given subsystem name is wrong
 
         """
@@ -106,7 +106,7 @@ class Cgroups(Parser):
 
             value (boolean): Return True if the cgroup of specified subsystem is enabled, else return False
 
-        Raises：
+        Raises:
             KeyError: Exception is raised if given subsystem name is wrong
 
         """
