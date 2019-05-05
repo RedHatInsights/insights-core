@@ -28,8 +28,9 @@ def test_cgroups():
     assert i_cgroups.get_num_cgroups("memory") == 232
     assert i_cgroups.is_subsys_enabled("memory") is True
     assert i_cgroups.subsystems["memory"]["enabled"] == "1"
-    with pytest.raises(KeyError) as pe:
+    with pytest.raises(KeyError) as ke:
         i_cgroups.get_num_cgroups("Wrong_memory")
+    assert "wrong subsys_name" in str(ke)
 
 
 def test_cgroup_documentation():
