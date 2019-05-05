@@ -37,7 +37,7 @@ Examples:
 
 from .. import parser, Parser
 from insights.specs import Specs
-from . import ParseException, parse_delimited_table
+from . import parse_delimited_table
 
 
 @parser(Specs.cgroups)

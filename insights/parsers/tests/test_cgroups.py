@@ -3,7 +3,6 @@ import pytest
 from insights.parsers import cgroups
 from insights.parsers.cgroups import Cgroups
 from insights.tests import context_wrap
-from insights.parsers import ParseException
 
 cgroups_content = """
 #subsys_name	hierarchy	num_cgroups	enabled
