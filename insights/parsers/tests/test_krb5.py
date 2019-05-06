@@ -124,6 +124,7 @@ def test_krb5configuration():
     assert sorted(common_conf_info.options("logging")) == sorted(['default', 'admin_server', 'kdc'])
     assert common_conf_info.include == ["/etc/krb5test.conf"]
     assert common_conf_info.includedir == ["/etc/krb5.conf.d/"]
+    assert common_conf_info.has_option('domain_realm', 'xyz') is False
     assert common_conf_info.module == ["/etc/krb5test.conf:residual"]
 
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG3, path=KRB5_CONF_PATH))
