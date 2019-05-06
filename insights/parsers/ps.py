@@ -5,7 +5,7 @@ Ps - command ``ps auxww`` and others
 This module provides processing for the various outputs of the ``ps`` command.
 """
 from .. import parser, CommandParser
-from . import ParseException, parse_delimited_table, keyword_search, optlist_to_dict
+from . import ParseException, parse_delimited_table, keyword_search
 from insights.specs import Specs
 from insights.core.filters import add_filter
 
@@ -26,7 +26,7 @@ class Ps(CommandParser):
             `ps` output.
         cmd_names (set): Set of just the command names, minus any path or
             arguments.
-        services (list): List of sets in format (cmd names, user/uid/pid, raw_line) for
+        services (list): List of sets in format (cmd names, user/uid, raw_line) for
             each command.
 
     """
@@ -35,9 +35,9 @@ class Ps(CommandParser):
     ``command_name`` is the name of the last column from the header of ps output,
     the subclass must override it correspondingly
     '''
-    first_column = "FIRST_COLUMN_TEMPLATE"
+    user_name = "USER_TEMPLATE"
     '''
-    ``first_column`` is the name of the first column from the header of ps output,
+    ``user_name`` is the name of the first column from the header of ps output,
     the subclass must override it correspondingly
     '''
     max_splits = 0
@@ -55,14 +55,13 @@ class Ps(CommandParser):
 
     def parse_content(self, content):
         raw_line_key = "_line"
-        if any(line.lstrip().startswith(self.first_column) and line.rstrip().endswith(self.command_name) for line in
-               content):
+        if any(line.lstrip().startswith(self.user_name) and line.rstrip().endswith(self.command_name) for line in content):
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
                 row
                 for row in parse_delimited_table(
-                    content, heading_ignore=[self.first_column], max_splits=self.max_splits,
+                    content, heading_ignore=[self.user_name], max_splits=self.max_splits,
                     raw_line_key=raw_line_key
                 )
                 if self.command_name in row
@@ -77,7 +76,7 @@ class Ps(CommandParser):
                 proc["COMMAND_NAME"] = cmd_name
                 self.cmd_names.add(cmd_name)
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
-                self.services.append((cmd_name, proc[self.first_column], proc[raw_line_key]))
+                self.services.append((cmd_name, proc[self.user_name], proc[raw_line_key]))
                 del proc[raw_line_key]
         else:
             raise ParseException(
@@ -108,18 +107,15 @@ class Ps(CommandParser):
         Returns:
             dict: each username as a key to a list of PIDs (as strings) that
             are running the given process.
-            ``{}`` if  neither ``USER`` nor ``UID`` is found or ``proc`` is not found.
 
-        .. note::
-           'proc' must match the entire command and arguments.
+        .. note:: 'proc' must match the entire command and arguments.
         """
         ret = {}
-        if self.first_column in ['USER', 'UID']:
-            for row in self.data:
-                if proc == row[self.command_name]:
-                    if row[self.first_column] not in ret:
-                        ret[row[self.first_column]] = []
-                    ret[row[self.first_column]].append(row["PID"])
+        for row in self.data:
+            if proc == row[self.command_name]:
+                if row[self.user_name] not in ret:
+                    ret[row[self.user_name]] = []
+                ret[row[self.user_name]].append(row["PID"])
         return ret
 
     def fuzzy_match(self, proc):
@@ -129,8 +125,8 @@ class Ps(CommandParser):
         Returns:
             boolean: ``True`` if the word ``proc`` appears in the command column.
 
-        .. note::
-           'proc' can match anywhere in the command path, name or arguments.
+        .. note:: 'proc' can match anywhere in the command path, name or
+            arguments.
         """
         return any(proc in row[self.command_name] for row in self.data)
 
@@ -141,8 +137,8 @@ class Ps(CommandParser):
         Returns:
             int: The number of occurencies of commands with given text
 
-        .. note::
-           'proc' can match anywhere in the command path, name or arguments.
+        .. note:: 'proc' can match anywhere in the command path, name or
+           arguments.
         """
         return len([True for row in self.data if proc in row[self.command_name]])
 
@@ -208,7 +204,7 @@ class PsAuxww(Ps):
         333252
     """
     command_name = "COMMAND"
-    first_column = "USER"
+    user_name = "USER"
     max_splits = 10
 
     def cpu_usage(self, proc):
@@ -220,12 +216,13 @@ class PsAuxww(Ps):
             str: the %CPU column corresponding to ``proc`` in command or
             ``None`` if ``proc`` is not found.
 
-        .. note::
-           'proc' must match the entire command and arguments.
+        .. note:: 'proc' must match the entire command and arguments.
         """
         for row in self.data:
             if proc == row[self.command_name]:
                 return row["%CPU"]
+
+    pass
 
 
 add_filter(Specs.ps_ef, "CMD")
@@ -261,7 +258,7 @@ class PsEf(Ps):
         True
     """
     command_name = "CMD"
-    first_column = "UID"
+    user_name = "UID"
     max_splits = 7
 
     def parent_pid(self, pid):
@@ -278,6 +275,8 @@ class PsEf(Ps):
                 for sub_row in self.data:
                     if sub_row["PID"] == row["PPID"]:
                         return [row["PPID"], sub_row[self.command_name]]
+
+    pass
 
 
 @parser(Specs.ps_auxcww)
@@ -331,7 +330,7 @@ class PsEo(Ps):
          {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0'}]
     """
     command_name = 'COMMAND'
-    first_column = 'PID'
+    user_name = 'PID'
     max_splits = 3
 
     def parse_content(self, content):
@@ -343,49 +342,3 @@ class PsEo(Ps):
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
         return [row for row in self.data if row['PPID'] == ppid]
-
-
-add_filter(Specs.ps_aexww, "COMMAND")
-
-
-@parser(Specs.ps_aexww)
-class PsAexww(Ps):
-    """
-    Class to parse the output of ``ps aexww`` command
-
-    Sample input data::
-
-          PID TTY      STAT   TIME COMMAND
-            1 ?        Ss     0:08 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
-            2 ?        S      0:00 [kthreadd]
-            3 ?        S      0:00 [ksoftirqd/0]
-            5 ?        S<     0:00 [kworker/0:0H]
-            7 ?        S      0:01 [migration/0]
-        24477 ?        Ssl    6:56 /usr/bin/openshift-router PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOSTNAME=node1 RELOAD_INTERVAL=10s
-
-    Examples:
-        >>> type(ps_aexww)
-        <class 'insights.parsers.ps.PsAexww'>
-        >>> ps_aexww.get_environ('/usr/bin/openshift-router')[0]['RELOAD_INTERVAL']
-        '10s'
-    """
-    command_name = 'COMMAND'
-    first_column = 'PID'
-    max_splits = 4
-
-    def get_environ(self, proc):
-        """
-        Searches for all the commands matching ``proc`` and returns their
-        environment variables as a list of dict.
-
-        Returns:
-            list: List of dictionary with environment variable name as key and containing  environment variable value
-            ``[]`` if ``proc`` is not found.
-        .. note::
-           'proc' must contain the command
-        """
-        env = []
-        for row in self.data:
-            if row[self.command_name].startswith(proc.strip() + ' '):
-                env.append(optlist_to_dict(row['ARGS'], opt_sep=' '))
-        return env
