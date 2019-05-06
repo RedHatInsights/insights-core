@@ -230,15 +230,16 @@ def handle_unregistration(config, pconn):
         False - machine could not be unregistered
         None - could not reach the API
     """
-    logger.info('Unregistration is not currently available.')
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
-    unreg = pconn.unregister()
-    if unreg:
-        # only set if unreg was successful
-        write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
-    return unreg
+    logger.info('Unregistration is not currently available.')
+    return False
+    # unreg = False  # pconn.unregister()
+    # if unreg:
+    #     # only set if unreg was successful
+    #     write_unregistered_file()
+    #     get_scheduler(config).remove_scheduling()
+    # return unreg
 
 
 def get_machine_id():

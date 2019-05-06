@@ -668,8 +668,8 @@ class InsightsConnection(object):
             url = self.api_url + "/v1/systems/" + machine_id
             net_logger.info("DELETE %s", url)
             self.session.delete(url)
-            # logger.info(
-            #     "Successfully unregistered from the Red Hat Insights Service")
+            logger.info(
+                "Successfully unregistered from the Red Hat Insights Service")
             return True
         except requests.ConnectionError as e:
             logger.debug(e)
