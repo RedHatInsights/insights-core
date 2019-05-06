@@ -484,7 +484,7 @@ class InsightsConnection(object):
         client_hostname = determine_hostname()
         machine_id = generate_machine_id(new_machine_id)
 
-        branch_info = self.branch_info
+        branch_info = self.config.branch_info
         if not branch_info:
             return False
 
