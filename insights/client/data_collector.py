@@ -48,6 +48,12 @@ class DataCollector(object):
         self.archive.add_metadata_to_archive(
             json.dumps(branch_info), '/branch_info')
 
+    def _write_display_name(self):
+        if self.config.display_name:
+            logger.debug("Writing display_name to archive...")
+            self.archive.add_metadata_to_archive(
+                self.config.display_name, '/display_name')
+
     def _run_pre_command(self, pre_cmd):
         '''
         Run a pre command to get external args for a command
@@ -200,6 +206,7 @@ class DataCollector(object):
         # collect metadata
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
+        self._write_display_name()
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):

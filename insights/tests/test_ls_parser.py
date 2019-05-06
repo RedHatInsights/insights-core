@@ -112,6 +112,14 @@ drwxr-xr-x. root root system_u:object_r:boot_t:s0      grub2
 -rw-r--r--. root root system_u:object_r:boot_t:s0      initramfs-0-rescue
 """
 
+RHEL8_SELINUX_DIRECTORY = """
+/var/lib/nova/instances:
+total 0
+drwxr-xr-x. 3 root root unconfined_u:object_r:var_lib_t:s0 50 Apr  8 16:41 .
+drwxr-xr-x. 3 root root unconfined_u:object_r:var_lib_t:s0 23 Apr  8 16:29 ..
+drwxr-xr-x. 2 root root unconfined_u:object_r:var_lib_t:s0 54 Apr  8 16:41 abcd-efgh-ijkl-mnop
+"""
+
 FILES_CREATED_WITH_SELINUX_DISABLED = """
 /dev/mapper:
 total 2
@@ -285,3 +293,22 @@ def test_bad_line():
     assert res["date"] == "Aug  4 16:56"
     assert res["name"] == "dm-10"
     assert res["dir"] == "/tmp"
+
+
+def test_rhel8_selinux():
+    results = parse(RHEL8_SELINUX_DIRECTORY.splitlines(), "/var/lib/nova/instances")
+    assert len(results) == 1
+    assert results["/var/lib/nova/instances"]["name"] == "/var/lib/nova/instances", results["/var/lib/nova/instances"]["name"]
+    res = results["/var/lib/nova/instances"]["entries"]["abcd-efgh-ijkl-mnop"]
+    assert results["/var/lib/nova/instances"]["total"] == 0, results["/var/lib/nova/instances"]["total"]
+    assert res["type"] == "d"
+    assert res["links"] == 2
+    assert res["owner"] == "root"
+    assert res["group"] == "root"
+    assert res["se_user"] == "unconfined_u"
+    assert res["se_role"] == "object_r"
+    assert res["se_type"] == "var_lib_t"
+    assert res["se_mls"] == "s0"
+    assert res["date"] == "Apr  8 16:41"
+    assert res["name"] == "abcd-efgh-ijkl-mnop"
+    assert res["dir"] == "/var/lib/nova/instances"
