@@ -207,7 +207,7 @@ def post_update(client, config):
     # put this first to avoid conflicts with register
     if config.unregister:
         if reg_check:
-            logger.info('Unregistration not supported yet.')
+            logger.info('Unregistration is not currently available.')
             sys.exit(constants.sig_kill_bad)
         else:
             logger.info('This host is not registered, unregistration is not applicable.')
