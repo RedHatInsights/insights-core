@@ -100,9 +100,11 @@ class datasource(PluginType):
 class parser(PluginType):
     """
     Decorates a component responsible for parsing the output of a
-    :class:`datasource`. ``@parser`` should accept only one argument, which is
-    the datasource the parser component should handle. ``@parser`` should only
-    decorate subclasses of :class:`insights.core.Parser`.
+    :class:`datasource`. ``@parser`` should accept multiple arguments, the first
+    will ALWAYS be the datasource the parser component should handle.
+    Any subsequent argument will be a ``component`` used to determine if
+    the parser should fire.
+    ``@parser`` should only decorate subclasses of :class:`insights.core.Parser`.
 
     .. warning::
         If a Parser component handles a datasource that returns a ``list``, a
@@ -110,8 +112,8 @@ class parser(PluginType):
         or rules that depend on the Parser will be passed the list of instances
         and **not** a single parser instance.
     """
-    def __init__(self, dep, group=dr.GROUPS.single):
-        super(parser, self).__init__(dep, group=group)
+    def __init__(self, *args, group=dr.GROUPS.single):
+        super(parser, self).__init__(*args, group=group)
 
     def invoke(self, broker):
         dep_value = broker[self.requires[0]]
