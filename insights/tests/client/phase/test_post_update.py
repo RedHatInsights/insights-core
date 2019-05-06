@@ -18,7 +18,8 @@ def patch_insights_config(old_function):
                        "return_value.load_all.return_value.register": False,
                        "return_value.load_all.return_value.legacy_upload": False,
                        "return_value.load_all.return_value.diagnosis": None,
-                       "return_value.load_all.return_value.reregister": False})
+                       "return_value.load_all.return_value.reregister": False,
+                       "return_value.load_all.return_value.payload": None})
     return patcher(old_function)
 
 # DRY this at some point... for the love of god

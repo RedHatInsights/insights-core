@@ -185,6 +185,11 @@ def post_update(client, config):
         logger.debug('Running client in offline mode. Bypassing registration.')
         return
 
+    # --payload short circuits registration check
+    if config.payload:
+        logger.debug('Uploading a specified archive. Bypassing registration.')
+        return
+
     # check registration status before anything else
     reg_check = client.get_registration_status()
     if reg_check is None:
@@ -248,7 +253,7 @@ def collect_and_output(client, config):
         except RuntimeError as e:
             logger.error(e)
             sys.exit(constants.sig_kill_bad)
-        config.content_type = 'application/vnd.redhat.advisor.test+tgz'
+        config.content_type = 'application/vnd.redhat.advisor.collection+tgz'
 
     if not insights_archive:
         sys.exit(constants.sig_kill_bad)

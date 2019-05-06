@@ -76,7 +76,7 @@ def parse_selinux(parts):
 
     Returns:
         A dict containing owner, group, se_user, se_role, se_type, se_mls, and
-        name. If the raw name was a symbolic link, link is always included.
+        name. If the raw name was a symbolic link, link is also included.
 
     """
 
@@ -92,6 +92,47 @@ def parse_selinux(parts):
         "se_type": selinux[2] if lsel > 2 else None,
         "se_mls": selinux[3] if lsel > 3 else None,
         "name": path
+    }
+    if link:
+        result["link"] = link
+    return result
+
+
+def parse_rhel8_selinux(parts):
+    """
+    Parse part of an ls output line that is selinux on RHEL8.
+
+    Args:
+        parts (list): A four element list of strings representing the initial
+            parts of an ls line after the permission bits. The parts are link
+            count, owner, group, and everything else
+
+    Returns:
+        A dict containing links, owner, group, se_user, se_role, se_type,
+        se_mls, size, date, and name. If the raw name was a symbolic link,
+        link is also included.
+
+    """
+
+    links, owner, group, last = parts
+
+    selinux = parts[3].split(":")
+    lsel = len(selinux)
+    selinux, size, last = parts[-1].split(None, 2)
+    selinux = selinux.split(":")
+    date = last[:12]
+    path, link = parse_path(last[13:])
+    result = {
+        "links": int(links),
+        "owner": owner,
+        "group": group,
+        "se_user": selinux[0],
+        "se_role": selinux[1] if lsel > 1 else None,
+        "se_type": selinux[2] if lsel > 2 else None,
+        "se_mls": selinux[3] if lsel > 3 else None,
+        "size": int(size),
+        "name": path,
+        "date": date,
     }
     if link:
         result["link"] = link
@@ -137,6 +178,10 @@ class Directory(dict):
         files = []
         specials = []
         for line in self.body:
+            # we can't split(None, 5) here b/c rhel 6/7 selinux lines only have
+            # 4 parts before the path, and the path itself could contain
+            # spaces. Unfortunately, this means we have to split the line again
+            # below
             parts = line.split(None, 4)
             perms = parts[0]
             typ = perms[0]
@@ -145,7 +190,13 @@ class Directory(dict):
                 "perms": perms[1:]
             }
             if parts[1][0].isdigit():
-                rest = parse_non_selinux(parts[1:])
+                # We have to split the line again to see if this is a RHEL8
+                # selinux stanza. This assumes that the context section will
+                # always have at least two pieces separated by ':'.
+                if ":" in line.split()[4]:
+                    rest = parse_rhel8_selinux(parts[1:])
+                else:
+                    rest = parse_non_selinux(parts[1:])
             else:
                 rest = parse_selinux(parts[1:])
 
@@ -220,5 +271,6 @@ def parse(lines, root=None):
             continue
         entries.append(line)
     name = name or root
-    doc[name] = Directory(name, total or len(entries), entries)
+    total = total if total is not None else len(entries)
+    doc[name] = Directory(name, total, entries)
     return doc

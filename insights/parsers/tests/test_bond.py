@@ -54,12 +54,17 @@ Active Aggregator Info:
 
 Slave Interface: eth1
 MII Status: up
+Speed: 1000 Mbps
+Duplex: full
 Link Failure Count: 0
 Permanent HW addr: 00:16:35:5e:42:fc
 Aggregator ID: 3
 
 Slave Interface: eth2
 MII Status: up
+Speed: 1000 Mbps
+Duplex: full
+Speed
 Link Failure Count: 0
 Permanent HW addr: 00:16:35:5e:02:7e
 Aggregator ID: 2
@@ -145,7 +150,6 @@ def test_netstat_doc_examples():
 
 
 def test_bond_class():
-
     bond_obj = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH))
     assert bond_obj.file_name == 'bond0'
     assert not bond_obj.partner_mac_address
@@ -174,6 +178,14 @@ def test_bond_class():
     bond_obj_2 = Bond(context_wrap(BONDINFO_MODE_6, CONTEXT_PATH))
     assert bond_obj_2.bond_mode == '1'
     assert bond_obj_2.active_slave is None
+
+    bond_obj_3 = Bond(context_wrap(BONDINFO_1, CONTEXT_PATH))
+    assert bond_obj_3.file_name == 'bond0'
+    assert bond_obj_3.slave_interface == ['eno1', 'eno2']
+    assert bond_obj_3.slave_duplex == ['full', 'full']
+    assert bond_obj_3.slave_speed == ['1000 Mbps', '1000 Mbps']
+    assert bond_obj_3.slave_link_failure_count == ['0', '0']
+    assert bond_obj_3.mii_status == ['up', 'up', 'up']
 
     with pytest.raises(ParseException) as exc:
         bond_obj = Bond(context_wrap(BONDINFO_UNKNOWN_BOND_MODE, CONTEXT_PATH))

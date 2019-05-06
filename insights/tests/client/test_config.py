@@ -1,4 +1,5 @@
 import pytest
+import sys
 from io import TextIOWrapper, BytesIO
 from insights.client.config import InsightsConfig, DEFAULT_OPTS
 from mock.mock import patch
@@ -81,3 +82,26 @@ def test_env_number_bad_values():
     c = InsightsConfig()
     with pytest.raises(ValueError):
         c._load_env()
+
+
+# empty argv so parse_args isn't polluted with pytest arguments
+@patch('insights.client.config.sys.argv', [sys.argv[0]])
+def test_diagnosis_implies_legacy():
+    '''
+    --diagnosis should always imply legacy_upload=False
+    '''
+    c = InsightsConfig(diagnosis=True)
+    c.load_all()
+    assert c.legacy_upload is False
+
+
+# empty argv so parse_args isn't polluted with pytest arguments
+@patch('insights.client.config.sys.argv', [sys.argv[0]])
+def test_to_json_quiet_implies_diagnosis():
+    '''
+    --diagnosis should always imply legacy_upload=False
+    '''
+    c = InsightsConfig(to_json=True, quiet=True)
+    c.load_all()
+    assert c.diagnosis is True
+    assert c.legacy_upload is False

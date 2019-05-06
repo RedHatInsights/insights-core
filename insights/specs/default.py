@@ -43,6 +43,21 @@ def get_owner(filename):
     return (name, group)
 
 
+def get_cmd_and_package_in_ps(broker, target_command):
+        ps = broker[DefaultSpecs.ps_auxww].content
+        ctx = broker[HostContext]
+        results = set()
+        for p in ps:
+            p_splits = p.split(None, 10)
+            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
+            which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
+            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
+            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
+            if cmd and pkg is not None:
+                results.add("{0} {1}".format(cmd, pkg[0]))
+        return results
+
+
 def _make_rpm_formatter(fmt=None):
     if fmt is None:
         fmt = [
@@ -538,7 +553,11 @@ class DefaultSpecs(Specs):
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
-    nova_conf = first_file(["/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf", "/etc/nova/nova.conf"])
+    nova_conf = first_file([
+                           "/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf",
+                           "/var/lib/config-data/puppet-generated/nova_libvirt/etc/nova/nova.conf",
+                           "/etc/nova/nova.conf"
+                           ])
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_crontab_container = simple_command("docker exec nova_api_cron /usr/bin/crontab -l -u nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
@@ -602,20 +621,16 @@ class DefaultSpecs(Specs):
     @datasource(ps_auxww, context=HostContext)
     def package_and_java(broker):
         """Command: package_and_java"""
-        ps = broker[DefaultSpecs.ps_auxww].content
-        ctx = broker[HostContext]
-        results = set()
-        for p in ps:
-            p_splits = p.split(None, 10)
-            cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
-            which = ctx.shell_out("which {0}".format(cmd)) if 'java' in os.path.basename(cmd) else None
-            resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
-            if cmd and pkg:
-                results.add("{0} {1}".format(cmd, pkg[0]))
-        return results
+        return get_cmd_and_package_in_ps(broker, 'java')
 
     package_provides_java = foreach_execute(package_and_java, "echo %s")
+
+    @datasource(ps_auxww, context=HostContext)
+    def package_and_httpd(broker):
+        """Command: package_and_httpd"""
+        return get_cmd_and_package_in_ps(broker, 'httpd')
+
+    package_provides_httpd = foreach_execute(package_and_httpd, "echo %s")
     pam_conf = simple_file("/etc/pam.conf")
     parted__l = simple_command("/sbin/parted -l -s")
     passenger_status = simple_command("/usr/bin/passenger-status")
