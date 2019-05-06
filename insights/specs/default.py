@@ -110,7 +110,6 @@ class DefaultSpecs(Specs):
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     candlepin_error_log = simple_file("/var/log/candlepin/error.log")
     checkin_conf = simple_file("/etc/splice/checkin.conf")
-    ps_aexww = simple_command("/bin/ps aexww")
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
