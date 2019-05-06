@@ -2,7 +2,7 @@
 ProcEnviron - File ``/proc/<PID>/environ``
 ==========================================
 
-Parser for parsing the the ``environ`` file under ``/proc/<PID>``
+Parser for parsing the ``environ`` file under ``/proc/<PID>``
 directory.
 
 """
@@ -37,7 +37,7 @@ class ProcEnviron(Parser, LegacyItemAccess):
     def parse_content(self, content):
         if not content:
             raise SkipException("Empty output.")
-        if len(content) != 1 or '=' not in content[0]:
+        if len(content) != 1:
             raise ParseException("Incorrect content: '{0}'".format(content[-1]))
 
         self.data = {}
@@ -45,6 +45,8 @@ class ProcEnviron(Parser, LegacyItemAccess):
             if '=' in item:
                 k, v = item.strip().split('=', 1)
                 self.data[k] = v
+            elif item:
+                raise ParseException("Incorrect content: '{0}'".format(item))
 
 
 @parser(Specs.openshift_fluentd_environ)
