@@ -55,6 +55,10 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None
     },
+    'branch_info': {
+        # non-CLI
+        'default': constants.default_branch_info
+    },
     'branch_info_url': {
         # non-CLI
         'default': None

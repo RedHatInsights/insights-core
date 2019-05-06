@@ -254,7 +254,7 @@ def update_rules(config, pconn):
     return pc.get_conf_update()
 
 
-def get_branch_info(config, pconn):
+def get_branch_info(config):
     """
     Get branch info for a system
     returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
@@ -265,7 +265,7 @@ def get_branch_info(config, pconn):
     if (config.offline or
             config.analyze_container):
         return constants.default_branch_info
-    return pconn.branch_info
+    return config.branch_info
 
 
 def collect(config, pconn):
@@ -308,7 +308,7 @@ def collect(config, pconn):
             logger.debug("Host selected as scanning target.")
         target = constants.default_target
 
-    branch_info = get_branch_info(config, pconn)
+    branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
     tar_file = None
 
