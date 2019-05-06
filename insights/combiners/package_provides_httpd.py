@@ -57,3 +57,10 @@ class PackageProvidesHttpdAll(LegacyItemAccess):
         """
 
         return self.data.get(httpd_command)
+
+    @property
+    def packages(self):
+        """
+        Returns the list of corresponding httpd RPM packages which are running on the system.
+        """
+        return list(self.data.values())
