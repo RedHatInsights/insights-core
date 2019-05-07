@@ -224,10 +224,10 @@ class PsAuxww(Ps):
     Examples:
         >>> type(ps_auxww)
         <class 'insights.parsers.ps.PsAuxww'>
-        >>> ps_auxww.running == set(
+        >>> ps_auxww.running == set([
         ...     '/bin/bash', '/usr/sbin/rpc.mountd', '/usr/lib/systemd/systemd --switched-root --system --deserialize 22',
         ...     '/usr/sbin/irqbalance --foreground', '/usr/sbin/dhclient enp0s25', '[kondemand/0]', '/usr/sbin/crond -n'
-        ... )
+        ... ])
         True
         >>> ps_auxww.cpu_usage('[kondemand/0]')
         '0.0'
