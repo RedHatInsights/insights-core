@@ -142,6 +142,8 @@ def _legacy_handle_registration(config, pconn):
         return True
 
     if config.register:
+        if config.group:
+            logger.info('Registering with a group is currently unavailable.')
         # register if specified
         message, hostname, group, display_name = register(config, pconn)
         if not hostname:
@@ -230,12 +232,14 @@ def handle_unregistration(config, pconn):
     """
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
-    unreg = pconn.unregister()
-    if unreg:
-        # only set if unreg was successful
-        write_unregistered_file()
-        get_scheduler(config).remove_scheduling()
-    return unreg
+    logger.info('Unregistration is not currently available.')
+    return False
+    # unreg = False  # pconn.unregister()
+    # if unreg:
+    #     # only set if unreg was successful
+    #     write_unregistered_file()
+    #     get_scheduler(config).remove_scheduling()
+    # return unreg
 
 
 def get_machine_id():
@@ -251,7 +255,7 @@ def update_rules(config, pconn):
     return pc.get_conf_update()
 
 
-def get_branch_info(config, pconn):
+def get_branch_info(config):
     """
     Get branch info for a system
     returns (dict): {'remote_branch': -1, 'remote_leaf': -1}
@@ -262,7 +266,7 @@ def get_branch_info(config, pconn):
     if (config.offline or
             config.analyze_container):
         return constants.default_branch_info
-    return pconn.branch_info
+    return config.branch_info
 
 
 def collect(config, pconn):
@@ -305,7 +309,7 @@ def collect(config, pconn):
             logger.debug("Host selected as scanning target.")
         target = constants.default_target
 
-    branch_info = get_branch_info(config, pconn)
+    branch_info = get_branch_info(config)
     pc = InsightsUploadConf(config)
     tar_file = None
 
@@ -404,7 +408,6 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
 
         if upload.status_code in (200, 201):
             api_response = json.loads(upload.text)
-            machine_id = generate_machine_id()
 
             # Write to last upload file
             with open(constants.last_upload_results_file, 'w') as handler:
@@ -414,12 +417,13 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                     handler.write(upload.text.encode('utf-8'))
             write_to_disk(constants.lastupload_file)
 
+            msg_name = determine_hostname(config.display_name)
             account_number = config.account_number
             if account_number:
-                logger.info("Successfully uploaded report from %s to account %s." % (
-                            machine_id, account_number))
+                logger.info("Successfully uploaded report from %s to account %s.",
+                            msg_name, account_number)
             else:
-                logger.info("Successfully uploaded report for %s." % (machine_id))
+                logger.info("Successfully uploaded report for %s.", msg_name)
             break
 
         elif upload.status_code == 412:
@@ -446,11 +450,11 @@ def upload(config, pconn, tar_file, content_type, collection_duration=None):
     for tries in range(config.retries):
         upload = pconn.upload_archive(tar_file, content_type, collection_duration)
 
-        if upload.status_code == 202:
-            machine_id = generate_machine_id()
-            logger.info("Successfully uploaded report for %s." % (machine_id))
+        if upload.status_code in (200, 202):
+            msg_name = determine_hostname(config.display_name)
+            logger.info("Successfully uploaded report for %s.", msg_name)
         else:
-            logger.error("Upload attempt %d of %d failed!",
+            logger.error("Upload attempt %d of %d failed! Status code: %s",
                          tries + 1, config.retries, upload.status_code)
             if tries + 1 != config.retries:
                 logger.info("Waiting %d seconds then retrying",
