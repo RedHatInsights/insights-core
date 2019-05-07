@@ -29,17 +29,58 @@ root     111434      1  0 22:32 ?        00:00:00 nginx: master process /usr/sbi
 nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
 """
 
+PsAex_TEST_DOC = """
+  PID TTY      STAT   TIME COMMAND
+    1 ?        Ss     0:08 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+    2 ?        S      0:00 [kthreadd]
+    3 ?        S      0:00 [ksoftirqd/0]
+    5 ?        S<     0:00 [kworker/0:0H]
+    7 ?        S      0:01 [migration/0]
+24477 ?        Ssl    6:56 /usr/bin/openshift-router PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin HOSTNAME=node1 ROUTER_EXTERNAL_HOST_HOSTNAME= ROUTER_METRICS_TLS_CERT_FILE=/etc/pki/tls/metrics/tls.crt ROUTER_METRICS_TLS_KEY_FILE=/etc/pki/tls/metrics/tls.key STATS_PASSWORD=9cBJqkmTE6 ROUTER_MAX_CONNECTIONS=25000 DEFAULT_CERTIFICATE_DIR=/etc/pki/tls/private ROUTER_EXTERNAL_HOST_INSECURE=false ROUTER_EXTERNAL_HOST_PASSWORD= ROUTER_SERVICE_HTTP_PORT=80 ROUTER_CIPHERS= ROUTER_EXTERNAL_HOST_INTERNAL_ADDRESS= ROUTER_LISTEN_ADDR=0.0.0.0:1936 ROUTER_METRICS_TYPE=haproxy ROUTER_SERVICE_NAME=router ROUTER_EXTERNAL_HOST_USERNAME= DEFAULT_CERTIFICATE_PATH=/etc/pki/tls/private/tls.crt ROUTER_EXTERNAL_HOST_HTTPS_VSERVER= ROUTER_EXTERNAL_HOST_PARTITION_PATH= ROUTER_SERVICE_NAMESPACE=default STATS_USERNAME=admin ROUTER_EXTERNAL_HOST_PRIVKEY=/etc/secret-volume/router.pem RELOAD_INTERVAL=10s ROUTER_EXTERNAL_HOST_HTTP_VSERVER= ROUTER_EXTERNAL_HOST_VXLAN_GW_CIDR= ROUTER_SERVICE_HTTPS_PORT=443 ROUTER_SUBDOMAIN= STATS_PORT=1936 ROUTER_SERVICE_PORT_443_TCP=443 ROUTER_PORT_80_TCP_PORT=80 KUBERNETES_PORT_443_TCP_PROTO=tcp KUBERNETES_PORT_443_TCP_ADDR=172.30.0.1 KUBERNETES_PORT_53_UDP_PROTO=udp KUBERNETES_PORT_53_UDP_PORT=53 REGISTRY_CONSOLE_SERVICE_HOST=172.30.207.124 REGISTRY_CONSOLE_PORT=tcp://172.30.207.124:9000 ROUTER_PORT_1936_TCP=tcp://172.30.106.114:1936 DOCKER_REGISTRY_SERVICE_HOST=172.30.43.64 DOCKER_REGISTRY_PORT=tcp://172.30.43.64:5000 KUBERNETES_PORT=tcp://172.30.0.1:443 ROUTER_PORT_80_TCP_ADDR=172.30.106.114 ROUTER_PORT_443_TCP_PORT=443 DOCKER_REGISTRY_SERVICE_PORT_5000_TCP=5000 DOCKER_REGISTRY_PORT_5000_TCP_ADDR=172.30.43.64 KUBERNETES_SERVICE_PORT=443 ROUTER_SERVICE_PORT_1936_TCP=1936 KUBERNETES_PORT_53_TCP=tcp://172.30.0.1:53 KUBERNETES_PORT_53_TCP_ADDR=172.30.0.1 KUBERNETES_SERVICE_PORT_HTTPS=443 KUBERNETES_SERVICE_PORT_DNS=53 REGISTRY_CONSOLE_PORT_9000_TCP_PROTO=tcp REGISTRY_CONSOLE_PORT_9000_TCP_PORT=9000 ROUTER_PORT_80_TCP=tcp://172.30.106.114:80 ROUTER_PORT_443_TCP=tcp://172.30.106.114:443 ROUTER_PORT_443_TCP_PROTO=tcp DOCKER_REGISTRY_PORT_5000_TCP_PROTO=tcp KUBERNETES_SERVICE_PORT_DNS_TCP=53 KUBERNETES_PORT_443_TCP_PORT=443 KUBERNETES_PORT_53_UDP=udp://172.30.0.1:53 KUBERNETES_PORT_53_TCP_PORT=53 REGISTRY_CONSOLE_SERVICE_PORT_REGISTRY_CONSOLE=9000 REGISTRY_CONSOLE_PORT_9000_TCP_ADDR=172.30.207.124 ROUTER_PORT_80_TCP_PROTO=tcp ROUTER_PORT_1936_TCP_PORT=1936 DOCKER_REGISTRY_PORT_5000_TCP=tcp://172.30.43.64:5000 KUBERNETES_PORT_53_UDP_ADDR=172.30.0.1 ROUTER_SERVICE_PORT_80_TCP=80 ROUTER_PORT_443_TCP_ADDR=172.30.106.114 DOCKER_REGISTRY_PORT_5000_TCP_PORT=5000 KUBERNETES_SERVICE_HOST=172.30.0.1 ROUTER_PORT_1936_TCP_ADDR=172.30.106.114 DOCKER_REGISTRY_SERVICE_PORT=5000 REGISTRY_CONSOLE_SERVICE_PORT=9000 REGISTRY_CONSOLE_PORT_9000_TCP=tcp://172.30.207.124:9000 ROUTER_SERVICE_HOST=172.30.106.114 ROUTER_SERVICE_PORT=80 ROUTER_PORT=tcp://172.30.106.114:80 ROUTER_PORT_1936_TCP_PROTO=tcp KUBERNETES_PORT_443_TCP=tcp://172.30.0.1:443 KUBERNETES_PORT_53_TCP_PROTO=tcp container=oci HOME=/root KUBECONFIG=/var/lib/origin/openshift.local.config/master/admin.kubeconfig TEMPLATE_FILE=/var/lib/haproxy/conf/haproxy-config.template RELOAD_SCRIPT=/var/lib/haproxy/reload-haproxy
+""".strip()
+
+PsEo_TEST_DOC = """
+  PID  PPID COMMAND
+    1     0 systemd
+    2     0 kthreadd
+    3     2 ksoftirqd/0
+ 2416     1 auditd
+ 2419  2416 audispd
+ 2421  2419 sedispatch
+ 2892     1 NetworkManager
+ 3172  2892 dhclient
+ 3871     1 master
+ 3886  3871 qmgr
+13724  3871 pickup
+15663     2 kworker/0:1
+16998     2 kworker/0:3
+17259     2 kworker/0:0
+18294  3357 sshd
+"""
+
+PsAlxwww_TEST_DOC = """
+F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
+4     0     1     0  20   0 128292  6928 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+1     0     2     0  20   0      0     0 kthrea S    ?          0:00 [kthreadd]
+1     0     3     2  20   0      0     0 smpboo S    ?          0:00 [ksoftirqd/0]
+5     0     4     2  20   0      0     0 worker S    ?          0:00 [kworker/0:0]
+1     0     5     2   0 -20      0     0 worker S<   ?          0:00 [kworker/0:0H]
+1     0     6     2  20   0      0     0 worker S    ?          0:00 [kworker/u4:0]
+1     0     7     2 -100  -      0     0 smpboo S    ?          0:00 [migration/0]
+1     0     8     2  20   0      0     0 rcu_gp S    ?          0:00 [rcu_bh]
+"""
+
 
 def test_doc_examples():
     env = {
-            'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
-            'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
-            'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
-          }
+        'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
+        'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
+        'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
+        'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC)),
+        'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC))
+    }
     failed, total = doctest.testmod(ps, globs=env)
-    # XXX: these tests depend on the order of sets and dictionaries
-    # I'm skipping them for now.
-    # assert failed == 0
+    assert failed == 0
 
 
 PsAuxww_TEST = """
@@ -310,7 +351,7 @@ def test_ps_auxww_with_bad_input():
     with pytest.raises(ParseException) as exc:
         d2 = ps.PsAuxww(context_wrap(Ps_BAD))
         assert d2 is None
-    assert 'PsAuxww: Cannot find ps header line in output' in str(exc)
+    assert 'PsAuxww: Cannot find ps header line containing' in str(exc)
 
 
 PS_EO_NORMAL = """
@@ -356,3 +397,38 @@ def test_ps_eo():
         {'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''}
     ]
     assert len(p.children('2')) == 6
+
+
+PS_ALXWWW_DATA = """
+F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
+4     0     1     0  20   0 128292  6944 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+1     0     2     0  20   0      0     0 kthrea S    ?          0:00 [kthreadd]
+1     0     3     2  20   0      0     0 smpboo S    ?          0:00 [ksoftirqd/0]
+5     0     4     2  20   0      0     0 worker S    ?          0:00 [kworker/0:0]
+1     0     5     2   0 -20      0     0 worker S<   ?          0:00 [kworker/0:0H]
+4     0  1585     1  20   0  39336  3872 ep_pol Ss   ?          0:00 /usr/lib/systemd/systemd-journald
+5     0  2964     1  16  -4  55520   900 ep_pol S<sl ?          0:00 /sbin/auditd
+4     0  2966  2964  12  -8  84552   896 futex_ S<sl ?          0:00 /sbin/audispd
+4     0  2968  2966  16  -4  55628  1404 unix_s S<   ?          0:00 /usr/sbin/sedispatch
+4    81  3000     1  20   0  69800  3580 ep_pol Ssl  ?          0:00 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+"""
+
+
+def test_ps_alxwww():
+    p = ps.PsAlxwww(context_wrap(PS_ALXWWW_DATA))
+    assert p is not None
+    assert len(p.data) > 0
+    assert set(p.data[0].keys()) == set([
+        'F', 'UID', 'PID', 'PPID', 'PRI', 'NI', 'VSZ', 'RSS', 'WCHAN',
+        'STAT', 'TTY', 'TIME', 'COMMAND', 'COMMAND_NAME', 'ARGS'
+    ])
+    assert 'auditd' in p.cmd_names
+    assert 'dbus-daemon' in p.cmd_names
+    assert '/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation' in p.running
+    assert '/usr/lib/systemd/systemd --switched-root --system --deserialize 22' in p
+    assert p.running_pids() == ['1', '2', '3', '4', '5', '1585', '2964', '2966', '2968', '3000']
+    dbus_proc = next((proc for proc in p.data if proc['COMMAND_NAME'] == 'dbus-daemon'), None)
+    assert dbus_proc is not None
+    assert dbus_proc['COMMAND_NAME'] == 'dbus-daemon'
+    assert dbus_proc['UID'] == '81'
+    assert dbus_proc['ARGS'] == '--system --address=systemd: --nofork --nopidfile --systemd-activation'

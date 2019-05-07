@@ -79,6 +79,7 @@ class SosSpecs(Specs):
     ntptime = simple_file("sos_commands/ntp/ntptime")
     pcs_config = first_file(["sos_commands/pacemaker/pcs_config", "sos_commands/cluster/pcs_config"])
     pcs_status = first_file(["sos_commands/pacemaker/pcs_status", "sos_commands/cluster/pcs_status"])
+    ps_alxwww = simple_file("sos_commands/process/ps_alxwww")
     ps_aux = first_file(["sos_commands/process/ps_aux", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_auxcww"])
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
     ps_auxww = first_file(["sos_commands/process/ps_auxww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
