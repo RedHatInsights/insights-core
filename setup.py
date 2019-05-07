@@ -32,6 +32,7 @@ runtime = set([
     'cachecontrol[redis]',
     'cachecontrol[filecache]',
     'lockfile',
+    'rpm_vercmp',
 ])
 
 
