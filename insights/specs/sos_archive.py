@@ -96,6 +96,7 @@ class SosSpecs(Specs):
         simple_file("sos_commands/foreman/foreman-debug/qpid_stat_subscriptions"),
         simple_file("sos_commands/foreman/foreman-debug/qpid-stat-u")
     ])
+    rabbitmq_report = simple_file("sos_commands/rabbitmq/rabbitmqctl_report")
     rhn_charsets = simple_file("database-character-sets")
     root_crontab = simple_file("sos_commands/cron/root_crontab")
     route = simple_file("sos_commands/networking/route_-n")
