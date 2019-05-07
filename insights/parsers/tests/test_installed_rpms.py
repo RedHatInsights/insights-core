@@ -201,21 +201,13 @@ def test_release_compare():
     rpm7 = InstalledRpm.from_package('kernel-3.10.0-327.1')
     rpm8 = InstalledRpm.from_package('kernel-3.10.0-327.x86_64')
     rpm9 = InstalledRpm.from_package('kernel-3.10.0-327.1.x86_64')
-    with pytest.raises(ValueError) as ve:
-        rpm4 < rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 != rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 == rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 >= rpm6
-    assert "the other does not" in str(ve)
-    with pytest.raises(ValueError) as ve:
-        rpm4 < rpm8
-    assert "the other does not" in str(ve)
+    rpm11 = InstalledRpm.from_package('xz-5.2.2-1.el7')
+    rpm12 = InstalledRpm.from_package('xz-5.2.2-12alpha.el7')
+    rpm13 = InstalledRpm.from_package('nagios-plugins-disk-2.2.1-16.20180725git3429dad.el7')
+    rpm14 = InstalledRpm.from_package('nagios-plugins-disk-2.2.1-9git5c7eb5b9.el7')
+    rpm15 = InstalledRpm.from_package('gpg-pubkey-352c64e5-52ae6884')
+    rpm16 = InstalledRpm.from_package('gpg-pubkey-352c64e5-4ae0493b')
+
     with pytest.raises(ValueError) as ve:
         rpm1 > rpm7
     assert "differing names" in str(ve)
@@ -240,6 +232,9 @@ def test_release_compare():
     assert rpm6 <= rpm8
     assert rpm6 >= rpm8
     assert not (rpm7 != rpm9)
+    assert rpm11 < rpm12
+    assert rpm13 > rpm14
+    assert rpm15 > rpm16
 
 
 def test_version_compare():
