@@ -66,6 +66,10 @@ RPMS_JSON = '''
 RPMS_MULTIPLE = '''
 yum-3.4.3-132.el7.noarch
 yum-3.4.2-132.el7.noarch
+xaaz-5.2.2-1alpha.el7.x86_64
+xaaz-5.2.2-1.el7.x86_64
+nagios-plugins-disk-2.2.1-9git5c7eb5b9.el7
+nagios-plugins-disk-2.2.1-16.20180725git3429dad.el7
 '''
 
 RPMS_MULTIPLE_KERNEL = '''
@@ -175,6 +179,9 @@ def test_max_min():
     rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE))
     assert rpms.get_min('yum').package == 'yum-3.4.2-132.el7'
     assert rpms.get_max('yum').package == 'yum-3.4.3-132.el7'
+    assert rpms.get_max('xaaz').package == 'xaaz-5.2.2-1alpha.el7'
+    assert rpms.get_min('nagios-plugins-disk').package == 'nagios-plugins-disk-2.2.1-9git5c7eb5b9.el7'
+
 
 
 def test_max_min_not_found():

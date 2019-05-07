@@ -356,6 +356,12 @@ class InstalledRpm(object):
                     nondigit_flag = True
                 elif nondigit_flag and r.isdigit():
                     return len(rest_split) - i
+            # obviously to check last two fields
+            if rest_split and 'el' in rest_split[-1]:
+                return len(rest_split) - 1
+            elif len(rest_split) > 1 and 'el' in rest_split[-2]:
+                return len(rest_split) - 2
+
 
         self._release_sep = self.release
         self._distribution = None
