@@ -362,7 +362,6 @@ class InstalledRpm(object):
             elif len(rest_split) > 1 and 'el' in rest_split[-2]:
                 return len(rest_split) - 2
 
-
         self._release_sep = self.release
         self._distribution = None
         rl_split = self._release_sep.split('.') if self._release_sep else None

@@ -183,7 +183,6 @@ def test_max_min():
     assert rpms.get_min('nagios-plugins-disk').package == 'nagios-plugins-disk-2.2.1-9git5c7eb5b9.el7'
 
 
-
 def test_max_min_not_found():
     rpms = InstalledRpms(context_wrap(RPMS_MULTIPLE_KERNEL))
     assert rpms.get_min('abc') is None
