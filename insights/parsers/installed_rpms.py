@@ -69,7 +69,6 @@ Examples:
     True
 """
 import json
-import re
 import rpm_vercmp
 from collections import defaultdict
 
@@ -236,47 +235,6 @@ class InstalledRpms(CommandParser):
     # re-export get_max/min with more descriptive names
     newest = get_max
     oldest = get_min
-
-
-p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
-
-
-def _int_or_str(c):
-    try:
-        return int(c)
-    except ValueError:
-        return c
-
-
-def vcmp(s):
-    return [_int_or_str(c) for c in p.split(s) if c and c not in (".", "_", "-")]
-
-
-def pad_version(left, right):
-    """Returns two sequences of the same length so that they can be compared.
-    The shorter of the two arguments is lengthened by inserting extra zeros
-    before non-integer components.  The algorithm attempts to align character
-    components."""
-    pair = vcmp(left), vcmp(right)
-
-    mn, mx = min(pair, key=len), max(pair, key=len)
-
-    for idx, c in enumerate(mx):
-
-        try:
-            a = mx[idx]
-            b = mn[idx]
-            if type(a) != type(b):
-                mn.insert(idx, 0)
-        except IndexError:
-            if type(c) is int:
-                mn.append(0)
-            elif isinstance(c, six.string_types):
-                mn.append('')
-            else:
-                raise Exception("pad_version failed (%s) (%s)" % (left, right))
-
-    return pair
 
 
 class InstalledRpm(object):

@@ -1,5 +1,5 @@
 import pytest
-from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm, pad_version
+from insights.parsers.installed_rpms import InstalledRpms, InstalledRpm
 from insights.tests import context_wrap
 
 
@@ -339,10 +339,6 @@ def test_unicode_char_in_rpms():
     assert u"openobex\u018e" in rpms.packages
     rpm = rpms.get_max(u'openobex\u018e')
     assert rpm.package == u'openobex\u018e-1.4-7.el6'
-
-
-def test_pad_version_uneven_sections():
-    assert pad_version('1.el7', '1.el7_4.ngx') == ([1, 'el', 7, 0, ''], [1, 'el', 7, 4, 'ngx'])
 
 
 def test_epoch():
