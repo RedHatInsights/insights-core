@@ -1255,6 +1255,24 @@ class Syslog(LogFileOutput):
                 msg_info['procname'] = info_splits[4]
         return msg_info
 
+    def get_logs_by_procname(self, proc):
+        """
+        Parameters:
+            proc(str): The process or facility that you're looking for
+
+        Returns:
+            (list): The raw syslog messages produced by that process or facility
+        """
+        _log_re = re.compile(r'^[A-Za-z]{3}\s+\d{1,2}\s\d{2}:\d{2}:\d{2}\s\S+\s(?P<procname>\S+):.*$')
+        ret = list()
+        for line in self.lines:
+            match = _log_re.search(line)
+            if match:
+                proc_and_id = match.group('procname')
+                if '[' in proc_and_id and proc_and_id[-1] == ']' and proc == proc_and_id.split('[')[0]:
+                    ret.append(line)
+        return ret
+
 
 class IniConfigFile(ConfigParser):
     """
