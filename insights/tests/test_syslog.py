@@ -13,6 +13,7 @@ Apr 22 10:40:01 boy-bona CROND[30677]: (root) CMD (/usr/lib64/sa/sa1 -S DISK 1 1
 Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)
 Apr 29 11:33:36 kvmr7u5 ehtest: crontab[12345]: {
 April 29 11:33:36 kvmr7u5 ehtest: crontab[12345]: {
+May  5 03:50:01 kvmr7u5 systemd: Removed slice user-0.slice.
 """.strip()
 
 
@@ -32,3 +33,5 @@ def test_syslog():
     crontab_logs = msg_info.get_logs_by_procname('crontab')
     assert len(crontab_logs) == 2
     assert crontab_logs[1] == "Apr 22 10:41:13 boy-bona crontab[32515]: (root) LIST (root)"
+    systemd_logs = msg_info.get_logs_by_procname('systemd')
+    assert len(systemd_logs) == 1

@@ -1269,7 +1269,7 @@ class Syslog(LogFileOutput):
             match = _log_re.search(line)
             if match:
                 proc_and_id = match.group('procname')
-                if '[' in proc_and_id and proc_and_id[-1] == ']' and proc == proc_and_id.split('[')[0]:
+                if '[' in proc_and_id and proc_and_id[-1] == ']' and proc == proc_and_id.split('[')[0] or proc == proc_and_id:
                     ret.append(line)
         return ret
 
