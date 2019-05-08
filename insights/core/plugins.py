@@ -112,7 +112,8 @@ class parser(PluginType):
         or rules that depend on the Parser will be passed the list of instances
         and **not** a single parser instance.
     """
-    def __init__(self, *args, group=dr.GROUPS.single):
+    def __init__(self, *args, **kwargs):
+        group = kwargs.get('group', dr.GROUPS.single)
         super(parser, self).__init__(*args, group=group)
 
     def invoke(self, broker):
