@@ -1,7 +1,5 @@
-import pytest
 from insights.parsers.getconf_pagesize import GetconfPageSize
 from insights.tests import context_wrap
-from insights.parsers import ParseException
 
 GETCONFPAGESIZE1 = """
 4096
@@ -10,6 +8,7 @@ GETCONFPAGESIZE1 = """
 GETCONFPAGESIZE2 = """
 16384
 """.strip()
+
 
 class Testgetconfpagesize():
     def test_getconf_PAGESIZE1(self):
