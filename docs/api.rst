@@ -251,7 +251,7 @@ Parsers
 A ``Parser`` takes the raw content of a particular ``Data Source`` such as
 file contents or command output, parses it, and then provides a small API for
 plugins to query.  The parsed data and computed facts available via the API are
-also serialized to be used in downstream processes. The
+also serialized to be used in downstream processes.
 
 Choosing a Module
 -----------------
