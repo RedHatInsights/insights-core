@@ -110,7 +110,6 @@ class DefaultSpecs(Specs):
     candlepin_log = simple_file("/var/log/candlepin/candlepin.log")
     candlepin_error_log = simple_file("/var/log/candlepin/error.log")
     checkin_conf = simple_file("/etc/splice/checkin.conf")
-    ps_aexww = simple_command("/bin/ps aexww")
     ps_aux = simple_command("/bin/ps aux")
     ps_auxcww = simple_command("/bin/ps auxcww")
     ps_auxww = simple_command("/bin/ps auxww")
@@ -554,7 +553,11 @@ class DefaultSpecs(Specs):
     nmcli_dev_show = simple_command("/usr/bin/nmcli dev show")
     nova_api_log = first_file(["/var/log/containers/nova/nova-api.log", "/var/log/nova/nova-api.log"])
     nova_compute_log = first_file(["/var/log/containers/nova/nova-compute.log", "/var/log/nova/nova-compute.log"])
-    nova_conf = first_file(["/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf", "/etc/nova/nova.conf"])
+    nova_conf = first_file([
+                           "/var/lib/config-data/puppet-generated/nova/etc/nova/nova.conf",
+                           "/var/lib/config-data/puppet-generated/nova_libvirt/etc/nova/nova.conf",
+                           "/etc/nova/nova.conf"
+                           ])
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_crontab_container = simple_command("docker exec nova_api_cron /usr/bin/crontab -l -u nova")
     nova_uid = simple_command("/usr/bin/id -u nova")
@@ -591,7 +594,11 @@ class DefaultSpecs(Specs):
     odbcinst_ini = simple_file("/etc/odbcinst.ini")
     crt = simple_command("/usr/bin/find /etc/origin/node /etc/origin/master -type f -path '*.crt'")
     openshift_certificates = foreach_execute(crt, "/usr/bin/openssl x509 -noout -enddate -in %s")
+    openshift_fluentd_pid = simple_command("/usr/bin/pgrep -n fluentd")
+    openshift_fluentd_environ = foreach_collect(openshift_fluentd_pid, "/proc/%s/environ")
     openshift_hosts = simple_file("/root/.config/openshift/hosts")
+    openshift_router_pid = simple_command("/usr/bin/pgrep -n openshift-route")
+    openshift_router_environ = foreach_collect(openshift_router_pid, "/proc/%s/environ")
     openvswitch_other_config = simple_command("/usr/bin/ovs-vsctl -t 5 get Open_vSwitch . other_config")
     openvswitch_server_log = simple_file('/var/log/openvswitch/ovsdb-server.log')
     openvswitch_daemon_log = simple_file('/var/log/openvswitch/ovs-vswitchd.log')
