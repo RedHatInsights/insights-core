@@ -504,6 +504,7 @@ class Specs(SpecSet):
     sysconfig_libvirt_guests = RegistryPoint()
     sysconfig_memcached = RegistryPoint()
     sysconfig_mongod = RegistryPoint(multi_output=True)
+    sysconfig_network = RegistryPoint()
     sysconfig_ntpd = RegistryPoint()
     sysconfig_prelink = RegistryPoint()
     sysconfig_sshd = RegistryPoint()
