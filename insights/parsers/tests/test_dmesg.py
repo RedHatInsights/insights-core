@@ -55,6 +55,8 @@ TS_MSGINFO = """
 [    0.025482] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
 [    0.035484] smpboot: CPU0: Intel(R) Core(TM) i7-4800MQ CPU @ 2.70GHz (fam: 06, model: 3c, stepping: 03)
 [    0.035490] TSC deadline timer enabled
+
+[10424.756954] perf: interrupt took too long (2507 > 2500), lowering kernel.perf_event_max_sample_rate to 79750
 """
 
 
@@ -68,6 +70,7 @@ def test_dmesg():
     assert not dmesg_info.has_startswith("xfs:")
     assert len(list(dmesg_info.get_after(0.0001))) == 2
     assert list(dmesg_info.get_after(0.0001))[0]['raw_message'] == '[    8.687252] HP HPSA Driver (v 3.4.4-1-RH2) 2.5.0'
+    assert dmesg_info.logs_startwith('(null)') == ['(null): Dropping TSO features since no CSUM feature.', '(null): Dropping TSO6 features since no CSUM feature.']
 
     ts_info = DmesgLineList(context_wrap(TS_MSGINFO))
     assert ts_info
@@ -75,5 +78,7 @@ def test_dmesg():
     assert ts_info.has_startswith('ENERGY_PERF_BIAS')
     assert not ts_info.has_startswith('Intel(R) Core(TM)')
     assert 'tlb_flushall_shift' in ts_info
-    assert len(list(ts_info.get_after(0.024847))) == 7
+    assert len(list(ts_info.get_after(0.024847))) == 9
     assert len(list(ts_info.get_after(0.024847, 'x2apic'))) == 3
+    assert ts_info.logs_startwith('perf') == ['perf: interrupt took too long (2507 > 2500), lowering kernel.perf_event_max_sample_rate to 79750']
+    assert ts_info.logs_startwith('systemd') == []
