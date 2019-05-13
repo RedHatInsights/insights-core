@@ -809,6 +809,7 @@ class DefaultSpecs(Specs):
     subscription_manager_list_installed = simple_command('/usr/bin/subscription-manager list --installed')
     subscription_manager_release_show = simple_command('/usr/bin/subscription-manager release --show')
     subscription_manager_repos_list_enabled = simple_command('/usr/bin/subscription-manager repos --list-enabled')
+    swift_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/swift.conf", "/etc/swift/swift.conf"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
     swift_proxy_server_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/proxy-server.conf", "/etc/swift/proxy-server.conf"])
     sysconfig_chronyd = simple_file("/etc/sysconfig/chronyd")
