@@ -19,8 +19,6 @@ from insights import get_active_lines, parser, Parser
 from insights import make_fail, make_pass, rule, run
 from insights.core.spec_factory import SpecSet, simple_file
 from insights.parsers.redhat_release import RedhatRelease
-from insights.core.plugins import component
-from insights.core.dr import SkipComponent
 
 # Error key used in make_fail
 ERROR_KEY = "TOO_MANY_HOSTS"
@@ -33,26 +31,12 @@ CONTENT = {
 }
 
 
-# Checks if Fedora, if so returns version, if not raises SkipComponent
-@component(RedhatRelease)
-class Is_Fedora(object):
-    def __init__(self, rhel):
-        self.content = []
-        if "Fedora" in rhel.product:
-            self.rhel_version = rhel.version
-        else:
-            raise SkipComponent('Not Fedora')
-
-
 class Specs(SpecSet):
     """ Datasources for collection from local host """
     hosts = simple_file("/etc/hosts")
 
 
-# If this runs on a server that is not Fedora or with an archive that
-# is not from a Fedora server this parser will not fire since the
-# Is_Fedora component raises SkipComponent if not Fedora
-@parser(Specs.hosts, Is_Fedora)
+@parser(Specs.hosts)
 class HostParser(Parser):
     """
     Parses the results of the ``hosts`` Specs

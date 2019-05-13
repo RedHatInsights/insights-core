@@ -1,9 +1,13 @@
-from insights.components.rhel_version import Is_Rhel6, Is_Rhel7, Is_Rhel8
-from insights.parsers.redhat_release import RedhatRelease as RR
+from insights.components.rhel_version import IsRhel6, IsRhel7, IsRhel8
+from insights.combiners.redhat_release import RedHatRelease as RR
+from insights.parsers.uname import Uname
+from insights.parsers.redhat_release import RedhatRelease
 from insights.tests import context_wrap
 from insights.core.dr import SkipComponent
 import pytest
 
+
+UNAME = "Linux localhost.localdomain 3.10.0-327.rt56.204.el7.x86_64 #1 SMP PREEMPT RT Thu Oct 29 21:54:23 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux"
 
 REDHAT_RELEASE1 = """
 Red Hat Enterprise Linux Server release 6.7 (Santiago)
@@ -18,65 +22,77 @@ Red Hat Enterprise Linux release 7.5-0.14
 """.strip()
 
 REDHAT_RELEASE4 = """
-RedHat Enterprise Linux release 8.0 (Ootpa)
+Red Hat Enterprise Linux release 8.0 (Ootpa)
 """.strip()
 
 
 # RHEL6 Tests
 def test_is_rhel6():
-    rel = RR(context_wrap(REDHAT_RELEASE1))
-    expected = '6.7'
-    result = Is_Rhel6(rel)
-    assert result.rhel_version == expected
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE1))
+    rel = RR(None, rr)
+    result = IsRhel6(rel)
+    assert isinstance(result, IsRhel6)
 
 
 def test_not_rhel6():
-    rel = RR(context_wrap(REDHAT_RELEASE2))
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
+    rel = RR(None, rr)
     with pytest.raises(SkipComponent) as e:
-        Is_Rhel6(rel)
+        IsRhel6(rel)
     assert "Not RHEL6" in str(e)
 
 
 # RHEL7 Server Tests
 def test_is_rhel7s():
-    rel = RR(context_wrap(REDHAT_RELEASE2))
-    expected = '7.2'
-    result = Is_Rhel7(rel)
-    assert result.rhel_version == expected
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
+    rel = RR(None, rr)
+    result = IsRhel7(rel)
+    assert isinstance(result, IsRhel7)
 
 
 def test_not_rhel7s():
-    rel = RR(context_wrap(REDHAT_RELEASE1))
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE1))
+    rel = RR(None, rr)
     with pytest.raises(SkipComponent) as e:
-        Is_Rhel7(rel)
+        IsRhel7(rel)
     assert "Not RHEL7" in str(e)
 
 
 # RHEL7 Tests
+def test_uname_is_rhel7():
+    uname = Uname(context_wrap(UNAME))
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE3))
+    rel = RR(uname, rr)
+    result = IsRhel7(rel)
+    assert isinstance(result, IsRhel7)
+
+
 def test_is_rhel7():
-    rel = RR(context_wrap(REDHAT_RELEASE3))
-    expected = '7.5-0.14'
-    result = Is_Rhel7(rel)
-    assert result.rhel_version == expected
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE3))
+    rel = RR(None, rr)
+    result = IsRhel7(rel)
+    assert isinstance(result, IsRhel7)
 
 
 def test_not_rhel7():
-    rel = RR(context_wrap(REDHAT_RELEASE1))
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE1))
+    rel = RR(None, rr)
     with pytest.raises(SkipComponent) as e:
-        Is_Rhel7(rel)
+        IsRhel7(rel)
     assert "Not RHEL7" in str(e)
 
 
 # RHEL8 Tests
 def test_is_rhel8():
-    rel = RR(context_wrap(REDHAT_RELEASE4))
-    expected = '8.0'
-    result = Is_Rhel8(rel)
-    assert result.rhel_version == expected
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE4))
+    rel = RR(None, rr)
+    result = IsRhel8(rel)
+    assert isinstance(result, IsRhel8)
 
 
 def test_not_rhel8():
-    rel = RR(context_wrap(REDHAT_RELEASE2))
+    rr = RedhatRelease(context_wrap(REDHAT_RELEASE2))
+    rel = RR(None, rr)
     with pytest.raises(SkipComponent) as e:
-        Is_Rhel8(rel)
+        IsRhel8(rel)
     assert "Not RHEL8" in str(e)
