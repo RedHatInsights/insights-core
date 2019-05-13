@@ -1263,12 +1263,13 @@ class Syslog(LogFileOutput):
         Returns:
             (list): The raw syslog messages produced by that process or facility
         """
-        _log_re = re.compile(r'^[A-Za-z]{3}\s+\d{1,2}\s\d{2}:\d{2}:\d{2}\s\S+\s(?P<procname>\S+):.*$')
         ret = list()
         for line in self.lines:
-            match = _log_re.search(line)
-            if match:
-                proc_and_id = match.group('procname')
+            tiles = line.split()
+            if (len(tiles[0]) == 3 and tiles[1].isdigit() and
+                    ':' in tiles[2] and len(tiles[2].split(':')) == 3 and
+                    tiles[4].endswith(':')):
+                proc_and_id = tiles[4][:-1]
                 if '[' in proc_and_id and proc_and_id[-1] == ']' and proc == proc_and_id.split('[')[0] or proc == proc_and_id:
                     ret.append(line)
         return ret
