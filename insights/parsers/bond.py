@@ -56,6 +56,10 @@ Examples:
     >>> bond_info.xmit_hash_policy
     'layer2'
     >>> bond_info.active_slave
+    >>> bond_info.slave_duplex
+    ['full', 'full']
+    >>> bond_info.slave_speed
+    ['1000 Mbps', '1000 Mbps']
 """
 
 from insights import Parser, parser, get_active_lines
@@ -92,6 +96,10 @@ class Bond(Parser):
         self.xmit_hash_policy = None
         self._slave_interface = []
         self._aggregator_id = []
+        self._mii_status = []
+        self._slave_link_failure_count = []
+        self._slave_speed = []
+        self._slave_duplex = []
 
         for line in get_active_lines(content):
             if line.startswith("Bonding Mode: "):
@@ -113,6 +121,14 @@ class Bond(Parser):
                 self.xmit_hash_policy = line.split(":", 1)[1].split()[0]
             elif line.strip().startswith("Currently Active Slave"):
                 self._active_slave = line.split(":", 1)[1].split()[0]
+            elif line.strip().startswith("MII Status: "):
+                self._mii_status.append(line.strip().split(':', 1)[1].strip())
+            elif line.strip().startswith("Link Failure Count: "):
+                self._slave_link_failure_count.append(line.strip().split(':', 1)[1].strip())
+            elif line.strip().startswith("Speed: "):
+                self._slave_speed.append(line.strip().split(':', 1)[1].strip())
+            elif line.strip().startswith("Duplex: "):
+                self._slave_duplex.append(line.strip().split(':', 1)[1].strip())
 
     @property
     def bond_mode(self):
@@ -153,3 +169,35 @@ class Bond(Parser):
         is returned.
         """
         return self._active_slave
+
+    @property
+    def mii_status(self):
+        """Returns the master and all the slaves "MII Status" value in the bond file wrapped
+        a list if the key/value exists.  If the key is not in the
+        bond file, ``[]`` is returned.
+        """
+        return self._mii_status
+
+    @property
+    def slave_link_failure_count(self):
+        """Returns all the slaves "Link Failure Count" value in the bond file wrapped
+        a list if the key/value exists.  If the key is not in the
+        bond file, ``[]`` is returned.
+        """
+        return self._slave_link_failure_count
+
+    @property
+    def slave_speed(self):
+        """Returns all the slaves "Speed" value in the bond file wrapped
+        a list if the key/value exists.  If the key is not in the
+        bond file, ``[]`` is returned.
+        """
+        return self._slave_speed
+
+    @property
+    def slave_duplex(self):
+        """Returns all the slave "Duplex" value in the bond file wrapped
+        a list if the key/value exists.  If the key is not in the
+        bond file, ``[]`` is returned.
+        """
+        return self._slave_duplex
