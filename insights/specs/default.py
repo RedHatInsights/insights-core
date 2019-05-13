@@ -497,6 +497,7 @@ class DefaultSpecs(Specs):
     meminfo = first_file(["/proc/meminfo", "/meminfo"])
     messages = simple_file("/var/log/messages")
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
+    mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
