@@ -853,22 +853,15 @@ class InsightsConnection(object):
         '''
         Set display name of a system independently of upload.
         '''
-        legacy_set = False
         if self.config.legacy_upload:
-            # [circus music plays]
-            # while we have to support legacy, set name in both APIs
-            legacy_set = self._legacy_set_display_name(display_name)
+            return self._legacy_set_display_name(display_name)
 
         system = self._fetch_system_by_machine_id()
         if not system:
-            return legacy_set or system
+            return system
         inventory_id = system[0]['id']
 
-        # [circus music]
-        if self.config.legacy_upload:
-            req_url = self.base_url + '/platform/inventory/v1/hosts/' + inventory_id
-        else:
-            req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
