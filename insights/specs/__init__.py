@@ -295,6 +295,7 @@ class Specs(SpecSet):
     meminfo = RegistryPoint()
     messages = RegistryPoint(filterable=True)
     metadata_json = RegistryPoint(raw=True)
+    mistral_executor_log = RegistryPoint(filterable=True)
     mlx4_port = RegistryPoint()
     modinfo_i40e = RegistryPoint()
     modinfo_vmxnet3 = RegistryPoint()
