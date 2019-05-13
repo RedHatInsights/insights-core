@@ -44,13 +44,13 @@ def attach_machine_id(result, mid):
     return result
 
 
-def process_archives(archives):
+def process_archives(graph, archives):
     for archive in archives:
         with extract(archive) as ex:
             ctx = create_context(ex.tmp_dir)
             broker = dr.Broker()
             broker[ctx.__class__] = ctx
-            yield dr.run(broker=broker)
+            yield dr.run(graph, broker=broker)
 
 
 def extract_facts(brokers):
@@ -66,18 +66,22 @@ def extract_facts(brokers):
     return results
 
 
-def process_facts(facts, meta, broker):
+def process_facts(facts, meta, broker, cluster_graph):
     broker[ClusterMeta] = meta
     for k, v in facts.items():
         broker[k] = pd.DataFrame(v)
-    return dr.run(dr.COMPONENTS[dr.GROUPS.cluster], broker=broker)
+    return dr.run(cluster_graph, broker=broker)
 
 
-def process_cluster(archives, broker, inventory=None):
+def process_cluster(graph, archives, broker, inventory=None):
+    host_graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
+    host_graph[machine_id] = dr.DELEGATES[machine_id].dependencies
+    cluster_graph = dict((k, v) for k, v in graph.items() if k not in host_graph)
+
     inventory = parse_inventory(inventory) if inventory else {}
 
-    brokers = process_archives(archives)
+    brokers = process_archives(host_graph, archives)
     facts = extract_facts(brokers)
     meta = ClusterMeta(len(archives), inventory)
 
-    return process_facts(facts, meta, broker)
+    return process_facts(facts, meta, broker, cluster_graph)

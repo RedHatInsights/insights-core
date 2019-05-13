@@ -85,12 +85,13 @@ def process_dir(broker, root, graph, context, inventory=None):
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
-        return process_cluster(archives, broker=broker, inventory=inventory)
+        return process_cluster(graph, archives, broker=broker, inventory=inventory)
 
     broker[ctx.__class__] = ctx
     if isinstance(ctx, SerializedArchiveContext):
         h = Hydration(ctx.root)
         broker = h.hydrate(broker=broker)
+    graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
     broker = dr.run(graph, broker=broker)
     return broker
 
@@ -117,6 +118,7 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
     if not root:
         context = context or HostContext
         broker[context] = context()
+        graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
