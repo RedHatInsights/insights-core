@@ -4,8 +4,8 @@ Heat logs
 
 Module for parsing the log files for Heat.  Parsers included are:
 
-HeatApiLog - file ``/var/log/heat/heat-api.log``
-------------------------------------------------
+HeatApiLog - file ``/var/log/heat/heat-api.log, /var/log/containers/heat/heat_api.log``
+---------------------------------------------------------------------------------------
 
 HeatEngineLog - file ``/var/log/heat/heat-engine.log``
 ------------------------------------------------------
@@ -18,7 +18,7 @@ from insights.specs import Specs
 
 @parser(Specs.heat_api_log)
 class HeatApiLog(LogFileOutput):
-    """Class for parsing ``/var/log/heat/heat-api.log`` file.
+    """Class for parsing ``/var/log/heat/heat-api.log, /var/log/containers/heat/heat_api.log`` file.
 
     Typical content of ``heat-api.log`` file is::
 
