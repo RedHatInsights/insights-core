@@ -10,10 +10,9 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
-import socket
-import io
+# import io
 from tempfile import TemporaryFile
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 try:
     # python 2
     from urlparse import urlparse
@@ -22,7 +21,6 @@ except ImportError:
     # python 3
     from urllib.parse import urlparse
     from urllib.parse import quote
-from OpenSSL import SSL, crypto
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
@@ -70,12 +68,12 @@ class InsightsConnection(object):
         # workaround while we support both legacy and plat APIs
         self.cert_verify = self.config.cert_verify
         if self.cert_verify is None:
-            if self.config.legacy_upload:
-                self.cert_verify = os.path.join(
-                    constants.default_conf_dir,
-                    'cert-api.access.redhat.com.pem')
-            else:
-                self.cert_verify = True
+            # if self.config.legacy_upload:
+            self.cert_verify = os.path.join(
+                constants.default_conf_dir,
+                'cert-api.access.redhat.com.pem')
+            # else:
+            # self.cert_verify = True
         else:
             if isinstance(self.cert_verify, six.string_types):
                 if self.cert_verify.lower() == 'false':
@@ -126,10 +124,6 @@ class InsightsConnection(object):
         self.systemid = self.config.systemid or None
         self.get_proxies()
         self.session = self._init_session()
-        # need this global -- [barfing intensifies]
-        # tuple of self-signed cert flag & cert chain list
-        self.cert_chain = [False, []]
-        self.branch_info = constants.default_branch_info
 
     def _init_session(self):
         """
@@ -258,10 +252,7 @@ class InsightsConnection(object):
         url = urlparse(url)
         test_url = url.scheme + "://" + url.netloc
         last_ex = None
-        if self.config.legacy_upload:
-            paths = (url.path + '/', '', '/r', '/r/insights')
-        else:
-            paths = (url.path + '/', '', '/api')
+        paths = (url.path + '/', '', '/r', '/r/insights')
         for ext in paths:
             try:
                 logger.debug("Testing: %s", test_url + ext)
@@ -300,7 +291,7 @@ class InsightsConnection(object):
             if method is 'POST':
                 test_tar = TemporaryFile(mode='rb', suffix='.tar.gz')
                 test_files = {
-                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.test+tgz'),
+                    'file': ('test.tar.gz', test_tar, 'application/vnd.redhat.advisor.collection+tgz'),
                     'metadata': '{\"test\": \"test\"}'
                 }
                 test_req = self.session.post(url, timeout=self.config.http_timeout, files=test_files)
@@ -324,122 +315,12 @@ class InsightsConnection(object):
         if last_ex:
             raise last_ex
 
-        # files['file'] = (file_name, open(data_collected, 'rb'), content_type)
-
-        # logger.debug("Uploading %s to %s", data_collected, upload_url)
-
-        # # net_logger.info("POST %s", upload_url)
-        # # upload = self.session.post(upload_url, files=files, headers=headers)
-
-        #     elif method is 'GET':
-        #         pass
-
-    def _verify_check(self, conn, cert, err, depth, ret):
-        del conn
-        # add cert to chain
-        self.cert_chain[1].append(cert)
-        logger.info('depth=' + str(depth))
-        logger.info('verify error:num=' + str(err))
-        logger.info('verify return:' + str(ret))
-        if err == 19:
-            # self-signed cert
-            self.cert_chain[0] = True
-        return True
-
-    def _generate_cert_str(self, cert_data, prefix):
-        return prefix + u'/'.join(
-                [a[0].decode('utf-8') + u'=' + a[1].decode('utf-8')
-                    for a in cert_data.get_components()])
-
-    def _test_openssl(self):
-        '''
-        Run a test with openssl to detect any MITM proxies
-        '''
-        if not self.cert_verify:
-            logger.info('cert_verify set to False, skipping SSL check...')
-            return False
-        success = True
-        hostname = urlparse(self.base_url).netloc.split(':')
-        sock = socket.socket()
-        sock.setblocking(1)
-        if self.proxies:
-            connect_str = 'CONNECT {0}:443 HTTP/1.0\r\n'.format(hostname[0])
-            if self.proxy_auth:
-                connect_str += 'Proxy-Authorization: {0}\r\n'.format(self.proxy_auth)
-            connect_str += '\r\n'
-            proxy = urlparse(self.proxies['https']).netloc.split(':')
-            try:
-                sock.connect((proxy[0], int(proxy[1])))
-            except Exception as e:
-                logger.debug(e)
-                logger.error('Failed to connect to proxy %s. Connection refused.', self.proxies['https'])
-                return False
-            sock.send(connect_str.encode('utf-8'))
-            res = sock.recv(4096)
-            if u'200 connection established' not in res.decode('utf-8').lower():
-                logger.error('Failed to connect to %s.', self.base_url)
-                logger.error('HTTP message:\n%s', res)
-                return False
-        else:
-            try:
-                sock.connect((hostname[0], 443))
-            except socket.gaierror as e:
-                logger.error('Error: Failed to connect to %s. Invalid hostname.', self.base_url)
-                logger.error(e)
-                return False
-        ctx = SSL.Context(SSL.TLSv1_METHOD)
-        if type(self.cert_verify) is not bool:
-            if os.path.isfile(self.cert_verify):
-                ctx.load_verify_locations(self.cert_verify, None)
-            else:
-                logger.error('Error: Invalid cert path: %s', self.cert_verify)
-                return False
-        ctx.set_verify(SSL.VERIFY_PEER, self._verify_check)
-        ssl_conn = SSL.Connection(ctx, sock)
-        ssl_conn.set_connect_state()
-        try:
-            # output from verify generated here
-            ssl_conn.do_handshake()
-            # print cert chain
-            certs = self.cert_chain[1]
-            # put them in the right order
-            certs.reverse()
-            logger.debug('---\nCertificate chain')
-            for depth, c in enumerate(certs):
-                logger.debug(self._generate_cert_str(c.get_subject(),
-                                                     u'{0} s :/'.format(depth)))
-                logger.debug(self._generate_cert_str(c.get_issuer(),
-                                                     u'  i :/'))
-            # print server cert
-            server_cert = ssl_conn.get_peer_certificate()
-            logger.debug('---\nServer certificate')
-            logger.debug(crypto.dump_certificate(crypto.FILETYPE_PEM, server_cert))
-            logger.debug(self._generate_cert_str(server_cert.get_subject(), u'subject=/'))
-            logger.debug(self._generate_cert_str(server_cert.get_issuer(), u'issuer=/'))
-            logger.debug('---')
-        except SSL.Error as e:
-            logger.debug('SSL error: %s', e)
-            success = False
-            logger.error('Certificate chain test failed!')
-        ssl_conn.shutdown()
-        ssl_conn.close()
-        if self.cert_chain[0]:
-            logger.error('Certificate chain test failed!  Self '
-                         'signed certificate detected in chain')
-        return success and not self.cert_chain[0]
-
     def test_connection(self, rc=0):
         """
         Test connection to Red Hat
         """
-        logger.error("Connection test config:")
         logger.debug("Proxy config: %s", self.proxies)
-        logger.debug("Certificate Verification: %s", self.cert_verify)
         try:
-            logger.info("=== Begin Certificate Chain Test ===")
-            cert_success = self._test_openssl()
-            logger.info("=== End Certificate Chain Test: %s ===\n",
-                        "SUCCESS" if cert_success else "FAILURE")
             logger.info("=== Begin Upload URL Connection Test ===")
             upload_success = self._test_urls(self.upload_url, "POST")
             logger.info("=== End Upload URL Connection Test: %s ===\n",
@@ -451,11 +332,11 @@ class InsightsConnection(object):
                 api_success = self._test_urls(self.base_url + '/apicast-tests/ping', 'GET')
             logger.info("=== End API URL Connection Test: %s ===\n",
                         "SUCCESS" if api_success else "FAILURE")
-            if cert_success and upload_success and api_success:
-                logger.info("\nConnectivity tests completed successfully")
+            if upload_success and api_success:
+                logger.info("Connectivity tests completed successfully")
                 logger.info("See %s for more details.", self.config.logging_file)
             else:
-                logger.info("\nConnectivity tests completed with some errors")
+                logger.info("Connectivity tests completed with some errors")
                 logger.info("See %s for more details.", self.config.logging_file)
                 rc = 1
         except requests.ConnectionError as exc:
@@ -554,18 +435,18 @@ class InsightsConnection(object):
         Retrieve branch_info from Satellite Server
         """
         branch_info = None
-        if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 10 minutes old
-            #  (failsafe, should be deleted at end of client run normally)
-            logger.debug(u'Reading branch info from cached file.')
-            ctime = datetime.utcfromtimestamp(
-                os.path.getctime(constants.cached_branch_info))
-            if datetime.utcnow() < (ctime + timedelta(minutes=5)):
-                with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
-                    branch_info = json.load(f)
-                return branch_info
-            else:
-                logger.debug(u'Cached branch info is older than 5 minutes.')
+        # if os.path.exists(constants.cached_branch_info):
+        #     # use cached branch info file if less than 10 minutes old
+        #     #  (failsafe, should be deleted at end of client run normally)
+        #     logger.debug(u'Reading branch info from cached file.')
+        #     ctime = datetime.utcfromtimestamp(
+        #         os.path.getctime(constants.cached_branch_info))
+        #     if datetime.utcnow() < (ctime + timedelta(minutes=5)):
+        #         with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
+        #             branch_info = json.load(f)
+        #         return branch_info
+        #     else:
+        #         logger.debug(u'Cached branch info is older than 5 minutes.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
@@ -576,7 +457,7 @@ class InsightsConnection(object):
         if response.status_code != 200:
             logger.debug("There was an error obtaining branch information.")
             logger.debug(u'Bad status from server: %s', response.status_code)
-            logger.debug("Assuming default branch information %s" % self.branch_info)
+            logger.debug("Assuming default branch information %s" % constants.default_branch_info)
             return False
 
         branch_info = response.json()
@@ -587,12 +468,12 @@ class InsightsConnection(object):
              branch_info[u'remote_leaf'] is -1)):
             self.get_satellite5_info(branch_info)
 
-        logger.debug(u'Saving branch info to file.')
-        with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
-            # json.dump is broke in py2 so use dumps
-            bi_str = json.dumps(branch_info, ensure_ascii=False)
-            f.write(bi_str)
-        self.branch_info = branch_info
+        # logger.debug(u'Saving branch info to file.')
+        # with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
+        #     # json.dump is broke in py2 so use dumps
+        #     bi_str = json.dumps(branch_info, ensure_ascii=False)
+        #     f.write(bi_str)
+        self.config.branch_info = branch_info
         return branch_info
 
     # -LEGACY-
@@ -603,7 +484,7 @@ class InsightsConnection(object):
         client_hostname = determine_hostname()
         machine_id = generate_machine_id(new_machine_id)
 
-        branch_info = self.branch_info
+        branch_info = self.config.branch_info
         if not branch_info:
             return False
 
@@ -729,7 +610,11 @@ class InsightsConnection(object):
         '''
         machine_id = generate_machine_id()
         try:
-            url = self.api_url + '/inventory/v1/hosts?insights_id=' + machine_id
+            # [circus music]
+            if self.config.legacy_upload:
+                url = self.base_url + '/platform/inventory/v1/hosts?insights_id=' + machine_id
+            else:
+                url = self.base_url + '/inventory/v1/hosts?insights_id=' + machine_id
             net_logger.info("GET %s", url)
             res = self.session.get(url, timeout=self.config.http_timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
@@ -915,14 +800,14 @@ class InsightsConnection(object):
         logger.debug("Upload status: %s %s %s",
                      upload.status_code, upload.reason, upload.text)
         logger.debug('Request ID: %s', upload.headers.get('x-rh-insights-request-id', None))
-        if upload.status_code == 202:
+        if upload.status_code in (200, 202):
             # 202 from platform, no json response
             logger.debug(upload.text)
             # upload = registration on platform
             write_registered_file()
         else:
-            logger.error(
-                "Upload archive failed with status code  %s",
+            logger.debug(
+                "Upload archive failed with status code %s",
                 upload.status_code)
             return upload
         logger.debug("Upload duration: %s", upload.elapsed)
@@ -962,22 +847,28 @@ class InsightsConnection(object):
                 return False
         except requests.ConnectionError:
             # can't connect, run connection test
-            logger.error('Connection timed out. Running connection test...')
-            self.test_connection()
             return False
 
     def set_display_name(self, display_name):
         '''
         Set display name of a system independently of upload.
         '''
+        legacy_set = False
         if self.config.legacy_upload:
-            return self._legacy_set_display_name(display_name)
+            # [circus music plays]
+            # while we have to support legacy, set name in both APIs
+            legacy_set = self._legacy_set_display_name(display_name)
 
         system = self._fetch_system_by_machine_id()
         if not system:
-            return system
+            return legacy_set or system
         inventory_id = system[0]['id']
-        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+
+        # [circus music]
+        if self.config.legacy_upload:
+            req_url = self.base_url + '/platform/inventory/v1/hosts/' + inventory_id
+        else:
+            req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
