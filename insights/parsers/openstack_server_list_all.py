@@ -36,6 +36,8 @@ class OpenstackServerListAll(LegacyItemAccess, CommandParser):
         ['410b05bb-59b7-4b4c-88e9-975c811d68da', 'f891e98b-4df6-4c90-9bf1-39cf8ac900b0', '3d62cd7e-41d2-43dd-a5bf-5935bc319fae']
         >>> parser_result_server_list.get_startwith('Name','compute')
         ['compute-0', 'compute-1']
+         >>> parser_result_server_list.get_from_name('compute-0', 'Flavor')
+         'compute'
     """
 
     def parse_content(self, content):
@@ -82,3 +84,15 @@ class OpenstackServerListAll(LegacyItemAccess, CommandParser):
         list_values = [i.get(key, '') for i in self.data]
         list_starts_with = [value for value in list_values if startswith in value]
         return list_starts_with
+
+    def get_from_name(self, name_value, key):
+        '''
+        If the name_value exists in the dict returns the value for the key
+
+        Example:
+        >>> parser_result_server_list.get_from_name('controller-0','Flavor')
+        'controller'
+        '''
+        for i in self.data:
+            if name_value in i.values() and key != 'Name':
+                return i.get(key, '')
