@@ -1,4 +1,5 @@
 import pytest
+from requests import ConnectionError
 from insights.client import InsightsClient
 from insights.client.config import InsightsConfig
 from mock.mock import Mock
@@ -45,3 +46,12 @@ def test_request_forced(insights_client):
     url = "{0}{1}".format(insights_client.connection.base_url, source_path)
     timeout = insights_client.config.http_timeout
     insights_client.session.get.assert_called_once_with(url, timeout=timeout)
+
+
+def test_fetch_with_bad_url(insights_client):
+    insights_client.session.get.side_effect = ConnectionError
+    
+    source_path = 'some-source-path'
+    with pytest.raises(SystemExit) as pytest_error:
+        insights_client._fetch(source_path, "", "", force=False)
+    assert pytest_error.type == SystemExit
