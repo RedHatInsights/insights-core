@@ -11,6 +11,7 @@ from insights.parsers.sysconfig import NetconsoleSysconfig, ForemanTasksSysconfi
 from insights.parsers.sysconfig import DockerStorageSetupSysconfig, DirsrvSysconfig
 from insights.parsers.sysconfig import CorosyncSysconfig
 from insights.parsers.sysconfig import IfCFGStaticRoute
+from insights.parsers.sysconfig import NetworkSysconfig
 import doctest
 
 
@@ -148,6 +149,13 @@ DOCKER_CONFIG_STORAGE = """
 DOCKER_STORAGE_OPTIONS="--storage-driver devicemapper --storage-opt dm.fs=xfs --storage-opt dm.thinpooldev=/dev/mapper/dockervg-docker--pool --storage-opt dm.use_deferred_removal=true --storage-opt dm.use_deferred_deletion=true"
 """.strip()
 
+NETWORK_SYSCONFIG = """
+NETWORKING=yes
+HOSTNAME=rhel7-box
+GATEWAY=172.31.0.1
+NM_BOND_VLAN_ENABLED=no
+""".strip()
+
 
 def test_sysconfig_doc():
     env = {
@@ -171,6 +179,7 @@ def test_sysconfig_doc():
             'dirsrv_syscfg': DirsrvSysconfig(context_wrap(DIRSRVSYSCONFG)),
             'cs_syscfg': CorosyncSysconfig(context_wrap(COROSYNCSYSCONFIG)),
             'conn_info': IfCFGStaticRoute(context_wrap(STATIC_ROUTE_1, CONTEXT_PATH_DEVICE_1)),
+            'net_syscfg': NetworkSysconfig(context_wrap(NETWORK_SYSCONFIG))
           }
     failed, total = doctest.testmod(sysconfig, globs=env)
     assert failed == 0
