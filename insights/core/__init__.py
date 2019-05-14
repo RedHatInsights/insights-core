@@ -1237,7 +1237,6 @@ class Syslog(LogFileOutput):
         Parsed result::
 
             {'timestamp':'May 18 14:24:14',
-             'datetime':'May 18 14:24:14',
              'procname': 'kernel',
              'hostname':'lxc-rhel68-sat56',
              'message': '...',
@@ -1254,7 +1253,6 @@ class Syslog(LogFileOutput):
                 logstamp = ' '.join(info_splits[:3])
                 try:
                     datetime.datetime.strptime(logstamp, self.time_format)
-                    msg_info['datetime'] = logstamp
                 except ValueError:
                     return msg_info
                 msg_info['timestamp'] = logstamp
