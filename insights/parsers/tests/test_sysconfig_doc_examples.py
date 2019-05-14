@@ -156,6 +156,7 @@ GATEWAY=172.31.0.1
 NM_BOND_VLAN_ENABLED=no
 """.strip()
 
+
 def test_sysconfig_doc():
     env = {
             'chronyd_syscfg': ChronydSysconfig(context_wrap(CHRONYDSYSCONFIG)),

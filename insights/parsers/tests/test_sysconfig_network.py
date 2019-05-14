@@ -1,6 +1,4 @@
-import doctest
 from insights.parsers.sysconfig import NetworkSysconfig
-from insights.parsers import sysconfig_network
 from insights.tests import context_wrap
 
 NETWORK_SYSCONFIG = """
