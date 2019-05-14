@@ -9,7 +9,7 @@ Sample input data::
     NetworkManager-glib.x86_64                1:1.10.10-1.fc28              @updates
 """
 from collections import defaultdict
-from insights import parser, Parser
+from insights import parser, Parser, SkipComponent
 from insights.parsers.installed_rpms import InstalledRpm, RpmList
 from insights.specs import Specs
 
@@ -28,19 +28,46 @@ class YumListInstalled(Parser, RpmList):
     A parser for working with data containing a list of installed RPM files on
     the system and related information.
     """
+
+    def _find_start(self, content):
+        for i, c in enumerate(content):
+            if c == "Installed Packages":
+                break
+        return i + 1
+
     def _get_rows(self, content):
         """
         "yum list installed" output is basically tabular with an ignorable row
         at the top, but each column after has a maximum width. If any column
         overflows, the following columns wrap to the next line and indent to
-        their usual starting positions. We sidestep the wrapping by collapsing
-        all the lines into a single line, splitting on whitespace, and
-        collecting records as groups of three.
+        their usual starting positions.
+
+        Yields:
+            a list per row of the following form:
+            [
+                <name.arch>,
+                <[epoch:]version-release>,
+                <repo or @installed-from-repo>
+            ]
         """
-        if content[0] == "Installed Packages":
-            content = content[1:]
-        content = "\n".join(content).split()
-        return zip(*(iter(content),) * 3)
+        start = self._find_start(content)
+        if start == len(content):
+            raise SkipComponent()
+
+        # join hanging wrapped lines together into a single line.
+        # see https://bugzilla.redhat.com/show_bug.cgi?id=584525
+        cur = []
+        for line in content[start:]:
+            if not cur:
+                cur.append(line.strip())
+            elif line.startswith(" "):
+                cur.append(line.strip())
+            else:
+                yield " ".join(cur).split()
+                cur = [line.strip()]
+
+        if cur:
+            yield " ".join(cur).split()
 
     def _make_record(self, package, ver_rel, repo):
         """
@@ -65,9 +92,16 @@ class YumListInstalled(Parser, RpmList):
         return {"name": name, "version": version, "release": release, "epoch":
                 epoch, "arch": arch, "repo": repo}
 
+    def _unknown_row(self, row):
+        # heuristic to tell us we've hit the bottom of the Installed
+        # Packages stanza
+        return len(row) != 3 or row[:2] == ["Loaded", "plugins:"]
+
     def parse_content(self, content):
         packages = defaultdict(list)
         for row in self._get_rows(content):
+            if self._unknown_row(row):
+                break
             rec = self._make_record(*row)
             packages[rec["name"]].append(YumInstalledRpm(rec))
         self.packages = dict(packages)
