@@ -3,7 +3,7 @@ from insights.parsers.redhat_release import RedhatRelease
 from insights.combiners.redhat_release import redhat_release, RedHatRelease
 from insights.combiners import redhat_release as rr
 from insights.tests import context_wrap
-from insights.parsers import ParseException
+from insights.parsers import SkipException
 import pytest
 import doctest
 
@@ -78,13 +78,13 @@ def test_RedHatRelease_both():
 
 def test_raise():
     un = Uname(context_wrap(BAD_UNAME))
-    with pytest.raises(ParseException):
+    with pytest.raises(SkipException):
         redhat_release(None, un)
 
-    with pytest.raises(ParseException):
+    with pytest.raises(SkipException):
         RedHatRelease(un, None)
 
-    with pytest.raises(ParseException):
+    with pytest.raises(SkipException):
         RedHatRelease(None, None)
 
 
