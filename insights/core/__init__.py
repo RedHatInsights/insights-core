@@ -1237,6 +1237,7 @@ class Syslog(LogFileOutput):
         Parsed result::
 
             {'timestamp':'May 18 14:24:14',
+             'datetime':'May 18 14:24:14',
              'procname': 'kernel',
              'hostname':'lxc-rhel68-sat56',
              'message': '...',
@@ -1252,7 +1253,8 @@ class Syslog(LogFileOutput):
             if len(info_splits) == 5:
                 logstamp = ' '.join(info_splits[:3])
                 try:
-                    ts = datetime.datetime.strptime(logstamp, self.time_format)
+                    datetime.datetime.strptime(logstamp, self.time_format)
+                    msg_info['datetime'] = logstamp
                 except ValueError:
                     return msg_info
                 msg_info['timestamp'] = logstamp
@@ -1270,7 +1272,7 @@ class Syslog(LogFileOutput):
         """
         for line in self.lines:
             l = self._parse_line(line)
-            procid= l.get('procname', '')
+            procid = l.get('procname', '')
             if proc == procid or proc == procid.split('[')[0]:
                 yield l
 
