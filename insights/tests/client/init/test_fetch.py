@@ -50,7 +50,7 @@ def test_request_forced(insights_client):
 
 def test_fetch_with_bad_url(insights_client):
     insights_client.session.get.side_effect = ConnectionError
-    
+
     source_path = 'some-source-path'
     with pytest.raises(SystemExit) as pytest_error:
         insights_client._fetch(source_path, "", "", force=False)
