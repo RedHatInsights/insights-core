@@ -1250,7 +1250,12 @@ class Syslog(LogFileOutput):
 
             info_splits = info.split()
             if len(info_splits) == 5:
-                msg_info['timestamp'] = ' '.join(info_splits[:3])
+                logstamp = ' '.join(info_splits[:3])
+                try:
+                    ts = datetime.datetime.strptime(logstamp, self.time_format)
+                except ValueError:
+                    return msg_info
+                msg_info['timestamp'] = logstamp
                 msg_info['hostname'] = info_splits[3]
                 msg_info['procname'] = info_splits[4]
         return msg_info
@@ -1260,19 +1265,14 @@ class Syslog(LogFileOutput):
         Parameters:
             proc(str): The process or facility that you're looking for
 
-        Returns:
-            (list): The raw syslog messages produced by that process or facility
+        Yields:
+            (dict): The parsed syslog messages produced by that process or facility
         """
-        ret = list()
         for line in self.lines:
-            tiles = line.split()
-            if (len(tiles[0]) == 3 and tiles[1].isdigit() and
-                    ':' in tiles[2] and len(tiles[2].split(':')) == 3 and
-                    tiles[4].endswith(':')):
-                proc_and_id = tiles[4][:-1]
-                if '[' in proc_and_id and proc_and_id[-1] == ']' and proc == proc_and_id.split('[')[0] or proc == proc_and_id:
-                    ret.append(line)
-        return ret
+            l = self._parse_line(line)
+            procid= l.get('procname', '')
+            if proc == procid or proc == procid.split('[')[0]:
+                yield l
 
 
 class IniConfigFile(ConfigParser):
