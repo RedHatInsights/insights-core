@@ -253,4 +253,5 @@ class InsightsArchiveSpecs(Specs):
     virsh_list_all = simple_file("insights_commands/virsh_--readonly_list_--all")
     virt_what = simple_file("insights_commands/virt-what")
     woopsie = simple_file("insights_commands/find_.var.crash_.var.tmp_-path_.reports-_.whoopsie-report")
+    yum_list_installed = simple_file("insights_commands/yum_list_installed")
     yum_repolist = simple_file("insights_commands/yum_-C_repolist")
