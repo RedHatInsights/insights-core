@@ -48,6 +48,9 @@ MongodSysconfig - file ``/etc/sysconfig/mongod``
 NetconsoleSysconfig -file ``/etc/sysconfig/netconsole``
 -------------------------------------------------------
 
+NetworkSysconfig -file ``/etc/sysconfig/network``
+-------------------------------------------------
+
 NtpdSysconfig - file ``/etc/sysconfig/ntpd``
 --------------------------------------------
 
@@ -408,6 +411,28 @@ class NetconsoleSysconfig(SysconfigOptions):
         >>> 'DEV' in netcs_syscfg
         False
     '''
+    pass
+
+
+@parser(Specs.sysconfig_network)
+class NetworkSysconfig(SysconfigOptions):
+    """
+    This parser parses the ``/etc/sysconfig/network`` configuration file
+
+    Sample Input::
+
+        NETWORKING=yes
+        HOSTNAME=rhel7-box
+        GATEWAY=172.31.0.1
+        NM_BOND_VLAN_ENABLED=no
+
+    Examples:
+
+        >>> 'NETWORKING' in net_syscfg
+        True
+        >>> net_syscfg['GATEWAY']
+        '172.31.0.1'
+    """
     pass
 
 

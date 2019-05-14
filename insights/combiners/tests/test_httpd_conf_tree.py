@@ -135,7 +135,6 @@ Listen 80
 '''.strip()
 
 HTTPD_CONF_MAIN_4 = '''
-# Load config files in the "/opt/rh/httpd24/root/etc/httpd/conf.d" directory, if any.
 IncludeOptional conf.d/*.conf
 IncludeOptional conf.modules.d/*.conf
 Listen 80
@@ -481,6 +480,20 @@ def test_httpd_one_file_overwrites():
 def test_httpd_conf_empty():
     with pytest.raises(SkipException):
         assert _HttpdConf(context_wrap('', path='/etc/httpd/httpd.conf')) is None
+
+
+def test_httpd_conf_tree_with_load_modules():
+    httpd1 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MAIN_4, path='/etc/httpd/conf/httpd.conf'))
+    httpd2 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf.d/01-b.conf'))
+    httpd3 = _HttpdConfSclHttpd24(context_wrap(HTTPD_CONF_FILE_3, path='/etc/httpd/conf.modules.d/02-c.conf'))
+    result = HttpdConfTree([httpd1, httpd2, httpd3])
+    userdirs = result['UserDir']
+    assert len(userdirs) == 2
+    assert userdirs[last].value == 'enable bob'
+    load_module_list = result['LoadModule']
+    assert len(load_module_list) == 4
+    assert result['LoadModule'][3].value == 'mpm_prefork_module modules/mod_mpm_prefork.so'
+    assert result['LoadModule'][3].file_path == '/etc/httpd/conf.modules.d/02-c.conf'
 
 
 def test_httpd_conf_scl_httpd24_tree():

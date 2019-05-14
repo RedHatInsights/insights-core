@@ -12,6 +12,10 @@ from . import client
 from .constants import InsightsConstants as constants
 from .config import InsightsConfig
 from .auto_config import try_auto_configuration
+from .utilities import (delete_registered_file,
+                        delete_unregistered_file,
+                        write_to_disk,
+                        generate_machine_id)
 
 logger = logging.getLogger(__name__)
 net_logger = logging.getLogger("network")
@@ -96,8 +100,23 @@ class InsightsClient(object):
 
         logger.debug("Beginning core fetch.")
 
+        # guess the URLs based on what legacy setting is
+        egg_url = self.config.egg_path
+        egg_gpg_url = self.config.egg_gpg_path
+        if egg_url is None:
+            egg_url = '/v1/static/core/insights-core.egg'
+            # if self.config.legacy_upload:
+            #     egg_url = '/v1/static/core/insights-core.egg'
+            # else:
+            #     egg_url = '/static/insights-core.egg'
+        if egg_gpg_url is None:
+            egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
+            # if self.config.legacy_upload:
+            #     egg_gpg_url = '/v1/static/core/insights-core.egg.asc'
+            # else:
+            #     egg_gpg_url = '/static/insights-core.egg.asc'
         # run fetch for egg
-        updated = self._fetch(self.config.egg_path,
+        updated = self._fetch(egg_url,
                               constants.core_etag_file,
                               fetch_results['core'],
                               force)
@@ -106,7 +125,7 @@ class InsightsClient(object):
         if updated:
             logger.debug("New core was fetched.")
             logger.debug("Beginning fetch for core gpg signature.")
-            self._fetch(self.config.egg_gpg_path,
+            self._fetch(egg_gpg_url,
                         constants.core_gpg_sig_etag_file,
                         fetch_results['gpg_sig'],
                         force)
@@ -118,13 +137,25 @@ class InsightsClient(object):
         """
             returns (str): path to new egg. None if no update.
         """
-        url = self.connection.base_url + path
         # Searched for cached etag information
         current_etag = None
         if os.path.isfile(etag_file):
             with open(etag_file, 'r') as fp:
                 current_etag = fp.read().strip()
                 logger.debug('Found etag %s', current_etag)
+
+        # it's only temporary. I promise. this is the worst timeline
+        # all for a phone popup
+        if self.config.legacy_upload:
+            url = self.connection.base_url + path
+            # verify = self.config.cert_verify
+        else:
+            url = self.connection.base_url.split('/platform')[0] + path
+            # if self.config.cert_verify is True:
+            #     # dont overwrite satellite cert
+            #     self.cert_verify = os.path.join(
+            #         constants.default_conf_dir,
+            #         'cert-api.access.redhat.com.pem')
 
         # Setup the new request for core retrieval
         logger.debug('Making request to %s for new core', url)
@@ -326,22 +357,13 @@ class InsightsClient(object):
                 False - machine is unregistered
                 None - could not reach the API
         """
-        if self.config.legacy_upload:
-            return client.handle_registration(self.config, self.connection)
-        else:
-            if self.config.register:
-                logger.info('Registration is not applicable to the platform.')
-            logger.debug('Platform upload. Bypassing registration.')
-            return True
+        return client.handle_registration(self.config, self.connection)
 
     @_net
     def unregister(self):
         """
             returns (bool): True success, False failure
         """
-        if not self.config.legacy_upload:
-            logger.info('Registration is not applicable to the platform.')
-            return True
         return client.handle_unregistration(self.config, self.connection)
 
     @_net
@@ -434,12 +456,6 @@ class InsightsClient(object):
                  'unreg_date': Date the machine was unregistered | None,
                  'unreachable': API could not be reached}
         """
-        if not self.config.legacy_upload:
-            return {
-                'messages': ['Registration is not applicable for platform uploads.'],
-                'unreachable': False,
-                'status': True
-            }
         return client.get_registration_status(self.config, self.connection)
 
     @_net
@@ -472,6 +488,16 @@ class InsightsClient(object):
 
     def get_machine_id(self):
         return client.get_machine_id()
+
+    def clear_local_registration(self):
+        '''
+        Deletes dotfiles and machine-id for fresh registration
+        '''
+        delete_registered_file()
+        delete_unregistered_file()
+        write_to_disk(constants.machine_id_file, delete=True)
+        logger.debug('Re-register set, forcing registration.')
+        logger.debug('New machine-id: %s', generate_machine_id(new=True))
 
 
 def format_config(config):
