@@ -9,6 +9,9 @@ SwiftObjectExpirerConf - file ``/etc/swift/object-expirer.conf``
 
 SwiftProxyServerConf - file ``/etc/swift/proxy-server.conf``
 ------------------------------------------------------------
+
+SwiftConf - file ``/etc/swift/swift.conf``
+------------------------------------------------------------
 """
 
 from .. import IniConfigFile, parser
@@ -42,11 +45,10 @@ class SwiftProxyServerConf(IniConfigFile):
         use = egg:swift  # catch_errors
 
     Examples:
-        >>> proxy_server_conf = shared[SwiftProxyServerConf]
         >>> 'app:proxy-server' in proxy_server_conf
         True
-        >>> proxy_server_conf.get('filter:catch_errors', 'use')
-        'egg:swift#catch_errors'
+        >>> proxy_server_conf.get('filter:catch_errors', 'use') == 'egg:swift#catch_errors'
+        True
         >>> proxy_server_conf.getint('DEFAULT', 'bind_port')
         8080
     """
@@ -91,12 +93,56 @@ class SwiftObjectExpirerConf(IniConfigFile):
         use = egg:swift#catch_errors
 
     Examples:
-        >>> object_expirer_conf = shared[SwiftObjectExpirerConf]
-        >>> 'filter:cache' in proxy_server_conf
+        >>> 'filter:cache' in object_expirer_conf
         True
-        >>> proxy_server_conf.get('filter:cache', 'memcache_servers')
-        '172.16.64.60:11211'
-        >>> proxy_server_conf.getint('object-expirer', 'report_interval')
+        >>> object_expirer_conf.get('filter:cache', 'memcache_servers') == '172.16.64.60:11211'
+        True
+        >>> object_expirer_conf.getint('object-expirer', 'report_interval')
         300
+    """
+    pass
+
+
+@parser(Specs.swift_conf)
+class SwiftConf(IniConfigFile):
+    """
+    This class is to parse the content of ``/etc/swift/swift.conf``.
+
+    ``/etc/swift/swift.conf`` is in the standard 'ini' format and is
+    read by the :py:class:`insights.core.IniConfigFile` parser class.
+
+    Sample configuration file::
+
+        [swift-hash]
+        # random unique strings that can never change (DO NOT LOSE)
+        # Use only printable chars (python -c "import string; print(string.printable)")
+        swift_hash_path_prefix = changeme
+        swift_hash_path_suffix = changeme
+
+        [storage-policy:0]
+        name = gold
+        policy_type = replication
+        default = yes
+
+        [storage-policy:1]
+        name = silver
+        policy_type = replication
+
+        [storage-policy:2]
+        name = ec42
+        policy_type = erasure_coding
+        ec_type = liberasurecode_rs_vand
+        ec_num_data_fragments = 4
+        ec_num_parity_fragments = 2
+
+    Examples:
+        >>> 'swift-hash' in swift_conf.sections()
+        True
+        >>> swift_conf.has_option('storage-policy:2', 'policy_type') is True
+        True
+        >>> swift_conf.get('storage-policy:2', 'policy_type') == 'erasure_coding'
+        True
+        >>> swift_conf.get('storage-policy:2', 'ec_type') == 'liberasurecode_rs_vand'
+        True
     """
     pass

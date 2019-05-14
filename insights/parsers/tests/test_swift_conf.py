@@ -1,6 +1,6 @@
+import doctest
 from insights.tests import context_wrap
-from insights.parsers.swift_conf import SwiftProxyServerConf
-from insights.parsers.swift_conf import SwiftObjectExpirerConf
+from insights.parsers import swift_conf
 
 proxy_server_conf = """
 [DEFAULT]
@@ -91,9 +91,33 @@ memcache_servers = 172.16.64.60:11211
 use = egg:swift#catch_errors
 """
 
+SWIFT_CONF = """
+[swift-hash]
+# random unique strings that can never change (DO NOT LOSE)
+# Use only printable chars (python -c "import string; print(string.printable)")
+swift_hash_path_prefix = changeme
+swift_hash_path_suffix = changeme
+
+[storage-policy:0]
+name = gold
+policy_type = replication
+default = yes
+
+[storage-policy:1]
+name = silver
+policy_type = replication
+
+[storage-policy:2]
+name = ec42
+policy_type = erasure_coding
+ec_type = liberasurecode_rs_vand
+ec_num_data_fragments = 4
+ec_num_parity_fragments = 2
+"""
+
 
 def test_proxy_server_conf():
-    result = SwiftProxyServerConf(context_wrap(proxy_server_conf))
+    result = swift_conf.SwiftProxyServerConf(context_wrap(proxy_server_conf))
     assert 'filter:ceilometer' in result
     assert 'filter:staticweb' in result
     assert result.items('filter:ceilometer').get('url_test') == ''
@@ -101,8 +125,26 @@ def test_proxy_server_conf():
 
 
 def test_object_expirer_conf():
-    result = SwiftObjectExpirerConf(context_wrap(object_expirer))
+    result = swift_conf.SwiftObjectExpirerConf(context_wrap(object_expirer))
     assert 'filter:cache' in result
     assert 'object-expirer' in result
     assert result.get('filter:cache', 'memcache_servers') == '172.16.64.60:11211'
     assert result.getint('object-expirer', 'report_interval') == 300
+
+
+def test_swift_conf():
+    conf = swift_conf.SwiftConf(context_wrap(SWIFT_CONF))
+    assert 'swift-hash' in conf.sections()
+    assert conf.has_option('storage-policy:2', 'policy_type') is True
+    assert conf.get('storage-policy:2', 'policy_type') == 'erasure_coding'
+    assert conf.get('storage-policy:2', 'ec_type') == 'liberasurecode_rs_vand'
+
+
+def test_swift_conf_documentation():
+    failed_count, tests = doctest.testmod(
+        swift_conf,
+        globs={'swift_conf': swift_conf.SwiftConf(context_wrap(SWIFT_CONF)),
+               'object_expirer_conf': swift_conf.SwiftObjectExpirerConf(context_wrap(object_expirer)),
+               'proxy_server_conf': swift_conf.SwiftProxyServerConf(context_wrap(proxy_server_conf))}
+    )
+    assert failed_count == 0
