@@ -16,7 +16,7 @@ from insights.core.plugins import combiner
 from insights.parsers.redhat_release import RedhatRelease as rht_release
 from insights.parsers.uname import Uname
 from insights.core.serde import serializer, deserializer
-from insights.parsers import SkipException
+from insights.parsers import SkipComponent
 from insights.util import deprecated
 
 
@@ -52,7 +52,7 @@ def redhat_release(rh_release, un):
             - minor: integer
 
     Raises:
-        SkipException: If the version can't be determined even though a Uname
+        SkipComponent: If the version can't be determined even though a Uname
             or RedhatRelease was provided.
 
     Examples:
@@ -73,7 +73,7 @@ def redhat_release(rh_release, un):
     if rh_release:
         return Release(rh_release.major, rh_release.minor)
 
-    raise SkipException("Unabled to determine release.")
+    raise SkipComponent("Unabled to determine release.")
 
 
 @combiner([Uname, rht_release])
@@ -92,7 +92,7 @@ class RedHatRelease(object):
         rhel8 (str): The RHEL version when it's RHEL8, otherwise None
 
     Raises:
-        SkipException: If the version can't be determined even though a Uname
+        SkipComponent: If the version can't be determined even though a Uname
             or RedhatRelease was provided.
 
     Examples:
@@ -121,7 +121,7 @@ class RedHatRelease(object):
             self.rhel = rh_rel.version
 
         if self.rhel is None:
-            raise SkipException("Unable to determine release.")
+            raise SkipComponent("Unable to determine release.")
 
         self.rhel6 = self.rhel if self.major == 6 else None
         self.rhel7 = self.rhel if self.major == 7 else None
