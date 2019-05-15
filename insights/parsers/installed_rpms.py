@@ -143,7 +143,7 @@ here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 
 class RpmList(object):
     """
-    Mixin class providing ``contains``, ``get_max``, ``get_min``,
+    Mixin class providing ``__contains__``, ``get_max``, ``get_min``,
     ``newest``, and ``oldest`` implementations for components that handle rpms.
     """
 
