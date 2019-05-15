@@ -10,9 +10,9 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
-# import io
+import io
 from tempfile import TemporaryFile
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 try:
     # python 2
     from urlparse import urlparse
