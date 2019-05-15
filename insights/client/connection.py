@@ -436,7 +436,7 @@ class InsightsConnection(object):
         """
         branch_info = None
         if os.path.exists(constants.cached_branch_info):
-            # use cached branch info file if less than 10 minutes old
+            # use cached branch info file if less than 5 minutes old
             #  (failsafe, should be deleted at end of client run normally)
             logger.debug(u'Reading branch info from cached file.')
             ctime = datetime.utcfromtimestamp(
