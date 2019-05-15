@@ -10,9 +10,9 @@ import json
 import logging
 import xml.etree.ElementTree as ET
 import warnings
-# import io
+import io
 from tempfile import TemporaryFile
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 try:
     # python 2
     from urlparse import urlparse
@@ -435,18 +435,18 @@ class InsightsConnection(object):
         Retrieve branch_info from Satellite Server
         """
         branch_info = None
-        # if os.path.exists(constants.cached_branch_info):
-        #     # use cached branch info file if less than 10 minutes old
-        #     #  (failsafe, should be deleted at end of client run normally)
-        #     logger.debug(u'Reading branch info from cached file.')
-        #     ctime = datetime.utcfromtimestamp(
-        #         os.path.getctime(constants.cached_branch_info))
-        #     if datetime.utcnow() < (ctime + timedelta(minutes=5)):
-        #         with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
-        #             branch_info = json.load(f)
-        #         return branch_info
-        #     else:
-        #         logger.debug(u'Cached branch info is older than 5 minutes.')
+        if os.path.exists(constants.cached_branch_info):
+            # use cached branch info file if less than 5 minutes old
+            #  (failsafe, should be deleted at end of client run normally)
+            logger.debug(u'Reading branch info from cached file.')
+            ctime = datetime.utcfromtimestamp(
+                os.path.getctime(constants.cached_branch_info))
+            if datetime.utcnow() < (ctime + timedelta(minutes=5)):
+                with io.open(constants.cached_branch_info, encoding='utf8', mode='r') as f:
+                    branch_info = json.load(f)
+                return branch_info
+            else:
+                logger.debug(u'Cached branch info is older than 5 minutes.')
 
         logger.debug(u'Obtaining branch information from %s',
                      self.branch_info_url)
@@ -468,11 +468,11 @@ class InsightsConnection(object):
              branch_info[u'remote_leaf'] is -1)):
             self.get_satellite5_info(branch_info)
 
-        # logger.debug(u'Saving branch info to file.')
-        # with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
-        #     # json.dump is broke in py2 so use dumps
-        #     bi_str = json.dumps(branch_info, ensure_ascii=False)
-        #     f.write(bi_str)
+        logger.debug(u'Saving branch info to file.')
+        with io.open(constants.cached_branch_info, encoding='utf8', mode='w') as f:
+            # json.dump is broke in py2 so use dumps
+            bi_str = json.dumps(branch_info, ensure_ascii=False)
+            f.write(bi_str)
         self.config.branch_info = branch_info
         return branch_info
 
@@ -853,22 +853,15 @@ class InsightsConnection(object):
         '''
         Set display name of a system independently of upload.
         '''
-        legacy_set = False
         if self.config.legacy_upload:
-            # [circus music plays]
-            # while we have to support legacy, set name in both APIs
-            legacy_set = self._legacy_set_display_name(display_name)
+            return self._legacy_set_display_name(display_name)
 
         system = self._fetch_system_by_machine_id()
         if not system:
-            return legacy_set or system
+            return system
         inventory_id = system[0]['id']
 
-        # [circus music]
-        if self.config.legacy_upload:
-            req_url = self.base_url + '/platform/inventory/v1/hosts/' + inventory_id
-        else:
-            req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
