@@ -1,5 +1,59 @@
 # Change Log
 
+## [insights-core-3.0.99-969](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.99-969) (2019-05-16)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.98-965...insights-core-3.0.99-969)
+
+**Fixed bugs:**
+
+- redhat\_release.RedHatRelease Combiner - Change `ParseException` to `SkipComponent`  [\#1924](https://github.com/RedHatInsights/insights-core/issues/1924)
+
+**Closed issues:**
+
+- get\_max\(package\_name\) returns TypeError for some package lists [\#1839](https://github.com/RedHatInsights/insights-core/issues/1839)
+- The default comparison method of InstalledRpm should only for packages from "Red Hat" [\#1836](https://github.com/RedHatInsights/insights-core/issues/1836)
+
+## [insights-core-3.0.98-965](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.98-965) (2019-05-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.97-1...insights-core-3.0.98-965)
+
+**Implemented enhancements:**
+
+- Local routes are filtered in the `RouteDevices` parser [\#1803](https://github.com/RedHatInsights/insights-core/issues/1803)
+
+**Fixed bugs:**
+
+- Directories of exploded archives not recognized as cluster [\#1900](https://github.com/RedHatInsights/insights-core/issues/1900)
+- cluster rules execute during non-cluster analysis [\#1896](https://github.com/RedHatInsights/insights-core/issues/1896)
+
+**Closed issues:**
+
+- Collect insights client configuration with blacklist [\#588](https://github.com/RedHatInsights/insights-core/issues/588)
+- Remove direct dependency on netstat [\#83](https://github.com/RedHatInsights/insights-core/issues/83)
+
+## [3.0.97-1](https://github.com/RedHatInsights/insights-core/tree/3.0.97-1) (2019-05-06)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.96-1...3.0.97-1)
+
+**Fixed bugs:**
+
+- Timestamp without space in square brackets doesn't get parsed by dmesg parser [\#1909](https://github.com/RedHatInsights/insights-core/issues/1909)
+- Ps aexww parser does not parser all environment vars correctly [\#1857](https://github.com/RedHatInsights/insights-core/issues/1857)
+- SshDConfig parser doesn't support "=" key/value separator [\#1807](https://github.com/RedHatInsights/insights-core/issues/1807)
+
+## [3.0.96-1](https://github.com/RedHatInsights/insights-core/tree/3.0.96-1) (2019-05-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.95-1...3.0.96-1)
+
+## [3.0.95-1](https://github.com/RedHatInsights/insights-core/tree/3.0.95-1) (2019-05-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.94-1...3.0.95-1)
+
+## [3.0.94-1](https://github.com/RedHatInsights/insights-core/tree/3.0.94-1) (2019-05-04)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.93-1...3.0.94-1)
+
+## [3.0.93-1](https://github.com/RedHatInsights/insights-core/tree/3.0.93-1) (2019-05-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.92-937...3.0.93-1)
+
+**Implemented enhancements:**
+
+- Add "display\_name" spec to specs [\#1891](https://github.com/RedHatInsights/insights-core/issues/1891)
+
 ## [insights-core-3.0.92-937](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.92-937) (2019-05-02)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.91-930...insights-core-3.0.92-937)
 
