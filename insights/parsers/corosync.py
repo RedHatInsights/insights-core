@@ -20,7 +20,7 @@ from .. import SysconfigOptions, parser
 from insights.parsr import (EOF, Forward, InSet, LeftCurly, Lift, LineEnd,
         Literal, RightCurly, Many, Number, OneLineComment, PosMarker,
         skip_none, String, QuotedString, WS, WSChar)
-from insights.parsr.query import Entry
+from insights.parsr.query import Directive, Entry, Section
 
 
 @parser(Specs.corosync)
@@ -68,8 +68,8 @@ class CoroSyncConfig(SysconfigOptions):
 def parse_doc(f, ctx=None, line_end="\n"):
     def to_entry(name, rest):
         if isinstance(rest, list):
-            return Entry(name=name.value, children=rest, lineno=name.lineno, src=ctx)
-        return Entry(name=name.value, attrs=[rest], lineno=name.lineno, src=ctx)
+            return Section(name=name.value, children=rest, lineno=name.lineno, src=ctx)
+        return Directive(name=name.value, attrs=[rest], lineno=name.lineno, src=ctx)
 
     Sep = InSet(":=")
     Stmt = Forward()

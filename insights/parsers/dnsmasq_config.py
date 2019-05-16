@@ -3,34 +3,15 @@ DnsmasqConf - files ``/etc/dnsmasq.conf`` and ``/etc/dnsmasq.d/*.conf``
 =======================================================================
 """
 
+import string
+
 from insights.core.plugins import parser
 from insights.core import ConfigParser
 from insights.specs import Specs
-from insights.configtree import (
-    DocParser,
-    LineGetter,
-    parse_name_attrs,
-    Node,
-)
 
-
-class DnsmasqConfDocParser(DocParser):
-    def parse_statement(self, lg):
-        line = lg.peek()
-        pos = lg.pos
-        if "=" in line:
-            name, attrs = parse_name_attrs(line, sep="=")
-        else:
-            name, attrs = line, None
-
-        ret = Node(name=name, attrs=attrs, ctx=self.ctx)
-        next(lg)
-        ret.pos = pos
-        return ret
-
-
-def parse_doc(f, ctx=None):
-    return DnsmasqConfDocParser(ctx).parse_doc(LineGetter(f))
+from insights.parsr import (Char, EOF, Forward, Lift, LineEnd, Many, Number,
+        OneLineComment, Opt, PosMarker, skip_none, String, WS, WSChar)
+from insights.parsr.query import Directive, Entry
 
 
 @parser(Specs.dnsmasq_config)
@@ -70,4 +51,24 @@ class DnsmasqConf(ConfigParser):
     """
 
     def parse_doc(self, content):
-        return parse_doc(content, ctx=self)
+        return parse_doc("\n".join(content), ctx=self)
+
+
+def parse_doc(f, ctx=None, line_end="\n"):
+    def to_entry(name, rest):
+        rest = [] if not rest else [rest]
+        return Directive(name=name.value, attrs=rest, lineno=name.lineno, src=ctx)
+
+    Sep = Char("=")
+    Stmt = Forward()
+    Num = Number & (WSChar | LineEnd)
+    Comment = (WS >> OneLineComment("#").map(lambda x: None))
+    Bare = String(set(string.printable) - (set("#\n\r")))
+    Name = WS >> PosMarker(String(string.ascii_letters + "_-" + string.digits)) << WS
+    Value = WS >> (Num | Bare) << WS
+    Stanza = (Lift(to_entry) * Name * (Opt(Sep >> Value))) | Comment
+    Stmt <= WS >> Stanza << WS
+    Doc = Many(Stmt).map(skip_none)
+    Top = Doc + EOF
+
+    return Entry(children=Top(f)[0], src=ctx)
