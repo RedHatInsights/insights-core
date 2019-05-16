@@ -1,4 +1,4 @@
-from insights.parsr.iniparser import loads
+from insights.parsr.iniparser import parse_doc
 
 
 DATA = """
@@ -22,33 +22,36 @@ vader = definitely Luke's
 [settings]
 music=The Imperial March
 color=blue
+#blah
 color=black
+accuracy=0
 
 [novalue]
 the_force
-"""
+""".strip()
 
 
 def test_iniparser():
-    res = loads(DATA)
-    assert len(res) == 6
+    res = parse_doc(DATA, None)
+    assert len(res) == 5
 
 
 def test_hanging_indent():
-    res = loads(DATA)
-    assert res["facts"]["vader"] == "definitely Luke's father"
+    res = parse_doc(DATA, None)
+    assert res["facts"]["vader"][0].value == "definitely Luke's father"
 
 
 def test_defaults():
-    res = loads(DATA)
-    assert res["facts"]["trooper_guns"] == "miss"
+    res = parse_doc(DATA, None)
+    assert res["facts"]["trooper_guns"][0].value == "miss"
 
 
 def test_multiple_values():
-    res = loads(DATA)
+    res = parse_doc(DATA, None)
     assert len(res["settings"]["color"]) == 2
+    assert res["settings"]["accuracy"][0].value == 0
 
 
 def test_no_value():
-    res = loads(DATA)
-    assert res["novalue"]["the_force"] is None
+    res = parse_doc(DATA, None)
+    assert res["novalue"]["the_force"][0].value == ""

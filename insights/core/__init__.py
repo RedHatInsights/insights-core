@@ -10,7 +10,7 @@ import yaml
 import six
 from fnmatch import fnmatch
 
-from insights.configtree import iniconfig
+from insights.parsr import iniparser
 from insights.parsr.query import (Directive, Entry, from_dict, Result, Section,
                                   compile_queries)
 from insights.contrib.ConfigParser import RawConfigParser
@@ -1412,7 +1412,7 @@ class IniConfigFile(ConfigParser):
         self.data = config
 
     def parse_doc(self, content):
-        return iniconfig.parse_doc(content)
+        return iniparser.parse_doc("\n".join(content), self)
 
     def sections(self):
         """list: Return a list of section names."""
