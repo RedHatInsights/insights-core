@@ -2,7 +2,8 @@
 Simple arithmetic with usual operator precedence and associativity. It allows
 addition, subtraction, multiplication, division, and grouping with parentheses.
 """
-from parsr import EOF, Forward, InSet, LeftParen, Many, Number, RightParen, WS
+from insights.parsr import (EOF, Forward, InSet, LeftParen, Many, Number,
+        RightParen, WS)
 
 
 def evaluate(e):

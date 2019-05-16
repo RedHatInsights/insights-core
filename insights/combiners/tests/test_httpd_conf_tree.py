@@ -1,4 +1,3 @@
-from insights.configtree import first, last  # noqa: F401
 from insights.combiners.httpd_conf import (_HttpdConf, HttpdConfTree, _HttpdConfSclHttpd24,
     HttpdConfSclHttpd24Tree, _HttpdConfSclJbcsHttpd24, HttpdConfSclJbcsHttpd24Tree)
 from insights.tests import context_wrap
@@ -401,7 +400,7 @@ def test_nopath():
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2))
     try:
         result = HttpdConfTree([httpd2])
-        # assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+        # assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
         exception_happened = False
     except:
         exception_happened = True
@@ -411,7 +410,7 @@ def test_nopath():
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     try:
         result = HttpdConfTree([httpd2])
-        # assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+        # assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
         exception_happened = False
     except:
         exception_happened = True
@@ -419,33 +418,33 @@ def test_nopath():
 
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd2])
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/laaalalalala/blablabla/httpd.conf'))
     result = HttpdConfTree([httpd2])
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # no include in httpd.conf
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
     result = HttpdConfTree([httpd2, httpd3])
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # no include in httpd.conf
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf/httpd.conf'))
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/aaa.conf'))
     result = HttpdConfTree([httpd3, httpd2])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 1
-    assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 1024
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][0].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # with an include
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
     httpd2 = _HttpdConf(context_wrap(HTTPD_CONF_2, path='/etc/httpd/conf.d/00-z.conf'))
     result = HttpdConfTree([httpd1, httpd2])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 2
-    assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 1024
+    assert result['IfModule', 'prefork.c']['ServerLimit'][0].value == 256
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 1024
 
     # colliding filenames
     httpd1 = _HttpdConf(context_wrap(HTTPD_CONF_1, path='/etc/httpd/conf/httpd.conf'))
@@ -453,13 +452,13 @@ def test_nopath():
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/00-z.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
     assert len(result['IfModule', 'prefork.c']['ServerLimit']) == 3
-    assert result['IfModule', 'prefork.c']['ServerLimit'][first].value == 256  # httpd1
+    assert result['IfModule', 'prefork.c']['ServerLimit'][0].value == 256  # httpd1
     assert result['IfModule', 'prefork.c']['ServerLimit'][1].value == 1024     # httpd2
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 256   # httpd3
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 256   # httpd3
     assert len(result['IfModule', 'prefork.c']['MaxClients']) == 3
-    assert result['IfModule', 'prefork.c']['MaxClients'][first].value == 256  # httpd1
+    assert result['IfModule', 'prefork.c']['MaxClients'][0].value == 256  # httpd1
     assert result['IfModule', 'prefork.c']['MaxClients'][1].value == 1024     # httpd2
-    assert result['IfModule', 'prefork.c']['MaxClients'][last].value == 512   # httpd3
+    assert result['IfModule', 'prefork.c']['MaxClients'][-1].value == 512   # httpd3
 
     # testing other ways to access the same indices
     assert result['IfModule', 'prefork.c']['MaxClients'][0].value == 256   # httpd1
@@ -473,12 +472,12 @@ def test_active_httpd():
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_3, path='/etc/httpd/conf.d/z-z.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
-    assert result['IfModule', 'prefork.c']['MaxClients'][last].value == 512
-    assert result['IfModule', 'prefork.c']['MaxClients'][last].file_path == '/etc/httpd/conf.d/z-z.conf'
-    assert result['IfModule', 'prefork.c']['ThreadsPerChild'][last].value == 16
-    assert result['IfModule', 'prefork.c']['ServerLimit'][last].value == 256
-    assert result['IfModule', 'prefork.c']['JustForTest'][last].file_name == '00-z.conf'
-    assert result['JustForTest_NoSec'][first].line == 'JustForTest_NoSec "/var/www/cgi"'
+    assert result['IfModule', 'prefork.c']['MaxClients'][-1].value == 512
+    assert result['IfModule', 'prefork.c']['MaxClients'][-1].file_path == '/etc/httpd/conf.d/z-z.conf'
+    assert result['IfModule', 'prefork.c']['ThreadsPerChild'][-1].value == 16
+    assert result['IfModule', 'prefork.c']['ServerLimit'][-1].value == 256
+    assert result['IfModule', 'prefork.c']['JustForTest'][-1].file_name == '00-z.conf'
+    assert result['JustForTest_NoSec'][0].line == 'JustForTest_NoSec "/var/www/cgi"'
 
 
 def test_shadowing():
@@ -506,13 +505,13 @@ def test_splits():
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
-    server_root = result['ServerRoot'][last]
+    server_root = result['ServerRoot'][-1]
     assert server_root.value == '/home/skontar/www'
     assert server_root.line == 'ServerRoot "/home/skontar/www"'
     assert server_root.file_name == '01-b.conf'
     assert server_root.file_path == '/etc/httpd/conf.d/01-b.conf'
 
-    listen = result["Listen"][last]
+    listen = result["Listen"][-1]
     assert listen.value == 8080
     assert listen.line == 'Listen 8080'
     assert listen.file_name == '00-a.conf'
@@ -523,13 +522,13 @@ def test_splits():
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
-    server_root = result['ServerRoot'][last]
+    server_root = result['ServerRoot'][-1]
     assert server_root.value == '/etc/httpd'
     assert server_root.line == 'ServerRoot "/etc/httpd"'
     assert server_root.file_name == 'httpd.conf'
     assert server_root.file_path == '/etc/httpd/conf/httpd.conf'
 
-    listen = result["Listen"][last]
+    listen = result["Listen"][-1]
     assert listen.value == 80
     assert listen.line == 'Listen 80'
     assert listen.file_name == 'httpd.conf'
@@ -540,7 +539,7 @@ def test_splits():
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/01-b.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
-    server_root = result['ServerRoot'][last]
+    server_root = result['ServerRoot'][-1]
     assert server_root.value == '/home/skontar/www'
     assert server_root.line == 'ServerRoot "/home/skontar/www"'
     assert server_root.file_name == '01-b.conf'
@@ -555,7 +554,7 @@ def test_httpd_one_file_overwrites():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MORE, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
-    active_setting = result['UserDir'][last]
+    active_setting = result['UserDir'][-1]
     assert active_setting.value == 'enable bob'
     assert active_setting.file_path == '/etc/httpd/conf/httpd.conf'
     assert active_setting.file_name == 'httpd.conf'
@@ -587,7 +586,7 @@ def test_httpd_conf_tree_with_load_modules():
     result = HttpdConfTree([httpd1, httpd2, httpd3])
     userdirs = result['UserDir']
     assert len(userdirs) == 2
-    assert userdirs[last].value == 'enable bob'
+    assert userdirs[-1].value == 'enable bob'
     load_module_list = result['LoadModule']
     assert len(load_module_list) == 4
     assert result['LoadModule'][3].value == 'mpm_prefork_module modules/mod_mpm_prefork.so'
@@ -601,7 +600,7 @@ def test_httpd_conf_scl_httpd24_tree():
     result = HttpdConfSclHttpd24Tree([httpd1, httpd2, httpd3])
     userdirs = result['UserDir']
     assert len(userdirs) == 2
-    assert userdirs[last].value == 'enable bob'
+    assert userdirs[-1].value == 'enable bob'
     load_module_list = result['LoadModule']
     assert len(load_module_list) == 4
     assert result['LoadModule'][3].value == 'mpm_prefork_module modules/mod_mpm_prefork.so'
@@ -615,7 +614,7 @@ def test_httpd_conf_jbcs_httpd24_tree():
     result = HttpdConfSclJbcsHttpd24Tree([httpd1, httpd2, httpd3])
     userdirs = result['UserDir']
     assert len(userdirs) == 2
-    assert userdirs[last].value == 'enable bob'
+    assert userdirs[-1].value == 'enable bob'
     load_module_list = result['LoadModule']
     assert len(load_module_list) == 4
     assert result['LoadModule'][3].value == 'mpm_prefork_module modules/mod_mpm_prefork.so'
@@ -639,5 +638,5 @@ def test_empty_last_line():
     httpd = _HttpdConf(context_wrap(HTTPD_EMPTY_LAST, path='/etc/httpd/conf/httpd.conf'))
     result = HttpdConfTree([httpd])
 
-    index_options = result['IndexOptions'][last]
+    index_options = result['IndexOptions'][-1]
     assert index_options.value == 'FancyIndexing HTMLTable VersionSort'

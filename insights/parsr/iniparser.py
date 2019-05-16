@@ -6,9 +6,9 @@ are supported. Sections inherit keys from the `[DEFAULT]` section. All keys are
 converted to lower case. Variable interpolation is not supported.
 """
 import string
-from parsr import (EOF, HangingString, InSet, LeftBracket, LineEnd, Many,
-                   Number, OneLineComment, Opt, RightBracket, String,
-                   WithIndent, WS, WSChar)
+from insights.parsr import (EOF, HangingString, InSet, LeftBracket, LineEnd,
+        Many, Number, OneLineComment, Opt, RightBracket, String, WithIndent,
+        WS, WSChar)
 
 
 def loads(s):

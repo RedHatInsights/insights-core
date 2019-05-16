@@ -1,4 +1,4 @@
-from parsr.examples.iniparser import loads
+from insights.parsr.iniparser import loads
 
 
 DATA = """
@@ -23,12 +23,15 @@ vader = definitely Luke's
 music=The Imperial March
 color=blue
 color=black
+
+[novalue]
+the_force
 """
 
 
 def test_iniparser():
     res = loads(DATA)
-    assert len(res) == 5
+    assert len(res) == 6
 
 
 def test_hanging_indent():
@@ -44,3 +47,8 @@ def test_defaults():
 def test_multiple_values():
     res = loads(DATA)
     assert len(res["settings"]["color"]) == 2
+
+
+def test_no_value():
+    res = loads(DATA)
+    assert res["novalue"]["the_force"] is None
