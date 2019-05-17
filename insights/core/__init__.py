@@ -272,6 +272,8 @@ class ConfigComponent(object):
         roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
 
+    find_all = find
+
     def _children_of_type(self, t):
         return [c for c in self.doc.children if isinstance(c, t)]
 
