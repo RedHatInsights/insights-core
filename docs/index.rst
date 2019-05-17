@@ -13,6 +13,7 @@ Contents:
     api_index
     parsers_index
     combiners_index
+    components_index
     docs_guidelines
     components
     embedded_content
