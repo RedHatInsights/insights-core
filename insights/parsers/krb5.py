@@ -132,10 +132,10 @@ class Krb5Configuration(Parser, LegacyItemAccess):
                     # If first section, just get the section name,
                     # if not, set the value to the former section and
                     # get the section name
-                    if section_name:
-                        dict_all[section_name] = section_value
                     section_name = line.strip("[]")
                     section_value = {}
+                    if section_name:
+                        dict_all[section_name] = section_value
                 # key value format is XXX = YYY, store as dict
                 elif "=" in line and not line.endswith("{"):
                     key, value = [i.strip() for i in line.split('=', 1)]
@@ -146,9 +146,6 @@ class Krb5Configuration(Parser, LegacyItemAccess):
                 else:
                     is_squ = True
                     squ_section_name = line.split("=")[0].strip()
-        # Set the value to the last section
-        if section_name and section_value:
-            dict_all[section_name] = section_value
         self.data = dict_all
 
     def sections(self):

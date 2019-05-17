@@ -17,7 +17,7 @@ class InsightsConstants(object):
     simple_find_replace_dir = '/etc/redhat-access-insights'
     default_log_file = os.path.join(log_dir, app_name + '.log')
     default_sed_file = os.path.join(default_conf_dir, '.exp.sed')
-    base_url = 'cloud.redhat.com/api'
+    base_url = 'cert-api.access.redhat.com/r/insights/platform'
     legacy_base_url = 'cert-api.access.redhat.com/r/insights'
     collection_rules_file = os.path.join(default_conf_dir, '.cache.json')
     collection_fallback_file = os.path.join(default_conf_dir, '.fallback.json')

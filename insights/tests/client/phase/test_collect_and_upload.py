@@ -58,7 +58,7 @@ def test_collect_and_output_payload_off(insights_config, insights_client):
     insights_client.return_value.collect.assert_called_once()
     insights_client.return_value.upload.assert_called_with(
         payload=insights_client.return_value.collect.return_value,
-        content_type='application/vnd.redhat.advisor.test+tgz')
+        content_type='application/vnd.redhat.advisor.collection+tgz')
     insights_client.return_value.delete_archive.assert_called_once()
     insights_client.return_value.delete_cached_branch_info.assert_called_once()
 
