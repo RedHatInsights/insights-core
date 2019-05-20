@@ -6,7 +6,7 @@ from insights.plugins import rules_fixture_plugin
 UNAME = {
     'spec': Specs.uname,
     'data': """
-Linux ceehadoop1.gsslab.rdu2.redhat.com 2.6.32-642.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux
+Linux testbox.redhat.com 2.6.32-642.el6.x86_64 #1 SMP Tue Sep 16 01:56:35 EDT 2014 x86_64 x86_64 x86_64 GNU/Linux
 """.strip()
 }
 RPMS = {
