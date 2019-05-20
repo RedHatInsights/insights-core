@@ -325,6 +325,7 @@ class Specs(SpecSet):
     neutron_l3_agent_log = RegistryPoint(filterable=True)
     neutron_metadata_agent_ini = RegistryPoint(filterable=True)
     neutron_metadata_agent_log = RegistryPoint(filterable=True)
+    neutron_ml2_conf = RegistryPoint(filterable=True)
     neutron_ovs_agent_log = RegistryPoint(filterable=True)
     neutron_plugin_ini = RegistryPoint()
     neutron_server_log = RegistryPoint(filterable=True)
