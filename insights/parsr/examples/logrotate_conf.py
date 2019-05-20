@@ -21,6 +21,7 @@ def to_entries(x):
             for n in [name.value] + attrs:
                 ret.append(Section(name=n, children=body, lineno=name.lineno))
         else:
+            attrs = [attrs] if not isinstance(attrs, list) else attrs
             ret.append(Directive(name=name.value, attrs=attrs, lineno=name.lineno))
     return ret
 

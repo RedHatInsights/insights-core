@@ -54,4 +54,4 @@ def test_multiple_values():
 
 def test_no_value():
     res = parse_doc(DATA, None)
-    assert res["novalue"]["the_force"][0].value == ""
+    assert res["novalue"]["the_force"][0].value is None

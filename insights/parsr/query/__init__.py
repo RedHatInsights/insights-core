@@ -79,7 +79,7 @@ class Entry(object):
     def value(self):
         if len(self.attrs) == 1:
             return self.attrs[0]
-        return self.string_value
+        return self.string_value if len(self.attrs) > 1 else None
 
     @property
     def root(self):
