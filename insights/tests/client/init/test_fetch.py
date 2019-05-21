@@ -15,7 +15,6 @@ def insights_client():
     return client
 
 
-@pytest.mark.skip(reason='we are doing some circus tricks for summit that breaks this test')
 def test_request_with_etag(insights_client):
     """
     An egg fetch request with Etag is issued with correct timeout set.
@@ -34,7 +33,6 @@ def test_request_with_etag(insights_client):
     insights_client.session.get.assert_called_once_with(url, headers=headers, timeout=timeout)
 
 
-@pytest.mark.skip(reason='we are doing some circus tricks for summit that breaks this test')
 def test_request_forced(insights_client):
     """
     A forced egg fetch request is issued with correct timeout set.

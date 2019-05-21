@@ -142,8 +142,6 @@ def _legacy_handle_registration(config, pconn):
         return True
 
     if config.register:
-        if config.group:
-            logger.info('Registering with a group is currently unavailable.')
         # register if specified
         message, hostname, group, display_name = register(config, pconn)
         if not hostname:
