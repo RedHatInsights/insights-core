@@ -1,8 +1,8 @@
 import string
 
 from insights.parsr import (EOF, HangingString, InSet, LeftBracket, Lift,
-        LineEnd, Literal, Many, Number, OneLineComment, Opt, PosMarker,
-        RightBracket, skip_none, String, WithIndent, WS, WSChar)
+        LineEnd, Literal, Many, OneLineComment, Opt, PosMarker, RightBracket,
+        skip_none, String, WithIndent, WS, WSChar)
 from insights.parsr.query import Directive, Entry, eq, Section
 
 
@@ -40,13 +40,12 @@ def parse_doc(content, ctx):
     Fals = Literal("false", False, ignore_case=True)
     Boolean = ((Yes | No | Tru | Fals) & (WSChar | LineEnd)) % "Boolean"
 
-    Num = Number & (WSChar | LineEnd)
     LeftEnd = (WS + LeftBracket + WS)
     RightEnd = (WS + RightBracket + WS)
     Header = (LeftEnd >> PosMarker(String(header_chars)) << RightEnd) % "Header"
     Key = WS >> PosMarker(String(key_chars)) << WS
     Sep = InSet(sep_chars, "Sep")
-    Value = WS >> (Num | Boolean | HangingString(value_chars))
+    Value = WS >> (Boolean | HangingString(value_chars))
     KVPair = WithIndent(Key + Opt(Sep >> Value)) % "KVPair"
     Comment = (WS >> (OneLineComment("#") | OneLineComment(";")).map(lambda x: None))
 

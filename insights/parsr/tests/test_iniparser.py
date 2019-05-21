@@ -25,6 +25,7 @@ color=blue
 #blah
 color=black
 accuracy=0
+banks=0 1 2
 
 [novalue]
 the_force
@@ -49,7 +50,8 @@ def test_defaults():
 def test_multiple_values():
     res = parse_doc(DATA, None)
     assert len(res["settings"]["color"]) == 2
-    assert res["settings"]["accuracy"][0].value == 0
+    assert res["settings"]["accuracy"][0].value == "0"
+    assert res["settings"]["banks"][0].value == "0 1 2"
 
 
 def test_no_value():

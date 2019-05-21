@@ -131,8 +131,13 @@ class Entry(object):
         query = desugar(query)
         return Result(children=[c for c in self.children if query.test(c)])
 
+    def __bool__(self):
+        return bool(self.name or self.attrs or self.children)
+
     def __repr__(self):
         return "\n".join(pretty_format(self))
+
+    __nonzero__ = __bool__
 
 
 class Section(Entry):
