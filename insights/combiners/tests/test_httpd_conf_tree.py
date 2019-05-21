@@ -384,6 +384,76 @@ HTTPD_CONF_NEST_4 = """
 """.strip()
 
 
+HTTPD_EMBEDDED_QUOTES = r"""
+# DirectoryIndex: sets the file that Apache will serve if a directory
+# is requested.
+#
+<IfModule dir_module>
+    DirectoryIndex index.html
+</IfModule>
+
+#
+# The following lines prevent .htaccess and .htpasswd files from being
+# viewed by Web clients.
+#
+<Files ".ht*">
+    Require all denied
+</Files>
+
+#
+# ErrorLog: The location of the error log file.
+# If you do not specify an ErrorLog directive within a <VirtualHost>
+# container, error messages relating to that virtual host will be
+# logged here.  If you *do* define an error logfile for a <VirtualHost>
+# container, that host's errors will be logged there and not here.
+#
+ErrorLog "logs/error_log"
+
+  RequestHeader   whatever # last value is taken
+  
+  
+  RequestHeader   unset   Proxy
+
+#
+# LogLevel: Control the number of messages logged to the error_log.
+# Possible values include: debug, info, notice, warn, error, crit,
+# alert, emerg.
+#
+LogLevel warn
+
+<IfModule log_config_module>
+    #
+    # The following directives define some format nicknames for use with
+    # a CustomLog directive (see below).
+    #
+    LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
+
+    <IfModule logio_module>
+      # You need to enable mod_logio.c to use %I and %O
+      LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %I %O" combinedio
+    </IfModule>
+
+    #
+    # The location and format of the access logfile (Common Logfile Format).
+    # logged therein and *not* in this file.
+    #
+    #CustomLog "logs/access_log" common
+
+    #
+    # If you prefer a logfile with access, agent, and referer information
+    # (Combined Logfile Format) you can use the following directive.
+    #
+    CustomLog "logs/access_log" combined
+</IfModule>
+
+
+DNSSDEnable on
+#DNSSDAutoRegisterVHosts on
+#DNSSDAutoRegisterUserDir on
+""".strip()  # noqa W293
+
+
 def test_mixed_case_tags():
     httpd = _HttpdConf(context_wrap(HTTPD_CONF_MIXED, path='/etc/httpd/conf/httpd.conf'))
     assert httpd.find("ServerLimit").value == 256
@@ -640,3 +710,11 @@ def test_empty_last_line():
 
     index_options = result['IndexOptions'][-1]
     assert index_options.value == 'FancyIndexing HTMLTable VersionSort'
+
+
+def test_indented_lines_and_comments():
+    httpd = _HttpdConf(context_wrap(HTTPD_EMBEDDED_QUOTES, path='/etc/httpd/conf/httpd.conf'))
+    result = HttpdConfTree([httpd])
+
+    request_headers = result['RequestHeader']
+    assert len(request_headers) == 2
