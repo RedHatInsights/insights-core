@@ -1,6 +1,9 @@
 import doctest
-from insights.tests import context_wrap
+import pytest
+from insights.tests import context_wrap, RHEL7, RHEL8
+from insights.parsers import SkipException, ParseException
 from insights.parsers.rsyslog_conf import RsyslogConf, RsyslogConf8
+from insights.parsers.redhat_release import RedhatRelease
 from insights.parsers import rsyslog_conf
 
 RSYSLOG_CONF_0 = """
@@ -130,6 +133,7 @@ module(load="imjournal" 	    # provides access to the systemd journal
 #module(load="imklog") # reads kernel messages (the same are read from journald)
 #module(load"immark") # provides --MARK-- message capability
 
+module(load="abc" xyz="on")
 # Provides UDP syslog reception
 # for parameters see http://www.rsyslog.com/doc/imudp.html
 module(load="imudp") # needs to be done just once
@@ -149,7 +153,8 @@ global(workDirectory="/var/lib/rsyslog")
 module(load="builtin:omfile" Template="RSYSLOG_TraditionalFileFormat")
 
 # Include all config files in /etc/rsyslog.d/
-incluRSYSLOGDCONF_PATHc/rsyslog.d/*.conf" mode="optional")
+include(file="/etc/rsyslog.d/*.conf" mode="optional")
+
 
 #### RULES ####
 
@@ -187,14 +192,17 @@ $ModLoad imtcp
 $InputTCPServerRun 10514"
 """.strip()
 
+RSYSLOG_CONF_RHEL7_NO = ""
+RSYSLOG_CONF_RHEL8_NO = ""
+
 RSYSLOGCONF_PATH = "/etc/rsyslog.conf"
 RSYSLOGDCONF_PATH = "/etc/rsyslog.d/rsyslog.conf"
-RSYSLOGDCONF_PATH = "/etc/rsyslog.d/listen.conf"
 
 
 def test_rsyslog_conf_0():
     ctx = context_wrap(RSYSLOG_CONF_0, path=RSYSLOGCONF_PATH)
-    m = RsyslogConf(ctx)
+    rhel7 = RedhatRelease(context_wrap(RHEL7))
+    m = RsyslogConf(ctx, rhel7)
     d = list(m)
     assert len(m) == 5
     assert len(d) == 5
@@ -214,33 +222,57 @@ def test_rsyslog_conf_0():
     assert m.config_val('ModLoad') == 'imtcp'
     assert m.config_val('ForwardSyslogHost', 'syslog.example.com') == 'syslog.example.com'
     ctx = context_wrap(RSYSLOG_CONF_RHEL7)
-    rsys = RsyslogConf(ctx)
+    rsys = RsyslogConf(ctx, rhel7)
     assert 'ModLoad' in rsys.config_items
     assert rsys.config_items['InputTCPServerRun'] == '514'
     d = list(rsys)
     assert len(rsys) == 15
 
-    ctx = context_wrap(RSYSLOG_CONF_RHEL8)
-    ctx.path = RSYSLOGCONF_PATH
-
-    rsys = RsyslogConf8(ctx)
+    ctx = context_wrap(RSYSLOG_CONF_RHEL8, path=RSYSLOGDCONF_PATH)
+    rhel8 = RedhatRelease(context_wrap(RHEL8))
+    rsys = RsyslogConf8(ctx, rhel8)
     d = list(rsys)
-    import pdb; pdb.set_trace()
     assert rsys.module_details == {'imuxsock': {'SysSock.Use': 'off'},
                                    'imjournal': {'StateFile': 'imjournal.state'},
+                                   'abc': {'xyz': 'on'},
                                    'imudp': {},
                                    'builtin:omfile': {'Template': 'RSYSLOG_TraditionalFileFormat'}}
-                                    # 'builtin:omfile': {'Template': 'RSYSLOG_TraditionalFileFormat', 'incluRSYSLOGDCONF_PATHc/rsyslog.d/*.conf': 'mode'}}
-    assert len(rsys.module_details) == 4
+    assert len(rsys.module_details) == 5
     assert len(rsys.log_details) == 8
     assert rsys.global_details == {'workDirectory': '/var/lib/rsyslog'}
     assert rsys.input_details == {'imudp': '514'}
     assert rsys.include_details == {'/etc/rsyslog.d/*.conf': {'mode': 'optional'}}
+    assert rsys.rsyslog_path == "/etc/rsyslog.d/rsyslog.conf"
+
+    ctx = context_wrap(RSYSLOG_CONF_RHEL7_NO)
+    rhel7 = RedhatRelease(context_wrap(RHEL7))
+    with pytest.raises(ParseException) as exc:
+        rsys = RsyslogConf(ctx, rhel7)
+    assert 'No Proper Contents' in str(exc)
+
+    ctx = context_wrap(RSYSLOG_CONF_RHEL8_NO)
+    rhel8 = RedhatRelease(context_wrap(RHEL8))
+    with pytest.raises(ParseException) as exc:
+        rsys = RsyslogConf8(ctx, rhel8)
+    assert 'No Proper Contents' in str(exc)
+
+    ctx = context_wrap(RSYSLOG_CONF_RHEL8)
+    rhel8 = RedhatRelease(context_wrap(RHEL8))
+    with pytest.raises(SkipException) as exc:
+        rsys = RsyslogConf(ctx, rhel8)
+    assert 'System is not a RHEL-6 or RHEL-7' in str(exc)
+
+    ctx = context_wrap(RSYSLOG_CONF_RHEL7, path=RSYSLOGDCONF_PATH)
+    rhel7 = RedhatRelease(context_wrap(RHEL7))
+    with pytest.raises(SkipException) as exc:
+        rsys = RsyslogConf8(ctx, rhel7)
+    assert 'System is not a RHEL-8' in str(exc)
 
 
 def test_rsyslog_conf_1():
     ctx = context_wrap(RSYSLOG_CONF_1)
-    m = RsyslogConf(ctx)
+    rhel7 = RedhatRelease(context_wrap(RHEL7))
+    m = RsyslogConf(ctx, rhel7)
     d = list(m)
     assert len(m) == 1
     assert len(d) == 1
@@ -250,9 +282,11 @@ def test_rsyslog_conf_1():
 
 
 def test_rsyslog_rhel8_doc_examples():
+    rhel7 = RedhatRelease(context_wrap(RHEL7))
+    rhel8 = RedhatRelease(context_wrap(RHEL8))
     env = {
-        'rsys': RsyslogConf8(context_wrap(RSYSLOG_CONF_RHEL8)),
-        'rsl': RsyslogConf(context_wrap(RSYSLOG_CONF_RHEL)),
+        'rsl': RsyslogConf(context_wrap(RSYSLOG_CONF_RHEL, path=RSYSLOGCONF_PATH), rhel7),
+        'rsys': RsyslogConf8(context_wrap(RSYSLOG_CONF_RHEL8, path=RSYSLOGCONF_PATH), rhel8)
     }
     failed, total = doctest.testmod(rsyslog_conf, globs=env)
     assert failed == 0
