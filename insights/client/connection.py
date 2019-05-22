@@ -658,7 +658,7 @@ class InsightsConnection(object):
         return True
 
     # -LEGACY-
-    def unregister(self):
+    def _legacy_unregister(self):
         """
         Unregister this system from the insights service
         """
@@ -666,6 +666,28 @@ class InsightsConnection(object):
         try:
             logger.debug("Unregistering %s", machine_id)
             url = self.api_url + "/v1/systems/" + machine_id
+            net_logger.info("DELETE %s", url)
+            self.session.delete(url)
+            logger.info(
+                "Successfully unregistered from the Red Hat Insights Service")
+            return True
+        except requests.ConnectionError as e:
+            logger.debug(e)
+            logger.error("Could not unregister this system")
+            return False
+
+    def unregister(self):
+        """
+        Unregister this system from the insights service
+        """
+        if self.config.legacy_upload:
+            return self._legacy_unregister()
+
+        results = self._fetch_system_by_machine_id()
+        msg_name = determine_hostname(self.config.display_name)
+        try:
+            logger.debug("Unregistering %s", msg_name)
+            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
             net_logger.info("DELETE %s", url)
             self.session.delete(url)
             logger.info(
