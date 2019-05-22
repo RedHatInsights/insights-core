@@ -249,7 +249,9 @@ class Many1(Many):
         pos, results = super(Many1, self).process(pos, data, ctx)
         if len(results) == 0:
             child = self.children[0]
-            raise Exception("Expected at least one {}.".format(child))
+            msg = "Expected at least one {}.".format(child)
+            ctx.set(pos, msg)
+            raise Exception(msg)
         return pos, results
 
 
