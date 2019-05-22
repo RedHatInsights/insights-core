@@ -48,7 +48,7 @@ def determine_hostname(display_name=None):
 
 
 def get_time():
-    return datetime.datetime.isoformat(datetime.datetime.now())
+    return datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat()
 
 
 def write_registered_file():
