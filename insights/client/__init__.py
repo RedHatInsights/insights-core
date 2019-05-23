@@ -14,6 +14,7 @@ from .config import InsightsConfig
 from .auto_config import try_auto_configuration
 from .utilities import (delete_registered_file,
                         delete_unregistered_file,
+                        delete_status_file,
                         write_to_disk,
                         generate_machine_id)
 
@@ -495,6 +496,7 @@ class InsightsClient(object):
         '''
         delete_registered_file()
         delete_unregistered_file()
+        delete_status_file()
         write_to_disk(constants.machine_id_file, delete=True)
         logger.debug('Re-register set, forcing registration.')
         logger.debug('New machine-id: %s', generate_machine_id(new=True))

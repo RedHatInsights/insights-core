@@ -4,6 +4,7 @@ Utility functions
 from __future__ import absolute_import
 import socket
 import os
+import fcntl
 import logging
 import uuid
 import datetime
@@ -12,6 +13,7 @@ import re
 import stat
 from subprocess import Popen, PIPE, STDOUT
 from six.moves.configparser import RawConfigParser
+import json
 
 from .constants import InsightsConstants as constants
 
@@ -62,7 +64,6 @@ def write_registered_file():
         else:
             write_to_disk(f)
 
-
 def write_unregistered_file(date=None):
     """
     Write .unregistered out to disk
@@ -79,11 +80,9 @@ def write_unregistered_file(date=None):
         else:
             write_to_disk(f, content=str(date))
 
-
 def delete_registered_file():
     for f in constants.registered_files:
         write_to_disk(f, delete=True)
-
 
 def delete_unregistered_file():
     for f in constants.unregistered_files:
@@ -221,3 +220,57 @@ def modify_config_file(updates):
     cmd = cmd + constants.default_conf_file
     status = run_command_get_output(cmd)
     write_to_disk(constants.default_conf_file, content=status['output'])
+
+# MODIFY_JSON_FILE - Modify a JSON file in place.
+#
+# If the file doesn't exist initially, it is created with default
+# permissions and the initial content is an empty JSON object.
+#
+# NAME: The name of the file to change
+#
+# MUTATE: A callback that does the modifications.  It will be called
+#         with one argument, containing the old data from the file.
+#         The function can modify this object directly and return
+#         None.  Alternatively, the function can return a new object.
+#
+# Example mutator functions.  Note that the first preseves other
+# fields in DATA while the second does not.
+#
+# def count_up(data):
+#    if "count" in data:
+#        data["count"] += 1
+#    else:
+#        data["count"] = 0
+#
+# def count_up_2(data):
+#    return { "count": data["count"] + 1 if "count" in data else 0 }
+
+def modify_json_file(name, mutate):
+    f = os.fdopen(os.open(name, os.O_RDWR | os.O_CREAT, 0o666), 'r+')
+    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+    old_text = f.read()
+    old = { } if old_text == "" else json.loads(old_text)
+    new = mutate(old) or old
+    f.seek(0)
+    f.truncate()
+    f.write(json.dumps(new) + "\n")
+    f.close()
+
+# SET_IN_JSON_FILE - Set a field in a JSON file
+#
+# This is a convenience wrapper around MODIFY_JSON_FILE for the common
+# case of this specific mutator function:
+#
+#  def mutate(data):
+#      data[field] = value
+
+def set_in_json_file(name, field, value):
+    def mutate(data):
+        data[field] = value
+    modify_json_file(name, mutate)
+
+def set_in_status_file(field, value):
+    set_in_json_file(constants.status_file, field, value)
+
+def delete_status_file():
+    write_to_disk(constants.status_file, delete=True)

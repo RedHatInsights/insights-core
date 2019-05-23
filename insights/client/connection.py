@@ -24,7 +24,8 @@ except ImportError:
 from .utilities import (determine_hostname,
                         generate_machine_id,
                         write_unregistered_file,
-                        write_registered_file)
+                        write_registered_file,
+                        set_in_status_file)
 from .cert_auth import rhsmCertificate
 from .constants import InsightsConstants as constants
 from insights.util.canonical_facts import get_canonical_facts
@@ -400,6 +401,7 @@ class InsightsConnection(object):
                     unreg_date = req.json()["unregistered_at"]
                     logger.error(req.json()["message"])
                     write_unregistered_file(unreg_date)
+                    set_in_status_file("registered", False)
                 except LookupError:
                     unreg_date = "412, but no unreg_date or message"
                     logger.debug("HTTP Response Text: %s", req.text)
@@ -827,6 +829,7 @@ class InsightsConnection(object):
             logger.debug(upload.text)
             # upload = registration on platform
             write_registered_file()
+            set_status_file("registered", True)
         else:
             logger.debug(
                 "Upload archive failed with status code %s",

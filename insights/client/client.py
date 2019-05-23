@@ -14,8 +14,10 @@ from .utilities import (generate_machine_id,
                         write_to_disk,
                         write_registered_file,
                         write_unregistered_file,
+                        set_in_status_file,
                         delete_registered_file,
                         delete_unregistered_file,
+                        delete_status_file,
                         determine_hostname)
 from .collection_rules import InsightsUploadConf
 from .data_collector import DataCollector
@@ -119,6 +121,7 @@ def _legacy_handle_registration(config, pconn):
     if config.reregister:
         delete_registered_file()
         delete_unregistered_file()
+        delete_status_file()
         write_to_disk(constants.machine_id_file, delete=True)
         logger.debug('Re-register set, forcing registration.')
 
@@ -139,6 +142,7 @@ def _legacy_handle_registration(config, pconn):
         if config.register:
             logger.info('This host has already been registered.')
         write_registered_file()
+        set_in_status_file("registered", True)
         return True
 
     if config.register:
@@ -161,10 +165,12 @@ def _legacy_handle_registration(config, pconn):
         if message:
             logger.info(message)
         write_registered_file()
+        set_in_status_file("registered", True)
         return True
     else:
         # unregistered in API, resync files
         write_unregistered_file(date=check['unreg_date'])
+        set_in_status_file("registered", False)
         # print messaging and exit
         if check['unreg_date']:
             # registered and then unregistered
@@ -219,6 +225,7 @@ def _legacy_handle_unregistration(config, pconn):
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()
+        set_in_status_file("registered", False)
         get_scheduler(config).remove_scheduling()
     return unreg
 
@@ -237,8 +244,8 @@ def handle_unregistration(config, pconn):
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()
+        set_in_status_file("registered", False)
     return unreg
-
 
 def get_machine_id():
     return generate_machine_id()
@@ -414,6 +421,7 @@ def _legacy_upload(config, pconn, tar_file, content_type, collection_duration=No
                 else:
                     handler.write(upload.text.encode('utf-8'))
             write_to_disk(constants.lastupload_file)
+            set_in_status_file("lastupload", time.time())
 
             msg_name = determine_hostname(config.display_name)
             account_number = config.account_number

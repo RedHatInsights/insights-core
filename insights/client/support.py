@@ -15,7 +15,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 from .constants import InsightsConstants as constants
 from .connection import InsightsConnection
-from .utilities import write_registered_file, write_unregistered_file
+from .utilities import write_registered_file, write_unregistered_file, set_in_status_file
 
 APP_NAME = constants.app_name
 logger = logging.getLogger(__name__)
@@ -65,6 +65,7 @@ def registration_check(pconn):
         write_registered_file()
     else:
         write_unregistered_file()
+    set_in_status_file("registered", bool(status))
     return status
 
 
