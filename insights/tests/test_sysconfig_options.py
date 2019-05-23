@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 from insights.core import SysconfigOptions
 from insights.tests import context_wrap
 
