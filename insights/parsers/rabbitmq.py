@@ -35,7 +35,7 @@ def erlblock_parser():
 
     key = p.Word(p.alphas + '_')
     value_tnum = p.Word(p.nums + '.')
-    value_tword = p.Word(p.alphanums + '/"-[]:.()')
+    value_tword = p.Word(p.alphanums + '/"-[]:.()\\')
     value_tstr = p.OneOrMore(value_tword)
     value_tdoustrs = value_tstr + COMMA + value_tstr
     value_tnumstr = value_tnum + value_tstr
@@ -126,10 +126,10 @@ class RabbitMQReport(CommandParser):
                         'redhat':['redhat.*', '.*', '.*']},
                     'test_vhost': ''}}
         """
-        try:
-            self.result = create_parser().parseString("\n".join(content)).asDict()
-        except p.ParseException:
-            self.result = None
+        # During the below parsing process, p.ParseException might be thrown.
+        # No handler will be applied here.
+        # And such p.ParseException won't be hidden, showing for debug usage.
+        self.result = create_parser().parseString("\n".join(content)).asDict()
 
 
 @parser(Specs.rabbitmq_users)
