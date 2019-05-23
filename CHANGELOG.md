@@ -1,5 +1,16 @@
 # Change Log
 
+## [insights-core-3.0.100-974](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.100-974) (2019-05-23)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.99-969...insights-core-3.0.100-974)
+
+**Implemented enhancements:**
+
+- New parser for PsAlxww [\#1833](https://github.com/RedHatInsights/insights-core/issues/1833)
+
+**Fixed bugs:**
+
+- Ps class incorrectly parses command name and forces position of "user" and "command" columns. [\#1915](https://github.com/RedHatInsights/insights-core/issues/1915)
+
 ## [insights-core-3.0.99-969](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.99-969) (2019-05-16)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.98-965...insights-core-3.0.99-969)
 
