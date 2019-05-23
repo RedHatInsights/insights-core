@@ -57,6 +57,7 @@ class InsightsArchiveSpecs(Specs):
     ethtool_k = glob_file("insights_commands/ethtool_-k_*")
     facter = simple_file("insights_commands/facter")
     fc_match = simple_file("insights_commands/fc-match_-sv_sans_regular_roman_family_fontformat")
+    fcoeadm_i = simple_file("insights_commands/fcoeadm_-i")
     fdisk_l = simple_file("insights_commands/fdisk_-l")
     foreman_rake_db_migrate_status = simple_file('insights_commands/foreman-rake_db_migrate_status')
     getcert_list = simple_file("insights_commands/getcert_list")

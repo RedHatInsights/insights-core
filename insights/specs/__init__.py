@@ -138,6 +138,7 @@ class Specs(SpecSet):
     exim_conf = RegistryPoint()
     facter = RegistryPoint()
     fc_match = RegistryPoint()
+    fcoeadm_i = RegistryPoint()
     fdisk_l = RegistryPoint()
     fdisk_l_sos = RegistryPoint(multi_output=True)
     foreman_production_log = RegistryPoint(filterable=True)
