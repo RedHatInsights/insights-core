@@ -187,6 +187,7 @@ class InsightsArchiveSpecs(Specs):
     passenger_status = simple_file("insights_commands/passenger-status")
     pcs_config = simple_file("insights_commands/pcs_config")
     pcs_status = simple_file("insights_commands/pcs_status")
+    ps_alxwww = simple_file("insights_commands/ps_alxwww")
     ps_aux = simple_file("insights_commands/ps_aux")
     ps_auxcww = simple_file("insights_commands/ps_auxcww")
     ps_auxww = simple_file("insights_commands/ps_auxww")
