@@ -486,8 +486,12 @@ class SysconfigOptions(Parser, LegacyItemAccess):
                 words = shlex.split(line)
             except ValueError:
                 # Handle foo=bar # unpaired ' or " here
-                line, comment = line.split(' #', 1)
-                words = shlex.split(line)
+                if ' #' in line:
+                    line, comment = line.split(' #', 1)
+                    words = shlex.split(line)
+                else:
+                    # Line contains unpaired quotes
+                    words = line.split()
 
             # Either only one thing or line or rest starts with comment
             # but either way we need to have an equals in the first word.

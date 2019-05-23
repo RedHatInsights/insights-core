@@ -34,6 +34,10 @@ this line should be in unparsed lines afterward
 AND = 'so should this'
 """ + "SPACES_AFTER_VALUE=should_be_ignored    \n" + "  \n"
 
+NO_CLOSING_QUOTATION = """
+KEY='VALUE_WITHOUT_CLOSING_QUOTATION"
+""".split()
+
 
 def test_standard_config():
     config = SysconfigOptions(context_wrap(STANDARD_CONFIG))
@@ -93,3 +97,6 @@ def test_tricky_config():
         'this line should be in unparsed lines afterward',
         "AND = 'so should this'",
     ]
+
+    config = SysconfigOptions(context_wrap(NO_CLOSING_QUOTATION))
+    assert config.data['KEY'] == '\'VALUE_WITHOUT_CLOSING_QUOTATION"'
