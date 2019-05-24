@@ -110,7 +110,7 @@ class SosSpecs(Specs):
     )
     sysctl = simple_file("sos_commands/kernel/sysctl_-a")
     systemctl_list_unit_files = simple_file("sos_commands/systemd/systemctl_list-unit-files")
-    systemctl_list_units = first_file(["sos_commands/systemd/systemctl_list-units", "sos_commands/systemd/systemctl_list-units_-all"])
+    systemctl_list_units = first_file(["sos_commands/systemd/systemctl_list-units", "sos_commands/systemd/systemctl_list-units_--all"])
     uname = simple_file("sos_commands/kernel/uname_-a")
     uptime = first_of([simple_file("sos_commands/general/uptime"), simple_file("sos_commands/host/uptime")])
     var_qemu_xml = glob_file(r"var/run/libvirt/qemu/*.xml")
