@@ -26,7 +26,6 @@ class SosSpecs(Specs):
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
     df__al = first_file(["sos_commands/filesys/df_-al", "sos_commands/filesys/df_-al_-x_autofs"])
     df__alP = simple_file("sos_commands/filesys/df_-alP")
-    df__li = first_file(["sos_commands/filesys/df_-ali", "sos_commands/filesys/df_-ali_-x_autofs"])
     display_java = simple_file("sos_commands/java/alternatives_--display_java")
     docker_info = simple_file("sos_commands/docker/docker_info")
     docker_list_containers = first_file(["sos_commands/docker/docker_ps_-a", "sos_commands/docker/docker_ps"])
