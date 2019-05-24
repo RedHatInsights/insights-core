@@ -28,6 +28,7 @@ Examples:
 from insights import combiner
 from insights.parsers.ceph_version import CephVersion as CephV
 from insights.parsers.ceph_insights import CephInsights
+from insights.tests import context_wrap
 
 
 @combiner([CephV, CephInsights])
@@ -46,4 +47,9 @@ class CephVersion(object):
             self.downstream_release = cv.downstream_release
             self.upstream_version = cv.upstream_version
         else:
-            CephV.parse_content(self, [ci.data["version"]["full"]])
+            cv = CephV(context_wrap(ci.data["version"]["full"]))
+            self.version = cv.version
+            self.major = cv.major
+            self.minor = cv.minor
+            self.downstream_release = cv.downstream_release
+            self.upstream_version = cv.upstream_version
