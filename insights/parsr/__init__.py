@@ -67,7 +67,7 @@ def _debug_hook(func):
     return inner
 
 
-class Ctx(object):
+class Context(object):
     def __init__(self, lines, src=None):
         self.error_pos = -1
         self.error_msg = None
@@ -77,7 +77,7 @@ class Ctx(object):
         self.lines = [i for i, x in enumerate(lines) if x == "\n"]
 
     def set(self, pos, msg):
-        if pos >= self.error_pos:
+        if self.error_pos <= self.error_pos:
             self.error_pos = pos
             self.error_msg = msg
 
@@ -107,9 +107,6 @@ class Parser(six.with_metaclass(ParserMeta, Node)):
         self._debug = d
         return self
 
-    def map(self, func):
-        return Map(self, func)
-
     @staticmethod
     def accumulate(first, rest):
         results = [first] if first else []
@@ -123,23 +120,26 @@ class Parser(six.with_metaclass(ParserMeta, Node)):
     def until(self, pred):
         return Until(self, pred)
 
-    def __or__(self, other):
-        return Choice([self, other])
-
-    def __and__(self, other):
-        return FollowedBy(self, other)
-
-    def __truediv__(self, other):
-        return NotFollowedBy(self, other)
+    def map(self, func):
+        return Map(self, func)
 
     def __add__(self, other):
         return Seq([self, other])
+
+    def __or__(self, other):
+        return Choice([self, other])
 
     def __lshift__(self, other):
         return KeepLeft(self, other)
 
     def __rshift__(self, other):
         return KeepRight(self, other)
+
+    def __and__(self, other):
+        return FollowedBy(self, other)
+
+    def __truediv__(self, other):
+        return NotFollowedBy(self, other)
 
     def __mod__(self, name):
         self.name = name
@@ -151,18 +151,18 @@ class Parser(six.with_metaclass(ParserMeta, Node)):
     def __call__(self, data, src=None):
         data = list(data)
         data.append(None)  # add a terminal so we don't overrun
-        ctx = Ctx(data, src=src)
-        ex = None
+        ctx = Context(data, src=src)
+
         try:
             _, ret = self.process(0, data, ctx)
             return ret
         except Exception:
-            lineno = ctx.line(ctx.error_pos) + 1
-            colno = ctx.col(ctx.error_pos) + 1
-            msg = "At line {} column {}: {}"
-            ex = Exception(msg.format(lineno, colno, ctx.error_msg))
-        if ex:
-            raise ex
+            pass
+
+        lineno = ctx.line(ctx.error_pos) + 1
+        colno = ctx.col(ctx.error_pos) + 1
+        msg = "At line {} column {}: {}"
+        raise Exception(msg.format(lineno, colno, ctx.error_msg))
 
     def __repr__(self):
         return self.name or self.__class__.__name__
@@ -222,17 +222,22 @@ class Choice(Parser):
         return self.add_child(other)
 
     def process(self, pos, data, ctx):
-        ex = None
         for c in self.children:
             try:
                 return c.process(pos, data, ctx)
-            except Exception as e:
-                ex = e
-        raise ex
+            except:
+                pass
+        raise Exception()
 
 
-class Many(Wrapper):
+class Many(Parser):
+    def __init__(self, parser, lower=0):
+        super(Many, self).__init__()
+        self.add_child(parser)
+        self.lower = lower
+
     def process(self, pos, data, ctx):
+        orig = pos
         results = []
         p = self.children[0]
         while True:
@@ -241,17 +246,14 @@ class Many(Wrapper):
                 results.append(res)
             except Exception:
                 break
-        return pos, results
 
-
-class Many1(Many):
-    def process(self, pos, data, ctx):
-        pos, results = super(Many1, self).process(pos, data, ctx)
-        if len(results) == 0:
+        if len(results) < self.lower:
             child = self.children[0]
-            msg = "Expected at least one {}.".format(child)
-            ctx.set(pos, msg)
-            raise Exception(msg)
+            msg = "Expected at least {} of {}.".format(self.lower, child)
+            ctx.error_pos = orig
+            ctx.error_msg = msg
+            raise Exception()
+
         return pos, results
 
 
@@ -285,12 +287,8 @@ class FollowedBy(Parser):
     def process(self, pos, data, ctx):
         left, right = self.children
         new, res = left.process(pos, data, ctx)
-        try:
-            right.process(new, data, ctx)
-        except Exception:
-            raise
-        else:
-            return new, res
+        right.process(new, data, ctx)
+        return new, res
 
 
 class NotFollowedBy(Parser):
@@ -306,7 +304,9 @@ class NotFollowedBy(Parser):
         except Exception:
             return new, res
         else:
-            raise Exception("{} can't follow {}".format(right, left))
+            msg = "{} can't follow {}".format(right, left)
+            ctx.set(new, msg)
+            raise Exception()
 
 
 class KeepLeft(Parser):
@@ -329,8 +329,7 @@ class KeepRight(Parser):
     def process(self, pos, data, ctx):
         left, right = self.children
         pos, _ = left.process(pos, data, ctx)
-        pos, res = right.process(pos, data, ctx)
-        return pos, res
+        return right.process(pos, data, ctx)
 
 
 class Opt(Parser):

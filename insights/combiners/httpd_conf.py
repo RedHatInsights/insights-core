@@ -21,7 +21,7 @@ from insights.core.plugins import combiner, parser
 from insights.parsr.query import (Directive, Entry, lift, lift2, Section,
         startswith)
 from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, LT,
-        Letters, Lift, LineEnd, Many, Many1, Number, OneLineComment, PosMarker,
+        Letters, Lift, LineEnd, Many, Number, OneLineComment, PosMarker,
         QuotedString, skip_none, StartTagName, String, WS, WSChar)
 from insights.parsers.httpd_conf import HttpdConf, dict_deep_merge, ParsedData
 from insights.specs import Specs
@@ -289,7 +289,7 @@ class DocParser(object):
         StartTag = (WS + LT) >> (StartName + Attrs) << (GT + WS)
         EndTag = (WS + LT + FS) >> EndName << (GT + WS)
         Simple = WS >> (Lift(self.to_directive) * PosMarker(Name) * Attrs) << WS
-        Stanza = Simple | Complex | Comment | Many1(WSChar | EOL).map(lambda x: None)
+        Stanza = Simple | Complex | Comment | Many(WSChar | EOL, lower=1).map(lambda x: None)
         Complex <= (Lift(self.to_section) * StartTag * Many(Stanza).map(skip_none)) << EndTag
         Doc = Many(Stanza).map(skip_none)
 

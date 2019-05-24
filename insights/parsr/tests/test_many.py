@@ -1,5 +1,5 @@
 import pytest
-from insights.parsr import Char, Many, Many1
+from insights.parsr import Char, Many
 
 
 def test_many():
@@ -29,7 +29,7 @@ def test_many1():
     b = Char("b")
     x = Char("x")
 
-    xs = Many1(x)
+    xs = Many(x, lower=1)
     with pytest.raises(Exception):
         xs("")
 
@@ -40,7 +40,7 @@ def test_many1():
     assert xs("xxxxx") == ["x", "x", "x", "x", "x"]
     assert xs("xxxxb") == ["x", "x", "x", "x"]
 
-    ab = Many1(a + b)
+    ab = Many(a + b, lower=1)
     with pytest.raises(Exception):
         ab("")
 
@@ -50,5 +50,5 @@ def test_many1():
     assert ab("ab") == [["a", "b"]]
     assert ab("ababab") == [["a", "b"], ["a", "b"], ["a", "b"]]
 
-    ab = Many1(a | b)
+    ab = Many(a | b, lower=1)
     assert ab("aababb") == ["a", "a", "b", "a", "b", "b"]
