@@ -1,6 +1,6 @@
 """
 FcoeadmI - command ``fcoeadm -i``
-=============================
+=================================
 
 Module for parsing the output of command ``fcoeadm -i``. The bulk of the
 content is split on the colon and keys are kept as is. Lines beginning
@@ -18,7 +18,7 @@ from insights.parsers import ParseException, SkipException
 
 
 @parser(Specs.fcoeadm_i)
-class FcoeadmI(CommandParser):
+class FcoeadmI(CommandParser, dict):
     """
     Class for parsing ``fcoeadm -i`` command output.
 
@@ -58,30 +58,41 @@ class FcoeadmI(CommandParser):
         <class 'insights.parsers.fcoeadm_i.FcoeadmI'>
         >>> fi.fcoe["Description"]
         'NetXtreme II BCM57810 10 Gigabit Ethernet'
+        >>> fi["Description"]
+        'NetXtreme II BCM57810 10 Gigabit Ethernet'
         >>> fi.fcoe["Driver"]
+        'bnx2x 1.712.30-0'
+        >>> fi["Driver"]
         'bnx2x 1.712.30-0'
         >>> fi.fcoe['Serial Number']
         '2C44FD8F4418'
-        >>> fi.get_iface
+        >>> fi['Serial Number']
+        '2C44FD8F4418'
+        >>> fi.iface_list
         ['eth8.0-fcoe', 'eth6.0-fcoe']
-        >>> fi.get_nic
+        >>> fi.nic_list
         ['eth8', 'eth6']
-        >>> fi.get_stat
+        >>> fi.stat_list
         ['Online', 'Offline']
         >>> fi.get_stat_from_nic('eth6')
         'Offline'
-        >>> fi.get_host_from_nic('eth8')
-        'host6'
+        >>> fi.get_host_from_nic('eth6')
+        'host7'
 
     Attributes:
-        fcoe (dict): Parse the command of '/usr/sbin/fcoeadm -i'
-        iface_lenth (int): The length of fcoe interfaces
+        fcoe (dict): The result parsed of '/usr/sbin/fcoeadm -i'
         driver_name (str): Driver name
         driver_version (str): Driver version
+        iface_list (list) : FCoE interface names
+        nic_list (list) : Ethernet ports running FCoE interfaces
+        stat_list (list): FCoE interface(s) status
 
     Raises:
         ParseException: When input content is empty or there is no parsed data.
     """
+    def __init__(self, *args, **kwargs):
+        super(FcoeadmI, self).__init__(*args, **kwargs)
+        self.update(self.fcoe)
 
     def parse_content(self, content):
         EMPTY = "Input content is empty"
@@ -93,15 +104,18 @@ class FcoeadmI(CommandParser):
         if len(content) < 6 and len(content) > 0:
             raise ParseException(BADWD)
 
-        iface_list = []
         iface = {}
-        self.iface_lenth = None
+        iface_section_list = []
+
+        self.iface_list = []
+        self.nic_list = []
+        self.stat_list = []
         self.driver_name = ''
         self.driver_version = ''
         self.fcoe = {}
-        self.fcoe['Interfaces'] = iface_list
-        symb = False
+        self.fcoe['Interfaces'] = iface_section_list
 
+        symb = False
         for line in content:
             line = line.strip()
 
@@ -116,50 +130,74 @@ class FcoeadmI(CommandParser):
                     iface[key] = val
 
             if 'State:' in line:
-                iface_list.append(iface)
+                iface_section_list.append(iface)
                 iface = {}
 
-        self.iface_lenth = len(self.fcoe['Interfaces'])
         self.driver_name = self.fcoe['Driver'].split(' ', 1)[0]
         self.driver_version = self.fcoe['Driver'].split(' ', 1)[-1]
-        return self.fcoe
 
-    @property
-    def get_iface(self):
-        """int: the major version of this OS."""
-        iface_list = []
         for iface in self.fcoe['Interfaces']:
-            iface_list.append(iface['Symbolic Name'].split(' ')[-1])
-        return iface_list
+            self.iface_list.append(iface['Symbolic Name'].split(' ')[-1])
 
-    @property
-    def get_nic(self):
-        """list: the nic of fcoe iface"""
-        nic_list = []
-        for nic in self.get_iface:
-            nic_list.append(nic.split('.', 1)[0])
-        return nic_list
+        for nic in self.iface_list:
+            self.nic_list.append(nic.split('.', 1)[0])
 
-    @property
-    def get_stat(self):
-        """list: the state of fcoe ifaces"""
-        stat_list = []
         for iface in self.fcoe['Interfaces']:
-            stat_list.append(iface['State'])
-        return stat_list
+            self.stat_list.append(iface['State'])
 
     def get_stat_from_nic(self, nic):
-        """str: the fcoe state"""
+        """
+        Get 'State' of fcoe interface created on specified ethernet port.
+
+        Parameter:
+            nic (str): Ethernet port which provided by FCoE adapter.
+
+        Return:
+            str: Return fcoe status. When nic is not valid fcoe port,
+                 raise ValueError.
+        """
+
         ret = None
+        self.__check_nic_valid__(nic)
+
         for iface in self.fcoe['Interfaces']:
             if nic in iface['Symbolic Name']:
                 ret = iface['State']
         return ret
 
     def get_host_from_nic(self, nic):
-        """str: the fcoe host"""
+        """
+        Get 'OS Device Name' for the specified ethernet port.
+
+        Parameter:
+            nic (str): Ethernet port which provided by FCoE adapter
+
+        Return:
+            str: Return fcoe host, which as 'OS Device Name' to display,
+                 when nic is not valid fcoe port, raise ValueError.
+        """
+
         ret = None
+        self.__check_nic_valid__(nic)
+
         for iface in self.fcoe['Interfaces']:
             if nic in iface['Symbolic Name']:
                 ret = iface['OS Device Name']
         return ret
+
+    def __check_nic_valid__(self, nic):
+        """
+        Check whether the input nic is valid.
+
+        Parameter:
+            nic (str): Ethernet port which provided by FCoE adapter
+
+        Return:
+            bool: Return True if nic is valid port which is from FCoE adapter
+                  Otherwise False.
+        """
+
+        BADNIC = "'%s' is NOT real FCoE port provided by HBA/CNA adapter" % nic
+
+        if nic not in self.nic_list:
+            raise ValueError(BADNIC)

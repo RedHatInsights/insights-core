@@ -39,15 +39,31 @@ FCOEADM_I_57810 = """
 
 def test_fcoeadm_i():
     result = FcoeadmI(context_wrap(FCOEADM_I_57810, path='/tmp/fcoeadm_i'))
-    assert result.iface_lenth == 2
     assert result.fcoe["Driver"] == "bnx2x 1.712.30-0"
     assert result.fcoe["Revision"] == "10"
     assert result.fcoe["Manufacturer"] == "Broadcom Corporation"
     assert result.fcoe["Serial Number"] == "2C44FD8F4418"
     assert result.fcoe["Number of Ports"] == "1"
-    assert result.get_iface == ['eth8.0-fcoe', 'eth6.0-fcoe']
-    assert result.get_nic == ['eth8', 'eth6']
-    assert result.get_stat == ['Online', 'Offline']
+
+    assert result.iface_list == ['eth8.0-fcoe', 'eth6.0-fcoe']
+    assert result.nic_list == ['eth8', 'eth6']
+    assert result.stat_list == ['Online', 'Offline']
+    assert result.get_host_from_nic('eth8') == 'host6'
+    assert result.get_stat_from_nic('eth8') == 'Online'
+
+    assert result["Driver"] == "bnx2x 1.712.30-0"
+    assert result["Revision"] == "10"
+    assert result["Manufacturer"] == "Broadcom Corporation"
+    assert result["Serial Number"] == "2C44FD8F4418"
+    assert result["Number of Ports"] == "1"
+
+    with pytest.raises(ValueError) as sc12:
+        result.get_stat_from_nic('abf371294f')
+    assert "is NOT real FCoE port provided" in str(sc12)
+
+    with pytest.raises(ValueError) as sc12:
+        result.get_host_from_nic('97hjh38k')
+    assert "is NOT real FCoE port provided" in str(sc12)
 
 
 def test_fcoeadm_i_documentation():
@@ -57,10 +73,7 @@ def test_fcoeadm_i_documentation():
     rule writer might see - a 'fcoeadm_i' command that has been
     passed in as a parameter to the rule declaration.
     """
-    env = {
-        'FcoeadmI': FcoeadmI,
-        'fi': FcoeadmI(context_wrap(FCOEADM_I_57810)),
-    }
+    env = {'fi': FcoeadmI(context_wrap(FCOEADM_I_57810))}
     failed, total = doctest.testmod(fcoeadm_i, globs=env)
     assert failed == 0
 
