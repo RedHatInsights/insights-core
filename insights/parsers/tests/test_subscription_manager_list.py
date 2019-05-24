@@ -1,6 +1,4 @@
 import doctest
-import pytest
-from insights.parsers import SkipException
 from ...parsers import subscription_manager_list
 from ...tests import context_wrap
 

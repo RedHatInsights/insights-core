@@ -19,8 +19,7 @@ import re
 from datetime import datetime
 import six
 from insights.specs import Specs
-from insights.parsers import split_kv_pairs, SkipException
-from .. import parser, CommandParser, LegacyItemAccess
+from .. import parser, CommandParser
 from . import keyword_search
 
 
