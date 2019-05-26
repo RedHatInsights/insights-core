@@ -40,11 +40,11 @@ LowOps = InSet("+-")
 # at the end.
 
 # We have to declare expr before its definition since it's used recursively.
-expr = Forward()
+expr = Forward() % "expr forward"
 
 
 # A factor is a simple number or a subexpression between parentheses
-factor = WS >> (Number | (LeftParen >> expr << RightParen)) << WS
+factor = WS >> Number % "Number" | (LeftParen >> expr << RightParen) << WS
 
 # A term handles strings of multiplication and division. As written, it would
 # convert "1 + 2 - 3 + 4" into [1, [['+', 2], ['-', 3], ['+', 4]]]. The first
@@ -53,10 +53,10 @@ factor = WS >> (Number | (LeftParen >> expr << RightParen)) << WS
 # contains several two-element lists generated from each match of
 # (HighOps + factor). We pass the entire structure into the op function with
 # map.
-term = (factor + Many(HighOps + factor)).map(op)
+term = (factor + Many(HighOps + factor)).map(op) % "term"
 
 # expr has the same form as term.
-expr <= (term + Many(LowOps + term)).map(op)
+expr <= (term + Many(LowOps + term)).map(op) % "expr"
 
 # Top returns [result, None] on success and raises an Exception on failure.
-Top = expr + EOF
+Top = (expr + EOF) % "Top"

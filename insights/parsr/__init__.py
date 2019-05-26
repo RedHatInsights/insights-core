@@ -1,9 +1,8 @@
 from __future__ import print_function
 import functools
-import six
 import string
 from bisect import bisect_left
-from io import StringIO
+from six import StringIO, with_metaclass
 
 
 class Node(object):
@@ -52,34 +51,43 @@ def render(tree):
 def _debug_hook(func):
     @functools.wraps(func)
     def inner(self, pos, data, ctx):
+        ctx.parser_stack.append(self)
         if self._debug:
             line = ctx.line(pos) + 1
             col = ctx.col(pos) + 1
             print("Trying {} at line {} col {}".format(self, line, col))
-            try:
-                res = func(self, pos, data, ctx)
+        try:
+            res = func(self, pos, data, ctx)
+            if self._debug:
                 print("Result: {}".format(res[1]))
-                return res
-            except:
-                print("Failed")
-                raise
-        return func(self, pos, data, ctx)
+            return res
+        except:
+            if self._debug:
+                ps = "-> ".join([str(p) for p in ctx.parser_stack])
+                print("Failed: {}".format(ps))
+            raise
+        finally:
+            ctx.parser_stack.pop()
     return inner
 
 
 class Context(object):
     def __init__(self, lines, src=None):
-        self.error_pos = -1
-        self.error_msg = None
+        self.pos = -1
         self.indents = []
         self.tags = []
         self.src = src
         self.lines = [i for i, x in enumerate(lines) if x == "\n"]
+        self.parser_stack = []
+        self.errors = []
 
     def set(self, pos, msg):
-        if self.error_pos <= self.error_pos:
-            self.error_pos = pos
-            self.error_msg = msg
+        if pos > self.pos:
+            self.errors = []
+
+        if pos >= self.pos:
+            self.pos = pos
+            self.errors.append((list(self.parser_stack), msg))
 
     def line(self, pos):
         return bisect_left(self.lines, pos)
@@ -97,7 +105,7 @@ class ParserMeta(type):
         setattr(cls, "process", _debug_hook(orig))
 
 
-class Parser(six.with_metaclass(ParserMeta, Node)):
+class Parser(with_metaclass(ParserMeta, Node)):
     def __init__(self):
         super(Parser, self).__init__()
         self.name = None
@@ -159,10 +167,17 @@ class Parser(six.with_metaclass(ParserMeta, Node)):
         except Exception:
             pass
 
-        lineno = ctx.line(ctx.error_pos) + 1
-        colno = ctx.col(ctx.error_pos) + 1
-        msg = "At line {} column {}: {}"
-        raise Exception(msg.format(lineno, colno, ctx.error_msg))
+        err = StringIO()
+
+        lineno = ctx.line(ctx.pos) + 1
+        colno = ctx.col(ctx.pos) + 1
+        msg = "At line {} column {}:"
+        print(msg.format(lineno, colno, ctx.lines), file=err)
+        for parsers, msg in ctx.errors:
+            ps = "-> ".join([str(p) for p in parsers])
+            print("{}: Got {!r}. {}".format(ps, data[ctx.pos], msg), file=err)
+        err.seek(0)
+        raise Exception(err.read())
 
     def __repr__(self):
         return self.name or self.__class__.__name__
@@ -246,15 +261,18 @@ class Many(Parser):
                 results.append(res)
             except Exception:
                 break
-
         if len(results) < self.lower:
             child = self.children[0]
             msg = "Expected at least {} of {}.".format(self.lower, child)
-            ctx.error_pos = orig
-            ctx.error_msg = msg
+            ctx.set(orig, msg)
             raise Exception()
 
         return pos, results
+
+    def __repr__(self):
+        if not self.name:
+            return "Many({}, lower={})".format(self.children[0], self.lower)
+        return super(Many, self).__repr__()
 
 
 class Until(Parser):
@@ -356,7 +374,9 @@ class Map(Parser):
         return pos, self.func(res)
 
     def __repr__(self):
-        return "Map({})".format(self.func)
+        if not self.name:
+            return "Map({}({}))".format(self.func.__name__, self.children[0])
+        return super(Map, self).__repr__()
 
 
 class Lift(Parser):
@@ -408,12 +428,12 @@ class Char(Parser):
     def process(self, pos, data, ctx):
         if data[pos] == self.char:
             return (pos + 1, self.char)
-        msg = "Expected {}.".format(self.char)
+        msg = "Expected {!r}.".format(self.char)
         ctx.set(pos, msg)
         raise Exception(msg)
 
     def __repr__(self):
-        return "Char('{}')".format(self.char)
+        return "Char({!r})".format(self.char)
 
 
 class InSet(Parser):
@@ -429,6 +449,11 @@ class InSet(Parser):
         msg = "Expected {}.".format(self)
         ctx.set(pos, msg)
         raise Exception(msg)
+
+    def __repr__(self):
+        if not self.name:
+            return "InSet({!r})".format(sorted(self.values))
+        return super(InSet, self).__repr__()
 
 
 class Literal(Parser):
@@ -447,7 +472,7 @@ class Literal(Parser):
                 if data[pos] == c:
                     pos += 1
                 else:
-                    msg = "Expected {}.".format(self.chars)
+                    msg = "Expected {!r}.".format(self.chars)
                     ctx.set(old, msg)
                     raise Exception(msg)
             return pos, (self.chars if self.value is self._NULL else self.value)
@@ -458,7 +483,7 @@ class Literal(Parser):
                     result.append(data[pos])
                     pos += 1
                 else:
-                    msg = "Expected case insensitive {}.".format(self.chars)
+                    msg = "Expected case insensitive {!r}.".format(self.chars)
                     ctx.set(old, msg)
                     raise Exception(msg)
             return pos, ("".join(result) if self.value is self._NULL else self.value)
@@ -486,7 +511,7 @@ class String(Parser):
                 break
             p = data[pos]
         if len(results) < self.min_length:
-            msg = "Expected {} of {}.".format(self.min_length, self.chars)
+            msg = "Expected {} of {}.".format(self.min_length, sorted(self.chars))
             ctx.set(old, msg)
             raise Exception(msg)
         return pos, "".join(results)
@@ -572,7 +597,7 @@ class EndTagName(Wrapper):
             e = expect.lower()
 
         if r != e:
-            msg = "Expected {}. Got {}.".format(expect, res)
+            msg = "Expected {!r}. Got {!r}.".format(expect, res)
             ctx.set(pos, msg)
             raise Exception(msg)
         return pos, res
