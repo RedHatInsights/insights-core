@@ -11,14 +11,14 @@ EXAMPLE_OK = """
    209
 (1 row)
 
-"""
+"""   # noqa: W291
 EXAMPLE_STRANGE = """
  count 
 -------
   hello
 (1 row)
 
-"""
+"""   # noqa: W291
 EXAMPLE_EMPTY = ""
 
 

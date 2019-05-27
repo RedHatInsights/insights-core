@@ -16,7 +16,7 @@ This module is supposed to consume this output:
 
 and provides `count` value.
 
-"""
+"""   # noqa: W291
 
 from insights import Parser, parser, get_active_lines
 from insights.parsers import ParseException, SkipException
