@@ -18,6 +18,9 @@ curl: (28) connect() timed out!
 AWS_TYPE_AB_4 = """
 .micro
 """.strip()
+AWS_TYPE_AB_5 = """
+No module named insights.tools
+""".strip()
 
 
 def test_aws_instance_type_ab_other():
@@ -33,6 +36,9 @@ def test_aws_instance_type_ab_other():
     with pytest.raises(ParseException) as pe:
         AWSInstanceType(context_wrap(AWS_TYPE_AB_4))
         assert 'Unrecognized type' in str(pe)
+
+    with pytest.raises(SkipException) as pe:
+        AWSInstanceType(context_wrap(AWS_TYPE_AB_5))
 
 
 def test_aws_instance_type_ab_empty():

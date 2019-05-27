@@ -49,6 +49,8 @@ class AWSInstanceType(CommandParser):
 
         if not self.type:
             raise ParseException('Unrecognized type: "{0}"', content[0])
+        elif len(self.type.split()) > 1:
+            raise SkipException()
 
     def __str__(self):
         return "<aws_type: {t}, raw: {r}>".format(t=self.type, r=self.raw)
