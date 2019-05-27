@@ -4,38 +4,39 @@ predicates in objects that have overloaded operators so they can be connected
 symbolically to express "and", "or", and "not". This is useful if you want to
 build up a complicated predicate and pass it to something else for evaluation.
 
-```python
-def is_even(n):
-    return (n % 2) == 0
+.. code-block:: python
 
-def is_positive(n):
-    return n > 0
+    def is_even(n):
+        return (n % 2) == 0
 
-even_and_positive = lift(is_even) & lift(is_positive)
+    def is_positive(n):
+        return n > 0
 
-even_and_positive(6) == True
-even_and_positive(-2) == False
-even_and_positive(3) == False
-```
+    even_and_positive = lift(is_even) & lift(is_positive)
+
+    even_and_positive(6) == True
+    even_and_positive(-2) == False
+    even_and_positive(3) == False
 
 You can also lift two parameter functions to which you want to partially apply
 an argument. The arguments partially applied will be those *after* the first
 argument. The first argument is the value the function should evaluate when
 it's fully applied.
 
-```python
-import operator
-lt = lift2(operator.lt)  # operator.lt is lt(a, b) == (a < b)
-gt = lift2(operator.gt)  # operator.gt is gt(a, b) == (a > b)
+.. code-block:: python
 
-gt_five = gt(5)  # creates a function of one argument that when called
-                 # returns operator.gt(x, 5)
+    import operator
+    lt = lift2(operator.lt)  # operator.lt is lt(a, b) == (a < b)
+    gt = lift2(operator.gt)  # operator.gt is gt(a, b) == (a > b)
 
-lt_ten = lt(10)  # creates a function of one argument that when called
-                 # returns operator.lt(x, 5)
+    gt_five = gt(5)  # creates a function of one argument that when called
+                     # returns operator.gt(x, 5)
 
-gt_five_and_lt_10 = gt(5) & lt(10)
-```
+    lt_ten = lt(10)  # creates a function of one argument that when called
+                     # returns operator.lt(x, 5)
+
+    gt_five_and_lt_10 = gt(5) & lt(10)
+
 """
 
 

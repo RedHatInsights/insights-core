@@ -14,10 +14,11 @@ made of keys with simple values (key/single attr), lists of simple values
 Something like XML allows duplicate keys, and it allows values to have named
 attributes and substructure. This module doesn't cover that case.
 
-`Entry` and `Result` have overloaded __getitem__ functions that respond to
-queries from the insights.parsr.query module. This allows their instances to be
-accessed like simple dictionaries, but the key passed to `[]` is converted to a
-query of immediate child instances instead of a simple lookup.
+:py:class:`Entry` and :py:class:`Result` have overloaded __getitem__ functions
+that respond to queries from the insights.parsr.query module. This allows their
+instances to be accessed like simple dictionaries, but the key passed to ``[]``
+is converted to a query of immediate child instances instead of a simple
+lookup.
 """
 import operator
 from functools import partial

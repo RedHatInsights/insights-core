@@ -297,7 +297,6 @@ val = n("15")  # returns the int 15
 Allows a multiple parameter function to work on parsers.
 ```python
 def comb(a, b, c):
-    """ a, b, and c should be strings. Returns their concatenation."""
     return "".join([a, b, c])
 
 # You'd normally invoke comb like comb("x", "y", "z"), but you can "lift" it for
