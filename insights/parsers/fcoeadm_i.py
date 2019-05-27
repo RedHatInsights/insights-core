@@ -88,7 +88,8 @@ class FcoeadmI(CommandParser, dict):
         stat_list (list): FCoE interface(s) status
 
     Raises:
-        ParseException: When input content is empty or there is no parsed data.
+        SkipException: When input content is empty
+        ParseException: When input content is not available to parse
     """
     def __init__(self, *args, **kwargs):
         super(FcoeadmI, self).__init__(*args, **kwargs)
@@ -155,10 +156,13 @@ class FcoeadmI(CommandParser, dict):
         Return:
             str: Return fcoe status. When nic is not valid fcoe port,
                  raise ValueError.
+
+        Raises:
+            ValueError: When nic is not valid fcoe port
         """
 
-        ret = None
-        self.__check_nic_valid__(nic)
+        ret = ''
+        self.__check_nic_valid(nic)
 
         for iface in self.fcoe['Interfaces']:
             if nic in iface['Symbolic Name']:
@@ -174,29 +178,21 @@ class FcoeadmI(CommandParser, dict):
 
         Return:
             str: Return fcoe host, which as 'OS Device Name' to display,
-                 when nic is not valid fcoe port, raise ValueError.
+                 when nic is not valid fcoe port, raise ValueError
+
+        Raises:
+            ValueError: When nic is not valid fcoe port
         """
 
-        ret = None
-        self.__check_nic_valid__(nic)
+        ret = ''
+        self.__check_nic_valid(nic)
 
         for iface in self.fcoe['Interfaces']:
             if nic in iface['Symbolic Name']:
                 ret = iface['OS Device Name']
         return ret
 
-    def __check_nic_valid__(self, nic):
-        """
-        Check whether the input nic is valid.
-
-        Parameter:
-            nic (str): Ethernet port which provided by FCoE adapter
-
-        Return:
-            bool: Return True if nic is valid port which is from FCoE adapter
-                  Otherwise False.
-        """
-
+    def __check_nic_valid(self, nic):
         BADNIC = "'%s' is NOT real FCoE port provided by HBA/CNA adapter" % nic
 
         if nic not in self.nic_list:
