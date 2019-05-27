@@ -38,7 +38,7 @@ def test_aws_instance_type_ab_other():
         AWSInstanceType(context_wrap(AWS_TYPE_AB_4))
         assert 'Unrecognized type' in str(pe)
 
-    with pytest.raises(Exception) as pe:
+    with pytest.raises(ContentException) as pe:
         AWSInstanceType(context_wrap(AWS_TYPE_AB_5))
 
 
