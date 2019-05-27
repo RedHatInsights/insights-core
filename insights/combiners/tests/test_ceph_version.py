@@ -59,7 +59,6 @@ def test_ceph_insights():
 def test_ceph_version_doc_examples():
     env = {
         'cv': CephVersion(CephV(context_wrap(CEPH_VERSION)), None)
-
     }
     failed, total = doctest.testmod(ceph_version, globs=env)
     assert failed == 0
