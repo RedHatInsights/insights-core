@@ -4,6 +4,7 @@ from insights.parsers import aws_instance_type
 from insights.parsers.aws_instance_type import AWSInstanceType
 from insights.tests import context_wrap
 from insights.parsers import SkipException, ParseException
+from insights.core.plugins import ContentException
 
 AWS_TYPE = "r3.xlarge"
 AWS_TYPE_AB_1 = """
@@ -37,7 +38,7 @@ def test_aws_instance_type_ab_other():
         AWSInstanceType(context_wrap(AWS_TYPE_AB_4))
         assert 'Unrecognized type' in str(pe)
 
-    with pytest.raises(SkipException) as pe:
+    with pytest.raises(Exception) as pe:
         AWSInstanceType(context_wrap(AWS_TYPE_AB_5))
 
 
