@@ -1,6 +1,6 @@
 """
-This module allows parsers to construct data with a common representation that
-is compatible with insights.parsr.query.
+insights.parsr.query defined a common data model and query language for parsers
+created with ``insights.parsr`` to target.
 
 The model allows duplicate keys, and it allows values with *unnamed* attributes
 and recursive substructure. This is a common model for many kinds of
@@ -14,11 +14,11 @@ made of keys with simple values (key/single attr), lists of simple values
 Something like XML allows duplicate keys, and it allows values to have named
 attributes and substructure. This module doesn't cover that case.
 
-:py:class:`Entry` and :py:class:`Result` have overloaded __getitem__ functions
-that respond to queries from the insights.parsr.query module. This allows their
-instances to be accessed like simple dictionaries, but the key passed to ``[]``
-is converted to a query of immediate child instances instead of a simple
-lookup.
+:py:class:`Entry`, :py:class:`Directive`, :py:class:`Section`, and
+:py:class:`Result` have overloaded ``__getitem__`` functions that respond to
+queries. This allows their instances to be accessed like simple dictionaries,
+but the key passed to ``[]`` is converted to a query of immediate child
+instances instead of a simple lookup.
 """
 import operator
 from functools import partial
@@ -27,6 +27,10 @@ from insights.parsr.query.boolean import All, Any, Boolean, lift, lift2, TRUE
 
 
 def pretty_format(root, indent=4):
+    """
+    pretty_format generates a text representation of a model as a list of
+    lines.
+    """
     results = []
 
     def sep():
@@ -53,6 +57,10 @@ def pretty_format(root, indent=4):
 
 
 class Entry(object):
+    """
+    Entry is the base class for the data model, which is a tree of Entry
+    instances. Each instance has a name, attributes, a parent, and children.
+    """
     def __init__(self, name=None, attrs=None, children=None, lineno=None, src=None):
         self.name = name
         self.attrs = attrs or []
@@ -68,22 +76,36 @@ class Entry(object):
 
     @property
     def line(self):
+        """
+        Returns the original first line of text that generated the ``Entry``.
+        """
         if self.src is not None:
             return self.src.content[self.lineno - 1]
 
     @property
     def string_value(self):
+        """
+        Returns the string representation of all attributes separated by a
+        single whilespace.
+        """
         t = " ".join(["%s"] * len(self.attrs))
         return t % tuple(self.attrs)
 
     @property
     def value(self):
+        """
+        Returns ``None`` if no attributes exist, the first attribute if only
+        one exists, or the ``string_value`` if more than one exists.
+        """
         if len(self.attrs) == 1:
             return self.attrs[0]
         return self.string_value if len(self.attrs) > 1 else None
 
     @property
     def root(self):
+        """
+        Returns the furthest ancestor ``Entry``.
+        """
         p = self
         while p.parent is not None and p.parent.parent is not None:
             p = p.parent
@@ -91,6 +113,9 @@ class Entry(object):
 
     @property
     def grandchildren(self):
+        """
+        Returns a flattened list of all grandchildren.
+        """
         return list(chain.from_iterable(c.children for c in self.children))
 
     def select(self, *queries, **kwargs):
@@ -99,7 +124,7 @@ class Entry(object):
 
     def find(self, *queries, **kwargs):
         """
-        Finds matching results anywhere in the configuration
+        Finds matching results anywhere in the configuration.
         """
         roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
@@ -114,10 +139,18 @@ class Entry(object):
 
     @property
     def sections(self):
+        """
+        Returns all immediate children that are instances of
+        :py:class:`Section`.
+        """
         return Result(children=[c for c in self.doc.children if isinstance(c, Section)])
 
     @property
     def directives(self):
+        """
+        Returns all immediate children that are instances of
+        :py:class:`Directive`.
+        """
         return Result(children=[c for c in self.doc.children if isinstance(c, Directive)])
 
     def __contains__(self, key):
@@ -129,7 +162,7 @@ class Entry(object):
     def __getitem__(self, query):
         if isinstance(query, (int, slice)):
             return self.children[query]
-        query = desugar(query)
+        query = _desugar(query)
         return Result(children=[c for c in self.children if query.test(c)])
 
     def __bool__(self):
@@ -142,16 +175,30 @@ class Entry(object):
 
 
 class Section(Entry):
+    """
+    A Section is an ``Entry`` composed of other Sections and
+    :py:class:`Directive`s.
+    """
     @property
     def section(self):
+        """
+        Returns the name of the section.
+        """
         return self.name
 
     @property
     def section_name(self):
+        """
+        Returns the value of the section.
+        """
         return self.value
 
 
 class Directive(Entry):
+    """
+    A Directive is an ``Entry`` that represents a single option or named value.
+    They are normally found in :py:class:`Section`s.
+    """
     @property
     def section(self):
         if self.parent:
@@ -164,18 +211,31 @@ class Directive(Entry):
 
 
 class Result(Entry):
+    """
+    Result is an Entry whose children are the results of a query.
+    """
     def __init__(self, children=None):
         super(Result, self).__init__()
         self.children = children or []
 
     @property
     def string_value(self):
+        """
+        Returns the string value of the child if only one child exists. This
+        helps queries behave more like dictionaries when you know only one
+        result should exist.
+        """
         if len(self.children) == 1:
             return self.children[0].string_value
         raise Exception("More than one value to return.")
 
     @property
     def value(self):
+        """
+        Returns the value of the child if only one child exists. This helps
+        queries behave more like dictionaries when you know only one result
+        should exist.
+        """
         if len(self.children) == 1:
             return self.children[0].value
         raise Exception("More than one value to return.")
@@ -187,11 +247,148 @@ class Result(Entry):
     def __getitem__(self, query):
         if isinstance(query, (int, slice)):
             return self.children[query]
-        query = desugar(query)
+        query = _desugar(query)
         return Result(children=[c for c in self.grandchildren if query.test(c)])
 
 
+class _EntryQuery(object):
+    """
+    _EntryQuery is the base class of all other query classes.
+    """
+    def __init__(self, expr):
+        self.expr = expr
+
+    def test(self, node):
+        return self.expr.test(node)
+
+
+class NameQuery(_EntryQuery):
+    def test(self, node):
+        return self.expr.test(node.name)
+
+
+class AttrQuery(_EntryQuery):
+    pass
+
+
+class _AllAttrQuery(AttrQuery):
+    def test(self, n):
+        return all(self.expr.test(a) for a in n.attrs)
+
+
+class _AnyAttrQuery(AttrQuery):
+    def test(self, n):
+        return any(self.expr.test(a) for a in n.attrs)
+
+
+def any_(*exprs):
+    return _AnyAttrQuery(Any(*[_desugar_attr(e) for e in exprs]))
+
+
+def all_(*exprs):
+    return _AllAttrQuery(All(*[_desugar_attr(e) for e in exprs]))
+
+
+def _desugar_name(q):
+    if q is None:
+        return NameQuery(TRUE)
+    if isinstance(q, NameQuery):
+        return q
+    if isinstance(q, Boolean):
+        return NameQuery(q)
+    if callable(q):
+        return NameQuery(lift(q))
+    return NameQuery(lift(partial(operator.eq, q)))
+
+
+def _desugar_attr(q):
+    if isinstance(q, Boolean):
+        return q
+    if callable(q):
+        return lift(q)
+    return lift(partial(operator.eq, q))
+
+
+def _desugar_attrs(q):
+    if not q:
+        return
+    if len(q) == 1:
+        q = q[0]
+        return q if isinstance(q, AttrQuery) else _AnyAttrQuery(_desugar_attr(q))
+    else:
+        attr_queries = [_desugar_attr(a) for a in q[1:]]
+        return _AnyAttrQuery(Any(*attr_queries))
+
+
+def _desugar(q):
+    if isinstance(q, tuple):
+        q = list(q)
+        name_query = _desugar_name(q[0])
+        attrs_query = _desugar_attrs(q[1:])
+        if attrs_query:
+            return All(name_query, attrs_query)
+        return name_query
+    return _desugar_name(q)
+
+
+def _flatten(nodes):
+    def inner(n):
+        res = [n]
+        res.extend(chain.from_iterable(inner(c) for c in n.children))
+        return res
+    return list(chain.from_iterable(inner(n) for n in nodes))
+
+
+def compile_queries(*queries):
+    """
+    compile_queries returns a function that will execute a list of query
+    expressions against an :py:class:`Entry`. The first query is run against
+    the current node's children, the second query is run against the children
+    of the children remaining from the first query, and so on.
+    """
+    def match(qs, nodes):
+        q = _desugar(qs[0])
+        res = [n for n in nodes if q.test(n)]
+        qs = qs[1:]
+        if qs:
+            gc = list(chain.from_iterable(n.children for n in res))
+            return match(qs, gc)
+        return res
+
+    def inner(nodes):
+        return Result(children=match(queries, nodes))
+    return inner
+
+
+def select(query, nodes, deep=False, roots=False):
+    """
+    select runs query, a function returned by :py:func:`compile_queries`,
+    against a list of :py:class:`Entry` instances. If you pass ``deep=True``,
+    select recursively walks each entry in the list and accumulates the
+    results of running the query against it. If you pass ``roots=True``,
+    select returns the deduplicated set of final ancestors of all successful
+    queries. Otherwise, it returns the matching entries.
+    """
+    results = query(_flatten(nodes)) if deep else query(nodes)
+
+    if not roots:
+        return Result(children=results)
+
+    seen = set()
+    top = []
+    for r in results:
+        root = r.root
+        if root not in seen:
+            seen.add(root)
+            top.append(root)
+    return Result(children=top)
+
+
 def from_dict(orig):
+    """
+    from_dict is a helper function that does its best to convert a python dict
+    into a tree of :py:class:`Entry` instances that can be queried.
+    """
     def inner(d):
         result = []
         for k, v in d.items():
@@ -210,122 +407,6 @@ def from_dict(orig):
                 result.append(Entry(name=k, attrs=[v]))
         return result
     return Entry(children=inner(orig))
-
-
-class EntryQuery(object):
-    def __init__(self, expr):
-        self.expr = expr
-
-    def test(self, node):
-        return self.expr.test(node)
-
-
-class NameQuery(EntryQuery):
-    def test(self, node):
-        return self.expr.test(node.name)
-
-
-class AttrQuery(EntryQuery):
-    pass
-
-
-class AllAttrQuery(AttrQuery):
-    def test(self, n):
-        return all(self.expr.test(a) for a in n.attrs)
-
-
-class AnyAttrQuery(AttrQuery):
-    def test(self, n):
-        return any(self.expr.test(a) for a in n.attrs)
-
-
-def any_(*exprs):
-    return AnyAttrQuery(Any(*[desugar_attr(e) for e in exprs]))
-
-
-def all_(*exprs):
-    return AllAttrQuery(All(*[desugar_attr(e) for e in exprs]))
-
-
-def desugar_name(q):
-    if q is None:
-        return NameQuery(TRUE)
-    if isinstance(q, NameQuery):
-        return q
-    if isinstance(q, Boolean):
-        return NameQuery(q)
-    if callable(q):
-        return NameQuery(lift(q))
-    return NameQuery(lift(partial(operator.eq, q)))
-
-
-def desugar_attr(q):
-    if isinstance(q, Boolean):
-        return q
-    if callable(q):
-        return lift(q)
-    return lift(partial(operator.eq, q))
-
-
-def desugar_attrs(q):
-    if not q:
-        return
-    if len(q) == 1:
-        q = q[0]
-        return q if isinstance(q, AttrQuery) else AnyAttrQuery(desugar_attr(q))
-    else:
-        attr_queries = [desugar_attr(a) for a in q[1:]]
-        return AnyAttrQuery(Any(*attr_queries))
-
-
-def desugar(q):
-    if isinstance(q, tuple):
-        q = list(q)
-        name_query = desugar_name(q[0])
-        attrs_query = desugar_attrs(q[1:])
-        if attrs_query:
-            return All(name_query, attrs_query)
-        return name_query
-    return desugar_name(q)
-
-
-def flatten(nodes):
-    def inner(n):
-        res = [n]
-        res.extend(chain.from_iterable(inner(c) for c in n.children))
-        return res
-    return list(chain.from_iterable(inner(n) for n in nodes))
-
-
-def compile_queries(*queries):
-    def match(qs, nodes):
-        q = desugar(qs[0])
-        res = [n for n in nodes if q.test(n)]
-        qs = qs[1:]
-        if qs:
-            gc = list(chain.from_iterable(n.children for n in res))
-            return match(qs, gc)
-        return res
-
-    def inner(nodes):
-        return Result(children=match(queries, nodes))
-    return inner
-
-
-def select(query, nodes, deep=False, roots=False):
-    results = query(flatten(nodes)) if deep else query(nodes)
-
-    if not roots:
-        return Result(children=results)
-
-    seen = set()
-    top = []
-    for r in results:
-        root = r.root
-        if root not in seen:
-            seen.add(root)
-            top.append(root)
-    return Result(children=top)
 
 
 lt = lift2(operator.lt)
