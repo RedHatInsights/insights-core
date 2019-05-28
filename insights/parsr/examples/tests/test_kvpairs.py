@@ -1,4 +1,4 @@
-from parsr.examples.kvpairs import loads
+from insights.parsr.examples.kvpairs import loads
 
 DATA = """
 # this is a config file

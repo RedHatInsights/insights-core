@@ -1,8 +1,8 @@
 import string
-from parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, LT, Letters,
-                   Lift, LineEnd, Many, Number, OneLineComment, PosMarker,
-                   QuotedString, skip_none, StartTagName, String, WS, WSChar)
-from parsr.query import Directive, Entry, Section
+from insights.parsr import (Char, EOF, EOL, EndTagName, Forward, FS, GT, LT,
+        Letters, Lift, LineEnd, Many, Number, OneLineComment, PosMarker,
+        QuotedString, skip_none, StartTagName, String, WS, WSChar)
+from insights.parsr.query import Directive, Entry, Section
 
 
 def loads(data):

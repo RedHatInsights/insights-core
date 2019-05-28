@@ -3,10 +3,10 @@ multipath_conf parses multipath.conf configuration files into nested
 dictionaries.
 """
 import string
-from parsr import (EOF, Forward, LeftCurly, Lift, Literal, LineEnd, RightCurly,
-                   Many, Number, OneLineComment, PosMarker, skip_none, String,
-                   QuotedString, WS, WSChar)
-from parsr.query import Entry
+from insights.parsr import (EOF, Forward, LeftCurly, Lift, Literal, LineEnd,
+        RightCurly, Many, Number, OneLineComment, PosMarker, skip_none, String,
+        QuotedString, WS, WSChar)
+from insights.parsr.query import Entry
 
 
 def loads(data):

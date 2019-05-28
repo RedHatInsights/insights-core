@@ -1,4 +1,4 @@
-from parsr.examples.nginx_conf import loads
+from insights.parsr.examples.nginx_conf import loads
 
 
 NGINX_CONF = r"""

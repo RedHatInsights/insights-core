@@ -1,5 +1,5 @@
-from parsr.examples.httpd_conf import loads
-from parsr.query import ieq
+from insights.parsr.examples.httpd_conf import loads
+from insights.parsr.query import ieq
 
 
 DATA = r"""

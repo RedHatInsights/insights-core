@@ -1,4 +1,4 @@
-from parsr.examples.multipath_conf import loads
+from insights.parsr.examples.multipath_conf import loads
 
 
 EXAMPLE = """

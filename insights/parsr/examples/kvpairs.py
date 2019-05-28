@@ -9,9 +9,9 @@ It returns a dictionary. The last definition for a given key sets its value.
 import operator
 import string
 from functools import reduce
-from parsr import (EOF, EOL, InSet, LineEnd, Many, Number, OneLineComment, Opt,
-                   PosMarker, skip_none, String, WS, WSChar)
-from parsr.query import Entry
+from insights.parsr import (EOF, EOL, InSet, LineEnd, Many, Number,
+        OneLineComment, Opt, PosMarker, skip_none, String, WS, WSChar)
+from insights.parsr.query import Entry
 
 
 def loads(s, sep_chars="=:", comment_chars="#;"):

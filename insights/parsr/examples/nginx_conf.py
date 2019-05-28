@@ -1,8 +1,8 @@
 import string
-from parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, RightCurly, Many,
-                   Number, OneLineComment, PosMarker, SemiColon,
-                   SingleQuotedString, skip_none, String, WS, WSChar)
-from parsr.query import Entry
+from insights.parsr import (EOF, Forward, LeftCurly, Lift, LineEnd, RightCurly,
+        Many, Number, OneLineComment, PosMarker, SemiColon, SingleQuotedString,
+        skip_none, String, WS, WSChar)
+from insights.parsr.query import Entry
 
 
 def loads(data):

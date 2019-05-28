@@ -44,7 +44,7 @@ expr = Forward() % "expr forward"
 
 
 # A factor is a simple number or a subexpression between parentheses
-factor = WS >> Number % "Number" | (LeftParen >> expr << RightParen) << WS
+factor = WS >> (Number % "Number" | (LeftParen >> expr << RightParen)) << WS
 
 # A term handles strings of multiplication and division. As written, it would
 # convert "1 + 2 - 3 + 4" into [1, [['+', 2], ['-', 3], ['+', 4]]]. The first
