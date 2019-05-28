@@ -65,7 +65,7 @@ class SosSpecs(Specs):
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
     ls_dev = first_file(["sos_commands/block/ls_-lanR_.dev", "sos_commands/devicemapper/ls_-lanR_.dev"])
-    lvs = simple_file("sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0")
+    lvs = first_file(["sos_commands/lvm2/lvs_-a_-o_lv_tags_devices_--config_global_locking_type_0", "sos_commands/lvm2/lvs_-a_-o_devices"])
     mount = simple_file("sos_commands/filesys/mount_-l")
     multipath__v4__ll = first_file(["sos_commands/multipath/multipath_-v4_-ll", "sos_commands/devicemapper/multipath_-v4_-ll"])
     netstat = first_file(["sos_commands/networking/netstat_-neopa", "sos_commands/networking/netstat_-W_-neopa", "sos_commands/networking/netstat_-T_-neopa"])
@@ -80,7 +80,7 @@ class SosSpecs(Specs):
     ps_auxcww = first_file(["sos_commands/process/ps_auxcww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux"])
     ps_auxww = first_file(["sos_commands/process/ps_auxww", "sos_commands/process/ps_auxwww", "sos_commands/process/ps_aux", "sos_commands/process/ps_auxcww"])
     puppet_ssl_cert_ca_pem = simple_file("sos_commands/foreman/foreman-debug/var/lib/puppet/ssl/certs/ca.pem")
-    pvs = simple_file("sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0")
+    pvs = first_file(["sos_commands/lvm2/pvs_-a_-v_-o_pv_mda_free_pv_mda_size_pv_mda_count_pv_mda_used_count_pe_start_--config_global_locking_type_0", "sos_commands/lvm2/pvs_-a_-v"])
     qpid_stat_q = first_of([
         simple_file("qpid_stat_queues"),
         simple_file("qpid-stat-q"),
@@ -115,7 +115,7 @@ class SosSpecs(Specs):
     uptime = first_of([simple_file("sos_commands/general/uptime"), simple_file("sos_commands/host/uptime")])
     var_qemu_xml = glob_file(r"var/run/libvirt/qemu/*.xml")
     vdsm_import_log = glob_file("var/log/vdsm/import/import-*.log")
-    vgdisplay = simple_file("vgdisplay")
-    vgs = simple_file("sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0")
+    vgdisplay = first_file(["sos_commands/lvm2/vgdisplay_-vv_--config_global_locking_type_0", "sos_commands/lvm2/vgdisplay_-vv"])
+    vgs = first_file(["sos_commands/lvm2/vgs_-v_-o_vg_mda_count_vg_mda_free_vg_mda_size_vg_mda_used_count_vg_tags_--config_global_locking_type_0", "sos_commands/lvm2/vgs_-v"])
     xfs_info = glob_file("sos_commands/xfs/xfs_info*")
     yum_repolist = simple_file("sos_commands/yum/yum_-C_repolist")
