@@ -8,10 +8,7 @@ backtracking. Fancy tricks like rewriting left recursions and optimizations like
 [packrat](https://pdos.csail.mit.edu/~baford/packrat/thesis/thesis.pdf) are not
 implemented since the goal is a library that's small yet sufficient for parsing
 non-standard configuration files. It also includes a generic data model that
-parsers can target to take advantage of an embedded query system.
-
-[insights.parsr.query](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/query)
-contains the common data model and query system.
+parsers can target to take advantage of an [embedded query system](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/query).
 
 ## Install
 1. Ensure python3.6 or python3.7 is installed.

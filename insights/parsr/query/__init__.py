@@ -288,6 +288,9 @@ class AttrQuery(_EntryQuery):
     def __or__(self, other):
         return _OrAttrQuery(self, other)
 
+    def __invert__(self):
+        return _NotAttrQuery(self)
+
 
 class _AndAttrQuery(AttrQuery):
     def __init__(self, *exprs):
@@ -311,6 +314,14 @@ class _OrAttrQuery(AttrQuery):
     def __or__(self, other):
         self.exprs.append(other)
         return self
+
+
+class _NotAttrQuery(AttrQuery):
+    def __init__(self, query):
+        self.query = query
+
+    def test(self, n):
+        return not self.query.test(n)
 
 
 class _AllAttrQuery(AttrQuery):

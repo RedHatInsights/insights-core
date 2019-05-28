@@ -4,7 +4,8 @@ representation that can be queried with a single system.
 
 `Entry` is the class that represents a configuration entry. It has a `name`, any
 number of unnamed `attrs`, and any number of `children`. The
-[httpd configuration parser](https://github.com/csams/parsr/blob/master/parsr/examples/httpd_conf.py)
+[httpd configuration
+parser](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/httpd_conf.py)
 is an example of how to construct a model using it.
 
 ## Queries
@@ -43,7 +44,8 @@ dirs = conf["Directory", "/"]
 
 The value in the first position matches against the name. Values after that
 require any attribute of an entry matching the name query to be equal to them.
-If multiple values come after the name, any attribute must match any of them.
+If multiple values come after the name, any attribute must exactly match any of
+them.
 
 This example will get all entries at the top level with a name that starts with
 "Dir" and an attribute that starts with "/var/www". It shows that queries are
@@ -151,7 +153,7 @@ the root entries that contain the matches, pass `roots=True` to `find`.
 
 ## Lifting
 To create your own predicates that can be combined using the connectors above,
-   use the `lift` and `lift2` functions from `parsr.query`.
+use the `lift` and `lift2` functions from `parsr.query`.
 
 `lift` is for predicates that take a single value, which will be either an entry
 name or an entry attribute. `lift2` is for functions that need to be
@@ -174,7 +176,7 @@ greater_than = lift2(greater_than)
 # get substitued as the *second* parameter when it's actually applied during the
 # evalutation. For example, greater_than(2) binds 2 to the parameter `b` in
 # `is_greater_than`. When the attribute gets passed to `greater_than` during the
-# evaluation, the its value will bind to `a`.
+# evaluation, then its value will bind to `a`.
 
 result = conf["server"]["port", even & greater_than(1024)]
 ```
@@ -183,18 +185,15 @@ result = conf["server"]["port", even & greater_than(1024)]
 string values to be converted to lower case before comparison.
 
 ## all_ and any_
-If you need all attributes to match all of a set of queries, use `all_`. If you
-need any attribute to match any of a set of queries, use `any_`. If you use
-`any_` or `all_`, it must be the only query in the attribute position of the
-search. A search with multiple queries in the attribute positions is considered
-to be an `any_` query.
+If you need all attributes to match a query, use `all_`. If you need any
+attribute to match a query, use `any_`. If you use `any_` or `all_`, it must be
+the only query in the attribute position of the search. A search with multiple
+queries in the attribute positions succeeds if any of the queries succeed. You
+also can connect `any_` and `all_` with `&` and `|` or negate them with `~`.
 ```python
 # all attributes must be even and greater than 15.
-conf["foo", all_(even, gt(15))]
+conf["foo", all_(even & gt(15))]
 
 # any attribute must be even or greater than 15
-conf["bar", any_(even, gt(15))]
-
-# same as the use of any_ above
-conf["bar", even, gt(15)]
+conf["bar", any_(even | gt(15))]
 ```
