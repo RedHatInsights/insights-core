@@ -207,7 +207,7 @@ def post_update(client, config):
     # put this first to avoid conflicts with register
     if config.unregister:
         if reg_check:
-            logger.info('Unregistering this host with Insights.')
+            logger.info('Unregistering this host from Insights.')
             if client.unregister():
                 get_scheduler(config).remove_scheduling()
                 sys.exit(constants.sig_kill_ok)

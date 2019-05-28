@@ -689,11 +689,12 @@ class InsightsConnection(object):
             logger.debug("Unregistering %s", msg_name)
             url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
             net_logger.info("DELETE %s", url)
-            self.session.delete(url)
+            response = self.session.delete(url)
+            response.raise_for_status()
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
-        except (requests.ConnectionError, requests.Timeout) as e:
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
             logger.debug(e)
             logger.error("Could not unregister this system")
             return False
