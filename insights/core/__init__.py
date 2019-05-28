@@ -516,12 +516,12 @@ class CommandParser(Parser):
     __bad_lines = [
             "no such file or directory",
             "command not found",
-            "python: No module named",
+            "no module named",
     ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
-    When adding a new lin to the list make sure text is all lower case.
+    When adding a new line to the list make sure text is all lower case.
     """
 
     @staticmethod
