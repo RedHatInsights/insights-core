@@ -26,7 +26,7 @@ def test_complex():
     q = compile_queries(("child", all_(lt(3))))
     assert len(q(t.children)) == 1
 
-    q = compile_queries(("child", any_(1, 2)))
+    q = compile_queries(("child", any_(1)))
     assert len(q(t.children)) == 3
 
     q = compile_queries("dog", "puppy")

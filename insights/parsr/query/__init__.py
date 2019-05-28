@@ -150,7 +150,7 @@ class Entry(object):
         Returns all immediate children that are instances of
         :py:class:`Section`.
         """
-        return Result(children=[c for c in self.doc.children if isinstance(c, Section)])
+        return Result(children=[c for c in self.children if isinstance(c, Section)])
 
     @property
     def directives(self):
@@ -158,7 +158,7 @@ class Entry(object):
         Returns all immediate children that are instances of
         :py:class:`Directive`.
         """
-        return Result(children=[c for c in self.doc.children if isinstance(c, Directive)])
+        return Result(children=[c for c in self.children if isinstance(c, Directive)])
 
     def __contains__(self, key):
         return len(self[key]) > 0
@@ -263,6 +263,7 @@ class _EntryQuery(object):
     _EntryQuery is the base class of all other query classes.
     """
     def __init__(self, expr):
+        super(_EntryQuery, self).__init__()
         self.expr = expr
 
     def test(self, node):
@@ -281,7 +282,35 @@ class AttrQuery(_EntryQuery):
     """
     A query against an attribute of an :py:class:`Entry`.
     """
-    pass
+    def __and__(self, other):
+        return _AndAttrQuery(self, other)
+
+    def __or__(self, other):
+        return _OrAttrQuery(self, other)
+
+
+class _AndAttrQuery(AttrQuery):
+    def __init__(self, *exprs):
+        self.exprs = list(exprs)
+
+    def test(self, n):
+        return all(expr.test(n) for expr in self.exprs)
+
+    def __and__(self, other):
+        self.exprs.append(other)
+        return self
+
+
+class _OrAttrQuery(AttrQuery):
+    def __init__(self, *exprs):
+        self.exprs = list(exprs)
+
+    def test(self, n):
+        return any(expr.test(n) for expr in self.exprs)
+
+    def __or__(self, other):
+        self.exprs.append(other)
+        return self
 
 
 class _AllAttrQuery(AttrQuery):
@@ -294,20 +323,20 @@ class _AnyAttrQuery(AttrQuery):
         return any(self.expr.test(a) for a in n.attrs)
 
 
-def any_(*exprs):
+def any_(expr):
     """
-    Use to express that *any* of the ``exprs`` can succeed for the query to
-    be successful. Only works against :py:class:`Entry` attributes.
+    Use to express that ``expr`` can succeed on any attribute for the query to be
+    successful. Only works against :py:class:`Entry` attributes.
     """
-    return _AnyAttrQuery(Any(*[_desugar_attr(e) for e in exprs]))
+    return _AnyAttrQuery(_desugar_attr(expr))
 
 
-def all_(*exprs):
+def all_(expr):
     """
-    Use to express that *all* of the ``exprs`` must succeed for the query to
-    be successful. Only works against :py:class:`Entry` attributes.
+    Use to express that ``expr`` must succeed on all attributes for the query
+    to be successful. Only works against :py:class:`Entry` attributes.
     """
-    return _AllAttrQuery(All(*[_desugar_attr(e) for e in exprs]))
+    return _AllAttrQuery(_desugar_attr(expr))
 
 
 def _desugar_name(q):
@@ -337,7 +366,7 @@ def _desugar_attrs(q):
         q = q[0]
         return q if isinstance(q, AttrQuery) else _AnyAttrQuery(_desugar_attr(q))
     else:
-        attr_queries = [_desugar_attr(a) for a in q[1:]]
+        attr_queries = [_desugar_attr(a) for a in q]
         return _AnyAttrQuery(Any(*attr_queries))
 
 

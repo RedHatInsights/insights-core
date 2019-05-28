@@ -47,9 +47,9 @@ def test_complex():
     assert len(t["child"]) == 3
     assert len(t["child", 3]) == 2
     assert len(t["child", all_(lt(3))]) == 1
-    assert len(t["child", any_(1, 2)]) == 3
+    assert len(t["child", any_(1)]) == 3
     assert len(t["child", any_(9)]) == 1
-    assert len(t["child", any_(2, 5)]) == 3
+    assert len(t["child", any_(2)]) == 2
     assert len(t["dog"]["puppy"]) == 2
     assert len(t[startswith("chi") & endswith("ld")]) == 3
     assert len(t[startswith("chi") | startswith("do")]) == 4
