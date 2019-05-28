@@ -1,6 +1,7 @@
 # parsr
-parsr is a little library for parsing simple, mostly context free grammars that
-might require knowledge of indentation or matching tags.
+parsr is a library for parsing and interpreting [parsing expression grammars or
+PEGS](http://bford.info/pub/lang/peg.pdf) with extensions for grammars that
+require knowledge of indentation or matching tags.
 
 It contains a small set of combinators that perform recursive decent with
 backtracking. Fancy tricks like rewriting left recursions and optimizations like
@@ -19,15 +20,15 @@ contains the common data model and query system.
 4. `pip install parsr`
 
 ## Examples
-* [Arithmetic](https://github.com/csams/parsr/blob/master/parsr/examples/arith.py)
-* [Generic Key/Value Pair configuration](https://github.com/csams/parsr/blob/master/parsr/examples/kvpairs.py)
-* [INI configuration](https://github.com/csams/parsr/blob/master/parsr/examples/iniparser.py) is an example of significant indentation.
-* [json](https://github.com/csams/parsr/blob/master/parsr/examples/json_parser.py)
-* [httpd configuration](https://github.com/csams/parsr/blob/master/parsr/examples/httpd_conf.py) is an example of matching starting and ending tags.
-* [nginx configuration](https://github.com/csams/parsr/blob/master/parsr/examples/nginx_conf.py)
-* [corosync configuration](https://github.com/csams/parsr/blob/master/parsr/examples/corosync_conf.py)
-* [multipath configuration](https://github.com/csams/parsr/blob/master/parsr/examples/multipath_conf.py)
-* [logrotate configuration](https://github.com/csams/parsr/blob/master/parsr/examples/logrotate_conf.py)
+* [Arithmetic](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/arith.py)
+* [Generic Key/Value Pair configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/kvpairs.py)
+* [INI configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/iniparser.py) is an example of significant indentation.
+* [json](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/json_parser.py)
+* [httpd configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/httpd_conf.py) is an example of matching starting and ending tags.
+* [nginx configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/nginx_conf.py)
+* [corosync configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/corosync_conf.py)
+* [multipath configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/multipath_conf.py)
+* [logrotate configuration](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/examples/logrotate_conf.py)
 
 ## Primitives
 These are the building blocks for matching individual characters, sets of
@@ -328,7 +329,7 @@ expr <= (term + Many(LowOps + term)).map(op)
 ### Arithmetic
 Here's an arithmetic parser that ties several concepts together. A progression
 of this parser from a simple imperative style to what you see below is in the
-[repo](https://github.com/csams/parsr/blob/master/parsr/lesson).
+[original project repo](https://github.com/csams/parsr/blob/master/parsr/lesson).
 
 ```python
 from parsr import EOF, Forward, InSet, LeftParen, Many, Number, RightParen, WS
