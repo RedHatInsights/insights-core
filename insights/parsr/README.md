@@ -9,11 +9,8 @@ implemented since the goal is a library that's small yet sufficient for parsing
 non-standard configuration files. It also includes a generic data model that
 parsers can target to take advantage of an embedded query system.
 
-To see how a handwritten parser might evolve to something like this project,
-check out the [lesson](https://github.com/csams/parsr/blob/master/parsr/lesson).
-
-[parser.query](https://github.com/csams/parsr/blob/master/parsr/query) contains 
-the common data model and query system.
+[insights.parsr.query](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/query)
+contains the common data model and query system.
 
 ## Install
 1. Ensure python3.6 or python3.7 is installed.
@@ -113,7 +110,7 @@ val = Number("-12.4")  # returns -12.4
 
 parsr also provides SingleQuotedString, DoubleQuotedString, QuotedString, EOL,
 EOF, WS, AnyChar, and several other primitives. See the bottom of
-[parsr/\_\_init\_\_.py](https://github.com/csams/parsr/blob/master/parsr/__init__.py)
+[parsr/\_\_init\_\_.py](https://github.com/RedHatInsights/insights-core/blob/master/insights/parsr/__init__.py)
 
 ## Combinators
 There are several ways of combining primitives and their combinations.
