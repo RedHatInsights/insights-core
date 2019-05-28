@@ -1,5 +1,5 @@
 """
-insights.parsr.query defined a common data model and query language for parsers
+insights.parsr.query defines a common data model and query language for parsers
 created with ``insights.parsr`` to target.
 
 The model allows duplicate keys, and it allows values with *unnamed* attributes
@@ -119,12 +119,19 @@ class Entry(object):
         return list(chain.from_iterable(c.children for c in self.children))
 
     def select(self, *queries, **kwargs):
+        """
+        select uses :py:func:`compile_queries` to compile ``queries`` into a
+        query function and then passes the function, the current ``Entry``
+        instances children, and ``kwargs`` on to :py:func:`select`.
+        """
         query = compile_queries(*queries)
         return select(query, self.children, **kwargs)
 
     def find(self, *queries, **kwargs):
         """
-        Finds matching results anywhere in the configuration.
+        Finds matching results anywhere in the configuration. The arguments are
+        the same as those accepted by :py:func:`compile_queries`, and the
+        kwargs are the same as those accepted by :py:func:`select`.
         """
         roots = kwargs.get("roots", False)
         return self.select(*queries, deep=True, roots=roots)
@@ -177,7 +184,7 @@ class Entry(object):
 class Section(Entry):
     """
     A Section is an ``Entry`` composed of other Sections and
-    :py:class:`Directive`s.
+    :py:class:`Directive` instances.
     """
     @property
     def section(self):
@@ -197,7 +204,7 @@ class Section(Entry):
 class Directive(Entry):
     """
     A Directive is an ``Entry`` that represents a single option or named value.
-    They are normally found in :py:class:`Section`s.
+    They are normally found in :py:class:`Section` instances.
     """
     @property
     def section(self):
@@ -263,11 +270,17 @@ class _EntryQuery(object):
 
 
 class NameQuery(_EntryQuery):
+    """
+    A query against the name of an :py:class:`Entry`.
+    """
     def test(self, node):
         return self.expr.test(node.name)
 
 
 class AttrQuery(_EntryQuery):
+    """
+    A query against an attribute of an :py:class:`Entry`.
+    """
     pass
 
 
@@ -282,10 +295,18 @@ class _AnyAttrQuery(AttrQuery):
 
 
 def any_(*exprs):
+    """
+    Use to express that *any* of the ``exprs`` can succeed for the query to
+    be successful. Only works against :py:class:`Entry` attributes.
+    """
     return _AnyAttrQuery(Any(*[_desugar_attr(e) for e in exprs]))
 
 
 def all_(*exprs):
+    """
+    Use to express that *all* of the ``exprs`` must succeed for the query to
+    be successful. Only works against :py:class:`Entry` attributes.
+    """
     return _AllAttrQuery(All(*[_desugar_attr(e) for e in exprs]))
 
 
@@ -343,8 +364,14 @@ def compile_queries(*queries):
     """
     compile_queries returns a function that will execute a list of query
     expressions against an :py:class:`Entry`. The first query is run against
-    the current node's children, the second query is run against the children
+    the current entry's children, the second query is run against the children
     of the children remaining from the first query, and so on.
+
+    If a query is a single object, it matches against the name of an Entry. If
+    it's a tuple, the first element matches against the name, and subsequent
+    elements are tried against each individual attribute. The attribute results
+    are `or'd` together and that result is `anded` with the name query. Any
+    query that raises an exception is treated as ``False``.
     """
     def match(qs, nodes):
         q = _desugar(qs[0])
