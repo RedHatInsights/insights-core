@@ -233,13 +233,7 @@ def handle_unregistration(config, pconn):
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
 
-    check = get_registration_status(config, pconn)
-
-    if check:
-        unreg = pconn.unregister()
-    else:
-        unreg = True
-        logger.info('This system is already unregistered.')
+    unreg = pconn.unregister()
     if unreg:
         # only set if unreg was successful
         write_unregistered_file()

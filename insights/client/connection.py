@@ -693,7 +693,7 @@ class InsightsConnection(object):
             logger.info(
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
-        except requests.ConnectionError as e:
+        except (requests.ConnectionError, requests.Timeout) as e:
             logger.debug(e)
             logger.error("Could not unregister this system")
             return False
