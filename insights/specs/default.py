@@ -660,6 +660,7 @@ class DefaultSpecs(Specs):
                            ])
     nova_crontab = simple_command("/usr/bin/crontab -l -u nova")
     nova_crontab_container = simple_command("docker exec nova_api_cron /usr/bin/crontab -l -u nova")
+    nova_libvirt_ls_root = simple_command("docker exec nova_libvirt /bin/ls -lanR /root")
     nova_uid = simple_command("/usr/bin/id -u nova")
     nova_migration_uid = simple_command("/usr/bin/id -u nova_migration")
     nscd_conf = simple_file("/etc/nscd.conf")
