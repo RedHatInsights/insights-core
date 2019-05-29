@@ -174,6 +174,7 @@ class InsightsArchiveSpecs(Specs):
     netstat_s = simple_file("insights_commands/netstat_-s")
     nmcli_conn_show = simple_file("insights_commands/nmcli_conn_show")
     nmcli_dev_show = simple_file("insights_commands/nmcli_dev_show")
+    nova_compute_ls_var_lib_nova = simple_file("insights_commands/docker_exec_nova_compute_.bin.ls_-larn_.var.lib.nova")
     nova_crontab = simple_file("insights_commands/crontab_-l_-u_nova")
     nova_crontab_container = simple_file("insights_commands/docker_exec_nova_api_cron_.usr.bin.crontab_-l_-u_nova")
     nova_uid = simple_file("insights_commands/id_-u_nova")

@@ -372,6 +372,7 @@ class Specs(SpecSet):
     nmcli_dev_show_sos = RegistryPoint(multi_output=True)
     nova_api_log = RegistryPoint(filterable=True)
     nova_compute_log = RegistryPoint(filterable=True)
+    nova_compute_ls_var_lib_nova = RegistryPoint()
     nova_conf = RegistryPoint()
     nova_crontab = RegistryPoint()
     nova_crontab_container = RegistryPoint()
