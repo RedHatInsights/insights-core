@@ -1,6 +1,6 @@
 from insights.tests import context_wrap
-from insights.combiners.nmcli import AllNmcliDevShow
-from insights.combiners import nmcli
+from insights.combiners.nmcli_dev_show import AllNmcliDevShow
+from insights.combiners import nmcli_dev_show
 from insights.parsers.nmcli import NmcliDevShow
 import doctest
 
@@ -108,5 +108,5 @@ def test_doc_examples():
     env = {
             'allnmclidevshow': AllNmcliDevShow(NmcliDevShow(context_wrap(NMCLI_SHOW1)), None),
           }
-    failed, total = doctest.testmod(nmcli, globs=env)
+    failed, total = doctest.testmod(nmcli_dev_show, globs=env)
     assert failed == 0

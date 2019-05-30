@@ -9,7 +9,7 @@ Parsers provided by this module include:
 
 NmcliDevShow - command ``/usr/bin/nmcli dev show``
 --------------------------------------------------
-NmcliConnShow - command ''/usr/bin/nmcli conn show``
+NmcliConnShow - command ``/usr/bin/nmcli conn show``
 ----------------------------------------------------
 """
 
@@ -24,8 +24,9 @@ from insights.parsers import parse_delimited_table, SkipException
 class NmcliDevShow(CommandParser, dict):
     """
     .. warning::
-        This parser is basic method, please use
-        :py:class:`insights.combiners.nmcli.AllNmcliDevShow` instead.
+        This parser may be for a single device, please use
+        :py:class:`insights.combiners.nmcli.AllNmcliDevShow` instead for all the
+        devices.
 
     This class will parse the output of command ``nmcli dev show``, and the information
     will be stored in dictionary format.
@@ -33,8 +34,8 @@ class NmcliDevShow(CommandParser, dict):
     NetworkManager displays all the devices and their current states along with network
     configuration and connection status.
 
-    This parser works like a python dictionary, all parsed data can be fetched
-    with the ``dict`` interfaces.
+    This parser works like a python dictionary, all parsed data can be accessed
+    via the ``dict`` interfaces.
 
     Attributes:
         connected_devices(list): list of devices who's state is connected.
@@ -140,13 +141,16 @@ class NmcliDevShow(CommandParser, dict):
 class NmcliDevShowSos(NmcliDevShow):
     """
     .. warning::
-        Please use the :py:class:`insights.combiners.nmcli.AllNmcliDevShow`
-        instead.
+        This parser may be for a single device, please use
+        :py:class:`insights.combiners.nmcli.AllNmcliDevShow` instead for all the
+        devices.
 
-    In sosreport, the ``nmcli dev show``command might be separated into
-    different individual files for different devices. And the base class
-    :py:class:`NmcliDevShow` could handle it too, except that the parsing
-    result of each devices is stored into a list.
+    In some versions of sosreport, the ``nmcli dev show`` command is separated
+    to individual files for different devices. While in some versions, it's
+    still a whole file.  The base class :py:class:`NmcliDevShow` could handle
+    both of them, except that the parsing results is stored into a list for
+    separated files.
+
     """
     pass
 
