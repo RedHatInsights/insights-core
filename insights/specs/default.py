@@ -811,7 +811,6 @@ class DefaultSpecs(Specs):
     subscription_manager_id = simple_command("/usr/bin/subscription-manager identity")
     subscription_manager_list_consumed = simple_command('/usr/bin/subscription-manager list --consumed')
     subscription_manager_release_show = simple_command('/usr/bin/subscription-manager release --show')
-    subscription_manager_repos_list_enabled = simple_command('/usr/bin/subscription-manager repos --list-enabled')
     swift_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/swift.conf", "/etc/swift/swift.conf"])
     swift_log = first_file(["/var/log/containers/swift/swift.log", "/var/log/swift/swift.log"])
     swift_object_expirer_conf = first_file(["/var/lib/config-data/puppet-generated/swift/etc/swift/object-expirer.conf", "/etc/swift/object-expirer.conf"])
