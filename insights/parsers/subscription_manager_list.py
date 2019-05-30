@@ -14,16 +14,12 @@ SubscriptionManagerListInstalled - command ``subscription-manager list --install
 
 SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
 -------------------------------------------------------------------------------------------
-
-SubscriptionManagerFactsList - command ``subscription-manager facts --list``
-----------------------------------------------------------------------------
 """
 import re
 from datetime import datetime
 import six
 from insights.specs import Specs
-from insights.parsers import split_kv_pairs, SkipException
-from .. import parser, CommandParser, LegacyItemAccess
+from .. import parser, CommandParser
 from . import keyword_search
 
 
@@ -254,36 +250,3 @@ class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
         'rhel-7-server-ansible-2-rpms'
     """
     pass
-
-
-@parser(Specs.subscription_manager_facts_list)
-class SubscriptionManagerFactsList(CommandParser, LegacyItemAccess):
-    """Read the output of ``subscription-manager facts --list``.
-
-    Sample output::
-
-        uname.machine: x86_64
-        uname.nodename: rhel7-box
-        uname.release: 3.10.0-327.el7.x86_64
-        uname.sysname: Linux
-        uname.version: #1 SMP Thu Oct 29 17:29:29 EDT 2015
-        virt.host_type: virtualbox, kvm
-        virt.is_guest: True
-        virt.uuid: 81897b5e-4df9-9794-8e2a-b496756b5cbc
-
-    Examples:
-        >>> facts['virt.uuid'] == "81897b5e-4df9-9794-8e2a-b496756b5cbc"
-        True
-        >>> facts['uname.sysname'] == "Linux"
-        True
-
-    Returns:
-        data(dict): All the facts that matches the filter criteria.
-
-    Raises:
-        SkipException: When the content is empty.
-    """
-    def parse_content(self, content):
-        if not content:
-            raise SkipException("Empty content.")
-        self.data = split_kv_pairs(content, split_on=":", use_partition=True)
