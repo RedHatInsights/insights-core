@@ -1,8 +1,9 @@
 from insights.tests import context_wrap
 from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos
 from insights.parsers.nmcli import NmcliConnShow
-from insights.parsers import nmcli
+from insights.parsers import nmcli, SkipException
 import doctest
+import pytest
 
 NMCLI_SHOW = """
 GENERAL.DEVICE:                         em3
@@ -122,6 +123,17 @@ def test_static_connection_test_1():
 def test_static_connection_test_2():
     static_conn = NmcliConnShow(context_wrap(STATIC_CONNECTION_SHOW_2))
     assert static_conn.disconnected_connection == ["test-net-1", "test-net-2"]
+
+
+def test_nmcli_dev_show_ab():
+    with pytest.raises(SkipException) as se:
+        NmcliDevShow(context_wrap(''))
+
+    with pytest.raises(SkipException) as se:
+        NmcliDevShow(context_wrap('GENERAL.TYPE: ethernet'))
+
+    with pytest.raises(SkipException) as se:
+        NmcliDevShow(context_wrap('Error'))
 
 
 def test_nmcli_doc_examples():

@@ -33,11 +33,11 @@ class AllNmcliDevShow(dict):
                 self.data.update(item.data)
                 self._con_dev.extend(item.connected_devices)
 
-        super(AllNmcliDevShow, self).__init__()
-        self.update(self.data)
-
         if not self.data:
             raise SkipException()
+
+        super(AllNmcliDevShow, self).__init__()
+        self.update(self.data)
 
     @property
     def connected_devices(self):
