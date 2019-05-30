@@ -126,13 +126,13 @@ def test_static_connection_test_2():
 
 
 def test_nmcli_dev_show_ab():
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipException):
         NmcliDevShow(context_wrap(''))
 
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipException):
         NmcliDevShow(context_wrap('GENERAL.TYPE: ethernet'))
 
-    with pytest.raises(SkipException) as se:
+    with pytest.raises(SkipException):
         NmcliDevShow(context_wrap('Error'))
 
 

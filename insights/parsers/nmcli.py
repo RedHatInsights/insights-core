@@ -127,9 +127,8 @@ class NmcliDevShow(CommandParser, dict):
         if not self.data:
             raise SkipException()
 
-        self._con_dev = [key for key in self.data
-                         if 'STATE' in self.data[key] and
-                         self.data[key]['STATE'] == 'connected']
+        self._con_dev = [k for k, v in self.data.items()
+                         if 'STATE' in v and v['STATE'] == 'connected']
 
     @property
     def connected_devices(self):
