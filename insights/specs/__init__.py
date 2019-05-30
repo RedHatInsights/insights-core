@@ -336,6 +336,7 @@ class Specs(SpecSet):
     nginx_conf = RegistryPoint(multi_output=True)
     nmcli_conn_show = RegistryPoint()
     nmcli_dev_show = RegistryPoint()
+    nmcli_dev_show_sos = RegistryPoint()
     nova_api_log = RegistryPoint(filterable=True)
     nova_compute_log = RegistryPoint(filterable=True)
     nova_conf = RegistryPoint()
