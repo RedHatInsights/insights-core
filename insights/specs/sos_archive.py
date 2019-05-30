@@ -19,8 +19,8 @@ class SosSpecs(Specs):
         simple_file("var/log/candlepin/error.log"),
         simple_file(r"sos_commands/foreman/foreman-debug/var/log/candlepin/error.log")
     ])
-    catalina_out = glob_file("tomcat-logs/tomcat*/catalina.out")
-    catalina_server_log = glob_file("tomcat-logs/tomcat*/catalina*.log")
+    catalina_out = glob_file("var/log/tomcat*/catalina.out")
+    catalina_server_log = glob_file("var/log/tomcat*/catalina*.log")
     ceph_osd_tree_text = simple_file("sos_commands/ceph/ceph_osd_tree")
     chkconfig = simple_file("sos_commands/startup/chkconfig_--list")
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
