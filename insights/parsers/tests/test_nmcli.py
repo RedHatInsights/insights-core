@@ -35,7 +35,7 @@ WIRED-PROPERTIES.CARRIER:               off
 
 GENERAL.DEVICE:                         em2
 GENERAL.TYPE:                           ethernet
-GENERAL.HWADDR:                         B8:2A:72:DE:F8:BC
+GENERAL.HWADDR:                         B8:AA:BB:DE:F8:BC
 GENERAL.MTU:                            1500
 GENERAL.STATE:                          100 (connected)
 GENERAL.CONNECTION:                     --
@@ -88,29 +88,29 @@ def test_nmcli():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW))
     con_dev = nmcli_obj.connected_devices
     assert sorted(con_dev) == sorted(['em1', 'em3', 'em2'])
-    assert nmcli_obj.data['em3']['IP4_GATEWAY'] == "10.16.187.254"
-    assert nmcli_obj.data['em3']['IP4_DNS1'] == "10.16.36.29"
-    assert nmcli_obj.data['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
-    assert nmcli_obj.data['em1']['STATE'] == "connected"
-    assert nmcli_obj.data['em1']['CON-PATH'] == "--"
-    assert nmcli_obj.data['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
-    assert nmcli_obj.data['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
-    assert nmcli_obj.data['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
-    assert len(nmcli_obj.data['em3']) == 17
-    assert len(nmcli_obj.data['em1']) == 7
+    assert nmcli_obj['em3']['IP4_GATEWAY'] == "10.16.187.254"
+    assert nmcli_obj['em3']['IP4_DNS1'] == "10.16.36.29"
+    assert nmcli_obj['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
+    assert nmcli_obj['em1']['STATE'] == "connected"
+    assert nmcli_obj['em1']['CON-PATH'] == "--"
+    assert nmcli_obj['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
+    assert len(nmcli_obj['em3']) == 17
+    assert len(nmcli_obj['em1']) == 7
 
 
 def test_nmcli_sos():
     nmcli_obj = NmcliDevShowSos(context_wrap(NMCLI_SHOW_SOS))
     con_dev = nmcli_obj.connected_devices
     assert sorted(con_dev) == sorted(['em3'])
-    assert nmcli_obj.data['em3']['IP4_GATEWAY'] == "10.16.187.254"
-    assert nmcli_obj.data['em3']['IP4_DNS1'] == "10.16.36.29"
-    assert nmcli_obj.data['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
-    assert nmcli_obj.data['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
-    assert nmcli_obj.data['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
-    assert nmcli_obj.data['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
-    assert len(nmcli_obj.data['em3']) == 17
+    assert nmcli_obj['em3']['IP4_GATEWAY'] == "10.16.187.254"
+    assert nmcli_obj['em3']['IP4_DNS1'] == "10.16.36.29"
+    assert nmcli_obj['em3']['IP6_ROUTE1'] == "dst = 2620:52:0:10bb::/64, nh = ::, mt = 100"
+    assert nmcli_obj['em3']['IP6_ADDRESS1'] == "2620:52:0:10bb:ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['IP6_ADDRESS2'] == "fe80::ba2a:72ff:fede:f8b9/64"
+    assert nmcli_obj['em3']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
+    assert len(nmcli_obj['em3']) == 17
 
 
 def test_static_connection_test_1():
