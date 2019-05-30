@@ -52,7 +52,7 @@ def parse_doc(content, ctx):
     Line = Comment | KVPair.map(to_directive)
     Sect = Lift(to_section) * Header * Many(Line).map(skip_none)
     Doc = Many(Comment | Sect).map(skip_none)
-    Top = Doc + EOF
+    Top = Doc << WS << EOF
 
-    res = Entry(children=Top(content)[0], src=ctx)
+    res = Entry(children=Top(content), src=ctx)
     return apply_defaults(res)
