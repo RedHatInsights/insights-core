@@ -223,7 +223,6 @@ class InsightsArchiveSpecs(Specs):
     software_collections_list = simple_file('insights_commands/scl_--list')
     ss = simple_file("insights_commands/ss_-tupna")
     sshd_config_perms = simple_file("insights_commands/ls_-l_.etc.ssh.sshd_config")
-    subscription_manager_facts_list = simple_file("insights_commands/subscription-manager_facts_--list")
     subscription_manager_id = simple_file("insights_commands/subscription-manager_identity")
     subscription_manager_list_consumed = simple_file('insights_commands/subscription-manager_list_--consumed')
     subscription_manager_release_show = simple_file('insights_commands/subscription-manager_release_--show')
