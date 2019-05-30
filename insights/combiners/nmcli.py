@@ -9,8 +9,8 @@ from insights.core.plugins import combiner
 from insights.parsers.nmcli import NmcliDevShow, NmcliDevShowSos
 
 
-@combiner(optional=[NmcliDevShow, NmcliDevShowSos])
-class Allnmclidevshow(object):
+@combiner([NmcliDevShow, NmcliDevShowSos])
+class AllNmcliDevShow(dict):
     """
     Combiner method to combine return value from parser NmcliDevShow into one dict
 
@@ -18,7 +18,7 @@ class Allnmclidevshow(object):
         data: interface info from nmcli dev shows commnand
 
     Examples:
-        >>> allnmclidevshow.data['eth0']['TYPE']
+        >>> allnmclidevshow['eth0']['TYPE']
         'ethernet'
         >>> allnmclidevshow.connected_devices
         ['eth0']
@@ -33,7 +33,8 @@ class Allnmclidevshow(object):
             for item in nmclidevshowsos:
                 self.data.update(item.data)
 
-        super(Allnmclidevshow, self).__init__()
+        super(AllNmcliDevShow, self).__init__()
+        self.update(self.data)
 
     @property
     def connected_devices(self):

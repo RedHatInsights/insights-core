@@ -1,5 +1,5 @@
 from insights.tests import context_wrap
-from insights.combiners.nmcli import Allnmclidevshow
+from insights.combiners.nmcli import AllNmcliDevShow
 from insights.combiners import nmcli
 from insights.parsers.nmcli import NmcliDevShow
 import doctest
@@ -81,32 +81,32 @@ IP6.GATEWAY:                            --
 
 def test_allnmcli1():
     nmcli_obj = NmcliDevShow(context_wrap(NMCLI_SHOW1))
-    allnmcli_obj = Allnmclidevshow(nmcli_obj, None)
+    allnmcli_obj = AllNmcliDevShow(nmcli_obj, None)
     con_dev = allnmcli_obj.connected_devices
     assert sorted(con_dev) == sorted(['eth0'])
-    assert allnmcli_obj.data['eth0']['IP4_GATEWAY'] == "10.72.37.254"
-    assert allnmcli_obj.data['eth0']['IP4_DNS1'] == "10.72.17.5"
-    assert allnmcli_obj.data['eth0']['STATE'] == "connected"
-    assert allnmcli_obj.data['eth0']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
-    assert len(allnmcli_obj.data['lo']) == 10
+    assert allnmcli_obj['eth0']['IP4_GATEWAY'] == "10.72.37.254"
+    assert allnmcli_obj['eth0']['IP4_DNS1'] == "10.72.17.5"
+    assert allnmcli_obj['eth0']['STATE'] == "connected"
+    assert allnmcli_obj['eth0']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
+    assert len(allnmcli_obj['lo']) == 10
 
 
 def test_allnmcli2():
     nmcli_obj1 = NmcliDevShow(context_wrap(NMCLI_SHOW2))
     nmcli_obj2 = NmcliDevShow(context_wrap(NMCLI_SHOW3))
-    allnmcli_obj = Allnmclidevshow(None, [nmcli_obj1, nmcli_obj2])
+    allnmcli_obj = AllNmcliDevShow(None, [nmcli_obj1, nmcli_obj2])
     con_dev = allnmcli_obj.connected_devices
     assert sorted(con_dev) == sorted(['eth0'])
-    assert allnmcli_obj.data['eth0']['IP4_GATEWAY'] == "10.72.37.254"
-    assert allnmcli_obj.data['eth0']['IP4_DNS1'] == "10.72.17.5"
-    assert allnmcli_obj.data['eth0']['STATE'] == "connected"
-    assert allnmcli_obj.data['eth0']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
-    assert len(allnmcli_obj.data['lo']) == 10
+    assert allnmcli_obj['eth0']['IP4_GATEWAY'] == "10.72.37.254"
+    assert allnmcli_obj['eth0']['IP4_DNS1'] == "10.72.17.5"
+    assert allnmcli_obj['eth0']['STATE'] == "connected"
+    assert allnmcli_obj['eth0']['CON-PATH'] == "/org/freedesktop/NetworkManager/ActiveConnection/1"
+    assert len(allnmcli_obj['lo']) == 10
 
 
 def test_doc_examples():
     env = {
-            'allnmclidevshow': Allnmclidevshow(NmcliDevShow(context_wrap(NMCLI_SHOW1)), None),
+            'allnmclidevshow': AllNmcliDevShow(NmcliDevShow(context_wrap(NMCLI_SHOW1)), None),
           }
     failed, total = doctest.testmod(nmcli, globs=env)
     assert failed == 0
