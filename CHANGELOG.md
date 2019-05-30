@@ -1,5 +1,21 @@
 # Change Log
 
+## [insights-core-3.0.101-986](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.101-986) (2019-05-30)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.100-974...insights-core-3.0.101-986)
+
+**Fixed bugs:**
+
+- "CommandParser does skip the "No module named insights.tools" [\#1955](https://github.com/RedHatInsights/insights-core/issues/1955)
+- wrong specs for heat api log  [\#1886](https://github.com/RedHatInsights/insights-core/issues/1886)
+
+**Closed issues:**
+
+- Invoking "insights-inspect" command without colorama installed results in a traceback [\#1956](https://github.com/RedHatInsights/insights-core/issues/1956)
+- `SysconfigOptions` base parser does not parse unpaired quoted lines [\#1946](https://github.com/RedHatInsights/insights-core/issues/1946)
+- Enhance parser RabbitMQReport  [\#1906](https://github.com/RedHatInsights/insights-core/issues/1906)
+- Do we need ceph\_version parser? [\#1764](https://github.com/RedHatInsights/insights-core/issues/1764)
+- nginx\_conf collection incomplete? [\#1472](https://github.com/RedHatInsights/insights-core/issues/1472)
+
 ## [insights-core-3.0.100-974](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.100-974) (2019-05-23)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.99-969...insights-core-3.0.100-974)
 
@@ -293,6 +309,10 @@
 
 ## [3.0.59-1](https://github.com/RedHatInsights/insights-core/tree/3.0.59-1) (2018-11-14)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.58-1...3.0.59-1)
+
+**Fixed bugs:**
+
+- Add xfs\_info datasource to default.py [\#1303](https://github.com/RedHatInsights/insights-core/issues/1303)
 
 **Closed issues:**
 
@@ -754,6 +774,7 @@
 
 **Closed issues:**
 
+- Should Docker Commands run in HostContext? [\#997](https://github.com/RedHatInsights/insights-core/issues/997)
 - Collect specs that aren't used by a rule [\#654](https://github.com/RedHatInsights/insights-core/issues/654)
 - Sync new style specs with old specs [\#598](https://github.com/RedHatInsights/insights-core/issues/598)
 
