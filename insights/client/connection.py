@@ -867,7 +867,8 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
+            logger.error(e)
             # can't connect, run connection test
             return False
 
