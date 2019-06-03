@@ -232,14 +232,12 @@ def handle_unregistration(config, pconn):
     """
     if config.legacy_upload:
         return _legacy_handle_unregistration(config, pconn)
-    logger.info('Unregistration is not currently available.')
-    return False
-    # unreg = False  # pconn.unregister()
-    # if unreg:
-    #     # only set if unreg was successful
-    #     write_unregistered_file()
-    #     get_scheduler(config).remove_scheduling()
-    # return unreg
+
+    unreg = pconn.unregister()
+    if unreg:
+        # only set if unreg was successful
+        write_unregistered_file()
+    return unreg
 
 
 def get_machine_id():
