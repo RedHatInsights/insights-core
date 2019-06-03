@@ -684,9 +684,8 @@ class InsightsConnection(object):
             return self._legacy_unregister()
 
         results = self._fetch_system_by_machine_id()
-        msg_name = determine_hostname(self.config.display_name)
         try:
-            logger.debug("Unregistering %s", msg_name)
+            logger.debug("Unregistering host...")
             url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
             net_logger.info("DELETE %s", url)
             response = self.session.delete(url)
