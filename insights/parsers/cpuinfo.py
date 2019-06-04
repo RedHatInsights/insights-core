@@ -128,13 +128,26 @@ class CpuInfo(LegacyItemAccess, Parser):
             "cpu MHz": "clockspeeds",
             "cache size": "cache_sizes",
             "cpu cores": "cpu_cores",
-            "flags": "flags"
+            "flags": "flags",
+            "stepping": "stepping",
+            "Features": "features",
+            "CPU implementer": "cpu_implementer",
+            "CPU architecture": "cpu_architecture",
+            "CPU variant": "cpu_variant",
+            "CPU part": "cpu_part",
+            "CPU revision": "cpu_revision",
+            "cpu": "cpu",
+            "revision": "revision",
         }
 
         for line in get_active_lines(content, comment_char="COMMAND>"):
             key, value = [p.strip() for p in line.split(":", 1)]
             if key in mappings:
                 self.data[mappings[key]].append(value)
+
+        if "cpu" in self.data and "POWER" in self.data["cpu"][0]:
+            # this works differently than on x86 and is not per-cpu
+            del self.data["model_ids"]
 
         self.data = dict(self.data)
 
