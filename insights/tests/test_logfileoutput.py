@@ -154,6 +154,7 @@ def test_messages_scanners_list():
     assert hasattr(log, 'puppet_master_first_last_any')
     assert 'puppet-master' in log.puppet_master_first_last_any['raw_message']
 
+
 def test_messages_get_after():
     ctx = context_wrap(MESSAGES, path='/var/log/messages')
     log = FakeMessagesClass(ctx)
