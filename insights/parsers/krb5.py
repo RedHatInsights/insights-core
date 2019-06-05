@@ -103,6 +103,7 @@ class Krb5Configuration(Parser, LegacyItemAccess):
         self.includedir = []
         self.include = []
         self.module = []
+        unchangeable_tags = []
         for line in get_active_lines(content):
             line = line.strip()
             if line.startswith(PREFIX_FOR_LIST):
@@ -113,10 +114,11 @@ class Krb5Configuration(Parser, LegacyItemAccess):
                 # If in {} sub_section, get the key_value pair
                 if "=" in line:
                     key, value = [i.strip() for i in line.split('=', 1)]
-                    squ_value[key] = _handle_key_value(squ_value, key, value)
+                    if key not in unchangeable_tags:
+                        value = value.split()[0].strip()
+                        squ_value[key] = _handle_key_value(squ_value, key, value)
                     if line.endswith("*"):
-                        section_value[squ_section_name] = squ_value
-                        break
+                        unchangeable_tags.append(key)
                 # The {} sub_section should end with },
                 # if it is, set the whole value to the sub_section name,
                 # and clean the flag
@@ -139,9 +141,11 @@ class Krb5Configuration(Parser, LegacyItemAccess):
                 # key value format is XXX = YYY, store as dict
                 elif "=" in line and not line.endswith("{"):
                     key, value = [i.strip() for i in line.split('=', 1)]
-                    section_value[key] = _handle_key_value(section_value, key, value)
+                    if key not in unchangeable_tags:
+                        value = value.split()[0].strip()
+                        section_value[key] = _handle_key_value(section_value, key, value)
                     if line.endswith("*"):
-                        break
+                        unchangeable_tags.append(key)
                 # The {} sub_section should start with format XXX = {
                 else:
                     is_squ = True
