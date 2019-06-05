@@ -210,6 +210,7 @@ class DefaultSpecs(Specs):
     dirsrv_access = glob_file("var/log/dirsrv/*/access*")
     dirsrv_errors = glob_file("var/log/dirsrv/*/errors*")
     display_java = simple_command("/usr/sbin/alternatives --display java")
+    display_name = simple_file("/display_name", kind=RawFileProvider)
     dmesg = simple_command("/bin/dmesg")
     dmidecode = simple_command("/usr/sbin/dmidecode")
     dmsetup_info = simple_command("/usr/sbin/dmsetup info -C")
