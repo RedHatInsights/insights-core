@@ -13,6 +13,7 @@ entry_points = {
     'console_scripts': [
         'insights-collect = insights.collect:main',
         'insights-run = insights:main',
+        'insights = insights:main',
         'insights-cat = insights.tools.cat:main',
         'insights-inspect = insights.tools.insights_inspect:main',
         'insights-info = insights.tools.query:main',
