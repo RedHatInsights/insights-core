@@ -1,8 +1,21 @@
 import operator
 import string
 from functools import reduce
-from insights.parsr import (EOF, EOL, InSet, LineEnd, Many, Number,
-        OneLineComment, Opt, PosMarker, skip_none, String, WS, WSChar)
+from insights.parsr import (
+    EOF,
+    EOL,
+    InSet,
+    LineEnd,
+    Many,
+    Number,
+    OneLineComment,
+    Opt,
+    PosMarker,
+    skip_none,
+    String,
+    WS,
+    WSChar,
+)
 from insights.parsr.query import Entry
 
 DATA = """
@@ -37,10 +50,12 @@ class KVPairs:
         OLC = reduce(operator.__or__, [OneLineComment(c) for c in comment_chars])
         Comment = (WS >> OLC).map(lambda x: None)
         Num = Number & (WSChar | LineEnd)
-        Key = WS >> PosMarker(String(key_chars).map(lambda x: x.strip())) << WS
+        Key = WS >> PosMarker(String(key_chars).map(str.strip)) << WS
         Sep = InSet(sep_chars)
-        Value = WS >> (Num | String(value_chars).map(lambda x: x.strip()))
-        KVPair = (Key + Opt(Sep + Value, default=[None, None])).map(lambda a: (a[0], a[1][1]))
+        Value = WS >> (Num | String(value_chars).map(str.strip))
+        KVPair = (Key + Opt(Sep + Value, default=[None, None])).map(
+            lambda a: (a[0], a[1][1])
+        )
         Line = Comment | KVPair | EOL.map(lambda x: None)
         Doc = Many(Line).map(skip_none).map(to_entry)
         self.Top = Doc + EOF

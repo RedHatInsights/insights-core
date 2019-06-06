@@ -531,9 +531,9 @@ class Mark(object):
 
 class PosMarker(Wrapper):
     """
-    Save the line number and column of a non-terminal or terminal by wrapping
-    it in a PosMarker. The value of the parser that handled the input as well
-    as the initial input position will be returned as a :py:class:`Mark`.
+    Save the line number and column of a subparser by wrapping it in a
+    PosMarker. The value of the parser that handled the input as well as the
+    initial input position will be returned as a :py:class:`Mark`.
     """
     def process(self, pos, data, ctx):
         lineno = ctx.line(pos) + 1
@@ -1158,14 +1158,14 @@ def _make_number(sign, int_part, frac_part):
 
 def skip_none(x):
     """
-    Filters ``None`` values from a list.
+    Filters ``None`` values from a list. Often used with map.
     """
     return [i for i in x if i is not None]
 
 
 EOF = EOF()
 EOL = InSet("\n\r") % "EOL"
-LineEnd = Wrapper(EOL | EOF)
+LineEnd = Wrapper(EOL | EOF) % "LineEnd"
 EQ = Char("=")
 LT = Char("<")
 GT = Char(">")
