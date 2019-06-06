@@ -1,5 +1,41 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.103-995...HEAD)
+
+**Implemented enhancements:**
+
+- `CpuInfo` parser cannot handle ARM and PowerPC [\#1794](https://github.com/RedHatInsights/insights-core/issues/1794)
+- Investigate collecting `/etc/dnf/modules.d` and other dnf related information [\#1648](https://github.com/RedHatInsights/insights-core/issues/1648)
+
+**Fixed bugs:**
+
+- FileListing could not check dir with sticky bit shown as 'T' in ls command [\#1121](https://github.com/RedHatInsights/insights-core/issues/1121)
+
+**Closed issues:**
+
+- \[RFE\] Abrt DUPHASH integration for backtraces [\#1785](https://github.com/RedHatInsights/insights-core/issues/1785)
+
+## [insights-core-3.0.103-995](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.103-995) (2019-06-05)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.102...insights-core-3.0.103-995)
+
+**Closed issues:**
+
+- issue on parsing line endswith "\*" in krb5.py [\#1911](https://github.com/RedHatInsights/insights-core/issues/1911)
+
+## [3.0.102](https://github.com/RedHatInsights/insights-core/tree/3.0.102) (2019-06-04)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.101-986...3.0.102)
+
+**Implemented enhancements:**
+
+- Filter out wanted system logs according to the process name [\#1919](https://github.com/RedHatInsights/insights-core/issues/1919)
+- Enhance @parser to allow additional dependencies [\#1888](https://github.com/RedHatInsights/insights-core/issues/1888)
+
+**Closed issues:**
+
+- Sync specs in sos\_archive.py [\#1950](https://github.com/RedHatInsights/insights-core/issues/1950)
+
 ## [insights-core-3.0.101-986](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.101-986) (2019-05-30)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.100-974...insights-core-3.0.101-986)
 
