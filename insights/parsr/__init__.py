@@ -659,7 +659,7 @@ class Many(Parser):
             ab = Many(a | b)  # parses any combination of "a" and "b" like
                               # "aababbaba..."
             val = ab("aababb")# produces ["a", "a", "b", "a", "b", "b"]
-            val = Many(1, lower=1) # requires at least one "a"
+            bs = Many(Char("b"), lower=1) # requires at least one "b"
 
     """
     def __init__(self, parser, lower=0):
