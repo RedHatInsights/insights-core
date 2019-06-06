@@ -81,8 +81,8 @@ class CephS(CommandParser, JSONParser):
 
     >>> type(ceph_s)
     <class 'insights.parsers.ceph_cmd_json_parsing.CephS'>
-    >>> ceph_s['pgmap']['pgs_by_state'][0]['state_name']
-    'active+clean'
+    >>> ceph_s['pgmap']['pgs_by_state'][0]['state_name'] == 'active+clean'
+    True
     """
     pass
 
@@ -111,8 +111,8 @@ class CephHealthDetail(CommandParser, JSONParser):
 
     >>> type(ceph_health_detail)
     <class 'insights.parsers.ceph_cmd_json_parsing.CephHealthDetail'>
-    >>> ceph_health_detail["overall_status"]
-    'HEALTH_OK'
+    >>> ceph_health_detail["overall_status"] ==   'HEALTH_OK'
+    True
     """
     pass
 
@@ -126,8 +126,8 @@ class CephECProfileGet(CommandParser, JSONParser):
 
     >>> type(ceph_osd_ec_profile_get)
     <class 'insights.parsers.ceph_cmd_json_parsing.CephECProfileGet'>
-    >>> ceph_osd_ec_profile_get['k']
-    '2'
+    >>> ceph_osd_ec_profile_get['k'] == '2'
+    True
     """
     pass
 
@@ -141,8 +141,8 @@ class CephCfgInfo(CommandParser, JSONParser):
 
     >>> type(ceph_cfg_info)
     <class 'insights.parsers.ceph_cmd_json_parsing.CephCfgInfo'>
-    >>> ceph_cfg_info.max_open_files
-    '131072'
+    >>> ceph_cfg_info.max_open_files == '131072'
+    True
     """
 
     @property
@@ -176,8 +176,8 @@ class CephReport(CommandParser, LegacyItemAccess):
     Examples:
     >>> type(ceph_report_content)
     <class 'insights.parsers.ceph_cmd_json_parsing.CephReport'>
-    >>> ceph_report_content["version"]
-    '12.2.8-52.el7cp'
+    >>> ceph_report_content["version"] == '12.2.8-52.el7cp'
+    True
     """
 
     def parse_content(self, content):
