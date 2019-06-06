@@ -828,6 +828,7 @@ class DefaultSpecs(Specs):
     sysctl = simple_command("/sbin/sysctl -a")
     sysctl_conf = simple_file("/etc/sysctl.conf")
     sysctl_conf_initramfs = simple_command("/bin/lsinitrd /boot/initramfs-*kdump.img -f /etc/sysctl.conf /etc/sysctl.d/*.conf")
+    systemctl_cat_rpcbind_socket = simple_command("/bin/systemctl cat rpcbind.socket")
     systemctl_cinder_volume = simple_command("/bin/systemctl show openstack-cinder-volume")
     systemctl_httpd = simple_command("/bin/systemctl show httpd")
     systemctl_list_unit_files = simple_command("/bin/systemctl list-unit-files")

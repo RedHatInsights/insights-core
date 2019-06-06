@@ -227,6 +227,7 @@ class InsightsArchiveSpecs(Specs):
     subscription_manager_release_show = simple_file('insights_commands/subscription-manager_release_--show')
     sysctl = simple_file("insights_commands/sysctl_-a")
     sysctl_conf_initramfs = simple_file("insights_commands/lsinitrd_.boot.initramfs-_kdump.img_-f_.etc.sysctl.conf_.etc.sysctl.d._.conf")
+    systemctl_cat_rpcbind_socket = simple_file("insights_commands/systemctl_cat_rpcbind.socket")
     systemctl_cinder_volume = simple_file("insights_commands/systemctl_show_openstack-cinder-volume")
     systemctl_httpd = simple_file("insights_commands/systemctl_show_httpd")
     systemctl_list_unit_files = simple_file("insights_commands/systemctl_list-unit-files")

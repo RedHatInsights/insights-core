@@ -13,6 +13,9 @@ SystemdDocker - file ``/usr/lib/systemd/system/docker.service``
 SystemdLogindConf - file ``/etc/systemd/logind.conf``
 -----------------------------------------------------
 
+SystemdRpcbindSocketConf - unit file ``rpcbind.socket``
+-------------------------------------------------------
+
 SystemdOpenshiftNode - file ``/usr/lib/systemd/system/atomic-openshift-node.service``
 -------------------------------------------------------------------------------------
 
@@ -167,6 +170,39 @@ class SystemdLogindConf(SystemdConf):
         'True'
         >>> logind_conf.get("Login").get("RemoveIPC")  # 'no' turns to 'False'
         'False'
+    """
+    pass
+
+
+@parser(Specs.systemctl_cat_rpcbind_socket)
+class SystemdRpcbindSocketConf(SystemdConf):
+    """
+    Class for systemd configuration for rpcbind.socket unit.
+
+    Typical content of the ``rpcbind.socket`` unit file is::
+
+        [Unit]
+        Description=RPCbind Server Activation Socket
+        DefaultDependencies=no
+        Wants=rpcbind.target
+        Before=rpcbind.target
+
+        [Socket]
+        ListenStream=/run/rpcbind.sock
+
+        # RPC netconfig can't handle ipv6/ipv4 dual sockets
+        BindIPv6Only=ipv6-only
+        ListenStream=0.0.0.0:111
+        ListenDatagram=0.0.0.0:111
+        ListenStream=[::]:111
+        ListenDatagram=[::]:111
+
+        [Install]
+        WantedBy=sockets.target
+
+    Example:
+        >>> rpcbind_socket["Socket"]["ListenStream"]
+        ['/run/rpcbind.sock', '0.0.0.0:111', '[::]:111']
     """
     pass
 
