@@ -1,5 +1,6 @@
 from insights.tests import context_wrap
 from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
+from insights.parsers.grub_conf import Grub2EditenvList
 import pytest
 
 # RHEL7
@@ -149,6 +150,12 @@ menuentry {
 }
 """.strip()
 
+GRUB2_EDITENV_LIST = """
+saved_entry=08c540cbca4d412c83e44a745aac36eb-4.18.0-80.1.2.el8_0.x86_64
+kernelopts=root=/dev/mapper/rhel_vm37--146-root ro crashkernel=auto resume=/dev/mapper/rhel_vm37--146-swap rd.lvm.lv=rhel_vm37-146/root rd.lvm.lv=rhel_vm37-146/swap boot_success=0
+boot_success=0
+""".strip()
+
 
 def test_grub_conf():
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
@@ -212,6 +219,14 @@ def test_grub_conf():
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_3))
     assert ('load_video', None) in grub_conf['menuentry'][0]
     assert grub_conf.is_kdump_iommu_enabled is False
+
+
+def test_grub2_editevn_list():
+    grub_env = Grub2EditenvList(context_wrap(GRUB2_EDITENV_LIST))
+    assert grub_env.name == '08c540cbca4d412c83e44a745aac36eb-4.18.0-80.1.2.el8_0.x86_64'
+    assert 'crashkernel=auto' in grub_env.cmdline
+    assert grub_env.kernelopts['ro'] == [True]
+    assert grub_env.kernelopts['rd.lvm.lv'][0] == 'rhel_vm37-146/root'
 
 
 def test_grub_conf_raise():
