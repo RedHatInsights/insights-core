@@ -959,7 +959,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             s(str or list): one or more strings to search for
             check(func): built-in function ``all`` or ``any`` applied to each line
             num(int): the number of lines to get, ``None`` for unlimited
-            reverse(bool): scan start from the tail when ``True``, otherwise start from the head
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
             (list): list of dictionaries corresponding to the parsed lines contain the `s`.
@@ -1010,14 +1010,15 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             result_key(str): the scanner key to register
             token(str or list): one or more strings to search for
             check(func): built-in function ``all`` or ``any`` applied to each line
-            reverse(bool): scan start from the tail when ``True``, otherwise start from the head
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
             (list): list of dictionaries corresponding to the parsed lines contain the `token`.
         """
         def _scan(self):
             search_by_expression = self._valid_search(token, check)
-            return any(search_by_expression(l) for l in self.lines)
+            lines = self.lines[::-1] if reverse else self.lines
+            return any(search_by_expression(l) for l in lines)
 
         cls.scan(result_key, _scan)
 
@@ -1032,7 +1033,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             token(str or list): one or more strings to search for
             check(func): built-in function ``all`` or ``any`` applied to each line
             num(int): the number of lines to get, ``None`` for unlimited
-            reverse(bool): scan start from the tail when ``True``, otherwise start from the head
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
             (list): list of dictionaries corresponding to the parsed lines contain the `token`.
