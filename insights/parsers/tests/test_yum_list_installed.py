@@ -9,6 +9,17 @@ EMPTY = """
 Installed Packages
 """.strip()
 
+EXPIRED_EMPTY = """
+Repodata is over 2 weeks old. Install yum-cron? Or run: yum makecache fast
+Installed Packages
+""".strip()
+
+EXPIRED_WITH_DATA = """
+Repodata is over 2 weeks old. Install yum-cron? Or run: yum makecache fast
+Installed Packages
+bash.x86_64                               4.4.23-1.fc28                 @updates
+""".strip()
+
 SIMPLE = """
 Installed Packages
 bash.x86_64                               4.4.23-1.fc28                 @updates
@@ -64,6 +75,18 @@ def test_simple():
     assert rpm.release == "1.fc28"
     assert rpm.arch == "x86_64"
     assert rpm.repo == "updates"
+
+
+def test_expired_cache_with_data():
+    ctx = context_wrap(EXPIRED_WITH_DATA)
+    rpms = YumListInstalled(ctx)
+    assert rpms.expired_cache is True
+
+
+def test_expired_cache_no_data():
+    ctx = context_wrap(EXPIRED_EMPTY)
+    with pytest.raises(SkipComponent):
+        YumListInstalled(ctx)
 
 
 def test_wrapped():

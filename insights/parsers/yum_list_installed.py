@@ -26,6 +26,8 @@ Examples:
     True
     >>> rpms.get_max('GeoIP')
     0:GeoIP-1.5.0-11.el7
+    >>> rpms.expired_cache
+    True
     >>> type(rpms.get_max('GeoIP'))
     <class 'insights.parsers.yum_list_installed.YumInstalledRpm'>
     >>> rpm = rpms.get_max('GeoIP')
@@ -82,9 +84,17 @@ class YumListInstalled(CommandParser, RpmList):
     attribute.
     """
 
+    def __init__(self, context):
+        self.expired_cache = False
+        """bool: Indicates if the yum repo cache is expired."""
+
+        super(YumListInstalled, self).__init__(context)
+
     def _find_start(self, content):
         for i, c in enumerate(content):
-            if c == "Installed Packages":
+            if 'Repodata is over 2 weeks old' in c:
+                self.expired_cache = True
+            elif c == "Installed Packages":
                 break
         return i + 1
 
