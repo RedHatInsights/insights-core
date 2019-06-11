@@ -1,4 +1,3 @@
-import pytest
 from itertools import islice
 
 from insights import tests
@@ -11,7 +10,7 @@ def test_integration(component, compare_func, input_data, expected):
 
 
 def pytest_generate_tests(metafunc):
-    pattern = pytest.config.getoption("-k")
+    pattern = metafunc.config.getoption("-k")
     generate_tests(metafunc, test_integration, "insights/tests", pattern=pattern)
 
 
@@ -28,8 +27,8 @@ def generate_tests(metafunc, test_func, package_names, pattern=None):
             load_components(package_name, include=pattern or ".*", exclude=None)
         args = []
         ids = []
-        slow_mode = pytest.config.getoption("--runslow")
-        fast_mode = pytest.config.getoption("--smokey")
+        slow_mode = metafunc.config.getoption("--runslow")
+        fast_mode = metafunc.config.getoption("--smokey")
         for f in tests.ARCHIVE_GENERATORS:
             ts = f(stride=1 if slow_mode else f.stride)
             if fast_mode:
