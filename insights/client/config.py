@@ -75,6 +75,12 @@ DEFAULT_OPTS = {
         # non-CLI
         'default': None
     },
+    'compliance': {
+        'default': False,
+        'opt': ['--compliance'],
+        'help': 'Scan the system using openscap and upload the report',
+        'action': 'store_true'
+    },
     'compressor': {
         'default': 'gz',
         'opt': ['--compressor'],
