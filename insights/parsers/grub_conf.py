@@ -70,7 +70,7 @@ Grub2EFIGrubenv - file ``/boot/efi/EFI/redhat/grubenv``
 
 from insights import Parser, CommandParser
 from insights import parser, get_active_lines, defaults
-from insights.parsers import ParseException
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 IOMMU = "intel_iommu=on"
