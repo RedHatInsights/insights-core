@@ -720,19 +720,19 @@ class TimeStamp(CommandParser):
 
         Time stamping parameters for eno1:
         Capabilities:
-            hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
-            software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
-            hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
-            software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
-            software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
-            hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
-        PTP Hardware Clock: 0
+	        hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
+	        software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+	        hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+	        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+	        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+	        hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+            PTP Hardware Clock: 0
         Hardware Transmit Timestamp Modes:
-            off                   (HWTSTAMP_TX_OFF)
-            on                    (HWTSTAMP_TX_ON)
+	        off                   (HWTSTAMP_TX_OFF)
+	        on                    (HWTSTAMP_TX_ON)
         Hardware Receive Filter Modes:
-            none                  (HWTSTAMP_FILTER_NONE)
-            all                   (HWTSTAMP_FILTER_ALL)
+	        none                  (HWTSTAMP_FILTER_NONE)
+	        all                   (HWTSTAMP_FILTER_ALL)
 
     Examples:
         >>> len(timestamp)
@@ -752,7 +752,6 @@ class TimeStamp(CommandParser):
         'HWTSTAMP_TX_OFF'
         >>> eno1.data['Hardware Receive Filter Modes']['all']
         'HWTSTAMP_FILTER_ALL'
-
     """
     @property
     def ifname(self):
