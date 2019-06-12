@@ -503,6 +503,8 @@ class DefaultSpecs(Specs):
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
+    modinfo_igb = simple_command("/sbin/modinfo igb")
+    modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
