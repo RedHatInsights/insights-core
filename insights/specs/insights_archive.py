@@ -50,6 +50,7 @@ class InsightsArchiveSpecs(Specs):
     engine_config_all = simple_file("insights_commands/engine-config_--all")
     ethtool = glob_file("insights_commands/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("insights_commands/ethtool_-S_*")
+    ethtool_T = glob_file("insights_commands/ethtool_-T_*")
     ethtool_a = glob_file("insights_commands/ethtool_-a_*")
     ethtool_c = glob_file("insights_commands/ethtool_-c_*")
     ethtool_g = glob_file("insights_commands/ethtool_-g_*")
