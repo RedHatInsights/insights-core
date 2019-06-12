@@ -5,8 +5,11 @@ Combiner for Red Hat Grub v1 and Grub v2 information.
 
 This combiner uses the parsers:
 :class:`insights.parsers.grub_conf.Grub1Config`,
-:class:`insights.parsers.grub_conf.Grub2Config`, and
-:class:`insights.parsers.grub_conf.Grub2Grubenv`.
+:class:`insights.parsers.grub_conf.Grub1EFIConfig`,
+:class:`insights.parsers.grub_conf.Grub2Config`,
+:class:`insights.parsers.grub_conf.Grub2EFIConfig`,
+:class:`insights.parsers.grub_conf.Grub2Grubenv`. and
+:class:`insights.parsers.grub_conf.Grub2EFIGrubenv`.
 
 It determines which parser was used by checking one of the follwing
 parsers/combiners:
