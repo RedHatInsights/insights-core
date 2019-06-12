@@ -719,20 +719,21 @@ class TimeStamp(CommandParser):
     Sample partial input for ``/sbin/ethtool -T eno1``::
 
         Time stamping parameters for eno1:
+
         Capabilities:
-	        hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
-	        software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
-	        hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
-	        software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
-	        software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
-	        hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
-            PTP Hardware Clock: 0
+            hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
+            software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+            hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+            software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+            software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+            hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+        PTP Hardware Clock: 0
         Hardware Transmit Timestamp Modes:
-	        off                   (HWTSTAMP_TX_OFF)
-	        on                    (HWTSTAMP_TX_ON)
+            off                   (HWTSTAMP_TX_OFF)
+            on                    (HWTSTAMP_TX_ON)
         Hardware Receive Filter Modes:
-	        none                  (HWTSTAMP_FILTER_NONE)
-	        all                   (HWTSTAMP_FILTER_ALL)
+            none                  (HWTSTAMP_FILTER_NONE)
+            all                   (HWTSTAMP_FILTER_ALL)
 
     Examples:
         >>> len(timestamp)
@@ -762,18 +763,19 @@ class TimeStamp(CommandParser):
         self.data = defaultdict(dict)
         self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-T_")
         key = None
+        info = []
 
         for line in content[1:]:
             if line:
-                if not line.startswith('\t'):
-                    if line.split(':')[1] != '':
-                        k1, v1 = line.split(':')
-                        self.data[k1] = v1.split()[0].strip()
-                    else:
-                        key = line[:-1]
+                if ":" in line:
+                    info = line.split(':')
+                    key = info[0]
+                    if info[1] != '':
+                        self.data[info[0]] = info[1].split()[0].strip()
                 else:
-                    k2, v2 = line.split('(')
-                    self.data[key][k2.split()[0].strip()] = v2.strip(')')
+                    key2, value2 = line.split('(')
+                    self.data[key][key2.split()[0].strip()] = value2.strip(')')
+
         self.data = dict(self.data)
 
 
