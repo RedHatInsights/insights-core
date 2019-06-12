@@ -621,6 +621,7 @@ def test_ethtool_S_f():
 
 TEST_ETHTOOL_TIMESTAMP = '''
 Time stamping parameters for eno1:
+
 Capabilities:
     hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE)
     software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
@@ -637,6 +638,24 @@ Hardware Receive Filter Modes:
     all                   (HWTSTAMP_FILTER_ALL)
 '''
 
+TEST_ETHTOOL_TIMESTAMP_AB = '''
+Time stamping parameters for eno1:
+
+Capabilities:
+    hardware-transmit     (SOF_TIMESTAMPING_TX_HARDWARE
+    software-transmit     (SOF_TIMESTAMPING_TX_SOFTWARE)
+    hardware-receive      (SOF_TIMESTAMPING_RX_HARDWARE)
+    software-receive      (SOF_TIMESTAMPING_RX_SOFTWARE)
+    software-system-clock (SOF_TIMESTAMPING_SOFTWARE)
+    hardware-raw-clock    (SOF_TIMESTAMPING_RAW_HARDWARE)
+PTP Hardware Clock: 0
+Hardware Transmit Timestamp Modes:
+    off                   (HWTSTAMP_TX_OFF)
+    on                    (HWTSTAMP_TX_ON)
+Hardware Receive Filter Modes:
+    none                  (HWTSTAMP_FILTER_NONE)
+    all                   (HWTSTAMP_FILTER_ALL)
+'''
 
 def test_ethtool_timestamp():
     timestamp = ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP, path="sbin/ethtool_-T_eno1"))
@@ -646,6 +665,9 @@ def test_ethtool_timestamp():
     assert timestamp.data['PTP Hardware Clock'] == '0'
     assert timestamp.data['Hardware Transmit Timestamp Modes']['off'] == 'HWTSTAMP_TX_OFF'
     assert timestamp.data['Hardware Receive Filter Modes']['all'] == 'HWTSTAMP_FILTER_ALL'
+    with pytest.raises(ParseException) as pe:
+        ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP_AB, path="sbin/ethtool_-T_eno1"))
+        assert 'bad line:' in str(pe)
 
 
 TEST_EXTRACT_FROM_PATH_1 = """

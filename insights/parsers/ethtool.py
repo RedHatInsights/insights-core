@@ -716,6 +716,9 @@ class TimeStamp(CommandParser):
         data (dict): Dictionary of keys with values.
         ifname (str): Interface name.
 
+    Raises:
+        ParseException: Raised when any problem parsing the command output.
+
     Sample partial input for ``/sbin/ethtool -T eno1``::
 
         Time stamping parameters for eno1:
@@ -763,15 +766,17 @@ class TimeStamp(CommandParser):
         self.data = {}
         self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-T_")
 
-        group = {}
+        group = None
         for line in content[1:]:
             if ":" in line:
                 key, val = [i.strip() for i in line.split(':', 1)]
                 group = {}
                 self.data[key] = val if val else group
-            else:
+            elif line.endswith(')') and group is not None:
                 key, val = [i.strip() for i in line.split(None, 1)]
                 group[key] = val.strip('()')
+            elif line:
+                raise ParseException('bad line: {}'.format(line) )
 
 
 @parser(Specs.ethtool)
