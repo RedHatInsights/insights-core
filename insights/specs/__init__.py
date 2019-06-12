@@ -53,6 +53,7 @@ class Specs(SpecSet):
     ceph_osd_log = RegistryPoint(multi_output=True, filterable=True)
     ceph_osd_tree = RegistryPoint()
     ceph_osd_tree_text = RegistryPoint()
+    ceph_report = RegistryPoint()
     ceph_s = RegistryPoint()
     ceph_v = RegistryPoint()
     certificates_enddate = RegistryPoint()
