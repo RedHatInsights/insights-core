@@ -1,6 +1,6 @@
 from insights.tests import context_wrap
 from insights.parsers.grub_conf import Grub1Config, Grub2Config, Grub1EFIConfig
-from insights.parsers.grub_conf import Grub2EditenvList
+from insights.parsers.grub_conf import Grub2Grubenv
 import pytest
 
 # RHEL7
@@ -221,8 +221,8 @@ def test_grub_conf():
     assert grub_conf.is_kdump_iommu_enabled is False
 
 
-def test_grub2_editevn_list():
-    grub_env = Grub2EditenvList(context_wrap(GRUB2_EDITENV_LIST))
+def test_grub2_grubenv():
+    grub_env = Grub2Grubenv(context_wrap(GRUB2_EDITENV_LIST))
     assert grub_env.name == '08c540cbca4d412c83e44a745aac36eb-4.18.0-80.1.2.el8_0.x86_64'
     assert 'crashkernel=auto' in grub_env.cmdline
     assert grub_env.kernelopts['ro'] == [True]

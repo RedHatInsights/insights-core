@@ -61,8 +61,11 @@ Grub2Config - file ``/boot/grub/grub2.cfg``
 Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
 
-Grub2EditenvList - Command ``gurb2-editenv list``
--------------------------------------------------
+Grub2Grubenv - file ``/boot/grub2/grubenv``
+-------------------------------------------
+
+Grub2EFIGrubenv - file ``/boot/efi/EFI/redhat/grubenv``
+-------------------------------------------------------
 """
 
 from insights import Parser, CommandParser
@@ -259,7 +262,7 @@ class Grub1Config(GrubConfig):
     def __init__(self, *args, **kwargs):
         super(Grub1Config, self).__init__(*args, **kwargs)
         self._version = 1
-        self._efi = False
+        self._efi = 'efi' in self.file_path
 
     def get_current_title(self):
         """
@@ -354,7 +357,7 @@ class Grub2Config(GrubConfig):
     def __init__(self, *args, **kwargs):
         super(Grub2Config, self).__init__(*args, **kwargs)
         self._version = 2
-        self._efi = False
+        self._efi = 'efi' in self.file_path
 
 
 @parser(Specs.grub2_efi_cfg)
@@ -366,8 +369,8 @@ class Grub2EFIConfig(GrubConfig):
         self._efi = True
 
 
-@parser(Specs.grub2_editenv_list)
-class Grub2EditenvList(CommandParser, GrubConfig):
+@parser(Specs.grub2_grubenv)
+class Grub2Grubenv(GrubConfig):
     """
     Parses output of ``grub2-editenv list`` for both non-EFI and EFI-based systems
 
@@ -376,20 +379,30 @@ class Grub2EditenvList(CommandParser, GrubConfig):
         cmdline(str): the cmdline of the saved boot entry
         saved_entry(str): the saved boot entry, alias of the :attr:`self.name`
         kernelopts(dict): the parsed boot options
+
+    Raises:
+        SkipException: when input content is empty or no useful data.
+        ParseException: when input content is not able to parse.
     """
     def __init__(self, *args, **kwargs):
-        super(Grub2EditenvList, self).__init__(*args, **kwargs)
+        super(Grub2Grubenv, self).__init__(*args, **kwargs)
+        self._efi = False
         self._version = 2
 
     def parse_content(self, content):
-        self.is_empty = bool(content)
+        if not content:
+            raise SkipException("Empty content.")
+
         self.data = {}
         for line in content:
             if '=' in line:
                 key, value = [i.strip() for i in line.split('=', 1)]
                 self.data[key] = value
-            else:
+            elif not line.startswith('#'):
                 raise ParseException('Bad line: "{0}"'.format(line))
+
+        if not self.data:
+            raise SkipException("No useful data")
 
         self.name = self.saved_entry = self.data.get('saved_entry', '')
         self.cmdline = self.data.get('kernelopts', '')
@@ -403,6 +416,14 @@ class Grub2EditenvList(CommandParser, GrubConfig):
             if key not in self.kernelopts:
                 self.kernelopts[key] = []
             self.kernelopts[key].append(value)
+
+
+@parser(Specs.grub2_efi_grubenv)
+class Grub2EFIGrubenv(Grub2Grubenv):
+    """Parses grub2 configuration for EFI-based systems"""
+    def __init__(self, *args, **kwargs):
+        super(Grub2EFIGrubenv, self).__init__(*args, **kwargs)
+        self._efi = True
 
 
 def _parse_line(sep, line):

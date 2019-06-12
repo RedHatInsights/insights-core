@@ -5,18 +5,15 @@ Combiner for Red Hat Grub v1 and Grub v2 information.
 
 This combiner uses the parsers:
 :class:`insights.parsers.grub_conf.Grub1Config`,
-:class:`insights.parsers.grub_conf.Grub1EFIConfig`,
-:class:`insights.parsers.grub_conf.Grub2Config`,
-:class:`insights.parsers.grub_conf.Grub2EFIConfig` and
-:class:`insights.parsers.grub_conf.Grub2EditenvList`.
+:class:`insights.parsers.grub_conf.Grub2Config`, and
+:class:`insights.parsers.grub_conf.Grub2Grubenv`.
 
 It determines which parser was used by checking one of the follwing
 parsers/combiners:
-:class:`insights.combiners.redhat_release.RedHatRelease`,
 :class:`insights.parsers.installed_rpms.InstalledRpms`,
-:class:`insights.parsers.cmdline.CmdLine`, and
-:class:`insights.parsers.ls_sys_firmware.LsSysFirmware`
-
+:class:`insights.parsers.cmdline.CmdLine`,
+:class:`insights.parsers.ls_sys_firmware.LsSysFirmware`, and
+:class:`insights.combiners.redhat_release.RedHatRelease`.
 
 
 Examples:
@@ -39,7 +36,7 @@ from insights.core.plugins import combiner
 from insights.combiners.redhat_release import RedHatRelease
 from insights.parsers.grub_conf import Grub1Config, Grub1EFIConfig
 from insights.parsers.grub_conf import Grub2Config, Grub2EFIConfig
-from insights.parsers.grub_conf import Grub2EditenvList
+from insights.parsers.grub_conf import Grub2Grubenv, Grub2EFIGrubenv
 from insights.parsers.ls_sys_firmware import LsSysFirmware
 from insights.parsers.installed_rpms import InstalledRpms
 from insights.parsers.cmdline import CmdLine
@@ -48,8 +45,8 @@ from insights.parsers import ParseException
 
 @combiner([Grub1Config, Grub2Config,
            Grub1EFIConfig, Grub2EFIConfig,
-           Grub2EditenvList],
-          optional=[LsSysFirmware, RedHatRelease, InstalledRpms, CmdLine])
+           Grub2Grubenv, Grub2EFIGrubenv],
+          optional=[InstalledRpms, CmdLine, LsSysFirmware, RedHatRelease])
 class GrubConf(object):
     """
     Process Grub configuration v1 or v2 based on which type is passed in.
@@ -67,12 +64,12 @@ class GrubConf(object):
             contains "intel_iommu=on"
     """
 
-    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grub2env,
-                 sys_firmware, rh_rel, rpms, cmdline):
+    def __init__(self, grub1, grub2, grub1_efi, grub2_efi, grubenv, grubenv_efi,
+                 rpms, cmdline, sys_firmware, rh_rel):
 
         self.version = self.is_kdump_iommu_enabled = None
         self.grub = self.kernel_initrds = None
-        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grub2env]))
+        _grubs = list(filter(None, [grub1, grub2, grub1_efi, grub2_efi, grubenv, grubenv_efi]))
         # Check if `/sys/firmware/efi` exist?
         self.is_efi = '/sys/firmware/efi' in sys_firmware if sys_firmware else False
 
@@ -80,9 +77,9 @@ class GrubConf(object):
             self.grub = _grubs[0]
             self.is_efi = self.is_efi if sys_firmware else self.grub._efi
         else:
-            _grub1, _grub2 = (grub1_efi, grub2_efi) if self.is_efi else (grub1, grub2)
+            _grub1, _grub2, _grubenv = (grub1_efi, grub2_efi, grubenv_efi) if self.is_efi else (grub1, grub2, grubenv)
             if rh_rel and rh_rel.rhel8:
-                self.grub = grub2env
+                self.grub = _grubenv
             # Check grub version via installed-rpms
             else:
                 if rpms:
