@@ -262,7 +262,7 @@ class Grub1Config(GrubConfig):
     def __init__(self, *args, **kwargs):
         super(Grub1Config, self).__init__(*args, **kwargs)
         self._version = 1
-        self._efi = 'efi' in self.file_path
+        self._efi = False
 
     def get_current_title(self):
         """
@@ -357,7 +357,7 @@ class Grub2Config(GrubConfig):
     def __init__(self, *args, **kwargs):
         super(Grub2Config, self).__init__(*args, **kwargs)
         self._version = 2
-        self._efi = 'efi' in self.file_path
+        self._efi = False
 
 
 @parser(Specs.grub2_efi_cfg)
