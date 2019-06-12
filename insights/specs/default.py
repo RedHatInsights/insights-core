@@ -266,6 +266,7 @@ class DefaultSpecs(Specs):
     dcbtool_gc_dcb = foreach_execute(ethernet_interfaces, "/sbin/dcbtool gc %s dcb")
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
     ethtool_S = foreach_execute(ethernet_interfaces, "/sbin/ethtool -S %s")
+    ethtool_T = foreach_execute(ethernet_interfaces, "/sbin/ethtool -T %s")
     ethtool_a = foreach_execute(ethernet_interfaces, "/sbin/ethtool -a %s")
     ethtool_c = foreach_execute(ethernet_interfaces, "/sbin/ethtool -c %s")
     ethtool_g = foreach_execute(ethernet_interfaces, "/sbin/ethtool -g %s")
@@ -503,6 +504,8 @@ class DefaultSpecs(Specs):
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
     mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
+    modinfo_igb = simple_command("/sbin/modinfo igb")
+    modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
