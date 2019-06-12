@@ -44,12 +44,12 @@ from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
 from .formats import Formatter as FormatterClass
-from pkg_resources import iter_entry_points
-import importlib
 
 log = logging.getLogger(__name__)
 
+
 package_info = dict((k, None) for k in ["RELEASE", "COMMIT", "VERSION", "NAME"])
+
 
 for name in package_info:
     package_info[name] = pkgutil.get_data(__name__, name).strip().decode("utf-8")
@@ -234,6 +234,7 @@ def _load_context(path):
 
 def run(component=None, root=None, print_summary=False,
         context=None, inventory=None, print_component=None):
+
     load_default_plugins()
 
     args = None
@@ -342,39 +343,12 @@ def run(component=None, root=None, print_summary=False,
         else:
             raise
 
-def run_insights_command():
-
-    command = sys.argv[1:2][0]
-
-    cstr = None
-    for entry_point in iter_entry_points(group='console_scripts', name=None):
-        mod_name = entry_point.name.split("-")
-        name = mod_name[1] if len(mod_name) > 1 else mod_name[0]
-        if "insights" in entry_point.module_name and name in command:
-            cstr = entry_point.module_name
-            break
-
-    if cstr:
-        cmd = importlib.import_module(cstr, package=None)
-        sys.argv.pop(1)
-        fn = entry_point.attrs[0]
-        getattr(cmd,fn)()
-    else:
-        log.error("Insights command provided '{}' is not a valid insights entry pount".format(command))
-
 
 def main():
+    if "" not in sys.path:
+        sys.path.insert(0, "")
+    run(print_summary=True)
 
-    scom = sys.argv[1:2][0]
-    command = sys.argv[0:1][0]
-    if 'insights-run' not in command and 'run' != scom:
-        run_insights_command()
-    else:
-        if 'insights-run' not in command:
-            sys.argv.pop(1)
-        if "" not in sys.path:
-            sys.path.insert(0, "")
-        run(print_summary=True)
 
 if __name__ == "__main__":
     main()
