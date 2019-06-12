@@ -136,6 +136,7 @@ class Specs(SpecSet):
     ethtool_k = RegistryPoint(multi_output=True)
     ethtool = RegistryPoint(multi_output=True)
     ethtool_S = RegistryPoint(multi_output=True)
+    ethtool_T = RegistryPoint(multi_output=True)
     exim_conf = RegistryPoint()
     facter = RegistryPoint()
     fc_match = RegistryPoint()
