@@ -68,7 +68,7 @@ Grub2EFIGrubenv - file ``/boot/efi/EFI/redhat/grubenv``
 -------------------------------------------------------
 """
 
-from insights import Parser, CommandParser
+from insights import Parser
 from insights import parser, get_active_lines, defaults
 from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
@@ -232,7 +232,7 @@ class Grub1Config(GrubConfig):
         >>> grub1_content = '''
         ... default=0
         ... timeout=0
-        ... splashimage=(hd0,0)/grub/splash.xpm.gz
+        ... SPLASHimage=(hd0,0)/grub/splash.xpm.gz
         ... hiddenmenu
         ... title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
         ...         kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
