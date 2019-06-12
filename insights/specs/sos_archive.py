@@ -35,6 +35,7 @@ class SosSpecs(Specs):
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("sos_commands/networking/ethtool_-S_*")
+    ethtool_T = glob_file("sos_commands/networking/ethtool_-T_*")
     ethtool_a = glob_file("sos_commands/networking/ethtool_-a_*")
     ethtool_c = glob_file("sos_commands/networking/ethtool_-c_*")
     ethtool_g = glob_file("sos_commands/networking/ethtool_-g_*")
