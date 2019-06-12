@@ -42,7 +42,7 @@ TimeStamp - command ``/sbin/ethtool -T {interface}``
 
 import os
 import re
-from collections import namedtuple, defaultdict
+from collections import namedtuple
 from ..parsers import ParseException
 from .. import parser, LegacyItemAccess, CommandParser
 from insights.specs import Specs
@@ -760,23 +760,18 @@ class TimeStamp(CommandParser):
         return self.iface
 
     def parse_content(self, content):
-        self.data = defaultdict(dict)
+        self.data = {}
         self.iface = extract_iface_name_from_path(self.file_path, "ethtool_-T_")
-        key = None
-        info = []
 
+        group = {}
         for line in content[1:]:
-            if line:
-                if ":" in line:
-                    info = line.split(':')
-                    key = info[0]
-                    if info[1] != '':
-                        self.data[info[0]] = info[1].split()[0].strip()
-                else:
-                    key2, value2 = line.split('(')
-                    self.data[key][key2.split()[0].strip()] = value2.strip(')')
-
-        self.data = dict(self.data)
+            if ":" in line:
+                key, val = [i.strip() for i in line.split(':', 1)]
+                group = {}
+                self.data[key] = val if val else group
+            else:
+                key, val = [i.strip() for i in line.split(None, 1)]
+                group[key] = val.strip('()')
 
 
 @parser(Specs.ethtool)
