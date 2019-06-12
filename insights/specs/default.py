@@ -266,6 +266,7 @@ class DefaultSpecs(Specs):
     dcbtool_gc_dcb = foreach_execute(ethernet_interfaces, "/sbin/dcbtool gc %s dcb")
     ethtool = foreach_execute(ethernet_interfaces, "/sbin/ethtool %s")
     ethtool_S = foreach_execute(ethernet_interfaces, "/sbin/ethtool -S %s")
+    ethtool_T = foreach_execute(ethernet_interfaces, "/sbin/ethtool -T %s")
     ethtool_a = foreach_execute(ethernet_interfaces, "/sbin/ethtool -a %s")
     ethtool_c = foreach_execute(ethernet_interfaces, "/sbin/ethtool -c %s")
     ethtool_g = foreach_execute(ethernet_interfaces, "/sbin/ethtool -g %s")
