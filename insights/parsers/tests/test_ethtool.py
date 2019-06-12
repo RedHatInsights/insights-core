@@ -657,6 +657,7 @@ Hardware Receive Filter Modes:
     all                   (HWTSTAMP_FILTER_ALL)
 '''
 
+
 def test_ethtool_timestamp():
     timestamp = ethtool.TimeStamp(context_wrap(TEST_ETHTOOL_TIMESTAMP, path="sbin/ethtool_-T_eno1"))
     assert timestamp.ifname == 'eno1'

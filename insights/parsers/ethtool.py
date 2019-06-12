@@ -776,7 +776,7 @@ class TimeStamp(CommandParser):
                 key, val = [i.strip() for i in line.split(None, 1)]
                 group[key] = val.strip('()')
             elif line:
-                raise ParseException('bad line: {}'.format(line) )
+                raise ParseException('bad line: {0}'.format(line))
 
 
 @parser(Specs.ethtool)
