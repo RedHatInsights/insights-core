@@ -301,6 +301,8 @@ class Specs(SpecSet):
     mistral_executor_log = RegistryPoint(filterable=True)
     mlx4_port = RegistryPoint()
     modinfo_i40e = RegistryPoint()
+    modinfo_igb = RegistryPoint()
+    modinfo_ixgbe = RegistryPoint()
     modinfo_vmxnet3 = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     module = RegistryPoint()
