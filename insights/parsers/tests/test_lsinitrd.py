@@ -71,7 +71,16 @@ def test_lsinitrd_filtered():
 
 def test_lsinitrd_all():
     d = lsinitrd.LSINITRD(context_wrap(LSINITRD_ALL))
-    assert d.search(name__contains='dev') == [{'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root', 'major': 5, 'minor': 1, 'date': 'Apr 20 15:57', 'name': 'dev/console', 'raw_entry': 'crw-r--r--   1 root     root       5,   1 Apr 20 15:57 dev/console', 'dir': ''}, {'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root', 'major': 1, 'minor': 11, 'date': 'Apr 20 15:57', 'name': 'dev/kmsg', 'raw_entry': 'crw-r--r--   1 root     root       1,  11 Apr 20 15:57 dev/kmsg', 'dir': ''}, {'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root', 'major': 1, 'minor': 3, 'date': 'Apr 20 15:57', 'name': 'dev/null', 'raw_entry': 'crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null', 'dir': ''}]
+    lsdev = d.search(name__contains='dev')
+    assert len(lsdev) == 3
+    dev_console = {
+        'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
+        'major': 5, 'minor': 1, 'date': 'Apr 20 15:57', 'name': 'dev/console', 'dir': '',
+        'raw_entry': 'crw-r--r--   1 root     root       5,   1 Apr 20 15:57 dev/console'
+    }
+    assert dev_console in lsdev
+    assert 'dev/kmsg' in [l['name'] for l in lsdev]
+    assert 'dev/null' in [l['name'] for l in lsdev]
     assert len(d.data) == 10
     assert len(d.unparsed_lines) == 32
     assert "udev-rules" in d.unparsed_lines

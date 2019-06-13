@@ -31,8 +31,11 @@ class LSINITRD(CommandParser):
     Examples:
         >>> len(ls.data)
         5
-        >>> ls.search(name__contains='kernel')
-        [{'type': 'd', 'perms': 'rwxr-xr-x', 'links': 3, 'owner': 'root', 'group': 'root', 'size': 0, 'date': 'Apr 20 15:58', 'name': 'kernel/x86', 'raw_entry': 'drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86', 'dir': ''}]
+        >>> assert ls.search(name__contains='kernel') == [
+        ...    {'group': 'root', 'name': 'kernel/x86', 'links': 3, 'perms': 'rwxr-xr-x',
+        ...     'raw_entry': 'drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86',
+        ...     'owner': 'root', 'date': 'Apr 20 15:58', 'type': 'd', 'dir': '', 'size': 0}
+        ... ]
         >>> "udev-rules" in ls.unparsed_lines
         True
     """
@@ -68,17 +71,19 @@ class LSINITRD(CommandParser):
             search criteria.
 
         Examples:
-            >>> ls.search(name__contains='dev') == [
-            ...    {'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
+            >>> lsdev = ls.search(name__contains='dev')
+            >>> len(lsdev)
+            3
+            >>> dev_console = {
+            ...     'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
             ...     'major': 5, 'minor': 1, 'date': 'Apr 20 15:57', 'name': 'dev/console', 'dir': '',
-            ...     'raw_entry': 'crw-r--r--   1 root     root       5,   1 Apr 20 15:57 dev/console'},
-            ...    {'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
-            ...     'major': 1, 'minor': 11, 'date': 'Apr 20 15:57', 'name': 'dev/kmsg', 'dir': '',
-            ...     'raw_entry': 'crw-r--r--   1 root     root       1,  11 Apr 20 15:57 dev/kmsg'},
-            ...    {'type': 'c', 'perms': 'rw-r--r--', 'links': 1, 'owner': 'root', 'group': 'root',
-            ...     'major': 1, 'minor': 3, 'date': 'Apr 20 15:57', 'name': 'dev/null', 'dir': '',
-            ...     'raw_entry': 'crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null'}
-            ... ]
+            ...     'raw_entry': 'crw-r--r--   1 root     root       5,   1 Apr 20 15:57 dev/console'
+            ... }
+            >>> dev_console in lsdev
+            True
+            >>> 'dev/kmsg' in [l['name'] for l in lsdev]
+            True
+            >>> 'dev/null' in [l['name'] for l in lsdev]
             True
 
         """
