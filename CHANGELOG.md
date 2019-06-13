@@ -1,21 +1,28 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.103-995...HEAD)
+## [insights-core-3.0.104-1004](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.104-1004) (2019-06-13)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.103-995...insights-core-3.0.104-1004)
 
 **Implemented enhancements:**
 
+- Krb5Configuration do not list all the sections [\#1874](https://github.com/RedHatInsights/insights-core/issues/1874)
+- Add "reponame" to the rpm query string for InstalledRpms [\#1854](https://github.com/RedHatInsights/insights-core/issues/1854)
 - `CpuInfo` parser cannot handle ARM and PowerPC [\#1794](https://github.com/RedHatInsights/insights-core/issues/1794)
 - Investigate collecting `/etc/dnf/modules.d` and other dnf related information [\#1648](https://github.com/RedHatInsights/insights-core/issues/1648)
 
 **Fixed bugs:**
 
+- There is a bug in parser "PassengerStatus" [\#1978](https://github.com/RedHatInsights/insights-core/issues/1978)
+- Krb5Configuration do not list all the sections [\#1874](https://github.com/RedHatInsights/insights-core/issues/1874)
 - FileListing could not check dir with sticky bit shown as 'T' in ls command [\#1121](https://github.com/RedHatInsights/insights-core/issues/1121)
 
 **Closed issues:**
 
+- ModInfo parser should parse octeon\_drv module. [\#1991](https://github.com/RedHatInsights/insights-core/issues/1991)
+- setup\_env.sh does not check for the presence of 'virtualenv' [\#1988](https://github.com/RedHatInsights/insights-core/issues/1988)
+- Need to enhance the keep\_scan and token\_scan of LogFileOutput [\#1969](https://github.com/RedHatInsights/insights-core/issues/1969)
 - \[RFE\] Abrt DUPHASH integration for backtraces [\#1785](https://github.com/RedHatInsights/insights-core/issues/1785)
+- Failed to get CephVersion from sosreport archives [\#1684](https://github.com/RedHatInsights/insights-core/issues/1684)
 
 ## [insights-core-3.0.103-995](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.103-995) (2019-06-05)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/3.0.102...insights-core-3.0.103-995)
