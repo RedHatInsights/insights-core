@@ -455,7 +455,7 @@ class DefaultSpecs(Specs):
     lsblk = simple_command("/bin/lsblk")
     lsblk_pairs = simple_command("/bin/lsblk -P -o NAME,KNAME,MAJ:MIN,FSTYPE,MOUNTPOINT,LABEL,UUID,RA,RO,RM,MODEL,SIZE,STATE,OWNER,GROUP,MODE,ALIGNMENT,MIN-IO,OPT-IO,PHY-SEC,LOG-SEC,ROTA,SCHED,RQ-SIZE,TYPE,DISC-ALN,DISC-GRAN,DISC-MAX,DISC-ZERO")
     lscpu = simple_command("/usr/bin/lscpu")
-    lsinitrd = simple_command("/sbin/lsinitrd")
+    lsinitrd = simple_command("/usr/bin/lsinitrd")
     lsinitrd_lvm_conf = first_of([
                                  simple_command("/sbin/lsinitrd -f /etc/lvm/lvm.conf"),
                                  simple_command("/usr/bin/lsinitrd -f /etc/lvm/lvm.conf")
