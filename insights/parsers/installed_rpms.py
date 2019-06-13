@@ -76,6 +76,7 @@ import six
 
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
+from .rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -348,30 +349,6 @@ class InstalledRpm(object):
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
 
-        """Below is only for version comparison"""
-        def _start_of_distribution(rest_split):
-            """
-            The start of distribution field: from the right, the last non-digit part
-            - bash-4.2.39-3.el7_2.2
-              distribution: el7_2.2
-            - kernel-rt-debug-3.10.0-327.rt56.204.el7
-              distribution: el7
-            """
-            nondigit_flag = False
-            for i, r in enumerate(reversed(rest_split)):
-                if not r.isdigit():
-                    nondigit_flag = True
-                elif nondigit_flag and r.isdigit():
-                    return len(rest_split) - i
-
-        self._release_sep = self.release
-        self._distribution = None
-        rl_split = self._release_sep.split('.') if self._release_sep else None
-        idx = _start_of_distribution(rl_split) if rl_split else None
-        if idx:
-            self._release_sep = '.'.join(rl_split[:idx])
-            self._distribution = '.'.join(rl_split[idx:])
-
     @classmethod
     def from_package(cls, package_string):
         """
@@ -557,23 +534,8 @@ class InstalledRpm(object):
         if self.name != other.name:
             raise ValueError('Cannot compare packages with differing names {0} != {1}'
                              .format(self.name, other.name))
-        if (not self._distribution) != (not other._distribution):
-            raise ValueError('Cannot compare packages that one has distribution while the other does not {0} != {1}'
-                             .format(self.package, other.package))
 
-        self_ep, other_ep = pad_version(self.epoch, other.epoch)
-        self_v, other_v = pad_version(self.version, other.version)
-        self_rl, other_rl = pad_version(self.release, other.release)
-        eq_ret = (type(self) == type(other) and
-                  self_ep == other_ep and
-                  self_v == other_v and
-                  self_rl == other_rl)
-
-        if self._distribution:
-            self_d, other_d = pad_version(self._distribution, other._distribution)
-            return eq_ret and self_d == other_d
-        else:
-            return eq_ret
+        return rpm_version_compare(self, other) == 0
 
     def __lt__(self, other):
         if not isinstance(other, InstalledRpm):
@@ -582,22 +544,7 @@ class InstalledRpm(object):
         if self == other:
             return False
 
-        self_ep, other_ep = pad_version(self.epoch, other.epoch)
-        if self_ep != other_ep:
-            return self_ep < other_ep
-
-        self_v, other_v = pad_version(self.version, other.version)
-        if self_v != other_v:
-            return self_v < other_v
-
-        self_rl, other_rl = pad_version(self._release_sep, other._release_sep)
-        if self_rl != other_rl:
-            return self_rl < other_rl
-
-        # If we reach this point, the self == other test has determined that
-        # we have a _distribution, so we rely on that.
-        self_d, other_d = pad_version(self._distribution, other._distribution)
-        return self_d < other_d
+        return rpm_version_compare(self, other) < 0
 
     def __ne__(self, other):
         return not self == other

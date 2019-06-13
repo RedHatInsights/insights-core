@@ -434,9 +434,9 @@ class InsightsConnection(object):
         """
         Retrieve branch_info from Satellite Server
         """
-        branch_info = None
+        # branch_info = None
         # if os.path.exists(constants.cached_branch_info):
-        #     # use cached branch info file if less than 10 minutes old
+        #     # use cached branch info file if less than 5 minutes old
         #     #  (failsafe, should be deleted at end of client run normally)
         #     logger.debug(u'Reading branch info from cached file.')
         #     ctime = datetime.utcfromtimestamp(
@@ -658,7 +658,7 @@ class InsightsConnection(object):
         return True
 
     # -LEGACY-
-    def unregister(self):
+    def _legacy_unregister(self):
         """
         Unregister this system from the insights service
         """
@@ -672,6 +672,28 @@ class InsightsConnection(object):
                 "Successfully unregistered from the Red Hat Insights Service")
             return True
         except requests.ConnectionError as e:
+            logger.debug(e)
+            logger.error("Could not unregister this system")
+            return False
+
+    def unregister(self):
+        """
+        Unregister this system from the insights service
+        """
+        if self.config.legacy_upload:
+            return self._legacy_unregister()
+
+        results = self._fetch_system_by_machine_id()
+        try:
+            logger.debug("Unregistering host...")
+            url = self.api_url + "/inventory/v1/hosts/" + results[0]['id']
+            net_logger.info("DELETE %s", url)
+            response = self.session.delete(url)
+            response.raise_for_status()
+            logger.info(
+                "Successfully unregistered from the Red Hat Insights Service")
+            return True
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as e:
             logger.debug(e)
             logger.error("Could not unregister this system")
             return False
@@ -845,7 +867,8 @@ class InsightsConnection(object):
                 logger.error('Unable to set display name: %s %s',
                              res.status_code, res.text)
                 return False
-        except requests.ConnectionError:
+        except (requests.ConnectionError, requests.Timeout, ValueError) as e:
+            logger.error(e)
             # can't connect, run connection test
             return False
 
@@ -853,22 +876,15 @@ class InsightsConnection(object):
         '''
         Set display name of a system independently of upload.
         '''
-        legacy_set = False
         if self.config.legacy_upload:
-            # [circus music plays]
-            # while we have to support legacy, set name in both APIs
-            legacy_set = self._legacy_set_display_name(display_name)
+            return self._legacy_set_display_name(display_name)
 
         system = self._fetch_system_by_machine_id()
         if not system:
-            return legacy_set or system
+            return system
         inventory_id = system[0]['id']
 
-        # [circus music]
-        if self.config.legacy_upload:
-            req_url = self.base_url + '/platform/inventory/v1/hosts/' + inventory_id
-        else:
-            req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
+        req_url = self.base_url + '/inventory/v1/hosts/' + inventory_id
         try:
             net_logger.info("PATCH %s", req_url)
             res = self.session.patch(req_url, json={'display_name': display_name})
