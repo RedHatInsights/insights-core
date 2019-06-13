@@ -118,6 +118,7 @@ class GrubConfig(Parser, dict):
                     [(menuentry_name, another_name), ...]
                 ],
             }
+
         """
 
         line_iter = iter(get_active_lines(content))
@@ -232,7 +233,7 @@ class Grub1Config(GrubConfig):
         >>> grub1_content = '''
         ... default=0
         ... timeout=0
-        ... SPLASHimage=(hd0,0)/grub/splash.xpm.gz
+        ... splashimage=(hd0,0)/grub/splash.xpm.gz
         ... hiddenmenu
         ... title Red Hat Enterprise Linux Server (2.6.32-431.17.1.el6.x86_64)
         ...         kernel /vmlinuz-2.6.32-431.17.1.el6.x86_64 crashkernel=128M rhgb quiet
@@ -372,7 +373,7 @@ class Grub2EFIConfig(GrubConfig):
 @parser(Specs.grub2_grubenv)
 class Grub2Grubenv(GrubConfig):
     """
-    Parses output of ``grub2-editenv list`` for both non-EFI and EFI-based systems
+    Parses the ``/boot/grub2/grubenv`` file.
 
     Attributes:
         name(str): the name of the saved boot entry
@@ -390,6 +391,9 @@ class Grub2Grubenv(GrubConfig):
         self._version = 2
 
     def parse_content(self, content):
+        """
+        Parse the ``/boot/grub2/grubenv``
+        """
         if not content:
             raise SkipException("Empty content.")
 
@@ -420,7 +424,9 @@ class Grub2Grubenv(GrubConfig):
 
 @parser(Specs.grub2_efi_grubenv)
 class Grub2EFIGrubenv(Grub2Grubenv):
-    """Parses grub2 configuration for EFI-based systems"""
+    """
+    Parses ``/boot/efi/EFI/redhat/grubenv`` for EFI-based systems
+    """
     def __init__(self, *args, **kwargs):
         super(Grub2EFIGrubenv, self).__init__(*args, **kwargs)
         self._efi = True
