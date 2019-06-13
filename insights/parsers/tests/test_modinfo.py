@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import modinfo, ParseException, SkipException
-from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3
+from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -115,6 +115,44 @@ sig_key:        A5:70:18:DF:B6:C9:D6:1F:CF:CE:0A:3D:02:8B:B3:69:BD:76:CA:ED
 sig_hashalgo:   sha256
 """.strip()
 
+MODINFO_IGB = """
+filename:       /lib/modules/3.10.0-327.10.1.el7.jump7.x86_64/kernel/drivers/net/ethernet/intel/igb/igb.ko
+version:        5.2.15-k
+license:        GPL
+description:    Intel(R) Gigabit Ethernet Network Driver
+author:         Intel Corporation, <e1000-devel@lists.sourceforge.net>
+rhelversion:    7.2
+srcversion:     9CF4D446FA2E882F6BA0A17
+alias:          pci:v00008086d000010D6sv*sd*bc*sc*i*
+depends:        i2c-core,ptp,dca,i2c-algo-bit
+intree:         Y
+vermagic:       3.10.0-327.10.1.el7.jump7.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        C9:10:C7:BB:C3:C7:10:A1:68:A6:F3:6D:45:22:90:B7:5A:D4:B0:7A
+sig_hashalgo:   sha256
+parm:           max_vfs:Maximum number of virtual functions to allocate per physical function (uint)
+parm:           debug:Debug level (0=none,...,16=all) (int)
+""".strip()
+
+MODINFO_IXGBE = """
+filename:       /lib/modules/3.10.0-514.6.1.el7.jump3.x86_64/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko
+version:        4.4.0-k-rh7.3
+license:        GPL
+description:    Intel(R) 10 Gigabit PCI Express Network Driver
+author:         Intel Corporation, <linux.nics@intel.com>
+rhelversion:    7.3
+srcversion:     24F0195E8A357701DE1B32E
+alias:          pci:v00008086d000015CEsv*sd*bc*sc*i*
+depends:        i2c-core,ptp,dca,i2c-algo-bit
+intree:         Y
+vermagic:       3.10.0-514.6.1.el7.jump3.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        69:10:6E:D5:83:0D:2C:66:97:41:91:7B:0F:57:D4:1D:95:A2:8A:EB
+sig_hashalgo:   sha256
+parm:           max_vfs:Maximum number of virtual functions to allocate per physical function (uint)
+parm:           debug:Debug level (0=none,...,16=all) (int)
+""".strip()
+
 MODINFO_NO = """
 """.strip()
 
@@ -159,6 +197,16 @@ def test_modinfo():
     assert modinfo_obj.module_signer == 'Red Hat Enterprise Linux kernel signing key'
     assert sorted(modinfo_obj.module_deps) == sorted(['mdio', 'libcrc32c', 'ptp'])
 
+    modinfo_igb = ModInfoIgb(context_wrap(MODINFO_IGB))
+    assert modinfo_igb.data.get('alias') == 'pci:v00008086d000010D6sv*sd*bc*sc*i*'
+    assert modinfo_igb.module_name == 'igb'
+    assert modinfo_igb.module_path == '/lib/modules/3.10.0-327.10.1.el7.jump7.x86_64/kernel/drivers/net/ethernet/intel/igb/igb.ko'
+
+    modinfo_ixgbe = ModInfoIxgbe(context_wrap(MODINFO_IXGBE))
+    assert modinfo_ixgbe.data.get('alias') == 'pci:v00008086d000015CEsv*sd*bc*sc*i*'
+    assert modinfo_ixgbe.module_name == 'ixgbe'
+    assert modinfo_ixgbe.module_path == '/lib/modules/3.10.0-514.6.1.el7.jump3.x86_64/kernel/drivers/net/ethernet/intel/ixgbe/ixgbe.ko'
+
     modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))
     assert modinfo_drv.data.get('alias') == 'pci:v000015ADd000007B0sv*sd*bc*sc*i*'
     assert len(modinfo_drv.module_parm) == 0
@@ -187,6 +235,8 @@ def test_modinfo():
 
 def test_modinfo_doc_examples():
     env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E)),
-           'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3))}
+           'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3)),
+           'modinfo_igb': ModInfoIgb(context_wrap(MODINFO_IGB)),
+           'modinfo_ixgbe': ModInfoIxgbe(context_wrap(MODINFO_IXGBE))}
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0
