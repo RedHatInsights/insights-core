@@ -566,6 +566,7 @@ class Specs(SpecSet):
     vdsm_import_log = RegistryPoint(multi_output=True, filterable=True)
     vdsm_log = RegistryPoint(filterable=True)
     vdsm_logger_conf = RegistryPoint()
+    version_info = RegistryPoint()
     vgdisplay = RegistryPoint()
     vgs_noheadings = RegistryPoint()
     vgs_noheadings_all = RegistryPoint()
