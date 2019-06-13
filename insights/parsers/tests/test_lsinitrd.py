@@ -1,4 +1,6 @@
 import doctest
+import pytest
+from insights.parsers import SkipException
 from insights.parsers import lsinitrd
 from insights.tests import context_wrap
 
@@ -61,16 +63,37 @@ crw-r--r--   1 root     root       1,  11 Apr 20 15:57 dev/kmsg
 crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null
 """.strip()
 
+LSINITRD_EMPTY = ""
+
+LSINITRD_BROKEN = """
+drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86
+Version: dracut-033-535.el7
+dracut modules:
+kernel-modules
+udev-rules
+drwxr-xr-x  12 root     root            0 Apr 20 15:58 .
+crw-r--r--   1
+crw-r-
+c
+""".strip()
+
+
+def test_lsinitrd_empty():
+    d = lsinitrd.Lsinitrd(context_wrap(LSINITRD_EMPTY))
+    assert len(d.data) == 0
+    assert d.search(name__contains='kernel') == []
+    assert d.unparsed_lines == []
+
 
 def test_lsinitrd_filtered():
-    d = lsinitrd.LSINITRD(context_wrap(LSINITRD_FILTERED))
+    d = lsinitrd.Lsinitrd(context_wrap(LSINITRD_FILTERED))
     assert len(d.data) == 5
     assert d.search(name__contains='kernel') == [{'type': 'd', 'perms': 'rwxr-xr-x', 'links': 3, 'owner': 'root', 'group': 'root', 'size': 0, 'date': 'Apr 20 15:58', 'name': 'kernel/x86', 'raw_entry': 'drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86', 'dir': ''}]
     assert d.unparsed_lines == ['Version: dracut-033-535.el7', 'dracut modules:', 'kernel-modules', 'udev-rules']
 
 
 def test_lsinitrd_all():
-    d = lsinitrd.LSINITRD(context_wrap(LSINITRD_ALL))
+    d = lsinitrd.Lsinitrd(context_wrap(LSINITRD_ALL))
     lsdev = d.search(name__contains='dev')
     assert len(lsdev) == 3
     dev_console = {
@@ -86,9 +109,14 @@ def test_lsinitrd_all():
     assert "udev-rules" in d.unparsed_lines
 
 
+def test_lsinitrd_broken():
+    with pytest.raises(SkipException) as err:
+        lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
+    assert 'Parsing failure for lsinitrd command output.' in str(err)
+
+
 def test_lsinitrd_docs():
     failed_count, tests = doctest.testmod(
-        lsinitrd,
-        globs={'ls': lsinitrd.LSINITRD(context_wrap(LSINITRD_FILTERED))}
+        globs={'ls': lsinitrd.Lsinitrd(context_wrap(LSINITRD_FILTERED))}
     )
     assert failed_count == 0

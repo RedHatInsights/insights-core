@@ -1,5 +1,5 @@
 """
-LSINITRD - command ``lsinitrd``
+Lsinitrd - command ``lsinitrd``
 ===============================
 
 This parser parses the filtered output of command ``lsinitrd`` and provides the
@@ -7,13 +7,13 @@ info of listed files.
 """
 
 from insights import parser, CommandParser
-from insights.core.ls_parser import Directory
+from insights.core import ls_parser
 from insights.specs import Specs
-from insights.parsers import keyword_search
+from insights.parsers import keyword_search, SkipException
 
 
 @parser(Specs.lsinitrd)
-class LSINITRD(CommandParser):
+class Lsinitrd(CommandParser):
     """
     A parser for command "lsinitrd".
 
@@ -47,16 +47,17 @@ class LSINITRD(CommandParser):
         _unparsed_lines = []
 
         for l in content:
-            if l and l[0] in file_types and l[1:4] in perm:
+            if l and len(l) > 10 and l[0] in file_types and l[1:4] in perm:
                 entries.append(l)
             else:
                 _unparsed_lines.append(l)
-
-        d = Directory("", len(entries), entries)
-        d._load()  # call _load() directly to parse the content
-
-        self.data = d['entries']
         self.unparsed_lines = _unparsed_lines
+
+        try:
+            d = ls_parser.parse(entries, '').get('')
+            self.data = d.get('entries')
+        except:
+            raise SkipException("Parsing failure for lsinitrd command output.")
 
     def search(self, **kwargs):
         """
