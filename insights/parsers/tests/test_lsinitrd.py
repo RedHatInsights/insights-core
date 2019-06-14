@@ -1,6 +1,5 @@
 import doctest
 import pytest
-from insights.parsers import SkipException
 from insights.parsers import lsinitrd
 from insights.tests import context_wrap
 
@@ -65,6 +64,7 @@ crw-r--r--   1 root     root       1,   3 Apr 20 15:57 dev/null
 
 LSINITRD_EMPTY = ""
 
+# This test case
 LSINITRD_BROKEN = """
 drwxr-xr-x   3 root     root            0 Apr 20 15:58 kernel/x86
 Version: dracut-033-535.el7
@@ -110,9 +110,13 @@ def test_lsinitrd_all():
 
 
 def test_lsinitrd_broken():
-    with pytest.raises(SkipException) as err:
+    """
+    For this testcase, ls_parser.parse() will throw an IndexError.
+    Assert with this specific error here.
+    """
+    with pytest.raises(Exception) as err:
         lsinitrd.Lsinitrd(context_wrap(LSINITRD_BROKEN))
-    assert 'Parsing failure for lsinitrd command output.' in str(err)
+    assert "list index out of range" in str(err)
 
 
 def test_lsinitrd_docs():

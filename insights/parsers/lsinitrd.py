@@ -9,7 +9,7 @@ info of listed files.
 from insights import parser, CommandParser
 from insights.core import ls_parser
 from insights.specs import Specs
-from insights.parsers import keyword_search, SkipException
+from insights.parsers import keyword_search
 
 
 @parser(Specs.lsinitrd)
@@ -53,11 +53,8 @@ class Lsinitrd(CommandParser):
                 _unparsed_lines.append(l)
         self.unparsed_lines = _unparsed_lines
 
-        try:
-            d = ls_parser.parse(entries, '').get('')
-            self.data = d.get('entries')
-        except:
-            raise SkipException("Parsing failure for lsinitrd command output.")
+        d = ls_parser.parse(entries, '').get('')
+        self.data = d.get('entries')
 
     def search(self, **kwargs):
         """
