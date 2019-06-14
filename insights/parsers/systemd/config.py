@@ -28,6 +28,7 @@ from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
+from insights.core.plugins import ContentException
 
 
 class SystemdConf(LegacyItemAccess, ConfigParser):
@@ -39,6 +40,9 @@ class SystemdConf(LegacyItemAccess, ConfigParser):
         return parse_doc(content)
 
     def parse_content(self, content):
+        if content and "No such file or directory" in content[0]:
+            name = self.__class__.__name__
+            raise ContentException(name + ": " + content[0])
         super(SystemdConf, self).parse_content(content)
         dict_all = {}
         for section in self.doc:
