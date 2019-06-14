@@ -1,5 +1,16 @@
 # Change Log
 
+## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
+
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.105-1009...HEAD)
+
+**Closed issues:**
+
+- Change sequence of simple\_file for first\_of Spec for lspci in sos\_archive.py [\#1997](https://github.com/RedHatInsights/insights-core/issues/1997)
+
+## [insights-core-3.0.105-1009](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.105-1009) (2019-06-14)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.104-1004...insights-core-3.0.105-1009)
+
 ## [insights-core-3.0.104-1004](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.104-1004) (2019-06-13)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.103-995...insights-core-3.0.104-1004)
 
