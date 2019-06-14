@@ -305,6 +305,7 @@ class Specs(SpecSet):
     modinfo_i40e = RegistryPoint()
     modinfo_igb = RegistryPoint()
     modinfo_ixgbe = RegistryPoint()
+    modinfo_veth = RegistryPoint()
     modinfo_vmxnet3 = RegistryPoint()
     modprobe = RegistryPoint(multi_output=True)
     module = RegistryPoint()
