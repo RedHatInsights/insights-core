@@ -1,3 +1,17 @@
+#  Copyright 2019 Red Hat, Inc.
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
 from datetime import datetime
 import pytest
 
@@ -288,7 +302,21 @@ def test_vdsm_version_4_log():
 VDSM_IMPORT_LOGS = """
 [    0.2] preparing for copy
 [    0.2] Copying disk 1/1 to /rhev/data-center/958ca292-9126-41f1-b7eb-2f9931fea2fb/f524d2ba-155a-45c8-b3ab-9e18539d3ef2/images/502f5598-335d-4023-8c01-635d86d129a3/d4b140c8-9cd5-4ad4-bb04-63aebeda808b
-    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (0/100%)    (1/100%)    (1/100%)    (1/100%)    (1/100%)    (1/100%)    (2/100%)    (2/100%)    (2/100%)    (2/100%)
+    (0/100%)
+    (0/100%)
+    (0/100%)
+    (0/100%)
+    (0/100%)
+    (0/100%)
+    (1/100%)
+    (1/100%)
+    (1/100%)
+    (1/100%)
+    (1/100%)
+    (2/100%)
+    (2/100%)
+    (2/100%)
+    (2/100%)
 [  546.9] Finishing off
 """.strip()
 
