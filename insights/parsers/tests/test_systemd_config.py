@@ -1,6 +1,7 @@
 from insights.parsers.systemd import config
 from insights.parsers import SkipException
 from insights.tests import context_wrap
+from insights.core.plugins import ContentException
 import doctest
 import pytest
 
@@ -44,6 +45,11 @@ WantedBy=multi-user.target
 """.strip()
 
 
+SYSTEMD_DOCKER_EMPTY = """
+Unit docker.service is not loaded: No such file or directory
+""".strip()
+
+
 SYSTEMD_OPENSHIFT_NODE = """
 [Unit]
 Description=Atomic OpenShift Node
@@ -71,6 +77,7 @@ ExecStartPost=/usr/sbin/sysctl --system
 WantedBy=multi-user.target
 
 """.strip()
+
 
 SYSTEMD_LOGIND_CONF = """
 #  This file is part of systemd.
@@ -188,6 +195,11 @@ def test_systemd_docker():
     assert docker_service.data["Install"]["WantedBy"] == "multi-user.target"
     assert list(docker_service.data["Install"].keys()) == ["WantedBy"]
     assert docker_service.data["Service"]["ExecStart"] == "/bin/sh -c '/usr/bin/docker-current daemon --authorization-plugin=rhel-push-plugin --exec-opt native.cgroupdriver=systemd $OPTIONS $DOCKER_STORAGE_OPTIONS $DOCKER_NETWORK_OPTIONS $ADD_REGISTRY $BLOCK_REGISTRY $INSECURE_REGISTRY 2>&1 | /usr/bin/forward-journald -tag docker'"
+
+
+def test_systemd_docker_empty():
+    with pytest.raises(ContentException):
+        config.SystemdDocker(context_wrap(SYSTEMD_DOCKER_EMPTY))
 
 
 def test_systemd_openshift_node():
