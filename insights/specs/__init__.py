@@ -525,6 +525,7 @@ class Specs(SpecSet):
     sysctl_conf_initramfs = RegistryPoint()
     sysctl_conf = RegistryPoint()
     sysctl = RegistryPoint()
+    systemctl_cat_rpcbind_socket = RegistryPoint()
     systemctl_cinder_volume = RegistryPoint()
     systemctl_httpd = RegistryPoint()
     systemctl_list_unit_files = RegistryPoint()
