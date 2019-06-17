@@ -31,7 +31,7 @@ from insights.parsers.yum import YumRepoList
 from collections import namedtuple
 
 
-@combiner(optional=[InstalledRpms, DMIDecode, YumRepoList])
+@combiner([InstalledRpms, DMIDecode, YumRepoList])
 class CloudProvider(object):
     """
     Combiner class to provide cloud vendor facts
