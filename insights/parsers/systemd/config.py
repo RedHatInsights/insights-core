@@ -28,9 +28,10 @@ from insights.core import ConfigParser, LegacyItemAccess
 from insights.core.plugins import parser
 from insights.specs import Specs
 from insights.util import deprecated
+from insights import CommandParser
 
 
-class SystemdConf(LegacyItemAccess, ConfigParser):
+class SystemdConf(CommandParser, LegacyItemAccess, ConfigParser):
     """
     Base class for parsing systemd INI like configuration files
 
