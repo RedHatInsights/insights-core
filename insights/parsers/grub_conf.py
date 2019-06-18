@@ -1,6 +1,6 @@
 """
 GRUB configuration files
-=======================================================================
+========================
 
 This parser reads the configuration of the GRand Unified Bootloader, versions
 1 or 2.
@@ -40,7 +40,7 @@ Each of these categories is (currently) stored as a simple list of tuples.
     as ``('load_video', None)`` and ``set root='hd0,msdos1'`` will be stored
     as ``('set', "root='hd0,msdos1'")``.
 
-Note:
+.. note::
     For GRUB version 2, all lines between the ``if`` and ``fi`` will be ignored
     due to we cannot analyze the result of the bash conditions.
 
@@ -60,9 +60,17 @@ Grub2Config - file ``/boot/grub/grub2.cfg``
 
 Grub2EFIConfig - file ``/boot/efi/EFI/redhat/grub.cfg``
 -------------------------------------------------------
+
+Grub2Grubenv - file ``/boot/grub2/grubenv``
+-------------------------------------------
+
+Grub2EFIGrubenv - file ``/boot/efi/EFI/redhat/grubenv``
+-------------------------------------------------------
 """
 
-from .. import Parser, parser, get_active_lines, defaults, LegacyItemAccess
+from insights import Parser
+from insights import parser, get_active_lines, defaults
+from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 IOMMU = "intel_iommu=on"
@@ -70,7 +78,7 @@ GRUB_KERNELS = 'grub_kernels'
 GRUB_INITRDS = 'grub_initrds'
 
 
-class BootEntry(LegacyItemAccess):
+class BootEntry(dict):
     """
     An object representing an entry in the output of ``mount`` command.  Each
     entry contains below fixed attributes:
@@ -80,20 +88,12 @@ class BootEntry(LegacyItemAccess):
         cmdline (str): Cmdline of the boot entry
     """
     def __init__(self, data={}):
-        self.data = data
-        for k, v in data.items():
-            setattr(self, k, v)
-
-    def items(self):
-        """
-        To keep backward compatibility and let it can be iterated as a
-        dictionary.
-        """
-        for k, v in self.data.items():
-            yield k, v
+        self.update(data)
+        self.name = data.get('name', '')
+        self.cmdline = data.get('cmdline', '')
 
 
-class GrubConfig(LegacyItemAccess, Parser):
+class GrubConfig(Parser, dict):
     """
     Parser for configuration for both GRUB versions 1 and 2.
     """
@@ -101,6 +101,7 @@ class GrubConfig(LegacyItemAccess, Parser):
     def __init__(self, *args, **kwargs):
         self._boot_entries = []
         super(GrubConfig, self).__init__(*args, **kwargs)
+        self.update(self.data)
 
     def parse_content(self, content):
         """
@@ -117,6 +118,7 @@ class GrubConfig(LegacyItemAccess, Parser):
                     [(menuentry_name, another_name), ...]
                 ],
             }
+
         """
 
         line_iter = iter(get_active_lines(content))
@@ -365,6 +367,68 @@ class Grub2EFIConfig(GrubConfig):
     def __init__(self, *args, **kwargs):
         super(Grub2EFIConfig, self).__init__(*args, **kwargs)
         self._version = 2
+        self._efi = True
+
+
+@parser(Specs.grub2_grubenv)
+class Grub2Grubenv(GrubConfig):
+    """
+    Parses the ``/boot/grub2/grubenv`` file.
+
+    Attributes:
+        name(str): the name of the saved boot entry
+        cmdline(str): the cmdline of the saved boot entry
+        saved_entry(str): the saved boot entry, alias of the :attr:`self.name`
+        kernelopts(dict): the parsed boot options
+
+    Raises:
+        SkipException: when input content is empty or no useful data.
+        ParseException: when input content is not able to parse.
+    """
+    def __init__(self, *args, **kwargs):
+        super(Grub2Grubenv, self).__init__(*args, **kwargs)
+        self._efi = False
+        self._version = 2
+
+    def parse_content(self, content):
+        """
+        Parse the ``/boot/grub2/grubenv``
+        """
+        if not content:
+            raise SkipException("Empty content.")
+
+        self.data = {}
+        for line in content:
+            if '=' in line:
+                key, value = [i.strip() for i in line.split('=', 1)]
+                self.data[key] = value
+            elif not line.startswith('#'):
+                raise ParseException('Bad line: "{0}"'.format(line))
+
+        if not self.data:
+            raise SkipException("No useful data")
+
+        self.name = self.saved_entry = self.data.get('saved_entry', '')
+        self.cmdline = self.data.get('kernelopts', '')
+        self._boot_entries.append(BootEntry({'name': self.name,
+                                             'cmdline': self.cmdline}))
+        self.kernelopts = dict()
+        for el in self.cmdline.split():
+            key, value = el, True
+            if "=" in el:
+                key, value = [i.strip() for i in el.split('=', 1)]
+            if key not in self.kernelopts:
+                self.kernelopts[key] = []
+            self.kernelopts[key].append(value)
+
+
+@parser(Specs.grub2_efi_grubenv)
+class Grub2EFIGrubenv(Grub2Grubenv):
+    """
+    Parses ``/boot/efi/EFI/redhat/grubenv`` for EFI-based systems
+    """
+    def __init__(self, *args, **kwargs):
+        super(Grub2EFIGrubenv, self).__init__(*args, **kwargs)
         self._efi = True
 
 
