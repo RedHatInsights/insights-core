@@ -28,7 +28,7 @@ import sys
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     import insights.contrib.ElementTree as ET
 else:
-    import xml.etree.ElementTree as ET
+    import defusedxml.ElementTree as ET
 
 log = logging.getLogger(__name__)
 
