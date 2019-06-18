@@ -50,6 +50,7 @@ maybe_require("argparse")
 
 client = set([
     'requests',
+    'defusedxml',
     'pyOpenSSL',
 ])
 
