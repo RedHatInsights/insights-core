@@ -183,6 +183,9 @@ class DataCollector(object):
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
+                    if s['command'] in rm_commands:
+                        logger.warn("WARNING: Skipping command %s", s['command'])
+                        continue
                     cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
