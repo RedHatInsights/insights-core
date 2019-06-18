@@ -22,6 +22,7 @@ class SosSpecs(Specs):
     catalina_out = glob_file("var/log/tomcat*/catalina.out")
     catalina_server_log = glob_file("var/log/tomcat*/catalina*.log")
     ceph_osd_tree_text = simple_file("sos_commands/ceph/ceph_osd_tree")
+    ceph_report = simple_file("sos_commands/ceph/ceph_report")
     chkconfig = simple_file("sos_commands/startup/chkconfig_--list")
     date = first_of([simple_file("sos_commands/general/date"), simple_file("sos_commands/date/date")])
     df__al = first_file(["sos_commands/filesys/df_-al", "sos_commands/filesys/df_-al_-x_autofs"])
@@ -34,6 +35,7 @@ class SosSpecs(Specs):
     dumpe2fs_h = glob_file("sos_commands/filesys/dumpe2fs_-h_*")
     ethtool = glob_file("sos_commands/networking/ethtool_*", ignore="ethtool_-.*")
     ethtool_S = glob_file("sos_commands/networking/ethtool_-S_*")
+    ethtool_T = glob_file("sos_commands/networking/ethtool_-T_*")
     ethtool_a = glob_file("sos_commands/networking/ethtool_-a_*")
     ethtool_c = glob_file("sos_commands/networking/ethtool_-c_*")
     ethtool_g = glob_file("sos_commands/networking/ethtool_-g_*")
@@ -56,12 +58,13 @@ class SosSpecs(Specs):
     journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot")])
     locale = simple_file("sos_commands/i18n/locale")
     lsblk = simple_file("sos_commands/block/lsblk")
+    lsinitrd = simple_file("sos_commands/boot/lsinitrd")
     lsof = simple_file("sos_commands/process/lsof_-b_M_-n_-l")
     lsmod = simple_file("sos_commands/kernel/lsmod")
     lspci = first_of([
         simple_file("sos_commands/pci/lspci_-nnvv"),
-        simple_file("sos_commands/pci/lspci_-nvv"),
-        simple_file("sos_commands/pci/lspci")
+        simple_file("sos_commands/pci/lspci"),
+        simple_file("sos_commands/pci/lspci_-nvv")
     ])
     lsscsi = simple_file("sos_commands/scsi/lsscsi")
     ls_dev = first_file(["sos_commands/block/ls_-lanR_.dev", "sos_commands/devicemapper/ls_-lanR_.dev"])
