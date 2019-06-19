@@ -11,6 +11,8 @@ ModInfoIgb - Command ``/sbin/modinfo igb``
 ------------------------------------------
 ModInfoIxgbe - Command ``/sbin/modinfo ixgbe``
 ----------------------------------------------
+ModInfoVeth - Command ``/sbin/modinfo veth``
+--------------------------------------------
 """
 
 from insights import parser, CommandParser
@@ -319,5 +321,35 @@ class ModInfoIxgbe(ModInfo):
         'Red Hat Enterprise Linux kernel signing key'
         >>> modinfo_ixgbe.module_alias
         'pci:v00008086d000015CEsv*sd*bc*sc*i*'
+    """
+    pass
+
+
+@parser(Specs.modinfo_veth)
+class ModInfoVeth(ModInfo):
+    """
+    Parses output of ``/sbin/modinfo veth`` command.
+    Sample ``/sbin/modinfo veth`` output::
+
+        filename:       /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/veth.ko
+        alias:          rtnl-link-veth
+        license:        GPL v2
+        description:    Virtual Ethernet Tunnel
+        rhelversion:    7.2
+        srcversion:     25C6BF3D2F35CAF3A252F12
+        depends:
+        intree:         Y
+        vermagic:       3.10.0-327.el7.x86_64 SMP mod_unload modversions
+        signer:         Red Hat Enterprise Linux kernel signing key
+        sig_key:        BC:73:C3:CE:E8:9E:5E:AE:99:4A:E5:0A:0D:B1:F0:FE:E3:FC:09:13
+        sig_hashalgo:   sha256
+
+    Examples:
+        >>> type(modinfo_veth)
+        <class 'insights.parsers.modinfo.ModInfoVeth'>
+        >>> modinfo_veth.module_name
+        'veth'
+        >>> modinfo_veth.module_signer
+        'Red Hat Enterprise Linux kernel signing key'
     """
     pass

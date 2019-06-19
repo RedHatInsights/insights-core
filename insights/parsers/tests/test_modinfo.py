@@ -1,7 +1,7 @@
 import doctest
 import pytest
 from insights.parsers import modinfo, ParseException, SkipException
-from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe
+from insights.parsers.modinfo import ModInfoI40e, ModInfoVmxnet3, ModInfoIgb, ModInfoIxgbe, ModInfoVeth
 from insights.tests import context_wrap
 
 MODINFO_I40E = """
@@ -160,6 +160,21 @@ MODINFO_NO_1 = """
 modinfo ERROR Module i40e not found.
 """.strip()
 
+MODINFO_VETH = """
+filename:       /lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/veth.ko
+alias:          rtnl-link-veth
+license:        GPL v2
+description:    Virtual Ethernet Tunnel
+rhelversion:    7.2
+srcversion:     25C6BF3D2F35CAF3A252F12
+depends:
+intree:         Y
+vermagic:       3.10.0-327.el7.x86_64 SMP mod_unload modversions
+signer:         Red Hat Enterprise Linux kernel signing key
+sig_key:        BC:73:C3:CE:E8:9E:5E:AE:99:4A:E5:0A:0D:B1:F0:FE:E3:FC:09:13
+sig_hashalgo:   sha256
+""".strip()
+
 
 def test_modinfo():
     modinfo_obj = ModInfoI40e(context_wrap(MODINFO_I40E))
@@ -216,6 +231,11 @@ def test_modinfo():
 
     assert sorted(modinfo_obj.data['firmware']) == sorted(['bnx2x/bnx2x-e2-7.13.1.0.fw', 'bnx2x/bnx2x-e1h-7.13.1.0.fw', 'bnx2x/bnx2x-e1-7.13.1.0.fw'])
 
+    modinfo_drv = ModInfoVeth(context_wrap(MODINFO_VETH))
+    assert modinfo_drv.module_name == 'veth'
+    assert modinfo_drv.module_path == '/lib/modules/3.10.0-327.el7.x86_64/kernel/drivers/net/veth.ko'
+    assert modinfo_drv.module_signer == 'Red Hat Enterprise Linux kernel signing key'
+
     with pytest.raises(SkipException) as exc:
         modinfo_obj = ModInfoI40e(context_wrap(MODINFO_NO))
     assert 'No Contents' in str(exc)
@@ -232,11 +252,20 @@ def test_modinfo():
         modinfo_drv = ModInfoVmxnet3(context_wrap(MODINFO_NO_1))
     assert 'No Parsed Contents' in str(exc)
 
+    with pytest.raises(SkipException) as exc:
+        modinfo_drv = ModInfoVeth(context_wrap(MODINFO_NO))
+    assert 'No Contents' in str(exc)
+
+    with pytest.raises(ParseException) as exc:
+        modinfo_drv = ModInfoVeth(context_wrap(MODINFO_NO_1))
+    assert 'No Parsed Contents' in str(exc)
+
 
 def test_modinfo_doc_examples():
     env = {'modinfo_obj': ModInfoI40e(context_wrap(MODINFO_I40E)),
            'modinfo_drv': ModInfoVmxnet3(context_wrap(MODINFO_VMXNET3)),
            'modinfo_igb': ModInfoIgb(context_wrap(MODINFO_IGB)),
+           'modinfo_veth': ModInfoVeth(context_wrap(MODINFO_VETH)),
            'modinfo_ixgbe': ModInfoIxgbe(context_wrap(MODINFO_IXGBE))}
     failed, total = doctest.testmod(modinfo, globs=env)
     assert failed == 0
