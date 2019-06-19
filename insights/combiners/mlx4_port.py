@@ -9,7 +9,7 @@ file.  This combiner puts all of them back together and presents
 them as a dict where the keys are the port names, and the contents
 of the port name file are the lines in each file stored as a list.
 
-This class inherits all methods and attributed from the ``dict`` object.
+This class inherits all methods and attributes from the ``dict`` object.
 
 Examples:
     >>> type(mlx4port)

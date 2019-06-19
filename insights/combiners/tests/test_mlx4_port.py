@@ -2,7 +2,7 @@ import doctest
 from insights.tests import context_wrap
 from insights.parsers.mlx4_port import Mlx4Port as Mlx4PortParser
 from insights.combiners import mlx4_port
-from insights.combiners.mlx4_port import  Mlx4Port
+from insights.combiners.mlx4_port import Mlx4Port
 
 MLX4_CONTENT_1 = """
 ib
