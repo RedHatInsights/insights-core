@@ -287,7 +287,7 @@ class DefaultSpecs(Specs):
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
-    heat_api_log = first_file(["/var/log/containers/heat/heat-api.log", "/var/log/heat/heat-api.log"])
+    heat_api_log = first_file(["/var/log/containers/heat/heat-api.log", "/var/log/heat/heat-api.log", "/var/log/heat/heat_api.log"])
     heat_conf = first_file(["/var/lib/config-data/puppet-generated/heat/etc/heat/heat.conf", "/etc/heat/heat.conf"])
     heat_crontab = simple_command("/usr/bin/crontab -l -u heat")
     heat_crontab_container = simple_command("docker exec heat_api_cron /usr/bin/crontab -l -u heat")
