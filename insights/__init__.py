@@ -43,6 +43,7 @@ from .core.serde import Hydration
 from .formats import get_formatter
 from .parsers import get_active_lines  # noqa: F401
 from .util import defaults  # noqa: F401
+from .formats import Formatter as FormatterClass
 
 log = logging.getLogger(__name__)
 
@@ -84,12 +85,13 @@ def process_dir(broker, root, graph, context, inventory=None):
     if isinstance(ctx, ClusterArchiveContext):
         from .core.cluster import process_cluster
         archives = [f for f in ctx.all_files if f.endswith(COMPRESSION_TYPES)]
-        return process_cluster(archives, broker=broker, inventory=inventory)
+        return process_cluster(graph, archives, broker=broker, inventory=inventory)
 
     broker[ctx.__class__] = ctx
     if isinstance(ctx, SerializedArchiveContext):
         h = Hydration(ctx.root)
         broker = h.hydrate(broker=broker)
+    graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
     broker = dr.run(graph, broker=broker)
     return broker
 
@@ -116,6 +118,7 @@ def _run(broker, graph=None, root=None, context=None, inventory=None):
     if not root:
         context = context or HostContext
         broker[context] = context()
+        graph = dict((k, v) for k, v in graph.items() if k in dr.COMPONENTS[dr.GROUPS.single])
         return dr.run(graph, broker=broker)
 
     if os.path.isdir(root):
@@ -242,7 +245,8 @@ def run(component=None, root=None, print_summary=False,
         import logging
         p = argparse.ArgumentParser(add_help=False)
         p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
-        p.add_argument("-p", "--plugins", default="", help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
+        p.add_argument("-p", "--plugins", default="",
+                       help="Comma-separated list without spaces of package(s) or module(s) containing plugins.")
         p.add_argument("-c", "--config", help="Configure components.")
         p.add_argument("-i", "--inventory", help="Ansible inventory file for cluster analysis.")
         p.add_argument("-v", "--verbose", help="Verbose output.", action="store_true")
@@ -262,7 +266,7 @@ def run(component=None, root=None, print_summary=False,
         args.format = "insights.formats._yaml" if args.format == "yaml" else args.format
         fmt = args.format if "." in args.format else "insights.formats." + args.format
         Formatter = dr.get_component(fmt)
-        if not Formatter:
+        if not Formatter or not isinstance(Formatter, FormatterClass):
             dr.load_components(fmt, continue_on_error=False)
             Formatter = get_formatter(fmt)
         Formatter.configure(p)

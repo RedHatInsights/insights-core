@@ -32,6 +32,22 @@ CGROUP_CONTAINER = """
 """.strip()
 
 
+CGROUP_CONTAINER_1 = """
+12:freezer:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+11:pids:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+10:cpuset:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+9:memory:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+8:devices:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+7:blkio:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+6:cpu,cpuacct:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+5:rdma:/
+4:net_cls,net_prio:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+3:perf_event:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+2:hugetlb:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+1:name=systemd:/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope
+""".strip()
+
+
 def test_init_process_cgroup():
     result = init_process_cgroup.InitProcessCgroup(context_wrap(CGROUP_HOST))
     assert result.data["memory"] == ["10", "/"]
@@ -39,4 +55,8 @@ def test_init_process_cgroup():
 
     result = init_process_cgroup.InitProcessCgroup(context_wrap(CGROUP_CONTAINER))
     assert result.data["memory"] == ["10", "/system.slice/docker-55b2b88feeb4fc56bb9384e55100a8581271ca7a22399c6ec52784a35dba933b.scope"]
+    assert result.is_container is True
+
+    result = init_process_cgroup.InitProcessCgroup(context_wrap(CGROUP_CONTAINER_1))
+    assert result.data["memory"] == ["9", "/machine.slice/libpod-af097fa761cd92daf9ac2e18b6d59959b1212e12621a0951223f9f55d99b452c.scope"]
     assert result.is_container is True

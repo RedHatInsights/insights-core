@@ -29,17 +29,48 @@ root     111434      1  0 22:32 ?        00:00:00 nginx: master process /usr/sbi
 nginx    111435 111434  0 22:32 ?        00:00:00 nginx: worker process
 """
 
+PsEo_TEST_DOC = """
+  PID  PPID COMMAND
+    1     0 systemd
+    2     0 kthreadd
+    3     2 ksoftirqd/0
+ 2416     1 auditd
+ 2419  2416 audispd
+ 2421  2419 sedispatch
+ 2892     1 NetworkManager
+ 3172  2892 dhclient
+ 3871     1 master
+ 3886  3871 qmgr
+13724  3871 pickup
+15663     2 kworker/0:1
+16998     2 kworker/0:3
+17259     2 kworker/0:0
+18294  3357 sshd
+"""
+
+PsAlxwww_TEST_DOC = """
+F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
+4     0     1     0  20   0 128292  6928 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+1     0     2     0  20   0      0     0 kthrea S    ?          0:00 [kthreadd]
+1     0     3     2  20   0      0     0 smpboo S    ?          0:00 [ksoftirqd/0]
+5     0     4     2  20   0      0     0 worker S    ?          0:00 [kworker/0:0]
+1     0     5     2   0 -20      0     0 worker S<   ?          0:00 [kworker/0:0H]
+1     0     6     2  20   0      0     0 worker S    ?          0:00 [kworker/u4:0]
+1     0     7     2 -100  -      0     0 smpboo S    ?          0:00 [migration/0]
+1     0     8     2  20   0      0     0 rcu_gp S    ?          0:00 [rcu_bh]
+"""
+
 
 def test_doc_examples():
     env = {
-            'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
-            'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
-            'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
-          }
+        'ps': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
+        'ps_auxww': ps.PsAuxww(context_wrap(PsAuxww_TEST_DOC)),
+        'ps_ef': ps.PsEf(context_wrap(PsEf_TEST_DOC)),
+        'ps_eo': ps.PsEo(context_wrap(PsEo_TEST_DOC)),
+        'ps_alxwww': ps.PsAlxwww(context_wrap(PsAlxwww_TEST_DOC))
+    }
     failed, total = doctest.testmod(ps, globs=env)
-    # XXX: these tests depend on the order of sets and dictionaries
-    # I'm skipping them for now.
-    # assert failed == 0
+    assert failed == 0
 
 
 PsAuxww_TEST = """
@@ -310,7 +341,7 @@ def test_ps_auxww_with_bad_input():
     with pytest.raises(ParseException) as exc:
         d2 = ps.PsAuxww(context_wrap(Ps_BAD))
         assert d2 is None
-    assert 'PsAuxww: Cannot find ps header line in output' in str(exc)
+    assert 'PsAuxww: Cannot find ps header line containing' in str(exc)
 
 
 PS_EO_NORMAL = """
@@ -356,3 +387,38 @@ def test_ps_eo():
         {'PID': '18379', 'PPID': '18347', 'COMMAND': 'ps', 'COMMAND_NAME': 'ps', 'ARGS': ''}
     ]
     assert len(p.children('2')) == 6
+
+
+PS_ALXWWW_DATA = """
+F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
+4     0     1     0  20   0 128292  6944 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+1     0     2     0  20   0      0     0 kthrea S    ?          0:00 [kthreadd]
+1     0     3     2  20   0      0     0 smpboo S    ?          0:00 [ksoftirqd/0]
+5     0     4     2  20   0      0     0 worker S    ?          0:00 [kworker/0:0]
+1     0     5     2   0 -20      0     0 worker S<   ?          0:00 [kworker/0:0H]
+4     0  1585     1  20   0  39336  3872 ep_pol Ss   ?          0:00 /usr/lib/systemd/systemd-journald
+5     0  2964     1  16  -4  55520   900 ep_pol S<sl ?          0:00 /sbin/auditd
+4     0  2966  2964  12  -8  84552   896 futex_ S<sl ?          0:00 /sbin/audispd
+4     0  2968  2966  16  -4  55628  1404 unix_s S<   ?          0:00 /usr/sbin/sedispatch
+4    81  3000     1  20   0  69800  3580 ep_pol Ssl  ?          0:00 /usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation
+"""
+
+
+def test_ps_alxwww():
+    p = ps.PsAlxwww(context_wrap(PS_ALXWWW_DATA))
+    assert p is not None
+    assert len(p.data) > 0
+    assert set(p.data[0].keys()) == set([
+        'F', 'UID', 'PID', 'PPID', 'PRI', 'NI', 'VSZ', 'RSS', 'WCHAN',
+        'STAT', 'TTY', 'TIME', 'COMMAND', 'COMMAND_NAME', 'ARGS'
+    ])
+    assert 'auditd' in p.cmd_names
+    assert 'dbus-daemon' in p.cmd_names
+    assert '/usr/bin/dbus-daemon --system --address=systemd: --nofork --nopidfile --systemd-activation' in p.running
+    assert '/usr/lib/systemd/systemd --switched-root --system --deserialize 22' in p
+    assert p.running_pids() == ['1', '2', '3', '4', '5', '1585', '2964', '2966', '2968', '3000']
+    dbus_proc = next((proc for proc in p.data if proc['COMMAND_NAME'] == 'dbus-daemon'), None)
+    assert dbus_proc is not None
+    assert dbus_proc['COMMAND_NAME'] == 'dbus-daemon'
+    assert dbus_proc['UID'] == '81'
+    assert dbus_proc['ARGS'] == '--system --address=systemd: --nofork --nopidfile --systemd-activation'

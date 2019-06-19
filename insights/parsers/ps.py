@@ -10,13 +10,18 @@ from insights.specs import Specs
 from insights.core.filters import add_filter
 
 
+def are_present(tags, line):
+    """bool: Returns True if all tags are present in line."""
+    return all(tag in line for tag in tags)
+
+
 class Ps(CommandParser):
     """
     Template Class to parse ``ps`` command output.
 
     Raises:
-        ParseException: Raised if the heading line (starting with 'USER'/'UID' and
-            ending with 'COMMAND'/'CMD') is not found in the input.
+        ParseException: Raised if the heading line (containing both ``user_name``
+            and ``command_name``) is not found in the input.
 
     Attributes:
         data (list): List of dicts, where the keys in each dict are the
@@ -26,19 +31,19 @@ class Ps(CommandParser):
             `ps` output.
         cmd_names (set): Set of just the command names, minus any path or
             arguments.
-        services (list): List of sets in format (cmd names, user/uid, raw_line) for
+        services (list): List of tuples in format (cmd names, user/uid/pid, raw_line) for
             each command.
 
     """
     command_name = "COMMAND_TEMPLATE"
     '''
-    ``command_name`` is the name of the last column from the header of ps output,
-    the subclass must override it correspondingly
+    ``command_name`` is the name of the subclass specific command column from the header of
+    ps output, the subclass must override it correspondingly
     '''
     user_name = "USER_TEMPLATE"
     '''
-    ``user_name`` is the name of the first column from the header of ps output,
-    the subclass must override it correspondingly
+    ``user_name`` is the name of the subclass specificuser_name column from the header of
+    ps output, the subclass must override it correspondingly
     '''
     max_splits = 0
     '''
@@ -55,13 +60,14 @@ class Ps(CommandParser):
 
     def parse_content(self, content):
         raw_line_key = "_line"
-        if any(line.lstrip().startswith(self.user_name) and line.rstrip().endswith(self.command_name) for line in content):
+        header_line = next((l for l in content if are_present(tags=[self.user_name, self.command_name], line=l)), None)
+        if header_line is not None:
             # parse_delimited_table allows short lines, but we specifically
             # want to ignore them.
             self.data = [
                 row
                 for row in parse_delimited_table(
-                    content, heading_ignore=[self.user_name], max_splits=self.max_splits,
+                    content, heading_ignore=[header_line], max_splits=self.max_splits,
                     raw_line_key=raw_line_key
                 )
                 if self.command_name in row
@@ -72,7 +78,9 @@ class Ps(CommandParser):
                 self.running.add(cmd)
                 cmd_name = cmd
                 if cmd.startswith('/'):
-                    cmd_name = cmd.split(" ")[0].split("/")[-1]
+                    cmd_name = cmd.split(None, 1)[0].split("/")[-1]
+                elif ' ' in cmd:
+                    cmd_name = cmd.split(None, 1)[0]
                 proc["COMMAND_NAME"] = cmd_name
                 self.cmd_names.add(cmd_name)
                 proc["ARGS"] = cmd.split(" ", 1)[1] if " " in cmd else ""
@@ -80,8 +88,8 @@ class Ps(CommandParser):
                 del proc[raw_line_key]
         else:
             raise ParseException(
-                "{0}: Cannot find ps header line in output".format(
-                    self.__class__.__name__)
+                "{0}: Cannot find ps header line containing {1} and {2} in output".format(
+                    self.__class__.__name__, self.user_name, self.command_name)
             )
 
     def __contains__(self, proc):
@@ -102,20 +110,25 @@ class Ps(CommandParser):
 
     def users(self, proc):
         """
-        Searches for all users running a given command.
+        Searches for all users running a given command.  If the
+        user column is not present then returns an empty dict.
 
         Returns:
             dict: each username as a key to a list of PIDs (as strings) that
             are running the given process.
+            ``{}`` if neither ``USER`` nor ``UID`` is found or ``proc`` is not found.
 
-        .. note:: 'proc' must match the entire command and arguments.
+        .. note::
+           'proc' must match the entire command and arguments.
         """
+        valid_user_columns = ['USER', 'UID']
         ret = {}
-        for row in self.data:
-            if proc == row[self.command_name]:
-                if row[self.user_name] not in ret:
-                    ret[row[self.user_name]] = []
-                ret[row[self.user_name]].append(row["PID"])
+        if self.user_name in valid_user_columns:
+            for row in self.data:
+                if proc == row[self.command_name]:
+                    if row[self.user_name] not in ret:
+                        ret[row[self.user_name]] = []
+                    ret[row[self.user_name]].append(row["PID"])
         return ret
 
     def fuzzy_match(self, proc):
@@ -125,8 +138,8 @@ class Ps(CommandParser):
         Returns:
             boolean: ``True`` if the word ``proc`` appears in the command column.
 
-        .. note:: 'proc' can match anywhere in the command path, name or
-            arguments.
+        .. note::
+           'proc' can match anywhere in the command path, name or arguments.
         """
         return any(proc in row[self.command_name] for row in self.data)
 
@@ -137,8 +150,8 @@ class Ps(CommandParser):
         Returns:
             int: The number of occurencies of commands with given text
 
-        .. note:: 'proc' can match anywhere in the command path, name or
-           arguments.
+        .. note::
+           'proc' can match anywhere in the command path, name or arguments.
         """
         return len([True for row in self.data if proc in row[self.command_name]])
 
@@ -155,14 +168,33 @@ class Ps(CommandParser):
             search criteria.
 
         Examples:
-            >>> ps.search(COMMAND__contains='bash')
-            [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}, {'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
-            >>> ps.search(USER='root', COMMAND__contains='bash')
-            [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '832'}]
-            >>> ps.search(TTY='pts/3')
-            [{'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0', 'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00', 'COMMAND_NAME': 'bash', 'RSS': '1896'}]
-            >>> ps.search(STAT__contains='Z')
-            [{'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0', 'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29', 'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}]
+            >>> ps.search(COMMAND__contains='bash') == [
+            ...    {'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0',
+            ...     'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00',
+            ...     'COMMAND_NAME': 'bash', 'RSS': '1896'},
+            ...    {'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0',
+            ...     'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00',
+            ...     'COMMAND_NAME': 'bash', 'RSS': '832'}
+            ... ]
+            True
+            >>> ps.search(USER='root', COMMAND__contains='bash') == [
+            ...    {'%MEM': '0.0', 'TTY': '?', 'VSZ': '9120', 'ARGS': '', 'PID': '20457', '%CPU': '0.0',
+            ...     'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'root', 'STAT': 'Ss', 'TIME': '0:00',
+            ...     'COMMAND_NAME': 'bash', 'RSS': '832'}
+            ... ]
+            True
+            >>> ps.search(TTY='pts/3') == [
+            ...    {'%MEM': '0.0', 'TTY': 'pts/3', 'VSZ': '108472', 'ARGS': '', 'PID': '20160', '%CPU': '0.0',
+            ...     'START': '10:09', 'COMMAND': '/bin/bash', 'USER': 'user1', 'STAT': 'Ss', 'TIME': '0:00',
+            ...     'COMMAND_NAME': 'bash', 'RSS': '1896'}
+            ... ]
+            True
+            >>> ps.search(STAT__contains='Z') == [
+            ...    {'%MEM': '0.0', 'TTY': '?', 'VSZ': '0', 'ARGS': '', 'PID': '1821', '%CPU': '0.0',
+            ...     'START': 'May31', 'COMMAND': '[kondemand/0]', 'USER': 'root', 'STAT': 'Z', 'TIME': '0:29',
+            ...     'COMMAND_NAME': '[kondemand/0]', 'RSS': '0'}
+            ... ]
+            True
         """
         return keyword_search(self.data, **kwargs)
 
@@ -192,12 +224,15 @@ class PsAuxww(Ps):
     Examples:
         >>> type(ps_auxww)
         <class 'insights.parsers.ps.PsAuxww'>
-        >>> ps_auxww.running
-        set(['/bin/bash', '/usr/sbin/rpc.mountd', '/usr/lib/systemd/systemd --switched-root --system --deserialize 22', '/usr/sbin/irqbalance --foreground', '/usr/sbin/dhclient enp0s25', '[kondemand/0]', '/usr/sbin/crond -n'])
+        >>> ps_auxww.running == set([
+        ...     '/bin/bash', '/usr/sbin/rpc.mountd', '/usr/lib/systemd/systemd --switched-root --system --deserialize 22',
+        ...     '/usr/sbin/irqbalance --foreground', '/usr/sbin/dhclient enp0s25', '[kondemand/0]', '/usr/sbin/crond -n'
+        ... ])
+        True
         >>> ps_auxww.cpu_usage('[kondemand/0]')
         '0.0'
-        >>> ps_auxww.users('/bin/bash')
-        {'root': ['20457'], 'user1': ['20160']}
+        >>> ps_auxww.users('/bin/bash') == {'root': ['20457'], 'user1': ['20160']}
+        True
         >>> ps_auxww.fuzzy_match('dhclient')
         True
         >>> sum(int(p['VSZ']) for p in ps_auxww)
@@ -216,7 +251,8 @@ class PsAuxww(Ps):
             str: the %CPU column corresponding to ``proc`` in command or
             ``None`` if ``proc`` is not found.
 
-        .. note:: 'proc' must match the entire command and arguments.
+        .. note::
+           'proc' must match the entire command and arguments.
         """
         for row in self.data:
             if proc == row[self.command_name]:
@@ -320,14 +356,17 @@ class PsEo(Ps):
         pid_info(dict): Dictionary with PID as key containing ps row as a dict
 
     Examples:
-        >>> pseo
-        <insights.parsers.ps.PsEo at 0x7fbf61d37d10>
-        >>> pseo.pid_info['1']
-        {'PID': '1', 'PPID': '0', 'COMMAND': 'systemd'}
-        >>> pseo.children('2')
-        [{'PID': '3', 'PPID': '2', 'COMMAND': 'ksoftirqd/0'},
-         {'PID': '16998', 'PPID': '2', 'COMMAND': 'kworker/0:3'},
-         {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0'}]
+        >>> type(ps_eo)
+        <class 'insights.parsers.ps.PsEo'>
+        >>> ps_eo.pid_info['1'] == {'PID': '1', 'PPID': '0', 'COMMAND': 'systemd', 'COMMAND_NAME': 'systemd', 'ARGS': ''}
+        True
+        >>> ps_eo.children('2') == [
+        ...     {'PID': '3', 'PPID': '2', 'COMMAND': 'ksoftirqd/0', 'COMMAND_NAME': 'ksoftirqd/0', 'ARGS': ''},
+        ...     {'PID': '15663', 'PPID': '2', 'COMMAND': 'kworker/0:1', 'COMMAND_NAME': 'kworker/0:1', 'ARGS': ''},
+        ...     {'PID': '16998', 'PPID': '2', 'COMMAND': 'kworker/0:3', 'COMMAND_NAME': 'kworker/0:3', 'ARGS': ''},
+        ...     {'PID': '17259', 'PPID': '2', 'COMMAND': 'kworker/0:0', 'COMMAND_NAME': 'kworker/0:0', 'ARGS': ''}
+        ... ]
+        True
     """
     command_name = 'COMMAND'
     user_name = 'PID'
@@ -342,3 +381,47 @@ class PsEo(Ps):
     def children(self, ppid):
         """list: Returns a list of dict for all rows with `ppid` as parent PID"""
         return [row for row in self.data if row['PPID'] == ppid]
+
+
+add_filter(Specs.ps_alxwww, "COMMAND")
+
+
+@parser(Specs.ps_alxwww)
+class PsAlxwww(Ps):
+    """
+    Class to parse the command `ps alxwww`.  See method and attribute details
+    in the ``Ps`` parser.
+
+    Sample input data::
+
+        F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
+        4     0     1     0  20   0 128292  6928 ep_pol Ss   ?          0:02 /usr/lib/systemd/systemd --switched-root --system --deserialize 22
+        1     0     2     0  20   0      0     0 kthrea S    ?          0:00 [kthreadd]
+        1     0     3     2  20   0      0     0 smpboo S    ?          0:00 [ksoftirqd/0]
+        5     0     4     2  20   0      0     0 worker S    ?          0:00 [kworker/0:0]
+        1     0     5     2   0 -20      0     0 worker S<   ?          0:00 [kworker/0:0H]
+        1     0     6     2  20   0      0     0 worker S    ?          0:00 [kworker/u4:0]
+        1     0     7     2 -100  -      0     0 smpboo S    ?          0:00 [migration/0]
+        1     0     8     2  20   0      0     0 rcu_gp S    ?          0:00 [rcu_bh]
+
+    Examples:
+        >>> type(ps_alxwww)
+        <class 'insights.parsers.ps.PsAlxwww'>
+        >>> 'systemd' in ps_alxwww.cmd_names
+        True
+        >>> '/usr/lib/systemd/systemd --switched-root --system --deserialize 22' in ps_alxwww.running
+        True
+        >>> ps_alxwww.search(COMMAND_NAME__contains='systemd') == [{
+        ...     'F': '4', 'UID': '0', 'PID': '1', 'PPID': '0', 'PRI': '20', 'NI': '0', 'VSZ': '128292', 'RSS': '6928',
+        ...     'WCHAN': 'ep_pol', 'STAT': 'Ss', 'TTY': '?', 'TIME': '0:02',
+        ...     'COMMAND': '/usr/lib/systemd/systemd --switched-root --system --deserialize 22',
+        ...     'COMMAND_NAME': 'systemd', 'ARGS': '--switched-root --system --deserialize 22'
+        ... }]
+        True
+
+    """
+    command_name = 'COMMAND'
+    user_name = 'UID'
+    max_splits = 12
+
+    pass

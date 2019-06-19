@@ -15,32 +15,29 @@ DEFAULT_OPTS = {
     'analyze_container': {
         'default': False,
         'opt': ['--analyze-container'],
-        'help': 'Treat the current filesystem as a container and upload to the /images endpoint.',
+        'help': argparse.SUPPRESS,
         'action': 'store_true'
     },
     'analyze_image_id': {
-        'default': None,
+        'default': False,
         'opt': ['--analyze-image-id'],
-        'help': 'Analyze a docker image with the specified ID.',
-        'action': 'store',
-        'metavar': 'ID'
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
     },
     'analyze_file': {
-        'default': None,
+        'default': False,
         'opt': ['--analyze-file'],
-        'help': 'Analyze an archived filesystem at the specified path.',
-        'action': 'store'
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
     },
     'analyze_mountpoint': {
-        'default': None,
+        'default': False,
         'opt': ['--analyze-mountpoint'],
-        'help': 'Analyze a filesystem at the specified mountpoint.',
-        'action': 'store'
-    },
-    # MARKED FOR DELETION
-    'api_url': {
-        # non-CLI
-        'default': None
+        'help': argparse.SUPPRESS,
+        'const': True,
+        'nargs': '?',
     },
     'authmethod': {
         # non-CLI
@@ -56,7 +53,11 @@ DEFAULT_OPTS = {
     },
     'base_url': {
         # non-CLI
-        'default': 'cert-api.access.redhat.com/r/insights'
+        'default': None
+    },
+    'branch_info': {
+        # non-CLI
+        'default': constants.default_branch_info
     },
     'branch_info_url': {
         # non-CLI
@@ -64,9 +65,7 @@ DEFAULT_OPTS = {
     },
     'cert_verify': {
         # non-CLI
-        'default': os.path.join(
-            constants.default_conf_dir,
-            'cert-api.access.redhat.com.pem'),
+        'default': None,
     },
     'cmd_timeout': {
         # non-CLI
@@ -80,7 +79,7 @@ DEFAULT_OPTS = {
         'default': 'gz',
         'opt': ['--compressor'],
         'help': argparse.SUPPRESS,
-        'action': 'store_true'
+        'action': 'store'
     },
     'conf': {
         'default': constants.default_conf_file,
@@ -90,7 +89,7 @@ DEFAULT_OPTS = {
     },
     'egg_path': {
         # non-CLI
-        'default': '/v1/static/core/insights-core.egg'
+        'default': None
     },
     'debug': {
         'default': False,  # Used by client wrapper script
@@ -127,7 +126,7 @@ DEFAULT_OPTS = {
     },
     'egg_gpg_path': {
         # non-CLI
-        'default': '/v1/static/core/insights-core.egg.asc'
+        'default': None
     },
     'group': {
         'default': None,
@@ -137,7 +136,7 @@ DEFAULT_OPTS = {
     },
     'http_timeout': {
         # non-CLI
-        'default': 10.0
+        'default': 120.0
     },
     'insecure_connection': {
         # non-CLI
@@ -376,6 +375,8 @@ class InsightsConfig(object):
         if args:
             self._update_dict(args[0])
         self._update_dict(kwargs)
+        self._imply_options()
+        self._validate_options()
         self._cli_opts = None
 
     def __str__(self):
@@ -420,10 +421,8 @@ class InsightsConfig(object):
         for u in unknown_opts:
             dict_.pop(u, None)
         self.__dict__.update(dict_)
-        self._imply_options()
-        self._validate_options()
 
-    def load_env(self):
+    def _load_env(self):
         '''
         Options can be set as environment variables
         The formula for the key is `"INSIGHTS_%s" % key.upper()`
@@ -460,7 +459,7 @@ class InsightsConfig(object):
                         'ERROR: Invalid value specified for {0}: {1}.'.format(k, v))
         self._update_dict(insights_env_opts)
 
-    def load_command_line(self, conf_only=False):
+    def _load_command_line(self, conf_only=False):
         '''
         Load config from command line switches.
         NOTE: Not all config is available on the command line.
@@ -497,7 +496,7 @@ class InsightsConfig(object):
 
         self._update_dict(self._cli_opts)
 
-    def load_config_file(self, fname=None):
+    def _load_config_file(self, fname=None):
         '''
         Load config from config file. If fname is not specified,
         config is loaded from the file named by InsightsConfig.conf
@@ -546,34 +545,52 @@ class InsightsConfig(object):
         Helper function for actual Insights client use
         '''
         # check for custom conf file before loading conf
-        self.load_command_line(conf_only=True)
-        self.load_config_file()
-        self.load_env()
-        self.load_command_line()
+        self._load_command_line(conf_only=True)
+        self._load_config_file()
+        self._load_env()
+        self._load_command_line()
+        self._imply_options()
+        self._validate_options()
         return self
 
     def _validate_options(self):
         '''
         Make sure there are no conflicting or invalid options
         '''
+        if self.analyze_image_id:
+            raise ValueError(
+                '--analyze-image-id is no longer supported.')
+        if self.analyze_file:
+            raise ValueError(
+                '--analyze-file is no longer supported.')
+        if self.analyze_mountpoint:
+            raise ValueError(
+                '--analyze-mountpoint is no longer supported.')
+        if self.analyze_container:
+            raise ValueError(
+                '--analyze-container is no longer supported.')
+        if self.use_atomic:
+            raise ValueError(
+                '--use-atomic is no longer supported.')
+        if self.use_docker:
+            raise ValueError(
+                '--use-docker is no longer supported.')
         if self.obfuscate_hostname and not self.obfuscate:
             raise ValueError(
                 'Option `obfuscate_hostname` requires `obfuscate`')
-        if self.analyze_image_id is not None and len(self.analyze_image_id) < 12:
-            raise ValueError(
-                'Image/Container ID must be at least twelve characters long.')
         if self.enable_schedule and self.disable_schedule:
             raise ValueError(
                 'Conflicting options: --enable-schedule and --disable-schedule')
-        if self.analyze_container and (self.register or self.unregister):
-            raise ValueError('Registration not supported with '
-                             'image or container analysis.')
         if self.to_json and self.to_stdout:
             raise ValueError(
                 'Conflicting options: --to-stdout and --to-json')
         if self.payload and not self.content_type:
             raise ValueError(
                 '--payload requires --content-type')
+        if not self.legacy_upload:
+            if self.group:
+                raise ValueError(
+                    '--group is not supported at this time.')
 
     def _imply_options(self):
         '''
@@ -586,11 +603,12 @@ class InsightsConfig(object):
            self.analyze_mountpoint or
            self.analyze_image_id):
             self.analyze_container = True
-        self.to_json = ((self.to_json or self.analyze_container) and
-                        not self.to_stdout)
+        self.to_json = self.to_json or self.analyze_container
         self.register = (self.register or self.reregister) and not self.offline
         self.keep_archive = self.keep_archive or self.no_upload
-        if self.payload:
+        if self.to_json and self.quiet:
+            self.diagnosis = True
+        if self.payload or self.diagnosis:
             self.legacy_upload = False
 
 

@@ -16,7 +16,7 @@ from tempfile import NamedTemporaryFile
 
 from insights.util import mangle
 from ..contrib.soscleaner import SOSCleaner
-from .utilities import _expand_paths
+from .utilities import _expand_paths, get_version_info
 from .constants import InsightsConstants as constants
 from .insights_spec import InsightsFile, InsightsCommand
 
@@ -47,6 +47,18 @@ class DataCollector(object):
         logger.debug("Writing branch information to archive...")
         self.archive.add_metadata_to_archive(
             json.dumps(branch_info), '/branch_info')
+
+    def _write_display_name(self):
+        if self.config.display_name:
+            logger.debug("Writing display_name to archive...")
+            self.archive.add_metadata_to_archive(
+                self.config.display_name, '/display_name')
+
+    def _write_version_info(self):
+        logger.debug("Writing version information to archive...")
+        version_info = get_version_info()
+        self.archive.add_metadata_to_archive(
+            json.dumps(version_info), '/version_info')
 
     def _run_pre_command(self, pre_cmd):
         '''
@@ -171,6 +183,9 @@ class DataCollector(object):
             elif self.mountpoint == "/" or c.get("image"):
                 cmd_specs = self._parse_command_spec(c, conf['pre_commands'])
                 for s in cmd_specs:
+                    if s['command'] in rm_commands:
+                        logger.warn("WARNING: Skipping command %s", s['command'])
+                        continue
                     cmd_spec = InsightsCommand(self.config, s, exclude, self.mountpoint)
                     self.archive.add_to_archive(cmd_spec)
         for f in conf['files']:
@@ -200,6 +215,8 @@ class DataCollector(object):
         # collect metadata
         logger.debug('Collecting metadata...')
         self._write_branch_info(branch_info)
+        self._write_display_name()
+        self._write_version_info()
         logger.debug('Metadata collection finished.')
 
     def done(self, conf, rm_conf):

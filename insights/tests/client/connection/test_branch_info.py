@@ -12,6 +12,6 @@ def test_request(get_proxies, init_session):
     config = Mock(base_url="www.example.com", branch_info_url="https://www.example.com/branch_info")
 
     connection = InsightsConnection(config)
-    connection.branch_info()
+    connection.get_branch_info()
 
     init_session.return_value.get.assert_called_once_with(config.branch_info_url, timeout=config.http_timeout)

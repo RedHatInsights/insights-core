@@ -11,17 +11,13 @@ SubscriptionManagerListConsumed - command ``subscription-manager list --consumed
 
 SubscriptionManagerListInstalled - command ``subscription-manager list --installed``
 ------------------------------------------------------------------------------------
-
-SubscriptionManagerReposListEnabled - command ``subscription-manager repos --list-enabled``
--------------------------------------------------------------------------------------------
 """
-
+import re
+from datetime import datetime
+import six
+from insights.specs import Specs
 from .. import parser, CommandParser
 from . import keyword_search
-from insights.specs import Specs
-from datetime import datetime
-import re
-import six
 
 
 class SubscriptionManagerList(CommandParser):
@@ -99,11 +95,11 @@ class SubscriptionManagerList(CommandParser):
         Returns:
             (list): A list of records that matched the search criteria.
 
-        >>> consumed = shared[SubscriptionManagerListConsumed]
-        >>> len(consumed.search(Service_Level='PREMIUM'))
-        1
-        >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
-        []
+        Examples:
+            >>> len(consumed.search(Service_Level='PREMIUM'))
+            1
+            >>> consumed.search(Provides__contains='Red Hat Enterprise Virtualization')
+            []
         """
         return keyword_search(self.records, **kwargs)
 
@@ -139,7 +135,6 @@ class SubscriptionManagerListConsumed(SubscriptionManagerList):
         System Type:       Physical
 
     Examples:
-        >>> consumed = shared[SubscriptionManagerListConsumed]
         >>> type(consumed)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerListConsumed'>
         >>> len(consumed.records)
@@ -201,7 +196,6 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
         Ends:           04/27/16
 
     Examples:
-        >>> installed = shared[SubscriptionManagerListInstalled]
         >>> type(installed)
         <class 'insights.parsers.subscription_manager_list.SubscriptionManagerListInstalled'>
         >>> len(installed.records)
@@ -227,30 +221,3 @@ class SubscriptionManagerListInstalled(SubscriptionManagerList):
             sub['Status'] == 'Subscribed'
             for sub in self.records
         )
-
-
-@parser(Specs.subscription_manager_repos_list_enabled)
-class SubscriptionManagerReposListEnabled(SubscriptionManagerList):
-    """
-    Read the output of ``subscription-manager repos --list-enabled``.
-
-    Sample input file::
-
-        +-------------------------------------------+
-           Available Repositories in /etc/yum.repos.d/redhat.repo
-        +-------------------------------------------+
-        Repo ID:   rhel-7-server-ansible-2-rpms
-        Repo Name: Red Hat Ansible Engine 2 RPMs for Red Hat Enterprise Linux 7 Server
-        Repo URL:  https://cdn.redhat.com/content/dist/rhel/server/7/7Server/$basearch/ansible/2/os
-        Enabled:   1
-
-    Examples:
-        >>> repolist = shared[SubscriptionManagerReposListEnabled]
-        >>> type(repolist)
-        <class 'insights.parsers.subscription_manager_list.SubscriptionManagerReposListEnabled'>
-        >>> len(repolist.records)
-        1
-        >>> repolist.records[0]['Repo ID']
-        'rhel-7-server-ansible-2-rpms'
-    """
-    pass

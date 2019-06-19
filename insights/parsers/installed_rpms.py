@@ -76,6 +76,7 @@ import six
 
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
+from .rpm_vercmp import rpm_version_compare
 from insights.specs import Specs
 
 # This list of architectures is taken from PDC (Product Definition Center):
@@ -141,42 +142,11 @@ here https://pdc.fedoraproject.org/rest_api/v1/arches/.
 """
 
 
-@parser(Specs.installed_rpms)
-class InstalledRpms(CommandParser):
+class RpmList(object):
     """
-    A parser for working with data containing a list of installed RPM files on the system and
-    related information.
+    Mixin class providing ``__contains__``, ``get_max``, ``get_min``,
+    ``newest``, and ``oldest`` implementations for components that handle rpms.
     """
-    def __init__(self, *args, **kwargs):
-        self.errors = []
-        """list: List of input lines that indicate an error acquiring the data on the client."""
-        self.unparsed = []
-        """list: List of input lines that raised an exception during parsing."""
-        self.packages = defaultdict(list)
-        """dict (InstalledRpm): Dictionary of RPMs keyed by package name."""
-
-        super(InstalledRpms, self).__init__(*args, **kwargs)
-
-    def parse_content(self, content):
-        for line in get_active_lines(content, comment_char='COMMAND>'):
-            if line.startswith('error:') or line.startswith('warning:'):
-                self.errors.append(line)
-            else:
-                try:
-                    # Try to parse from JSON input
-                    rpm = InstalledRpm.from_json(line)
-                    self.packages[rpm.name].append(rpm)
-                except Exception:
-                    # If that fails, try to parse from line input
-                    if line.strip():
-                        try:
-                            rpm = InstalledRpm.from_line(line)
-                            self.packages[rpm.name].append(rpm)
-                        except Exception:
-                            # Both ways failed
-                            self.unparsed.append(line)
-        # Don't want defaultdict's behavior after parsing is complete
-        self.packages = dict(self.packages)
 
     def __contains__(self, package_name):
         """
@@ -189,11 +159,6 @@ class InstalledRpms(CommandParser):
             bool: True if package name is in list of installed packages, otherwise False
         """
         return package_name in self.packages
-
-    @property
-    def corrupt(self):
-        """bool: True if RPM database is corrupted, else False."""
-        return any('rpmdbNextIterator' in s for s in self.errors)
 
     def get_max(self, package_name):
         """
@@ -235,6 +200,49 @@ class InstalledRpms(CommandParser):
     # re-export get_max/min with more descriptive names
     newest = get_max
     oldest = get_min
+
+
+@parser(Specs.installed_rpms)
+class InstalledRpms(CommandParser, RpmList):
+    """
+    A parser for working with data containing a list of installed RPM files on the system and
+    related information.
+    """
+    def __init__(self, *args, **kwargs):
+        self.errors = []
+        """list: List of input lines that indicate an error acquiring the data on the client."""
+        self.unparsed = []
+        """list: List of input lines that raised an exception during parsing."""
+        self.packages = defaultdict(list)
+        """dict (InstalledRpm): Dictionary of RPMs keyed by package name."""
+
+        super(InstalledRpms, self).__init__(*args, **kwargs)
+
+    def parse_content(self, content):
+        for line in get_active_lines(content, comment_char='COMMAND>'):
+            if line.startswith('error:') or line.startswith('warning:'):
+                self.errors.append(line)
+            else:
+                try:
+                    # Try to parse from JSON input
+                    rpm = InstalledRpm.from_json(line)
+                    self.packages[rpm.name].append(rpm)
+                except Exception:
+                    # If that fails, try to parse from line input
+                    if line.strip():
+                        try:
+                            rpm = InstalledRpm.from_line(line)
+                            self.packages[rpm.name].append(rpm)
+                        except Exception:
+                            # Both ways failed
+                            self.unparsed.append(line)
+        # Don't want defaultdict's behavior after parsing is complete
+        self.packages = dict(self.packages)
+
+    @property
+    def corrupt(self):
+        """bool: True if RPM database is corrupted, else False."""
+        return any('rpmdbNextIterator' in s for s in self.errors)
 
 
 p = re.compile(r"(\d+|[a-z]+|\.|-|_)")
@@ -340,30 +348,6 @@ class InstalledRpm(object):
         for k, v in data.items():
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
-
-        """Below is only for version comparison"""
-        def _start_of_distribution(rest_split):
-            """
-            The start of distribution field: from the right, the last non-digit part
-            - bash-4.2.39-3.el7_2.2
-              distribution: el7_2.2
-            - kernel-rt-debug-3.10.0-327.rt56.204.el7
-              distribution: el7
-            """
-            nondigit_flag = False
-            for i, r in enumerate(reversed(rest_split)):
-                if not r.isdigit():
-                    nondigit_flag = True
-                elif nondigit_flag and r.isdigit():
-                    return len(rest_split) - i
-
-        self._release_sep = self.release
-        self._distribution = None
-        rl_split = self._release_sep.split('.') if self._release_sep else None
-        idx = _start_of_distribution(rl_split) if rl_split else None
-        if idx:
-            self._release_sep = '.'.join(rl_split[:idx])
-            self._distribution = '.'.join(rl_split[idx:])
 
     @classmethod
     def from_package(cls, package_string):
@@ -550,23 +534,8 @@ class InstalledRpm(object):
         if self.name != other.name:
             raise ValueError('Cannot compare packages with differing names {0} != {1}'
                              .format(self.name, other.name))
-        if (not self._distribution) != (not other._distribution):
-            raise ValueError('Cannot compare packages that one has distribution while the other does not {0} != {1}'
-                             .format(self.package, other.package))
 
-        self_ep, other_ep = pad_version(self.epoch, other.epoch)
-        self_v, other_v = pad_version(self.version, other.version)
-        self_rl, other_rl = pad_version(self.release, other.release)
-        eq_ret = (type(self) == type(other) and
-                  self_ep == other_ep and
-                  self_v == other_v and
-                  self_rl == other_rl)
-
-        if self._distribution:
-            self_d, other_d = pad_version(self._distribution, other._distribution)
-            return eq_ret and self_d == other_d
-        else:
-            return eq_ret
+        return rpm_version_compare(self, other) == 0
 
     def __lt__(self, other):
         if not isinstance(other, InstalledRpm):
@@ -575,22 +544,7 @@ class InstalledRpm(object):
         if self == other:
             return False
 
-        self_ep, other_ep = pad_version(self.epoch, other.epoch)
-        if self_ep != other_ep:
-            return self_ep < other_ep
-
-        self_v, other_v = pad_version(self.version, other.version)
-        if self_v != other_v:
-            return self_v < other_v
-
-        self_rl, other_rl = pad_version(self._release_sep, other._release_sep)
-        if self_rl != other_rl:
-            return self_rl < other_rl
-
-        # If we reach this point, the self == other test has determined that
-        # we have a _distribution, so we rely on that.
-        self_d, other_d = pad_version(self._distribution, other._distribution)
-        return self_d < other_d
+        return rpm_version_compare(self, other) < 0
 
     def __ne__(self, other):
         return not self == other
