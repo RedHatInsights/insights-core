@@ -509,6 +509,7 @@ class DefaultSpecs(Specs):
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modinfo_igb = simple_command("/sbin/modinfo igb")
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
+    modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
