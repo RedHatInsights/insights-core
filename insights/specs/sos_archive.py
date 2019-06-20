@@ -54,7 +54,7 @@ class SosSpecs(Specs):
     installed_rpms = simple_file("installed-rpms")
     ip_addr = first_of([simple_file("sos_commands/networking/ip_-d_address"), simple_file("sos_commands/networking/ip_address")])
     ip_route_show_table_all = simple_file("sos_commands/networking/ip_route_show_table_all")
-    ip_s_link = simple_file("sos_commands/networking/ip_-s_link")
+    ip_s_link = first_of([simple_file("sos_commands/networking/ip_-s_-d_link"), simple_file("sos_commands/networking/ip_-s_link"), simple_file("sos_commands/networking/ip_link")])
     iptables = first_file(["/etc/sysconfig/iptables", "/etc/sysconfig/iptables.save"])
     journal_since_boot = first_of([simple_file("sos_commands/logs/journalctl_--no-pager_--boot"), simple_file("sos_commands/logs/journalctl_--no-pager_--catalog_--boot")])
     locale = simple_file("sos_commands/i18n/locale")
