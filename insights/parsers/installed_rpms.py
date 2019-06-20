@@ -73,6 +73,7 @@ import re
 from collections import defaultdict
 
 import six
+import warnings
 
 from ..util import rsplit
 from .. import parser, get_active_lines, CommandParser
@@ -192,7 +193,14 @@ class RpmList(object):
 
     @property
     def is_hypervisor(self):
-        """bool: True if ".el[6|7]ev" exists in "vdsm".release, else False."""
+        """
+        .. warning::
+           This method is deprecated, please use
+           :py:class:`insights.parsers.virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.
+
+        bool: True if ".el[6|7]ev" exists in "vdsm".release, else False.
+        """
+        warnings.warn("`is_hypervisor` is deprecated: Use `virt_what.VirtWhat` which uses the command `virt-what` to check the hypervisor type.", DeprecationWarning)
         rpm = self.get_max("vdsm")
         return (True if rpm and rpm.release.endswith((".el6ev", ".el7ev")) else
                 False)
