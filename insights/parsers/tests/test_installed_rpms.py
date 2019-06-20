@@ -156,7 +156,6 @@ xz-libs-5.2.2-1.el7
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
     assert not rpms.is_hypervisor
-
     pkg_rpm = rpms.packages['openssh-server'][0]
     rpm = InstalledRpm.from_package(pkg_rpm.package)
     assert rpm.package == 'openssh-server-5.3p1-104.el6'
