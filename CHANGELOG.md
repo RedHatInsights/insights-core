@@ -1,12 +1,16 @@
 # Change Log
 
-## [Unreleased](https://github.com/RedHatInsights/insights-core/tree/HEAD)
-
-[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.105-1009...HEAD)
+## [insights-core-3.0.106-1020](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.106-1020) (2019-06-20)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.105-1009...insights-core-3.0.106-1020)
 
 **Closed issues:**
 
 - Change sequence of simple\_file for first\_of Spec for lspci in sos\_archive.py [\#1997](https://github.com/RedHatInsights/insights-core/issues/1997)
+- Combiner CloudProvider appears in every "insights-info" [\#1994](https://github.com/RedHatInsights/insights-core/issues/1994)
+- Current GrubConf parser cannot handle the "grub2/grub.cfg" of RHEL8 [\#1972](https://github.com/RedHatInsights/insights-core/issues/1972)
+- Update is\_hypervisor check in InstalledRpms [\#1928](https://github.com/RedHatInsights/insights-core/issues/1928)
+-  Specs.software\_collections\_list: Option `-l` is changed to 'list-collections' in RHEL8 [\#1870](https://github.com/RedHatInsights/insights-core/issues/1870)
+- GRUB2 on RHEL8 - add support for blscfg [\#1650](https://github.com/RedHatInsights/insights-core/issues/1650)
 
 ## [insights-core-3.0.105-1009](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.105-1009) (2019-06-14)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.104-1004...insights-core-3.0.105-1009)
