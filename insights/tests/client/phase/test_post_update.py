@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 
-import pytest
 from insights.client.phase.v1 import post_update
 from mock.mock import patch, MagicMock
 from pytest import raises
@@ -154,7 +153,6 @@ def test_post_update_register_unregistered(insights_config, insights_client, get
     get_scheduler.return_value.set_daily.assert_called_once()
 
 
-@pytest.mark.skip(reason="No unregistration yet.")
 @patch("insights.client.phase.v1.get_scheduler")
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
@@ -164,18 +162,36 @@ def test_post_update_unregister_registered(insights_config, insights_client, get
         If registered, exit with 100 exit code
         Also disable scheduling.
     """
-    pass
+    insights_config.return_value.load_all.return_value.unregister = True
+    insights_client.return_value.get_registration_status = MagicMock(return_value=True)
+    with raises(SystemExit) as exc_info:
+        post_update()
+    assert exc_info.value.code == 100
+    insights_client.return_value.get_machine_id.assert_called_once()
+    insights_client.return_value.get_registration_status.assert_called_once()
+    insights_client.return_value.clear_local_registration.assert_not_called()
+    insights_client.return_value.set_display_name.assert_not_called()
+    get_scheduler.return_value.remove_scheduling.assert_called_once()
 
 
-@pytest.mark.skip(reason="No unregistration yet.")
+@patch("insights.client.phase.v1.get_scheduler")
 @patch("insights.client.phase.v1.InsightsClient")
 @patch_insights_config
 def test_post_update_unregister_unregistered(insights_config, insights_client, get_scheduler):
     """
     Client run with --unregister.
-        If unregistered, exit with 100 exit code
+        If unregistered, exit with 101 exit code
     """
-    pass
+    insights_config.return_value.load_all.return_value.unregister = True
+    insights_client.return_value.get_registration_status = MagicMock(return_value=False)
+    with raises(SystemExit) as exc_info:
+        post_update()
+    assert exc_info.value.code == 101
+    insights_client.return_value.get_machine_id.assert_called_once()
+    insights_client.return_value.get_registration_status.assert_called_once()
+    insights_client.return_value.clear_local_registration.assert_not_called()
+    insights_client.return_value.set_display_name.assert_not_called()
+    get_scheduler.return_value.remove_scheduling.assert_not_called()
 
 
 @patch("insights.client.phase.v1.get_scheduler")
