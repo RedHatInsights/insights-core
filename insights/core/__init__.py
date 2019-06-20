@@ -24,11 +24,15 @@ import sys
 # Since XPath expression is not supported by the ElementTree in Python 2.6,
 # import insights.contrib.ElementTree when running python is prior to 2.6 for compatibility.
 # Script insights.contrib.ElementTree is the same with xml.etree.ElementTree in Python 2.7.14
-# Otherwise, import xml.etree.ElementTree instead.
+# Otherwise, import defusedxml.ElementTree to avoid XML vulnerabilities,
+# if dependency not installed import xml.etree.ElementTree instead.
 if sys.version_info[0] == 2 and sys.version_info[1] <= 6:
     import insights.contrib.ElementTree as ET
 else:
-    import defusedxml.ElementTree as ET
+    try:
+        import defusedxml.ElementTree as ET
+    except:
+        import xml.etree.ElementTree as ET
 
 log = logging.getLogger(__name__)
 
