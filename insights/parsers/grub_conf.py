@@ -98,11 +98,6 @@ class GrubConfig(Parser, dict):
     Parser for configuration for both GRUB versions 1 and 2.
     """
 
-    def __init__(self, *args, **kwargs):
-        self._boot_entries = []
-        super(GrubConfig, self).__init__(*args, **kwargs)
-        self.update(self.data)
-
     def parse_content(self, content):
         """
         Parse grub configuration file to create a dict with this structure::
@@ -110,7 +105,7 @@ class GrubConfig(Parser, dict):
             {
                 "configs": [ (name, value), (name, value) ...],
                 "title": [
-                    [(title_name, name), (cmd, opt), (cmd, opt) ...],
+                    [(name, name), (cmd, opt), (cmd, opt) ...],
                     [(title_name, another_name), ...]
                 ],
                 "menuentry": [
@@ -121,45 +116,71 @@ class GrubConfig(Parser, dict):
 
         """
 
-        line_iter = iter(get_active_lines(content))
-        conf = {"configs": [], "title": [], "menuentry": []}
-        line = None
-
-        while (True):
-            try:
-
-                if line is None:
-                    line = next(line_iter)
-
+        self.configs = []
+        self.entries = self.title = self.menuentry = []
+        entry = {}
+        in_script = False
+        if_idx = 0
+        for line in get_active_lines(content):
+            line = line.strip('{} \t')
+            if line.startswith('if'):
+                if_idx += 1
+                in_script = True
+                continue
+            if line.startswith('fi'):
+                if_idx -= 1
+                in_script = True if if_idx else False
+                continue
+            if not in_script and line.startswith(('title ', 'menuentry')):
+                self.entries.append(entry) if entry else None
+                entry = {}
                 if line.startswith('title '):
-                    last_line = _parse_title(line_iter, line, conf)
-                    line = last_line
-                elif line.startswith('menuentry '):
-                    _parse_menu_entry(line_iter, line, conf)
-                    line = None
+                    entry['title_name'] = line.split('title', 1)[1].strip()
                 else:
-                    conf["configs"].append(_parse_config(line))
-                    line = None
+                    entry['menuentry_name'] = line.split('menuentry', 1)[1].split('{', 1)[0].strip()
+            elif not in_script and line:
+                if entry:
+                    sp = [i.strip() for i in line.split(None, 1)]
+                    if sp[0] not in entry:
+                        entry[sp[0]] = []
+                    entry[sp[0]].append(sp[1] if len(sp) > 1 else '')
+                else:
+                    sep = '=' if '=' in line else None
+                    sp = [i.strip() for i in line.split(sep, 1)]
+                    self.configs.append((sp[0], sp[1] if len(sp) > 1 else ''))
+        self.entries.append(entry) if entry else None
 
-            except StopIteration:
-                self.data = conf
-                break
+        self.update({'configs': self.configs}) if self.configs else None
 
-        if not self.data.get('title'):
-            self.data.pop('title')
-        if not self.data.get('menuentry'):
-            self.data.pop('menuentry')
-        if not self.data.get('configs'):
-            self.data.pop('configs')
+        # while (True):
+        #     try:
 
-        for line_full in self.data.get('title', []) + self.data.get('menuentry', []):
-            for name, line in line_full:
-                if name == 'menuentry_name' or name == 'title_name':
-                    entry = {}
-                    entry['name'] = line
-                elif entry and name.startswith(('kernel', 'linux')):
-                    entry['cmdline'] = line
-                    self._boot_entries.append(BootEntry(entry))
+        #         if line is None:
+        #             line = next(line_iter)
+
+        #         if line.startswith('title '):
+        #             last_line = _parse_title(line_iter, line, conf)
+        #             line = last_line
+        #         elif line.startswith('menuentry '):
+        #             _parse_menu_entry(line_iter, line, conf)
+        #             line = None
+        #         else:
+        #             conf["configs"].append(_parse_config(line))
+        #             line = None
+
+        #     except StopIteration:
+        #         self.data = conf
+        #         break
+
+        self._boot_entries = []
+        for entry in self.entries:
+            s_entry = {}
+            for k, v in entry.items():
+                if k in ('menuentry_name', 'title_name'):
+                    s_entry['name'] = v
+                elif s_entry and k.startswith(('kernel', 'linux')):
+                    s_entry['cmdline'] = v[0]
+            self._boot_entries.append(BootEntry(s_entry))
 
     @property
     def boot_entries(self):
@@ -175,7 +196,6 @@ class GrubConfig(Parser, dict):
         return self._boot_entries
 
     @property
-    @defaults()
     def is_kdump_iommu_enabled(self):
         """
         Does any kernel have 'intel_iommu=on' set?
@@ -190,7 +210,6 @@ class GrubConfig(Parser, dict):
         return False
 
     @property
-    @defaults()
     def kernel_initrds(self):
         """
         Get the `kernel` and `initrd` files referenced in GRUB configuration files
@@ -202,25 +221,37 @@ class GrubConfig(Parser, dict):
 
         kernels = []
         initrds = []
-        name_values = [(k, v) for k, v in self.data.get('configs', [])]
-        for value in self.data.get('title', []) + self.data.get('menuentry', []):
-            name_values.extend(value)
+        name_values = []
+        for k, v in self.configs:
+            if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
+                name_values.append((k, v))
+        for entry in self.entries:
+            for k, v in entry.items():
+                if (k.startswith(('module', 'kernel', 'linux', 'initrd'))):
+                    name_values.append((k, v))
+        print('--')
+        print(name_values)
 
         for name, value in name_values:
-            if name.startswith('module'):
-                if 'vmlinuz' in value:
-                    kernels.append(_parse_kernel_initrds_value(value))
-                elif 'initrd' in value or 'initramfs' in value:
-                    initrds.append(_parse_kernel_initrds_value(value))
-            elif (name.startswith(('kernel', 'linux'))):
-                if 'ipxe.lkrn' in value:
-                    # Machine PXE boots the kernel, assume all is ok
-                    return {}
-                elif 'xen.gz' not in value:
-                    kernels.append(_parse_kernel_initrds_value(value))
-            elif name.startswith('initrd') or name.startswith('initrd16'):
-                initrds.append(_parse_kernel_initrds_value(value))
+            v = None
+            if isinstance(value, list):
+                v = [i.split()[0].split('/')[-1] for i in value if i]
+            elif value and isinstance(value, str):
+                v = [value.split()[0].split('/')[-1]]
+            if v:
+                if name.startswith('module'):
+                    kernels.extend([i for i in v if 'vmlinuz' in i])
+                    initrds.extend([i for i in v if 'initrd' in i or 'initramfs' in i])
+                elif (name.startswith(('kernel', 'linux'))):
+                    if any('ipxe.lkrn' in i for i in v):
+                        # Machine PXE boots the kernel, assume all is ok
+                        return {}
+                    elif 'xen.gz' not in v:
+                        kernels.extend([i for i in v if 'xen.gz' not in i])
+                elif name.startswith('initrd') or name.startswith('initrd16'):
+                    initrds.extend(v)
 
+        print({GRUB_KERNELS: kernels, GRUB_INITRDS: initrds})
         return {GRUB_KERNELS: kernels, GRUB_INITRDS: initrds}
 
 
@@ -264,6 +295,7 @@ class Grub1Config(GrubConfig):
         super(Grub1Config, self).__init__(*args, **kwargs)
         self._version = 1
         self._efi = False
+        self.update({'title': self.title})
 
     def get_current_title(self):
         """
@@ -276,14 +308,14 @@ class Grub1Config(GrubConfig):
         """
         # if no 'default' in grub.conf, set default to 0
         idx = '0'
-        conf = self.data.get('configs', [])
+        conf = self.configs
         for v in conf:
             if v[0] == 'default':
                 idx = v[1]
 
         if idx.isdigit():
             idx = int(idx)
-            title = self.data['title']
+            title = self.title
             if len(title) > idx:
                 return title[idx]
 
@@ -359,6 +391,7 @@ class Grub2Config(GrubConfig):
         super(Grub2Config, self).__init__(*args, **kwargs)
         self._version = 2
         self._efi = False
+        self.update({'menuentry': self.menuentry})
 
 
 @parser(Specs.grub2_efi_cfg)
@@ -410,8 +443,7 @@ class Grub2Grubenv(GrubConfig):
 
         self.name = self.saved_entry = self.data.get('saved_entry', '')
         self.cmdline = self.data.get('kernelopts', '')
-        self._boot_entries.append(BootEntry({'name': self.name,
-                                             'cmdline': self.cmdline}))
+        self._boot_entries = [BootEntry({'name': self.name, 'cmdline': self.cmdline})]
         self.kernelopts = dict()
         for el in self.cmdline.split():
             key, value = el, True
@@ -430,22 +462,6 @@ class Grub2EFIGrubenv(Grub2Grubenv):
     def __init__(self, *args, **kwargs):
         super(Grub2EFIGrubenv, self).__init__(*args, **kwargs)
         self._efi = True
-
-
-def _parse_line(sep, line):
-    """
-    Parse a grub commands/config with format: cmd{sep}opts
-    Returns: (name, value): value can be None
-    """
-    strs = line.split(sep, 1)
-    return (strs[0].strip(), None) if len(strs) == 1 else (strs[0].strip(), strs[1].strip())
-
-
-def _parse_cmd(line):
-    """
-    Parse commands within grub v1/v2 config using space delimeter
-    """
-    return _parse_line(" ", line)
 
 
 def _parse_config(line):
@@ -471,6 +487,22 @@ def _parse_script(list, line, line_iter):
             ifIdx -= 1
         elif line.startswith("if"):
             ifIdx += 1
+
+
+def _parse_line(sep, line):
+    """
+    Parse a grub commands/config with format: cmd{sep}opts
+    Returns: (name, value): value can be None
+    """
+    strs = line.split(sep, 1)
+    return (strs[0].strip(), None) if len(strs) == 1 else (strs[0].strip(), strs[1].strip())
+
+
+def _parse_cmd(line):
+    """
+    Parse commands within grub v1/v2 config using space delimeter
+    """
+    return _parse_line(" ", line)
 
 
 def _parse_menu_entry(line_iter, cur_line, conf):

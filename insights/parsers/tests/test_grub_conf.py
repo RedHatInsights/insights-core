@@ -157,30 +157,36 @@ boot_success=0
 """.strip()
 
 
-def test_grub_conf():
+def test_grub_conf_1():
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5", "vmlinuz-2.6.18-194.17.1.el5"],
                        'grub_initrds': ["initrd-2.6.18-194.8.1.el5.img", "initramfs-2.6.18-194.8.1.el5.img"]}
+    print(Grub1Config(context_wrap(GRUB1_CONF_3)).kernel_initrds)
     assert expected_result == Grub1Config(context_wrap(GRUB1_CONF_3)).kernel_initrds
 
     expected_result = {'grub_kernels': ["vmlinuz-2.6.18-194.8.1.el5"],
                        'grub_initrds': []}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_4))
+    print(grub1)
     assert grub1.is_kdump_iommu_enabled is False
     assert expected_result == grub1.kernel_initrds
+    print('-----')
+    print(grub1.get_current_title())
     assert grub1.get_current_title() is None
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_5))
     assert grub1.is_kdump_iommu_enabled is False
-    assert grub1.get_current_title() == [
-        ('title_name', '(2.6.18-194.8.1.el5)'),
-        ('kernel', None), ('module', '/2.6.18-194.8.1.el5.img')]
+    print('-0')
+    print(grub1.get_current_title())
+    assert grub1.get_current_title() == {
+            'title_name': '(2.6.18-194.8.1.el5)',
+            'kernel': None, 'module': '/2.6.18-194.8.1.el5.img'}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_6))
     assert grub1.is_kdump_iommu_enabled is False
-    assert grub1.get_current_title() == [
-        ('title_name', 'Red Hat Enterprise Linux Server'),
-        ('kernel', 'test'), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1.get_current_title() == {
+        'title_name': 'Red Hat Enterprise Linux Server',
+        'kernel': 'test', 'module': '/2.6.18-194.8.1.el5.img'}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_7))
     assert grub1.is_kdump_iommu_enabled is False
@@ -193,22 +199,23 @@ def test_grub_conf():
     assert grub1efi.get_current_title() is None
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_5))
-    assert grub1efi.get_current_title() == [
-        ('title_name', '(2.6.18-194.8.1.el5)'),
-        ('kernel', None), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1efi.get_current_title() == {
+            'title_name': '(2.6.18-194.8.1.el5)',
+            'kernel': None, 'module': '/2.6.18-194.8.1.el5.img'}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_6))
-    assert grub1efi.get_current_title() == [
-        ('title_name', 'Red Hat Enterprise Linux Server'),
-        ('kernel', 'test'), ('module', '/2.6.18-194.8.1.el5.img')]
+    assert grub1efi.get_current_title() == {
+        'title_name': 'Red Hat Enterprise Linux Server',
+        'kernel': 'test', 'module': '/2.6.18-194.8.1.el5.img'}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_7))
     assert grub1efi.get_current_title() is None
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_1))['menuentry']
-    assert ('load_video', None) in grub_conf[0]
-    assert ('load_env', None) not in grub_conf[0]
-    assert ('insmod', 'gzio') in grub_conf[0]
+    print(grub_conf)
+    assert 'load_video' in grub_conf[0]
+    assert 'load_env' not in grub_conf[0]
+    assert 'insmod' in grub_conf[0]
 
     expected_result = {'grub_kernels': ["vmlinuz-3.10.0-229.el7.x86_64", "vmlinuz-3.10.0-123.13.2.el7.x86_64",
                                         "vmlinuz-3.10.0-123.el7.x86_64", "vmlinuz-0-rescue-13798ffcbc1ed4374f3f2e0fa6c923ad"],
@@ -217,7 +224,7 @@ def test_grub_conf():
     assert expected_result == Grub2Config(context_wrap(GRUB2_CFG_2)).kernel_initrds
 
     grub_conf = Grub2Config(context_wrap(GRUB2_CFG_3))
-    assert ('load_video', None) in grub_conf['menuentry'][0]
+    assert 'load_video' not in grub_conf['menuentry'][0]
     assert grub_conf.is_kdump_iommu_enabled is False
 
 
