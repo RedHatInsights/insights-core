@@ -52,7 +52,7 @@ def get_cmd_and_package_in_ps(broker, target_command):
             cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
             which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
             resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
+            pkg = ctx.shell_out("/bin/rpm -qf {0}".format(resolved[0])) if resolved else None
             if cmd and pkg is not None:
                 results.add("{0} {1}".format(cmd, pkg[0]))
         return results
@@ -736,7 +736,7 @@ class DefaultSpecs(Specs):
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
-    rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
@@ -932,15 +932,15 @@ class DefaultSpecs(Specs):
 
     rpm_format = format_rpm()
 
-    host_installed_rpms = simple_command("/usr/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
+    host_installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
 
     @datasource(DockerImageContext)
     def docker_installed_rpms(broker):
-        """ Command: /usr/bin/rpm -qa --root `%s` --qf `%s`"""
+        """ Command: /bin/rpm -qa --root `%s` --qf `%s`"""
         ctx = broker[DockerImageContext]
         root = ctx.root
         fmt = DefaultSpecs.rpm_format
-        cmd = "/usr/bin/rpm -qa --root %s --qf '%s'" % (root, fmt)
+        cmd = "/bin/rpm -qa --root %s --qf '%s'" % (root, fmt)
         result = ctx.shell_out(cmd)
         return CommandOutputProvider(cmd, ctx, content=result)
 
