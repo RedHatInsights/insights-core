@@ -180,13 +180,13 @@ def test_grub_conf_1():
     print(grub1.get_current_title())
     assert grub1.get_current_title() == {
             'title_name': '(2.6.18-194.8.1.el5)',
-            'kernel': None, 'module': '/2.6.18-194.8.1.el5.img'}
+            'kernel': [''], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_6))
     assert grub1.is_kdump_iommu_enabled is False
     assert grub1.get_current_title() == {
         'title_name': 'Red Hat Enterprise Linux Server',
-        'kernel': 'test', 'module': '/2.6.18-194.8.1.el5.img'}
+        'kernel': ['test'], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1 = Grub1Config(context_wrap(GRUB1_CONF_7))
     assert grub1.is_kdump_iommu_enabled is False
@@ -201,12 +201,12 @@ def test_grub_conf_1():
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_5))
     assert grub1efi.get_current_title() == {
             'title_name': '(2.6.18-194.8.1.el5)',
-            'kernel': None, 'module': '/2.6.18-194.8.1.el5.img'}
+            'kernel': [''], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_6))
     assert grub1efi.get_current_title() == {
         'title_name': 'Red Hat Enterprise Linux Server',
-        'kernel': 'test', 'module': '/2.6.18-194.8.1.el5.img'}
+        'kernel': ['test'], 'module': ['/2.6.18-194.8.1.el5.img']}
 
     grub1efi = Grub1EFIConfig(context_wrap(GRUB1_CONF_7))
     assert grub1efi.get_current_title() is None

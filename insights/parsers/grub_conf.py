@@ -137,7 +137,10 @@ class GrubConfig(Parser, dict):
                 if line.startswith('title '):
                     entry['title_name'] = line.split('title', 1)[1].strip()
                 else:
-                    entry['menuentry_name'] = line.split('menuentry', 1)[1].split('{', 1)[0].strip()
+                    entry_name = line.split('menuentry', 1)[1].split('{', 1)[0].strip()
+                    if not entry_name:
+                        raise ParseException("Cannot parse menuentry line: {0}".format(line))
+                    entry['menuentry_name'] = entry_name
             elif not in_script and line:
                 if entry:
                     sp = [i.strip() for i in line.split(None, 1)]
@@ -148,29 +151,10 @@ class GrubConfig(Parser, dict):
                     sep = '=' if '=' in line else None
                     sp = [i.strip() for i in line.split(sep, 1)]
                     self.configs.append((sp[0], sp[1] if len(sp) > 1 else ''))
+        # for the last entry
         self.entries.append(entry) if entry else None
 
         self.update({'configs': self.configs}) if self.configs else None
-
-        # while (True):
-        #     try:
-
-        #         if line is None:
-        #             line = next(line_iter)
-
-        #         if line.startswith('title '):
-        #             last_line = _parse_title(line_iter, line, conf)
-        #             line = last_line
-        #         elif line.startswith('menuentry '):
-        #             _parse_menu_entry(line_iter, line, conf)
-        #             line = None
-        #         else:
-        #             conf["configs"].append(_parse_config(line))
-        #             line = None
-
-        #     except StopIteration:
-        #         self.data = conf
-        #         break
 
         self._boot_entries = []
         for entry in self.entries:
