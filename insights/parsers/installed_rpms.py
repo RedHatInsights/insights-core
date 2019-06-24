@@ -335,6 +335,17 @@ class InstalledRpm(object):
              '8902150305004...b3576ff37da7e12e2285358267495ac48a437d4eefb3213' '\t'
              'RSA/8, Mon Aug 16 11:14:17 2010, Key ID 199e2f91fd431d51')
     """
+    PRODUCT_SIGNING_KEYS = [
+        'F76F66C3D4082792', '199e2f91fd431d51', '5326810137017186',
+        '45689c882fa658e0', '219180cddb42a60e', '7514f77d8366b0d9',
+        'fd372689897da07a', '938a80caf21541eb',
+        '08b871e6a5787476',
+        'E191DDB2C509E861'
+    ]
+    """
+    list: List of package-signing keys. Should be updated timely according to 
+          https://access.redhat.com/security/team/key/
+    """
     SOSREPORT_KEYS = [
         'installtime', 'buildtime', 'vendor', 'buildserver', 'pgpsig', 'pgpsig_short'
     ]
@@ -349,6 +360,8 @@ class InstalledRpm(object):
         """str: RPM package release."""
         self.arch = None
         """str: RPM package architecture."""
+        self.redhat_signed = None
+        """bool: RPM package is signed by Red Hat or not."""
 
         if isinstance(data, six.string_types):
             data = self._parse_package(data)
@@ -356,6 +369,8 @@ class InstalledRpm(object):
         for k, v in data.items():
             setattr(self, k, v)
         self.epoch = data['epoch'] if 'epoch' in data and data['epoch'] != '(none)' else '0'
+        _gpg_key_pos = data.get('sigpgp', data.get('rsaheader', data.get('pgpsig_short', data.get('pgpsig', ''))))
+        self.redhat_signed = any(key in _gpg_key_pos for key in self.PRODUCT_SIGNING_KEYS)
 
     @classmethod
     def from_package(cls, package_string):
