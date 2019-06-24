@@ -590,6 +590,7 @@ class DefaultSpecs(Specs):
     nfnetlink_queue = simple_file("/proc/net/netfilter/nfnetlink_queue")
     nfs_exports = simple_file("/etc/exports")
     nfs_exports_d = glob_file("/etc/exports.d/*.exports")
+    nft_ruleset = simple_command("/usr/sbin/nft list ruleset")
     nginx_conf = glob_file([
                            "/etc/nginx/*.conf", "/etc/nginx/conf.d/*", "/etc/nginx/default.d/*",
                            "/opt/rh/nginx*/root/etc/nginx/*.conf", "/opt/rh/nginx*/root/etc/nginx/conf.d/*", "/opt/rh/nginx*/root/etc/nginx/default.d/*",

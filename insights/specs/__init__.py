@@ -346,6 +346,7 @@ class Specs(SpecSet):
     nfnetlink_queue = RegistryPoint()
     nfs_exports_d = RegistryPoint(multi_output=True)
     nfs_exports = RegistryPoint()
+    nft_ruleset = RegistryPoint()
     nginx_conf = RegistryPoint(multi_output=True)
     nmcli_conn_show = RegistryPoint()
     nmcli_dev_show = RegistryPoint()
