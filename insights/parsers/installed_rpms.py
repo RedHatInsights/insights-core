@@ -343,7 +343,7 @@ class InstalledRpm(object):
         'E191DDB2C509E861'
     ]
     """
-    list: List of package-signing keys. Should be updated timely according to 
+    list: List of package-signing keys. Should be updated timely according to
           https://access.redhat.com/security/team/key/
     """
     SOSREPORT_KEYS = [
