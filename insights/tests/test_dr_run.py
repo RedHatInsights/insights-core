@@ -87,7 +87,7 @@ def test_run_command(tmpdir):
     assert broker[always_fires.report] == ALWAYS_FIRES_RESULT
     assert broker[never_fires.report] == NEVER_FIRES_RESULT
 
-    broker = run([Specs.redhat_release, always_fires.report, never_fires.report], root=tmpdir)
+    broker = run([Specs.redhat_release, always_fires.report, never_fires.report], root=tmpdir.strpath)
     assert broker is not None
     assert always_fires.report in broker
     assert never_fires.report in broker
