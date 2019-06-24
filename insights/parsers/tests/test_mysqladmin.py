@@ -1,7 +1,38 @@
 import pytest
 from insights.parsers import ParseException, SkipException
-from insights.parsers.mysqladmin import MysqladminVars
+from insights.parsers.mysqladmin import MysqladminVars, MysqladminStatus
 from insights.tests import context_wrap
+
+OUTPUT_MYSQLADMIN_STATUS = """
+Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
+""".strip()
+
+BLANK_SAMPLE = """
+""".strip()
+
+BAD_INPUT_SAMPLE = """
+type:0, len:0, queries:0
+""".strip()
+
+
+def test_mysqladmin_status():
+    mysqlstat = MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS))
+    assert "Uptime" in mysqlstat
+    assert "logtime" not in mysqlstat
+    assert mysqlstat['Threads'] == 1820
+
+
+def test_mysqlstat_blank_input():
+    ctx = context_wrap(BLANK_SAMPLE)
+    with pytest.raises(ParseException) as sc:
+        MysqladminStatus(ctx)
+    assert "Input content is empty." in str(sc)
+
+
+def test_mysqlstat_bad_input():
+    mysqlstat = MysqladminStatus(context_wrap(BAD_INPUT_SAMPLE))
+    assert mysqlstat.data == {}
+
 
 INPUT_NORMAL = """
 +---------------------------------------------------+-------------------
