@@ -38,7 +38,7 @@ runtime = set([
 if (sys.version_info < (2, 7)):
     runtime.add('pyyaml>=3.10,<=3.13')
 else:
-    runtime.add('pyyaml==5.1.1')
+    runtime.add('pyyaml')
 
 
 def maybe_require(pkg):
