@@ -25,119 +25,119 @@ class NFTListRules(CommandParser):
     Sample input data looks like::
 
         table ip filter {
-        \t\t\t\tchain INPUT {
-        \t\t\t\t	type filter hook input priority 0; policy accept;
-        \t\t\t\t	iifname "virbr0" meta l4proto udp udp dport 53 counter packets 0 bytes 0 accept
-        \t\t\t\t	iifname "virbr0" meta l4proto tcp tcp dport 53 counter packets 0 bytes 0 accept
-        \t\t\t\t	iifname "virbr0" meta l4proto udp udp dport 67 counter packets 0 bytes 0 accept
-        \t\t\t\t	iifname "virbr0" meta l4proto tcp tcp dport 67 counter packets 0 bytes 0 accept
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain FORWARD {
-        \t\t\t\t	type filter hook forward priority 0; policy accept;
-        \t\t\t\t	oifname "virbr0" ip daddr 192.168.122.0/24 ct state related,established counter packets 0 bytes 0 accept
-        \t\t\t\t	iifname "virbr0" ip saddr 192.168.122.0/24 counter packets 0 bytes 0 accept
-        \t\t\t\t	iifname "virbr0" oifname "virbr0" counter packets 0 bytes 0 accept
-        \t\t\t\t	oifname "virbr0" counter packets 0 bytes 0 reject
-        \t\t\t\t	iifname "virbr0" counter packets 0 bytes 0 reject
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type filter hook output priority 0; policy accept;
-        \t\t\t\t	oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 accept
-        \t\t\t\t}
+        \t\tchain INPUT {
+        \t\t	type filter hook input priority 0; policy accept;
+        \t\t	iifname "virbr0" meta l4proto udp udp dport 53 counter packets 0 bytes 0 accept
+        \t\t	iifname "virbr0" meta l4proto tcp tcp dport 53 counter packets 0 bytes 0 accept
+        \t\t	iifname "virbr0" meta l4proto udp udp dport 67 counter packets 0 bytes 0 accept
+        \t\t	iifname "virbr0" meta l4proto tcp tcp dport 67 counter packets 0 bytes 0 accept
+        \t\t}
+        \t\t
+        \t\tchain FORWARD {
+        \t\t	type filter hook forward priority 0; policy accept;
+        \t\t	oifname "virbr0" ip daddr 192.168.122.0/24 ct state related,established counter packets 0 bytes 0 accept
+        \t\t	iifname "virbr0" ip saddr 192.168.122.0/24 counter packets 0 bytes 0 accept
+        \t\t	iifname "virbr0" oifname "virbr0" counter packets 0 bytes 0 accept
+        \t\t	oifname "virbr0" counter packets 0 bytes 0 reject
+        \t\t	iifname "virbr0" counter packets 0 bytes 0 reject
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type filter hook output priority 0; policy accept;
+        \t\t	oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 accept
+        \t\t}
         }
         table ip6 filter {
-        \t\t\t\tchain INPUT {
-        \t\t\t\t	type filter hook input priority 0; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain FORWARD {
-        \t\t\t\t	type filter hook forward priority 0; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type filter hook output priority 0; policy accept;
-        \t\t\t\t}
+        \t\tchain INPUT {
+        \t\t	type filter hook input priority 0; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain FORWARD {
+        \t\t	type filter hook forward priority 0; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type filter hook output priority 0; policy accept;
+        \t\t}
         }
         table bridge filter {
-        \t\t\t\tchain INPUT {
-        \t\t\t\t	type filter hook input priority -200; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain FORWARD {
-        \t\t\t\t	type filter hook forward priority -200; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type filter hook output priority -200; policy accept;
-        \t\t\t\t}
+        \t\tchain INPUT {
+        \t\t	type filter hook input priority -200; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain FORWARD {
+        \t\t	type filter hook forward priority -200; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type filter hook output priority -200; policy accept;
+        \t\t}
         }
         table ip security {
-        \t\t\t\tchain INPUT {
-        \t\t\t\t	type filter hook input priority 150; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain FORWARD {
-        \t\t\t\t	type filter hook forward priority 150; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type filter hook output priority 150; policy accept;
-        \t\t\t\t}
+        \t\tchain INPUT {
+        \t\t	type filter hook input priority 150; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain FORWARD {
+        \t\t	type filter hook forward priority 150; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type filter hook output priority 150; policy accept;
+        \t\t}
         }
         table ip raw {
-        \t\t\t\tchain PREROUTING {
-        \t\t\t\t	type filter hook prerouting priority -300; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type filter hook output priority -300; policy accept;
-        \t\t\t\t}
+        \t\tchain PREROUTING {
+        \t\t	type filter hook prerouting priority -300; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type filter hook output priority -300; policy accept;
+        \t\t}
         }
         table ip mangle {
-        \t\t\t\tchain PREROUTING {
-        \t\t\t\t	type filter hook prerouting priority -150; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain INPUT {
-        \t\t\t\t	type filter hook input priority -150; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain FORWARD {
-        \t\t\t\t	type filter hook forward priority -150; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type route hook output priority -150; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain POSTROUTING {
-        \t\t\t\t	type filter hook postrouting priority -150; policy accept;
-        \t\t\t\t	oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 # CHECKSUM fill
-        \t\t\t\t}
+        \t\tchain PREROUTING {
+        \t\t	type filter hook prerouting priority -150; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain INPUT {
+        \t\t	type filter hook input priority -150; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain FORWARD {
+        \t\t	type filter hook forward priority -150; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type route hook output priority -150; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain POSTROUTING {
+        \t\t	type filter hook postrouting priority -150; policy accept;
+        \t\t	oifname "virbr0" meta l4proto udp udp dport 68 counter packets 0 bytes 0 # CHECKSUM fill
+        \t\t}
         }
         table ip nat {
-        \t\t\t\tchain PREROUTING {
-        \t\t\t\t	type nat hook prerouting priority -100; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain INPUT {
-        \t\t\t\t	type nat hook input priority 100; policy accept;
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain POSTROUTING {
-        \t\t\t\t	type nat hook postrouting priority 100; policy accept;
-        \t\t\t\t	ip saddr 192.168.122.0/24 ip daddr 224.0.0.0/24 counter packets 3 bytes 232 return
-        \t\t\t\t	ip saddr 192.168.122.0/24 ip daddr 255.255.255.255 counter packets 0 bytes 0 return
-        \t\t\t\t	meta l4proto tcp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
-        \t\t\t\t	meta l4proto udp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
-        \t\t\t\t	ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade
-        \t\t\t\t}
-        \t\t\t\t
-        \t\t\t\tchain OUTPUT {
-        \t\t\t\t	type nat hook output priority -100; policy accept;
-        \t\t\t\t}
+        \t\tchain PREROUTING {
+        \t\t	type nat hook prerouting priority -100; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain INPUT {
+        \t\t	type nat hook input priority 100; policy accept;
+        \t\t}
+        \t\t
+        \t\tchain POSTROUTING {
+        \t\t	type nat hook postrouting priority 100; policy accept;
+        \t\t	ip saddr 192.168.122.0/24 ip daddr 224.0.0.0/24 counter packets 3 bytes 232 return
+        \t\t	ip saddr 192.168.122.0/24 ip daddr 255.255.255.255 counter packets 0 bytes 0 return
+        \t\t	meta l4proto tcp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
+        \t\t	meta l4proto udp ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade to :1024-65535
+        \t\t	ip saddr 192.168.122.0/24 ip daddr != 192.168.122.0/24 counter packets 0 bytes 0 masquerade
+        \t\t}
+        \t\t
+        \t\tchain OUTPUT {
+        \t\t	type nat hook output priority -100; policy accept;
+        \t\t}
         }
 
     Raises:
