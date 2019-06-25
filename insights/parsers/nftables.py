@@ -142,11 +142,30 @@ class NFTListRules(Parser, LegacyItemAccess):
     def parse_content(self, content):
 
         self.data = {}
-
+        nst_cnt = 0
+        idx_key = ''
+        idx_key_2 = ''
         for line in get_active_lines(content):
-            if '{' in line:
+            if '{' in line and nst_cnt == 0:
                 idx_key = line.split('{')[0]
-                self.data[idx_key] = []
-            elif '}' not in line:
-                slef.data[idx_key].append(line)
-            elif '}' in line:
+                self.data[idx_key] = {}
+                nst_cnt += 1
+            elif not (('}' in line) or ('{' in line)) and\
+                    idx_key and idx_key_2 and nst_cnt == 2:
+                self.data[idx_key][idx_key_2].append(line)
+            elif ('{' in line) and nst_cnt == 1 and idx_key:
+                idx_key_2 = line.split('{')[0]
+                self.data[idx_key][idx_key_2] = []
+                nst_cnt += 1
+            elif '}' in line and nst_cnt == 2 and idx_key_2:
+                idx_key_2 = ''
+                nst_cnt -= 1
+            elif '}' in line and nst_cnt == 1 and idx_key:
+                idx_key = ''
+                nst_cnt -= 1
+
+    @property
+    def get_nftables(self):
+        """
+        (list): This will return the list of  
+        """
