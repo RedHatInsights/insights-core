@@ -15,6 +15,36 @@ from insights.parsers import ParseException, SkipException
 from insights.specs import Specs
 
 
+@parser(Specs.mysqladmin_status)
+class MysqladminStatus(LegacyItemAccess, CommandParser):
+    """
+    Module for parsing the output of the ``mysqladmin status`` command.
+    Typical output looks like::
+        Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
+    Example:
+        >>> type(mysqlstat)
+        >>> "Uptime" in mysqlstat
+        True
+        >>> mysqlstat['Threads']
+        1820
+    """
+    def parse_content(self, content):
+        if not content:
+            raise ParseException("Input content is empty.")
+        self.data = {}
+
+        if len(content) == 1:
+            st = list(content)[0].strip()
+            line = st.replace(': ', '=')
+            if line.startswith("Uptime="):
+                for item in line.split(None)[0:]:
+                    try:
+                        k, v = item.split('=')
+                        self.data[k.strip()] = int(v.strip())
+                    except ValueError:
+                        continue
+
+
 @parser(Specs.mysqladmin_vars)
 class MysqladminVars(LegacyItemAccess, CommandParser):
     """
