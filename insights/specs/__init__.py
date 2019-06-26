@@ -299,6 +299,7 @@ class Specs(SpecSet):
     multipath_conf_initramfs = RegistryPoint()
     multipath__v4__ll = RegistryPoint()
     mysqladmin_vars = RegistryPoint()
+    mysqladmin_status = RegistryPoint()
     mysql_log = RegistryPoint(multi_output=True, filterable=True)
     mysqld_limits = RegistryPoint()
     named_checkconf_p = RegistryPoint(filterable=True)
