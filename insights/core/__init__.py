@@ -516,12 +516,12 @@ class CommandParser(Parser):
     __bad_lines = [
             "no such file or directory",
             "command not found",
-            "python: No module named",
+            "no module named",
     ]
     """
     This variable contains filters for bad responses from commands defined
     with command specs.
-    When adding a new lin to the list make sure text is all lower case.
+    When adding a new line to the list make sure text is all lower case.
     """
 
     @staticmethod
@@ -859,8 +859,13 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         ...     pass
         >>> MyLogger.keep_scan('get_one', 'one')
         >>> MyLogger.keep_scan('get_three_and_more', ['three', 'more'])
-        >>> MyLogger.token_scan('is_more', 'more')
-        >>> MyLogger.token_scan('is_more_and_more', ['four', 'more'])
+        >>> MyLogger.keep_scan('get_one_or_two', ['one', 'two'], check=any)
+        >>> MyLogger.last_scan('last_line_contains_file', 'file')
+        >>> MyLogger.keep_scan('last_2_lines_contain_file', 'file', num=2, reverse=True)
+        >>> MyLogger.keep_scan('last_3_lines_contain_line_and_t', ['line', 't'], num=3, reverse=True)
+        >>> MyLogger.token_scan('find_more', 'more')
+        >>> MyLogger.token_scan('find_four_and_more', ['four', 'more'])
+        >>> MyLogger.token_scan('find_four_or_more', ['four', 'more'], check=any)
         >>> my_logger = MyLogger(context_wrap(contents, path='/var/log/mylog'))
         >>> my_logger.file_path
         '/var/log/mylog'
@@ -868,7 +873,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         'mylog'
         >>> my_logger.get('two')
         [{'raw_message': 'Log file line two'}]
-        >>> 'three' in my_logger
+        >>> 'line three,' in my_logger
         True
         >>> my_logger.get(['three', 'more'])
         [{'raw_message': 'Log file line three, and more'}]
@@ -878,10 +883,18 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         [{'raw_message': 'Log file line one'}]
         >>> my_logger.get_three_and_more == my_logger.get(['three', 'more'])
         True
-        >>> my_logger.is_more
+        >>> my_logger.last_line_contains_file
+        {'raw_message': 'Log file line three, and more'}
+        >>> len(my_logger.last_2_lines_contain_file)
+        2
+        >>> len(my_logger.last_3_lines_contain_line_and_t)  # Only 2 lines contain 'line' and 't'
+        2
+        >>> my_logger.find_more
         True
-        >>> my_logger.is_more_and_more
+        >>> my_logger.find_four_and_more
         False
+        >>> my_logger.find_four_or_more
+        True
 
     Attributes:
         lines (list): List of the lines from the log file content.
@@ -910,7 +923,8 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
 
     def __contains__(self, s):
         """
-        Returns true if any line contains the given text string.
+        Return ``True`` if any line contains the given text string or all the
+        strings in the given list.
         """
         search_by_expression = self._valid_search(s)
         return any(search_by_expression(l) for l in self.lines)
@@ -922,7 +936,7 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         """
         return {'raw_message': line}
 
-    def _valid_search(self, s):
+    def _valid_search(self, s, check=all):
         """
         Check this given `s`, it must be a string or a list of strings.
         Otherwise, a TypeError will be raised.
@@ -931,29 +945,39 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
             return lambda l: s in l
         elif (isinstance(s, list) and len(s) > 0 and
               all(isinstance(w, six.string_types) for w in s)):
-            return lambda l: all(w in l for w in s)
+            return lambda l: check(w in l for w in s)
         elif s is not None:
             raise TypeError('Search items must be given as a string or a list of strings')
 
-    def get(self, s):
+    def get(self, s, check=all, num=None, reverse=False):
         """
         Returns all lines that contain `s` anywhere and wrap them in a list of
         dictionaries.  `s` can be either a single string or a string list. For
         list, all keywords in the list must be found in each line.
 
         Parameters:
-            s(str or list): one or more strings to search for.
+            s(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+            num(int): the number of lines to get, ``None`` for unlimited
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
 
         Returns:
-            (list): list of dictionaries corresponding to the parsed lines
-            contain the `s`.
+            (list): list of dictionaries corresponding to the parsed lines contain the `s`.
+
+        Raises:
+            TypeError: When `s` is not a string or a list of strings, or `num`
+                is not an integer.
         """
+        if num is not None and not isinstance(num, six.integer_types):
+            raise TypeError('Required numbers must be given as a integer')
         ret = []
-        search_by_expression = self._valid_search(s)
-        for l in self.lines:
-            if search_by_expression(l):
+        search_by_expression = self._valid_search(s, check)
+        lines = self.lines[::-1] if reverse else self.lines
+        for l in lines:
+            if (num is None or len(ret) < num) and search_by_expression(l):
                 ret.append(self._parse_line(l))
-        return ret
+        # re-sort to original order
+        return ret[::-1] if reverse else ret
 
     @classmethod
     def scan(cls, result_key, func):
@@ -961,6 +985,9 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         Define computed fields based on a string to "grep for".  This is
         preferred to utilizing raw log lines in plugins because computed fields
         will be serialized, whereas raw log lines will not.
+
+        Raises:
+            ValueError: When `result_key` is already a registered scanner key.
         """
 
         if result_key in cls.scanner_keys:
@@ -974,24 +1001,65 @@ class LogFileOutput(six.with_metaclass(ScanMeta, Parser)):
         cls.scanner_keys.add(result_key)
 
     @classmethod
-    def token_scan(cls, result_key, token):
+    def token_scan(cls, result_key, token, check=all, reverse=False):
         """
         Define a property that is set to true if the given token is found in
         the log file.  Uses the __contains__ method of the log file.
+
+        Parameters:
+            result_key(str): the scanner key to register
+            token(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
+
+        Returns:
+            (list): list of dictionaries corresponding to the parsed lines contain the `token`.
         """
         def _scan(self):
-            return token in self
+            search_by_expression = self._valid_search(token, check)
+            lines = self.lines[::-1] if reverse else self.lines
+            return any(search_by_expression(l) for l in lines)
 
         cls.scan(result_key, _scan)
 
     @classmethod
-    def keep_scan(cls, result_key, token):
+    def keep_scan(cls, result_key, token, check=all, num=None, reverse=False):
         """
-        Define a property that is set to the list of lines that contain the
-        given token.  Uses the get method of the log file.
+        Define a property that is set to the list of dictionaries of the lines
+        that contain the given token.  Uses the get method of the log file.
+
+        Parameters:
+            result_key(str): the scanner key to register
+            token(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+            num(int): the number of lines to get, ``None`` for unlimited
+            reverse(bool): scan start from the head when ``False`` by default, otherwise start from the tail
+
+        Returns:
+            (list): list of dictionaries corresponding to the parsed lines contain the `token`.
         """
         def _scan(self):
-            return self.get(token)
+            return self.get(token, check=check, num=num, reverse=reverse)
+
+        cls.scan(result_key, _scan)
+
+    @classmethod
+    def last_scan(cls, result_key, token, check=all):
+        """
+        Define a property that is set to the dictionary of the last line
+        that contains the given token.  Uses the get method of the log file.
+
+        Parameters:
+            result_key(str): the scanner key to register
+            token(str or list): one or more strings to search for
+            check(func): built-in function ``all`` or ``any`` applied to each line
+
+        Returns:
+            (dict): dictionary corresponding to the last parsed line contains the `token`.
+        """
+        def _scan(self):
+            ret = self.get(token, check=check, num=1, reverse=True)
+            return ret[0] if ret else dict()
 
         cls.scan(result_key, _scan)
 

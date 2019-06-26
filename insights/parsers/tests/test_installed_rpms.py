@@ -156,7 +156,6 @@ xz-libs-5.2.2-1.el7
 def test_from_package():
     rpms = InstalledRpms(context_wrap(RPMS_PACKAGE))
     assert not rpms.is_hypervisor
-
     pkg_rpm = rpms.packages['openssh-server'][0]
     rpm = InstalledRpm.from_package(pkg_rpm.package)
     assert rpm.package == 'openssh-server-5.3p1-104.el6'
@@ -175,6 +174,8 @@ def test_from_line():
     assert rpms.get_max("yum").release == '69.el6'
     assert rpms.get_max("tftp-server").version == '5.2'
     assert rpms.get_max("yum").package == "yum-3.2.29-69.el6"
+    assert not rpms.get_max("tftp-server").redhat_signed
+    assert rpms.get_max("yum").redhat_signed
     assert rpms.corrupt is False
 
 
@@ -184,6 +185,7 @@ def test_from_json():
     assert len(rpms.packages) == len(RPMS_JSON.splitlines())
     assert rpms.get_max("log4j").source.name == "log4j"
     assert rpms.get_max("util-linux").epoch == '0'
+    assert rpms.get_max("jboss-servlet-3.0-api").redhat_signed
 
 
 def test_garbage():
