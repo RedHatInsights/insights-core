@@ -1,4 +1,5 @@
 import os
+import sys
 from setuptools import setup, find_packages
 
 __here__ = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +26,6 @@ entry_points = {
 }
 
 runtime = set([
-    'pyyaml>=3.10,<=3.13',
     'six',
     'requests',
     'redis',
@@ -34,6 +34,11 @@ runtime = set([
     'cachecontrol[filecache]',
     'lockfile',
 ])
+
+if (sys.version_info < (2, 7)):
+    runtime.add('pyyaml>=3.10,<=3.13')
+else:
+    runtime.add('pyyaml')
 
 
 def maybe_require(pkg):
