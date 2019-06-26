@@ -94,19 +94,22 @@ import logging
 import os
 import sys
 import yaml
-from IPython import embed
 
 from contextlib import contextmanager
 
 from insights import (apply_configs, create_context, dr, extract, HostContext,
                       load_default_plugins)
+from insights.core import filters
+from IPython import embed
+from IPython.terminal.embed import InteractiveShellEmbed
+
 
 try:
     import colorama as C
     C.init()
 except:
     class Pass(object):
-        def _getattr__(self, name):
+        def __getattr__(self, name):
             return ""
 
     class C(object):
@@ -114,10 +117,22 @@ except:
         Style = Pass()
 
 
+def get_ipshell():
+    banner = 'Starting IPython Interpreter Now \n'
+    exit_msg = '\nExiting IPython Interpreter Now'
+
+    try:
+        return InteractiveShellEmbed(banner1=banner, exit_msg=exit_msg)
+    except:
+        print("*** Error initializing colorized shell, failing over to non-colorized shell ***\n\n")
+        return embed
+
+
 def parse_args():
     p = argparse.ArgumentParser("Insights component runner.")
     p.add_argument("-c", "--config", help="Configure components.")
     p.add_argument("-D", "--debug", action="store_true", help="Show debug level information.")
+    p.add_argument("--nofilters", action="store_true", help="Turn datasource filters off")
     p.add_argument("component", nargs=1, help="Component to inspect.")
     p.add_argument("archive", nargs="?", help="Archive or directory to analyze.")
     return p.parse_args()
@@ -193,8 +208,9 @@ def run(component, archive=None):
             print("Example:")
             print("In [1]: {}.<property_name>".format(name))
             print("Out[1]: <property value>\n")
-            print("To exit ipython enter 'exit' and hit enter or use 'CTL D'\n\n")
-            embed()
+            print("To exit ipython enter 'exit' and hit enter or use 'CTL D'\n")
+            ipshell = get_ipshell()
+            ipshell()
         else:
             dump_error(component, broker)
             return sys.exit(1)
@@ -209,6 +225,9 @@ def main():
     if not component:
         print("Component not found: %s" % args.component[0], file=sys.stderr)
         sys.exit(1)
+    if args.nofilters:
+        filters.ENABLED = False
+
     run(component, archive=args.archive)
 
 

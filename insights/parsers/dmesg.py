@@ -46,12 +46,12 @@ class DmesgLineList(CommandParser, LogFileOutput):
         Please refer to its super-class :class:`insights.core.LogFileOutput`
 
     """
-    _line_re = re.compile(r'^(?:\[\s+(?P<timestamp>\d+\.\d+)\]\s+)?(?P<message>.*)$')
+    _line_re = re.compile(r'^(?:\[\s*(?P<timestamp>\d+\.\d+)\]\s+)?(?P<message>.*)$')
 
     def has_startswith(self, prefix):
         """
         Parameters:
-            prefix (str): The prefix of the line to look for.  Ignores any
+            prefix (str): The prefix of the line to look for. Ignores any
                 timestamp before the message body.
 
         Returns:
@@ -61,6 +61,23 @@ class DmesgLineList(CommandParser, LogFileOutput):
             self._line_re.search(line).group('message').startswith(prefix)
             for line in self.lines
         )
+
+    def logs_startwith(self, prefix):
+        """
+        Parameters:
+            prefix (str): The prefix of the line to look for. Ignores any timestamp.
+
+        Returns:
+            (list): All logs start with the given prefix without timestamp.
+        """
+        msgs = list()
+        for line in self.lines:
+            match = self._line_re.search(line)
+            if match:
+                msg = match.group('message')
+                if msg.startswith(prefix):
+                    msgs.append(msg)
+        return msgs
 
     def get_after(self, timestamp, s=None):
         """

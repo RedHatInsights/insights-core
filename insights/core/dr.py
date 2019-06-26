@@ -947,7 +947,9 @@ def run(components=None, broker=None):
     for component in run_order(components):
         start = time.time()
         try:
-            if component not in broker and component in DELEGATES and is_enabled(component):
+            if (component not in broker and component in components and
+               component in DELEGATES and
+               is_enabled(component)):
                 log.info("Trying %s" % get_name(component))
                 result = DELEGATES[component].process(broker)
                 broker[component] = result
@@ -961,7 +963,7 @@ def run(components=None, broker=None):
             pass
         except Exception as ex:
             tb = traceback.format_exc()
-            log.warn(tb)
+            log.warning(tb)
             broker.add_exception(component, ex, tb)
         finally:
             broker.exec_times[component] = time.time() - start

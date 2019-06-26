@@ -1,7 +1,7 @@
+import doctest
 from ...parsers import subscription_manager_list
 from ...tests import context_wrap
 
-import doctest
 
 subscription_manager_list_consumed_in_docs = '''
 +-------------------------------------------+
@@ -51,38 +51,6 @@ Starts:         04/27/15
 Ends:           04/27/16
 '''
 
-subscription_manager_repos_list_enabled_test_data = '''
-+----------------------------------------------------------+
-    Available Repositories in /etc/yum.repos.d/redhat.repo
-+----------------------------------------------------------+
-Repo ID:   rhel-7-server-ansible-2-rpms
-Repo Name: Red Hat Ansible Engine 2 RPMs for Red Hat Enterprise Linux 7 Server
-Repo URL:  https://cdn.redhat.com/content/dist/rhel/server/7/7Server/$basearch/ansible/2/os
-Enabled:   1
-'''
-
-
-def test_subscription_manager_list_docs():
-    env = {
-        'SubscriptionManagerListConsumed': subscription_manager_list.SubscriptionManagerListConsumed,
-        'SubscriptionManagerListInstalled': subscription_manager_list.SubscriptionManagerListInstalled,
-        'SubscriptionManagerReposListEnabled': subscription_manager_list.SubscriptionManagerReposListEnabled,
-        'shared': {
-            subscription_manager_list.SubscriptionManagerListConsumed: subscription_manager_list.SubscriptionManagerListConsumed(
-                context_wrap(subscription_manager_list_consumed_in_docs)
-            ),
-            subscription_manager_list.SubscriptionManagerListInstalled: subscription_manager_list.SubscriptionManagerListInstalled(
-                context_wrap(subscription_manager_list_installed_in_docs)
-            ),
-            subscription_manager_list.SubscriptionManagerReposListEnabled: subscription_manager_list.SubscriptionManagerReposListEnabled(
-                context_wrap(subscription_manager_repos_list_enabled_test_data)
-            )
-        },
-    }
-    failed, total = doctest.testmod(subscription_manager_list, globs=env)
-    assert failed == 0
-
-
 subscription_manager_list_test_data = '''
 +-------------------------------------------+
    Consumed Subscriptions
@@ -113,3 +81,12 @@ def test_subscription_manager_list_exceptions():
         context_wrap(subscription_manager_list_no_installed_products)
     )
     assert sml.records == []
+
+
+def test_subscription_manager_list_docs():
+    env = {
+        'installed': subscription_manager_list.SubscriptionManagerListInstalled(context_wrap(subscription_manager_list_installed_in_docs)),
+        'consumed': subscription_manager_list.SubscriptionManagerListConsumed(context_wrap(subscription_manager_list_consumed_in_docs)),
+    }
+    failed, total = doctest.testmod(subscription_manager_list, globs=env)
+    assert failed == 0

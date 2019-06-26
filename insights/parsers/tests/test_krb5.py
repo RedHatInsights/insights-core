@@ -72,7 +72,33 @@ KRB5DCONFIG = """
  default = FILE:/var/log/krb5libs.log
  kdc = FILE:/var/log/krb5kdc.log *
  admin_server = FILE:/var/log/kadmind.log
+ kdc = FILE:/var/log/krb5kdc.log2
+""".strip()
 
+KRB5CONFIG3 = """
+[logging]
+ default = FILE:/var/log/krb5libs.log
+ kdc = FILE:/var/log/krb5kdc.log
+ admin_server = FILE:/var/log/kadmind.log
+
+[libdefaults]
+ dns_lookup_realm = false
+ ticket_lifetime = 24h
+ renew_lifetime = 7d
+ forwardable = true
+ rdns = false
+# default_realm = EXAMPLE.COM
+ default_ccache_name = KEYRING:persistent:%{uid}
+
+[realms]
+# EXAMPLE.COM = {
+#  kdc = kerberos.example.com
+#  admin_server = kerberos.example.com
+# }
+
+[domain_realm]
+# .example.com = EXAMPLE.COM
+# example.com = EXAMPLE.COM
 """.strip()
 
 KRB5_CONF_PATH = "etc/krb5.conf"
@@ -98,6 +124,13 @@ def test_krb5configuration():
     assert common_conf_info.includedir == ["/etc/krb5.conf.d/"]
     assert common_conf_info.module == ["/etc/krb5test.conf:residual"]
 
+    common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG3, path=KRB5_CONF_PATH))
+    assert len(common_conf_info.sections()) == 4
+    assert common_conf_info.has_section('domain_realm') is True
+    assert sorted(common_conf_info.options('logging')) == sorted(['default', 'kdc', 'admin_server'])
+    assert common_conf_info.has_option('libdefaults', 'dns_lookup_realm') is True
+    assert common_conf_info.has_option('domain_realm', 'example.com') is False
+
 
 def test2_krb5configuration():
     common_conf_info = krb5.Krb5Configuration(context_wrap(KRB5CONFIG2, path=KRB5_CONF_PATH))
@@ -109,4 +142,5 @@ def test_krb5Dconfiguration():
     assert common_conf_info["realms"]["ticket_lifetime"] == "24h"
     assert "default_ccache_name" not in common_conf_info.data.keys()
     assert common_conf_info["realms"]["EXAMPLE.COM"]["kdc"] == ['kerberos.example.com', 'test2.example.com', 'test3.example.com']
-    assert not common_conf_info.has_option("logging", "admin_server")
+    assert common_conf_info.has_option("logging", "admin_server")
+    assert common_conf_info["logging"]["kdc"] == "FILE:/var/log/krb5kdc.log"

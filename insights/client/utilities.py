@@ -221,3 +221,17 @@ def modify_config_file(updates):
     cmd = cmd + constants.default_conf_file
     status = run_command_get_output(cmd)
     write_to_disk(constants.default_conf_file, content=status['output'])
+
+
+def get_version_info():
+    '''
+    Get the insights client and core versions for archival
+    '''
+    from insights.client import InsightsClient
+
+    cmd = 'rpm -q --qf "%{VERSION}-%{RELEASE}" insights-client'
+    version_info = {}
+    version_info['core_version'] = InsightsClient().version()
+    version_info['client_version'] = run_command_get_output(cmd)['output']
+
+    return version_info

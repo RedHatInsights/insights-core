@@ -14,6 +14,9 @@ CryptoPoliciesStateCurrent - file ``/etc/crypto-policies/state/current``
 
 CryptoPoliciesOpensshserver - file ``/etc/crypto-policies/back-ends/opensshserver.config``
 ------------------------------------------------------------------------------------------
+
+CryptoPoliciesBind - file ``/etc/crypto-policies/back-ends/bind.config``
+------------------------------------------------------------------------
 """
 
 from insights import Parser, parser, SysconfigOptions
@@ -85,3 +88,54 @@ class CryptoPoliciesOpensshserver(SysconfigOptions):
     def options(self):
         """ (union[str, None]): The value of the ``CRYPTO_POLICY`` variable if it exists, else None."""
         return self.data.get('CRYPTO_POLICY', None)
+
+
+@parser(Specs.crypto_policies_bind)
+class CryptoPoliciesBind(Parser):
+    """
+    This parser reads the ``/etc/crypto-policies/back-ends/bind.config`` file.
+    The sections ``disable-algorithms`` and ``disable-ds-digests`` are in the
+    properties ``disable_algorithms`` and ``disable_ds_digests``.
+
+    Sample Input::
+
+        disable-algorithms "." {
+        RSAMD5;
+        DSA;
+        };
+        disable-ds-digests "." {
+        GOST;
+        };
+
+    Examples:
+        >>> 'GOST' in cp_bind.disable_ds_digests
+        True
+        >>> cp_bind.disable_algorithms
+        ['RSAMD5', 'DSA']
+    """
+    def parse_content(self, content):
+        if not content:
+            raise SkipException("/etc/crypto-policies/back-ends/bind.config is empty")
+        self.value = content
+        in_da = False
+        in_ddd = False
+        da = []
+        ddd = []
+        for line in self.value:
+            if line.strip().lower().startswith("disable-algorithms"):
+                in_da = True
+                continue
+            if line.strip().lower().startswith("disable-ds-digests"):
+                in_ddd = True
+                continue
+            if line.strip().startswith("}"):
+                in_da = False
+                in_ddd = False
+                continue
+            algo = line.strip().strip(''';'"''')
+            if in_da:
+                da.append(algo)
+            if in_ddd:
+                ddd.append(algo)
+        self.disable_algorithms = da
+        self.disable_ds_digests = ddd
