@@ -133,6 +133,9 @@ class MarkdownFormat(Formatter):
             print(file=self.stream)
 
         def printit(c, v):
+            resp = self.responses[v["type"]]
+            name = "[%s] %s" % (resp.label, dr.get_name(c))
+            self.print_header(name, 3)
             print("```", file=self.stream)
             print(render(c, v), file=self.stream)
             print("```", file=self.stream)
