@@ -524,7 +524,7 @@ class Specs(SpecSet):
     sysconfig_prelink = RegistryPoint()
     sysconfig_sshd = RegistryPoint()
     sysconfig_virt_who = RegistryPoint()
-    sysctl_conf_initramfs = RegistryPoint()
+    sysctl_conf_initramfs = RegistryPoint(multi_output=True)
     sysctl_conf = RegistryPoint()
     sysctl = RegistryPoint()
     systemctl_cat_rpcbind_socket = RegistryPoint()
