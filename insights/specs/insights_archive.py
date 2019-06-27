@@ -144,6 +144,7 @@ class InsightsArchiveSpecs(Specs):
     modinfo_i40e = simple_file("insights_commands/modinfo_i40e")
     modinfo_igb = simple_file("insights_commands/modinfo_igb")
     modinfo_ixgbe = simple_file("insights_commands/modinfo_ixgbe")
+    modinfo_veth = simple_file("insights_commands/modinfo_veth")
     modinfo_vmxnet3 = simple_file("insights_commands/modinfo_vmxnet3")
     multicast_querier = simple_file("insights_commands/find_.sys.devices.virtual.net._-name_multicast_querier_-print_-exec_cat")
     multipath_conf_initramfs = simple_file("insights_commands/lsinitrd_-f_.etc.multipath.conf")
