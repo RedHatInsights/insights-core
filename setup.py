@@ -32,6 +32,7 @@ runtime = set([
     'cachecontrol',
     'cachecontrol[redis]',
     'cachecontrol[filecache]',
+    'defusedxml',
     'lockfile',
 ])
 
