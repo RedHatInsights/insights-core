@@ -303,7 +303,7 @@ class Specs(SpecSet):
     messages = RegistryPoint(filterable=True)
     metadata_json = RegistryPoint(raw=True)
     mistral_executor_log = RegistryPoint(filterable=True)
-    mlx4_port = RegistryPoint()
+    mlx4_port = RegistryPoint(multi_output=True)
     modinfo_i40e = RegistryPoint()
     modinfo_igb = RegistryPoint()
     modinfo_ixgbe = RegistryPoint()
