@@ -97,3 +97,18 @@ def test_dont_archive_when_command_not_found(write_data_to_file):
 
     arch.add_to_archive(cmd)
     write_data_to_file.assert_called_once()
+
+
+@patch("insights.client.data_collector.DataCollector._run_pre_command", return_value=['eth0'])
+@patch("insights.client.data_collector.InsightsCommand")
+def test_omit_after_parse_command(InsightsCommand, run_pre_command):
+    """
+    Files are omitted based on the expanded paths of the uploader.json path
+    """
+    c = InsightsConfig()
+    data_collector = DataCollector(c)
+
+    collection_rules = {'commands': [{"command": "/sbin/ethtool -i", "pattern": [], "pre_command": "iface", "symbolic_name": "ethtool"}], 'files': [], "pre_commands": {"iface": "/sbin/ip -o link | awk -F ': ' '/.*link\\/ether/ {print $2}'"}}
+    rm_conf = {'commands': ["/sbin/ethtool -i eth0"]}
+    data_collector.run_collection(collection_rules, rm_conf, {})
+    InsightsCommand.assert_not_called()

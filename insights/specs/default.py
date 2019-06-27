@@ -52,7 +52,7 @@ def get_cmd_and_package_in_ps(broker, target_command):
             cmd = p_splits[10].split()[0] if len(p_splits) == 11 else ''
             which = ctx.shell_out("which {0}".format(cmd)) if target_command in os.path.basename(cmd) else None
             resolved = ctx.shell_out("readlink -e {0}".format(which[0])) if which else None
-            pkg = ctx.shell_out("rpm -qf {0}".format(resolved[0])) if resolved else None
+            pkg = ctx.shell_out("/bin/rpm -qf {0}".format(resolved[0])) if resolved else None
             if cmd and pkg is not None:
                 results.add("{0} {1}".format(cmd, pkg[0]))
         return results
@@ -283,7 +283,7 @@ class DefaultSpecs(Specs):
     foreman_satellite_log = simple_file("/var/log/foreman-installer/satellite.log")
     foreman_ssl_access_ssl_log = simple_file("var/log/httpd/foreman-ssl_access_ssl.log")
     foreman_rake_db_migrate_status = simple_command('/usr/sbin/foreman-rake db:migrate:status')
-    foreman_tasks_config = simple_file("/etc/sysconfig/foreman-tasks")
+    foreman_tasks_config = first_file(["/etc/sysconfig/foreman-tasks", "/etc/sysconfig/dynflowd"])
     fstab = simple_file("/etc/fstab")
     galera_cnf = first_file(["/var/lib/config-data/puppet-generated/mysql/etc/my.cnf.d/galera.cnf", "/etc/my.cnf.d/galera.cnf"])
     getcert_list = simple_command("/usr/bin/getcert list")
@@ -299,17 +299,19 @@ class DefaultSpecs(Specs):
     gnocchi_conf = first_file(["/var/lib/config-data/puppet-generated/gnocchi/etc/gnocchi/gnocchi.conf", "/etc/gnocchi/gnocchi.conf"])
     gnocchi_metricd_log = first_file(["/var/log/containers/gnocchi/gnocchi-metricd.log", "/var/log/gnocchi/metricd.log"])
     grub_conf = simple_file("/boot/grub/grub.conf")
+    grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
     grub_efi_conf = simple_file("/boot/efi/EFI/redhat/grub.conf")
+    grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
     grub2_cfg = simple_file("/boot/grub2/grub.cfg")
     grub2_efi_cfg = simple_file("boot/efi/EFI/redhat/grub.cfg")
-    grub_config_perms = simple_command("/bin/ls -l /boot/grub2/grub.cfg")  # only RHEL7 and updwards
-    grub1_config_perms = simple_command("/bin/ls -l /boot/grub/grub.conf")  # RHEL6
+    grub2_efi_grubenv = simple_file("/boot/efi/EFI/redhat/grubenv")
+    grub2_grubenv = simple_file("/boot/grub2/grubenv")
     grubby_default_index = simple_command("/usr/sbin/grubby --default-index")  # only RHEL7 and updwards
     grubby_default_kernel = simple_command("/usr/sbin/grubby --default-kernel")  # RHEL6 and updwards
     hammer_ping = simple_command("/usr/bin/hammer ping")
     hammer_task_list = simple_command("/usr/bin/hammer --csv task list")
     haproxy_cfg = first_file(["/var/lib/config-data/puppet-generated/haproxy/etc/haproxy/haproxy.cfg", "/etc/haproxy/haproxy.cfg"])
-    heat_api_log = first_file(["/var/log/containers/heat/heat_api.log", "/var/log/heat/heat-api.log"])
+    heat_api_log = first_file(["/var/log/containers/heat/heat-api.log", "/var/log/heat/heat-api.log", "/var/log/heat/heat_api.log"])
     heat_conf = first_file(["/var/lib/config-data/puppet-generated/heat/etc/heat/heat.conf", "/etc/heat/heat.conf"])
     heat_crontab = simple_command("/usr/bin/crontab -l -u heat")
     heat_crontab_container = simple_command("docker exec heat_api_cron /usr/bin/crontab -l -u heat")
@@ -507,6 +509,7 @@ class DefaultSpecs(Specs):
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modinfo_igb = simple_command("/sbin/modinfo igb")
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
+    modinfo_veth = simple_command("/sbin/modinfo veth")
     modinfo_vmxnet3 = simple_command("/sbin/modinfo vmxnet3")
     modprobe = glob_file(["/etc/modprobe.conf", "/etc/modprobe.d/*.conf"])
     sysconfig_mongod = glob_file([
@@ -733,7 +736,7 @@ class DefaultSpecs(Specs):
     rhsm_log = simple_file("/var/log/rhsm/rhsm.log")
     root_crontab = simple_command("/usr/bin/crontab -l -u root")
     route = simple_command("/sbin/route -n")
-    rpm_V_packages = simple_command("/usr/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
+    rpm_V_packages = simple_command("/bin/rpm -V coreutils procps procps-ng shadow-utils passwd sudo", keep_rc=True)
     rsyslog_conf = simple_file("/etc/rsyslog.conf")
     samba = simple_file("/etc/samba/smb.conf")
     saphostctrl_listinstances = simple_command("/usr/sap/hostctrl/exe/saphostctrl -function ListInstances")
@@ -929,15 +932,15 @@ class DefaultSpecs(Specs):
 
     rpm_format = format_rpm()
 
-    host_installed_rpms = simple_command("/usr/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
+    host_installed_rpms = simple_command("/bin/rpm -qa --qf '%s'" % rpm_format, context=HostContext)
 
     @datasource(DockerImageContext)
     def docker_installed_rpms(broker):
-        """ Command: /usr/bin/rpm -qa --root `%s` --qf `%s`"""
+        """ Command: /bin/rpm -qa --root `%s` --qf `%s`"""
         ctx = broker[DockerImageContext]
         root = ctx.root
         fmt = DefaultSpecs.rpm_format
-        cmd = "/usr/bin/rpm -qa --root %s --qf '%s'" % (root, fmt)
+        cmd = "/bin/rpm -qa --root %s --qf '%s'" % (root, fmt)
         result = ctx.shell_out(cmd)
         return CommandOutputProvider(cmd, ctx, content=result)
 
