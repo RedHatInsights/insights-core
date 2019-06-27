@@ -134,9 +134,10 @@ class HumanReadableFormat(Formatter):
         """ Prints the formatted response for the matching return type """
 
         def printit(c, v):
-            underline = "-" * len(dr.get_name(c))
             resp = self.responses[v["type"]]
-            name = "%s[%s] %s%s" % (resp.color, resp.label, dr.get_name(c), Style.RESET_ALL)
+            name = "[%s] %s" % (resp.label, dr.get_name(c))
+            underline = "-" * len(name)
+            name = "%s%s%s" % (resp.color, name, Style.RESET_ALL)
             print(name, file=self.stream)
             print(underline, file=self.stream)
             print(render(c, v), file=self.stream)
