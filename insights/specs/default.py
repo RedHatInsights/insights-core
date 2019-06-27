@@ -505,7 +505,7 @@ class DefaultSpecs(Specs):
     messages = simple_file("/var/log/messages")
     metadata_json = simple_file("metadata.json", context=ClusterArchiveContext, kind=RawFileProvider)
     mistral_executor_log = simple_file("/var/log/mistral/executor.log")
-    mlx4_port = simple_command("/usr/bin/find /sys/bus/pci/devices/*/mlx4_port[0-9] -print -exec cat {} \;")
+    mlx4_port = glob_file("/sys/bus/pci/devices/*/mlx4_port[0-9]")
     modinfo_i40e = simple_command("/sbin/modinfo i40e")
     modinfo_igb = simple_command("/sbin/modinfo igb")
     modinfo_ixgbe = simple_command("/sbin/modinfo ixgbe")
