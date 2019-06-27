@@ -1,5 +1,25 @@
 # Change Log
 
+## [insights-core-3.0.107-1033](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.107-1033) (2019-06-27)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.106-1020...insights-core-3.0.107-1033)
+
+**Implemented enhancements:**
+
+- Enhance parser qemu\_xml to parse new RHOSP specific attributes [\#1717](https://github.com/RedHatInsights/insights-core/issues/1717)
+
+**Fixed bugs:**
+
+- ModInfoVeth Parser needs spec for Insights Archives [\#2026](https://github.com/RedHatInsights/insights-core/issues/2026)
+
+**Closed issues:**
+
+- NoOptionError using smb.conf parser \(samba.py\) [\#2018](https://github.com/RedHatInsights/insights-core/issues/2018)
+- The installed\_rpms spec does work on RHEL6 [\#2015](https://github.com/RedHatInsights/insights-core/issues/2015)
+- Critical security issue in dependency pyyaml [\#2013](https://github.com/RedHatInsights/insights-core/issues/2013)
+- ModuleNotFoundError: No module named 'insights.config' [\#2009](https://github.com/RedHatInsights/insights-core/issues/2009)
+- Missing boilerplate notice in all the files of the project. [\#2003](https://github.com/RedHatInsights/insights-core/issues/2003)
+- Markdown formatter needs to show plugin module in output [\#1700](https://github.com/RedHatInsights/insights-core/issues/1700)
+
 ## [insights-core-3.0.106-1020](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.106-1020) (2019-06-20)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.105-1009...insights-core-3.0.106-1020)
 
