@@ -181,7 +181,7 @@ class MountEntry(CommandParser):
 
     @property
     def data(self):
-        return {k: getattr(self, k) for k in self.__slots__ if hasattr(self, k)}
+        return dict((k, getattr(self, k)) for k in self.__slots__ if hasattr(self, k))
 
     def get(self, item, default=None):
         return getattr(self, item, default)
