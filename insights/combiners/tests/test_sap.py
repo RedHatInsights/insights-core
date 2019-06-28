@@ -173,6 +173,15 @@ SAPHOSTCTRL_HOSTINSTANCES_GOOD = '''
  FullQualifiedHostname , String , li-ld-1810.example.com
  IPAddress , String , 10.0.0.1
  SapVersionInfo , String , 749, patch 200, changelist 1746260
+*********************************************************
+ CreationClassName , String , SAPInstance
+ SID , String , B15
+ SystemNumber , String , 00
+ InstanceName , String , HDB00
+ Hostname , String , sapb15hdba1
+ FullQualifiedHostname , String , li-ld-1810.example.com
+ SapVersionInfo , String , 749, patch 418, changelist 1816226
+*********************************************************
 '''
 
 
@@ -213,19 +222,24 @@ def test_saphostcrtl_hana_2():
     hn = hostname(Hostname(context_wrap(HOSTNAME1)), None, None)
     sap = Sap(hn, inst, lssap)
     assert 'D50' not in sap
+    assert 'HDB00' in sap
     assert sorted(sap.local_instances) == sorted(['HDB88', 'HDB90', 'SMDA91'])
-    assert sorted(sap.business_instances) == sorted(['HDB88', 'HDB90'])
+    assert sorted(sap.all_instances) == sorted([
+        'ASCS07', 'ASCS52', 'D54', 'DVEBMGS09', 'ERS08', 'HDB00', 'HDB62',
+        'HDB88', 'HDB90', 'SCS10', 'SMDA91'])
+    assert sorted(sap.business_instances) == sorted([
+        'ASCS07', 'ASCS52', 'D54', 'DVEBMGS09', 'ERS08', 'HDB00', 'HDB62',
+        'HDB88', 'HDB90', 'SCS10'])
     assert sorted(sap.function_instances) == sorted(['SMDA91'])
-    assert 'ASCS52' in sap.all_instances
     assert sap['HDB88'].number == '88'
     assert sap['HDB90'].hostname == 'li-ld-1810'
     assert sap['DVEBMGS09'].version == '749, patch 301, changelist 1779613'
     assert sap.version('HDB90') == '749, patch 211, changelist 1754007'
     assert sap.hostname('HDB62') == 'd62dbsrv'
     assert sap.type('SCS10') == 'SCS'
-    assert sap.is_netweaver is False
+    assert sap.is_netweaver is True
     assert sap.is_hana is True
-    assert sap.is_ascs is False
+    assert sap.is_ascs is True
 
 
 def test_lssap_hana():
