@@ -7,9 +7,7 @@ argument followed by the function specific arguments.  See USAGE text
 below.
 """
 from __future__ import print_function
-from __future__ import unicode_literals
 
-import six
 import argparse
 import sys
 
@@ -75,15 +73,13 @@ def fix_arg_dashes():
     en_dash = '\u2013'
     em_dash = '\u2014'
 
+    # replace unicode (en dash and em dash) dashes from argument definitions that may have been copy
+    # and pasted from another source
     i = 1
-    # replace unicode dashes from argument definitions that may have been copy and pasted from documentation
     for a in sys.argv[1:]:
-        if six.PY2:
-            a = a.decode('utf-8', 'unicode')
-            a = a.replace(em_dash, "--").replace(en_dash, "-").encode('ascii')
-        else:
-            a = a.replace(em_dash, "--").replace(en_dash, "-")
-        sys.argv[i] = a
+        first = list(a)
+        first[0] = first[0].replace(em_dash, "--").replace(en_dash, "-")
+        sys.argv[i] = "".join(first)
         i += 1
 
 
