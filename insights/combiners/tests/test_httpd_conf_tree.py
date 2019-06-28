@@ -531,7 +531,7 @@ def test_httpd_nested_conf_file():
     httpd3 = _HttpdConf(context_wrap(HTTPD_CONF_FILE_2, path='/etc/httpd/conf.d/d1/hello.conf'))
     result = HttpdConfTree([httpd1, httpd2, httpd3])
 
-    server_root = result['ServerRoot'][last]
+    server_root = result['ServerRoot'][-1]
     assert server_root.value == '/home/skontar/www'
     assert server_root.line == 'ServerRoot "/home/skontar/www"'
     assert server_root.file_name == 'hello.conf'
