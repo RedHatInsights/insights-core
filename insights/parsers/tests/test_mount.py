@@ -2,11 +2,13 @@
 test mount
 ==========
 """
+import doctest
+import pytest
 from insights.parsers import ParseException
+import insights.parsers.mount as mount_module
 from insights.parsers.mount import Mount
 from insights.tests import context_wrap
 
-import pytest
 
 MOUNT_DATA = """
 tmpfs on /tmp type tmpfs (rw,seclabel)
@@ -30,6 +32,14 @@ tmpfs on /tmp type tmpfs (rw,seclabel)
 hugetlbfs /dev/hugepages type hugetlbfs (rw,relatime,seclabel)
 /dev/mapper/fedora-root on / type ext4 (rw,relatime,seclabel,data=ordered)
 """.strip()
+
+
+MOUNT_TEST_DOCS = """
+tmpfs on /tmp type tmpfs (rw,seclabel)
+/dev/sda1 on /boot type ext4 (rw,relatime,seclabel,data=ordered)
+/dev/mapper/HostVG-Config on / type ext4 (rw,noatime,seclabel,stripe=256,data=ordered) [CONFIG]
+/dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]
+"""
 
 
 def test_mount():
@@ -57,6 +67,9 @@ def test_mount():
     assert sda1['mount_options']['data'] == 'ordered'
     assert sda1.mount_options.data == 'ordered'
     assert 'mount_label' not in sda1
+    assert type(sr0.data) is dict
+    assert len(sr0.data) == 6
+    assert sr0.data['mount_point'] == sr0.get('mount_point')
 
     # Test iteration
     for mount in results:
@@ -112,3 +125,10 @@ def test_mount_get_dir():
     with pytest.raises(ParseException) as exc:
         Mount(context_wrap(MOUNT_WITHOUT_ROOT))
     assert "Input for mount must contain '/' mount point." in str(exc)
+
+
+def test_mount_docs():
+    failed_count, tests = doctest.testmod(mount_module,
+        globs={'mnt_info': Mount(context_wrap(MOUNT_TEST_DOCS))}
+    )
+    assert failed_count == 0

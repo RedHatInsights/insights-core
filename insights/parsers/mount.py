@@ -45,32 +45,30 @@ Examples:
     <class 'insights.parsers.mount.Mount'>
     >>> len(mnt_info)
     4
-    >>> mnt_info[3].__dict__
-    {'filesystem': 'dev/sr0',
-     'mount_clause': 'dev/sr0 on /run/media/root/VMware Tools type iso9660 (ro,nosuid,nodev,relatime,uid=0,gid=0,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks2) [VMware Tools]',
-     'mount_label': 'VMware Tools',
-     'mount_options': {'dmode': '0500', 'relatime': True, 'uid': '0',
-         'iocharset': 'utf8', 'gid': '0', 'mode': '0400', 'ro': True,
-         'nosuid': True, 'uhelper': 'udisks2', 'nodev': True}
-     'mount_point': '/run/media/root/VMware Tools',
-     'mount_type': 'iso9660'}
+    >>> type(mnt_info[3].data) == dict
+    True
+    >>> len(mnt_info[3].data) == 6
+    True
+    >>> mnt_info[3].data['mount_point'] == mnt_info[3].mount_point
+    True
+    >>> mnt_info[3].data['mount_label']
+    'VMware Tools'
     >>> mnt_info[3].filesystem
-    'dev/sr0'
+    '/dev/sr0'
     >>> mnt_info[3].mount_type
     'iso9660'
-    >>> mnt_info[3].mount_options
-    {'dmode': '0500', 'gid': '0', 'iocharset': 'utf8', 'mode': '0400', 'nodev': True,
-     'nosuid': True, 'relatime': True, 'ro': True, 'uhelper': 'udisks2', 'uid': '0'}
+    >>> type(mnt_info[3].mount_options)
+    <class 'insights.parsers.mount.MountOpts'>
     >>> mnt_info[3].mount_options.ro
     True
     >>> mnt_info.mounts['/run/media/root/VMware Tools'].filesystem
-    'dev/sr0'
+    '/dev/sr0'
 """
 
 import re
 from insights.specs import Specs
 from ..parsers import optlist_to_dict, keyword_search, ParseException
-from .. import parser, get_active_lines, LegacyItemAccess, CommandParser
+from .. import parser, get_active_lines, CommandParser
 
 
 class MountOpts(object):
@@ -141,7 +139,7 @@ class MountOpts(object):
             yield k, v
 
 
-class MountEntry(LegacyItemAccess, CommandParser):
+class MountEntry(CommandParser):
     """
     An object representing an entry in the output of ``mount`` command.  Each
     entry contains below fixed attributes:
@@ -161,21 +159,38 @@ class MountEntry(LegacyItemAccess, CommandParser):
             'mount_options': MountOpts(),
     }
 
+    __slots__ = ['mount_clause', 'filesystem', 'mount_point', 'mount_type',
+                 'mount_options', 'mount_label', 'parse_error']
+
     def __init__(self, data={}):
-        self.data = data
         for k, v in MountEntry.attrs.items():
             if k not in data:
                 setattr(self, k, v)
         for k, v in data.items():
-            setattr(self, k, v)
+            if k in self.__slots__:
+                setattr(self, k, v)
 
     def items(self):
         """
         To keep backward compatibility and let it can be iterated as a
         dictionary.
         """
-        for k, v in self.data.items():
-            yield k, v
+        for k in self.__slots__:
+            if hasattr(self, k):
+                yield k, getattr(self, k)
+
+    @property
+    def data(self):
+        return {k: getattr(self, k) for k in self.__slots__ if hasattr(self, k)}
+
+    def get(self, item, default=None):
+        return getattr(self, item, default)
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def __contains__(self, item):
+        return hasattr(self, item)
 
 
 @parser(Specs.mount)
@@ -228,7 +243,6 @@ class Mount(CommandParser):
                     mount['mount_label'] = match.group('mount_label')
             else:
                 mount['parse_error'] = 'Unable to parse line'
-
             entry = MountEntry(mount)
             self.rows.append(entry)
             if match:
@@ -263,10 +277,15 @@ class Mount(CommandParser):
 
         Examples:
 
-            >>> mounts.search(filesystem='/dev/sda1')
-            [{'filesystem': '/dev/sda1', 'mount_point': '/boot', ...}]
-            >>> mounts.search(mount_options__contains='ro')
-            [{'filesystem': '/dev/sr0', 'mount_point', '/mnt/CDROM', ...}, ...]
+            >>> len(mnt_info.search(filesystem='/dev/sda1')) == 1
+            True
+            >>> sda1 = mnt_info.search(filesystem='/dev/sda1')[0]
+            >>> type(sda1)
+            <class 'insights.parsers.mount.MountEntry'>
+            >>> sda1.mount_point
+            '/boot'
+            >>> mnt_info.search(mount_options__contains='ro')[0].mount_point
+            '/run/media/root/VMware Tools'
 
         Arguments:
             **kwargs (dict): Dictionary of key-value pairs to search for.
