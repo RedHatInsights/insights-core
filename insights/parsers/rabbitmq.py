@@ -16,7 +16,8 @@ RabbitMQQueues - command ``/usr/sbin/rabbitmqctl list_queues name messages consu
 RabbitMQEnv - file ``/etc/rabbitmq/rabbitmq-env.conf``
 ------------------------------------------------------
 """
-from re import compile
+from re import compile, sub
+import json
 
 from collections import namedtuple
 from insights.contrib import pyparsing as p
@@ -118,7 +119,29 @@ class RabbitMQReport(CommandParser):
                         'uptime': '3075482',
                         'pid': '9304',
                         'disk_free': '260561866752',
-                        'disk_free_limit': '50000000'}}
+                        'disk_free_limit': '50000000'}},
+                 'clusters': {
+                     'rabbit@controller1': {'alarms': [{'rabbit@controller0': []},
+                                                {'rabbit@controller2': []},
+                                                {'rabbit@controller1': []}],
+                                     'cluster_name': 'rabbit@controller0.x.y.com',
+                                     'nodes': [{'disc': ['rabbit@controller0',
+                                                         'rabbit@controller1',
+                                                         'rabbit@controller2']}],
+                                     'partitions': [],
+                                     'running_nodes': ['rabbit@controller0',
+                                                       'rabbit@controller2',
+                                                       'rabbit@controller1']},
+                    'rabbit@controller2': {'alarms': [{'rabbit@controller1': []},
+                                                        {'rabbit@controller0': []},
+                                                        {'rabbit@controller2': []}],
+                                            'cluster_name': 'rabbit@controller0.x.y.com',
+                                            'nodes': [{'disc': ['rabbit@controller0',
+                                                                'rabbit@controller1',
+                                                                'rabbit@controller2']}],
+                                            'partitions': [],
+                                            'running_nodes': ['rabbit@controller2']},
+                 },
                  'perm': {
                     '/': {
                         'redhat1': ['redhat.*', '.*', '.*'],
@@ -130,6 +153,43 @@ class RabbitMQReport(CommandParser):
         # No handler will be applied here.
         # And such p.ParseException won't be hidden, showing for debug usage.
         self.result = create_parser().parseString("\n".join(content)).asDict()
+        clusters_nodes = self.parse_cluster_nodes(content)
+        if clusters_nodes:
+            self.result.update({'clusters': clusters_nodes})
+
+    def parse_cluster_nodes(self, content):
+        nodes_result = {}
+        node_data_start = False
+        node_data_done = False
+        for line in content:
+            if line.startswith('Cluster status of node '):
+                line = line.strip('.')
+                node_name = line.split()[-1]
+                node_data = ''
+                node_data_start = True
+                node_data_done = False
+                continue
+            if line.startswith('Application environment'):
+                node_data_start = False
+                node_data_done = True
+            if node_data_start:
+                node_data += line.strip()
+            if node_data_done:
+                node_info_list = self.parse_cluster_node(node_data)
+                single_node_result = {}
+                [single_node_result.update(item) for item in node_info_list]
+                nodes_result.update({node_name: single_node_result})
+                node_data_done = False
+        return nodes_result
+
+    def parse_cluster_node(self, node_data):
+        regex_replace = [
+            (r',<<"', r':'), (r'">>', r''), (r',\[', r':['), (r'([a-zA-Z_@0-9\.\-]+)', r'"\1"')
+        ]
+        for r, s in regex_replace:
+            node_data = sub(r, s, node_data)
+        clean_json = json.loads(node_data)
+        return clean_json
 
 
 @parser(Specs.rabbitmq_users)

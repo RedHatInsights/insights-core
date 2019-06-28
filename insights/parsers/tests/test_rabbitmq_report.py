@@ -48,7 +48,7 @@ Status of node rabbit@rabbitmq0 ...
  {uptime,5590}]
 
 Cluster status of node rabbit@rabbitmq0 ...
-[{nodes,[{disc,[rabbit@rabbitmq0]}]},
+[{nodes,[{disc,[rabbit@rabbitmq0]}]}]
 
 Application environment of node rabbit@rabbitmq0 ...
 [{auth_backends,[rabbit_auth_backend_internal]},
@@ -83,11 +83,14 @@ Status of node 'rabbit@overcloud-controller-2' ...
                     {sockets_used,833}]},
  {uptime,3075474}]
 
-Cluster status of node 'rabbit@overcloud-controller-2' ...
-[{nodes,[{disc,['rabbit@overcloud-controller-0',
-                'rabbit@overcloud-controller-1',
-                'rabbit@overcloud-controller-2']}]},
- {partitions,[]}]
+Cluster status of node rabbit@controller1 ...
+[{nodes,[{disc,[rabbit@controller0,rabbit@controller1,rabbit@controller2]}]},
+ {running_nodes,[rabbit@controller0,rabbit@controller2,rabbit@controller1]},
+ {cluster_name,<<"rabbit@controller0.x.y.com">>},
+ {partitions,[]},
+ {alarms,[{rabbit@controller0,[]},
+          {rabbit@controller2,[]},
+          {rabbit@controller1,[]}]}]
 
 Application environment of node 'rabbit@overcloud-controller-2' ...
 [{auth_backends,[rabbit_auth_backend_internal]}]
@@ -102,11 +105,14 @@ Status of node 'rabbit@overcloud-controller-1' ...
                     {sockets_used,851}]},
  {uptime,3075482}]
 
-Cluster status of node 'rabbit@overcloud-controller-2' ...
-[{nodes,[{disc,['rabbit@overcloud-controller-0',
-                'rabbit@overcloud-controller-1',
-                'rabbit@overcloud-controller-2']}]},
- {partitions,[]}]
+Cluster status of node rabbit@controller2 ...
+[{nodes,[{disc,[rabbit@controller0,rabbit@controller1,rabbit@controller2]}]},
+ {running_nodes,[rabbit@controller2]},
+ {cluster_name,<<"rabbit@controller0.x.y.com">>},
+ {partitions,[]},
+ {alarms,[{rabbit@controller1,[]},
+          {rabbit@controller0,[]},
+          {rabbit@controller2,[]}]}]
 
 Application environment of node 'rabbit@overcloud-controller-2' ...
 [{auth_backends,[rabbit_auth_backend_internal]}]
@@ -121,11 +127,14 @@ Status of node 'rabbit@overcloud-controller-0' ...
                     {sockets_used,965}]},
  {uptime,3075485}]
 
-Cluster status of node 'rabbit@overcloud-controller-2' ...
-[{nodes,[{disc,['rabbit@overcloud-controller-0',
-                'rabbit@overcloud-controller-1',
-                'rabbit@overcloud-controller-2']}]},
- {partitions,[]}]
+Cluster status of node rabbit@overcloud-controller-2 ...
+[{nodes,[{disc,[rabbit@controller0,rabbit@controller1,rabbit@controller2]}]},
+ {running_nodes,[rabbit@controller1,rabbit@controller0,rabbit@controller2]},
+ {cluster_name,<<"rabbit@controller0.x.y.com">>},
+ {partitions,[]},
+ {alarms,[{rabbit@controller1,[]},
+          {rabbit@controller0,[]},
+          {rabbit@controller2,[]}]}]
 
 Application environment of node 'rabbit@overcloud-controller-2' ...
 [{auth_backends,[rabbit_auth_backend_internal]}]
@@ -196,7 +205,7 @@ Status of node rabbit@controller1 ...
 Cluster status of node rabbit@controller1 ...
 [{nodes,[{disc,[rabbit@controller0,rabbit@controller1,rabbit@controller2]}]},
  {running_nodes,[rabbit@controller0,rabbit@controller2,rabbit@controller1]},
- {cluster_name,<<"rabbit@controller0.external.s4-southlake.vcp.vzwops.com">>},
+ {cluster_name,<<"rabbit@controller0.x.y.com">>},
  {partitions,[]},
  {alarms,[{rabbit@controller0,[]},
           {rabbit@controller2,[]},
@@ -235,6 +244,30 @@ def test_rabbitmq_report():
     assert len(result.get("nstat")) == 3
     permissions = {'/': {'guest': ['.*', '.*', '.*']}}
     assert result.get("perm") == permissions
+
+    # test clusters
+    nodes = [{'disc': ['rabbit@controller0', 'rabbit@controller1', 'rabbit@controller2']}]
+    assert result.get("clusters").get('rabbit@controller1').get('nodes') == nodes
+    assert len(result.get("clusters").get('rabbit@controller1').get('running_nodes')) == 3
+    running_nodes = ['rabbit@controller0', 'rabbit@controller2', 'rabbit@controller1']
+    assert result.get("clusters").get('rabbit@controller1').get('running_nodes') == running_nodes
+    assert result.get("clusters").get('rabbit@controller1').get('cluster_name') == 'rabbit@controller0.x.y.com'
+    assert result.get("clusters").get('rabbit@controller1').get('partitions') == []
+    alarms = [{'rabbit@controller0': []},
+              {'rabbit@controller2': []},
+              {'rabbit@controller1': []}]
+    assert result.get("clusters").get('rabbit@controller1').get('alarms') == alarms
+
+    assert result.get("clusters").get('rabbit@controller2').get('nodes') == nodes
+    assert len(result.get("clusters").get('rabbit@controller2').get('running_nodes')) == 1
+    running_nodes = ['rabbit@controller2']
+    assert result.get("clusters").get('rabbit@controller2').get('running_nodes') == running_nodes
+    assert result.get("clusters").get('rabbit@controller2').get('cluster_name') == 'rabbit@controller0.x.y.com'
+    assert result.get("clusters").get('rabbit@controller2').get('partitions') == []
+    alarms = [{'rabbit@controller1': []},
+              {'rabbit@controller0': []},
+              {'rabbit@controller2': []}]
+    assert result.get("clusters").get('rabbit@controller2').get('alarms') == alarms
 
     result = RabbitMQReport(context_wrap(RABBITMQCTL_REPORT_3,
             hostname="controller_1", osp=osp_controller)).result
