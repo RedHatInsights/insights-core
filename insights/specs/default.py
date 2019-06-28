@@ -324,6 +324,7 @@ class DefaultSpecs(Specs):
         [
             "/etc/httpd/conf/httpd.conf",
             "/etc/httpd/conf.d/*.conf",
+            "/etc/httpd/conf.d/*/*.conf",
             "/etc/httpd/conf.modules.d/*.conf"
         ]
     )
