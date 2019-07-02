@@ -83,14 +83,12 @@ Status of node 'rabbit@overcloud-controller-2' ...
                     {sockets_used,833}]},
  {uptime,3075474}]
 
-Cluster status of node rabbit@controller1 ...
-[{nodes,[{disc,[rabbit@controller0,rabbit@controller1,rabbit@controller2]}]},
- {running_nodes,[rabbit@controller0,rabbit@controller2,rabbit@controller1]},
- {cluster_name,<<"rabbit@controller0.x.y.com">>},
+Cluster status of node 'rabbit@controller-0'
+[{nodes,[{disc,['rabbit@controller-0']}]},
+ {running_nodes,['rabbit@controller-0']},
+ {cluster_name,<<"rabbit@controller-0.localdomain">>},
  {partitions,[]},
- {alarms,[{rabbit@controller0,[]},
-          {rabbit@controller2,[]},
-          {rabbit@controller1,[]}]}]
+ {alarms,[{'rabbit@controller-0',[]}]}]
 
 Application environment of node 'rabbit@overcloud-controller-2' ...
 [{auth_backends,[rabbit_auth_backend_internal]}]
@@ -246,18 +244,17 @@ def test_rabbitmq_report():
     assert result.get("perm") == permissions
 
     # test clusters
-    nodes = [{'disc': ['rabbit@controller0', 'rabbit@controller1', 'rabbit@controller2']}]
-    assert result.get("clusters").get('rabbit@controller1').get('nodes') == nodes
-    assert len(result.get("clusters").get('rabbit@controller1').get('running_nodes')) == 3
-    running_nodes = ['rabbit@controller0', 'rabbit@controller2', 'rabbit@controller1']
-    assert result.get("clusters").get('rabbit@controller1').get('running_nodes') == running_nodes
-    assert result.get("clusters").get('rabbit@controller1').get('cluster_name') == 'rabbit@controller0.x.y.com'
-    assert result.get("clusters").get('rabbit@controller1').get('partitions') == []
-    alarms = [{'rabbit@controller0': []},
-              {'rabbit@controller2': []},
-              {'rabbit@controller1': []}]
-    assert result.get("clusters").get('rabbit@controller1').get('alarms') == alarms
+    nodes = [{"disc": ["'rabbit@controller-0'"]}]
+    assert result.get("clusters").get("'rabbit@controller-0'").get('nodes') == nodes
+    assert len(result.get("clusters").get("'rabbit@controller-0'").get('running_nodes')) == 1
+    running_nodes = ["'rabbit@controller-0'"]
+    assert result.get("clusters").get("'rabbit@controller-0'").get('running_nodes') == running_nodes
+    assert result.get("clusters").get("'rabbit@controller-0'").get('cluster_name') == 'rabbit@controller-0.localdomain'
+    assert result.get("clusters").get("'rabbit@controller-0'").get('partitions') == []
+    alarms = [{"'rabbit@controller-0'": []}]
+    assert result.get("clusters").get("'rabbit@controller-0'").get('alarms') == alarms
 
+    nodes = [{'disc': ['rabbit@controller0', 'rabbit@controller1', 'rabbit@controller2']}]
     assert result.get("clusters").get('rabbit@controller2').get('nodes') == nodes
     assert len(result.get("clusters").get('rabbit@controller2').get('running_nodes')) == 1
     running_nodes = ['rabbit@controller2']

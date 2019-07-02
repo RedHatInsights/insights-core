@@ -184,7 +184,7 @@ class RabbitMQReport(CommandParser):
 
     def parse_cluster_node(self, node_data):
         regex_replace = [
-            (r',<<"', r':'), (r'">>', r''), (r',\[', r':['), (r'([a-zA-Z_@0-9\.\-]+)', r'"\1"')
+            (r',<<"', r':'), (r'">>', r''), (r',\[', r':['), (r'([a-zA-Z_@0-9\.\-\']+)', r'"\1"')
         ]
         for r, s in regex_replace:
             node_data = sub(r, s, node_data)
