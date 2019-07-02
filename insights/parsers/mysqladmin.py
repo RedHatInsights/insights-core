@@ -18,15 +18,22 @@ from insights.specs import Specs
 @parser(Specs.mysqladmin_status)
 class MysqladminStatus(LegacyItemAccess, CommandParser):
     """
+    MysqladminStatus - command ``/bin/mysqladmin status``
+    ------------------------------------------------------
+
     Module for parsing the output of the ``mysqladmin status`` command.
-    Typical output looks like::
+
+    Typical output looks like:
+
         Uptime: 1103965 Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
-    Example:
-        >>> type(mysqlstat)
+
+    Examples:
         >>> "Uptime" in mysqlstat
         True
         >>> mysqlstat['Threads']
-        1820
+        '1820'
+        >>> mysqlstat['Flush_tables'] == '1'
+        True
     """
     def parse_content(self, content):
         if not content:
@@ -36,13 +43,16 @@ class MysqladminStatus(LegacyItemAccess, CommandParser):
         if len(content) == 1:
             st = list(content)[0].strip()
             line = st.replace(': ', '=')
-            if line.startswith("Uptime="):
-                for item in line.split(None)[0:]:
+            line_ = line.replace("Slow queries", "Slow_queries").replace("Flush tables", "Flush_tables").replace("Open tables", "Open_tables").replace("Queries per second avg", "Queries_per_second_avg")
+            if line_.startswith("Uptime="):
+                for item in line_.split(None):
                     try:
                         k, v = item.split('=')
-                        self.data[k.strip()] = int(v.strip())
+                        self.data[k.strip()] = v.strip()
                     except ValueError:
-                        continue
+                        return None
+            else:
+                raise ParseException("Wrong Content.")
 
 
 @parser(Specs.mysqladmin_vars)
@@ -53,27 +63,14 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
     This parser will parse the table and set each variable as an class
     attribute. The unparsable lines are stored in the ``bad_lines`` property list.
 
-    Sample command output::
-
-        +-------------------------------------------------+------------------+
-        | Variable_name                                   | Value            |
-        +-------------------------------------------------+------------------+
-        | aria_block_size                                 | 8192             |
-        | aria_checkpoint_interval                        | 30               |
-        | aria_checkpoint_log_activity                    | 1048576          |
-        | datadir                                         | /var/lib/mysql/  |
-        | version                                         | 5.5.56-MariaDB   |
-        +-------------------------------------------------+------------------+
-
-
     Example:
-        >>> output.version
+        >>> output.get('version')
         '5.5.56-MariaDB'
         >>> 'datadir' in output
         True
         >>> output.get('what', '233')
         '233'
-        >>> output.getint('aria_block_size', '4096')
+        >>> output.getint('aria_block_size')
         8192
     """
 
@@ -110,9 +107,7 @@ class MysqladminVars(LegacyItemAccess, CommandParser):
         Example:
 
             >>> output.getint('wait_timeout')
-            3000
-            >>> output.getint('wait_what')
-            None
+            28800
             >>> output.getint('wait_what', 100)
             100
 

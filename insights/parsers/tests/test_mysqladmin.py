@@ -1,5 +1,6 @@
 import pytest
-from insights.parsers import ParseException, SkipException
+import doctest
+from insights.parsers import ParseException, SkipException, mysqladmin
 from insights.parsers.mysqladmin import MysqladminVars, MysqladminStatus
 from insights.tests import context_wrap
 
@@ -12,7 +13,7 @@ BLANK_SAMPLE = """
 """.strip()
 
 BAD_INPUT_SAMPLE = """
-type:0, len:0, queries:0
+Threads: 1820 Questions: 44778091 Slow queries: 0 Opens: 1919 Flush tables: 1 Open tables: 592 Queries per second avg: 40.561
 """.strip()
 
 
@@ -20,7 +21,11 @@ def test_mysqladmin_status():
     mysqlstat = MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS))
     assert "Uptime" in mysqlstat
     assert "logtime" not in mysqlstat
-    assert mysqlstat['Threads'] == 1820
+    assert "Slow_queries" in mysqlstat
+    assert "Flush_tables" in mysqlstat
+    assert "Open_tables" in mysqlstat
+    assert mysqlstat['Threads'] == '1820'
+    assert mysqlstat['Queries_per_second_avg'] == '40.561'
 
 
 def test_mysqlstat_blank_input():
@@ -31,8 +36,9 @@ def test_mysqlstat_blank_input():
 
 
 def test_mysqlstat_bad_input():
-    mysqlstat = MysqladminStatus(context_wrap(BAD_INPUT_SAMPLE))
-    assert mysqlstat.data == {}
+    with pytest.raises(ParseException) as exc:
+        MysqladminStatus(context_wrap(BAD_INPUT_SAMPLE))
+    assert "Wrong Content." in str(exc)
 
 
 INPUT_NORMAL = """
@@ -156,3 +162,14 @@ def test_mysqladmin_still_parsable():
     res = MysqladminVars(context_wrap(INPUT_FORAMT_WRONG))
     assert len(res.bad_lines) == 3
     assert res.bad_lines[1] == '| version_compile_machine                         | x86_64           |x'
+
+
+def test_doc():
+    env = {
+            'MysqladminStatus': MysqladminStatus,
+            'mysqlstat': MysqladminStatus(context_wrap(OUTPUT_MYSQLADMIN_STATUS, path='/bin/mysqladmin status')),
+            'MysqladminVars': MysqladminVars,
+            'output': MysqladminVars(context_wrap(INPUT_NORMAL, '/bin/mysqladmin variables')),
+    }
+    failed, total = doctest.testmod(mysqladmin, globs=env)
+    assert failed == 0
