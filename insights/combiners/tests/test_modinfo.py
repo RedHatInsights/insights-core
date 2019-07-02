@@ -24,9 +24,9 @@ def test_modinfo():
         modinfo_vmxnet3,
         modinfo_veth,
     ])
-    assert comb.retpoline_y == {'aesni-intel', 'i40e', 'vmxnet3'}
-    assert comb.retpoline_n == {'bnx2x'}
-    assert comb.data.keys() == {'i40e', 'aesni-intel', 'bnx2x', 'vmxnet3', 'igb', 'ixgbe', 'veth'}
+    assert comb.retpoline_y == set(['aesni-intel', 'i40e', 'vmxnet3'])
+    assert comb.retpoline_n == set(['bnx2x'])
+    assert comb.data.keys() == set(['i40e', 'aesni-intel', 'bnx2x', 'vmxnet3', 'igb', 'ixgbe', 'veth'])
 
     modinfo_obj = comb.data['i40e']
     assert modinfo_obj.module_name == 'i40e'
