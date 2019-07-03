@@ -1,6 +1,4 @@
-import os
 import sys
-import insights
 from insights import run, make_pass
 from insights.core import dr
 from insights.plugins import always_fires, never_fires
@@ -71,7 +69,16 @@ REDHAT_RELEASE = "Red Hat Enterprise Linux Server release 7.3 (Maipo)"
 UNAME = "Linux test.redhat.com 3.10.0-514.el7.x86_64 #1 SMP Wed Oct 19 11:24:13 EDT 2016 x86_64 x86_64 x86_64 GNU/Linux"
 
 
-def test_run_command():
+def test_run_command(tmpdir):
+
+    d = tmpdir / "etc"
+    d.mkdir()
+    p = d / "redhat-release"
+    p.write(REDHAT_RELEASE)
+    g = tmpdir / "insights_commands"
+    g.mkdir()
+    r = g / "uname_-a"
+    r.write(UNAME)
 
     broker = run([always_fires.report, never_fires.report])
     assert broker is not None
@@ -80,8 +87,7 @@ def test_run_command():
     assert broker[always_fires.report] == ALWAYS_FIRES_RESULT
     assert broker[never_fires.report] == NEVER_FIRES_RESULT
 
-    test_archive = os.path.join(os.path.dirname(insights.__file__), 'archive/repository/base_archives/rhel7')
-    broker = run([Specs.redhat_release, always_fires.report, never_fires.report], root=test_archive)
+    broker = run([Specs.redhat_release, always_fires.report, never_fires.report], root=tmpdir.strpath)
     assert broker is not None
     assert always_fires.report in broker
     assert never_fires.report in broker
@@ -99,7 +105,7 @@ def test_run_command():
         assert broker[always_fires.report] == ALWAYS_FIRES_RESULT
         assert broker[never_fires.report] == NEVER_FIRES_RESULT
 
-    testargs = ["insights-run", "-p", "insights.plugins", test_archive]
+    testargs = ["insights-run", "-p", "insights.plugins", tmpdir.strpath]
     with patch.object(sys, 'argv', testargs):
         broker = run(print_summary=True)
         assert broker is not None
