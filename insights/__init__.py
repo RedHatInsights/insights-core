@@ -157,11 +157,12 @@ def parse_plugins(p):
     return plugins
 
 
-def apply_default_enabled(default_enabled):
+def apply_default_enabled(config):
     """
     Configures dr and already loaded components with a default enabled
     value.
     """
+    default_enabled = config.get("default_component_enabled", True)
     for k in dr.ENABLED:
         dr.ENABLED[k] = default_enabled
 
@@ -172,39 +173,35 @@ def apply_default_enabled(default_enabled):
 
 def apply_configs(config):
     """
-    Configures components. They can be enabled or disabled, have timeouts set
-    if applicable, and have metadata customized. Valid keys are name, enabled,
-    metadata, and timeout.
+    Configures components.
 
     Args:
-        config (list): a list of dictionaries with the following keys:
-            default_component_enabled (bool): default value for whether compoments
-                are enable if not specifically declared in the config section
+        config (dict): a dictionary with the following keys:
+            default_component_enabled (bool, optional): default value for
+                whether compoments are enable if not specifically declared in
+                the config section. Defaults to True.
 
-            packages (list): a list of packages to be loaded. These will be in
-                addition to any packages previosly loaded for the `-p` option
-
-            configs:
-                name, enabled, metadata, and timeout. All keys are optional except
-                name.
+            configs (list): list of dictionaries with the following keys:
+                name, enabled, metadata, and timeout. All keys are optional
+                except name.
 
                 name is the prefix or exact name of any loaded component. Any
-                component starting with name will have the associated configuration
-                applied.
+                component starting with name will have the associated
+                configuration applied.
 
                 enabled is whether the matching components will execute even if
                 their dependencies are met. Defaults to True.
 
-                timeout sets the class level timeout attribute of any component so
-                long as the attribute already exists.
+                timeout sets the class level timeout attribute of any component
+                so long as the attribute already exists.
 
                 metadata is any dictionary that you want to attach to the
                 component. The dictionary can be retrieved by the component at
                 runtime.
     """
-    default_enabled = config.get('default_component_enabled', False)
+    default_enabled = config.get("default_component_enabled", True)
     delegate_keys = sorted(dr.DELEGATES, key=dr.get_name)
-    for comp_cfg in config.get('configs', []):
+    for comp_cfg in config.get("configs", []):
         name = comp_cfg.get("name")
         for c in delegate_keys:
             delegate = dr.DELEGATES[c]
@@ -301,6 +298,7 @@ def run(component=None, root=None, print_summary=False,
                 config = (yaml.safe_load(f))
                 packages_loaded = load_packages(config.get('packages', []))
                 plugins.extend(packages_loaded)
+                apply_default_enabled(config)
                 apply_configs(config)
 
         if component is None:
