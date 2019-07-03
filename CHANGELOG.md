@@ -1,5 +1,19 @@
 # Change Log
 
+## [insights-core-3.0.108-1038](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.108-1038) (2019-07-03)
+[Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.107-1033...insights-core-3.0.108-1038)
+
+**Fixed bugs:**
+
+- IfCFG parser do not add raw\_device\_value [\#2037](https://github.com/RedHatInsights/insights-core/issues/2037)
+- incorrect default\_component\_enabled behavior [\#2034](https://github.com/RedHatInsights/insights-core/issues/2034)
+- When em/en dash is mistakenly used for an arg to insights run exception is thrown [\#1832](https://github.com/RedHatInsights/insights-core/issues/1832)
+
+**Closed issues:**
+
+- Add regex support to add\_filter [\#2029](https://github.com/RedHatInsights/insights-core/issues/2029)
+- Remove archive creation code [\#1642](https://github.com/RedHatInsights/insights-core/issues/1642)
+
 ## [insights-core-3.0.107-1033](https://github.com/RedHatInsights/insights-core/tree/insights-core-3.0.107-1033) (2019-06-27)
 [Full Changelog](https://github.com/RedHatInsights/insights-core/compare/insights-core-3.0.106-1020...insights-core-3.0.107-1033)
 
