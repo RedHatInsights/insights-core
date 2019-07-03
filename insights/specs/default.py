@@ -796,6 +796,7 @@ class DefaultSpecs(Specs):
     secure = simple_file("/var/log/secure")
     selinux_config = simple_file("/etc/selinux/config")
     sestatus = simple_command("/usr/sbin/sestatus -b")
+    setup_named_chroot = simple_file("/usr/libexec/setup-named-chroot.sh")
 
     @datasource(HostContext)
     def block(broker):
